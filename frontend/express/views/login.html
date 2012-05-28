@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<link href='http://fonts.googleapis.com/css?family=Ubuntu:400,500&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+	<style>
+	body {padding:20px; background-color:#1A1A1A; font-family: "Ubuntu";}
+	input {outline:none;}
+	input[type=text], input[type=password] { font-size:20px; box-shadow:inset 0 2px 2px 0 #999, 0 1px 0 0 #555; border-radius:5px; border:1px solid #000; padding:8px; background-color:#E0EDE0; font-family: "Ubuntu"; color:#CCC; width:210px; margin-bottom:5px; } 
+	input[type=text]:active, input[type=text]:focus, input[type=password]:active, input[type=password]:focus{ background-color:#FFF; box-shadow:inset 0 2px 2px 0 #BBB, 0 0 20px 0px #000; transition: background-color 1s; outline:none; color:#666; } 
+	#login-form { width:477px; height:143px; margin-left:-238px; left:50%; top:50%; margin-top:-72px; position:absolute; background-image:url('/images/login/cly_login_bg.png'); background-position:220px; background-repeat:no-repeat; } 
+	#login-left {margin-right:30px; padding-right:30px; height:100%; float:left;}
+	
+	#login-button { font-size:16px; font-weight:normal; box-shadow:inset 0 1px 0 0 #AFE7B3; border-radius:5px; border:1px solid #1A691C; padding:12px 26px; padding-top:11px; padding-left:0; background-color:#6BB96E; background-image: url('/images/login/cly_login.png'), linear-gradient(top, #6BB96E 10%, #58985A 100%); background-position:right; background-repeat:no-repeat; font-family: "Ubuntu"; color:#FFF; text-shadow:0 -1px #666; font-weight:400; cursor:pointer; width:227px; margin-top:2px; } 	
+	#login-button:hover { background-image:url('/images/login/cly_login.png'), linear-gradient(top, #76CC79 10%, #58985A 100%); }
+	#login-button:active { box-shadow:inset 0 0 3px 0 #145016; }
+	
+	#home-button{ color: #888; padding: 9px 20px; display: block; text-shadow: 0 -1px #000000; background: linear-gradient(top, #242424 0%, #111111 100%); position:absolute; top:20px; right:20px; border-radius:6px; cursor: pointer; font-size: 15px; box-shadow: inset 0 1px 0 #2e2e2e; border: 1px #080808 solid;}
+	#home-button:hover{ background: linear-gradient(top, #1a1a1a 0%, #1b1b1b 100%); }
+	#home-button:active{ background: #161616; box-shadow: inset 0 0 2px #010101; }
+	
+	/*
+	#home-button { font-size:16px; font-weight:normal; box-shadow:inset 0 1px 0 0 #666; border-radius:5px; border:1px solid #000; padding:9px 15px; background-color:#333; background-image: linear-gradient(top, #3f3f3f 50%, #333 100%); font-family: "Ubuntu"; color:#EEE; text-shadow:0 -1px #111; font-weight:bold; cursor:pointer; position:absolute; top:20px; right:20px; font-size:15px; }
+	#home-button:hover { background-image: linear-gradient(top, #434343 50%, #333 100%); }
+	#home-button:active { box-shadow:inset 0 0 2px 0 #000; }
+	*/
+	
+	#logo {margin-top:43px; width:189px; height:57px; font-size:30px; background-image:url('/images/login/logo.png');}
+	a {color:inherit; text-decoration:none;}
+	a:visited {color:inherit;}
+	a:hover {color:inherit;}
+	a:active {color:inherit;}
+	</style>
+	<link rel="icon" type="image/png" href="/images/favicon.png">
+	<title>Countly | Dashboard Login</title>
+	<meta name="description" content="Admin dashboard demo of Countly, innovative, real-time mobile analytics application." />
+</head>
+<body>
+	<a id="home-button" type="button" href="http://count.ly">Countly</a>
+	<div id="login-form">
+		<div id="login-left">
+			<div id="logo"></div>
+		</div>
+		<div style="float:left;">
+			<form method="POST">
+				<div>
+				<input type="text" name="username" placeholder="Username"/>
+				</div>
+				<div>
+					<input name="password" type="password" placeholder="Password"/>
+				</div>
+				<div>
+					<input id="login-button" value="Login" type="submit" />
+				</div>
+			</form>
+		</div>
+	</div>
+	<script language="javascript" type="text/javascript" src="/javascripts/jquery-1.7.1.min.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/prefixfree.min.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/jquery.noisy.min.js"></script>
+	<script>
+	$(document).ready(function(){
+		$('body').noisy({
+			intensity: 0.9, 
+			size: 50, 
+			opacity: 0.02,
+			monochrome: true
+		});
+	});
+	</script>
+</body>
+</html>

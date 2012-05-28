@@ -1,0 +1,15 @@
+{   "name": "express-expose"
+  , "version": "0.2.2"
+  , "description": "Expose helpers and local variables to the client-side"
+  , "keywords": ["express"]
+  , "author": "TJ Holowaychuk <tj@vision-media.ca>"
+  , "devDependencies": {
+      "connect": "1.8.x"
+    , "express": "2.5.x"
+    , "mocha": "*"
+    , "should": "*"
+    , "jade": "*"
+  }
+  , "main": "index"
+  , "engines": { "node": ">= 0.4.x < 0.8.x" }
+}
