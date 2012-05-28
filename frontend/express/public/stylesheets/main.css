@@ -1,0 +1,417 @@
+body {margin:0; padding:0; overflow:auto; /*background-image:url('/images/dashboard/bg.png');*/ background-color:#F5F5F5; user-select:text; }
+#content {margin-left:224px; min-width:1010px; padding:16px;}
+a {color:inherit; text-decoration:none;}
+a:visited {color:inherit;}
+a:hover {color:inherit;}
+a:active {color:inherit;}
+
+/* SIDEBAR */
+
+#sidebar {position:fixed; left:0; width:224px; background-image:url('/images/dashboard/menu_bg.png'); background-position:0px 400px; height:100%; z-index:10; user-select: none;}
+#sidebar-top {height:112px; padding-top:11px; background-image:url('/images/dashboard/logo_bg.png');}
+#sidebar-logo {background-image:url('/images/dashboard/logo.png'); width:144px; height:44px; margin:0 auto;}
+#sidebar-app-select {width:170px; height:16px; padding:10px; background-image:url('/images/dashboard/combobox.png'); margin:0 auto; margin-top:21px; cursor:pointer;}
+	#sidebar-app-select:hover {background-position:-190px;}
+	#sidebar-app-select.active {background-position:-380px;}
+	#sidebar-app-select.active:hover {background-position:-570px;}
+	#sidebar-app-select.disabled {opacity:0.3;}
+	#sidebar-app-select.disabled:hover {background-position:0;}
+	#sidebar-app-select .text { width:120px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; font:13px 'Ubuntu'; color:#505050; text-shadow:0 1px #CCC; float:left; }
+	#sidebar-app-select .logo { width:20px; height:20px; float:left; margin-right:10px; margin-top:-3px; background-position:center; border-radius:4px; border:1px solid #555; }
+	
+#sidebar-bottom-container { z-index:2; position:absolute; background-color:#222222; bottom:14px; left:14px; padding:5px 10px; width:170px; font:13px 'Ubuntu'; color:#505050; box-shadow:inset 0 1px 0 #2D2D2D; text-shadow:0 -1px #161616; border:1px solid #1A1A1A; border-radius:5px;}
+#sidebar-bottom-container .reveal-menu {width:14px; height:15px; background-image:url('/images/dashboard/settings.png'); float:right; cursor:pointer;}
+#sidebar-bottom-container .menu {display:none; margin-bottom:5px; border-bottom:1px solid #2D2D2D;}
+#sidebar-bottom-container .item {padding-bottom:3px; padding-top:3px; cursor:pointer; display:block; }
+#sidebar-bottom-container .item:last-child {border-bottom:1px solid #1A1A1A; padding-bottom:8px;}
+#sidebar-bottom-container .item:hover{color:#848484;}
+#sidebar-bottom-container .username {float:left;}
+
+#sidebar-menu {margin-top:-2px;}
+	#sidebar-menu>.item {margin-top:-1px; margin-left:-1px; width:223px; height:43px; padding-top:3px; background-image:url('/images/dashboard/menu_button.png'); display:block; cursor:pointer;}
+		#sidebar-menu .item:hover {background-position:446px;}
+		#sidebar-menu .item.active {background-position:223px;}
+		#sidebar-menu .item .logo {background-image:url('/images/dashboard/menu_icons.png'); width:40px; height:40px; float:left; margin-left:9px;}
+			#sidebar-menu .item .logo.dashboard{background-position:0px;}
+			#sidebar-menu .item.active .logo.dashboard{background-position:-40px;}
+			#sidebar-menu .item .logo.analytics{background-position:-80px;}
+			#sidebar-menu .item.active .logo.analytics{background-position:-120px;}
+			#sidebar-menu .item .logo.management{background-position:-160px;}
+			#sidebar-menu .item.active .logo.management{background-position:-200px;}
+			#sidebar-menu .item .logo.reports{background-position:-240px;}
+			#sidebar-menu .item.active .logo.reports{background-position:-280px;}
+			#sidebar-menu .item .logo.bookmarks{background-position:80px;}
+			#sidebar-menu .item.active .logo.bookmarks{background-position:40px;}
+		#sidebar-menu .item .text {margin-left:15px; float:left; padding-top:11px; font:15px 'Ubuntu'; color:#888; text-shadow:0 1px #222;}
+			#sidebar-menu .item.active .text{color:#FFF; text-shadow:0 1px #666;}
+			
+	#sidebar-menu .sidebar-submenu {background-image:url('/images/dashboard/submenu_bg.png'); width:222px; display:none;}
+		#sidebar-menu .sidebar-submenu .item,
+		#sidebar-menu .sidebar-submenu .disabled-item {height:34px; display:block; padding-left:8px; background-image:url('/images/dashboard/submenu_seperator.png'); background-position:bottom; background-repeat:no-repeat; cursor:pointer;}
+		#sidebar-menu .sidebar-submenu .disabled-item {cursor:default;}
+		
+		#sidebar-menu .sidebar-submenu .item:hover{opacity:0.6;}
+		#sidebar-menu .sidebar-submenu .item.active:hover {opacity:1;}
+		#sidebar-menu .sidebar-submenu .item:last-child {background-image:none;}
+			#sidebar-menu .sidebar-submenu .item .logo{background-image:url('/images/dashboard/analytics_icons.png'); width:30px; height:30px; float:left; margin-left:8px; margin-top:1px;}
+				#sidebar-menu .sidebar-submenu .item .logo.users{background-position:-30px;}
+				#sidebar-menu .sidebar-submenu .item.active .logo.users{background-position:0px;}
+				#sidebar-menu .sidebar-submenu .item .logo.sessions{background-position:-90px;}
+				#sidebar-menu .sidebar-submenu .item.active .logo.sessions{background-position:-60px;}
+				#sidebar-menu .sidebar-submenu .item .logo.frequency{background-position:-150px;}
+				#sidebar-menu .sidebar-submenu .item.active .logo.frequency{background-position:-120px;}
+				#sidebar-menu .sidebar-submenu .item .logo.country{background-position:-210px;}
+				#sidebar-menu .sidebar-submenu .item.active .logo.country{background-position:-180px;}
+				#sidebar-menu .sidebar-submenu .item .logo.devices{background-position:-270px;}
+				#sidebar-menu .sidebar-submenu .item.active .logo.devices{background-position:-240px;}
+				#sidebar-menu .sidebar-submenu .item .logo.carrier{background-position:-330px;}
+				#sidebar-menu .sidebar-submenu .item.active .logo.carrier{background-position:-300px;}
+				#sidebar-menu .sidebar-submenu .item .logo.loyalty{background-position:-390px;}
+				#sidebar-menu .sidebar-submenu .item.active .logo.loyalty{background-position:-360px;}
+			#sidebar-menu .sidebar-submenu .item .text {margin-left:17px; float:left; padding-top:8px; font:13px 'Ubuntu'; color:#666; text-shadow:none;}
+				#sidebar-menu .sidebar-submenu .item.active .text{color:#4DB351;}
+				
+			#management-submenu.sidebar-submenu .item .logo{background-image:url('/images/dashboard/management_icons.png');}
+				.sidebar-submenu .item .logo.applications{background-position:-30px;}
+				.sidebar-submenu .item.active .logo.applications{background-position:0px;}
+				.sidebar-submenu .item .logo.mgmt-users{background-position:-90px;}
+				.sidebar-submenu .item.active .logo.mgmt-users{background-position:-60px;}
+				
+				#management-submenu.sidebar-submenu .disabled-item  {opacity:0.3;}
+				#management-submenu.sidebar-submenu .disabled-item .logo {width:30px; height:30px; float:left; margin-left:8px; margin-top:1px; background-image:url('/images/dashboard/management_icons.png'); background-position:-90px;}
+				#management-submenu.sidebar-submenu .disabled-item .text {margin-left:17px; float:left; padding-top:8px; font:13px 'Ubuntu'; color:#666; text-shadow:none;}
+
+/* SIDEBAR END */
+
+/* DASHBOARD */
+
+	#dashboard-graph {font-family:'AlternateGothicNo2BT-Regular'; text-shadow:none; }
+	.graph-key-event-label {font-family:'AlternateGothicNo2BT-Regular'; padding:2px 2px; cursor:pointer; text-shadow:none; width:15px; text-align:center; background-color:#6BB96E; color:#FFF; font-size:13px; border-radius:3px; font-weight:normal; opacity:0.8;}
+
+	.widget {margin-bottom:16px; box-shadow:0px 1px 1px 0px #D1D1D1; border-radius:7px;}
+	.widget-header {position:relative; padding:4px 8px; height:41px; color:#666; text-shadow:0 1px #fff; font-size:13px; border-top-left-radius:7px; border-top-right-radius:7px; border:1px solid #979797; border-bottom:none; box-shadow:inset 0 1px 0 #F4F4F4; background-color:#E2E2E2; background-image: linear-gradient(top, #EAEAEA 30%, #E2E2E2 100%);}
+			.widget-header .left {float:left; margin-top:2px; margin-left:2px;}
+			.widget-header>.title {font:19px 'Ubuntu'; color:#636363; text-shadow:0 1px #F6F6F6; float:left;}
+			.widget-header .left>.title {font:19px 'Ubuntu'; color:#636363; text-shadow:0 1px #F6F6F6; float:left; padding-top:8px; float:left; margin-left:3px;}
+			.widget-header .logo {float:left; width:38px; height:38px; background-image:url('/images/dashboard/anayltcs_header_icons.png');}
+				.widget-header .logo.sessions {background-position:-38px;}
+				.widget-header .logo.frequency {background-position:-76px;}
+				.widget-header .logo.countries {background-position:-114px;}
+				.widget-header .logo.devices {background-position:-152px;}
+				.widget-header .logo.carriers {background-position:-190px;}
+				.widget-header .logo.loyalty {background-position:-228px;}
+				
+	.widget-footer {text-align:right; min-height:10px; color:#666; text-shadow:0 1px #fff; font-size:11px; border-bottom-left-radius:5px; border-bottom-right-radius:5px; border:1px solid #C2C2C2; border-top:none; background-color:#FFF; box-shadow:inset 0 1px 0 #FFF; overflow:hidden;}
+	.widget-content {background-color:#FFF; border:1px solid #A1A1A1; border-top-color:#B8B9B9;}
+
+	#big-numbers-container {overflow:hidden; position:relative;}
+	#big-numbers-container.dashboard {border:1px solid #C2C2C2; border-top-color:#B8B9B9; border-bottom:none; padding-bottom:8px; }
+		.big-numbers {float:left; position:relative;}
+		.widget-footer .big-numbers:first-child .inner {border-bottom-left-radius:7px;}
+		.widget-footer .big-numbers:last-child .inner {border-bottom-right-radius:7px;}
+		.big-numbers .inner {border-left:1px solid #C9C9C9; border-bottom:1px solid #A1A1A1; background-color:#F9F9F9; height:180px; text-align:center;}
+			.widget-content .big-numbers .inner {height:190px; cursor:pointer;}
+			.widget-footer .big-numbers .inner {height:100px; border-bottom:none; background-color:#f4f4f4;}
+			.big-numbers.active .inner{background-color:#FFF;}
+			.big-numbers:first-child .inner{border-left:none;}
+			.big-numbers:last-child {position:absolute; right:0; border-left:none;}
+		.big-numbers .select {padding-top:7px; font:13px 'Ubuntu'; color:#5B5B5B; text-shadow:0px 1px #FFF; position:absolute; height:23px; width:100%; background-color:#D6D6D6; background-image: linear-gradient(top, #E1E1E1 20%, #D6D6D6 100%); box-shadow:inset 0 1px 0 #F6F6F6;}
+			.widget-content .big-numbers .select {bottom:1px; border-top:1px solid #A1A2A2; cursor:pointer; }
+			.widget-footer .big-numbers .select {top:0px; border-bottom:1px solid #A1A2A2; position:relative;}
+			.widget-content .big-numbers .select:hover,
+			.widget-content .big-numbers:hover .select {background-color:#E0E0E0; background-image: linear-gradient(top, #EEEEEE 40%, #E0E0E0 100%);}
+			.big-numbers.active .select:hover, 
+			.big-numbers.active:hover .select {background-color:#2B2B2B; background-image: linear-gradient(top, #484848 20%, #2B2B2B 100%);} 
+			.big-numbers.active .select{color:#EEE; text-shadow:0px -1px #333; background-color:#2B2B2B; background-image: linear-gradient(top, #484848 20%, #2B2B2B 100%); box-shadow:inset 0 1px 0 #5E5E5E; border-top-color:#404040; border-bottom:1px solid #616161; bottom:0px;}
+		.big-numbers .inner .logo {background-image:url('/images/dashboard/dashboard_icons.png'); width:60px; height:60px; margin:0 auto;}
+			.big-numbers .inner .logo.one {background-position:-55px;}
+			.big-numbers.active .logo.one {background-position:5px;}
+			.big-numbers .inner .logo.two {background-position:-175px;}
+			.big-numbers.active .logo.two {background-position:-115px;}
+			.big-numbers .inner .logo.three {background-position:-295px;}
+			.big-numbers.active .logo.three {background-position:-235px;}
+			.big-numbers .inner .logo.four {background-position:-655px;}
+			.big-numbers.active .logo.four {background-position:-595px;}	
+			.big-numbers .inner .logo.five {background-position:-415px;}
+			.big-numbers.active .logo.five {background-position:-355px;}
+			.big-numbers .inner .logo.six {background-position:-535px;}
+			.big-numbers.active .logo.six {background-position:-475px;}
+		.big-numbers .number{font:38px 'AlternateGothicNo2BT-Regular'; color:#666; text-shadow:0px 1px #FFF; }
+			.widget-content .big-numbers .number {margin-top:1px;}
+			.widget-footer .big-numbers .number {margin-top:7px;}
+			.big-numbers.active .number{color:#333; text-shadow:0px 1px #FFF;}
+		.big-numbers  .arrow {display:none; background-image:url('/images/dashboard/dashboard-arrow.png'); width:18px; height:8px; position:absolute; left:50%; z-index:2; margin-left:-9px; bottom:-6px;}
+		.big-numbers.active .arrow {display:block;}
+		.big-numbers .spark {margin-top:11px;}
+		.big-numbers .color { height:5px; }
+				.big-numbers:nth-child(1) .color { background-color:#88BBC8; }
+				.big-numbers:nth-child(2) .color { background-color:#ED8662; }
+				.big-numbers:nth-child(3) .color {background-color:#BEEB9F; }
+				
+		.widget-content .big-numbers .trend{width:12px; height:9px; right:7%; top:11px; position:absolute;}
+		.widget-footer .big-numbers .trend{width:12px; height:9px; right:20px; top:62px; position:absolute;}
+		.widget-content .big-numbers .change{right:15px; white-space:nowrap; top:-1px; position:absolute; font:10px 'Ubuntu'; color:#999; text-shadow:0 1px #FFF; }
+			.big-numbers.active .change {color:#333;}
+			
+		.map-list {background-color:#FFF; height:323px; border:1px solid #A2A2A2;}
+			#geo-chart {text-align:center; padding-top:20px;}
+			#geo-chart-outer {background-image:url('/images/dashboard/map_dotted_bg.png');}
+			.map-list #geo-chart-outer {border-radius:7px;}
+			#map-list-right {border-top-right-radius:0px; border-bottom-right-radius:0px; width:240px; float:right;  height:100%; margin-top: 40px; margin-right: 42px;}
+			.map-list-item {overflow:hidden; padding:4px 12px;}
+			.map-list-item:hover {}
+			.map-list-item:last-child {border-bottom:none;}
+			.flag {float:left; width:16px; height:11px; border-radius:2px; box-shadow:0 0 1px 0 #333; margin-top:5px; margin-right:10px; background-image:url('/images/flags/tr.png');}
+			.map-list-item .flag { margin-top:8px; }
+			.map-list-item:hover .flag {}
+			.map-list-item .total{float:right; color:#646464; text-shadow:0px 1px #FFF; font:22px 'AlternateGothicNo2BT-Regular'; margin-right:10px;}
+			.map-list .country-name {float:left; padding-top:4px; color:#646464; text-shadow:0px 1px #FFF; font:16px 'Ubuntu';}
+			.map-list .bar {float:left; margin-left:10px; height:15px; margin-top:2px; background-color:#333; }
+				
+		.graph {font:19px 'Ubuntu'; z-index:1;}
+		.graph table tr:nth-child(n+10){ display:none; }
+		#graph-tooltip{border: 1px solid #1B1B1C; box-shadow:0 1px 1px 0 #B0B0B0; box-shadow:inset 0 1px 0 #727475; background-color:#383B3C; background-image: linear-gradient(top, #3947320 30%, #383B3C 100%); padding:2px 8px; border-radius:3px; background-color:#3C3F40; opacity:0.80; color:#FFF; font:14px 'AlternateGothicNo2BT-Regular'; display:none; position:absolute; z-index:100;}
+/* DASHBOARD END */
+
+/* APP NAVIGATION */
+
+#app-nav {width:190px; display:none; text-align:right; background-color:#CCC; height:100%; position:fixed; left:31px; z-index:8; background-image:url('/images/dashboard/dropdown_bg.png');}
+#app-nav-head {height:27px; padding:20px; padding-left:32px; color:#BFBFBF; text-shadow:0px -1px #232323; font:18px 'Ubuntu'; background-image:url('/images/dashboard/dropdown_head.png'); text-align:left;}
+.app-container {cursor:pointer; height:30px; background-image:url('/images/dashboard/dropdown_item.png'); padding:8px 12px; padding-left:32px; overflow:auto;}
+.app-container:hover {opacity:0.7;}
+.app-container:last-child {margin-bottom:60px;}
+	.app-container .logo {float:left; width:25px; height:25px; margin-top:1px; border-radius:5px; border:1px solid #555; box-shadow:0 0 1px 0 #333; background-position:center; }
+	.app-container .name {width: 126px; text-align:left; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; float:left; margin-left:10px; padding-top:6px; color:#464646; text-shadow:0px 1px #EAEAEA; font:13px 'Ubuntu';}
+	.new-app-name { width: 300px; text-align:left; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; }
+	.app-container.app-navigate .name{ width:109px; }
+/*	.app-container:nth-child(1) .logo {background-image:url('/images/demo/mappy_small.png'); background-position: -2px -2px;}
+	.app-container:nth-child(2) .logo {background-image:url('/images/demo/notely_small.png'); background-position: -2px -2px;} */
+	
+/* APP NAVIGATION END */
+
+#app-management-bar {width:190px; position:fixed; left:220px; top:0px; text-align:right; background-color:#CCC; height:100%; background-image:url('/images/dashboard/dropdown_bg.png');}
+#app-management-bar .app-container {padding-left:15px;}
+
+table.d-table {width:100%; padding:0px; margin:0px; border-radius:7px; border:1px solid #C2C2C2; border-top-color:#959595; box-shadow:0 0 2px 0 #CCC; margin-bottom:20px; background-image:linear-gradient(top, #EAEAEA 30%, #E2E2E2 100%);}
+	.d-table  th{padding:5px 10px; height:17px; color:#4DB351; font-weight:normal; font:13px 'Ubuntu'; text-shadow:0 1px #F1F1F1; background-color:#E2E2E2; box-shadow:inset 0 1px 0 #F6F6F6; text-align:left; border-bottom:1px solid #CCC; border-right:none; border-left:1px solid #ccc;}
+	.d-table  th:first-child{border-left:none; border-top-left-radius:7px;}
+	.d-table  th:last-child{border-top-right-radius:7px;}
+	.d-table  thead tr {background-color:#E2E2E2; background-image: linear-gradient(top, #EAEAEA 30%, #E2E2E2 100%);}
+	.d-table  td {padding:5px 10px; padding-bottom:7px; margin:0px; border-bottom:1px solid #DDD; border-top:1px solid #fff; border-left:1px solid #ccc; color:#6B6B6B;}
+	.d-table  td:first-child{border-left:none; font-weight:normal;}
+	.d-table  tr{border-bottom:1px solid #DDD; border-top:1px solid #fff; font:16px 'Ubuntu'; background-color:#fff}
+	.d-table  tr:first-child{border-top:none;}
+	.d-table  tr:last-child{border-bottom:none;}
+	.d-table  tr:nth-child(even){background-color:#F9F9F9}
+	.d-table  tr:hover{background-color:#f1f1f1;}
+	.d-table  tr:last-child td{border-bottom:none;}
+	.d-table  tr:last-child td:first-child{border-bottom-left-radius:7px;}
+	.d-table  tr:last-child td:last-child{border-bottom-right-radius:7px;}
+	.d-table .table-no-data {text-align:center; font:15px 'Ubuntu'; padding:20px; color:#CCC;}
+	.d-table .table-no-data:hover { background-color:#FFF; }
+.d-table.horizontal { border-radius:0px; }
+	.d-table.horizontal  tr:hover { background-color:#FFF; }
+	.d-table.horizontal  tr:nth-child(even):hover { background-color:#F9F9F9; }
+	.d-table.horizontal td:first-child { color:#669140; width:127px; }
+	.d-table.horizontal tr:last-child td { border-radius:0; }
+.table-edit { display:none; }
+	.table-edit td, .table-add td { padding:10px; }
+	.table-edit td { border-top:1px solid #DDD; }
+	.table-edit .icon-button, .table-add .icon-button { float:right; padding:5px; margin-left:5px; }
+	.table-edit-prev td { border-bottom:none; }
+	
+.sortable td{font-family:'AlternateGothicNo2BT-Regular';}
+.sortable th {padding-top:6px;}
+	
+.d-table input[type=text] { margin: 0; font-size: 15px; font-family: Ubuntu; padding: 3px; border: 1px solid #DDD; } 
+	
+.icon-button { cursor:pointer; float:left; padding:5px 7px; border-radius:4px; font:13px 'Ubuntu'; overflow:auto; margin-left:8px; }
+.icon-button:hover {opacity:0.8;}
+.icon-button.light {color:#666; background-color:#E0E0E0; background-image: linear-gradient(top, #EEEEEE 40%, #E0E0E0 100%); border:1px solid #A5A5A5; text-shadow: 0 1px #FFF; box-shadow:inset 0 1px 0 #FDFDFD;}
+.icon-button.light:active, .icon-button.light.active { background-image: linear-gradient(top, #E0E0E0 40%, #EEEEEE 100%); }
+.icon-button.disabled {opacity:0.5;}
+.icon-button.dark {background-color:#292929; background-image: linear-gradient(top, #3E3E3E 40%, #292929 100%); border:1px solid #1B1B1B; text-shadow: 0 -1px #232323; box-shadow:inset 0 1px 0 #777777;}
+.icon-button.dark:active { background-image: linear-gradient(top, #292929 40%, #3E3E3E 100%); }
+	.icon-button .icon {float:left; margin-right:7px; background-repeat:no-repeat;}
+	.icon-button .text {float:right; padding-top:2px;}
+.icon-button.create-report {background-image:linear-gradient(top, #4CC04F 10%, #43A947 100%); border:1px solid #2C6B2E; color:#FFF; box-shadow:inset 0 1px 0 #58DE5D; text-shadow:0 -1px #3D9A41; }
+.icon-button.create-report:active {background-image:linear-gradient(top, #43A947 10%, #4CC04F 100%);}
+.icon-button.delete-app { background-image:linear-gradient(top, #E95C6C 10%, #D63E40 100%); border:1px solid #AD0303; color:#FFF; box-shadow:inset 0 1px 0 #F196A0; text-shadow:0 -1px #AD434B; }
+.icon-button.delete-app:active { background-image:linear-gradient(top, #D63E40 10%, #E95C6C 100%); }
+	
+#date-selector {float:right; font:13px 'Ubuntu'; color:#6B6B6B; text-shadow:0 1px #F6F6F6; padding:6px; padding-right:0px; overflow:auto; user-select:none; }
+	#date-selector .button {cursor:pointer; user-select:none; background-color:#E0E0E0; background-image: linear-gradient(top, #EEEEEE 40%, #E0E0E0 100%); float:left; padding:7px 5px; padding-top:6px; border:1px solid #A5A5A5; border-left:1px solid #747575; box-shadow:inset 0 1px 0 #FDFDFD; border-right:1px solid #EDEDED;}
+	#date-selector .button:nth-child(3) {border-top-left-radius:4px; border-bottom-left-radius:4px;}
+	#date-selector .button:last-child {border-top-right-radius:4px; border-bottom-right-radius:4px; border-right:1px solid #747575;}
+	#date-selector .button:hover {background-color:#F9F9F9; background-image: linear-gradient(top, #F9F9F9 40%, #E0E0E0 100%);}
+	#date-selector .button:active  {background-color:#E0E0E0; background-image: linear-gradient(top, #E0E0E0 40%, #F9F9F9 100%);}
+	#date-selector .button.active,
+	#date-selector .calendar {background-image: linear-gradient(top, #3C3C3C 10%, #717171 100%); box-shadow:inset 0 0 1px 0px #2D2D2D; color:#FFF; text-shadow:none; border-color:#202020; text-shadow:0 -1px #333;}
+	#date-selector .calendar {cursor:pointer; background-image: url('/images/dashboard/date-time-icon.png'), linear-gradient(top, #3C3C3C 10%, #717171 100%); background-repeat:no-repeat; background-position:center; float:left; border-radius:4px; margin-right:10px; width:29px; height:29px;}
+	
+	#date-picker-button:hover {box-shadow: 0 0 5px 2px #fff;}
+	/*#date-selector .button:active {background-color:#E4E4E4; background-image: linear-gradient(top, #E4E4E4 40%, #C8C8C8 100%); box-shadow:inset 0px 0px 1px #999;}*/
+	
+.two-column {width:50%;}
+	
+.three-column {width:33%;}
+.three-column:nth-child(2) {width:34%;}
+.three-column:last-child {width:34%;}
+
+.six-column {width:17%;}
+.six-column:first-child {width:16%;}
+.six-column:last-child {width:17%;}
+
+.sticky-header.hide { display:none;}
+.sticky-header { top:0; position:fixed;}
+.sticky-header table {border-bottom:none; box-shadow: 0 1px 1px 0px #666; border-radius:0;}
+
+.tickLabel {text-shadow: 0 1px #FFF; }
+
+/* DATEPICKER */
+
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default { 
+	border:none; border-left:1px solid #F8F8F8; border-top:1px solid #F8F8F8; color:#424242; font-size:11px;
+	padding:5px 4px; background-color:#EEEEEE; background-image:none; text-align:center; background-image: linear-gradient(top, #EEEEEE 20%, #DEDEDE 100%); text-shadow:0 1px #F2F2F2; border-radius:0;}
+.ui-state-disabled, .ui-widget-content .ui-state-disabled, .ui-widget-header .ui-state-disabled {border-right-color:#DADADA;}
+.ui-widget-content .ui-state-hover { background-color:#CCC; border-color:#CCC; background-image: linear-gradient(top, #CCC 20%, #AAA 100%); color:#424242; text-shadow:none; background-image:none;}
+.ui-widget-content .ui-state-active { background-color:#EEEEEE; color:#424242; border-color:#F8F8F8; text-shadow:none; background-image:url('/images/dashboard/calendar_seleted.png'), linear-gradient(top, #EEEEEE 20%, #DEDEDE 100%); background-repeat:no-repeat; background-position:center;}
+.ui-datepicker td { padding:0px; border:1px solid #BABABA; border-left:none;}
+.ui-datepicker th { font-weight:normal; font-size:10px;}
+.ui-datepicker-inline table {margin:0; font-weight:normal; background-color:#FFF; width:100%; border-radius:3px;}
+.ui-datepicker-group-last .ui-datepicker-calendar {}
+.ui-datepicker {width:170px ! important; background-color:default; border:none; }
+.ui-widget-header {font-family:'AlternateGothicNo2BT-Regular'; border-radius:0px; border-top-left-radius:2px; border-top-right-radius:2px; border:none; background-color:#5CA21C; background-image:linear-gradient(top, #4FC253 6%, #5EA260 100%); color:#FFF; text-shadow:0 -1px #5EA260; font-weight:normal; font-size:16px; border-bottom: 1px solid #4D844E;}
+.ui-datepicker { font-weight:normal; font-family:'Ubuntu'; overflow:auto;}
+.ui-widget-content {background-color:transparent; background-image:none; padding:0px;}
+.ui-datepicker-calendar thead { box-shadow:inset 0 0 1px 0 #FFF; background-color:#F7F7F7; background-image: linear-gradient(top, #F7F7F7 20%, #F1F1F1 100%); color:#8E8E8E; font-weight:normal; border-bottom:1px solid #BBBBBB;}
+.ui-datepicker-calendar tr:last-child td {border-bottom:none;}
+.ui-datepicker-calendar td:last-child{border-right:none;}
+.ui-datepicker-calendar tr:last-child td:first-child {border-bottom-left-radius:3px;}
+.ui-datepicker-calendar tr:last-child td:first-child a{border-bottom-left-radius:3px;}
+.ui-datepicker-calendar tr:last-child td:first-child span{border-bottom-left-radius:3px;}
+.ui-datepicker-calendar tr:last-child td:last-child {border-bottom-right-radius:3px;}
+.ui-datepicker-calendar tr:last-child td:last-child a{border-bottom-right-radius:3px;}
+.ui-datepicker-calendar tr:last-child td:last-child span{border-bottom-right-radius:3px;}
+/*.ui-datepicker-group-first .ui-datepicker-calendar {border-right:1px solid #AAA;}*/
+.ui-datepicker-multi-2 .ui-datepicker-group {width:154px; margin:5px; box-shadow:0 1px 1px 1px #000; border-radius:3px;}
+.ui-datepicker th { padding: 4px 3px; }
+
+.ui-corner-all.ui-state-hover {background-color:transparent; border:none; cursor:pointer; padding-top:1px;}
+.ui-datepicker-prev.ui-state-hover {padding-left:1px;}
+.ui-datepicker-next.ui-state-hover {margin-right:1px;}
+.ui-datepicker .ui-datepicker-prev, .ui-datepicker .ui-datepicker-next {width:15px; margin-top:1px;}
+.ui-widget-header .ui-icon { background-image:url('/images/dashboard/calendar_arrows.png'); }
+.ui-icon-circle-triangle-w { background-position:0px !important; width:11px; margin:0 auto;}
+.ui-icon-circle-triangle-e { background-position:-11px !important; width:11px; margin:0 auto;}
+.ui-datepicker .ui-datepicker-title { line-height:1.6em; }
+
+/* FORMS */
+.cly-button-dark { color: #DDD; text-shadow: 0 -1px #222; background-color: #292929; background-image: linear-gradient(top, #3E3E3E 40%, #292929 100%); border: 1px solid #1B1B1B; box-shadow: inset 0 1px 0 #777777; cursor: pointer; float: left; padding: 5px 10px; border-radius: 4px; font: 13px 'Ubuntu'; }
+.cly-button-dark:hover {opacity:0.9;}
+.cly-button-dark:active {background-image: linear-gradient(top, #292929 40%, #3E3E3E 100%);}
+
+.dashboard-summary { margin-bottom:16px; overflow:auto;}
+	.dashboard-summary .item {float:left; font-family:'AlternateGothicNo2BT-Regular'; width:25%;}
+	.dashboard-summary .inner {padding:10px; border-radius:5px; background-image: linear-gradient(top, #3C3C3C 10%, #2A2A2A 100%); margin-left:5px;}
+	.dashboard-summary  .item:first-child  .inner{margin-left:0px;}
+	.dashboard-summary .item:first-child .inner{border-left:none;}
+	.dashboard-summary .item:last-child .inner{border-right:none;}
+	.dashboard-summary .item  .title{font-size:12px; text-align:center; color:#FFF; font-family:"Ubuntu";}
+	.dashboard-summary .item  .bar {width:80%; height:6px; padding-top:2px; padding-bottom:2px; overflow:auto; border-radius:5px; background-color:transparent; margin:0 auto; margin-top:5px; margin-bottom:5px;}
+		.dashboard-summary .item  .bar .bar-inner {background-color:#6BB96E; width:40%; float:left; height:6px; cursor:pointer; box-shadow:inset 2px 0 0 0 #333 }
+			.dashboard-summary .item  .bar .bar-inner:hover {margin-bottom:-1px; margin-top:-1px; height:8px;}
+		
+		.dashboard-summary .item  .bar .bar-inner:first-child {box-shadow:none; border-top-left-radius:5px; border-bottom-left-radius:5px;}
+		.dashboard-summary .item  .bar .bar-inner:last-child {border-top-right-radius:5px; border-bottom-right-radius:5px;}
+		.dashboard-summary .item  .bar .bar-inner:nth-child(2) {background-color:#86CBDD; width:42%;}
+		.dashboard-summary .item  .bar .bar-inner:nth-child(3) {background-color:#EC8C45; width:16%;}
+		
+	.dashboard-summary .item  .number{font-size:33px; text-align:center; color:#6BB96E; line-height:26px;}
+	.dashboard-summary .item .no-data { font-family:"Ubuntu"; font-size:17px; text-align:center; color:#222; padding-bottom:11px; padding-top:16px; font-weight:500; }
+	
+/* REPORTS */
+
+#drop-menu { display:none; border-top-left-radius:7px; border-top-right-radius:7px; top:-1px; left:-1px; opacity:0.7; position:absolute; background-color: #2A2A2A; width:100%; height:100%; border:1px solid #2A2A2A; }
+#drop-menu.hover { opacity:0.9; }
+#drop-menu .message { margin:0 auto; font-size:14px; margin-top:18px; text-align:center; text-shadow:none; color:#FFF; font-family:"Ubuntu"; }
+
+#report-items {overflow:auto; }
+.report-item { float:left; width:25%; overflow:auto; }
+.report-item:first-child { cursor:default; }
+.report-item.dragged { opacity:0.6; }
+.report-item.placeholder { height:351px; box-shadow:inset 0 0 4px 0 #666; margin-top:8px; }
+.report-item:last-child.placeholder { border-left:1px dashed #C5C5C5;}
+.report-item .sort-handle {width:30px; cursor:move; height:30px; background-color:#EEE; opacity:0.6; position:absolute; left:7px; top:7px; }
+.report-item:hover .sort-handle {opacity:1;}
+.report-item .title { text-align:center; height:20px; padding:13px; padding-top:10px; border:1px solid #C5C5C5; position:relative; margin:8px; margin-bottom:0px; background-color:#FFF; }
+	.report-item .title .text { color:#8A8A8A; font-family:"Ubuntu"; font-size:15px; }
+		.report-item:first-child .title .text { color:#4DB351; }
+	.report-item .title .text input { color:#8A8A8A; font-family:"Ubuntu"; font-size:15px; border:none; background-color:#FFF; text-align:center; outline:none; }	
+	.report-item:first-child .title .text input { color:#4DB351; }
+	.report-item .arrow {width:18px; height:8px; position:absolute; left:50%; margin-left:-10px; bottom:-8px; background-image: url('/images/reports/title_arrow.png'); }
+.report-item  .details { padding-top:25px; padding-bottom:25px; overflow:auto; border:1px solid #C5C5C5; border-top:none; margin:8px; margin-top:0px; background-color:#FFF; }
+	.report-item .cly-select { margin:0 auto; margin-top:20px; }
+	.report-item .details .image { background-image:url('/images/reports/reports.png'); background-repeat:no-repeat; width:135px; height:175px; margin:0 auto; }
+	.report-item .checkboxes {width:135px; margin:0 auto; margin-top:15px; overflow:auto; min-height:16px; }
+		.report-item .checkboxes .option {float:left; width:50%;}
+		.report-item .checkboxes .option:last-child {float:right; width:56px; }
+		.report-item .checkboxes .checkbox { cursor:pointer; width:16px; height:16px; float:left; margin-right:5px; background-image: url('/images/reports/checkbox.png'); background-position:-16px;}
+			.report-item .checkboxes .checkbox.checked { background-position:0px;}
+		.report-item .checkboxes .text { color:#666; font-family:"Ubuntu"; font-size:13px; padding-top:1px; }
+		
+.cly-select { user-select:none; display:inline-block; width:135px; height:27px; background-image: linear-gradient(top, #F0F0F0 10%, #E3E3E3 100%); border:1px solid #B5B5B5; border-radius:6px; box-shadow:inset 0 1px 0 0 #FFF; cursor:pointer; }
+	.cly-select .select-inner { position:relative; width:100%; height:100%; }
+	.cly-select:hover { box-shadow:inset 0 0 2px 0 #FFF; }
+	.cly-select.active {border-bottom-left-radius:0px; border-bottom-right-radius:0px;}
+	.cly-select.active .right {border-bottom-right-radius:0px;}
+	.cly-select .select-items { z-index:1; border-top:1px solid #B5B5B5; display:none; position:absolute; margin-left:-1px; border-radius:5px; background-color: #F5F5F5; border:1px solid #B5B5B5; border-radius:6px; border-top-left-radius:0px; border-top-right-radius:0px; width:135px;}
+	.cly-select .select-items.square { border-radius:0px; }
+	.cly-select .select-items .scrollable {  max-height:194px; }
+	.cly-select .select-items .item { text-overflow:ellipsis;  overflow:hidden; white-space:nowrap; color:#666; font-weight:normal; border-top:1px solid #FFF; border-bottom:1px solid #B5B5B5; font:13px 'Ubuntu'; text-shadow:0 1px #fff; padding:5px 9px; padding-bottom:7px; }
+		.cly-select .flag {opacity:0.8; width:16px; height:11px; border-radius:2px; box-shadow:0 0 1px 0 #333; margin-right:8px; margin-top:2px; float:left; }
+		.cly-select .select-items .item:hover {background-color:#444; color:#FFF; text-shadow:0 1px #555; border-top-color:#444; margin: -1px; padding: 6px 10px; padding-bottom: 8px;}
+		.cly-select .select-items .item:hover .flag { box-shadow:0 0 0 1px #000; }
+		.cly-select .select-items .item:first-child {border-top:none;}
+		.cly-select .select-items .item:last-child {border-bottom:none; border-bottom-left-radius:6px; border-bottom-right-radius:6px;}
+	.cly-select .text-container { float:left; width:100%; }
+		.cly-select .text { padding:6px 9px; padding-right:25px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; color:#444; font-weight:normal; font:13px 'Ubuntu'; text-shadow:0 1px #F1F1F1; }
+	.cly-select .right { right:0; position:absolute; width:20px; height:100%; border-top-right-radius:5px; border-bottom-right-radius:5px; background-image: linear-gradient(top, #E2E2E2 10%, #D1D1D1 100%); border-left:1px solid #C5C6C6; box-shadow:inset 1px 0px 0 0 #eee, inset 0 1px 0 0 #fff; background-repeat:no-repeat; background-position:center; }
+		.cly-select .right.combo { background-image: url('/images/reports/combo-arrow.png'), linear-gradient(top, #E2E2E2 10%, #D1D1D1 100%); }
+		.cly-select .right.date { background-image: url('/images/reports/date-time.png'), linear-gradient(top, #E2E2E2 10%, #D1D1D1 100%); }
+	.cly-select .slimScrollBar.ui-draggable { cursor:default; }
+	
+.read {}
+	.read .flag { margin-top:4px; }
+	.read .country { float:left; margin-right:8px; }
+	.read .timezone { float:left; }
+	.read .logo { float:left; height:25px; width:25px; background-image:url('/images/reports/date-time.png'); margin-top:1px; border-radius:5px; border:1px solid #555; box-shadow:0 0 1px 0 #333; background-position:center; }
+.edit {display:none;}
+
+#sidebar-new-app { display:none; }
+
+.required { font-size:20px; color:#B94A48; vertical-align: top; display:none; }
+	.required-message { font-size:16px; color:#B94A48; font-style:italic; display:none; }
+	.table-edit .required-message, .table-add .required-message { float:left; padding-top:3px; padding-right:10px; }
+
+#overlay { display:none; background-color:#000; opacity:0.2; width:100%; height:100%; position:fixed; z-index:99; top:0; }
+.dialog {display:none; position:fixed; max-width:368px; left:50%; top:50%; background-color:#FFF; border:1px solid #999; box-shadow:0 0 10px 0 #666; border-radius:3px; z-index:100;}
+	.dialog.red { border:1px solid #AD0303; }
+	.dialog.black { border:1px solid #000; }
+	.dialog .indicator { height:7px; margin-bottom:10px; border-top-left-radius:2px; border-top-right-radius:2px;}
+	.dialog.red .indicator { background-color:#D63E40; border-bottom:1px solid #AD0303; box-shadow:inset 0 1px 0 #F196A0; }
+	.dialog.black .indicator { background-color:#666; border-bottom:1px solid #000; box-shadow:inset 0 1px 0 #999; }
+	.dialog .message { color:#333; font-family:"Ubuntu"; font-size:15px; padding:0 10px; }
+	.dialog .buttons { margin-top:15px; overflow:auto; padding:10px; padding-top:0px; }
+	.dialog .buttons .icon-button { float:right; }
+	.dialog.red #dialog-continue { background-image:linear-gradient(top, #E95C6C 10%, #D63E40 100%); border:1px solid #AD0303; color:#FFF; box-shadow:inset 0 1px 0 #F196A0; text-shadow:0 -1px #AD434B; }
+		.dialog.red #dialog-continue:active { background-image:linear-gradient(top, #D63E40 10%, #E95C6C 100%); }
+	.dialog input[type=text], .dialog input[type=password] { margin: 0; font-size: 15px; font-family: Ubuntu; padding: 3px; border: 1px solid #DDD; }
+	.dialog .result-message { font-family: Ubuntu; float: left; margin-top: 6px; font-style: italic; font-size: 13px; }
+	.dialog .result-message.red { color:#D63E40; }
+	.dialog .result-message.green { color:#6BB96E; }
+	
+#new-install-overlay { display:none; z-index:1; position: absolute; width: 100%; height: 100%; background-color: #000; opacity: 0.6; margin-left: -2px; }
+.alert { font-family:Ubuntu; border-radius: 4px; padding: 8px 14px; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5); }
+	.alert.danger { color: #B94A48; background-color: #F2DEDE; border: 1px solid #EED3D7; }
+	.alert.success { color: #468847; background-color: #DFF0D8; border: 1px solid #D6E9C6; }

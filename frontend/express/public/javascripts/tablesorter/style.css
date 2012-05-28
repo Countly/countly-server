@@ -1,0 +1,15 @@
+table.sortable thead tr .header {
+	background-image: url(table-arrow.png), linear-gradient(top, #EAEAEA 30%, #E2E2E2 100%);
+	background-repeat: no-repeat;
+	background-position: center right;
+	cursor: pointer;
+}
+table.sortable thead tr .headerSortUp {
+	background-image: url(table-arrow-up.png);
+}
+table.sortable thead tr .headerSortDown {
+	background-image: url(table-arrow-down.png);
+}
+table.sortable thead tr .headerSortDown, table.sortable thead tr .headerSortUp {
+	background-color: #DDD;
+}
