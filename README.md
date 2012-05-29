@@ -1,5 +1,5 @@
 ##What's Countly?
-Countly is an innovative, real-time, open source mobile analytics application. It collects data from mobile phones, and visualizes this information to analyze mobile application usage and end-user behavior.
+Countly is an innovative, real-time, open source mobile analytics application. It collects data from mobile phones, and visualizes this information to analyze mobile application usage and end-user behavior. There are two parts of Countly: the server that collects and analyzes data, and mobile SDK that sends this data (for iOS & Android).
 
 ##How do I install Countly Server?
 
@@ -27,7 +27,7 @@ Countly offers integration with world's two leading smartphones, Android and iOS
 ##How can I help you with your efforts?
 Glad you asked. We need ideas, feedbacks and constructive comments. All your suggestions will be taken care with upmost importance. 
 
-We are on [Twitter](http://twitter.com/gocountly) and [Facebook](http://www.facebook.com/Countly) if you would  like to keep up with our fast progress!
+We are on [Twitter](http://twitter.com/gocountly) and [Facebook](http://www.facebook.com/Countly) if you would like to keep up with our fast progress!
 
 ##Home
 
