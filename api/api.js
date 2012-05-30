@@ -86,6 +86,10 @@ function fillTimeObject(object, property, increment) {
 function checkUserLocation(getParams) {
 	var locationData = geoip.lookup(getParams.ip_address);
 
+	if (!locationData) {
+		return false;
+	}
+	
 	if (locationData.country) {
 		getParams.user.country = locationData.country;
 	}
