@@ -19,7 +19,7 @@ Countly dashboard that runs on express server.
 Contains seperate  helper js files for each data visualization. For example `countly.session.js` is responsible for calculating session related metrics and interacts with `api/api.js` to retrieve data from the sessions collection.
 ####3. api/api.js
 
-Countly write and read API. Waits for write requests from the iOS/Android SDKs and read requests from the countly js helpers.
+Countly write and read API. Waits for write requests from the iOS/Android SDKs and read requests from the countly js helpers. Refer to [Countly Server API Reference](https://github.com/Countly/countly-server/wiki/Countly-Server-API-Reference) for details.
 
 ##Which mobile operating systems are supported?
 Countly offers integration with world's two leading smartphones, Android and iOS.
