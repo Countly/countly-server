@@ -5,7 +5,7 @@ Countly is an innovative, real-time, open source mobile analytics application. I
 
 We provide a beautiful installation sript (`bin/countly.install.sh`) with countly-server package that installs and configures everything required to run Countly Server.
 
-If you feel like doing things manually you can take a look at the installation articles from [http://support.count.ly](http://support.count.ly, "Countly Support").
+If you feel like doing things manually you can take a look at the installation articles from [http://support.count.ly](http://support.count.ly "Countly Support").
 
 ##API & Frontend
 
@@ -31,8 +31,8 @@ We are on [Twitter](http://twitter.com/gocountly) and [Facebook](http://www.face
 
 ##Home
 
-[http://count.ly](http://count.ly, "Countly")
+[http://count.ly](http://count.ly "Countly")
 
 ##Community & support
 
-[http://support.count.ly](http://support.count.ly, "Countly Support")
+[http://support.count.ly](http://support.count.ly "Countly Support")
