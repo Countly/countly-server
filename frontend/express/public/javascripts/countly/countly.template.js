@@ -392,6 +392,10 @@ window.SessionView = countlyView.extend({
 		}
 	},
 	refresh: function() {
+		if (app.activeView == this) {
+			return false;
+		}
+		
 		var self = this;
 		$.when(countlySession.initialize()).then(function(){
 			self.renderCommon(true);
@@ -482,6 +486,10 @@ window.UserView = countlyView.extend({
 		}
 	},
 	refresh: function() {
+		if (app.activeView == this) {
+			return false;
+		}
+	
 		var self = this;
 		$.when(countlySession.initialize()).then(function(){
 			self.renderCommon(true);
@@ -545,6 +553,10 @@ window.LoyaltyView = countlyView.extend({
 		}
 	},
 	refresh: function() {
+		if (app.activeView == this) {
+			return false;
+		}
+		
 		var loyaltyData = countlyUser.getLoyaltyData();
 		var self = this;
 		$.when(countlyUser.initialize()).then(function(){
@@ -628,6 +640,10 @@ window.CountriesView = countlyView.extend({
 		}
 	},
 	refresh: function() {
+		if (app.activeView == this) {
+			return false;
+		}
+		
 		var self = this;
 		$.when(countlySession.initialize(), countlyLocation.initialize()).then(function(){
 			self.renderCommon(true);
@@ -690,6 +706,10 @@ window.FrequencyView = countlyView.extend({
 		}
 	},
 	refresh: function() {
+		if (app.activeView == this) {
+			return false;
+		}
+		
 		var self = this;
 		$.when(countlyUser.initialize()).then(function(){
 			self.renderCommon(true);
@@ -736,6 +756,10 @@ window.DeviceView = countlyView.extend({
 		}
 	},
 	refresh: function() {
+		if (app.activeView == this) {
+			return false;
+		}
+	
 		var self = this;
 		$.when(countlyDevice.initialize()).then(function(){
 			self.renderCommon(true);
@@ -797,6 +821,10 @@ window.CarrierView = countlyView.extend({
 		}
 	},
 	refresh: function() {
+		if (app.activeView == this) {
+			return false;
+		}
+		
 		var self = this;
 		$.when(countlyCarrier.initialize()).then(function(){
 			self.renderCommon(true);
