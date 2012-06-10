@@ -277,6 +277,10 @@ window.DashboardView = countlyView.extend({
 		}
 	},
 	refresh: function() {
+		if (app.activeView == this) {
+			return false;
+		}
+	
 		var self = this;
 		$.when(countlySession.initialize(), countlyCarrier.initialize(), countlyLocation.initialize(), countlyDeviceDetails.initialize()).then(function(){
 			self.renderCommon(true);
