@@ -86,19 +86,17 @@ function fillTimeObject(object, property, increment) {
 function checkUserLocation(getParams) {
 	var locationData = geoip.lookup(getParams.ip_address);
 
-	if (!locationData) {
-		return false;
-	}
-	
-	if (locationData.country) {
-		getParams.user.country = locationData.country;
-	}
-	if (locationData.city) {
-		getParams.user.city = locationData.city;
-	}
-	if (locationData.ll) {
-		getParams.user.lat = locationData.ll[0];
-		getParams.user.lng = locationData.ll[1];
+	if (locationData) {
+		if (locationData.country) {
+			getParams.user.country = locationData.country;
+		}
+		if (locationData.city) {
+			getParams.user.city = locationData.city;
+		}
+		if (locationData.ll) {
+			getParams.user.lat = locationData.ll[0];
+			getParams.user.lng = locationData.ll[1];
+		}
 	}
 	
 	processUserLocation(getParams);
