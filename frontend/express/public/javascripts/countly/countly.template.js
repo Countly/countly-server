@@ -277,12 +277,11 @@ window.DashboardView = countlyView.extend({
 		}
 	},
 	refresh: function() {
-		if (app.activeView == this) {
-			return false;
-		}
-	
 		var self = this;
 		$.when(countlySession.initialize(), countlyCarrier.initialize(), countlyLocation.initialize(), countlyDeviceDetails.initialize()).then(function(){
+			if (app.activeView != self) {
+				return false;
+			}
 			self.renderCommon(true);
 			countlyLocation.refreshGeoChart();
 			
@@ -396,12 +395,11 @@ window.SessionView = countlyView.extend({
 		}
 	},
 	refresh: function() {
-		if (app.activeView == this) {
-			return false;
-		}
-		
 		var self = this;
 		$.when(countlySession.initialize()).then(function(){
+			if (app.activeView != self) {
+				return false;
+			}
 			self.renderCommon(true);
 			newPage = $("<div>"+self.template(self.templateData)+"</div>");
 			newPage.find(".sortable").tablesorter({
@@ -490,12 +488,11 @@ window.UserView = countlyView.extend({
 		}
 	},
 	refresh: function() {
-		if (app.activeView == this) {
-			return false;
-		}
-	
 		var self = this;
 		$.when(countlySession.initialize()).then(function(){
+			if (app.activeView != self) {
+				return false;
+			}
 			self.renderCommon(true);
 			newPage = $("<div>"+self.template(self.templateData)+"</div>");
 			newPage.find(".sortable").tablesorter({
@@ -556,14 +553,13 @@ window.LoyaltyView = countlyView.extend({
 			countlyCommon.drawGraph(loyaltyData.chartDP, "#dashboard-graph", "bar");
 		}
 	},
-	refresh: function() {
-		if (app.activeView == this) {
-			return false;
-		}
-		
+	refresh: function() {		
 		var loyaltyData = countlyUser.getLoyaltyData();
 		var self = this;
 		$.when(countlyUser.initialize()).then(function(){
+			if (app.activeView != self) {
+				return false;
+			}
 			self.renderCommon(true);
 			newPage = $("<div>"+self.template(self.templateData)+"</div>");
 			newPage.find(".sortable").tablesorter({sortList: self.sortList});
@@ -644,12 +640,11 @@ window.CountriesView = countlyView.extend({
 		}
 	},
 	refresh: function() {
-		if (app.activeView == this) {
-			return false;
-		}
-		
 		var self = this;
 		$.when(countlySession.initialize(), countlyLocation.initialize()).then(function(){
+			if (app.activeView != self) {
+				return false;
+			}
 			self.renderCommon(true);
 			countlyLocation.refreshGeoChart();
 			
@@ -710,12 +705,11 @@ window.FrequencyView = countlyView.extend({
 		}
 	},
 	refresh: function() {
-		if (app.activeView == this) {
-			return false;
-		}
-		
 		var self = this;
 		$.when(countlyUser.initialize()).then(function(){
+			if (app.activeView != self) {
+				return false;
+			}
 			self.renderCommon(true);
 			newPage = $("<div>"+self.template(self.templateData)+"</div>");
 			newPage.find(".sortable").tablesorter({sortList: self.sortList});
@@ -760,12 +754,11 @@ window.DeviceView = countlyView.extend({
 		}
 	},
 	refresh: function() {
-		if (app.activeView == this) {
-			return false;
-		}
-	
 		var self = this;
 		$.when(countlyDevice.initialize()).then(function(){
+			if (app.activeView != self) {
+				return false;
+			}
 			self.renderCommon(true);
 			newPage = $("<div>"+self.template(self.templateData)+"</div>");
 			newPage.find(".sortable").tablesorter({sortList: self.sortList});
@@ -825,12 +818,11 @@ window.CarrierView = countlyView.extend({
 		}
 	},
 	refresh: function() {
-		if (app.activeView == this) {
-			return false;
-		}
-		
 		var self = this;
 		$.when(countlyCarrier.initialize()).then(function(){
+			if (app.activeView != self) {
+				return false;
+			}
 			self.renderCommon(true);
 			newPage = $("<div>"+self.template(self.templateData)+"</div>");
 			newPage.find(".sortable").tablesorter({sortList: self.sortList});
