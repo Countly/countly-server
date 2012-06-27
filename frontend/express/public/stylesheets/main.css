@@ -192,11 +192,11 @@ a:active {color:inherit;}
 #app-management-bar {width:190px; position:fixed; left:220px; top:0px; text-align:right; background-color:#CCC; height:100%; background-image:url('/images/dashboard/dropdown_bg.png');}
 #app-management-bar .app-container {padding-left:15px;}
 
-table.d-table {width:100%; padding:0px; margin:0px; border-radius:7px; border:1px solid #C2C2C2; border-top-color:#959595; box-shadow:0 0 2px 0 #CCC; margin-bottom:20px; background-image:linear-gradient(top, #EAEAEA 30%, #E2E2E2 100%);}
-	.d-table  th{padding:5px 10px; height:17px; color:#4DB351; font-weight:normal; font:13px 'Ubuntu'; text-shadow:0 1px #F1F1F1; background-color:#E2E2E2; box-shadow:inset 0 1px 0 #F6F6F6; text-align:left; border-bottom:1px solid #CCC; border-right:none; border-left:1px solid #ccc;}
-	.d-table  th:first-child{border-left:none; border-top-left-radius:7px;}
-	.d-table  th:last-child{border-top-right-radius:7px;}
-	.d-table  thead tr {background-color:#E2E2E2; background-image: linear-gradient(top, #EAEAEA 30%, #E2E2E2 100%);}
+table.d-table { width:100%; padding:0px; margin:0px; border-radius:7px; border:1px solid #C2C2C2; border-top-color:#959595; margin-bottom:20px; }
+	.d-table  th { padding:5px 10px; height:17px; color:#4DB351; font-weight:normal; font:13px 'Ubuntu'; text-shadow:0 1px #F1F1F1; background-color:#E2E2E2; box-shadow:inset 0 1px 0 #F6F6F6; text-align:left; border-bottom:1px solid #CCC; border-right:none; border-left:1px solid #ccc; background-color:#E2E2E2; background-image: linear-gradient(top, #EAEAEA 30%, #E2E2E2 100%); }
+	.d-table  th:first-child { border-left:none; border-top-left-radius:7px; }
+	.d-table  th:last-child { border-top-right-radius:7px; }
+	.d-table  thead tr { background-color:transparent; }
 	.d-table  td {padding:5px 10px; padding-bottom:7px; margin:0px; border-bottom:1px solid #DDD; border-top:1px solid #fff; border-left:1px solid #ccc; color:#6B6B6B;}
 	.d-table  td:first-child{border-left:none; font-weight:normal;}
 	.d-table  tr{border-bottom:1px solid #DDD; border-top:1px solid #fff; font:16px 'Ubuntu'; background-color:#fff}
@@ -230,14 +230,14 @@ table.d-table {width:100%; padding:0px; margin:0px; border-radius:7px; border:1p
 .icon-button.light {color:#666; background-color:#E0E0E0; background-image: linear-gradient(top, #EEEEEE 40%, #E0E0E0 100%); border:1px solid #A5A5A5; text-shadow: 0 1px #FFF; box-shadow:inset 0 1px 0 #FDFDFD;}
 .icon-button.light:active, .icon-button.light.active { background-image: linear-gradient(top, #E0E0E0 40%, #EEEEEE 100%); }
 .icon-button.disabled {opacity:0.5;}
-.icon-button.dark {background-color:#292929; background-image: linear-gradient(top, #3E3E3E 40%, #292929 100%); border:1px solid #1B1B1B; text-shadow: 0 -1px #232323; box-shadow:inset 0 1px 0 #777777;}
+.icon-button.dark {background-color:#292929; color: #BFBFBF; background-image: linear-gradient(top, #3E3E3E 40%, #292929 100%); border:1px solid #1B1B1B; text-shadow: 0 -1px #232323; box-shadow:inset 0 1px 0 #777777;}
 .icon-button.dark:active { background-image: linear-gradient(top, #292929 40%, #3E3E3E 100%); }
 	.icon-button .icon {float:left; margin-right:7px; background-repeat:no-repeat;}
 	.icon-button .text {float:right; padding-top:2px;}
 .icon-button.create-report {background-image:linear-gradient(top, #4CC04F 10%, #43A947 100%); border:1px solid #2C6B2E; color:#FFF; box-shadow:inset 0 1px 0 #58DE5D; text-shadow:0 -1px #3D9A41; }
 .icon-button.create-report:active {background-image:linear-gradient(top, #43A947 10%, #4CC04F 100%);}
-.icon-button.delete-app { background-image:linear-gradient(top, #E95C6C 10%, #D63E40 100%); border:1px solid #AD0303; color:#FFF; box-shadow:inset 0 1px 0 #F196A0; text-shadow:0 -1px #AD434B; }
-.icon-button.delete-app:active { background-image:linear-gradient(top, #D63E40 10%, #E95C6C 100%); }
+.icon-button.delete-app, .icon-button.red  { background-image:linear-gradient(top, #E95C6C 10%, #D63E40 100%); border:1px solid #AD0303; color:#FFF; box-shadow:inset 0 1px 0 #F196A0; text-shadow:0 -1px #AD434B; }
+.icon-button.delete-app:active, .icon-button.red:active { background-image:linear-gradient(top, #D63E40 10%, #E95C6C 100%); }
 	
 #date-selector {float:right; font:13px 'Ubuntu'; color:#6B6B6B; text-shadow:0 1px #F6F6F6; padding:6px; padding-right:0px; overflow:auto; user-select:none; }
 	#date-selector .button {cursor:pointer; user-select:none; background-color:#E0E0E0; background-image: linear-gradient(top, #EEEEEE 40%, #E0E0E0 100%); float:left; padding:7px 5px; padding-top:6px; border:1px solid #A5A5A5; border-left:1px solid #747575; box-shadow:inset 0 1px 0 #FDFDFD; border-right:1px solid #EDEDED;}
@@ -356,8 +356,8 @@ table.d-table {width:100%; padding:0px; margin:0px; border-radius:7px; border:1p
 	.report-item .checkboxes {width:135px; margin:0 auto; margin-top:15px; overflow:auto; min-height:16px; }
 		.report-item .checkboxes .option {float:left; width:50%;}
 		.report-item .checkboxes .option:last-child {float:right; width:56px; }
-		.report-item .checkboxes .checkbox { cursor:pointer; width:16px; height:16px; float:left; margin-right:5px; background-image: url('/images/reports/checkbox.png'); background-position:-16px;}
-			.report-item .checkboxes .checkbox.checked { background-position:0px;}
+		.checkbox { cursor:pointer; width:16px; height:16px; float:left; margin-right:5px; background-image: url('/images/reports/checkbox.png'); background-position:-16px;}
+			.checkbox.checked { background-position:0px;}
 		.report-item .checkboxes .text { color:#666; font-family:"Ubuntu"; font-size:13px; padding-top:1px; }
 		
 .cly-select { user-select:none; display:inline-block; width:135px; height:27px; background-image: linear-gradient(top, #F0F0F0 10%, #E3E3E3 100%); border:1px solid #B5B5B5; border-radius:6px; box-shadow:inset 0 1px 0 0 #FFF; cursor:pointer; }
@@ -390,9 +390,9 @@ table.d-table {width:100%; padding:0px; margin:0px; border-radius:7px; border:1p
 
 #sidebar-new-app { display:none; }
 
-.required { font-size:20px; color:#B94A48; vertical-align: top; display:none; }
-	.required-message { font-size:16px; color:#B94A48; font-style:italic; display:none; }
-	.table-edit .required-message, .table-add .required-message { float:left; padding-top:3px; padding-right:10px; }
+.required { font-size:20px; color:#B94A48; vertical-align:top; display:none; padding-left:2px; }
+.red-text { font-size:12px; color:#B94A48; vertical-align:text-top; padding-left:5px; }
+.green-text { font-size:12px; color:#50C354; vertical-align:text-top; padding-left:5px; }
 
 #overlay { display:none; background-color:#000; opacity:0.2; width:100%; height:100%; position:fixed; z-index:99; top:0; }
 .dialog {display:none; position:fixed; max-width:368px; left:50%; top:50%; background-color:#FFF; border:1px solid #999; box-shadow:0 0 10px 0 #666; border-radius:3px; z-index:100;}
@@ -415,3 +415,57 @@ table.d-table {width:100%; padding:0px; margin:0px; border-radius:7px; border:1p
 .alert { font-family:Ubuntu; border-radius: 4px; padding: 8px 14px; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5); }
 	.alert.danger { color: #B94A48; background-color: #F2DEDE; border: 1px solid #EED3D7; }
 	.alert.success { color: #468847; background-color: #DFF0D8; border: 1px solid #D6E9C6; }
+
+/* USER MANAGEMENT */
+	
+.manage-user { padding:10px; }
+#user-table {border-bottom-left-radius:0px; border-bottom-right-radius:0px; }
+#user-table tr { font-size:14px; }
+#user-table .help-edit { font-size:11px; display:none; position:absolute; right:3px; top:2px; }
+#user-table .help-close { font-size:11px; display:none; position:absolute; right:3px; top:2px; }
+#user-table tr:first-child td { border-bottom:none; border-top:none; }
+#user-table tr.active { opacity:1 !important; }
+#user-table tr:hover .help-edit {display:block;}
+#user-table tr.active:hover { background-color:#FFF; }
+#user-table tr.active:hover .help-edit {display:none;}
+#user-table tr.active:hover .help-close {display:block;}
+#user-table tr td { border-bottom:none; border-top:1px solid #CCC; border-radius:0px; }
+#user-table tr.user-details { display:none; overflow:auto; }
+#user-table tr.user-details td { padding:0px; }
+#user-table tr td>div { position:relative; }
+#user-table tr.user-details td>div { border-top: 5px solid #E8E8E8; border-left: 10px solid whiteSmoke; border-right: 10px solid whiteSmoke; margin-left: -2px; padding-bottom: 45px; margin-right: -2px; box-shadow: inset 2px 0px 0 -1px #DDD, inset -2px 0px 0 -1px #DDD, inset 0px 2px 0 -1px #DDD; position:relative; }
+#user-table tr:last-child td>div { margin-bottom:-2px; }
+#user-table tr.user-details { background-color:#f9f9f9; }
+#user-table tr.user-details:hover { background-color:#f9f9f9; }
+#listof-apps { width:138px; display:none; position:absolute; margin-top:12px; z-index:10; padding:5px; padding-bottom:7px; background-color:rgba(85,85,85,1); border:1px solid #333; box-shadow: inset 0 0 0 1px #777; border-radius:5px; background-image:url('/images/dashboard/calendar_bg.png'); }
+	#listof-apps .button-container { overflow:auto; margin-top:5px; }
+	#listof-apps .button-container .icon-button { float:right; font-size:11px; }
+	#listof-apps .scrollable { max-height:221px; overflow: auto; box-shadow: inset 0 0 1px 1px #999, 0 1px 0 0 #777; background-color: #CCC; border: 1px solid #333; }
+	#listof-apps .tip { position:absolute; width:14px; left:18px; margin-top:-13px; height:9px; background-image:url('/images/dashboard/calendar_tip.png'); z-index:20; }
+	#listof-apps .app { float:left; width:120px; border-bottom:1px solid #999; padding:8px; overflow:auto; background-color:#EEE; box-shadow:inset 0 0 1px 1px #F9F9F9; cursor:pointer; color:#333; text-shadow:0 1px #FFF; }
+	#listof-apps .app:first-child.selected { box-shadow:none; }
+	#listof-apps .app:last-child { border-bottom:none; }
+	#listof-apps .app.disabled { opacity:0.5; cursor:default; }
+	#listof-apps .app.disabled:hover { opacity:0.5; }
+	#listof-apps .app.selected { background-image:linear-gradient(top, #80C582 10%, #80C582 100%); border-color:#2C6B2E; box-shadow:inset 0 1px 0 #C7DAC7; text-shadow:0 1px #C7DAC7; }
+	#listof-apps .app:hover { opacity:0.8; }
+	#listof-apps .app .image { float:left; margin-right:8px; border-radius:2px; box-shadow:0 0 1px 0 #333; width:20px; height:20px; background-position:center; }
+	#listof-apps .app .name { float:left; font-size:13px; font-family:Ubuntu; padding-top: 2px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; width:90px;}
+	#listof-apps #deselect-all { display:none; }
+	#listof-apps #done { margin-left:5px; }
+.user-details .button-container { overflow:auto; bottom:8px; right:16px; position:absolute; }
+	.user-details .row { overflow:auto; border-top:1px solid #EEE; padding:10px; margin:0 1px; }
+	.user-details .row:first-child { border-top:none; padding-top:15px; }
+	.user-details .row .title { float:left; }
+	.user-details .row .detail { margin-left:110px; }
+	.user-details .button-container { padding-bottom:5px; }
+	.user-details .button-container .icon-button { float:right; }
+	.user-details .app-selection { margin-left:10px; border-radius:10px; background-color:#CCC; cursor:pointer; float:left; width:15px; height:15px; }
+	.user-details .select-apps { margin-left:10px; cursor:pointer; float:left; width:17px; height:18px; background-image: url('/images/management/add.png'); }
+	.user-details .user-admin-list span, .user-details .no-apps { color:#CCC; font-size:12px; font-style:italic; }
+.user-details .no-apps { margin-left:110px; display:none; }
+.small-link { margin-top:10px; font-size:11px; cursor:pointer; color:#999; vertical-align:text-top; display:inline-block; }
+.small-link:hover { text-decoration:underline; }
+.password-row { display:none; }
+
+.user-noapps { position: absolute; left: 50%; top: 50%; width: 460px; margin-left: -118px; font-size: 16px; line-height: 23px; font-family: Ubuntu; text-shadow: 0 1px white; color:#555; height:50px; margin-top:-25px; }

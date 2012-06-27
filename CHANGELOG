@@ -1,0 +1,10 @@
+12.06 
+
+  * user management support. a user can be created as a global admin to 
+    manage & view all apps or can be assigned to any application as an
+    admin or user. an admin of an application can edit application settings. 
+    a user of an application can only view analytics for that application 
+    and can not edit it's settings.
+  
+  * csfr protection to all methods provided through app.js.
+  

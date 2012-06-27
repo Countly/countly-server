@@ -1,4 +1,12 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+   ______                  __  __     
+  / ____/___  __  ______  / /_/ /_  __
+ / /   / __ \/ / / / __ \/ __/ / / / /
+/ /___/ /_/ / /_/ / / / / /_/ / /_/ / 
+\____/\____/\__,_/_/ /_/\__/_/\__, /  
+              http://count.ly/____/   
+-->
 <html> 
 <head> 
 	<title>Countly</title> 
@@ -17,8 +25,8 @@
 		<div id="sidebar-top">
 			<a href="#/"><div id="sidebar-logo"></div></a>
 			<div id="sidebar-app-select">
-				<div class="logo"<% if (apps[0]){ %>style="background-image:url('/appimages/<%= apps[0]._id %>.png')"<% } %>></div>
-				<div class="text"><% if (apps[0]){ %><%= apps[0].name %><% } %></div>
+				<div class="logo"<% if (userOfApps[0]){ %>style="background-image:url('/appimages/<%= userOfApps[0]._id %>.png')"<% } %>></div>
+				<div class="text"><% if (userOfApps[0]){ %><%= userOfApps[0].name %><% } %></div>
 			</div>
 		</div>
 		<div id="sidebar-menu">
@@ -60,6 +68,7 @@
 					<div class="text">Carriers</div>
 				</a>
 			</div>
+			<% if(member['global_admin'] || adminOfApps.length) { %>
 			<a class="item" id="management-menu">
 				<div class="logo management"></div>
 				<div class="text">Management</div>
@@ -69,14 +78,21 @@
 					<div class="logo applications"></div>
 					<div class="text">Applications</div>
 				</a>
+				<% if(member['global_admin']) { %>
+				<a href="#/manage/users" class="item">
+					<div class="logo mgmt-users"></div>
+					<div class="text">Users</div>
+				</a>
+				<% } %>
 			</div>
+			<% } %>
 		</div>
 		<div id="sidebar-bottom-container">
 			<div class="menu">
 				<a class="item" id="account-settings">Settings</a>
 				<a class="item" href="/logout">Logout</a>
 			</div>
-			<div class="username" id="menu-username"><%= username %></div>
+			<div class="username" id="menu-username"><%= member['username'] %></div>
 			<div class="reveal-menu"></div>
 		</div>
 	</div>
@@ -85,10 +101,10 @@
 			APPS
 		</div>
 		<div class="scrollable">
-			<% for (var i = 0; i < apps.length; i++) { %>
-				<div class="app-container app-navigate" data-key="<%= apps[i].key %>" data-id="<%= apps[i]['_id'] %>">
-					<div class="logo" style="background-image: url('/appimages/<%= apps[i]['_id'] %>.png');"></div>
-					<div class="name"><%= apps[i].name %></div>
+			<% for (var i = 0; i < userOfApps.length; i++) { %>
+				<div class="app-container app-navigate" data-key="<%= userOfApps[i].key %>" data-id="<%= userOfApps[i]['_id'] %>">
+					<div class="logo" style="background-image: url('/appimages/<%= userOfApps[i]['_id'] %>.png');"></div>
+					<div class="name"><%= userOfApps[i].name %></div>
 				</div>
 			<% } %>
 		</div>
@@ -156,7 +172,6 @@
 				</div>
 			</div>
 			<div class="button" id="month">2012</div>
-			<!--<div class="button" id="day">May</div>-->
 			<div class="button" id="hour">Today</div>
 			<div class="button" id="7days">7 days</div>
 			<div class="button" id="30days">30 days</div>
@@ -532,25 +547,39 @@
 	</script>
 	
 	<script id="template-management-applications" type="text/x-handlebars-template">
+		<% if(member['global_admin'] || adminOfApps.length) { %>
 		<div id="app-management-bar">
 			<div id="app-nav-head">
 				APPS
+				<% if(member['global_admin']) { %>
 				<div style="float:right; overflow:hidden; margin-top:-2px;">
 					<div class="icon-button dark" id="add-app-button">
 						<div class="icon" style="background-image:url('/images/management/add.png'); width:17px; height:18px;"></div>
 						<div class="text">Add</div>
 					</div>
 				</div>
+				<% } %>
 			</div>
-			<div class="scrollable"></div>
+			<div class="scrollable">
+				{{#eachOfObjectValue admin_apps}}
+				<div class="app-container" data-key="{{this.key}}" data-id="{{this._id}}">
+					<div class="logo" style="background-image: url('/appimages/{{this._id}}.png');"></div>
+					<div class="name">{{this.name}}</div>
+				</div>
+				{{/eachOfObjectValue}}
+			</div>
+			<% if(member['global_admin']) { %>
 			<div id="manage-new-app">
 				<div class="app-container">
 					<div class="logo"></div>
 					<div class="name">My new app</div>
 				</div>
 			</div>
+			<% } %>
 		</div>
+		<% } %>
 		<div class="widget" style="margin-left:187px;">
+			<% if(member['global_admin']) { %>
 			<div id="add-new-app">
 				<div class="widget-header">
 					<div class="left">
@@ -564,7 +593,6 @@
 								<td>Application Name</td>
 								<td>
 									<input type='text' value='' placeholder='Enter application name...' id="app-add-name">
-									<span class="required" id="req-app-add-name">*</span>
 								</td>
 							</tr>
 							<tr>
@@ -583,7 +611,6 @@
 											</div>
 										</div>
 									</div>
-									<span class="required" id="req-app-add-cat">*</span>
 								</td>
 							</tr>
 							<tr>
@@ -603,7 +630,6 @@
 												</div>
 											</div>
 										</div>
-										<span class="required" id="req-app-add-time">*</span>
 										<div id="timezone-select" class="cly-select" style="width:200px; display:none;">
 											<div class="select-inner">
 												<div class="text-container">	
@@ -626,7 +652,7 @@
 							<tr>
 								<td>Icon</td>
 								<td>
-									<form action="/dashboard/apps/icon" enctype="multipart/form-data" id="add-app-image-form" method="post">
+									<form action="/apps/icon" enctype="multipart/form-data" id="add-app-image-form" method="post">
 										<input type="file" id="app_image" name="app_image" />
 										<input type="hidden" id="app_image_id" name="app_image_id" />
 									</form>
@@ -634,7 +660,6 @@
 							</tr>
 							<tr class="table-add">
 								<td colspan="2">
-									<div class="required-message">* Required</div>
 									<a id="save-app-add" class="icon-button light">Add Application</a>
 									<a id="cancel-app-add" class="icon-button light">Cancel</a>
 								</td>
@@ -643,16 +668,22 @@
 					</table>
 				</div>
 			</div>
+			<% } %>
+			<% if(!member['global_admin'] && adminOfApps.length == 0) { %>
+			<div class="user-noapps">Oops... There are no apps to view on this dashboard right now. You will have to wait until a global administrator creates an app...</div>
+			<% } %>
 			<div id="view-app">
 				<div class="widget-header">
 					<div class="left">
 						<div class="title"></div>
 					</div>
 					<div style="float:right; overflow:hidden; margin-top:6px;">
+						<% if(member['global_admin']) { %>
 						<div class="icon-button delete-app" id="delete-app">
 							<div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
 							<div class="text">Delete</div>
 						</div>
+						<% } %>
 						<div class="icon-button light" id="edit-app">
 							<div class="icon" style="background-image:url('/images/management/edit.png'); width:22px; height:19px;"></div>
 							<div class="text">Edit</div>
@@ -669,7 +700,6 @@
 									<div class="read"></div>
 									<div class="edit">
 										<input type='text' value=''>
-										<span class="required" id="req-app-edit-name">*</span>
 									</div>
 								</td>
 							</tr>
@@ -748,7 +778,7 @@
 										<div class="logo"></div>
 									</div>
 									<div class="edit">
-										<form action="/dashboard/apps/icon" enctype="multipart/form-data" id="add-edit-image-form" method="post">
+										<form action="/apps/icon" enctype="multipart/form-data" id="add-edit-image-form" method="post">
 											<input type="file" id="app_image" name="app_image" />
 											<input type="hidden" id="app_image_id" name="app_image_id" />
 										</form>
@@ -757,7 +787,6 @@
 							</tr>
 							<tr class="table-edit">
 								<td colspan="2">
-									<div class="required-message">* Required</div>
 									<a id="save-app-edit" class="icon-button light">Save Changes</a>
 									<a id="cancel-app-edit" class="icon-button light">Cancel</a>
 								</td>
@@ -767,8 +796,10 @@
 				</div>
 			</div>
 			</div>
+			<% if(member['global_admin']) { %>
 			<div id="no-app-warning" style="display:none; margin-left:187px;" class="alert danger">In order to start collecting data you need to add an application to your account.</div>
 			<div id="first-app-success" style="display:none; margin-left:187px;" class="alert success">Great! You can now embed our Android or iOS SDK into your application and start viewing your stats instantly. Don't forget to get your App Key from above.</div>
+			<% } %>
 		</div>
 	</script>
 	
