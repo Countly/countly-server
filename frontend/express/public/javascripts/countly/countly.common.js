@@ -5,7 +5,7 @@
 	
 	//Public Properties
 	countlyCommon.ACTIVE_APP_KEY = 1;
-	countlyCommon.READ_API_URL = "";
+	countlyCommon.READ_API_URL = "http://localhost/o";
 	countlyCommon.DEBUG = false;
 	countlyCommon.GRAPH_COLORS = ["#88BBC8", "#ED8662", "#A0ED62", "#326064", "#3D867F", "#3F9B31", "#A2C025", "#DFB114", "#DD770C", "#D35417", "#B93629", "#9A1B2F"];
 	countlyCommon.periodObj = {};

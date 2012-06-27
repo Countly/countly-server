@@ -7,6 +7,16 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+echo "
+   ______                  __  __
+  / ____/___  __  ______  / /_/ /_  __
+ / /   / __ \/ / / / __ \/ __/ / / / /
+/ /___/ /_/ / /_/ / / / / /_/ / /_/ /
+\____/\____/\__,_/_/ /_/\__/_/\__, /
+              http://count.ly/____/
+
+"
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 #update package index
@@ -39,6 +49,9 @@ apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
 #install imagemagick
 apt-get -y install imagemagick
 
+#install sendmail
+apt-get -y install sendmail
+
 apt-get -y install build-essential || (echo "Failed to install build-essential." ; exit)
 
 #install time module for node
@@ -61,3 +74,5 @@ pkill -SIGTERM supervisord
 
 #finally start countly api and dashboard
 start countly-supervisor
+
+echo -e "\nVisit http://$serverip in order to setup your administrator account\n"
