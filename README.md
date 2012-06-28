@@ -6,11 +6,15 @@ Below you can find Countly SDK repositories;
 - [Countly Android SDK (countly-sdk-android)](https://github.com/Countly/countly-sdk-android)
 - [Countly iOS SDK (countly-sdk-ios)](https://github.com/Countly/countly-sdk-ios)
 
-##How do I install Countly Server?
+##How do I install Countly server?
 
 We provide a beautiful installation sript (`bin/countly.install.sh`) with countly-server package that installs and configures everything required to run Countly Server.
 
 If you feel like doing things manually you can take a look at the installation articles from [http://support.count.ly](http://support.count.ly "Countly Support").
+
+##How do I upgrade my Countly server?
+
+[See this tutorial](http://support.count.ly/kb/web-installation/upgrading-countly-server-to-v1206-from-v1205x) for upgrading from 12.05 to 12.06
 
 ##API & Frontend
 
