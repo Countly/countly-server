@@ -232,6 +232,55 @@
 			</div>
 			{{/if}}
 		</div>
+		{{#if bars}}
+		<div class="dashboard-summary three">
+			<div class="item">
+				<div class="inner">
+					<div class="title">TOP PLATFORM</div>
+					{{#if bars.platforms}}
+					<div class="bar">
+						{{#each bars.platforms}}
+							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+						{{/each}}
+					</div>
+					<div class="number" data-item="{{bars.platforms.0.name}}">{{bars.platforms.0.name}}</div>
+					{{else}}
+					<div class="no-data">NO DATA</div>
+					{{/if}}
+				</div>
+			</div>
+			<div class="item">
+				<div class="inner">
+					<div class="title">TOP PLATFORM VERSION</div>
+					{{#if bars.os_versions}}
+					<div class="bar">
+						{{#each bars.os_versions}}
+							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+						{{/each}}
+					</div>
+					<div class="number" data-item="{{bars.os_versions.0.name}}">{{bars.os_versions.0.name}}</div>
+					{{else}}
+					<div class="no-data">NO DATA</div>
+					{{/if}}
+				</div>
+			</div>
+			<div class="item">
+				<div class="inner">
+					<div class="title">TOP RESOLUTION</div>
+					{{#if bars.resolutions}}
+					<div class="bar">
+						{{#each bars.resolutions}}
+							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+						{{/each}}
+					</div>
+					<div class="number" data-item="{{bars.resolutions.0.name}}">{{bars.resolutions.0.name}}</div>
+					{{else}}
+					<div class="no-data">NO DATA</div>
+					{{/if}}
+				</div>
+			</div>
+		</div>
+		{{/if}}
 		<table class="d-table sortable" cellpadding="0" cellspacing="0">
 			<thead>
 			<tr>
@@ -547,7 +596,6 @@
 	</script>
 	
 	<script id="template-management-applications" type="text/x-handlebars-template">
-		<% if(member['global_admin'] || adminOfApps.length) { %>
 		<div id="app-management-bar">
 			<div id="app-nav-head">
 				APPS
@@ -568,18 +616,14 @@
 				</div>
 				{{/eachOfObjectValue}}
 			</div>
-			<% if(member['global_admin']) { %>
 			<div id="manage-new-app">
 				<div class="app-container">
 					<div class="logo"></div>
 					<div class="name">My new app</div>
 				</div>
 			</div>
-			<% } %>
 		</div>
-		<% } %>
 		<div class="widget" style="margin-left:187px;">
-			<% if(member['global_admin']) { %>
 			<div id="add-new-app">
 				<div class="widget-header">
 					<div class="left">
@@ -668,10 +712,6 @@
 					</table>
 				</div>
 			</div>
-			<% } %>
-			<% if(!member['global_admin'] && adminOfApps.length == 0) { %>
-			<div class="user-noapps">Oops... There are no apps to view on this dashboard right now. You will have to wait until a global administrator creates an app...</div>
-			<% } %>
 			<div id="view-app">
 				<div class="widget-header">
 					<div class="left">
@@ -796,17 +836,12 @@
 				</div>
 			</div>
 			</div>
-			<% if(member['global_admin']) { %>
 			<div id="no-app-warning" style="display:none; margin-left:187px;" class="alert danger">In order to start collecting data you need to add an application to your account.</div>
 			<div id="first-app-success" style="display:none; margin-left:187px;" class="alert success">Great! You can now embed our Android or iOS SDK into your application and start viewing your stats instantly. Don't forget to get your App Key from above.</div>
-			<% } %>
 		</div>
 	</script>
 	
 	<script language="javascript" type='text/javascript' src='https://www.google.com/jsapi'></script>
-	<!--
-	<script language="javascript" type="text/javascript" src="/javascripts/countly.js"></script>
-	-->
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery-1.7.1.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery.form.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/tipsy/jquery.tipsy.js"></script>

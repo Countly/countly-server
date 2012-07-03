@@ -313,6 +313,8 @@ table.d-table { width:100%; padding:0px; margin:0px; border-radius:7px; border:1
 
 .dashboard-summary { margin-bottom:16px; overflow:auto;}
 	.dashboard-summary .item {float:left; font-family:'AlternateGothicNo2BT-Regular'; width:25%;}
+	.dashboard-summary.three .item { width:33%; }
+	.dashboard-summary.three .item:nth-child(2) { width:34%; }
 	.dashboard-summary .inner {padding:10px; border-radius:5px; background-image: linear-gradient(top, #3C3C3C 10%, #2A2A2A 100%); margin-left:5px;}
 	.dashboard-summary  .item:first-child  .inner{margin-left:0px;}
 	.dashboard-summary .item:first-child .inner{border-left:none;}

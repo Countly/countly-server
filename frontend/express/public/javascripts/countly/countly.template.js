@@ -230,21 +230,21 @@ window.DashboardView = countlyView.extend({
 			$(this).parent(".big-numbers").addClass("active");
 			$(this).find('.select').addClass("selected");
 		});
-		
-		$(".bar-inner").hover(
-			function(){
+
+		$(".bar-inner").on({
+			mouseenter: function(){
 				var number = $(this).parent().next();
-				
+			
 				number.text($(this).data("item"));
 				number.css({"color": $(this).css("background-color")});
 			},
-			function(){
+			mouseleave: function(){
 				var number = $(this).parent().next();
-			
+		
 				number.text(number.data("item"));
 				number.css({"color": $(this).parent().find(".bar-inner:first-child").css("background-color")});
 			}
-		);
+		});
 		
 		var self = this;
 		$(".big-numbers .inner").click(function(){
@@ -341,7 +341,6 @@ window.DashboardView = countlyView.extend({
 			$(self.el).find("#big-numbers-container").html(newPage.find("#big-numbers-container").html());
 			$(self.el).find(".dashboard-summary").html(newPage.find(".dashboard-summary").html());
 			$(self.selectedView).parents(".big-numbers").addClass("active");
-			self.pageScript();
 			
 			switch(self.selectedView) {
 				case "#draw-total-users":
@@ -382,6 +381,8 @@ window.DashboardView = countlyView.extend({
 			} else {
 				$(".widget.map-list").prepend(newPage.find("#map-list-right"));
 			}
+			
+			self.pageScript();
 		});
 	}
 });
@@ -777,9 +778,25 @@ window.FrequencyView = countlyView.extend({
 });
 
 window.DeviceView = countlyView.extend({
+	pageScript: function() {
+		$(".bar-inner").on({
+			mouseenter: function(){
+				var number = $(this).parent().next();
+			
+				number.text($(this).data("item"));
+				number.css({"color": $(this).css("background-color")});
+			},
+			mouseleave: function(){
+				var number = $(this).parent().next();
+		
+				number.text(number.data("item"));
+				number.css({"color": $(this).parent().find(".bar-inner:first-child").css("background-color")});
+			}
+		});
+	},
 	renderCommon: function(isRefresh) {
 		var deviceData = countlyDevice.getDeviceData();
-		
+				
 		this.templateData = {
 			"page-title": "DEVICES",
 			"logo-class": "devices",
@@ -787,6 +804,11 @@ window.DeviceView = countlyView.extend({
 				"columnCount":4, 
 				"columns": ["Device","Total Sessions", "Total Users","New Users"], 
 				"rows": []
+			},
+			"bars": {
+				"platforms": countlyDeviceDetails.getPlatformBars(),
+				"resolutions": countlyDeviceDetails.getResolutionBars(),
+				"os_versions": countlyDeviceDetails.getOSVersionBars()
 			}
 		};
 				
@@ -794,7 +816,7 @@ window.DeviceView = countlyView.extend({
 		
 		if (!isRefresh) {
 			$(this.el).html(this.template(this.templateData));
-		
+			this.pageScript();
 			$(".sortable").stickyTableHeaders();
 			
 			var self = this;
@@ -807,19 +829,22 @@ window.DeviceView = countlyView.extend({
 	},
 	refresh: function() {
 		var self = this;
-		$.when(countlyDevice.initialize()).then(function(){
+		$.when(countlyDevice.initialize(), countlyDeviceDetails.initialize()).then(function(){
 			if (app.activeView != self) {
 				return false;
 			}
 			self.renderCommon(true);
+
 			newPage = $("<div>"+self.template(self.templateData)+"</div>");
 			newPage.find(".sortable").tablesorter({sortList: self.sortList});
 		
 			$(self.el).find(".sortable tbody").replaceWith(newPage.find(".sortable tbody"));
+			$(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
 		
 			var deviceData = countlyDevice.getDeviceData();
 			countlyCommon.drawGraph(deviceData.chartDP, "#dashboard-graph", "bar");
 		
+			self.pageScript();
 			$(".sortable").trigger("update");
 		});
 	}
