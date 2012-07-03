@@ -19,6 +19,7 @@
 				dataType: "jsonp",
 				success: function(json) {
 					_deviceDetailsDb = jQuery.parseJSON(json);
+					_deviceDetailsDb["os_versions"] = _deviceDetailsDb["os_versions"].join(",").replace(/\./g, ":").split(",");
 				}
 			});
 		} else {
@@ -46,6 +47,16 @@
 	
 	countlyDeviceDetails.getResolutionBars = function() {	
 		return countlyCommon.extractBarData(_deviceDetailsDb, _deviceDetailsDb["resolutions"], countlyDeviceDetails.clearDeviceDetailsObject);
+	}
+	
+	countlyDeviceDetails.getOSVersionBars = function() {
+		var osVersions = countlyCommon.extractBarData(_deviceDetailsDb, _deviceDetailsDb["os_versions"], countlyDeviceDetails.clearDeviceDetailsObject);
+		
+		for (var i = 0; i < osVersions.length; i++) {
+			osVersions[i].name = osVersions[i].name.replace(/:/g, ".");
+		}
+		
+		return osVersions;
 	}
 	
 }(window.countlyDeviceDetails = window.countlyDeviceDetails || {}, jQuery));
