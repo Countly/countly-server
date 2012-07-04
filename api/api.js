@@ -108,6 +108,9 @@ function processUserLocation(getParams) {
 			processUserSession(dbAppUser, getParams);
 		});
 	} else if (getParams.is_end_session) {
+		if (getParams.session_duration) {
+			processSessionDuration(getParams);
+		}
 		countlyDb.collection('app_users').findOne({'_id': getParams.app_user_id }, function(err, dbAppUser){
 			if (!dbAppUser || !dbAppUser['session_duration']) {
 				return false;
