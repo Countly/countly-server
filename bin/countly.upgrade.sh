@@ -19,17 +19,23 @@ echo "
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+#update package index
+apt-get update
+
+#install sendmail
+apt-get -y install sendmail
+
 #stop countly
 stop countly-supervisor
 
-#create api configuration file from sample
-cp $DIR/../api/config.sample.js $DIR/../api/config.js
+#add machine IP as API IP for countly dashboard
+serverip="`ifconfig | sed -n 's/.*inet addr:\([0-9.]\+\)\s.*/\1/p' | grep -v 127.0.0.1`"
+echo "countlyCommon.READ_API_URL = \"http://$serverip/o\"" > $DIR/../frontend/express/public/javascripts/countly/countly.config.js
 
-#add platform prefix to all platform versions stored in device_details collection
-mongo countly $DIR/platform.versions.fix.js
-
-#modify escaped single quotes
-mongo countly $DIR/escape.fix.js
+#delete existing user from members collection
+mongo countly --eval "db.members.remove()"
 
 #start countly
 start countly-supervisor
+
+echo -e "\nVisit http://$serverip in order to setup your administrator account\n"

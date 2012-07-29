@@ -18,7 +18,7 @@
 				},
 				dataType: "jsonp",
 				success: function(json) {
-					_deviceDb = json;
+					_deviceDb = jQuery.parseJSON(json);
 				}
 			});
 		} else {
@@ -44,28 +44,19 @@
 		var deviceNames = _.pluck(chartData.chartData, 'device'),
 			deviceTotal = _.pluck(chartData.chartData, 'u'),
 			deviceNew = _.pluck(chartData.chartData, 'n'),
-			chartData2 = [],
-			chartData3 = [];
-		
-		var sum = _.reduce(deviceTotal, function(memo, num){ return memo + num; }, 0);
+			chartData2 = [];
 		
 		for (var i = 0; i < deviceNames.length; i++) {
-			var percent = (deviceTotal[i] / sum) * 100;
-			chartData2[i] = {data: [[0, deviceTotal[i]]], label: deviceNames[i]};
+			chartData2[i] = {data: [[-1,null],[0, deviceTotal[i]], [1, deviceNew[i]], [2,null]], label: deviceFullName(deviceNames[i])};
 		}
 		
-		var sum2 = _.reduce(deviceNew, function(memo, num){ return memo + num; }, 0);
-		
-		for (var i = 0; i < deviceNames.length; i++) {
-			var percent = (deviceNew[i] / sum) * 100;
-			chartData3[i] = {data: [[0, deviceNew[i]]], label: deviceNames[i]};
+		if (chartData2.length == 0) {
+			chartData2[0] = {data: [[-1,null], [0, null], [1, null], [2,null]]};
 		}
 		
-		chartData.chartDPTotal = {};
-		chartData.chartDPTotal.dp = chartData2;
-		
-		chartData.chartDPNew = {};
-		chartData.chartDPNew.dp = chartData3;
+		chartData.chartDP = {};
+		chartData.chartDP.dp = chartData2;
+		chartData.chartDP.ticks = [[-1,""],[0,"Total Users"],[1,"New Users"],[2,""]];
 		
 		return chartData;
 	}
@@ -135,12 +126,12 @@
 		var fullName = "";
 
 		switch (shortName) {
-			case "iPhone1,1": fullName = "iPhone 1G"; break;
-			case "iPhone1,2": fullName = "iPhone 3G"; break;
-			case "iPhone2,1": fullName = "iPhone 3GS"; break;
-			case "iPhone3,1": fullName = "iPhone 4"; break;
-			case "iPhone3,3": fullName = "Verizon iPhone 4"; break;
-			case "iPhone4,1": fullName = "iPhone 4S"; break;
+			case "iPhone1,1":	fullName = "iPhone 1G"; break;
+			case "iPhone1,2":	fullName = "iPhone 3G"; break;
+			case "iPhone2,1":	fullName = "iPhone 3GS"; break;
+			case "iPhone3,1":	fullName = "iPhone 4"; break;
+			case "iPhone3,3":	fullName = "Verizon iPhone 4"; break;
+			case "iPhone4,1":	fullName = "iPhone 4S"; break;
 			case "iPod1,1":	fullName = "iPod Touch 1G"; break;
 			case "iPod2,1":	fullName = "iPod Touch 2G"; break;
 			case "iPod3,1":	fullName = "iPod Touch 3G"; break;
@@ -153,9 +144,9 @@
 			case "iPad3,1":	fullName = "iPad-3G (WiFi)"; break;
 			case "iPad3,2":	fullName = "iPad-3G (4G)"; break;
 			case "iPad3,3":	fullName = "iPad-3G (4G)"; break;
-			case "i386": fullName = "Simulator"; break;
-			case "x86_64": fullName = "Simulator"; break;
-			default: fullName = shortName;
+			case "i386":	fullName = "Simulator"; break;
+			case "x86_64":	fullName = "Simulator"; break;
+			default:	fullName = shortName;
 		}
 		
 		return fullName;

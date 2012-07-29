@@ -18,7 +18,7 @@
 				},
 				dataType: "jsonp",
 				success: function(json) {
-					_userDb = json;
+					_userDb = jQuery.parseJSON(json);
 				}
 			});
 		} else {
