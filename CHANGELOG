@@ -3,23 +3,23 @@
   * Added platforms view under analytics section.
   
   * Added app versions view under analytics section and API is modified 
-	accordingly to handle _app_version metric.
+    accordingly to handle _app_version metric.
 	
   * Added summary bars to device view to show top platform, top platform 
-	version and top resolution.
+    version and top resolution.
 	
   * Added reset data option to manage apps screen. Global admin can reset 
-	the data stored for any application.
+    the data stored for any application.
 	
   * Added timestamp (UTC unix timestamp) parameter to the write API. If 
-	provided, the event is recorded with the given time instead of current 
-	time.
+    provided, the event is recorded with the given time instead of current 
+    time.
 	
   * Fixed application delete bug that prevented app_users collection to be 
-	cleared. app_id field is added to app_users collection.
+    cleared. app_id field is added to app_users collection.
 	
   * Fixed JSON escape issue for the read API when device name, carrier name 
-	etc. contained a single quote.
+    etc. contained a single quote.
 
 12.06
 
