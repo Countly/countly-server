@@ -7,7 +7,7 @@
 	countlyCommon.ACTIVE_APP_KEY = 1;
 	countlyCommon.READ_API_URL = "http://localhost/o";
 	countlyCommon.DEBUG = false;
-	countlyCommon.GRAPH_COLORS = ["#88BBC8", "#ED8662", "#A0ED62", "#869BD5", "#F7B05A", "#C8A788", "#A2C025", "#DFB114", "#DD770C", "#D35417", "#B93629", "#9A1B2F"];
+	countlyCommon.GRAPH_COLORS = ["#88BBC8", "#ED8662", "#A0ED62", "#326064", "#3D867F", "#3F9B31", "#A2C025", "#DFB114", "#DD770C", "#D35417", "#B93629", "#9A1B2F"];
 	countlyCommon.periodObj = {};
 	
 	//Public Methods
@@ -73,7 +73,7 @@
 				grid: { hoverable: true, borderColor: "null", color: "#999", borderWidth: 0, minBorderMargin:10},
 				xaxis: { minTickSize: 1, tickDecimals:"number", tickLength: 0},
 				yaxis: { min: 0, minTickSize: 1, tickDecimals:"number" },
-				legend: { backgroundOpacity:0, margin: [5, -19] },
+				legend: { backgroundOpacity:0 },
 				colors: countlyCommon.GRAPH_COLORS
 			};
 		}
@@ -130,6 +130,7 @@
 				xaxis: { min: 1, max:31, tickDecimals:"number", tickSize:0, tickLength: 0 },
 				yaxis: { min: 0, minTickSize: 1, tickDecimals:"number", ticks: 3 },
 				legend: { show:false, margin: [-25, -44], noColumns:3, backgroundOpacity:0 },
+				selection: { mode: "x" },
 				colors: countlyCommon.GRAPH_COLORS
 			};
 		}
@@ -617,7 +618,7 @@
 						propertyValue = dataObj[propertyNames[k]];
 					}
 										
-					if (typeof propertyValue !== 'string') {
+					if (propertyValue == (propertyValue | 0)) {
 						propertySum += propertyValue;
 					}
 					
@@ -660,12 +661,12 @@
 						if (!tmpPropertyObj[propertyNames[k]]) {
 							tmpPropertyObj[propertyNames[k]] = 0;
 						}
-						
-						if (typeof propertyValue === 'string') {
-							tmpPropertyObj[propertyNames[k]] = propertyValue;
-						} else {
+							
+						if (propertyValue == (propertyValue | 0)) {
 							propertySum += propertyValue;
 							tmpPropertyObj[propertyNames[k]] += propertyValue;
+						} else {
+							tmpPropertyObj[propertyNames[k]] = propertyValue;
 						}
 					}
 				}
@@ -680,12 +681,12 @@
 						}
 						tmp_x = clearFunction(tmp_x);
 						propertyValue = tmp_x["u"];
-
-						if (typeof propertyValue === 'string') {
-							tmpPropertyObj["u"] = propertyValue;
-						} else {
+						
+						if (propertyValue == (propertyValue | 0)) {
 							propertySum += propertyValue;
 							tmpPropertyObj["u"] += propertyValue;
+						} else {
+							tmpPropertyObj["u"] = propertyValue;
 						}
 					}
 				}

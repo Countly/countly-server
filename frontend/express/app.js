@@ -298,23 +298,17 @@ app.post('/forgot', function(req, res, next) {
 });
 
 app.post('/setup', function(req, res, next) {
-	countlyDb.collection('members').count({}, function(err, memberCount){
-		if (memberCount) {
-			res.redirect('/login');
-		} else {
-			if (req.body.username && req.body.password) {
-				var password = sha1Hash(req.body.password);
-			
-				countlyDb.collection('members').insert({"username": req.body.username, "password": password, "global_admin": true}, {safe: true}, function(err, member){
-					req.session.uid = member[0]["_id"];
-					req.session.gadm = true;
-					res.redirect('/dashboard');
-				});
-			} else {
-				res.redirect('/setup');
-			}
-		}
-	});
+	if (req.body.username && req.body.password) {
+		var password = sha1Hash(req.body.password);
+	
+		countlyDb.collection('members').insert({"username": req.body.username, "password": password, "global_admin": true}, {safe: true}, function(err, member){
+			req.session.uid = member[0]["_id"];
+			req.session.gadm = true;
+			res.redirect('/dashboard');
+		});
+	} else {
+		res.redirect('/setup');
+	}
 });
 
 app.post('/login', function(req, res, next) {
@@ -460,36 +454,12 @@ app.post('/apps/delete', function(req, res, next) {
 		countlyDb.collection('carriers').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 		countlyDb.collection('locations').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 		countlyDb.collection('realtime').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
-		countlyDb.collection('app_users').remove({"app_id": countlyDb.ObjectID(req.body.app_id)});
+		countlyDb.collection('app_users').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 		countlyDb.collection('devices').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 		countlyDb.collection('device_details').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
-		countlyDb.collection('app_versions').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 		
 		res.send(true);
 	});
-});
-
-app.post('/apps/reset', function(req, res, next) {
-	if (!req.session.uid) {
-		res.end();
-		return false;
-	}
-	
-	if(!isGlobalAdmin(req)) {
-		res.end();
-		return false;
-	}
-	
-	countlyDb.collection('sessions').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
-	countlyDb.collection('users').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
-	countlyDb.collection('carriers').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
-	countlyDb.collection('locations').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
-	countlyDb.collection('app_users').remove({"app_id": countlyDb.ObjectID(req.body.app_id)});
-	countlyDb.collection('devices').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
-	countlyDb.collection('device_details').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
-	countlyDb.collection('app_versions').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
-
-	res.send(true);
 });
 
 app.post('/apps/icon', function(req, res) {

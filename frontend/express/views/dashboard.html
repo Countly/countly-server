@@ -10,9 +10,8 @@
 <html> 
 <head> 
 	<title>Countly</title> 
-	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1.0">
 	<link rel="icon" type="image/png" href="/images/favicon.png">
-	<link href="http://fonts.googleapis.com/css?family=Ubuntu:400,500&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+	<link href='http://fonts.googleapis.com/css?family=Ubuntu:400,500&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
 	<link rel="stylesheet" href="/javascripts/tablesorter/style.css" />
 	<link rel="stylesheet" href="/javascripts/tipsy/tipsy.css" />
 	<link rel="stylesheet" href="/stylesheets/jqueryui/jquery.ui.all.css" />
@@ -64,17 +63,9 @@
 					<div class="logo devices"></div>
 					<div class="text">Devices</div>
 				</a>
-				<a href="#/analytics/versions" class="item">
-					<div class="logo app-versions"></div>
-					<div class="text">App versions</div>
-				</a>
 				<a href="#/analytics/carriers" class="item">
 					<div class="logo carrier"></div>
 					<div class="text">Carriers</div>
-				</a>
-				<a href="#/analytics/platforms" class="item">
-					<div class="logo platforms"></div>
-					<div class="text">Platforms</div>
 				</a>
 			</div>
 			<% if(member['global_admin'] || adminOfApps.length) { %>
@@ -109,7 +100,7 @@
 		<div id="app-nav-head">
 			APPS
 		</div>
-		<div class="apps-scrollable">
+		<div class="scrollable">
 			<% for (var i = 0; i < userOfApps.length; i++) { %>
 				<div class="app-container app-navigate" data-key="<%= userOfApps[i].key %>" data-id="<%= userOfApps[i]['_id'] %>">
 					<div class="logo" style="background-image: url('/appimages/<%= userOfApps[i]['_id'] %>.png');"></div>
@@ -166,9 +157,7 @@
 			<a id="dialog-cancel" class="icon-button light">Close</a>
 		</div>
 	</div>
-	<div id="content">
-		<div id="content-loader"></div>
-	</div>
+	<div id="content"></div>
 	<script id="template-date-selector" type="text/x-handlebars-template">
 		<div id="date-selector">
 			<div class="calendar" id="date-picker-button"></div>
@@ -223,26 +212,8 @@
 				</div>
 				{{> date-selector }}
 			</div>
-			<div class="widget-content" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
-				{{#if graph-type-double-pie}}
-				<div style="float:left; width:50%; position:relative;">
-					<div style="border-right:1px solid #CCC;">
-						<div class="pie-overlay one {{logo-class}}"></div>
-						<div id="dashboard-graph" class="graph" style="width:500px; margin:0 auto; height:360px; font-family:'Ubuntu';"></div>	
-					</div>
-				</div>
-				<div style="float:left; width:50%; position:relative;">
-					<div class="graph-segment-container" style="position:absolute; left:3px; top:10px; z-index:3;">
-					{{#if graph-segmentation}}
-						<div class="graph-segment {{graph-segmentation.class}}" data-name="{{graph-segmentation.name}}"></div>
-					{{/if}}
-					</div>
-					<div class="pie-overlay two {{logo-class}}"></div>
-					<div id="dashboard-graph2" class="graph" style="width:500px; margin:0 auto; height:360px; font-family:'Ubuntu';"></div>
-				</div>
-				{{else}}
+			<div class="widget-content" style="height:300px; padding-top:20px; padding-bottom:10px;">
 				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
-				{{/if}}
 			</div>
 			{{#if big-numbers}}
 			<div class="widget-footer" style="background-color:#EEEEEE;">
@@ -263,23 +234,51 @@
 		</div>
 		{{#if bars}}
 		<div class="dashboard-summary three">
-			{{#each bars}}
 			<div class="item">
 				<div class="inner">
-					<div class="title">{{this.title}}</div>
-					{{#if this.data}}
+					<div class="title">TOP PLATFORM</div>
+					{{#if bars.platforms}}
 					<div class="bar">
-						{{#each this.data}}
+						{{#each bars.platforms}}
 							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
 						{{/each}}
 					</div>
-					<div class="number" data-item="{{this.data.0.name}}">{{this.data.0.name}}</div>
+					<div class="number" data-item="{{bars.platforms.0.name}}">{{bars.platforms.0.name}}</div>
 					{{else}}
 					<div class="no-data">NO DATA</div>
 					{{/if}}
 				</div>
 			</div>
-			{{/each}}
+			<div class="item">
+				<div class="inner">
+					<div class="title">TOP PLATFORM VERSION</div>
+					{{#if bars.os_versions}}
+					<div class="bar">
+						{{#each bars.os_versions}}
+							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+						{{/each}}
+					</div>
+					<div class="number" data-item="{{bars.os_versions.0.name}}">{{bars.os_versions.0.name}}</div>
+					{{else}}
+					<div class="no-data">NO DATA</div>
+					{{/if}}
+				</div>
+			</div>
+			<div class="item">
+				<div class="inner">
+					<div class="title">TOP RESOLUTION</div>
+					{{#if bars.resolutions}}
+					<div class="bar">
+						{{#each bars.resolutions}}
+							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+						{{/each}}
+					</div>
+					<div class="number" data-item="{{bars.resolutions.0.name}}">{{bars.resolutions.0.name}}</div>
+					{{else}}
+					<div class="no-data">NO DATA</div>
+					{{/if}}
+				</div>
+			</div>
 		</div>
 		{{/if}}
 		<table class="d-table sortable" cellpadding="0" cellspacing="0">
@@ -306,32 +305,54 @@
 				{{/if}}
 			</tbody>
 		</table>
-		{{#if chart-data2}}
+	</script>
+	
+	<script id="template-analytics-carriers"  type="text/x-handlebars-template">
+		<div class="widget">
+			<div class="widget-header">
+				<div class="left">
+					<div class="logo {{logo-class}}"></div>
+					<div class="title">{{page-title}}</div>
+				</div>
+				{{> date-selector }}
+			</div>
+			<div class="widget-content" style="overflow:hidden;">
+				<div style="float:left; width:50%; position:relative;">
+					<div style="border-right:1px solid #CCC;">
+						<div style="position:absolute; z-index:2; width:248px; height:248px; left:50%; margin-left:-119px; top:56px; background-image:url('/images/dashboard/total-user.png'); background-position:center; background-repeat:no-repeat;"> </div>
+						<div id="dashboard-graph" class="graph" style="width:500px; margin:0 auto; height:360px; font-family:'Ubuntu';"></div>	
+					</div>
+				</div>
+				<div style="float:left; width:50%; position:relative;">
+					<div style="position:absolute; z-index:2; width:248px; height:248px; left:50%; margin-left:-119px; top:56px; background-image:url('/images/dashboard/new-users.png'); background-position:center; background-repeat:no-repeat;"> </div>
+					<div id="dashboard-graph2" class="graph" style="width:500px; margin:0 auto; height:360px; font-family:'Ubuntu';"></div>
+				</div>
+			</div>
+		</div>
 		<table class="d-table sortable" cellpadding="0" cellspacing="0">
 			<thead>
 			<tr>
-				{{#eachOfArray chart-data2.columns}}
+				{{#eachOfArray chart-data.columns}}
 				<th style="width:25%">{{value}}</th>
 				{{/eachOfArray}}
 			</tr>
 			</thead>
 			<tbody>
-				{{#if chart-data2.rows}}
-				{{#each chart-data2.rows}}
+				{{#if chart-data.rows}}
+				{{#each chart-data.rows}}
 				<tr>
 					{{#eachOfObject this}}
-						<td>{{getFormattedNumber value}}</td>
+						<td>{{value}}</td>
 					{{/eachOfObject }}
 				</tr>
 				{{/each}}
 				{{else}}
 				<tr>
-					<td colspan="{{chart-data2.columnCount}}" class="table-no-data">No data</td>
+					<td colspan="{{chart-data.columnCount}}" class="table-no-data">No data</td>
 				</tr>
 				{{/if}}
 			</tbody>
 		</table>
-		{{/if}}
 	</script>
 	
 	<script id="template-analytics-countries"  type="text/x-handlebars-template">
@@ -398,20 +419,78 @@
 			</div>
 			<div class="widget-content" style="border:none;">				
 				<div id="big-numbers-container" class="dashboard">
-					{{#each usage}}
 					<div class="big-numbers six-column">
 						<div class="inner">
-							<div class="logo"></div>
-							<div class="number">{{getShortNumber this.data.total}}</div>
-							<div class="trend" style="background-image:url('/images/dashboard/{{this.data.trend}}trend.png');">
-								<div class="change">{{this.data.change}}</div>
+							<div class="logo one"></div>
+							<div class="number">{{getShortNumber usage.total-sessions.total}}</div>
+							<div class="trend" style="background-image:url('/images/dashboard/{{usage.total-sessions.trend}}trend.png');">
+								<div class="change">{{usage.total-sessions.change}}</div>
 							</div>
-							<div class="spark"><span class="{{this.data.trend}}sparkline">{{this.data.sparkline}}</span></div>
-							<div class="select" id="{{this.id}}">{{this.title}}</div>
+							<div class="spark"><span class="{{usage.total-sessions.trend}}sparkline">{{usage.total-sessions.sparkline}}</span></div>
+							<div class="select" id="draw-total-sessions">TOTAL SESSIONS</div>
 							<div class="arrow"></div>
 						</div>
 					</div>
-					{{/each}}
+					<div class="big-numbers six-column">
+						<div class="inner">
+							<div class="logo two"></div>
+							<div class="number">{{getShortNumber usage.total-users.total}}</div>
+							<div class="trend" style="background-image:url('/images/dashboard/{{usage.total-users.trend}}trend.png');">
+								<div class="change">{{usage.total-users.change}}</div>
+							</div>
+							<div class="spark"><span class="{{usage.total-users.trend}}sparkline">{{usage.total-users.sparkline}}</span></div>
+							<div class="select" id="draw-total-users">TOTAL USERS</div>
+							<div class="arrow"></div>
+						</div>
+					</div>
+					<div class="big-numbers six-column">
+						<div class="inner">
+							<div class="logo three"></div>
+							<div class="number">{{getShortNumber usage.new-users.total}}</div>
+							<div class="trend" style="background-image:url('/images/dashboard/{{usage.new-users.trend}}trend.png');">
+								<div class="change">{{usage.new-users.change}}</div>
+							</div>
+							<div class="spark"><span class="{{usage.new-users.trend}}sparkline">{{usage.new-users.sparkline}}</span></div>
+							<div class="select" id="draw-new-users">NEW USERS</div>
+							<div class="arrow"></div>
+						</div>
+					</div>
+					<div class="big-numbers six-column">
+						<div class="inner">
+							<div class="logo six"></div>
+							<div class="number">{{usage.avg-duration-per-session.total}}</div>
+							<div class="trend" style="background-image:url('/images/dashboard/{{usage.avg-duration-per-session.trend}}trend.png');">
+								<div class="change">{{usage.avg-duration-per-session.change}}</div>
+							</div>
+							<div class="spark"><span class="{{usage.avg-duration-per-session.trend}}sparkline">{{usage.avg-duration-per-session.sparkline}}</span></div>
+							<div class="select" id="draw-time-spent">AVG. TIME SPENT</div>
+							<div class="arrow"></div>
+						</div>
+					</div>
+					<div class="big-numbers six-column">
+						<div class="inner">
+							<div class="logo four"></div>
+							<div class="number">{{getShortNumber usage.events.total}}</div>
+							<div class="trend" style="background-image:url('/images/dashboard/{{usage.events.trend}}trend.png');">
+								<div class="change">{{usage.events.change}}</div>
+							</div>
+							<div class="spark"><span class="{{usage.events.trend}}sparkline">{{usage.events.sparkline}}</span></div>
+							<div class="select" id="draw-events-served">EVENTS SERVED</div>
+							<div class="arrow"></div>
+						</div>
+					</div>
+					<div class="big-numbers six-column">
+						<div class="inner">
+							<div class="logo five"></div>
+							<div class="number">{{getShortNumber usage.avg-events.total}}</div>
+							<div class="trend" style="background-image:url('/images/dashboard/{{usage.avg-events.trend}}trend.png');">
+								<div class="change">{{usage.avg-events.change}}</div>
+							</div>
+							<div class="spark"><span class="{{usage.avg-events.trend}}sparkline">{{usage.avg-events.sparkline}} </span></div>
+							<div class="select" id="draw-avg-events-served">AVG. EVENTS SERVED</div>
+							<div class="arrow"></div>
+						</div>
+					</div>
 				</div>
 			</div>
 			<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none;">
@@ -419,23 +498,66 @@
 			</div>
 		</div>
 		<div class="dashboard-summary">
-			{{#each bars}}
 			<div class="item">
 				<div class="inner">
-					<div class="title">{{this.title}}</div>
-					{{#if this.data}}
+					<div class="title">TOP PLATFORM</div>
+					{{#if bars.platforms}}
 					<div class="bar">
-						{{#each this.data}}
+						{{#each bars.platforms}}
 							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
 						{{/each}}
 					</div>
-					<div class="number" data-item="{{this.data.0.name}}">{{this.data.0.name}}</div>
+					<div class="number" data-item="{{bars.platforms.0.name}}">{{bars.platforms.0.name}}</div>
 					{{else}}
 					<div class="no-data">NO DATA</div>
 					{{/if}}
 				</div>
 			</div>
-			{{/each}}
+			<div class="item">
+				<div class="inner">
+					<div class="title">TOP RESOLUTION</div>
+					{{#if bars.resolutions}}
+					<div class="bar">
+						{{#each bars.resolutions}}
+							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+						{{/each}}
+					</div>
+					<div class="number" data-item="{{bars.resolutions.0.name}}">{{bars.resolutions.0.name}}</div>
+					{{else}}
+					<div class="no-data">NO DATA</div>
+					{{/if}}
+				</div>
+			</div>
+			<div class="item">
+				<div class="inner">
+					<div class="title">TOP CARRIER</div>
+					{{#if bars.carriers}}
+					<div class="bar">
+						{{#each bars.carriers}}
+							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+						{{/each}}
+					</div>
+					<div class="number" data-item="{{bars.carriers.0.name}}">{{bars.carriers.0.name}}</div>
+					{{else}}
+					<div class="no-data">NO DATA</div>
+					{{/if}}
+				</div>
+			</div>
+			<div class="item">
+				<div class="inner">
+					<div class="title">TOP USERS</div>
+					{{#if bars.users}}
+					<div class="bar">
+						{{#each bars.users}}
+							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+						{{/each}}
+					</div>
+					<div class="number" data-item="{{bars.users.0.name}}">{{bars.users.0.name}}</div>
+					{{else}}
+					<div class="no-data">NO DATA</div>
+					{{/if}}
+				</div>
+			</div> 
 		</div>
 		<!--
 		<div class="widget" style="width:28%; float:left; box-shadow:none;">
@@ -514,7 +636,7 @@
 							<tr>
 								<td>Application Name</td>
 								<td>
-									<input type="text" value="" placeholder="Enter application name..." id="app-add-name">
+									<input type='text' value='' placeholder='Enter application name...' id="app-add-name">
 								</td>
 							</tr>
 							<tr>
@@ -601,10 +723,6 @@
 							<div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
 							<div class="text">Delete</div>
 						</div>
-						<div class="icon-button delete-app" id="clear-app-data">
-							<div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
-							<div class="text">Clear data</div>
-						</div>
 						<% } %>
 						<div class="icon-button light" id="edit-app">
 							<div class="icon" style="background-image:url('/images/management/edit.png'); width:22px; height:19px;"></div>
@@ -621,7 +739,7 @@
 								<td id="app-edit-name">
 									<div class="read"></div>
 									<div class="edit">
-										<input type="text" value="">
+										<input type='text' value=''>
 									</div>
 								</td>
 							</tr>
@@ -654,9 +772,9 @@
 								<td>Time Zone</td>
 								<td id="app-edit-timezone">
 									<div class="read">
-											<div class="flag"></div>
-											<div class="country"></div>
-											<div class="timezone"></div>
+											<div class='flag'></div>
+											<div class='country'></div>
+											<div class='timezone'></div>
 									</div>
 									<div class="edit">
 										<div style="float:left;">
@@ -723,7 +841,7 @@
 		</div>
 	</script>
 	
-	<script language="javascript" type="text/javascript" src="https://www.google.com/jsapi"></script>
+	<script language="javascript" type='text/javascript' src='https://www.google.com/jsapi'></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery-1.7.1.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery.form.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/tipsy/jquery.tipsy.js"></script>
@@ -736,6 +854,7 @@
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery.easing.1.3.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/prefixfree.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/flot/jquery.flot.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/flot/jquery.flot.selection.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/flot/jquery.flot.pie.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/flot/jquery.flot.resize.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/flot/jquery.flot.stack.js"></script>
@@ -751,7 +870,6 @@
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.user.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.device.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.device.detail.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.app.version.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.carrier.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.template.js"></script>
 </body>

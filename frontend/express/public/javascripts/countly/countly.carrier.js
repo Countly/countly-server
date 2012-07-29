@@ -18,7 +18,7 @@
 				},
 				dataType: "jsonp",
 				success: function(json) {
-					_carrierDb = json;
+					_carrierDb = jQuery.parseJSON(json);
 				}
 			});
 		} else {
