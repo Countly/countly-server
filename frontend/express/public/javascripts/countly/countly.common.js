@@ -773,8 +773,13 @@
 				formattedDateStart = moment((countlyCommon.periodObj.activePeriod+" " + countlyCommon.periodObj.periodMin + ":00:00").replace(/\./g, "/"));
 				formattedDateEnd = moment((countlyCommon.periodObj.activePeriod+" " + (countlyCommon.periodObj.periodMax) + ":00:00").replace(/\./g, "/"));
 			} else {
-				formattedDateStart = moment((countlyCommon.periodObj.activePeriod+"/" + countlyCommon.periodObj.periodMin).replace(/\./g, "/"));
-				formattedDateEnd = moment((countlyCommon.periodObj.activePeriod+"/" + (countlyCommon.periodObj.periodMax)).replace(/\./g, "/"));
+				if ((countlyCommon.periodObj.periodMin + "").indexOf(".") == -1) { 
+					formattedDateStart = moment((countlyCommon.periodObj.activePeriod+"/" + countlyCommon.periodObj.periodMin + ".1").replace(/\./g, "/"));
+					formattedDateEnd = moment((countlyCommon.periodObj.activePeriod+"/" + (countlyCommon.periodObj.periodMax) + ".1").replace(/\./g, "/"));
+				} else {
+					formattedDateStart = moment((countlyCommon.periodObj.activePeriod+"/" + countlyCommon.periodObj.periodMin).replace(/\./g, "/"));
+					formattedDateEnd = moment((countlyCommon.periodObj.activePeriod+"/" + (countlyCommon.periodObj.periodMax)).replace(/\./g, "/"));
+				}
 			}
 		} else {
 			formattedDateStart = moment((countlyCommon.periodObj.currentPeriodArr[0]).replace(/\./g, "/"));
