@@ -30,7 +30,7 @@
 				},
 				dataType: "jsonp",
 				success: function(json) {
-					_locationsDb = jQuery.parseJSON(json);
+					_locationsDb = json;
 				}
 			});
 		} else {
