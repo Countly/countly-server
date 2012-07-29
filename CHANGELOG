@@ -1,10 +1,32 @@
-12.06 
+12.07
 
-  * user management support. a user can be created as a global admin to 
+  * Added platforms view under analytics section.
+  
+  * Added app versions view under analytics section and API is modified 
+    accordingly to handle _app_version metric.
+	
+  * Added summary bars to device view to show top platform, top platform 
+    version and top resolution.
+	
+  * Added reset data option to manage apps screen. Global admin can reset 
+    the data stored for any application.
+	
+  * Added timestamp (UTC unix timestamp) parameter to the write API. If 
+    provided, the event is recorded with the given time instead of current 
+    time.
+	
+  * Fixed application delete bug that prevented app_users collection to be 
+    cleared. app_id field is added to app_users collection.
+	
+  * Fixed JSON escape issue for the read API when device name, carrier name 
+    etc. contained a single quote.
+
+12.06
+
+  * Added user management support. A user can be created as a global admin to 
     manage & view all apps or can be assigned to any application as an
-    admin or user. an admin of an application can edit application settings. 
-    a user of an application can only view analytics for that application 
+    admin or user. An admin of an application can edit application settings. 
+    A user of an application can only view analytics for that application 
     and can not edit it's settings.
   
-  * csfr protection to all methods provided through app.js.
-  
+  * Added csfr protection to all methods provided through app.js.

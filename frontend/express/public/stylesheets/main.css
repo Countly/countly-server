@@ -68,6 +68,10 @@ a:active {color:inherit;}
 				#sidebar-menu .sidebar-submenu .item.active .logo.carrier{background-position:-300px;}
 				#sidebar-menu .sidebar-submenu .item .logo.loyalty{background-position:-390px;}
 				#sidebar-menu .sidebar-submenu .item.active .logo.loyalty{background-position:-360px;}
+				#sidebar-menu .sidebar-submenu .item .logo.app-versions{background-position:-450px;}
+				#sidebar-menu .sidebar-submenu .item.active .app-versions{background-position:-420px;}
+				#sidebar-menu .sidebar-submenu .item .logo.platforms{background-position:-510px;}
+				#sidebar-menu .sidebar-submenu .item.active .logo.platforms{background-position:-480px;}				
 			#sidebar-menu .sidebar-submenu .item .text {margin-left:17px; float:left; padding-top:8px; font:13px 'Ubuntu'; color:#666; text-shadow:none;}
 				#sidebar-menu .sidebar-submenu .item.active .text{color:#4DB351;}
 				
@@ -100,6 +104,8 @@ a:active {color:inherit;}
 				.widget-header .logo.devices {background-position:-152px;}
 				.widget-header .logo.carriers {background-position:-190px;}
 				.widget-header .logo.loyalty {background-position:-228px;}
+				.widget-header .logo.app-versions {background-position:-266px;}
+				.widget-header .logo.platforms {background-position:-304px;}
 				
 	.widget-footer {text-align:right; min-height:10px; color:#666; text-shadow:0 1px #fff; font-size:11px; border-bottom-left-radius:5px; border-bottom-right-radius:5px; border:1px solid #C2C2C2; border-top:none; background-color:#FFF; box-shadow:inset 0 1px 0 #FFF; overflow:hidden;}
 	.widget-content {background-color:#FFF; border:1px solid #A1A1A1; border-top-color:#B8B9B9;}
@@ -124,18 +130,18 @@ a:active {color:inherit;}
 			.big-numbers.active:hover .select {background-color:#2B2B2B; background-image: linear-gradient(top, #484848 20%, #2B2B2B 100%);} 
 			.big-numbers.active .select{color:#EEE; text-shadow:0px -1px #333; background-color:#2B2B2B; background-image: linear-gradient(top, #484848 20%, #2B2B2B 100%); box-shadow:inset 0 1px 0 #5E5E5E; border-top-color:#404040; border-bottom:1px solid #616161; bottom:0px;}
 		.big-numbers .inner .logo {background-image:url('/images/dashboard/dashboard_icons.png'); width:60px; height:60px; margin:0 auto;}
-			.big-numbers .inner .logo.one {background-position:-55px;}
-			.big-numbers.active .logo.one {background-position:5px;}
-			.big-numbers .inner .logo.two {background-position:-175px;}
-			.big-numbers.active .logo.two {background-position:-115px;}
-			.big-numbers .inner .logo.three {background-position:-295px;}
-			.big-numbers.active .logo.three {background-position:-235px;}
-			.big-numbers .inner .logo.four {background-position:-655px;}
-			.big-numbers.active .logo.four {background-position:-595px;}	
-			.big-numbers .inner .logo.five {background-position:-415px;}
-			.big-numbers.active .logo.five {background-position:-355px;}
-			.big-numbers .inner .logo.six {background-position:-535px;}
-			.big-numbers.active .logo.six {background-position:-475px;}
+			.big-numbers:nth-child(1) .inner .logo {background-position:-55px;}
+			.big-numbers:nth-child(1).active .logo {background-position:5px;}
+			.big-numbers:nth-child(2) .inner .logo {background-position:-175px;}
+			.big-numbers:nth-child(2).active .logo {background-position:-115px;}
+			.big-numbers:nth-child(3) .inner .logo {background-position:-295px;}
+			.big-numbers:nth-child(3).active .logo {background-position:-235px;}
+			.big-numbers:nth-child(4) .inner .logo {background-position:-655px;}
+			.big-numbers:nth-child(4).active .logo {background-position:-595px;}	
+			.big-numbers:nth-child(5) .inner .logo {background-position:-415px;}
+			.big-numbers:nth-child(5).active .logo {background-position:-355px;}
+			.big-numbers:nth-child(6) .inner .logo {background-position:-535px;}
+			.big-numbers:nth-child(6).active .logo {background-position:-475px;}
 		.big-numbers .number{font:38px 'AlternateGothicNo2BT-Regular'; color:#666; text-shadow:0px 1px #FFF; }
 			.widget-content .big-numbers .number {margin-top:1px;}
 			.widget-footer .big-numbers .number {margin-top:7px;}
@@ -171,6 +177,12 @@ a:active {color:inherit;}
 		.graph {font:19px 'Ubuntu'; z-index:1;}
 		.graph table tr:nth-child(n+10){ display:none; }
 		#graph-tooltip{border: 1px solid #1B1B1C; box-shadow:0 1px 1px 0 #B0B0B0; box-shadow:inset 0 1px 0 #727475; background-color:#383B3C; background-image: linear-gradient(top, #3947320 30%, #383B3C 100%); padding:2px 8px; border-radius:3px; background-color:#3C3F40; opacity:0.80; color:#FFF; font:14px 'AlternateGothicNo2BT-Regular'; display:none; position:absolute; z-index:100;}
+		.pie-overlay {position:absolute; z-index:2; width:248px; height:248px; left:50%; margin-left:-119px; top:56px; background-image:url('/images/dashboard/total-user.png'); background-position:center; background-repeat:no-repeat;}
+		.pie-overlay.one {background-image:url('/images/dashboard/total-user.png');}
+		.pie-overlay.two {background-image:url('/images/dashboard/new-users.png');}
+		.pie-overlay.one.platforms {background-image:url('/images/dashboard/platforms.png');}
+		.pie-overlay.two.platforms {background-image:url('/images/dashboard/platform-versions.png');}
+		.pieLabel div{font-size:11px !important;}
 /* DASHBOARD END */
 
 /* APP NAVIGATION */
@@ -184,8 +196,6 @@ a:active {color:inherit;}
 	.app-container .name {width: 126px; text-align:left; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; float:left; margin-left:10px; padding-top:6px; color:#464646; text-shadow:0px 1px #EAEAEA; font:13px 'Ubuntu';}
 	.new-app-name { width: 300px; text-align:left; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; }
 	.app-container.app-navigate .name{ width:109px; }
-/*	.app-container:nth-child(1) .logo {background-image:url('/images/demo/mappy_small.png'); background-position: -2px -2px;}
-	.app-container:nth-child(2) .logo {background-image:url('/images/demo/notely_small.png'); background-position: -2px -2px;} */
 	
 /* APP NAVIGATION END */
 
@@ -250,7 +260,6 @@ table.d-table { width:100%; padding:0px; margin:0px; border-radius:7px; border:1
 	#date-selector .calendar {cursor:pointer; background-image: url('/images/dashboard/date-time-icon.png'), linear-gradient(top, #3C3C3C 10%, #717171 100%); background-repeat:no-repeat; background-position:center; float:left; border-radius:4px; margin-right:10px; width:29px; height:29px;}
 	
 	#date-picker-button:hover {box-shadow: 0 0 5px 2px #fff;}
-	/*#date-selector .button:active {background-color:#E4E4E4; background-image: linear-gradient(top, #E4E4E4 40%, #C8C8C8 100%); box-shadow:inset 0px 0px 1px #999;}*/
 	
 .two-column {width:50%;}
 	
@@ -471,3 +480,9 @@ table.d-table { width:100%; padding:0px; margin:0px; border-radius:7px; border:1
 .password-row { display:none; }
 
 .user-noapps { position: absolute; left: 50%; top: 50%; width: 460px; margin-left: -118px; font-size: 16px; line-height: 23px; font-family: Ubuntu; text-shadow: 0 1px white; color:#555; height:50px; margin-top:-25px; }
+
+.graph-segment {float:left; cursor:pointer; margin-left:8px; }
+.graph-segment.ios {background-image: url('/images/dashboard/platforms_button.png'); width:81px; height:40px; background-position:0px -53px;}
+.graph-segment.android {background-image: url('/images/dashboard/platforms_button.png'); width:81px; height:40px; background-position:0px 0px;}
+
+#content-loader {position:absolute; left:50%; top:50%; margin-top:-24px; margin-left:88px; background:url('/images/dashboard/content-loader.gif'); background-repeat:none; width:48px; height:48px;}
