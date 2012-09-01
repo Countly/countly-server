@@ -2,7 +2,9 @@
 
 	//Private Properties
 	var _periodObj = {},
-		_appVersionsDb = {};
+		_appVersionsDb = {},
+		_app_versions = [],
+		_activeAppKey = 0;
 		
 	//Public Methods
 	countlyAppVersion.initialize = function() {
@@ -19,6 +21,7 @@
 				dataType: "jsonp",
 				success: function(json) {
 					_appVersionsDb = json;
+					setMeta();
 				}
 			});
 		} else {
@@ -26,6 +29,41 @@
 			return true;
 		}
 	};
+	
+	countlyAppVersion.refresh = function() {
+		_periodObj = countlyCommon.periodObj;
+		
+		if (!countlyCommon.DEBUG) {
+		
+			if (_activeAppKey != countlyCommon.ACTIVE_APP_KEY) {
+				_activeAppKey = countlyCommon.ACTIVE_APP_KEY;
+				return countlyAppVersion.initialize();
+			}
+		
+			return $.ajax({
+				type: "GET",
+				url: countlyCommon.READ_API_URL,
+				data: {
+					"app_key" : countlyCommon.ACTIVE_APP_KEY,
+					"method" : "app_versions",
+					"action": "refresh"
+				},
+				dataType: "jsonp",
+				success: function(json) {
+					countlyCommon.extendDbObj(_appVersionsDb, json);
+					setMeta();
+				}
+			});
+		} else {
+			_appVersionsDb = {"2012":{}};
+			return true;
+		}
+	};
+	
+	countlyAppVersion.reset = function() {
+		_appVersionsDb = {};
+		setMeta();
+	}
 	
 	countlyAppVersion.clearAppVersionsObject = function(obj) {
 		if (obj) {
@@ -41,14 +79,14 @@
 	}
 
 	countlyAppVersion.getAppVersionBars = function() {
-		return countlyCommon.extractBarData(_appVersionsDb, _appVersionsDb["app_versions"], countlyAppVersion.clearAppVersionsObject);
+		return countlyCommon.extractBarData(_appVersionsDb, _app_versions, countlyAppVersion.clearAppVersionsObject);
 	}
 	
 	countlyAppVersion.getAppVersionData = function(os) {
 		
 		var appVersionData = {chartData: {}, chartDP: {dp: [], ticks: []}};
 		
-		var tmpAppVersionData = countlyCommon.extractTwoLevelData(_appVersionsDb, _appVersionsDb["app_versions"], countlyAppVersion.clearAppVersionsObject, [
+		var tmpAppVersionData = countlyCommon.extractTwoLevelData(_appVersionsDb, _app_versions, countlyAppVersion.clearAppVersionsObject, [
 			{ 
 				name: "app_version",
 				func: function (rangeArr, dataObj) {
@@ -71,8 +109,8 @@
 		var appVersions = _.pluck(appVersionData.chartData, "app_version"),
 			appVersionTotal = _.pluck(appVersionData.chartData, 't'),
 			appVersionNew = _.pluck(appVersionData.chartData, 'n'),
-			chartDP = [{data: [], label: "Total Sessions"}, {data: [], label: "New Users"}];
-				
+			chartDP = [{data: [], label: jQuery.i18n.map["common.table.total-sessions"]}, {data: [], label: jQuery.i18n.map["common.table.new-users"]}];
+				 
 		chartDP[0]["data"][0] = [-1,null];
 		chartDP[0]["data"][appVersions.length+1] = [appVersions.length, null];
 		
@@ -88,6 +126,14 @@
 		appVersionData.chartDP.dp = chartDP;
 		
 		return appVersionData;
+	}
+	
+	function setMeta() {
+		if (_appVersionsDb['meta']) {
+			_app_versions = (_appVersionsDb['meta']['app_versions'])? _appVersionsDb['meta']['app_versions'] : [];
+		} else {
+			_app_versions = [];
+		}
 	}
 	
 }(window.countlyAppVersion = window.countlyAppVersion || {}, jQuery));

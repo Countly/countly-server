@@ -22,8 +22,38 @@ var dbMap = {
 	'duration': 'd',
 	'durations': 'ds',
 	'frequency': 'f',
-	'loyalty': 'l'
+	'loyalty': 'l',
+	'sum': 's',
+	'max': 'mx',
+	'min': 'mn',
+	'count': 'c'
 };
+
+function isNumber(n) {
+	return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+function initTimeVars(appTimezone, reqTimestamp) {
+	var tmpTimestamp;
+
+	// Check if the timestamp paramter exists in the request and is an 10 digit integer
+	if (reqTimestamp && reqTimestamp.length == 10 && isNumber(reqTimestamp)) {
+		tmpTimestamp = reqTimestamp;
+	}
+
+	// Set the timestamp to request parameter value or the current time
+	timestamp = (tmpTimestamp)? tmpTimestamp : time.time();
+
+	// Construct the a date object from the received timestamp or current time
+	now = (tmpTimestamp)? new time.Date(tmpTimestamp * 1000) : new time.Date();
+	now.setTimezone(appTimezone);
+	
+	yearly = now.getFullYear();
+	monthly = yearly + '.' + (now.getMonth() + 1);
+	daily = monthly + '.' + (now.getDate());
+	hourly = daily + '.' + (now.getHours());
+	weekly = Math.ceil(moment(now.getTime()).format("DDD") / 7);
+}
 
 // Checks app_key from the http request against "apps" collection. This is the first step of every write request to API.
 function validateAppForWriteAPI(getParams) {
@@ -32,34 +62,22 @@ function validateAppForWriteAPI(getParams) {
 			return false;
 		}
 		
-		var tmpTimestamp,
-			intRegex = /^\d+$/;
-		
-		// Check if the timestamp paramter exists in the request and is an 10 digit integer
-		if (getParams.timestamp && getParams.timestamp.length == 10 && intRegex.test(getParams.timestamp)) {
-			tmpTimestamp = getParams.timestamp;
-		}
-
-		// Set the timestamp to request parameter value or the current time
-		timestamp = (tmpTimestamp)? tmpTimestamp : time.time();
-
-		// Construct the a date object from the received timestamp or current time
-		now = (tmpTimestamp)? new time.Date(tmpTimestamp * 1000) : new time.Date();
-		appTimezone = app.timezone;
-		now.setTimezone(appTimezone);
-		
-		yearly = now.getFullYear();
-		monthly = yearly + '.' + (now.getMonth() + 1);
-		daily = monthly + '.' + (now.getDate());
-		hourly = daily + '.' + (now.getHours());
-		weekly = Math.ceil(moment(now.getTime()).format("DDD") / 7);
-		
 		getParams.app_id = app['_id'];
+		appTimezone = app['timezone']; // Global var appTimezone
+		
+		initTimeVars(appTimezone, getParams.timestamp);
+		
 		var updateSessions = {};
 		fillTimeObject(updateSessions, dbMap['events']);
 		countlyDb.collection('sessions').update({'_id': getParams.app_id}, {'$inc': updateSessions}, {'upsert': true});
 		
-		checkUserLocation(getParams);
+		if (getParams.events) {
+			processEvents(getParams);
+		} else if (getParams.session_duration) {
+			processSessionDuration(getParams);
+		} else {
+			checkUserLocation(getParams);
+		}
 	});
 }
 
@@ -69,7 +87,11 @@ function validateAppForReadAPI(getParams, callback, collection, res) {
 			res.end();
 			return false;
 		}
+		
 		getParams.app_id = app['_id'];
+		appTimezone = app['timezone']; // Global var appTimezone
+		
+		initTimeVars(appTimezone, getParams.timestamp);
 		callback(getParams, collection, res);
 	});
 }
@@ -94,7 +116,7 @@ function fillTimeObject(object, property, increment) {
 		property.substr(0,2) == (dbMap["frequency"] + ".") ||
 		property.substr(0,2) == (dbMap["loyalty"] + "."))
 	{
-		object["w" + weekly + '.' + property] = increment;
+		object[yearly + ".w" + weekly + '.' + property] = increment;
 	}
 }
 
@@ -191,7 +213,7 @@ function processSessionDurationRange(getParams, totalSessionDuration) {
 		}
 		
 		fillTimeObject(updateSessions, dbMap['durations'] + '.' + calculatedDurationRange);
-		countlyDb.collection('sessions').update({'_id': getParams.app_id}, {'$inc': updateSessions, '$addToSet': {'d-ranges': calculatedDurationRange}}, {'upsert': false});
+		countlyDb.collection('sessions').update({'_id': getParams.app_id}, {'$inc': updateSessions, '$addToSet': {'meta.d-ranges': calculatedDurationRange}}, {'upsert': false});
 		countlyDb.collection('app_users').update({'_id': getParams.app_user_id}, {'$set': {'session_duration': 0, 'app_id': getParams.app_id}}, {'upsert': true});
 }
 
@@ -279,13 +301,16 @@ function processUserSession(dbAppUser, getParams) {
 		var currentTime = new time.Date(dbAppUser.last_seen * 1000);
 		currentTime.setTimezone(appTimezone);
 		
-		var userLastSessionWeek = Math.ceil(moment(currentTime.getTime()).format("DDD") / 7);
+		var userLastSessionWeek = Math.ceil(moment(currentTime.getTime()).format("DDD") / 7),
+			userLastSessionYear = moment(currentTime.getTime()).format("YYYY");
 		
-		if (userLastSessionWeek < weekly) {
-			uniqueLevels[uniqueLevels.length] = "w" + weekly;
+		if (userLastSessionYear == yearly && userLastSessionWeek < weekly) {
+			uniqueLevels[uniqueLevels.length] = yearly + ".w" + weekly;
 		}
 		if (dbAppUser.last_seen <= (timestamp - secInMin)) {
-			uniqueLevels[uniqueLevels.length] = hourly;
+			// We don't need to put hourly fragment to the unique levels array since
+			// we will store hourly data only in sessions collection
+			updateSessions[uniqueLevels[i] + '.' + dbMap['unique']] = 1;
 		}
 		if (dbAppUser.last_seen <= (timestamp - secInHour)) {
 			uniqueLevels[uniqueLevels.length] = daily;
@@ -305,8 +330,8 @@ function processUserSession(dbAppUser, getParams) {
 		}
 		
 		if (uniqueLevels.length != 0) {
-			userRanges['f-ranges'] = calculatedFrequency;
-			userRanges['l-ranges'] = calculatedLoyaltyRange;
+			userRanges['meta.' + 'f-ranges'] = calculatedFrequency;
+			userRanges['meta.' + 'l-ranges'] = calculatedLoyaltyRange;
 			countlyDb.collection('users').update({'_id': getParams.app_id}, {'$inc': updateUsers, '$addToSet': userRanges}, {'upsert': true});
 		}
 		
@@ -324,16 +349,16 @@ function processUserSession(dbAppUser, getParams) {
 		calculatedFrequency = '0';
 		
 		fillTimeObject(updateUsers, dbMap['frequency'] + '.' + calculatedFrequency);
-		userRanges['f-ranges'] = calculatedFrequency;
+		userRanges['meta.' + 'f-ranges'] = calculatedFrequency;
 		
 		fillTimeObject(updateUsers, dbMap['loyalty'] + '.' + calculatedLoyaltyRange);
-		userRanges['l-ranges'] = calculatedLoyaltyRange;
+		userRanges['meta.' + 'l-ranges'] = calculatedLoyaltyRange;
 		
 		countlyDb.collection('users').update({'_id': getParams.app_id}, {'$inc': updateUsers, '$addToSet': userRanges}, {'upsert': true});
 	}
 	
 	countlyDb.collection('sessions').update({'_id': getParams.app_id}, {'$inc': updateSessions}, {'upsert': true});
-	countlyDb.collection('locations').update({'_id': getParams.app_id}, {'$inc': updateLocations, '$addToSet': {'countries': getParams.user.country }}, {'upsert': true});
+	countlyDb.collection('locations').update({'_id': getParams.app_id}, {'$inc': updateLocations, '$addToSet': {'meta.countries': getParams.user.country}}, {'upsert': true});
 	countlyDb.collection('app_users').update({'_id': getParams.app_user_id}, {'$inc': {'session_count': 1}, '$set': { 'last_seen': timestamp, 'app_id': getParams.app_id }}, {'upsert': true});
 	
 	processPredefinedMetrics(getParams, isNewUser, uniqueLevels);
@@ -361,9 +386,9 @@ function processPredefinedMetrics(getParams, isNewUser, uniqueLevels) {
 				recvMetricValue = getParams.metrics[tmpMetric.name];
 				
 			if (recvMetricValue) {
-				var escapedMetricVal = recvMetricValue.replace(/([.$])/mg, ":");
+				var escapedMetricVal = recvMetricValue.replace(/^\$/, "").replace(/\./g, ":");
 				needsUpdate = true;
-				tmpSet[tmpMetric.set] = escapedMetricVal;
+				tmpSet["meta." + tmpMetric.set] = escapedMetricVal;
 				fillTimeObject(tmpTimeObj, escapedMetricVal + '.' + dbMap['total']);
 				
 				if (isNewUser) {
@@ -383,15 +408,272 @@ function processPredefinedMetrics(getParams, isNewUser, uniqueLevels) {
 	}
 }
 
-var fetchTimeData = function(getParams, collection, res) {
-	countlyDb.collection(collection).findOne({'_id' : getParams.app_id}, function(err, result){
+function mergeEvents(obj1, obj2) {
+	for (var level1 in obj2) {
+		if (!obj1[level1]) {
+			obj1[level1] = obj2[level1];
+			continue;
+		}
 		
+		for (var level2 in obj2[level1]) {
+			if (obj1[level1][level2]) {
+				obj1[level1][level2] += obj2[level1][level2];
+			} else {
+				obj1[level1][level2] = obj2[level1][level2];
+			}
+		}
+	}
+}
+
+// Adds item to array arr if it is not already present
+function arrayAddUniq(arr, item) {
+	if (arr.indexOf(item) == -1) {
+		arr[arr.length] = item;
+	}
+};
+
+function processEvents(getParams) {
+	if (!getParams.events) {
+		return false;
+	}
+	
+	var events = [],
+		eventCollections = {},
+		eventSegments = {},
+		tmpEventObj = {},
+		shortCollectionName = "",
+		eventCollectionName = "";
+	
+	for (var i=0; i < getParams.events.length; i++) {
+		
+		var currEvent = getParams.events[i];
+		tmpEventObj = {};
+		tmpEventColl = {};
+	
+		// Key and count fields are required
+		if (!currEvent.key || !currEvent.count || !isNumber(currEvent.count)) {
+			continue;
+		}
+		
+		// Mongodb collection names can not contain system. or $
+		shortCollectionName = currEvent.key.replace(/system\.|\$/g, "");
+		eventCollectionName = shortCollectionName + getParams.app_id;
+		
+		// Mongodb collection names can not be longer than 128 characters
+		if (eventCollectionName.length > 128) {
+			continue;
+		}
+		
+		// If present use timestamp inside each event while recording
+		if (getParams.events[i].timestamp) {
+			initTimeVars(appTimezone, getParams.events[i].timestamp);
+		}
+		
+		arrayAddUniq(events, shortCollectionName);
+		
+		if (currEvent.sum && isNumber(currEvent.sum)) {
+			fillTimeObject(tmpEventObj, dbMap['sum'], currEvent.sum);
+		}
+		fillTimeObject(tmpEventObj, dbMap['count'], currEvent.count);
+		
+		tmpEventColl["no-segment"] = tmpEventObj;
+		
+		if (currEvent.segmentation) {
+			for (var segKey in currEvent.segmentation) {
+			
+				if (!currEvent.segmentation[segKey]) {
+					continue;
+				}
+			
+				tmpEventObj = {};
+				var tmpSegVal = currEvent.segmentation[segKey];
+				
+				// Mongodb field names can't start with $ or contain .
+				tmpSegVal = tmpSegVal.replace(/^\$/, "").replace(/\./g, ":");
+
+				if (currEvent.sum && isNumber(currEvent.sum)) {
+					fillTimeObject(tmpEventObj, tmpSegVal + '.' + dbMap['sum'], currEvent.sum);
+				}
+				fillTimeObject(tmpEventObj, tmpSegVal + '.' + dbMap['count'], currEvent.count);
+				
+				if (!eventSegments[eventCollectionName]) {
+					eventSegments[eventCollectionName] = {};
+				}
+				
+				if (!eventSegments[eventCollectionName]['meta.' + segKey]) {
+					eventSegments[eventCollectionName]['meta.' + segKey] = {};
+				}
+				
+				if (eventSegments[eventCollectionName]['meta.' + segKey]["$each"] && eventSegments[eventCollectionName]['meta.' + segKey]["$each"].length) {
+					arrayAddUniq(eventSegments[eventCollectionName]['meta.' + segKey]["$each"], tmpSegVal);
+				} else {
+					eventSegments[eventCollectionName]['meta.' + segKey]["$each"] = [tmpSegVal];
+				}
+				
+				if (!eventSegments[eventCollectionName]["meta.segments"]) {
+					eventSegments[eventCollectionName]["meta.segments"] = {};
+					eventSegments[eventCollectionName]["meta.segments"]["$each"] = [];
+				}
+				
+				arrayAddUniq(eventSegments[eventCollectionName]["meta.segments"]["$each"], segKey);
+				tmpEventColl[segKey] = tmpEventObj;
+			}
+		} else if (currEvent.seg_val && currEvent.seg_key) {
+			tmpEventObj = {};
+			
+			// Mongodb field names can't start with $ or contain .
+			currEvent.seg_val = currEvent.seg_val.replace(/^\$/, "").replace(/\./g, ":");
+
+			if (currEvent.sum && isNumber(currEvent.sum)) {
+				fillTimeObject(tmpEventObj, currEvent.seg_val + '.' + dbMap['sum'], currEvent.sum);
+			}
+			fillTimeObject(tmpEventObj, currEvent.seg_val + '.' + dbMap['count'], currEvent.count);
+			
+			if (!eventSegments[eventCollectionName]) {
+				eventSegments[eventCollectionName] = {};
+			}
+			
+			if (!eventSegments[eventCollectionName]['meta.' + currEvent.seg_key]) {
+				eventSegments[eventCollectionName]['meta.' + currEvent.seg_key] = {};
+			}
+			
+			if (eventSegments[eventCollectionName]['meta.' + currEvent.seg_key]["$each"] && eventSegments[eventCollectionName]['meta.' + currEvent.seg_key]["$each"].length) {
+				arrayAddUniq(eventSegments[eventCollectionName]['meta.' + currEvent.seg_key]["$each"], currEvent.seg_val);
+			} else {
+				eventSegments[eventCollectionName]['meta.' + currEvent.seg_key]["$each"] = [currEvent.seg_val];
+			}
+			
+			if (!eventSegments[eventCollectionName]["meta.segments"]) {
+				eventSegments[eventCollectionName]["meta.segments"] = {};
+				eventSegments[eventCollectionName]["meta.segments"]["$each"] = [];
+			}
+			
+			arrayAddUniq(eventSegments[eventCollectionName]["meta.segments"]["$each"], currEvent.seg_key);
+			tmpEventColl[currEvent.seg_key] = tmpEventObj;
+		}
+		
+		if (!eventCollections[eventCollectionName]) {
+			eventCollections[eventCollectionName] = {};
+		}
+		
+		mergeEvents(eventCollections[eventCollectionName], tmpEventColl);
+	}
+	
+	for (var collection in eventCollections) {
+		for (var segment in eventCollections[collection]) {
+			if (segment == "no-segment") {
+				if (eventSegments[collection]) {
+					countlyDb.collection(collection).update({'_id': segment}, {'$inc': eventCollections[collection][segment], '$addToSet': eventSegments[collection]}, {'upsert': true});
+				} else {
+					countlyDb.collection(collection).update({'_id': segment}, {'$inc': eventCollections[collection][segment]}, {'upsert': true});
+				}
+			} else {
+				countlyDb.collection(collection).update({'_id': segment}, {'$inc': eventCollections[collection][segment]}, {'upsert': true});
+			}
+		}
+	}
+	
+	if (events.length) {
+		var eventSegmentList = {'$addToSet': {'list': {'$each': events}}};
+		
+		for (var event in eventSegments) {
+			if (!eventSegmentList['$addToSet']["segments." + event.replace(getParams.app_id, "")]) {
+				eventSegmentList['$addToSet']["segments." + event.replace(getParams.app_id, "")] = {};
+			}
+		
+			if (eventSegments[event]['meta.segments']) {
+				eventSegmentList['$addToSet']["segments." + event.replace(getParams.app_id, "")] = eventSegments[event]['meta.segments'];
+			}
+		}
+
+		countlyDb.collection('events').update({'_id': getParams.app_id}, eventSegmentList, {'upsert': true});
+	}
+}
+
+var preFetchEventData = function(getParams, collection, res) {
+	if (!getParams.event) {
+		countlyDb.collection('events').findOne({'_id' : getParams.app_id}, function(err, result){
+			if (result && result.list) {
+				collection = result.list[0];
+				fetchEventData(getParams, collection + getParams.app_id, res);
+			} else {			
+				if (getParams.callback) {
+					result = getParams.callback + "({})";
+				} else {
+					result = {};
+				}
+			
+				res.writeHead(200, {'Content-Type': 'application/json'});
+				res.write(result);
+				res.end();
+			}
+		});
+	} else {
+		fetchEventData(getParams, getParams.event + getParams.app_id, res);
+	}
+}
+
+var fetchEventData = function(getParams, collection, res) {
+	var fetchFields = {};
+
+	if (getParams.action == "refresh") {
+		fetchFields[daily] = 1;
+		fetchFields['meta'] = 1;
+	}
+
+	countlyDb.collection(collection).find({}, fetchFields).toArray(function(err, result){
+		if (!result.length) {
+			now = new time.Date();
+			result = {};
+			result[now.getFullYear()] = {};
+		}
+		
+		if (getParams.callback) {
+			result = getParams.callback + "(" + JSON.stringify(result) + ")";
+		} else {
+			result = JSON.stringify(result);
+		}
+				
+		res.writeHead(200, {'Content-Type': 'application/json'});
+		res.write(result);
+		res.end();
+	});
+}
+
+var fetchCollection = function(getParams, collection, res) {
+	countlyDb.collection(collection).findOne({'_id' : getParams.app_id}, function(err, result){
+		if (!result) {
+			result = {};
+		}
+		
+		if (getParams.callback) {
+			result = getParams.callback + "(" + JSON.stringify(result) + ")";
+		} else {
+			result = JSON.stringify(result);
+		}
+				
+		res.writeHead(200, {'Content-Type': 'application/json'});
+		res.write(result);
+		res.end();
+	});
+}
+
+var fetchTimeData = function(getParams, collection, res) {
+
+	var fetchFields = {};
+
+	if (getParams.action == "refresh") {		
+		fetchFields[daily] = 1;
+		fetchFields['meta'] = 1;
+	}
+
+	countlyDb.collection(collection).findOne({'_id' : getParams.app_id}, fetchFields, function(err, result){
 		if (!result) {
 			now = new time.Date();
 			result = {};
 			result[now.getFullYear()] = {};
 		}
-				
+		
 		if (getParams.callback) {
 			result = getParams.callback + "(" + JSON.stringify(result) + ")";
 		} else {
@@ -418,6 +700,7 @@ http.Server(function(req, res) {
 					'sdk_version': queryString.sdk_version,
 					'device_id': queryString.device_id,
 					'metrics': queryString.metrics,
+					'events': queryString.events,
 					'session_duration': queryString.session_duration,
 					'session_duration_total': queryString.session_duration_total,
 					'is_begin_session': queryString.begin_session,
@@ -451,7 +734,13 @@ http.Server(function(req, res) {
 						getParams.metrics["_os_version"] = getParams.metrics["_os"][0].toLowerCase() + getParams.metrics["_os_version"];
 					}
 					
-				} catch (SyntaxError) { console.log('Parse metrics JSON failed') }
+				} catch (SyntaxError) { console.log('Parse metrics JSON failed'); }
+			}
+			
+			if (getParams.events) {
+				try {
+					getParams.events = JSON.parse(getParams.events);
+				} catch (SyntaxError) { console.log('Parse events JSON failed'); }
 			}
 			
 			validateAppForWriteAPI(getParams);
@@ -465,7 +754,9 @@ http.Server(function(req, res) {
 			var getParams = {
 					'app_key': queryString.app_key,
 					'method': queryString.method,
-					'callback': queryString.callback
+					'event': queryString.event,
+					'callback': queryString.callback,
+					'action': queryString.action
 				};
 				
 			if (!getParams.app_key) {
@@ -473,7 +764,7 @@ http.Server(function(req, res) {
 				res.end();
 				return false;
 			}
-			
+
 			switch (getParams.method) {
 				case 'locations':
 				case 'sessions':
@@ -483,6 +774,12 @@ http.Server(function(req, res) {
 				case 'carriers':
 				case 'app_versions':
 					validateAppForReadAPI(getParams, fetchTimeData, getParams.method, res);
+					break;
+				case 'events':
+					validateAppForReadAPI(getParams, preFetchEventData, getParams.method, res);
+					break;
+				case 'get_events':
+					validateAppForReadAPI(getParams, fetchCollection, 'events', res);
 					break;
 				default:
 					res.writeHead(400);

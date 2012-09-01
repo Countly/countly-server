@@ -2,7 +2,9 @@
 
 	//Private Properties
 	var _periodObj = {},
-		_deviceDb = {};
+		_deviceDb = {},
+		_devices = [],
+		_activeAppKey = 0;
 		
 	//Public Methods
 	countlyDevice.initialize = function() {
@@ -19,6 +21,7 @@
 				dataType: "jsonp",
 				success: function(json) {
 					_deviceDb = json;
+					setMeta();
 				}
 			});
 		} else {
@@ -27,9 +30,44 @@
 		}
 	};
 	
+	countlyDevice.refresh = function() {
+		_periodObj = countlyCommon.periodObj;
+		
+		if (!countlyCommon.DEBUG) {
+			
+			if (_activeAppKey != countlyCommon.ACTIVE_APP_KEY) {
+				_activeAppKey = countlyCommon.ACTIVE_APP_KEY;
+				return countlyDevice.initialize();
+			}
+		
+			return $.ajax({
+				type: "GET",
+				url: countlyCommon.READ_API_URL,
+				data: {
+					"app_key" : countlyCommon.ACTIVE_APP_KEY,
+					"method" : "devices",
+					"action" : "refresh"
+				},
+				dataType: "jsonp",
+				success: function(json) {
+					countlyCommon.extendDbObj(_deviceDb, json);
+					setMeta();
+				}
+			});
+		} else {
+			_deviceDb = {"2012":{}};
+			return true;
+		}
+	};
+	
+	countlyDevice.reset = function() {
+		_deviceDb = {};
+		setMeta();
+	}
+	
 	countlyDevice.getDeviceData = function() {
 		
-		var chartData = countlyCommon.extractTwoLevelData(_deviceDb, _deviceDb["devices"], countlyDevice.clearDeviceObject, [
+		var chartData = countlyCommon.extractTwoLevelData(_deviceDb, _devices, countlyDevice.clearDeviceObject, [
 			{ 
 				name: "device",
 				func: function (rangeArr, dataObj) {
@@ -79,7 +117,7 @@
 			ticks = [],
 			rangeUsers;
 			
-		for(var j = 0; j < _deviceDb["devices"].length; j++) {
+		for(var j = 0; j < _devices.length; j++) {
 		
 			rangeUsers = 0;
 		
@@ -161,4 +199,11 @@
 		return fullName;
 	}
 	
+	function setMeta() {
+		if (_deviceDb['meta']) {
+			_devices = (_deviceDb['meta']['devices'])? _deviceDb['meta']['devices'] : [];
+		} else {
+			_devices = [];
+		}
+	}
 }(window.countlyDevice = window.countlyDevice || {}, jQuery));

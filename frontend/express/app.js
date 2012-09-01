@@ -26,6 +26,37 @@ function isGlobalAdmin(req) {
 	}
 }
 
+function sortBy(arrayToSort, sortList) {
+	
+	if (!sortList.length) {
+		return arrayToSort;
+	}
+	
+	var tmpArr = [],
+		retArr = [];
+	
+	for (var i=0; i < arrayToSort.length; i++) {
+		var objId = arrayToSort[i]["_id"] + "";
+		if (sortList.indexOf(objId) !== -1) {
+			tmpArr[sortList.indexOf(objId)] = arrayToSort[i];
+		}
+	}
+	
+	for (var i=0; i < tmpArr.length; i++) {
+		if (tmpArr[i]) {
+			retArr[retArr.length] = tmpArr[i];
+		}
+	}
+	
+	for (var i=0; i < arrayToSort.length; i++) {
+		if (retArr.indexOf(arrayToSort[i]) === -1) {
+			retArr[retArr.length] = arrayToSort[i];
+		}
+	}
+
+	return retArr;
+}
+
 var app = module.exports = express.createServer();
 
 app.configure(function() {
@@ -148,24 +179,32 @@ app.get('/dashboard', function(req, res, next) {
 					});
 				}
 				
-				function renderDashboard() {					
-					req.session.uid = member["_id"];
-					req.session.gadm = (member["global_admin"] == true);
-					res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
-					
-					res.expose({
-						"apps": countlyGlobalApps,
-						"admin_apps": countlyGlobalAdminApps,
-						"csrf_token": req.session._csrf
-					}, 'countlyGlobal');
-					
-					res.render('dashboard', { 
-						adminOfApps: adminOfApps,
-						userOfApps: userOfApps,
-						member: {
-							username: member["username"],
-							global_admin: (member["global_admin"] == true)
+				function renderDashboard() {
+					countlyDb.collection('settings').findOne({}, function(err, settings) {
+						
+						req.session.uid = member["_id"];
+						req.session.gadm = (member["global_admin"] == true);
+						res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+						
+						res.expose({
+							"apps": countlyGlobalApps,
+							"admin_apps": countlyGlobalAdminApps,
+							"csrf_token": req.session._csrf
+						}, 'countlyGlobal');
+						
+						if (settings && !err) {
+							adminOfApps = sortBy(adminOfApps, settings.appSortList);
+							userOfApps = sortBy(userOfApps, settings.appSortList);
 						}
+						
+						res.render('dashboard', { 
+							adminOfApps: adminOfApps,
+							userOfApps: userOfApps,
+							member: {
+								username: member["username"],
+								global_admin: (member["global_admin"] == true)
+							}
+						});
 					});
 				}
 			} else {
@@ -221,18 +260,18 @@ app.get('/reset/:prid', function(req, res, next) {
 			
 			if (passwordReset && !err) {
 				if (timestamp > (passwordReset.timestamp + 600)) {
-					req.flash('info', 'Invalid password reset request');
+					req.flash('info', 'reset.invalid');
 					res.redirect('/forgot');
 				} else {
 					res.render('reset', { "csrf": req.session._csrf, "prid": req.params.prid, "message": "" });
 				}
 			} else {
-				req.flash('info', 'Invalid password reset request');
+				req.flash('info', 'reset.invalid');
 				res.redirect('/forgot');
 			}
 		});
 	} else {
-		req.flash('info', 'Invalid password reset request');
+		req.flash('info', 'reset.invalid');
 		res.redirect('/forgot');
 	}
 });
@@ -243,7 +282,7 @@ app.post('/reset', function(req, res, next) {
 		
 		countlyDb.collection('password_reset').findOne({prid: req.body.prid}, function(err, passwordReset){
 			countlyDb.collection('members').update({_id: passwordReset.user_id}, {'$set': { "password": password }}, function(err, member){
-				req.flash('info', 'You can login with your new password!');
+				req.flash('info', 'reset.result');
 				res.redirect('/login');
 			});
 			
@@ -286,10 +325,10 @@ app.post('/forgot', function(req, res, next) {
 						console.log('/forgot email sent successfully!');
 					});
 					
-					res.render('forgot', { "message": "You will receive an email shortly if the email you entered exists in the system", "csrf": req.session._csrf });
+					res.render('forgot', { "message": "forgot.result", "csrf": req.session._csrf });
 				});
 			} else {
-				res.render('forgot', { "message": "You will receive an email shortly if the email you entered exists in the system", "csrf": req.session._csrf });
+				res.render('forgot', { "message": "forgot.result", "csrf": req.session._csrf });
 			}
 		});
 	} else {
@@ -327,13 +366,35 @@ app.post('/login', function(req, res, next) {
 				req.session.gadm = (member["global_admin"] == true);
 				res.redirect('/dashboard');
 			} else {
-				res.render('login', { "message": "Login Failed", "csrf": req.session._csrf });
+				res.render('login', { "message": "login.result", "csrf": req.session._csrf });
 			}
 		});
 	} else {
-		res.render('login', { "message": "Login Failed", "csrf": req.session._csrf });
+		res.render('login', { "message": "login.result", "csrf": req.session._csrf });
 		res.end();
 	}
+});
+
+app.post('/dashboard/settings', function(req, res, next) {
+
+	if (!req.session.uid) {
+		res.end();
+		return false;
+	}
+	
+	if(!isGlobalAdmin(req)) {
+		res.end();
+		return false;
+	}
+
+	var newAppOrder = req.body.app_sort_list;
+	
+	if (!newAppOrder || newAppOrder.length == 0) {
+		res.end();
+		return false;
+	}
+	
+	countlyDb.collection('settings').update({}, {'$set': {'appSortList': newAppOrder}}, {'upsert': true});
 });
 
 app.post('/apps/all', function(req, res, next) {
@@ -465,6 +526,16 @@ app.post('/apps/delete', function(req, res, next) {
 		countlyDb.collection('device_details').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 		countlyDb.collection('app_versions').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 		
+		countlyDb.collection('events').findOne({"_id": countlyDb.ObjectID(req.body.app_id)}, function(err, events) {
+			if (!err && events && events.list) {
+				for (var i = 0; i < events.list.length; i++) {
+					countlyDb.collection(events.list[i] + req.body.app_id).drop();
+				}
+				
+				countlyDb.collection('events').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
+			}
+		});
+		
 		res.send(true);
 	});
 });
@@ -489,6 +560,14 @@ app.post('/apps/reset', function(req, res, next) {
 	countlyDb.collection('device_details').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 	countlyDb.collection('app_versions').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 
+	countlyDb.collection('events').findOne({"_id": countlyDb.ObjectID(req.body.app_id)}, function(err, events) {
+		if (!err && events && events.list) {
+			for (var i = 0; i < events.list.length; i++) {
+				countlyDb.collection(events.list[i] + req.body.app_id).drop();
+			}
+		}
+	});
+	
 	res.send(true);
 });
 
@@ -818,6 +897,30 @@ app.post('/users/check/username', function(req, res, next) {
 			res.send(true);
 		}
 	});
+});
+
+app.post('/events/map/edit', function(req, res, next) {
+	if (!req.session.uid || !req.body.app_id) {
+		res.end();
+		return false;
+	}
+	
+	if(!isGlobalAdmin(req)) {
+		countlyDb.collection('members').findOne({"_id": countlyDb.ObjectID(req.session.uid)}, function(err, member){
+			if (!err && member.admin_of && member.admin_of.indexOf(req.body.app_id) != -1) {
+				countlyDb.collection('events').update({"_id": countlyDb.ObjectID(req.body.app_id)}, {'$set': {"map": req.body.event_map}}, function(err, events) {});
+				res.send(true);
+				return true;
+			} else {
+				res.send(false);
+				return false;
+			}
+		});
+	} else {
+		countlyDb.collection('events').update({"_id": countlyDb.ObjectID(req.body.app_id)}, {'$set': {"map": req.body.event_map}}, function(err, events) {});
+		res.send(true);
+		return true;
+	}
 });
 
 app.listen(countlyConfig.web.port);

@@ -22,14 +22,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 #stop countly
 stop countly-supervisor
 
-#create api configuration file from sample
-cp $DIR/../api/config.sample.js $DIR/../api/config.js
-
-#add platform prefix to all platform versions stored in device_details collection
-mongo countly $DIR/platform.versions.fix.js
-
-#modify escaped single quotes
-mongo countly $DIR/escape.fix.js
+#update all mongo collections for 12.08
+mongo countly $DIR/updateCollections.js
 
 #start countly
 start countly-supervisor

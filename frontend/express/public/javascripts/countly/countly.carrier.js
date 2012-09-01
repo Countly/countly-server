@@ -2,7 +2,9 @@
 
 	//Private Properties
 	var _periodObj = {},
-		_carrierDb = {};
+		_carrierDb = {},
+		_carriers = [],
+		_activeAppKey = 0;
 		
 	//Public Methods
 	countlyCarrier.initialize = function() {
@@ -19,6 +21,38 @@
 				dataType: "jsonp",
 				success: function(json) {
 					_carrierDb = json;
+					setMeta();
+				}
+			});
+		} else {
+			_carrierDb = {"2012":{}};
+
+			return true;
+		}
+	};
+	
+	countlyCarrier.refresh = function() {
+		_periodObj = countlyCommon.periodObj;
+		
+		if (!countlyCommon.DEBUG) {
+		
+			if (_activeAppKey != countlyCommon.ACTIVE_APP_KEY) {
+				_activeAppKey = countlyCommon.ACTIVE_APP_KEY;
+				return countlyCarrier.initialize();
+			}
+		
+			return $.ajax({
+				type: "GET",
+				url: countlyCommon.READ_API_URL,
+				data: {
+					"app_key" : countlyCommon.ACTIVE_APP_KEY,
+					"method" : "carriers",
+					"action": "refresh"
+				},
+				dataType: "jsonp",
+				success: function(json) {
+					countlyCommon.extendDbObj(_carrierDb, json);
+					setMeta();
 				}
 			});
 		} else {
@@ -28,9 +62,14 @@
 		}
 	};
 
+	countlyCarrier.reset = function() {
+		_carrierDb = {};
+		setMeta();
+	}
+	
 	countlyCarrier.getCarrierData = function() {
 		
-		var chartData = countlyCommon.extractTwoLevelData(_carrierDb, _carrierDb["carriers"], countlyCarrier.clearCarrierObject, [
+		var chartData = countlyCommon.extractTwoLevelData(_carrierDb, _carriers, countlyCarrier.clearCarrierObject, [
 			{ 
 				name: "carrier",
 				func: function (rangeArr, dataObj) {
@@ -85,7 +124,14 @@
 	}
 	
 	countlyCarrier.getCarrierBars = function() {		
-		return countlyCommon.extractBarData(_carrierDb, _carrierDb["carriers"], countlyCarrier.clearCarrierObject);
+		return countlyCommon.extractBarData(_carrierDb, _carriers, countlyCarrier.clearCarrierObject);
 	}
 	
+	function setMeta() {
+		if (_carrierDb['meta']) {
+			_carriers = (_carrierDb['meta']['carriers'])? _carrierDb['meta']['carriers'] : [];
+		} else {
+			_carriers = [];
+		}
+	}
 }(window.countlyCarrier = window.countlyCarrier || {}, jQuery));
