@@ -14,7 +14,7 @@ If you feel like doing things manually you can take a look at the installation a
 
 ##How do I upgrade my Countly server?
 
-countly-server package includes an upgrade script (`bin/countly.upgrade.sh`) that takes care of the upgrade process. [See this tutorial](http://support.count.ly/kb/web-installation/upgrading-countly-server-to-v1207-from-v1206) if you would like to perform the upgrade manually (12.06 to 12.07).
+countly-server package includes an upgrade script (`bin/countly.upgrade.sh`) that takes care of the upgrade process. [See this tutorial](http://support.count.ly/kb/web-installation/upgrading-countly-server-to-v1208-from-v1207) if you would like to perform the upgrade manually (12.07 to 12.08).
 
 ##API & Frontend
 

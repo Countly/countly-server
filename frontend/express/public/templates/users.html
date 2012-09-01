@@ -24,6 +24,36 @@ $(document).ready(function() {
 		currUsername = "",
 		currEmail = "";
 
+	// translate help module
+	$("[data-help-localize]").each(function() {
+		var elem = $(this);
+		if (elem.data("help-localize") != undefined) {
+			elem.data("help", countlyCommon.HELP_MAP[elem.data("help-localize")]);
+		}
+	});
+	
+	// translate dashboard
+	$("[data-localize]").each(function() {
+		var elem = $(this);
+		elem.text(jQuery.i18n.map[elem.data("localize")]);				
+	});
+	
+	if ($("#help-toggle").hasClass("active")) {
+		$('.help-zone-vb').tipsy({gravity: $.fn.tipsy.autoNS, trigger: 'manual', title: function(){ return ($(this).data("help"))? $(this).data("help") : ""; }, fade: true, offset: 5, cssClass: 'yellow', opacity: 1, html: true});
+		$('.help-zone-vs').tipsy({gravity: $.fn.tipsy.autoNS, trigger: 'manual', title: function(){ return ($(this).data("help"))? $(this).data("help") : ""; }, fade: true, offset: 5, cssClass: 'yellow narrow', opacity: 1, html: true});
+		
+		$.idleTimer('destroy');
+		clearInterval(self.refreshActiveView);
+		$(".help-zone-vs, .help-zone-vb").hover(
+			function () {
+				$(this).tipsy("show");
+			}, 
+			function () {
+				$(this).tipsy("hide");
+			}
+		);
+	}
+	
 	function closeActiveEdit() {
 		if (previousUserDetails) {
 			previousUserDetails.replaceWith(userDetailsClone);
@@ -139,7 +169,7 @@ $(document).ready(function() {
 			currUserDetails.find(".email-text").after(reqSpan.clone());
 		} else if (!validateEmail(data.email)) {
 			$(".email-check").remove();
-			var invalidSpan = $("<span class='email-check red-text'>").html("invalid email");
+			var invalidSpan = $("<span class='email-check red-text'>").html(jQuery.i18n.map["management-users.email.invalid"]);
 			currUserDetails.find(".email-text").after(invalidSpan.clone());
 		}
 		
@@ -220,13 +250,13 @@ $(document).ready(function() {
 		}
 		
 		if (changedPassword) {
-			CountlyHelpers.confirm("You have changed " + data.full_name + "'s password. Do you want a notification email to be sent?", "black", function(result) {
+			CountlyHelpers.confirm(jQuery.i18n.prop('management-users.password-change-confirm', data.full_name), "black", function(result) {
 				if (result) {
 					data.send_notification = true;
 				}
 				
 				saveUser();
-			}, ["No", "Yes"]);
+			}, [jQuery.i18n.map["common.no"], jQuery.i18n.map["common.yes"]]);
 		} else {
 			saveUser();
 		}
@@ -242,12 +272,7 @@ $(document).ready(function() {
 					if (currUserDetails.find(".delete-user").length == 0) {
 						$("#menu-username").text(data.username);
 					}
-					
-					currUserDetails.hide();
-					var userViewRow = currUserDetails.prev("tr");
-					userViewRow.find(".user-full-name").text(data.full_name);
-					userViewRow.find(".user-username").text(data.username);
-					userViewRow.find(".user-email").text(data.email);
+					app.activeView.render();
 				}
 			});
 		}
@@ -261,7 +286,7 @@ $(document).ready(function() {
 	
 		$(this).next(".required").remove();
 	
-		var existSpan = $("<span class='username-check red-text'>").html("username exists"),
+		var existSpan = $("<span class='username-check red-text'>").html(jQuery.i18n.map["management-users.username.exists"]),
 			notExistSpan = $("<span class='username-check green-text'>").html("&#10004;"),
 			data = {};
 		
@@ -294,12 +319,12 @@ $(document).ready(function() {
 		
 		if (!validateEmail($(this).val())) {
 			$(".email-check").remove();
-			var invalidSpan = $("<span class='email-check red-text'>").html("invalid email");
+			var invalidSpan = $("<span class='email-check red-text'>").html(jQuery.i18n.map["management-users.email.invalid"]);
 			$(this).after(invalidSpan.clone());
 			return false;
 		}
 		
-		var existSpan = $("<span class='email-check red-text'>").html("email exists"),
+		var existSpan = $("<span class='email-check red-text'>").html(jQuery.i18n.map["management-users.email.exists"]),
 			notExistSpan = $("<span class='email-check green-text'>").html("&#10004;"),
 			data = {};
 		
@@ -331,7 +356,12 @@ $(document).ready(function() {
 		var fullName = currUserDetails.find(".full-name-text").val();
 	
 		var self = $(this);
-		CountlyHelpers.confirm("You are about to delete " + fullName + "'s account. Do you want to continue?", "red", function() {
+		CountlyHelpers.confirm(jQuery.i18n.prop('management-users.delete-confirm', fullName), "red", function(result) {
+			
+			if (!result) {
+				return false;
+			}
+		
 			var data = {};
 			data.user_ids = [];
 			data.user_ids[0] = self.parent(".button-container").find(".user_id").val();
@@ -486,9 +516,10 @@ $(document).ready(function() {
 <table id="user-table" cellspacing="0" class="d-table">
 	<thead>
 		<tr>
-			<th>Full Name</th>
-			<th>Username</th>
-			<th>Email</th>
+			<th data-localize="management-users.full-name"></th>
+			<th data-localize="management-users.username"></th>
+			<th data-localize="management-users.role"></th>
+			<th data-localize="management-users.email"></th>
 		</tr>
 	</thead>
 	<tbody>
@@ -496,42 +527,57 @@ $(document).ready(function() {
 		<tr>
 			<td class="user-full-name">{{this.full_name}}</td>
 			<td class="user-username">{{this.username}}</td>
+			<td class="user-role">
+				{{#if this.global_admin}}
+					<span data-localize="management-users.global-admin"></span>
+				{{else}}
+					{{#if this.admin_of}}
+						<span data-localize="management-users.admin"></span>
+					{{else}}
+						{{#if this.user_of}}
+							<span data-localize="management-users.user"></span>
+						{{else}}
+							<span data-localize="management-users.no-role"></span>
+						{{/if}}
+					{{/if}}
+				{{/if}}
+			</td>
 			<td>
 				<div>
 					<span class="user-email">{{this.email}}</span>
-					<div class="help-edit">Click to edit</div>
-					<div class="help-close">Click to close</div>
+					<div class="help-edit" data-localize="management-users.edit"></div>
+					<div class="help-close" data-localize="management-users.close"></div>
 				</div>
 			</td>
 		</tr>
 		<tr class="user-details">
-			<td colspan="3">
+			<td colspan="4">
 				<div>
-					<div class="row">
-						<div class="title">Full Name</div>
+					<div class="row help-zone-vs" data-help-localize="manage-users.full-name">
+						<div class="title" data-localize="management-users.full-name"></div>
 						<div class="detail"><input class="full-name-text" type="text" value="{{this.full_name}}"/></div>
 					</div>
-					<div class="row">
-						<div class="title">Username</div>
+					<div class="row help-zone-vs" data-help-localize="manage-users.username">
+						<div class="title" data-localize="management-users.username"></div>
 						<div class="detail">
 							<input class="username-text" type="text" value="{{this.username}}"/><br/>
-							<div class="small-link change-password">Change password</div>
+							<div class="small-link change-password" data-localize="management-users.change-password"></div>
 						</div>
 					</div>
 					<div class="row password-row">
-						<div class="title">Password</div>
+						<div class="title" data-localize="management-users.password"></div>
 						<div class="detail">
 							<input class="password-text" type="text" value=""/><br/>
-							<div class="small-link generate-password">Generate password</div>
+							<div class="small-link generate-password" data-localize="management-users.generate-password"></div>
 						</div>
 					</div>
-					<div class="row">
-						<div class="title">Email</div>
+					<div class="row help-zone-vs" data-help-localize="manage-users.email">
+						<div class="title" data-localize="management-users.email"></div>
 						<div class="detail"><input class="email-text" type="text" value="{{this.email}}"/></div>
 					</div>
 					{{#unless this.is_current_user}}
-					<div class="row">
-						<div class="title">Global Admin</div>
+					<div class="row help-zone-vs" data-help-localize="manage-users.global-admin">
+						<div class="title" data-localize="management-users.global-admin"></div>
 						<div class="detail">
 							<div class="option">
 								<div class="global-admin checkbox {{#if this.global_admin}} checked {{/if}}"></div>
@@ -539,8 +585,8 @@ $(document).ready(function() {
 							</div>
 						</div>
 					</div>
-					<div class="row admin-apps" {{#if this.global_admin}}style="display:none;"{{/if}}>
-						<div class="title">Admin of</div>
+					<div class="row admin-apps help-zone-vs" data-help-localize="manage-users.admin-of" {{#if this.global_admin}}style="display:none;"{{/if}}>
+						<div class="title" data-localize="management-users.admin-of"></div>
 						<div class="select-apps">
 							<input type="hidden" value="{{this.admin_of}}" class="app-list"/>
 						</div>
@@ -548,13 +594,13 @@ $(document).ready(function() {
 							{{#if this.admin_of}}
 								{{#appIdsToNames this.admin_of}}{{/appIdsToNames}}
 							{{else}}
-							<span>User is not the administrator of any application...</span>
+							<span data-localize="management-users.admin-of.tip"></span>
 							{{/if}}
 						</div>
-						<div class="no-apps">User is not the administrator of any application...</div>
+						<div class="no-apps" data-localize="management-users.admin-of.tip"></div>
 					</div>
-					<div class="row user-apps" {{#if this.global_admin}}style="display:none;"{{/if}}>
-						<div class="title">User of</div>
+					<div class="row user-apps help-zone-vs" data-help-localize="manage-users.user-of" {{#if this.global_admin}}style="display:none;"{{/if}}>
+						<div class="title" data-localize="management-users.user-of"></div>
 						<div class="select-apps">
 							<input type="hidden" value="{{this.user_of}}" class="app-list"/>
 						</div>
@@ -562,18 +608,18 @@ $(document).ready(function() {
 							{{#if this.user_of}}
 								{{#appIdsToNames this.user_of}}{{/appIdsToNames}}
 							{{else}}
-							<span>User does not have view rights to any application...</span>
+							<span data-localize="management-users.user-of.tip"></span>
 							{{/if}}
 						</div>
-						<div class="no-apps">User does not have view rights to any application...</div>
+						<div class="no-apps" data-localize="management-users.user-of.tip"></div>
 					</div>
 					{{/unless}}
 					<div class="button-container">
 						<input class="user_id" type="hidden" value="{{this._id}}"/>
-						<a class="icon-button light save-user">Save</a>
-						<a class="icon-button light cancel-user">Cancel</a>
+						<a class="icon-button light save-user" data-localize="common.save"></a>
+						<a class="icon-button light cancel-user" data-localize="common.cancel"></a>
 						{{#unless this.is_current_user}}
-						<a class="icon-button red delete-user">Delete User</a>
+						<a class="icon-button red delete-user" data-localize="management-users.delete-user"></a>
 						{{/unless}}
 					</div>
 				</div>
@@ -581,36 +627,34 @@ $(document).ready(function() {
 		</tr>
 		{{/eachOfObjectValue}}
 		<tr>
-			<td colspan="3">
-				<div>
-					Create a new user
-				</div>
+			<td colspan="4">
+				<div data-localize="management-users.create-new-user"></div>
 			</td>
 		</tr>
 		<tr class="user-details">
-			<td colspan="3">
+			<td colspan="4">
 				<div>
-					<div class="row">
-						<div class="title">Full Name</div>
+					<div class="row help-zone-vs" data-help-localize="manage-users.full-name">
+						<div class="title" data-localize="management-users.full-name"></div>
 						<div class="detail"><input class="full-name-text" type="text" value=""/></div>
 					</div>
-					<div class="row">
-						<div class="title">Username</div>
+					<div class="row help-zone-vs" data-help-localize="manage-users.username">
+						<div class="title" data-localize="management-users.username"></div>
 						<div class="detail"><input class="username-text" type="text" value=""/></div>
 					</div>
 					<div class="row">
-						<div class="title">Password</div>
+						<div class="title" data-localize="management-users.password"></div>
 						<div class="detail">
 							<input class="password-text" type="text" value=""/><br/>
-							<div class="small-link generate-password">Generate password</div>
+							<div class="small-link generate-password" data-localize="management-users.generate-password"></div>
 						</div>
 					</div>
-					<div class="row">
-						<div class="title">Email</div>
+					<div class="row help-zone-vs" data-help-localize="manage-users.email">
+						<div class="title" data-localize="management-users.email"></div>
 						<div class="detail"><input class="email-text" type="text" value=""/></div>
 					</div>
-					<div class="row">
-						<div class="title">Global Admin</div>
+					<div class="row help-zone-vs" data-help-localize="manage-users.global-admin">
+						<div class="title" data-localize="management-users.global-admin"></div>
 						<div class="detail">
 							<div class="option">
 								<div class="global-admin checkbox"></div>
@@ -618,29 +662,29 @@ $(document).ready(function() {
 							</div>
 						</div>
 					</div>
-					<div class="row admin-apps">
-						<div class="title">Admin of</div>
+					<div class="row admin-apps help-zone-vs" data-help-localize="manage-users.admin-of">
+						<div class="title" data-localize="management-users.admin-of"></div>
 						<div class="select-apps">
 							<input type="hidden" value="" class="app-list"/>
 						</div>
 						<div class="detail user-admin-list">
-							<span>User is not the administrator of any application...</span>
+							<span data-localize="management-users.admin-of.tip"></span>
 						</div>
-						<div class="no-apps">User is not the administrator of any application...</div>
+						<div class="no-apps" data-localize="management-users.admin-of.tip"></div>
 					</div>
-					<div class="row user-apps">
-						<div class="title">User of</div>
+					<div class="row user-apps help-zone-vs" data-help-localize="manage-users.user-of">
+						<div class="title" data-localize="management-users.user-of"></div>
 						<div class="select-apps">
 							<input type="hidden" value="" class="app-list"/>
 						</div>
 						<div class="detail user-admin-list">
-							<span>User does not have view rights to any application...</span>
+							<span data-localize="management-users.user-of.tip"></span>
 						</div>
-						<div class="no-apps">User does not have view rights to any application...</div>
+						<div class="no-apps" data-localize="management-users.user-of.tip"></div>
 					</div>
 					<div class="button-container">
-						<a class="icon-button light create-user">Create User</a>
-						<a class="icon-button light cancel-user">Cancel</a>
+						<a class="icon-button light create-user" data-localize="management-users.create-user"></a>
+						<a class="icon-button light cancel-user" data-localize="common.cancel"></a>
 					</div>
 				</div>
 			</td>
@@ -659,8 +703,8 @@ $(document).ready(function() {
 		{{/eachOfObjectValue}}
 	</div>
 	<div class="button-container">
-		<a class="icon-button dark" id="done">Done</a>
-		<a class="icon-button dark" id="select-all">Select all</a>
-		<a class="icon-button dark" id="deselect-all">Deselect all</a>
+		<a class="icon-button dark" id="done" data-localize="common.done"></a>
+		<a class="icon-button dark" id="select-all" data-localize="common.select-all"></a>
+		<a class="icon-button dark" id="deselect-all" data-localize="common.deselect-all"></a>
 	</div>
 </div>

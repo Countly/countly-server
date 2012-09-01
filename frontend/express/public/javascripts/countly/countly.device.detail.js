@@ -2,7 +2,11 @@
 
 	//Private Properties
 	var _periodObj = {},
-		_deviceDetailsDb = {};
+		_deviceDetailsDb = {},
+		_os = [],
+		_resolutions = [],
+		_os_versions = [],
+		_activeAppKey = 0;
 		
 	//Public Methods
 	countlyDeviceDetails.initialize = function() {
@@ -19,9 +23,7 @@
 				dataType: "jsonp",
 				success: function(json) {
 					_deviceDetailsDb = json;
-					if (_deviceDetailsDb["os_versions"]) {
-						_deviceDetailsDb["os_versions"] = _deviceDetailsDb["os_versions"].join(",").replace(/\./g, ":").split(",");
-					}
+					setMeta();
 				}
 			});
 		} else {
@@ -29,6 +31,41 @@
 			return true;
 		}
 	};
+	
+	countlyDeviceDetails.refresh = function() {
+		_periodObj = countlyCommon.periodObj;
+		
+		if (!countlyCommon.DEBUG) {
+		
+			if (_activeAppKey != countlyCommon.ACTIVE_APP_KEY) {
+				_activeAppKey = countlyCommon.ACTIVE_APP_KEY;
+				return countlyDeviceDetails.initialize();
+			}
+		
+			return $.ajax({
+				type: "GET",
+				url: countlyCommon.READ_API_URL,
+				data: {
+					"app_key" : countlyCommon.ACTIVE_APP_KEY,
+					"method" : "device_details",
+					"action": "refresh"
+				},
+				dataType: "jsonp",
+				success: function(json) {
+					countlyCommon.extendDbObj(_deviceDetailsDb, json);
+					setMeta();
+				}
+			});
+		} else {
+			_deviceDetailsDb = {"2012":{}};
+			return true;
+		}
+	};
+	
+	countlyDeviceDetails.reset = function() {
+		_deviceDetailsDb = {};
+		setMeta();
+	}
 	
 	countlyDeviceDetails.clearDeviceDetailsObject = function(obj) {
 		if (obj) {
@@ -44,16 +81,16 @@
 	}
 
 	countlyDeviceDetails.getPlatforms = function() {
-		return _deviceDetailsDb["os"];
+		return _os;
 	}
 	
 	countlyDeviceDetails.getPlatformBars = function() {	
-		return countlyCommon.extractBarData(_deviceDetailsDb, _deviceDetailsDb["os"], countlyDeviceDetails.clearDeviceDetailsObject);
+		return countlyCommon.extractBarData(_deviceDetailsDb, _os, countlyDeviceDetails.clearDeviceDetailsObject);
 	}
 	
 	countlyDeviceDetails.getPlatformData = function() {
-		
-		var chartData = countlyCommon.extractTwoLevelData(_deviceDetailsDb, _deviceDetailsDb["os"], countlyDeviceDetails.clearDeviceDetailsObject, [
+
+		var chartData = countlyCommon.extractTwoLevelData(_deviceDetailsDb, _os, countlyDeviceDetails.clearDeviceDetailsObject, [
 			{ 
 				name: "os_",
 				func: function (rangeArr, dataObj) {
@@ -83,11 +120,11 @@
 	}
 	
 	countlyDeviceDetails.getResolutionBars = function() {	
-		return countlyCommon.extractBarData(_deviceDetailsDb, _deviceDetailsDb["resolutions"], countlyDeviceDetails.clearDeviceDetailsObject);
+		return countlyCommon.extractBarData(_deviceDetailsDb, _resolutions, countlyDeviceDetails.clearDeviceDetailsObject);
 	}
 	
 	countlyDeviceDetails.getOSVersionBars = function() {
-		var osVersions = countlyCommon.extractBarData(_deviceDetailsDb, _deviceDetailsDb["os_versions"], countlyDeviceDetails.clearDeviceDetailsObject);
+		var osVersions = countlyCommon.extractBarData(_deviceDetailsDb, _os_versions, countlyDeviceDetails.clearDeviceDetailsObject);
 		
 		for (var i = 0; i < osVersions.length; i++) {
 			osVersions[i].name = osVersions[i].name.replace(/:/g, ".").replace(/i/g, "iOS ").replace(/a/g, "Android ");
@@ -98,7 +135,7 @@
 	
 	countlyDeviceDetails.getOSVersionData = function(os) {
 		
-		var oSVersionData = countlyCommon.extractTwoLevelData(_deviceDetailsDb, _deviceDetailsDb["os_versions"], countlyDeviceDetails.clearDeviceDetailsObject, [
+		var oSVersionData = countlyCommon.extractTwoLevelData(_deviceDetailsDb, _os_versions, countlyDeviceDetails.clearDeviceDetailsObject, [
 			{ 
 				name: "os_version",
 				func: function (rangeArr, dataObj) {
@@ -110,12 +147,12 @@
 			{ "name": "n" }
 		]);
 		
-		var osSegmentation = ((os)? os : ((_deviceDetailsDb["os"])? _deviceDetailsDb["os"][0] : null)),
+		var osSegmentation = ((os)? os : ((_os)? _os[0] : null)),
 			platformVersionTotal = _.pluck(oSVersionData.chartData, 'u'),
 			chartData2 = [];
 		
 		if (oSVersionData.chartData) {
-			for (var i = 0; i < oSVersionData.chartData.length; i++) {
+			for (var i = 0; i < oSVersionData.chartData.length; i++) {			
 				oSVersionData.chartData[i].os_version = oSVersionData.chartData[i].os_version.replace(/:/g, ".").replace(/i/g, "iOS ").replace(/a/g, "Android ");
 				
 				if (oSVersionData.chartData[i].os_version.indexOf(osSegmentation) == -1) {
@@ -141,20 +178,36 @@
 		oSVersionData.chartDP.dp = chartData2;
 		oSVersionData.os = {};
 		
-		if (_deviceDetailsDb["os"] && _deviceDetailsDb["os"].length > 1) {
-			for (var i = 0; i < _deviceDetailsDb["os"].length; i++) {
-				if (_deviceDetailsDb["os"][i] != osSegmentation) {
+		if (_os && _os.length > 1) {
+			for (var i = 0; i < _os.length; i++) {
+				if (_os[i] != osSegmentation) {
 					continue;
 				}
 
 				oSVersionData.os = {
-					name: _deviceDetailsDb["os"][i],
-					class: _deviceDetailsDb["os"][i].toLowerCase()
+					name: _os[i],
+					class: _os[i].toLowerCase()
 				};
 			}
 		}
 		
 		return oSVersionData;
+	}
+	
+	function setMeta() {
+		if (_deviceDetailsDb['meta']) {
+			_os = (_deviceDetailsDb['meta']['os'])? _deviceDetailsDb['meta']['os'] : [];
+			_resolutions = (_deviceDetailsDb['meta']['resolutions'])? _deviceDetailsDb['meta']['resolutions'] : [];
+			_os_versions = (_deviceDetailsDb['meta']['os_versions'])? _deviceDetailsDb['meta']['os_versions'] : [];
+		} else {
+			_os = [];
+			_resolutions = [];
+			_os_versions = [];
+		}
+		
+		if (_os_versions.length) {
+			_os_versions = _os_versions.join(",").replace(/\./g, ":").split(",");
+		}
 	}
 	
 }(window.countlyDeviceDetails = window.countlyDeviceDetails || {}, jQuery));

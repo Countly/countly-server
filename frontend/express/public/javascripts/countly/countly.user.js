@@ -2,7 +2,10 @@
 
 	//Private Properties
 	var _periodObj = {},
-		_userDb = {};
+		_userDb = {},
+		_lolayties = [],
+		_frequencies = [],
+		_activeAppKey = 0;
 		
 	//Public Methods
 	countlyUser.initialize = function() {
@@ -19,6 +22,7 @@
 				dataType: "jsonp",
 				success: function(json) {
 					_userDb = json;
+					setMeta();
 				}
 			});
 		} else {
@@ -27,11 +31,46 @@
 		}
 	};
 
+	countlyUser.refresh = function() {
+		_periodObj = countlyCommon.periodObj;
+		
+		if (!countlyCommon.DEBUG) {
+		
+			if (_activeAppKey != countlyCommon.ACTIVE_APP_KEY) {
+				_activeAppKey = countlyCommon.ACTIVE_APP_KEY;
+				return countlyUser.initialize();
+			}
+		
+			return $.ajax({
+				type: "GET",
+				url: countlyCommon.READ_API_URL,
+				data: {
+					"app_key" : countlyCommon.ACTIVE_APP_KEY,
+					"method" : "users",
+					"action": "refresh"
+				},
+				dataType: "jsonp",
+				success: function(json) {
+					countlyCommon.extendDbObj(_userDb, json);
+					setMeta();
+				}
+			});
+		} else {
+			_userDb = {"2012":{}};
+			return true;
+		}
+	};
+	
+	countlyUser.reset = function() {
+		_userDb = {};
+		setMeta();
+	}
+	
 	countlyUser.getFrequencyData = function() {
 	
 		var chartData = {chartData: {}, chartDP: {dp: [], ticks: []}};
 		
-		chartData.chartData = countlyCommon.extractRangeData(_userDb, "f", _userDb["f-ranges"], countlyUser.explainFrequencyRange);
+		chartData.chartData = countlyCommon.extractRangeData(_userDb, "f", _frequencies, countlyUser.explainFrequencyRange);
 		
 		var frequencies = _.pluck(chartData.chartData, "f"),
 			frequencyTotals = _.pluck(chartData.chartData, "t"),
@@ -50,6 +89,10 @@
 		
 		chartData.chartDP.dp = chartDP;
 		
+		for (var i = 0; i < chartData.chartData.length; i++) {
+			chartData.chartData[i]["percent"] = "<div class='percent-bar' style='width:"+ (2 * chartData.chartData[i]["percent"]) +"px;'></div>" + chartData.chartData[i]["percent"] + "%";
+		}
+		
 		return chartData;
 	}
 	
@@ -57,7 +100,7 @@
 	
 		var chartData = {chartData: {}, chartDP: {dp: [], ticks: []}};
 		
-		chartData.chartData = countlyCommon.extractRangeData(_userDb, "l", _userDb["l-ranges"], countlyUser.explainLoyaltyRange);
+		chartData.chartData = countlyCommon.extractRangeData(_userDb, "l", _lolayties, countlyUser.explainLoyaltyRange);
 		
 		var loyalties = _.pluck(chartData.chartData, "l"),
 			loyaltyTotals = _.pluck(chartData.chartData, 't'),
@@ -76,6 +119,10 @@
 		
 		chartData.chartDP.dp = chartDP;
 		
+		for (var i = 0; i < chartData.chartData.length; i++) {
+			chartData.chartData[i]["percent"] = "<div class='percent-bar' style='width:"+ (2 * chartData.chartData[i]["percent"]) +"px;'></div>" + chartData.chartData[i]["percent"] + "%";
+		}
+		
 		return chartData;
 	}
 	
@@ -84,11 +131,11 @@
 		//Update the current period object in case selected date is changed
 		_periodObj = countlyCommon.periodObj;
 		
-		var dataArr = [ { data: [], label: "Loyalty" }],
+		var dataArr = [ { data: [], label: jQuery.i18n.map["user-loyalty.loyalty"] }],
 			ticks = [],
 			rangeUsers;
 			
-		for(var j = 0; j < _userDb["l-ranges"].length; j++) {
+		for(var j = 0; j < _lolayties.length; j++) {
 		
 			rangeUsers = 0;
 		
@@ -98,12 +145,12 @@
 					var tmp_x = countlyCommon.getDescendantProp(_userDb, _periodObj.activePeriod + "." + i + "." + "l");
 					tmp_x = clearLoyaltyObject(tmp_x);
 
-					rangeUsers += tmp_x[_userDb["l-ranges"][j]];
+					rangeUsers += tmp_x[_lolayties[j]];
 				}
 				
 				if (rangeUsers != 0) {
 					dataArr[0]["data"][dataArr[0]["data"].length] = [j, rangeUsers];
-					ticks[j] = [j, _userDb["l-ranges"][j]];
+					ticks[j] = [j, _lolayties[j]];
 				}
 			} else {	
 				for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
@@ -111,12 +158,12 @@
 					var tmp_x = countlyCommon.getDescendantProp(_userDb, _periodObj.currentPeriodArr[i] + "." + "l");
 					tmp_x = clearLoyaltyObject(tmp_x);
 					
-					rangeUsers += tmp_x[_userDb["l-ranges"][j]];
+					rangeUsers += tmp_x[_lolayties[j]];
 				}
 								
 				if (rangeUsers != 0) {
 					dataArr[0]["data"][dataArr[0]["data"].length] = [j, rangeUsers];
-					ticks[j] = [j, _userDb["l-ranges"][j]];
+					ticks[j] = [j, _lolayties[j]];
 				}
 			}
 		}
@@ -128,19 +175,23 @@
 	};
 
 	countlyUser.explainFrequencyRange = function(index) {
+		var localHours = jQuery.i18n.map["user-loyalty.range.hours"],
+			localDay = jQuery.i18n.map["user-loyalty.range.day"],
+			localDays = jQuery.i18n.map["user-loyalty.range.days"];
+	
 		var frequencyRange = [
-			"First session",
-			"1-24 hours",
-			"1 day",
-			"2 days",
-			"3 days",
-			"4 days",
-			"5 days",
-			"6 days",
-			"7 days",
-			"8-14 days",
-			"15-30 days",
-			"30+ days"
+			jQuery.i18n.map["user-loyalty.range.first-session"],
+			"1-24 " + localHours,
+			"1 " + localDay,
+			"2 " + localDays,
+			"3 " + localDays,
+			"4 " + localDays,
+			"5 " + localDays,
+			"6 " + localDays,
+			"7 " + localDays,
+			"8-14 " + localDays,
+			"15-30 " + localDays,
+			"30+ " + localDays
 		];
 		
 		return frequencyRange[index];
@@ -148,18 +199,27 @@
 	
 	countlyUser.explainLoyaltyRange = function(index) {
 		var loyaltyRange = [
-			"1st",
-			"2nd",
-			"3rd-5th",
-			"6th-9th",
-			"10th-19th",
-			"20th-49th",
-			"50th-99th",
-			"100-499th",
-			"> 500th"
+			"1",
+			"2",
+			"3-5",
+			"6-9",
+			"10-19",
+			"20-49",
+			"50-99",
+			"100-499",
+			"> 500"
 		];
 		
 		return loyaltyRange[index];
 	}
-			
+	
+	function setMeta() {
+		if (_userDb['meta']) {
+			_lolayties = (_userDb['meta']['l-ranges'])? _userDb['meta']['l-ranges'] : [];
+			_frequencies = (_userDb['meta']['f-ranges'])? _userDb['meta']['f-ranges'] : [];
+		} else {
+			_lolayties = [];
+			_frequencies = [];
+		}
+	}
 }(window.countlyUser = window.countlyUser || {}, jQuery));

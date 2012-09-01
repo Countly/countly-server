@@ -1,23 +1,47 @@
+12.08
+
+  * Added custom event support. Each event has a key as well as a count and 
+    an optional sum property. There can be unlimited number of segmentation 
+    keys for an event.
+
+  * Added help mode. After activated from the sidebar under Management > 
+    Help, certain items in the interface show a small descriptive text when 
+    hovered on.
+
+  * Added option to re-order applications listed in the sidebar.
+
+  * Added option to select a single day from the date picker. When a single 
+    day is selected hourly data for that day is displayed.
+
+  * Optimized dashboard refresh process. While refreshing the dashboard, only 
+    the data for the current day is requested from the read API. Current day 
+    data is merged into the existing data which is fetched the first time 
+    user logs in to the dashboard.
+
+  * Fixed active application and selected date reset problem after a hard 
+    page reload. Active application and selected date are stored in 
+    localStorage until user logs out.
+
 12.07
 
   * Added platforms view under analytics section.
-  
+
   * Added app versions view under analytics section and API is modified 
     accordingly to handle _app_version metric.
-	
+
   * Added summary bars to device view to show top platform, top platform 
     version and top resolution.
-	
+
   * Added reset data option to manage apps screen. Global admin can reset 
     the data stored for any application.
-	
-  * Added timestamp (UTC unix timestamp) parameter to the write API. If 
+
+  * Added timestamp (UTC UNIX timestamp) parameter to the write API. If 
     provided, the event is recorded with the given time instead of current 
     time.
-	
+
   * Fixed application delete bug that prevented app_users collection to be 
     cleared. app_id field is added to app_users collection.
-	
+
   * Fixed JSON escape issue for the read API when device name, carrier name 
     etc. contained a single quote.
 
@@ -27,6 +51,6 @@
     manage & view all apps or can be assigned to any application as an
     admin or user. An admin of an application can edit application settings. 
     A user of an application can only view analytics for that application 
-    and can not edit it's settings.
-  
+    and cannot edit its settings.
+
   * Added csfr protection to all methods provided through app.js.

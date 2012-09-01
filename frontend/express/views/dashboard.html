@@ -18,6 +18,7 @@
 	<link rel="stylesheet" href="/stylesheets/jqueryui/jquery.ui.all.css" />
 	<link rel="stylesheet" href="/stylesheets/main.css" />
 	<link rel="stylesheet" href="/stylesheets/webfonts.css" />
+	<link rel="stylesheet" href="/javascripts/tablesorter/pager/jquery.tablesorter.pager.css"/>
 	<script><%- javascript %></script>
 </head>
 <body> 
@@ -33,87 +34,120 @@
 		<div id="sidebar-menu">
 			<a href="#/" class="item active">
 				<div class="logo dashboard"></div>
-				<div class="text">Dashboard</div>
+				<div class="text" data-localize="sidebar.dashboard"></div>
 			</a>
 			<a class="item" id="analytics-menu">
 				<div class="logo analytics"></div>
-				<div class="text">Analytics</div>
+				<div class="text" data-localize="sidebar.analytics"></div>
 			</a>
 			<div class="sidebar-submenu" id="analytics-submenu">
 				<a href="#/analytics/users" class="item active">
 					<div class="logo users"></div>
-					<div class="text">Users</div>
+					<div class="text" data-localize="sidebar.analytics.users"></div>
 				</a>
 				<a href="#/analytics/loyalty" class="item">
 					<div class="logo loyalty"></div>
-					<div class="text">User loyalty</div>
+					<div class="text" data-localize="sidebar.analytics.user-loyalty"></div>
 				</a>
 				<a href="#/analytics/sessions" class="item">
 					<div class="logo sessions"></div>
-					<div class="text">Sessions</div>
+					<div class="text" data-localize="sidebar.analytics.sessions"></div>
 				</a>
 				<a href="#/analytics/frequency" class="item">
 					<div class="logo frequency"></div>
-					<div class="text">Session frequency</div>
+					<div class="text" data-localize="sidebar.analytics.session-frequency"></div>
 				</a>
 				<a href="#/analytics/countries" class="item">
 					<div class="logo country"></div>
-					<div class="text">Countries</div>
+					<div class="text" data-localize="sidebar.analytics.countries"></div>
 				</a>
 				<a href="#/analytics/devices" class="item">
 					<div class="logo devices"></div>
-					<div class="text">Devices</div>
+					<div class="text" data-localize="sidebar.analytics.devices"></div>
 				</a>
 				<a href="#/analytics/versions" class="item">
 					<div class="logo app-versions"></div>
-					<div class="text">App versions</div>
+					<div class="text" data-localize="sidebar.analytics.app-versions"></div>
 				</a>
 				<a href="#/analytics/carriers" class="item">
 					<div class="logo carrier"></div>
-					<div class="text">Carriers</div>
+					<div class="text" data-localize="sidebar.analytics.carriers"></div>
 				</a>
 				<a href="#/analytics/platforms" class="item">
 					<div class="logo platforms"></div>
-					<div class="text">Platforms</div>
+					<div class="text" data-localize="sidebar.analytics.platforms"></div>
 				</a>
 			</div>
+			<a href="#/analytics/events" class="item" id="sidebar-events">
+				<div class="logo events"></div>
+				<div class="text" data-localize="sidebar.events"></div>
+			</a>
 			<% if(member['global_admin'] || adminOfApps.length) { %>
 			<a class="item" id="management-menu">
 				<div class="logo management"></div>
-				<div class="text">Management</div>
+				<div class="text" data-localize="sidebar.management"></div>
 			</a>
 			<div class="sidebar-submenu" id="management-submenu">
 				<a href="#/manage/apps" class="item active">
 					<div class="logo applications"></div>
-					<div class="text">Applications</div>
+					<div class="text" data-localize="sidebar.management.applications"></div>
 				</a>
+				<!--
+				<a href="#/manage/export" class="item">
+					<div class="logo applications"></div>
+					<div class="text" data-localize="">Export</div>
+				</a>
+				-->
 				<% if(member['global_admin']) { %>
 				<a href="#/manage/users" class="item">
 					<div class="logo mgmt-users"></div>
-					<div class="text">Users</div>
+					<div class="text" data-localize="sidebar.management.users"></div>
 				</a>
 				<% } %>
+				<a class="item help-toggle disabled">
+					<div class="logo help"></div>
+					<div class="text" data-localize="sidebar.management.help"></div>
+					<div id="help-toggle"></div>
+				</a>
 			</div>
 			<% } %>
 		</div>
 		<div id="sidebar-bottom-container">
 			<div class="menu">
-				<a class="item" id="account-settings">Settings</a>
-				<a class="item" href="/logout">Logout</a>
+				<a id="sidebar-countly-version">Countly v12.08</a>
+				<a class="item" id="account-settings" data-localize="sidebar.settings"></a>
+				<a class="item" id="user-logout" href="/logout" data-localize="sidebar.logout"></a>
+			</div>
+			<div id="language-menu">
+				<a data-language-code="en" class="item">English</a>
+				<a data-language-code="es" class="item">Español</a>
+				<a data-language-code="fr" class="item">Français</a>
+				<a data-language-code="it" class="item">Italiano</a>
+				<a data-language-code="tr" class="item">Türkçe</a>
+				<a data-language-code="ja" class="item">日本語</a>			
 			</div>
 			<div class="username" id="menu-username"><%= member['username'] %></div>
+			<!--<div class="reveal-language-menu">EN</div>-->
 			<div class="reveal-menu"></div>
 		</div>
 	</div>
 	<div id="app-nav">
 		<div id="app-nav-head">
-			APPS
+			<div id="app-nav-title" data-localize="management-applications.title"></div>
+			<div style="overflow:hidden; position:absolute; top:19px; right:10px;">
+				<% if(member['global_admin']) { %>
+				<div class="icon-button dark help-zone-vs" id="sort-app-button">
+					<div class="icon"></div>
+				</div>
+				<% } %>
+			</div>
 		</div>
 		<div class="apps-scrollable">
 			<% for (var i = 0; i < userOfApps.length; i++) { %>
 				<div class="app-container app-navigate" data-key="<%= userOfApps[i].key %>" data-id="<%= userOfApps[i]['_id'] %>">
 					<div class="logo" style="background-image: url('/appimages/<%= userOfApps[i]['_id'] %>.png');"></div>
 					<div class="name"><%= userOfApps[i].name %></div>
+					<div class="drag"></div>
 				</div>
 			<% } %>
 		</div>
@@ -121,6 +155,7 @@
 			<div class="app-container app-navigate" id="">
 				<div class="logo"></div>
 				<div class="name"></div>
+				<div class="drag"></div>
 			</div>
 		</div>
 	</div>
@@ -134,43 +169,43 @@
 		<div class="indicator"></div>
 		<div class="message"></div>
 		<div class="buttons">
-				<a id="dialog-ok" class="icon-button light">OK</a>
+				<a id="dialog-ok" class="icon-button light" data-localize="common.ok"></a>
 		</div>
 	</div>
 	<div id="cly-confirm" class="dialog">
 		<div class="indicator"></div>
 		<div class="message"></div>
 		<div class="buttons">
-				<a id="dialog-continue" class="icon-button light">Continue</a>
-				<a id="dialog-cancel" class="icon-button light">Cancel</a>
+				<a id="dialog-continue" class="icon-button light" data-localize="common.continue"></a>
+				<a id="dialog-cancel" class="icon-button light" data-localize="common.cancel"></a>
 		</div>
 	</div>
 	<div id="edit-account-details" style="display:none;">
 		<div class="message">
 			<div>
-				<div style="float:left; width:100px;">Username</div>
+				<div style="float:left; width:100px;" data-localize="user-settings.username"></div>
 				<div style="margin-left:105px;"><input id="username" type="text" value=""/></div>
 			</div>
 			<div style="margin-top:15px;">
-				<div style="float:left; width:100px;">Change password</div> 
+				<div style="float:left; width:100px;" data-localize="user-settings.change-password"></div> 
 				<div style="margin-left:105px;">
-					<div><input id="old_pwd" type="password" placeholder="Old password..."/></div>
-					<div style="margin-top:10px;"><input id="new_pwd" type="password" placeholder="New password..."/></div>
-					<div style="margin-top:5px;"><input id="re_new_pwd" type="password" placeholder="Again..."/></div>
+					<div><input id="old_pwd" type="password" placeholder="Old password..." data-localize="placeholder.old-password"/></div>
+					<div style="margin-top:10px;"><input id="new_pwd" type="password" placeholder="New password..." data-localize="placeholder.new-password"/></div>
+					<div style="margin-top:5px;"><input id="re_new_pwd" type="password" placeholder="Again..." data-localize="placeholder.again"/></div>
 				</div>
 			</div>
 		</div>
 		<div class="buttons">
 			<div id="settings-save-result" class="result-message"></div>
-			<a id="save-account-details" class="icon-button light">Save</a>
-			<a id="dialog-cancel" class="icon-button light">Close</a>
+			<a id="save-account-details" class="icon-button light" data-localize="common.save"></a>
+			<a id="dialog-cancel" class="icon-button light" data-localize="common.close"></a>
 		</div>
 	</div>
 	<div id="content">
 		<div id="content-loader"></div>
 	</div>
 	<script id="template-date-selector" type="text/x-handlebars-template">
-		<div id="date-selector">
+		<div id="date-selector" class="help-zone-vs">
 			<div class="calendar" id="date-picker-button"></div>
 			<div id="date-picker" style="display:none; position:absolute; z-index:10; margin-top:38px; margin-left:-175px; padding:2px 3px 6px 3px; background-color:rgba(85,85,85,1); border:1px solid #333; box-shadow: inset 0 0 0 1px #777; border-radius:5px; background-image:url('/images/dashboard/calendar_bg.png');">
 				<div style="width:14px; margin:0 auto; margin-top:-10px; height:9px; background-image:url('/images/dashboard/calendar_tip.png'); z-index:20;"></div>
@@ -179,39 +214,39 @@
 					<div id="date-to" style="float:left; margin-left:3px; border:1px solid #666; border-radius:3px;"></div>
 				</div>			
 				<div style="overflow:auto; margin-top:6px; padding:3px;">
-					<div id="date-submit" style="float:right;" class="cly-button-dark">Apply</div>
+					<div id="date-submit" style="float:right;" class="cly-button-dark" data-localize="common.apply"></div>
 				</div>
 			</div>
 			<div class="button" id="month">2012</div>
-			<div class="button" id="hour">Today</div>
-			<div class="button" id="7days">7 days</div>
-			<div class="button" id="30days">30 days</div>
-			<div class="button" id="60days">60 days</div>
-			<div class="button" id="90days">90 days</div>
+			<div class="button" id="hour" data-localize="common.today"></div>
+			<div class="button" id="7days" data-localize="common.7days"></div>
+			<div class="button" id="30days" data-localize="common.30days"></div>
+			<div class="button" id="60days" data-localize="common.60days"></div>
+			<div class="button" id="90days" data-localize="common.90days"></div>
 		</div>
 	</script>
 	
 	<script id="template-app-categories" type="text/x-handlebars-template">
-		<div data-value="1" class="item">Books</div>
-		<div data-value="2" class="item">Business</div>
-		<div data-value="3" class="item">Education</div>
-		<div data-value="4" class="item">Entertainment</div>
-		<div data-value="5" class="item">Finance</div>
-		<div data-value="6" class="item">Games</div>
-		<div data-value="7" class="item">Health &amp; Fitness</div>
-		<div data-value="8" class="item">Lifestyle</div>
-		<div data-value="9" class="item">Medical</div>
-		<div data-value="10" class="item">Music</div>
-		<div data-value="11" class="item">Navigation</div>
-		<div data-value="12" class="item">News</div>
-		<div data-value="13" class="item">Photography</div>
-		<div data-value="14" class="item">Productivity</div>
-		<div data-value="15" class="item">Reference</div>
-		<div data-value="16" class="item">Social Networking</div>
-		<div data-value="17" class="item">Sports</div>
-		<div data-value="18" class="item">Travel</div>
-		<div data-value="19" class="item">Utilities</div>
-		<div data-value="20" class="item">Weather</div>
+		<div data-value="1" class="item" data-localize="application-category.books"></div>
+		<div data-value="2" class="item" data-localize="application-category.business"></div>
+		<div data-value="3" class="item" data-localize="application-category.education"></div>
+		<div data-value="4" class="item" data-localize="application-category.entertainment"></div>
+		<div data-value="5" class="item" data-localize="application-category.finance"></div>
+		<div data-value="6" class="item" data-localize="application-category.games"></div>
+		<div data-value="7" class="item" data-localize="application-category.health-fitness"></div>
+		<div data-value="8" class="item" data-localize="application-category.lifestyle"></div>
+		<div data-value="9" class="item" data-localize="application-category.medical"></div>
+		<div data-value="10" class="item" data-localize="application-category.music"></div>
+		<div data-value="11" class="item" data-localize="application-category.navigation"></div>
+		<div data-value="12" class="item" data-localize="application-category.news"></div>
+		<div data-value="13" class="item" data-localize="application-category.photography"></div>
+		<div data-value="14" class="item" data-localize="application-category.productivity"></div>
+		<div data-value="15" class="item" data-localize="application-category.reference"></div>
+		<div data-value="16" class="item" data-localize="application-category.social-networking"></div>
+		<div data-value="17" class="item" data-localize="application-category.sports"></div>
+		<div data-value="18" class="item" data-localize="application-category.travel"></div>
+		<div data-value="19" class="item" data-localize="application-category.utilities"></div>
+		<div data-value="20" class="item" data-localize="application-category.weather"></div>
 	</script>
 	
 	<script id="template-analytics-common"  type="text/x-handlebars-template">
@@ -222,6 +257,624 @@
 					<div class="title">{{page-title}}</div>
 				</div>
 				{{> date-selector }}
+			</div>
+			<div class="widget-content help-zone-vb" data-help-localize="{{{chart-helper}}}" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
+				{{#if graph-type-double-pie}}
+				<div style="float:left; width:50%; position:relative;">
+					<div style="border-right:1px solid #CCC;">
+						<div class="pie-overlay one {{logo-class}}">
+							<div class="title">{{pie-titles.left}}</div>
+						</div>
+						<div id="dashboard-graph" class="graph" style="width:500px; margin:0 auto; height:360px; font-family:'Ubuntu';"></div>	
+					</div>
+				</div>
+				<div style="float:left; width:50%; position:relative;">
+					<div class="graph-segment-container" style="position:absolute; left:3px; top:10px; z-index:3;">
+					{{#if graph-segmentation}}
+						<div class="graph-segment {{graph-segmentation.class}}" data-name="{{graph-segmentation.name}}"></div>
+					{{/if}}
+					</div>
+					<div class="pie-overlay two {{logo-class}}">
+						<div class="title">{{pie-titles.right}}</div>
+					</div>
+					<div id="dashboard-graph2" class="graph" style="width:500px; margin:0 auto; height:360px; font-family:'Ubuntu';"></div>
+				</div>
+				{{else}}
+				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
+				{{/if}}
+			</div>
+			{{#if big-numbers}}
+			<div class="widget-footer" style="background-color:#EEEEEE;">
+				<div id="big-numbers-container">
+					{{#each big-numbers.items}}
+					<div class="big-numbers three-column help-zone-vs" data-help-localize="{{this.help}}">
+						<div class="inner">
+							<div class="select">{{this.title}}</div>
+							<div class="color"></div>
+							<div class="number">{{getFormattedNumber this.total}}</div>
+							<div class="trend" style="background-image:url('/images/dashboard/{{this.trend}}trend.png');"></div>
+						</div>
+					</div>
+					{{/each}}
+				</div>
+			</div>
+			{{/if}}
+		</div>
+		{{#if bars}}
+		<div class="dashboard-summary three">
+			{{#each bars}}
+			<div class="item help-zone-vs" data-help-localize="{{this.help}}">
+				<div class="inner">
+					<div class="title">{{this.title}}</div>
+					{{#if this.data}}
+					<div class="bar">
+						{{#each this.data}}
+							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+						{{/each}}
+					</div>
+					<div class="number" data-item="{{this.data.0.name}}">{{this.data.0.name}}</div>
+					{{else}}
+					<div class="no-data" data-localize="common.bar.no-data"></div>
+					{{/if}}
+				</div>
+			</div>
+			{{/each}}
+		</div>
+		{{/if}}
+		<table class="d-table sortable help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}">
+			<thead>
+			<tr>
+				{{#eachOfArray chart-data.columns}}
+				<th style="width:25%">{{value}}</th>
+				{{/eachOfArray}}
+			</tr>
+			</thead>
+			<tbody>
+				{{#if chart-data.rows}}
+				{{#each chart-data.rows}}
+				<tr>
+					{{#eachOfObject this}}
+						<td>{{{getFormattedNumber value}}}</td>
+					{{/eachOfObject }}
+				</tr>
+				{{/each}}
+				{{else}}
+				<tr>
+					<td colspan="{{chart-data.columnCount}}" class="table-no-data" data-localize="common.table.no-data"></td>
+				</tr>
+				{{/if}}
+			</tbody>
+		</table>
+		{{#if chart-data2}}
+		<table class="d-table sortable" cellpadding="0" cellspacing="0">
+			<thead>
+			<tr>
+				{{#eachOfArray chart-data2.columns}}
+				<th style="width:25%">{{value}}</th>
+				{{/eachOfArray}}
+			</tr>
+			</thead>
+			<tbody>
+				{{#if chart-data2.rows}}
+				{{#each chart-data2.rows}}
+				<tr>
+					{{#eachOfObject this}}
+						<td>{{getFormattedNumber value}}</td>
+					{{/eachOfObject }}
+				</tr>
+				{{/each}}
+				{{else}}
+				<tr>
+					<td colspan="{{chart-data2.columnCount}}" class="table-no-data" data-localize="common.table.no-data"></td>
+				</tr>
+				{{/if}}
+			</tbody>
+		</table>
+		{{/if}}
+	</script>
+	
+	<script id="template-analytics-countries"  type="text/x-handlebars-template">
+		<div class="widget">
+			<div class="widget-header">
+				<div class="left">
+					<div class="logo {{logo-class}}"></div>
+					<div class="title">{{page-title}}</div>
+				</div>
+				{{> date-selector }}
+			</div>
+			<div class="widget-content help-zone-vb" data-help-localize="{{{chart-helper}}}" style="height:495px; background-color:#FFF;">
+				<div id="geo-chart-outer"><div id="geo-chart" style="margin:0 auto; padding:20px;"></div></div>
+			</div>
+			<div class="widget-footer" style="background-color:#EEEEEE;">
+				<div id="big-numbers-container">
+					{{#each big-numbers.items}}
+					<div class="big-numbers three-column help-zone-vs" data-help-localize="{{this.help}}">
+						<div class="inner">
+							<div class="select">{{this.title}}</div>
+							<div class="number" style="margin-top: 10px;">{{getFormattedNumber this.total}}</div>
+							<div class="trend" style="background-image:url('/images/dashboard/{{this.trend}}trend.png');"></div>
+						</div>
+					</div>
+					{{/each}}
+				</div>
+			</div>
+		</div>
+		<table class="d-table sortable help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}">
+			<thead>
+			<tr>
+				{{#eachOfArray chart-data.columns}}
+				<th style="width:25%">{{value}}</th>
+				{{/eachOfArray}}
+			</tr>
+			</thead>
+			<tbody>
+				{{#if chart-data.rows}}
+				{{#each chart-data.rows}}
+				<tr>
+					<td>
+						<div class="flag" style="background-image:url('/images/flags/{{this.code}}.png');"></div>
+						{{this.country}}
+					</td>
+					<td>{{getFormattedNumber this.t}}</td>
+					<td>{{getFormattedNumber this.u}}</td>
+					<td>{{getFormattedNumber this.n}}</td>
+				</tr>
+				{{/each}}
+				{{else}}
+				<tr>
+					<td colspan="{{chart-data.columnCount}}" class="table-no-data" data-localize="common.table.no-data"></td>
+				</tr>
+				{{/if}}
+			</tbody>
+		</table>
+	</script>
+	
+	<script id="dashboard-template" type="text/x-handlebars-template">
+		<div class="widget">
+			<div class="widget-header">
+				<div class="title" style="letter-spacing:-1px; font-size:19px; margin-top:10px; margin-left:5px;">{{toUpperCase page-title}}</div>
+				{{> date-selector }}
+			</div>
+			<div class="widget-content" style="border:none;">				
+				<div id="big-numbers-container" class="dashboard">
+					{{#each usage}}
+					<div class="big-numbers six-column help-zone-vs" data-help-localize="{{this.help}}">
+						<div class="inner">
+							<div class="logo"></div>
+							<div class="number">{{getShortNumber this.data.total}}</div>
+							<div class="trend" style="background-image:url('/images/dashboard/{{this.data.trend}}trend.png');">
+								<div class="change">{{this.data.change}}</div>
+							</div>
+							<div class="spark"><span class="{{this.data.trend}}sparkline">{{this.data.sparkline}}</span></div>
+							<div class="select" id="{{this.id}}">
+								<div class="title">{{this.title}}</div>
+							</div>
+							<div class="arrow"></div>
+						</div>
+					</div>
+					{{/each}}
+				</div>
+			</div>
+			<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none;">
+				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
+			</div>
+		</div>
+		<div class="dashboard-summary">
+			{{#each bars}}
+			<div class="item help-zone-vs" data-help-localize="{{this.help}}">
+				<div class="inner">
+					<div class="title">{{this.title}}</div>
+					{{#if this.data}}
+					<div class="bar">
+						{{#each this.data}}
+							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+						{{/each}}
+					</div>
+					<div class="number" data-item="{{this.data.0.name}}">{{this.data.0.name}}</div>
+					{{else}}
+					<div class="no-data" data-localize="common.bar.no-data"></div>
+					{{/if}}
+				</div>
+			</div>
+			{{/each}}
+		</div>
+		<div class="widget map-list help-zone-vb" data-help-localize="dashboard.map" style="float:right; width:100%;">
+			{{#if country-data}}
+			<div id="map-list-right" style="max-height:236px; overflow:hidden;">
+				<div>
+					{{#each country-data}}
+					<div class="map-list-item">
+						<div class="flag" style="background-image:url('/images/flags/{{this.code}}.png');"></div>
+						<div class="country-name">{{this.country}}</div>
+						<div class="total">{{getShortNumber this.t}}</div>
+					</div>
+					{{/each}}
+				</div>
+			</div>
+			{{/if}}
+			<div id="geo-chart-outer" style="padding-bottom: 8px;"><div id="geo-chart" {{#if country-data}}style="margin-right:240px;"{{/if}}></div></div>
+		</div>
+	</script>
+	
+	<script id="template-management-applications" type="text/x-handlebars-template">
+		<div id="app-management-bar">
+			<div id="app-nav-head">
+				<div id="app-nav-title" data-localize="management-applications.title"></div>
+				<% if(member['global_admin']) { %>
+				<div style="overflow:hidden; position:absolute; top:19px; right:10px;">
+					<div class="icon-button dark help-zone-vs" data-help-localize="manage-apps.app-add-button" id="add-app-button">
+						<div class="icon" style="background-image:url('/images/management/add.png'); width:17px; height:18px;"></div>
+						<div class="text" data-localize="common.add"></div>
+					</div>
+				</div>
+				<% } %>
+			</div>
+			<div class="scrollable">
+				{{#eachOfObjectValue admin_apps}}
+				<div class="app-container" data-key="{{this.key}}" data-id="{{this._id}}">
+					<div class="logo" style="background-image: url('/appimages/{{this._id}}.png');"></div>
+					<div class="name">{{this.name}}</div>
+				</div>
+				{{/eachOfObjectValue}}
+			</div>
+			<div id="manage-new-app">
+				<div class="app-container">
+					<div class="logo"></div>
+					<div class="name" data-localize="management-applications.my-new-app"></div>
+				</div>
+			</div>
+		</div>
+		<div class="widget" style="margin-left:187px;">
+			<div id="add-new-app">
+				<div class="widget-header">
+					<div class="left">
+						<div class="title new-app-name" data-localize="management-applications.my-new-app"></div>
+					</div>
+				</div>
+				<div>
+					<table class="d-table horizontal" cellpadding="0" cellspacing="0">
+						<tbody>
+							<tr class="help-zone-vs" data-help-localize="manage-apps.app-name">
+								<td data-localize="management-applications.application-name"></td>
+								<td>
+									<input type="text" value="" placeholder="Enter application name..." data-localize="placeholder.app-name" id="app-add-name">
+								</td>
+							</tr>
+							<tr class="help-zone-vs" data-help-localize="manage-apps.app-category">
+								<td data-localize="management-applications.category"></td>
+								<td>
+									<div class="cly-select" style="width:280px;">
+										<div class="select-inner">
+											<div class="text-container">
+												<div class="text" id="app-add-category" data-localize="management-applications.category.tip"></div>
+											</div>	
+											<div class="right combo"></div>
+										</div>
+										<div class="select-items square" style="width:280px;">
+											<div class="scrollable">
+												{{> app-categories }}
+											</div>
+										</div>
+									</div>
+								</td>
+							</tr>
+							<tr class="help-zone-vs" data-help-localize="manage-apps.app-timezone">
+								<td data-localize="management-applications.time-zone"></td>
+								<td id="app-add-timezone" >
+									<div style="float:left;">
+										<div id="country-select" class="cly-select" style="width:280px;">
+											<div class="select-inner">
+												<div class="text-container">	
+													<div class="text"></div>
+												</div>
+												<div class="right combo"></div>
+											</div>
+											<div class="select-items square" style="width:280px;">
+												<div id="country-items" class="scrollable"></div>
+											</div>
+										</div>
+										<div id="timezone-select" class="cly-select" style="width:200px; display:none;">
+											<div class="select-inner">
+												<div class="text-container">	
+													<div class="text"></div>
+												</div>
+												<div class="right combo"></div>
+											</div>
+											<div class="select-items square" style="width:200px;">
+												<div id="timezone-items" class="scrollable"></div>
+											</div>
+										</div>
+									</div>
+									<div id="selected" style="float:left; font-size:14px; padding:5px 10px; padding-top:6px; color:#666; font-family:'Ubuntu';"></div>
+									<input type="hidden" value="" id="app-timezone"/>
+									<input type="hidden" value="" id="app-country"/>
+								</td>
+							</tr>
+							<tr class="help-zone-vs" data-help-localize="manage-apps.app-icon">
+								<td data-localize="management-applications.icon"></td>
+								<td>
+									<form action="/apps/icon" enctype="multipart/form-data" id="add-app-image-form" method="post">
+										<input type="file" id="app_image" name="app_image" />
+										<input type="hidden" id="app_image_id" name="app_image_id" />
+									</form>
+								</td>
+							</tr>
+							<tr class="table-add">
+								<td colspan="2">
+									<a id="save-app-add" class="icon-button light" data-localize="management-applications.add-application"></a>
+									<a id="cancel-app-add" class="icon-button light" data-localize="common.cancel"></a>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div id="view-app">
+				<div class="widget-header">
+					<div class="left">
+						<div class="title"></div>
+					</div>
+					<div style="float:right; overflow:hidden; margin-top:6px;">
+						<% if(member['global_admin']) { %>
+						<div class="icon-button delete-app help-zone-vs" data-help-localize="manage-apps.app-delete-button" id="delete-app">
+							<div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
+							<div class="text" data-localize="common.delete"></div>
+						</div>
+						<div class="icon-button delete-app help-zone-vs" data-help-localize="manage-apps.app-clear-button" id="clear-app-data">
+							<div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
+							<div class="text" data-localize="management-applications.clear-data"></div>
+						</div>
+						<% } %>
+						<div class="icon-button light help-zone-vs" data-help-localize="manage-apps.app-edit-button" id="edit-app">
+							<div class="icon" style="background-image:url('/images/management/edit.png'); width:22px; height:19px;"></div>
+							<div class="text" data-localize="common.edit"></div>
+						</div>
+					</div>
+				</div>
+				<div class="app-details">
+					<input type="hidden" id="app-edit-id"/>
+					<table class="d-table horizontal" cellpadding="0" cellspacing="0">
+						<tbody>
+							<tr class="help-zone-vs" data-help-localize="manage-apps.app-name">
+								<td data-localize="management-applications.application-name"></td>
+								<td id="app-edit-name">
+									<div class="read"></div>
+									<div class="edit">
+										<input type="text" value="">
+									</div>
+								</td>
+							</tr>
+							<tr class="help-zone-vs" data-help-localize="manage-apps.app-category">
+								<td data-localize="management-applications.category"></td>
+								<td id="app-edit-category">
+									<div class="read"></div>
+									<div class="edit">
+										<div class="cly-select">
+											<div class="select-inner">
+												<div class="text-container">
+													<div class="text"></div>
+												</div>	
+												<div class="right combo"></div>
+											</div>
+											<div class="select-items square">
+												<div class="scrollable">
+													{{> app-categories }}
+												</div>
+											</div>
+										</div>
+									</div>
+								</td>
+							</tr>
+							<tr class="help-zone-vs" data-help-localize="manage-apps.app-key">
+								<td data-localize="management-applications.app-key"></td>
+								<td id="view-app-key"></td>
+							</tr>
+							<tr class="help-zone-vs" data-help-localize="manage-apps.app-timezone">
+								<td data-localize="management-applications.time-zone"></td>
+								<td id="app-edit-timezone">
+									<div class="read">
+											<div class="flag"></div>
+											<div class="country"></div>
+											<div class="timezone"></div>
+									</div>
+									<div class="edit">
+										<div style="float:left;">
+											<div id="country-select" class="cly-select" style="width:280px;">
+												<div class="select-inner">
+													<div class="text-container">	
+														<div class="text"></div>
+													</div>
+													<div class="right combo"></div>
+												</div>
+												<div class="select-items square" style="width:280px;">
+													<div id="country-items" class="scrollable"></div>
+												</div>
+											</div>
+											<div id="timezone-select" class="cly-select" style="width:200px; display:none;">
+												<div class="select-inner">
+													<div class="text-container">	
+														<div class="text"></div>
+													</div>
+													<div class="right combo"></div>
+												</div>
+												<div class="select-items square" style="width:200px;">
+													<div id="timezone-items" class="scrollable">
+					
+													</div>
+												</div>
+											</div>
+										</div>
+										<div id="selected" style="float:left; font-size:14px; padding:5px 10px; padding-top:6px; color:#666; font-family:'Ubuntu';"></div>
+										<input type="hidden" value="" id="app-timezone"/>
+										<input type="hidden" value="" id="app-country"/>
+									</div>
+								</td>
+							</tr>
+							<tr class="table-edit-prev help-zone-vs" data-help-localize="manage-apps.app-icon">
+								<td data-localize="management-applications.icon"></td>
+								<td id="app-edit-image">
+									<div class="read">
+										<div class="logo"></div>
+									</div>
+									<div class="edit">
+										<form action="/apps/icon" enctype="multipart/form-data" id="add-edit-image-form" method="post">
+											<input type="file" id="app_image" name="app_image" />
+											<input type="hidden" id="app_image_id" name="app_image_id" />
+										</form>
+									</div>
+								</td>
+							</tr>
+							<tr class="table-edit">
+								<td colspan="2">
+									<a id="save-app-edit" class="icon-button light" data-localize="common.save-changes"></a>
+									<a id="cancel-app-edit" class="icon-button light" data-localize="common.cancel"></a>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div style="float:right;">
+					<a href="/sdks/countly-sdk-ios-v12.08.zip" class="icon-button light">Download iOS SDK</a>
+					<a href="/sdks/countly-sdk-android-v12.08.zip" class="icon-button light">Download Android SDK</a>
+				</div>
+			</div>
+			</div>
+			<div id="no-app-warning" style="display:none; margin-left:187px;" class="alert danger" data-localize="management-applications.no-app-warning"></div>
+			<div id="first-app-success" style="display:none; margin-left:187px; margin-top:-5px; margin-right:309px;" class="alert success" data-localize="management-applications.first-app-message"></div>
+		</div>
+	</script>
+	
+	<script id="template-management-export"  type="text/x-handlebars-template">
+		<div class="widget">
+			<div class="widget-header">
+				<div class="left">
+					<div class="title">{{app_name}}</div>
+				</div>
+				<div style="float:right; overflow:hidden; margin-top:6px;">
+					<div class="icon-button light" id="export-select-all">
+						<div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
+						<div class="text">Select all</div>
+					</div>
+					<div class="icon-button light" id="export-deselect-all" style="display:none;">
+						<div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
+						<div class="text">Deselect all</div>
+					</div>
+					<div class="icon-button light create-report" id="create-report">
+						<div class="icon" style="background-image:url('/images/reports/pdf_icon.png'); width:18px; height:19px;"></div>
+						<div class="text">Export</div>
+					</div>
+				</div>
+			</div>
+			<div class="widget-content">
+				<div class="export-description">
+					Select items to export. Event name / segmentation indicates that only event data for the given segmentation will be exported.
+				</div>
+				<div id="export-checkbox-container">
+					{{#eachOfArray events}}
+					<div class="export-checkbox" data-key="{{value.key}}">
+						<div class="option">
+							<div class="checkbox"></div>
+							<div class="text">{{value.name}}</div>
+						</div>
+					</div>
+					{{/eachOfArray}}
+					<span class="stretch"></span>
+				</div>
+			</div>
+		</div>
+		<div class="widget">
+			<div class="widget-header">
+				<div class="left">
+					<div class="title">EXPORT HISTORY</div>
+				</div>
+			</div>
+			<div class="widget-content"></div>
+		</div>
+		{{#eachOfArray exports}}
+		<div>{{value.date}}</div>
+		{{/eachOfArray}}
+	</script>
+	
+	<script id="template-events"  type="text/x-handlebars-template">
+		<div id="event-nav">
+			<div id="event-nav-head">
+				<div id="event-nav-title" data-localize="events.title"></div>
+				<div style="overflow:hidden; position:absolute; top:18px; right:10px;">
+					<% if(member['global_admin']) { %>
+					<div class="icon-button dark help-zone-vs" id="edit-events-button" style="padding: 4px 5px;">
+						<div class="icon"></div>
+					</div>
+					<% } %>
+				</div>
+			</div>
+			<div class="scrollable">
+				{{#eachOfArray events}}
+				<div class="event-container {{#if value.is_active}}active{{/if}}" data-key="{{value.key}}">
+					<div class="name">{{value.name}}</div>
+				</div>
+				{{/eachOfArray}}
+			</div>
+		</div>
+		<div id="edit-event-container" style="display:none;">
+			<div id="edit-event-table-container">
+				<table class="events-table" cellpadding="0" cellspacing="0">
+					<thead>
+						<tr>
+							<th>Event key</th>
+							<th>Event name</th>
+							<th>Count</th>
+							<th>Sum</th>
+						</tr>
+					</thead>
+					<tbody>
+						{{#eachOfObjectValue event-map}}
+						<tr>
+							<td class="event-key">{{this.event_key}}</td>
+							<td><input class="event-name" type="text" placeholder="Event name" value="{{this.name}}"/></td>
+							<td><input class="event-count" type="text" placeholder="Count" value="{{this.count}}"/></td>
+							<td><input class="event-sum" type="text" placeholder="Sum" value="{{this.sum}}"/></td>
+						</tr>
+						{{/eachOfObjectValue}}
+					</tbody>
+				</table>
+			</div>
+			<div class="buttons">
+				<div id="settings-save-result" class="result-message"></div>
+				<a id="events-save" class="icon-button dark" data-localize="common.save"></a>
+				<a id="dialog-cancel" class="icon-button dark" data-localize="common.close"></a>
+			</div>
+		</div>
+		<div style="margin-left:187px;">
+		<div class="widget">
+			<div class="widget-header">
+				<div class="left">
+					<div id="event-update-area">
+					<div class="title">{{page-title}}</div>
+					<div class="event-segmentation">
+						{{#if segmentations}}
+						<div class="cly-select" style="width:220px;">
+							<div class="select-inner">
+								<div class="text-container">
+									<div class="text">{{active-segmentation}}</div>
+								</div>	
+								<div class="right combo"></div>
+							</div>
+							<div class="select-items square" style="width:220px;">
+								<div class="scrollable">
+									<div data-value="" class="segmentation-option item" data-localize="events.no-segmentation"></div>
+									{{#eachOfArray segmentations}}
+									<div data-value="{{value}}" class="segmentation-option item">{{value}}</div>
+									{{/eachOfArray}}
+								</div>
+							</div>
+						</div>
+						{{/if}}
+					</div>
+					</div>
+				</div>
+				<div style="position:absolute; right:8px;">
+				{{> date-selector }}
+				</div>
 			</div>
 			<div class="widget-content" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
 				{{#if graph-type-double-pie}}
@@ -246,9 +899,9 @@
 			</div>
 			{{#if big-numbers}}
 			<div class="widget-footer" style="background-color:#EEEEEE;">
-				<div id="big-numbers-container">
+				<div id="big-numbers-container" class="{{big-numbers.class}}">
 					{{#each big-numbers.items}}
-					<div class="big-numbers three-column">
+					<div class="big-numbers">
 						<div class="inner">
 							<div class="select">{{this.title}}</div>
 							<div class="color"></div>
@@ -275,7 +928,7 @@
 					</div>
 					<div class="number" data-item="{{this.data.0.name}}">{{this.data.0.name}}</div>
 					{{else}}
-					<div class="no-data">NO DATA</div>
+					<div class="no-data" data-localize="common.bar.no-data"></div>
 					{{/if}}
 				</div>
 			</div>
@@ -301,7 +954,7 @@
 				{{/each}}
 				{{else}}
 				<tr>
-					<td colspan="{{chart-data.columnCount}}" class="table-no-data">No data</td>
+					<td colspan="{{chart-data.columnCount}}" class="table-no-data" data-localize="common.table.no-data"></td>
 				</tr>
 				{{/if}}
 			</tbody>
@@ -326,426 +979,45 @@
 				{{/each}}
 				{{else}}
 				<tr>
-					<td colspan="{{chart-data2.columnCount}}" class="table-no-data">No data</td>
+					<td colspan="{{chart-data2.columnCount}}" class="table-no-data" data-localize="common.table.no-data"></td>
 				</tr>
 				{{/if}}
 			</tbody>
 		</table>
 		{{/if}}
-	</script>
-	
-	<script id="template-analytics-countries"  type="text/x-handlebars-template">
-		<div class="widget">
-			<div class="widget-header">
-				<div class="left">
-					<div class="logo {{logo-class}}"></div>
-					<div class="title">{{page-title}}</div>
-				</div>
-				{{> date-selector }}
-			</div>
-			<div class="widget-content" style="height:495px; background-color:#FFF;">
-				<div id="geo-chart-outer"><div id="geo-chart" style="margin:0 auto; padding:20px;"></div></div>
-			</div>
-			<div class="widget-footer" style="background-color:#EEEEEE;">
-				<div id="big-numbers-container">
-					{{#each big-numbers.items}}
-					<div class="big-numbers three-column">
-						<div class="inner">
-							<div class="select">{{this.title}}</div>
-							<div class="number" style="margin-top: 10px;">{{getFormattedNumber this.total}}</div>
-							<div class="trend" style="background-image:url('/images/dashboard/{{this.trend}}trend.png');"></div>
-						</div>
-					</div>
-					{{/each}}
-				</div>
-			</div>
-		</div>
-		<table class="d-table sortable" cellpadding="0" cellspacing="0">
-			<thead>
-			<tr>
-				{{#eachOfArray chart-data.columns}}
-				<th style="width:25%">{{value}}</th>
-				{{/eachOfArray}}
-			</tr>
-			</thead>
-			<tbody>
-				{{#if chart-data.rows}}
-				{{#each chart-data.rows}}
-				<tr>
-					<td>
-						<div class="flag" style="background-image:url('/images/flags/{{this.code}}.png');"></div>
-						{{this.country}}
-					</td>
-					<td>{{getFormattedNumber this.t}}</td>
-					<td>{{getFormattedNumber this.u}}</td>
-					<td>{{getFormattedNumber this.n}}</td>
-				</tr>
-				{{/each}}
-				{{else}}
-				<tr>
-					<td colspan="{{chart-data.columnCount}}" class="table-no-data">No data</td>
-				</tr>
-				{{/if}}
-			</tbody>
-		</table>
-	</script>
-	
-	<script id="dashboard-template" type="text/x-handlebars-template">
-		<div class="widget">
-			<div class="widget-header">
-				<div class="title" style="letter-spacing:-1px; font-size:19px; margin-top:10px; margin-left:5px;">{{toUpperCase page-title}}</div>
-				{{> date-selector }}
-			</div>
-			<div class="widget-content" style="border:none;">				
-				<div id="big-numbers-container" class="dashboard">
-					{{#each usage}}
-					<div class="big-numbers six-column">
-						<div class="inner">
-							<div class="logo"></div>
-							<div class="number">{{getShortNumber this.data.total}}</div>
-							<div class="trend" style="background-image:url('/images/dashboard/{{this.data.trend}}trend.png');">
-								<div class="change">{{this.data.change}}</div>
-							</div>
-							<div class="spark"><span class="{{this.data.trend}}sparkline">{{this.data.sparkline}}</span></div>
-							<div class="select" id="{{this.id}}">{{this.title}}</div>
-							<div class="arrow"></div>
-						</div>
-					</div>
-					{{/each}}
-				</div>
-			</div>
-			<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none;">
-				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
-			</div>
-		</div>
-		<div class="dashboard-summary">
-			{{#each bars}}
-			<div class="item">
-				<div class="inner">
-					<div class="title">{{this.title}}</div>
-					{{#if this.data}}
-					<div class="bar">
-						{{#each this.data}}
-							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
-						{{/each}}
-					</div>
-					<div class="number" data-item="{{this.data.0.name}}">{{this.data.0.name}}</div>
-					{{else}}
-					<div class="no-data">NO DATA</div>
-					{{/if}}
-				</div>
-			</div>
-			{{/each}}
-		</div>
-		<!--
-		<div class="widget" style="width:28%; float:left; box-shadow:none;">
-			<div class="widget-header">
-				<div class="left">
-					<div class="title">Key Events</div>
-				</div>
-			</div>
-			<div>
-				<table class="d-table" cellpadding="0" cellspacing="0" style="border-top-right-radius:0px; border-top-left-radius:0px;">
-					<tbody id="key-events">
-						<tr>
-							<td class="table-no-data">No data</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-		</div>
-		-->
-		<div class="widget map-list" style="float:right; width:100%;">
-			{{#if country-data}}
-			<div id="map-list-right" style="max-height:236px; overflow:hidden;">
-				<div>
-					{{#each country-data}}
-					<div class="map-list-item">
-						<div class="flag" style="background-image:url('/images/flags/{{this.code}}.png');"></div>
-						<div class="country-name">{{this.country}}</div>
-						<div class="total">{{getShortNumber this.t}}</div>
-					</div>
-					{{/each}}
-				</div>
-			</div>
-			{{/if}}
-			<div id="geo-chart-outer" style="padding-bottom: 8px;"><div id="geo-chart" {{#if country-data}}style="margin-right:240px;"{{/if}}></div></div>
-		</div>
-	</script>
-	
-	<script id="template-management-applications" type="text/x-handlebars-template">
-		<div id="app-management-bar">
-			<div id="app-nav-head">
-				APPS
-				<% if(member['global_admin']) { %>
-				<div style="float:right; overflow:hidden; margin-top:-2px;">
-					<div class="icon-button dark" id="add-app-button">
-						<div class="icon" style="background-image:url('/images/management/add.png'); width:17px; height:18px;"></div>
-						<div class="text">Add</div>
-					</div>
-				</div>
-				<% } %>
-			</div>
-			<div class="scrollable">
-				{{#eachOfObjectValue admin_apps}}
-				<div class="app-container" data-key="{{this.key}}" data-id="{{this._id}}">
-					<div class="logo" style="background-image: url('/appimages/{{this._id}}.png');"></div>
-					<div class="name">{{this.name}}</div>
-				</div>
-				{{/eachOfObjectValue}}
-			</div>
-			<div id="manage-new-app">
-				<div class="app-container">
-					<div class="logo"></div>
-					<div class="name">My new app</div>
-				</div>
-			</div>
-		</div>
-		<div class="widget" style="margin-left:187px;">
-			<div id="add-new-app">
-				<div class="widget-header">
-					<div class="left">
-						<div class="title new-app-name">My new app</div>
-					</div>
-				</div>
-				<div>
-					<table class="d-table horizontal" cellpadding="0" cellspacing="0">
-						<tbody>
-							<tr>
-								<td>Application Name</td>
-								<td>
-									<input type="text" value="" placeholder="Enter application name..." id="app-add-name">
-								</td>
-							</tr>
-							<tr>
-								<td>Category</td>
-								<td>
-									<div class="cly-select" style="width:280px;">
-										<div class="select-inner">
-											<div class="text-container">
-												<div class="text" id="app-add-category">Select a category</div>
-											</div>	
-											<div class="right combo"></div>
-										</div>
-										<div class="select-items square" style="width:280px;">
-											<div class="scrollable">
-												{{> app-categories }}
-											</div>
-										</div>
-									</div>
-								</td>
-							</tr>
-							<tr>
-								<td>Time Zone</td>
-								<td id="app-add-timezone" >
-									<div style="float:left;">
-										<div id="country-select" class="cly-select" style="width:280px;">
-											<div class="select-inner">
-												<div class="text-container">	
-													<div class="text">Select a country</div>
-												</div>
-												<div class="right combo"></div>
-											</div>
-											<div class="select-items square" style="width:280px;">
-												<div id="country-items" class="scrollable">
-					
-												</div>
-											</div>
-										</div>
-										<div id="timezone-select" class="cly-select" style="width:200px; display:none;">
-											<div class="select-inner">
-												<div class="text-container">	
-													<div class="text"></div>
-												</div>
-												<div class="right combo"></div>
-											</div>
-											<div class="select-items square" style="width:200px;">
-												<div id="timezone-items" class="scrollable">
-					
-												</div>
-											</div>
-										</div>
-									</div>
-									<div id="selected" style="float:left; font-size:14px; padding:5px 10px; padding-top:6px; color:#666; font-family:'Ubuntu';"></div>
-									<input type="hidden" value="" id="app-timezone"/>
-									<input type="hidden" value="" id="app-country"/>
-								</td>
-							</tr>
-							<tr>
-								<td>Icon</td>
-								<td>
-									<form action="/apps/icon" enctype="multipart/form-data" id="add-app-image-form" method="post">
-										<input type="file" id="app_image" name="app_image" />
-										<input type="hidden" id="app_image_id" name="app_image_id" />
-									</form>
-								</td>
-							</tr>
-							<tr class="table-add">
-								<td colspan="2">
-									<a id="save-app-add" class="icon-button light">Add Application</a>
-									<a id="cancel-app-add" class="icon-button light">Cancel</a>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-			</div>
-			<div id="view-app">
-				<div class="widget-header">
-					<div class="left">
-						<div class="title"></div>
-					</div>
-					<div style="float:right; overflow:hidden; margin-top:6px;">
-						<% if(member['global_admin']) { %>
-						<div class="icon-button delete-app" id="delete-app">
-							<div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
-							<div class="text">Delete</div>
-						</div>
-						<div class="icon-button delete-app" id="clear-app-data">
-							<div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
-							<div class="text">Clear data</div>
-						</div>
-						<% } %>
-						<div class="icon-button light" id="edit-app">
-							<div class="icon" style="background-image:url('/images/management/edit.png'); width:22px; height:19px;"></div>
-							<div class="text">Edit</div>
-						</div>
-					</div>
-				</div>
-				<div class="app-details">
-					<input type="hidden" id="app-edit-id"/>
-					<table class="d-table horizontal" cellpadding="0" cellspacing="0">
-						<tbody>
-							<tr>
-								<td>Application Name</td>
-								<td id="app-edit-name">
-									<div class="read"></div>
-									<div class="edit">
-										<input type="text" value="">
-									</div>
-								</td>
-							</tr>
-							<tr>
-								<td>Category</td>
-								<td id="app-edit-category">
-									<div class="read"></div>
-									<div class="edit">
-										<div class="cly-select">
-											<div class="select-inner">
-												<div class="text-container">
-													<div class="text"></div>
-												</div>	
-												<div class="right combo"></div>
-											</div>
-											<div class="select-items square">
-												<div class="scrollable">
-													{{> app-categories }}
-												</div>
-											</div>
-										</div>
-									</div>
-								</td>
-							</tr>
-							<tr>
-								<td>App Key</td>
-								<td id="view-app-key"></td>
-							</tr>
-							<tr>
-								<td>Time Zone</td>
-								<td id="app-edit-timezone">
-									<div class="read">
-											<div class="flag"></div>
-											<div class="country"></div>
-											<div class="timezone"></div>
-									</div>
-									<div class="edit">
-										<div style="float:left;">
-											<div id="country-select" class="cly-select" style="width:280px;">
-												<div class="select-inner">
-													<div class="text-container">	
-														<div class="text">Select a country</div>
-													</div>
-													<div class="right combo"></div>
-												</div>
-												<div class="select-items square" style="width:280px;">
-													<div id="country-items" class="scrollable">
-					
-													</div>
-												</div>
-											</div>
-											<div id="timezone-select" class="cly-select" style="width:200px; display:none;">
-												<div class="select-inner">
-													<div class="text-container">	
-														<div class="text"></div>
-													</div>
-													<div class="right combo"></div>
-												</div>
-												<div class="select-items square" style="width:200px;">
-													<div id="timezone-items" class="scrollable">
-					
-													</div>
-												</div>
-											</div>
-										</div>
-										<div id="selected" style="float:left; font-size:14px; padding:5px 10px; padding-top:6px; color:#666; font-family:'Ubuntu';"></div>
-										<input type="hidden" value="" id="app-timezone"/>
-										<input type="hidden" value="" id="app-country"/>
-									</div>
-								</td>
-							</tr>
-							<tr class="table-edit-prev">
-								<td>Icon</td>
-								<td id="app-edit-image">
-									<div class="read">
-										<div class="logo"></div>
-									</div>
-									<div class="edit">
-										<form action="/apps/icon" enctype="multipart/form-data" id="add-edit-image-form" method="post">
-											<input type="file" id="app_image" name="app_image" />
-											<input type="hidden" id="app_image_id" name="app_image_id" />
-										</form>
-									</div>
-								</td>
-							</tr>
-							<tr class="table-edit">
-								<td colspan="2">
-									<a id="save-app-edit" class="icon-button light">Save Changes</a>
-									<a id="cancel-app-edit" class="icon-button light">Cancel</a>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-			</div>
-			</div>
-			<div id="no-app-warning" style="display:none; margin-left:187px;" class="alert danger">In order to start collecting data you need to add an application to your account.</div>
-			<div id="first-app-success" style="display:none; margin-left:187px;" class="alert success">Great! You can now embed our Android or iOS SDK into your application and start viewing your stats instantly. Don't forget to get your App Key from above.</div>
 		</div>
 	</script>
 	
 	<script language="javascript" type="text/javascript" src="https://www.google.com/jsapi"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/jquery-1.7.1.min.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/jquery-1.7.2.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery.form.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/tipsy/jquery.tipsy.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery.noisy.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery.idle-timer.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery.tablesorter.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery.stickytableheaders.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/jquery-ui-1.8.18.custom.min.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/jquery-ui-1.8.22.custom.min.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/jquery-ui-i18n.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/slimScroll.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery.easing.1.3.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/prefixfree.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/flot/jquery.flot.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/flot/jquery.flot.tickrotor.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/flot/jquery.flot.pie.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/flot/jquery.flot.resize.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/flot/jquery.flot.stack.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/moment.min.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/moment/moment.min.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/moment/lang-all.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery.peity.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/handlebars.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/underscore-min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/backbone-min.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/jquery.i18n.properties-min-1.0.9.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/jstz.min.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/store+json2.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.common.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.config.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.event.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.session.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.location.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.user.js"></script>
