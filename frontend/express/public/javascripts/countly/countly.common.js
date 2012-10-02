@@ -1,22 +1,20 @@
 (function(countlyCommon, $, undefined) {
 
-	//Private Properties
+	// Private Properties
 	var _period = (store.get("countly_date"))? store.get("countly_date") : "30days";
 	
-	//Public Properties
+	// Public Properties
+	countlyCommon.DEBUG = false;
 	countlyCommon.ACTIVE_APP_KEY = 0;
 	countlyCommon.ACTIVE_APP_ID = 0;
 	countlyCommon.READ_API_URL = "http://localhost/o";
-	countlyCommon.DEBUG = false;
+	countlyCommon.DASHBOARD_REFRESH_MS = 10000;
+	countlyCommon.DASHBOARD_IDLE_MS = 30000;
 	countlyCommon.GRAPH_COLORS = ["#88BBC8", "#ED8662", "#A0ED62", "#869BD5", "#F7B05A", "#C8A788", "#A2C025", "#DFB114", "#DD770C", "#D35417", "#B93629", "#9A1B2F"];
-	countlyCommon.BROWSER_LANG = "en";
-	countlyCommon.BROWSER_LANG_SHORT = "en";
-	// Localization params which will be used for localization later
-	//countlyCommon.BROWSER_LANG = jQuery.i18n.browserLang();
-	//countlyCommon.BROWSER_LANG_SHORT = jQuery.i18n.browserLang().split("-")[0];
-	countlyCommon.LANG_FILE_POSTFIX = "";
-	countlyCommon.periodObj = getPeriodObj();
+	countlyCommon.BROWSER_LANG = jQuery.i18n.browserLang();
+	countlyCommon.BROWSER_LANG_SHORT = jQuery.i18n.browserLang().split("-")[0];
 	countlyCommon.HELP_MAP = {};
+	countlyCommon.periodObj = getPeriodObj();
 	
 	if (store.get("countly_active_app")) {
 		if (countlyGlobal['apps'][store.get("countly_active_app")]) {
@@ -31,7 +29,8 @@
 		countlyCommon.BROWSER_LANG = lang;
 	}
 	
-	//Public Methods
+	// Public Methods
+	
 	countlyCommon.setPeriod = function(period) {
 		_period = period;
 		countlyCommon.periodObj = getPeriodObj();
@@ -44,19 +43,22 @@
 	
 	countlyCommon.setActiveApp = function(appId) {
 		countlyCommon.ACTIVE_APP_KEY = countlyGlobal['apps'][appId].key;
+		countlyCommon.ACTIVE_APP_ID = appId;
 		store.set("countly_active_app", appId);
 	};
 	
+	// Calculates the percent change between previous and current values.
+	// Returns an object in the following format {"percent": "20%", "trend": "u"}
 	countlyCommon.getPercentChange = function(previous, current) {	
 		var pChange = 0,
 			trend = "";
 		
 		if (previous == 0) {
 			pChange = "NA";
-			trend = "u";
+			trend = "u"; //upward
 		} else if (current == 0) {
 			pChange = "∞";
-			trend = "d";
+			trend = "d"; //downward
 		} else {
 			pChange = countlyCommon.getShortNumber((((current - previous) / current) * 100).toFixed(1)) + "%";
 			if (previous > current) {
@@ -68,7 +70,18 @@
 		
 		return {"percent": pChange, "trend": trend};
 	};
-		
+	
+	// Fetches nested property values from an obj.
+	/* countlyCommon.getDescendantProp(obj, "2012.8.20") can fetch the value of "20" (100) from the below object.
+	
+		{
+		"2012": {
+			"8": {
+				"20": 100
+			}
+			}
+		}
+	*/
 	countlyCommon.getDescendantProp = function(obj, desc) {
 		desc = String(desc);
 		
@@ -82,9 +95,7 @@
 		return obj;
 	};
 	
-	/*
-	Draws a graph with the given data points. This function is used to draw all graphs except line graphs.
-	*/
+	// Draws a graph with the given dataPoints to container. Used for drawing bar and pie charts.
 	countlyCommon.drawGraph = function(dataPoints, container, graphType, graphProperties) {
 
 		if (!graphProperties) {
@@ -137,9 +148,7 @@
 		$(container).unbind("plothover");
 	}
 	
-	/*
-	Draws a line graph with the given dataPoints to container. graphProperties param is optional and you may specify graph's properties
-	*/
+	// Draws a line graph with the given dataPoints to container. 
 	countlyCommon.drawTimeGraph = function(dataPoints, container, hideTicks, graphProperties) {
 		
 		timeGraphData = dataPoints[0].data;
@@ -222,14 +231,14 @@
 				break;
 			case "hour":
 				var hourTicks = [];
-				for (var i = 0; i < 25; i++) {
-					if (i != 0 && i != 24 && i % 3 == 0) {
+				for (var i = 0; i < 24; i++) {
+					if (i != 0 && i != 23 && i % 3 == 0) {
 						hourTicks[hourTicks.length] = [i, i+":00"];
 					}
 					
 					graphTicks[i] = [i+":00"];
 				}
-				graphProperties.xaxis.max = 24;
+				graphProperties.xaxis.max = 23;
 				graphProperties.xaxis.ticks = hourTicks;
 				graphProperties.xaxis.min = 0;
 				break;
@@ -363,7 +372,8 @@
 		
 		var graphObj = $.plot($(container), dataPoints, graphProperties),
 			keyEventCounter = "A",
-			keyEvents = [];
+			keyEvents = [],
+			keyEventsIndex = 0;
 		
 		for (var k = 0; k < graphObj.getData().length; k++) {
 		
@@ -373,6 +383,11 @@
 				tmpMinIndex = 0,
 				label = (graphObj.getData()[k].label).toLowerCase();
 
+			if (graphObj.getData()[k].mode === "ghost") {
+				keyEventsIndex += graphObj.getData()[k].data.length;
+				continue;
+			}
+				
 			$.each(graphObj.getData()[k].data, function(i, el){
 								
 				//data point is null
@@ -423,6 +438,10 @@
 		
 		for (var k = 0; k < keyEvents.length; k++) {
 			var bgColor = graphObj.getData()[k].color;
+		
+			if (!keyEvents[k]) {
+				continue;
+			}
 		
 			for (var l = 0; l < keyEvents[k].length; l++) {
 
@@ -479,15 +498,18 @@
 			}
 		}).bind("plotselected", function (event, ranges) {
 			plot = $.plot($(container), dataPoints,
-					  $.extend(true, {}, graphProperties, {
-						  xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to }
-					  }));
+				$.extend(true, {}, graphProperties, {
+					xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to }
+				})
+			);
 		});
 		
 		return keyEvents;
 	}
-		
+	
 	countlyCommon.extractRangeData = function(db, propertyName, rangeArray, explainRange) {
+	
+		countlyCommon.periodObj = getPeriodObj();
 	
 		var dataArr = [],
 			dataArrCounter = 0,
@@ -518,12 +540,26 @@
 					dataArrCounter++;
 				}
 			} else {
+				var tmpRangeTotal = 0;
+			
 				for (var i = 0; i < (countlyCommon.periodObj.uniquePeriodArr.length); i++) {
 					var tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[i] + "." + propertyName);
 					
 					if (tmp_x && tmp_x[rangeArray[j]]) {
 						rangeTotal += tmp_x[rangeArray[j]];
 					}
+				}
+				
+				for (var i = 0; i < (countlyCommon.periodObj.uniquePeriodCheckArr.length); i++) {
+					var tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[i] + "." + propertyName);
+					
+					if (tmp_x && tmp_x[rangeArray[j]]) {
+						tmpRangeTotal += tmp_x[rangeArray[j]];
+					}
+				}
+				
+				if (rangeTotal > tmpRangeTotal) {
+					rangeTotal = tmpRangeTotal;
 				}
 				
 				if (rangeTotal != 0) {
@@ -548,47 +584,64 @@
 	
 	countlyCommon.extractChartData = function(db, clearFunction, chartData, dataProperties) {
 	
-		var periodMin = 0,
-			periodMax = 0,
+		countlyCommon.periodObj = getPeriodObj();
+	
+		var periodMin = countlyCommon.periodObj.periodMin,
+			periodMax = (countlyCommon.periodObj.periodMax + 1),
 			dataObj = {},
 			formattedDate = "",
 			tableData = [],
 			propertyNames = _.pluck(dataProperties, "name"),
-			propertyFunctions = _.pluck(dataProperties, "func");
-	
-		if (!countlyCommon.periodObj.isSpecialPeriod) {
-			periodMin = countlyCommon.periodObj.periodMin;
-			periodMax = (countlyCommon.periodObj.periodMax + 1);	
-		} else {
-			periodMin = 0;
-			periodMax = countlyCommon.periodObj.currentPeriodArr.length;
-		}
-		
-		for (var i = periodMin; i < periodMax; i++) {
-			
-			if (!countlyCommon.periodObj.isSpecialPeriod) {
-				
-				if (countlyCommon.periodObj.periodMin == 0) {
-					formattedDate = moment((countlyCommon.periodObj.activePeriod+" "+i+":00:00").replace(/\./g, "/"));
-				} else if ((""+countlyCommon.periodObj.activePeriod).indexOf(".") == -1) {
-					formattedDate = moment((countlyCommon.periodObj.activePeriod+"/"+i+"/1").replace(/\./g, "/"));
+			propertyFunctions = _.pluck(dataProperties, "func"),
+			currOrPrevious = _.pluck(dataProperties, "period"),
+			activeDate,
+			activeDateArr;
+
+		for (var j = 0; j < propertyNames.length; j++) {
+			if (currOrPrevious[j] === "previous") {
+				if (countlyCommon.periodObj.isSpecialPeriod) {
+					periodMin = 0;
+					periodMax = countlyCommon.periodObj.previousPeriodArr.length;
+					activeDateArr = countlyCommon.periodObj.previousPeriodArr;
 				} else {
-					formattedDate = moment((countlyCommon.periodObj.activePeriod+"/"+i).replace(/\./g, "/"));
+					activeDate = countlyCommon.periodObj.previousPeriod;
 				}
-			
-				dataObj = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.activePeriod + "." + i);
 			} else {
-				formattedDate = moment((countlyCommon.periodObj.currentPeriodArr[i]).replace(/\./g, "/"));
-				dataObj = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.currentPeriodArr[i]);
+				if (countlyCommon.periodObj.isSpecialPeriod) {
+					periodMin = 0;
+					periodMax = countlyCommon.periodObj.currentPeriodArr.length;
+					activeDateArr = countlyCommon.periodObj.currentPeriodArr;
+				} else {
+					activeDate = countlyCommon.periodObj.activePeriod;
+				}
 			}
+		
+			for (var i = periodMin; i < periodMax; i++) {
 			
-			dataObj = clearFunction(dataObj);
-			
-			tableData[i] = {};
-			tableData[i]["date"] = formattedDate.format(countlyCommon.periodObj.dateString);
-			
-			for (var j = 0; j < propertyNames.length; j++) {
-			
+				if (!countlyCommon.periodObj.isSpecialPeriod) {
+					
+					if (countlyCommon.periodObj.periodMin == 0) {
+						formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"));
+					} else if (("" + activeDate).indexOf(".") == -1) {
+						formattedDate = moment((activeDate + "/" + i + "/1").replace(/\./g, "/"));
+					} else {
+						formattedDate = moment((activeDate + "/" + i).replace(/\./g, "/"));
+					}
+				
+					dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i);
+				} else {
+					formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"));
+					dataObj = countlyCommon.getDescendantProp(db, activeDateArr[i]);
+				}
+				
+				dataObj = clearFunction(dataObj);
+				
+				if (!tableData[i]) {
+					tableData[i] = {};
+				}
+				
+				tableData[i]["date"] = formattedDate.format(countlyCommon.periodObj.dateString);
+
 				if (propertyFunctions[j]) {
 					propertyValue = propertyFunctions[j](dataObj);
 				} else {
@@ -611,12 +664,14 @@
 			keyEvents[k].min = _.min(chartVals);
 			keyEvents[k].max = _.max(chartVals);
 		}
-		
+
 		return {"chartDP": chartData, "chartData": _.compact(tableData), "keyEvents": keyEvents};
 	}
 	
 	countlyCommon.extractTwoLevelData = function(db, rangeArray, clearFunction, dataProperties) {
 
+		countlyCommon.periodObj = getPeriodObj();
+	
 		if (!rangeArray) {
 			return {"chartData": tableData};
 		}
@@ -717,6 +772,10 @@
 				if (propertyNames.indexOf("u") !== -1) {
 					//tmpPropertyObj["u"] = 0;
 				
+					var tmpUniqVal = 0,
+						tmpUniqValCheck = 0,
+						tmpCheckVal = 0;
+				
 					for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
 						tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[l] + "." + rangeArray[j]);
 						if (!tmp_x) {
@@ -729,8 +788,28 @@
 							tmpPropertyObj["u"] = propertyValue;
 						} else {
 							propertySum += propertyValue;
+							tmpUniqVal += propertyValue;
 							tmpPropertyObj["u"] += propertyValue;
 						}
+					}
+					
+					for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
+						tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[l] + "." + rangeArray[j]);
+						if (!tmp_x) {
+							continue;
+						}
+						tmp_x = clearFunction(tmp_x);
+						tmpCheckVal = tmp_x["u"];
+
+						if (typeof tmpCheckVal !== 'string') {
+							propertySum += tmpCheckVal;
+							tmpUniqValCheck += tmpCheckVal;
+							tmpPropertyObj["u"] += tmpCheckVal;
+						}
+					}
+					
+					if (tmpUniqVal > tmpUniqValCheck) {
+						tmpPropertyObj["u"] = tmpUniqValCheck;
 					}
 				}
 				
@@ -758,6 +837,14 @@
 		return {"chartData": _.compact(tableData)};
 	}
 	
+	// Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
+	/* Outputs an object array in the following form;
+		[
+			{ "name": "iPhone 4S", "percent": 50 }, 
+			{ "name": "iPhone 4", "percent": 30 }, 
+			{ "name": "iPhone 3GS", "percent": 20 } 
+		]
+	*/
 	countlyCommon.extractBarData = function(db, rangeArray, clearFunction) {
 	
 		var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, [
@@ -805,6 +892,8 @@
 		return barData;
 	}
 	
+	// Shortens the given number by adding K (thousand) or M (million) postfix.
+	// K is added only if the number is bigger than 10000.
 	countlyCommon.getShortNumber = function(number) {
 		
 		var tmpNumber = "";
@@ -824,26 +913,27 @@
 	// Function for getting the date range shown on the dashboard like 1 Aug - 30 Aug.
 	// countlyCommon.periodObj holds a dateString property which holds the date format.
 	countlyCommon.getDateRange = function() {
-				
+
+		countlyCommon.periodObj = getPeriodObj();
+		
 		if (!countlyCommon.periodObj.isSpecialPeriod) {
 			if (countlyCommon.periodObj.dateString == "HH:mm") {
-				formattedDateStart = moment((countlyCommon.periodObj.activePeriod+" " + countlyCommon.periodObj.periodMin + ":00:00").replace(/\./g, "/"));
-				formattedDateEnd = moment((countlyCommon.periodObj.activePeriod+" " + (countlyCommon.periodObj.periodMax) + ":00:00").replace(/\./g, "/"));
+				formattedDateStart = moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMin + ":00", "YYYY.M.D HH:mm");
+				formattedDateEnd = moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMax + ":00", "YYYY.M.D HH:mm");
+				
+				var nowMin = moment().format("mm");
+				formattedDateEnd.add("minutes", nowMin);
+				
 			} else if (countlyCommon.periodObj.dateString == "D MMM, HH:mm") {
 				formattedDateStart = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
-				formattedDateEnd = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D").add("hours", 23);
+				formattedDateEnd = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D").add("hours", 23).add("minutes", 59);
 			} else {
-				if ((countlyCommon.periodObj.periodMin + "").indexOf(".") == -1) { 
-					formattedDateStart = moment((countlyCommon.periodObj.activePeriod+"/" + countlyCommon.periodObj.periodMin + ".1").replace(/\./g, "/"));
-					formattedDateEnd = moment((countlyCommon.periodObj.activePeriod+"/" + (countlyCommon.periodObj.periodMax) + ".1").replace(/\./g, "/"));
-				} else {
-					formattedDateStart = moment((countlyCommon.periodObj.activePeriod+"/" + countlyCommon.periodObj.periodMin).replace(/\./g, "/"));
-					formattedDateEnd = moment((countlyCommon.periodObj.activePeriod+"/" + (countlyCommon.periodObj.periodMax)).replace(/\./g, "/"));
-				}
+				formattedDateStart = moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMin, "YYYY.M.D");
+				formattedDateEnd = moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMax, "YYYY.M.D");
 			}
 		} else {
-			formattedDateStart = moment((countlyCommon.periodObj.currentPeriodArr[0]).replace(/\./g, "/"));
-			formattedDateEnd = moment((countlyCommon.periodObj.currentPeriodArr[(countlyCommon.periodObj.currentPeriodArr.length - 1)]).replace(/\./g, "/"));
+			formattedDateStart = moment(countlyCommon.periodObj.currentPeriodArr[0], "YYYY.M.D");
+			formattedDateEnd = moment(countlyCommon.periodObj.currentPeriodArr[(countlyCommon.periodObj.currentPeriodArr.length - 1)], "YYYY.M.D");
 		}
 			
 		return formattedDateStart.format(countlyCommon.periodObj.dateString) + " - " + formattedDateEnd.format(countlyCommon.periodObj.dateString);
@@ -970,11 +1060,14 @@
 	}
 	
 	// Private Methods
+	
 	function getDaysInMonth(year, month) {
 		return new Date(year, month, 0).getDate();
 	}
 	
+	// Returns a period object used by all time related data calculation functions.
 	function getPeriodObj() {
+
 		var	now = moment(),
 			year = now.year(),
 			month = (now.month() + 1),
@@ -984,15 +1077,13 @@
 			previousPeriod,
 			periodMax,
 			periodMin,
-			currentPeriodArr = [],
-			previousPeriodArr = [],
 			periodObj = {},
 			isSpecialPeriod = false,
 			daysInPeriod = 0,
 			rangeEndDay = null,
 			dateString,
-			uniquePeriods = [],
-			previousUniquePeriods = [];
+			uniquePeriodsCheck = [],
+			previousUniquePeriodsCheck = [];
 
 		switch (_period) {
 			case "month":
@@ -1004,7 +1095,7 @@
 				break;
 			case "day":
 				activePeriod = year + "." + month;
-	
+
 				var previousDate = moment().subtract('days', day),
 					previousYear = previousDate.year(),
 					previousMonth = (previousDate.month() + 1),
@@ -1073,131 +1164,56 @@
 				rangeEndDay = _period[1];
 			}
 		}
-		
-		var weekCounts = {},
-			weeksArray = [],
-			monthCounts = {},
-			monthsArray = [],
-			previousWeekCounts = {},
-			previousWeeksArray = [],
-			previousMonthCounts = {},
-			previousMonthsArray = [];
-		
+
 		if (daysInPeriod != 0) {
 			var yearChanged = false,
-				currentYear = 0;
-					
+				currentYear = 0,
+				currWeeksArr = [], 
+				currWeekCounts = {}, 
+				currMonthsArr = [], 
+				currMonthCounts = {}, 
+				currPeriodArr = [],
+				prevWeeksArr = [], 
+				prevWeekCounts = {}, 
+				prevMonthsArr = [], 
+				prevMonthCounts = {}, 
+				prevPeriodArr = [];
+
 			for (var i = (daysInPeriod - 1); i > -1; i--) {
-				var periodStart = (!rangeEndDay)? moment().subtract('days', i) : moment(rangeEndDay).subtract('days', i),
-					periodStartYear = periodStart.year(),
-					previousPeriodStart = moment().subtract('days', (daysInPeriod + i));
+				var currIndex = (!rangeEndDay)? moment().subtract('days', i) : moment(rangeEndDay).subtract('days', i),
+					currIndexYear = currIndex.year(),
+					prevIndex = (!rangeEndDay)? moment().subtract('days', (daysInPeriod + i)) : moment(rangeEndDay).subtract('days', (daysInPeriod + i)),
+					prevYear = prevIndex.year();
 				
-				if (i != (daysInPeriod - 1) && currentYear != periodStartYear) {
+				if (i != (daysInPeriod - 1) && currentYear != currIndexYear) {
 					yearChanged = true;
 				}
-				currentYear = periodStartYear;
+				currentYear = currIndexYear;
 				
-				var currWeek = currentYear + "." + "w" + periodStart.format("w");
-				weeksArray[weeksArray.length] = currWeek;
-				weekCounts[currWeek] = (weekCounts[currWeek] != undefined)? (weekCounts[currWeek] + 1) : 1;
+				// Current period variables
 				
-				var currMonth = periodStart.format("YYYY.M");
-				monthsArray[monthsArray.length] = currMonth;
-				monthCounts[currMonth] = (monthCounts[currMonth] != undefined)? (monthCounts[currMonth] + 1) : 1;
+				var currWeek = currentYear + "." + "w" + currIndex.format("w");
+				currWeeksArr[currWeeksArr.length] = currWeek;
+				currWeekCounts[currWeek] = (currWeekCounts[currWeek])? (currWeekCounts[currWeek] + 1) : 1;
 				
-				var prevWeek = "w" + previousPeriodStart.format("w");
-				previousWeeksArray[previousWeeksArray.length] = prevWeek;
-				previousWeekCounts[prevWeek] = (previousWeekCounts[prevWeek] != undefined)? (previousWeekCounts[prevWeek] + 1) : 1;
+				var currMonth = currIndex.format("YYYY.M");
+				currMonthsArr[currMonthsArr.length] = currMonth;
+				currMonthCounts[currMonth] = (currMonthCounts[currMonth])? (currMonthCounts[currMonth] + 1) : 1;
 				
-				var prevMonth = previousPeriodStart.format("YYYY.M");
-				previousMonthsArray[previousMonthsArray.length] = prevMonth;
-				previousMonthCounts[prevMonth] = (previousMonthCounts[prevMonth] != undefined)? (previousMonthCounts[prevMonth] + 1) : 1;
+				currPeriodArr[currPeriodArr.length] = currIndex.format("YYYY.M.D");
 				
-				currentPeriodArr[currentPeriodArr.length] = periodStart.format("YYYY.M.D");
-				previousPeriodArr[previousPeriodArr.length] =  previousPeriodStart.format("YYYY.M.D");
-			}
-			
-			for (var key in weekCounts) {
-				if (weekCounts[key] < 7) {
-					for (var i=0; i < weeksArray.length; i++) {
-						weeksArray[i] = weeksArray[i].replace(key, 0);
-					}
-				}
-			}
-			
-			var tmpDaysInMonth = -1,
-				tmpPrevKey = -1;
-			
-			for (var key in monthCounts) {
-				if (tmpPrevKey != key) {
-					tmpDaysInMonth = moment(key, "YYYY.M").daysInMonth();
-					tmpPrevKey = key;
-				}
+				// Previous period variables
 				
-				if (monthCounts[key] < tmpDaysInMonth) {
-					for (var i=0; i < monthsArray.length; i++) {
-						monthsArray[i] = monthsArray[i].replace(key, 0);
-					}
-				}
-			}
-						
-			var rejectedWeeks = [];
-			for (var i=0; i < monthsArray.length; i++) {
-				if (monthsArray[i] == 0) {
-					if (weeksArray[i] == 0 || (rejectedWeeks.indexOf(weeksArray[i]) != -1)) {
-						uniquePeriods[i] = currentPeriodArr[i];
-					} else {
-						uniquePeriods[i] = weeksArray[i];
-					}
-				} else {
-					rejectedWeeks[rejectedWeeks.length] = weeksArray[i];
-					uniquePeriods[i] = monthsArray[i];
-				}
-			}
-			
-			rejectedWeeks = _.uniq(rejectedWeeks);
-			uniquePeriods = _.uniq(_.difference(uniquePeriods, rejectedWeeks));
-			
-			for (var key in previousWeekCounts) {
-				if (previousWeekCounts[key] < 7) {
-					for (var i=0; i < previousWeeksArray.length; i++) {
-						previousWeeksArray[i] = previousWeeksArray[i].replace(key, 0);
-					}
-				}
-			}
-			
-			var tmpDaysInMonth = -1,
-				tmpPrevKey = -1;
-			
-			for (var key in previousMonthCounts) {
-				if (tmpPrevKey != key) {
-					tmpDaysInMonth = moment(key, "YYYY.M").daysInMonth();
-					tmpPrevKey = key;
-				}
+				var prevWeek = prevYear + "." + "w" + prevIndex.format("w");
+				prevWeeksArr[prevWeeksArr.length] = prevWeek;
+				prevWeekCounts[prevWeek] = (prevWeekCounts[prevWeek])? (prevWeekCounts[prevWeek] + 1) : 1;
 				
-				if (previousMonthCounts[key] < tmpDaysInMonth) {
-					for (var i=0; i < previousMonthsArray.length; i++) {
-						previousMonthsArray[i] = previousMonthsArray[i].replace(key, 0);
-					}
-				}
+				var prevMonth = prevIndex.format("YYYY.M");
+				prevMonthsArr[prevMonthsArr.length] = prevMonth;
+				prevMonthCounts[prevMonth] = (prevMonthCounts[prevMonth])? (prevMonthCounts[prevMonth] + 1) : 1;
+				
+				prevPeriodArr[prevPeriodArr.length] =  prevIndex.format("YYYY.M.D");
 			}
-			
-			var rejectedWeeks = [];
-			for (var i=0; i < previousMonthsArray.length; i++) {
-				if (previousMonthsArray[i] == 0) {
-					if (previousWeeksArray[i] == 0 || (rejectedWeeks.indexOf(weeksArray[i]) != -1)) {
-						previousUniquePeriods[i] = previousPeriodArr[i];
-					} else {
-						previousUniquePeriods[i] = previousWeeksArray[i];
-					}
-				} else {
-					rejectedWeeks[rejectedWeeks.length] = weeksArray[i];
-					previousUniquePeriods[i] = previousMonthsArray[i];
-				}
-			}
-			
-			rejectedWeeks = _.uniq(rejectedWeeks);
-			previousUniquePeriods = _.uniq(_.difference(previousUniquePeriods, rejectedWeeks));
 			
 			dateString = (yearChanged)? "D MMM, YYYY" : "D MMM";
 			isSpecialPeriod = true;
@@ -1208,18 +1224,228 @@
 			"periodMax": periodMax,
 			"periodMin": periodMin, 
 			"previousPeriod": previousPeriod, 
-			"currentPeriodArr": currentPeriodArr,
-			"previousPeriodArr": previousPeriodArr,
+			"currentPeriodArr": currPeriodArr,
+			"previousPeriodArr": prevPeriodArr,
 			"isSpecialPeriod": isSpecialPeriod,
 			"dateString": dateString,
 			"daysInPeriod": daysInPeriod,
-			"uniquePeriodArr": uniquePeriods,
-			"previousUniquePeriodArr": previousUniquePeriods,
+			"uniquePeriodArr": getUniqArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts, currPeriodArr),
+			"uniquePeriodCheckArr": getUniqCheckArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts),
+			"previousUniquePeriodArr": getUniqArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts, prevPeriodArr),
+			"previousUniquePeriodCheckArr": getUniqCheckArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts)
 		}
-
+		
 		return periodObj;
 	}
+
+	function getUniqArray(weeksArray, weekCounts, monthsArray, monthCounts, periodArr) {
+
+		if (_period == "month" || _period == "day" || _period == "hour") {
+			return [];
+		}
+		
+		if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length == 2) {
+			if (_period[0] == _period[1]) {
+				return [];
+			}	
+		}
 	
+		var weeksArray = clone(weeksArray),
+			weekCounts = clone(weekCounts),
+			monthsArray = clone(monthsArray),
+			monthCounts = clone(monthCounts),
+			periodArr = clone(periodArr);
+
+		var uniquePeriods = [],
+			tmpDaysInMonth = -1,
+			tmpPrevKey = -1,
+			rejectedWeeks = [],
+			rejectedWeekDayCounts = {};
+		
+		for (var key in weekCounts) {
+		
+			// If this is the current week we can use it
+			if (key === moment().format("YYYY.\\w w").replace(" ", "")) {
+				continue;
+			}
+		
+			if (weekCounts[key] < 7) {
+				for (var i=0; i < weeksArray.length; i++) {
+					weeksArray[i] = weeksArray[i].replace(key, 0);
+				}
+			}
+		}
+		
+		for (var key in monthCounts) {
+			if (tmpPrevKey != key) {
+				if (moment().format("YYYY.M") === key) {
+					tmpDaysInMonth = moment().format("D");
+				} else {
+					tmpDaysInMonth = moment(key, "YYYY.M").daysInMonth();
+				}
+				
+				tmpPrevKey = key;
+			}
+			
+			if (monthCounts[key] < tmpDaysInMonth) {
+				for (var i=0; i < monthsArray.length; i++) {
+					monthsArray[i] = monthsArray[i].replace(key, 0);
+				}
+			}
+		}
+			
+		for (var i=0; i < monthsArray.length; i++) {
+			if (monthsArray[i] == 0) {
+				if (weeksArray[i] == 0 || (rejectedWeeks.indexOf(weeksArray[i]) != -1)) {
+					uniquePeriods[i] = periodArr[i];
+				} else {
+					uniquePeriods[i] = weeksArray[i];
+				}
+			} else {
+				rejectedWeeks[rejectedWeeks.length] = weeksArray[i];
+				uniquePeriods[i] = monthsArray[i];
+				
+				if (rejectedWeekDayCounts[weeksArray[i]]) {
+					rejectedWeekDayCounts[weeksArray[i]].count++;
+				} else {
+					rejectedWeekDayCounts[weeksArray[i]] = {
+						count: 1,
+						index: i
+					};
+				}
+			}
+		}
+
+		var totalWeekCounts = _.countBy(weeksArray, function(per) { 
+			return per;
+		});
+		
+		for (var weekDayCount in rejectedWeekDayCounts) {
+			
+			// If the whole week is rejected continue
+			if (rejectedWeekDayCounts[weekDayCount].count == 7) {
+				continue;
+			}
+			
+			// If its the current week continue
+			if (moment().format("YYYY.\\w w").replace(" ", "") == weekDayCount && totalWeekCounts[weekDayCount] == rejectedWeekDayCounts[weekDayCount].count) {
+				continue;
+			}
+			
+			// If only some part of the week is rejected we should add back daily buckets
+			
+			var startIndex = rejectedWeekDayCounts[weekDayCount].index - (totalWeekCounts[weekDayCount] - rejectedWeekDayCounts[weekDayCount].count),
+				limit = startIndex + (totalWeekCounts[weekDayCount] - rejectedWeekDayCounts[weekDayCount].count);
+			
+			for (var i = startIndex; i < limit; i++) {
+				// If there isn't already a monthly bucket for that day
+				if (monthsArray[i] == 0) {
+					uniquePeriods[i] = periodArr[i];
+				}
+			}
+		}
+				
+		rejectedWeeks = _.uniq(rejectedWeeks);
+		uniquePeriods = _.uniq(_.difference(uniquePeriods, rejectedWeeks));
+		
+		return uniquePeriods;
+	}
+
+	function getUniqCheckArray(weeksArray, weekCounts, monthsArray, monthCounts) {
+
+		if (_period == "month" || _period == "day" || _period == "hour") {
+			return [];
+		}
+		
+		if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length == 2) {
+			if (_period[0] == _period[1]) {
+				return [];
+			}	
+		}
+	
+		var weeksArray = clone(weeksArray),
+			weekCounts = clone(weekCounts),
+			monthsArray = clone(monthsArray),
+			monthCounts = clone(monthCounts);
+
+		var uniquePeriods = [],
+			tmpDaysInMonth = -1,
+			tmpPrevKey = -1;
+		
+		for (var key in weekCounts) {
+			if (key === moment().format("YYYY.\\w w").replace(" ", "")) {
+				continue;
+			}
+		
+			if (weekCounts[key] < 1) {
+				for (var i=0; i < weeksArray.length; i++) {
+					weeksArray[i] = weeksArray[i].replace(key, 0);
+				}
+			}
+		}
+		
+		for (var key in monthCounts) {
+			if (tmpPrevKey != key) {
+				if (moment().format("YYYY.M") === key) {
+					tmpDaysInMonth = moment().format("D");
+				} else {
+					tmpDaysInMonth = moment(key, "YYYY.M").daysInMonth();
+				}
+				
+				tmpPrevKey = key;
+			}
+			
+			if (monthCounts[key] < (tmpDaysInMonth * 0.5)) {
+				for (var i=0; i < monthsArray.length; i++) {
+					monthsArray[i] = monthsArray[i].replace(key, 0);
+				}
+			}
+		}
+			
+		for (var i=0; i < monthsArray.length; i++) {
+			if (monthsArray[i] == 0) {
+				if (weeksArray[i] == 0) {
+					
+				} else {
+					uniquePeriods[i] = weeksArray[i];
+				}
+			} else {
+				uniquePeriods[i] = monthsArray[i];
+			}
+		}
+
+		uniquePeriods = _.uniq(uniquePeriods);
+		
+		return uniquePeriods;
+	}
+
+	function clone(obj) {
+		if (null == obj || "object" != typeof obj) return obj;
+
+		if (obj instanceof Date) {
+			var copy = new Date();
+			copy.setTime(obj.getTime());
+			return copy;
+		}
+
+		if (obj instanceof Array) {
+			var copy = [];
+			for (var i = 0, len = obj.length; i < len; ++i) {
+				copy[i] = clone(obj[i]);
+			}
+			return copy;
+		}
+
+		if (obj instanceof Object) {
+			var copy = {};
+			for (var attr in obj) {
+				if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+			}
+			return copy;
+		}
+	}
+
+	// Function to show the tooltip when any data point in the graph is hovered on.
 	function showTooltip(x, y, contents) {			
 		var tooltip = '<div id="graph-tooltip">' + contents + '</div>';
 		

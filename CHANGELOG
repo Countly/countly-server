@@ -1,3 +1,23 @@
+12.09
+
+  * Added localization support. All the pages have translations in the 
+    following languages: Chinese, Dutch, French, German, Italian, Japanese, 
+    Spanish and Turkish (https://www.transifex.com/projects/p/countly/).
+
+  * Added city level location information to countries view. City level 
+    location information is available only for the country selected in 
+    timezone configuration of an application. 
+
+  * Added ghost graphs for all the 6 time graphs on the dashboard view. A 
+    light gray graph will represent the previous period. For instance if "30 
+    days" is selected, ghost graph will show the stats for the previous 30 
+    days.
+
+  * Added current month to the available time buckets.
+
+  * Optimized total user calculation for date ranges other than currrent 
+    year, month and day which already show the absolute number.
+
 12.08
 
   * Added custom event support. Each event has a key as well as a count and 

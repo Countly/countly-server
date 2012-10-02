@@ -1,4 +1,5 @@
-var express = require('express'),
+var http = require('http'),
+	express = require('express'),
 	mongoStore = require('connect-mongodb'),
 	expose = require('express-expose'),
 	mongo = require('mongoskin'),
@@ -222,6 +223,8 @@ app.get('/dashboard', function(req, res, next) {
 });
 
 app.get('/setup', function(req, res, next) {
+	res.render('setup', { "csrf": req.session._csrf });
+	/*
 	countlyDb.collection('members').count({}, function(err, memberCount){
 		if (memberCount) {
 			res.redirect('/login');
@@ -229,6 +232,7 @@ app.get('/setup', function(req, res, next) {
 			res.render('setup', { "csrf": req.session._csrf });
 		}
 	});
+	*/
 });
 
 app.get('/login', function(req, res, next) {
@@ -341,10 +345,12 @@ app.post('/setup', function(req, res, next) {
 		if (memberCount) {
 			res.redirect('/login');
 		} else {
-			if (req.body.username && req.body.password) {
+			if (req.body.username && req.body.password && req.body.email) {
 				var password = sha1Hash(req.body.password);
 			
-				countlyDb.collection('members').insert({"username": req.body.username, "password": password, "global_admin": true}, {safe: true}, function(err, member){
+				countlyDb.collection('members').insert({"full_name": req.body.username, "username": req.body.username, "password": password, "email": req.body.email, "global_admin": true}, {safe: true}, function(err, member){
+					http.get('http://count.ly/t?a=f7f718f83b4282a31e98ab974948a318');
+					
 					req.session.uid = member[0]["_id"];
 					req.session.gadm = true;
 					res.redirect('/dashboard');
@@ -520,8 +526,9 @@ app.post('/apps/delete', function(req, res, next) {
 		countlyDb.collection('users').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 		countlyDb.collection('carriers').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 		countlyDb.collection('locations').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
+		countlyDb.collection('cities').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 		countlyDb.collection('realtime').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
-		countlyDb.collection('app_users').remove({"app_id": countlyDb.ObjectID(req.body.app_id)});
+		countlyDb.collection('app_users' + req.body.app_id).drop();
 		countlyDb.collection('devices').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 		countlyDb.collection('device_details').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 		countlyDb.collection('app_versions').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
@@ -555,7 +562,8 @@ app.post('/apps/reset', function(req, res, next) {
 	countlyDb.collection('users').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 	countlyDb.collection('carriers').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 	countlyDb.collection('locations').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
-	countlyDb.collection('app_users').remove({"app_id": countlyDb.ObjectID(req.body.app_id)});
+	countlyDb.collection('cities').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
+	countlyDb.collection('app_users' + req.body.app_id).drop();
 	countlyDb.collection('devices').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 	countlyDb.collection('device_details').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 	countlyDb.collection('app_versions').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
@@ -565,6 +573,8 @@ app.post('/apps/reset', function(req, res, next) {
 			for (var i = 0; i < events.list.length; i++) {
 				countlyDb.collection(events.list[i] + req.body.app_id).drop();
 			}
+			
+			countlyDb.collection('events').remove({"_id": countlyDb.ObjectID(req.body.app_id)});
 		}
 	});
 	

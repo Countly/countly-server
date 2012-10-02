@@ -1,4 +1,4 @@
-(function(countlyLocation, $, undefined) {
+(function(countlyCity, $, undefined) {
 
 	// Private Properties
 	var _periodObj = {},
@@ -9,24 +9,20 @@
 		_dataTable,
 		_chartElementId = "geo-chart",
 		_chartOptions = {
-			displayMode: 'region',
+			displayMode: 'markers',
 			colorAxis: {minValue: 0,  colors: ['#D7F1D8', '#6BB96E']},
 			resolution: 'countries',
 			toolTip: {textStyle: {color: '#FF0000'}, showColorCode: false},
 			legend: "none",
 			backgroundColor: "transparent",
-			datalessRegionColor: "#FFF"
+			datalessRegionColor: "#FFF",
+			region: "TR"
 		},
 		_countryMap = {};
 		
 	// Public Methods
-	countlyLocation.initialize = function() {
+	countlyCity.initialize = function() {
 		_periodObj = countlyCommon.periodObj;
-		
-		// Load local country names
-		$.get('/localization/countries/'+countlyCommon.BROWSER_LANG_SHORT+'/country.json', function(data) {
-			_countryMap = data;
-		});
 	
 		if (!countlyCommon.DEBUG) {
 			return $.ajax({
@@ -34,7 +30,7 @@
 				url: countlyCommon.READ_API_URL,
 				data: {
 					"app_key" : countlyCommon.ACTIVE_APP_KEY,
-					"method" : "locations"
+					"method" : "cities"
 				},
 				dataType: "jsonp",
 				success: function(json) {
@@ -48,14 +44,14 @@
 		}
 	};
 
-	countlyLocation.refresh = function() {
+	countlyCity.refresh = function() {
 		_periodObj = countlyCommon.periodObj;
 	
 		if (!countlyCommon.DEBUG) {
 		
 			if (_activeAppKey != countlyCommon.ACTIVE_APP_KEY) {
 				_activeAppKey = countlyCommon.ACTIVE_APP_KEY;
-				return countlyLocation.initialize();
+				return countlyCity.initialize();
 			}
 		
 			return $.ajax({
@@ -63,7 +59,7 @@
 				url: countlyCommon.READ_API_URL,
 				data: {
 					"app_key" : countlyCommon.ACTIVE_APP_KEY,
-					"method" : "locations",
+					"method" : "cities",
 					"action": "refresh"
 				},
 				dataType: "jsonp",
@@ -78,12 +74,12 @@
 		}
 	};
 	
-	countlyLocation.reset = function() {
+	countlyCity.reset = function() {
 		_locationsDb = {};
 		setMeta();
 	}
 	
-	countlyLocation.drawGeoChart = function(options) {
+	countlyCity.drawGeoChart = function(options) {
 		
 		_periodObj = countlyCommon.periodObj;	
 		
@@ -107,7 +103,7 @@
 		}
 	};
 	
-	countlyLocation.refreshGeoChart = function() {
+	countlyCity.refreshGeoChart = function() {
 		if (google.visualization) {
 			reDraw();
 		} else {
@@ -115,19 +111,13 @@
 		}
 	}
 	
-	countlyLocation.getLocationData = function(options) {
+	countlyCity.getLocationData = function(options) {
 		
-		var locationData = countlyCommon.extractTwoLevelData(_locationsDb, _countries, countlyLocation.clearLocationObject, [
+		var locationData = countlyCommon.extractTwoLevelData(_locationsDb, _countries, countlyCity.clearLocationObject, [
 			{
 				"name":"country",
 				"func": function(rangeArr, dataObj) {
-					return countlyLocation.getCountryName(rangeArr);
-				}
-			}, 
-			{
-				"name":"code",
-				"func": function(rangeArr, dataObj) {
-					return rangeArr.toLowerCase();
+					return rangeArr;
 				}
 			},
 			{ "name":"t" },
@@ -144,7 +134,7 @@
 		return locationData.chartData;
 	}
 
-	countlyLocation.clearLocationObject = function(obj) {
+	countlyCity.clearLocationObject = function(obj) {
 		if (obj) {
 			if(!obj["t"]) obj["t"] = 0;
 			if(!obj["n"]) obj["n"] = 0;
@@ -157,85 +147,58 @@
 		return obj;
 	}
 	
-	countlyLocation.getCountryName = function(cc) {
-		var countryName = _countryMap[cc.toUpperCase()];
-		
-		if (countryName) {
-			return countryName;
-		} else {
-			return "Unknown";
-		}
-	}
-	
-	countlyLocation.changeLanguage = function() {
-		// Load local country names
-		return $.get('/localization/countries/'+countlyCommon.BROWSER_LANG_SHORT+'/country.json', function(data) {
-			_countryMap = data;
-		});
-	}
-	
 	//Private Methods
-	function draw() {
+	function draw() {	
 		var chartData = {cols: [], rows: []};
 		
 		_chart = new google.visualization.GeoChart(document.getElementById(_chartElementId));
 				
-		var tt = countlyCommon.extractTwoLevelData(_locationsDb, _countries, countlyLocation.clearLocationObject, [
+		var tt = countlyCommon.extractTwoLevelData(_locationsDb, _countries, countlyCity.clearLocationObject, [
 			{
 				"name":"country",
 				"func": function(rangeArr, dataObj) {
-					return countlyLocation.getCountryName(rangeArr);
+					return rangeArr;
 				}
 			},
 			{ "name":"t" }
 		]);
 		
-		chartData.cols = [{id: 'country', label: jQuery.i18n.map["countries.table.country"], type: 'string'}, {id: 'total', label: jQuery.i18n.map["common.total"], type: 'number'}];
+		chartData.cols = [{id: 'city', label: "City", type: 'string'},
+						  {id: 'total', label: jQuery.i18n.map["common.total"], type: 'number'}];
+						  
 		chartData.rows = _.map(tt.chartData, function(value, key, list){
 			if (value.country == "European Union" || value.country == "Unknown") {
-				return {c: [{v: ""}, {v: value["t"]}]};
+				return {c: []};
 			}
 			return {c: [{v: value.country}, {v: value["t"]}]};
 		});
 		
 		_dataTable = new google.visualization.DataTable(chartData);
 
-		_chartOptions['region'] = "world"; 
-		_chartOptions['resolution'] = 'countries';
-		_chartOptions["displayMode"] = "region";
-		
-		// This is how you handle regionClick and change zoom for only a specific country
-		
-		if (_chartOptions.height > 300) {
-			google.visualization.events.addListener(_chart, 'regionClick', function(eventData) {
-				var activeAppCountry = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].country;
-				if (activeAppCountry && eventData.region == activeAppCountry) {
-					_chartOptions['region'] = eventData.region;
-					_chartOptions['resolution'] = 'countries';
-					_chart.draw(_dataTable, _chartOptions);
-					
-					$(document).trigger('selectMapCountry');
-				}
-			});
+		if (countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].country) {
+			_chartOptions['region'] = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].country; 
 		}
 		
-		_chart.draw(_dataTable, _chartOptions);
+		_chartOptions['resolution'] = 'countries';
+		_chartOptions["displayMode"] = "markers";
+
+		_chart.draw(_dataTable, _chartOptions); 
 	}
 	
 	function reDraw() {
 		var chartData = {cols: [], rows: []};
 		
-		var tt = countlyCommon.extractTwoLevelData(_locationsDb, _locationsDb["countries"], countlyLocation.clearLocationObject, [
+		var tt = countlyCommon.extractTwoLevelData(_locationsDb, _locationsDb["cities"], countlyCity.clearLocationObject, [
 			{
 				"name":"country",
 				"func": function(rangeArr, dataObj) {
-					return countlyLocation.getCountryName(rangeArr);
+					return rangeArr;
 				}
 			},
 			{ "name":"t" }
 		]);
 		
-		chartData.cols = [{id: 'country', label: jQuery.i18n.map["countries.table.country"], type: 'string'}, {id: 'total', label: jQuery.i18n.map["common.total"], type: 'number'}];
+		chartData.cols = [{id: 'country', label: "City", type: 'string'}, {id: 'total', label: jQuery.i18n.map["common.total"], type: 'number'}];
 		chartData.rows = _.map(tt.chartData, function(value, key, list){
 			if (value.country == "European Union" || value.country == "Unknown") {
 				return {c: [{v: ""}, {v: value["t"]}]};
@@ -247,15 +210,16 @@
 		_chart.draw(_dataTable, _chartOptions);
 	}
 	
-	function geoDataSortHelper(a, b) {
+	function geoDataSortHelper(a, b){
 	  return ((a["t"] > b["t"]) ? -1 : ((a["t"] < b["t"]) ? 1 : 0));
 	}
 
 	function setMeta() {
 		if (_locationsDb['meta']) {
-			_countries = (_locationsDb['meta']['countries'])? _locationsDb['meta']['countries'] : [];
+			_countries = (_locationsDb['meta']['cities'])? _locationsDb['meta']['cities'] : [];
 		} else {
 			_countries = [];
 		}
 	}
-}(window.countlyLocation = window.countlyLocation || {}, jQuery));
+
+}(window.countlyCity = window.countlyCity || {}, jQuery));

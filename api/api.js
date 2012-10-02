@@ -24,8 +24,6 @@ var dbMap = {
 	'frequency': 'f',
 	'loyalty': 'l',
 	'sum': 's',
-	'max': 'mx',
-	'min': 'mn',
 	'count': 'c'
 };
 
@@ -33,12 +31,15 @@ function isNumber(n) {
 	return !isNaN(parseFloat(n)) && isFinite(n);
 }
 
+// Initialization of the global time variables yearly, monthly, daily etc.
+// Also adjusts the time to current app's configured timezone.
 function initTimeVars(appTimezone, reqTimestamp) {
 	var tmpTimestamp;
-
+	
 	// Check if the timestamp paramter exists in the request and is an 10 digit integer
-	if (reqTimestamp && reqTimestamp.length == 10 && isNumber(reqTimestamp)) {
-		tmpTimestamp = reqTimestamp;
+	if (reqTimestamp && (reqTimestamp + "").length == 10 && isNumber(reqTimestamp)) {
+		// If the received timestamp is greater than current time use the current time as timestamp
+		tmpTimestamp = (reqTimestamp > time.time())? time.time() : reqTimestamp;
 	}
 
 	// Set the timestamp to request parameter value or the current time
@@ -55,7 +56,8 @@ function initTimeVars(appTimezone, reqTimestamp) {
 	weekly = Math.ceil(moment(now.getTime()).format("DDD") / 7);
 }
 
-// Checks app_key from the http request against "apps" collection. This is the first step of every write request to API.
+// Checks app_key from the http request against "apps" collection. 
+// This is the first step of every write request to API.
 function validateAppForWriteAPI(getParams) {
 	countlyDb.collection('apps').findOne({'key': getParams.app_key}, function(err, app){
 		if (!app) {
@@ -63,6 +65,7 @@ function validateAppForWriteAPI(getParams) {
 		}
 		
 		getParams.app_id = app['_id'];
+		getParams.app_cc = app['country'];
 		appTimezone = app['timezone']; // Global var appTimezone
 		
 		initTimeVars(appTimezone, getParams.timestamp);
@@ -120,6 +123,7 @@ function fillTimeObject(object, property, increment) {
 	}
 }
 
+// Performs geoip lookup for the IP address of the app user
 function checkUserLocation(getParams) {
 	// Location of the user is retrieved using geoip-lite module from her IP address.
 	var locationData = geoip.lookup(getParams.ip_address);
@@ -129,11 +133,13 @@ function checkUserLocation(getParams) {
 			getParams.user.country = locationData.country;
 		}
 		
-		// City and coordinate values of the user location has no use for now but 
-		// here they are in case you need them.
 		if (locationData.city) {
 			getParams.user.city = locationData.city;
+		} else {
+			getParams.user.city = 'Unknown';
 		}
+		
+		// Coordinate values of the user location has no use for now
 		if (locationData.ll) {
 			getParams.user.lat = locationData.ll[0];
 			getParams.user.lng = locationData.ll[1];
@@ -147,14 +153,14 @@ function processUserLocation(getParams) {
 	// If begin_session exists in the API request
 	if (getParams.is_begin_session) {
 		// Before processing the session of the user we check if she exists in app_users collection.
-		countlyDb.collection('app_users').findOne({'_id': getParams.app_user_id }, function(err, dbAppUser){
+		countlyDb.collection('app_users' + getParams.app_id).findOne({'_id': getParams.app_user_id }, function(err, dbAppUser){
 			processUserSession(dbAppUser, getParams);
 		});
 	} else if (getParams.is_end_session) { // If end_session exists in the API request
 		if (getParams.session_duration) {
 			processSessionDuration(getParams);
 		}
-		countlyDb.collection('app_users').findOne({'_id': getParams.app_user_id }, function(err, dbAppUser){
+		countlyDb.collection('app_users' + getParams.app_id).findOne({'_id': getParams.app_user_id }, function(err, dbAppUser){
 			// If the user does not exist in the app_users collection or she does not have any 
 			// previous session duration stored than we dont need to calculate the session 
 			// duration range for this user.
@@ -214,7 +220,9 @@ function processSessionDurationRange(getParams, totalSessionDuration) {
 		
 		fillTimeObject(updateSessions, dbMap['durations'] + '.' + calculatedDurationRange);
 		countlyDb.collection('sessions').update({'_id': getParams.app_id}, {'$inc': updateSessions, '$addToSet': {'meta.d-ranges': calculatedDurationRange}}, {'upsert': false});
-		countlyDb.collection('app_users').update({'_id': getParams.app_user_id}, {'$set': {'session_duration': 0, 'app_id': getParams.app_id}}, {'upsert': true});
+		
+		// sd: session duration. dbMap is not used here for readability purposes.
+		countlyDb.collection('app_users' + getParams.app_id).update({'_id': getParams.app_user_id}, {'$set': {'sd': 0}}, {'upsert': true});
 }
 
 function processSessionDuration(getParams) {
@@ -225,7 +233,9 @@ function processSessionDuration(getParams) {
 		fillTimeObject(updateSessions, dbMap['duration'], session_duration);
 	
 		countlyDb.collection('sessions').update({'_id': getParams.app_id}, {'$inc': updateSessions}, {'upsert': false});
-		countlyDb.collection('app_users').update({'_id': getParams.app_user_id}, {'$inc': {'session_duration': session_duration, '$set': { 'app_id': getParams.app_id }}}, {'upsert': true});
+		
+		// sd: session duration. dbMap is not used here for readability purposes.
+		countlyDb.collection('app_users' + getParams.app_id).update({'_id': getParams.app_user_id}, {'$inc': {'sd': session_duration}}, {'upsert': true});
 	}
 }
 
@@ -233,6 +243,7 @@ function processUserSession(dbAppUser, getParams) {
 	var updateSessions = {},
 		updateUsers = {},
 		updateLocations = {},
+		updateCities = {},
 		userRanges = {},
 		loyaltyRanges = [
 			[0,1],
@@ -266,6 +277,7 @@ function processUserSession(dbAppUser, getParams) {
 	
 	fillTimeObject(updateSessions, dbMap['total']);
 	fillTimeObject(updateLocations, getParams.user.country + '.' + dbMap['total']);
+	fillTimeObject(updateCities, getParams.user.city + '.' + dbMap['total']);
 	
 	if (dbAppUser) {
 		if ((timestamp - dbAppUser.last_seen) >= (sessionFrequencyMax * 60 * 60)) {
@@ -325,6 +337,7 @@ function processUserSession(dbAppUser, getParams) {
 		for (var i=0; i < uniqueLevels.length; i++) {
 			updateSessions[uniqueLevels[i] + '.' + dbMap['unique']] = 1;
 			updateLocations[uniqueLevels[i] + '.' + getParams.user.country + '.' + dbMap['unique']] = 1;
+			updateCities[uniqueLevels[i] + '.' + getParams.user.city + '.' + dbMap['unique']] = 1;
 			updateUsers[uniqueLevels[i] + '.' + dbMap['frequency'] + '.' + calculatedFrequency] = 1;
 			updateUsers[uniqueLevels[i] + '.' + dbMap['loyalty'] + '.' + calculatedLoyaltyRange] = 1;
 		}
@@ -343,6 +356,8 @@ function processUserSession(dbAppUser, getParams) {
 		fillTimeObject(updateSessions, dbMap['unique']);
 		fillTimeObject(updateLocations, getParams.user.country + '.' + dbMap['new']);
 		fillTimeObject(updateLocations, getParams.user.country + '.' + dbMap['unique']);
+		fillTimeObject(updateCities, getParams.user.city + '.' + dbMap['new']);
+		fillTimeObject(updateCities, getParams.user.city + '.' + dbMap['unique']);
 		
 		// First time user.
 		calculatedLoyaltyRange = '0';
@@ -359,21 +374,32 @@ function processUserSession(dbAppUser, getParams) {
 	
 	countlyDb.collection('sessions').update({'_id': getParams.app_id}, {'$inc': updateSessions}, {'upsert': true});
 	countlyDb.collection('locations').update({'_id': getParams.app_id}, {'$inc': updateLocations, '$addToSet': {'meta.countries': getParams.user.country}}, {'upsert': true});
-	countlyDb.collection('app_users').update({'_id': getParams.app_user_id}, {'$inc': {'session_count': 1}, '$set': { 'last_seen': timestamp, 'app_id': getParams.app_id }}, {'upsert': true});
+	
+	if (getParams.app_cc == getParams.user.country) {
+		countlyDb.collection('cities').update({'_id': getParams.app_id}, {'$inc': updateCities, '$set': {'country': getParams.user.country}, '$addToSet': {'meta.cities': getParams.user.city}}, {'upsert': true});
+	}
 	
 	processPredefinedMetrics(getParams, isNewUser, uniqueLevels);
 }
 
 function processPredefinedMetrics(getParams, isNewUser, uniqueLevels) {
+
+	var userProps = {
+		'ls': timestamp, // last seen
+		'did': getParams.device_id, // device id
+		'cc': getParams.user.country // country code
+	};
+
 	if (!getParams.metrics) {
+		countlyDb.collection('app_users' + getParams.app_id).update({'_id': getParams.app_user_id}, {'$inc': {'sc': 1}, '$set': userProps}, {'upsert': true});
 		return false;
 	}
 	
 	var predefinedMetrics = [
-		{ db: "devices", metrics: [{ name: "_device", set: "devices" }] },
-		{ db: "carriers", metrics: [{ name: "_carrier", set: "carriers" }] },
-		{ db: "device_details", metrics: [{ name: "_os", set: "os" }, { name: "_os_version", set: "os_versions" }, { name: "_resolution", set: "resolutions" }] },
-		{ db: "app_versions", metrics: [{ name: "_app_version", set: "app_versions" }] }
+		{ db: "devices", metrics: [{ name: "_device", set: "devices", short_code: "d" }] },
+		{ db: "carriers", metrics: [{ name: "_carrier", set: "carriers", short_code: "c" }] },
+		{ db: "device_details", metrics: [{ name: "_os", set: "os", short_code: "p" }, { name: "_os_version", set: "os_versions", short_code: "pv" }, { name: "_resolution", set: "resolutions" }] },
+		{ db: "app_versions", metrics: [{ name: "_app_version", set: "app_versions", short_code: "av" }] }
 	];
 	
 	for (var i=0; i < predefinedMetrics.length; i++) {
@@ -399,12 +425,19 @@ function processPredefinedMetrics(getParams, isNewUser, uniqueLevels) {
 						tmpTimeObj[uniqueLevels[k] + '.' + escapedMetricVal + '.' + dbMap['unique']] = 1;
 					}
 				}
+				
+				// Assign properties to app_users document of the current user
+				if (tmpMetric.short_code) {
+					userProps[tmpMetric.short_code] = escapedMetricVal;
+				}
 			}
 		}
 		
 		if (needsUpdate) {
 			countlyDb.collection(predefinedMetrics[i].db).update({'_id': getParams.app_id}, {'$inc': tmpTimeObj, '$addToSet': tmpSet}, {'upsert': true});
 		}
+		
+		countlyDb.collection('app_users' + getParams.app_id).update({'_id': getParams.app_user_id}, {'$inc': {'sc': 1}, '$set': userProps}, {'upsert': true});
 	}
 }
 
@@ -432,6 +465,20 @@ function arrayAddUniq(arr, item) {
 	}
 };
 
+// Process events received in the following format;
+/*
+	[
+		{
+			"key": "event_key", 
+			"count": 1, 
+			"sum": 0.99, 
+			"segmentation": {
+				"seg_key1": seg_val1, 
+				"seg_key2": seg_val2
+			}
+		}
+	]
+*/
 function processEvents(getParams) {
 	if (!getParams.events) {
 		return false;
@@ -486,7 +533,7 @@ function processEvents(getParams) {
 				}
 			
 				tmpEventObj = {};
-				var tmpSegVal = currEvent.segmentation[segKey];
+				var tmpSegVal = currEvent.segmentation[segKey] + "";
 				
 				// Mongodb field names can't start with $ or contain .
 				tmpSegVal = tmpSegVal.replace(/^\$/, "").replace(/\./g, ":");
@@ -695,6 +742,7 @@ http.Server(function(req, res) {
 			var	queryString = urlParts.query;
 			var getParams = {
 					'app_id': '',
+					'app_cc': '',
 					'app_key': queryString.app_key,
 					'ip_address': req.headers['x-forwarded-for'] || req.connection.remoteAddress,
 					'sdk_version': queryString.sdk_version,
@@ -708,7 +756,8 @@ http.Server(function(req, res) {
 					'user' : {
 						'last_seen': 0, 
 						'duration': 0,
-						'country': 'Unknown'
+						'country': 'Unknown',
+						'city': 'Unknown'
 					},
 					'timestamp': queryString.timestamp
 				};
@@ -773,6 +822,7 @@ http.Server(function(req, res) {
 				case 'device_details':
 				case 'carriers':
 				case 'app_versions':
+				case 'cities':
 					validateAppForReadAPI(getParams, fetchTimeData, getParams.method, res);
 					break;
 				case 'events':

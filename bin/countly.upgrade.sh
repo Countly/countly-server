@@ -22,8 +22,11 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 #stop countly
 stop countly-supervisor
 
-#update all mongo collections for 12.08
+#update all mongo collections for 12.09
 mongo countly $DIR/updateCollections.js
 
 #start countly
 start countly-supervisor
+
+os="`lsb_release -ds`"
+wget 'http://count.ly/t?a=247152a73e2b3934ab73c4477c5f85e1&cly_v=907348361b9fc62242b06465b925bb32&os_v='"$os" >/dev/null 2>&1
