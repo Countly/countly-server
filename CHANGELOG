@@ -15,7 +15,7 @@
 
   * Added current month to the available time buckets.
 
-  * Optimized total user calculation for date ranges other than currrent 
+  * Optimized total user calculation for date ranges other than current 
     year, month and day which already show the absolute number.
 
 12.08
