@@ -16,9 +16,8 @@
 	<link rel="stylesheet" href="/javascripts/tablesorter/style.css" />
 	<link rel="stylesheet" href="/javascripts/tipsy/tipsy.css" />
 	<link rel="stylesheet" href="/stylesheets/jqueryui/jquery.ui.all.css" />
-	<link rel="stylesheet" href="/stylesheets/main.css" />
+	<link rel="stylesheet" href="/stylesheets/main.css?v12.09" />
 	<link rel="stylesheet" href="/stylesheets/webfonts.css" />
-	<link rel="stylesheet" href="/javascripts/tablesorter/pager/jquery.tablesorter.pager.css"/>
 	<script><%- javascript %></script>
 </head>
 <body> 
@@ -114,28 +113,35 @@
 		</div>
 		<div id="sidebar-bottom-container">
 			<div class="menu">
-				<a id="sidebar-countly-version">Countly v12.08</a>
+				<a id="sidebar-countly-version">Countly v12.09</a>
 				<a class="item" id="account-settings" data-localize="sidebar.settings"></a>
 				<a class="item" id="user-logout" href="/logout" data-localize="sidebar.logout"></a>
 			</div>
 			<div id="language-menu">
-				<a data-language-code="en" class="item">English</a>
-				<a data-language-code="es" class="item">Español</a>
-				<a data-language-code="fr" class="item">Français</a>
-				<a data-language-code="it" class="item">Italiano</a>
-				<a data-language-code="tr" class="item">Türkçe</a>
-				<a data-language-code="ja" class="item">日本語</a>			
+				<div class="group">
+					<a data-language-code="de" class="item">Deutsch</a>
+					<a data-language-code="en" class="item">English</a>
+					<a data-language-code="es" class="item">Español</a>
+					<a data-language-code="fr" class="item">Français</a>
+					<a data-language-code="it" class="item">Italiano</a>
+				</div>
+				<div class="group">
+					<a data-language-code="nl" class="item">Nederlands</a>
+					<a data-language-code="tr" class="item">Türkçe</a>
+					<a data-language-code="zh" class="item">中文</a>
+					<a data-language-code="ja" class="item">日本語</a>
+				</div>
 			</div>
 			<div class="username" id="menu-username"><%= member['username'] %></div>
-			<!--<div class="reveal-language-menu">EN</div>-->
+			<div class="reveal-language-menu">EN</div>
 			<div class="reveal-menu"></div>
 		</div>
 	</div>
 	<div id="app-nav">
 		<div id="app-nav-head">
-			<div id="app-nav-title" data-localize="management-applications.title"></div>
-			<div style="overflow:hidden; position:absolute; top:19px; right:10px;">
-				<% if(member['global_admin']) { %>
+			<div id="app-nav-title" style="max-width: 105px;" data-localize="management-applications.title"></div>
+			<div class="button-container">
+				<% if(member['global_admin'] && adminOfApps.length > 1) { %>
 				<div class="icon-button dark help-zone-vs" id="sort-app-button">
 					<div class="icon"></div>
 				</div>
@@ -180,15 +186,15 @@
 				<a id="dialog-cancel" class="icon-button light" data-localize="common.cancel"></a>
 		</div>
 	</div>
-	<div id="edit-account-details" style="display:none;">
+	<div id="edit-account-details">
 		<div class="message">
 			<div>
-				<div style="float:left; width:100px;" data-localize="user-settings.username"></div>
-				<div style="margin-left:105px;"><input id="username" type="text" value=""/></div>
+				<div class="title" data-localize="user-settings.username"></div>
+				<div class="input"><input id="username" type="text" value=""/></div>
 			</div>
 			<div style="margin-top:15px;">
-				<div style="float:left; width:100px;" data-localize="user-settings.change-password"></div> 
-				<div style="margin-left:105px;">
+				<div class="title" data-localize="user-settings.change-password"></div> 
+				<div class="input">
 					<div><input id="old_pwd" type="password" placeholder="Old password..." data-localize="placeholder.old-password"/></div>
 					<div style="margin-top:10px;"><input id="new_pwd" type="password" placeholder="New password..." data-localize="placeholder.new-password"/></div>
 					<div style="margin-top:5px;"><input id="re_new_pwd" type="password" placeholder="Again..." data-localize="placeholder.again"/></div>
@@ -207,17 +213,18 @@
 	<script id="template-date-selector" type="text/x-handlebars-template">
 		<div id="date-selector" class="help-zone-vs">
 			<div class="calendar" id="date-picker-button"></div>
-			<div id="date-picker" style="display:none; position:absolute; z-index:10; margin-top:38px; margin-left:-175px; padding:2px 3px 6px 3px; background-color:rgba(85,85,85,1); border:1px solid #333; box-shadow: inset 0 0 0 1px #777; border-radius:5px; background-image:url('/images/dashboard/calendar_bg.png');">
-				<div style="width:14px; margin:0 auto; margin-top:-10px; height:9px; background-image:url('/images/dashboard/calendar_tip.png'); z-index:20;"></div>
-				<div style="overflow: auto; box-shadow: inset 0 0 1px 1px #999, 0 1px 0 0 #777; padding: 6px; background-color: #CCC; border-radius: 4px; border: 1px solid #333; margin:3px; margin-top:5px;">
-					<div id="date-from" style="float:left; margin-right:3px; border:1px solid #666; border-radius:3px;"></div>
-					<div id="date-to" style="float:left; margin-left:3px; border:1px solid #666; border-radius:3px;"></div>
+			<div id="date-picker">
+				<div class="tip"></div>
+				<div class="calendar-container">
+					<div id="date-from" class="calendar"></div>
+					<div id="date-to" class="calendar"></div>
 				</div>			
-				<div style="overflow:auto; margin-top:6px; padding:3px;">
+				<div class="button-container">
 					<div id="date-submit" style="float:right;" class="cly-button-dark" data-localize="common.apply"></div>
 				</div>
 			</div>
 			<div class="button" id="month">2012</div>
+			<div class="button" id="day"></div>
 			<div class="button" id="hour" data-localize="common.today"></div>
 			<div class="button" id="7days" data-localize="common.7days"></div>
 			<div class="button" id="30days" data-localize="common.30days"></div>
@@ -260,16 +267,16 @@
 			</div>
 			<div class="widget-content help-zone-vb" data-help-localize="{{{chart-helper}}}" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
 				{{#if graph-type-double-pie}}
-				<div style="float:left; width:50%; position:relative;">
+				<div class="pie-chart-container">
 					<div style="border-right:1px solid #CCC;">
 						<div class="pie-overlay one {{logo-class}}">
 							<div class="title">{{pie-titles.left}}</div>
 						</div>
-						<div id="dashboard-graph" class="graph" style="width:500px; margin:0 auto; height:360px; font-family:'Ubuntu';"></div>	
+						<div id="dashboard-graph" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>	
 					</div>
 				</div>
-				<div style="float:left; width:50%; position:relative;">
-					<div class="graph-segment-container" style="position:absolute; left:3px; top:10px; z-index:3;">
+				<div class="pie-chart-container">
+					<div class="graph-segment-container">
 					{{#if graph-segmentation}}
 						<div class="graph-segment {{graph-segmentation.class}}" data-name="{{graph-segmentation.name}}"></div>
 					{{/if}}
@@ -277,7 +284,7 @@
 					<div class="pie-overlay two {{logo-class}}">
 						<div class="title">{{pie-titles.right}}</div>
 					</div>
-					<div id="dashboard-graph2" class="graph" style="width:500px; margin:0 auto; height:360px; font-family:'Ubuntu';"></div>
+					<div id="dashboard-graph2" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>
 				</div>
 				{{else}}
 				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
@@ -383,6 +390,9 @@
 				{{> date-selector }}
 			</div>
 			<div class="widget-content help-zone-vb" data-help-localize="{{{chart-helper}}}" style="height:495px; background-color:#FFF;">
+				<div style="position:absolute; top:80px; right:30px; z-index:1;">
+					<a id="toggle-map" class="icon-button light"></a>
+				</div>
 				<div id="geo-chart-outer"><div id="geo-chart" style="margin:0 auto; padding:20px;"></div></div>
 			</div>
 			<div class="widget-footer" style="background-color:#EEEEEE;">
@@ -412,7 +422,9 @@
 				{{#each chart-data.rows}}
 				<tr>
 					<td>
-						<div class="flag" style="background-image:url('/images/flags/{{this.code}}.png');"></div>
+						{{#if this.code}}
+							<div class="flag" style="background-image:url('/images/flags/{{this.code}}.png');"></div>
+						{{/if}}
 						{{this.country}}
 					</td>
 					<td>{{getFormattedNumber this.t}}</td>
@@ -492,7 +504,7 @@
 				</div>
 			</div>
 			{{/if}}
-			<div id="geo-chart-outer" style="padding-bottom: 8px;"><div id="geo-chart" {{#if country-data}}style="margin-right:240px;"{{/if}}></div></div>
+			<div id="geo-chart-outer" style="padding-bottom: 8px;"><div id="geo-chart" {{#if country-data}}style="margin-right:282px;"{{/if}}></div></div>
 		</div>
 	</script>
 	
@@ -734,13 +746,13 @@
 					</table>
 				</div>
 				<div style="float:right;">
-					<a href="/sdks/countly-sdk-ios-v12.08.zip" class="icon-button light">Download iOS SDK</a>
-					<a href="/sdks/countly-sdk-android-v12.08.zip" class="icon-button light">Download Android SDK</a>
+					<a href="/sdks/countly-sdk-ios-v12.09.zip" class="icon-button light">iOS SDK</a>
+					<a href="/sdks/countly-sdk-android-v12.08.zip" class="icon-button light">Android SDK</a>
 				</div>
 			</div>
 			</div>
-			<div id="no-app-warning" style="display:none; margin-left:187px;" class="alert danger" data-localize="management-applications.no-app-warning"></div>
-			<div id="first-app-success" style="display:none; margin-left:187px; margin-top:-5px; margin-right:309px;" class="alert success" data-localize="management-applications.first-app-message"></div>
+			<div id="no-app-warning" class="alert danger" data-localize="management-applications.no-app-warning"></div>
+			<div id="first-app-success" class="alert success" data-localize="management-applications.first-app-message"></div>
 		</div>
 	</script>
 	
@@ -798,7 +810,7 @@
 	<script id="template-events"  type="text/x-handlebars-template">
 		<div id="event-nav">
 			<div id="event-nav-head">
-				<div id="event-nav-title" data-localize="events.title"></div>
+				<div id="event-nav-title" style="max-width: 120px;" data-localize="events.title"></div>
 				<div style="overflow:hidden; position:absolute; top:18px; right:10px;">
 					<% if(member['global_admin']) { %>
 					<div class="icon-button dark help-zone-vs" id="edit-events-button" style="padding: 4px 5px;">
@@ -820,19 +832,19 @@
 				<table class="events-table" cellpadding="0" cellspacing="0">
 					<thead>
 						<tr>
-							<th>Event key</th>
-							<th>Event name</th>
-							<th>Count</th>
-							<th>Sum</th>
+							<th data-localize="events.edit.event-key"></th>
+							<th data-localize="events.edit.event-name"></th>
+							<th data-localize="events.table.count"></th>
+							<th data-localize="events.table.sum"></th>
 						</tr>
 					</thead>
 					<tbody>
 						{{#eachOfObjectValue event-map}}
 						<tr>
 							<td class="event-key">{{this.event_key}}</td>
-							<td><input class="event-name" type="text" placeholder="Event name" value="{{this.name}}"/></td>
-							<td><input class="event-count" type="text" placeholder="Count" value="{{this.count}}"/></td>
-							<td><input class="event-sum" type="text" placeholder="Sum" value="{{this.sum}}"/></td>
+							<td><input class="event-name" type="text" placeholder="Event name"  data-localize="events.edit.event-name" value="{{this.name}}"/></td>
+							<td><input class="event-count" type="text" placeholder="Count" data-localize="events.table.count" value="{{this.count}}"/></td>
+							<td><input class="event-sum" type="text" placeholder="Sum" data-localize="events.table.sum" value="{{this.sum}}"/></td>
 						</tr>
 						{{/eachOfObjectValue}}
 					</tbody>
@@ -849,27 +861,27 @@
 			<div class="widget-header">
 				<div class="left">
 					<div id="event-update-area">
-					<div class="title">{{page-title}}</div>
-					<div class="event-segmentation">
-						{{#if segmentations}}
-						<div class="cly-select" style="width:220px;">
-							<div class="select-inner">
-								<div class="text-container">
-									<div class="text">{{active-segmentation}}</div>
-								</div>	
-								<div class="right combo"></div>
-							</div>
-							<div class="select-items square" style="width:220px;">
-								<div class="scrollable">
-									<div data-value="" class="segmentation-option item" data-localize="events.no-segmentation"></div>
-									{{#eachOfArray segmentations}}
-									<div data-value="{{value}}" class="segmentation-option item">{{value}}</div>
-									{{/eachOfArray}}
+						<div class="title">{{page-title}}</div>
+						<div class="event-segmentation">
+							{{#if segmentations}}
+							<div class="cly-select" style="width:220px;">
+								<div class="select-inner">
+									<div class="text-container">
+										<div class="text">{{active-segmentation}}</div>
+									</div>	
+									<div class="right combo"></div>
+								</div>
+								<div class="select-items square" style="width:220px;">
+									<div class="scrollable">
+										<div data-value="" class="segmentation-option item" data-localize="events.no-segmentation"></div>
+										{{#eachOfArray segmentations}}
+										<div data-value="{{value}}" class="segmentation-option item">{{value}}</div>
+										{{/eachOfArray}}
+									</div>
 								</div>
 							</div>
+							{{/if}}
 						</div>
-						{{/if}}
-					</div>
 					</div>
 				</div>
 				<div style="position:absolute; right:8px;">
@@ -878,20 +890,20 @@
 			</div>
 			<div class="widget-content" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
 				{{#if graph-type-double-pie}}
-				<div style="float:left; width:50%; position:relative;">
+				<div class="pie-chart-container">
 					<div style="border-right:1px solid #CCC;">
 						<div class="pie-overlay one {{logo-class}}"></div>
-						<div id="dashboard-graph" class="graph" style="width:500px; margin:0 auto; height:360px; font-family:'Ubuntu';"></div>	
+						<div id="dashboard-graph" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>	
 					</div>
 				</div>
-				<div style="float:left; width:50%; position:relative;">
-					<div class="graph-segment-container" style="position:absolute; left:3px; top:10px; z-index:3;">
+				<div class="pie-chart-container">
+					<div class="graph-segment-container">
 					{{#if graph-segmentation}}
 						<div class="graph-segment {{graph-segmentation.class}}" data-name="{{graph-segmentation.name}}"></div>
 					{{/if}}
 					</div>
 					<div class="pie-overlay two {{logo-class}}"></div>
-					<div id="dashboard-graph2" class="graph" style="width:500px; margin:0 auto; height:360px; font-family:'Ubuntu';"></div>
+					<div id="dashboard-graph2" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>
 				</div>
 				{{else}}
 				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
@@ -989,7 +1001,8 @@
 	</script>
 	
 	<script language="javascript" type="text/javascript" src="https://www.google.com/jsapi"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/jquery-1.7.2.min.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/jquery-1.8.2.min.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/underscore-min.js?v12.09"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery.form.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/tipsy/jquery.tipsy.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery.noisy.min.js"></script>
@@ -1010,21 +1023,21 @@
 	<script language="javascript" type="text/javascript" src="/javascripts/moment/lang-all.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery.peity.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/handlebars.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/underscore-min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/backbone-min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery.i18n.properties-min-1.0.9.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/jstz.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/store+json2.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.common.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.config.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.event.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.session.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.location.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.user.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.device.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.device.detail.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.app.version.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.carrier.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.template.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.common.js?v12.09"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.config.js?v12.09"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.event.js?v12.09"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.session.js?v12.09"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.city.js?v12.09"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.location.js?v12.09"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.user.js?v12.09"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.device.js?v12.09"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.device.detail.js?v12.09"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.app.version.js?v12.09"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.carrier.js?v12.09"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.template.js?v12.09"></script>
 </body>
 </html>

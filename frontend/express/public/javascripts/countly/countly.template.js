@@ -14,17 +14,10 @@ var countlyView = Backbone.View.extend({
 		this.renderCommon();
 	},
 	appChanged: function() {	//called when user changes selected app from the sidebar
-		countlySession.initialize();
-		countlyLocation.initialize();
-		countlyUser.initialize();
-		countlyDevice.initialize();
-		countlyCarrier.initialize();
-		countlyDeviceDetails.initialize();
-		countlyAppVersion.initialize();
-		countlyEvent.initialize();
-		
 		var self = this;
-		_.defer(function(){ self.refresh() });
+		$.when(countlySession.initialize(), countlyCity.initialize(), countlyLocation.initialize(), countlyUser.initialize(), countlyDevice.initialize(), countlyCarrier.initialize(), countlyDeviceDetails.initialize(), countlyAppVersion.initialize(), countlyEvent.initialize()).then(function(){
+			_.defer(function(){ self.refresh() });
+		});
 	},
 	render: function(eventName) {	//backbone.js view render function
 		this.renderCommon();
@@ -201,6 +194,11 @@ function fillKeyEvents(keyEvents) {
 	
 	$("#key-events").html("");
 	for (var k = 0; k < keyEvents.length; k++) {
+		
+		if (!keyEvents[k]) {
+			continue;
+		}
+		
 		for (var l = 0; l < keyEvents[k].length; l++) {								
 			$("#key-events").append("<tr>\
 				<td>\
@@ -435,8 +433,9 @@ window.DashboardView = countlyView.extend({
 			self.renderCommon(true);
 			
 			newPage = $("<div>"+self.template(self.templateData)+"</div>");
-			$(self.el).find("#big-numbers-container").html(newPage.find("#big-numbers-container").html());
-			$(self.el).find(".dashboard-summary").html(newPage.find(".dashboard-summary").html());
+			$("#big-numbers-container").replaceWith(newPage.find("#big-numbers-container"));
+			$(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
+			$(".widget-header .title").replaceWith(newPage.find(".widget-header .title"));
 			$(self.selectedView).parents(".big-numbers").addClass("active");
 			
 			switch(self.selectedView) {
@@ -716,21 +715,30 @@ window.LoyaltyView = countlyView.extend({
 });
 
 window.CountriesView = countlyView.extend({
+	cityView: (store.get("countly_location_city"))? store.get("countly_active_app") : false,
 	initialize: function() {
 		this.template = Handlebars.compile($("#template-analytics-countries").html());
 	},
 	render: function(eventName) {
 		this.renderCommon();
-		countlyLocation.drawGeoChart({height: 450});	
         return this;
     },
 	dateChanged: function() {
 		this.renderCommon();
-		countlyLocation.drawGeoChart({height: 450});
+		//countlyLocation.drawGeoChart({height: 450});
+	},
+	appChanged: function() {
+		var self = this;
+		$.when(countlySession.initialize(), countlyCity.initialize(), countlyLocation.initialize()).then(function(){
+			self.renderCommon();
+			app.pageScript();
+		});
+		//countlyLocation.drawGeoChart({height: 450});
 	},
 	renderCommon: function(isRefresh) {
-		var sessionData = countlySession.getSessionData();
-		
+		var sessionData = countlySession.getSessionData(),
+			tableFirstColTitle = (this.cityView)? jQuery.i18n.map["countries.table.city"] : jQuery.i18n.map["countries.table.country"];
+			
 		this.templateData = {
 			"page-title": jQuery.i18n.map["countries.title"],
 			"logo-class": "countries",
@@ -759,17 +767,37 @@ window.CountriesView = countlyView.extend({
 			},
 			"chart-data": {
 				"columnCount":4, 
-				"columns": [jQuery.i18n.map["countries.table.country"],jQuery.i18n.map["common.table.total-sessions"],jQuery.i18n.map["common.table.total-users"],jQuery.i18n.map["common.table.new-users"]],
+				"columns": [tableFirstColTitle, jQuery.i18n.map["common.table.total-sessions"],jQuery.i18n.map["common.table.total-users"],jQuery.i18n.map["common.table.new-users"]],
 				"rows": []
 			},
 			"chart-helper": "countries.chart",
 			"table-helper": "countries.table"
 		};
-				
-		this.templateData["chart-data"]["rows"] = countlyLocation.getLocationData();
 		
+		if (this.cityView) {
+			this.templateData["chart-data"]["rows"] = countlyCity.getLocationData();
+		} else {
+			this.templateData["chart-data"]["rows"] = countlyLocation.getLocationData();
+		}
+		
+		var self = this;
+		$(document).bind('selectMapCountry', function() {
+			self.cityView = true;
+			store.set("countly_location_city", true);
+			$("#toggle-map").addClass("active");
+			
+			countlyCity.drawGeoChart({height: 450});
+			self.refresh();
+		});
+
 		if (!isRefresh) {
+		
 			$(this.el).html(this.template(this.templateData));
+			
+			var activeApp = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID];
+			if (activeApp && activeApp.country) {
+				$("#toggle-map").text(countlyLocation.getCountryName(activeApp.country));
+			}
 			
 			$(".sortable").stickyTableHeaders();
 			
@@ -779,11 +807,39 @@ window.CountriesView = countlyView.extend({
 			}).bind("sortEnd", function(sorter) {
 				self.sortList = sorter.target.config.sortList;
 			});
+			
+			if (this.cityView) {
+				countlyCity.drawGeoChart({height: 450});
+				$("#toggle-map").addClass("active");
+			} else {
+				countlyLocation.drawGeoChart({height: 450});
+			}
+			
+			$("#toggle-map").on('click', function() {
+				if ($(this).hasClass("active")) {
+					self.cityView = false;
+					countlyLocation.drawGeoChart({height: 450});
+					$(this).removeClass("active");
+					self.refresh();
+					store.set("countly_location_city", false);
+				} else {
+					self.cityView = true;
+					countlyCity.drawGeoChart({height: 450});
+					$(this).addClass("active");
+					self.refresh();
+					store.set("countly_location_city", true);
+				}
+				
+				tableFirstColTitle = (self.cityView)? jQuery.i18n.map["countries.table.city"] : jQuery.i18n.map["countries.table.country"];
+				$("#content table.d-table").each(function() {
+					$(this).find("tr:eq(0) th:eq(0)").text(tableFirstColTitle);
+				});
+			});
 		}
 	},
 	refresh: function() {
 		var self = this;
-		$.when(countlySession.refresh(), countlyLocation.refresh()).then(function(){
+		$.when(countlySession.refresh(), countlyLocation.refresh(), countlyCity.refresh()).then(function(){
 			if (app.activeView != self) {
 				return false;
 			}
@@ -1199,6 +1255,7 @@ window.ManageAppsView = countlyView.extend({
 				
 				countlySession.initialize();
 				countlyLocation.initialize();
+				countlyCity.initialize();
 				countlyUser.initialize();
 				countlyDevice.initialize();
 				countlyCarrier.initialize();
@@ -1806,13 +1863,13 @@ window.EventsView = countlyView.extend({
 			countlyEvent.setActiveEvent(tmpCurrEvent);
 			$(".event-container").removeClass("active");
 			$(this).addClass("active");
-			self.refresh();
+			self.refresh(true);
 		});
 
 		$(".segmentation-option").on("click", function() {
 			var tmpCurrSegmentation = $(this).data("value");
 			countlyEvent.setActiveSegmentation(tmpCurrSegmentation);
-			self.refresh();
+			self.refresh(false, true);
 		});
 		
 		$("#edit-events-button").on("click", function() {
@@ -1885,7 +1942,7 @@ window.EventsView = countlyView.extend({
 		
 		if (countlyEvent.getEvents().length == 0) {
 			window.location = "dashboard#/";
-			CountlyHelpers.alert("There are no events tracked for this application!", "black");
+			CountlyHelpers.alert(jQuery.i18n.map["events.no-event"], "black");
 			return true;
 		}
 		
@@ -1912,7 +1969,7 @@ window.EventsView = countlyView.extend({
 			}
 		}
 	},
-	refresh: function() {
+	refresh: function(eventChanged, segmentationChanged) {
 		if (countlyEvent.getEvents().length == 0) {
 
 		}
@@ -1925,9 +1982,28 @@ window.EventsView = countlyView.extend({
 			self.renderCommon(true);
 			newPage = $("<div>"+self.template(self.templateData)+"</div>");
 			
-			$(self.el).find("#event-nav").replaceWith(newPage.find("#event-nav"));
+			$(self.el).find("#event-nav .scrollable").html(function() {
+				return newPage.find("#event-nav .scrollable").html();
+			});
+
 			$(self.el).find(".sortable").replaceWith(newPage.find(".sortable"));
-			$(self.el).find("#event-update-area").replaceWith(newPage.find("#event-update-area"));
+
+			// Segmentation change does not require title area refresh
+			if (!segmentationChanged) {
+				if ($("#event-update-area .cly-select").length && !eventChanged) {
+					// If there is segmentation for this event and this is not an event change refresh
+					// we just refresh the segmentation select's list
+					$(self.el).find("#event-update-area .select-items").html(function() {
+						return newPage.find("#event-update-area .select-items").html();
+					});
+				} else {
+					// Otherwise we refresh whole title area including the title and the segmentation select
+					// and afterwards initialize the select since we replaced it with a new element
+					$(self.el).find("#event-update-area").replaceWith(newPage.find("#event-update-area"));
+					CountlyHelpers.initializeSelect();
+				}
+			}
+
 			$(self.el).find(".widget-footer").html(newPage.find(".widget-footer").html());
 			$(self.el).find("#edit-event-container").replaceWith(newPage.find("#edit-event-container"));
 			
@@ -1939,15 +2015,6 @@ window.EventsView = countlyView.extend({
 			}).bind("sortEnd", function(sorter) {
 				self.sortList = sorter.target.config.sortList;
 			});
-			
-			$('.scrollable').slimScroll({
-				height: '100%',
-				start: 'top',
-				wheelStep: 10,
-				position: 'right'
-			});
-			
-			CountlyHelpers.initializeSelect();
 			
 			var eventData = countlyEvent.getEventData();
 			if (eventData.dataLevel == 2) {
@@ -1970,7 +2037,7 @@ var AppRouter = Backbone.Router.extend({
 		"/"			   			: "dashboard",
 		"/analytics/sessions" 	: "sessions",
 		"/analytics/countries" 	: "countries",
-		"/analytics/users" 		: "users",
+		"/analytics/users"		: "users",
 		"/analytics/loyalty" 	: "loyalty",
 		"/analytics/devices" 	: "devices",
 		"/analytics/platforms" 	: "platforms",
@@ -2053,13 +2120,13 @@ var AppRouter = Backbone.Router.extend({
 		var self = this;
 		if (this.readyToRender) {
 			viewName.render();
-			this.refreshActiveView = setInterval(function() { self.activeView.refresh(); }, 10000);
+			this.refreshActiveView = setInterval(function() { self.activeView.refresh(); }, countlyCommon.DASHBOARD_REFRESH_MS);
 			this.pageScript();
 		} else {
-			$.when(countlySession.initialize(), countlyLocation.initialize(), countlyUser.initialize(), countlyDevice.initialize(), countlyCarrier.initialize(), countlyDeviceDetails.initialize(), countlyAppVersion.initialize(), countlyEvent.initialize()).then(function(){
+			$.when(countlySession.initialize(), countlyCity.initialize(), countlyLocation.initialize(), countlyUser.initialize(), countlyDevice.initialize(), countlyCarrier.initialize(), countlyDeviceDetails.initialize(), countlyAppVersion.initialize(), countlyEvent.initialize()).then(function(){
 				self.readyToRender = true;
 				self.activeView.render();
-				self.refreshActiveView = setInterval(function() { self.activeView.refresh(); }, 10000);
+				self.refreshActiveView = setInterval(function() { self.activeView.refresh(); }, countlyCommon.DASHBOARD_REFRESH_MS);
 				self.pageScript();
 			});
 		}
@@ -2173,12 +2240,6 @@ var AppRouter = Backbone.Router.extend({
 					path:'/localization/dashboard/',
 					mode:'map'
 				});
-				
-				/* Localization test
-				$.each(jQuery.i18n.map, function(key, value) {
-					jQuery.i18n.map[key] = key;
-				});
-				*/
 			}
 		});
 		
@@ -2192,7 +2253,14 @@ var AppRouter = Backbone.Router.extend({
 				self.dateToSelected = countlyCommon.getPeriod()[1];
 			}
 		
-			// Initialize language related stuff
+			// Initialize localization related stuff
+		
+			// Localization test
+			/*
+			$.each(jQuery.i18n.map, function(key, value) {
+				jQuery.i18n.map[key] = key;
+			});
+			*/
 		
 			moment.lang(countlyCommon.BROWSER_LANG_SHORT);
 			$(".reveal-language-menu").text(countlyCommon.BROWSER_LANG_SHORT.toUpperCase());
@@ -2256,7 +2324,7 @@ var AppRouter = Backbone.Router.extend({
 			$("#sidebar-events").click(function(e) {	
 				$.when(countlyEvent.refreshEvents()).then(function(){ 
 					if (countlyEvent.getEvents().length == 0) {
-						CountlyHelpers.alert("There are no events tracked for this application!", "black");
+						CountlyHelpers.alert(jQuery.i18n.map["events.no-event"], "black");
 						e.stopImmediatePropagation();
 						e.preventDefault();
 					}
@@ -2464,15 +2532,17 @@ var AppRouter = Backbone.Router.extend({
 						}
 					);
 				} else {
-					self.refreshActiveView = setInterval(function() { self.activeView.refresh(); }, 10000);
-					$.idleTimer(30000);
+					self.refreshActiveView = setInterval(function() { self.activeView.refresh(); }, countlyCommon.DASHBOARD_REFRESH_MS);
+					$.idleTimer(countlyCommon.DASHBOARD_IDLE_MS);
 					$(".help-zone-vs, .help-zone-vb").unbind('mouseenter mouseleave');
 				}
 				e.stopPropagation();
 			});
 		
 			$("#user-logout").click(function() {
-				store.clear();
+				store.remove('countly_active_app');
+				store.remove('countly_date');
+				store.remove('countly_location_city');
 			});
 		});
 
@@ -2492,7 +2562,7 @@ var AppRouter = Backbone.Router.extend({
 			$("#new-install-overlay").show();
 		}
 		
-		$.idleTimer(30000);
+		$.idleTimer(countlyCommon.DASHBOARD_IDLE_MS);
 		
 		$(document).bind("idle.idleTimer", function(){
 			clearInterval(self.refreshActiveView);
@@ -2500,10 +2570,11 @@ var AppRouter = Backbone.Router.extend({
 
 		$(document).bind("active.idleTimer", function(){
 			self.activeView.refresh();
-			self.refreshActiveView = setInterval(function() { self.activeView.refresh(); }, 10000);
+			self.refreshActiveView = setInterval(function() { self.activeView.refresh(); }, countlyCommon.DASHBOARD_REFRESH_MS);
 		});
 	},
 	localize: function() {
+	
 		// translate help module
 		$("[data-help-localize]").each(function() {
 			var elem = $(this);

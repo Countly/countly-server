@@ -23,6 +23,10 @@ a:active {color:inherit;}
 #sidebar-bottom-container .reveal-language-menu {float:right; padding:5px 0 6px 5px; margin:-5px -4px -5px 5px; border-left:1px solid #1A1A1A; cursor:pointer; transition:color 1s;}
 #sidebar-bottom-container .reveal-language-menu:hover {color:#848484; transition:color 1s;}
 #sidebar-bottom-container .menu, #language-menu {display:none; margin-bottom:5px; border-bottom:1px solid #2D2D2D;}
+#sidebar-bottom-container #language-menu {overflow:auto; box-shadow:inset 0 -1px 0 0 #1A1A1A;}
+#sidebar-bottom-container #language-menu .group { float:left; margin-right:34px; }
+#sidebar-bottom-container #language-menu .group:last-child { margin-right:0px; }
+#sidebar-bottom-container #language-menu .group .item:last-child { border-bottom:none; }
 #sidebar-bottom-container .item {padding-bottom:3px; padding-top:3px; cursor:pointer; display:block; }
 #sidebar-bottom-container .item:last-child {border-bottom:1px solid #1A1A1A; padding-bottom:8px;}
 #sidebar-bottom-container .item:hover{color:#848484;}
@@ -165,6 +169,7 @@ a:active {color:inherit;}
 			
 		.map-list {background-color:#FFF; height:323px; border:1px solid #A2A2A2;}
 			#geo-chart {text-align:center; padding-top:20px;}
+			#geo-chart>div {margin:0 auto;}
 			#geo-chart-outer {background-image:url('/images/dashboard/map_dotted_bg.png');}
 			.map-list #geo-chart-outer {border-radius:7px;}
 			#map-list-right {border-top-right-radius:0px; border-bottom-right-radius:0px; width:240px; float:right;  height:100%; margin-top: 40px; margin-right: 42px;}
@@ -175,12 +180,14 @@ a:active {color:inherit;}
 			.map-list-item .flag { margin-top:8px; }
 			.map-list-item:hover .flag {}
 			.map-list-item .total{float:right; color:#646464; text-shadow:0px 1px #FFF; font:22px 'AlternateGothicNo2BT-Regular'; margin-right:10px;}
-			.map-list .country-name {float:left; padding-top:4px; color:#646464; text-shadow:0px 1px #FFF; font:16px 'Ubuntu';}
+			.map-list .country-name {width:140px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; float:left; padding-top:4px; color:#646464; text-shadow:0px 1px #FFF; font:16px 'Ubuntu';}
 			.map-list .bar {float:left; margin-left:10px; height:15px; margin-top:2px; background-color:#333; }
 				
 		.graph {font:19px 'Ubuntu'; z-index:1;}
 		.graph table tr:nth-child(n+10){ display:none; }
 		#graph-tooltip{border: 1px solid #1B1B1C; box-shadow:0 1px 1px 0 #B0B0B0; box-shadow:inset 0 1px 0 #727475; background-color:#383B3C; background-image: linear-gradient(top, #3947320 30%, #383B3C 100%); padding:2px 8px; border-radius:3px; background-color:#3C3F40; opacity:0.80; color:#FFF; font:14px 'AlternateGothicNo2BT-Regular'; display:none; position:absolute; z-index:100;}
+		.pie-chart-container { float:left; width:50%; position:relative; }
+			.pie-chart-container .graph-segment-container { position:absolute; left:3px; top:10px; z-index:3; }
 		.pie-overlay {position:absolute; z-index:2; width:248px; height:248px; left:50%; margin-left:-119px; top:56px; background-image:url('/images/dashboard/total-user.png'); background-position:center; background-repeat:no-repeat;}
 		.pie-overlay  .title {font:18px 'AlternateGothicNo2BT-Regular'; color:#7D7D7D; text-shadow:0 -1px #070707; margin:0 auto; text-align:center; margin-top:143px; max-width:100px; line-height:17px;}
 		.pie-overlay.one {background-image:url('/images/dashboard/total-user.png');}
@@ -196,6 +203,7 @@ a:active {color:inherit;}
 #app-nav-title {overflow: hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px; float: left; padding-top:3px;}
 #app-nav {width:190px; display:none; text-align:right; background-color:#CCC; height:100%; position:fixed; left:31px; z-index:8; background-image:url('/images/dashboard/dropdown_bg.png');}
 #app-nav-head {height:27px; padding:20px; padding-left:32px; color:#BFBFBF; text-shadow:0px -1px #232323; font:18px 'Ubuntu'; background-image:url('/images/dashboard/dropdown_head.png'); text-align:left;}
+	#app-nav-head .button-container { overflow:hidden; position:absolute; top:19px; right:10px; }
 .app-container {cursor:pointer; height:30px; background-image:url('/images/dashboard/dropdown_item.png'); padding:8px 12px; padding-left:32px; overflow:auto;}
 .app-container:hover {opacity:0.7;}
 .app-container:last-child {margin-bottom:60px;}
@@ -214,6 +222,7 @@ a:active {color:inherit;}
 #app-management-bar .app-container.active {background-image:url('/images/dashboard/dropdown_item_active.png'), url('/images/dashboard/dropdown_item.png'); background-repeat:no-repeat; background-position:right;}
 #app-management-bar .app-container.active:hover {opacity:1;}
 
+/* TABLES */
 table.d-table { width:100%; padding:0px; margin:0px; border-radius:7px; border:1px solid #C2C2C2; border-top-color:#959595; margin-bottom:20px; }
 	.d-table  th { padding:5px 10px; height:17px; color:#4DB351; font-weight:normal; font:13px 'Ubuntu'; text-shadow:0 1px #F1F1F1; background-color:#E2E2E2; box-shadow:inset 0 1px 0 #F6F6F6; text-align:left; border-bottom:1px solid #CCC; border-right:none; border-left:1px solid #ccc; background-color:#E2E2E2; background-image: linear-gradient(top, #EAEAEA 30%, #E2E2E2 100%); }
 	.d-table  th:first-child { border-left:none; border-top-left-radius:7px; }
@@ -245,33 +254,39 @@ table.d-table { width:100%; padding:0px; margin:0px; border-radius:7px; border:1
 .sortable td{font-family:'AlternateGothicNo2BT-Regular';}
 .sortable th {padding-top:6px;}
 	
-.d-table input[type=text] { margin: 0; font-size: 15px; font-family: Ubuntu; padding: 3px; border: 1px solid #DDD; } 
+.d-table input[type=text] { margin: 0; font-size: 15px; font-family: Ubuntu; padding: 3px; border: 1px solid #DDD; width:274px; } 
+/* TABLES END */
 	
 .icon-button { cursor:pointer; float:left; padding:5px 7px; border-radius:4px; font:13px 'Ubuntu'; overflow:auto; margin-left:8px; }
 .icon-button:hover {opacity:0.8;}
 .icon-button.light {color:#666; background-color:#E0E0E0; background-image: linear-gradient(top, #EEEEEE 40%, #E0E0E0 100%); border:1px solid #A5A5A5; text-shadow: 0 1px #FFF; box-shadow:inset 0 1px 0 #FDFDFD;}
-.icon-button.light:active, .icon-button.light.active { background-image: linear-gradient(top, #E0E0E0 40%, #EEEEEE 100%); }
+.icon-button.light:active, .icon-button.light.active { background-color:#EEEEEE; background-image: linear-gradient(top, #E0E0E0 40%, #EEEEEE 100%); }
 .icon-button.disabled {opacity:0.5;}
-.icon-button.dark {background-color:#292929; color: #BFBFBF; background-image: linear-gradient(top, #3E3E3E 40%, #292929 100%); border:1px solid #1B1B1B; text-shadow: 0 -1px #232323; box-shadow:inset 0 1px 0 #777777;}
-.icon-button.dark:active { background-image: linear-gradient(top, #292929 40%, #3E3E3E 100%); }
-	.icon-button .icon {float:left; margin-right:7px; background-repeat:no-repeat;}
-	.icon-button .text {float:right; padding-top:2px;}
-.icon-button.create-report {background-image:linear-gradient(top, #4CC04F 10%, #43A947 100%); border:1px solid #2C6B2E; color:#FFF; box-shadow:inset 0 1px 0 #58DE5D; text-shadow:0 -1px #3D9A41; }
-.icon-button.create-report:active {background-image:linear-gradient(top, #43A947 10%, #4CC04F 100%);}
-.icon-button.delete-app, .icon-button.red  { background-image:linear-gradient(top, #E95C6C 10%, #D63E40 100%); border:1px solid #AD0303; color:#FFF; box-shadow:inset 0 1px 0 #F196A0; text-shadow:0 -1px #AD434B; }
-.icon-button.delete-app:active, .icon-button.red:active { background-image:linear-gradient(top, #D63E40 10%, #E95C6C 100%); }
+.icon-button.dark { background-color:#292929; color: #BFBFBF; background-image: linear-gradient(top, #3E3E3E 40%, #292929 100%); border:1px solid #1B1B1B; text-shadow: 0 -1px #232323; box-shadow:inset 0 1px 0 #777777;}
+.icon-button.dark:active { background-color:#3E3E3E; background-image: linear-gradient(top, #292929 40%, #3E3E3E 100%); }
+	.icon-button .icon { float:left; margin-right:7px; background-repeat:no-repeat; }
+	.icon-button .text { float:right; padding-top:2px; }
+.icon-button.create-report { background-color:#43A947; background-image:linear-gradient(top, #4CC04F 10%, #43A947 100%); border:1px solid #2C6B2E; color:#FFF; box-shadow:inset 0 1px 0 #58DE5D; text-shadow:0 -1px #3D9A41; }
+.icon-button.create-report:active { background-color:#4CC04F; background-image:linear-gradient(top, #43A947 10%, #4CC04F 100%);}
+.icon-button.delete-app, .icon-button.red  { background-color:#D63E40; background-image:linear-gradient(top, #E95C6C 10%, #D63E40 100%); border:1px solid #AD0303; color:#FFF; box-shadow:inset 0 1px 0 #F196A0; text-shadow:0 -1px #AD434B; }
+.icon-button.delete-app:active, .icon-button.red:active { background-color:#E95C6C; background-image:linear-gradient(top, #D63E40 10%, #E95C6C 100%); }
 	
 #date-selector {float:right; font:13px 'Ubuntu'; color:#6B6B6B; text-shadow:0 1px #F6F6F6; padding:6px; padding-right:0px; overflow:auto; user-select:none; }
 	#date-selector .button {cursor:pointer; user-select:none; background-color:#E0E0E0; background-image: linear-gradient(top, #EEEEEE 40%, #E0E0E0 100%); float:left; padding:7px 5px; padding-top:6px; border:1px solid #A5A5A5; border-left:1px solid #747575; box-shadow:inset 0 1px 0 #FDFDFD; border-right:1px solid #EDEDED;}
 	#date-selector .button:nth-child(3) {border-top-left-radius:4px; border-bottom-left-radius:4px;}
 	#date-selector .button:last-child {border-top-right-radius:4px; border-bottom-right-radius:4px; border-right:1px solid #747575;}
-	#date-selector .button:hover {background-color:#F9F9F9; background-image: linear-gradient(top, #F9F9F9 40%, #E0E0E0 100%);}
-	#date-selector .button:active  {background-color:#E0E0E0; background-image: linear-gradient(top, #E0E0E0 40%, #F9F9F9 100%);}
+	#date-selector .button:hover { background-color:#F9F9F9; background-image: linear-gradient(top, #F9F9F9 40%, #E0E0E0 100%);}
+	#date-selector .button:active  { background-color:#E0E0E0; background-image: linear-gradient(top, #E0E0E0 40%, #F9F9F9 100%);}
 	#date-selector .button.active,
-	#date-selector .calendar {background-image: linear-gradient(top, #3C3C3C 10%, #717171 100%); box-shadow:inset 0 0 1px 0px #2D2D2D; color:#FFF; text-shadow:none; border-color:#202020; text-shadow:0 -1px #333;}
-	#date-selector .calendar {cursor:pointer; background-image: url('/images/dashboard/date-time-icon.png'), linear-gradient(top, #3C3C3C 10%, #717171 100%); background-repeat:no-repeat; background-position:center; float:left; border-radius:4px; margin-right:10px; width:29px; height:29px;}
+	#date-selector>.calendar { background-color:#3C3C3C; background-image: linear-gradient(top, #3C3C3C 10%, #717171 100%); box-shadow:inset 0 0 1px 0px #2D2D2D; color:#FFF; text-shadow:none; border-color:#202020; text-shadow:0 -1px #333; }
+	#date-selector>.calendar { background-color:#3C3C3C; cursor:pointer; background-image: url('/images/dashboard/date-time-icon.png'), linear-gradient(top, #3C3C3C 10%, #717171 100%); background-repeat:no-repeat; background-position:center; float:left; border-radius:4px; margin-right:10px; width:29px; height:29px; }
 	
-	#date-picker-button:hover {box-shadow: 0 0 5px 2px #fff;}
+#date-picker { display:none; position:absolute; z-index:10; margin-top:38px; margin-left:-175px; padding:2px 3px 6px 3px; background-color:rgba(85,85,85,1); border:1px solid #333; box-shadow: inset 0 0 0 1px #777; border-radius:5px; background-image:url('/images/dashboard/calendar_bg.png'); }
+	#date-picker .tip { width:14px; margin:0 auto; margin-top:-10px; height:9px; background-image:url('/images/dashboard/calendar_tip.png'); z-index:20; }
+	#date-picker .calendar-container { overflow: auto; box-shadow: inset 0 0 1px 1px #999, 0 1px 0 0 #777; padding: 6px; background-color: #CCC; border-radius: 4px; border: 1px solid #333; margin:3px; margin-top:5px; }
+	#date-picker .calendar-container .calendar { float:left; margin-right:3px; border:1px solid #666; border-radius:3px; }
+	#date-picker .button-container { overflow:auto; margin-top:6px; padding:3px; }
+#date-picker-button:hover {box-shadow: 0 0 5px 2px #fff;}
 
 .two-column .big-numbers {width:50%;}
 .one-column .big-numbers {width:100%; position:relative;}
@@ -329,15 +344,15 @@ table.d-table { width:100%; padding:0px; margin:0px; border-radius:7px; border:1
 /* DATEPICKER END */
 
 /* FORMS */
-.cly-button-dark { color: #DDD; text-shadow: 0 -1px #222; background-color: #292929; background-image: linear-gradient(top, #3E3E3E 40%, #292929 100%); border: 1px solid #1B1B1B; box-shadow: inset 0 1px 0 #777777; cursor: pointer; float: left; padding: 5px 10px; border-radius: 4px; font: 13px 'Ubuntu'; }
-.cly-button-dark:hover {opacity:0.9;}
-.cly-button-dark:active {background-image: linear-gradient(top, #292929 40%, #3E3E3E 100%);}
+.cly-button-dark { color: #DDD; text-shadow: 0 -1px #222; background-color:#292929; background-image: linear-gradient(top, #3E3E3E 40%, #292929 100%); border: 1px solid #1B1B1B; box-shadow: inset 0 1px 0 #777777; cursor: pointer; float: left; padding: 5px 10px; border-radius: 4px; font: 13px 'Ubuntu'; }
+.cly-button-dark:hover { opacity:0.9; }
+.cly-button-dark:active { background-color:#3E3E3E; background-image: linear-gradient(top, #292929 40%, #3E3E3E 100%); }
 
 .dashboard-summary { margin-bottom:16px; overflow:auto;}
 	.dashboard-summary .item {float:left; font-family:'AlternateGothicNo2BT-Regular'; width:25%;}
 	.dashboard-summary.three .item { width:33%; }
 	.dashboard-summary.three .item:nth-child(2) { width:34%; }
-	.dashboard-summary .inner {padding:10px; border-radius:5px; background-image: linear-gradient(top, #3C3C3C 10%, #2A2A2A 100%); margin-left:5px;}
+	.dashboard-summary .inner { background-color:#3C3C3C; padding:10px; border-radius:5px; background-image: linear-gradient(top, #3C3C3C 10%, #2A2A2A 100%); margin-left:5px; }
 	.dashboard-summary  .item:first-child  .inner{margin-left:0px;}
 	.dashboard-summary .item:first-child .inner{border-left:none;}
 	.dashboard-summary .item:last-child .inner{border-right:none;}
@@ -372,7 +387,7 @@ table.d-table { width:100%; padding:0px; margin:0px; border-radius:7px; border:1
 		.report-item:first-child .title .text { color:#4DB351; }
 	.report-item .title .text input { color:#8A8A8A; font-family:"Ubuntu"; font-size:15px; border:none; background-color:#FFF; text-align:center; outline:none; }	
 	.report-item:first-child .title .text input { color:#4DB351; }
-	.report-item .arrow {width:18px; height:8px; position:absolute; left:50%; margin-left:-10px; bottom:-8px; background-image: url('/images/reports/title_arrow.png'); }
+	.report-item .arrow { width:18px; height:8px; position:absolute; left:50%; margin-left:-10px; bottom:-8px; background-image: url('/images/reports/title_arrow.png'); }
 .report-item  .details { padding-top:25px; padding-bottom:25px; overflow:auto; border:1px solid #C5C5C5; border-top:none; margin:8px; margin-top:0px; background-color:#FFF; }
 	.report-item .cly-select { margin:0 auto; margin-top:20px; }
 	.report-item .details .image { background-image:url('/images/reports/reports.png'); background-repeat:no-repeat; width:135px; height:175px; margin:0 auto; }
@@ -383,7 +398,7 @@ table.d-table { width:100%; padding:0px; margin:0px; border-radius:7px; border:1
 			.checkbox.checked { background-position:0px;}
 		.report-item .checkboxes .text { color:#666; font-family:"Ubuntu"; font-size:13px; padding-top:1px; }
 		
-.cly-select { user-select:none; display:inline-block; width:135px; height:27px; background-image: linear-gradient(top, #F0F0F0 10%, #E3E3E3 100%); border:1px solid #B5B5B5; border-radius:6px; box-shadow:inset 0 1px 0 0 #FFF; cursor:pointer; }
+.cly-select { background-color:#F0F0F0; user-select:none; display:inline-block; width:135px; height:27px; background-image: linear-gradient(top, #F0F0F0 10%, #E3E3E3 100%); border:1px solid #B5B5B5; border-radius:6px; box-shadow:inset 0 1px 0 0 #FFF; cursor:pointer; }
 	.cly-select .select-inner { position:relative; width:100%; height:100%; }
 	.cly-select:hover { box-shadow:inset 0 0 2px 0 #FFF; }
 	.cly-select.active {border-bottom-left-radius:0px; border-bottom-right-radius:0px;}
@@ -400,9 +415,9 @@ table.d-table { width:100%; padding:0px; margin:0px; border-radius:7px; border:1
 		.cly-select .select-items .item:last-child {border-bottom:none; border-bottom-left-radius:6px; border-bottom-right-radius:6px;}
 	.cly-select .text-container { float:left; width:100%; }
 		.cly-select .text { padding:6px 9px; padding-right:25px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; color:#444; font-weight:normal; font:13px 'Ubuntu'; text-shadow:0 1px #F1F1F1; }
-	.cly-select .right { right:0; position:absolute; width:20px; height:100%; border-top-right-radius:5px; border-bottom-right-radius:5px; background-image: linear-gradient(top, #E2E2E2 10%, #D1D1D1 100%); border-left:1px solid #C5C6C6; box-shadow:inset 1px 0px 0 0 #eee, inset 0 1px 0 0 #fff; background-repeat:no-repeat; background-position:center; }
-		.cly-select .right.combo { background-image: url('/images/reports/combo-arrow.png'), linear-gradient(top, #E2E2E2 10%, #D1D1D1 100%); }
-		.cly-select .right.date { background-image: url('/images/reports/date-time.png'), linear-gradient(top, #E2E2E2 10%, #D1D1D1 100%); }
+	.cly-select .right { background-color:#E2E2E2; right:0; position:absolute; width:20px; height:100%; border-top-right-radius:5px; border-bottom-right-radius:5px; background-image: linear-gradient(top, #E2E2E2 10%, #D1D1D1 100%); border-left:1px solid #C5C6C6; box-shadow:inset 1px 0px 0 0 #eee, inset 0 1px 0 0 #fff; background-repeat:no-repeat; background-position:center; }
+		.cly-select .right.combo { background-color:#E2E2E2; background-image: url('/images/reports/combo-arrow.png'), linear-gradient(top, #E2E2E2 10%, #D1D1D1 100%); }
+		.cly-select .right.date { background-color:#E2E2E2; background-image: url('/images/reports/date-time.png'), linear-gradient(top, #E2E2E2 10%, #D1D1D1 100%); }
 	.cly-select .slimScrollBar.ui-draggable { cursor:default; }
 	
 .read {}
@@ -430,12 +445,14 @@ table.d-table { width:100%; padding:0px; margin:0px; border-radius:7px; border:1
 	.dialog .message { color:#333; font-family:"Ubuntu"; font-size:15px; padding:0 10px; }
 	.dialog .buttons { margin-top:15px; overflow:auto; padding:10px; padding-top:0px; }
 	.dialog .buttons .icon-button { float:right; }
-	.dialog.red #dialog-continue { background-image:linear-gradient(top, #E95C6C 10%, #D63E40 100%); border:1px solid #AD0303; color:#FFF; box-shadow:inset 0 1px 0 #F196A0; text-shadow:0 -1px #AD434B; }
-		.dialog.red #dialog-continue:active { background-image:linear-gradient(top, #D63E40 10%, #E95C6C 100%); }
+	.dialog.red #dialog-continue { background-color:#D63E40; background-image:linear-gradient(top, #E95C6C 10%, #D63E40 100%); border:1px solid #AD0303; color:#FFF; box-shadow:inset 0 1px 0 #F196A0; text-shadow:0 -1px #AD434B; }
+		.dialog.red #dialog-continue:active { background-color:#E95C6C; background-image:linear-gradient(top, #D63E40 10%, #E95C6C 100%); }
 	.dialog input[type=text], .dialog input[type=password] { margin: 0; font-size: 15px; font-family: Ubuntu; padding: 3px; border: 1px solid #DDD; }
 	.dialog .result-message { font-family: Ubuntu; float: left; margin-top: 6px; font-style: italic; font-size: 13px; }
 	.dialog .result-message.red { color:#D63E40; }
 	.dialog .result-message.green { color:#6BB96E; }
+	.dialog .message .title { margin-bottom:8px; }
+	.dialog .message .input input { width:250px; }
 	
 #new-install-overlay { display:none; z-index:1; position: absolute; width: 100%; height: 100%; background-color: #000; opacity: 0.6; margin-left: -2px; }
 .alert { font-family:Ubuntu; border-radius: 4px; padding: 8px 14px; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5); }
@@ -472,7 +489,7 @@ table.d-table { width:100%; padding:0px; margin:0px; border-radius:7px; border:1
 	#listof-apps .app:last-child { border-bottom:none; }
 	#listof-apps .app.disabled { opacity:0.5; cursor:default; }
 	#listof-apps .app.disabled:hover { opacity:0.5; }
-	#listof-apps .app.selected { background-image:linear-gradient(top, #80C582 10%, #80C582 100%); border-color:#2C6B2E; box-shadow:inset 0 1px 0 #C7DAC7; text-shadow:0 1px #C7DAC7; }
+	#listof-apps .app.selected { background-color:#80C582; background-image:linear-gradient(top, #80C582 10%, #80C582 100%); border-color:#2C6B2E; box-shadow:inset 0 1px 0 #C7DAC7; text-shadow:0 1px #C7DAC7; }
 	#listof-apps .app:hover { opacity:0.8; }
 	#listof-apps .app .image { float:left; margin-right:8px; border-radius:2px; box-shadow:0 0 1px 0 #333; width:20px; height:20px; background-position:center; }
 	#listof-apps .app .name { float:left; font-size:13px; font-family:Ubuntu; padding-top: 2px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; width:90px;}
@@ -482,13 +499,13 @@ table.d-table { width:100%; padding:0px; margin:0px; border-radius:7px; border:1
 	.user-details .row { overflow:auto; border-top:1px solid #EEE; padding:10px; margin:0 1px; }
 	.user-details .row:first-child { border-top:none; padding-top:15px; }
 	.user-details .row .title { float:left; }
-	.user-details .row .detail { margin-left:145px; }
+	.user-details .row .detail { margin-left:165px; }
 	.user-details .button-container { padding-bottom:5px; }
 	.user-details .button-container .icon-button { float:right; }
 	.user-details .app-selection { margin-left:10px; border-radius:10px; background-color:#CCC; cursor:pointer; float:left; width:15px; height:15px; }
 	.user-details .select-apps { margin-left:10px; cursor:pointer; float:left; width:17px; height:18px; background-image: url('/images/management/add.png'); }
 	.user-details .user-admin-list span, .user-details .no-apps { color:#CCC; font-size:12px; font-style:italic; }
-.user-details .no-apps { margin-left:110px; display:none; }
+.user-details .no-apps { margin-left:165px; display:none; }
 .small-link { margin-top:10px; font-size:11px; cursor:pointer; color:#999; vertical-align:text-top; display:inline-block; }
 .small-link:hover { text-decoration:underline; }
 .password-row { display:none; }
@@ -548,3 +565,13 @@ table.events-table { width:100%; padding:0px; margin:0px;}
 .export-description {font: 15px 'Ubuntu'; color:#999; padding:10px; padding-bottom:5px;}
 .stretch {}
 /* EXPORT END */
+
+/* MISC */
+#edit-account-details { display:none; }
+	#edit-account-details .title { float:left; width:100px; }
+	#edit-account-details .input { margin-left:105px; }
+
+#no-app-warning { display:none; margin-left:187px; }
+#first-app-success { display:none; margin-left:187px; margin-top:-5px; margin-right:181px; }
+#add-app-button  .text { overflow: hidden; text-overflow:clip; white-space:nowrap; max-width: 60px; }
+#listof-apps .icon-button { overflow: hidden; text-overflow:ellipsis; white-space:nowrap; max-width: 45px; }

@@ -1,4 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!--
    ______                  __  __     
   / ____/___  __  ______  / /_/ /_  __
@@ -10,7 +10,7 @@
 <html>
 <head>
 	<link href='http://fonts.googleapis.com/css?family=Ubuntu:400,500&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
-	<link href='/stylesheets/pre-login/main.css' rel='stylesheet' type='text/css'>
+	<link href='/stylesheets/pre-login/main.css?v12.09' rel='stylesheet' type='text/css'>
 	<link rel="icon" type="image/png" href="/images/favicon.png">
 	<title>Countly</title>
 </head>
@@ -18,7 +18,27 @@
 	 <% if (message){ %>
 		<div id="message"></div>
 	 <% } %>
-	<a id="home-button" type="button" href="http://count.ly">Countly</a>
+	<div id="top-container">
+		<a class="top-button" href="http://count.ly">Countly</a>
+		<div class="top-button" id="select-lang">
+			<div id="active-lang">EN</div>
+			<div id="langs">
+				<div class="group">
+					<a data-language-code="de" class="item">Deutsch</a>
+					<a data-language-code="en" class="item">English</a>
+					<a data-language-code="es" class="item">Español</a>
+					<a data-language-code="fr" class="item">Français</a>
+					<a data-language-code="it" class="item">Italiano</a>
+				</div>
+				<div class="group">
+					<a data-language-code="nl" class="item">Nederlands</a>
+					<a data-language-code="tr" class="item">Türkçe</a>
+					<a data-language-code="zh" class="item">中文</a>
+					<a data-language-code="ja" class="item">日本語</a>
+				</div>
+			</div>
+		</div>
+	</div>
 	<div id="reset-form">
 		<div id="forgot-left">
 			<div id="forgot-logo"></div>
@@ -40,16 +60,21 @@
 			</form>
 		</div>
 	</div>
-	<script language="javascript" type="text/javascript" src="/javascripts/jquery-1.7.2.min.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/jquery-1.8.2.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/prefixfree.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery.noisy.min.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/store+json2.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/jquery.i18n.properties-min-1.0.9.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/pre-login.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/pre-login.js?v12.09"></script>
 	<script>
 		$(document).ready(function() {
 			<% if (message){ %>
 				showMessage("<%= message %>");
 			<% } %>
+			document.title = "Countly | " + jQuery.i18n.map["forgot.title"];
+		});
+		
+		$(document).bind('clyLangChange', function() {
 			document.title = "Countly | " + jQuery.i18n.map["forgot.title"];
 		});
 	</script>

@@ -83,3 +83,6 @@ cp $DIR/../frontend/express/config.sample.js $DIR/../frontend/express/config.js
 start countly-supervisor
 
 echo -e "\nVisit http://$serverip in order to setup your administrator account\n"
+
+os="`lsb_release -ds`"
+wget 'http://count.ly/t?a=ec5f7fef43d3a1d04ce55e4ce6a5721e&cly_v=907348361b9fc62242b06465b925bb32&os_v='"$os" >/dev/null 2>&1

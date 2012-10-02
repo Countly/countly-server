@@ -17,9 +17,5 @@
  * 
  * © 2012 Bitstream Inc
 */
-
-
-
   
- @font-face {font-family: 'AlternateGothicNo2BT-Regular';src: url('webfonts/21E76E_0_0.eot');src: url('webfonts/21E76E_0_0.eot?#iefix') format('embedded-opentype'),url('webfonts/21E76E_0_0.woff') format('woff'),url('webfonts/21E76E_0_0.ttf') format('truetype');}
- 
+@font-face {font-family: 'AlternateGothicNo2BT-Regular';src: url('webfonts/21E76E_0_0.eot');src: url('webfonts/21E76E_0_0.eot?#iefix') format('embedded-opentype'),url('webfonts/21E76E_0_0.woff') format('woff'),url('webfonts/21E76E_0_0.ttf') format('truetype');}
