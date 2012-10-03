@@ -19,11 +19,11 @@ echo "
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-#stop countly
-stop countly-supervisor
-
 #update all mongo collections for 12.09
 mongo countly $DIR/updateCollections.js
+
+#stop countly
+stop countly-supervisor
 
 #start countly
 start countly-supervisor

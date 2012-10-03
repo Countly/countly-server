@@ -180,7 +180,7 @@ a:active {color:inherit;}
 			.map-list-item .flag { margin-top:8px; }
 			.map-list-item:hover .flag {}
 			.map-list-item .total{float:right; color:#646464; text-shadow:0px 1px #FFF; font:22px 'AlternateGothicNo2BT-Regular'; margin-right:10px;}
-			.map-list .country-name {width:140px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; float:left; padding-top:4px; color:#646464; text-shadow:0px 1px #FFF; font:16px 'Ubuntu';}
+			.map-list .country-name {width:130px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; float:left; padding-top:4px; color:#646464; text-shadow:0px 1px #FFF; font:16px 'Ubuntu';}
 			.map-list .bar {float:left; margin-left:10px; height:15px; margin-top:2px; background-color:#333; }
 				
 		.graph {font:19px 'Ubuntu'; z-index:1;}
