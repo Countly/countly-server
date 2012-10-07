@@ -223,8 +223,6 @@ app.get('/dashboard', function(req, res, next) {
 });
 
 app.get('/setup', function(req, res, next) {
-	res.render('setup', { "csrf": req.session._csrf });
-	/*
 	countlyDb.collection('members').count({}, function(err, memberCount){
 		if (memberCount) {
 			res.redirect('/login');
@@ -232,7 +230,6 @@ app.get('/setup', function(req, res, next) {
 			res.render('setup', { "csrf": req.session._csrf });
 		}
 	});
-	*/
 });
 
 app.get('/login', function(req, res, next) {
