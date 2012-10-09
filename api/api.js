@@ -27,6 +27,20 @@ var dbMap = {
 	'count': 'c'
 };
 
+var dbUserMap = {
+	'device_id': 'did',
+	'last_seen': 'ls',
+	'session_duration': 'sd',
+	'total_session_duration': 'tsd',
+	'session_count': 'sc',
+	'device': 'd',
+	'carrier': 'c',
+	'country_code': 'cc',
+	'platform': 'p',
+	'platform_version': 'pv',
+	'app_version': 'av'
+};
+
 function isNumber(n) {
 	return !isNaN(parseFloat(n)) && isFinite(n);
 }
@@ -164,11 +178,11 @@ function processUserLocation(getParams) {
 			// If the user does not exist in the app_users collection or she does not have any 
 			// previous session duration stored than we dont need to calculate the session 
 			// duration range for this user.
-			if (!dbAppUser || !dbAppUser['session_duration']) {
+			if (!dbAppUser || !dbAppUser[dbUserMap['session_duration']]) {
 				return false;
 			}
 			
-			processSessionDurationRange(getParams, dbAppUser['session_duration']);
+			processSessionDurationRange(getParams, dbAppUser[dbUserMap['session_duration']]);
 		});
 	} else {
 	
@@ -221,7 +235,7 @@ function processSessionDurationRange(getParams, totalSessionDuration) {
 		fillTimeObject(updateSessions, dbMap['durations'] + '.' + calculatedDurationRange);
 		countlyDb.collection('sessions').update({'_id': getParams.app_id}, {'$inc': updateSessions, '$addToSet': {'meta.d-ranges': calculatedDurationRange}}, {'upsert': false});
 		
-		// sd: session duration. dbMap is not used here for readability purposes.
+		// sd: session duration. dbUserMap is not used here for readability purposes.
 		countlyDb.collection('app_users' + getParams.app_id).update({'_id': getParams.app_user_id}, {'$set': {'sd': 0}}, {'upsert': true});
 }
 
@@ -234,8 +248,8 @@ function processSessionDuration(getParams) {
 	
 		countlyDb.collection('sessions').update({'_id': getParams.app_id}, {'$inc': updateSessions}, {'upsert': false});
 		
-		// sd: session duration. dbMap is not used here for readability purposes.
-		countlyDb.collection('app_users' + getParams.app_id).update({'_id': getParams.app_user_id}, {'$inc': {'sd': session_duration}}, {'upsert': true});
+		// sd: session duration, tsd: total session duration. dbUserMap is not used here for readability purposes.
+		countlyDb.collection('app_users' + getParams.app_id).update({'_id': getParams.app_user_id}, {'$inc': {'sd': session_duration, 'tsd': session_duration}}, {'upsert': true});
 	}
 }
 
@@ -280,19 +294,19 @@ function processUserSession(dbAppUser, getParams) {
 	fillTimeObject(updateCities, getParams.user.city + '.' + dbMap['total']);
 	
 	if (dbAppUser) {
-		if ((timestamp - dbAppUser.last_seen) >= (sessionFrequencyMax * 60 * 60)) {
+		if ((timestamp - dbAppUser[dbUserMap['last_seen']]) >= (sessionFrequencyMax * 60 * 60)) {
 			calculatedFrequency = sessionFrequency.length + '';
 		} else {
 			for (var i=0; i < sessionFrequency.length; i++) {
-				if ((timestamp - dbAppUser.last_seen) < (sessionFrequency[i][1] * 60 * 60) && 
-					(timestamp - dbAppUser.last_seen) >= (sessionFrequency[i][0] * 60 * 60)) {
+				if ((timestamp - dbAppUser[dbUserMap['last_seen']]) < (sessionFrequency[i][1] * 60 * 60) && 
+					(timestamp - dbAppUser[dbUserMap['last_seen']]) >= (sessionFrequency[i][0] * 60 * 60)) {
 					calculatedFrequency = i + '';
 					break;
 				}
 			}
 		}
 		
-		var userSessionCount = dbAppUser.session_count + 1;
+		var userSessionCount = dbAppUser[dbUserMap['session_count']] + 1;
 
 		//Calculate the loyalty range of the user
 		if (userSessionCount >= loyaltyMax) {
@@ -310,7 +324,7 @@ function processUserSession(dbAppUser, getParams) {
 			secInHour = (60 * 60 * (now.getHours())) + secInMin,
 			secInMonth = (60 * 60 * 24 * (now.getDate() - 1)) + secInHour;
 			
-		var currentTime = new time.Date(dbAppUser.last_seen * 1000);
+		var currentTime = new time.Date(dbAppUser[dbUserMap['last_seen']] * 1000);
 		currentTime.setTimezone(appTimezone);
 		
 		var userLastSessionWeek = Math.ceil(moment(currentTime.getTime()).format("DDD") / 7),
@@ -319,18 +333,18 @@ function processUserSession(dbAppUser, getParams) {
 		if (userLastSessionYear == yearly && userLastSessionWeek < weekly) {
 			uniqueLevels[uniqueLevels.length] = yearly + ".w" + weekly;
 		}
-		if (dbAppUser.last_seen <= (timestamp - secInMin)) {
+		if (dbAppUser[dbUserMap['last_seen']] <= (timestamp - secInMin)) {
 			// We don't need to put hourly fragment to the unique levels array since
 			// we will store hourly data only in sessions collection
-			updateSessions[uniqueLevels[i] + '.' + dbMap['unique']] = 1;
+			updateSessions[hourly + '.' + dbMap['unique']] = 1;
 		}
-		if (dbAppUser.last_seen <= (timestamp - secInHour)) {
+		if (dbAppUser[dbUserMap['last_seen']] <= (timestamp - secInHour)) {
 			uniqueLevels[uniqueLevels.length] = daily;
 		}
-		if (dbAppUser.last_seen <= (timestamp - secInMonth)) {
+		if (dbAppUser[dbUserMap['last_seen']] <= (timestamp - secInMonth)) {
 			uniqueLevels[uniqueLevels.length] = monthly;
 		}
-		if (dbAppUser.last_seen < (timestamp - secInMonth)) {
+		if (dbAppUser[dbUserMap['last_seen']] < (timestamp - secInMonth)) {
 			uniqueLevels[uniqueLevels.length] = yearly;
 		}
 
@@ -384,22 +398,23 @@ function processUserSession(dbAppUser, getParams) {
 
 function processPredefinedMetrics(getParams, isNewUser, uniqueLevels) {
 
-	var userProps = {
-		'ls': timestamp, // last seen
-		'did': getParams.device_id, // device id
-		'cc': getParams.user.country // country code
-	};
+	var userProps = {};
+	
+	userProps[dbUserMap['last_seen']] = timestamp;
+	userProps[dbUserMap['device_id']] = getParams.device_id;
+	userProps[dbUserMap['country_code']] = getParams.user.country;
 
 	if (!getParams.metrics) {
+		// sc: session count. dbUserMap is not used here for readability purposes.
 		countlyDb.collection('app_users' + getParams.app_id).update({'_id': getParams.app_user_id}, {'$inc': {'sc': 1}, '$set': userProps}, {'upsert': true});
 		return false;
 	}
 	
 	var predefinedMetrics = [
-		{ db: "devices", metrics: [{ name: "_device", set: "devices", short_code: "d" }] },
-		{ db: "carriers", metrics: [{ name: "_carrier", set: "carriers", short_code: "c" }] },
-		{ db: "device_details", metrics: [{ name: "_os", set: "os", short_code: "p" }, { name: "_os_version", set: "os_versions", short_code: "pv" }, { name: "_resolution", set: "resolutions" }] },
-		{ db: "app_versions", metrics: [{ name: "_app_version", set: "app_versions", short_code: "av" }] }
+		{ db: "devices", metrics: [{ name: "_device", set: "devices", short_code: dbUserMap['device'] }] },
+		{ db: "carriers", metrics: [{ name: "_carrier", set: "carriers", short_code: dbUserMap['carrier'] }] },
+		{ db: "device_details", metrics: [{ name: "_os", set: "os", short_code: dbUserMap['platform'] }, { name: "_os_version", set: "os_versions", short_code: dbUserMap['platform_version'] }, { name: "_resolution", set: "resolutions" }] },
+		{ db: "app_versions", metrics: [{ name: "_app_version", set: "app_versions", short_code: dbUserMap['app_version'] }] }
 	];
 	
 	for (var i=0; i < predefinedMetrics.length; i++) {
@@ -436,9 +451,10 @@ function processPredefinedMetrics(getParams, isNewUser, uniqueLevels) {
 		if (needsUpdate) {
 			countlyDb.collection(predefinedMetrics[i].db).update({'_id': getParams.app_id}, {'$inc': tmpTimeObj, '$addToSet': tmpSet}, {'upsert': true});
 		}
-		
-		countlyDb.collection('app_users' + getParams.app_id).update({'_id': getParams.app_user_id}, {'$inc': {'sc': 1}, '$set': userProps}, {'upsert': true});
 	}
+	
+	// sc: session count. dbUserMap is not used here for readability purposes.
+	countlyDb.collection('app_users' + getParams.app_id).update({'_id': getParams.app_user_id}, {'$inc': {'sc': 1}, '$set': userProps}, {'upsert': true});
 }
 
 function mergeEvents(obj1, obj2) {
@@ -754,8 +770,6 @@ http.Server(function(req, res) {
 					'is_begin_session': queryString.begin_session,
 					'is_end_session': queryString.end_session,
 					'user' : {
-						'last_seen': 0, 
-						'duration': 0,
 						'country': 'Unknown',
 						'city': 'Unknown'
 					},
