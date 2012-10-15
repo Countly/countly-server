@@ -179,11 +179,14 @@
 			case "iPhone3,1": fullName = "iPhone 4"; break;
 			case "iPhone3,3": fullName = "Verizon iPhone 4"; break;
 			case "iPhone4,1": fullName = "iPhone 4S"; break;
-			case "iPod1,1":	fullName = "iPod Touch 1G"; break;
+            case "iPhone5,1": fullName = "iPhone 5 (A1428, GSM)"; break;
+            case "iPhone5,2": fullName = "iPhone 5 (A1429, Global)"; break;
+            case "iPod1,1":	fullName = "iPod Touch 1G"; break;
 			case "iPod2,1":	fullName = "iPod Touch 2G"; break;
 			case "iPod3,1":	fullName = "iPod Touch 3G"; break;
 			case "iPod4,1":	fullName = "iPod Touch 4G"; break;
-			case "iPad1,1":	fullName = "iPad"; break;
+            case "iPod5,1":	fullName = "iPod Touch 5G"; break;
+            case "iPad1,1":	fullName = "iPad"; break;
 			case "iPad2,1":	fullName = "iPad 2 (WiFi)"; break;
 			case "iPad2,2":	fullName = "iPad 2 (GSM)"; break;
 			case "iPad2,3":	fullName = "iPad 2 (CDMA)"; break;
