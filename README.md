@@ -45,3 +45,7 @@ We are on [Twitter](http://twitter.com/gocountly) and [Facebook](http://www.face
 ##Community & support
 
 [http://support.count.ly](http://support.count.ly "Countly Support")
+
+##Rebranding
+
+Ask us (hello@count.ly) if you want to rebrand Countly and we'll be glad to help.
