@@ -48,4 +48,4 @@ We are on [Twitter](http://twitter.com/gocountly) and [Facebook](http://www.face
 
 ##Rebranding
 
-Ask us (hello@count.ly) if you want to rebrand Countly and we'll be glad to help.
+Ask us (hello@count.ly) if you want to whitelabel Countly and we'll be glad to help.
