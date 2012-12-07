@@ -12,6 +12,9 @@ We provide a beautiful installation sript (`bin/countly.install.sh`) with countl
 
 If you feel like doing things manually you can take a look at the installation articles from [http://support.count.ly](http://support.count.ly "Countly Support").
 
+##Dependencies
+We develop and test Countly on Ubuntu with MongoDB, Node.js and nginx. It should work in your Linux distribution (e.g Fedora, OpenSUSE, etc), however, you need to install them by hand.
+
 ##How do I upgrade my Countly server?
 
 countly-server package includes an upgrade script (`bin/countly.upgrade.sh`) that takes care of the upgrade process. [See this tutorial](http://support.count.ly/kb/web-installation/upgrading-countly-server-to-v1209-from-v1208) if you would like to perform the upgrade manually (12.08 to 12.09).
