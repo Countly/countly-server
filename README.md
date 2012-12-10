@@ -3,7 +3,7 @@ Countly is an innovative, real-time, open source mobile analytics application. I
 collects data from mobile phones, tablets and other internet-connected devices, 
 and visualizes this information to analyze mobile application usage and end-user behavior. 
 There are two parts of Countly: the server that collects and analyzes data, and mobile SDK 
-that sends this data (for iOS & Android).
+that sends this data (for iOS, Android, Windows Phone and Blackberry).
 
 Below you can find Countly SDK repositories. Each SDK has its own installation instructions.
 
