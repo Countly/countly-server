@@ -3,14 +3,17 @@ Countly is an innovative, real-time, open source mobile analytics application. I
 collects data from mobile phones, tablets and other internet-connected devices, 
 and visualizes this information to analyze mobile application usage and end-user behavior. 
 There are two parts of Countly: the server that collects and analyzes data, and mobile SDK 
-that sends this data (for iOS, Android, Windows Phone and Blackberry).
+that sends this data.
 
+Which mobile operating systems does Countly support? 
+
+Countly supports top-notch devices, including iOS, Android, Windows Phone and Blackberry. 
 Below you can find Countly SDK repositories. Each SDK has its own installation instructions.
 
-- [Countly Android SDK (countly-sdk-android)](https://github.com/Countly/countly-sdk-android)
-- [Countly iOS SDK (countly-sdk-ios)](https://github.com/Countly/countly-sdk-ios)
-- [Countly Windows Phone SDK (countly-sdk-windows-phone)](https://github.com/Countly/countly-sdk-windows-phone)
-- [Countly Blackberry Webworks SDK (countly-sdk-blackberry-webworks)](https://github.com/Countly/countly-sdk-blackberry-webworks)
+- [Countly Android SDK](https://github.com/Countly/countly-sdk-android)
+- [Countly iOS SDK](https://github.com/Countly/countly-sdk-ios)
+- [Countly Windows Phone SDK](https://github.com/Countly/countly-sdk-windows-phone)
+- [Countly Blackberry Webworks SDK](https://github.com/Countly/countly-sdk-blackberry-webworks)
 
 ##How do I install Countly server?
 
