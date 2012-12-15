@@ -13,7 +13,9 @@ var http = require('http'),
 	Server = require('mongodb').Server,
 	server_config = new Server(countlyConfig.mongodb.host, countlyConfig.mongodb.port, {auto_reconnect: true, native_parser: true}),
 	sessionDb = new Db(countlyConfig.mongodb.db, server_config, {});
-	
+
+console.log('Server running on port ' + countlyConfig.web.port);
+
 function sha1Hash(str, addSalt) {
 	var salt = (addSalt)? new Date().getTime() : "";
 	return crypto.createHmac('sha1', salt + "").update(str + "").digest('hex');
@@ -86,11 +88,11 @@ app.configure('production', function() {
 	app.use(express.errorHandler());
 });
 
-app.get('/', function(req, res, next) {
+app.get(countlyConfig.web.base + '/', function(req, res, next) {
 	res.redirect('/login');
 });
 
-app.get('/logout', function(req, res, next) {
+app.get(countlyConfig.web.base + '/logout', function(req, res, next) {
   if (req.session) {
     req.session.uid = null;
 	req.session.gadm = null;
@@ -98,12 +100,12 @@ app.get('/logout', function(req, res, next) {
 	res.clearCookie('gadm');
     req.session.destroy(function() {});
   }
-  res.redirect('/login');
+  res.redirect(countlyConfig.web.base + '/login');
 });
 
-app.get('/dashboard', function(req, res, next) {
+app.get(countlyConfig.web.base + '/dashboard', function(req, res, next) {
 	if (!req.session.uid) {
-		res.redirect('/login');
+		res.redirect(countlyConfig.web.base + '/login');
 	} else {
 		countlyDb.collection('members').findOne({"_id": countlyDb.ObjectID(req.session.uid)}, function(err, member){
 			if (member) {
@@ -222,17 +224,17 @@ app.get('/dashboard', function(req, res, next) {
 	}
 });
 
-app.get('/setup', function(req, res, next) {
+app.get(countlyConfig.web.base + '/setup', function(req, res, next) {
 	countlyDb.collection('members').count({}, function(err, memberCount){
 		if (memberCount) {
-			res.redirect('/login');
+			res.redirect(countlyConfig.web.base + '/login');
 		} else {
 			res.render('setup', { "csrf": req.session._csrf });
 		}
 	});
 });
 
-app.get('/login', function(req, res, next) {
+app.get(countlyConfig.web.base + '/login', function(req, res, next) {
 	if (req.session.uid) {
 		res.redirect('/dashboard');
 	} else {
@@ -246,7 +248,7 @@ app.get('/login', function(req, res, next) {
 	}
 });
 
-app.get('/forgot', function(req, res, next) {
+app.get(countlyConfig.web.base + '/forgot', function(req, res, next) {
 	if (req.session.uid) {
 		res.redirect('/dashboard');
 	} else {
@@ -254,7 +256,7 @@ app.get('/forgot', function(req, res, next) {
 	}
 });
 
-app.get('/reset/:prid', function(req, res, next) {
+app.get(countlyConfig.web.base + '/reset/:prid', function(req, res, next) {
 	if (req.params.prid) {
 		countlyDb.collection('password_reset').findOne({prid: req.params.prid}, function(err, passwordReset){
 			var timestamp = Math.round(new Date().getTime() / 1000);
@@ -277,7 +279,7 @@ app.get('/reset/:prid', function(req, res, next) {
 	}
 });
 
-app.post('/reset', function(req, res, next) {
+app.post(countlyConfig.web.base + '/reset', function(req, res, next) {
 	if (req.body.password && req.body.again && req.body.prid) {		
 		var password = sha1Hash(req.body.password);
 		
@@ -294,7 +296,7 @@ app.post('/reset', function(req, res, next) {
 	}
 });
 
-app.post('/forgot', function(req, res, next) {
+app.post(countlyConfig.web.base + '/forgot', function(req, res, next) {
 	if (req.body.email) {
 		countlyDb.collection('members').findOne({"email": req.body.email}, function(err, member){
 			if (member) {
@@ -337,7 +339,7 @@ app.post('/forgot', function(req, res, next) {
 	}
 });
 
-app.post('/setup', function(req, res, next) {
+app.post(countlyConfig.web.base + '/setup', function(req, res, next) {
 	countlyDb.collection('members').count({}, function(err, memberCount){
 		if (memberCount) {
 			res.redirect('/login');
@@ -359,7 +361,7 @@ app.post('/setup', function(req, res, next) {
 	});
 });
 
-app.post('/login', function(req, res, next) {
+app.post(countlyConfig.web.base + '/login', function(req, res, next) {
 	if (req.body.username && req.body.password) {
 		var password = sha1Hash(req.body.password);
 	
@@ -378,7 +380,7 @@ app.post('/login', function(req, res, next) {
 	}
 });
 
-app.post('/dashboard/settings', function(req, res, next) {
+app.post(countlyConfig.web.base + '/dashboard/settings', function(req, res, next) {
 
 	if (!req.session.uid) {
 		res.end();
@@ -400,7 +402,7 @@ app.post('/dashboard/settings', function(req, res, next) {
 	countlyDb.collection('settings').update({}, {'$set': {'appSortList': newAppOrder}}, {'upsert': true});
 });
 
-app.post('/apps/all', function(req, res, next) {
+app.post(countlyConfig.web.base + '/apps/all', function(req, res, next) {
 
 	if (!req.session.uid) {
 		res.end();
@@ -436,7 +438,7 @@ app.post('/apps/all', function(req, res, next) {
 	});
 });
 
-app.post('/apps/add', function(req, res, next) {
+app.post(countlyConfig.web.base + '/apps/add', function(req, res, next) {
 	
 	if (!req.session.uid) {
 		res.end();
@@ -469,7 +471,7 @@ app.post('/apps/add', function(req, res, next) {
 	});
 });
 
-app.post('/apps/edit', function(req, res, next) {
+app.post(countlyConfig.web.base + '/apps/edit', function(req, res, next) {
 	if (!req.session.uid) {
 		res.end();
 		return false;
@@ -497,7 +499,7 @@ app.post('/apps/edit', function(req, res, next) {
 	}
 });
 
-app.post('/apps/delete', function(req, res, next) {
+app.post(countlyConfig.web.base + '/apps/delete', function(req, res, next) {
 	if (!req.session.uid) {
 		res.end();
 		return false;
@@ -544,7 +546,7 @@ app.post('/apps/delete', function(req, res, next) {
 	});
 });
 
-app.post('/apps/reset', function(req, res, next) {
+app.post(countlyConfig.web.base + '/apps/reset', function(req, res, next) {
 	if (!req.session.uid) {
 		res.end();
 		return false;
@@ -578,7 +580,7 @@ app.post('/apps/reset', function(req, res, next) {
 	res.send(true);
 });
 
-app.post('/apps/icon', function(req, res) {
+app.post(countlyConfig.web.base + '/apps/icon', function(req, res) {
 
 	if (!req.files.app_image || !req.body.app_image_id) {
 		res.end();
@@ -608,7 +610,7 @@ app.post('/apps/icon', function(req, res) {
 	});
 });
 
-app.post('/user/settings', function(req, res, next) {
+app.post(countlyConfig.web.base + '/user/settings', function(req, res, next) {
 
 	if (!req.session.uid) {
 		res.end();
@@ -648,7 +650,7 @@ app.post('/user/settings', function(req, res, next) {
 	}
 });
 
-app.post('/users/all', function(req, res, next) {
+app.post(countlyConfig.web.base + '/users/all', function(req, res, next) {
 
 	if (!req.session.uid) {
 		res.end();
@@ -686,7 +688,7 @@ app.post('/users/all', function(req, res, next) {
 	});
 });
 
-app.post('/users/create', function(req, res, next) {
+app.post(countlyConfig.web.base + '/users/create', function(req, res, next) {
 
 	if (!req.session.uid) {
 		res.end();
@@ -766,7 +768,7 @@ app.post('/users/create', function(req, res, next) {
 	}
 });
 
-app.post('/users/delete', function(req, res, next) {
+app.post(countlyConfig.web.base + '/users/delete', function(req, res, next) {
 
 	if (!req.session.uid) {
 		res.end();
@@ -792,7 +794,7 @@ app.post('/users/delete', function(req, res, next) {
 	}
 });
 
-app.post('/users/update', function(req, res, next) {
+app.post(countlyConfig.web.base + '/users/update', function(req, res, next) {
 
 	if (!req.session.uid) {
 		res.end();
@@ -874,7 +876,7 @@ app.post('/users/update', function(req, res, next) {
 	});
 });
 
-app.post('/users/check/email', function(req, res, next) {
+app.post(countlyConfig.web.base + '/users/check/email', function(req, res, next) {
 
 	if (!req.session.uid || !isGlobalAdmin(req) || !req.body.email) {
 		res.send(false);
@@ -890,7 +892,7 @@ app.post('/users/check/email', function(req, res, next) {
 	});
 });
 
-app.post('/users/check/username', function(req, res, next) {
+app.post(countlyConfig.web.base + '/users/check/username', function(req, res, next) {
 
 	if (!req.session.uid || !isGlobalAdmin(req) || !req.body.username) {
 		res.send(false);
@@ -906,7 +908,7 @@ app.post('/users/check/username', function(req, res, next) {
 	});
 });
 
-app.post('/events/map/edit', function(req, res, next) {
+app.post(countlyConfig.web.base + '/events/map/edit', function(req, res, next) {
 	if (!req.session.uid || !req.body.app_id) {
 		res.end();
 		return false;
