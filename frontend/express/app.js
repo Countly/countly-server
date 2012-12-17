@@ -17,7 +17,7 @@ var http = require('http'),
 console.log('Server running on port ' + countlyConfig.web.port);
 
 var redirect = function(res, url) {
-    res.redirect(countlyConfig.web.base +  url);
+	res.redirect(countlyConfig.web.base +  url);
 }
 
 function sha1Hash(str, addSalt) {
@@ -80,8 +80,8 @@ app.configure(function() {
 	app.use(express.methodOverride());
 	app.use(express.csrf());
 	app.use(app.router);
-    var oneYear = 31557600000;
-    app.use(express.static(__dirname + '/public'), { maxAge: oneYear });
+	var oneYear = 31557600000;
+	app.use(express.static(__dirname + '/public'), { maxAge: oneYear });
 });
 
 app.configure('development', function() {
@@ -98,11 +98,11 @@ app.get('/', function(req, res, next) {
 
 app.get('/logout', function(req, res, next) {
   if (req.session) {
-    req.session.uid = null;
+	req.session.uid = null;
 	req.session.gadm = null;
-    res.clearCookie('uid');
+	res.clearCookie('uid');
 	res.clearCookie('gadm');
-    req.session.destroy(function() {});
+	req.session.destroy(function() {});
   }
   redirect(res, 'login');
 });
@@ -211,7 +211,7 @@ app.get('/dashboard', function(req, res, next) {
 								username: member["username"],
 								global_admin: (member["global_admin"] == true)
 							},
-                            base: countlyConfig.web.base
+							base: countlyConfig.web.base
 						});
 					});
 				}
