@@ -13,7 +13,13 @@ var http = require('http'),
 	Server = require('mongodb').Server,
 	server_config = new Server(countlyConfig.mongodb.host, countlyConfig.mongodb.port, {auto_reconnect: true, native_parser: true}),
 	sessionDb = new Db(countlyConfig.mongodb.db, server_config, {});
-	
+
+console.log('Server running on port ' + countlyConfig.web.port);
+
+var redirect = function(res, url) {
+	res.redirect(countlyConfig.web.base +  url);
+}
+
 function sha1Hash(str, addSalt) {
 	var salt = (addSalt)? new Date().getTime() : "";
 	return crypto.createHmac('sha1', salt + "").update(str + "").digest('hex');
@@ -74,8 +80,8 @@ app.configure(function() {
 	app.use(express.methodOverride());
 	app.use(express.csrf());
 	app.use(app.router);
-    var oneYear = 31557600000;
-    app.use(express.static(__dirname + '/public'), { maxAge: oneYear });
+	var oneYear = 31557600000;
+	app.use(express.static(__dirname + '/public'), { maxAge: oneYear });
 });
 
 app.configure('development', function() {
@@ -87,23 +93,23 @@ app.configure('production', function() {
 });
 
 app.get('/', function(req, res, next) {
-	res.redirect('/login');
+	redirect(res, 'login');
 });
 
 app.get('/logout', function(req, res, next) {
   if (req.session) {
-    req.session.uid = null;
+	req.session.uid = null;
 	req.session.gadm = null;
-    res.clearCookie('uid');
+	res.clearCookie('uid');
 	res.clearCookie('gadm');
-    req.session.destroy(function() {});
+	req.session.destroy(function() {});
   }
-  res.redirect('/login');
+  redirect(res, 'login');
 });
 
 app.get('/dashboard', function(req, res, next) {
 	if (!req.session.uid) {
-		res.redirect('/login');
+		redirect(res, 'login');
 	} else {
 		countlyDb.collection('members').findOne({"_id": countlyDb.ObjectID(req.session.uid)}, function(err, member){
 			if (member) {
@@ -204,7 +210,8 @@ app.get('/dashboard', function(req, res, next) {
 							member: {
 								username: member["username"],
 								global_admin: (member["global_admin"] == true)
-							}
+							},
+							base: countlyConfig.web.base
 						});
 					});
 				}
@@ -216,7 +223,7 @@ app.get('/dashboard', function(req, res, next) {
 					res.clearCookie('gadm');
 					req.session.destroy(function() {});
 				}
-				res.redirect('/login');
+				redirect(res, 'login');
 			}
 		});
 	}
@@ -225,22 +232,22 @@ app.get('/dashboard', function(req, res, next) {
 app.get('/setup', function(req, res, next) {
 	countlyDb.collection('members').count({}, function(err, memberCount){
 		if (memberCount) {
-			res.redirect('/login');
+			redirect(res, 'login');
 		} else {
-			res.render('setup', { "csrf": req.session._csrf });
+			res.render('setup', { "csrf": req.session._csrf, "base": countlyConfig.web.base });
 		}
 	});
 });
 
 app.get('/login', function(req, res, next) {
 	if (req.session.uid) {
-		res.redirect('/dashboard');
+		redirect(res, 'dashboard');
 	} else {
 		countlyDb.collection('members').count({}, function(err, memberCount){
 			if (memberCount) {
-				res.render('login', { "message": req.flash('info'), "csrf": req.session._csrf });
+				res.render('login', { "message": req.flash('info'), "csrf": req.session._csrf, "base": countlyConfig.web.base });
 			} else {
-				res.redirect('/setup');
+				redirect(res, 'setup');
 			}
 		});
 	}
@@ -248,9 +255,9 @@ app.get('/login', function(req, res, next) {
 
 app.get('/forgot', function(req, res, next) {
 	if (req.session.uid) {
-		res.redirect('/dashboard');
+		redirect(res, 'dashboard');
 	} else {
-		res.render('forgot', { "csrf": req.session._csrf, "message": req.flash('info') });
+		res.render('forgot', { "csrf": req.session._csrf, "message": req.flash('info'), "base": countlyConfig.web.base });
 	}
 });
 
@@ -262,18 +269,18 @@ app.get('/reset/:prid', function(req, res, next) {
 			if (passwordReset && !err) {
 				if (timestamp > (passwordReset.timestamp + 600)) {
 					req.flash('info', 'reset.invalid');
-					res.redirect('/forgot');
+					redirect(res, 'forgot');
 				} else {
-					res.render('reset', { "csrf": req.session._csrf, "prid": req.params.prid, "message": "" });
+					res.render('reset', { "csrf": req.session._csrf, "prid": req.params.prid, "message": "", "base": countlyConfig.web.base });
 				}
 			} else {
 				req.flash('info', 'reset.invalid');
-				res.redirect('/forgot');
+				redirect(res, 'forgot');
 			}
 		});
 	} else {
 		req.flash('info', 'reset.invalid');
-		res.redirect('/forgot');
+		redirect(res, 'forgot');
 	}
 });
 
@@ -284,13 +291,13 @@ app.post('/reset', function(req, res, next) {
 		countlyDb.collection('password_reset').findOne({prid: req.body.prid}, function(err, passwordReset){
 			countlyDb.collection('members').update({_id: passwordReset.user_id}, {'$set': { "password": password }}, function(err, member){
 				req.flash('info', 'reset.result');
-				res.redirect('/login');
+				redirect(res, 'login');
 			});
 			
 			countlyDb.collection('password_reset').remove({prid: req.body.prid}, function(){});
 		});
 	} else {
-		res.render('reset', { "csrf": req.session._csrf, "prid": req.body.prid, "message": "" });
+		res.render('reset', { "csrf": req.session._csrf, "prid": req.body.prid, "message": "", "base": countlyConfig.web.base });
 	}
 });
 
@@ -326,21 +333,21 @@ app.post('/forgot', function(req, res, next) {
 						console.log('/forgot email sent successfully!');
 					});
 					
-					res.render('forgot', { "message": "forgot.result", "csrf": req.session._csrf });
+					res.render('forgot', { "message": "forgot.result", "csrf": req.session._csrf, "base": countlyConfig.web.base });
 				});
 			} else {
-				res.render('forgot', { "message": "forgot.result", "csrf": req.session._csrf });
+				res.render('forgot', { "message": "forgot.result", "csrf": req.session._csrf, "base": countlyConfig.web.base });
 			}
 		});
 	} else {
-		res.redirect('/forgot');
+		redirect(res, 'forgot');
 	}
 });
 
 app.post('/setup', function(req, res, next) {
 	countlyDb.collection('members').count({}, function(err, memberCount){
 		if (memberCount) {
-			res.redirect('/login');
+			redirect(res, 'login');
 		} else {
 			if (req.body.username && req.body.password && req.body.email) {
 				var password = sha1Hash(req.body.password);
@@ -350,10 +357,10 @@ app.post('/setup', function(req, res, next) {
 					
 					req.session.uid = member[0]["_id"];
 					req.session.gadm = true;
-					res.redirect('/dashboard');
+					redirect(res, 'dashboard');
 				});
 			} else {
-				res.redirect('/setup');
+				redirect(res, 'setup');
 			}
 		}
 	});
@@ -367,13 +374,13 @@ app.post('/login', function(req, res, next) {
 			if (member) {
 				req.session.uid = member["_id"];
 				req.session.gadm = (member["global_admin"] == true);
-				res.redirect('/dashboard');
+				redirect(res, 'dashboard');
 			} else {
-				res.render('login', { "message": "login.result", "csrf": req.session._csrf });
+				res.render('login', { "message": "login.result", "csrf": req.session._csrf, "base": countlyConfig.web.base });
 			}
 		});
 	} else {
-		res.render('login', { "message": "login.result", "csrf": req.session._csrf });
+		res.render('login', { "message": "login.result", "csrf": req.session._csrf, "base": countlyConfig.web.base });
 		res.end();
 	}
 });

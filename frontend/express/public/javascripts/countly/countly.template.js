@@ -1250,7 +1250,7 @@ window.ManageAppsView = countlyView.extend({
 				$("#first-app-success").show();
 				$("#new-install-overlay").fadeOut();
 				countlyCommon.setActiveApp(appId);
-				$("#sidebar-app-select .logo").css("background-image", "url('/appimages/" + appId + ".png')");
+				$("#sidebar-app-select .logo").css("background-image", "url('appimages/" + appId + ".png')");
 				$("#sidebar-app-select .text").text(countlyGlobal['apps'][appId].name);
 				
 				countlySession.initialize();
@@ -1271,7 +1271,7 @@ window.ManageAppsView = countlyView.extend({
 			$("#app-edit-category .cly-select .text").data("value", countlyGlobal['apps'][appId].category);
 			$("#app-edit-timezone .cly-select .text").data("value", countlyGlobal['apps'][appId].timezone);
 			$("#app-edit-category .read").text(appCategories[countlyGlobal['apps'][appId].category]);
-			$("#app-edit-image .read .logo").css({"background-image": 'url("/appimages/' + appId + '.png")'});
+			$("#app-edit-image .read .logo").css({"background-image": 'url("appimages/' + appId + '.png")'});
 			var appTimezone = timezones[countlyGlobal['apps'][appId].country];
 		
 			for (var i = 0; i < appTimezone.z.length; i++) {
@@ -1279,7 +1279,7 @@ window.ManageAppsView = countlyView.extend({
 					if (appTimezone.z[i][tzone] == countlyGlobal['apps'][appId].timezone) {
 						var appEditTimezone = $("#app-edit-timezone .read"),
 							appCountryCode = countlyGlobal['apps'][appId].country;
-						appEditTimezone.find(".flag").css({"background-image": "url(/images/flags/" + appCountryCode.toLowerCase() + ".png)"});
+						appEditTimezone.find(".flag").css({"background-image": "url(images/flags/" + appCountryCode.toLowerCase() + ".png)"});
 						appEditTimezone.find(".country").text(appTimezone.n);
 						appEditTimezone.find(".timezone").text(tzone);
 						initCountrySelect("#app-edit-timezone", appCountryCode, tzone, appTimezone.z[i][tzone]);
@@ -1299,7 +1299,7 @@ window.ManageAppsView = countlyView.extend({
 			var timezoneSelect = $(parent + " #timezone-items");
 			
 			for (var key in timezones) {
-				countrySelect.append("<div data-value='"+ key +"' class='item'><div class='flag' style='background-image:url(/images/flags/"+ key.toLowerCase() +".png)'></div>"+ timezones[key].n +"</div>")
+				countrySelect.append("<div data-value='"+ key +"' class='item'><div class='flag' style='background-image:url(images/flags/"+ key.toLowerCase() +".png)'></div>"+ timezones[key].n +"</div>")
 			}
 			
 			if (countryCode && timezone_text && timezone) {
@@ -1311,7 +1311,7 @@ window.ManageAppsView = countlyView.extend({
 						$(parent + " #selected").text(prop);
 						$(parent + " #app-timezone").val(country.z[0][prop]);
 						$(parent + " #app-country").val(countryCode);
-						$(parent + " #country-select .text").html("<div class='flag' style='background-image:url(/images/flags/"+ countryCode.toLowerCase() +".png)'></div>"+ country.n);
+						$(parent + " #country-select .text").html("<div class='flag' style='background-image:url(images/flags/"+ countryCode.toLowerCase() +".png)'></div>"+ country.n);
 					}
 				} else {
 					$(parent + " #timezone-select").find(".text").text(prop);
@@ -1325,7 +1325,7 @@ window.ManageAppsView = countlyView.extend({
 					
 					$(parent + " #app-timezone").val(timezone);
 					$(parent + " #app-country").val(countryCode);
-					$(parent + " #country-select .text").html("<div class='flag' style='background-image:url(/images/flags/"+ countryCode.toLowerCase() +".png)'></div>"+ country.n);
+					$(parent + " #country-select .text").html("<div class='flag' style='background-image:url(images/flags/"+ countryCode.toLowerCase() +".png)'></div>"+ country.n);
 					$(parent + " #timezone-select .text").text(timezone_text);
 					$(parent + " #timezone-select").show();
 				}
@@ -1463,7 +1463,7 @@ window.ManageAppsView = countlyView.extend({
 		
 				$.ajax({
 					type: "POST",
-					url: "/apps/reset",
+					url: "apps/reset",
 					data: {
 						app_id: appId,
 						_csrf: countlyGlobal['csrf_token']
@@ -1500,7 +1500,7 @@ window.ManageAppsView = countlyView.extend({
 		
 				$.ajax({
 					type: "POST",
-					url: "/apps/delete",
+					url: "apps/delete",
 					data: {
 						app_id: appId,
 						_csrf: countlyGlobal['csrf_token']
@@ -1573,7 +1573,7 @@ window.ManageAppsView = countlyView.extend({
 		
 			$.ajax({
 				type: "POST",
-				url: "/apps/edit",
+				url: "apps/edit",
 				data: {
 					app_id: appId, 
 					app_name: appName,
@@ -1701,7 +1701,7 @@ window.ManageAppsView = countlyView.extend({
 		
 			$.ajax({
 				type: "POST",
-				url: "/apps/add",
+				url: "apps/add",
 				data: { 
 					app_name: appName,
 					category: category,
@@ -1787,7 +1787,7 @@ window.ManageUsersView = countlyView.extend({
 		var self = this;
 		$.ajax({
 			type: "POST",
-			url: "/users/all",
+			url: "users/all",
 			data: {
 				_csrf: countlyGlobal['csrf_token']
 			},
@@ -1906,7 +1906,7 @@ window.EventsView = countlyView.extend({
 				
 				$.ajax({
 					type: "POST",
-					url: "/events/map/edit",
+					url: "events/map/edit",
 					data: {
 						"app_id": countlyCommon.ACTIVE_APP_ID,
 						"event_map": eventMap,
@@ -2227,7 +2227,7 @@ var AppRouter = Backbone.Router.extend({
 			name:'help',
 			cache: true,
 			language: countlyCommon.BROWSER_LANG_SHORT,
-			path:'/localization/help/',
+			path:'localization/help/',
 			mode:'map',
 			callback: function() {
 				countlyCommon.HELP_MAP = jQuery.i18n.map;
@@ -2237,7 +2237,7 @@ var AppRouter = Backbone.Router.extend({
 					name:'dashboard',
 					cache: true,
 					language: countlyCommon.BROWSER_LANG_SHORT,
-					path:'/localization/dashboard/',
+					path:'localization/dashboard/',
 					mode:'map'
 				});
 			}
@@ -2282,7 +2282,7 @@ var AppRouter = Backbone.Router.extend({
 					
 					$.ajax({
 						type: "POST",
-						url: "/dashboard/settings",
+						url: "dashboard/settings",
 						data: {
 							"app_sort_list": orderArr,
 							_csrf: countlyGlobal['csrf_token']
@@ -2436,7 +2436,7 @@ var AppRouter = Backbone.Router.extend({
 					name:'help',
 					cache: true,
 					language: countlyCommon.BROWSER_LANG_SHORT,
-					path:'/localization/help/',
+					path:'localization/help/',
 					mode:'map',
 					callback: function() {
 						countlyCommon.HELP_MAP = jQuery.i18n.map;
@@ -2446,7 +2446,7 @@ var AppRouter = Backbone.Router.extend({
 							name:'dashboard',
 							cache: true,
 							language: countlyCommon.BROWSER_LANG_SHORT,
-							path:'/localization/dashboard/',
+							path:'localization/dashboard/',
 							mode:'map',
 							callback: function() {
 								$.when(countlyLocation.changeLanguage()).then(function(){
@@ -2479,7 +2479,7 @@ var AppRouter = Backbone.Router.extend({
 				
 				$.ajax({
 					type: "POST",
-					url: "/user/settings",
+					url: "user/settings",
 					data: {
 						"username": username,
 						"old_pwd": old_pwd,
@@ -2554,7 +2554,7 @@ var AppRouter = Backbone.Router.extend({
 					break;
 				}
 			} else {
-				$("#sidebar-app-select .logo").css("background-image", "url('/appimages/" + countlyCommon.ACTIVE_APP_ID + ".png')");
+				$("#sidebar-app-select .logo").css("background-image", "url('appimages/" + countlyCommon.ACTIVE_APP_ID + ".png')");
 				$("#sidebar-app-select .text").text(countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].name);
 				self.activeAppName = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].name;
 			}

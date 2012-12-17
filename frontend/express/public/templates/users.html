@@ -189,7 +189,7 @@ $(document).ready(function() {
 		
 		$.ajax({
 			type: "POST",
-			url: "/users/create",
+			url: "users/create",
 			data: data,
 			success: function() {
 				app.activeView.render();
@@ -266,7 +266,7 @@ $(document).ready(function() {
 		
 			$.ajax({
 				type: "POST",
-				url: "/users/update",
+				url: "users/update",
 				data: data,
 				success: function(result) {
 					if (currUserDetails.find(".delete-user").length == 0) {
@@ -296,7 +296,7 @@ $(document).ready(function() {
 		var self = $(this);
 		$.ajax({
 			type: "POST",
-			url: "/users/check/username",
+			url: "users/check/username",
 			data: data,
 			success: function(result) {
 				$(".username-check").remove();
@@ -334,7 +334,7 @@ $(document).ready(function() {
 		var self = $(this);
 		$.ajax({
 			type: "POST",
-			url: "/users/check/email",
+			url: "users/check/email",
 			data: data,
 			success: function(result) {
 				$(".email-check").remove();
@@ -369,7 +369,7 @@ $(document).ready(function() {
 		
 			$.ajax({
 				type: "POST",
-				url: "/users/delete",
+				url: "users/delete",
 				data: data,
 				success: function(result) {
 					currUserDetails.hide();
