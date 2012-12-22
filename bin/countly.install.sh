@@ -24,6 +24,11 @@ apt-get update
 
 apt-get -y install python-software-properties
 
+#Test to see if we were using the old package, and use the latest package
+if command -v apt-add-repository >/dev/null; then
+   apt-get -y install python-software-common
+fi
+
 #add node.js repo
 echo | apt-add-repository ppa:chris-lea/node.js
 
