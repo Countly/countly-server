@@ -1,0 +1,11 @@
+/*
+ * jQuery UI CSS Framework 1.8.18
+ *
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://jquery.org/license
+ *
+ * http://docs.jquery.com/UI/Theming
+ */
+@import "/javascripts/dom/jqueryui/jquery.ui.base.css";
+@import "/javascripts/dom/jqueryui/jquery.ui.theme.css";
