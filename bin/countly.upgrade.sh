@@ -19,14 +19,18 @@ echo "
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-#update all mongo collections for 12.09
 mongo countly $DIR/updateCollections.js
+
+#create frontend JS configuration file from sample
+mv $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
 
 #stop countly
 stop countly-supervisor
 
+#update nginx configuration for new API
+cp /etc/nginx/sites-enabled/default $DIR/config/nginx.default.backup
+cp $DIR/config/nginx.server.conf /etc/nginx/sites-enabled/default
+/etc/init.d/nginx reload
+
 #start countly
 start countly-supervisor
-
-os="`lsb_release -ds`"
-wget 'http://count.ly/t?a=247152a73e2b3934ab73c4477c5f85e1&cly_v=907348361b9fc62242b06465b925bb32&os_v='"$os" >/dev/null 2>&1

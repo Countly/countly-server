@@ -9,8 +9,7 @@
 -->
 <html>
 <head>
-	<link href='http://fonts.googleapis.com/css?family=Ubuntu:400,500&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
-	<link href='/stylesheets/pre-login/main.css?v12.09' rel='stylesheet' type='text/css'>
+	<link href='/stylesheets/pre-login/main.css' rel='stylesheet' type='text/css'>
 	<link rel="icon" type="image/png" href="/images/favicon.png">
 	<title>Countly</title>
 </head>
@@ -21,33 +20,38 @@
 		<div class="top-button" id="select-lang">
 			<div id="active-lang">EN</div>
 			<div id="langs">
-				<div class="group">
-					<a data-language-code="de" class="item">Deutsch</a>
-					<a data-language-code="en" class="item">English</a>
-					<a data-language-code="es" class="item">Español</a>
-					<a data-language-code="fr" class="item">Français</a>
-					<a data-language-code="it" class="item">Italiano</a>
-				</div>
-				<div class="group">
-					<a data-language-code="nl" class="item">Nederlands</a>
-					<a data-language-code="tr" class="item">Türkçe</a>
-					<a data-language-code="zh" class="item">中文</a>
-					<a data-language-code="ja" class="item">日本語</a>
-				</div>
+                <div class="group">
+                    <a data-language-code="de" class="item">Deutsch</a>
+                    <a data-language-code="en" class="item">English</a>
+                    <a data-language-code="es" class="item">Español</a>
+                    <a data-language-code="fr" class="item">Français</a>
+                    <a data-language-code="it" class="item">Italiano</a>
+                    <a data-language-code="nl" class="item">Nederlands</a>
+                </div>
+                <div class="group">
+                    <a data-language-code="pt" class="item">Português</a>
+                    <a data-language-code="ru" class="item">Русский язык</a>
+                    <a data-language-code="tr" class="item">Türkçe</a>
+                    <a data-language-code="zh" class="item">中文</a>
+                    <a data-language-code="ja" class="item">日本語</a>
+                </div>
 			</div>
 		</div>
 	</div>
-	<div id="login-form" style="background-position:220px 22px;">
+	<div id="login-form" style="background-position:220px 47px; height:230px; margin-top:-115px;">
 		<div id="login-left">
-			<div id="login-logo" style="margin-top:64px;"></div>
+			<div id="login-logo" style="margin-top:89px;"></div>
 		</div>
 		<div style="float:left; overflow:auto;">
 			<form method="POST">
+                <div>
+                    <input autocapitalize="off" autocomplete="off" type="text" name="full_name" placeholder="Full Name" data-localize="placeholder.full-name"/>
+                </div>
+                <div>
+                    <input autocapitalize="off" autocomplete="off" type="text" name="email" placeholder="Email" data-localize="placeholder.email"/>
+                </div>
 				<div>
 					<input type="text" autocapitalize="off" autocomplete="off" name="username" placeholder="Username" data-localize="placeholder.username"/>
-				</div>
-				<div>
-					<input autocapitalize="off" autocomplete="off" type="text" name="email" placeholder="Email" data-localize="placeholder.email"/>
 				</div>
 				<div>
 					<input name="password" type="password" autocomplete="off" placeholder="Password" data-localize="placeholder.password"/>
@@ -59,12 +63,12 @@
 			</form>
 		</div>
 	</div>
-	<script language="javascript" type="text/javascript" src="/javascripts/jquery-1.8.2.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/prefixfree.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/jquery.noisy.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/store+json2.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/jquery.i18n.properties-min-1.0.9.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/pre-login.js?v12.09"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/utils/prefixfree.min.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery.noisy.min.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/utils/store+json2.min.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/pre-login.js"></script>
 	<script>
 		$(document).ready(function() {
 			document.title = "Countly | " + jQuery.i18n.map["setup.title"];

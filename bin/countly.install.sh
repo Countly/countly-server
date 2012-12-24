@@ -23,6 +23,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 apt-get update
 
 apt-get -y install python-software-properties
+apt-get -y install software-properties-common
 
 #add node.js repo
 echo | apt-add-repository ppa:chris-lea/node.js
@@ -62,9 +63,7 @@ cp /etc/nginx/sites-enabled/default $DIR/config/nginx.default.backup
 cp $DIR/config/nginx.server.conf /etc/nginx/sites-enabled/default
 /etc/init.d/nginx start
 
-#add machine IP as API IP for countly dashboard
-serverip="`ifconfig | sed -n 's/.*inet addr:\([0-9.]\+\)\s.*/\1/p' | grep -v 127.0.0.1`"
-echo "countlyCommon.READ_API_URL = \"http://$serverip/o\"" > $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js
+#create frontend JS configuration file from sample
 mv $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
 
 #kill existing supervisor process
@@ -82,7 +81,4 @@ cp $DIR/../frontend/express/config.sample.js $DIR/../frontend/express/config.js
 #finally start countly api and dashboard
 start countly-supervisor
 
-echo -e "\nVisit http://$serverip in order to setup your administrator account\n"
-
-os="`lsb_release -ds`"
-wget 'http://count.ly/t?a=ec5f7fef43d3a1d04ce55e4ce6a5721e&cly_v=907348361b9fc62242b06465b925bb32&os_v='"$os" >/dev/null 2>&1
+echo -e "\nCountly setup is complete! Visit your domain or IP from your browser to setup an admin account.\n"

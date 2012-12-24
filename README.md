@@ -26,7 +26,7 @@ We develop and test Countly on Ubuntu with MongoDB, Node.js and nginx. It should
 
 ##How do I upgrade my Countly server?
 
-countly-server package includes an upgrade script (`bin/countly.upgrade.sh`) that takes care of the upgrade process. [See this tutorial](http://support.count.ly/kb/web-installation/upgrading-countly-server-to-v1209-from-v1208) if you would like to perform the upgrade manually (12.08 to 12.09).
+countly-server package includes an upgrade script (`bin/countly.upgrade.sh`) that takes care of the upgrade process. [See this tutorial](http://support.count.ly/kb/web-installation/upgrading-countly-server-to-v1212-from-v1209) if you would like to perform the upgrade manually (12.09 to 12.12).
 
 ##API & Frontend
 
@@ -62,4 +62,4 @@ We are on [Twitter](http://twitter.com/gocountly) and [Facebook](http://www.face
 
 ##Rebranding
 
-Ask us (hello@count.ly) if you want to whitelabel Countly and we'll be glad to help.
+Contact us (hello@count.ly) if you want to whitelabel Countly and we'll be glad to help.

@@ -1,3 +1,30 @@
+12.12
+
+  * Added Windows Phone and Blackberry WebWorks support.
+
+  * Added management API. All user and application related operations can
+    be performed through the API using an API key.
+
+  * Modified data read API (/o) to be accessible only by using an API key.
+
+  * Added Portuguese and Russian to available languages.
+
+  * Added event key sorting to event configuration modal.
+
+  * Removed "EVENTS SERVED" from the dashboard and added "TIME SPENT" metric.
+
+  * Fixed a bug that prevented correct visualization of event data which has
+    segmentation values 0-23 (hours of the day).
+
+  * Modified event segmentation bar chart not to show stacked data.
+
+  * Modified event segmentation count and sum below the graph to show only
+    the count and sum for the selected segmentation key.
+
+  * Optimized dashboard experience on tablet devices.
+
+  * Added awesome animation for closing popups with ESC key :)
+
 12.09
 
   * Added localization support. All the pages have translations in the 

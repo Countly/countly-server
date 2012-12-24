@@ -61,12 +61,12 @@ $(document).ready(function() {
 		}
 		
 		$(".user-details").hide();
-		$("#user-table tbody tr.active").removeClass("active");
-		$("#user-table tbody tr:not(.user-details)").css({"opacity": "1"});
+		$("#user-table").find("tbody tr.active").removeClass("active");
+		$("#user-table").find("tbody tr:not(.user-details)").css({"opacity": "1"});
 		$("#listof-apps").hide();
 	}
 	
-	$("#user-table tbody tr").not(".user-details").on('click', function() {
+	$("#user-table").find("tbody tr").not(".user-details").on('click', function() {
 		
 		if (!lastUserSaved && previousUserDetails) {
 			previousUserDetails.replaceWith(userDetailsClone);
@@ -184,13 +184,15 @@ $(document).ready(function() {
 			data.admin_of = currUserDetails.find(".admin-apps .app-list").val().split(",");
 			data.user_of = currUserDetails.find(".user-apps .app-list").val().split(",");
 		}
-		
-		data._csrf = countlyGlobal['csrf_token'];
-		
+
 		$.ajax({
-			type: "POST",
-			url: "/users/create",
-			data: data,
+			type: "GET",
+            url: countlyCommon.API_PARTS.users.w + '/create',
+            data: {
+                args: JSON.stringify(data),
+                api_key: countlyGlobal['member'].api_key
+            },
+            dataType: "jsonp",
 			success: function() {
 				app.activeView.render();
 			}
@@ -262,12 +264,14 @@ $(document).ready(function() {
 		}
 		
 		function saveUser() {
-			data._csrf = countlyGlobal['csrf_token'];
-		
 			$.ajax({
-				type: "POST",
-				url: "/users/update",
-				data: data,
+				type: "GET",
+                url: countlyCommon.API_PARTS.users.w + '/update',
+                data: {
+                    args: JSON.stringify(data),
+                    api_key: countlyGlobal['member'].api_key
+                },
+                dataType: "jsonp",
 				success: function(result) {
 					if (currUserDetails.find(".delete-user").length == 0) {
 						$("#menu-username").text(data.username);
@@ -362,15 +366,18 @@ $(document).ready(function() {
 				return false;
 			}
 		
-			var data = {};
-			data.user_ids = [];
-			data.user_ids[0] = self.parent(".button-container").find(".user_id").val();
-			data._csrf = countlyGlobal['csrf_token'];
-		
+			var data = {
+                user_ids: [self.parent(".button-container").find(".user_id").val()]
+            };
+
 			$.ajax({
-				type: "POST",
-				url: "/users/delete",
-				data: data,
+				type: "GET",
+                url: countlyCommon.API_PARTS.users.w + '/delete',
+                data: {
+                    args: JSON.stringify(data),
+                    api_key: countlyGlobal['member'].api_key
+                },
+                dataType: "jsonp",
 				success: function(result) {
 					currUserDetails.hide();
 					currUserDetails.prev("tr").remove();
@@ -414,7 +421,7 @@ $(document).ready(function() {
 	});
 	
 	$("#deselect-all").on('click', function() {
-		$("#listof-apps .app:not(.disabled)").removeClass("selected");
+		$("#listof-apps").find(".app:not(.disabled)").removeClass("selected");
 		
 		adminsOf = [];
 		var adminOfIds = [];
