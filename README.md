@@ -17,9 +17,11 @@ Below you can find Countly SDK repositories. Each SDK has its own installation i
 
 ##How do I install Countly server?
 
+You can either download all files from [Sourceforge](http://sf.net/projects/countly), or get code from Github (this page).
+ 
 We provide a beautiful installation sript (`bin/countly.install.sh`) with countly-server package that installs and configures everything required to run Countly Server.
 
-If you feel like doing things manually you can take a look at the installation articles from [http://support.count.ly](http://support.count.ly "Countly Support").
+If you feel like doing things manually, or need to upgrade Countly from a previous version, please take a look at the installation articles from [http://support.count.ly](http://support.count.ly "Countly Support").
 
 ##Dependencies
 We develop and test Countly on Ubuntu with MongoDB, Node.js and nginx. It should work in your Linux distribution (e.g Fedora, OpenSUSE, etc), however, you need to install them by hand.
