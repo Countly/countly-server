@@ -14,7 +14,7 @@ Below you can find Countly SDK repositories. Each SDK has its own installation i
 - [Countly iOS SDK](https://github.com/Countly/countly-sdk-ios)
 - [Countly Windows Phone SDK](https://github.com/Countly/countly-sdk-windows-phone)
 - [Countly Blackberry Webworks SDK](https://github.com/Countly/countly-sdk-blackberry-webworks)
-- [Countly Mac OS X SDK9](https://github.com/mrballoon/countly-sdk-osx) (Community supported)
+- [Countly Mac OS X SDK](https://github.com/mrballoon/countly-sdk-osx) (Community supported)
 - [Countly Appcelerator Titanium SDK](https://github.com/euforic/Titanium-Count.ly) (Community supported)
 
 ##How do I install Countly server?
