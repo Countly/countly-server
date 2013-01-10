@@ -63,7 +63,3 @@ We are on [Twitter](http://twitter.com/gocountly) and [Facebook](http://www.face
 ##Community & support
 
 [http://support.count.ly](http://support.count.ly "Countly Support")
-
-##Rebranding
-
-Contact us (hello@count.ly) if you want to whitelabel Countly and we'll be glad to help.
