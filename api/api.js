@@ -376,7 +376,17 @@ http.Server(function (req, res) {
                     validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeData, params.qstring.method);
                     break;
                 case 'events':
-                    validateUserForDataReadAPI(params, countlyApi.data.fetch.prefetchEventData, params.qstring.method);
+                    if (params.qstring.events) {
+                        try {
+                            params.qstring.events = JSON.parse(params.qstring.events);
+                        } catch (SyntaxError) {
+                            console.log('Parse events array failed');
+                        }
+
+                        validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventData);
+                    } else {
+                        validateUserForDataReadAPI(params, countlyApi.data.fetch.prefetchEventData, params.qstring.method);
+                    }
                     break;
                 case 'get_events':
                     validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchCollection, 'events');

@@ -1,5 +1,6 @@
 var fetch = {},
-    common = require('./../../utils/common.js');
+    common = require('./../../utils/common.js'),
+    async = require('./../../utils/async.min.js');
 
 (function (fetch) {
 
@@ -41,6 +42,98 @@ var fetch = {},
 
             common.returnOutput(params, result);
         });
+    };
+
+    fetch.fetchMergedEventData = function (params) {
+        var eventKeysArr = [];
+
+        for (var i = 0; i < params.qstring.events.length; i++) {
+            eventKeysArr.push(params.qstring.events[i] + params.app_id);
+        }
+
+        if (!eventKeysArr.length) {
+            common.returnOutput(params, {});
+        } else {
+            async.map(eventKeysArr, getEventData, function (err, allEventData) {
+                var mergedEventOutput = {};
+
+                for (var i = 0; i < allEventData.length; i++) {
+                    delete allEventData[i].meta;
+
+                    for (var levelOne in allEventData[i]) {
+                        if (typeof allEventData[i][levelOne] !== 'object') {
+                            if (mergedEventOutput[levelOne]) {
+                                mergedEventOutput[levelOne] += allEventData[i][levelOne];
+                            } else {
+                                mergedEventOutput[levelOne] = allEventData[i][levelOne];
+                            }
+                        } else {
+                            for (var levelTwo in allEventData[i][levelOne]) {
+                                if (!mergedEventOutput[levelOne]) {
+                                    mergedEventOutput[levelOne] = {};
+                                }
+
+                                if (typeof allEventData[i][levelOne][levelTwo] !== 'object') {
+                                    if (mergedEventOutput[levelOne][levelTwo]) {
+                                        mergedEventOutput[levelOne][levelTwo] += allEventData[i][levelOne][levelTwo];
+                                    } else {
+                                        mergedEventOutput[levelOne][levelTwo] = allEventData[i][levelOne][levelTwo];
+                                    }
+                                } else {
+                                    for (var levelThree in allEventData[i][levelOne][levelTwo]) {
+                                        if (!mergedEventOutput[levelOne][levelTwo]) {
+                                            mergedEventOutput[levelOne][levelTwo] = {};
+                                        }
+
+                                        if (typeof allEventData[i][levelOne][levelTwo][levelThree] !== 'object') {
+                                            if (mergedEventOutput[levelOne][levelTwo][levelThree]) {
+                                                mergedEventOutput[levelOne][levelTwo][levelThree] += allEventData[i][levelOne][levelTwo][levelThree];
+                                            } else {
+                                                mergedEventOutput[levelOne][levelTwo][levelThree] = allEventData[i][levelOne][levelTwo][levelThree];
+                                            }
+                                        } else {
+                                            for (var levelFour in allEventData[i][levelOne][levelTwo][levelThree]) {
+                                                if (!mergedEventOutput[levelOne][levelTwo][levelThree]) {
+                                                    mergedEventOutput[levelOne][levelTwo][levelThree] = {};
+                                                }
+
+                                                if (typeof allEventData[i][levelOne][levelTwo][levelThree][levelFour] !== 'object') {
+                                                    if (mergedEventOutput[levelOne][levelTwo][levelThree][levelFour]) {
+                                                        mergedEventOutput[levelOne][levelTwo][levelThree][levelFour] += allEventData[i][levelOne][levelTwo][levelThree][levelFour];
+                                                    } else {
+                                                        mergedEventOutput[levelOne][levelTwo][levelThree][levelFour] = allEventData[i][levelOne][levelTwo][levelThree][levelFour];
+                                                    }
+                                                } else {
+                                                    for (var levelFive in allEventData[i][levelOne][levelTwo][levelThree][levelFour]) {
+                                                        if (!mergedEventOutput[levelOne][levelTwo][levelThree][levelFour]) {
+                                                            mergedEventOutput[levelOne][levelTwo][levelThree][levelFour] = {};
+                                                        }
+
+                                                        if (mergedEventOutput[levelOne][levelTwo][levelThree][levelFour][levelFive]) {
+                                                            mergedEventOutput[levelOne][levelTwo][levelThree][levelFour][levelFive] += allEventData[i][levelOne][levelTwo][levelThree][levelFour][levelFive];
+                                                        } else {
+                                                            mergedEventOutput[levelOne][levelTwo][levelThree][levelFour][levelFive] = allEventData[i][levelOne][levelTwo][levelThree][levelFour][levelFive];
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                common.returnOutput(params, mergedEventOutput);
+            });
+        }
+
+        function getEventData(eventKey, callback) {
+            common.db.collection(eventKey).findOne({"_id": "no-segment"}, {"_id": 0}, function (err, eventData) {
+                callback(err, eventData || {});
+            });
+        }
     };
 
     fetch.fetchCollection = function (collection, params) {
