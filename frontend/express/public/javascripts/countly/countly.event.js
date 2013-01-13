@@ -364,7 +364,8 @@
 
     countlyEvent.getEventMap = function() {
         var events = (_activeEvents)? ((_activeEvents.list)? _activeEvents.list : []) : [],
-            eventMap = (_activeEvents)? ((_activeEvents.map)? _activeEvents.map : {}) : {};
+            eventMap = (_activeEvents)? ((_activeEvents.map)? _activeEvents.map : {}) : {},
+            eventOrder = (_activeEvents)? ((_activeEvents.order)? _activeEvents.order : []) : [];
 
         for (var i = 0; i < events.length; i++) {
             if (!eventMap[events[i]]) {
@@ -376,6 +377,12 @@
             }
 
             eventMap[events[i]]["event_key"] = events[i];
+        }
+
+        if (eventOrder.length) {
+            eventMap = _.sortBy(eventMap, function(event){ return eventOrder.indexOf(event.event_key); });
+        } else {
+            eventMap = _.sortBy(eventMap, function(event){ return event.name; });
         }
 
         return eventMap;
