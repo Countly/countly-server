@@ -188,18 +188,22 @@ var usage = {},
                 updateSessions[params.time.hourly + '.' + common.dbMap['unique']] = 1;
             }
 
+            //If user is not tracked today, update totals
             if (userLastSeenTimestamp <= (params.time.timestamp - secInHour)) {
                 uniqueLevels[uniqueLevels.length] = params.time.daily;
-            }
-
-            if (userLastSeenTimestamp <= (params.time.timestamp - secInMonth)) {
                 uniqueLevels[uniqueLevels.length] = params.time.monthly;
-            }
-
-            if (userLastSeenTimestamp < (params.time.timestamp - secInMonth)) {
                 uniqueLevels[uniqueLevels.length] = params.time.yearly;
             }
 
+            // if (userLastSeenTimestamp <= (params.time.timestamp - secInMonth)) {
+            //     uniqueLevels[uniqueLevels.length] = params.time.monthly;
+            // }
+            // 
+            // if (userLastSeenTimestamp < (params.time.timestamp - secInMonth)) {
+            //     uniqueLevels[uniqueLevels.length] = params.time.yearly;
+            // }
+            
+            
             for (var i = 0; i < uniqueLevels.length; i++) {
                 updateSessions[uniqueLevels[i] + '.' + common.dbMap['unique']] = 1;
                 updateLocations[uniqueLevels[i] + '.' + params.user.country + '.' + common.dbMap['unique']] = 1;
