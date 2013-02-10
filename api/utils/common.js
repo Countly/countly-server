@@ -35,7 +35,8 @@ var common = {},
         'app_version':'av'
     };
 
-    common.db = mongo.db(countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db + '?auto_reconnect');
+    var connectionString = typeof countlyConfig.mongodb === "string" ? countlyConfig.mongodb : (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db + '?auto_reconnect');
+    common.db = mongo.db(connectionString);
 
     common.config = countlyConfig;
 
