@@ -26,7 +26,7 @@ var appsApi = {},
 
     appsApi.getCurrentUserApps = function (params) {
         if (params.member.global_admin) {
-            appsApi.getAllApps(params);
+            appsApi.getAllApps();
             return true;
         }
 
