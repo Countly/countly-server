@@ -1,0 +1,31 @@
+{
+  "name": "countly-server-frontend",
+  "version": "12.12.0",
+  "description": "Countly Mobile Analytics Server Frontend",
+  "main": "app.js",
+  "private": true, 
+  "dependencies": {
+    "bson": "~0.1.0",
+    "ejs": "~0.7.1",
+    "express": "~2.5.9",
+    "express-expose": "~0.2.2",
+    "imagemagick": "~0.1.2",
+    "mongodb": "~0.9.9-2",
+    "mongoskin": "~0.3.6",
+    "request": "~2.9.202"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Countly/countly-server.git"
+  },
+  "keywords": [
+    "countly",
+    "analytics"
+  ],
+  "author": "",
+  "license": "BSD"
+}

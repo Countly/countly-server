@@ -1,6 +1,6 @@
 var http = require('http'),
     express = require('express'),
-    mongoStore = require('connect-mongodb'),
+    SkinStore = require('connect-mongoskin'),
     expose = require('express-expose'),
     mongo = require('mongoskin'),
     crypto = require('crypto'),
@@ -10,11 +10,8 @@ var http = require('http'),
     countlyMail = require('../../api/parts/mgmt/mail.js'),
     countlyStats = require('../../api/parts/data/stats.js'),
     countlyConfig = require('./config'),
-    countlyDb = mongo.db(countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db + '?auto_reconnect'),
-    Db = require('mongodb').Db,
-    Server = require('mongodb').Server,
-    server_config = new Server(countlyConfig.mongodb.host, countlyConfig.mongodb.port, {auto_reconnect:true, native_parser:true}),
-    sessionDb = new Db(countlyConfig.mongodb.db, server_config, {});
+    connectionString = typeof countlyConfig.mongodb === "string" ? countlyConfig.mongodb : (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db + '?auto_reconnect'),
+    countlyDb = mongo.db(connectionString);
 
 function sha1Hash(str, addSalt) {
     var salt = (addSalt) ? new Date().getTime() : "";
@@ -70,7 +67,7 @@ app.configure(function () {
     app.use(express.cookieParser());
     app.use(express.session({
         secret:'countlyss',
-        store:new mongoStore({db:sessionDb, collection:'user_sessions'})
+        store:new SkinStore(countlyDb)
     }));
     app.use(express.methodOverride());
     app.use(express.csrf());

@@ -1,6 +1,6 @@
 var fetch = {},
     common = require('./../../utils/common.js'),
-    async = require('./../../utils/async.min.js');
+    async = require('async');
 
 (function (fetch) {
 
