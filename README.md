@@ -1,14 +1,9 @@
 ##What's Countly?
-Countly is an innovative, real-time, open source mobile analytics application. It 
-collects data from mobile phones, tablets and other internet-connected devices, 
-and visualizes this information to analyze mobile application usage and end-user behavior. 
-There are two parts of Countly: the server that collects and analyzes data, and mobile SDK 
-that sends this data.
+Countly is an innovative, real-time, open source mobile analytics application. It collects data from mobile phones, tablets and other internet-connected devices,  and visualizes this information to analyze mobile application usage and end-user behavior. There are two parts of Countly: the server that collects and analyzes data, and mobile SDK that sends this data.
 
-Which mobile operating systems does Countly support? 
+##Which mobile operating systems does Countly support?
 
-Countly supports top-notch devices, including iOS, Android, Windows Phone and Blackberry. 
-Below you can find Countly SDK repositories. Each SDK has its own installation instructions.
+Countly supports top-notch devices, including iOS, Android, Windows Phone and Blackberry. Below you can find Countly SDK repositories. Each SDK has its own installation instructions.
 
 - [Countly Android SDK](https://github.com/Countly/countly-sdk-android)
 - [Countly iOS SDK](https://github.com/Countly/countly-sdk-ios)
@@ -48,7 +43,7 @@ Contains seperate  helper js files for each data visualization. For example `cou
 ####3. api/api.js
 
 Countly write and read API. Waits for write requests from the mobile SDKs and read requests from the 
-Countly js helpers. Refer to [Countly Server API Reference](https://github.com/Countly/countly-server/wiki/Countly-Server-API-Reference) for details.
+Countly js helpers. Refer to [Countly Server API Reference](http://support.count.ly/kb/reference/countly-server-api-reference) for details.
 
 ##Which mobile operating systems are supported?
 Countly offers integration with world's leading mobile operating systems: Android, iOS, Windows Phone and Blackberry.
