@@ -32,12 +32,12 @@ function validateAppForWriteAPI(params) {
 
         if (params.qstring.events) {
             countlyApi.data.events.processEvents(params);
+        } else if (params.qstring.end_session) {
+            countlyApi.data.usage.endUserSession(params);
         } else if (params.qstring.session_duration) {
             countlyApi.data.usage.processSessionDuration(params);
         } else if (params.qstring.begin_session) {
             countlyApi.data.usage.beginUserSession(params);
-        } else if (params.qstring.end_session) {
-            countlyApi.data.usage.endUserSession(params);
         } else {
             return false;
         }
