@@ -23,7 +23,10 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 apt-get update
 
 apt-get -y install python-software-properties
-apt-get -y install software-properties-common
+
+if !(command -v apt-add-repository >/dev/null) then
+    apt-get -y install software-properties-common
+fi
 
 #add node.js repo
 echo | apt-add-repository ppa:chris-lea/node.js
