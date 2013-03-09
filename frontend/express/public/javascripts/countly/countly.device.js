@@ -195,10 +195,13 @@
                 fullName = "iPhone 3GS";
                 break;
             case "iPhone3,1":
-                fullName = "iPhone 4";
+                fullName = "iPhone 4 (GSM)";
+                break;
+            case "iPhone3,2":
+                fullName = "iPhone 4 (GSM Rev A)";
                 break;
             case "iPhone3,3":
-                fullName = "Verizon iPhone 4";
+                fullName = "iPhone 4 (CDMA)";
                 break;
             case "iPhone4,1":
                 fullName = "iPhone 4S";
@@ -237,16 +240,34 @@
                 fullName = "iPad 2 (CDMA)";
                 break;
             case "iPad2,4":
-                fullName = "iPad 2";
+                fullName = "iPad 2 (WiFi Rev A)";
                 break;
             case "iPad3,1":
-                fullName = "iPad-3G (WiFi)";
+                fullName = "iPad 3 (WiFi)";
                 break;
             case "iPad3,2":
-                fullName = "iPad-3G (4G)";
+                fullName = "iPad 3 (CDMA)";
                 break;
             case "iPad3,3":
-                fullName = "iPad-3G (4G)";
+                fullName = "iPad 3 (Global)";
+                break;
+            case "iPad3,4":
+                fullName = "iPad 4 (WiFi)";
+                break;
+            case "iPad3,5":
+                fullName = "iPad 4 (GSM)";
+                break;
+            case "iPad3,6":
+                fullName = "iPad 4 (Global)";
+                break;
+            case "iPad2,5":
+                fullName = "iPad Mini (WiFi)";
+                break;
+            case "iPad2,6":
+                fullName = "iPad Mini (GSM)";
+                break;
+            case "iPad2,7":
+                fullName = "iPad Mini (Global)";
                 break;
             case "i386":
                 fullName = "Simulator";
