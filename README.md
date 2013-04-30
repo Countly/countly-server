@@ -1,6 +1,9 @@
 ##What's Countly?
 Countly is an innovative, real-time, open source mobile analytics application. It collects data from mobile phones, tablets and other internet-connected devices,  and visualizes this information to analyze mobile application usage and end-user behavior. There are two parts of Countly: the server that collects and analyzes data, and mobile SDK that sends this data.
 
+.. image:: http://a.fsdn.com/con/app/proj/countly/screenshots/dashboard_without_realtime.png
+   :target: http://count.ly
+
 ##Which mobile operating systems does Countly support?
 
 Countly supports top-notch devices, including iOS, Android, Windows Phone and Blackberry. Below you can find Countly SDK repositories. Each SDK has its own installation instructions.
