@@ -98,8 +98,8 @@
 
                 var x;
                 for (var i = 0; i < ticks.length; i++) {
-                  elem = $('<span style="margin-top:-16px; font:normal 15px AlternateGothicNo2BT-Regular;" >' + ticks[i].label + '</div>');
-                  console.log(elem)
+                  elem = $('<span class="rotated-tick">' + ticks[i].label + '</div>');
+                  //console.log(elem)
 				  plot.getPlaceholder().append(elem);
                   ticks[i].height = elem.outerHeight(true);
                   ticks[i].width = elem.outerWidth(true);
@@ -191,7 +191,6 @@
                         ctx.rotate(-radsAboveHoriz);
                     }
 					ctx.fillStyle = '#999';
-					ctx.font = "normal 15px AlternateGothicNo2BT-Regular";
                     ctx.fillText(tick.label, 0, 0);
                     ctx.restore();
                 }

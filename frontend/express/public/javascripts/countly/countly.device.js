@@ -4,13 +4,19 @@
     var _periodObj = {},
         _deviceDb = {},
         _devices = [],
-        _activeAppKey = 0;
+        _activeAppKey = 0,
+        _initialized = false;
 
     //Public Methods
     countlyDevice.initialize = function () {
-        _periodObj = countlyCommon.periodObj;
+        if (_initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+            return countlyDevice.refresh();
+        }
 
         if (!countlyCommon.DEBUG) {
+            _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
+            _initialized = true;
+
             return $.ajax({
                 type:"GET",
                 url:countlyCommon.API_PARTS.data.r,

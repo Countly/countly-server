@@ -1,8 +1,8 @@
 var mail = {},
     nodemailer = require('nodemailer'),
     request = require('request'),
-    smtpTransport = nodemailer.createTransport("Sendmail", "/usr/sbin/sendmail"),
-    countlyConfig = require('./../../config');
+    countlyConfig = require('./../../config'),
+    smtpTransport = nodemailer.createTransport("Sendmail", "/usr/sbin/sendmail");
 /*
  Use the below transport to send mails through Gmail
 
@@ -13,10 +13,23 @@ var mail = {},
          pass: "PASSWORD"
      }
  });
- */
+*/
+/*
+ Use the below transport to send mails through your own SMTP server
+
+ smtpTransport = nodemailer.createTransport("SMTP", {
+     host: "smtp.gmail.com", // hostname
+     secureConnection: true, // use SSL
+     port: 465, // port for secure SMTP
+     auth: {
+         user: "gmail.user@gmail.com",
+         pass: "userpass"
+     }
+ });
+*/
 
 function sendMail(message) {
-    message.from = '"Countly"';
+    message.from = "Countly";
 
     smtpTransport.sendMail(message, function (error) {
         if (error) {

@@ -27,7 +27,7 @@ var usersApi = {},
 
             var membersObj = {};
 
-            for (var i = 0; i < members.length; i++) {
+            for (var i = 0; i < members.length ;i++) {
                 membersObj[members[i]._id] = {
                     '_id':members[i]._id,
                     'api_key':members[i].api_key,
@@ -55,13 +55,13 @@ var usersApi = {},
         }
 
         var argProps = {
-                'full_name':{ 'required':true, 'type':'String' },
-                'username':{ 'required':true, 'type':'String' },
-                'password':{ 'required':true, 'type':'String' },
-                'email':{ 'required':true, 'type':'String' },
-                'admin_of':{ 'required':false, 'type':'Array' },
-                'user_of':{ 'required':false, 'type':'Array' },
-                'global_admin':{ 'required':false, 'type':'Boolean' }
+                'full_name':    { 'required': true, 'type': 'String' },
+                'username':     { 'required': true, 'type': 'String' },
+                'password':     { 'required': true, 'type': 'String' },
+                'email':        { 'required': true, 'type': 'String' },
+                'admin_of':     { 'required': false, 'type': 'Array' },
+                'user_of':      { 'required': false, 'type': 'Array' },
+                'global_admin': { 'required': false, 'type': 'Boolean' }
             },
             newMember = {};
 
@@ -70,10 +70,7 @@ var usersApi = {},
             return false;
         }
 
-        common.db.collection('members').findOne({ $or:[
-            {email:newMember.email},
-            {username:newMember.username}
-        ] }, function (err, member) {
+        common.db.collection('members').findOne({ $or : [ {email: newMember.email}, {username: newMember.username} ] }, function(err, member) {
             if (member || err) {
                 common.returnMessage(params, 200, 'Email or username already exists');
                 return false;
@@ -88,12 +85,11 @@ var usersApi = {},
             newMember.password = common.sha1Hash(newMember.password);
             newMember.created_at = Math.floor(((new Date()).getTime()) / 1000); //TODO: Check if UTC
 
-            common.db.collection('members').insert(newMember, {safe:true}, function (err, member) {
+            common.db.collection('members').insert(newMember, {safe: true}, function(err, member) {
                 if (member && member.length && !err) {
 
                     member[0].api_key = common.md5Hash(member[0]._id + (new Date().getTime()));
-
-                    common.db.collection('members').update({'_id':member[0]._id}, {$set:{api_key:member[0].api_key}});
+                    common.db.collection('members').update({'_id': member[0]._id}, {$set: {api_key: member[0].api_key}});
 
                     mail.sendToNewMember(member[0], passwordNoHash);
 
@@ -111,15 +107,15 @@ var usersApi = {},
 
     usersApi.updateUser = function (params) {
         var argProps = {
-                'user_id':{ 'required':true, 'type':'String', 'min-length':24, 'max-length':24, 'exclude-from-ret-obj':true },
-                'full_name':{ 'required':false, 'type':'String' },
-                'username':{ 'required':false, 'type':'String' },
-                'password':{ 'required':false, 'type':'String' },
-                'email':{ 'required':false, 'type':'String' },
-                'admin_of':{ 'required':false, 'type':'Array' },
-                'user_of':{ 'required':false, 'type':'Array' },
-                'global_admin':{ 'required':false, 'type':'Boolean' },
-                'send_notification':{ 'required':false, 'type':'Boolean', 'exclude-from-ret-obj':true }
+                'user_id':      { 'required': true, 'type': 'String', 'min-length': 24, 'max-length': 24, 'exclude-from-ret-obj': true },
+                'full_name':    { 'required': false, 'type': 'String' },
+                'username':     { 'required': false, 'type': 'String' },
+                'password':     { 'required': false, 'type': 'String' },
+                'email':        { 'required': false, 'type': 'String' },
+                'admin_of':     { 'required': false, 'type': 'Array' },
+                'user_of':      { 'required': false, 'type': 'Array' },
+                'global_admin': { 'required': false, 'type': 'Boolean' },
+                'send_notification': { 'required': false, 'type': 'Boolean', 'exclude-from-ret-obj': true }
             },
             updatedMember = {},
             passwordNoHash = "";
@@ -139,8 +135,8 @@ var usersApi = {},
             updatedMember.password = common.sha1Hash(updatedMember.password);
         }
 
-        common.db.collection('members').update({'_id':common.db.ObjectID(params.qstring.args.user_id)}, {'$set':updatedMember}, {safe:true}, function (err, isOk) {
-            common.db.collection('members').findOne({'_id':common.db.ObjectID(params.qstring.args.user_id)}, function (err, member) {
+        common.db.collection('members').update({'_id': common.db.ObjectID(params.qstring.args.user_id)}, {'$set': updatedMember}, {safe: true}, function(err, isOk) {
+            common.db.collection('members').findOne({'_id': common.db.ObjectID(params.qstring.args.user_id)}, function(err, member) {
                 if (member && !err) {
                     if (params.qstring.args.send_notification && passwordNoHash) {
                         mail.sendToUpdatedMember(member, passwordNoHash);
@@ -157,7 +153,7 @@ var usersApi = {},
 
     usersApi.deleteUser = function (params) {
         var argProps = {
-                'user_ids':{ 'required':true, 'type':'Array' }
+                'user_ids': { 'required': true, 'type': 'Array' }
             },
             userIds = [];
 
@@ -172,11 +168,11 @@ var usersApi = {},
         }
 
         for (var i = 0; i < userIds.length; i++) {
-            // Each user id should be 24 chars long and a user can't delete herself
+            // Each user id should be 24 chars long and a user can't delete his own account
             if (userIds[i] === params.member._id || userIds[i].length !== 24) {
                 continue;
             } else {
-                common.db.collection('members').remove({'_id':common.db.ObjectID(userIds[i])});
+                common.db.collection('members').remove({'_id': common.db.ObjectID(userIds[i])});
             }
         }
 

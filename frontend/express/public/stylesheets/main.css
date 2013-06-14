@@ -19,7 +19,7 @@ a:active { color:inherit; }
 	#sidebar-app-select.disabled { opacity:0.3; }
 	#sidebar-app-select.disabled:hover { background-position:0; }
 	#sidebar-app-select .text { width:120px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; font:13px Ubuntu,Helvetica,sans-serif; color:#505050; text-shadow:0 1px #CCC; float:left; }
-	#sidebar-app-select .logo { width:20px; height:20px; float:left; margin-right:10px; margin-top:-3px; background-position:center; border-radius:4px; border:1px solid #555; }
+	#sidebar-app-select .logo { width:20px; height:20px; background-size:20px 20px; float:left; margin-right:10px; margin-top:-3px; background-position:center; border-radius:4px; border:1px solid #555; }
 	
 #sidebar-bottom-container { z-index:2; position:absolute; background-color:#222222; bottom:14px; left:14px; padding:5px 10px; width:170px; font:13px Ubuntu,Helvetica,sans-serif; color:#505050; box-shadow:inset 0 1px 0 #2D2D2D; text-shadow:0 -1px #161616; border:1px solid #1A1A1A; border-radius:5px; }
 #sidebar-bottom-container .reveal-menu { width:14px; height:15px; background-image:url('/images/dashboard/settings.png'); float:right; cursor:pointer; }
@@ -83,6 +83,10 @@ a:active { color:inherit; }
 				#sidebar-menu .sidebar-submenu .item.active .app-versions { background-position:-420px; }
 				#sidebar-menu .sidebar-submenu .item .logo.platforms { background-position:-510px; }
 				#sidebar-menu .sidebar-submenu .item.active .logo.platforms { background-position:-480px; }
+                #sidebar-menu .sidebar-submenu .item .logo.durations { background-position:-630px; }
+                #sidebar-menu .sidebar-submenu .item.active .logo.durations { background-position:-600px; }
+                #sidebar-menu .sidebar-submenu .item .logo.resolutions { background-position:-690px; }
+                #sidebar-menu .sidebar-submenu .item.active .logo.resolutions { background-position:-660px; }
 			#sidebar-menu .sidebar-submenu .item .text { margin-left:17px; float:left; padding-top:8px; font:13px Ubuntu,Helvetica,sans-serif; color:#666; text-shadow:none; }
 				#sidebar-menu .sidebar-submenu .item.active .text { color:#4DB351; }
 				#sidebar-menu .sidebar-submenu .item.help-toggle.active { color:#666; }
@@ -119,6 +123,8 @@ a:active { color:inherit; }
 				.widget-header .logo.loyalty { background-position:-228px; }
 				.widget-header .logo.app-versions { background-position:-266px; }
 				.widget-header .logo.platforms { background-position:-304px; }
+                .widget-header .logo.durations { background-position:-380px; }
+                .widget-header .logo.resolutions { background-position:-418px; }
 
 	.widget-footer { text-align:right; min-height:10px; color:#666; text-shadow:0 1px #fff; font-size:11px; border-bottom-left-radius:5px; border-bottom-right-radius:5px; border:1px solid #C2C2C2; border-top:none; background-color:#FFF; box-shadow:inset 0 1px 0 #FFF; overflow:hidden; }
 	.widget-content { background-color:#FFF; border:1px solid #A1A1A1; border-top-color:#B8B9B9; }
@@ -186,7 +192,7 @@ a:active { color:inherit; }
 			.map-list-item .flag { margin-top:8px; }
 			.map-list-item:hover .flag {}
 			.map-list-item .total { float:right; color:#646464; text-shadow:0 1px #FFF; font:18px Oswald; margin-right:10px; }
-			.map-list .country-name { width:130px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; float:left; padding-top:4px; color:#646464; text-shadow:0 1px #FFF; font:16px Ubuntu,Helvetica,sans-serif; }
+			.map-list .country-name { width:128px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; float:left; padding-top:4px; color:#646464; text-shadow:0 1px #FFF; font:16px Ubuntu,Helvetica,sans-serif; }
 			.map-list .bar { float:left; margin-left:10px; height:15px; margin-top:2px; background-color:#333; }
 
 		.graph { font:19px Ubuntu,Helvetica,sans-serif; z-index:1; }
@@ -213,7 +219,7 @@ a:active { color:inherit; }
 .app-container { cursor:pointer; height:30px; background-image:url('/images/dashboard/dropdown_item.png'); padding:8px 12px; padding-left:32px; overflow:auto; }
 .app-container:hover { opacity:0.7; }
 .app-container:last-child { margin-bottom:60px; }
-	.app-container .logo { float:left; width:25px; height:25px; margin-top:1px; border-radius:5px; border:1px solid #555; box-shadow:0 0 1px 0 #333; background-position:center; }
+	.app-container .logo { float:left; width:25px; height:25px; background-size:25px 25px; margin-top:1px; border-radius:5px; border:1px solid #555; box-shadow:0 0 1px 0 #333; background-position:center; }
 	.app-container .name { width:126px; text-align:left; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; float:left; margin-left:10px; padding-top:6px; color:#464646; text-shadow:0 1px #EAEAEA; font:13px Ubuntu,Helvetica,sans-serif; }
 	.new-app-name { width:300px; text-align:left; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; }
 	.app-container.app-navigate { position:relative; }
@@ -229,7 +235,7 @@ a:active { color:inherit; }
 #app-management-bar .app-container.active:hover { opacity:1; }
 
 /* TABLES */
-table.d-table { width:100%; padding:0; margin:0; border-radius:7px; border:1px solid #C2C2C2; border-top-color:#959595; margin-bottom:20px; }
+table.d-table { width:100%; table-layout:fixed; padding:0; margin:0; border-radius:7px; border:1px solid #C2C2C2; border-top-color:#959595; margin-bottom:20px; }
 	.d-table  th { padding:5px 10px; height:17px; color:#4DB351; font-weight:normal; font:13px Ubuntu,Helvetica,sans-serif; text-shadow:0 1px #F1F1F1; background-color:#E2E2E2; box-shadow:inset 0 1px 0 #F6F6F6; text-align:left; border-bottom:1px solid #CCC; border-right:none; border-left:1px solid #ccc; background-color:#E2E2E2; background-image:linear-gradient(top, #EAEAEA 30%, #E2E2E2 100%); background-image:linear-gradient(to bottom, #EAEAEA 30%, #E2E2E2 100%); }
     .d-table  th:first-child { border-left:none; border-top-left-radius:7px; }
 	.d-table  th:last-child { border-top-right-radius:7px; }
@@ -257,7 +263,7 @@ table.d-table { width:100%; padding:0; margin:0; border-radius:7px; border:1px s
 	.table-edit .icon-button, .table-add .icon-button { float:right; padding:5px; margin-left:5px; }
 	.table-edit-prev td { border-bottom:none; }
 
-.sortable td { font-family:Oswald; font-size:13px; }
+.sortable td { font-family:Oswald; font-size:12px; }
 .sortable th { padding-top:6px; }
 
 .d-table input[type=text] { margin:0; font:15px Ubuntu,Helvetica,sans-serif; padding:3px; border:1px solid #DDD; width:274px; }
@@ -288,10 +294,11 @@ table.d-table { width:100%; padding:0; margin:0; border-radius:7px; border:1px s
 	#date-selector>.calendar { background-color:#3C3C3C; background-image:linear-gradient(top, #3C3C3C 10%, #717171 100%); background-image:linear-gradient(to bottom, #3C3C3C 10%, #717171 100%); box-shadow:inset 0 0 1px 0 #2D2D2D; color:#FFF; border-color:#202020; text-shadow:0 -1px #333; }
 	#date-selector>.calendar { background-color:#3C3C3C; cursor:pointer; background-image:url('/images/dashboard/date-time-icon.png'), linear-gradient(top, #3C3C3C 10%, #717171 100%); background-image:url('/images/dashboard/date-time-icon.png'), linear-gradient(to bottom, #3C3C3C 10%, #717171 100%); background-repeat:no-repeat; background-position:center; float:left; border-radius:4px; margin-right:10px; width:29px; height:29px; }
 
-#date-picker { display:none; position:absolute; z-index:10; margin-top:38px; margin-left:-175px; padding:2px 3px 6px 3px; background-color:rgba(85,85,85,1); border:1px solid #333; box-shadow:inset 0 0 0 1px #777; border-radius:5px; background-image:url('/images/dashboard/calendar_bg.png'); }
+#date-picker { display:none; position:absolute; z-index:10; margin-top:38px; margin-left:-174px; padding:2px 3px 6px 3px; background-color:rgba(85,85,85,1); border:1px solid #333; box-shadow:inset 0 0 0 1px #777; border-radius:5px; background-image:url('/images/dashboard/calendar_bg.png'); }
 	#date-picker .tip { width:14px; margin:0 auto; margin-top:-10px; height:9px; background-image:url('/images/dashboard/calendar_tip.png'); z-index:20; }
 	#date-picker .calendar-container { overflow:auto; box-shadow:inset 0 0 1px 1px #999, 0 1px 0 0 #777; padding:6px; background-color:#CCC; border-radius:4px; border:1px solid #333; margin:3px; margin-top:5px; }
-	#date-picker .calendar-container .calendar { float:left; margin-right:3px; border:1px solid #666; border-radius:3px; }
+	#date-picker .calendar-container .calendar { float:left; margin-right:6px; border:1px solid #666; border-radius:3px; }
+    #date-picker .calendar-container .calendar:nth-child(2) { margin-right:0; }
 	#date-picker .button-container { overflow:auto; margin-top:6px; padding:3px; }
 #date-picker-button:hover { box-shadow:0 0 5px 2px #fff; }
 
@@ -431,7 +438,7 @@ table.d-table { width:100%; padding:0; margin:0; border-radius:7px; border:1px s
 	.read .flag { margin-top:4px; }
 	.read .country { float:left; margin-right:8px; }
 	.read .timezone { float:left; }
-	.read .logo { float:left; height:25px; width:25px; background-image:url('/images/reports/date-time.png'); margin-top:1px; border-radius:5px; border:1px solid #555; box-shadow:0 0 1px 0 #333; background-position:center; }
+	.read .logo { float:left; height:25px; width:25px; background-size:25px 25px; background-image:url('/images/reports/date-time.png'); margin-top:1px; border-radius:5px; border:1px solid #555; box-shadow:0 0 1px 0 #333; background-position:center; }
 .edit { display:none; }
 
 #sidebar-new-app { display:none; }
@@ -556,9 +563,9 @@ table.events-table { width:100%; padding:0; margin:0; }
 	.events-table  thead tr { background-color:transparent; }
 	.events-table  td { padding:5px 10px; padding-bottom:7px; margin:0; border-bottom:1px solid #DDD; border-top:1px solid #fff; border-left:1px solid #ccc; color:#6B6B6B; }
 	.events-table  td:first-child { border-left:none; font-weight:normal; }
-    .events-table  td:nth-child(2) { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:170px; max-width:170px; }
+    .events-table  td:nth-child(3) { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:170px; max-width:170px; }
     .events-table  tr { border-bottom:1px solid #DDD; border-top:1px solid #fff; font:16px Ubuntu,Helvetica,sans-serif; background-color:#fff}
-	.events-table  td:nth-child(2) input[type=text] { width:170px; }
+	.events-table  td:nth-child(3) input[type=text] { width:170px; }
 	.events-table  tr input[type=text] { border:none; outline:none; width:130px; }
 	.events-table  tr:nth-child(even) input[type=text] { background-color:#F9F9F9}
 	.events-table  tr:first-child { border-top:none; }
@@ -579,6 +586,9 @@ table.events-table { width:100%; padding:0; margin:0; }
 .event-numbers .big-numbers { cursor:pointer; }
 .event-numbers .big-numbers:nth-child(1).selected .color { box-shadow: 0 1px 20px 0 #88BBC8; }
 .event-numbers .big-numbers:nth-child(2).selected .color { box-shadow: 0 1px 20px 0 #ED8662; }
+
+.delete-event { color:#D67678; cursor:pointer; }
+.delete-event:hover { color:#D63E40; }
 /* EVENTS END */
 
 #help-toggle { float:right; background-image:url('/images/dashboard/on-off.png'); width:34px; height:18px; background-position:-51px; margin-top:7px; margin-right:16px; cursor:pointer; }
@@ -600,11 +610,14 @@ table.events-table { width:100%; padding:0; margin:0; }
 #edit-account-details { display:none; }
 	#edit-account-details .title { float:left; width:100px; }
 	#edit-account-details .input { margin-left:105px; }
+    .xAxis .tickLabel { overflow: hidden; text-overflow: ellipsis; max-width: 100px; max-height: 60px; white-space: pre-wrap; }
 
 #no-app-warning { display:none; margin-left:187px; }
-#first-app-success { display:none; margin-left:187px; margin-top:-5px; margin-right:582px; }
+#first-app-success { display:none; margin-left:187px; margin-top:-5px; }
 #add-app-button  .text { overflow:hidden; text-overflow:clip; white-space:nowrap; max-width:60px; }
 #listof-apps .icon-button { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:45px; }
 
 #total-user-estimate-ind { vertical-align:text-top; font-size:13px; margin-left:-5px; }
 #total-user-estimate-ind:hover { color:#6BB96E; }
+
+.rotated-tick { margin-top:-16px; font:normal 17px Oswald; }

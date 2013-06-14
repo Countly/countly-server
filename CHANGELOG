@@ -1,3 +1,27 @@
+13.06
+
+  * Added session durations view that shows users categorized into predefined
+    session duration buckets.
+
+  * Added resolutions view that shows detailed device resolution data for
+    new and all users.
+
+  * Added cluster mechanism to api.js to fork itself according to number of
+    cores in the server in order to increase utilisation. This can also be
+    configured from api/config.js by changing "worker" count.
+
+  * Added two new API paths, /o/analytics/dashboard and /o/analytics/countries
+    that returns ready-to-use metrics for today, 7 days and 30 days. This API
+    is used by Countly Mobile Apps.
+
+  * Added individual event key deletion to event configuration modal.
+
+  * Improved and optimized update mechanism during dashboard navigation.
+
+  * Added a script (bin/geoip-updater.sh) to fetch and update geoip data.
+
+  * Various performance and visual improvements to Events view.
+
 12.12
 
   * Added Windows Phone and Blackberry WebWorks support.
