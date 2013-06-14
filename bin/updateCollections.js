@@ -1,2 +1,2 @@
-// Force logout all users since during login each user will be assigned an api_key
+// Force logout all users
 db.sessions_.remove();

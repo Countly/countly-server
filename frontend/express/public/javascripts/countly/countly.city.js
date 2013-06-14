@@ -18,123 +18,139 @@
             datalessRegionColor:"#FFF",
             region:"TR"
         },
-        _countryMap = {};
+        _countryMap = {},
+        _initialized = false;
 
-    // Public Methods
-    countlyCity.initialize = function () {
-        _periodObj = countlyCommon.periodObj;
+    if (countlyCommon.CITY_DATA !== true) {
+        countlyCity.initialize = function() { return true; };
+        countlyCity.refresh = function() { return true; };
+        countlyCity.drawGeoChart = function() { return true; };
+        countlyCity.refreshGeoChart = function() { return true; };
+        countlyCity.getLocationData = function() { return []; };
+    } else {
+        // Public Methods
+        countlyCity.initialize = function () {
 
-        if (!countlyCommon.DEBUG) {
-            return $.ajax({
-                type:"GET",
-                url:countlyCommon.API_PARTS.data.r,
-                data:{
-                    "api_key":countlyGlobal.member.api_key,
-                    "app_id":countlyCommon.ACTIVE_APP_ID,
-                    "method":"cities"
-                },
-                dataType:"jsonp",
-                success:function (json) {
-                    _locationsDb = json;
-                    setMeta();
-                }
-            });
-        } else {
-            _locationsDb = {"2012":{}};
-            return true;
-        }
-    };
+            if (_initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+                return countlyCity.refresh();
+            }
 
-    countlyCity.refresh = function () {
-        _periodObj = countlyCommon.periodObj;
-
-        if (!countlyCommon.DEBUG) {
-
-            if (_activeAppKey != countlyCommon.ACTIVE_APP_KEY) {
+            if (!countlyCommon.DEBUG) {
                 _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
-                return countlyCity.initialize();
+                _initialized = true;
+
+                return $.ajax({
+                    type:"GET",
+                    url:countlyCommon.API_PARTS.data.r,
+                    data:{
+                        "api_key":countlyGlobal.member.api_key,
+                        "app_id":countlyCommon.ACTIVE_APP_ID,
+                        "method":"cities"
+                    },
+                    dataType:"jsonp",
+                    success:function (json) {
+                        _locationsDb = json;
+                        setMeta();
+                    }
+                });
+            } else {
+                _locationsDb = {"2012":{}};
+                return true;
+            }
+        };
+
+        countlyCity.refresh = function () {
+
+            _periodObj = countlyCommon.periodObj;
+
+            if (!countlyCommon.DEBUG) {
+
+                if (_activeAppKey != countlyCommon.ACTIVE_APP_KEY) {
+                    _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
+                    return countlyCity.initialize();
+                }
+
+                return $.ajax({
+                    type:"GET",
+                    url:countlyCommon.API_PARTS.data.r,
+                    data:{
+                        "api_key":countlyGlobal.member.api_key,
+                        "app_id":countlyCommon.ACTIVE_APP_ID,
+                        "method":"cities",
+                        "action":"refresh"
+                    },
+                    dataType:"jsonp",
+                    success:function (json) {
+                        countlyCommon.extendDbObj(_locationsDb, json);
+                        setMeta();
+                    }
+                });
+            } else {
+                _locationsDb = {"2012":{}};
+                return true;
+            }
+        };
+
+        countlyCity.reset = function () {
+            _locationsDb = {};
+            setMeta();
+        };
+
+        countlyCity.drawGeoChart = function (options) {
+
+            _periodObj = countlyCommon.periodObj;
+
+            if (options) {
+                if (options.chartElementId) {
+                    _chartElementId = options.chartElementId;
+                }
+
+                if (options.height) {
+                    _chartOptions.height = options.height;
+
+                    //preserve the aspect ratio of the chart if height is given
+                    _chartOptions.width = (options.height * 556 / 347);
+                }
             }
 
-            return $.ajax({
-                type:"GET",
-                url:countlyCommon.API_PARTS.data.r,
-                data:{
-                    "api_key":countlyGlobal.member.api_key,
-                    "app_id":countlyCommon.ACTIVE_APP_ID,
-                    "method":"cities",
-                    "action":"refresh"
+            if (google.visualization) {
+                draw();
+            } else {
+                google.load('visualization', '1', {'packages':['geochart'], callback:draw});
+            }
+        };
+
+        countlyCity.refreshGeoChart = function () {
+            if (google.visualization) {
+                reDraw();
+            } else {
+                google.load('visualization', '1', {'packages':['geochart'], callback:draw});
+            }
+        };
+
+        countlyCity.getLocationData = function (options) {
+
+            var locationData = countlyCommon.extractTwoLevelData(_locationsDb, _countries, countlyCity.clearLocationObject, [
+                {
+                    "name":"country",
+                    "func":function (rangeArr, dataObj) {
+                        return rangeArr;
+                    }
                 },
-                dataType:"jsonp",
-                success:function (json) {
-                    countlyCommon.extendDbObj(_locationsDb, json);
-                    setMeta();
+                { "name":"t" },
+                { "name":"u" },
+                { "name":"n" }
+            ]);
+
+            if (options && options.maxCountries && locationData.chartData) {
+                if (locationData.chartData.length > options.maxCountries) {
+                    locationData.chartData = locationData.chartData.splice(0, options.maxCountries);
                 }
-            });
-        } else {
-            _locationsDb = {"2012":{}};
-            return true;
-        }
-    };
-
-    countlyCity.reset = function () {
-        _locationsDb = {};
-        setMeta();
-    };
-
-    countlyCity.drawGeoChart = function (options) {
-
-        _periodObj = countlyCommon.periodObj;
-
-        if (options) {
-            if (options.chartElementId) {
-                _chartElementId = options.chartElementId;
             }
 
-            if (options.height) {
-                _chartOptions.height = options.height;
-
-                //preserve the aspect ratio of the chart if height is given
-                _chartOptions.width = (options.height * 556 / 347);
-            }
-        }
-
-        if (google.visualization) {
-            draw();
-        } else {
-            google.load('visualization', '1', {'packages':['geochart'], callback:draw});
-        }
-    };
-
-    countlyCity.refreshGeoChart = function () {
-        if (google.visualization) {
-            reDraw();
-        } else {
-            google.load('visualization', '1', {'packages':['geochart'], callback:draw});
-        }
-    };
-
-    countlyCity.getLocationData = function (options) {
-
-        var locationData = countlyCommon.extractTwoLevelData(_locationsDb, _countries, countlyCity.clearLocationObject, [
-            {
-                "name":"country",
-                "func":function (rangeArr, dataObj) {
-                    return rangeArr;
-                }
-            },
-            { "name":"t" },
-            { "name":"u" },
-            { "name":"n" }
-        ]);
-
-        if (options && options.maxCountries && locationData.chartData) {
-            if (locationData.chartData.length > options.maxCountries) {
-                locationData.chartData = locationData.chartData.splice(0, options.maxCountries);
-            }
-        }
-
-        return locationData.chartData;
-    };
+            return locationData.chartData;
+        };
+    }
 
     countlyCity.clearLocationObject = function (obj) {
         if (obj) {

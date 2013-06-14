@@ -17,11 +17,14 @@
             backgroundColor:"transparent",
             datalessRegionColor:"#FFF"
         },
-        _countryMap = {};
+        _countryMap = {},
+        _initialized = false;
 
     // Public Methods
     countlyLocation.initialize = function () {
-        _periodObj = countlyCommon.periodObj;
+        if (_initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+            return countlyLocation.refresh();
+        }
 
         // Load local country names
         $.get('/localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function (data) {
@@ -29,6 +32,9 @@
         });
 
         if (!countlyCommon.DEBUG) {
+            _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
+            _initialized = true;
+
             return $.ajax({
                 type:"GET",
                 url:countlyCommon.API_PARTS.data.r,
@@ -217,7 +223,7 @@
 
         // This is how you handle regionClick and change zoom for only a specific country
 
-        if (_chartOptions.height > 300) {
+        if (countlyCommon.CITY_DATA === true && _chartOptions.height > 300) {
             google.visualization.events.addListener(_chart, 'regionClick', function (eventData) {
                 var activeAppCountry = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].country;
                 if (activeAppCountry && eventData.region == activeAppCountry) {

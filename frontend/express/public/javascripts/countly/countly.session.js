@@ -4,14 +4,18 @@
     var _periodObj = {},
         _sessionDb = {},
         _durations = [],
-        _activeAppKey = 0;
+        _activeAppKey = 0,
+        _initialized = false;
 
     //Public Methods
     countlySession.initialize = function () {
-        _periodObj = countlyCommon.periodObj;
+        if (_initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+            return countlySession.refresh();
+        }
 
         if (!countlyCommon.DEBUG) {
             _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
+            _initialized = true;
 
             return $.ajax({
                 type:"GET",
@@ -201,7 +205,7 @@
                     "change":changeUnique.percent,
                     "trend":changeUnique.trend,
                     "sparkline":sparkLines.unique,
-                    "isEstimate": isEstimate
+                    "isEstimate":isEstimate
                 },
                 "new-users":{
                     "total":currentNew,
@@ -246,11 +250,34 @@
     };
 
     countlySession.getDurationData = function () {
+        var chartData = {chartData:{}, chartDP:{dp:[], ticks:[]}};
 
-        //Update the current period object in case selected date is changed
-        _periodObj = countlyCommon.periodObj;
+        chartData.chartData = countlyCommon.extractRangeData(_sessionDb, "ds", _durations, countlySession.explainDurationRange);
 
-        return countlyCommon.extractRangeData(_sessionDb, "durations", _durations, countlySession.explainDurationRange);
+        var durations = _.pluck(chartData.chartData, "ds"),
+            durationTotals = _.pluck(chartData.chartData, "t"),
+            chartDP = [
+                {data:[]}
+            ];
+
+        chartDP[0]["data"][0] = [-1, null];
+        chartDP[0]["data"][durations.length + 1] = [durations.length, null];
+
+        chartData.chartDP.ticks.push([-1, ""]);
+        chartData.chartDP.ticks.push([durations.length, ""]);
+
+        for (var i = 0; i < durations.length; i++) {
+            chartDP[0]["data"][i + 1] = [i, durationTotals[i]];
+            chartData.chartDP.ticks.push([i, durations[i]]);
+        }
+
+        chartData.chartDP.dp = chartDP;
+
+        for (var i = 0; i < chartData.chartData.length; i++) {
+            chartData.chartData[i]["percent"] = "<div class='percent-bar' style='width:" + (2 * chartData.chartData[i]["percent"]) + "px;'></div>" + chartData.chartData[i]["percent"] + "%";
+        }
+
+        return chartData;
     };
 
     countlySession.getSessionDP = function () {
@@ -358,8 +385,8 @@
     countlySession.getDurationDP = function () {
 
         var chartData = [
-                { data:[], label:jQuery.i18n.map["common.graph.total-time"], color:'#DDDDDD', mode:"ghost"},
-                { data:[], label:jQuery.i18n.map["common.graph.total-time"], color:'#333933' }
+                { data:[], label:jQuery.i18n.map["common.graph.time-spent"], color:'#DDDDDD', mode:"ghost"},
+                { data:[], label:jQuery.i18n.map["common.graph.time-spent"], color:'#333933' }
             ],
             dataProps = [
                 {
@@ -408,8 +435,8 @@
     countlySession.getEventsDP = function () {
 
         var chartData = [
-                { data:[], label:jQuery.i18n.map["common.graph.events-served"], color:'#DDDDDD', mode:"ghost"},
-                { data:[], label:jQuery.i18n.map["common.graph.events-served"], color:'#333933' }
+                { data:[], label:jQuery.i18n.map["common.graph.reqs-received"], color:'#DDDDDD', mode:"ghost"},
+                { data:[], label:jQuery.i18n.map["common.graph.reqs-received"], color:'#333933' }
             ],
             dataProps = [
                 {
@@ -430,8 +457,8 @@
     countlySession.getEventsDPAvg = function () {
 
         var chartData = [
-                { data:[], label:jQuery.i18n.map["common.graph.avg-events-served"], color:'#DDDDDD', mode:"ghost"},
-                { data:[], label:jQuery.i18n.map["common.graph.avg-events-served"], color:'#333933' }
+                { data:[], label:jQuery.i18n.map["common.graph.avg-reqs-received"], color:'#DDDDDD', mode:"ghost"},
+                { data:[], label:jQuery.i18n.map["common.graph.avg-reqs-received"], color:'#333933' }
             ],
             dataProps = [
                 {

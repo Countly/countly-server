@@ -42,7 +42,7 @@ apt-get update
 apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 
 #install node.js
-apt-get -y --force-yes install nodejs npm || (echo "Failed to install nodejs." ; exit)
+apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
 
 #install mongodb
 apt-get -y --force-yes install mongodb-10gen || (echo "Failed to install mongodb." ; exit)
@@ -66,8 +66,7 @@ cp /etc/nginx/sites-enabled/default $DIR/config/nginx.default.backup
 cp $DIR/config/nginx.server.conf /etc/nginx/sites-enabled/default
 /etc/init.d/nginx start
 
-#create frontend JS configuration file from sample
-mv $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
+cp $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
 
 #kill existing supervisor process
 pkill -SIGTERM supervisord
@@ -83,5 +82,3 @@ cp $DIR/../frontend/express/config.sample.js $DIR/../frontend/express/config.js
 
 #finally start countly api and dashboard
 start countly-supervisor
-
-echo -e "\nCountly setup is complete! Visit your domain or IP from your browser to setup an admin account.\n"

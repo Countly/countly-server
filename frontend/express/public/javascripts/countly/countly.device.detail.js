@@ -6,13 +6,19 @@
         _os = [],
         _resolutions = [],
         _os_versions = [],
-        _activeAppKey = 0;
+        _activeAppKey = 0,
+        _initialized = false;
 
     //Public Methods
     countlyDeviceDetails.initialize = function () {
-        _periodObj = countlyCommon.periodObj;
+        if (_initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+            return countlyDeviceDetails.refresh();
+        }
 
         if (!countlyCommon.DEBUG) {
+            _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
+            _initialized = true;
+
             return $.ajax({
                 type:"GET",
                 url:countlyCommon.API_PARTS.data.r,
@@ -127,6 +133,68 @@
 
     countlyDeviceDetails.getResolutionBars = function () {
         return countlyCommon.extractBarData(_deviceDetailsDb, _resolutions, countlyDeviceDetails.clearDeviceDetailsObject);
+    };
+
+    countlyDeviceDetails.getResolutionData = function () {
+        var chartData = countlyCommon.extractTwoLevelData(_deviceDetailsDb, _resolutions, countlyDeviceDetails.clearDeviceDetailsObject, [
+            {
+                name:"resolution",
+                func:function (rangeArr, dataObj) {
+                    return rangeArr;
+                }
+            },
+            {
+                name:"width",
+                func:function (rangeArr, dataObj) {
+                    return "<a>" + rangeArr.split("x")[0] + "</a>";
+                }
+            },
+            {
+                name:"height",
+                func:function (rangeArr, dataObj) {
+                    return "<a>" + rangeArr.split("x")[1] + "</a>";
+                }
+            },
+            { "name":"t" },
+            { "name":"u" },
+            { "name":"n" }
+        ]);
+
+        var resolutions = _.pluck(chartData.chartData, 'resolution'),
+            resolutionTotal = _.pluck(chartData.chartData, 'u'),
+            resolutionNew = _.pluck(chartData.chartData, 'n'),
+            chartData2 = [],
+            chartData3 = [];
+
+        var sum = _.reduce(resolutionTotal, function (memo, num) {
+            return memo + num;
+        }, 0);
+
+        for (var i = 0; i < resolutions.length; i++) {
+            var percent = (resolutionTotal[i] / sum) * 100;
+            chartData2[i] = {data:[
+                [0, resolutionTotal[i]]
+            ], label:resolutions[i]};
+        }
+
+        var sum2 = _.reduce(resolutionNew, function (memo, num) {
+            return memo + num;
+        }, 0);
+
+        for (var i = 0; i < resolutions.length; i++) {
+            var percent = (resolutionNew[i] / sum) * 100;
+            chartData3[i] = {data:[
+                [0, resolutionNew[i]]
+            ], label:resolutions[i]};
+        }
+
+        chartData.chartDPTotal = {};
+        chartData.chartDPTotal.dp = chartData2;
+
+        chartData.chartDPNew = {};
+        chartData.chartDPNew.dp = chartData3;
+
+        return chartData;
     };
 
     countlyDeviceDetails.getOSVersionBars = function () {

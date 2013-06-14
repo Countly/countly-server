@@ -1,6 +1,8 @@
 ##What's Countly?
 Countly is an innovative, real-time, open source mobile analytics application. It collects data from mobile phones, tablets and other internet-connected devices,  and visualizes this information to analyze mobile application usage and end-user behavior. There are two parts of Countly: the server that collects and analyzes data, and mobile SDK that sends this data.
 
+![Countly dashboard screenshot](http://a.fsdn.com/con/app/proj/countly/screenshots/dashboard_without_realtime.png)
+
 ##Which mobile operating systems does Countly support?
 
 Countly supports top-notch devices, including iOS, Android, Windows Phone and Blackberry. Below you can find Countly SDK repositories. Each SDK has its own installation instructions.
@@ -23,11 +25,11 @@ We provide a beautiful installation sript (`bin/countly.install.sh`) with countl
 If you feel like doing things manually, or need to upgrade Countly from a previous version, please take a look at the installation articles from [http://support.count.ly](http://support.count.ly "Countly Support").
 
 ##Dependencies
-We develop and test Countly on Ubuntu with MongoDB, Node.js and nginx. It should work in your Linux distribution (e.g Fedora, OpenSUSE, etc), however, you need to install them by hand.
+We develop and test Countly on Ubuntu with MongoDB, Node.js and nginx. Installation script only needs a clean, decent Ubuntu Linux without any services listening to port 80 and takes care of every library and software (e.g MongoDB, Nginx, Node.js, Expressjs etc) required to be installed on Ubuntu Linux.
 
 ##How do I upgrade my Countly server?
 
-countly-server package includes an upgrade script (`bin/countly.upgrade.sh`) that takes care of the upgrade process. [See this tutorial](http://support.count.ly/kb/web-installation/upgrading-countly-server-to-v1212-from-v1209) if you would like to perform the upgrade manually (12.09 to 12.12).
+countly-server package includes an upgrade script (`bin/countly.upgrade.sh`) that takes care of the upgrade process.
 
 ##API & Frontend
 

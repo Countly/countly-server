@@ -4,13 +4,19 @@
     var _periodObj = {},
         _carrierDb = {},
         _carriers = [],
-        _activeAppKey = 0;
+        _activeAppKey = 0,
+        _initialized = false;
 
     //Public Methods
     countlyCarrier.initialize = function () {
-        _periodObj = countlyCommon.periodObj;
+        if (_initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+            return countlyCarrier.refresh();
+        }
 
         if (!countlyCommon.DEBUG) {
+            _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
+            _initialized = true;
+
             return $.ajax({
                 type:"GET",
                 url:countlyCommon.API_PARTS.data.r,
@@ -27,7 +33,6 @@
             });
         } else {
             _carrierDb = {"2012":{}};
-
             return true;
         }
     };

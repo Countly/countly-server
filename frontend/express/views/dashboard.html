@@ -8,15 +8,16 @@
               http://count.ly/____/   
 -->
 <html>
-<head> 
+<head>
 	<title>Countly</title> 
 	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1.0">
 	<link rel="icon" type="image/png" href="/images/favicon.png">
-    <link rel="stylesheet" href="/stylesheets/font-awesome/css/font-awesome.css" />
+    <link rel="stylesheet" href="/stylesheets/font-awesome/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="/stylesheets/entypo/css/entypo.css" />
 	<link rel="stylesheet" href="/javascripts/dom/tablesorter/style.css" />
 	<link rel="stylesheet" href="/javascripts/dom/tipsy/tipsy.css" />
 	<link rel="stylesheet" href="/javascripts/dom/jqueryui/jquery.ui.all.css" />
-	<link rel="stylesheet" href="/stylesheets/main.css?v12.12" />
+	<link rel="stylesheet" href="/stylesheets/main.css?<%= countlyVersion %>" />
     <link rel="stylesheet" href="/javascripts/visualization/rickshaw/rickshaw.min.css" />
 	<script><%- javascript %></script>
 </head>
@@ -58,6 +59,10 @@
 					<div class="logo devices"></div>
 					<div class="text" data-localize="sidebar.analytics.devices"></div>
 				</a>
+                    <a href="#/analytics/resolutions" class="item">
+                        <div class="logo resolutions"></div>
+                    <div class="text" data-localize="sidebar.analytics.resolutions"></div>
+                </a>
 				<a href="#/analytics/versions" class="item">
 					<div class="logo app-versions"></div>
 					<div class="text" data-localize="sidebar.analytics.app-versions"></div>
@@ -70,10 +75,9 @@
 					<div class="logo platforms"></div>
 					<div class="text" data-localize="sidebar.analytics.platforms"></div>
 				</a>
-
 			</div>
             <a class="item" id="engagement-menu">
-                <div class="logo icon-magnet" style="background-image:none; font-size:28px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px;"></div>
+                <div class="logo icon-magnet" style="background-image:none; font-size:28px; text-align:center; width:35px; margin-left:14px; line-height:44px;"></div>
                 <div class="text" data-localize="sidebar.engagement"></div>
             </a>
             <div class="sidebar-submenu" id="engagement-submenu">
@@ -84,6 +88,10 @@
                 <a href="#/analytics/frequency" class="item">
                     <div class="logo frequency"></div>
                     <div class="text" data-localize="sidebar.analytics.session-frequency"></div>
+                </a>
+                <a href="#/analytics/durations" class="item">
+                    <div class="logo durations"></div>
+                    <div class="text" data-localize="sidebar.engagement.durations"></div>s
                 </a>
             </div>
 			<a href="#/analytics/events" class="item" id="sidebar-events">
@@ -124,7 +132,7 @@
 		</div>
 		<div id="sidebar-bottom-container">
 			<div class="menu">
-				<a id="sidebar-countly-version">Countly 12.12</a>
+				<a id="sidebar-countly-version">Countly <%= countlyVersion %></a>
 				<a class="item" id="account-settings" data-localize="sidebar.settings"></a>
 				<a class="item" id="user-logout" href="/logout" data-localize="sidebar.logout"></a>
 			</div>
@@ -360,7 +368,7 @@
 			<thead>
 			<tr>
 				{{#eachOfArray chart-data.columns}}
-				<th style="width:25%">{{value}}</th>
+				<th>{{value}}</th>
 				{{/eachOfArray}}
 			</tr>
 			</thead>
@@ -666,12 +674,10 @@
 						<div class="title"></div>
 					</div>
 					<div style="float:right; overflow:hidden; margin-top:6px;">
-						<% if(member['global_admin']) { %>
-						<div class="icon-button delete-app help-zone-vs" data-help-localize="manage-apps.app-delete-button" id="delete-app">
+						<div style="display:none;" class="icon-button delete-app help-zone-vs" data-help-localize="manage-apps.app-delete-button" id="delete-app">
 							<div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
 							<div class="text" data-localize="common.delete"></div>
 						</div>
-                        <% } %>
 						<div class="icon-button delete-app help-zone-vs" data-help-localize="manage-apps.app-clear-button" id="clear-app-data">
 							<div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
 							<div class="text" data-localize="management-applications.clear-data"></div>
@@ -686,6 +692,10 @@
 					<input type="hidden" id="app-edit-id"/>
 					<table class="d-table horizontal" cellpadding="0" cellspacing="0">
 						<tbody>
+                            <tr class="help-zone-vs" data-help-localize="manage-apps.app-id">
+                                <td data-localize="management-applications.app-id"></td>
+                                <td id="view-app-id"></td>
+                            </tr>
 							<tr class="help-zone-vs" data-help-localize="manage-apps.app-name">
 								<td data-localize="management-applications.application-name"></td>
 								<td id="app-edit-name">
@@ -785,15 +795,12 @@
 					</table>
 				</div>
 				<div style="float:right;">
-					<a href="/sdks/countly-sdk-ios-v12.12.zip" class="icon-button light"><i class="icon-download-alt"></i> iOS SDK</a>
-					<a href="/sdks/countly-sdk-android-v12.12.zip" class="icon-button light"><i class="icon-download-alt"></i> Android SDK</a>
-                    <a href="/sdks/countly-sdk-windows-phone-v12.12.zip" class="icon-button light"><i class="icon-download-alt"></i> Windows Phone SDK</a>
-                    <a href="/sdks/countly-sdk-blackberry-webworks-v12.12.zip" class="icon-button light"><i class="icon-download-alt"></i> Blackberry WebWorks SDK</a>
+					<a target="blank" href="http://count.ly/resources/source/download-sdk" style="margin-right:14px;" class="icon-button light"><i class="icon-mobile-phone"></i> Countly SDKs</a>
 				</div>
 			</div>
 			</div>
 			<div id="no-app-warning" class="alert danger" data-localize="management-applications.no-app-warning"></div>
-			<div id="first-app-success" class="alert success" data-localize="management-applications.first-app-message"></div>
+			<div id="first-app-success" class="alert success" data-localize="management-applications.first-app-message2"></div>
 		</div>
 	</script>
 	
@@ -853,11 +860,9 @@
 			<div id="event-nav-head">
 				<div id="event-nav-title" style="max-width: 120px;" data-localize="events.title"></div>
 				<div style="overflow:hidden; position:absolute; top:18px; right:10px;">
-					<% if(member['global_admin']) { %>
-					<div class="icon-button dark help-zone-vs" id="edit-events-button" style="padding: 4px 5px;">
+					<div class="icon-button dark help-zone-vs" id="edit-events-button" style="<% if(!member['global_admin']) { %> display:none; <% } %> padding: 4px 5px;">
 						<div class="icon"></div>
 					</div>
-					<% } %>
 				</div>
 			</div>
 			<div class="scrollable">
@@ -874,6 +879,7 @@
 					<thead>
 						<tr>
                             <th></th>
+                            <th></th>
 							<th data-localize="events.edit.event-key"></th>
 							<th data-localize="events.edit.event-name"></th>
 							<th data-localize="events.table.count"></th>
@@ -884,7 +890,8 @@
 						{{#eachOfObjectValue event-map}}
 						<tr>
                             <td style="text-align:center;"><i class="icon-reorder event-order"></i></td>
-							<td class="event-key">{{this.event_key}}</td>
+                            <td style="text-align:center;"><i class="icon-trash delete-event" data-event-key="{{this.key}}"></i></td>
+							<td class="event-key">{{this.key}}</td>
 							<td><input class="event-name" type="text" placeholder="Event name"  data-localize="events.edit.event-name" value="{{this.name}}"/></td>
 							<td><input class="event-count" type="text" placeholder="Count" data-localize="events.table.count" value="{{this.count}}"/></td>
 							<td><input class="event-sum" type="text" placeholder="Sum" data-localize="events.table.sum" value="{{this.sum}}"/></td>
@@ -1049,12 +1056,12 @@
 
     <!-- PRODUCTION -->
     <!---->
-    <script language="javascript" type="text/javascript" src="/javascripts/min/countly.dom.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/dom/tablesorter/jquery.tablesorter.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/min/countly.utils.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/min/countly.visualization.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/countly/countly.config.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/min/countly.lib.js"></script>
+    <script language="javascript" type="text/javascript" src="/javascripts/min/countly.dom.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="/javascripts/dom/tablesorter/jquery.tablesorter.min.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="/javascripts/min/countly.utils.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="/javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="/javascripts/countly/countly.config.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="/javascripts/min/countly.lib.js?<%= countlyVersion %>"></script>
     <!---->
     <!-- DEVELOPMENT -->
     <!--

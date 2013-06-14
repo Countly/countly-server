@@ -1,13 +1,10 @@
 var events = {},
-    common = require('./../../utils/common.js');
+    common = require('./../../utils/common.js'),
+    async = require('./../../utils/async.min.js');
 
 (function (events) {
 
     events.processEvents = function(params) {
-        if (!params.qstring.events) {
-            return false;
-        }
-
         var events = [],
             eventCollections = {},
             eventSegments = {},
@@ -28,7 +25,7 @@ var events = {},
             }
 
             // Mongodb collection names can not contain system. or $
-            shortCollectionName = currEvent.key.replace(/system\.|\$/g, "");
+            shortCollectionName = currEvent.key.replace(/system\.|\.\.|\$/g, "");
             eventCollectionName = shortCollectionName + params.app_id;
 
             // Mongodb collection names can not be longer than 128 characters
@@ -131,17 +128,83 @@ var events = {},
             mergeEvents(eventCollections[eventCollectionName], tmpEventColl);
         }
 
-        for (var collection in eventCollections) {
-            for (var segment in eventCollections[collection]) {
-                if (segment == "no-segment") {
-                    if (eventSegments[collection]) {
+        if (!common.config.api.safe) {
+            for (var collection in eventCollections) {
+                for (var segment in eventCollections[collection]) {
+                    if (segment == "no-segment" && eventSegments[collection]) {
                         common.db.collection(collection).update({'_id': segment}, {'$inc': eventCollections[collection][segment], '$addToSet': eventSegments[collection]}, {'upsert': true});
                     } else {
                         common.db.collection(collection).update({'_id': segment}, {'$inc': eventCollections[collection][segment]}, {'upsert': true});
                     }
-                } else {
-                    common.db.collection(collection).update({'_id': segment}, {'$inc': eventCollections[collection][segment]}, {'upsert': true});
                 }
+            }
+        } else {
+            var eventDocs = [];
+
+            for (var collection in eventCollections) {
+                for (var segment in eventCollections[collection]) {
+                    eventDocs.push({c: collection, s: segment});
+                }
+            }
+
+            async.map(eventDocs, updateEventDb, function (err, eventUpdateResults) {
+                var needRollback = false;
+
+                for (var i = 0; i < eventUpdateResults.length; i++) {
+                    if (eventUpdateResults[i].status == "failed") {
+                        needRollback = true;
+                        break;
+                    }
+                }
+
+                if (needRollback) {
+                    async.map(eventUpdateResults, rollbackEventDb, function (err, eventRollbackResults) {
+                        common.returnMessage(params, 500, 'Failure');
+                    });
+                } else {
+                    common.returnMessage(params, 200, 'Success');
+                }
+            });
+
+            function updateEventDb(eventDoc, callback) {
+                if (eventDoc.s == "no-segment" && eventSegments[eventDoc.c]) {
+                    common.db.collection(eventDoc.c).update({'_id': eventDoc.s}, {'$inc': eventCollections[eventDoc.c][eventDoc.s], '$addToSet': eventSegments[eventDoc.c]}, {'upsert': true, 'safe': true}, function(err, result) {
+                        if (err || result != 1) {
+                            callback(false, {status: "failed", obj: eventDoc});
+                        } else {
+                            callback(false, {status: "ok", obj: eventDoc});
+                        }
+                    });
+                } else {
+                    common.db.collection(eventDoc.c).update({'_id': eventDoc.s}, {'$inc': eventCollections[eventDoc.c][eventDoc.s]}, {'upsert': true, 'safe': true}, function(err, result) {
+                        if (err || result != 1) {
+                            callback(false, {status: "failed", obj: eventDoc});
+                        } else {
+                            callback(false, {status: "ok", obj: eventDoc});
+                        }
+                    });
+                }
+            }
+
+            function rollbackEventDb(eventUpdateResult, callback) {
+                if (eventUpdateResult.status == "failed") {
+                    callback(false, {});
+                } else {
+                    var eventDoc = eventUpdateResult.obj;
+
+                    common.db.collection(eventDoc.c).update({'_id': eventDoc.s}, {'$inc': getInvertedValues(eventCollections[eventDoc.c][eventDoc.s])}, {'upsert': false}, function(err, result) {});
+                    callback(true, {});
+                }
+            }
+
+            function getInvertedValues(obj) {
+                var invObj = {};
+
+                for (var objProp in obj) {
+                    invObj[objProp] = -obj[objProp];
+                }
+
+                return invObj;
             }
         }
 
@@ -158,7 +221,7 @@ var events = {},
                 }
             }
 
-            common.db.collection('events').update({'_id': params.app_id}, eventSegmentList, {'upsert': true});
+            common.db.collection('events').update({'_id': params.app_id}, eventSegmentList, {'upsert': true}, function(err, res){});
         }
     };
 

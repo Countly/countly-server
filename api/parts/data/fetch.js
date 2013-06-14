@@ -1,6 +1,11 @@
 var fetch = {},
     common = require('./../../utils/common.js'),
-    async = require('./../../utils/async.min.js');
+    async = require('./../../utils/async.min.js'),
+    countlySession = require('../../lib/countly.session.js'),
+    countlyCarrier = require('../../lib/countly.carrier.js'),
+    countlyDeviceDetails = require('../../lib/countly.device.detail.js'),
+    countlyLocation = require('../../lib/countly.location.js'),
+    countlyCommon = require('../../lib/countly.common.js');
 
 (function (fetch) {
 
@@ -168,6 +173,68 @@ var fetch = {},
             common.returnOutput(params, result);
         });
     };
+
+    fetch.fetchDashboard = function(params) {
+
+        common.db.collection("sessions").findOne({'_id': params.app_id}, function (err, sessionsDoc) {
+            common.db.collection("device_details").findOne({'_id': params.app_id}, function (err, deviceDetailsDoc) {
+                common.db.collection("carriers").findOne({'_id': params.app_id}, function (err, carriersDoc) {
+
+                    var output = {},
+                        periods = [
+                            {period: "30days", out: "30days"},
+                            {period: "7days", out: "7days"},
+                            {period: "hour", out: "today"}
+                        ];
+
+                    countlyCommon.setTimezone(params.appTimezone);
+                    countlySession.setDb(sessionsDoc || {});
+                    countlyDeviceDetails.setDb(deviceDetailsDoc || {});
+                    countlyCarrier.setDb(carriersDoc || {});
+
+                    for (var i = 0; i < periods.length; i++) {
+                        countlyCommon.setPeriod(periods[i].period);
+
+                        output[periods[i].out] = {
+                            dashboard: countlySession.getSessionData(),
+                            top: {
+                                platforms: countlyDeviceDetails.getPlatformBars(),
+                                resolutions: countlyDeviceDetails.getResolutionBars(),
+                                carriers: countlyCarrier.getCarrierBars(),
+                                users: countlySession.getTopUserBars()
+                            },
+                            period: countlyCommon.getDateRange()
+                        };
+                    }
+
+                    common.returnOutput(params, output);
+                });
+            });
+        });
+    }
+
+    fetch.fetchCountries = function(params) {
+
+        common.db.collection("locations").findOne({'_id': params.app_id}, function (err, locationsDoc) {
+            var output = {},
+                periods = [
+                    {period: "30days", out: "30days"},
+                    {period: "7days", out: "7days"},
+                    {period: "hour", out: "today"}
+                ];
+
+            countlyCommon.setTimezone(params.appTimezone);
+            countlyLocation.setDb(locationsDoc || {});
+
+            for (var i = 0; i < periods.length; i++) {
+                countlyCommon.setPeriod(periods[i].period);
+
+                output[periods[i].out] = countlyLocation.getLocationData({maxCountries: 10});
+            }
+
+            common.returnOutput(params, output);
+        });
+    }
 
 }(fetch));
 
