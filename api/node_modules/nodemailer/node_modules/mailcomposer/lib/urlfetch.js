@@ -4,14 +4,14 @@ var http = require("http"),
     Stream = require('stream').Stream;
 
 /**
- * @namespace URLFetch 
+ * @namespace URLFetch
  * @name urlfetch
  */
 module.exports = openUrlStream;
 
 /**
  * <p>Open a stream to a specified URL</p>
- * 
+ *
  * @memberOf urlfetch
  * @param {String} url URL to open
  * @param {Object} [options] Optional options object
@@ -28,18 +28,19 @@ function openUrlStream(url, options){
             method: "GET",
             headers: {
                 "User-Agent": options.userAgent || "mailcomposer"
-            }
+            },
+            agent: false
         },
         client = (urlparts.protocol=="https:"?https:http),
         stream = new Stream(),
         request;
-    
+
     stream.resume = function(){};
-        
+
     if(urlparts.auth){
         urloptions.auth = urlparts.auth;
     }
-    
+
     request = client.request(urloptions, function(response) {
         if((response.statusCode || 0).toString().charAt(0) != "2"){
             stream.emit("error", "Invalid status code " + (response.statusCode || 0));
@@ -53,7 +54,7 @@ function openUrlStream(url, options){
         response.on('data', function(chunk) {
             stream.emit("data", chunk);
         });
-        
+
         response.on('end', function(chunk) {
             if(chunk){
                 stream.emit("data", chunk);
@@ -62,10 +63,10 @@ function openUrlStream(url, options){
         });
     });
     request.end();
-    
+
     request.on('error', function(err) {
         stream.emit("error", err);
     });
-    
-    return stream; 
+
+    return stream;
 }

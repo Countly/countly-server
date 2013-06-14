@@ -19,16 +19,11 @@ module.exports = SkinStore = function (skinDb, options, callback) {
 
 	this.db = skinDb;
 	this.sessions = this.db.collection('sessions_');
-  
-  this.sessions.ensureIndex({expires: 1}, {expireAfterSeconds: 0}, function(err, result) {
-    if (err) {
-      throw new Error('Error setting TTL index on collection');
-    }
-  });
-  
+  this.sessions.ensureIndex({expires: 1}, {expireAfterSeconds: 0}, function() {});
+
 	Store.call(this, options);
 };
-	
+
 /** SkinStore extendes Store from Connect */
 util.inherits(SkinStore, Store);
 

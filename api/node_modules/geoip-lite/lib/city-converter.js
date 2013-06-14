@@ -1,4 +1,5 @@
-var fs = require('fs');
+var fs = require('fs'),
+    LineInputStream = require('line-input-stream');
 
 var bfile = process.argv[2];
 var ofile = process.argv[3];
@@ -60,23 +61,13 @@ process_data['location'] = function(line, i, a) {
 	fs.writeSync(lfd, b, 0, b.length, null);
 };
 
-function process_input(which, data) {
-	var lines = data.split(/[\r\n]+/);
-	lines[0] = lastline[which] + lines[0];
-	lastline[which] = lines.pop();
-
-	lines.forEach(process_data[which]);
-
-	//console.log("wrote %d lines", lines.length);
-}
-
 var ofd = fs.openSync(ofile, "w");
 var lfd = fs.openSync(ofile.replace(/\.dat/, '-names.dat'), "w");
-var lstream = fs.createReadStream(lfile);
+var lstream = LineInputStream(fs.createReadStream(lfile), /[\r\n]+/);
 lstream.setEncoding('utf8');
-var bstream = fs.createReadStream(bfile);
+var bstream = LineInputStream(fs.createReadStream(bfile), /[\r\n]+/);
 bstream.setEncoding('utf8');
-lstream.on('data', function(data) { process_input('location', data); });
-bstream.on('data', function(data) { process_input('block', data); });
+lstream.on('line', process_data['location']);
+bstream.on('line', process_data['block']);
 
 

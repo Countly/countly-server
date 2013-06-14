@@ -1,41 +1,41 @@
-var sys = require('sys'),
-    fs = require('fs'),
+var fs = require('fs'),
     im = require('./imagemagick');
 
-var path = 'sample-images/jpeg5.jpg';
+var path = __dirname+'/sample-images/blue-bottle-coffee.jpg';
 var imdata = fs.readFileSync(path, 'binary');
 
-im.identify(path, function(err, features){
-  if (err) return sys.error(err.stack || err);
-  sys.puts('features: '+sys.inspect(features));
+im.identify(path, function (err, features){
+  if (err) return console.error(err.stack || err);
+  console.log('identify(path) ->', features);
 })
 
-im.identify({data:imdata}, function(err, features){
-  if (err) return sys.error(err.stack || err);
-  sys.puts('features: '+sys.inspect(features));
+im.identify({data:imdata}, function (err, features){
+  if (err) return console.error(err.stack || err);
+  console.log('identify({data:imdata}) ->', features);
 })
 
-im.readMetadata(path, function(err, metadata){
-  if (err) return sys.error(err.stack || err);
-  sys.puts('metadata: '+sys.inspect(metadata));
+im.readMetadata(path, function (err, metadata){
+  if (err) return console.error(err.stack || err);
+  console.log('readMetadata(path) ->', metadata);
 })
 
-im.readMetadata({data:imdata}, function(err, metadata){
-  if (err) return sys.error(err.stack || err);
-  sys.puts('metadata: '+sys.inspect(metadata));
+im.readMetadata({data:imdata}, function (err, metadata){
+  if (err) return console.error(err.stack || err);
+  console.log('readMetadata({data:imdata} ->', metadata);
 })
 
 var timeStarted = new Date;
 im.resize({
   srcPath: path,
-  dstPath: path+'.resized.jpg',
+  dstPath: 'test-resized.jpg',
   width: 256
-}, function(err, stdout, stderr){
-  if (err) return sys.error(err.stack || err);
-  sys.puts('real time taken for convert: '+((new Date)-timeStarted)+' ms')
-  im.identify(['-format', '%b', path+'.resized.jpg'], function(err, r){
+}, function (err, stdout, stderr){
+  if (err) return console.error(err.stack || err);
+  console.log('resize(...) wrote "test-resized.jpg"');
+  console.log('real time taken for convert: '+((new Date)-timeStarted)+' ms');
+  im.identify(['-format', '%b', 'test-resized.jpg'], function (err, r){
     if (err) throw err;
-    sys.puts('size: '+r.substr(0,r.length-2)+' Bytes');
+    console.log("identify(['-format', '%b', 'test-resized.jpg']) ->", r);
   })
 })
 
@@ -43,9 +43,10 @@ timeStarted = new Date;
 im.resize({
   srcData: imdata,
   width: 256
-}, function(err, stdout, stderr){
-  if (err) return sys.error(err.stack || err);
-  sys.puts('real time taken for convert (with buffers): '+((new Date)-timeStarted)+' ms');
-  fs.writeFileSync(path+'.resized-io.jpg', stdout, 'binary');
-  sys.puts('size: '+stdout.length+' Bytes');
+}, function (err, stdout, stderr){
+  if (err) return console.error(err.stack || err);
+  console.log('real time taken for convert (with buffers): '+
+              ((new Date)-timeStarted)+' ms');
+  fs.writeFileSync('test-resized-io.jpg', stdout, 'binary');
+  console.log('resize(...) wrote "test-resized.jpg" ('+stdout.length+' Bytes)');
 })

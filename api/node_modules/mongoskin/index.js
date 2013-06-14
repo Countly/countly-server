@@ -1,1 +1,1 @@
-module.exports = require('./lib/mongoskin');
+module.exports = process.env.MONGOSKIN_COV ? require('./lib-cov/mongoskin') : require('./lib/mongoskin');
