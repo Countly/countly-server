@@ -10,8 +10,8 @@ var http = require('http'),
     countlyMail = require('../../api/parts/mgmt/mail.js'),
     countlyStats = require('../../api/parts/data/stats.js'),
     countlyConfig = require('./config'),
-    connectionString = (typeof countlyConfig.mongodb === "string")? countlyConfig.mongodb : (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db + '?auto_reconnect=true&safe=true'),
-    countlyDb = mongo.db(connectionString, {safe:true});
+    connectionString = (typeof countlyConfig.mongodb === "string")? countlyConfig.mongodb : (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db + '?auto_reconnect'),
+    countlyDb = mongo.db(connectionString);
 
 function sha1Hash(str, addSalt) {
     var salt = (addSalt) ? new Date().getTime() : "";
@@ -56,10 +56,10 @@ function sortBy(arrayToSort, sortList) {
     return retArr;
 }
 
-var app = express();
+var app = module.exports = express.createServer();
 
 app.configure(function () {
-    app.engine('html', require('ejs').renderFile);
+    app.register('.html', require('ejs'));
     app.set('views', __dirname + '/views');
     app.set('view engine', 'html');
     app.set('view options', {layout:false});
@@ -69,11 +69,6 @@ app.configure(function () {
         secret:'countlyss',
         store:new SkinStore(countlyDb)
     }));
-    app.use(require('connect-flash')());
-    app.use(function(req, res, next) {
-        res.locals.flash = req.flash.bind(req);
-        next();
-    });
     app.use(express.methodOverride());
     app.use(express.csrf());
     app.use(app.router);
@@ -142,24 +137,16 @@ app.get('/dashboard', function (req, res, next) {
                     var adminOfAppIds = [],
                         userOfAppIds = [];
 
-                    if (member.admin_of.length == 1 && member.admin_of[0] == "") {
-                        member.admin_of = [];
+                    if (member.admin_of.length && member.admin_of[0] != "") {
+                        for (var i = 0; i < member.admin_of.length; i++) {
+                            adminOfAppIds[adminOfAppIds.length] = countlyDb.ObjectID(member.admin_of[i]);
+                        }
                     }
 
-                    for (var i = 0; i < member.admin_of.length; i++) {
-                        if (member.admin_of[i] == "") {
-                            continue;
+                    if (member.user_of.length) {
+                        for (var i = 0; i < member.user_of.length; i++) {
+                            userOfAppIds[userOfAppIds.length] = countlyDb.ObjectID(member.user_of[i]);
                         }
-
-                        adminOfAppIds[adminOfAppIds.length] = countlyDb.ObjectID(member.admin_of[i]);
-                    }
-
-                    for (var i = 0; i < member.user_of.length; i++) {
-                        if (member.user_of[i] == "") {
-                            continue;
-                        }
-
-                        userOfAppIds[userOfAppIds.length] = countlyDb.ObjectID(member.user_of[i]);
                     }
 
                     countlyDb.collection('apps').find({ _id:{ '$in':adminOfAppIds } }).toArray(function (err, admin_of) {
@@ -219,7 +206,6 @@ app.get('/dashboard', function (req, res, next) {
                         res.render('dashboard', {
                             adminOfApps:adminOfApps,
                             userOfApps:userOfApps,
-                            countlyVersion:"13.06",
                             member:member
                         });
                     });
@@ -294,21 +280,6 @@ app.get('/reset/:prid', function (req, res, next) {
     }
 });
 
-var auth = express.basicAuth(function(user, pass, callback) {
-    var password = sha1Hash(pass);
-    countlyDb.collection('members').findOne({"username":user, "password":password}, function (err, member) {
-        callback(null, member);
-    });
-});
-
-app.get('/api-key', auth, function (req, res, next) {
-    if (req.user) {
-        res.send(req.user.api_key);
-    } else {
-        res.send("-1");
-    }
-});
-
 app.post('/reset', function (req, res, next) {
     if (req.body.password && req.body.again && req.body.prid) {
         var password = sha1Hash(req.body.password);
@@ -363,7 +334,7 @@ app.post('/setup', function (req, res, next) {
                         json: {
                             "email": req.body.email,
                             "full_name": req.body.full_name,
-                            "v": "13.06"
+                            "v": "12.12"
                         }
                     };
 
@@ -412,7 +383,7 @@ app.post('/login', function (req, res, next) {
                                 json: {
                                     "email": member.email,
                                     "full_name": member.full_name,
-                                    "v": "13.06",
+                                    "v": "12.12",
                                     "u": userCount,
                                     "e": eventCount,
                                     "r": reqCount,
@@ -496,20 +467,22 @@ app.post('/apps/icon', function (req, res) {
         type = req.files.app_image.type;
 
     if (type != "image/png" && type != "image/gif" && type != "image/jpeg") {
-        fs.unlink(tmp_path, function () {});
+        fs.unlink(tmp_path, function () {
+        });
         res.send(false);
         return true;
     }
 
     fs.rename(tmp_path, target_path, function (err) {
-        fs.unlink(tmp_path, function () {});
+        fs.unlink(tmp_path, function () {
+        });
         im.crop({
             srcPath:target_path,
             dstPath:target_path,
             format:'png',
-            width:72,
-            height:72
-        }, function (err, stdout, stderr) {});
+            width:25
+        }, function (err, stdout, stderr) {
+        });
 
         res.send("/appimages/" + req.body.app_image_id + ".png");
     });
@@ -616,43 +589,4 @@ app.post('/events/map/edit', function (req, res, next) {
     }
 });
 
-app.post('/events/delete', function (req, res, next) {
-    if (!req.session.uid || !req.body.app_id || !req.body.event_key) {
-        res.end();
-        return false;
-    }
-
-    var updateThese = {
-        "$unset": {},
-        "$pull": {
-            "list": req.body.event_key,
-            "order": req.body.event_key
-        }
-    };
-
-    updateThese["$unset"]["map." + req.body.event_key] = 1;
-    updateThese["$unset"]["segments." + req.body.event_key] = 1;
-
-    if (!isGlobalAdmin(req)) {
-        countlyDb.collection('members').findOne({"_id":countlyDb.ObjectID(req.session.uid)}, function (err, member) {
-            if (!err && member.admin_of && member.admin_of.indexOf(req.body.app_id) != -1) {
-                countlyDb.collection('events').update({"_id":countlyDb.ObjectID(req.body.app_id)}, updateThese, function (err, events) {});
-                countlyDb.collection(req.body.event_key + req.body.app_id).drop();
-
-                res.send(true);
-                return true;
-            } else {
-                res.send(false);
-                return false;
-            }
-        });
-    } else {
-        countlyDb.collection('events').update({"_id":countlyDb.ObjectID(req.body.app_id)}, updateThese, function (err, events) {});
-        countlyDb.collection(req.body.event_key + req.body.app_id).drop();
-
-        res.send(true);
-        return true;
-    }
-});
-
-app.listen(countlyConfig.web.port, countlyConfig.web.host  || '');
+app.listen(countlyConfig.web.port, 'localhost');

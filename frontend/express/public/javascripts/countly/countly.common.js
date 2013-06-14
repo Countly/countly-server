@@ -774,7 +774,9 @@
                     }
                 }
 
-                if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
+                if (propertyNames.indexOf("u") !== -1) {
+                    //tmpPropertyObj["u"] = 0;
+
                     var tmpUniqVal = 0,
                         tmpUniqValCheck = 0,
                         tmpCheckVal = 0;
@@ -816,7 +818,7 @@
                     }
                 }
 
-                //if (propertySum > 0)
+                //if (propertySum > 0) {
                 {
                     tableData[tableCounter] = {};
                     tableData[tableCounter] = tmpPropertyObj;
@@ -825,17 +827,13 @@
             }
         }
 
-        if (propertyNames.indexOf("u") !== -1) {
+        if (propertyNames.indexOf("t") !== -1) {
             tableData = _.sortBy(tableData, function (obj) {
-                return -obj["u"];
-            });
-        } else if (propertyNames.indexOf("t") !== -1) {
-            tableData = _.sortBy(tableData, function (obj) {
-                return -obj["t"];
+                return -obj["t"]
             });
         } else if (propertyNames.indexOf("c") !== -1) {
             tableData = _.sortBy(tableData, function (obj) {
-                return -obj["c"];
+                return -obj["c"]
             });
         }
 
@@ -1043,7 +1041,7 @@
                     }
 
                     if (dbObj[year][level1][level2]) {
-                        if (tmpOldObj[level1] && tmpOldObj[level1][level2]) {
+                        if (tmpOldObj[level1][level2]) {
                             dbObj[year][level1][level2] += (tmpUpdateObj[level1][level2] - tmpOldObj[level1][level2]);
                         } else {
                             dbObj[year][level1][level2] += tmpUpdateObj[level1][level2];
@@ -1053,7 +1051,7 @@
                     }
 
                     if (dbObj[year][month][level1][level2]) {
-                        if (tmpOldObj[level1] && tmpOldObj[level1][level2]) {
+                        if (tmpOldObj[level1][level2]) {
                             dbObj[year][month][level1][level2] += (tmpUpdateObj[level1][level2] - tmpOldObj[level1][level2]);
                         } else {
                             dbObj[year][month][level1][level2] += tmpUpdateObj[level1][level2];
@@ -1063,7 +1061,7 @@
                     }
 
                     if (dbObj[year]["w" + weekly][level1][level2]) {
-                        if (tmpOldObj[level1] && tmpOldObj[level1][level2]) {
+                        if (tmpOldObj[level1][level2]) {
                             dbObj[year]["w" + weekly][level1][level2] += (tmpUpdateObj[level1][level2] - tmpOldObj[level1][level2]);
                         } else {
                             dbObj[year]["w" + weekly][level1][level2] += tmpUpdateObj[level1][level2];
@@ -1245,7 +1243,7 @@
 
                 // Current period variables
 
-                var currWeek = currentYear + "." + "w" + Math.ceil(currIndex.format("DDD") / 7);
+                var currWeek = currentYear + "." + "w" + currIndex.format("w");
                 currWeeksArr[currWeeksArr.length] = currWeek;
                 currWeekCounts[currWeek] = (currWeekCounts[currWeek]) ? (currWeekCounts[currWeek] + 1) : 1;
 
@@ -1257,7 +1255,7 @@
 
                 // Previous period variables
 
-                var prevWeek = prevYear + "." + "w" + Math.ceil(prevIndex.format("DDD") / 7);
+                var prevWeek = prevYear + "." + "w" + prevIndex.format("w");
                 prevWeeksArr[prevWeeksArr.length] = prevWeek;
                 prevWeekCounts[prevWeek] = (prevWeekCounts[prevWeek]) ? (prevWeekCounts[prevWeek] + 1) : 1;
 

@@ -1,14 +1,11 @@
-var countlyConfig = {
-    mongodb: {
-        host: "localhost",
-        db: "countly",
-        port: 27017
-    },
-    web: {
-        port: 6001,
-        host: "localhost",
-        use_intercom: true
-    }
-};
+var countlyConfig = {};
+
+countlyConfig.mongodb = {};
+countlyConfig.web = {};
+
+countlyConfig.mongodb.host = "localhost";
+countlyConfig.mongodb.db = "countly";
+countlyConfig.mongodb.port = 27017;
+countlyConfig.web.port = 6001;
 
 module.exports = countlyConfig;

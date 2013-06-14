@@ -5,15 +5,13 @@
         _userDb = {},
         _lolayties = [],
         _frequencies = [],
-        _activeAppKey = 0,
-        _initialized = false;
+        _activeAppKey = 0;
 
     //Public Methods
     countlyUser.initialize = function () {
-        if (!countlyCommon.DEBUG) {
-            _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
-            _initialized = true;
+        _periodObj = countlyCommon.periodObj;
 
+        if (!countlyCommon.DEBUG) {
             return $.ajax({
                 type:"GET",
                 url:countlyCommon.API_PARTS.data.r,
@@ -34,7 +32,36 @@
         }
     };
 
-    countlyUser.refresh = countlyUser.initialize;
+    countlyUser.refresh = function () {
+        _periodObj = countlyCommon.periodObj;
+
+        if (!countlyCommon.DEBUG) {
+
+            if (_activeAppKey != countlyCommon.ACTIVE_APP_KEY) {
+                _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
+                return countlyUser.initialize();
+            }
+
+            return $.ajax({
+                type:"GET",
+                url:countlyCommon.API_PARTS.data.r,
+                data:{
+                    "api_key":countlyGlobal.member.api_key,
+                    "app_id":countlyCommon.ACTIVE_APP_ID,
+                    "method":"users",
+                    "action":"refresh"
+                },
+                dataType:"jsonp",
+                success:function (json) {
+                    countlyCommon.extendDbObj(_userDb, json);
+                    setMeta();
+                }
+            });
+        } else {
+            _userDb = {"2012":{}};
+            return true;
+        }
+    };
 
     countlyUser.reset = function () {
         _userDb = {};

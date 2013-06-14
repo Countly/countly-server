@@ -9,22 +9,14 @@
         _activeSegmentation = "",
         _activeSegmentations = [],
         _activeSegmentationValues = [],
-        _activeAppId = 0,
-        _activeAppKey = 0,
-        _initialized = false;
+        _activeAppId = 0;
 
     //Public Methods
-    countlyEvent.initialize = function(eventChanged) {
-        if (!eventChanged && _initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
-            return countlyEvent.refresh();
-        }
+    countlyEvent.initialize = function() {
 
         _activeAppId = countlyCommon.ACTIVE_APP_ID;
 
         if (!countlyCommon.DEBUG) {
-            _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
-            _initialized = true;
-
             return $.when(
                 $.ajax({
                     type: "GET",
@@ -145,8 +137,6 @@
         _activeSegmentations = [];
         _activeSegmentationValues = [];
         _activeAppId = 0;
-        _activeAppKey = 0;
-        _initialized = false;
     };
 
     countlyEvent.refreshEvents = function () {
@@ -217,7 +207,7 @@
 
             eventData.chartData = tmpEventData.chartData;
 
-            var segments = _.pluck(eventData.chartData, "curr_segment").slice(0,15),
+            var segments = _.pluck(eventData.chartData, "curr_segment"),
                 segmentsCount = _.pluck(eventData.chartData, 'c'),
                 segmentsSum = _.without(_.pluck(eventData.chartData, 's'), false, null, "", undefined, NaN),
                 chartDP = [
@@ -308,39 +298,31 @@
         var events = (_activeEvents)? ((_activeEvents.list)? _activeEvents.list : []) : [],
             eventMap = (_activeEvents)? ((_activeEvents.map)? _activeEvents.map : {}) : {},
             eventOrder = (_activeEvents)? ((_activeEvents.order)? _activeEvents.order : []) : [],
-            eventsWithOrder = [],
-            eventsWithoutOrder = [];
+            eventNames = [];
 
         for (var i = 0; i < events.length; i++) {
-            var arrayToUse = eventsWithoutOrder;
-
-            if (eventOrder.indexOf(events[i]) !== -1) {
-                arrayToUse = eventsWithOrder;
-            }
-
             if (eventMap[events[i]] && eventMap[events[i]]["name"]) {
-                arrayToUse.push({
+                eventNames.push({
                     "key": events[i],
                     "name": eventMap[events[i]]["name"],
-                    "count": eventMap[events[i]]["count"],
-                    "sum": eventMap[events[i]]["sum"],
                     "is_active": (_activeEvent == events[i])
                 });
             } else {
-                arrayToUse.push({
+                eventNames.push({
                     "key": events[i],
                     "name": events[i],
-                    "count": "",
-                    "sum": "",
                     "is_active": (_activeEvent == events[i])
                 });
             }
         }
 
-        eventsWithOrder = _.sortBy(eventsWithOrder, function(event){ return eventOrder.indexOf(event.key); });
-        eventsWithoutOrder = _.sortBy(eventsWithoutOrder, function(event){ return event.key; });
+        if (eventOrder.length) {
+            eventNames = _.sortBy(eventNames, function(event){ return eventOrder.indexOf(event.key); });
+        } else {
+            eventNames = _.sortBy(eventNames, function(event){ return event.name; });
+        }
 
-        return eventsWithOrder.concat(eventsWithoutOrder);
+        return eventNames;
     };
 
     countlyEvent.getEventsWithSegmentations = function() {
@@ -381,11 +363,26 @@
     };
 
     countlyEvent.getEventMap = function() {
-        var events = countlyEvent.getEvents(),
-            eventMap = {};
+        var events = (_activeEvents)? ((_activeEvents.list)? _activeEvents.list : []) : [],
+            eventMap = (_activeEvents)? ((_activeEvents.map)? _activeEvents.map : {}) : {},
+            eventOrder = (_activeEvents)? ((_activeEvents.order)? _activeEvents.order : []) : [];
 
         for (var i = 0; i < events.length; i++) {
-            eventMap[events[i].key] = events[i];
+            if (!eventMap[events[i]]) {
+                eventMap[events[i]] = {
+                    "name": "",
+                    "count": "",
+                    "sum": ""
+                };
+            }
+
+            eventMap[events[i]]["event_key"] = events[i];
+        }
+
+        if (eventOrder.length) {
+            eventMap = _.sortBy(eventMap, function(event){ return eventOrder.indexOf(event.event_key); });
+        } else {
+            eventMap = _.sortBy(eventMap, function(event){ return event.name; });
         }
 
         return eventMap;
@@ -533,82 +530,12 @@
         return bigNumbers;
     };
 
-    countlyEvent.getMultiEventData = function(eventKeysArr, callback) {
-        _activeAppId = countlyCommon.ACTIVE_APP_ID;
-
-        $.ajax({
-            type: "GET",
-            url: countlyCommon.API_PARTS.data.r,
-            data: {
-                "api_key": countlyGlobal.member.api_key,
-                "app_id" : countlyCommon.ACTIVE_APP_ID,
-                "method" : "events",
-                "events": JSON.stringify(eventKeysArr)
-            },
-            dataType: "jsonp",
-            success: function(json) {
-                callback(extractDataForGraphAndChart(json));
-            }
-        });
-
-
-        function extractDataForGraphAndChart(dataFromDb) {
-            var eventData = {},
-                eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
-                countString = (eventMap[_activeEvent] && eventMap[_activeEvent].count) ? eventMap[_activeEvent].count : jQuery.i18n.map["events.table.count"],
-                sumString = (eventMap[_activeEvent] && eventMap[_activeEvent].sum) ? eventMap[_activeEvent].sum : jQuery.i18n.map["events.table.sum"];
-
-            var chartData = [
-                    { data:[], label:countString, color: countlyCommon.GRAPH_COLORS[0] },
-                    { data:[], label:sumString, color: countlyCommon.GRAPH_COLORS[1] }
-                ],
-                dataProps = [
-                    { name:"c" },
-                    { name:"s" }
-                ];
-
-            eventData = countlyCommon.extractChartData(dataFromDb, countlyEvent.clearEventsObject, chartData, dataProps);
-
-            eventData["eventName"] = countlyEvent.getEventLongName(_activeEvent);
-            eventData["dataLevel"] = 1;
-            eventData["tableColumns"] = [jQuery.i18n.map["common.date"], countString];
-
-            var cleanSumCol = _.without(_.pluck(eventData.chartData, 's'), false, null, "", undefined, NaN);
-
-            if (_.reduce(cleanSumCol, function(memo, num) { return memo + num;  }, 0) != 0) {
-                eventData["tableColumns"][eventData["tableColumns"].length] = sumString;
-            } else {
-                eventData.chartDP[1] = false;
-                eventData.chartDP = _.compact(eventData.chartDP);
-                _.each(eventData.chartData, function (element, index, list) {
-                    list[index] = _.pick(element, "date", "c");
-                });
-            }
-
-            var countArr = _.pluck(eventData.chartData, "c");
-
-            if (countArr.length) {
-                eventData.totalCount = _.reduce(countArr, function(memo, num){ return memo + num; }, 0);
-            }
-
-            var sumArr = _.pluck(eventData.chartData, "s");
-
-            if (sumArr.length) {
-                eventData.totalSum = _.reduce(sumArr, function(memo, num){ return memo + num; }, 0);
-            }
-
-            return eventData;
-        }
-    };
-
     function setMeta() {
         var noSegIndex = _activeEventDbIndex.indexOf("no-segment");
 
         if (noSegIndex != -1 && _activeEventDbArr[noSegIndex]["meta"]) {
             var tmpMeta = _activeEventDbArr[noSegIndex]["meta"];
             _activeSegmentations = tmpMeta["segments"] || [];
-
-            _activeSegmentations.sort();
 
             if (_activeSegmentation) {
                 _activeSegmentationValues = (tmpMeta[_activeSegmentation])? tmpMeta[_activeSegmentation]: [];
