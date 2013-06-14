@@ -2,14 +2,19 @@ var fs   = require('fs'),
     path = require('path'),
     net = require('net');
 
-var lookup4, lookup6;
+var lookup4, lookup6, geodatadir;
+
+if (typeof global.geodatadir === 'undefined'){
+	geodatadir = path.join(__dirname, '/../data/');
+} else {
+	geodatadir = global.geodatadir;
+}
 
 (function() {
-
 var ifile, ifd, sz, recsz, buff, lrecsz, lbuff;
 
 try {
-	ifile = path.join(__dirname, '/../data/geoip-city-names.dat');
+	ifile = path.join(geodatadir, 'geoip-city-names.dat');
 	ifd = fs.openSync(ifile, "r");
 	sz = fs.fstatSync(ifd).size;
 	lrecsz = 32;
@@ -18,7 +23,7 @@ try {
 	fs.readSync(ifd, lbuff, 0, sz, 0);
 	fs.closeSync(ifd);
 
-	ifile = path.join(__dirname, '/../data/geoip-city.dat');
+	ifile = path.join(geodatadir, 'geoip-city.dat');
 	ifd = fs.openSync(ifile, "r");
 	sz = fs.fstatSync(ifd).size;
 	recsz = 12;
@@ -27,14 +32,7 @@ catch(err) {
 	if(err.code != 'ENOENT' && err.code != 'EBADF') {
 		throw err;
 	}
-	console.warn("\n======================== Warning ========================");
-	console.warn(" City data not found, falling back to country data.");
-	console.warn(" Get the latest city data files from\n");
-	console.warn(" https://github.com/bluesmoon/node-geoip/tree/master/data\n");
-	console.warn(" You need geoip-city-names.dat and geoip-city.dat");
-	console.warn(" Put them into the data/ directory for this package");
-	console.warn("======================== Warning ========================\n\n");
-	ifile = path.join(__dirname, '/../data/geoip-country.dat');
+	ifile = path.join(geodatadir, 'geoip-country.dat');
 	ifd = fs.openSync(ifile, "r");
 	sz = fs.fstatSync(ifd).size;
 	recsz = 10;
@@ -128,8 +126,7 @@ function ntoa4(n) {
 }
 
 (function() {
-	
-	var ifile = path.join(__dirname, '/../data/geoip-country6.dat');
+	var ifile = path.join(geodatadir, 'geoip-country6.dat');
 	var ifd = fs.openSync(ifile, "r");
 	var sz = fs.fstatSync(ifd).size;
 	var recsz = 34;

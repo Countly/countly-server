@@ -30,7 +30,7 @@ exports["General tests"] = {
             
         mc.setMessageOption({
             from: "andmekala@hot.ee",
-            to: "andris@node.ee",
+            to: "andris@pangalink.net",
             subject:"Hello!",
             body: "Hello world!",
             html: "<b>Hello world!</b>"
@@ -67,7 +67,7 @@ exports["General tests"] = {
             mc = new MailComposer({escapeSMTP: true});
             mc.setMessageOption({
                 from: "andmekala@hot.ee",
-                to: "andris@node.ee",
+                to: "andris@pangalink.net",
                 subject:"Hello!",
                 body: "Hello world!",
                 html: "<b>Hello world!</b>"
@@ -92,7 +92,7 @@ exports["General tests"] = {
             
         mc.setMessageOption({
             from: "andmekala@hot.ee",
-            to: "andris@node.ee",
+            to: "andris@pangalink.net",
             subject:"Hello!",
             body: "Hello world!",
             html: "<b>Hello world!</b>"
@@ -129,7 +129,7 @@ exports["General tests"] = {
             mc = new MailComposer({escapeSMTP: true});
             mc.setMessageOption({
                 from: "andmekala@hot.ee",
-                to: "andris@node.ee",
+                to: "andris@pangalink.net",
                 subject:"Hello!",
                 body: "Hello world!",
                 html: "<b>Hello world!</b>"
@@ -182,7 +182,7 @@ exports["Auth fail tests"] = {
             
         mc.setMessageOption({
             from: "andmekala2@hot.ee",
-            to: "andris2@node.ee",
+            to: "andris2@pangalink.net",
             subject:"Hello2!",
             body: "Hello2 world!",
             html: "<b>Hello2 world!</b>"
@@ -214,7 +214,7 @@ exports["Auth fail tests"] = {
             
         mc.setMessageOption({
             from: "andmekala2@hot.ee",
-            to: "andris2@node.ee",
+            to: "andris2@pangalink.net",
             subject:"Hello2!",
             body: "Hello2 world!",
             html: "<b>Hello2 world!</b>"
@@ -255,7 +255,7 @@ exports["Auth fail tests"] = {
             mc = new MailComposer({escapeSMTP: true});
             mc.setMessageOption({
                 from: "andmekala@hot.ee",
-                to: "andris@node.ee",
+                to: "andris@pangalink.net",
                 subject:"Hello!",
                 body: "Hello world!",
                 html: "<b>Hello world!</b>"

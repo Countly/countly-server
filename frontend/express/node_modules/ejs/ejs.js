@@ -1,3 +1,4 @@
+ejs = (function(){
 
 // CommonJS require()
 
@@ -51,7 +52,7 @@ require.register("ejs.js", function(module, exports, require){
 
 /*!
  * EJS
- * Copyright(c) 2010 TJ Holowaychuk <tj@vision-media.ca>
+ * Copyright(c) 2012 TJ Holowaychuk <tj@vision-media.ca>
  * MIT Licensed
  */
 
@@ -66,7 +67,7 @@ var utils = require('./utils')
  * Library version.
  */
 
-exports.version = '0.6.1';
+exports.version = '0.7.2';
 
 /**
  * Filters.
@@ -168,6 +169,7 @@ var parse = exports.parse = function(str, options){
   
   var lineno = 1;
 
+  var consumeEOL = false;
   for (var i = 0, len = str.length; i < len; ++i) {
     if (str.slice(i, open.length + i) == open) {
       i += open.length
@@ -193,7 +195,12 @@ var parse = exports.parse = function(str, options){
         , js = str.substring(i, end)
         , start = i
         , n = 0;
-
+        
+      if ('-' == js[js.length-1]){
+        js = js.substring(0, js.length - 2);
+        consumeEOL = true;
+      }
+        
       while (~(n = js.indexOf("\n", n))) n++, lineno++;
       if (js.substr(0, 1) == ':') js = filtered(js);
       buf.push(prefix, js, postfix);
@@ -206,8 +213,12 @@ var parse = exports.parse = function(str, options){
     } else if (str.substr(i, 1) == "\r") {
       buf.push(" ");
     } else if (str.substr(i, 1) == "\n") {
-      buf.push("\\n");
-      lineno++;
+      if (consumeEOL) {
+        consumeEOL = false;
+      } else {
+        buf.push("\\n");
+        lineno++;
+      }
     } else {
       buf.push(str.substr(i, 1));
     }
@@ -309,7 +320,7 @@ exports.renderFile = function(path, options, fn){
 
   try {
     var str = options.cache
-      ? exports.cache[key] || (exports.cache[key] = fs.readFileSync(path, 'utf8'))
+      ? cache[key] || (cache[key] = fs.readFileSync(path, 'utf8'))
       : fs.readFileSync(path, 'utf8');
 
     fn(null, exports.render(str, options));
@@ -565,3 +576,6 @@ exports.escape = function(html){
 };
  
 }); // module: utils.js
+
+ return require("ejs");
+})();

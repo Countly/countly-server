@@ -1,5 +1,5 @@
 var mongoskin = require('../lib/mongoskin/');
 
-require('myconsole').replace();
-
 exports.db = mongoskin.db('localhost/test');
+
+mongoskin.db('localhost', { database: 'test' });

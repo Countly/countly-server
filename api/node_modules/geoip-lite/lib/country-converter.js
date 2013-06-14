@@ -1,4 +1,5 @@
-var fs = require('fs');
+var fs = require('fs'),
+    LineInputStream = require('line-input-stream');
 
 var ifile = process.argv[2];
 var ofile = process.argv[3];
@@ -8,9 +9,7 @@ if(!ifile || !ofile) {
 	process.exit();
 }
 
-var lastline = "";
-
-function process_line(line, i, a) {
+function process_line(line) {
 	var fields = line.split(/, */);
 	if(fields.length < 6) {
 		console.log("weird line: %s::", line);
@@ -76,20 +75,10 @@ function aton6(ip) {
 	return r;
 }
 
-function process_input(data) {
-	var lines = data.split(/[\r\n]+/);
-	lines[0] = lastline + lines[0];
-	lastline = lines.pop();
-
-	lines.forEach(process_line);
-
-	//console.log("wrote %d lines", lines.length);
-}
-
 var ofd = fs.openSync(ofile, "w");
-var istream = fs.createReadStream(ifile);
+var istream = LineInputStream(fs.createReadStream(ifile), /[\r\n]+/);
 istream.setEncoding('utf8');
-istream.on('data', process_input);
+istream.on('line', process_line);
 
 
 

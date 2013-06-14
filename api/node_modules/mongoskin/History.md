@@ -1,3 +1,17 @@
+
+0.5.0 / 2012-12-29 
+==================
+
+  * fixed unsafe mode warnning log
+  * Merge pull request #84 from kingpearl/master
+  * MongoDB 1.2.x support
+  * Merge pull request #73 from jockster/master
+  * Merge pull request #75 from voke/patch-1
+  * Fix typo
+  * fixed bind() test cases;
+  * Minor error in readme. Now updated
+  * Updated readme according to issue #72
+
 0.3.4 / 2011-03-24
  * fix global leaks
 
