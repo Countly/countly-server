@@ -27,7 +27,15 @@
     Running this script will update country and city database from Maxmind
     database.
 
-  * Various performance and visual improvements to Events view. 
+  * Various performance and visual improvements to Events view.
+  
+  * Added switch to turn off or change session_duration limit of 120 seconds
+    in api/config.js (session_duration_limit).
+
+  * Added host configuration to both app.js and api.js configuration files
+    (/frontend/express/config.js and /api/config.js) to make it possible to 
+    run dashboard and application on different servers (defaults to localhost)
+
 
 12.12
 
