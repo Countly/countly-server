@@ -45,7 +45,7 @@ Contains seperate  helper js files for each data visualization. For example `cou
 ####3. api/api.js
 
 Countly write and read API. Waits for write requests from the mobile SDKs and read requests from the 
-Countly js helpers. Refer to [Countly Server API Reference](http://support.count.ly/kb/reference/countly-server-api-reference) for details.
+Countly js helpers. Refer to [Countly Server API Reference](http://count.ly/resources/reference/server-api) for details.
 
 ##How can I help you with your efforts?
 Glad you asked. We need ideas, feedbacks and constructive comments. All your suggestions will be taken care with upmost importance. 
