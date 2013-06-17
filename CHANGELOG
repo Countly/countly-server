@@ -1,10 +1,14 @@
 13.06
 
   * Added session durations view that shows users categorized into predefined
-    session duration buckets.
+    session duration buckets. User is categorized into one of 0-10 seconds, 
+    11-30 seconds, 31-60 seconds, 1-3 minutes, 3-10 minutes, 10-30 minutes, 
+    30-60 minutes or > 1 hour according to this session duration (accessible
+    from Engagement > Session durations)
 
-  * Added resolutions view that shows detailed device resolution data for
-    new and all users.
+  * Added resolutions view that shows detailed device resolution data
+    (width and height) for new and all users using two pie charts (accessible
+    from Analytics > Resolutions).
 
   * Added cluster mechanism to api.js to fork itself according to number of
     cores in the server in order to increase utilisation. This can also be
@@ -16,11 +20,22 @@
 
   * Added individual event key deletion to event configuration modal.
 
-  * Improved and optimized update mechanism during dashboard navigation.
+  * Improved and optimized update mechanism during dashboard navigation. 
+    Navigation is now much more smoother.
 
-  * Added a script (bin/geoip-updater.sh) to fetch and update geoip data.
+  * Added a script (bin/geoip-updater.sh) to fetch and update geoip data. 
+    Running this script will update country and city database from Maxmind
+    database.
 
   * Various performance and visual improvements to Events view.
+  
+  * Added switch to turn off or change session_duration limit of 120 seconds
+    in api/config.js (session_duration_limit).
+
+  * Added host configuration to both app.js and api.js configuration files
+    (/frontend/express/config.js and /api/config.js) to make it possible to 
+    run dashboard and application on different servers (defaults to localhost)
+
 
 12.12
 
