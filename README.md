@@ -27,6 +27,8 @@ If you feel like doing things manually, or need to upgrade Countly from a previo
 ##Dependencies
 We develop and test Countly on Ubuntu with MongoDB, Node.js and nginx. Installation script only needs a clean, decent Ubuntu Linux without any services listening to port 80 and takes care of every library and software (e.g MongoDB, Nginx, Node.js, Expressjs etc) required to be installed on Ubuntu Linux.
 
+Countly community also provides scripts to install Countly on [Mac OS X](http://support.count.ly/discussions/questions/161-can-i-install-countly-on-a-mac-server)  or [Debian Wheezy](https://gist.github.com/cbess/6221635)
+
 ##How do I upgrade my Countly server?
 
 countly-server package includes an upgrade script (`bin/countly.upgrade.sh`) that takes care of the upgrade process.
