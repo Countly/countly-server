@@ -59,8 +59,8 @@
 					<div class="logo devices"></div>
 					<div class="text" data-localize="sidebar.analytics.devices"></div>
 				</a>
-                    <a href="#/analytics/resolutions" class="item">
-                        <div class="logo resolutions"></div>
+                <a href="#/analytics/resolutions" class="item">
+					<div class="logo resolutions"></div>
                     <div class="text" data-localize="sidebar.analytics.resolutions"></div>
                 </a>
 				<a href="#/analytics/versions" class="item">
@@ -91,14 +91,13 @@
                 </a>
                 <a href="#/analytics/durations" class="item">
                     <div class="logo durations"></div>
-                    <div class="text" data-localize="sidebar.engagement.durations"></div>s
+                    <div class="text" data-localize="sidebar.engagement.durations"></div>
                 </a>
             </div>
-			<a href="#/analytics/events" class="item" id="sidebar-events">
-                <!--<div class="logo icon-magnet" style="background-image:none; font-size:28px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px;"></div>-->
-				<div class="logo events"></div>
-				<div class="text" data-localize="sidebar.events"></div>
-			</a>
+            <a href="#/analytics/events" class="item" id="sidebar-events">
+                <div class="logo events"></div>
+                <div class="text" data-localize="sidebar.events"></div>
+            </a>
 			<% if(member['global_admin'] || adminOfApps.length) { %>
 			<a class="item" id="management-menu">
                 <!--<div class="logo icon-wrench" style="background-image:none; font-size:28px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px;"></div>-->
@@ -215,7 +214,7 @@
 				<div class="input"><input id="username" type="text" value=""/></div>
 			</div>
 			<div style="margin-top:15px;">
-				<div class="title" data-localize="user-settings.change-password"></div> 
+				<div class="title" data-localize="user-settings.change-password"></div>
 				<div class="input">
 					<div><input id="old_pwd" type="password" placeholder="Old password..." data-localize="placeholder.old-password"/></div>
 					<div style="margin-top:10px;"><input id="new_pwd" type="password" placeholder="New password..." data-localize="placeholder.new-password"/></div>
@@ -248,21 +247,22 @@
 				<div class="calendar-container">
 					<div id="date-from" class="calendar"></div>
 					<div id="date-to" class="calendar"></div>
-				</div>			
+				</div>
 				<div class="button-container">
 					<div id="date-submit" style="float:right;" class="cly-button-dark" data-localize="common.apply"></div>
 				</div>
 			</div>
-			<div class="button" id="month">2012</div>
-			<div class="button" id="day"></div>
-			<div class="button" id="hour" data-localize="common.today"></div>
-			<div class="button" id="7days" data-localize="common.7days"></div>
-			<div class="button" id="30days" data-localize="common.30days"></div>
-			<div class="button" id="60days" data-localize="common.60days"></div>
-			<div class="button" id="90days" data-localize="common.90days"></div>
+			<div class="button date-selector" id="month"></div>
+			<div class="button date-selector" id="day"></div>
+            <div class="button date-selector" id="yesterday"></div>
+			<div class="button date-selector" id="hour" data-localize="common.today"></div>
+			<div class="button date-selector" id="7days" data-localize="common.7days"></div>
+			<div class="button date-selector" id="30days" data-localize="common.30days"></div>
+			<div class="button date-selector" id="60days" data-localize="common.60days"></div>
+			<!--<div class="button date-selector" id="90days" data-localize="common.90days"></div>-->
 		</div>
 	</script>
-	
+
 	<script id="template-app-categories" type="text/x-handlebars-template">
 		<div data-value="1" class="item" data-localize="application-category.books"></div>
 		<div data-value="2" class="item" data-localize="application-category.business"></div>
@@ -285,7 +285,7 @@
 		<div data-value="19" class="item" data-localize="application-category.utilities"></div>
 		<div data-value="20" class="item" data-localize="application-category.weather"></div>
 	</script>
-	
+
 	<script id="template-analytics-common"  type="text/x-handlebars-template">
 		<div class="widget">
 			<div class="widget-header">
@@ -302,7 +302,7 @@
 						<div class="pie-overlay one {{logo-class}}">
 							<div class="title">{{pie-titles.left}}</div>
 						</div>
-						<div id="dashboard-graph" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>	
+						<div id="dashboard-graph" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>
 					</div>
 				</div>
 				<div class="pie-chart-container">
@@ -415,7 +415,7 @@
 		</table>
 		{{/if}}
 	</script>
-	
+
 	<script id="template-analytics-countries"  type="text/x-handlebars-template">
 		<div class="widget">
 			<div class="widget-header">
@@ -475,7 +475,7 @@
 				{{/if}}
 			</tbody>
 		</table>
-	</script>
+    </script>
 
 	<script id="dashboard-template" type="text/x-handlebars-template">
 		<div class="widget">
@@ -483,7 +483,7 @@
 				<div class="title" style="letter-spacing:-1px; font-size:19px; margin-top:10px; margin-left:5px;">{{toUpperCase page-title}}</div>
 				{{> date-selector }}
 			</div>
-			<div class="widget-content" style="border:none;">				
+			<div class="widget-content" style="border:none;">
 				<div id="big-numbers-container" class="dashboard">
 					{{#each usage}}
 					<div class="big-numbers six-column help-zone-vs" data-help-localize="{{this.help}}">
@@ -554,7 +554,7 @@
 			<div id="geo-chart-outer" style="padding-bottom: 8px;"><div id="geo-chart" {{#if country-data}}style="margin-right:282px;"{{/if}}></div></div>
 		</div>
 	</script>
-	
+
 	<script id="template-management-applications" type="text/x-handlebars-template">
 		<div id="app-management-bar">
 			<div id="app-nav-head">
@@ -606,7 +606,7 @@
 										<div class="select-inner">
 											<div class="text-container">
 												<div class="text" id="app-add-category" data-localize="management-applications.category.tip"></div>
-											</div>	
+											</div>
 											<div class="right combo"></div>
 										</div>
 										<div class="select-items square" style="width:280px;">
@@ -623,7 +623,7 @@
 									<div style="float:left;">
 										<div id="country-select" class="cly-select" style="width:280px;">
 											<div class="select-inner">
-												<div class="text-container">	
+												<div class="text-container">
 													<div class="text"></div>
 												</div>
 												<div class="right combo"></div>
@@ -634,7 +634,7 @@
 										</div>
 										<div id="timezone-select" class="cly-select" style="width:200px; display:none;">
 											<div class="select-inner">
-												<div class="text-container">	
+												<div class="text-container">
 													<div class="text"></div>
 												</div>
 												<div class="right combo"></div>
@@ -649,7 +649,7 @@
 									<input type="hidden" value="" id="app-country"/>
 								</td>
 							</tr>
-							<tr class="help-zone-vs" data-help-localize="manage-apps.app-icon">
+                            <tr class="help-zone-vs" data-help-localize="manage-apps.app-icon">
 								<td data-localize="management-applications.icon"></td>
 								<td>
 									<form action="/apps/icon" enctype="multipart/form-data" id="add-app-image-form" method="post">
@@ -673,19 +673,19 @@
 					<div class="left">
 						<div class="title"></div>
 					</div>
-					<div style="float:right; overflow:hidden; margin-top:6px;">
-						<div style="display:none;" class="icon-button delete-app help-zone-vs" data-help-localize="manage-apps.app-delete-button" id="delete-app">
-							<div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
-							<div class="text" data-localize="common.delete"></div>
-						</div>
-						<div class="icon-button delete-app help-zone-vs" data-help-localize="manage-apps.app-clear-button" id="clear-app-data">
+					<div style="float:right; min-width:260px; overflow:hidden; margin-top:6px;">
+                        <div style="float:right;" class="icon-button light help-zone-vs" data-help-localize="manage-apps.app-edit-button" id="edit-app">
+                            <div class="icon" style="background-image:url('/images/management/edit.png'); width:22px; height:19px;"></div>
+                            <div class="text" data-localize="common.edit"></div>
+                        </div>
+						<div style="float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="manage-apps.app-clear-button" id="clear-app-data">
 							<div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
 							<div class="text" data-localize="management-applications.clear-data"></div>
 						</div>
-						<div class="icon-button light help-zone-vs" data-help-localize="manage-apps.app-edit-button" id="edit-app">
-							<div class="icon" style="background-image:url('/images/management/edit.png'); width:22px; height:19px;"></div>
-							<div class="text" data-localize="common.edit"></div>
-						</div>
+						<div style="display:none; float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="manage-apps.app-delete-button" id="delete-app">
+                            <div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
+                            <div class="text" data-localize="common.delete"></div>
+                        </div>
 					</div>
 				</div>
 				<div class="app-details">
@@ -714,7 +714,7 @@
 											<div class="select-inner">
 												<div class="text-container">
 													<div class="text"></div>
-												</div>	
+												</div>
 												<div class="right combo"></div>
 											</div>
 											<div class="select-items square">
@@ -742,7 +742,7 @@
 										<div style="float:left;">
 											<div id="country-select" class="cly-select" style="width:280px;">
 												<div class="select-inner">
-													<div class="text-container">	
+													<div class="text-container">
 														<div class="text"></div>
 													</div>
 													<div class="right combo"></div>
@@ -753,14 +753,14 @@
 											</div>
 											<div id="timezone-select" class="cly-select" style="width:200px; display:none;">
 												<div class="select-inner">
-													<div class="text-container">	
+													<div class="text-container">
 														<div class="text"></div>
 													</div>
 													<div class="right combo"></div>
 												</div>
 												<div class="select-items square" style="width:200px;">
 													<div id="timezone-items" class="scrollable">
-					
+
 													</div>
 												</div>
 											</div>
@@ -768,9 +768,9 @@
 										<div id="selected" style="float:left; font-size:14px; padding:5px 10px; padding-top:6px; color:#666; font-family:'Ubuntu';"></div>
 										<input type="hidden" value="" id="app-timezone"/>
 										<input type="hidden" value="" id="app-country"/>
-									</div>
-								</td>
-							</tr>
+                                    </div>
+                                </td>
+                            </tr>
 							<tr class="table-edit-prev help-zone-vs" data-help-localize="manage-apps.app-icon">
 								<td data-localize="management-applications.icon"></td>
 								<td id="app-edit-image">
@@ -803,7 +803,7 @@
 			<div id="first-app-success" class="alert success" data-localize="management-applications.first-app-message2"></div>
 		</div>
 	</script>
-	
+
 	<script id="template-management-export"  type="text/x-handlebars-template">
 		<div class="widget">
 			<div class="widget-header">
@@ -854,7 +854,7 @@
 		<div>{{value.date}}</div>
 		{{/eachOfArray}}
 	</script>
-	
+
 	<script id="template-events"  type="text/x-handlebars-template">
 		<div id="event-nav">
 			<div id="event-nav-head">
@@ -875,30 +875,30 @@
 		</div>
 		<div id="edit-event-container" style="display:none;">
 			<div id="edit-event-table-container">
-				<table class="events-table" cellpadding="0" cellspacing="0">
-					<thead>
-						<tr>
-                            <th></th>
-                            <th></th>
-							<th data-localize="events.edit.event-key"></th>
-							<th data-localize="events.edit.event-name"></th>
-							<th data-localize="events.table.count"></th>
-							<th data-localize="events.table.sum"></th>
-						</tr>
-					</thead>
-					<tbody>
-						{{#eachOfObjectValue event-map}}
-						<tr>
-                            <td style="text-align:center;"><i class="icon-reorder event-order"></i></td>
-                            <td style="text-align:center;"><i class="icon-trash delete-event" data-event-key="{{this.key}}"></i></td>
-							<td class="event-key">{{this.key}}</td>
-							<td><input class="event-name" type="text" placeholder="Event name"  data-localize="events.edit.event-name" value="{{this.name}}"/></td>
-							<td><input class="event-count" type="text" placeholder="Count" data-localize="events.table.count" value="{{this.count}}"/></td>
-							<td><input class="event-sum" type="text" placeholder="Sum" data-localize="events.table.sum" value="{{this.sum}}"/></td>
-						</tr>
-						{{/eachOfObjectValue}}
-					</tbody>
-				</table>
+                <table class="events-table" cellpadding="0" cellspacing="0">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th data-localize="events.edit.event-key"></th>
+                        <th data-localize="events.edit.event-name"></th>
+                        <th data-localize="events.table.count"></th>
+                        <th data-localize="events.table.sum"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{#eachOfObjectValue event-map}}
+                    <tr>
+                        <td style="text-align:center;"><i class="icon-reorder event-order"></i></td>
+                        <td style="text-align:center;"><i class="icon-trash delete-event" data-event-key="{{this.key}}"></i></td>
+                        <td class="event-key">{{this.key}}</td>
+                        <td><input class="event-name" type="text" placeholder="Event name"  data-localize="events.edit.event-name" value="{{this.name}}"/></td>
+                        <td><input class="event-count" type="text" placeholder="Count" data-localize="events.table.count" value="{{this.count}}"/></td>
+                        <td><input class="event-sum" type="text" placeholder="Sum" data-localize="events.table.sum" value="{{this.sum}}"/></td>
+                    </tr>
+                    {{/eachOfObjectValue}}
+                    </tbody>
+                </table>
 			</div>
 			<div class="buttons">
 				<div id="settings-save-result" class="result-message"></div>
@@ -918,7 +918,7 @@
 								<div class="select-inner">
 									<div class="text-container">
 										<div class="text">{{active-segmentation}}</div>
-									</div>	
+									</div>
 									<div class="right combo"></div>
 								</div>
 								<div class="select-items square" style="width:220px;">
@@ -943,7 +943,7 @@
 				<div class="pie-chart-container">
 					<div style="border-right:1px solid #CCC;">
 						<div class="pie-overlay one {{logo-class}}"></div>
-						<div id="dashboard-graph" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>	
+						<div id="dashboard-graph" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>
 					</div>
 				</div>
 				<div class="pie-chart-container">

@@ -39,7 +39,7 @@ var fetch = {},
         }
 
         common.db.collection(collection).find({}, fetchFields).toArray(function (err, result) {
-            if (!result.length) {
+            if (!result || !result.length) {
                 now = new common.time.Date();
                 result = {};
                 result[now.getFullYear()] = {};
@@ -229,7 +229,7 @@ var fetch = {},
             for (var i = 0; i < periods.length; i++) {
                 countlyCommon.setPeriod(periods[i].period);
 
-                output[periods[i].out] = countlyLocation.getLocationData({maxCountries: 10});
+                output[periods[i].out] = countlyLocation.getLocationData({maxCountries: 10, sort: "new"});
             }
 
             common.returnOutput(params, output);

@@ -13,11 +13,12 @@ var appsApi = {},
         common.db.collection('apps').find({}).toArray(function (err, apps) {
 
             if (!apps || err) {
-                common.returnOutput(params, {});
+                common.returnOutput(params, {admin_of: {}, user_of: {}});
                 return false;
             }
 
-            common.returnOutput(params, packApps(apps));
+            var appsObj = packApps(apps);
+            common.returnOutput(params, {admin_of: appsObj, user_of: appsObj});
             return true;
         });
 

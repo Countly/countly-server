@@ -55,8 +55,10 @@
             pChange = "∞";
             trend = "d"; //downward
         } else {
-            pChange = countlyCommon.getShortNumber((((current - previous) / current) * 100).toFixed(1)) + "%";
-            if (previous > current) {
+            var change = (((current - previous) / previous) * 100).toFixed(1);
+            pChange = countlyCommon.getShortNumber(change) + "%";
+
+            if (change < 0) {
                 trend = "d";
             } else {
                 trend = "u";
@@ -157,16 +159,19 @@
     };
 
     // Draws a line graph with the given dataPoints to container.
-    countlyCommon.drawTimeGraph = function (dataPoints, container, hideTicks, graphProperties) {
+    countlyCommon.drawTimeGraph = function (dataPoints, container, bucket) {
 
-        timeGraphData = dataPoints[0].data;
+        // Some data points start with [1, XXX] (should be [0, XXX]) and brakes the new tick logic
+        // Below loops converts the old structures to the new one
+        if (dataPoints[0].data[0][0] == 1) {
+            for (var i = 0; i < dataPoints.length; i++) {
+                for (var j = 0; j < dataPoints[i].data.length; j++) {
+                    dataPoints[i].data[j][0] -= 1;
+                }
+            }
+        }
 
-        var now = moment(),
-            year = now.year(),
-            month = (now.month() + 1);
-
-        if (!graphProperties) {
-            graphProperties = {
+        var graphProperties = {
                 series:{
                     lines:{ stack:false, show:true, fill:true, lineWidth:2, fillColor:{ colors:[
                         { opacity:0 },
@@ -175,209 +180,29 @@
                     points:{ show:true, radius:4, shadowSize:0 },
                     shadowSize:0
                 },
-                grid:{ hoverable:!hideTicks, borderColor:"null", color:"#BDBDBD", borderWidth:0, minBorderMargin:10, labelMargin:10},
-                xaxis:{ min:1, max:31, tickDecimals:"number", tickSize:0, tickLength:0 },
+                grid:{ hoverable:true, borderColor:"null", color:"#BDBDBD", borderWidth:0, minBorderMargin:10, labelMargin:10},
+                xaxis:{ tickDecimals:"number", tickSize:0, tickLength:0 },
                 yaxis:{ min:0, minTickSize:1, tickDecimals:"number", ticks:3 },
                 legend:{ show:false, margin:[-25, -44], noColumns:3, backgroundOpacity:0 },
                 colors:countlyCommon.GRAPH_COLORS
             };
-        }
 
         graphProperties.series.points.show = (dataPoints[0].data.length <= 90);
 
-        var graphTicks = [];
+        var graphTicks = [],
+            tickObj = {};
 
-        switch (_period) {
-            case "month":
-                graphProperties.xaxis.max = null;
-                graphProperties.xaxis.min = null;
-                var monthTicks = [];
-
-                monthTicks[0] = [0, ""];
-
-                for (var i = 0; i < 12; i++) {
-                    monthTicks[monthTicks.length] = [(i + 1), moment.monthsShort[i]];
-                    graphTicks[i + 1] = [moment.monthsShort[i]];
-                }
-
-                for (var i = 0; i < dataPoints.length; i++) {
-                    var tmpData = [
-                        [0.9, null]
-                    ];
-                    dataPoints[i].data = tmpData.concat(dataPoints[i].data);
-                    dataPoints[i].data[dataPoints[i].data.length] = [(dataPoints[i].data.length - 0.9), null];
-                }
-
-                monthTicks[dataPoints[0].data.length - 1] = [dataPoints[0].data.length, ""];
-
-                graphProperties.xaxis.ticks = monthTicks;
-                break;
-            case "day":
-                var monthTicks = [],
-                    daysInMonth = getDaysInMonth(year, month);
-
-                graphProperties.xaxis.max = null;
-                graphProperties.xaxis.min = null;
-
-                for (var i = 0; i < daysInMonth; i++) {
-                    var monthStart = moment(year + "-" + month).add('days', i),
-                        monthStartDay = monthStart.date(),
-                        monthStartMonth = monthStart.format("MMM");
-
-                    graphTicks[i + 1] = [monthStartDay + " " + monthStartMonth];
-                }
-
-                for (var i = 2; i < daysInMonth; (i = i + 3)) {
-                    var monthStart = moment(year + "-" + month).add('days', i - 1),
-                        monthStartYear = monthStart.year(),
-                        monthStartMonth = monthStart.format("MMM"),
-                        monthStartDay = monthStart.date();
-
-                    monthTicks[monthTicks.length] = [i, monthStartDay + " " + monthStartMonth];
-                }
-
-                graphProperties.xaxis.ticks = monthTicks;
-                break;
-            case "hour":
-                var hourTicks = [];
-                for (var i = 0; i < 24; i++) {
-                    if (i != 0 && i != 23 && i % 3 == 0) {
-                        hourTicks[hourTicks.length] = [i, i + ":00"];
-                    }
-
-                    graphTicks[i] = [i + ":00"];
-                }
-                graphProperties.xaxis.max = 23;
-                graphProperties.xaxis.ticks = hourTicks;
-                graphProperties.xaxis.min = 0;
-                break;
-            case "90days":
-                var monthTicks = [];
-                graphProperties.xaxis.max = null;
-                graphProperties.xaxis.min = null;
-                for (var i = 0; i < 90; i++) {
-                    var monthStart = moment().subtract('days', i),
-                        monthStartYear = monthStart.year(),
-                        monthStartMonth = monthStart.format("MMM"),
-                        monthStartDay = monthStart.date();
-
-                    if (i != 0 && (i == 1 || i % 4 == 0)) {
-                        monthTicks[monthTicks.length] = [(89 - i), monthStartDay + " " + monthStartMonth];
-                    }
-
-                    graphTicks[(89 - i)] = [monthStartDay + " " + monthStartMonth];
-                }
-
-                graphProperties.xaxis.ticks = monthTicks;
-                break;
-            case "60days":
-                var monthTicks = [];
-                graphProperties.xaxis.max = null;
-                graphProperties.xaxis.min = null;
-
-                for (var i = 0; i < 60; i++) {
-                    var monthStart = moment().subtract('days', i),
-                        monthStartYear = monthStart.year(),
-                        monthStartMonth = monthStart.format("MMM"),
-                        monthStartDay = monthStart.date();
-
-                    if (i != 0 && (i == 1 || i % 4 == 0)) {
-                        monthTicks[monthTicks.length] = [(59 - i), monthStartDay + " " + monthStartMonth];
-                    }
-
-                    graphTicks[(59 - i)] = [monthStartDay + " " + monthStartMonth];
-                }
-
-                graphProperties.xaxis.ticks = monthTicks;
-
-                break;
-            case "30days":
-                var monthTicks = [];
-                graphProperties.xaxis.max = null;
-                graphProperties.xaxis.min = null;
-
-                for (var i = 0; i < 30; i++) {
-                    var monthStart = moment().subtract('days', i),
-                        monthStartYear = monthStart.year(),
-                        monthStartMonth = monthStart.format("MMM"),
-                        monthStartDay = monthStart.date();
-
-                    if (i != 0 && (i == 1 || i % 4 == 0)) {
-                        monthTicks[monthTicks.length] = [(29 - i), monthStartDay + " " + monthStartMonth];
-                    }
-
-                    graphTicks[(29 - i)] = [monthStartDay + " " + monthStartMonth];
-                }
-
-                graphProperties.xaxis.ticks = monthTicks;
-
-                break;
-            case "7days":
-                var weekTicks = [];
-                graphProperties.xaxis.max = null;
-                graphProperties.xaxis.min = null;
-
-                for (var i = 0; i < 7; i++) {
-                    var weekStart = moment().subtract('days', i),
-                        weekStartYear = weekStart.year(),
-                        weekStartMonth = weekStart.format("MMM"),
-                        weekStartDay = weekStart.date();
-
-                    if (i == 1 || i == 3 || i == 5) {
-                        weekTicks[weekTicks.length] = [(6 - i), weekStartDay + " " + weekStartMonth];
-                    }
-
-                    graphTicks[(6 - i)] = [weekStartDay + " " + weekStartMonth];
-                }
-
-                graphProperties.xaxis.ticks = weekTicks;
-                break;
-            default:
-                break;
+        if (_period == "month" && !bucket) {
+            tickObj = countlyCommon.getTickObj("monthly");
+        } else {
+            tickObj = countlyCommon.getTickObj(bucket);
         }
 
-        if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length == 2) {
-            // One day is selected from the datepicker
-            if (_period[0] == _period[1]) {
-                var hourTicks = [];
-                for (var i = 0; i < 25; i++) {
-                    if (i != 0 && i != 24 && i % 3 == 0) {
-                        hourTicks[hourTicks.length] = [i, i + ":00"];
-                    }
+        graphProperties.xaxis.max = tickObj.max;
+        graphProperties.xaxis.min = tickObj.min;
+        graphProperties.xaxis.ticks = tickObj.ticks;
 
-                    graphTicks[i] = [i + ":00"];
-                }
-                graphProperties.xaxis.max = 23;
-                graphProperties.xaxis.ticks = hourTicks;
-                graphProperties.xaxis.min = 0;
-            } else {
-                var a = moment(_period[0]),
-                    b = moment(_period[1]);
-
-                daysInPeriod = b.diff(a, 'days');
-                rangeEndDay = _period[1];
-
-                var monthTicks = [];
-
-                graphProperties.xaxis.max = null;
-                graphProperties.xaxis.min = null;
-
-                for (var i = 0; i < daysInPeriod; i++) {
-                    var monthStart = moment(_period[0]).add('days', i),
-                        monthStartYear = monthStart.year(),
-                        monthStartMonth = monthStart.format("MMM"),
-                        monthStartDay = monthStart.date();
-
-                    if (i != 0 && i % Math.ceil(daysInPeriod / 10) == 0) {
-                        monthTicks[monthTicks.length] = [i, monthStartDay + " " + monthStartMonth];
-                    }
-
-                    graphTicks[i] = [monthStartDay + " " + monthStartMonth];
-                }
-
-                graphProperties.xaxis.ticks = monthTicks;
-            }
-        }
+        graphTicks = tickObj.tickTexts;
 
         var graphObj = $.plot($(container), dataPoints, graphProperties),
             keyEventCounter = "A",
@@ -390,7 +215,7 @@
                 tmpMaxIndex = 0,
                 tmpMin = 999999999999,
                 tmpMinIndex = 0,
-                label = (graphObj.getData()[k].label).toLowerCase();
+                label = (graphObj.getData()[k].label + "").toLowerCase();
 
             if (graphObj.getData()[k].mode === "ghost") {
                 keyEventsIndex += graphObj.getData()[k].data.length;
@@ -431,6 +256,7 @@
                 event:"min",
                 desc:jQuery.i18n.prop('common.graph-min', tmpMin, label, graphTicks[tmpMinIndex])
             };
+
             keyEventCounter = String.fromCharCode(keyEventCounter.charCodeAt() + 1);
 
             keyEvents[k][keyEvents[k].length] = {
@@ -440,6 +266,7 @@
                 event:"max",
                 desc:jQuery.i18n.prop('common.graph-max', tmpMax, label, graphTicks[tmpMaxIndex])
             };
+
             keyEventCounter = String.fromCharCode(keyEventCounter.charCodeAt() + 1);
         }
 
@@ -464,7 +291,7 @@
                     o.left = (graphWidth - 15);
                 }
 
-                if (!hideTicks) {
+                if (true) {
                     var keyEventLabel = $('<div class="graph-key-event-label">').text(keyEvents[k][l]["code"]);
 
                     keyEventLabel.attr({
@@ -1112,10 +939,128 @@
         }
     };
 
+    countlyCommon.toFirstUpper = function(str) {
+        return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1);});
+    }
+
+    countlyCommon.divide = function (val1, val2) {
+        var temp = val1 / val2;
+	
+        if (!temp || temp == Number.POSITIVE_INFINITY) {
+            temp = 0;
+        }
+	
+        return temp;
+    }
+
+    countlyCommon.getTickObj = function(bucket) {
+        var days = parseInt(countlyCommon.periodObj.numberOfDays, 10),
+            ticks = [],
+            tickTexts = [],
+            skipReduction = false;
+
+        if (days == 1) {
+            for (var i = 0; i < 24; i++) {
+                ticks.push([i, (i + ":00")]);
+                tickTexts.push((i + ":00"));
+            }
+
+            skipReduction = true;
+        } else {
+            var start = moment().subtract('days', days);
+            if (Object.prototype.toString.call(countlyCommon.getPeriod()) === '[object Array]'){
+                start = moment(countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length - 1]).subtract('days',days);
+            }
+            if (bucket == "monthly") {
+                var allMonths = [];
+
+                for (var i = 0; i < days; i++) {
+                    start.add('days', 1);
+                    allMonths.push(start.format("MMM"));
+                }
+
+                allMonths = _.uniq(allMonths);
+
+                for (var i = 0; i < allMonths.length; i++) {
+                    ticks.push([i, allMonths[i]]);
+                    tickTexts[i] = allMonths[i];
+                }
+            } else if (bucket == "weekly") {
+                var allWeeks = [];
+
+                for (var i = 0; i < days; i++) {
+                    start.add('days', 1);
+                    allWeeks.push(start.isoweek());
+                }
+
+                allWeeks = _.uniq(allWeeks);
+
+                for (var i = 0; i < allWeeks.length; i++) {
+                    ticks.push([i, "W" + allWeeks[i]]);
+
+                    var weekText = moment().isoweek(allWeeks[i]).isoday(1).format(", MMM D");
+                    tickTexts[i] = "W" + allWeeks[i] + weekText;
+                }
+            } else if (bucket == "hourly") {
+                for (var i = 0; i < days; i++) {
+                    start.add('days', 1);
+
+                    for (var j = 0; j < 24; j++) {
+                        if (j == 0) {
+                            ticks.push([((24 * i) + j), start.format("D MMM") + " 0:00"]);
+                        }
+
+                        tickTexts.push(start.format("D MMM, ") + j + ":00");
+                    }
+                }
+            } else {
+                for (var i = 0; i < days; i++) {
+                    start.add('days', 1);
+                    ticks.push([i, start.format("D MMM")]);
+                    tickTexts[i] = start.format("D MMM");
+                }
+            }
+
+            ticks = _.compact(ticks);
+            tickTexts = _.compact(tickTexts);
+        }
+
+        if (!skipReduction && ticks.length > 10) {
+            var reducedTicks = [],
+                step = (Math.floor(ticks.length / 10) < 1)? 1 : Math.floor(ticks.length / 10),
+                pickStartIndex = (Math.floor(ticks.length / 30) < 1)? 1 : Math.floor(ticks.length / 30);
+
+            for (var i = pickStartIndex; i < (ticks.length - 1); i = i + step) {
+                reducedTicks.push(ticks[i]);
+            }
+
+            ticks = reducedTicks;
+        } else {
+            ticks[0] = null;
+
+            // Hourly ticks already contain 23 empty slots at the end
+            if (!(bucket == "hourly" && days != 1)) {
+                ticks[ticks.length - 1] = null;
+            }
+        }
+
+        return {
+            min: 0,
+            max: tickTexts.length - 1,
+            tickTexts: tickTexts,
+            ticks: _.compact(ticks)
+        };
+    };
+
     // Private Methods
 
     function getDaysInMonth(year, month) {
         return new Date(year, month, 0).getDate();
+    }
+
+    function getDOY() {
+        var onejan = new Date((new Date()).getFullYear(),0,1);
+        return Math.ceil(((new Date()) - onejan) / 86400000);
     }
 
     // Returns a period object used by all time related data calculation functions.
@@ -1133,6 +1078,7 @@
             periodObj = {},
             isSpecialPeriod = false,
             daysInPeriod = 0,
+            numberOfDays = 0,
             rangeEndDay = null,
             dateString,
             uniquePeriodsCheck = [],
@@ -1145,6 +1091,7 @@
                 periodMax = month;
                 periodMin = 1;
                 dateString = "MMM";
+                numberOfDays = getDOY();
                 break;
             case "day":
                 activePeriod = year + "." + month;
@@ -1158,6 +1105,25 @@
                 periodMax = day;
                 periodMin = 1;
                 dateString = "D MMM";
+                numberOfDays = moment().format("D");
+                break;
+            case "yesterday":
+                var yesterday = moment().subtract('days', 1),
+                    year = yesterday.year(),
+                    month = (yesterday.month() + 1),
+                    day = yesterday.date();
+
+                activePeriod = year + "." + month + "." + day;
+                var previousDate = moment().subtract('days', 2),
+                    previousYear = previousDate.year(),
+                    previousMonth = (previousDate.month() + 1),
+                    previousDay = previousDate.date();
+
+                previousPeriod = previousYear + "." + previousMonth + "." + previousDay;
+                periodMax = 23;
+                periodMin = 0;
+                dateString = "D MMM, HH:mm";
+                numberOfDays = 1;
                 break;
             case "hour":
                 activePeriod = year + "." + month + "." + day;
@@ -1170,18 +1136,19 @@
                 periodMax = hour;
                 periodMin = 0;
                 dateString = "HH:mm";
+                numberOfDays = 1;
                 break;
             case "7days":
-                daysInPeriod = 7;
+                numberOfDays = daysInPeriod = 7;
                 break;
             case "30days":
-                daysInPeriod = 30;
+                numberOfDays = daysInPeriod = 30;
                 break;
             case "60days":
-                daysInPeriod = 60;
+                numberOfDays = daysInPeriod = 60;
                 break;
             case "90days":
-                daysInPeriod = 90;
+                numberOfDays = daysInPeriod = 90;
                 break;
             default:
                 break;
@@ -1189,7 +1156,9 @@
 
         // Check whether period object is array
         if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length == 2) {
-
+            var tmpDate = new Date (_period[1]);
+            tmpDate.setHours(0,0,0,0);
+            _period[1]= tmpDate.getTime();
             // One day is selected from the datepicker
             if (_period[0] == _period[1]) {
                 var selectedDate = moment(_period[0]),
@@ -1209,11 +1178,12 @@
                 periodMax = 23;
                 periodMin = 0;
                 dateString = "D MMM, HH:mm";
+                numberOfDays = 1;
             } else {
                 var a = moment(_period[0]),
                     b = moment(_period[1]);
 
-                daysInPeriod = b.diff(a, 'days') + 1;
+                numberOfDays = daysInPeriod = b.diff(a, 'days') + 1;
                 rangeEndDay = _period[1];
             }
         }
@@ -1282,6 +1252,7 @@
             "isSpecialPeriod":isSpecialPeriod,
             "dateString":dateString,
             "daysInPeriod":daysInPeriod,
+            "numberOfDays":numberOfDays,
             "uniquePeriodArr":getUniqArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts, currPeriodArr),
             "uniquePeriodCheckArr":getUniqCheckArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts),
             "previousUniquePeriodArr":getUniqArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts, prevPeriodArr),
@@ -1293,7 +1264,7 @@
 
     function getUniqArray(weeksArray, weekCounts, monthsArray, monthCounts, periodArr) {
 
-        if (_period == "month" || _period == "day" || _period == "hour") {
+        if (_period == "month" || _period == "day" || _period == "yesterday" || _period == "hour") {
             return [];
         }
 
@@ -1406,7 +1377,7 @@
 
     function getUniqCheckArray(weeksArray, weekCounts, monthsArray, monthCounts) {
 
-        if (_period == "month" || _period == "day" || _period == "hour") {
+        if (_period == "month" || _period == "day" || _period == "yesterday" || _period == "hour") {
             return [];
         }
 

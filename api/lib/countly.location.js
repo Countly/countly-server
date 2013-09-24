@@ -1,5 +1,6 @@
 var countlyLocation = {},
-    countlyCommon = require('./countly.common.js');
+    countlyCommon = require('./countly.common.js'),
+    underscore = require('underscore');
 
 (function (countlyLocation) {
 
@@ -39,6 +40,12 @@ var countlyLocation = {},
         if (options && options.maxCountries && locationData.chartData) {
             if (locationData.chartData.length > options.maxCountries) {
                 locationData.chartData = locationData.chartData.splice(0, options.maxCountries);
+            }
+        }
+
+        if (options && options.sort) {
+            if (options.sort == "new") {
+                locationData.chartData = underscore.sortBy(locationData.chartData, function(obj) { return -obj.n; });
             }
         }
 

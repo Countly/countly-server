@@ -170,7 +170,13 @@ var countlyDeviceDetails = {},
     }
 
     function fixOSVersion(osName) {
-        return osName.replace(/:/g, ".").replace(/i/g, "iOS ").replace(/a/g, "Android ").replace(/b/g, "BlackBerry ").replace(/w/g, "Windows Phone ");
+        return osName
+            .replace(/:/g, ".")
+            .replace(/i/g, "iOS ")
+            .replace(/a/g, "Android ")
+            .replace(/b/g, "BlackBerry ")
+            .replace(/w/g, "Windows Phone ")
+            .replace(/m/g, "Mac ");
     }
 
 }(countlyDeviceDetails));

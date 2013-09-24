@@ -17,8 +17,8 @@ echo "
 
 "
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-mongo countly $DIR/updateCollections.js
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"ss
+#mongo countly $DIR/updateCollections.js
 
 #stop countly
 stop countly-supervisor

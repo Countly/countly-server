@@ -219,7 +219,7 @@ app.get('/dashboard', function (req, res, next) {
                         res.render('dashboard', {
                             adminOfApps:adminOfApps,
                             userOfApps:userOfApps,
-                            countlyVersion:"13.06",
+                            countlyVersion:"13.09",
                             member:member
                         });
                     });
@@ -363,7 +363,7 @@ app.post('/setup', function (req, res, next) {
                         json: {
                             "email": req.body.email,
                             "full_name": req.body.full_name,
-                            "v": "13.06"
+                            "v": "13.09"
                         }
                     };
 
@@ -412,7 +412,7 @@ app.post('/login', function (req, res, next) {
                                 json: {
                                     "email": member.email,
                                     "full_name": member.full_name,
-                                    "v": "13.06",
+                                    "v": "13.09",
                                     "u": userCount,
                                     "e": eventCount,
                                     "r": reqCount,

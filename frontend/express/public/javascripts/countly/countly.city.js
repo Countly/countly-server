@@ -21,7 +21,7 @@
         _countryMap = {},
         _initialized = false;
 
-    if (countlyCommon.CITY_DATA !== true) {
+    if (countlyCommon.CITY_DATA === false) {
         countlyCity.initialize = function() { return true; };
         countlyCity.refresh = function() { return true; };
         countlyCity.drawGeoChart = function() { return true; };

@@ -413,7 +413,7 @@ if (cluster.isMaster) {
                         validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeData, params.qstring.method);
                         break;
                     case 'cities':
-                        if (common.config.api.city_data === true) {
+                        if (common.config.api.city_data !== false) {
                             validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTimeData, params.qstring.method);
                         } else {
                             common.returnOutput(params, {});

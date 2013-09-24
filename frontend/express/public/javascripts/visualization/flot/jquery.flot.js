@@ -966,8 +966,10 @@
                     axis.box = { left: plotOffset.left + axismargin + 25, width: lw };
                     /*onur: add - (lw + 10)*/
 					plotOffset.left += lw + axismargin - (lw + 25);
-                }
-                else {
+                } else if (pos == "right") { /* onur */
+                    axis.box = { left: canvasWidth - lw - 15 - plotOffset.right - axismargin, width: lw };
+                    plotOffset.left += lw + axismargin - (lw);
+                } else {
                     plotOffset.right += lw + axismargin;
                     axis.box = { left: canvasWidth - plotOffset.right, width: lw };
                 }

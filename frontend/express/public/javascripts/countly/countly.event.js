@@ -56,15 +56,15 @@
                         if (json.length){
                             _activeEventDbArr = json;
                             _activeEventDbIndex = _.pluck(json, "_id");
-                            _activeEventDb = _activeEventDbArr[_activeEventDbIndex.indexOf("no-segment")];
+                            _activeEventDb = _activeEventDbArr[_activeEventDbIndex.indexOf("no-segment")] || {};
                         }
 
                         setMeta();
                     }
                 })
             ).then(function(){
-                    return true;
-                });
+                return true;
+            });
         } else {
             _activeEventDb = {"2012":{}};
             _activeEvents = {};
@@ -92,7 +92,7 @@
                     dataType: "jsonp",
                     success: function(json) {
                         _activeEvents = json;
-                        if (!_activeEvent) {
+                        if (!_activeEvent && countlyEvent.getEvents()[0]) {
                             _activeEvent = countlyEvent.getEvents()[0].key;
                         }
                     }
@@ -120,7 +120,7 @@
                             }
                         }
 
-                        _activeEventDb = _activeEventDbArr[_activeEventDbIndex.indexOf(_activeSegmentation || "no-segment")];
+                        _activeEventDb = _activeEventDbArr[_activeEventDbIndex.indexOf(_activeSegmentation || "no-segment")] || {};
 
                         setMeta();
                     }

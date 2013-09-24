@@ -286,7 +286,7 @@
         }
 
         return fullName;
-    }
+    };
 
     function setMeta() {
         if (_deviceDb['meta']) {
@@ -295,4 +295,5 @@
             _devices = [];
         }
     }
+
 }(window.countlyDevice = window.countlyDevice || {}, jQuery));

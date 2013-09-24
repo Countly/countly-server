@@ -228,7 +228,7 @@ var countlySession = {},
             barData[i] = { "name":topUsers[i]["date"], "percent":percent };
         }
 
-        return barData;
+        return underscore.sortBy(barData, function(obj) { return -obj.percent; });
     };
 
 }(countlySession));

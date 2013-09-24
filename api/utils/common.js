@@ -33,7 +33,10 @@ var common = {},
         'country_code': 'cc',
         'platform': 'p',
         'platform_version': 'pv',
-        'app_version': 'av'
+        'app_version': 'av',
+        'last_begin_session_timestamp': 'lbst',
+        'last_end_session_timestamp': 'lest',
+        'has_ongoing_session': 'hos'
     };
 
     var connectionString = (typeof countlyConfig.mongodb === "string")? countlyConfig.mongodb : (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db + '?auto_reconnect=true');
@@ -122,9 +125,10 @@ var common = {},
     // Adjusts the time to current app's configured timezone appTimezone and returns a time object.
     common.initTimeObj = function (appTimezone, reqTimestamp) {
         var currTimestamp,
-            currDate;
+            currDate,
+            currDateWithoutTimestamp = new Date();
 
-        // Check if the timestamp parameter exists in the request and is an 10 digit integer
+        // Check if the timestamp parameter exists in the request and is a 10 digit integer
         if (reqTimestamp && (reqTimestamp + "").length === 10 && common.isNumber(reqTimestamp)) {
             // If the received timestamp is greater than current time use the current time as timestamp
             currTimestamp = (reqTimestamp > time.time()) ? time.time() : parseInt(reqTimestamp, 10);
@@ -135,12 +139,14 @@ var common = {},
         }
 
         currDate.setTimezone(appTimezone);
+        currDateWithoutTimestamp.setTimezone(appTimezone);
 
         var tmpMoment = moment(currDate);
 
         return {
             now: tmpMoment,
             nowUTC: moment.utc(currDate),
+            nowWithoutTimestamp: moment(currDateWithoutTimestamp),
             timestamp: currTimestamp,
             yearly: tmpMoment.format("YYYY"),
             monthly: tmpMoment.format("YYYY.M"),
@@ -159,6 +165,33 @@ var common = {},
         }
 
         return tmpDate;
+    };
+
+    common.getDOY = function (timestamp, timezone) {
+        var endDate = (timestamp)? new Date(timestamp * 1000) : new Date();
+
+        if (timezone) {
+            endDate.setTimezone(timezone);
+        }
+
+        var startDate = (timestamp)? new Date(timestamp * 1000) : new Date();
+
+        if (timezone) {
+            startDate.setTimezone(timezone);
+        }
+
+        startDate.setMonth(0);
+        startDate.setDate(1);
+        startDate.setHours(0);
+        startDate.setMinutes(0);
+        startDate.setSeconds(0);
+        startDate.setMilliseconds(0);
+
+        var diff = endDate - startDate;
+        var oneDay = 1000 * 60 * 60 * 24;
+        var currDay = Math.ceil(diff / oneDay);
+
+        return currDay;
     };
 
     /*

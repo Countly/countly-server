@@ -453,7 +453,7 @@ var countlyCommon = {},
             barData[i] = { "name":rangeNames[i], "percent":percent };
         }
 
-        return barData;
+        return underscore.sortBy(barData, function(obj) { return -obj.percent; });
     };
 
     // Shortens the given number by adding K (thousand) or M (million) postfix.

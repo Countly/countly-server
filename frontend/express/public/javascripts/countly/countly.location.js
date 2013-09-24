@@ -149,7 +149,7 @@
             }
         }
 
-        return locationData.chartData;
+        return _.sortBy(locationData.chartData, function(obj) { return -obj.t; });
     };
 
     countlyLocation.clearLocationObject = function (obj) {
@@ -223,7 +223,7 @@
 
         // This is how you handle regionClick and change zoom for only a specific country
 
-        if (countlyCommon.CITY_DATA === true && _chartOptions.height > 300) {
+        if (countlyCommon.CITY_DATA !== false && _chartOptions.height > 300) {
             google.visualization.events.addListener(_chart, 'regionClick', function (eventData) {
                 var activeAppCountry = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].country;
                 if (activeAppCountry && eventData.region == activeAppCountry) {
@@ -284,4 +284,5 @@
             _countries = [];
         }
     }
+
 }(window.countlyLocation = window.countlyLocation || {}, jQuery));
