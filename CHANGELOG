@@ -1,3 +1,11 @@
+13.10
+
+  * Add new iPhone device names (iPhone 5S and iPhone 5C)
+
+  * Add replica set configuration for MongoDB (https://github.com/Countly/countly-server/pull/74)
+
+  * Fix issue #77 (https://github.com/Countly/countly-server/issues/77)
+
 13.09
 
   * Optimizations and fixes to the API for viewing the data on Countly for iPhone

@@ -11,17 +11,19 @@ var http = require('http'),
     countlyStats = require('../../api/parts/data/stats.js'),
     countlyConfig = require('./config');
     
-var dbName;
-var dbOptions = { safe:true };
-if  (typeof countlyConfig.mongodb === "string" ){
-    dbName = countlyConfig.mongodb;
-} else if ( typeof countlyConfig.mongodb.replSetServers === 'object'){
-    dbName = countlyConfig.mongodb.replSetServers;
-    dbOptions.database = countlyConfig.mongodb.db || 'countly';
-} else {
-    dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db + '?auto_reconnect=true');
-} 
-var countlyDb = mongo.db(dbName, dbOptions);
+    var dbName;
+    var dbOptions = { safe:true };
+
+    if (typeof countlyConfig.mongodb === "string"){
+        dbName = countlyConfig.mongodb;
+    } else if (typeof countlyConfig.mongodb.replSetServers === 'object') {
+        dbName = countlyConfig.mongodb.replSetServers;
+        dbOptions.database = countlyConfig.mongodb.db || 'countly';
+    } else {
+        dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db + '?auto_reconnect=true');
+    }
+
+    var countlyDb = mongo.db(dbName, dbOptions);
 
 function sha1Hash(str, addSalt) {
     var salt = (addSalt) ? new Date().getTime() : "";
@@ -229,7 +231,7 @@ app.get('/dashboard', function (req, res, next) {
                         res.render('dashboard', {
                             adminOfApps:adminOfApps,
                             userOfApps:userOfApps,
-                            countlyVersion:"13.09",
+                            countlyVersion:"13.10",
                             member:member
                         });
                     });
@@ -373,7 +375,7 @@ app.post('/setup', function (req, res, next) {
                         json: {
                             "email": req.body.email,
                             "full_name": req.body.full_name,
-                            "v": "13.09"
+                            "v": "13.10"
                         }
                     };
 
@@ -422,7 +424,7 @@ app.post('/login', function (req, res, next) {
                                 json: {
                                     "email": member.email,
                                     "full_name": member.full_name,
-                                    "v": "13.09",
+                                    "v": "13.10",
                                     "u": userCount,
                                     "e": eventCount,
                                     "r": reqCount,
