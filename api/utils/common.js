@@ -39,8 +39,17 @@ var common = {},
         'has_ongoing_session': 'hos'
     };
 
-    var connectionString = (typeof countlyConfig.mongodb === "string")? countlyConfig.mongodb : (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db + '?auto_reconnect=true');
-    common.db = mongo.db(connectionString, {safe:false, maxPoolSize: countlyConfig.mongodb.max_pool_size || 1000});
+    var dbName;
+    var dbOptions = { safe:false, maxPoolSize: countlyConfig.mongodb.max_pool_size || 1000 };
+    if  (typeof countlyConfig.mongodb === "string" ){
+        dbName = countlyConfig.mongodb;
+    } else if ( typeof countlyConfig.mongodb.replSetServers === 'object'){
+        dbName = countlyConfig.mongodb.replSetServers;
+        dbOptions.database = countlyConfig.mongodb.db || 'countly';
+    } else {
+        dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db + '?auto_reconnect=true');
+    } 
+    common.db = mongo.db(dbName, dbOptions);
 
     common.config = countlyConfig;
 

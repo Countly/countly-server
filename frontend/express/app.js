@@ -9,9 +9,19 @@ var http = require('http'),
     request = require('request'),
     countlyMail = require('../../api/parts/mgmt/mail.js'),
     countlyStats = require('../../api/parts/data/stats.js'),
-    countlyConfig = require('./config'),
-    connectionString = (typeof countlyConfig.mongodb === "string")? countlyConfig.mongodb : (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db + '?auto_reconnect=true&safe=true'),
-    countlyDb = mongo.db(connectionString, {safe:true});
+    countlyConfig = require('./config');
+    
+var dbName;
+var dbOptions = { safe:true };
+if  (typeof countlyConfig.mongodb === "string" ){
+    dbName = countlyConfig.mongodb;
+} else if ( typeof countlyConfig.mongodb.replSetServers === 'object'){
+    dbName = countlyConfig.mongodb.replSetServers;
+    dbOptions.database = countlyConfig.mongodb.db || 'countly';
+} else {
+    dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db + '?auto_reconnect=true');
+} 
+var countlyDb = mongo.db(dbName, dbOptions);
 
 function sha1Hash(str, addSalt) {
     var salt = (addSalt) ? new Date().getTime() : "";
