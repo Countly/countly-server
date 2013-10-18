@@ -200,8 +200,6 @@ var usage = {},
             var lastEndSession = dbAppUser[common.dbUserMap['last_end_session_timestamp']];
 
             if (lastEndSession && (params.time.nowWithoutTimestamp.unix() - lastEndSession) < 15) {
-                liveApi.extendUserSession(params);
-
                 var userProps = {};
                 userProps[common.dbUserMap['has_ongoing_session']] = true;
                 userProps[common.dbUserMap['last_begin_session_timestamp']] = params.time.nowWithoutTimestamp.unix();

@@ -218,6 +218,18 @@
             case "iPhone5,2":
                 fullName = "iPhone 5 (Global)";
                 break;
+            case "iPhone5,3":
+                fullName = "iPhone 5C (GSM)";
+                break;
+            case "iPhone5,4":
+                fullName = "iPhone 5C (Global)";
+                break;
+            case "iPhone6,1":
+                fullName = "iPhone 5S (GSM)";
+                break;
+            case "iPhone6,2":
+                fullName = "iPhone 5S (Global)";
+                break;
             case "iPod1,1":
                 fullName = "iPod Touch 1G";
                 break;
