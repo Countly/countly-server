@@ -98,6 +98,13 @@ function validateUserForMgmtReadAPI(callback, params) {
         callback(params);
     });
 }
+function getIpAddress(req) {
+
+    var ipaddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress ||
+                  req.socket.remoteAddress || req.connection.socket.remoteAddress;
+    /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
+    return ipaddress.split(',')[0];
+}
 
 http.Server(function (req, res) {
     var urlParts = url.parse(req.url, true),
@@ -264,7 +271,8 @@ http.Server(function (req, res) {
         }
         case '/i':
         {
-            params.ip_address = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+            params.ip_address = getIpAddress(req);
+
             params.user = {
                 'country':'Unknown',
                 'city':'Unknown'
