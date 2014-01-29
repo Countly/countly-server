@@ -12,7 +12,7 @@ $(document).ready(function() {
 	
 	jQuery.i18n.properties({
 		name:'pre-login', 
-		path:'/localization/pre-login/',
+		path:'localization/pre-login/',
 		mode:'map',
 		language: lang,
 		callback: function() {
@@ -63,7 +63,7 @@ $(document).ready(function() {
 		
 		jQuery.i18n.properties({
 			name:'pre-login', 
-			path:'/localization/pre-login/',
+			path:'localization/pre-login/',
 			mode:'map',
 			language: langCode,
 			callback: function() {
