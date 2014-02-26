@@ -278,6 +278,12 @@
             case "iPad3,6":
                 fullName = "iPad 4 (Global)";
                 break;
+            case "iPad4,1":
+                fullName = "iPad Air (WiFi)";
+                break;
+            case "iPad4,2":
+                fullName = "iPad Air (Global)";
+                break;
             case "iPad2,5":
                 fullName = "iPad Mini (WiFi)";
                 break;
@@ -286,6 +292,12 @@
                 break;
             case "iPad2,7":
                 fullName = "iPad Mini (Global)";
+                break;
+            case "iPad4,4":
+                fullName = "iPad Mini 2G (WiFi)";
+                break;
+            case "iPad4,5":
+                fullName = "iPad Mini 2G (Global)";
                 break;
             case "i386":
                 fullName = "Simulator";
