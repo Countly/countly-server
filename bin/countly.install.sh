@@ -64,7 +64,7 @@ apt-get -y install build-essential || (echo "Failed to install build-essential."
 #configure and start nginx
 cp /etc/nginx/sites-enabled/default $DIR/config/nginx.default.backup
 cp $DIR/config/nginx.server.conf /etc/nginx/sites-enabled/default
-/etc/init.d/nginx start
+/etc/init.d/nginx restart
 
 cp $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
 
