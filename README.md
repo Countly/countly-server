@@ -21,7 +21,6 @@ Countly supports top-notch devices, including iOS, Android, Windows Phone and Bl
 
 ##How do I install Countly server?
 
-You can either download all files from [Sourceforge](http://sf.net/projects/countly), or get code from Github (this page).
  
 We provide a beautiful installation sript (`bin/countly.install.sh`) with countly-server package that installs and configures everything required to run Countly Server.
 
@@ -52,10 +51,6 @@ Contains seperate  helper js files for each data visualization. For example `cou
 Countly write and read API. Waits for write requests from the mobile SDKs and read requests from the 
 Countly js helpers. Refer to [Countly Server API Reference](http://count.ly/resources/reference/server-api) for details.
 
-##How can I help you with your efforts?
-Glad you asked. We need ideas, feedbacks and constructive comments. All your suggestions will be taken care with upmost importance. 
-
-We are on [Twitter](http://twitter.com/gocountly) and [Facebook](http://www.facebook.com/Countly) if you would like to keep up with our fast progress!
 
 ##Links
 
