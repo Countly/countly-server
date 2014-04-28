@@ -2,9 +2,7 @@
 Countly is an innovative, real-time, open source mobile analytics application. 
 It collects data from mobile phones, tablets and other internet-connected devices, and visualizes this information to analyze mobile application usage and end-user behavior. There are two parts of Countly: the server that collects and analyzes data, and mobile SDK that sends this data.
 
-This repository holds Countly Community Edition. For more information other versions (e.g Enterprise Edition), see [Editions page](https://count.ly/products/editions/)
-
-![Countly dashboard screenshot](http://a.fsdn.com/con/app/proj/countly/screenshots/dashboard_without_realtime.png)
+This repository holds forked Countly Community Edition and customized for SKIE needs. 
 
 ##Which mobile operating systems does Countly support?
 
@@ -59,4 +57,5 @@ Countly js helpers. Refer to [Countly Server API Reference](http://count.ly/reso
 * [Countly Enterprise & Cloud Edition](https://count.ly/products/editions/)
 * [Resources and documentation](http://count.ly/resources)
 * [Packages on Sourceforge for direct download](http://sf.net/projects/countly)
+* [Countly dashboard screenshot](http://a.fsdn.com/con/app/proj/countly/screenshots/dashboard_without_realtime.png)
 
