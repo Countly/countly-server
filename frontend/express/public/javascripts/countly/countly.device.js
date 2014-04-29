@@ -18,21 +18,21 @@
             _initialized = true;
 
             return $.ajax({
-                type:"GET",
-                url:countlyCommon.API_PARTS.data.r,
-                data:{
-                    "api_key":countlyGlobal.member.api_key,
-                    "app_id":countlyCommon.ACTIVE_APP_ID,
-                    "method":"devices"
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    "api_key": countlyGlobal.member.api_key,
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "method": "devices"
                 },
-                dataType:"jsonp",
-                success:function (json) {
+                dataType: "jsonp",
+                success: function (json) {
                     _deviceDb = json;
                     setMeta();
                 }
             });
         } else {
-            _deviceDb = {"2012":{}};
+            _deviceDb = {"2012": {}};
             return true;
         }
     };
@@ -48,22 +48,22 @@
             }
 
             return $.ajax({
-                type:"GET",
-                url:countlyCommon.API_PARTS.data.r,
-                data:{
-                    "api_key":countlyGlobal.member.api_key,
-                    "app_id":countlyCommon.ACTIVE_APP_ID,
-                    "method":"devices",
-                    "action":"refresh"
+                type: "GET",
+                url: countlyCommon.API_PARTS.data.r,
+                data: {
+                    "api_key": countlyGlobal.member.api_key,
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "method": "devices",
+                    "action": "refresh"
                 },
-                dataType:"jsonp",
-                success:function (json) {
+                dataType: "jsonp",
+                success: function (json) {
                     countlyCommon.extendDbObj(_deviceDb, json);
                     setMeta();
                 }
             });
         } else {
-            _deviceDb = {"2012":{}};
+            _deviceDb = {"2012": {}};
             return true;
         }
     };
@@ -77,14 +77,14 @@
 
         var chartData = countlyCommon.extractTwoLevelData(_deviceDb, _devices, countlyDevice.clearDeviceObject, [
             {
-                name:"device",
-                func:function (rangeArr, dataObj) {
+                name: "device",
+                func: function (rangeArr, dataObj) {
                     return deviceFullName(rangeArr);
                 }
             },
-            { "name":"t" },
-            { "name":"u" },
-            { "name":"n" }
+            { "name": "t" },
+            { "name": "u" },
+            { "name": "n" }
         ]);
 
         var deviceNames = _.pluck(chartData.chartData, 'device'),
@@ -99,9 +99,9 @@
 
         for (var i = 0; i < deviceNames.length; i++) {
             var percent = (deviceTotal[i] / sum) * 100;
-            chartData2[i] = {data:[
+            chartData2[i] = {data: [
                 [0, deviceTotal[i]]
-            ], label:deviceNames[i]};
+            ], label: deviceNames[i]};
         }
 
         var sum2 = _.reduce(deviceNew, function (memo, num) {
@@ -110,9 +110,9 @@
 
         for (var i = 0; i < deviceNames.length; i++) {
             var percent = (deviceNew[i] / sum) * 100;
-            chartData3[i] = {data:[
+            chartData3[i] = {data: [
                 [0, deviceNew[i]]
-            ], label:deviceNames[i]};
+            ], label: deviceNames[i]};
         }
 
         chartData.chartDPTotal = {};
@@ -130,7 +130,7 @@
         _periodObj = countlyCommon.periodObj;
 
         var dataArr = [
-                { data:[], label:"Devices" }
+                { data: [], label: "Devices" }
             ],
             ticks = [],
             rangeUsers;
@@ -169,8 +169,8 @@
         }
 
         return {
-            dp:dataArr,
-            ticks:ticks
+            dp: dataArr,
+            ticks: ticks
         };
     };
 
@@ -181,7 +181,7 @@
             if (!obj["u"]) obj["u"] = 0;
         }
         else {
-            obj = {"t":0, "n":0, "u":0};
+            obj = {"t": 0, "n": 0, "u": 0};
         }
 
         return obj;
@@ -286,6 +286,18 @@
                 break;
             case "iPad2,7":
                 fullName = "iPad Mini (Global)";
+                break;
+            case "iPad4,1":
+                fullName = "iPad Air (WiFi)";
+                break;
+            case "iPad4,2":
+                fullName = "iPad Air (Global)";
+                break;
+            case "iPad4,4":
+                fullName = "iPad Mini 2G (WiFi)";
+                break;
+            case "iPad4,5":
+                fullName = "iPad Mini 2G (Global)";
                 break;
             case "i386":
                 fullName = "Simulator";

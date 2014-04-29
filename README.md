@@ -2,9 +2,7 @@
 Countly is an innovative, real-time, open source mobile analytics application. 
 It collects data from mobile phones, tablets and other internet-connected devices, and visualizes this information to analyze mobile application usage and end-user behavior. There are two parts of Countly: the server that collects and analyzes data, and mobile SDK that sends this data.
 
-This repository holds Countly Community Edition. For more information other versions (e.g Enterprise Edition), see [Editions page](https://count.ly/products/editions/)
-
-![Countly dashboard screenshot](http://a.fsdn.com/con/app/proj/countly/screenshots/dashboard_without_realtime.png)
+This repository holds forked Countly Community Edition and customized for SKIE needs. 
 
 ##Which mobile operating systems does Countly support?
 
@@ -21,7 +19,6 @@ Countly supports top-notch devices, including iOS, Android, Windows Phone and Bl
 
 ##How do I install Countly server?
 
-You can either download all files from [Sourceforge](http://sf.net/projects/countly), or get code from Github (this page).
  
 We provide a beautiful installation sript (`bin/countly.install.sh`) with countly-server package that installs and configures everything required to run Countly Server.
 
@@ -52,10 +49,6 @@ Contains seperate  helper js files for each data visualization. For example `cou
 Countly write and read API. Waits for write requests from the mobile SDKs and read requests from the 
 Countly js helpers. Refer to [Countly Server API Reference](http://count.ly/resources/reference/server-api) for details.
 
-##How can I help you with your efforts?
-Glad you asked. We need ideas, feedbacks and constructive comments. All your suggestions will be taken care with upmost importance. 
-
-We are on [Twitter](http://twitter.com/gocountly) and [Facebook](http://www.facebook.com/Countly) if you would like to keep up with our fast progress!
 
 ##Links
 
@@ -64,4 +57,5 @@ We are on [Twitter](http://twitter.com/gocountly) and [Facebook](http://www.face
 * [Countly Enterprise & Cloud Edition](https://count.ly/products/editions/)
 * [Resources and documentation](http://count.ly/resources)
 * [Packages on Sourceforge for direct download](http://sf.net/projects/countly)
+* [Countly dashboard screenshot](http://a.fsdn.com/con/app/proj/countly/screenshots/dashboard_without_realtime.png)
 
