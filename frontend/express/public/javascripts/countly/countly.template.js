@@ -2495,7 +2495,7 @@ var AppRouter = Backbone.Router.extend({
             return countlyCommon.getShortNumber(context);
         });
         Handlebars.registerHelper('getFormattedNumber', function (context, options) {
-            if (isNaN(context)) {
+            if (!_.isNumber(context)) {
                 return context;
             }
 
