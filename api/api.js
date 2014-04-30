@@ -207,7 +207,9 @@ if (cluster.isMaster) {
                     if (!tmpParams.qstring.device_id) {
                         continue;
                     } else {
-                        tmpParams.app_user_id = common.crypto.createHash('sha1').update(tmpParams.qstring.app_key + tmpParams.qstring.device_id + "").digest('hex');
+                        //tmpParams.app_user_id = common.crypto.createHash('sha1').update(tmpParams.qstring.app_key + tmpParams.qstring.device_id + "").digest('hex');
+                        //SSDK-191
+                        tmpParams.app_user_id = tmpParams.qstring.device_id
                     }
 
                     if (tmpParams.qstring.metrics) {
