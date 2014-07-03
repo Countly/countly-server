@@ -93,7 +93,7 @@ var usage = {},
         var updateSessions = {},
             session_duration = parseInt(params.qstring.session_duration);
 
-        if (session_duration == (session_duration | 0)) {
+        if (!isNaN(session_duration) && session_duration > 0) {
             if (common.config.api.session_duration_limit && session_duration > common.config.api.session_duration_limit) {
                 session_duration = common.config.api.session_duration_limit;
             }
@@ -108,6 +108,8 @@ var usage = {},
                     callback();
                 }
             });
+        } else if (callback) { // session_duration was a bad value, but callback still needs to be called
+            callback();
         }
     };
 
