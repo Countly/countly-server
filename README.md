@@ -25,7 +25,7 @@ You can either download all files from [Sourceforge](http://sf.net/projects/coun
  
 We provide a beautiful installation sript (`bin/countly.install.sh`) with countly-server package that installs and configures everything required to run Countly Server.
 
-If you feel like doing things manually, or need to upgrade Countly from a previous version, please take a look at the installation articles from [http://support.count.ly](http://support.count.ly "Countly Support").
+If you feel like doing things manually, or need to upgrade Countly from a previous version, please take a look at the installation articles from [http://count.ly/resources](http://count.ly/resources "Countly resources page").
 
 ##Dependencies
 We develop and test Countly on Ubuntu with MongoDB, Node.js and nginx. Installation script only needs a clean, decent Ubuntu Linux without any services listening to port 80 and takes care of every library and software (e.g MongoDB, Nginx, Node.js, Expressjs etc) required to be installed on Ubuntu Linux.
