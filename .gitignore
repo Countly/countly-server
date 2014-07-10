@@ -4,3 +4,4 @@ frontend/express/node_modules/time
 api/config.js
 frontend/express/config.js
 frontend/express/public/javascripts/countly/countly.config.js
+closure-compiler.jar
