@@ -1,4 +1,4 @@
-COUNTLY MOBILE ANALYTICS COMMUNITY EDITION LICENSE 
+Countly Mobile Analytics Community Edition License
 --------------------------------------------------
 
 Copyright (C) 2011-2014 Countly, www.count.ly
