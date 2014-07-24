@@ -1,3 +1,13 @@
+13.11-beta.1
+
+  * Fix issue #88
+  
+  * Fix issue #99
+  
+  * Fixed minor error in English translation
+  
+  * Renamed LICENCE.md to LICENSE.md
+
 13.10
 
   * Add new iPhone device names (iPhone 5S and iPhone 5C)
