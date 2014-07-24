@@ -1,8 +1,8 @@
 13.11-beta.1
 
-  * Fix issue #88
+  * Fix issue #88 (https://github.com/Countly/countly-server/issues/88)
   
-  * Fix issue #99
+  * Fix issue #99 (https://github.com/Countly/countly-server/issues/99)
   
   * Fixed minor error in English translation
   
