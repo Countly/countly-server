@@ -18,7 +18,7 @@ var countlyView = Backbone.View.extend({
 
         var self = this;
         $.when(countlyEvent.initialize()).then(function() {
-           self.render();
+            self.render();
         });
     },
     beforeRender: function () {
@@ -31,7 +31,7 @@ var countlyView = Backbone.View.extend({
 
         if (countlyCommon.ACTIVE_APP_ID) {
             var self = this;
-            $.when(this.beforeRender(), initializeEventsOnce()).then(function() {
+            $.when(this.beforeRender(), initializeOnce()).then(function() {
                 self.renderCommon();
                 self.afterRender();
                 app.pageScript();
@@ -56,7 +56,7 @@ var countlyView = Backbone.View.extend({
     }
 });
 
-var initializeEventsOnce = _.once(function() {
+var initializeOnce = _.once(function() {
     return $.when(countlyEvent.initialize()).then(function() {});
 });
 
@@ -155,12 +155,21 @@ $.extend(Template.prototype, {
     };
 
     CountlyHelpers.initializeSelect = function () {
-        $(".cly-select").click(function (e) {
-            var selectItems = $(this).find(".select-items");
+        $("#content-container").on("click", ".cly-select", function (e) {
+            if ($(this).hasClass("disabled")) {
+                return true;
+            }
+
+            $(this).removeClass("req");
+
+            var selectItems = $(this).find(".select-items"),
+                itemCount = selectItems.find(".item").length;
 
             if (!selectItems.length) {
                 return false;
             }
+
+            $(".cly-select").find(".search").remove();
 
             if (selectItems.is(":visible")) {
                 $(this).removeClass("active");
@@ -168,18 +177,59 @@ $.extend(Template.prototype, {
                 $(".cly-select").removeClass("active");
                 $(".select-items").hide();
                 $(this).addClass("active");
+
+                if (itemCount > 10 && !$(this).hasClass("centered")) {
+                    $("<div class='search'><div class='inner'><input type='text' /><i class='icon-search'></i></div></div>").insertBefore($(this).find(".select-items"));
+                }
             }
 
-            $(this).find(".select-items").toggle();
+            if ($(this).hasClass("centered")) {
+                var height = $(this).find(".select-items").height();
+                $(this).find(".select-items").css("margin-top", (-(height/2).toFixed(0) - ($(this).height()/2).toFixed(0)) + "px");
+            }
+
+            if ($(this).find(".select-items").is(":visible")) {
+                $(this).find(".select-items").hide();
+            } else {
+                $(this).find(".select-items").show();
+                $(this).find(".select-items>div").addClass("scroll-list");
+                $(this).find(".scroll-list").slimScroll({
+                    height:'100%',
+                    start:'top',
+                    wheelStep:10,
+                    position:'right',
+                    disableFadeOut:true
+                });
+            }
+
+            $(this).find(".search input").focus();
 
             $("#date-picker").hide();
             e.stopPropagation();
         });
 
-        $(".select-items .item").click(function () {
+        $("#content-container").on("click", ".select-items .item", function () {
             var selectedItem = $(this).parents(".cly-select").find(".text");
             selectedItem.text($(this).text());
             selectedItem.data("value", $(this).data("value"));
+        });
+
+        $("#content-container").on("click", ".cly-select .search", function (e) {
+            e.stopPropagation();
+        });
+
+        $("#content-container").on("keyup", ".cly-select .search input", function(event) {
+            if (!$(this).val()) {
+                $(this).parents(".cly-select").find(".item").removeClass("hidden");
+            } else {
+                $(this).parents(".cly-select").find(".item:not(:contains('" + $(this).val() + "'))").addClass("hidden");
+                $(this).parents(".cly-select").find(".item:contains('" + $(this).val() + "')").removeClass("hidden");
+            }
+        });
+
+        $(window).click(function () {
+            $(".select-items").hide();
+            $(".cly-select").find(".search").remove();
         });
     };
 
@@ -233,6 +283,12 @@ $.extend(Template.prototype, {
     });
 
 }(window.CountlyHelpers = window.CountlyHelpers || {}, jQuery));
+
+$.expr[":"].contains = $.expr.createPseudo(function(arg) {
+    return function( elem ) {
+        return $(elem).text().toUpperCase().indexOf(arg.toUpperCase()) >= 0;
+    };
+});
 
 function fillKeyEvents(keyEvents) {
     if (!keyEvents.length) {
@@ -2316,15 +2372,7 @@ window.EventsView = countlyView.extend({
                     // Otherwise we refresh whole title area including the title and the segmentation select
                     // and afterwards initialize the select since we replaced it with a new element
                     $(self.el).find("#event-update-area").replaceWith(newPage.find("#event-update-area"));
-                    CountlyHelpers.initializeSelect();
                 }
-
-                $('#event-update-area .scrollable').slimScroll({
-                    height:'100%',
-                    start:'top',
-                    wheelStep:10,
-                    position:'right'
-                });
             }
 
             $(self.el).find(".widget-footer").html(newPage.find(".widget-footer").html());
@@ -2580,6 +2628,8 @@ var AppRouter = Backbone.Router.extend({
 
         var self = this;
         $(document).ready(function () {
+
+            CountlyHelpers.initializeSelect();
 
             // If date range is selected initialize the calendar with these
             var periodObj = countlyCommon.getPeriod();
@@ -3059,7 +3109,6 @@ var AppRouter = Backbone.Router.extend({
             $(window).click(function () {
                 $("#date-picker").hide();
                 $(".cly-select").removeClass("active");
-                $(".select-items").hide();
             });
 
             $("#date-picker").click(function (e) {
@@ -3169,7 +3218,6 @@ var AppRouter = Backbone.Router.extend({
                 $(this).toggleClass("checked");
             });
 
-            CountlyHelpers.initializeSelect();
         });
     }
 });

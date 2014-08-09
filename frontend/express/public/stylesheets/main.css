@@ -55,16 +55,18 @@ a:active { color:inherit; }
             #sidebar-menu .item.active .logo.engagement { background-position:-520px; }
 		#sidebar-menu .item .text { margin-left:15px; float:left; padding-top:11px; font:15px Ubuntu,Helvetica,sans-serif; color:#888; text-shadow:0 1px #222; }
 			#sidebar-menu .item.active .text { color:#FFF; text-shadow:0 1px #666; }
-			
+
 	#sidebar-menu .sidebar-submenu { background-image:url('../images/dashboard/submenu_bg.png'); width:222px; display:none; }
 		#sidebar-menu .sidebar-submenu .item,
 		#sidebar-menu .sidebar-submenu .disabled-item { text-overflow:ellipsis; white-space:nowrap; overflow:hidden; height:34px; display:block; padding-left:8px; background-image:url('../images/dashboard/submenu_seperator.png'); background-position:bottom; background-repeat:no-repeat; cursor:pointer; }
 		#sidebar-menu .sidebar-submenu .disabled-item { cursor:default; }
-		
+
 		#sidebar-menu .sidebar-submenu .item:hover { opacity:0.6; }
 		#sidebar-menu .sidebar-submenu .item.active:hover { opacity:1; }
 		#sidebar-menu .sidebar-submenu .item:last-child { background-image:none; }
-			#sidebar-menu .sidebar-submenu .item .logo { background-image:url('../images/dashboard/analytics_icons.png'); width:30px; height:30px; float:left; margin-left:8px; margin-top:1px; }
+			#sidebar-menu .sidebar-submenu .item .logo { background-image:url('../images/dashboard/analytics_icons.png'); color:#888; width:30px; height:30px; float:left; margin-left:8px; margin-top:1px; }
+	                #sidebar-menu .sidebar-submenu .item.active .logo { color:#4DB339; }
+
 				#sidebar-menu .sidebar-submenu .item .logo.users { background-position:-30px; }
 				#sidebar-menu .sidebar-submenu .item.active .logo.users { background-position:0; }
 				#sidebar-menu .sidebar-submenu .item .logo.sessions { background-position:-90px; }
@@ -90,14 +92,14 @@ a:active { color:inherit; }
 				#sidebar-menu .sidebar-submenu .item .text { margin-left:17px; float:left; padding-top:8px; font:13px Ubuntu,Helvetica,sans-serif; color:#666; text-shadow:none; }
 				#sidebar-menu .sidebar-submenu .item.active .text { color:#4DB351; }
 				#sidebar-menu .sidebar-submenu .item.help-toggle.active { color:#666; }
-				
+
 			#management-submenu.sidebar-submenu .item .logo { background-image:url('../images/dashboard/management_icons.png'); }
 				.sidebar-submenu .item .logo.applications { background-position:-30px; }
 				.sidebar-submenu .item.active .logo.applications { background-position:0; }
 				.sidebar-submenu .item .logo.mgmt-users { background-position:-90px; }
 				.sidebar-submenu .item.active .logo.mgmt-users { background-position:-60px; }
 				.sidebar-submenu .item .logo.help { background-position:-120px; }
-				
+
 				#management-submenu.sidebar-submenu .disabled-item  { opacity:0.3; }
 				#management-submenu.sidebar-submenu .disabled-item .logo { width:30px; height:30px; float:left; margin-left:8px; margin-top:1px; background-image:url('../images/dashboard/management_icons.png'); background-position:-90px; }
 				#management-submenu.sidebar-submenu .disabled-item .text { margin-left:17px; float:left; padding-top:8px; font:13px Ubuntu,Helvetica,sans-serif; color:#666; text-shadow:none; }
@@ -114,7 +116,7 @@ a:active { color:inherit; }
 			.widget-header .left { float:left; margin-top:2px; margin-left:2px; }
 			.widget-header>.title { font:19px Ubuntu,Helvetica,sans-serif; color:#636363; text-shadow:0 1px #F6F6F6; float:left; }
 			.widget-header .left>.title { font:19px Ubuntu,Helvetica,sans-serif; color:#636363; text-shadow:0 1px #F6F6F6; float:left; padding-top:8px; float:left; margin-left:3px; }
-			.widget-header .logo { float:left; width:38px; height:38px; background-image:url('../images/dashboard/anayltcs_header_icons.png'); }
+			.widget-header .logo { color:#636363; float:left; width:38px; height:38px; background-image:url('../images/dashboard/anayltcs_header_icons.png'); }
 				.widget-header .logo.sessions { background-position:-38px; }
 				.widget-header .logo.frequency { background-position:-76px; }
 				.widget-header .logo.countries { background-position:-114px; }
@@ -433,7 +435,7 @@ table.d-table:not(.no-fix) { table-layout:fixed; }
     .cly-select.dark .select-items { border-color:#666; }
     .cly-select .select-items.square { border-radius:0; }
 	.cly-select .select-items.square .item:last-child { border-radius:0; }
-    .cly-select .select-items .scrollable {  max-height:189px; }
+	.cly-select .select-items .scroll-list {  max-height:189px; }
 	.cly-select .select-items .item { text-overflow:ellipsis; overflow:hidden; white-space:nowrap; color:#666; font-weight:normal; border-bottom:1px solid #B5B5B5; font:13px Ubuntu,Helvetica,sans-serif; text-shadow:0 1px #fff; padding:5px 9px; padding-bottom:7px; }
     .cly-select.dark .select-items .item { border-color:#888; }
     .cly-select .select-items .item.hidden { display:none; }

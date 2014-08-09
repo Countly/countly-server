@@ -224,15 +224,16 @@ app.get('/dashboard', function (req, res, next) {
                         }, 'countlyGlobal');
 
                         if (settings && !err) {
-                            adminOfApps = sortBy(adminOfApps, settings.appSortList);
-                            userOfApps = sortBy(userOfApps, settings.appSortList);
+                            adminOfApps = sortBy(adminOfApps, settings.appSortList || []);
+                            userOfApps = sortBy(userOfApps, settings.appSortList || []);
                         }
 
                         res.render('dashboard', {
                             adminOfApps:adminOfApps,
                             userOfApps:userOfApps,
                             countlyVersion:"13.10",
-                            member:member
+                            member:member,
+			                cdn: countlyConfig.cdn || ""
                         });
                     });
                 }
@@ -242,8 +243,7 @@ app.get('/dashboard', function (req, res, next) {
                     req.session.gadm = null;
                     res.clearCookie('uid');
                     res.clearCookie('gadm');
-                    req.session.destroy(function () {
-                    });
+                    req.session.destroy(function () {});
                 }
                 res.redirect('/login');
             }

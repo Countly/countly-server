@@ -79,7 +79,7 @@
             {
                 name:"device",
                 func:function (rangeArr, dataObj) {
-                    return deviceFullName(rangeArr);
+                    return countlyDevice.getDeviceFullName(rangeArr);
                 }
             },
             { "name":"t" },
@@ -150,7 +150,7 @@
 
                 if (rangeUsers != 0) {
                     dataArr[0]["data"][dataArr[0]["data"].length] = [j, rangeUsers];
-                    ticks[j] = [j, deviceFullName(_deviceDb["devices"][j])];
+                    ticks[j] = [j, countlyDevice.getDeviceFullName(_deviceDb["devices"][j])];
                 }
             } else {
                 for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
@@ -163,7 +163,7 @@
 
                 if (rangeUsers != 0) {
                     dataArr[0]["data"][dataArr[0]["data"].length] = [j, rangeUsers];
-                    ticks[j] = [j, deviceFullName(_deviceDb["devices"][j])];
+                    ticks[j] = [j, countlyDevice.getDeviceFullName(_deviceDb["devices"][j])];
                 }
             }
         }
@@ -187,7 +187,7 @@
         return obj;
     };
 
-    function deviceFullName(shortName) {
+    countlyDevice.getDeviceFullName = function(shortName) {
         var fullName = "";
 
         switch (shortName) {

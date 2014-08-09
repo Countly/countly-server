@@ -610,7 +610,7 @@
 											<div class="right combo"></div>
 										</div>
 										<div class="select-items square" style="width:280px;">
-											<div class="scrollable">
+											<div>
 												{{> app-categories }}
 											</div>
 										</div>
@@ -629,7 +629,7 @@
 												<div class="right combo"></div>
 											</div>
 											<div class="select-items square" style="width:280px;">
-												<div id="country-items" class="scrollable"></div>
+												<div id="country-items"></div>
 											</div>
 										</div>
 										<div id="timezone-select" class="cly-select" style="width:200px; display:none;">
@@ -640,15 +640,15 @@
 												<div class="right combo"></div>
 											</div>
 											<div class="select-items square" style="width:200px;">
-												<div id="timezone-items" class="scrollable"></div>
+												<div id="timezone-items"></div>
 											</div>
 										</div>
 									</div>
 									<div id="selected" style="float:left; font-size:14px; padding:5px 10px; padding-top:6px; color:#666; font-family:'Ubuntu';"></div>
 									<input type="hidden" value="" id="app-timezone"/>
 									<input type="hidden" value="" id="app-country"/>
-								</td>
-							</tr>
+                                </td>
+                            </tr>
                             <tr class="help-zone-vs" data-help-localize="manage-apps.app-icon">
 								<td data-localize="management-applications.icon"></td>
 								<td>
@@ -718,7 +718,7 @@
 												<div class="right combo"></div>
 											</div>
 											<div class="select-items square">
-												<div class="scrollable">
+												<div>
 													{{> app-categories }}
 												</div>
 											</div>
@@ -748,7 +748,7 @@
 													<div class="right combo"></div>
 												</div>
 												<div class="select-items square" style="width:280px;">
-													<div id="country-items" class="scrollable"></div>
+													<div id="country-items"></div>
 												</div>
 											</div>
 											<div id="timezone-select" class="cly-select" style="width:200px; display:none;">
@@ -759,7 +759,7 @@
 													<div class="right combo"></div>
 												</div>
 												<div class="select-items square" style="width:200px;">
-													<div id="timezone-items" class="scrollable">
+													<div id="timezone-items">
 
 													</div>
 												</div>
@@ -875,30 +875,30 @@
 		</div>
 		<div id="edit-event-container" style="display:none;">
 			<div id="edit-event-table-container">
-                <table class="events-table" cellpadding="0" cellspacing="0">
-                    <thead>
-                    <tr>
-                        <th></th>
-                        <th></th>
-                        <th data-localize="events.edit.event-key"></th>
-                        <th data-localize="events.edit.event-name"></th>
-                        <th data-localize="events.table.count"></th>
-                        <th data-localize="events.table.sum"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {{#eachOfObjectValue event-map}}
-                    <tr>
-                        <td style="text-align:center;"><i class="icon-reorder event-order"></i></td>
-                        <td style="text-align:center;"><i class="icon-trash delete-event" data-event-key="{{this.key}}"></i></td>
-                        <td class="event-key">{{this.key}}</td>
-                        <td><input class="event-name" type="text" placeholder="Event name"  data-localize="events.edit.event-name" value="{{this.name}}"/></td>
-                        <td><input class="event-count" type="text" placeholder="Count" data-localize="events.table.count" value="{{this.count}}"/></td>
-                        <td><input class="event-sum" type="text" placeholder="Sum" data-localize="events.table.sum" value="{{this.sum}}"/></td>
-                    </tr>
-                    {{/eachOfObjectValue}}
-                    </tbody>
-                </table>
+				<table class="events-table" cellpadding="0" cellspacing="0">
+					<thead>
+						<tr>
+                            <th></th>
+                            <th></th>
+							<th data-localize="events.edit.event-key"></th>
+							<th data-localize="events.edit.event-name"></th>
+							<th data-localize="events.table.count"></th>
+							<th data-localize="events.table.sum"></th>
+						</tr>
+					</thead>
+					<tbody>
+						{{#eachOfObjectValue event-map}}
+						<tr>
+                            <td style="text-align:center;"><i class="icon-reorder event-order"></i></td>
+                            <td style="text-align:center;"><i class="icon-trash delete-event" data-event-key="{{this.key}}"></i></td>
+							<td class="event-key">{{this.key}}</td>
+							<td><input class="event-name" type="text" placeholder="Event name"  data-localize="events.edit.event-name" value="{{this.name}}"/></td>
+							<td><input class="event-count" type="text" placeholder="Count" data-localize="events.table.count" value="{{this.count}}"/></td>
+							<td><input class="event-sum" type="text" placeholder="Sum" data-localize="events.table.sum" value="{{this.sum}}"/></td>
+						</tr>
+						{{/eachOfObjectValue}}
+					</tbody>
+				</table>
 			</div>
 			<div class="buttons">
 				<div id="settings-save-result" class="result-message"></div>
@@ -922,7 +922,7 @@
 									<div class="right combo"></div>
 								</div>
 								<div class="select-items square" style="width:220px;">
-									<div class="scrollable">
+									<div>
 										<div data-value="" class="segmentation-option item" data-localize="events.no-segmentation"></div>
 										{{#eachOfArray segmentations}}
 										<div data-value="{{value}}" class="segmentation-option item">{{value}}</div>
@@ -943,7 +943,7 @@
 				<div class="pie-chart-container">
 					<div style="border-right:1px solid #CCC;">
 						<div class="pie-overlay one {{logo-class}}"></div>
-						<div id="dashboard-graph" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>
+						<div id="dashboard-graph" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>	
 					</div>
 				</div>
 				<div class="pie-chart-container">

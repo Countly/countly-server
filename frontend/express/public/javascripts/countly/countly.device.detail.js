@@ -201,7 +201,7 @@
         var osVersions = countlyCommon.extractBarData(_deviceDetailsDb, _os_versions, countlyDeviceDetails.clearDeviceDetailsObject);
 
         for (var i = 0; i < osVersions.length; i++) {
-            osVersions[i].name = fixOSVersion(osVersions[i].name);
+            osVersions[i].name = countlyDeviceDetails.fixOSVersion(osVersions[i].name);
         }
 
         return osVersions;
@@ -227,7 +227,7 @@
 
         if (oSVersionData.chartData) {
             for (var i = 0; i < oSVersionData.chartData.length; i++) {
-                oSVersionData.chartData[i].os_version = fixOSVersion(oSVersionData.chartData[i].os_version);
+                oSVersionData.chartData[i].os_version = countlyDeviceDetails.fixOSVersion(oSVersionData.chartData[i].os_version);
 
                 if (oSVersionData.chartData[i].os_version.indexOf(osSegmentation) == -1) {
                     delete oSVersionData.chartData[i];
@@ -272,6 +272,16 @@
         return oSVersionData;
     };
 
+    countlyDeviceDetails.fixOSVersion = function(osName) {
+        return osName
+            .replace(/:/g, ".")
+            .replace(/i/g, "iOS ")
+            .replace(/a/g, "Android ")
+            .replace(/b/g, "BlackBerry ")
+            .replace(/w/g, "Windows Phone ")
+            .replace(/m/g, "Mac ");
+    };
+
     function setMeta() {
         if (_deviceDetailsDb['meta']) {
             _os = (_deviceDetailsDb['meta']['os']) ? _deviceDetailsDb['meta']['os'] : [];
@@ -286,16 +296,6 @@
         if (_os_versions.length) {
             _os_versions = _os_versions.join(",").replace(/\./g, ":").split(",");
         }
-    }
-
-    function fixOSVersion(osName) {
-        return osName
-            .replace(/:/g, ".")
-            .replace(/i/g, "iOS ")
-            .replace(/a/g, "Android ")
-            .replace(/b/g, "BlackBerry ")
-            .replace(/w/g, "Windows Phone ")
-            .replace(/m/g, "Mac ");
     }
 
 }(window.countlyDeviceDetails = window.countlyDeviceDetails || {}, jQuery));

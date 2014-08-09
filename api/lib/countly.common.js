@@ -45,8 +45,10 @@ var countlyCommon = {},
             pChange = "∞";
             trend = "d"; //downward
         } else {
-            pChange = countlyCommon.getShortNumber((((current - previous) / previous) * 100).toFixed(1)) + "%";
-            if (previous > current) {
+            var change = (((current - previous) / previous) * 100).toFixed(1);
+            pChange = countlyCommon.getShortNumber(change) + "%";
+
+            if (change < 0) {
                 trend = "d";
             } else {
                 trend = "u";
@@ -565,6 +567,23 @@ var countlyCommon = {},
                 periodMin = 0;
                 dateString = "HH:mm";
                 break;
+            case "yesterday":
+                var yesterday = _currMoment.subtract('days', 1),
+                    year = yesterday.year(),
+                    month = (yesterday.month() + 1),
+                    day = yesterday.date();
+
+                activePeriod = year + "." + month + "." + day;
+                var previousDate = _currMoment.subtract('days', 2),
+                    previousYear = previousDate.year(),
+                    previousMonth = (previousDate.month() + 1),
+                    previousDay = previousDate.date();
+
+                previousPeriod = previousYear + "." + previousMonth + "." + previousDay;
+                periodMax = 23;
+                periodMin = 0;
+                dateString = "D MMM, HH:mm";
+                break;
             case "7days":
                 daysInPeriod = 7;
                 break;
@@ -583,10 +602,11 @@ var countlyCommon = {},
 
         // Check whether period object is array
         if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length == 2) {
-
             // One day is selected from the datepicker
             if (_period[0] == _period[1]) {
-                var selectedDate = moment(_period[0]),
+                var fromDate = new Date(_period[0]);
+                fromDate.setTimezone(_appTimezone);
+                var selectedDate = moment(fromDate),
                     selectedYear = selectedDate.year(),
                     selectedMonth = (selectedDate.month() + 1),
                     selectedDay = selectedDate.date(),
@@ -604,9 +624,14 @@ var countlyCommon = {},
                 periodMin = 0;
                 dateString = "D MMM, HH:mm";
             } else {
-                var a = moment(_period[0]),
-                    b = moment(_period[1]);
+                var fromDate = new Date(_period[0]),
+                    toDate = new Date(_period[1]);
 
+                fromDate.setTimezone(_appTimezone);
+                toDate.setTimezone(_appTimezone);
+
+                var a = moment(fromDate),
+                    b = moment(toDate);
                 daysInPeriod = b.diff(a, 'days') + 1;
                 rangeEndDay = _period[1];
             }
@@ -637,9 +662,15 @@ var countlyCommon = {},
                 var momentOne = moment(currTime),
                     momentTwo = moment(currTime2);
 
-                var currIndex = (!rangeEndDay) ? momentOne.subtract('days', i) : moment(rangeEndDay).subtract('days', i),
+                var currRangeEndDate = new Date(rangeEndDay);
+                currRangeEndDate.setTimezone(_appTimezone);
+
+                var prevRangeEndDate = new Date(rangeEndDay);
+                prevRangeEndDate.setTimezone(_appTimezone);
+
+                var currIndex = (!rangeEndDay) ? momentOne.subtract('days', i) : moment(currRangeEndDate).subtract('days', i),
                     currIndexYear = currIndex.year(),
-                    prevIndex = (!rangeEndDay) ? momentTwo.subtract('days', (daysInPeriod + i)) : moment(rangeEndDay).subtract('days', (daysInPeriod + i)),
+                    prevIndex = (!rangeEndDay) ? momentTwo.subtract('days', (daysInPeriod + i)) : moment(prevRangeEndDate).subtract('days', (daysInPeriod + i)),
                     prevYear = prevIndex.year();
 
                 if (i != (daysInPeriod - 1) && currentYear != currIndexYear) {
@@ -696,8 +727,7 @@ var countlyCommon = {},
     }
 
     function getUniqArray(weeksArray, weekCounts, monthsArray, monthCounts, periodArr) {
-
-        if (_period == "month" || _period == "day" || _period == "hour") {
+        if (_period == "month" || _period == "day" || _period == "hour" || _period == "yesterday") {
             return [];
         }
 
@@ -810,7 +840,7 @@ var countlyCommon = {},
 
     function getUniqCheckArray(weeksArray, weekCounts, monthsArray, monthCounts) {
 
-        if (_period == "month" || _period == "day" || _period == "hour") {
+        if (_period == "month" || _period == "day" || _period == "hour" || _period == "yesterday") {
             return [];
         }
 
