@@ -226,7 +226,7 @@ var usage = {},
                 for (var i=0; i < sessionFrequency.length; i++) {
                     if ((params.time.timestamp - userLastSeenTimestamp) < (sessionFrequency[i][1] * 60 * 60) &&
                         (params.time.timestamp - userLastSeenTimestamp) >= (sessionFrequency[i][0] * 60 * 60)) {
-                        calculatedFrequency = i + '';
+                        calculatedFrequency = (i + 1) + '';
                         break;
                     }
                 }

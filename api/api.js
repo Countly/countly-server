@@ -304,7 +304,7 @@ if (cluster.isMaster) {
             }
             case '/i':
             {
-                params.ip_address =  getIpAddress(req);
+                params.ip_address =  params.qstring.ip_address || getIpAddress(req);
                 params.user = {
                     'country':'Unknown',
                     'city':'Unknown'
