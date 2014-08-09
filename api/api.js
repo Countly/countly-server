@@ -334,6 +334,8 @@ if (cluster.isMaster) {
 
                     } catch (SyntaxError) {
                         console.log('Parse metrics JSON failed');
+                        common.returnMessage(params, 400, 'metrics JSON is not properly formed');
+                        return false
                     }
                 }
 
@@ -342,6 +344,8 @@ if (cluster.isMaster) {
                         params.qstring.events = JSON.parse(params.qstring.events);
                     } catch (SyntaxError) {
                         console.log('Parse events JSON failed');
+                        common.returnMessage(params, 400, 'events JSON is not properly formed');
+                        return false;
                     }
                 }
 
@@ -430,6 +434,8 @@ if (cluster.isMaster) {
                                 params.qstring.events = JSON.parse(params.qstring.events);
                             } catch (SyntaxError) {
                                 console.log('Parse events array failed');
+                                common.returnMessage(params, 400, 'events JSON is not properly formed');
+                                break;
                             }
 
                             validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventData);
