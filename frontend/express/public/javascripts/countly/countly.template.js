@@ -2397,6 +2397,68 @@ window.EventsView = countlyView.extend({
     }
 });
 
+window.DensityView = countlyView.extend({
+    beforeRender: function() {
+        return $.when(countlyDeviceDetails.initialize()).then(function () {});
+    },
+    renderCommon:function (isRefresh) {
+        var densityData = countlyDeviceDetails.getDensityData();
+
+        this.templateData = {
+            "page-title":jQuery.i18n.map["density.title"],
+            "logo-class":"densities",
+            "graph-type-double-pie":true,
+            "pie-titles":{
+                "left":jQuery.i18n.map["common.total-users"],
+                "right":jQuery.i18n.map["common.new-users"]
+            },
+            "chart-data":{
+                "columnCount":4,
+                "columns":[jQuery.i18n.map["density.table.density"], jQuery.i18n.map["common.table.total-sessions"], jQuery.i18n.map["common.table.total-users"], jQuery.i18n.map["common.table.new-users"]],
+                "rows":[]
+            },
+            "chart-helper":"resolutions.chart"
+        };
+
+        this.templateData["chart-data"]["rows"] = densityData.chartData;
+
+        if (!isRefresh) {
+            $(this.el).html(this.template(this.templateData));
+            $(".sortable").stickyTableHeaders();
+
+            var self = this;
+            $(".sortable").tablesorter({sortList:this.sortList}).bind("sortEnd", function (sorter) {
+                self.sortList = sorter.target.config.sortList;
+            });
+
+            countlyCommon.drawGraph(densityData.chartDPTotal, "#dashboard-graph", "pie");
+            countlyCommon.drawGraph(densityData.chartDPNew, "#dashboard-graph2", "pie");
+        }
+    },
+    refresh:function () {
+        var self = this;
+        $.when(countlyDeviceDetails.refresh()).then(function () {
+            if (app.activeView != self) {
+                return false;
+            }
+            self.renderCommon(true);
+
+            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+            newPage.find(".sortable").tablesorter({sortList:self.sortList});
+
+            $(self.el).find(".sortable tbody").replaceWith(newPage.find(".sortable tbody"));
+            $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
+
+            var resolutionData = countlyDeviceDetails.getDensityData();
+
+            countlyCommon.drawGraph(resolutionData.chartDPTotal, "#dashboard-graph", "pie");
+            countlyCommon.drawGraph(resolutionData.chartDPNew, "#dashboard-graph2", "pie");
+
+            $(".sortable").trigger("update");
+        });
+    }
+});
+
 var AppRouter = Backbone.Router.extend({
     routes:{
         "/":"dashboard",
@@ -2411,6 +2473,7 @@ var AppRouter = Backbone.Router.extend({
         "/analytics/frequency":"frequency",
         "/analytics/events":"events",
         "/analytics/resolutions":"resolutions",
+        "/analytics/density":"density",
         "/analytics/durations":"durations",
         "/manage/apps":"manageApps",
         "/manage/users":"manageUsers",
@@ -2466,6 +2529,9 @@ var AppRouter = Backbone.Router.extend({
     resolutions:function () {
         this.renderWhenReady(this.resolutionsView);
     },
+    density:function () {
+        this.renderWhenReady(this.densityView);
+    },
     durations:function () {
         this.renderWhenReady(this.durationsView);
     },
@@ -2513,6 +2579,7 @@ var AppRouter = Backbone.Router.extend({
         this.manageUsersView = new ManageUsersView();
         this.eventsView = new EventsView();
         this.resolutionsView = new ResolutionView();
+        this.densityView = new DensityView();
         this.durationsView = new DurationView();
 
         Handlebars.registerPartial("date-selector", $("#template-date-selector").html());

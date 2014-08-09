@@ -86,9 +86,11 @@ a:active { color:inherit; }
 				#sidebar-menu .sidebar-submenu .item .logo.platforms { background-position:-510px; }
 				#sidebar-menu .sidebar-submenu .item.active .logo.platforms { background-position:-480px; }
 				#sidebar-menu .sidebar-submenu .item .logo.durations { background-position:-630px; }
-		                #sidebar-menu .sidebar-submenu .item.active .logo.durations { background-position:-600px; }
-                		#sidebar-menu .sidebar-submenu .item .logo.resolutions { background-position:-690px; }
-		                #sidebar-menu .sidebar-submenu .item.active .logo.resolutions { background-position:-660px; }
+                #sidebar-menu .sidebar-submenu .item.active .logo.durations { background-position:-600px; }
+                #sidebar-menu .sidebar-submenu .item .logo.resolutions { background-position:-690px; }
+                #sidebar-menu .sidebar-submenu .item.active .logo.resolutions { background-position:-660px; }
+                #sidebar-menu .sidebar-submenu .item .logo.densities { background-position:-750px; }
+                #sidebar-menu .sidebar-submenu .item.active .logo.densities { background-position:-720px; }
 				#sidebar-menu .sidebar-submenu .item .text { margin-left:17px; float:left; padding-top:8px; font:13px Ubuntu,Helvetica,sans-serif; color:#666; text-shadow:none; }
 				#sidebar-menu .sidebar-submenu .item.active .text { color:#4DB351; }
 				#sidebar-menu .sidebar-submenu .item.help-toggle.active { color:#666; }
@@ -125,8 +127,9 @@ a:active { color:inherit; }
 				.widget-header .logo.loyalty { background-position:-228px; }
 				.widget-header .logo.app-versions { background-position:-266px; }
 				.widget-header .logo.platforms { background-position:-304px; }
-                		.widget-header .logo.durations { background-position:-380px; }
-                		.widget-header .logo.resolutions { background-position:-418px; }
+                .widget-header .logo.durations { background-position:-380px; }
+                .widget-header .logo.resolutions { background-position:-418px; }
+                .widget-header .logo.densities { background-position:-456px; }
 
 	.widget-footer { text-align:right; min-height:10px; color:#666; text-shadow:0 1px #fff; font-size:11px; border-bottom-left-radius:5px; border-bottom-right-radius:5px; border:1px solid #C2C2C2; border-top:none; background-color:#FFF; box-shadow:inset 0 1px 0 #FFF; overflow:hidden; }
 	.widget-content { background-color:#FFF; border:1px solid #A1A1A1; border-top-color:#B8B9B9; }

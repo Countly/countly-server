@@ -362,7 +362,11 @@ var usage = {},
         var predefinedMetrics = [
             { db: "devices", metrics: [{ name: "_device", set: "devices", short_code: common.dbUserMap['device'] }] },
             { db: "carriers", metrics: [{ name: "_carrier", set: "carriers", short_code: common.dbUserMap['carrier'] }] },
-            { db: "device_details", metrics: [{ name: "_os", set: "os", short_code: common.dbUserMap['platform'] }, { name: "_os_version", set: "os_versions", short_code: common.dbUserMap['platform_version'] }, { name: "_resolution", set: "resolutions" }] },
+            { db: "device_details", metrics: [
+                { name: "_os", set: "os", short_code: common.dbUserMap['platform'] },
+                { name: "_os_version", set: "os_versions", short_code: common.dbUserMap['platform_version'] },
+                { name: "_resolution", set: "resolutions" },
+                { name: "_density", set: "densities" }] },
             { db: "app_versions", metrics: [{ name: "_app_version", set: "app_versions", short_code: common.dbUserMap['app_version'] }] }
         ];
 
