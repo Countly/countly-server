@@ -93,7 +93,7 @@ var usage = {},
         var updateSessions = {},
             session_duration = parseInt(params.qstring.session_duration);
 
-        if (session_duration == (session_duration | 0)) {
+        if (!isNaN(session_duration) && session_duration > 0) {
             if (common.config.api.session_duration_limit && session_duration > common.config.api.session_duration_limit) {
                 session_duration = common.config.api.session_duration_limit;
             }
@@ -108,6 +108,8 @@ var usage = {},
                     callback();
                 }
             });
+        } else if (callback) { // session_duration was a bad value, but callback still needs to be called
+            callback();
         }
     };
 
@@ -136,10 +138,17 @@ var usage = {},
             }
         }
 
-        common.fillTimeObject(params, updateSessions, common.dbMap['durations'] + '.' + calculatedDurationRange);
-        common.db.collection('sessions').update({'_id': params.app_id}, {'$inc': updateSessions, '$addToSet': {'meta.d-ranges': calculatedDurationRange}}, {'upsert': false});
+        // check that calculatedDurationRange is not undefined; shouldn't happen now that the server
+        // rejects session durations less than 1 second, but check anyways to make sure we don't put
+        // 'ds.undefined' into the database, or add 'null' to 'meta.d-ranges'.
+        if (calculatedDurationRange != undefined) {
+            common.fillTimeObject(params, updateSessions, common.dbMap['durations'] + '.' + calculatedDurationRange);
+            common.db.collection('sessions').update({'_id': params.app_id}, {'$inc': updateSessions, '$addToSet': {'meta.d-ranges': calculatedDurationRange}}, {'upsert': false});
+        }
 
         // sd: session duration. common.dbUserMap is not used here for readability purposes.
+        // regardless of whether or not the 'sessions' collection was updated above, still need to
+        // clear user's current session duration
         common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': {'sd': 0}}, {'upsert': true});
     }
 
