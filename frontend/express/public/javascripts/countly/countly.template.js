@@ -2459,6 +2459,39 @@ window.DensityView = countlyView.extend({
     }
 });
 
+window.EnterpriseView = countlyView.extend({
+    initialize:function () {
+        this.template = Handlebars.compile($("#template-enterprise").html());
+    },
+    pageScript:function () {
+        var titles = {
+            "drill":"Game changer for data analytics",
+            "funnels":"Track completion rates step by step",
+            "retention":"See how engaging your application is",
+            "revenue":"Calculate your customer's lifetime value",
+            "scalability": "Tens of millions of users? No problem",
+            "support":"Enterprise support and SLA",
+            "raw-data": "Your data, your rules"
+        }
+
+        $("#enterprise-sections").find(".app-container").on("click", function() {
+            var section = $(this).data("section");
+
+            $(".enterprise-content").hide();
+            $(".enterprise-content." + section).show();
+
+            $("#enterprise-sections").find(".app-container").removeClass("active");
+            $(this).addClass("active");
+
+            $(".widget-header .title").text(titles[section] || "");
+        });
+    },
+    renderCommon:function () {
+        $(this.el).html(this.template(this.templateData));
+        this.pageScript();
+    }
+});
+
 var AppRouter = Backbone.Router.extend({
     routes:{
         "/":"dashboard",
@@ -2477,6 +2510,7 @@ var AppRouter = Backbone.Router.extend({
         "/analytics/durations":"durations",
         "/manage/apps":"manageApps",
         "/manage/users":"manageUsers",
+        "/enterprise": "enterprise",
         "*path":"main"
     },
     activeView:null, //current view
@@ -2535,6 +2569,9 @@ var AppRouter = Backbone.Router.extend({
     durations:function () {
         this.renderWhenReady(this.durationsView);
     },
+    enterprise:function () {
+        this.renderWhenReady(this.enterpriseView);
+    },
     refreshActiveView:function () {
     }, //refresh interval function
     renderWhenReady:function (viewName) { //all view renders end up here
@@ -2581,6 +2618,7 @@ var AppRouter = Backbone.Router.extend({
         this.resolutionsView = new ResolutionView();
         this.densityView = new DensityView();
         this.durationsView = new DurationView();
+        this.enterpriseView = new EnterpriseView();
 
         Handlebars.registerPartial("date-selector", $("#template-date-selector").html());
         Handlebars.registerPartial("timezones", $("#template-timezones").html());
