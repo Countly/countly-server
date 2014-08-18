@@ -9,16 +9,17 @@
 -->
 <html>
 <head>
+	<base href="/countly/">
 	<title>Countly</title> 
 	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1.0">
-	<link rel="icon" type="image/png" href="/images/favicon.png">
-    <link rel="stylesheet" href="/stylesheets/font-awesome/css/font-awesome.min.css" />
-    <link rel="stylesheet" href="/stylesheets/entypo/css/entypo.css" />
-	<link rel="stylesheet" href="/javascripts/dom/tablesorter/style.css" />
-	<link rel="stylesheet" href="/javascripts/dom/tipsy/tipsy.css" />
-	<link rel="stylesheet" href="/javascripts/dom/jqueryui/jquery.ui.all.css" />
-	<link rel="stylesheet" href="/stylesheets/main.css?<%= countlyVersion %>" />
-    <link rel="stylesheet" href="/javascripts/visualization/rickshaw/rickshaw.min.css" />
+	<link rel="icon" type="image/png" href="images/favicon.png">
+    <link rel="stylesheet" href="stylesheets/font-awesome/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="stylesheets/entypo/css/entypo.css" />
+	<link rel="stylesheet" href="javascripts/dom/tablesorter/style.css" />
+	<link rel="stylesheet" href="javascripts/dom/tipsy/tipsy.css" />
+	<link rel="stylesheet" href="javascripts/dom/jqueryui/jquery.ui.all.css" />
+	<link rel="stylesheet" href="stylesheets/main.css?<%= countlyVersion %>" />
+    <link rel="stylesheet" href="javascripts/visualization/rickshaw/rickshaw.min.css" />
 	<script><%- javascript %></script>
 </head>
 <body> 
@@ -27,7 +28,7 @@
 		<div id="sidebar-top">
 			<a href="#/"><div id="sidebar-logo"></div></a>
 			<div id="sidebar-app-select">
-				<div class="logo" <% if (userOfApps[0]){ %>style="background-image:url('/appimages/<%= userOfApps[0]._id %>.png')"<% } %>></div>
+				<div class="logo" <% if (userOfApps[0]){ %>style="background-image:url('appimages/<%= userOfApps[0]._id %>.png')"<% } %>></div>
 				<div class="text"><% if (userOfApps[0]){ %><%= userOfApps[0].name %><% } %></div>
 			</div>
 		</div>
@@ -133,7 +134,7 @@
 			<div class="menu">
 				<a id="sidebar-countly-version">Countly <%= countlyVersion %></a>
 				<a class="item" id="account-settings" data-localize="sidebar.settings"></a>
-				<a class="item" id="user-logout" href="/logout" data-localize="sidebar.logout"></a>
+				<a class="item" id="user-logout" href="logout" data-localize="sidebar.logout"></a>
 			</div>
 			<div id="language-menu">
 				<div class="group">
@@ -172,7 +173,7 @@
 		<div class="apps-scrollable">
 			<% for (var i = 0; i < userOfApps.length; i++) { %>
 				<div class="app-container app-navigate" data-key="<%= userOfApps[i].key %>" data-id="<%= userOfApps[i]['_id'] %>">
-					<div class="logo" style="background-image: url('/appimages/<%= userOfApps[i]['_id'] %>.png');"></div>
+					<div class="logo" style="background-image: url('appimages/<%= userOfApps[i]['_id'] %>.png');"></div>
 					<div class="name"><%= userOfApps[i].name %></div>
 					<div class="drag"></div>
 				</div>
@@ -335,7 +336,7 @@
 							<div class="select">{{this.title}}</div>
 							<div class="color"></div>
 							<div class="number">{{getFormattedNumber this.total}}</div>
-							<div class="trend" style="background-image:url('/images/dashboard/{{this.trend}}trend.png');"></div>
+							<div class="trend" style="background-image:url('images/dashboard/{{this.trend}}trend.png');"></div>
 						</div>
 					</div>
 					{{/each}}
@@ -438,7 +439,7 @@
 						<div class="inner">
 							<div class="select">{{this.title}}</div>
 							<div class="number" style="margin-top: 10px;">{{getFormattedNumber this.total}}</div>
-							<div class="trend" style="background-image:url('/images/dashboard/{{this.trend}}trend.png');"></div>
+							<div class="trend" style="background-image:url('images/dashboard/{{this.trend}}trend.png');"></div>
 						</div>
 					</div>
 					{{/each}}
@@ -459,7 +460,7 @@
 				<tr>
 					<td>
 						{{#if this.code}}
-							<div class="flag" style="background-image:url('/images/flags/{{this.code}}.png');"></div>
+							<div class="flag" style="background-image:url('images/flags/{{this.code}}.png');"></div>
 						{{/if}}
 						{{this.country}}
 					</td>
@@ -501,7 +502,7 @@
                                     </div>
                                 {{/if}}
                             </div>
-							<div class="trend" style="background-image:url('/images/dashboard/{{this.data.trend}}trend.png');">
+							<div class="trend" style="background-image:url('images/dashboard/{{this.data.trend}}trend.png');">
 								<div class="change">{{this.data.change}}</div>
 							</div>
 							<div class="spark"><span class="{{this.data.trend}}sparkline">{{this.data.sparkline}}</span></div>
@@ -543,7 +544,7 @@
 				<div>
 					{{#each country-data}}
 					<div class="map-list-item">
-						<div class="flag" style="background-image:url('/images/flags/{{this.code}}.png');"></div>
+						<div class="flag" style="background-image:url('images/flags/{{this.code}}.png');"></div>
 						<div class="country-name">{{this.country}}</div>
 						<div class="total">{{getShortNumber this.t}}</div>
 					</div>
@@ -562,7 +563,7 @@
 				<% if(member['global_admin']) { %>
 				<div style="overflow:hidden; position:absolute; top:19px; right:10px;">
 					<div class="icon-button dark help-zone-vs" data-help-localize="manage-apps.app-add-button" id="add-app-button">
-						<div class="icon" style="background-image:url('/images/management/add.png'); width:17px; height:18px;"></div>
+						<div class="icon" style="background-image:url('images/management/add.png'); width:17px; height:18px;"></div>
 						<div class="text" data-localize="common.add"></div>
 					</div>
 				</div>
@@ -571,7 +572,7 @@
 			<div class="scrollable">
 				{{#eachOfObjectValue admin_apps}}
 				<div class="app-container" data-key="{{this.key}}" data-id="{{this._id}}">
-					<div class="logo" style="background-image: url('/appimages/{{this._id}}.png');"></div>
+					<div class="logo" style="background-image: url('appimages/{{this._id}}.png');"></div>
 					<div class="name">{{this.name}}</div>
 				</div>
 				{{/eachOfObjectValue}}
@@ -652,7 +653,7 @@
                             <tr class="help-zone-vs" data-help-localize="manage-apps.app-icon">
 								<td data-localize="management-applications.icon"></td>
 								<td>
-									<form action="/apps/icon" enctype="multipart/form-data" id="add-app-image-form" method="post">
+									<form action="apps/icon" enctype="multipart/form-data" id="add-app-image-form" method="post">
 										<input type="file" id="app_image" name="app_image" />
 										<input type="hidden" id="app_image_id" name="app_image_id" />
 									</form>
@@ -675,7 +676,7 @@
 					</div>
 					<div style="float:right; min-width:260px; overflow:hidden; margin-top:6px;">
                         <div style="float:right;" class="icon-button light help-zone-vs" data-help-localize="manage-apps.app-edit-button" id="edit-app">
-                            <div class="icon" style="background-image:url('/images/management/edit.png'); width:22px; height:19px;"></div>
+                            <div class="icon" style="background-image:url('images/management/edit.png'); width:22px; height:19px;"></div>
                             <div class="text" data-localize="common.edit"></div>
                         </div>
 						<div style="float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="manage-apps.app-clear-button" id="clear-app-data">
@@ -778,7 +779,7 @@
 										<div class="logo"></div>
 									</div>
 									<div class="edit">
-										<form action="/apps/icon" enctype="multipart/form-data" id="add-edit-image-form" method="post">
+										<form action="apps/icon" enctype="multipart/form-data" id="add-edit-image-form" method="post">
 											<input type="file" id="app_image" name="app_image" />
 											<input type="hidden" id="app_image_id" name="app_image_id" />
 										</form>
@@ -820,7 +821,7 @@
 						<div class="text">Deselect all</div>
 					</div>
 					<div class="icon-button light create-report" id="create-report">
-						<div class="icon" style="background-image:url('/images/reports/pdf_icon.png'); width:18px; height:19px;"></div>
+						<div class="icon" style="background-image:url('images/reports/pdf_icon.png'); width:18px; height:19px;"></div>
 						<div class="text">Export</div>
 					</div>
 				</div>
@@ -968,7 +969,7 @@
 							<div class="select">{{this.title}}</div>
 							<div class="color"></div>
 							<div class="number">{{getFormattedNumber this.total}}</div>
-							<div class="trend" style="background-image:url('/images/dashboard/{{this.trend}}trend.png');"></div>
+							<div class="trend" style="background-image:url('images/dashboard/{{this.trend}}trend.png');"></div>
 						</div>
 					</div>
 					{{/each}}
@@ -1056,58 +1057,58 @@
 
     <!-- PRODUCTION -->
     <!---->
-    <script language="javascript" type="text/javascript" src="/javascripts/min/countly.dom.js?<%= countlyVersion %>"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/dom/tablesorter/jquery.tablesorter.min.js?<%= countlyVersion %>"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/min/countly.utils.js?<%= countlyVersion %>"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/countly/countly.config.js?<%= countlyVersion %>"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/min/countly.lib.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/min/countly.dom.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/dom/tablesorter/jquery.tablesorter.min.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/min/countly.utils.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/countly/countly.config.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/min/countly.lib.js?<%= countlyVersion %>"></script>
     <!---->
     <!-- DEVELOPMENT -->
     <!--
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/utils/underscore-min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/prefixfree.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/moment/moment.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/moment/moment.isocalendar.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/moment/lang-all.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/handlebars.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/backbone-min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/jstz.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/store+json2.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/jquery.idle-timer.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery.form.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/tipsy/jquery.tipsy.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery.noisy.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/tablesorter/jquery.tablesorter.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery.sticky.headers.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jqueryui/jquery-ui-1.8.22.custom.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jqueryui/jquery-ui-i18n.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/slimScroll.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery.easing.1.3.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/jquery.peity.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/flot/jquery.flot.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/flot/jquery.flot.tickrotor.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/flot/jquery.flot.pie.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/flot/jquery.flot.resize.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/flot/jquery.flot.stack.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/gauge.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/d3/d3.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/d3/d3.layout.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/rickshaw/rickshaw.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.common.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.config.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.event.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.session.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.city.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.location.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.user.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.device.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.device.detail.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.app.version.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.carrier.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.template.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/underscore-min.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/utils/prefixfree.min.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/utils/moment/moment.min.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/utils/moment/moment.isocalendar.min.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/utils/moment/lang-all.min.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/utils/handlebars.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/utils/backbone-min.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/utils/jstz.min.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/utils/store_plus_json2.min.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/utils/jquery.idle-timer.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery.form.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/tipsy/jquery.tipsy.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery.noisy.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/tablesorter/jquery.tablesorter.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery.sticky.headers.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/jqueryui/jquery-ui-1.8.22.custom.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/jqueryui/jquery-ui-i18n.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/slimScroll.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery.easing.1.3.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/visualization/jquery.peity.min.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/visualization/flot/jquery.flot.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/visualization/flot/jquery.flot.tickrotor.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/visualization/flot/jquery.flot.pie.min.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/visualization/flot/jquery.flot.resize.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/visualization/flot/jquery.flot.stack.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/visualization/gauge.min.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/visualization/d3/d3.min.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/visualization/d3/d3.layout.min.js"></script>
+    <script language="javascript" type="text/javascript" src="javascripts/visualization/rickshaw/rickshaw.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/countly/countly.common.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/countly/countly.config.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/countly/countly.event.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/countly/countly.session.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/countly/countly.city.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/countly/countly.location.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/countly/countly.user.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/countly/countly.device.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/countly/countly.device.detail.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/countly/countly.app.version.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/countly/countly.carrier.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/countly/countly.template.js"></script>
     -->
     <% if (member.in_user_id && member.in_user_hash) { %>
     <!---->

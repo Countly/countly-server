@@ -9,7 +9,8 @@
 -->
 <html>
 <head>
-	<link href='/stylesheets/pre-login/main.css' rel='stylesheet' type='text/css'>
+	<base href="/countly/">
+	<link href='stylesheets/pre-login/main.css' rel='stylesheet' type='text/css'>
 	<link rel="icon" type="image/png" href="/images/favicon.png">
 	<title>Countly</title>
 </head>
@@ -58,18 +59,18 @@
 						<input id="login-button" value="Login" type="submit" data-localize="login.button"/>
 					</div>
 					<div style="text-align:right; margin-top:12px;">
-						<a id="forgot-password" href="/forgot"  data-localize="login.forgot"></a>
+						<a id="forgot-password" href="forgot"  data-localize="login.forgot"></a>
 					</div>
 				</form>
 			</div>
 		</div>
 	</div>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/utils/prefixfree.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery.noisy.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/utils/store+json2.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/pre-login.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/prefixfree.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery.noisy.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/store_plus_json2.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/pre-login.js"></script>
 	<script>
 		$(document).ready(function() {
 			<% if (message){ %>

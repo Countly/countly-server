@@ -27,7 +27,7 @@
         }
 
         // Load local country names
-        $.get('/localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function (data) {
+        $.get('localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function (data) {
             _countryMap = data;
         });
 
@@ -177,7 +177,7 @@
 
     countlyLocation.changeLanguage = function () {
         // Load local country names
-        return $.get('/localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function (data) {
+        return $.get('localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function (data) {
             _countryMap = data;
         });
     };
