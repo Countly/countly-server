@@ -224,15 +224,16 @@ app.get('/dashboard', function (req, res, next) {
                         }, 'countlyGlobal');
 
                         if (settings && !err) {
-                            adminOfApps = sortBy(adminOfApps, settings.appSortList);
-                            userOfApps = sortBy(userOfApps, settings.appSortList);
+                            adminOfApps = sortBy(adminOfApps, settings.appSortList || []);
+                            userOfApps = sortBy(userOfApps, settings.appSortList || []);
                         }
 
                         res.render('dashboard', {
                             adminOfApps:adminOfApps,
                             userOfApps:userOfApps,
-                            countlyVersion:"13.10",
-                            member:member
+                            countlyVersion:"14.08",
+                            member:member,
+			                cdn: countlyConfig.cdn || ""
                         });
                     });
                 }
@@ -242,8 +243,7 @@ app.get('/dashboard', function (req, res, next) {
                     req.session.gadm = null;
                     res.clearCookie('uid');
                     res.clearCookie('gadm');
-                    req.session.destroy(function () {
-                    });
+                    req.session.destroy(function () {});
                 }
                 res.redirect('/login');
             }
@@ -375,7 +375,7 @@ app.post('/setup', function (req, res, next) {
                         json: {
                             "email": req.body.email,
                             "full_name": req.body.full_name,
-                            "v": "13.10"
+                            "v": "14.08"
                         }
                     };
 
@@ -424,7 +424,7 @@ app.post('/login', function (req, res, next) {
                                 json: {
                                     "email": member.email,
                                     "full_name": member.full_name,
-                                    "v": "13.10",
+                                    "v": "14.08",
                                     "u": userCount,
                                     "e": eventCount,
                                     "r": reqCount,

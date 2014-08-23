@@ -18,7 +18,7 @@ var countlyView = Backbone.View.extend({
 
         var self = this;
         $.when(countlyEvent.initialize()).then(function() {
-           self.render();
+            self.render();
         });
     },
     beforeRender: function () {
@@ -31,7 +31,7 @@ var countlyView = Backbone.View.extend({
 
         if (countlyCommon.ACTIVE_APP_ID) {
             var self = this;
-            $.when(this.beforeRender(), initializeEventsOnce()).then(function() {
+            $.when(this.beforeRender(), initializeOnce()).then(function() {
                 self.renderCommon();
                 self.afterRender();
                 app.pageScript();
@@ -56,7 +56,7 @@ var countlyView = Backbone.View.extend({
     }
 });
 
-var initializeEventsOnce = _.once(function() {
+var initializeOnce = _.once(function() {
     return $.when(countlyEvent.initialize()).then(function() {});
 });
 
@@ -155,12 +155,21 @@ $.extend(Template.prototype, {
     };
 
     CountlyHelpers.initializeSelect = function () {
-        $(".cly-select").click(function (e) {
-            var selectItems = $(this).find(".select-items");
+        $("#content-container").on("click", ".cly-select", function (e) {
+            if ($(this).hasClass("disabled")) {
+                return true;
+            }
+
+            $(this).removeClass("req");
+
+            var selectItems = $(this).find(".select-items"),
+                itemCount = selectItems.find(".item").length;
 
             if (!selectItems.length) {
                 return false;
             }
+
+            $(".cly-select").find(".search").remove();
 
             if (selectItems.is(":visible")) {
                 $(this).removeClass("active");
@@ -168,18 +177,59 @@ $.extend(Template.prototype, {
                 $(".cly-select").removeClass("active");
                 $(".select-items").hide();
                 $(this).addClass("active");
+
+                if (itemCount > 10 && !$(this).hasClass("centered")) {
+                    $("<div class='search'><div class='inner'><input type='text' /><i class='icon-search'></i></div></div>").insertBefore($(this).find(".select-items"));
+                }
             }
 
-            $(this).find(".select-items").toggle();
+            if ($(this).hasClass("centered")) {
+                var height = $(this).find(".select-items").height();
+                $(this).find(".select-items").css("margin-top", (-(height/2).toFixed(0) - ($(this).height()/2).toFixed(0)) + "px");
+            }
+
+            if ($(this).find(".select-items").is(":visible")) {
+                $(this).find(".select-items").hide();
+            } else {
+                $(this).find(".select-items").show();
+                $(this).find(".select-items>div").addClass("scroll-list");
+                $(this).find(".scroll-list").slimScroll({
+                    height:'100%',
+                    start:'top',
+                    wheelStep:10,
+                    position:'right',
+                    disableFadeOut:true
+                });
+            }
+
+            $(this).find(".search input").focus();
 
             $("#date-picker").hide();
             e.stopPropagation();
         });
 
-        $(".select-items .item").click(function () {
+        $("#content-container").on("click", ".select-items .item", function () {
             var selectedItem = $(this).parents(".cly-select").find(".text");
             selectedItem.text($(this).text());
             selectedItem.data("value", $(this).data("value"));
+        });
+
+        $("#content-container").on("click", ".cly-select .search", function (e) {
+            e.stopPropagation();
+        });
+
+        $("#content-container").on("keyup", ".cly-select .search input", function(event) {
+            if (!$(this).val()) {
+                $(this).parents(".cly-select").find(".item").removeClass("hidden");
+            } else {
+                $(this).parents(".cly-select").find(".item:not(:contains('" + $(this).val() + "'))").addClass("hidden");
+                $(this).parents(".cly-select").find(".item:contains('" + $(this).val() + "')").removeClass("hidden");
+            }
+        });
+
+        $(window).click(function () {
+            $(".select-items").hide();
+            $(".cly-select").find(".search").remove();
         });
     };
 
@@ -233,6 +283,12 @@ $.extend(Template.prototype, {
     });
 
 }(window.CountlyHelpers = window.CountlyHelpers || {}, jQuery));
+
+$.expr[":"].contains = $.expr.createPseudo(function(arg) {
+    return function( elem ) {
+        return $(elem).text().toUpperCase().indexOf(arg.toUpperCase()) >= 0;
+    };
+});
 
 function fillKeyEvents(keyEvents) {
     if (!keyEvents.length) {
@@ -2316,15 +2372,7 @@ window.EventsView = countlyView.extend({
                     // Otherwise we refresh whole title area including the title and the segmentation select
                     // and afterwards initialize the select since we replaced it with a new element
                     $(self.el).find("#event-update-area").replaceWith(newPage.find("#event-update-area"));
-                    CountlyHelpers.initializeSelect();
                 }
-
-                $('#event-update-area .scrollable').slimScroll({
-                    height:'100%',
-                    start:'top',
-                    wheelStep:10,
-                    position:'right'
-                });
             }
 
             $(self.el).find(".widget-footer").html(newPage.find(".widget-footer").html());
@@ -2349,6 +2397,101 @@ window.EventsView = countlyView.extend({
     }
 });
 
+window.DensityView = countlyView.extend({
+    beforeRender: function() {
+        return $.when(countlyDeviceDetails.initialize()).then(function () {});
+    },
+    renderCommon:function (isRefresh) {
+        var densityData = countlyDeviceDetails.getDensityData();
+
+        this.templateData = {
+            "page-title":jQuery.i18n.map["density.title"],
+            "logo-class":"densities",
+            "graph-type-double-pie":true,
+            "pie-titles":{
+                "left":jQuery.i18n.map["common.total-users"],
+                "right":jQuery.i18n.map["common.new-users"]
+            },
+            "chart-data":{
+                "columnCount":4,
+                "columns":[jQuery.i18n.map["density.table.density"], jQuery.i18n.map["common.table.total-sessions"], jQuery.i18n.map["common.table.total-users"], jQuery.i18n.map["common.table.new-users"]],
+                "rows":[]
+            },
+            "chart-helper":"resolutions.chart"
+        };
+
+        this.templateData["chart-data"]["rows"] = densityData.chartData;
+
+        if (!isRefresh) {
+            $(this.el).html(this.template(this.templateData));
+            $(".sortable").stickyTableHeaders();
+
+            var self = this;
+            $(".sortable").tablesorter({sortList:this.sortList}).bind("sortEnd", function (sorter) {
+                self.sortList = sorter.target.config.sortList;
+            });
+
+            countlyCommon.drawGraph(densityData.chartDPTotal, "#dashboard-graph", "pie");
+            countlyCommon.drawGraph(densityData.chartDPNew, "#dashboard-graph2", "pie");
+        }
+    },
+    refresh:function () {
+        var self = this;
+        $.when(countlyDeviceDetails.refresh()).then(function () {
+            if (app.activeView != self) {
+                return false;
+            }
+            self.renderCommon(true);
+
+            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+            newPage.find(".sortable").tablesorter({sortList:self.sortList});
+
+            $(self.el).find(".sortable tbody").replaceWith(newPage.find(".sortable tbody"));
+            $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
+
+            var resolutionData = countlyDeviceDetails.getDensityData();
+
+            countlyCommon.drawGraph(resolutionData.chartDPTotal, "#dashboard-graph", "pie");
+            countlyCommon.drawGraph(resolutionData.chartDPNew, "#dashboard-graph2", "pie");
+
+            $(".sortable").trigger("update");
+        });
+    }
+});
+
+window.EnterpriseView = countlyView.extend({
+    initialize:function () {
+        this.template = Handlebars.compile($("#template-enterprise").html());
+    },
+    pageScript:function () {
+        var titles = {
+            "drill":"Game changer for data analytics",
+            "funnels":"Track completion rates step by step",
+            "retention":"See how engaging your application is",
+            "revenue":"Calculate your customer's lifetime value",
+            "scalability": "Tens of millions of users? No problem",
+            "support":"Enterprise support and SLA",
+            "raw-data": "Your data, your rules"
+        }
+
+        $("#enterprise-sections").find(".app-container").on("click", function() {
+            var section = $(this).data("section");
+
+            $(".enterprise-content").hide();
+            $(".enterprise-content." + section).show();
+
+            $("#enterprise-sections").find(".app-container").removeClass("active");
+            $(this).addClass("active");
+
+            $(".widget-header .title").text(titles[section] || "");
+        });
+    },
+    renderCommon:function () {
+        $(this.el).html(this.template(this.templateData));
+        this.pageScript();
+    }
+});
+
 var AppRouter = Backbone.Router.extend({
     routes:{
         "/":"dashboard",
@@ -2363,9 +2506,11 @@ var AppRouter = Backbone.Router.extend({
         "/analytics/frequency":"frequency",
         "/analytics/events":"events",
         "/analytics/resolutions":"resolutions",
+        "/analytics/density":"density",
         "/analytics/durations":"durations",
         "/manage/apps":"manageApps",
         "/manage/users":"manageUsers",
+        "/enterprise": "enterprise",
         "*path":"main"
     },
     activeView:null, //current view
@@ -2418,8 +2563,14 @@ var AppRouter = Backbone.Router.extend({
     resolutions:function () {
         this.renderWhenReady(this.resolutionsView);
     },
+    density:function () {
+        this.renderWhenReady(this.densityView);
+    },
     durations:function () {
         this.renderWhenReady(this.durationsView);
+    },
+    enterprise:function () {
+        this.renderWhenReady(this.enterpriseView);
     },
     refreshActiveView:function () {
     }, //refresh interval function
@@ -2465,7 +2616,9 @@ var AppRouter = Backbone.Router.extend({
         this.manageUsersView = new ManageUsersView();
         this.eventsView = new EventsView();
         this.resolutionsView = new ResolutionView();
+        this.densityView = new DensityView();
         this.durationsView = new DurationView();
+        this.enterpriseView = new EnterpriseView();
 
         Handlebars.registerPartial("date-selector", $("#template-date-selector").html());
         Handlebars.registerPartial("timezones", $("#template-timezones").html());
@@ -2495,7 +2648,7 @@ var AppRouter = Backbone.Router.extend({
             return countlyCommon.getShortNumber(context);
         });
         Handlebars.registerHelper('getFormattedNumber', function (context, options) {
-            if (isNaN(context)) {
+            if (!_.isNumber(context)) {
                 return context;
             }
 
@@ -2580,6 +2733,8 @@ var AppRouter = Backbone.Router.extend({
 
         var self = this;
         $(document).ready(function () {
+
+            CountlyHelpers.initializeSelect();
 
             // If date range is selected initialize the calendar with these
             var periodObj = countlyCommon.getPeriod();
@@ -3059,7 +3214,6 @@ var AppRouter = Backbone.Router.extend({
             $(window).click(function () {
                 $("#date-picker").hide();
                 $(".cly-select").removeClass("active");
-                $(".select-items").hide();
             });
 
             $("#date-picker").click(function (e) {
@@ -3169,7 +3323,6 @@ var AppRouter = Backbone.Router.extend({
                 $(this).toggleClass("checked");
             });
 
-            CountlyHelpers.initializeSelect();
         });
     }
 });

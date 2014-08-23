@@ -79,7 +79,7 @@
             {
                 name:"device",
                 func:function (rangeArr, dataObj) {
-                    return deviceFullName(rangeArr);
+                    return countlyDevice.getDeviceFullName(rangeArr);
                 }
             },
             { "name":"t" },
@@ -150,7 +150,7 @@
 
                 if (rangeUsers != 0) {
                     dataArr[0]["data"][dataArr[0]["data"].length] = [j, rangeUsers];
-                    ticks[j] = [j, deviceFullName(_deviceDb["devices"][j])];
+                    ticks[j] = [j, countlyDevice.getDeviceFullName(_deviceDb["devices"][j])];
                 }
             } else {
                 for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
@@ -163,7 +163,7 @@
 
                 if (rangeUsers != 0) {
                     dataArr[0]["data"][dataArr[0]["data"].length] = [j, rangeUsers];
-                    ticks[j] = [j, deviceFullName(_deviceDb["devices"][j])];
+                    ticks[j] = [j, countlyDevice.getDeviceFullName(_deviceDb["devices"][j])];
                 }
             }
         }
@@ -187,7 +187,7 @@
         return obj;
     };
 
-    function deviceFullName(shortName) {
+    countlyDevice.getDeviceFullName = function(shortName) {
         var fullName = "";
 
         switch (shortName) {
@@ -278,6 +278,12 @@
             case "iPad3,6":
                 fullName = "iPad 4 (Global)";
                 break;
+            case "iPad4,1":
+                fullName = "iPad Air (WiFi)";
+                break;
+            case "iPad4,2":
+                fullName = "iPad Air (Global)";
+                break;
             case "iPad2,5":
                 fullName = "iPad Mini (WiFi)";
                 break;
@@ -286,6 +292,12 @@
                 break;
             case "iPad2,7":
                 fullName = "iPad Mini (Global)";
+                break;
+            case "iPad4,4":
+                fullName = "iPad Mini 2G (WiFi)";
+                break;
+            case "iPad4,5":
+                fullName = "iPad Mini 2G (Global)";
                 break;
             case "i386":
                 fullName = "Simulator";

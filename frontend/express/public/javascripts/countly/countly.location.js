@@ -20,16 +20,16 @@
         _countryMap = {},
         _initialized = false;
 
+    // Load local country names
+    $.get('/localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function (data) {
+        _countryMap = data;
+    });
+
     // Public Methods
     countlyLocation.initialize = function () {
         if (_initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
             return countlyLocation.refresh();
         }
-
-        // Load local country names
-        $.get('/localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function (data) {
-            _countryMap = data;
-        });
 
         if (!countlyCommon.DEBUG) {
             _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
