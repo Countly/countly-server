@@ -1,3 +1,21 @@
+14.08
+
+  * Added density reporting for Android
+
+  * New license, check LICENSE.md for details
+
+  * Visual improvements, cross-browser compatibility fixes
+
+  * Fix issue #81 (https://github.com/Countly/countly-server/issues/81)
+
+  * Fix issue #87 (https://github.com/Countly/countly-server/issues/87)
+
+  * Fix issue #91 (https://github.com/Countly/countly-server/issues/91)
+
+  * Fix issue #92 (https://github.com/Countly/countly-server/issues/92)
+
+  * Fix issue #96 (https://github.com/Countly/countly-server/issues/96)
+
 13.11
 
   * Fix issue #88 (https://github.com/Countly/countly-server/issues/88)
