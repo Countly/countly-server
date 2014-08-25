@@ -6,11 +6,11 @@ This repository holds Countly Community Edition. For more information other vers
 
 ![Countly dashboard screenshot](http://a.fsdn.com/con/app/proj/countly/screenshots/dashboard_without_realtime.png)
 
-##Which mobile operating systems does Countly support?
+##Supported devices
 
 [Countly](http://count.ly) supports top-notch devices, including iOS, Android, Windows Phone and Blackberry. You can find a list of [officially and community supported Countly SDK libraries here](https://count.ly/resources/source/download-sdk). Each SDK has its own installation instructions.
 
-##How do I install Countly server?
+##Installing Countly server
 
 You can either download all files from [Sourceforge](http://sf.net/projects/countly), or get code from Github (this page).
  
