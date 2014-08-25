@@ -1,5 +1,5 @@
 ##What's Countly?
-Countly is an innovative, real-time, open source mobile analytics application. 
+[Countly](http://count.ly) is an innovative, real-time, open source mobile analytics application. 
 It collects data from mobile phones, tablets and other internet-connected devices, and visualizes this information to analyze mobile application usage and end-user behavior. There are two parts of Countly: the server that collects and analyzes data, and mobile SDK that sends this data.
 
 This repository holds Countly Community Edition. For more information other versions (e.g Enterprise Edition), see [Editions page](https://count.ly/products/editions/)
@@ -8,16 +8,7 @@ This repository holds Countly Community Edition. For more information other vers
 
 ##Which mobile operating systems does Countly support?
 
-Countly supports top-notch devices, including iOS, Android, Windows Phone and Blackberry. Below you can find Countly SDK repositories. Each SDK has its own installation instructions.
-
-- [Countly Android SDK](https://github.com/Countly/countly-sdk-android)
-- [Countly iOS SDK](https://github.com/Countly/countly-sdk-ios)
-- [Countly Windows Phone SDK](https://github.com/Countly/countly-sdk-windows-phone)
-- [Countly Blackberry Webworks SDK](https://github.com/Countly/countly-sdk-blackberry-webworks)
-- [Countly Blackberry Cascades SDK](https://github.com/craigmj/countly-sdk-blackberry10-cascades) (Community supported)
-- [Countly Mac OS X SDK](https://github.com/mrballoon/countly-sdk-osx) (Community supported)
-- [Countly Appcelerator Titanium SDK](https://github.com/euforic/Titanium-Count.ly) (Community supported)
-- [Countly Unity3D SDK](https://github.com/Countly/countly-sdk-unity) (Community supported)
+[Countly](http://count.ly) supports top-notch devices, including iOS, Android, Windows Phone and Blackberry. You can find a list of [officially and community supported Countly SDK libraries here](https://count.ly/resources/source/download-sdk). Each SDK has its own installation instructions.
 
 ##How do I install Countly server?
 
