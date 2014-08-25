@@ -58,6 +58,14 @@ apt-get -y install sendmail
 
 apt-get -y install build-essential || (echo "Failed to install build-essential." ; exit)
 
+#drop packages coming from 0/0 going through mongodb port
+#allow those coming from localhost
+iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s localhost -j ACCEPT
+iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s 0/0 -j DROP
+
+#install iptables-persistent
+apt-get install iptables-persistent
+
 #install time module for node
 ( cd $DIR/../api ; npm install time )
 
