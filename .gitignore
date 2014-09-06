@@ -5,3 +5,9 @@ api/config.js
 frontend/express/config.js
 frontend/express/public/javascripts/countly/countly.config.js
 closure-compiler.jar
+
+# Vagrant-related & test data
+.vagrant/
+log/
+bin/config/nginx.default.backup
+
