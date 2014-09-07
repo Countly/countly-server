@@ -10,8 +10,6 @@ Countly is a big project and we are happy to receive contributors with different
 * If you know any other language, you can start writing your own SDK and help others use Countly as a backend. 
 [Here's a list of SDKs that Countly supports](https://count.ly/resources/source/download-sdk).
 
-So you want to contribute to Countly? Here's a short guide on how to do it properly. 
-
 ## Contribution areas 
 
 You can always send a pull request to Countly Community Edition or to Countly SDKs for the following: 
