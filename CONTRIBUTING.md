@@ -22,7 +22,7 @@ You can always send a pull request to Countly Community Edition or to Countly SD
 * Documentation (including installation, deployment to various platforms, video training) 
 
 Before sending a pull request, we expect you first check 
-[all new issues](https://github.com/countly/countly-server/issues/new) before putting your effort. It's also better to 
+[all new issues](https://github.com/countly/countly-server/issues/) before putting your effort. It's also better to 
 test your code thoroughly before sending it over. Also please check existing code to have an understanding of how we work. 
 
 Before starting, you may want to check Github's guide on [contributing open source projects](https://guides.github.com/activities/contributing-to-open-source/).
