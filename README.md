@@ -44,9 +44,7 @@ Countly write and read API. Waits for write requests from the mobile SDKs and re
 Countly js helpers. Refer to [Countly Server API Reference](http://count.ly/resources/reference/server-api) for details.
 
 ##How can I help you with your efforts?
-Glad you asked. We need ideas, feedbacks and constructive comments. All your suggestions will be taken care with upmost importance. 
-
-We are on [Twitter](http://twitter.com/gocountly) and [Facebook](http://www.facebook.com/Countly) if you would like to keep up with our fast progress!
+See our section on [how to contribute to Countly](http://github.com/countly/countly-server/CONTRIBUTING.md)
 
 ##Links
 
