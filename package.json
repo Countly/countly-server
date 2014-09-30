@@ -1,0 +1,27 @@
+{
+  "name": "countly-server",
+  "version": "14.8.0",
+  "description": "innovative, real-time, open source mobile analytics application",
+  "keywords": [
+    "analytics",
+    "mobile",
+    "data",
+    "analysis",
+    "countly"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/countly/countly-server.git"
+  },
+  "devDependencies": {
+	"should": "*",
+    "grunt": "*",
+    "grunt-cli": "*",
+    "grunt-contrib-jshint": "*",
+	"grunt-mocha-test": "*",
+	"supertest":"*"
+  },
+  "scripts": {
+    "test": "grunt --verbose"
+  }
+}
