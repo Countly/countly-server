@@ -56,6 +56,9 @@ apt-get -y install imagemagick
 #install sendmail
 apt-get -y install sendmail
 
+#install iptables
+apt-get -y install iptables
+
 apt-get -y install build-essential || (echo "Failed to install build-essential." ; exit)
 
 #drop packages coming from 0/0 going through mongodb port
