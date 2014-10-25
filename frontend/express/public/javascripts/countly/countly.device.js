@@ -230,6 +230,12 @@
             case "iPhone6,2":
                 fullName = "iPhone 5S (Global)";
                 break;
+            case "iPhone7,1":
+                fullName = "iPhone 6 Plus";
+                break;
+            case "iPhone7,2":
+                fullName = "iPhone 6";
+                break;
             case "iPod1,1":
                 fullName = "iPod Touch 1G";
                 break;
@@ -284,6 +290,12 @@
             case "iPad4,2":
                 fullName = "iPad Air (Global)";
                 break;
+            case "iPad5,3":
+                fullName = "iPad Air 2G (WiFi)";
+                break;
+            case "iPad5,4":
+                fullName = "iPad Air 2G (Global)";
+                break;
             case "iPad2,5":
                 fullName = "iPad Mini (WiFi)";
                 break;
@@ -298,6 +310,12 @@
                 break;
             case "iPad4,5":
                 fullName = "iPad Mini 2G (Global)";
+                break;
+            case "iPad4,7":
+                fullName = "iPad Mini 3G (WiFi)";
+                break;
+            case "iPad4,8":
+                fullName = "iPad Mini 3G (Global)";
                 break;
             case "i386":
                 fullName = "Simulator";
