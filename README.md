@@ -24,9 +24,11 @@ Refer to [upgrading Countly documentation](https://count.ly/resources/upgrade/co
 
 ##Installing Countly server with Push Notifications support
 
+![Countly push notifications dashboard](https://a.fsdn.com/con/app/proj/countly/screenshots/push_notifications.png)
+
 Countly includes push notifications support for iOS and Android. In order to checkout this code, use "messaging" branch. This will download all Countly Analytics code plus code required to run Countly server with push notifications support.
 
-`git clone -b messaging https://github.com/Countly/countly-server.git``
+`git clone -b messaging https://github.com/Countly/countly-server.git`
 
 In order to download Countly SDK for push notification support, you also need to checkout messaging branches of [Android SDK](https://github.com/countly/countly-sdk-android/tree/messaging) and [iOS SDK](https://github.com/countly/countly-sdk-ios/tree/messaging). Refer to instructions on each SDK page for more information on how to setup SDKs. 
 
