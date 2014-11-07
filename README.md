@@ -22,6 +22,14 @@ If you feel like doing things manually, or need to upgrade Countly from a previo
 
 Refer to [upgrading Countly documentation](https://count.ly/resources/upgrade/countly-server-upgrade) on Resources page.
 
+##Installing Countly server with Push Notifications support
+
+Countly includes push notifications support for iOS and Android. In order to checkout this code, use "messaging" branch. This will download all Countly Analytics code plus code required to run Countly server with push notifications support.
+
+`git clone -b messaging https://github.com/Countly/countly-server.git``
+
+In order to download Countly SDK for push notification support, you also need to checkout messaging branches of [Android SDK](https://github.com/countly/countly-sdk-android/tree/messaging) and [iOS SDK](https://github.com/countly/countly-sdk-ios/tree/messaging). Refer to instructions on each SDK page for more information on how to setup SDKs. 
+
 ##Dependencies
 We develop and test Countly on Ubuntu with MongoDB, Node.js and nginx. Installation script only needs a clean, decent Ubuntu Linux without any services listening to port 80 and takes care of every library and software (e.g MongoDB, Nginx, Node.js, Expressjs etc) required to be installed on Ubuntu Linux.
 
