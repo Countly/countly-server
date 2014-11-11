@@ -73,8 +73,8 @@ describe('Deleting app', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('admin_of', []);
-				ob.should.have.property('user_of', []);
+				ob.should.have.property('admin_of').be.empty;
+				ob.should.have.property('user_of').be.empty;
 				done()
 			});
 		});
@@ -87,8 +87,8 @@ describe('Deleting app', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('admin_of', []);
-				ob.should.have.property('user_of', []);
+				ob.should.have.property('admin_of').be.empty;
+				ob.should.have.property('user_of').be.empty;
 				done()
 			});
 		});
