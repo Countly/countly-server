@@ -306,8 +306,8 @@ if (cluster.isMaster) {
             {
                 params.ip_address =  params.qstring.ip_address || getIpAddress(req);
                 params.user = {
-                    'country':'Unknown',
-                    'city':'Unknown'
+                    'country':params.qstring.country_code || 'Unknown',
+                    'city':params.qstring.city || 'Unknown'
                 };
 
                 if (!params.qstring.app_key || !params.qstring.device_id) {
