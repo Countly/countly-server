@@ -45,7 +45,7 @@ apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
 
 #install mongodb
-apt-get -y --force-yes install mongodb-10gen || (echo "Failed to install mongodb." ; exit)
+apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
 
 #install supervisor
 apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
