@@ -2868,6 +2868,198 @@ window.EnterpriseView = countlyView.extend({
     }
 });
 
+window.AllAppsView = countlyView.extend({
+	selectedView:"#draw-total-sessions",
+	selectedApps: {"all":true},
+	selectedCount: 1,
+	initialize:function () {
+        this.template = Handlebars.compile($("#template-allapps").html());
+    },
+    beforeRender: function() {
+        return $.when(countlyAllApps.initialize()).then(function () {});
+    },
+	pageScript:function () {
+        $(".widget-content .inner").click(function () {
+            $(".big-numbers").removeClass("active");
+            $(".big-numbers .select").removeClass("selected");
+            $(this).parent(".big-numbers").addClass("active");
+            $(this).find('.select').addClass("selected");
+        });
+
+        var self = this;
+        $(".big-numbers .inner").click(function () {
+            var elID = $(this).find('.select').attr("id");
+
+            if (self.selectedView == "#" + elID) {
+                return true;
+            }
+
+            self.selectedView = "#" + elID;
+            self.drawGraph();
+        });
+
+        app.localize();
+    },
+	drawGraph:function() {
+        var sessionDP = [];
+		var sessions = countlyAllApps.getSessionData();
+		var data, color;
+		var cnt = 0;
+		for(var i in this.selectedApps){
+			try{
+				data = sessions[i][this.selectedView];
+				color = countlyCommon.GRAPH_COLORS[cnt];
+				if(i == "all")
+					sessionDP.push({data:data.data, label:data.label + " for All Apps", color:color});
+				else
+					sessionDP.push({data:data.data, label:data.label + " for "+countlyGlobal["apps"][i].name, color:color});
+				$("#"+i+" .color").css("background-color", color);
+				cnt++;
+			}
+			catch(err){
+				
+			}
+		}
+        _.defer(function () {
+            countlyCommon.drawTimeGraph(sessionDP, "#dashboard-graph");
+			
+        });
+    },
+    renderCommon:function (isRefresh) {
+		$("#sidebar-app-select").find(".text").text(jQuery.i18n.map["allapps.title"]);
+        $("#sidebar-app-select").find(".logo").css("background-image", "url('/images/favicon.png')");
+		$("#sidebar-menu > .item").addClass("hide");
+		$("#management-menu").removeClass("hide");
+		$("#enterprise-menu").removeClass("hide");
+		$("#allapps-menu").removeClass("hide").css("display", "inline");
+        var appData = countlyAllApps.getData();
+
+        this.templateData = {
+            "page-title":jQuery.i18n.map["allapps.title"],
+            "logo-class":"platforms",
+			"usage":[
+				{
+					"title":jQuery.i18n.map["common.total-sessions"],
+					"data":0,
+					"id":"draw-total-sessions",
+					"help":"dashboard.total-sessions"
+				},
+				{
+					"title":jQuery.i18n.map["common.total-users"],
+					"data":0,
+					"id":"draw-total-users",
+					"help":"dashboard.total-users"
+				},
+				{
+					"title":jQuery.i18n.map["common.new-users"],
+					"data":0,
+					"id":"draw-new-users",
+					"help":"dashboard.new-users"
+				},
+				{
+					"title":jQuery.i18n.map["dashboard.time-spent"],
+					"data":0,
+					"id":"draw-total-time-spent",
+					"help":"dashboard.total-time-spent"
+				},
+				{
+					"title":jQuery.i18n.map["dashboard.avg-time-spent"],
+					"data":0,
+					"id":"draw-time-spent",
+					"help":"dashboard.avg-time-spent2"
+				},
+				{
+					"title":jQuery.i18n.map["dashboard.avg-reqs-received"],
+					"data":0,
+					"id":"draw-avg-events-served",
+					"help":"dashboard.avg-reqs-received"
+				}
+			]
+        };
+		var self = this;
+        if (!isRefresh) {
+            $(this.el).html(this.template(this.templateData));
+			$(this.selectedView).parents(".big-numbers").addClass("active");
+            this.pageScript();
+            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": appData,
+				"fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+					$(nRow).attr("id", aData._id);
+				},
+                "aoColumns": [
+					{ "mData": function(row, type){if(self.selectedApps[row._id]) return "<i class='check icon-check'></i>"; else return "<i class='check icon-unchecked'></i>";}, "sWidth":"10px", "bSortable":false},
+                    { "mData": function(row, type){if(type == "display"){ var ret; if(row["_id"] == "all") ret = "<div class='logo' style='background-image: url(/images/favicon.png);'></div> "; else ret = "<div class='logo' style='background-image: url(/appimages/" + row["_id"] + ".png);'></div> "; return ret+row.name+"<div class='color'></div>";} else return row.name;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.app-name"] },
+                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url(/images/dashboard/"+row.sessions.trend+"trend.png);'></div> "+row.sessions.total; else return row.sessions.total;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.total-sessions"] },
+                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url(/images/dashboard/"+row.users.trend+"trend.png);'></div> "+row.users.total; else return row.users.total;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.total-users"] },
+                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url(/images/dashboard/"+row.newusers.trend+"trend.png);'></div> "+row.newusers.total; else return row.newusers.total;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.new-users"] },
+                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url(/images/dashboard/"+row.duration.trend+"trend.png);'></div> "+row.duration.total; else return row.duration.total;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.total-duration"] },
+                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url(/images/dashboard/"+row.avgduration.trend+"trend.png);'></div> "+row.avgduration.total; else return row.avgduration.total;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.average-duration"] }
+                ]
+            }));
+			this.drawGraph();
+			$(".dataTable-bottom").append("<div clas='dataTables_info' style='float: right; margin-top:2px; margin-right: 10px;'>Maximum number of applications to be compared (10)</div>")
+
+            $(".d-table").stickyTableHeaders();
+			
+			$('.allapps tbody').on("click", "tr", function (event){
+				var td = $(event.target).closest("td");
+				var row = $(this);
+				if(row.children().first().is(td))
+				{
+					if(self.selectedApps[row.attr("id")]){
+						row.find(".check").removeClass("icon-check").addClass("icon-unchecked");
+						row.find(".color").css("background-color", "transparent");
+						delete self.selectedApps[row.attr("id")];
+						self.selectedCount--;
+					}
+					else if(self.selectedCount <= 10 || row.attr("id") == "all"){
+						if(row.attr("id") == "all"){
+							$(".check.icon-check").removeClass("icon-check").addClass("icon-unchecked");
+							$('.d-table').find(".color").css("background-color", "transparent");
+							self.selectedApps = {};
+							self.selectedCount = 0;
+						}
+						else if(self.selectedApps["all"]){
+							$(".d-table #all .check.icon-check").removeClass("icon-check").addClass("icon-unchecked");
+							$('.d-table #all').find(".color").css("background-color", "transparent");
+							delete self.selectedApps["all"];
+						}
+						self.selectedCount++;
+						row.find(".check").removeClass("icon-unchecked").addClass("icon-check");
+						self.selectedApps[row.attr("id")] = true;
+					}
+					self.drawGraph();
+				}
+				else
+				{
+					var aData = self.dtable.fnGetData( this );
+					countlyAllApps.setApp(row.attr("id"));
+					$("#sidebar-app-select").find(".logo").css("background-image", "url('/appimages/" + row.attr("id") + ".png')");
+					$("#sidebar-app-select").find(".text").text(aData["name"]);
+					$("#sidebar-menu > .item").removeClass("hide");
+					$("#allapps-menu").css("display", "none");
+					window.location.hash = "#/";
+				}
+			});
+        }
+    },
+    refresh:function () {
+        var self = this;
+        $.when(countlyAllApps.initialize()).then(function () {
+            if (app.activeView != self) {
+                return false;
+            }
+            self.renderCommon(true);
+            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+
+            var appData = countlyAllApps.getData();
+            CountlyHelpers.refreshTable(self.dtable, appData);
+			self.drawGraph();
+            app.localize();
+        });
+    }
+});
+
 var AppRouter = Backbone.Router.extend({
     routes:{
         "/":"dashboard",
@@ -2884,6 +3076,7 @@ var AppRouter = Backbone.Router.extend({
         "/analytics/resolutions":"resolutions",
         "/analytics/density":"density",
         "/analytics/durations":"durations",
+		"/all":"allapps",
         "/manage/apps":"manageApps",
         "/manage/users":"manageUsers",
         "/enterprise": "enterprise",
@@ -2948,6 +3141,9 @@ var AppRouter = Backbone.Router.extend({
     enterprise:function () {
         this.renderWhenReady(this.enterpriseView);
     },
+	allapps:function () {
+        this.renderWhenReady(this.allAppsView);
+    },
     refreshActiveView:function () {
     }, //refresh interval function
     renderWhenReady:function (viewName) { //all view renders end up here
@@ -2995,6 +3191,7 @@ var AppRouter = Backbone.Router.extend({
         this.densityView = new DensityView();
         this.durationsView = new DurationView();
         this.enterpriseView = new EnterpriseView();
+		this.allAppsView = new AllAppsView();
 
         Handlebars.registerPartial("date-selector", $("#template-date-selector").html());
         Handlebars.registerPartial("timezones", $("#template-timezones").html());
@@ -3174,6 +3371,20 @@ var AppRouter = Backbone.Router.extend({
                     appName = $(this).find(".name").text(),
                     appImage = $(this).find(".logo").css("background-image"),
                     sidebarApp = $("#sidebar-app-select");
+					
+				if (appId == "allapps") {
+					window.location.hash = "/all";
+					sidebarApp.removeClass("active");
+                    $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack'});
+                    return false;
+				}
+				else{
+					$("#sidebar-menu > .item").removeClass("hide");
+					$("#allapps-menu").css("display", "none");
+				}
+
+				if(window.location.hash.toString() == "#/all")
+					window.location.hash = "/";
 
                 if (self.activeAppKey == appKey) {
                     sidebarApp.removeClass("active");

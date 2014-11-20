@@ -94,7 +94,7 @@ a:active { color:inherit; }
 				#sidebar-menu .sidebar-submenu .item .text { margin-left:17px; float:left; padding-top:8px; font:13px Ubuntu,Helvetica,sans-serif; color:#666; text-shadow:none; }
 				#sidebar-menu .sidebar-submenu .item.active .text { color:#4DB351; }
 				#sidebar-menu .sidebar-submenu .item.help-toggle.active { color:#666; }
-
+#sidebar-menu>.item.hide{display: none !important;}
 			#management-submenu.sidebar-submenu .item .logo { background-image:url('../images/dashboard/management_icons.png'); }
 				.sidebar-submenu .item .logo.applications { background-position:-30px; }
 				.sidebar-submenu .item.active .logo.applications { background-position:0; }
@@ -690,3 +690,14 @@ table.events-table { width:100%; padding:0; margin:0; }
 .enterprise-content { padding:20px; display: none; }
 .enterprise-content .image { float:left; }
 .enterprise-content .text { font-family: Ubuntu; font-size:15px; color:#555; line-height: 22px; }
+
+/* ALL APPS */
+.allapps {margin-top: -16px;}
+.allapps .dataTable-top {border-radius: 0;}
+.allapps .logo{width: 20px; height: 20px; background-size: 20px 20px; float: left; margin-right: 10px; margin-top: -2px; background-position: center; border-radius: 4px; border: 1px solid #555;}
+.allapps .trend { width:12px; height:9px; display: inline-block; margin-top: 5px; margin-right: 5px;}
+.allapps tbody tr {cursor: pointer;}
+
+.allappview .widget-content .big-numbers .inner{height: 30px;}
+.allappview .widget-footer{border-radius: 0;}
+.allapps div.color{ width: 10px; height: 20px; float: right;}

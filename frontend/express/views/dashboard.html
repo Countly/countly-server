@@ -37,6 +37,10 @@
 				<div class="logo dashboard"></div>
 				<div class="text" data-localize="sidebar.dashboard"></div>
 			</a>
+			<a href="#/all" id="allapps-menu" class="item analytics active" style='display: none;'>
+				<div class="logo dashboard"></div>
+				<div class="text" data-localize="sidebar.dashboard"></div>
+			</a>
 			<a class="item" id="analytics-menu">
                 <!--<div class="logo icon-signal" style="background-image:none; font-size:28px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px;"></div>-->
 				<div class="logo analytics"></div>
@@ -178,6 +182,11 @@
 			</div>
 		</div>
 		<div class="apps-scrollable">
+			<div class="app-container app-navigate" data-id="allapps">
+				<div class="logo" style="background-image: url('<%= cdn %>/images/favicon.png');"></div>
+				<div class="name" data-localize="allapps.title"></div>
+				<div class="drag"></div>
+			</div>
 			<% for (var i = 0; i < userOfApps.length; i++) { %>
 				<div class="app-container app-navigate" data-key="<%= userOfApps[i].key %>" data-id="<%= userOfApps[i]['_id'] %>">
 					<div class="logo" style="background-image: url('/appimages/<%= userOfApps[i]['_id'] %>.png');"></div>
@@ -485,6 +494,35 @@
 			</div>
 			{{/if}}
 			<div id="geo-chart-outer" style="padding-bottom: 8px;"><div id="geo-chart" {{#if country-data}}style="margin-right:282px;"{{/if}}></div></div>
+		</div>
+	</script>
+	
+	<script id="template-allapps"  type="text/x-handlebars-template">
+		<div class="widget allappview">
+			<div class="widget-header">
+				<div class="title" style="letter-spacing:-1px; font-size:19px; margin-top:10px; margin-left:5px;">{{toUpperCase page-title}}</div>
+				{{> date-selector }}
+			</div>
+			<div class="widget-content" style="border:none;">
+				<div id="big-numbers-container" class="dashboard">
+					{{#each usage}}
+					<div class="big-numbers six-column help-zone-vs" data-help-localize="{{this.help}}">
+						<div class="inner">
+							<div class="select" id="{{this.id}}">
+								<div class="title">{{this.title}}</div>
+							</div>
+							<div class="arrow"></div>
+						</div>
+					</div>
+					{{/each}}
+				</div>
+			</div>
+			<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none; position:relative;">
+				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
+			</div>
+		</div>
+		<div class="allapps" data-help-localize="{{{chart-helper}}}">
+			<table class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
 		</div>
 	</script>
 
@@ -1111,6 +1149,7 @@
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.device.detail.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.app.version.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.carrier.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.allapps.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.template.js"></script>
     -->
     <% if (member.in_user_id && member.in_user_hash) { %>
