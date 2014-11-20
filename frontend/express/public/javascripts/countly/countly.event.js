@@ -193,6 +193,10 @@
     countlyEvent.getActiveSegmentation = function () {
         return (_activeSegmentation) ? _activeSegmentation : jQuery.i18n.map["events.no-segmentation"];
     };
+	
+	countlyEvent.isSegmentedView = function() {
+        return (_activeSegmentation) ? true : false;
+    };
 
     countlyEvent.getEventData = function () {
 
