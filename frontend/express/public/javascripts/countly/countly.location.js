@@ -148,6 +148,12 @@
                 locationData.chartData = locationData.chartData.splice(0, options.maxCountries);
             }
         }
+		
+		for (var i = 0; i < locationData.chartData.length; i++) {
+            locationData.chartData[i]['country_flag'] =
+                "<div class='flag' style='background-image:url(/images/flags/" + locationData.chartData[i]['code'] + ".png);'></div>" +
+                locationData.chartData[i]['country'];
+        }
 
         return _.sortBy(locationData.chartData, function(obj) { return -obj.t; });
     };

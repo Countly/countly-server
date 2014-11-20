@@ -1051,6 +1051,13 @@
             ticks: _.compact(ticks)
         };
     };
+	
+	countlyCommon.formatNumber = function(x) {
+        x = parseFloat(parseFloat(x).toFixed(2));
+        var parts = x.toString().split(".");
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return parts.join(".");
+    };
 
     // Private Methods
 
