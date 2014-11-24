@@ -18,7 +18,7 @@ var countlyView = Backbone.View.extend({
 
         var self = this;
         $.when(countlyEvent.initialize()).then(function() {
-           self.render();
+            self.render();
         });
     },
     beforeRender: function () {
@@ -31,7 +31,7 @@ var countlyView = Backbone.View.extend({
 
         if (countlyCommon.ACTIVE_APP_ID) {
             var self = this;
-            $.when(this.beforeRender(), initializeEventsOnce()).then(function() {
+            $.when(this.beforeRender(), initializeOnce()).then(function() {
                 self.renderCommon();
                 self.afterRender();
                 app.pageScript();
@@ -56,7 +56,7 @@ var countlyView = Backbone.View.extend({
     }
 });
 
-var initializeEventsOnce = _.once(function() {
+var initializeOnce = _.once(function() {
     return $.when(countlyEvent.initialize()).then(function() {});
 });
 
@@ -153,14 +153,76 @@ $.extend(Template.prototype, {
             callback(true);
         });
     };
+	
+	CountlyHelpers.refreshTable = function(dTable, newDataArr) {
+        var oSettings = dTable.fnSettings();
+        dTable.fnClearTable(false);
+
+        for (var i=0; i < newDataArr.length; i++) {
+            dTable.oApi._fnAddData(oSettings, newDataArr[i]);
+        }
+
+        oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
+        dTable.fnStandingRedraw();
+    };
+	
+	CountlyHelpers.expandRows = function(dTable, getData){
+		dTable.aOpen = [];
+		dTable.on("click", "tr", function (e){
+			var nTr = this;
+			var id = $(nTr).attr("id");
+			if(!id){
+				e.stopPropagation();
+			}
+			else{
+				var i = $.inArray( id, dTable.aOpen );
+			
+				if ( i === -1 ) {
+					$(nTr).addClass("selected");
+					var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr )), 'details' );
+					$('div.datatablesubrow', nDetailsRow).slideDown();
+					dTable.aOpen.push( id );
+				}
+				else {
+					$(nTr).removeClass("selected");
+					$('div.datatablesubrow', $(nTr).next()[0]).slideUp( function () {
+						dTable.fnClose( nTr );
+						dTable.aOpen.splice( i, 1 );
+					} );
+				}
+			}
+		});
+	};
+	
+	CountlyHelpers.reopenRows = function(dTable, getData){
+		var nTr;
+		var oSettings = dTable.fnSettings();
+		if(dTable.aOpen){
+			$.each( dTable.aOpen, function ( i, id ) {
+				var nTr = $("#"+id)[0];
+				$(nTr).addClass("selected");
+				var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr )), 'details' );
+				$('div.datatablesubrow', nDetailsRow).show();
+			});
+		}
+	};
 
     CountlyHelpers.initializeSelect = function () {
-        $(".cly-select").click(function (e) {
-            var selectItems = $(this).find(".select-items");
+        $("#content-container").on("click", ".cly-select", function (e) {
+            if ($(this).hasClass("disabled")) {
+                return true;
+            }
+
+            $(this).removeClass("req");
+
+            var selectItems = $(this).find(".select-items"),
+                itemCount = selectItems.find(".item").length;
 
             if (!selectItems.length) {
                 return false;
             }
+
+            $(".cly-select").find(".search").remove();
 
             if (selectItems.is(":visible")) {
                 $(this).removeClass("active");
@@ -168,18 +230,59 @@ $.extend(Template.prototype, {
                 $(".cly-select").removeClass("active");
                 $(".select-items").hide();
                 $(this).addClass("active");
+
+                if (itemCount > 10 && !$(this).hasClass("centered")) {
+                    $("<div class='search'><div class='inner'><input type='text' /><i class='icon-search'></i></div></div>").insertBefore($(this).find(".select-items"));
+                }
             }
 
-            $(this).find(".select-items").toggle();
+            if ($(this).hasClass("centered")) {
+                var height = $(this).find(".select-items").height();
+                $(this).find(".select-items").css("margin-top", (-(height/2).toFixed(0) - ($(this).height()/2).toFixed(0)) + "px");
+            }
+
+            if ($(this).find(".select-items").is(":visible")) {
+                $(this).find(".select-items").hide();
+            } else {
+                $(this).find(".select-items").show();
+                $(this).find(".select-items>div").addClass("scroll-list");
+                $(this).find(".scroll-list").slimScroll({
+                    height:'100%',
+                    start:'top',
+                    wheelStep:10,
+                    position:'right',
+                    disableFadeOut:true
+                });
+            }
+
+            $(this).find(".search input").focus();
 
             $("#date-picker").hide();
             e.stopPropagation();
         });
 
-        $(".select-items .item").click(function () {
+        $("#content-container").on("click", ".select-items .item", function () {
             var selectedItem = $(this).parents(".cly-select").find(".text");
             selectedItem.text($(this).text());
             selectedItem.data("value", $(this).data("value"));
+        });
+
+        $("#content-container").on("click", ".cly-select .search", function (e) {
+            e.stopPropagation();
+        });
+
+        $("#content-container").on("keyup", ".cly-select .search input", function(event) {
+            if (!$(this).val()) {
+                $(this).parents(".cly-select").find(".item").removeClass("hidden");
+            } else {
+                $(this).parents(".cly-select").find(".item:not(:contains('" + $(this).val() + "'))").addClass("hidden");
+                $(this).parents(".cly-select").find(".item:contains('" + $(this).val() + "')").removeClass("hidden");
+            }
+        });
+
+        $(window).click(function () {
+            $(".select-items").hide();
+            $(".cly-select").find(".search").remove();
         });
     };
 
@@ -230,9 +333,391 @@ $.extend(Template.prototype, {
                 $("#overlay").hide();
             }
         });
+		
+		$.fn.dataTableExt.oPagination.four_button = {
+            "fnInit": function ( oSettings, nPaging, fnCallbackDraw )
+            {
+                nFirst = document.createElement( 'span' );
+                nPrevious = document.createElement( 'span' );
+                nNext = document.createElement( 'span' );
+                nLast = document.createElement( 'span' );
+
+                nFirst.innerHTML = "<i class='icon-double-angle-left'></i>";
+                nPrevious.innerHTML = "<i class='icon-angle-left'></i>";
+                nNext.innerHTML = "<i class='icon-angle-right'></i>";
+                nLast.innerHTML = "<i class='icon-double-angle-right'></i>";
+
+                nFirst.className = "paginate_button first";
+                nPrevious.className = "paginate_button previous";
+                nNext.className="paginate_button next";
+                nLast.className = "paginate_button last";
+
+                nPaging.appendChild( nFirst );
+                nPaging.appendChild( nPrevious );
+                nPaging.appendChild( nNext );
+                nPaging.appendChild( nLast );
+
+                $(nFirst).click( function () {
+                    oSettings.oApi._fnPageChange( oSettings, "first" );
+                    fnCallbackDraw( oSettings );
+                } );
+
+                $(nPrevious).click( function() {
+                    oSettings.oApi._fnPageChange( oSettings, "previous" );
+                    fnCallbackDraw( oSettings );
+                } );
+
+                $(nNext).click( function() {
+                    oSettings.oApi._fnPageChange( oSettings, "next" );
+                    fnCallbackDraw( oSettings );
+                } );
+
+                $(nLast).click( function() {
+                    oSettings.oApi._fnPageChange( oSettings, "last" );
+                    fnCallbackDraw( oSettings );
+                } );
+
+                $(nFirst).bind( 'selectstart', function () { return false; } );
+                $(nPrevious).bind( 'selectstart', function () { return false; } );
+                $(nNext).bind( 'selectstart', function () { return false; } );
+                $(nLast).bind( 'selectstart', function () { return false; } );
+            },
+
+            "fnUpdate": function ( oSettings, fnCallbackDraw )
+            {
+                if ( !oSettings.aanFeatures.p )
+                {
+                    return;
+                }
+
+                var an = oSettings.aanFeatures.p;
+                for ( var i=0, iLen=an.length ; i<iLen ; i++ )
+                {
+                    var buttons = an[i].getElementsByTagName('span');
+                    if ( oSettings._iDisplayStart === 0 )
+                    {
+                        buttons[0].className = "paginate_disabled_previous";
+                        buttons[1].className = "paginate_disabled_previous";
+                    }
+                    else
+                    {
+                        buttons[0].className = "paginate_enabled_previous";
+                        buttons[1].className = "paginate_enabled_previous";
+                    }
+
+                    if ( oSettings.fnDisplayEnd() == oSettings.fnRecordsDisplay() )
+                    {
+                        buttons[2].className = "paginate_disabled_next";
+                        buttons[3].className = "paginate_disabled_next";
+                    }
+                    else
+                    {
+                        buttons[2].className = "paginate_enabled_next";
+                        buttons[3].className = "paginate_enabled_next";
+                    }
+                }
+            }
+        };
+
+        $.fn.dataTableExt.oApi.fnStandingRedraw = function(oSettings) {
+            if(oSettings.oFeatures.bServerSide === false){
+                var before = oSettings._iDisplayStart;
+
+                oSettings.oApi._fnReDraw(oSettings);
+
+                // iDisplayStart has been reset to zero - so lets change it back
+                oSettings._iDisplayStart = before;
+                oSettings.oApi._fnCalculateEnd(oSettings);
+            }
+
+            // draw the 'current' page
+            oSettings.oApi._fnDraw(oSettings);
+        };
+
+        function getCustomDateInt(s) {
+            if (s.indexOf(":") != -1) {
+                if (s.indexOf(",") != -1) {
+                    s = s.replace(/,|:/g,"");
+                    var dateParts = s.split(" ");
+
+                    return  parseInt((moment.monthsShort.indexOf(dateParts[1]) + 1) * 1000000) +
+                        parseInt(dateParts[0]) * 10000 +
+                        parseInt(dateParts[2]);
+                } else {
+                    return parseInt(s.replace(':', ''));
+                }
+            } else if (s.length == 3) {
+                return moment.monthsShort.indexOf(s);
+            } else {
+                s = s.replace(",","");
+                var dateParts = s.split(" ");
+
+                if (dateParts.length == 3) {
+                    return (parseInt(dateParts[2]) * 10000) + parseInt(moment.monthsShort.indexOf(dateParts[1]) * 100) + parseInt(dateParts[0]);
+                } else {
+                    return parseInt(moment.monthsShort.indexOf(dateParts[1]) * 100) + parseInt(dateParts[0]);
+                }
+            }
+        }
+
+        jQuery.fn.dataTableExt.oSort['customDate-asc']  = function(x, y) {
+            x = getCustomDateInt(x);
+            y = getCustomDateInt(y);
+
+            return ((x < y) ? -1 : ((x > y) ?  1 : 0));
+        };
+
+        jQuery.fn.dataTableExt.oSort['customDate-desc'] = function(x, y) {
+            x = getCustomDateInt(x);
+            y = getCustomDateInt(y);
+
+            return ((x < y) ?  1 : ((x > y) ? -1 : 0));
+        };
+
+        function getDateRangeInt(s) {
+            s = s.split("-")[0];
+            var mEnglish = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+            if (s.indexOf(":") != -1) {
+                var mName = (s.split(" ")[1]).split(",")[0];
+
+                return s.replace(mName, parseInt(mEnglish.indexOf(mName))).replace(/[:, ]/g, "");
+            } else {
+                var parts = s.split(" ");
+                if (parts.length > 1) {
+                    return parseInt(mEnglish.indexOf(parts[1]) * 100) + parseInt(parts[0]);
+                } else {
+                    return parts[0].replace(/[><]/g, "");
+                }
+            }
+        }
+
+        jQuery.fn.dataTableExt.oSort['dateRange-asc']  = function(x, y) {
+            x = getDateRangeInt(x);
+            y = getDateRangeInt(y);
+
+            return ((x < y) ? -1 : ((x > y) ?  1 : 0));
+        };
+
+        jQuery.fn.dataTableExt.oSort['dateRange-desc'] = function(x, y) {
+            x = getDateRangeInt(x);
+            y = getDateRangeInt(y);
+
+            return ((x < y) ?  1 : ((x > y) ? -1 : 0));
+        };
+
+        jQuery.fn.dataTableExt.oSort['percent-asc']  = function(x, y) {
+            x = parseFloat($("<a></a>").html(x).text().replace("%",""));
+            y = parseFloat($("<a></a>").html(y).text().replace("%",""));
+
+            return ((x < y) ? -1 : ((x > y) ?  1 : 0));
+        };
+
+        jQuery.fn.dataTableExt.oSort['percent-desc']  = function(x, y) {
+            x = parseFloat($("<a></a>").html(x).text().replace("%",""));
+            y = parseFloat($("<a></a>").html(y).text().replace("%",""));
+
+            return ((x < y) ?  1 : ((x > y) ? -1 : 0));
+        };
+
+        jQuery.fn.dataTableExt.oSort['formatted-num-asc'] = function (x, y) {
+            'use strict';
+
+            // Define vars
+            var a = [], b = [];
+
+            // Match any character except: digits (0-9), dash (-), period (.), or backslash (/) and replace those characters with empty string.
+            x = x.replace(/[^\d\-\.\/]/g, '');
+            y = y.replace(/[^\d\-\.\/]/g, '');
+
+            // Handle simple fractions
+            if (x.indexOf('/') >= 0) {
+                a = x.split("/");
+                x = parseInt(a[0], 10) / parseInt(a[1], 10);
+            }
+            if (y.indexOf('/') >= 0) {
+                b = y.split("/");
+                y = parseInt(b[0], 10) / parseInt(b[1], 10);
+            }
+
+            return x - y;
+        };
+
+        jQuery.fn.dataTableExt.oSort['formatted-num-desc'] = function (x, y) {
+            'use strict';
+
+            // Define vars
+            var a = [], b = [];
+
+            // Match any character except: digits (0-9), dash (-), period (.), or backslash (/) and replace those characters with empty string.
+            x = x.replace(/[^\d\-\.\/]/g, '');
+            y = y.replace(/[^\d\-\.\/]/g, '');
+
+            // Handle simple fractions
+            if (x.indexOf('/') >= 0) {
+                a = x.split("/");
+                x = parseInt(a[0], 10) / parseInt(a[1], 10);
+            }
+            if (y.indexOf('/') >= 0) {
+                b = y.split("/");
+                y = parseInt(b[0], 10) / parseInt(b[1], 10);
+            }
+
+            return y - x;
+        };
+
+        jQuery.fn.dataTableExt.oSort['loyalty-asc']  = function(x, y) {
+            x = countlyUser.getLoyaltyIndex(x);
+            y = countlyUser.getLoyaltyIndex(y);
+
+            return ((x < y) ? -1 : ((x > y) ?  1 : 0));
+        };
+
+        jQuery.fn.dataTableExt.oSort['loyalty-desc']  = function(x, y) {
+            x = countlyUser.getLoyaltyIndex(x);
+            y = countlyUser.getLoyaltyIndex(y);
+
+            return ((x < y) ?  1 : ((x > y) ? -1 : 0));
+        };
+
+        jQuery.fn.dataTableExt.oSort['frequency-asc']  = function(x, y) {
+            x = countlyUser.getFrequencyIndex(x);
+            y = countlyUser.getFrequencyIndex(y);
+
+            return ((x < y) ? -1 : ((x > y) ?  1 : 0));
+        };
+
+        jQuery.fn.dataTableExt.oSort['frequency-desc']  = function(x, y) {
+            x = countlyUser.getFrequencyIndex(x);
+            y = countlyUser.getFrequencyIndex(y);
+
+            return ((x < y) ?  1 : ((x > y) ? -1 : 0));
+        };
+
+        jQuery.fn.dataTableExt.oSort['session-duration-asc']  = function(x, y) {
+            x = countlySession.getDurationIndex(x);
+            y = countlySession.getDurationIndex(y);
+
+            return ((x < y) ? -1 : ((x > y) ?  1 : 0));
+        };
+
+        jQuery.fn.dataTableExt.oSort['session-duration-desc']  = function(x, y) {
+            x = countlySession.getDurationIndex(x);
+            y = countlySession.getDurationIndex(y);
+
+            return ((x < y) ?  1 : ((x > y) ? -1 : 0));
+        };
+
+        $.extend($.fn.dataTable.defaults, {
+            "sDom": '<"dataTable-top"fpT>t<"dataTable-bottom"i>',
+            "bAutoWidth": false,
+            "sPaginationType": "four_button",
+            "iDisplayLength": 50,
+            "bDestroy": true,
+            "bDeferRender": true,
+            "oTableTools": {
+                "sSwfPath": "/javascripts/dom/dataTables/swf/copy_csv_xls.swf",
+                "aButtons": [
+                    {
+                        "sExtends": "csv",
+                        "sButtonText": "Save to CSV",
+                        "fnClick": function (nButton, oConfig, flash) {
+                            var tableCols = $(nButton).parents(".dataTables_wrapper").find(".dataTable").dataTable().fnSettings().aoColumns,
+                                tableData = this.fnGetTableData(oConfig).split(/\r\n|\r|\n/g).join('","').split('","'),
+                                retStr = "";
+
+                            for (var i = 0;  i < tableData.length; i++) {
+                                tableData[i] = tableData[i].replace("\"", "");
+
+                                if (i >= tableCols.length) {
+                                    var colIndex = i % tableCols.length;
+
+                                    if (tableCols[colIndex].sType == "formatted-num") {
+                                        tableData[i] = tableData[i].replace(/,/g, "");
+                                    } else if (tableCols[colIndex].sType == "percent") {
+                                        tableData[i] = tableData[i].replace("%", "");
+                                    }
+                                }
+
+                                if ((i + 1) % tableCols.length == 0) {
+                                    retStr += "\"" + tableData[i] + "\"\r\n";
+                                } else {
+                                    retStr += "\"" + tableData[i] + "\", ";
+                                }
+                            }
+
+                            this.fnSetText(flash, retStr);
+                        }
+                    },
+                    {
+                        "sExtends": "xls",
+                        "sButtonText": "Save for Excel",
+                        "fnClick": function (nButton, oConfig, flash) {
+                            var tableCols = $(nButton).parents(".dataTables_wrapper").find(".dataTable").dataTable().fnSettings().aoColumns,
+                                tableData = this.fnGetTableData(oConfig).split(/\r\n|\r|\n/g).join('\t').split('\t'),
+                                retStr = "";
+
+                            for (var i = 0;  i < tableData.length; i++) {
+                                if (i >= tableCols.length) {
+                                    var colIndex = i % tableCols.length;
+
+                                    if (tableCols[colIndex].sType == "formatted-num") {
+                                        tableData[i] = parseFloat(tableData[i].replace(/,/g, "")).toLocaleString();
+                                    } else if (tableCols[colIndex].sType == "percent") {
+                                        tableData[i] = parseFloat(tableData[i].replace("%", "")).toLocaleString();
+                                    } else if (tableCols[colIndex].sType == "numeric") {
+                                        tableData[i] = parseFloat(tableData[i]).toLocaleString();
+                                    }
+                                }
+
+                                if ((i + 1) % tableCols.length == 0) {
+                                    retStr += tableData[i] + "\r\n";
+                                } else {
+                                    retStr += tableData[i] + "\t";
+                                }
+                            }
+
+                            this.fnSetText(flash, retStr);
+                        }
+                    }
+                ]
+            },
+            "fnInitComplete": function(oSettings, json) {
+                var saveHTML = "<div class='save-table-data'><i class='icon-download-alt'></i></div>",
+                    searchHTML = "<div class='search-table-data'><i class='icon-search'></i></div>",
+                    tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
+
+                $(saveHTML).insertBefore(tableWrapper.find(".DTTT_container"));
+                $(searchHTML).insertBefore(tableWrapper.find(".dataTables_filter"));
+                tableWrapper.find(".dataTables_filter").html(tableWrapper.find(".dataTables_filter").find("input").attr("Placeholder","Search").clone(true));
+
+                tableWrapper.find(".save-table-data").on("click", function() {
+                    if ($(this).next(".DTTT_container").css('visibility') == 'hidden') {
+                        $(this).next(".DTTT_container").css("visibility", 'visible');
+                    } else {
+                        $(this).next(".DTTT_container").css("visibility", 'hidden');
+                    }
+                });
+
+                tableWrapper.find(".search-table-data").on("click", function() {
+                    $(this).next(".dataTables_filter").toggle();
+                    $(this).next(".dataTables_filter").find("input").focus();
+                });
+
+                tableWrapper.css({"min-height": tableWrapper.height()});
+            }
+        });
+
+        $.fn.dataTableExt.sErrMode = 'throw';
     });
 
 }(window.CountlyHelpers = window.CountlyHelpers || {}, jQuery));
+
+$.expr[":"].contains = $.expr.createPseudo(function(arg) {
+    return function( elem ) {
+        return $(elem).text().toUpperCase().indexOf(arg.toUpperCase()) >= 0;
+    };
+});
 
 function fillKeyEvents(keyEvents) {
     if (!keyEvents.length) {
@@ -574,29 +1059,24 @@ window.SessionView = countlyView.extend({
                         "help":"sessions.unique-sessions"
                     }
                 ]
-            },
-            "chart-data":{
-                "columnCount":4,
-                "columns":[jQuery.i18n.map["common.date"], jQuery.i18n.map["common.table.total-sessions"], jQuery.i18n.map["common.table.new-sessions"], jQuery.i18n.map["common.table.unique-sessions"]],
-                "rows":[]
             }
         };
-
-        this.templateData["chart-data"]["rows"] = sessionDP.chartData;
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
 
             countlyCommon.drawTimeGraph(sessionDP.chartDP, "#dashboard-graph");
-            $(".sortable").stickyTableHeaders();
+            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": sessionDP.chartData,
+                "aoColumns": [
+                    { "mData": "date", "sType":"customDate", "sTitle": jQuery.i18n.map["common.date"] },
+                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
+                    { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-sessions"] },
+                    { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.unique-sessions"] }
+                ]
+            }));
 
-            var self = this;
-            $(".sortable").tablesorter({
-                sortList:this.sortList,
-                headers:{
-                    0:{ sorter:'customDate' }
-                }
-            });
+            $(".d-table").stickyTableHeaders();
         }
     },
     refresh:function () {
@@ -607,20 +1087,12 @@ window.SessionView = countlyView.extend({
             }
             self.renderCommon(true);
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            newPage.find(".sortable").tablesorter({
-                sortList:self.sortList,
-                headers:{
-                    0:{ sorter:'customDate' }
-                }
-            });
 
             $(self.el).find("#big-numbers-container").html(newPage.find("#big-numbers-container").html());
-            $(self.el).find(".d-table tbody").html(newPage.find(".d-table tbody").html());
 
             var sessionDP = countlySession.getSessionDP();
             countlyCommon.drawTimeGraph(sessionDP.chartDP, "#dashboard-graph");
-
-            $(".sortable").trigger("update");
+			CountlyHelpers.refreshTable(self.dtable, sessionDP.chartData);
             app.localize();
         });
     }
@@ -665,30 +1137,23 @@ window.UserView = countlyView.extend({
                         "help":"users.returning-users"
                     }
                 ]
-            },
-            "chart-data":{
-                "columnCount":4,
-                "columns":[jQuery.i18n.map["common.date"], jQuery.i18n.map["common.table.total-users"], jQuery.i18n.map["common.table.new-users"], jQuery.i18n.map["common.table.returning-users"]],
-                "rows":[]
             }
         };
-
-        this.templateData["chart-data"]["rows"] = userDP.chartData;
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
 
-            $(".sortable").stickyTableHeaders();
+            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": userDP.chartData,
+                "aoColumns": [
+                    { "mData": "date", "sType":"customDate", "sTitle": jQuery.i18n.map["common.date"] },
+                    { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
+                    { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] },
+                    { "mData": "returning", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.returning-users"] }
+                ]
+            }));
 
-            var self = this;
-            $(".sortable").tablesorter({
-                sortList:this.sortList,
-                headers:{
-                    0:{ sorter:'customDate' }
-                }
-            }).bind("sortEnd", function (sorter) {
-                    self.sortList = sorter.target.config.sortList;
-                });
+            $(".d-table").stickyTableHeaders();
 
             countlyCommon.drawTimeGraph(userDP.chartDP, "#dashboard-graph");
         }
@@ -701,20 +1166,13 @@ window.UserView = countlyView.extend({
             }
             self.renderCommon(true);
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            newPage.find(".sortable").tablesorter({
-                sortList:self.sortList,
-                headers:{
-                    0:{ sorter:'customDate' }
-                }
-            });
 
             $(self.el).find("#big-numbers-container").replaceWith(newPage.find("#big-numbers-container"));
-            $(self.el).find(".d-table tbody").replaceWith(newPage.find(".d-table tbody"));
 
             var userDP = countlySession.getUserDP();
             countlyCommon.drawTimeGraph(userDP.chartDP, "#dashboard-graph");
+			CountlyHelpers.refreshTable(self.dtable, userDP.chartData);
 
-            $(".sortable").trigger("update");
             app.localize();
         });
     }
@@ -732,29 +1190,23 @@ window.LoyaltyView = countlyView.extend({
         this.templateData = {
             "page-title":jQuery.i18n.map["user-loyalty.title"],
             "logo-class":"loyalty",
-            "chart-data":{
-                "columnCount":3,
-                "columns":[jQuery.i18n.map["user-loyalty.table.session-count"], jQuery.i18n.map["common.number-of-users"], jQuery.i18n.map["common.percent"]],
-                "rows":[]
-            },
             "chart-helper":"loyalty.chart",
             "table-helper":"loyalty.table"
         };
 
-        this.templateData["chart-data"]["rows"] = loyaltyData.chartData;
-
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
 
-            $(".sortable").stickyTableHeaders();
+			this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": loyaltyData.chartData,
+                "aoColumns": [
+                    { "mData": "l", sType:"loyalty", "sTitle": jQuery.i18n.map["user-loyalty.table.session-count"] },
+                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.number-of-users"] },
+                    { "mData": "percent", "sType":"percent", "sTitle": jQuery.i18n.map["common.percent"] }
+                ]
+            }));
 
-            var self = this;
-            $(".sortable").tablesorter({
-                sortList:this.sortList
-            }).bind("sortEnd", function (sorter) {
-                    self.sortList = sorter.target.config.sortList;
-                });
-
+            $(".d-table").stickyTableHeaders();
             countlyCommon.drawGraph(loyaltyData.chartDP, "#dashboard-graph", "bar");
         }
     },
@@ -767,14 +1219,11 @@ window.LoyaltyView = countlyView.extend({
             }
             self.renderCommon(true);
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            newPage.find(".sortable").tablesorter({sortList:self.sortList});
-
-            $(self.el).find(".sortable tbody").replaceWith(newPage.find(".sortable tbody"));
 
             var frequencyData = countlyUser.getLoyaltyData();
             countlyCommon.drawGraph(loyaltyData.chartDP, "#dashboard-graph", "bar");
+			CountlyHelpers.refreshTable(self.dtable, loyaltyData.chartData);
 
-            $(".sortable").trigger("update");
             app.localize();
         });
     }
@@ -787,6 +1236,35 @@ window.CountriesView = countlyView.extend({
     },
     beforeRender: function() {
         return $.when(countlySession.initialize(), countlyLocation.initialize(), countlyCity.initialize()).then(function () {});
+    },
+	drawTable: function() {
+        var tableFirstColTitle = (this.cityView) ? jQuery.i18n.map["countries.table.city"] : jQuery.i18n.map["countries.table.country"],
+            locationData,
+            firstCollData = "country_flag"
+
+        if (this.cityView) {
+            locationData = countlyCity.getLocationData();
+            firstCollData = "city";
+        } else {
+            locationData = countlyLocation.getLocationData();
+        }
+
+        var activeApp = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID];
+        if (activeApp && activeApp.country) {
+            $("#toggle-map").text(countlyLocation.getCountryName(activeApp.country));
+        }
+
+        this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            "aaData": locationData,
+            "aoColumns": [
+                { "mData": firstCollData, "sTitle": tableFirstColTitle },
+                { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
+                { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
+                { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
+            ]
+        }));
+
+        $(".d-table").stickyTableHeaders();
     },
     dateChanged:function () {
         this.renderCommon();
@@ -822,20 +1300,9 @@ window.CountriesView = countlyView.extend({
                     }
                 ]
             },
-            "chart-data":{
-                "columnCount":4,
-                "columns":[tableFirstColTitle, jQuery.i18n.map["common.table.total-sessions"], jQuery.i18n.map["common.table.total-users"], jQuery.i18n.map["common.table.new-users"]],
-                "rows":[]
-            },
             "chart-helper":"countries.chart",
             "table-helper":"countries.table"
         };
-
-        if (this.cityView) {
-            this.templateData["chart-data"]["rows"] = countlyCity.getLocationData();
-        } else {
-            this.templateData["chart-data"]["rows"] = countlyLocation.getLocationData();
-        }
 
         var self = this;
         $(document).bind('selectMapCountry', function () {
@@ -844,7 +1311,7 @@ window.CountriesView = countlyView.extend({
             $("#toggle-map").addClass("active");
 
             countlyCity.drawGeoChart({height:450});
-            self.refresh();
+            self.refresh(true);
         });
 
         if (!isRefresh) {
@@ -856,14 +1323,7 @@ window.CountriesView = countlyView.extend({
                 $("#toggle-map").text(countlyLocation.getCountryName(activeApp.country));
             }
 
-            $(".sortable").stickyTableHeaders();
-
-            var self = this;
-            $(".sortable").tablesorter({
-                sortList:this.sortList
-            }).bind("sortEnd", function (sorter) {
-                self.sortList = sorter.target.config.sortList;
-            });
+            this.drawTable();
 
             if (this.cityView) {
                 countlyCity.drawGeoChart({height:450});
@@ -882,24 +1342,19 @@ window.CountriesView = countlyView.extend({
                     self.cityView = false;
                     countlyLocation.drawGeoChart({height:450});
                     $(this).removeClass("active");
-                    self.refresh();
+                    self.refresh(true);
                     store.set("countly_location_city", false);
                 } else {
                     self.cityView = true;
                     countlyCity.drawGeoChart({height:450});
                     $(this).addClass("active");
-                    self.refresh();
+                    self.refresh(true);
                     store.set("countly_location_city", true);
                 }
-
-                tableFirstColTitle = (self.cityView) ? jQuery.i18n.map["countries.table.city"] : jQuery.i18n.map["countries.table.country"];
-                $("#content").find("table.d-table").each(function () {
-                    $(this).find("tr:eq(0) th:eq(0)").text(tableFirstColTitle);
-                });
             });
         }
     },
-    refresh:function () {
+    refresh:function (isToggle) {
         var self = this;
         $.when(this.beforeRender()).then(function () {
             if (app.activeView != self) {
@@ -908,14 +1363,24 @@ window.CountriesView = countlyView.extend({
             self.renderCommon(true);
 
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            newPage.find(".sortable").tablesorter({
-                sortList:self.sortList
-            });
 
             $(self.el).find("#big-numbers-container").replaceWith(newPage.find("#big-numbers-container"));
-            $(self.el).find(".d-table tbody").replaceWith(newPage.find(".d-table tbody"));
+			
+			if (isToggle) {
+                self.drawTable();
+            } else {
+                var locationData;
+                if (self.cityView) {
+                    locationData = countlyCity.getLocationData();
+                    countlyCity.refreshGeoChart();
+                } else {
+                    locationData = countlyLocation.getLocationData();
+                    countlyLocation.refreshGeoChart();
+                }
 
-            $(".sortable").trigger("update");
+                CountlyHelpers.refreshTable(self.dtable, locationData);
+            }
+           
             app.localize();
         });
     }
@@ -935,28 +1400,23 @@ window.FrequencyView = countlyView.extend({
         this.templateData = {
             "page-title":jQuery.i18n.map["session-frequency.title"],
             "logo-class":"frequency",
-            "chart-data":{
-                "columnCount":4,
-                "columns":[jQuery.i18n.map["session-frequency.table.time-after"], jQuery.i18n.map["common.number-of-users"], jQuery.i18n.map["common.percent"]],
-                "rows":[]
-            },
             "chart-helper":"frequency.chart",
             "table-helper":"frequency.table"
         };
 
-        this.templateData["chart-data"]["rows"] = frequencyData.chartData;
-
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
 
-            $(".sortable").stickyTableHeaders();
+			this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": frequencyData.chartData,
+                "aoColumns": [
+                    { "mData": "f", sType:"frequency", "sTitle": jQuery.i18n.map["session-frequency.table.time-after"] },
+                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.number-of-users"] },
+                    { "mData": "percent", "sType":"percent", "sTitle": jQuery.i18n.map["common.percent"] }
+                ]
+            }));
 
-            var self = this;
-            $(".sortable").tablesorter({
-                sortList:this.sortList
-            }).bind("sortEnd", function (sorter) {
-                    self.sortList = sorter.target.config.sortList;
-                });
+            $(".d-table").stickyTableHeaders();
 
             countlyCommon.drawGraph(frequencyData.chartDP, "#dashboard-graph", "bar");
         }
@@ -969,14 +1429,10 @@ window.FrequencyView = countlyView.extend({
             }
             self.renderCommon(true);
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            newPage.find(".sortable").tablesorter({sortList:self.sortList});
-
-            $(self.el).find(".sortable tbody").replaceWith(newPage.find(".sortable tbody"));
 
             var frequencyData = countlyUser.getFrequencyData();
             countlyCommon.drawGraph(frequencyData.chartDP, "#dashboard-graph", "bar");
-
-            $(".sortable").trigger("update");
+			CountlyHelpers.refreshTable(self.dtable, frequencyData.chartData);
             app.localize();
         });
     }
@@ -1015,11 +1471,6 @@ window.DeviceView = countlyView.extend({
                 "left":jQuery.i18n.map["common.total-users"],
                 "right":jQuery.i18n.map["common.new-users"]
             },
-            "chart-data":{
-                "columnCount":4,
-                "columns":[jQuery.i18n.map["devices.table.device"], jQuery.i18n.map["common.table.total-sessions"], jQuery.i18n.map["common.table.total-users"], jQuery.i18n.map["common.table.new-users"]],
-                "rows":[]
-            },
             "bars":[
                 {
                     "title":jQuery.i18n.map["common.bar.top-platform"],
@@ -1041,20 +1492,24 @@ window.DeviceView = countlyView.extend({
             "table-helper":""
         };
 
-        this.templateData["chart-data"]["rows"] = deviceData.chartData;
-
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             this.pageScript();
-            $(".sortable").stickyTableHeaders();
-
-            var self = this;
-            $(".sortable").tablesorter({sortList:this.sortList}).bind("sortEnd", function (sorter) {
-                self.sortList = sorter.target.config.sortList;
-            });
 
             countlyCommon.drawGraph(deviceData.chartDPTotal, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(deviceData.chartDPNew, "#dashboard-graph2", "pie");
+			
+			this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": deviceData.chartData,
+                "aoColumns": [
+                    { "mData": "device", "sTitle": jQuery.i18n.map["devices.table.device"] },
+                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
+                    { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
+                    { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
+                ]
+            }));
+
+            $(".d-table").stickyTableHeaders();
         }
     },
     refresh:function () {
@@ -1066,18 +1521,14 @@ window.DeviceView = countlyView.extend({
             self.renderCommon(true);
 
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            newPage.find(".sortable").tablesorter({sortList:self.sortList});
-
-            $(self.el).find(".sortable tbody").replaceWith(newPage.find(".sortable tbody"));
             $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
 
             var deviceData = countlyDevice.getDeviceData();
 
             countlyCommon.drawGraph(deviceData.chartDPTotal, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(deviceData.chartDPNew, "#dashboard-graph2", "pie");
-
+			CountlyHelpers.refreshTable(self.dtable, deviceData.chartData);
             self.pageScript();
-            $(".sortable").trigger("update");
         });
     }
 });
@@ -1119,38 +1570,39 @@ window.PlatformView = countlyView.extend({
                 "right":jQuery.i18n.map["platforms.pie-right"]
             },
             "graph-segmentation":oSVersionData.os,
-            "chart-data":{
-                "columnCount":4,
-                "columns":[jQuery.i18n.map["platforms.table.platform"], jQuery.i18n.map["common.table.total-sessions"], jQuery.i18n.map["common.table.total-users"], jQuery.i18n.map["common.table.new-users"]],
-                "rows":[]
-            },
-            "chart-data2":{
-                "columnCount":4,
-                "columns":[jQuery.i18n.map["platforms.table.platform-version"], jQuery.i18n.map["common.table.total-sessions"], jQuery.i18n.map["common.table.total-users"], jQuery.i18n.map["common.table.new-users"]],
-                "rows":[]
-            },
             "chart-helper":"platform-versions.chart",
-            "table-helper":""
+            "table-helper":"",
+			"two-tables": true
         };
-
-        this.templateData["chart-data"]["rows"] = platformData.chartData;
-        this.templateData["chart-data2"]["rows"] = oSVersionData.chartData;
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             this.pageScript();
-            $(".sortable:eq(1)").stickyTableHeaders();
-
-            var self = this;
-            $(".sortable:eq(0)").tablesorter({sortList:this.sortList}).bind("sortEnd", function (sorter) {
-                self.sortList = sorter.target.config.sortList;
-            });
-            $(".sortable:eq(1)").tablesorter({sortList:this.sortList2}).bind("sortEnd", function (sorter) {
-                self.sortList2 = sorter.target.config.sortList;
-            });
 
             countlyCommon.drawGraph(platformData.chartDP, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(oSVersionData.chartDP, "#dashboard-graph2", "pie");
+			
+			this.dtable = $('#dataTableOne').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": platformData.chartData,
+                "aoColumns": [
+                    { "mData": "os_", "sTitle": jQuery.i18n.map["platforms.table.platform"] },
+                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
+                    { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
+                    { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
+                ]
+            }));
+
+            this.dtableTwo = $('#dataTableTwo').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": oSVersionData.chartData,
+                "aoColumns": [
+                    { "mData": "os_version", "sTitle": jQuery.i18n.map["platforms.table.platform-version"] },
+                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
+                    { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
+                    { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
+                ]
+            }));
+
+            $("#dataTableTwo").stickyTableHeaders();
         }
     },
     refresh:function () {
@@ -1162,24 +1614,20 @@ window.PlatformView = countlyView.extend({
             self.renderCommon(true);
 
             var oSVersionData = countlyDeviceDetails.getOSVersionData(self.activePlatform),
+            platformData = countlyDeviceDetails.getPlatformData();
 
-                newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            newPage.find(".sortable:eq(0)").tablesorter({sortList:self.sortList});
-
-            if (oSVersionData.chartData.length) {
-                newPage.find(".sortable:eq(1)").tablesorter({sortList:self.sortList2});
-            }
-
-            $(self.el).find(".sortable:eq(0) tbody").replaceWith(newPage.find(".sortable:eq(0) tbody"));
-            $(self.el).find(".sortable:eq(1) tbody").replaceWith(newPage.find(".sortable:eq(1) tbody"));
+            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+			
             $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
             $(self.el).find(".graph-segment-container").replaceWith(newPage.find(".graph-segment-container"));
 
             countlyCommon.drawGraph(countlyDeviceDetails.getPlatformData().chartDP, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(oSVersionData.chartDP, "#dashboard-graph2", "pie");
 
+			CountlyHelpers.refreshTable(self.dtable, platformData.chartData);
+            CountlyHelpers.refreshTable(self.dtableTwo, oSVersionData.chartData);
+			
             self.pageScript();
-            $(".sortable").trigger("update");
         });
     }
 });
@@ -1194,30 +1642,25 @@ window.AppVersionView = countlyView.extend({
         this.templateData = {
             "page-title":jQuery.i18n.map["app-versions.title"],
             "logo-class":"app-versions",
-            "chart-data":{
-                "columnCount":4,
-                "columns":[jQuery.i18n.map["app-versions.table.app-version"], jQuery.i18n.map["common.table.total-sessions"], jQuery.i18n.map["common.table.total-users"], jQuery.i18n.map["common.table.new-users"]],
-                "rows":[]
-            },
             "chart-helper":"app-versions.chart",
             "table-helper":""
         };
 
-        this.templateData["chart-data"]["rows"] = appVersionData.chartData;
-
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-
-            $(".sortable").stickyTableHeaders();
-
-            var self = this;
-            $(".sortable").tablesorter({
-                sortList:this.sortList
-            }).bind("sortEnd", function (sorter) {
-                    self.sortList = sorter.target.config.sortList;
-                });
-
             countlyCommon.drawGraph(appVersionData.chartDP, "#dashboard-graph", "bar");
+			
+			this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": appVersionData.chartData,
+                "aoColumns": [
+                    { "mData": "app_version", "sTitle": jQuery.i18n.map["app-versions.table.app-version"] },
+                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
+                    { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
+                    { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
+                ]
+            }));
+
+            $(".d-table").stickyTableHeaders();
         }
     },
     refresh:function () {
@@ -1228,14 +1671,10 @@ window.AppVersionView = countlyView.extend({
             }
             self.renderCommon(true);
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            newPage.find(".sortable").tablesorter({sortList:self.sortList});
-
-            $(self.el).find(".sortable tbody").replaceWith(newPage.find(".sortable tbody"));
 
             var appVersionData = countlyAppVersion.getAppVersionData();
             countlyCommon.drawGraph(appVersionData.chartDP, "#dashboard-graph", "bar");
-
-            $(".sortable").trigger("update");
+			CountlyHelpers.refreshTable(self.dtable, appVersionData.chartData);
             app.localize();
         });
     }
@@ -1256,29 +1695,27 @@ window.CarrierView = countlyView.extend({
                 "left":jQuery.i18n.map["common.total-users"],
                 "right":jQuery.i18n.map["common.new-users"]
             },
-            "chart-data":{
-                "columnCount":4,
-                "columns":[jQuery.i18n.map["carriers.table.carrier"], jQuery.i18n.map["common.table.total-sessions"], jQuery.i18n.map["common.table.total-users"], jQuery.i18n.map["common.table.new-users"]],
-                "rows":[]
-            },
             "chart-helper":"carriers.chart",
             "table-helper":""
         };
 
-        this.templateData["chart-data"]["rows"] = carrierData.chartData;
-
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
 
-            $(".sortable").stickyTableHeaders();
-
-            var self = this;
-            $(".sortable").tablesorter({sortList:this.sortList}).bind("sortEnd", function (sorter) {
-                self.sortList = sorter.target.config.sortList;
-            });
-
             countlyCommon.drawGraph(carrierData.chartDPTotal, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(carrierData.chartDPNew, "#dashboard-graph2", "pie");
+			
+			this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": carrierData.chartData,
+                "aoColumns": [
+                    { "mData": "carrier", "sTitle": jQuery.i18n.map["carriers.table.carrier"] },
+                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
+                    { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
+                    { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
+                ]
+            }));
+
+            $(".d-table").stickyTableHeaders();
         }
     },
     refresh:function () {
@@ -1289,15 +1726,12 @@ window.CarrierView = countlyView.extend({
             }
             self.renderCommon(true);
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            newPage.find(".sortable").tablesorter({sortList:self.sortList});
-
-            $(self.el).find(".sortable tbody").replaceWith(newPage.find(".sortable tbody"));
 
             var carrierData = countlyCarrier.getCarrierData();
             countlyCommon.drawGraph(carrierData.chartDPTotal, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(carrierData.chartDPNew, "#dashboard-graph2", "pie");
-
-            $(".sortable").trigger("update");
+			CountlyHelpers.refreshTable(self.dtable, carrierData.chartData);
+			
             app.localize();
         });
     }
@@ -1318,27 +1752,28 @@ window.ResolutionView = countlyView.extend({
                 "left":jQuery.i18n.map["common.total-users"],
                 "right":jQuery.i18n.map["common.new-users"]
             },
-            "chart-data":{
-                "columnCount":6,
-                "columns":[jQuery.i18n.map["resolutions.table.resolution"], jQuery.i18n.map["resolutions.table.width"], jQuery.i18n.map["resolutions.table.height"], jQuery.i18n.map["common.table.total-sessions"], jQuery.i18n.map["common.table.total-users"], jQuery.i18n.map["common.table.new-users"]],
-                "rows":[]
-            },
             "chart-helper":"resolutions.chart"
         };
 
-        this.templateData["chart-data"]["rows"] = resolutionData.chartData;
-
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-            $(".sortable").stickyTableHeaders();
-
-            var self = this;
-            $(".sortable").tablesorter({sortList:this.sortList}).bind("sortEnd", function (sorter) {
-                self.sortList = sorter.target.config.sortList;
-            });
 
             countlyCommon.drawGraph(resolutionData.chartDPTotal, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(resolutionData.chartDPNew, "#dashboard-graph2", "pie");
+			
+			this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": resolutionData.chartData,
+                "aoColumns": [
+                    { "mData": "resolution", "sTitle": jQuery.i18n.map["resolutions.table.resolution"] },
+                    { "mData": "width", "sTitle": jQuery.i18n.map["resolutions.table.width"] },
+                    { "mData": "height", "sTitle": jQuery.i18n.map["resolutions.table.height"] },
+                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
+                    { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
+                    { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
+                ]
+            }));
+
+            $(".d-table").stickyTableHeaders();
         }
     },
     refresh:function () {
@@ -1350,17 +1785,13 @@ window.ResolutionView = countlyView.extend({
             self.renderCommon(true);
 
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            newPage.find(".sortable").tablesorter({sortList:self.sortList});
-
-            $(self.el).find(".sortable tbody").replaceWith(newPage.find(".sortable tbody"));
             $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
 
             var resolutionData = countlyDeviceDetails.getResolutionData();
 
             countlyCommon.drawGraph(resolutionData.chartDPTotal, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(resolutionData.chartDPNew, "#dashboard-graph2", "pie");
-
-            $(".sortable").trigger("update");
+			CountlyHelpers.refreshTable(self.dtable, resolutionData.chartData);
         });
     }
 });
@@ -1375,30 +1806,25 @@ window.DurationView = countlyView.extend({
         this.templateData = {
             "page-title":jQuery.i18n.map["session-duration.title"],
             "logo-class":"durations",
-            "chart-data":{
-                "columnCount":3,
-                "columns":[jQuery.i18n.map["session-duration.table.duration"], jQuery.i18n.map["common.number-of-users"], jQuery.i18n.map["common.percent"]],
-                "rows":[]
-            },
             "chart-helper":"durations.chart",
             "table-helper":"durations.table"
         };
 
-        this.templateData["chart-data"]["rows"] = durationData.chartData;
-
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
 
-            $(".sortable").stickyTableHeaders();
-
-            var self = this;
-            $(".sortable").tablesorter({
-                sortList:this.sortList
-            }).bind("sortEnd", function (sorter) {
-                self.sortList = sorter.target.config.sortList;
-            });
-
             countlyCommon.drawGraph(durationData.chartDP, "#dashboard-graph", "bar");
+			
+			this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": durationData.chartData,
+                "aoColumns": [
+                    { "mData": "ds", sType:"session-duration", "sTitle": jQuery.i18n.map["session-duration.table.duration"] },
+                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.number-of-users"] },
+                    { "mData": "percent", "sType":"percent", "sTitle": jQuery.i18n.map["common.percent"] }
+                ]
+            }));
+
+            $(".d-table").stickyTableHeaders();
         }
     },
     refresh:function () {
@@ -1409,14 +1835,10 @@ window.DurationView = countlyView.extend({
             }
             self.renderCommon(true);
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            newPage.find(".sortable").tablesorter({sortList:self.sortList});
-
-            $(self.el).find(".sortable tbody").replaceWith(newPage.find(".sortable tbody"));
 
             var durationData = countlySession.getDurationData();
             countlyCommon.drawGraph(durationData.chartDP, "#dashboard-graph", "bar");
-
-            $(".sortable").trigger("update");
+			CountlyHelpers.refreshTable(self.dtable, durationData.chartData);
             app.localize();
         });
     }
@@ -2128,6 +2550,37 @@ window.EventsView = countlyView.extend({
             countlyCommon.drawTimeGraph(eventData.chartDP, "#dashboard-graph");
         }
     },
+    drawTable:function(eventData) {
+        if (this.dtable && this.dtable.fnDestroy) {
+            this.dtable.fnDestroy(true);
+        }
+
+        $("#event-main").append('<table class="d-table" cellpadding="0" cellspacing="0"></table>');
+
+        var aaColumns = [];
+
+        if (countlyEvent.isSegmentedView()) {
+            aaColumns.push({"mData":"curr_segment", "sTitle":jQuery.i18n.map["events.table.segmentation"]});
+        } else {
+            aaColumns.push({"mData":"date", "sType":"customDate", "sTitle":jQuery.i18n.map["common.date"]});
+        }
+
+        aaColumns.push({"mData":"c", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":eventData.tableColumns[1]});
+
+        if (eventData.tableColumns[2]) {
+            aaColumns.push({"mData":"s", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":eventData.tableColumns[2]});
+        }
+
+        this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            "aaData": eventData.chartData,
+            "aoColumns": aaColumns
+        }));
+
+        $(".d-table").stickyTableHeaders();
+    },
+	getColumnCount:function(){
+        return $(".dataTable").find("thead th").length;
+    },
     renderCommon:function (isRefresh) {
         var eventData = countlyEvent.getEventData(),
             eventSummary = countlyEvent.getEventSummary();
@@ -2140,14 +2593,12 @@ window.EventsView = countlyView.extend({
             "segmentations":countlyEvent.getEventSegmentations(),
             "active-segmentation":countlyEvent.getActiveSegmentation(),
             "big-numbers":eventSummary,
-            "chart-data":{
+			"chart-data":{
                 "columnCount":eventData.tableColumns.length,
                 "columns":eventData.tableColumns,
                 "rows":eventData.chartData
             }
         };
-
-        this.templateData["chart-data"]["rows"] = eventData.chartData;
 
         if (countlyEvent.getEvents().length == 0) {
             window.location = "dashboard#/";
@@ -2159,19 +2610,8 @@ window.EventsView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
 
             this.drawGraph(eventData);
+			this.drawTable(eventData);
             this.pageScript();
-
-            $(".sortable").stickyTableHeaders();
-
-            var self = this;
-            $(".sortable").tablesorter({
-                sortList:this.sortList,
-                headers:{
-                    0:{ sorter:'customDate' }
-                }
-            }).bind("sortEnd", function (sorter) {
-                    self.sortList = sorter.target.config.sortList;
-                });
 
             $("#edit-events-button").on("click", function () {
                 CountlyHelpers.popup("#edit-event-container", "events");
@@ -2296,8 +2736,6 @@ window.EventsView = countlyView.extend({
                 return newPage.find("#event-nav .scrollable").html();
             });
 
-            $(self.el).find(".sortable").replaceWith(newPage.find(".sortable"));
-
             // Segmentation change does not require title area refresh
             if (!segmentationChanged) {
                 if ($("#event-update-area .cly-select").length && !eventChanged) {
@@ -2316,34 +2754,307 @@ window.EventsView = countlyView.extend({
                     // Otherwise we refresh whole title area including the title and the segmentation select
                     // and afterwards initialize the select since we replaced it with a new element
                     $(self.el).find("#event-update-area").replaceWith(newPage.find("#event-update-area"));
-                    CountlyHelpers.initializeSelect();
                 }
-
-                $('#event-update-area .scrollable').slimScroll({
-                    height:'100%',
-                    start:'top',
-                    wheelStep:10,
-                    position:'right'
-                });
             }
 
             $(self.el).find(".widget-footer").html(newPage.find(".widget-footer").html());
             $(self.el).find("#edit-event-container").replaceWith(newPage.find("#edit-event-container"));
 
-            $(".sortable").tablesorter({
-                sortList:self.sortList,
-                headers:{
-                    0:{ sorter:'customDate' }
-                }
-            }).bind("sortEnd", function (sorter) {
-                    self.sortList = sorter.target.config.sortList;
-                });
-
-            self.drawGraph(countlyEvent.getEventData());
+			var eventData = countlyEvent.getEventData();
+            self.drawGraph(eventData);
             self.pageScript();
 
-            $(".sticky-header").remove();
-            $(".sortable").stickyTableHeaders();
+            if (eventChanged || segmentationChanged) {
+                self.drawTable(eventData);
+            } else if (self.getColumnCount() != eventData.tableColumns.length) {
+                self.drawTable(eventData);
+            } else {
+                CountlyHelpers.refreshTable(self.dtable, eventData.chartData);
+            }
+			
+            app.localize();
+        });
+    }
+});
+
+window.DensityView = countlyView.extend({
+    beforeRender: function() {
+        return $.when(countlyDeviceDetails.initialize()).then(function () {});
+    },
+    renderCommon:function (isRefresh) {
+        var densityData = countlyDeviceDetails.getDensityData();
+
+        this.templateData = {
+            "page-title":jQuery.i18n.map["density.title"],
+            "logo-class":"densities",
+            "graph-type-double-pie":true,
+            "pie-titles":{
+                "left":jQuery.i18n.map["common.total-users"],
+                "right":jQuery.i18n.map["common.new-users"]
+            },
+            "chart-helper":"resolutions.chart"
+        };
+
+        if (!isRefresh) {
+            $(this.el).html(this.template(this.templateData));
+
+            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": densityData.chartData,
+                "aoColumns": [
+                    { "mData": "densities", sType:"session-duration", "sTitle": jQuery.i18n.map["density.table.density"] },
+                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
+                    { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
+                    { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
+                ]
+            }));
+
+            $(".d-table").stickyTableHeaders();
+
+            countlyCommon.drawGraph(densityData.chartDPTotal, "#dashboard-graph", "pie");
+            countlyCommon.drawGraph(densityData.chartDPNew, "#dashboard-graph2", "pie");
+        }
+    },
+    refresh:function () {
+        var self = this;
+        $.when(countlyDeviceDetails.refresh()).then(function () {
+            if (app.activeView != self) {
+                return false;
+            }
+            self.renderCommon(true);
+
+            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+        
+            $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
+
+            var densityData = countlyDeviceDetails.getDensityData();
+
+            countlyCommon.drawGraph(densityData.chartDPTotal, "#dashboard-graph", "pie");
+            countlyCommon.drawGraph(densityData.chartDPNew, "#dashboard-graph2", "pie");
+			CountlyHelpers.refreshTable(self.dtable, densityData.chartData);
+        });
+    }
+});
+
+window.EnterpriseView = countlyView.extend({
+    initialize:function () {
+        this.template = Handlebars.compile($("#template-enterprise").html());
+    },
+    pageScript:function () {
+        var titles = {
+            "drill":"Game changer for data analytics",
+            "funnels":"Track completion rates step by step",
+            "retention":"See how engaging your application is",
+            "revenue":"Calculate your customer's lifetime value",
+            "scalability": "Tens of millions of users? No problem",
+            "support":"Enterprise support and SLA",
+            "raw-data": "Your data, your rules"
+        }
+
+        $("#enterprise-sections").find(".app-container").on("click", function() {
+            var section = $(this).data("section");
+
+            $(".enterprise-content").hide();
+            $(".enterprise-content." + section).show();
+
+            $("#enterprise-sections").find(".app-container").removeClass("active");
+            $(this).addClass("active");
+
+            $(".widget-header .title").text(titles[section] || "");
+        });
+    },
+    renderCommon:function () {
+        $(this.el).html(this.template(this.templateData));
+        this.pageScript();
+    }
+});
+
+window.AllAppsView = countlyView.extend({
+	selectedView:"#draw-total-sessions",
+	selectedApps: {"all":true},
+	selectedCount: 1,
+	initialize:function () {
+        this.template = Handlebars.compile($("#template-allapps").html());
+    },
+    beforeRender: function() {
+        return $.when(countlyAllApps.initialize()).then(function () {});
+    },
+	pageScript:function () {
+        $(".widget-content .inner").click(function () {
+            $(".big-numbers").removeClass("active");
+            $(".big-numbers .select").removeClass("selected");
+            $(this).parent(".big-numbers").addClass("active");
+            $(this).find('.select').addClass("selected");
+        });
+
+        var self = this;
+        $(".big-numbers .inner").click(function () {
+            var elID = $(this).find('.select').attr("id");
+
+            if (self.selectedView == "#" + elID) {
+                return true;
+            }
+
+            self.selectedView = "#" + elID;
+            self.drawGraph();
+        });
+
+        app.localize();
+    },
+	drawGraph:function() {
+        var sessionDP = [];
+		var sessions = countlyAllApps.getSessionData();
+		var data, color;
+		var cnt = 0;
+		for(var i in this.selectedApps){
+			try{
+				data = sessions[i][this.selectedView];
+				color = countlyCommon.GRAPH_COLORS[cnt];
+				if(i == "all")
+					sessionDP.push({data:data.data, label:data.label + " for All Apps", color:color});
+				else
+					sessionDP.push({data:data.data, label:data.label + " for "+countlyGlobal["apps"][i].name, color:color});
+				$("#"+i+" .color").css("background-color", color);
+				cnt++;
+			}
+			catch(err){
+				
+			}
+		}
+        _.defer(function () {
+            countlyCommon.drawTimeGraph(sessionDP, "#dashboard-graph");
+			
+        });
+    },
+    renderCommon:function (isRefresh) {
+		$("#sidebar-app-select").find(".text").text(jQuery.i18n.map["allapps.title"]);
+        $("#sidebar-app-select").find(".logo").css("background-image", "url('/images/favicon.png')");
+		$("#sidebar-menu > .item").addClass("hide");
+		$("#management-menu").removeClass("hide");
+		$("#enterprise-menu").removeClass("hide");
+		$("#allapps-menu").removeClass("hide").css("display", "inline");
+        var appData = countlyAllApps.getData();
+
+        this.templateData = {
+            "page-title":jQuery.i18n.map["allapps.title"],
+            "logo-class":"platforms",
+			"usage":[
+				{
+					"title":jQuery.i18n.map["common.total-sessions"],
+					"data":0,
+					"id":"draw-total-sessions",
+					"help":"dashboard.total-sessions"
+				},
+				{
+					"title":jQuery.i18n.map["common.total-users"],
+					"data":0,
+					"id":"draw-total-users",
+					"help":"dashboard.total-users"
+				},
+				{
+					"title":jQuery.i18n.map["common.new-users"],
+					"data":0,
+					"id":"draw-new-users",
+					"help":"dashboard.new-users"
+				},
+				{
+					"title":jQuery.i18n.map["dashboard.time-spent"],
+					"data":0,
+					"id":"draw-total-time-spent",
+					"help":"dashboard.total-time-spent"
+				},
+				{
+					"title":jQuery.i18n.map["dashboard.avg-time-spent"],
+					"data":0,
+					"id":"draw-time-spent",
+					"help":"dashboard.avg-time-spent2"
+				},
+				{
+					"title":jQuery.i18n.map["dashboard.avg-reqs-received"],
+					"data":0,
+					"id":"draw-avg-events-served",
+					"help":"dashboard.avg-reqs-received"
+				}
+			]
+        };
+		var self = this;
+        if (!isRefresh) {
+            $(this.el).html(this.template(this.templateData));
+			$(this.selectedView).parents(".big-numbers").addClass("active");
+            this.pageScript();
+            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": appData,
+				"fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+					$(nRow).attr("id", aData._id);
+				},
+                "aoColumns": [
+					{ "mData": function(row, type){if(self.selectedApps[row._id]) return "<i class='check icon-check'></i>"; else return "<i class='check icon-unchecked'></i>";}, "sWidth":"10px", "bSortable":false},
+                    { "mData": function(row, type){if(type == "display"){ var ret; if(row["_id"] == "all") ret = "<div class='logo' style='background-image: url(/images/favicon.png);'></div> "; else ret = "<div class='logo' style='background-image: url(/appimages/" + row["_id"] + ".png);'></div> "; return ret+row.name+"<div class='color'></div>";} else return row.name;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.app-name"] },
+                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url(/images/dashboard/"+row.sessions.trend+"trend.png);'></div> "+row.sessions.total; else return row.sessions.total;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.total-sessions"] },
+                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url(/images/dashboard/"+row.users.trend+"trend.png);'></div> "+row.users.total; else return row.users.total;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.total-users"] },
+                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url(/images/dashboard/"+row.newusers.trend+"trend.png);'></div> "+row.newusers.total; else return row.newusers.total;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.new-users"] },
+                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url(/images/dashboard/"+row.duration.trend+"trend.png);'></div> "+row.duration.total; else return row.duration.total;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.total-duration"] },
+                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url(/images/dashboard/"+row.avgduration.trend+"trend.png);'></div> "+row.avgduration.total; else return row.avgduration.total;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.average-duration"] }
+                ]
+            }));
+			this.drawGraph();
+			$(".dataTable-bottom").append("<div clas='dataTables_info' style='float: right; margin-top:2px; margin-right: 10px;'>Maximum number of applications to be compared (10)</div>")
+
+            $(".d-table").stickyTableHeaders();
+			
+			$('.allapps tbody').on("click", "tr", function (event){
+				var td = $(event.target).closest("td");
+				var row = $(this);
+				if(row.children().first().is(td))
+				{
+					if(self.selectedApps[row.attr("id")]){
+						row.find(".check").removeClass("icon-check").addClass("icon-unchecked");
+						row.find(".color").css("background-color", "transparent");
+						delete self.selectedApps[row.attr("id")];
+						self.selectedCount--;
+					}
+					else if(self.selectedCount <= 10 || row.attr("id") == "all"){
+						if(row.attr("id") == "all"){
+							$(".check.icon-check").removeClass("icon-check").addClass("icon-unchecked");
+							$('.d-table').find(".color").css("background-color", "transparent");
+							self.selectedApps = {};
+							self.selectedCount = 0;
+						}
+						else if(self.selectedApps["all"]){
+							$(".d-table #all .check.icon-check").removeClass("icon-check").addClass("icon-unchecked");
+							$('.d-table #all').find(".color").css("background-color", "transparent");
+							delete self.selectedApps["all"];
+						}
+						self.selectedCount++;
+						row.find(".check").removeClass("icon-unchecked").addClass("icon-check");
+						self.selectedApps[row.attr("id")] = true;
+					}
+					self.drawGraph();
+				}
+				else
+				{
+					var aData = self.dtable.fnGetData( this );
+					countlyAllApps.setApp(row.attr("id"));
+					$("#sidebar-app-select").find(".logo").css("background-image", "url('/appimages/" + row.attr("id") + ".png')");
+					$("#sidebar-app-select").find(".text").text(aData["name"]);
+					$("#sidebar-menu > .item").removeClass("hide");
+					$("#allapps-menu").css("display", "none");
+					window.location.hash = "#/";
+				}
+			});
+        }
+    },
+    refresh:function () {
+        var self = this;
+        $.when(countlyAllApps.initialize()).then(function () {
+            if (app.activeView != self) {
+                return false;
+            }
+            self.renderCommon(true);
+            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+
+            var appData = countlyAllApps.getData();
+            CountlyHelpers.refreshTable(self.dtable, appData);
+			self.drawGraph();
             app.localize();
         });
     }
@@ -2363,9 +3074,12 @@ var AppRouter = Backbone.Router.extend({
         "/analytics/frequency":"frequency",
         "/analytics/events":"events",
         "/analytics/resolutions":"resolutions",
+        "/analytics/density":"density",
         "/analytics/durations":"durations",
+		"/all":"allapps",
         "/manage/apps":"manageApps",
         "/manage/users":"manageUsers",
+        "/enterprise": "enterprise",
         "*path":"main"
     },
     activeView:null, //current view
@@ -2418,8 +3132,17 @@ var AppRouter = Backbone.Router.extend({
     resolutions:function () {
         this.renderWhenReady(this.resolutionsView);
     },
+    density:function () {
+        this.renderWhenReady(this.densityView);
+    },
     durations:function () {
         this.renderWhenReady(this.durationsView);
+    },
+    enterprise:function () {
+        this.renderWhenReady(this.enterpriseView);
+    },
+	allapps:function () {
+        this.renderWhenReady(this.allAppsView);
     },
     refreshActiveView:function () {
     }, //refresh interval function
@@ -2465,7 +3188,10 @@ var AppRouter = Backbone.Router.extend({
         this.manageUsersView = new ManageUsersView();
         this.eventsView = new EventsView();
         this.resolutionsView = new ResolutionView();
+        this.densityView = new DensityView();
         this.durationsView = new DurationView();
+        this.enterpriseView = new EnterpriseView();
+		this.allAppsView = new AllAppsView();
 
         Handlebars.registerPartial("date-selector", $("#template-date-selector").html());
         Handlebars.registerPartial("timezones", $("#template-timezones").html());
@@ -2495,7 +3221,7 @@ var AppRouter = Backbone.Router.extend({
             return countlyCommon.getShortNumber(context);
         });
         Handlebars.registerHelper('getFormattedNumber', function (context, options) {
-            if (isNaN(context)) {
+            if (!_.isNumber(context)) {
                 return context;
             }
 
@@ -2581,6 +3307,8 @@ var AppRouter = Backbone.Router.extend({
         var self = this;
         $(document).ready(function () {
 
+            CountlyHelpers.initializeSelect();
+
             // If date range is selected initialize the calendar with these
             var periodObj = countlyCommon.getPeriod();
             if (Object.prototype.toString.call(periodObj) === '[object Array]' && periodObj.length == 2) {
@@ -2643,6 +3371,20 @@ var AppRouter = Backbone.Router.extend({
                     appName = $(this).find(".name").text(),
                     appImage = $(this).find(".logo").css("background-image"),
                     sidebarApp = $("#sidebar-app-select");
+					
+				if (appId == "allapps") {
+					window.location.hash = "/all";
+					sidebarApp.removeClass("active");
+                    $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack'});
+                    return false;
+				}
+				else{
+					$("#sidebar-menu > .item").removeClass("hide");
+					$("#allapps-menu").css("display", "none");
+				}
+
+				if(window.location.hash.toString() == "#/all")
+					window.location.hash = "/";
 
                 if (self.activeAppKey == appKey) {
                     sidebarApp.removeClass("active");
@@ -3059,7 +3801,6 @@ var AppRouter = Backbone.Router.extend({
             $(window).click(function () {
                 $("#date-picker").hide();
                 $(".cly-select").removeClass("active");
-                $(".select-items").hide();
             });
 
             $("#date-picker").click(function (e) {
@@ -3169,7 +3910,6 @@ var AppRouter = Backbone.Router.extend({
                 $(this).toggleClass("checked");
             });
 
-            CountlyHelpers.initializeSelect();
         });
     }
 });

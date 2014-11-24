@@ -45,7 +45,7 @@ apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
 
 #install mongodb
-apt-get -y --force-yes install mongodb-10gen || (echo "Failed to install mongodb." ; exit)
+apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
 
 #install supervisor
 apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
@@ -56,7 +56,18 @@ apt-get -y install imagemagick
 #install sendmail
 apt-get -y install sendmail
 
+#install iptables
+apt-get -y install iptables
+
 apt-get -y install build-essential || (echo "Failed to install build-essential." ; exit)
+
+#drop packages coming from 0/0 going through mongodb port
+#allow those coming from localhost
+iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s localhost -j ACCEPT
+iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s 0/0 -j DROP
+
+#install iptables-persistent
+apt-get install iptables-persistent
 
 #install time module for node
 ( cd $DIR/../api ; npm install time )

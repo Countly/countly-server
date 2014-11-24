@@ -211,7 +211,7 @@ var fetch = {},
                 });
             });
         });
-    }
+    };
 
     fetch.fetchCountries = function(params) {
 

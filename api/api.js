@@ -117,6 +117,13 @@ function validateUserForMgmtReadAPI(callback, params) {
     });
 }
 
+function getIpAddress(req) {
+    var ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress;
+
+    /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
+    return ipAddress.split(',')[0];
+}
+
 if (cluster.isMaster) {
 
     var workerCount = (common.config.api.workers)? common.config.api.workers : os.cpus().length;
@@ -297,12 +304,10 @@ if (cluster.isMaster) {
             }
             case '/i':
             {
-                var ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-
-                params.ip_address =  params.qstring.ip_address || ipAddress.split(",")[0];
+                params.ip_address =  params.qstring.ip_address || getIpAddress(req);
                 params.user = {
-                    'country':'Unknown',
-                    'city':'Unknown'
+                    'country':params.qstring.country_code || 'Unknown',
+                    'city':params.qstring.city || 'Unknown'
                 };
 
                 if (!params.qstring.app_key || !params.qstring.device_id) {
@@ -329,6 +334,8 @@ if (cluster.isMaster) {
 
                     } catch (SyntaxError) {
                         console.log('Parse metrics JSON failed');
+                        common.returnMessage(params, 400, 'metrics JSON is not properly formed');
+                        return false
                     }
                 }
 
@@ -337,6 +344,8 @@ if (cluster.isMaster) {
                         params.qstring.events = JSON.parse(params.qstring.events);
                     } catch (SyntaxError) {
                         console.log('Parse events JSON failed');
+                        common.returnMessage(params, 400, 'events JSON is not properly formed');
+                        return false;
                     }
                 }
 
@@ -425,6 +434,8 @@ if (cluster.isMaster) {
                                 params.qstring.events = JSON.parse(params.qstring.events);
                             } catch (SyntaxError) {
                                 console.log('Parse events array failed');
+                                common.returnMessage(params, 400, 'events JSON is not properly formed');
+                                break;
                             }
 
                             validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventData);

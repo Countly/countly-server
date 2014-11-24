@@ -37,6 +37,10 @@
 				<div class="logo dashboard"></div>
 				<div class="text" data-localize="sidebar.dashboard"></div>
 			</a>
+			<a href="#/all" id="allapps-menu" class="item analytics active" style='display: none;'>
+				<div class="logo dashboard"></div>
+				<div class="text" data-localize="sidebar.dashboard"></div>
+			</a>
 			<a class="item" id="analytics-menu">
                 <!--<div class="logo icon-signal" style="background-image:none; font-size:28px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px;"></div>-->
 				<div class="logo analytics"></div>
@@ -62,6 +66,10 @@
                 <a href="#/analytics/resolutions" class="item">
 					<div class="logo resolutions"></div>
                     <div class="text" data-localize="sidebar.analytics.resolutions"></div>
+                </a>
+                <a href="#/analytics/density" class="item">
+					<div class="logo densities"></div>
+                    <div class="text" data-localize="sidebar.analytics.densities"></div>
                 </a>
 				<a href="#/analytics/versions" class="item">
 					<div class="logo app-versions"></div>
@@ -128,6 +136,10 @@
 				</a>
 			</div>
 			<% } %>
+            <a class="item" id="enterprise-menu" href="#/enterprise">
+                <div class="logo icon-rocket" style="background-image:none; font-size:24px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px; line-height: 34px;"></div>
+                <div class="text" data-localize="">Enterprise</div>
+            </a>
 		</div>
 		<div id="sidebar-bottom-container">
 			<div class="menu">
@@ -170,6 +182,11 @@
 			</div>
 		</div>
 		<div class="apps-scrollable">
+			<div class="app-container app-navigate" data-id="allapps">
+				<div class="logo" style="background-image: url('<%= cdn %>/images/favicon.png');"></div>
+				<div class="name" data-localize="allapps.title"></div>
+				<div class="drag"></div>
+			</div>
 			<% for (var i = 0; i < userOfApps.length; i++) { %>
 				<div class="app-container app-navigate" data-key="<%= userOfApps[i].key %>" data-id="<%= userOfApps[i]['_id'] %>">
 					<div class="logo" style="background-image: url('/appimages/<%= userOfApps[i]['_id'] %>.png');"></div>
@@ -364,56 +381,10 @@
 			{{/each}}
 		</div>
 		{{/if}}
-		<table class="d-table sortable help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}">
-			<thead>
-			<tr>
-				{{#eachOfArray chart-data.columns}}
-				<th>{{value}}</th>
-				{{/eachOfArray}}
-			</tr>
-			</thead>
-			<tbody>
-				{{#if chart-data.rows}}
-				{{#each chart-data.rows}}
-				<tr>
-					{{#eachOfObject this}}
-						<td>{{{getFormattedNumber value}}}</td>
-					{{/eachOfObject }}
-				</tr>
-				{{/each}}
-				{{else}}
-				<tr>
-					<td colspan="{{chart-data.columnCount}}" class="table-no-data" data-localize="common.table.no-data"></td>
-				</tr>
-				{{/if}}
-			</tbody>
-		</table>
-		{{#if chart-data2}}
-		<table class="d-table sortable" cellpadding="0" cellspacing="0">
-			<thead>
-			<tr>
-				{{#eachOfArray chart-data2.columns}}
-				<th style="width:25%">{{value}}</th>
-				{{/eachOfArray}}
-			</tr>
-			</thead>
-			<tbody>
-				{{#if chart-data2.rows}}
-				{{#each chart-data2.rows}}
-				<tr>
-					{{#eachOfObject this}}
-						<td>{{getFormattedNumber value}}</td>
-					{{/eachOfObject }}
-				</tr>
-				{{/each}}
-				{{else}}
-				<tr>
-					<td colspan="{{chart-data2.columnCount}}" class="table-no-data" data-localize="common.table.no-data"></td>
-				</tr>
-				{{/if}}
-			</tbody>
-		</table>
-		{{/if}}
+		<table id="dataTableOne" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
+        {{#if two-tables}}
+        <table id="dataTableTwo" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
+        {{/if}}
 	</script>
 
 	<script id="template-analytics-countries"  type="text/x-handlebars-template">
@@ -445,36 +416,7 @@
 				</div>
 			</div>
 		</div>
-		<table class="d-table sortable help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}">
-			<thead>
-			<tr>
-				{{#eachOfArray chart-data.columns}}
-				<th style="width:25%">{{value}}</th>
-				{{/eachOfArray}}
-			</tr>
-			</thead>
-			<tbody>
-				{{#if chart-data.rows}}
-				{{#each chart-data.rows}}
-				<tr>
-					<td>
-						{{#if this.code}}
-							<div class="flag" style="background-image:url('/images/flags/{{this.code}}.png');"></div>
-						{{/if}}
-						{{this.country}}
-					</td>
-					<td>{{getFormattedNumber this.t}}</td>
-					<td>{{getFormattedNumber this.u}}</td>
-					<td>{{getFormattedNumber this.n}}</td>
-				</tr>
-				{{/each}}
-				{{else}}
-				<tr>
-					<td colspan="{{chart-data.columnCount}}" class="table-no-data" data-localize="common.table.no-data"></td>
-				</tr>
-				{{/if}}
-			</tbody>
-		</table>
+		<table class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
     </script>
 
 	<script id="dashboard-template" type="text/x-handlebars-template">
@@ -554,6 +496,35 @@
 			<div id="geo-chart-outer" style="padding-bottom: 8px;"><div id="geo-chart" {{#if country-data}}style="margin-right:282px;"{{/if}}></div></div>
 		</div>
 	</script>
+	
+	<script id="template-allapps"  type="text/x-handlebars-template">
+		<div class="widget allappview">
+			<div class="widget-header">
+				<div class="title" style="letter-spacing:-1px; font-size:19px; margin-top:10px; margin-left:5px;">{{toUpperCase page-title}}</div>
+				{{> date-selector }}
+			</div>
+			<div class="widget-content" style="border:none;">
+				<div id="big-numbers-container" class="dashboard">
+					{{#each usage}}
+					<div class="big-numbers six-column help-zone-vs" data-help-localize="{{this.help}}">
+						<div class="inner">
+							<div class="select" id="{{this.id}}">
+								<div class="title">{{this.title}}</div>
+							</div>
+							<div class="arrow"></div>
+						</div>
+					</div>
+					{{/each}}
+				</div>
+			</div>
+			<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none; position:relative;">
+				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
+			</div>
+		</div>
+		<div class="allapps" data-help-localize="{{{chart-helper}}}">
+			<table class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
+		</div>
+	</script>
 
 	<script id="template-management-applications" type="text/x-handlebars-template">
 		<div id="app-management-bar">
@@ -610,7 +581,7 @@
 											<div class="right combo"></div>
 										</div>
 										<div class="select-items square" style="width:280px;">
-											<div class="scrollable">
+											<div>
 												{{> app-categories }}
 											</div>
 										</div>
@@ -629,7 +600,7 @@
 												<div class="right combo"></div>
 											</div>
 											<div class="select-items square" style="width:280px;">
-												<div id="country-items" class="scrollable"></div>
+												<div id="country-items"></div>
 											</div>
 										</div>
 										<div id="timezone-select" class="cly-select" style="width:200px; display:none;">
@@ -640,15 +611,15 @@
 												<div class="right combo"></div>
 											</div>
 											<div class="select-items square" style="width:200px;">
-												<div id="timezone-items" class="scrollable"></div>
+												<div id="timezone-items"></div>
 											</div>
 										</div>
 									</div>
 									<div id="selected" style="float:left; font-size:14px; padding:5px 10px; padding-top:6px; color:#666; font-family:'Ubuntu';"></div>
 									<input type="hidden" value="" id="app-timezone"/>
 									<input type="hidden" value="" id="app-country"/>
-								</td>
-							</tr>
+                                </td>
+                            </tr>
                             <tr class="help-zone-vs" data-help-localize="manage-apps.app-icon">
 								<td data-localize="management-applications.icon"></td>
 								<td>
@@ -718,7 +689,7 @@
 												<div class="right combo"></div>
 											</div>
 											<div class="select-items square">
-												<div class="scrollable">
+												<div>
 													{{> app-categories }}
 												</div>
 											</div>
@@ -748,7 +719,7 @@
 													<div class="right combo"></div>
 												</div>
 												<div class="select-items square" style="width:280px;">
-													<div id="country-items" class="scrollable"></div>
+													<div id="country-items"></div>
 												</div>
 											</div>
 											<div id="timezone-select" class="cly-select" style="width:200px; display:none;">
@@ -759,7 +730,7 @@
 													<div class="right combo"></div>
 												</div>
 												<div class="select-items square" style="width:200px;">
-													<div id="timezone-items" class="scrollable">
+													<div id="timezone-items">
 
 													</div>
 												</div>
@@ -875,30 +846,30 @@
 		</div>
 		<div id="edit-event-container" style="display:none;">
 			<div id="edit-event-table-container">
-                <table class="events-table" cellpadding="0" cellspacing="0">
-                    <thead>
-                    <tr>
-                        <th></th>
-                        <th></th>
-                        <th data-localize="events.edit.event-key"></th>
-                        <th data-localize="events.edit.event-name"></th>
-                        <th data-localize="events.table.count"></th>
-                        <th data-localize="events.table.sum"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {{#eachOfObjectValue event-map}}
-                    <tr>
-                        <td style="text-align:center;"><i class="icon-reorder event-order"></i></td>
-                        <td style="text-align:center;"><i class="icon-trash delete-event" data-event-key="{{this.key}}"></i></td>
-                        <td class="event-key">{{this.key}}</td>
-                        <td><input class="event-name" type="text" placeholder="Event name"  data-localize="events.edit.event-name" value="{{this.name}}"/></td>
-                        <td><input class="event-count" type="text" placeholder="Count" data-localize="events.table.count" value="{{this.count}}"/></td>
-                        <td><input class="event-sum" type="text" placeholder="Sum" data-localize="events.table.sum" value="{{this.sum}}"/></td>
-                    </tr>
-                    {{/eachOfObjectValue}}
-                    </tbody>
-                </table>
+				<table class="events-table" cellpadding="0" cellspacing="0">
+					<thead>
+						<tr>
+                            <th></th>
+                            <th></th>
+							<th data-localize="events.edit.event-key"></th>
+							<th data-localize="events.edit.event-name"></th>
+							<th data-localize="events.table.count"></th>
+							<th data-localize="events.table.sum"></th>
+						</tr>
+					</thead>
+					<tbody>
+						{{#eachOfObjectValue event-map}}
+						<tr>
+                            <td style="text-align:center;"><i class="icon-reorder event-order"></i></td>
+                            <td style="text-align:center;"><i class="icon-trash delete-event" data-event-key="{{this.key}}"></i></td>
+							<td class="event-key">{{this.key}}</td>
+							<td><input class="event-name" type="text" placeholder="Event name"  data-localize="events.edit.event-name" value="{{this.name}}"/></td>
+							<td><input class="event-count" type="text" placeholder="Count" data-localize="events.table.count" value="{{this.count}}"/></td>
+							<td><input class="event-sum" type="text" placeholder="Sum" data-localize="events.table.sum" value="{{this.sum}}"/></td>
+						</tr>
+						{{/eachOfObjectValue}}
+					</tbody>
+				</table>
 			</div>
 			<div class="buttons">
 				<div id="settings-save-result" class="result-message"></div>
@@ -906,7 +877,7 @@
 				<a id="dialog-cancel" class="icon-button dark" data-localize="common.close"></a>
 			</div>
 		</div>
-		<div style="margin-left:187px;">
+		<div id="event-main" style="margin-left:187px;">
 		<div class="widget">
 			<div class="widget-header">
 				<div class="left">
@@ -922,7 +893,7 @@
 									<div class="right combo"></div>
 								</div>
 								<div class="select-items square" style="width:220px;">
-									<div class="scrollable">
+									<div>
 										<div data-value="" class="segmentation-option item" data-localize="events.no-segmentation"></div>
 										{{#eachOfArray segmentations}}
 										<div data-value="{{value}}" class="segmentation-option item">{{value}}</div>
@@ -943,7 +914,7 @@
 				<div class="pie-chart-container">
 					<div style="border-right:1px solid #CCC;">
 						<div class="pie-overlay one {{logo-class}}"></div>
-						<div id="dashboard-graph" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>
+						<div id="dashboard-graph" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>	
 					</div>
 				</div>
 				<div class="pie-chart-container">
@@ -997,58 +968,126 @@
 			{{/each}}
 		</div>
 		{{/if}}
-		<table class="d-table sortable" cellpadding="0" cellspacing="0">
-			<thead>
-			<tr>
-				{{#eachOfArray chart-data.columns}}
-				<th style="width:25%">{{value}}</th>
-				{{/eachOfArray}}
-			</tr>
-			</thead>
-			<tbody>
-				{{#if chart-data.rows}}
-				{{#each chart-data.rows}}
-				<tr>
-					{{#eachOfObject this}}
-						<td>{{getFormattedNumber value}}</td>
-					{{/eachOfObject }}
-				</tr>
-				{{/each}}
-				{{else}}
-				<tr>
-					<td colspan="{{chart-data.columnCount}}" class="table-no-data" data-localize="common.table.no-data"></td>
-				</tr>
-				{{/if}}
-			</tbody>
-		</table>
-		{{#if chart-data2}}
-		<table class="d-table sortable" cellpadding="0" cellspacing="0">
-			<thead>
-			<tr>
-				{{#eachOfArray chart-data2.columns}}
-				<th style="width:25%">{{value}}</th>
-				{{/eachOfArray}}
-			</tr>
-			</thead>
-			<tbody>
-				{{#if chart-data2.rows}}
-				{{#each chart-data2.rows}}
-				<tr>
-					{{#eachOfObject this}}
-						<td>{{getFormattedNumber value}}</td>
-					{{/eachOfObject }}
-				</tr>
-				{{/each}}
-				{{else}}
-				<tr>
-					<td colspan="{{chart-data2.columnCount}}" class="table-no-data" data-localize="common.table.no-data"></td>
-				</tr>
-				{{/if}}
-			</tbody>
-		</table>
-		{{/if}}
 		</div>
 	</script>
+
+    <script id="template-enterprise" type="text/x-handlebars-template">
+        <div id="app-management-bar">
+            <div id="app-nav-head">
+                <div id="app-nav-title" style="max-width:110px;" data-localize="">HIGHLIGHTS</div>
+            </div>
+            <div id="enterprise-sections" class="scrollable">
+                <div class="app-container active" data-section="drill">
+                    <div class="name">Drill</div>
+                </div>
+                <div class="app-container" data-section="funnels">
+                    <div class="name">Funnels</div>
+                </div>
+                <div class="app-container" data-section="retention">
+                    <div class="name">Retention</div>
+                </div>
+                <div class="app-container" data-section="revenue">
+                    <div class="name">Revenue Analytics</div>
+                </div>
+                <div class="app-container" data-section="scalability">
+                    <div class="name">∞ Scalability</div>
+                </div>
+                <div class="app-container" data-section="support">
+                    <div class="name">Support</div>
+                </div>
+                <div class="app-container" data-section="raw-data">
+                    <div class="name">Raw Data Access</div>
+                </div>
+            </div>
+        </div>
+        <div class="widget" style="margin-left:187px;">
+        <div>
+            <div class="widget-header">
+                <div class="left">
+                    <div class="title">Game changer for data analytics</div>
+                </div>
+                <div style="float:right; min-width:260px; overflow:hidden; margin-top:6px;">
+                    <div style="float:right;" class="icon-button green help-zone-vs" data-help-localize="manage-apps.app-delete-button" id="delete-app">
+                        <div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
+                        <a href="mailto:hello@count.ly?subject=Countly Enterprise (OSS)"><div class="text" data-localize="">Contact Sales</div></a>
+                    </div>
+                </div>
+            </div>
+            <div class="widget-content">
+                <div class="enterprise-content drill" style="display:block;">
+                    <div class="image"></div>
+                    <div class="text">
+                        Drill enables performing advanced analysis/segmentation on your data by applying AND, OR and BY filters to your segmentation properties as well as user properties such as Device, App Version, Platform, Platform Version, Session Count, Session Duration, First Session, Last Session, Country, City and Carrier.<br/><br/>
+
+                        With Countly Drill, you can:
+
+                        <ul>
+                            <li>View data on a line, pie or bar chart, whichever makes more sense for the current data</li>
+                            <li>Change the time bucket displayed on the chart and table to hourly, daily, weekly or monthly</li>
+                            <li>View how many times your custom event occurred as well as how many users performed it and an average (times/users)</li>
+                        </ul>
+
+                        Drill is something every data analyst should have. Say goodbye to complex SQL queries!
+                    </div>
+                </div>
+                <div class="enterprise-content funnels">
+                    <div class="image"></div>
+                    <div class="text">
+                        Using funnels you can understand where you lose your users throughout conversion paths/goals inside your application. Funnel view shows you the number of users passing through each step as well as how many times that action is performed.<br/><br/>
+                        You can filter your funnel data using any metric including custom segments you send together with your events. This enables A/B testing and comparing conversion rates within different user groups.
+                    </div>
+                </div>
+                <div class="enterprise-content retention">
+                    <div class="image"></div>
+                    <div class="text">
+                        Every company wants its customers to use their application everyday and engage with it. If they find it valuable, then they'll go on with using it, what we call "Retention". Retention is simply condition of keeping your customers. Retention page shows you active days (e.g days your customer used your application) after first session. On the retention page, you'll see a breakdown of daily, weekly and monthly retention.<br/><br/>
+
+                        With retention page, you can consistently monitor how much impact does each application change affect your customer. This is one of the most important metrics for mobile app analytics and is available in Enterprise Edition.
+                    </div>
+                </div>
+                <div class="enterprise-content revenue">
+                    <div class="image"></div>
+                    <div class="text">
+                        Revenue analytics lets you track in app purchase metrics with ease. Below is some of the information you will be getting from revenue analytics;
+                        <ul>
+                            <li>Total revenue</li>
+                            <li>Avg. revenue per user</li>
+                            <li>Avg. revenue per paying user</li>
+                            <li>Paying user count</li>
+                            <li>Paying/total users</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="enterprise-content scalability">
+                    <div class="image"></div>
+                    <div class="text">
+                        Countly Enterprise Edition has a different architecture then Community Edition, where it can serve tens of billions of hits per month on a scalable infrastructure and is available for customers in need of a bigdata solution for mobile analytics.<br/><br/>
+
+                        To meet the sustained performance and scalability of ever increasing data and query, Countly Enterprise Edition has a sharding and replicaset mechanism designed to distribute overhead to several machines. You can deploy any number of servers and scale to your desired environment while preserving single pane of monitoring and reporting.
+                    </div>
+                </div>
+                <div class="enterprise-content support">
+                    <div class="image"></div>
+                    <div class="text">
+                        Countly Enterprise Edition comes with support and SLA agreement from the same team who build Countly from ground up. You can also get 2-day training on-site where you'll learn foundations of Countly, scaling Countly, reporting, dashboard customization and mobile device SDKs thoroughly.<br/><br/>
+
+                        A comprehensive support program for Countly Enterprise Edition includes orientation programs, technical support for IT, one-on-one expert sessions, online tutorials and more.
+                    </div>
+                </div>
+                <div class="enterprise-content raw-data">
+                    <div class="image"></div>
+                    <div class="text">
+                        It's important that you can access your Countly mobile analytics data when you want it, where you want it - whether is it to import it into another service or just create your own copy for your archives. Self-hosted Countly Enterprise Edition does exactly that: You own your database, you own your data - it's solely your property.<br/><br/>
+
+                        Countly Enterprise Edition also allows you download your stored data in CSV and XLS formats, allowing your data scientists to visualize information the way your company managers want. This saves time and energy, instead of spending time with trying to extract data using command line utilities.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+    </script>
 
     <div id="IntercomDefaultWidget" style="visibility: visible;"><span></span></div>
 
@@ -1086,6 +1125,9 @@
 	<script language="javascript" type="text/javascript" src="/javascripts/dom/jqueryui/jquery-ui-i18n.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/dom/slimScroll.min.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery.easing.1.3.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/dom/dataTables/js/jquery.dataTables.js"></script>
+    <script language="javascript" type="text/javascript" src="/javascripts/dom/dataTables/js/ZeroClipboard.js"></script>
+    <script language="javascript" type="text/javascript" src="/javascripts/dom/dataTables/js/TableTools.js"></script>
     <script language="javascript" type="text/javascript" src="/javascripts/visualization/jquery.peity.min.js"></script>
     <script language="javascript" type="text/javascript" src="/javascripts/visualization/flot/jquery.flot.js"></script>
     <script language="javascript" type="text/javascript" src="/javascripts/visualization/flot/jquery.flot.tickrotor.js"></script>
@@ -1107,6 +1149,7 @@
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.device.detail.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.app.version.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.carrier.js"></script>
+	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.allapps.js"></script>
 	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.template.js"></script>
     -->
     <% if (member.in_user_id && member.in_user_hash) { %>

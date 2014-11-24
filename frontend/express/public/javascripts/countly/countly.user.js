@@ -177,6 +177,29 @@
 
         return frequencyRange[index];
     };
+	
+	countlyUser.getFrequencyIndex = function (frequency) {
+        var localHours = jQuery.i18n.map["user-loyalty.range.hours"],
+            localDay = jQuery.i18n.map["user-loyalty.range.day"],
+            localDays = jQuery.i18n.map["user-loyalty.range.days"];
+
+        var frequencyRange = [
+            jQuery.i18n.map["user-loyalty.range.first-session"],
+            "1-24 " + localHours,
+            "1 " + localDay,
+            "2 " + localDays,
+            "3 " + localDays,
+            "4 " + localDays,
+            "5 " + localDays,
+            "6 " + localDays,
+            "7 " + localDays,
+            "8-14 " + localDays,
+            "15-30 " + localDays,
+            "30+ " + localDays
+        ];
+
+        return frequencyRange.indexOf(frequency);
+    };
 
     countlyUser.explainLoyaltyRange = function (index) {
         var loyaltyRange = [
@@ -192,6 +215,22 @@
         ];
 
         return loyaltyRange[index];
+    };
+	
+	countlyUser.getLoyaltyIndex = function (loyalty) {
+        var loyaltyRange = [
+            "1",
+            "2",
+            "3-5",
+            "6-9",
+            "10-19",
+            "20-49",
+            "50-99",
+            "100-499",
+            "> 500"
+        ];
+
+        return loyaltyRange.indexOf(loyalty);
     };
 
     function setMeta() {

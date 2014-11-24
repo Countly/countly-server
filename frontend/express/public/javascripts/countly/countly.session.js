@@ -514,6 +514,25 @@
 
         return durationRange[index];
     };
+	
+	countlySession.getDurationIndex = function (duration) {
+        var sec = jQuery.i18n.map["common.seconds"],
+            min = jQuery.i18n.map["common.minutes"],
+            hr = jQuery.i18n.map["common.hour"];
+
+        var durationRange = [
+            "0-10 " + sec,
+            "11-30 " + sec,
+            "31-60 " + sec,
+            "1-3 " + min,
+            "3-10 " + min,
+            "10-30 " + min,
+            "30-60 " + min,
+            "> 1 " + hr
+        ];
+
+        return durationRange.indexOf(duration);
+    };
 
     countlySession.getTopUserBars = function () {
 
@@ -561,6 +580,10 @@
         }
 
         return barData;
+    };
+
+    countlySession.getSessionDb = function () {
+        return _sessionDb;
     };
 
     //Private Methods

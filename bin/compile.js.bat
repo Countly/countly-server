@@ -8,6 +8,9 @@ java -jar closure-compiler.jar ^
 --js=../frontend/express/public/javascripts/dom/jqueryui/jquery-ui-i18n.js ^
 --js=../frontend/express/public/javascripts/dom/slimScroll.min.js ^
 --js=../frontend/express/public/javascripts/dom/jquery.easing.1.3.js ^
+--js=../frontend/express/public/javascripts/dom/dataTables/js/jquery.dataTables.js ^
+--js=../frontend/express/public/javascripts/dom/dataTables/js/ZeroClipboard.js ^
+--js=../frontend/express/public/javascripts/dom/dataTables/js/TableTools.js ^
 --js_output_file=../frontend/express/public/javascripts/min/countly.dom.js
 
 java -jar closure-compiler.jar ^
@@ -48,5 +51,6 @@ java -jar closure-compiler.jar ^
 --js=../frontend/express/public/javascripts/countly/countly.device.detail.js ^
 --js=../frontend/express/public/javascripts/countly/countly.app.version.js ^
 --js=../frontend/express/public/javascripts/countly/countly.carrier.js ^
+--js=../frontend/express/public/javascripts/countly/countly.allapps.js ^
 --js=../frontend/express/public/javascripts/countly/countly.template.js ^
 --js_output_file=../frontend/express/public/javascripts/min/countly.lib.js

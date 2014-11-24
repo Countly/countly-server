@@ -20,16 +20,16 @@
         _countryMap = {},
         _initialized = false;
 
+    // Load local country names
+    $.get('/localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function (data) {
+        _countryMap = data;
+    });
+
     // Public Methods
     countlyLocation.initialize = function () {
         if (_initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
             return countlyLocation.refresh();
         }
-
-        // Load local country names
-        $.get('/localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function (data) {
-            _countryMap = data;
-        });
 
         if (!countlyCommon.DEBUG) {
             _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
@@ -147,6 +147,12 @@
             if (locationData.chartData.length > options.maxCountries) {
                 locationData.chartData = locationData.chartData.splice(0, options.maxCountries);
             }
+        }
+		
+		for (var i = 0; i < locationData.chartData.length; i++) {
+            locationData.chartData[i]['country_flag'] =
+                "<div class='flag' style='background-image:url(/images/flags/" + locationData.chartData[i]['code'] + ".png);'></div>" +
+                locationData.chartData[i]['country'];
         }
 
         return _.sortBy(locationData.chartData, function(obj) { return -obj.t; });
