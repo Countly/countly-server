@@ -19,9 +19,9 @@ This repository holds Countly Community Edition. For more information other vers
 
 You can either download all files from [Sourceforge](http://sf.net/projects/countly), or get code from Github (this page). We provide a beautiful installation sript (`bin/countly.install.sh`) with countly-server package that installs and configures everything required to run Countly Server.
 
-If you feel like doing things manually, or need to upgrade Countly from a previous version, please take a look at the installation articles from [http://resources.count.ly](http://resources.count.ly "Countly resources page").
+If you feel like doing things manually, or need to upgrade Countly from a previous version, please take a look at the installation & upgrading articles at [http://resources.count.ly](http://resources.count.ly "Countly resources page").
 
-Refer to [upgrading Countly documentation](https://count.ly/resources/upgrade/countly-server-upgrade) on Resources page.
+Countly also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/u/countly/countly-server/)
 
 ##Installing Countly server with Push Notifications support
 
