@@ -8,6 +8,10 @@
 *.PDF	diff=astextplain
 *.rtf	diff=astextplain
 *.RTF	diff=astextplain
+*.sxw	diff=astextplain
+*.SXW	diff=astextplain
+*.odf	diff=astextplain
+*.ODF	diff=astextplain
 
 *.jpg  	binary
 *.png 	binary
