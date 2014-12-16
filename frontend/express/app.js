@@ -233,7 +233,8 @@ app.get('/dashboard', function (req, res, next) {
                             userOfApps:userOfApps,
                             countlyVersion:"14.08",
                             member:member,
-			                cdn: countlyConfig.cdn || ""
+			                cdn: countlyConfig.cdn || "",
+							production: countlyConfig.production || false
                         });
                     });
                 }
