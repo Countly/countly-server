@@ -380,7 +380,7 @@ var usage = {},
                     recvMetricValue = params.qstring.metrics[tmpMetric.name];
 
                 if (recvMetricValue) {
-                    var escapedMetricVal = recvMetricValue.replace(/^\$/, "").replace(/\./g, ":");
+                    var escapedMetricVal = (recvMetricValue+"").replace(/^\$/, "").replace(/\./g, ":");
                     needsUpdate = true;
                     tmpSet["meta." + tmpMetric.set] = escapedMetricVal;
                     common.fillTimeObject(params, tmpTimeObj, escapedMetricVal + '.' + common.dbMap['total']);

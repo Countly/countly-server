@@ -20,7 +20,8 @@ var countlyConfig = {
         port: 6001,
         host: "localhost",
         use_intercom: true
-    }
+    },
+    production: true
 };
 
 module.exports = countlyConfig;

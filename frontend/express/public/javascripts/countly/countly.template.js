@@ -2871,7 +2871,7 @@ window.EnterpriseView = countlyView.extend({
 window.AllAppsView = countlyView.extend({
 	selectedView:"#draw-total-sessions",
 	selectedApps: {"all":true},
-	selectedCount: 1,
+	selectedCount: 0,
 	initialize:function () {
         this.template = Handlebars.compile($("#template-allapps").html());
     },
@@ -2931,7 +2931,7 @@ window.AllAppsView = countlyView.extend({
 		$("#sidebar-menu > .item").addClass("hide");
 		$("#management-menu").removeClass("hide");
 		$("#enterprise-menu").removeClass("hide");
-		$("#allapps-menu").removeClass("hide").css("display", "inline");
+		$("#allapps-menu").removeClass("hide").css("display", "inline-block");
         var appData = countlyAllApps.getData();
 
         this.templateData = {
@@ -3010,21 +3010,34 @@ window.AllAppsView = countlyView.extend({
 						row.find(".check").removeClass("icon-check").addClass("icon-unchecked");
 						row.find(".color").css("background-color", "transparent");
 						delete self.selectedApps[row.attr("id")];
-						self.selectedCount--;
+						if(row.attr("id") != "all")
+							self.selectedCount--;
+						if(self.selectedCount==0){
+							$("#empty-graph").show();
+							$(".big-numbers").removeClass("active");
+							$(".big-numbers .select").removeClass("selected");
+						}
+						
 					}
-					else if(self.selectedCount <= 10 || row.attr("id") == "all"){
+					else if(self.selectedCount < 10 || row.attr("id") == "all"){
+						if(self.selectedCount==0){
+							$("#empty-graph").hide();
+							$(self.selectedView).parents(".big-numbers").addClass("active");
+						}
 						if(row.attr("id") == "all"){
 							$(".check.icon-check").removeClass("icon-check").addClass("icon-unchecked");
 							$('.d-table').find(".color").css("background-color", "transparent");
 							self.selectedApps = {};
 							self.selectedCount = 0;
 						}
-						else if(self.selectedApps["all"]){
-							$(".d-table #all .check.icon-check").removeClass("icon-check").addClass("icon-unchecked");
-							$('.d-table #all').find(".color").css("background-color", "transparent");
-							delete self.selectedApps["all"];
+						else{
+							if(self.selectedApps["all"]){
+								$(".d-table #all .check.icon-check").removeClass("icon-check").addClass("icon-unchecked");
+								$('.d-table #all').find(".color").css("background-color", "transparent");
+								delete self.selectedApps["all"];
+							}
+							self.selectedCount++;
 						}
-						self.selectedCount++;
 						row.find(".check").removeClass("icon-unchecked").addClass("icon-check");
 						self.selectedApps[row.attr("id")] = true;
 					}

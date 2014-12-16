@@ -700,4 +700,5 @@ table.events-table { width:100%; padding:0; margin:0; }
 
 .allappview .widget-content .big-numbers .inner{height: 30px;}
 .allappview .widget-footer{border-radius: 0;}
+.allappview #empty-graph {position: absolute; text-align: center; font-size: 35px; width:100%; top:50%; margin-top: -20px; display: none;}
 .allapps div.color{ width: 10px; height: 20px; float: right;}
