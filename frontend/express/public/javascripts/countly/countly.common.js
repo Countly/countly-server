@@ -6,8 +6,8 @@
     // Public Properties
     countlyCommon.ACTIVE_APP_KEY = 0;
     countlyCommon.ACTIVE_APP_ID = 0;
-    countlyCommon.BROWSER_LANG = jQuery.i18n.browserLang();
-    countlyCommon.BROWSER_LANG_SHORT = jQuery.i18n.browserLang().split("-")[0];
+    countlyCommon.BROWSER_LANG = jQuery.i18n.browserLang() || "en-US";
+    countlyCommon.BROWSER_LANG_SHORT = countlyCommon.BROWSER_LANG.split("-")[0];
     countlyCommon.HELP_MAP = {};
     countlyCommon.periodObj = getPeriodObj();
 
