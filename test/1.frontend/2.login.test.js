@@ -133,6 +133,25 @@ describe('Login in', function(){
 			.expect(302, done);
 		})
 	})
+	describe('Getting new CSRF', function(){
+		before(function( done ){
+			//clear old csrf
+			testUtils.setCSRF(null);
+			done();
+		});
+		it('should display login page', function(done){
+			agent
+			.get('/login')
+			.expect('Content-Type', "text/html; charset=utf-8")
+			.expect(200)
+			.end(function(err, res){
+				if (err) return done(err);
+				var csrf = testUtils.CSRFfromBody(res.text);
+				csrf.should.be.an.instanceOf(String).and.have.lengthOf(24);
+				done()
+			});
+		})
+	})
 	describe('Login with email', function(){
 		before(function( done ){
 			testUtils.waitCSRF( done );
