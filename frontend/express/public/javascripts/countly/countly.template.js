@@ -2931,7 +2931,7 @@ window.AllAppsView = countlyView.extend({
 		$("#sidebar-menu > .item").addClass("hide");
 		$("#management-menu").removeClass("hide");
 		$("#enterprise-menu").removeClass("hide");
-		$("#allapps-menu").removeClass("hide").css("display", "inline-block");
+		$("#allapps-menu").removeClass("hide").css("display", "block");
         var appData = countlyAllApps.getData();
 
         this.templateData = {
