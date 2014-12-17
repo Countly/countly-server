@@ -113,7 +113,7 @@ describe('Login in', function(){
 			.expect(200, done);
 		})
 	})
-	describe('Login user', function(){
+	describe('Login with username', function(){
 		before(function( done ){
 			testUtils.waitCSRF( done );
 		});
@@ -121,6 +121,45 @@ describe('Login in', function(){
 			agent
 			.post('/login')
 			.send({username:testUtils.username, password:testUtils.password, _csrf:testUtils.getCSRF()})
+			.expect('location', '/dashboard')
+			.expect(302, done);
+		})
+	})
+	describe('Login out', function(){
+		it('should redirect to login', function(done){
+			agent
+			.get('/logout')
+			.expect('location', '/login')
+			.expect(302, done);
+		})
+	})
+	describe('Getting new CSRF', function(){
+		before(function( done ){
+			//clear old csrf
+			testUtils.setCSRF(null);
+			done();
+		});
+		it('should display login page', function(done){
+			agent
+			.get('/login')
+			.expect('Content-Type', "text/html; charset=utf-8")
+			.expect(200)
+			.end(function(err, res){
+				if (err) return done(err);
+				var csrf = testUtils.CSRFfromBody(res.text);
+				csrf.should.be.an.instanceOf(String).and.have.lengthOf(24);
+				done()
+			});
+		})
+	})
+	describe('Login with email', function(){
+		before(function( done ){
+			testUtils.waitCSRF( done );
+		});
+		it('should redirect to dashboard', function(done){
+			agent
+			.post('/login')
+			.send({username:testUtils.email, password:testUtils.password, _csrf:testUtils.getCSRF()})
 			.expect('location', '/dashboard')
 			.expect(302, done);
 		})
