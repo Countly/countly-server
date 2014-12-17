@@ -113,7 +113,7 @@ describe('Login in', function(){
 			.expect(200, done);
 		})
 	})
-	describe('Login user', function(){
+	describe('Login with username', function(){
 		before(function( done ){
 			testUtils.waitCSRF( done );
 		});
@@ -121,6 +121,26 @@ describe('Login in', function(){
 			agent
 			.post('/login')
 			.send({username:testUtils.username, password:testUtils.password, _csrf:testUtils.getCSRF()})
+			.expect('location', '/dashboard')
+			.expect(302, done);
+		})
+	})
+	describe('Login out', function(){
+		it('should redirect to login', function(done){
+			agent
+			.get('/logout')
+			.expect('location', '/login')
+			.expect(302, done);
+		})
+	})
+	describe('Login with email', function(){
+		before(function( done ){
+			testUtils.waitCSRF( done );
+		});
+		it('should redirect to dashboard', function(done){
+			agent
+			.post('/login')
+			.send({username:testUtils.email, password:testUtils.password, _csrf:testUtils.getCSRF()})
 			.expect('location', '/dashboard')
 			.expect(302, done);
 		})
