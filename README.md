@@ -46,7 +46,7 @@ Other important files are `frontend/express/app.js` (Countly dashboard that runs
 Countly js helpers. 
 
 ##How can I help you with your efforts?
-See our section on [how to contribute to Countly](http://github.com/countly/countly-server/CONTRIBUTING.md)
+See our section on [how to contribute to Countly](https://github.com/Countly/countly-server/blob/master/CONTRIBUTING.md)
 
 ##Links
 
