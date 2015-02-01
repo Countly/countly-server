@@ -1,7 +1,7 @@
 #Countly [![Build Status](https://api.travis-ci.org/Countly/countly-server.png)](https://travis-ci.org/Countly/countly-server) [![Gitter chat](https://badges.gitter.im/CountlyAnalytics/countly-server.png)](https://gitter.im/CountlyAnalytics/countly)
 
 
-**We're hiring:** Countly is looking for developers to work on its core platform. Send us an email (hello at count.ly), including your past experience about Javascript & Node.js, together with Github account name. 
+**We're hiring:** Countly is looking for full stack node.js developers to work on its core platform. [Click this link for job description](https://count.ly/full-stack-node-js-developer/)
 
 ##What's Countly?
 [Countly](http://count.ly) is an innovative, real-time, open source mobile analytics application. 
