@@ -1,17 +1,24 @@
-fs = require('fs');
-console.log("Output Logs:");
-fs.readFile('../../log/countly-dashboard.log', 'utf8', function (err,data) {
-	console.log("countly-dashboard.log");
-	if (err) {
-		return console.log(err);
-	}
-	console.log(data);
-});
+var fs = require('fs');
 
-fs.readFile('../../log/countly-dashboard.log', 'utf8', function (err,data) {
-	console.log("countly-api.log");
-	if (err) {
-		return console.log(err);
-	}
-	console.log(data);
+describe('Outputing logs', function(){
+	describe('countly-dashboard.log', function(){
+		it('should output', function(done){
+			fs.readFile('../../log/countly-dashboard.log', 'utf8', function (err,data) {
+				if (err) {
+					return console.log(err);
+				}
+				console.log(data);
+			});
+		});
+	});
+	describe('countly-api.log', function(){
+		it('should output', function(done){
+			fs.readFile('../../log/countly-api.log', 'utf8', function (err,data) {
+				if (err) {
+					return console.log(err);
+				}
+				console.log(data);
+			});
+		}
+	});
 });
