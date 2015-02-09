@@ -104,3 +104,6 @@ bash $DIR/scripts/compile.js.sh
 
 #install plugins
 bash $DIR/scripts/countly.install.plugins.sh
+
+#make swap file
+bash $DIR/scripts/make.swap.sh
