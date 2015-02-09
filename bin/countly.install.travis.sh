@@ -18,6 +18,9 @@ echo "
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+#make swap file
+bash $DIR/scripts/make.swap.sh
+
 #update package index
 apt-get update
 
@@ -104,6 +107,3 @@ bash $DIR/scripts/compile.js.sh
 
 #install plugins
 bash $DIR/scripts/countly.install.plugins.sh
-
-#make swap file
-bash $DIR/scripts/make.swap.sh
