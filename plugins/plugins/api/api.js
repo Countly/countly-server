@@ -72,6 +72,7 @@ var plugin = {},
 							var ob = {};
 							if (data){
 								ob.title = data.title || file;
+								ob.name = data.name || file;
 								ob.description = data.description || file;
 								ob.version = data.version || "unknown";
 								ob.author = data.author || "unknown";
