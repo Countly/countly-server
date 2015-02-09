@@ -3,5 +3,5 @@ node_js:
   - "0.10"
 services:
   - mongodb
-before_install: sudo bash ./bin/countly.travis.install.sh
+before_install: sudo bash ./bin/countly.install.travis.sh
 install: sudo npm install
