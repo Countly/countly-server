@@ -16,7 +16,8 @@ module.exports = function(grunt) {
 			"-W038": true,
 			"-W082": true,
 			"-W058": true,
-			"-W030": true
+			"-W030": true,
+			"-W032": true
 		},
 		all: ['Gruntfile.js', 'api/api.js', 'api/lib/*.js', 'api/parts/**/*.js', 'api/utils/common.js', 'frontend/express/app.js', 'plugins/pluginManager.js', 'plugins/**/api/*.js', 'plugins/**/api/parts/**/*.js', 'plugins/**/frontend/*.js']
     },

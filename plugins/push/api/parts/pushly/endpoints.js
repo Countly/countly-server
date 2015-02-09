@@ -576,7 +576,7 @@ var pushly 			= require('pushly')(),
         }
 
         for (var platform in msg.platforms) if ([Platform.APNS, Platform.GCM].indexOf(msg.platforms[platform]) === -1) {
-            common.returnOutput(params, {error: 'Bad message plaform "' + msg.platforms[plaform] + '", only "' + Platform.APNS + '" (APNS) and "' + Platform.GCM + '" (GCM) are supported'});
+            common.returnOutput(params, {error: 'Bad message plaform "' + msg.platforms[platform] + '", only "' + Platform.APNS + '" (APNS) and "' + Platform.GCM + '" (GCM) are supported'});
             return false;
         }
 
@@ -825,7 +825,7 @@ var pushly 			= require('pushly')(),
         common.fillTimeObjectZero(params, updateUsersZero, levels);
         common.fillTimeObjectMonth(params, updateUsersMonth, levels);
 
-        if (Object.keys(updateUsersZero).length || Object.keys(usersMeta).length) {
+        if (Object.keys(updateUsersZero).length) {
             common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, {$set: {m: dbDateIds.zero, a: params.app_id + ""}, '$inc': updateUsersZero}, {'upsert': true},function(){});
         }
         common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true},function(){});
