@@ -4,7 +4,7 @@
     var _periodObj = {},
         _locationsDb = {},
         _activeAppKey = 0,
-        _countries = [],
+        _cities = [],
         _chart,
         _dataTable,
         _chartElementId = "geo-chart",
@@ -18,8 +18,8 @@
             datalessRegionColor:"#FFF",
             region:"TR"
         },
-        _countryMap = {},
-        _initialized = false;
+        _initialized = false,
+        _period = null;
 
     if (countlyCommon.CITY_DATA === false) {
         countlyCity.initialize = function() { return true; };
@@ -31,9 +31,11 @@
         // Public Methods
         countlyCity.initialize = function () {
 
-            if (_initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+            if (_initialized && _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
                 return countlyCity.refresh();
             }
+
+            _period = countlyCommon.getPeriodForAjax();
 
             if (!countlyCommon.DEBUG) {
                 _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
@@ -45,7 +47,8 @@
                     data:{
                         "api_key":countlyGlobal.member.api_key,
                         "app_id":countlyCommon.ACTIVE_APP_ID,
-                        "method":"cities"
+                        "method":"cities",
+                        "period":_period
                     },
                     dataType:"jsonp",
                     success:function (json) {
@@ -130,9 +133,9 @@
 
         countlyCity.getLocationData = function (options) {
 
-            var locationData = countlyCommon.extractTwoLevelData(_locationsDb, _countries, countlyCity.clearLocationObject, [
+            var locationData = countlyCommon.extractTwoLevelData(_locationsDb, _cities, countlyCity.clearLocationObject, [
                 {
-                    "name":"country",
+                    "name":"city",
                     "func":function (rangeArr, dataObj) {
                         return rangeArr;
                     }
@@ -171,9 +174,9 @@
 
         _chart = new google.visualization.GeoChart(document.getElementById(_chartElementId));
 
-        var tt = countlyCommon.extractTwoLevelData(_locationsDb, _countries, countlyCity.clearLocationObject, [
+        var tt = countlyCommon.extractTwoLevelData(_locationsDb, _cities, countlyCity.clearLocationObject, [
             {
-                "name":"country",
+                "name":"city",
                 "func":function (rangeArr, dataObj) {
                     return rangeArr;
                 }
@@ -187,11 +190,11 @@
         ];
 
         chartData.rows = _.map(tt.chartData, function (value, key, list) {
-            if (value.country == "European Union" || value.country == "Unknown") {
+            if (value.city == "Unknown") {
                 return {c:[]};
             }
             return {c:[
-                {v:value.country},
+                {v:value.city},
                 {v:value["t"]}
             ]};
         });
@@ -211,9 +214,9 @@
     function reDraw() {
         var chartData = {cols:[], rows:[]};
 
-        var tt = countlyCommon.extractTwoLevelData(_locationsDb, _locationsDb["cities"], countlyCity.clearLocationObject, [
+        var tt = countlyCommon.extractTwoLevelData(_locationsDb, _cities, countlyCity.clearLocationObject, [
             {
-                "name":"country",
+                "name":"city",
                 "func":function (rangeArr, dataObj) {
                     return rangeArr;
                 }
@@ -222,18 +225,18 @@
         ]);
 
         chartData.cols = [
-            {id:'country', label:"City", type:'string'},
+            {id:'city', label:"City", type:'string'},
             {id:'total', label:jQuery.i18n.map["common.total"], type:'number'}
         ];
         chartData.rows = _.map(tt.chartData, function (value, key, list) {
-            if (value.country == "European Union" || value.country == "Unknown") {
+            if (value.city == "Unknown") {
                 return {c:[
                     {v:""},
                     {v:value["t"]}
                 ]};
             }
             return {c:[
-                {v:value.country},
+                {v:value.city},
                 {v:value["t"]}
             ]};
         });
@@ -242,15 +245,11 @@
         _chart.draw(_dataTable, _chartOptions);
     }
 
-    function geoDataSortHelper(a, b) {
-        return ((a["t"] > b["t"]) ? -1 : ((a["t"] < b["t"]) ? 1 : 0));
-    }
-
     function setMeta() {
         if (_locationsDb['meta']) {
-            _countries = (_locationsDb['meta']['cities']) ? _locationsDb['meta']['cities'] : [];
+            _cities = (_locationsDb['meta']['cities']) ? _locationsDb['meta']['cities'] : [];
         } else {
-            _countries = [];
+            _cities = [];
         }
     }
 

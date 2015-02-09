@@ -5,13 +5,16 @@
         _deviceDb = {},
         _devices = [],
         _activeAppKey = 0,
-        _initialized = false;
+        _initialized = false,
+        _period = null;
 
     //Public Methods
     countlyDevice.initialize = function () {
-        if (_initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+        if (_initialized && _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
             return countlyDevice.refresh();
         }
+
+        _period = countlyCommon.getPeriodForAjax();
 
         if (!countlyCommon.DEBUG) {
             _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
@@ -23,7 +26,8 @@
                 data:{
                     "api_key":countlyGlobal.member.api_key,
                     "app_id":countlyCommon.ACTIVE_APP_ID,
-                    "method":"devices"
+                    "method":"devices",
+                    "period":_period
                 },
                 dataType:"jsonp",
                 success:function (json) {
@@ -59,7 +63,7 @@
                 dataType:"jsonp",
                 success:function (json) {
                     countlyCommon.extendDbObj(_deviceDb, json);
-                    setMeta();
+                    extendMeta();
                 }
             });
         } else {
@@ -109,7 +113,7 @@
         }, 0);
 
         for (var i = 0; i < deviceNames.length; i++) {
-            var percent = (deviceNew[i] / sum) * 100;
+            var percent = (deviceNew[i] / sum2) * 100;
             chartData3[i] = {data:[
                 [0, deviceNew[i]]
             ], label:deviceNames[i]};
@@ -335,6 +339,12 @@
             _devices = (_deviceDb['meta']['devices']) ? _deviceDb['meta']['devices'] : [];
         } else {
             _devices = [];
+        }
+    }
+
+    function extendMeta() {
+        if (_deviceDb['meta']) {
+            _devices = countlyCommon.union(_devices, _deviceDb['meta']['devices']);
         }
     }
 

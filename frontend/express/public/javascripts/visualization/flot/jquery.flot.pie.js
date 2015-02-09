@@ -278,6 +278,7 @@ More detail and specific examples can be found in the included HTML file.
 			var slices = plot.getData();
 		
 			var attempts = 0;
+            redraw = true;
 			while (redraw && attempts<redrawAttempts)
 			{
 				redraw = false;

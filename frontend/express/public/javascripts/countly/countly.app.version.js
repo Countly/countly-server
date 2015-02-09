@@ -1,71 +1,18 @@
 (function (countlyAppVersion, $, undefined) {
 
     //Private Properties
-    var _periodObj = {},
-        _appVersionsDb = {},
-        _app_versions = [],
-        _activeAppKey = 0,
-        _initialized = false;
+    var _appVersionsDb = {},
+        _app_versions = [];
 
     //Public Methods
     countlyAppVersion.initialize = function () {
-        if (_initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
-            return countlyAppVersion.refresh();
-        }
-
-        if (!countlyCommon.DEBUG) {
-            _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
-            _initialized = true;
-
-            return $.ajax({
-                type:"GET",
-                url:countlyCommon.API_PARTS.data.r || "/o",
-                data:{
-                    "api_key":countlyGlobal.member.api_key,
-                    "app_id":countlyCommon.ACTIVE_APP_ID,
-                    "method":"app_versions"
-                },
-                dataType:"jsonp",
-                success:function (json) {
-                    _appVersionsDb = json;
-                    setMeta();
-                }
-            });
-        } else {
-            _appVersionsDb = {"2012":{}};
-            return true;
-        }
+        _appVersionsDb = countlyDeviceDetails.getDbObj();
+        setMeta();
     };
 
-    countlyAppVersion.refresh = function () {
-        _periodObj = countlyCommon.periodObj;
-
-        if (!countlyCommon.DEBUG) {
-
-            if (_activeAppKey != countlyCommon.ACTIVE_APP_KEY) {
-                _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
-                return countlyAppVersion.initialize();
-            }
-
-            return $.ajax({
-                type:"GET",
-                url:countlyCommon.API_PARTS.data.r,
-                data:{
-                    "api_key":countlyGlobal.member.api_key,
-                    "app_id":countlyCommon.ACTIVE_APP_ID,
-                    "method":"app_versions",
-                    "action":"refresh"
-                },
-                dataType:"jsonp",
-                success:function (json) {
-                    countlyCommon.extendDbObj(_appVersionsDb, json);
-                    setMeta();
-                }
-            });
-        } else {
-            _appVersionsDb = {"2012":{}};
-            return true;
-        }
+    countlyAppVersion.refresh = function (newJSON) {
+        countlyCommon.extendDbObj(_appVersionsDb, newJSON);
+        extendMeta();
     };
 
     countlyAppVersion.reset = function () {
@@ -144,6 +91,12 @@
             _app_versions = (_appVersionsDb['meta']['app_versions']) ? _appVersionsDb['meta']['app_versions'] : [];
         } else {
             _app_versions = [];
+        }
+    }
+
+    function extendMeta() {
+        if (_appVersionsDb['meta']) {
+            _app_versions = countlyCommon.union(_app_versions, _appVersionsDb['meta']['app_versions']);
         }
     }
 

@@ -22,8 +22,10 @@ var common = {},
 
     common.dbUserMap = {
         'device_id': 'did',
+        'user_id' : 'uid',
         'first_seen': 'fs',
         'last_seen': 'ls',
+        'last_payment': 'lp',
         'session_duration': 'sd',
         'total_session_duration': 'tsd',
         'session_count': 'sc',
@@ -36,22 +38,47 @@ var common = {},
         'app_version': 'av',
         'last_begin_session_timestamp': 'lbst',
         'last_end_session_timestamp': 'lest',
-        'has_ongoing_session': 'hos'
+        'has_ongoing_session': 'hos',
+        'resolution': 'r'
     };
 
-    var dbName;
-    var dbOptions = { safe:false, maxPoolSize: countlyConfig.mongodb.max_pool_size || 1000 };
+    common.dbEventMap = {
+        'user_properties':'up',
+        'timestamp':'ts',
+        'segmentations':'sg',
+        'count':'c',
+        'sum':'s'
+    };
 
+	//mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
+	var dbName;
+    var dbOptions = {db:{safe:false}, server:{auto_reconnect:true}};
+	var optString = "?maxPoolSize="+(countlyConfig.mongodb.max_pool_size || 500);
+	countlyConfig.mongodb.db = countlyConfig.mongodb.db || 'countly';
     if (typeof countlyConfig.mongodb === "string") {
         dbName = countlyConfig.mongodb;
     } else if ( typeof countlyConfig.mongodb.replSetServers === 'object'){
-        dbName = countlyConfig.mongodb.replSetServers;
-        dbOptions.database = countlyConfig.mongodb.db || 'countly';
+		//mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test
+        dbName = countlyConfig.mongodb.replSetServers.join(",")+"/"+countlyConfig.mongodb.db;
+        dbOptions.replSet = {auto_reconnect:true, poolSize: countlyConfig.mongodb.max_pool_size || 500 };
+		if(countlyConfig.mongodb.username && countlyConfig.mongodb.password){
+			dbName = countlyConfig.mongodb.username + ":" + countlyConfig.mongodb.password +"@" + dbName;
+		}
     } else {
-        dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db + '?auto_reconnect=true');
+        dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db);
+		if(countlyConfig.mongodb.username && countlyConfig.mongodb.password){
+			dbName = countlyConfig.mongodb.username + ":" + countlyConfig.mongodb.password +"@" + dbName;
+		}
     }
-
+	if(dbName.indexOf("mongodb://") !== 0){
+		dbName = "mongodb://"+dbName;
+	}
+	dbName = dbName+optString;
+	
     common.db = mongo.db(dbName, dbOptions);
+	common.db._emitter.setMaxListeners(0);
+	if(!common.db.ObjectID)
+		common.db.ObjectID = mongo.ObjectID;
 
     common.config = countlyConfig;
 
@@ -78,6 +105,15 @@ var common = {},
         return !isNaN(parseFloat(n)) && isFinite(n);
     };
 
+    common.safeDivision = function(dividend, divisor) {
+        var tmpAvgVal;
+        tmpAvgVal = dividend / divisor;
+        if(!tmpAvgVal || tmpAvgVal == Number.POSITIVE_INFINITY){
+            tmpAvgVal = 0;
+        }
+        return tmpAvgVal;
+    }
+
     common.zeroFill = function(number, width) {
         width -= number.toString().length;
 
@@ -89,8 +125,20 @@ var common = {},
     };
 
     common.arrayAddUniq = function (arr, item) {
-        if (arr.indexOf(item) === -1) {
-            arr[arr.length] = item;
+        if (!arr) {
+            arr = [];
+        }
+
+        if (toString.call(item) === "[object Array]") {
+            for (var i = 0; i < item.length; i++) {
+                if (arr.indexOf(item[i]) === -1) {
+                    arr[arr.length] = item[i];
+                }
+            }
+        } else {
+            if (arr.indexOf(item) === -1) {
+                arr[arr.length] = item;
+            }
         }
     };
 
@@ -127,7 +175,8 @@ var common = {},
             property == common.dbMap["unique"] ||
             property.substr(0,2) == (common.dbMap["frequency"] + ".") ||
             property.substr(0,2) == (common.dbMap["loyalty"] + ".") ||
-            property.substr(0,3) == (common.dbMap["durations"] + "."))
+            property.substr(0,3) == (common.dbMap["durations"] + ".") ||
+            property == common.dbMap["paying"])
         {
             object[timeObj.yearly + ".w" + timeObj.weekly + '.' + property] = increment;
         }
@@ -139,18 +188,22 @@ var common = {},
             currDate,
             currDateWithoutTimestamp = new Date();
 
-        // Check if the timestamp parameter exists in the request and is a 10 digit integer
+        // Check if the timestamp parameter exists in the request and is a 10 or 13 digit integer
         if (reqTimestamp && (reqTimestamp + "").length === 10 && common.isNumber(reqTimestamp)) {
             // If the received timestamp is greater than current time use the current time as timestamp
             currTimestamp = (reqTimestamp > time.time()) ? time.time() : parseInt(reqTimestamp, 10);
+            currDate = new Date(currTimestamp * 1000);
+        } else if (reqTimestamp && (reqTimestamp + "").length === 13 && common.isNumber(reqTimestamp)) {
+            var tmpTimestamp = Math.round(parseInt(reqTimestamp, 10) / 1000);
+            currTimestamp = (tmpTimestamp > time.time()) ? time.time() : tmpTimestamp;
             currDate = new Date(currTimestamp * 1000);
         } else {
             currTimestamp = time.time(); // UTC
             currDate = new Date();
         }
-
-        currDate.setTimezone(appTimezone);
-        currDateWithoutTimestamp.setTimezone(appTimezone);
+		
+		currDate.setTimezone(appTimezone);
+		currDateWithoutTimestamp.setTimezone(appTimezone);
 
         var tmpMoment = moment(currDate);
 
@@ -163,7 +216,10 @@ var common = {},
             monthly: tmpMoment.format("YYYY.M"),
             daily: tmpMoment.format("YYYY.M.D"),
             hourly: tmpMoment.format("YYYY.M.D.H"),
-            weekly: Math.ceil(tmpMoment.format("DDD") / 7)
+            weekly: Math.ceil(tmpMoment.format("DDD") / 7),
+            month: tmpMoment.format("M"),
+            day: tmpMoment.format("D"),
+            hour: tmpMoment.format("H")
         };
     };
 
@@ -172,7 +228,7 @@ var common = {},
         var tmpDate = (timestamp)? new Date(timestamp * 1000) : new Date();
 
         if (timezone) {
-            tmpDate.setTimezone(timezone);
+			tmpDate.setTimezone(timezone);
         }
 
         return tmpDate;
@@ -182,13 +238,13 @@ var common = {},
         var endDate = (timestamp)? new Date(timestamp * 1000) : new Date();
 
         if (timezone) {
-            endDate.setTimezone(timezone);
+			endDate.setTimezone(timezone);
         }
 
         var startDate = (timestamp)? new Date(timestamp * 1000) : new Date();
 
         if (timezone) {
-            startDate.setTimezone(timezone);
+			startDate.setTimezone(timezone);
         }
 
         startDate.setMonth(0);
@@ -203,6 +259,23 @@ var common = {},
         var currDay = Math.ceil(diff / oneDay);
 
         return currDay;
+    };
+
+    common.getDaysInYear = function (year) {
+        if(new Date(year, 1, 29).getMonth() === 1) {
+            return 366;
+        } else {
+            return 365;
+        }
+    };
+
+    common.getISOWeeksInYear = function (year) {
+        var d = new Date(year, 0, 1),
+            isLeap = new Date(year, 1, 29).getMonth() === 1;
+
+        //Check for a Jan 1 that's a Thursday or a leap year that has a
+        //Wednesday Jan 1. Otherwise it's 52
+        return d.getDay() === 4 || isLeap && d.getDay() === 3 ? 53 : 52
     };
 
     /*
@@ -273,27 +346,174 @@ var common = {},
         return returnObj;
     };
 
-    common.returnMessage = function (params, returnCode, message) {
-        params.res.writeHead(returnCode, {'Content-Type': 'application/json; charset=utf-8'});
-        if (params.qstring.callback) {
-            params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}) + ')');
+    common.fixEventKey = function (eventKey) {
+        var shortEventName = eventKey.replace(/system\.|\.\.|\$/g, "");
+
+        if (shortEventName.length >= 128) {
+            return false;
         } else {
-            params.res.write(JSON.stringify({result: message}));
+            return shortEventName;
         }
-        params.res.end();
+    };
+
+    common.returnMessage = function (params, returnCode, message) {
+        if (params && params.res) {
+            params.res.writeHead(returnCode, {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+            if (params.qstring.callback) {
+                params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}) + ')');
+            } else {
+                params.res.write(JSON.stringify({result: message}));
+            }
+
+            params.res.end();
+        }
     };
 
     common.returnOutput = function (params, output) {
-        params.res.writeHead(200, {'Content-Type': 'application/json; charset=utf-8'});
-        if (params.qstring.callback) {
-            params.res.write(params.qstring.callback + '(' + JSON.stringify(output) + ')');
-        } else {
-            params.res.write(JSON.stringify(output));
-        }
+        if (params && params.res) {
+            params.res.writeHead(200, {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+            if (params.qstring.callback) {
+                params.res.write(params.qstring.callback + '(' + JSON.stringify(output) + ')');
+            } else {
+                params.res.write(JSON.stringify(output));
+            }
 
-        params.res.end();
+            params.res.end();
+        }
     };
 
+    common.fillTimeObjectZero = function (params, object, property, increment) {
+        var tmpIncrement = (increment) ? increment : 1,
+            timeObj = params.time;
+
+        if (!timeObj || !timeObj.yearly || !timeObj.month) {
+            return false;
+        }
+
+        if (property instanceof Array) {
+            for (var i = 0; i < property.length; i ++) {
+                object['d.' + property[i]] = tmpIncrement;
+                object['d.' + timeObj.month + '.' + property[i]] = tmpIncrement;
+
+                // For properties that hold the unique visitor count we store weekly data as well.
+                if (property[i].substr(-2) == ("." + common.dbMap["unique"]) ||
+                    property[i] == common.dbMap["unique"] ||
+                    property[i].substr(0,2) == (common.dbMap["frequency"] + ".") ||
+                    property[i].substr(0,2) == (common.dbMap["loyalty"] + ".") ||
+                    property[i].substr(0,3) == (common.dbMap["durations"] + ".") ||
+                    property[i] == common.dbMap["paying"])
+                {
+                    object['d.' + "w" + timeObj.weekly + '.' + property[i]] = tmpIncrement;
+                }
+            }
+        } else {
+            object['d.' + property] = tmpIncrement;
+            object['d.' + timeObj.month + '.' + property] = tmpIncrement;
+
+            if (property.substr(-2) == ("." + common.dbMap["unique"]) ||
+                property == common.dbMap["unique"] ||
+                property.substr(0,2) == (common.dbMap["frequency"] + ".") ||
+                property.substr(0,2) == (common.dbMap["loyalty"] + ".") ||
+                property.substr(0,3) == (common.dbMap["durations"] + ".") ||
+                property == common.dbMap["paying"])
+            {
+                object['d.' + "w" + timeObj.weekly + '.' + property] = tmpIncrement;
+            }
+        }
+
+        return true;
+    };
+
+    common.fillTimeObjectMonth = function (params, object, property, increment) {
+        var tmpIncrement = (increment) ? increment : 1,
+            timeObj = params.time;
+
+        if (!timeObj || !timeObj.yearly || !timeObj.month || !timeObj.weekly || !timeObj.day || !timeObj.hour) {
+            return false;
+        }
+
+        if (property instanceof Array) {
+            for (var i = 0; i < property.length; i ++) {
+                object['d.' + timeObj.day + '.' + property[i]] = tmpIncrement;
+
+                // If the property parameter contains a dot, hourly data is not saved in
+                // order to prevent two level data (such as 2012.7.20.TR.u) to get out of control.
+                if (property[i].indexOf('.') === -1) {
+                    object['d.' + timeObj.day + '.' + timeObj.hour + '.' + property[i]] = tmpIncrement;
+                }
+            }
+        } else {
+            object['d.' + timeObj.day + '.' + property] = tmpIncrement;
+
+            if (property.indexOf('.') === -1) {
+                object['d.' + timeObj.day + '.' + timeObj.hour + '.' + property] = tmpIncrement;
+            }
+        }
+
+        return true;
+    };
+
+    common.getDateIds = function(params) {
+        if (!params || !params.time) {
+            return {
+                zero: "0000:0",
+                month: "0000:1"
+            };
+        }
+
+        return {
+            zero: params.time.yearly + ":0",
+            month: params.time.yearly + ":" + params.time.month
+        };
+    };
+	
+	common.versionCompare = function(v1, v2, options) {
+		var lexicographical = options && options.lexicographical,
+			zeroExtend = options && options.zeroExtend,
+			v1parts = v1.split(':'),
+			v2parts = v2.split(':');
+	
+		function isValidPart(x) {
+			return (lexicographical ? /^\d+[A-Za-z]*$/ : /^\d+$/).test(x);
+		}
+	
+		if (!v1parts.every(isValidPart) || !v2parts.every(isValidPart)) {
+			return NaN;
+		}
+	
+		if (zeroExtend) {
+			while (v1parts.length < v2parts.length) v1parts.push("0");
+			while (v2parts.length < v1parts.length) v2parts.push("0");
+		}
+	
+		if (!lexicographical) {
+			v1parts = v1parts.map(Number);
+			v2parts = v2parts.map(Number);
+		}
+	
+		for (var i = 0; i < v1parts.length; ++i) {
+			if (v2parts.length == i) {
+				return 1;
+			}
+	
+			if (v1parts[i] == v2parts[i]) {
+				continue;
+			}
+			else if (v1parts[i] > v2parts[i]) {
+				return 1;
+			}
+			else {
+				return -1;
+			}
+		}
+	
+		if (v1parts.length != v2parts.length) {
+			return -1;
+		}
+	
+		return 0;
+	};
+	
 }(common));
 
 module.exports = common;

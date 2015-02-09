@@ -1,0 +1,108 @@
+#dbviewer{ overflow: hidden; border-bottom-left-radius: 7px; border-bottom-right-radius: 7px;}
+#dbviewer .clear {clear: both;}
+#dbviewer .left-side{ width: 300px; float: left; background-color: #fff; border-right: 1px solid #ccc; padding-bottom: 1000px; margin-bottom: -1000px; overflow: hidden;}
+#dbviewer .right-side{ margin-left: 300px; padding: 10px 25px;}
+#dbviewer .left-side ul {list-style: none; padding:0; margin:0; font-size: 13px;}
+#dbviewer .left-side ul li{padding-top: 3px; padding-bottom: 3px;}
+#dbviewer .left-side ul li:hover{background-color: #eee;}
+#dbviewer .left-side .ui-accordion .ui-accordion-content {padding: 10px;}
+#dbviewer .left-side .ui-state-active{
+border: none;
+border-left: 1px solid #F8F8F8;
+border-top: 1px solid #F8F8F8;
+color: #424242;
+font-size: 11px;
+padding: 5px 4px;
+background-color: #EEEEEE;
+text-align: center;
+background-image: linear-gradient(top, #EEEEEE 20%, #DEDEDE 100%);
+background-image: linear-gradient(to bottom, #EEEEEE 20%, #DEDEDE 100%);
+text-shadow: 0 1px #F2F2F2;
+border-radius: 0;}
+#dbviewer-collections {width: 100%; border-spacing: 2px; border: 1px solid #ccc; border-collapse: collapse;}
+#dbviewer-collections th {border: 1px solid #ccc;}
+#dbviewer-collections td {background-color: #f5f5f5; border: 1px solid #ccc; overflow: auto; display: block; height: 150px; white-space: pre-wrap;}
+.pagination a, #collection-filter{border: 1px solid #ccc; background-color: #f5f5f5; padding: 4px; cursor: pointer;}
+.pagination a.current{font-style: italic; color: #839B00;}
+.breadcrumbs{font-weight: bold; color: #666;}
+.breadcrumbs a{font-style: italic; color: #5286BC;}
+.collection-filter{width: 100%; min-height: 50px;}
+#dbviewer .right-side select{height: 27px; position: relative; top:-3px;}
+
+.jh-root, .jh-type-object, .jh-type-array, .jh-key, .jh-value, .jh-root tr{
+ -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+ -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+ box-sizing: border-box;         /* Opera/IE 8+ */
+}
+
+.jh-key, .jh-value{
+ margin: 0;
+ padding: 0.2em;
+}
+
+.jh-value{
+    border-left: 1px solid #ddd;
+}
+
+.jh-type-bool, .jh-type-number{
+    font-weight: bold;
+    text-align: center;
+    color: #5286BC;
+}
+
+.jh-type-string{
+    font-style: italic;
+    color: #839B00;
+}
+
+.jh-array-key{
+    font-style: italic;
+    font-size: small;
+    text-align: center;
+}
+
+.jh-object-key, .jh-array-key{
+    color: #444;
+    vertical-align: top;
+}
+
+.jh-type-object > tr:nth-child(odd), .jh-type-array > tr:nth-child(odd){
+    background-color: #f5f5f5;
+}
+
+.jh-type-object > tr:nth-child(even), .jh-type-array > tr:nth-child(even){
+    background-color: #fff;
+}
+
+.jh-type-object, .jh-type-array{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.jh-root{
+ border: 1px solid #ccc;
+ margin: 0.2em;
+}
+
+th.jh-key{
+ text-align: left;
+}
+
+.jh-type-object > tr, .jh-type-array > tr{
+ border: 1px solid #ddd;
+ border-bottom: none;
+}
+
+.jh-type-object > tr:last-child, .jh-type-array > tr:last-child{
+ border-bottom: 1px solid #ddd;
+}
+
+.jh-type-object > tr:hover, .jh-type-array > tr:hover{
+ border: 1px solid #F99927;
+}
+
+.jh-empty{
+ font-style: italic;
+ color: #999;
+ font-size: small;
+}

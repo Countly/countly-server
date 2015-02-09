@@ -14,7 +14,6 @@ echo "
 / /___/ /_/ / /_/ / / / / /_/ / /_/ /
 \____/\____/\__,_/_/ /_/\__/_/\__, /
               http://count.ly/____/
-
 "
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -29,7 +28,8 @@ if !(command -v apt-add-repository >/dev/null) then
 fi
 
 #add node.js repo
-echo | apt-add-repository ppa:chris-lea/node.js
+#echo | apt-add-repository ppa:chris-lea/node.js
+wget -qO- https://deb.nodesource.com/setup | bash -
 
 #add mongodb repo
 echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" > /etc/apt/sources.list.d/mongodb-10gen-countly.list
@@ -57,7 +57,7 @@ apt-get -y install imagemagick
 apt-get -y install sendmail
 
 #install iptables
-apt-get -y install iptables
+DEBIAN_FRONTEND=noninteractive apt-get -y install iptables-persistent
 
 apt-get -y install build-essential || (echo "Failed to install build-essential." ; exit)
 
@@ -69,12 +69,16 @@ iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s 0/0 -j
 #install iptables-persistent
 apt-get install iptables-persistent
 
-#install time module for node
-( cd $DIR/../api ; npm install time )
+#install api modules
+( cd $DIR/../api ; npm install --unsafe-perm )
+
+#install frontend modules
+( cd $DIR/../frontend/express ; npm install --unsafe-perm )
 
 #configure and start nginx
 cp /etc/nginx/sites-enabled/default $DIR/config/nginx.default.backup
 cp $DIR/config/nginx.server.conf /etc/nginx/sites-enabled/default
+cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
 /etc/init.d/nginx restart
 
 cp $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
@@ -93,3 +97,10 @@ cp $DIR/../frontend/express/config.sample.js $DIR/../frontend/express/config.js
 
 #finally start countly api and dashboard
 start countly-supervisor
+
+#compile scripts for production
+apt-get -y install default-jre
+bash $DIR/scripts/compile.js.sh
+
+#install plugins
+bash $DIR/scripts/countly.install.plugins.sh

@@ -1,17 +1,18 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!--
-   ______                  __  __     
-  / ____/___  __  ______  / /_/ /_  __
- / /   / __ \/ / / / __ \/ __/ / / / /
-/ /___/ /_/ / /_/ / / / / /_/ / /_/ / 
-\____/\____/\__,_/_/ /_/\__/_/\__, /  
-              http://count.ly/____/   
+   ______                  __  __         ______      __                       _
+  / ____/___  __  ______  / /_/ /_  __   / ____/___  / /____  _________  _____(_)_______
+ / /   / __ \/ / / / __ \/ __/ / / / /  / __/ / __ \/ __/ _ \/ ___/ __ \/ ___/ / ___/ _ \
+/ /___/ /_/ / /_/ / / / / /_/ / /_/ /  / /___/ / / / /_/  __/ /  / /_/ / /  / (__  )  __/
+\____/\____/\__,_/_/ /_/\__/_/\__, /  /_____/_/ /_/\__/\___/_/  / .___/_/  /_/____/\___/
+              http://count.ly/____/                            /_/
 -->
 <html>
 <head>
-	<link href='/stylesheets/pre-login/main.css' rel='stylesheet' type='text/css'>
-	<link rel="icon" type="image/png" href="/images/favicon.png">
+	<link href='stylesheets/pre-login/main.css' rel='stylesheet' type='text/css'>
+	<link rel="icon" type="image/png" href="images/favicon.png">
 	<title>Countly</title>
+	<script>window.countlyGlobal = window.countlyGlobal || {}; countlyGlobal["cdn"] = "<%- cdn %>";</script>
 </head>
 <body>
 	 <% if (message){ %>
@@ -57,12 +58,12 @@
 			</form>
 		</div>
 	</div>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/utils/prefixfree.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery.noisy.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/utils/store+json2.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/pre-login.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/prefixfree.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery.noisy.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/store+json2.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/pre-login.js"></script>
 	<script>
 		$(document).ready(function() {
 			<% if (message){ %>
@@ -75,5 +76,8 @@
 			document.title = "Countly | " + jQuery.i18n.map["forgot.title"];
 		});
 	</script>
+	<% if (typeof javascript != 'undefined') { %>
+	<script><%- javascript %></script>
+	<% } %>
 </body>
 </html>

@@ -1,0 +1,12 @@
+{
+  "name": "countly-server-api",
+  "dependencies": {
+	"geoip-lite": "*",
+    "moment": "1.7.2",
+    "mongoskin": "1.4.11",
+	"nodemailer": "0.4.4",
+	"request":"2.51.0",
+	"time":"*",
+	"underscore":"1.7.0"
+  }
+}

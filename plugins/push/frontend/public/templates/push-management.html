@@ -1,0 +1,80 @@
+<tr>
+    <td data-localize="management-applications.push-apn-creds"></td>
+    <td id="app-apn-cert" style="padding:0;">
+        <div class="read">
+            <table cellspacing="0" style="width:100%;">
+                <tr class="help-zone-vs" data-help-localize="manage-apps.push-apn-certificate">
+                    <td><span data-localize="management-applications.push-apn-creds-test"></span></td>
+                    <td><i id="push-apn-cert-test-view" class="icon-remove"></i></td>
+                </tr>
+                <tr class="help-zone-vs" data-help-localize="manage-apps.push-apn-certificate">
+                    <td><span data-localize="management-applications.push-apn-creds-prod"></span></td>
+                    <td><i id="push-apn-cert-prod-view" class="icon-remove"></i></td>
+                </tr>
+                <tr class="help-zone-vs" data-help-localize="manage-apps.push-apn-id">
+                    <td><span data-localize="management-applications.push-apn-creds-id"></span></td>
+                    <td id="apn-app-store-id"></td>
+                </tr>
+            </table>
+        </div>
+        <div class="edit">
+            <table cellspacing="0" style="width:100%;">
+                <tr class="help-zone-vs" data-help-localize="manage-apps.push-apn-certificate">
+                    <td><span data-localize="management-applications.push-apn-creds-test"></span></td>
+                    <td>
+                        <form action="./apps/certificate" enctype="multipart/form-data" id="add-edit-apn-creds-test-form" method="post">
+                            <input type="file" id="apns_cert_test" name="apns_cert" />
+                            <input placeholder="Passphrase" style="margin-top:5px;" type="text" name="passphrase" />
+                            <input type="hidden" name="app_id" />
+                            <input type="hidden" name="test" value="true" />
+                        </form>
+                    </td>
+                </tr>
+                <tr class="help-zone-vs" data-help-localize="manage-apps.push-apn-certificate">
+                    <td><span data-localize="management-applications.push-apn-creds-prod"></span></td>
+                    <td>
+                        <form action="./apps/certificate" enctype="multipart/form-data" id="add-edit-apn-creds-prod-form" method="post">
+                            <input type="file" id="apns_cert_prod" name="apns_cert" />
+                            <input type="hidden" name="app_id" />
+                            <input placeholder="Passphrase" style="margin-top:5px;" type="text" name="passphrase" />
+
+                        </form>
+                    </td>
+                </tr>
+                <tr class="help-zone-vs" data-help-localize="manage-apps.push-apn-id">
+                	<td><span data-localize="management-applications.push-apn-creds-id"></span></td>
+                	<td><input placeholder="App Store ID" style="margin-top:5px;" type="text" id="apn-id"  /></td>
+                </tr>
+            </table>
+        </div>
+    </td>
+</tr>
+<tr class="table-edit-prev">
+    <td data-localize="management-applications.push-gcm-creds"></td>
+    <td id="app-gcm-creds" style="padding:0;">
+        <div class="read">
+            <table cellspacing="0" style="width:100%;">
+                <tr class="help-zone-vs" data-help-localize="manage-apps.push-gcm-id">
+                    <td><span data-localize="management-applications.push-gcm-id"></span></td>
+                    <td id="view-gcm-id"></td>
+                </tr>
+                <tr class="help-zone-vs" data-help-localize="manage-apps.push-gcm-key">
+                    <td><span data-localize="management-applications.push-gcm-key"></span></td>
+                    <td id="view-gcm-key"></td>
+                </tr>
+            </table>
+        </div>
+        <div class="edit">
+            <table cellspacing="0" style="width:100%;">
+                <tr class="help-zone-vs" data-help-localize="manage-apps.push-gcm-id">
+                    <td><span data-localize="management-applications.push-gcm-id"></span></td>
+                    <td><input id="gcm-id" type="text" value=""></td>
+                </tr>
+                <tr class="help-zone-vs" data-help-localize="manage-apps.push-gcm-key">
+                    <td><span data-localize="management-applications.push-gcm-key"></span></td>
+                    <td><input id="gcm-key" type="text" value=""></td>
+                </tr>
+            </table>
+		</div>
+	</td>
+</tr>

@@ -1,0 +1,183 @@
+@import url(https://fonts.googleapis.com/css?family=Ubuntu:400,500&subset=latin,latin-ext);
+body { padding:0px; background-color:#1A1A1A; font-family:Ubuntu,Helvetica,sans-serif; }
+input { outline:none; }
+input[type=text], input[type=password] { font:20px Ubuntu,Helvetica,sans-serif; box-shadow:inset 0 0 4px 0 #333, 0 1px 0 0 #555; border-radius:5px; border:1px solid #000; padding:8px; background-color:#E0EDE0; color:#CCC; width:210px; margin:0 0 5px 0; }
+input[type=text]:active, input[type=text]:focus, input[type=password]:active, input[type=password]:focus { background-color:#FFF; box-shadow:inset 0 2px 2px 0 #BBB, 0 0 20px 0 #000; transition: background-color 1s; outline:none; color:#666; }
+a { color:inherit; text-decoration:none; }
+a:visited { color:inherit; }
+a:hover { color:inherit; }
+a:active { color:inherit; }
+#login-form { overflow:hidden; border:1px solid #111; background-color:#1A1A1A; box-shadow: 0 0 30px 0 #000; border-radius:5px; position: absolute; left: 50%; top: 50%; margin-top: -175px; margin-left: -375px; width:750px; height:350px; }
+#login-left { margin-right:35px; padding-right:35px; height:auto; float:left;width: 450px;color: white ;border-right: 1px solid black;border-right-style:dashed;}
+#forgot-form { width:555px; height:218px; margin-left:-276px; left:50%; top:50%; margin-top:-109px; position:absolute; -webkit-touch-callout: none;-webkit-user-select: none;-khtml-user-select: none;-moz-user-select: none;-ms-user-select: none;user-select: none;} 
+#forgot-left { margin-bottom:28px; }
+#reset-form { width:704px; height:218px; margin-left:-352px; left:50%; top:50%; margin-top:-109px; position:absolute; } 
+#login-button { font:16px Ubuntu,Helvetica,sans-serif; box-shadow:inset 0 1px 0 0 #AFE7B3; border-radius:5px; border:1px solid #1A691C; padding:11px 26px; padding-left:0; background-color:#6BB96E; background-image: url('/images/pre-login/cly_login.png'), linear-gradient(top, #6BB96E 10%, #58985A 100%); background-image: url('/images/pre-login/cly_login.png'), linear-gradient(to bottom, #6BB96E 10%, #58985A 100%); background-position:right; background-repeat:no-repeat; color:#FFF; text-shadow:0 -1px #666; font-weight:400; cursor:pointer; width:227px; margin-top:0; }
+	#login-button:hover { background-image:url('/images/pre-login/cly_login.png'), linear-gradient(top, #76CC79 10%, #58985A 100%); background-image:url('/images/pre-login/cly_login.png'), linear-gradient(to bottom, #76CC79 10%, #58985A 100%); }
+	#login-button:active { box-shadow:inset 0 0 3px 0 #145016; }
+#top-container { position:absolute; top:20px; right:20px; min-width: 200px; }
+.top-button { float:right; margin-left:5px; color:#888; padding:9px 20px; display:block; text-shadow:0 -1px #000000; background:linear-gradient(top, #242424 0%, #111111 100%); background:linear-gradient(to bottom, #242424 0%, #111111 100%); border-radius:6px; cursor:pointer; font-size:15px; box-shadow:inset 0 1px 0 #2e2e2e; border:1px #080808 solid; }
+	.top-button:hover { background:linear-gradient(top, #1a1a1a 0%, #1b1b1b 100%); background:linear-gradient(to bottom, #1a1a1a 0%, #1b1b1b 100%); }
+	.top-button:active { background:#161616; box-shadow:inset 0 0 2px #010101; }
+	a.top-button:visited { color:#888; }
+	a.top-button:hover { color:#888; }
+	a.top-button:active { color:#888; }
+#select-lang { padding:9px 10px; }
+	#select-lang.active #langs { display:block; }
+	#select-lang.active { background:#161616; box-shadow:inset 2px 0 4px -3px #010101, inset -2px 0 4px -3px #010101, inset 0 2px 4px -3px #010101; }
+	#select-lang.active:hover { background:#161616; box-shadow:inset 2px 0 4px -3px #010101, inset -2px 0 4px -3px #010101, inset 0 2px 4px -3px #010101; }
+	#select-lang.active:active { background:#161616; box-shadow:inset 2px 0 4px -3px #010101, inset -2px 0 4px -3px #010101, inset 0 2px 4px -3px #010101; }
+	#select-lang .item  { padding-bottom:3px; padding-top:3px; cursor:pointer; display:block; font-size:13px; }
+	#select-lang .item:hover { color:#A2A2A2; }
+#active-lang { text-align:right; }
+	#langs { display:none; margin-top:8px; }
+	#langs .group { float:left; margin-right:17px; }
+	#langs .group:last-child { margin-right:0; }
+#login-logo { margin-top:0px; width:189px; height:57px; font-size:30px; background-image:url('/images/pre-login/logo.png'); }
+#forgot-logo { margin:0 auto; width:189px; height:57px; font-size:30px; background-image:url('/images/pre-login/logo.png'); }
+#create-account { overflow:auto; }
+	#create-account div { float:left; margin-right:10px; }
+	#create-account div:last-child { margin-right:0; }
+#message { position:absolute; top:50px; text-align:center; left:50%; width:400px; margin-left:-200px; color:#CCC; font:20px Ubuntu,Helvetica,sans-serif; }
+#forgot-password { color:#666; font-size:13px; cursor:pointer; }
+	#forgot-password:hover { color:#58985A; transition:color 1s; }
+
+
+
+#InstructionMessage {
+	/*margin-top: 1%;*/
+}
+
+#InstructionMessage img {
+	float: left;
+	width: 210px;
+	height: 210px;
+
+}
+
+#InstructionMessage h1{
+	margin: 0;
+	height: 75px;
+	overflow: hidden;
+	text-align: center;
+	display: none;
+}
+
+.InstructionMsg{
+	width: 210px;
+	float: right;
+	height: 210px;
+
+}
+
+/*slider-*/
+ .captionOrange, .captionBlack
+{
+    color: #fff;
+    font-size: 20px;
+    line-height: 30px;
+    text-align: center;
+    border-radius: 4px;
+}
+.captionOrange
+{
+    background: #EB5100;
+    background-color: #1A1A1A;
+}
+.captionBlack
+{
+    font-size:16px;
+    background: #000;
+    background-color: #1A1A1A;
+}
+a.captionOrange, A.captionOrange:active, A.captionOrange:visited
+{
+    color: #ffffff;
+    text-decoration: none;
+}
+a.captionOrange:hover
+{
+    color: #eb5100;
+    text-decoration: underline;
+    background-color: #eeeeee;
+    background-color: #1A1A1A;
+}
+.bricon
+{
+    background-color:#1A1A1A;
+}
+
+/* jssor slider thumbnail navigator skin 12 css */
+/*
+.jssort12 .p            (normal)
+.jssort12 .p:hover      (normal mouseover)
+.jssort12 .pav          (active)
+.jssort12 .pav:hover    (active mouseover)
+.jssort12 .pdn          (mousedown)
+*/
+.jssort12 .w, .jssort12 .phv .w
+{
+    cursor: pointer;
+    position: absolute;
+    WIDTH: 0px;
+    HEIGHT: 0px;
+    border: 0px solid gray;
+    top: 0px;
+    left: 0px;
+}
+.jssort12 .pav .w, .jssort12 .pdn .w
+{
+    border-bottom: 1px solid #fff;
+}
+.jssort12 .c
+{
+    color: #000;
+    font-size:13px;
+}
+.jssort12 .p .c, .jssort12 .pav:hover .c
+{
+    background-color:#eee;
+}
+.jssort12 .pav .c, .jssort12 .p:hover .c, .jssort12 .phv .c
+{
+    background-color:#fff;
+}
+
+#slider2_container {
+    height:100%;
+    width:100%;
+    position: relative;
+    overflow: hidden;
+}
+
+#slider2_container div{
+    margin: 0px;
+}
+
+#slider_inner{
+    cursor: default;
+    width: 480px;
+    padding: 0 !important;
+    height: 350px;
+    border: 0px solid gray; 
+    -webkit-filter: blur(0px);  
+    overflow: hidden;
+}
+
+#slider_inner>div {
+
+}
+
+#slider_inner .text {
+    color: #999;
+    line-height: 25px;
+    font-size: 14px;
+    padding:20px;
+    text-align: justify;
+}
+
+#slider_inner .image {
+    text-align: center;
+    padding:20px;
+    padding-bottom:0;
+}

@@ -1,3 +1,17 @@
+15.02
+
+  * Plugins system
+  
+  * New core and scalable data structure
+
+  * Using new MongoDB drive
+
+  * Path mounting
+  
+  * Accepting bulk requests as post
+  
+  * Lots of plugins as Data Populator, Event Logger, DBViewer, etc
+  
 14.08
 
   * Added density reporting for Android

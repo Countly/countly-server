@@ -36,6 +36,14 @@
         return _period;
     };
 
+    countlyCommon.getPeriodForAjax = function () {
+        if (Object.prototype.toString.call(_period) === '[object Array]'){
+            return JSON.stringify(_period);
+        } else {
+            return _period;
+        }
+    };
+
     countlyCommon.setActiveApp = function (appId) {
         countlyCommon.ACTIVE_APP_KEY = countlyGlobal['apps'][appId].key;
         countlyCommon.ACTIVE_APP_ID = appId;
@@ -69,268 +77,385 @@
     };
 
     // Fetches nested property values from an obj.
-    countlyCommon.getDescendantProp = function (obj, desc) {
-        desc = String(desc);
-
-        if (desc.indexOf(".") === -1) {
-            return obj[desc];
+    countlyCommon.getDescendantProp = function (obj, path, def) {
+        for (var i = 0, path = (path + "").split('.'), len = path.length; i < len; i++) {
+            if(!obj || typeof obj !== 'object') return def;
+            obj = obj[path[i]];
         }
 
-        var arr = desc.split(".");
-        while (arr.length && (obj = obj[arr.shift()]));
-
+        if(obj === undefined) return def;
         return obj;
     };
 
     // Draws a graph with the given dataPoints to container. Used for drawing bar and pie charts.
     countlyCommon.drawGraph = function (dataPoints, container, graphType, inGraphProperties) {
+        _.defer(function(){
+            if ((!dataPoints.dp || !dataPoints.dp.length) || (graphType == "bar" && !dataPoints.dp[0].data[0][1] && !dataPoints.dp[0].data[1][1])) {
+                $(container).hide();
+                $(container).siblings(".no-data").show();
+                return true;
+            } else {
+                $(container).show();
+                $(container).siblings(".no-data").hide();
+            }
 
-        var graphProperties = {
-            series:{
-                lines:{ show:true, fill:true },
-                points:{ show:true }
-            },
-            grid:{ hoverable:true, borderColor:"null", color:"#999", borderWidth:0, minBorderMargin:10},
-            xaxis:{ minTickSize:1, tickDecimals:"number", tickLength:0},
-            yaxis:{ min:0, minTickSize:1, tickDecimals:"number" },
-            legend:{ backgroundOpacity:0, margin:[5, -19] },
-            colors:countlyCommon.GRAPH_COLORS
-        };
+            var graphProperties = {
+                series:{
+                    lines:{ show:true, fill:true },
+                    points:{ show:true }
+                },
+                grid:{ hoverable:true, borderColor:"null", color:"#999", borderWidth:0, minBorderMargin:10},
+                xaxis:{ minTickSize:1, tickDecimals:"number", tickLength:0},
+                yaxis:{ min:0, minTickSize:1, tickDecimals:"number", position:"right" },
+                legend:{ backgroundOpacity:0, margin:[20, -19] },
+                colors:countlyCommon.GRAPH_COLORS
+            };
 
-        switch (graphType) {
-            case "line":
-                graphProperties.series = {lines:{ show:true, fill:true }, points:{ show:true }};
-                break;
-            case "bar":
-                if (dataPoints.ticks.length > 20) {
-                    graphProperties.xaxis.rotateTicks = 45;
-                }
+            switch (graphType) {
+                case "line":
+                    graphProperties.series = {lines:{ show:true, fill:true }, points:{ show:true }};
+                    break;
+                case "bar":
+                    if (dataPoints.ticks.length > 20) {
+                        graphProperties.xaxis.rotateTicks = 45;
+                    }
 
-                graphProperties.series = {stack:true, bars:{ show:true, align:"center", barWidth:0.6, tickLength:0 }};
-                graphProperties.xaxis.ticks = dataPoints.ticks;
-                break;
-            case "pie":
-                graphProperties.series = { pie:{
-                    show:true,
-                    lineWidth:0,
-                    radius:115,
-                    combine:{
-                        color:'#999',
-                        threshold:0.05
-                    },
-                    label:{
+                    graphProperties.series = {stack:true, bars:{ show:true, align:"center", barWidth:0.6, tickLength:0 }};
+                    graphProperties.xaxis.ticks = dataPoints.ticks;
+                    break;
+                case "pie":
+                    graphProperties.series = { pie:{
                         show:true,
-                        radius:160
-                    }
-                }};
-                graphProperties.legend.show = false;
-                break;
-            default:
-                break;
-        }
+                        lineWidth:0,
+                        radius:115,
+                        combine:{
+                            color:'#999',
+                            threshold:0.05
+                        },
+                        label:{
+                            show:true,
+                            radius:160
+                        }
+                    }};
+                    graphProperties.legend.show = false;
+                    break;
+                default:
+                    break;
+            }
 
-        if (inGraphProperties) {
-            $.extend(true, graphProperties, inGraphProperties);
-        }
+            if (inGraphProperties) {
+                $.extend(true, graphProperties, inGraphProperties);
+            }
 
-        $.plot($(container), dataPoints.dp, graphProperties);
+            $.plot($(container), dataPoints.dp, graphProperties);
 
-        if (graphType == "bar" && !graphProperties.series.stack) {
-            var previousBar;
+            if (graphType == "bar") {
+                var previousBar;
 
-            $(container).bind("plothover", function (event, pos, item) {
-                if (item) {
-                    var x = item.datapoint[0].toFixed(1).replace(".0", ""),
-                        y = item.datapoint[1].toFixed(1).replace(".0", "");
+                $(container).unbind("plothover");
+                $(container).bind("plothover", function (event, pos, item) {
+                    if (item) {
+                        var x = item.datapoint[0].toFixed(1).replace(".0", ""),
+                            y = item.datapoint[1].toFixed(1).replace(".0", "") - item.datapoint[2].toFixed(1).replace(".0", "");
 
-                    if (previousBar != y) {
+                        if (previousBar != y) {
+                            $("#graph-tooltip").remove();
+                            showTooltip(item.pageX, item.pageY - 40, y);
+                            previousBar = y;
+                        }
+                    } else {
                         $("#graph-tooltip").remove();
-                        showTooltip(item.pageX, item.pageY - 40, y);
-                        previousBar = y;
+                        previousBar = null;
                     }
-                } else {
-                    $("#graph-tooltip").remove();
-                    previousBar = null;
-                }
-            });
-        } else {
-            $(container).unbind("plothover");
-        }
+                });
+            } else {
+                $(container).unbind("plothover");
+            }
+        }, dataPoints, container, graphType, inGraphProperties);
     };
 
     // Draws a line graph with the given dataPoints to container.
     countlyCommon.drawTimeGraph = function (dataPoints, container, bucket) {
-
-        // Some data points start with [1, XXX] (should be [0, XXX]) and brakes the new tick logic
-        // Below loops converts the old structures to the new one
-        if (dataPoints[0].data[0][0] == 1) {
-            for (var i = 0; i < dataPoints.length; i++) {
-                for (var j = 0; j < dataPoints[i].data.length; j++) {
-                    dataPoints[i].data[j][0] -= 1;
-                }
-            }
-        }
-
-        var graphProperties = {
-                series:{
-                    lines:{ stack:false, show:true, fill:true, lineWidth:2, fillColor:{ colors:[
-                        { opacity:0 },
-                        { opacity:0.15 }
-                    ] }, shadowSize:0 },
-                    points:{ show:true, radius:4, shadowSize:0 },
-                    shadowSize:0
-                },
-                grid:{ hoverable:true, borderColor:"null", color:"#BDBDBD", borderWidth:0, minBorderMargin:10, labelMargin:10},
-                xaxis:{ tickDecimals:"number", tickSize:0, tickLength:0 },
-                yaxis:{ min:0, minTickSize:1, tickDecimals:"number", ticks:3 },
-                legend:{ show:false, margin:[-25, -44], noColumns:3, backgroundOpacity:0 },
-                colors:countlyCommon.GRAPH_COLORS
-            };
-
-        graphProperties.series.points.show = (dataPoints[0].data.length <= 90);
-
-        var graphTicks = [],
-            tickObj = {};
-
-        if (_period == "month" && !bucket) {
-            tickObj = countlyCommon.getTickObj("monthly");
-        } else {
-            tickObj = countlyCommon.getTickObj(bucket);
-        }
-
-        graphProperties.xaxis.max = tickObj.max;
-        graphProperties.xaxis.min = tickObj.min;
-        graphProperties.xaxis.ticks = tickObj.ticks;
-
-        graphTicks = tickObj.tickTexts;
-
-        var graphObj = $.plot($(container), dataPoints, graphProperties),
-            keyEventCounter = "A",
-            keyEvents = [],
-            keyEventsIndex = 0;
-
-        for (var k = 0; k < graphObj.getData().length; k++) {
-
-            var tmpMax = 0,
-                tmpMaxIndex = 0,
-                tmpMin = 999999999999,
-                tmpMinIndex = 0,
-                label = (graphObj.getData()[k].label + "").toLowerCase();
-
-            if (graphObj.getData()[k].mode === "ghost") {
-                keyEventsIndex += graphObj.getData()[k].data.length;
-                continue;
+        _.defer(function(){
+            if (!dataPoints.length) {
+                $(container).hide();
+                $(container).siblings(".no-data").show();
+                return true;
+            } else {
+                $(container).show();
+                $(container).siblings(".no-data").hide();
             }
 
-            $.each(graphObj.getData()[k].data, function (i, el) {
-
-                //data point is null
-                //this workaround is used to start drawing graph with a certain padding
-                if (!el[1] && el[1] !== 0) {
-                    return true;
+            // Some data points start with [1, XXX] (should be [0, XXX]) and brakes the new tick logic
+            // Below loops converts the old structures to the new one
+            if (dataPoints[0].data[0][0] == 1) {
+                for (var i = 0; i < dataPoints.length; i++) {
+                    for (var j = 0; j < dataPoints[i].data.length; j++) {
+                        dataPoints[i].data[j][0] -= 1;
+                    }
                 }
-
-                el[1] = parseFloat(el[1]);
-
-                if (el[1] >= tmpMax) {
-                    tmpMax = el[1];
-                    tmpMaxIndex = el[0];
-                }
-
-                if (el[1] <= tmpMin) {
-                    tmpMin = el[1];
-                    tmpMinIndex = el[0];
-                }
-            });
-
-            if (tmpMax == tmpMin) {
-                continue;
             }
 
-            keyEvents[k] = [];
+            var graphProperties = {
+                    series:{
+                        lines:{ stack:false, show:true, fill:true, lineWidth:2, fillColor:{ colors:[
+                            { opacity:0 },
+                            { opacity:0.15 }
+                        ] }, shadowSize:0 },
+                        points:{ show:true, radius:4, shadowSize:0 },
+                        shadowSize:0
+                    },
+                    grid:{ hoverable:true, borderColor:"null", color:"#BDBDBD", borderWidth:0, minBorderMargin:10, labelMargin:10},
+                    xaxis:{ tickDecimals:"number", tickSize:0, tickLength:0 },
+                    yaxis:{ min:0, minTickSize:1, tickDecimals:"number", ticks:3, position:"right" },
+                    legend:{ show:false, margin:[-25, -44], noColumns:3, backgroundOpacity:0 },
+                    colors:countlyCommon.GRAPH_COLORS
+                };
 
-            keyEvents[k][keyEvents[k].length] = {
-                data:[tmpMinIndex, tmpMin],
-                code:keyEventCounter,
-                color:graphObj.getData()[k].color,
-                event:"min",
-                desc:jQuery.i18n.prop('common.graph-min', tmpMin, label, graphTicks[tmpMinIndex])
-            };
+            graphProperties.series.points.show = (dataPoints[0].data.length <= 90);
 
-            keyEventCounter = String.fromCharCode(keyEventCounter.charCodeAt() + 1);
+            var graphTicks = [],
+                tickObj = {};
 
-            keyEvents[k][keyEvents[k].length] = {
-                data:[tmpMaxIndex, tmpMax],
-                code:keyEventCounter,
-                color:graphObj.getData()[k].color,
-                event:"max",
-                desc:jQuery.i18n.prop('common.graph-max', tmpMax, label, graphTicks[tmpMaxIndex])
-            };
-
-            keyEventCounter = String.fromCharCode(keyEventCounter.charCodeAt() + 1);
-        }
-
-        var graphWidth = graphObj.width();
-
-        for (var k = 0; k < keyEvents.length; k++) {
-            var bgColor = graphObj.getData()[k].color;
-
-            if (!keyEvents[k]) {
-                continue;
+            if (_period == "month" && !bucket) {
+                tickObj = countlyCommon.getTickObj("monthly");
+            } else {
+                tickObj = countlyCommon.getTickObj(bucket);
             }
 
-            for (var l = 0; l < keyEvents[k].length; l++) {
+            graphProperties.xaxis.max = tickObj.max;
+            graphProperties.xaxis.min = tickObj.min;
+            graphProperties.xaxis.ticks = tickObj.ticks;
 
-                var o = graphObj.pointOffset({x:keyEvents[k][l]["data"][0], y:keyEvents[k][l]["data"][1]});
+            graphTicks = tickObj.tickTexts;
 
-                if (o.left <= 15) {
-                    o.left = 15;
+            var graphObj = $.plot($(container), dataPoints, graphProperties),
+                keyEventCounter = "A",
+                keyEvents = [],
+                keyEventsIndex = 0;
+
+            for (var k = 0; k < graphObj.getData().length; k++) {
+
+                var tmpMax = 0,
+                    tmpMaxIndex = 0,
+                    tmpMin = 999999999999,
+                    tmpMinIndex = 0,
+                    label = (graphObj.getData()[k].label + "").toLowerCase();
+
+                if (graphObj.getData()[k].mode === "ghost") {
+                    keyEventsIndex += graphObj.getData()[k].data.length;
+                    continue;
                 }
 
-                if (o.left >= (graphWidth - 15)) {
-                    o.left = (graphWidth - 15);
+                $.each(graphObj.getData()[k].data, function (i, el) {
+
+                    //data point is null
+                    //this workaround is used to start drawing graph with a certain padding
+                    if (!el[1] && el[1] !== 0) {
+                        return true;
+                    }
+
+                    el[1] = parseFloat(el[1]);
+
+                    if (el[1] >= tmpMax) {
+                        tmpMax = el[1];
+                        tmpMaxIndex = el[0];
+                    }
+
+                    if (el[1] <= tmpMin) {
+                        tmpMin = el[1];
+                        tmpMinIndex = el[0];
+                    }
+                });
+
+                if (tmpMax == tmpMin) {
+                    continue;
                 }
 
-                if (true) {
+                keyEvents[k] = [];
+
+                keyEvents[k][keyEvents[k].length] = {
+                    data:[tmpMinIndex, tmpMin],
+                    code:keyEventCounter,
+                    color:graphObj.getData()[k].color,
+                    event:"min",
+                    desc:jQuery.i18n.prop('common.graph-min', tmpMin, label, graphTicks[tmpMinIndex])
+                };
+
+                keyEventCounter = String.fromCharCode(keyEventCounter.charCodeAt() + 1);
+
+                keyEvents[k][keyEvents[k].length] = {
+                    data:[tmpMaxIndex, tmpMax],
+                    code:keyEventCounter,
+                    color:graphObj.getData()[k].color,
+                    event:"max",
+                    desc:jQuery.i18n.prop('common.graph-max', tmpMax, label, graphTicks[tmpMaxIndex])
+                };
+
+                keyEventCounter = String.fromCharCode(keyEventCounter.charCodeAt() + 1);
+            }
+
+            var graphWidth = graphObj.width();
+
+            for (var k = 0; k < keyEvents.length; k++) {
+                var bgColor = graphObj.getData()[k].color;
+
+                if (!keyEvents[k]) {
+                    continue;
+                }
+
+                for (var l = 0; l < keyEvents[k].length; l++) {
+                    var o = graphObj.pointOffset({x:keyEvents[k][l]["data"][0], y:keyEvents[k][l]["data"][1]});
+                    var p = graphObj.pointOffset({x:keyEvents[k][l]["data"][0], y:keyEvents[k][l]["data"][1]});
+
+                    if (o.left <= 15) {
+                        o.left = 15;
+                    }
+
+                    if (o.left >= (graphWidth - 15)) {
+                        o.left = (graphWidth - 15);
+                    }
+
                     var keyEventLabel = $('<div class="graph-key-event-label">').text(keyEvents[k][l]["code"]);
 
                     keyEventLabel.attr({
                         "title":keyEvents[k][l]["desc"],
                         "data-points":"[" + keyEvents[k][l]["data"] + "]"
                     }).css({
-                            "position":'absolute',
-                            "left":o.left,
-                            "top":o.top - 33,
-                            "display":'none',
-                            "background-color":bgColor
-                        }).appendTo(graphObj.getPlaceholder()).show();
+                        "position":'absolute',
+                        "left":o.left,
+                        "top":o.top - 33,
+                        "display":'none',
+                        "background-color":bgColor
+                    }).appendTo(graphObj.getPlaceholder()).show();
 
                     $(".tipsy").remove();
                     keyEventLabel.tipsy({gravity:$.fn.tipsy.autoWE, offset:3, html:true});
                 }
             }
+
+            // Add note labels to the graph
+            if (!(bucket == "hourly" && dataPoints[0].data.length > 24) && bucket != "weekly") {
+                var noteDateIds = countlyCommon.getNoteDateIds(bucket),
+                    frontData = graphObj.getData()[graphObj.getData().length - 1],
+                    startIndex = (!frontData.data[1] && frontData.data[1] !== 0)? 1 : 0;
+
+                for (var k = 0, l = startIndex; k < frontData.data.length; k++, l++) {
+					if(frontData.data[l]){
+						var graphPoint = graphObj.pointOffset({x:frontData.data[l][0], y:frontData.data[l][1]});
+	
+						if (countlyCommon.getNotesForDateId(noteDateIds[k]).length) {
+							$('<div class="graph-note-label"><div class="point"></div></div>').attr({
+								"data-title":tickObj.tickTexts[k],
+								"data-notes":countlyCommon.getNotesForDateId(noteDateIds[k]),
+								"data-value":frontData.data[l][1].toFixed(1).replace(".0", "") + " " + frontData.label,
+								"data-points":"[" + frontData.data[l] + "]"
+							}).css({
+								"position":'absolute',
+								"left":graphPoint.left,
+								"top":graphPoint.top,
+								"display":'none',
+								"border-color":frontData.color
+							}).appendTo(graphObj.getPlaceholder()).show();
+						}
+					}
+                }
+
+                $(".graph-note-label").mouseenter(function() {
+                    $("#graph-tooltip").remove();
+
+                    var noteLines = ($(this).data("notes") + "").split("==="),
+                        contents = "<div class='label-value'>" + '<span id="graph-tooltip-title">' + $(this).data("title") + '</span>' + $(this).data("value") + "</div><div class='separator'></div>";
+
+                    for (var i = 0; i < noteLines.length; i++) {
+                        contents += "<div class='note-line'>&#8226; " + noteLines[i] + "</div>";
+                    }
+
+                    var tooltip = '<div id="graph-tooltip">' + contents + '</div>',
+                        x = $(this).offset().left,
+                        y = $(this).offset().top,
+                        widthVal,
+                        heightVal;
+
+                    $("#content").append("<div id='tooltip-calc'>" + tooltip + "</div>");
+                    widthVal = $("#graph-tooltip").outerWidth();
+                    heightVal = $("#graph-tooltip").outerHeight();
+                    $("#tooltip-calc").remove();
+
+                    var newLeft = x - widthVal,
+                        xReach = x + widthVal;
+
+                    if (xReach > $(window).width()) {
+                        newLeft = x - widthVal - 10;
+                    } else if (xReach < 800) {
+                        newLeft = x + $(this).outerWidth() + 10;
+                    } else {
+                        newLeft -= 10;
+                    }
+
+                    $(tooltip).css({
+                        top: y - (heightVal / 2) + ($(this).height() / 2),
+                        left: newLeft
+                    }).appendTo("body").fadeIn(200);
+                });
+
+                $(".graph-note-label").mouseleave(function() {
+                    $("#graph-tooltip").remove();
+                });
+            }
+
+            var previousPoint;
+
+            $(container).unbind("plothover");
+            $(container).bind("plothover", function (event, pos, item) {
+                if (item) {
+                    if (previousPoint != item.dataIndex) {
+                        previousPoint = item.dataIndex;
+
+                        $("#graph-tooltip").remove();
+                        var x = item.datapoint[0].toFixed(1).replace(".0", ""),
+                            y = item.datapoint[1].toFixed(1).replace(".0", "");
+
+                        // If this is the "ghost" graph don't add the date
+                        if (item.series.color === "#DDDDDD") {
+                            showTooltip(item.pageX, item.pageY - 40, y + " " + item.series.label);
+                        } else {
+                            showTooltip(item.pageX, item.pageY - 40, y + " " + item.series.label, tickObj.tickTexts[item.dataIndex]);
+                        }
+                    }
+                } else {
+                    $("#graph-tooltip").remove();
+                    previousPoint = null;
+                }
+            });
+        }, dataPoints, container, bucket);
+    };
+
+    countlyCommon.drawGauge = function(targetEl, value, maxValue, gaugeColor, textField) {
+        var opts = {
+            lines:12,
+            angle:0.15,
+            lineWidth:0.44,
+            pointer:{
+                length:0.7,
+                strokeWidth:0.05,
+                color:'#000000'
+            },
+            colorStart:gaugeColor,
+            colorStop:gaugeColor,
+            strokeColor:'#E0E0E0',
+            generateGradient:true
+        };
+
+        var gauge  = new Gauge($(targetEl)[0]).setOptions(opts);
+
+        if (textField) {
+            gauge.setTextField($(textField)[0]);
         }
 
-        var previousPoint;
-
-        $(container).bind("plothover", function (event, pos, item) {
-            if (item) {
-                if (previousPoint != item.dataIndex) {
-                    previousPoint = item.dataIndex;
-
-                    $("#graph-tooltip").remove();
-                    var x = item.datapoint[0].toFixed(1).replace(".0", ""),
-                        y = item.datapoint[1].toFixed(1).replace(".0", "");
-
-                    showTooltip(item.pageX, item.pageY - 40, y + " " + item.series.label);
-                }
-            } else {
-                $("#graph-tooltip").remove();
-                previousPoint = null;
-            }
-        });
-
-        return keyEvents;
+        gauge.maxValue = maxValue;
+        gauge.set(1);
+        gauge.set(value);
     };
 
     countlyCommon.extractRangeData = function (db, propertyName, rangeArray, explainRange) {
@@ -688,6 +813,8 @@
             { "name":"t" }
         ]);
 
+        rangeData.chartData = _.sortBy(rangeData.chartData, function(obj) { return -obj.t; });
+
         var rangeNames = _.pluck(rangeData.chartData, 'range'),
             rangeTotal = _.pluck(rangeData.chartData, 't'),
             barData = [],
@@ -722,6 +849,79 @@
 
         return barData;
     };
+	
+	countlyCommon.extractUserChartData = function (db, label, sec) {
+		var ret = {"data":[],"label":label};
+        countlyCommon.periodObj = getPeriodObj();
+        var periodMin, periodMax, dateob;
+			
+		if(countlyCommon.periodObj.isSpecialPeriod){
+			periodMin = 0;
+            periodMax = (countlyCommon.periodObj.daysInPeriod);
+			var dateob1 = countlyCommon.processPeriod(countlyCommon.periodObj.currentPeriodArr[0].toString());
+			var dateob2 = countlyCommon.processPeriod(countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length-1].toString());
+			dateob = {timestart:dateob1.timestart, timeend:dateob2.timeend, range:"d"};
+		}
+		else{
+			periodMin = countlyCommon.periodObj.periodMin-1;
+            periodMax = countlyCommon.periodObj.periodMax;
+			dateob = countlyCommon.processPeriod(countlyCommon.periodObj.activePeriod.toString());
+		}
+		var res = [], 
+			ts;
+		//get all timestamps in that period
+		for(var i = 0, l = db.length; i < l; i++){
+			ts = db[i];
+			if(sec)
+				ts.ts = ts.ts*1000;
+			if(ts.ts > dateob.timestart && ts.ts <= dateob.timeend){
+				res.push(ts);
+			}
+		}
+		var lastStart,
+			lastEnd = dateob.timestart,
+			total,
+			ts,
+			data = ret.data;
+		for(var i = periodMin; i < periodMax; i++){
+			total = 0;
+			lastStart = lastEnd;
+			lastEnd = moment(lastStart).add(moment.duration(1, dateob.range)).valueOf();
+			for(var j = 0, l = res.length; j < l; j++){
+				ts = res[j];
+				if(ts.ts > lastStart && ts.ts <= lastEnd)
+					if(ts.c)
+						total += ts.c;
+					else
+						total++;
+			}
+			data.push([i, total]);
+		}
+        return ret;
+    };
+	
+	countlyCommon.processPeriod = function(period){
+		var date = period.split(".");
+		var range,
+			timestart,
+			timeend;
+		if(date.length == 1){
+			range = "M";
+			timestart = moment(period, "YYYY").valueOf();
+			timeend = moment(period, "YYYY").add(moment.duration(1, "y")).valueOf();
+		}
+		else if(date.length == 2){
+			range = "d";
+			timestart = moment(period, "YYYY.MM").valueOf();
+			timeend = moment(period, "YYYY.MM").add(moment.duration(1, "M")).valueOf();
+		}
+		else if(date.length == 3){
+			range = "h";
+			timestart = moment(period, "YYYY.MM.DD").valueOf();
+			timeend = moment(period, "YYYY.MM.DD").add(moment.duration(1, "d")).valueOf();
+		}
+		return {timestart:timestart, timeend:timeend, range:range};
+	}
 
     // Shortens the given number by adding K (thousand) or M (million) postfix.
     // K is added only if the number is bigger than 10000.
@@ -767,7 +967,14 @@
             formattedDateEnd = moment(countlyCommon.periodObj.currentPeriodArr[(countlyCommon.periodObj.currentPeriodArr.length - 1)], "YYYY.M.D");
         }
 
-        return formattedDateStart.format(countlyCommon.periodObj.dateString) + " - " + formattedDateEnd.format(countlyCommon.periodObj.dateString);
+        var fromStr = formattedDateStart.format(countlyCommon.periodObj.dateString),
+            toStr = formattedDateEnd.format(countlyCommon.periodObj.dateString);
+
+        if (fromStr == toStr) {
+            return fromStr;
+        } else {
+            return fromStr + " - " + toStr;
+        }
     };
 
     // Function for merging updateObj object to dbObj.
@@ -940,8 +1147,8 @@
     };
 
     countlyCommon.toFirstUpper = function(str) {
-        return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1);});
-    }
+        return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+    };
 
     countlyCommon.divide = function (val1, val2) {
         var temp = val1 / val2;
@@ -951,15 +1158,16 @@
         }
 	
         return temp;
-    }
+    };
 
     countlyCommon.getTickObj = function(bucket) {
         var days = parseInt(countlyCommon.periodObj.numberOfDays, 10),
             ticks = [],
             tickTexts = [],
-            skipReduction = false;
+            skipReduction = false,
+            limitAdjustment = 0;
 
-        if (days == 1) {
+        if ((days == 1 && _period != "month" && _period != "day") || (days == 1 && bucket == "hourly")) {
             for (var i = 0; i < 24; i++) {
                 ticks.push([i, (i + ":00")]);
                 tickTexts.push((i + ":00"));
@@ -969,7 +1177,7 @@
         } else {
             var start = moment().subtract('days', days);
             if (Object.prototype.toString.call(countlyCommon.getPeriod()) === '[object Array]'){
-                start = moment(countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length - 1]).subtract('days',days);
+                start = moment(countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length - 1], "YYYY.MM.DD").subtract('days',days);
             }
             if (bucket == "monthly") {
                 var allMonths = [];
@@ -1025,7 +1233,25 @@
             tickTexts = _.compact(tickTexts);
         }
 
-        if (!skipReduction && ticks.length > 10) {
+        if (ticks.length <= 2) {
+            limitAdjustment = 0.02;
+            var tmpTicks = [],
+                tmpTickTexts = [];
+
+            tmpTickTexts[0] = "";
+            tmpTicks[0] = [-0.02, ""];
+
+            for (var i = 0; i < ticks.length; i++) {
+                tmpTicks[i + 1] = [i, ticks[i][1]];
+                tmpTickTexts[i + 1] = tickTexts[i];
+            }
+
+            tmpTickTexts.push("");
+            tmpTicks.push([tmpTicks.length - 1 - 0.98, ""]);
+
+            ticks = tmpTicks;
+            tickTexts = tmpTickTexts;
+        } else if (!skipReduction && ticks.length > 10) {
             var reducedTicks = [],
                 step = (Math.floor(ticks.length / 10) < 1)? 1 : Math.floor(ticks.length / 10),
                 pickStartIndex = (Math.floor(ticks.length / 30) < 1)? 1 : Math.floor(ticks.length / 30);
@@ -1045,19 +1271,239 @@
         }
 
         return {
-            min: 0,
-            max: tickTexts.length - 1,
+            min: 0 - limitAdjustment,
+            max: (limitAdjustment)? tickTexts.length - 3 + limitAdjustment : tickTexts.length - 1,
             tickTexts: tickTexts,
             ticks: _.compact(ticks)
         };
     };
-	
-	countlyCommon.formatNumber = function(x) {
+
+    countlyCommon.union = function(x, y) {
+        if (!x) {
+            return y;
+        } else if (!y) {
+            return x;
+        }
+
+        var needUnion = false;
+
+        for (var i = 0; i < y.length; i++) {
+            if (x.indexOf(y[i]) === -1) {
+                needUnion = true;
+                break;
+            }
+        }
+
+        if (!needUnion) {
+            return x;
+        }
+
+        var obj = {};
+        for (var i = x.length-1; i >= 0; -- i) {
+            obj[x[i]] = x[i];
+        }
+
+        for (var i = y.length-1; i >= 0; -- i) {
+            obj[y[i]] = y[i];
+        }
+
+        var res = [];
+
+        for (var k in obj) {
+            res.push(obj[k]);
+        }
+
+        return res;
+    };
+
+    countlyCommon.formatNumber = function(x) {
         x = parseFloat(parseFloat(x).toFixed(2));
         var parts = x.toString().split(".");
         parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         return parts.join(".");
     };
+	
+	countlyCommon.pad = function(n, width, z){
+		z = z || '0';
+		n = n + '';
+		return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+	};
+
+    countlyCommon.getNoteDateIds = function(bucket) {
+        var _periodObj = countlyCommon.periodObj,
+            dateIds = [],
+            dotSplit = [],
+            tmpDateStr = "";
+
+        if (!_periodObj.isSpecialPeriod && !bucket) {
+            for (var i = _periodObj.periodMin; i < (_periodObj.periodMax + 1); i++) {
+                dotSplit = (_periodObj.activePeriod + "." + i).split(".");
+                tmpDateStr = "";
+
+                for (var j = 0; j < dotSplit.length; j++) {
+                    if (dotSplit[j].length == 1) {
+                        tmpDateStr += "0" + dotSplit[j];
+                    } else {
+                        tmpDateStr += dotSplit[j];
+                    }
+                }
+
+                dateIds.push(tmpDateStr);
+            }
+        } else {
+            if (!_periodObj.currentPeriodArr && bucket == "daily") {
+                var tmpDate = new Date();
+                _periodObj.currentPeriodArr = [];
+
+                if (countlyCommon.getPeriod() == "month") {
+                    for (var i = 0; i < (tmpDate.getMonth() + 1); i++) {
+                        var daysInMonth = moment().month(i).daysInMonth();
+
+                        for (var j = 0; j < daysInMonth; j++) {
+                            _periodObj.currentPeriodArr.push(_periodObj.activePeriod + "." + (i + 1) + "." + (j + 1));
+
+                            // If current day of current month, just break
+                            if ((i == tmpDate.getMonth()) && (j == (tmpDate.getDate() - 1))) {
+                                break;
+                            }
+                        }
+                    }
+                } else if(countlyCommon.getPeriod() == "day") {
+                    for (var i = 0; i < tmpDate.getDate(); i++) {
+                        _periodObj.currentPeriodArr.push(_periodObj.activePeriod + "." + (i + 1));
+                    }
+                } else{
+                    _periodObj.currentPeriodArr.push(_periodObj.activePeriod);
+                }
+            }
+
+            for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
+                dotSplit = _periodObj.currentPeriodArr[i].split(".");
+                tmpDateStr = "";
+
+                for (var j = 0; j < dotSplit.length; j++) {
+                    if (dotSplit[j].length == 1) {
+                        tmpDateStr += "0" + dotSplit[j];
+                    } else {
+                        tmpDateStr += dotSplit[j];
+                    }
+                }
+
+                dateIds.push(tmpDateStr);
+            }
+        }
+
+        switch (bucket) {
+            case "hourly":
+                var tmpDateIds = [];
+
+                for (var i = 0; i < 25; i++) {
+                    tmpDateIds.push(dateIds[0] + ((i < 10)? "0" + i : i))
+                }
+
+                dateIds = tmpDateIds;
+                break;
+            case "monthly":
+                var tmpDateIds = [];
+
+                for (var i = 0; i < dateIds.length; i++) {
+                    countlyCommon.arrayAddUniq(tmpDateIds, moment(dateIds[i], "YYYYMMDD").format("YYYYMM"))
+                }
+
+                dateIds = tmpDateIds;
+                break;
+        }
+
+        return dateIds;
+    };
+
+    countlyCommon.getNotesForDateId = function(dateId) {
+        var ret = [];
+
+        if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes) {
+            for (var date in countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes) {
+                if (date.indexOf(dateId) === 0) {
+                    ret = ret.concat(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes[date]);
+                }
+            }
+        }
+
+        return ret.join("===");
+    };
+
+    countlyCommon.arrayAddUniq = function (arr, item) {
+        if (!arr) {
+            arr = [];
+        }
+
+        if (toString.call(item) === "[object Array]") {
+            for (var i = 0; i < item.length; i++) {
+                if (arr.indexOf(item[i]) === -1) {
+                    arr[arr.length] = item[i];
+                }
+            }
+        } else {
+            if (arr.indexOf(item) === -1) {
+                arr[arr.length] = item;
+            }
+        }
+    };
+	
+	countlyCommon.formatTimeAgo = function(timestamp) {
+		var target = new Date(timestamp*1000);
+		var now = new Date();
+		var diff = Math.floor((now - target) / 1000);
+		if (diff <= 1) {return "<span style='color:#50C354;'>just now</span>";}
+		if (diff < 20) {return "<span style='color:#50C354;'>" + diff + " seconds ago</span>";}
+		if (diff < 40) {return "<span style='color:#50C354;'>half a minute ago</span>";}
+		if (diff < 60) {return "<span style='color:#50C354;'>less than a minute ago</span>";}
+		if (diff <= 90) {return "one minute ago";}
+		if (diff <= 3540) {return Math.round(diff / 60) + " minutes ago";}
+		if (diff <= 5400) {return "1 hour ago";}
+		if (diff <= 86400) {return Math.round(diff / 3600) + " hours ago";}
+		if (diff <= 129600) {return "1 day ago";}
+		if (diff < 604800) {return Math.round(diff / 86400) + " days ago";}
+		if (diff <= 777600) {return "1 week ago";}
+		return "on " + target.toString().split(" GMT")[0];
+	};
+	
+	countlyCommon.formatTime = function(timestamp) {
+		var str = "";
+		var seconds = timestamp % 60;
+		str = str+leadingZero(seconds);
+		timestamp -= seconds;
+		var minutes = timestamp % (60*60);
+		str = leadingZero(minutes/60)+":"+str;
+		timestamp -= minutes;
+		var hours = timestamp % (60*60*24);
+		str = leadingZero(hours/(60*60))+":"+str;
+		timestamp -= hours;
+		if(timestamp > 0){
+			var days = timestamp % (60*60*24*365);
+			str = (days/(60*60*24))+" day(s) "+str;
+			timestamp -= days;
+			if(timestamp > 0){
+				str = (timestamp/(60*60*24*365))+" year(s) "+str;
+			}
+		}
+		return str;
+	};
+	
+	countlyCommon.getDate = function(timestamp) {
+		var d = new Date(timestamp*1000);
+		return leadingZero(d.getDate())+"."+leadingZero(d.getMonth()+1)+"."+d.getFullYear();
+	}
+	
+	countlyCommon.getTime = function(timestamp) {
+		var d = new Date(timestamp*1000);
+		return leadingZero(d.getHours())+":"+leadingZero(d.getMinutes());
+	}
+	
+	function leadingZero(value){
+		if(value > 9)
+			return value
+		return "0"+value;
+	}
 
     // Private Methods
 
@@ -1477,8 +1923,15 @@
     }
 
     // Function to show the tooltip when any data point in the graph is hovered on.
-    function showTooltip(x, y, contents) {
-        var tooltip = '<div id="graph-tooltip">' + contents + '</div>';
+    function showTooltip(x, y, contents, title) {
+        var tooltip = "";
+
+        if (title) {
+            var tooltipTitle = '<span id="graph-tooltip-title">' + title + '</span>';
+            tooltip = '<div id="graph-tooltip">' + tooltipTitle + contents + '</div>'
+        } else {
+            tooltip = '<div id="graph-tooltip">' + contents + '</div>'
+        }
 
         $("#content").append("<div id='tooltip-calc'>" + tooltip + "</div>");
         var widthVal = $("#graph-tooltip").outerWidth();
@@ -1497,6 +1950,38 @@
             top:y,
             left:newLeft
         }).appendTo("body").fadeIn(200);
+    }
+
+    function flattenObjUntilLastProp(ob) {
+        var toReturn = flattenObj(ob);
+
+        for (var i in toReturn) {
+            var n = i.lastIndexOf('.');
+
+            if (n !== -1) {
+                toReturn[i.substring(0, n)] = toReturn[i];
+                delete toReturn[i];
+            }
+        }
+
+        return toReturn
+    }
+
+    function flattenObj(ob) {
+        var toReturn = {};
+
+        for (var i in ob) {
+            if ((typeof ob[i]) == 'object') {
+                var flatObject = flattenObj(ob[i]);
+                for (var x in flatObject) {
+                    toReturn[i + '.' + x] = flatObject[x];
+                }
+            } else {
+                toReturn[i] = ob;
+            }
+        }
+
+        return toReturn;
     }
 
 }(window.countlyCommon = window.countlyCommon || {}, jQuery));

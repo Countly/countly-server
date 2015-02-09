@@ -1,0 +1,73 @@
+	<div class="widget">
+		<div class="widget-header">
+			<div class="left">
+				<div class="logo {{logo-class}}"></div>
+				<div class="title">{{page-title}}</div>
+			</div>
+		</div>
+		<div id="populator" class="widget-content">
+			<div class="left-side">
+				<h3 data-localize="populator.options"></h3>
+				<table cellpadding="10">
+					<tr>
+						<td><span data-localize="populator.amount-users"></span>:</td>
+						<td><input type='text' id='populate-users' value='1000'></td>
+					</tr>
+					<tr>
+						<td><span data-localize="populator.date-from"></span>:</td>
+						<td><input type='text' id='populate-from'></td>
+					</tr>
+					<tr>
+						<td><span data-localize="populator.date-to"></span>:</td>
+						<td><input type='text' id='populate-to'></td>
+					</tr>
+					<tr>
+						<td colspan="2">&nbsp;</td>
+					</tr>
+					<tr>
+						<td style="text-align:center" colspan="2"><a id="start-populate" class="icon-button green btn-header" data-localize="populator.start"></a><a id="stop-populate" class="icon-button red btn-header" data-localize="populator.stop"></a></td>
+					</tr>
+				</table>
+			</div>
+			<div class="right-side">
+				<div class="widget">
+					<div class="widget-header">
+						<h3 data-localize="populator.stats"></h3>
+					</div>
+					<div class="widget-content help-zone-vb" data-help-localize="{{{chart-helper}}}" style="padding-top:20px; padding-bottom:30px;">
+						<table cellpadding="10">
+							<tr>
+								<td><span data-localize="populator.bulk"></span>:</td>
+								<td><span id="populate-stats-br">0</span></td>
+							</tr>
+							<tr>
+								<td><span data-localize="populator.users"></span>:</td>
+								<td><span id="populate-stats-u">0</span></td>
+							</tr>
+							<tr>
+								<td><span data-localize="populator.events"></span>:</td>
+								<td><span id="populate-stats-e">0</span></td>
+							</tr>
+							<tr>
+								<td><span data-localize="populator.sessions"></span>:</td>
+								<td><span id="populate-stats-s">0</span></td>
+							</tr>
+							<tr>
+								<td><span data-localize="populator.extends"></span>:</td>
+								<td><span id="populate-stats-x">0</span></td>
+							</tr>
+							<tr>
+								<td><span data-localize="populator.duration"></span>:</td>
+								<td><span id="populate-stats-d">0</span>s</td>
+							</tr>
+							<tr>
+								<td><span data-localize="populator.requests"></span>:</td>
+								<td><span id="populate-stats-r">0</span></td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+			<div class="clear"></div>
+		</div>
+	</div>

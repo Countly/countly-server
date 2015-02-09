@@ -1,25 +1,24 @@
 (function(countlyEvent, $, undefined) {
 
     //Private Properties
-    var _activeEventDbArr = [],
-        _activeEventDbIndex = [],
-        _activeEventDb = {},
+    var _activeEventDb = {},
         _activeEvents = {},
         _activeEvent = "",
         _activeSegmentation = "",
         _activeSegmentations = [],
         _activeSegmentationValues = [],
-        _activeAppId = 0,
+        _activeSegmentationObj = {},
         _activeAppKey = 0,
-        _initialized = false;
+        _initialized = false,
+        _period = null;
 
     //Public Methods
-    countlyEvent.initialize = function(eventChanged) {
-        if (!eventChanged && _initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+    countlyEvent.initialize = function(forceReload) {
+        if (!forceReload && _initialized && _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
             return countlyEvent.refresh();
         }
 
-        _activeAppId = countlyCommon.ACTIVE_APP_ID;
+        _period = countlyCommon.getPeriodForAjax();
 
         if (!countlyCommon.DEBUG) {
             _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
@@ -32,7 +31,8 @@
                     data: {
                         "api_key": countlyGlobal.member.api_key,
                         "app_id" : countlyCommon.ACTIVE_APP_ID,
-                        "method" : "get_events"
+                        "method" : "get_events",
+                        "period":_period
                     },
                     dataType: "jsonp",
                     success: function(json) {
@@ -49,16 +49,13 @@
                         "api_key": countlyGlobal.member.api_key,
                         "app_id" : countlyCommon.ACTIVE_APP_ID,
                         "method" : "events",
-                        "event": _activeEvent
+                        "event": _activeEvent,
+                        "segmentation": _activeSegmentation,
+                        "period":_period
                     },
                     dataType: "jsonp",
                     success: function(json) {
-                        if (json.length){
-                            _activeEventDbArr = json;
-                            _activeEventDbIndex = _.pluck(json, "_id");
-                            _activeEventDb = _activeEventDbArr[_activeEventDbIndex.indexOf("no-segment")] || {};
-                        }
-
+                        _activeEventDb = json;
                         setMeta();
                     }
                 })
@@ -67,19 +64,12 @@
             });
         } else {
             _activeEventDb = {"2012":{}};
-            _activeEvents = {};
             return true;
         }
     };
 
     countlyEvent.refresh = function() {
         if (!countlyCommon.DEBUG) {
-
-            if (_activeAppId != countlyCommon.ACTIVE_APP_ID) {
-                _activeAppId = countlyCommon.ACTIVE_APP_ID;
-                return countlyEvent.initialize();
-            }
-
             return $.when(
                 $.ajax({
                     type: "GET",
@@ -105,46 +95,32 @@
                         "app_id" : countlyCommon.ACTIVE_APP_ID,
                         "method" : "events",
                         "action" : "refresh",
-                        "event": _activeEvent
+                        "event": _activeEvent,
+                        "segmentation": _activeSegmentation
                     },
                     dataType: "jsonp",
                     success: function(json) {
-                        for (var i=0; i < json.length; i++) {
-                            var segIndex = _activeEventDbIndex.indexOf(json[i]["_id"]);
-
-                            if (segIndex == -1) {
-                                _activeEventDbArr.push(json[i]);
-                                _activeEventDbIndex.push(json[i]["_id"]);
-                            } else {
-                                _activeEventDbArr[segIndex] = $.extend(true, _activeEventDbArr[segIndex], json[i]);
-                            }
-                        }
-
-                        _activeEventDb = _activeEventDbArr[_activeEventDbIndex.indexOf(_activeSegmentation || "no-segment")] || {};
-
-                        setMeta();
+                        countlyCommon.extendDbObj(_activeEventDb, json);
+                        extendMeta();
                     }
                 })
             ).then(function(){
-                    return true;
-                });
+                return true;
+            });
         } else {
             _activeEventDb = {"2012":{}};
-            _activeEvents = {};
             return true;
         }
     };
 
     countlyEvent.reset = function () {
-        _activeEventDbArr = [];
-        _activeEventDbIndex = [];
         _activeEventDb = {};
         _activeEvents = {};
         _activeEvent = "";
         _activeSegmentation = "";
         _activeSegmentations = [];
         _activeSegmentationValues = [];
-        _activeAppId = 0;
+        _activeSegmentationObj = {};
         _activeAppKey = 0;
         _initialized = false;
     };
@@ -174,27 +150,28 @@
     };
 
     countlyEvent.setActiveEvent = function (activeEvent, callback) {
-        _activeEventDbArr = [];
-        _activeEventDbIndex = [];
         _activeEventDb = {};
         _activeSegmentation = "";
         _activeSegmentations = [];
         _activeSegmentationValues = [];
-
+        _activeSegmentationObj = {};
         _activeEvent = activeEvent;
 
-        $.when(countlyEvent.initialize()).then(callback);
+        $.when(countlyEvent.initialize(true)).then(callback);
     };
 
-    countlyEvent.setActiveSegmentation = function (activeSegmentation) {
+    countlyEvent.setActiveSegmentation = function (activeSegmentation, callback) {
+        _activeEventDb = {};
         _activeSegmentation = activeSegmentation;
+
+        $.when(countlyEvent.initialize(true)).then(callback);
     };
 
     countlyEvent.getActiveSegmentation = function () {
         return (_activeSegmentation) ? _activeSegmentation : jQuery.i18n.map["events.no-segmentation"];
     };
-	
-	countlyEvent.isSegmentedView = function() {
+
+    countlyEvent.isSegmentedView = function() {
         return (_activeSegmentation) ? true : false;
     };
 
@@ -212,7 +189,7 @@
                 {
                     name:"curr_segment",
                     func:function (rangeArr, dataObj) {
-                        return rangeArr.replace(/:/g, ".");
+                        return rangeArr.replace(/:/g, ".").replace(/\[CLY\]/g,"");
                     }
                 },
                 { "name":"c" },
@@ -538,8 +515,6 @@
     };
 
     countlyEvent.getMultiEventData = function(eventKeysArr, callback) {
-        _activeAppId = countlyCommon.ACTIVE_APP_ID;
-
         $.ajax({
             type: "GET",
             url: countlyCommon.API_PARTS.data.r,
@@ -606,21 +581,24 @@
     };
 
     function setMeta() {
-        var noSegIndex = _activeEventDbIndex.indexOf("no-segment");
-
-        if (noSegIndex != -1 && _activeEventDbArr[noSegIndex]["meta"]) {
-            var tmpMeta = _activeEventDbArr[noSegIndex]["meta"];
-            _activeSegmentations = tmpMeta["segments"] || [];
-
+        _activeSegmentationObj = _activeEventDb["meta"] || {};
+        _activeSegmentations = _activeSegmentationObj["segments"] || [];
+        if (_activeSegmentations) {
             _activeSegmentations.sort();
-
-            if (_activeSegmentation) {
-                _activeSegmentationValues = (tmpMeta[_activeSegmentation])? tmpMeta[_activeSegmentation]: [];
-            }
-        } else {
-            _activeSegmentations = [];
-            _activeSegmentationValues = [];
         }
+        _activeSegmentationValues = (_activeSegmentationObj[_activeSegmentation])? _activeSegmentationObj[_activeSegmentation]: [];
+    }
+
+    function extendMeta() {
+        for (var metaObj in _activeEventDb["meta"]) {
+            _activeSegmentationObj[metaObj] = countlyCommon.union(_activeSegmentationObj[metaObj], _activeEventDb["meta"][metaObj]);
+        }
+
+        _activeSegmentations = _activeSegmentationObj["segments"];
+        if (_activeSegmentations) {
+            _activeSegmentations.sort();
+        }
+        _activeSegmentationValues = (_activeSegmentationObj[_activeSegmentation])? _activeSegmentationObj[_activeSegmentation]: [];
     }
 
 }(window.countlyEvent = window.countlyEvent || {}, jQuery));

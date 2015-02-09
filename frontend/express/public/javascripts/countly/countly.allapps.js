@@ -42,16 +42,13 @@
 							}
 							_sessions["all"][i].data[j][0] = _sessions[appID][i].data[j][0];
 							_sessions["all"][i].data[j][1] += parseFloat(_sessions[appID][i].data[j][1]);
-							if(i == "#draw-total-users")
-								_appData["all"].users.total += _sessions[appID][i].data[j][1];
-							else if(i == "#draw-new-users")
-								_appData["all"].newusers.total += _sessions[appID][i].data[j][1];
-							else if(i == "#draw-total-sessions")
-								_appData["all"].sessions.total += _sessions[appID][i].data[j][1];
-							else if(i == "#draw-total-time-spent")
+							if(i == "#draw-total-time-spent")
 								_appData["all"].duration.total += parseFloat(_sessions[appID][i].data[j][1]);
 						}
 					}
+					_appData["all"].sessions.total += sessionData.usage['total-sessions'].total;
+					_appData["all"].users.total += sessionData.usage['total-users'].total;
+					_appData["all"].newusers.total += sessionData.usage['new-users'].total;
 					_appData["all"].sessions.trend += fromShortNumber(sessionData.usage['total-sessions'].change);
 					_appData["all"].users.trend += fromShortNumber(sessionData.usage['total-users'].change);
 					_appData["all"].newusers.trend += fromShortNumber(sessionData.usage['new-users'].change);
@@ -115,7 +112,7 @@
 	
 	var loadApp = function(appID){
 		countlyCommon.setActiveApp(appID);
-		return $.when(countlySession.initialize()).done(function () {
+		return $.when(countlyUser.initialize()).done(function () {
 			var sessionData = countlySession.getSessionData();
 			if(!_appIds[appID]){
 				_sessionData[appID] = sessionData;

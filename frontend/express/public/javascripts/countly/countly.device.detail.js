@@ -6,15 +6,17 @@
         _os = [],
         _resolutions = [],
         _os_versions = [],
-        _densities = [],
         _activeAppKey = 0,
-        _initialized = false;
+        _initialized = false,
+        _period = null;
 
     //Public Methods
     countlyDeviceDetails.initialize = function () {
-        if (_initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+        if (_initialized && _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
             return countlyDeviceDetails.refresh();
         }
+
+        _period = countlyCommon.getPeriodForAjax();
 
         if (!countlyCommon.DEBUG) {
             _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
@@ -26,12 +28,15 @@
                 data:{
                     "api_key":countlyGlobal.member.api_key,
                     "app_id":countlyCommon.ACTIVE_APP_ID,
-                    "method":"device_details"
+                    "method":"device_details",
+                    "period":_period
                 },
                 dataType:"jsonp",
                 success:function (json) {
                     _deviceDetailsDb = json;
                     setMeta();
+
+                    countlyAppVersion.initialize();
                 }
             });
         } else {
@@ -62,7 +67,9 @@
                 dataType:"jsonp",
                 success:function (json) {
                     countlyCommon.extendDbObj(_deviceDetailsDb, json);
-                    setMeta();
+                    extendMeta();
+
+                    countlyAppVersion.refresh(json);
                 }
             });
         } else {
@@ -273,82 +280,43 @@
         return oSVersionData;
     };
 
-    countlyDeviceDetails.getDensityBars = function () {
-        return countlyCommon.extractBarData(_deviceDetailsDb, _densities, countlyDeviceDetails.clearDeviceDetailsObject);
-    };
-
-    countlyDeviceDetails.getDensityData = function () {
-        var chartData = countlyCommon.extractTwoLevelData(_deviceDetailsDb, _densities, countlyDeviceDetails.
-            clearDeviceDetailsObject, [
-            {
-                name:"densities",
-                func:function (rangeArr, dataObj) {
-                    return rangeArr;
-                }
-            },
-            { "name":"t" },
-            { "name":"u" },
-            { "name":"n" }
-        ]);
-
-        var densities = _.pluck(chartData.chartData, 'densities'),
-            densityTotal = _.pluck(chartData.chartData, 'u'),
-            densityNew = _.pluck(chartData.chartData, 'n'),
-            chartData2 = [],
-            chartData3 = [];
-
-        var sum = _.reduce(densityTotal, function (memo, num) {
-            return memo + num;
-        }, 0);
-
-        for (var i = 0; i < densities.length; i++) {
-            var percent = (densityTotal[i] / sum) * 100;
-            chartData2[i] = {data:[
-                [0, densityTotal[i]]
-            ], label:densities[i]};
-        }
-
-        var sum2 = _.reduce(densityNew, function (memo, num) {
-            return memo + num;
-        }, 0);
-
-        for (var i = 0; i < densities.length; i++) {
-            var percent = (densityNew[i] / sum) * 100;
-            chartData3[i] = {data:[
-                [0, densityNew[i]]
-            ], label:densities[i]};
-        }
-
-        chartData.chartDPTotal = {};
-        chartData.chartDPTotal.dp = chartData2;
-
-        chartData.chartDPNew = {};
-        chartData.chartDPNew.dp = chartData3;
-
-        return chartData;
-    };
-
     countlyDeviceDetails.fixOSVersion = function(osName) {
         return osName
             .replace(/:/g, ".")
-            .replace(/i/g, "iOS ")
-            .replace(/a/g, "Android ")
-            .replace(/b/g, "BlackBerry ")
-            .replace(/w/g, "Windows Phone ")
-            .replace(/m/g, "Mac ");
+            .replace(/^i/g, "iOS ")
+            .replace(/^a/g, "Android ")
+            .replace(/^b/g, "BlackBerry ")
+            .replace(/^w/g, "Windows Phone ")
+            .replace(/^o/g, "OS X ")
+            .replace(/^m/g, "Mac ")
+            .replace(/^t/g, "Tizen ");
+    };
+
+    countlyDeviceDetails.getDbObj = function() {
+        return _deviceDetailsDb;
     };
 
     function setMeta() {
         if (_deviceDetailsDb['meta']) {
             _os = (_deviceDetailsDb['meta']['os']) ? _deviceDetailsDb['meta']['os'] : [];
             _resolutions = (_deviceDetailsDb['meta']['resolutions']) ? _deviceDetailsDb['meta']['resolutions'] : [];
-            _densities = (_deviceDetailsDb['meta']['densities']) ? _deviceDetailsDb['meta']['densities'] : [];
             _os_versions = (_deviceDetailsDb['meta']['os_versions']) ? _deviceDetailsDb['meta']['os_versions'] : [];
         } else {
             _os = [];
             _resolutions = [];
-            _densities = [];
             _os_versions = [];
+        }
+
+        if (_os_versions.length) {
+            _os_versions = _os_versions.join(",").replace(/\./g, ":").split(",");
+        }
+    }
+
+    function extendMeta() {
+        if (_deviceDetailsDb['meta']) {
+            _os = countlyCommon.union(_os, _deviceDetailsDb['meta']['os']);
+            _resolutions = countlyCommon.union(_resolutions, _deviceDetailsDb['meta']['resolutions']);
+            _os_versions = countlyCommon.union(_os_versions, _deviceDetailsDb['meta']['os_versions']);
         }
 
         if (_os_versions.length) {

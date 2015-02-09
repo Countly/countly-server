@@ -5,13 +5,16 @@
         _carrierDb = {},
         _carriers = [],
         _activeAppKey = 0,
-        _initialized = false;
+        _initialized = false,
+        _period = null;
 
     //Public Methods
     countlyCarrier.initialize = function () {
-        if (_initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+        if (_initialized && _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
             return countlyCarrier.refresh();
         }
+
+        _period = countlyCommon.getPeriodForAjax();
 
         if (!countlyCommon.DEBUG) {
             _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
@@ -23,7 +26,8 @@
                 data:{
                     "api_key":countlyGlobal.member.api_key,
                     "app_id":countlyCommon.ACTIVE_APP_ID,
-                    "method":"carriers"
+                    "method":"carriers",
+                    "period":_period
                 },
                 dataType:"jsonp",
                 success:function (json) {
@@ -59,7 +63,7 @@
                 dataType:"jsonp",
                 success:function (json) {
                     countlyCommon.extendDbObj(_carrierDb, json);
-                    setMeta();
+                    extendMeta();
                 }
             });
         } else {
@@ -149,4 +153,11 @@
             _carriers = [];
         }
     }
+
+    function extendMeta() {
+        if (_carrierDb['meta']) {
+            _carriers = countlyCommon.union(_carriers, _carrierDb['meta']['carriers']);
+        }
+    }
+
 }(window.countlyCarrier = window.countlyCarrier || {}, jQuery));

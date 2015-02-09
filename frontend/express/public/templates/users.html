@@ -300,7 +300,7 @@ $(document).ready(function() {
 		var self = $(this);
 		$.ajax({
 			type: "POST",
-			url: "/users/check/username",
+			url: countlyGlobal["path"]+"/users/check/username",
 			data: data,
 			success: function(result) {
 				$(".username-check").remove();
@@ -338,7 +338,7 @@ $(document).ready(function() {
 		var self = $(this);
 		$.ajax({
 			type: "POST",
-			url: "/users/check/email",
+			url: countlyGlobal["path"]+"/users/check/email",
 			data: data,
 			success: function(result) {
 				$(".email-check").remove();
@@ -538,10 +538,10 @@ $(document).ready(function() {
 				{{#if this.global_admin}}
 					<span data-localize="management-users.global-admin"></span>
 				{{else}}
-					{{#if this.admin_of}}
+					{{#if this.admin_of.length}}
 						<span data-localize="management-users.admin"></span>
 					{{else}}
-						{{#if this.user_of}}
+						{{#if this.user_of.length}}
 							<span data-localize="management-users.user"></span>
 						{{else}}
 							<span data-localize="management-users.no-role"></span>

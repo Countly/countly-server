@@ -167,6 +167,19 @@ var countlySession = {},
             }
         };
     };
+	
+	countlySession.getSubperiodData = function () {
+
+       var dataProps = [
+                { name:"t" },
+                { name:"n" },
+                { name:"u" },
+                { name:"d" },
+                { name:"e" }
+            ];
+
+        return countlyCommon.extractData(_sessionDb, countlySession.clearSessionObject, dataProps);
+    };
 
     countlySession.clearSessionObject = function (obj) {
         if (obj) {
@@ -175,9 +188,10 @@ var countlySession = {},
             if (!obj["u"]) obj["u"] = 0;
             if (!obj["d"]) obj["d"] = 0;
             if (!obj["e"]) obj["e"] = 0;
+            if (!obj["p"]) obj["p"] = 0;
         }
         else {
-            obj = {"t":0, "n":0, "u":0, "d":0, "e":0};
+            obj = {"t":0, "n":0, "u":0, "d":0, "e":0, "p":0};
         }
 
         return obj;

@@ -1,25 +1,68 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!--
-   ______                  __  __     
-  / ____/___  __  ______  / /_/ /_  __
- / /   / __ \/ / / / __ \/ __/ / / / /
-/ /___/ /_/ / /_/ / / / / /_/ / /_/ / 
-\____/\____/\__,_/_/ /_/\__/_/\__, /  
-              http://count.ly/____/   
+   ______                  __  __         ______      __                       _
+  / ____/___  __  ______  / /_/ /_  __   / ____/___  / /____  _________  _____(_)_______
+ / /   / __ \/ / / / __ \/ __/ / / / /  / __/ / __ \/ __/ _ \/ ___/ __ \/ ___/ / ___/ _ \
+/ /___/ /_/ / /_/ / / / / /_/ / /_/ /  / /___/ / / / /_/  __/ /  / /_/ / /  / (__  )  __/
+\____/\____/\__,_/_/ /_/\__/_/\__, /  /_____/_/ /_/\__/\___/_/  / .___/_/  /_/____/\___/
+              http://count.ly/____/                            /_/
 -->
 <html>
-<head>
+<head> 
 	<title>Countly</title> 
 	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1.0">
-	<link rel="icon" type="image/png" href="/images/favicon.png">
-    <link rel="stylesheet" href="/stylesheets/font-awesome/css/font-awesome.min.css" />
-    <link rel="stylesheet" href="/stylesheets/entypo/css/entypo.css" />
-	<link rel="stylesheet" href="/javascripts/dom/tablesorter/style.css" />
-	<link rel="stylesheet" href="/javascripts/dom/tipsy/tipsy.css" />
-	<link rel="stylesheet" href="/javascripts/dom/jqueryui/jquery.ui.all.css" />
-	<link rel="stylesheet" href="/stylesheets/main.css?<%= countlyVersion %>" />
-    <link rel="stylesheet" href="/javascripts/visualization/rickshaw/rickshaw.min.css" />
-	<script><%- javascript %></script>
+    <script><%- javascript %></script>
+	<link rel="icon" type="image/png" href="<%- cdn %>images/favicon.png">
+    <link rel="stylesheet" href="<%- cdn %>stylesheets/font-awesome/css/font-awesome.min.css" />
+	<link rel="stylesheet" href="<%- cdn %>stylesheets/entypo/css/entypo.css" />
+	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/tablesorter/style.css" />
+	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/tipsy/tipsy.css" />
+	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.base.css" />
+	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.theme.css" />
+    <link rel="stylesheet" href="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.css" />
+	<link rel="stylesheet" href="<%- cdn %>javascripts/utils/messenger/messenger.css" />
+    <link rel="stylesheet" href="<%- cdn %>javascripts/utils/messenger/messenger-theme-future.css" />
+    <% if (production) { %>
+	<link rel="stylesheet" href="<%- cdn %>stylesheets/main.min.css?<%= countlyVersion %>" />
+    <!-- PRODUCTION -->
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.dom.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.utils.js?<%= countlyVersion %>"></script>
+    <% } else { %>
+	<link rel="stylesheet" href="<%- cdn %>stylesheets/main.css?<%= countlyVersion %>" />
+	<% if (plugins) { %>
+		<% for(var i=0, l=plugins.length; i<l; i++) {%>
+	<link rel="stylesheet" href="<%- cdn %><%= plugins[i] %>/stylesheets/main.css?<%= countlyVersion %>" />
+		<% } %>
+	<% } %>
+    <!-- DEVELOPMENT -->
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.form.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/tipsy/jquery.tipsy.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.noisy.min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/tablesorter/jquery.tablesorter.min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.sticky.headers.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jqueryui/jquery-ui-1.8.22.custom.min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jqueryui/jquery-ui-i18n.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/slimScroll.min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.easing.1.3.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/underscore-min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/prefixfree.min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/moment/moment.min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/moment/moment.isocalendar.min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/moment/lang-all.min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/handlebars.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/backbone-min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jstz.min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/store+json2.min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.idle-timer.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/initialAvatar.js"></script>
+	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/messenger/messenger.min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/messenger/messenger-theme-future.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/jquery.dataTables.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/ZeroClipboard.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js"></script>
+    <% } %>
 </head>
 <body> 
 	<div id="sidebar">
@@ -27,13 +70,12 @@
 		<div id="sidebar-top">
 			<a href="#/"><div id="sidebar-logo"></div></a>
 			<div id="sidebar-app-select">
-				<div class="logo" <% if (userOfApps[0]){ %>style="background-image:url('/appimages/<%= userOfApps[0]._id %>.png')"<% } %>></div>
+				<div class="logo" <% if (userOfApps[0]){ %>style="background-image:url('<%- cdn %>appimages/<%= userOfApps[0]._id %>.png')"<% } %>></div>
 				<div class="text"><% if (userOfApps[0]){ %><%= userOfApps[0].name %><% } %></div>
 			</div>
 		</div>
 		<div id="sidebar-menu">
-			<a href="#/" class="item active">
-                <!--<div class="logo icon-bar-chart" style="background-image:none; font-size:28px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px;"></div>-->
+			<a href="#/" class="item analytics active">
 				<div class="logo dashboard"></div>
 				<div class="text" data-localize="sidebar.dashboard"></div>
 			</a>
@@ -41,8 +83,8 @@
 				<div class="logo dashboard"></div>
 				<div class="text" data-localize="sidebar.dashboard"></div>
 			</a>
-			<a class="item" id="analytics-menu">
-                <!--<div class="logo icon-signal" style="background-image:none; font-size:28px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px;"></div>-->
+			<a class="item analytics" id="analytics-menu">
+                <!--<div style="background-image:none; font-size:54px; text-align:center; width:35px; margin-left:14px; line-height:14px;" class="logo entypo line-graph"></div>-->
 				<div class="logo analytics"></div>
 				<div class="text" data-localize="sidebar.analytics"></div>
 			</a>
@@ -67,10 +109,6 @@
 					<div class="logo resolutions"></div>
                     <div class="text" data-localize="sidebar.analytics.resolutions"></div>
                 </a>
-                <a href="#/analytics/density" class="item">
-					<div class="logo densities"></div>
-                    <div class="text" data-localize="sidebar.analytics.densities"></div>
-                </a>
 				<a href="#/analytics/versions" class="item">
 					<div class="logo app-versions"></div>
 					<div class="text" data-localize="sidebar.analytics.app-versions"></div>
@@ -84,8 +122,9 @@
 					<div class="text" data-localize="sidebar.analytics.platforms"></div>
 				</a>
 			</div>
-            <a class="item" id="engagement-menu">
-                <div class="logo icon-magnet" style="background-image:none; font-size:28px; text-align:center; width:35px; margin-left:14px; line-height:44px;"></div>
+            <a class="item analytics" id="engagement-menu">
+                <!--<div style="background-image:none; font-size:54px; text-align:center; width:35px; margin-left:14px; line-height:14px;" class="logo entypo magnet"></div>-->
+                <div class="logo icon-magnet" style="background-image:none; font-size:28px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>
                 <div class="text" data-localize="sidebar.engagement"></div>
             </a>
             <div class="sidebar-submenu" id="engagement-submenu">
@@ -102,10 +141,11 @@
                     <div class="text" data-localize="sidebar.engagement.durations"></div>
                 </a>
             </div>
-            <a href="#/analytics/events" class="item" id="sidebar-events">
+            <a href="#/analytics/events" class="item analytics" id="sidebar-events">
+                <!--<div style="background-image:none; font-size:54px; text-align:center; width:35px; margin-left:14px; line-height:14px;" class="logo entypo share"></div>-->
                 <div class="logo events"></div>
                 <div class="text" data-localize="sidebar.events"></div>
-            </a>
+            </a>	
 			<% if(member['global_admin'] || adminOfApps.length) { %>
 			<a class="item" id="management-menu">
                 <!--<div class="logo icon-wrench" style="background-image:none; font-size:28px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px;"></div>-->
@@ -136,16 +176,12 @@
 				</a>
 			</div>
 			<% } %>
-            <a class="item" id="enterprise-menu" href="#/enterprise">
-                <div class="logo icon-rocket" style="background-image:none; font-size:24px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px; line-height: 34px;"></div>
-                <div class="text" data-localize="">Enterprise</div>
-            </a>
 		</div>
 		<div id="sidebar-bottom-container">
 			<div class="menu">
-				<a id="sidebar-countly-version">Countly <%= countlyVersion %></a>
+				<a id="sidebar-countly-version">Countly Enterprise <%= countlyVersion %></a>
 				<a class="item" id="account-settings" data-localize="sidebar.settings"></a>
-				<a class="item" id="user-logout" href="/logout" data-localize="sidebar.logout"></a>
+				<a class="item" id="user-logout" href="<%= path %>/logout" data-localize="sidebar.logout"></a>
 			</div>
 			<div id="language-menu">
 				<div class="group">
@@ -183,13 +219,13 @@
 		</div>
 		<div class="apps-scrollable">
 			<div class="app-container app-navigate" data-id="allapps">
-				<div class="logo" style="background-image: url('<%= cdn %>/images/favicon.png');"></div>
+				<div class="logo" style="background-image: url('<%- cdn %>images/favicon.png');"></div>
 				<div class="name" data-localize="allapps.title"></div>
 				<div class="drag"></div>
 			</div>
 			<% for (var i = 0; i < userOfApps.length; i++) { %>
 				<div class="app-container app-navigate" data-key="<%= userOfApps[i].key %>" data-id="<%= userOfApps[i]['_id'] %>">
-					<div class="logo" style="background-image: url('/appimages/<%= userOfApps[i]['_id'] %>.png');"></div>
+					<div class="logo" style="background-image: url('<%- cdn %>appimages/<%= userOfApps[i]['_id'] %>.png');"></div>
 					<div class="name"><%= userOfApps[i].name %></div>
 					<div class="drag"></div>
 				</div>
@@ -205,10 +241,20 @@
 	</div>
 	<div></div>
 	<div id="overlay"></div>
+    <div id="cly-resource" class="dialog black" style="max-width: 800px; max-height: 600px;">
+        <div class="content"></div>
+    </div>
 	<div id="cly-popup" class="dialog black">
 		<div class="indicator"></div>
 		<div class="content"></div>
 	</div>
+	<div id="cly-loading" class="dialog black"> 
+ 		<div class="indicator"></div> 
+ 		<div class="message"></div> 
+ 		<div class="content"> 
+ 	        <div id="content-loader"></div> 
+ 		</div> 
+ 	</div> 
 	<div id="cly-alert" class="dialog">
 		<div class="indicator"></div>
 		<div class="message"></div>
@@ -249,6 +295,70 @@
 			<a id="dialog-cancel" class="icon-button light" data-localize="common.close"></a>
 		</div>
 	</div>
+    <div id="graph-note-popup">
+        <div class="note-popup">
+            <div class="message">
+                <div class="note-create">
+                    <div>
+                        <div class="title" data-localize="">Note</div>
+                        <div class="input" style="height:42px;"><input class="note-content" style="width:250px;" type="text" value=""/></div>
+                    </div>
+                    <div style="margin-top:20px; overflow: auto; height:225px;">
+                        <div style="float:left; position: relative;">
+                            <div style="position: relative;">
+                                <div class="calendar-container">
+                                    <div class="note-date" class="calendar" style="border: 1px solid #999; border-radius: 5px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="height: 193px; overflow:hidden; width:70px; border: 1px solid #999; border-radius: 5px; float:right;">
+                            <div class="time-picker" class="calendar-container" style="overflow:hidden;">
+                                <span class="selected">00:00</span>
+                                <span>01:00</span>
+                                <span>02:00</span>
+                                <span>03:00</span>
+                                <span>04:00</span>
+                                <span>05:00</span>
+                                <span>06:00</span>
+                                <span>07:00</span>
+                                <span>08:00</span>
+                                <span>09:00</span>
+                                <span>10:00</span>
+                                <span>11:00</span>
+                                <span>12:00</span>
+                                <span>13:00</span>
+                                <span>14:00</span>
+                                <span>15:00</span>
+                                <span>16:00</span>
+                                <span>17:00</span>
+                                <span>18:00</span>
+                                <span>19:00</span>
+                                <span>20:00</span>
+                                <span>21:00</span>
+                                <span>22:00</span>
+                                <span>23:00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="selected-date" style="display:none; margin-top:5px; font-family:Ubuntu; font-size:15px; color:#999; font-style: italic; text-align: center; height:20px;">
+
+                    </div>
+                </div>
+                <div class="note-manage" style="display:none;">
+                    <div style="height:311px;">
+                        <div class="note-list" style="overflow:hidden;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="buttons">
+                <div class="manage-notes-button popup-link">Manage notes</div>
+                <div class="create-note-button popup-link" style="display:none;">Back</div>
+                <div id="" class="result-message"></div>
+                <a class="create-note icon-button light" data-localize="common.create"></a>
+                <a id="dialog-cancel" class="icon-button light" data-localize="common.close"></a>
+            </div>
+        </div>
+    </div>
     <div id="content-container">
         <div id="content-top"></div>
         <div id="content">
@@ -308,14 +418,14 @@
 			<div class="widget-header">
 				<div class="left">
 					<div class="logo {{logo-class}}"></div>
-					<div class="title">{{page-title}}</div>
+					<div class="title">{{page-title}}</div>     
 				</div>
 				{{> date-selector }}
 			</div>
 			<div class="widget-content help-zone-vb" data-help-localize="{{{chart-helper}}}" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
 				{{#if graph-type-double-pie}}
 				<div class="pie-chart-container">
-					<div style="border-right:1px solid #CCC;">
+					<div style="border-right:1px solid #CCC; width: 100%; height: 100%">
 						<div class="pie-overlay one {{logo-class}}">
 							<div class="title">{{pie-titles.left}}</div>
 						</div>
@@ -340,7 +450,7 @@
 					<div id="dashboard-graph2" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>
 				</div>
 				{{else}}
-				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
+                <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
 				{{/if}}
 			</div>
 			{{#if big-numbers}}
@@ -352,7 +462,7 @@
 							<div class="select">{{this.title}}</div>
 							<div class="color"></div>
 							<div class="number">{{getFormattedNumber this.total}}</div>
-							<div class="trend" style="background-image:url('/images/dashboard/{{this.trend}}trend.png');"></div>
+							<div class="trend" style="background-image:url('<%- cdn %>images/dashboard/{{this.trend}}trend.png');"></div>
 						</div>
 					</div>
 					{{/each}}
@@ -381,10 +491,46 @@
 			{{/each}}
 		</div>
 		{{/if}}
-		<table id="dataTableOne" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
+        <table id="dataTableOne" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
         {{#if two-tables}}
         <table id="dataTableTwo" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
         {{/if}}
+	</script>
+	
+	<script id="template-allapps"  type="text/x-handlebars-template">
+		<div class="widget allappview">
+			<div class="widget-header">
+				<div class="title" style="letter-spacing:-1px; font-size:19px; margin-top:10px; margin-left:5px;">{{toUpperCase page-title}}</div>
+				{{> date-selector }}
+			</div>
+			<div class="widget-content" style="border:none;">
+				<div id="big-numbers-container" class="dashboard">
+					{{#each usage}}
+					<div class="big-numbers six-column help-zone-vs" data-help-localize="{{this.help}}">
+						<div class="inner">
+							<div class="select" id="{{this.id}}">
+								<div class="title">{{this.title}}</div>
+							</div>
+							<div class="arrow"></div>
+						</div>
+					</div>
+					{{/each}}
+				</div>
+			</div>
+			<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none; position:relative;">
+                <div id="graph-note">
+                    <div class="main">
+                        Notes
+                        <div class="tail"></div>
+                    </div>
+                </div>
+				<div id="empty-graph" data-localize="allapps.empty-graph"></div>
+				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
+			</div>
+		</div>
+		<div class="allapps" data-help-localize="{{{chart-helper}}}">
+			<table class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
+		</div>
 	</script>
 
 	<script id="template-analytics-countries"  type="text/x-handlebars-template">
@@ -409,7 +555,7 @@
 						<div class="inner">
 							<div class="select">{{this.title}}</div>
 							<div class="number" style="margin-top: 10px;">{{getFormattedNumber this.total}}</div>
-							<div class="trend" style="background-image:url('/images/dashboard/{{this.trend}}trend.png');"></div>
+							<div class="trend" style="background-image:url('<%- cdn %>images/dashboard/{{this.trend}}trend.png');"></div>
 						</div>
 					</div>
 					{{/each}}
@@ -417,7 +563,7 @@
 			</div>
 		</div>
 		<table class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
-    </script>
+	</script>
 
 	<script id="dashboard-template" type="text/x-handlebars-template">
 		<div class="widget">
@@ -432,7 +578,7 @@
 						<div class="inner">
 							<div class="logo"></div>
 							<div class="number">
-                                {{getShortNumber this.data.total}}
+                                <span class="value">{{getShortNumber this.data.total}}</span>
                                 {{#if this.data.isEstimate}}
                                     <span id="total-user-estimate-ind"><i class="icon-asterisk"></i></span>
                                     <div id="total-user-estimate-exp" style="display:none;">
@@ -443,7 +589,7 @@
                                     </div>
                                 {{/if}}
                             </div>
-							<div class="trend" style="background-image:url('/images/dashboard/{{this.data.trend}}trend.png');">
+							<div class="trend" style="background-image:url('<%- cdn %>images/dashboard/{{this.data.trend}}trend.png');">
 								<div class="change">{{this.data.change}}</div>
 							</div>
 							<div class="spark"><span class="{{this.data.trend}}sparkline">{{this.data.sparkline}}</span></div>
@@ -456,7 +602,13 @@
 					{{/each}}
 				</div>
 			</div>
-			<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none;">
+			<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none; position:relative;">
+                <div id="graph-note">
+                    <div class="main">
+                        Notes
+                        <div class="tail"></div>
+                    </div>
+                </div>
 				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
 			</div>
 		</div>
@@ -485,7 +637,7 @@
 				<div>
 					{{#each country-data}}
 					<div class="map-list-item">
-						<div class="flag" style="background-image:url('/images/flags/{{this.code}}.png');"></div>
+						<div class="flag" style="background-image:url('<%- cdn %>images/flags/{{this.code}}.png');"></div>
 						<div class="country-name">{{this.country}}</div>
 						<div class="total">{{getShortNumber this.t}}</div>
 					</div>
@@ -493,37 +645,7 @@
 				</div>
 			</div>
 			{{/if}}
-			<div id="geo-chart-outer" style="padding-bottom: 8px;"><div id="geo-chart" {{#if country-data}}style="margin-right:282px;"{{/if}}></div></div>
-		</div>
-	</script>
-	
-	<script id="template-allapps"  type="text/x-handlebars-template">
-		<div class="widget allappview">
-			<div class="widget-header">
-				<div class="title" style="letter-spacing:-1px; font-size:19px; margin-top:10px; margin-left:5px;">{{toUpperCase page-title}}</div>
-				{{> date-selector }}
-			</div>
-			<div class="widget-content" style="border:none;">
-				<div id="big-numbers-container" class="dashboard">
-					{{#each usage}}
-					<div class="big-numbers six-column help-zone-vs" data-help-localize="{{this.help}}">
-						<div class="inner">
-							<div class="select" id="{{this.id}}">
-								<div class="title">{{this.title}}</div>
-							</div>
-							<div class="arrow"></div>
-						</div>
-					</div>
-					{{/each}}
-				</div>
-			</div>
-			<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none; position:relative;">
-				<div id="empty-graph" data-localize="allapps.empty-graph"></div>
-				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
-			</div>
-		</div>
-		<div class="allapps" data-help-localize="{{{chart-helper}}}">
-			<table class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
+			<div id="geo-chart-outer" style="padding-bottom: 8px;"><div id="geo-chart"></div></div>
 		</div>
 	</script>
 
@@ -534,7 +656,7 @@
 				<% if(member['global_admin']) { %>
 				<div style="overflow:hidden; position:absolute; top:19px; right:10px;">
 					<div class="icon-button dark help-zone-vs" data-help-localize="manage-apps.app-add-button" id="add-app-button">
-						<div class="icon" style="background-image:url('/images/management/add.png'); width:17px; height:18px;"></div>
+						<div class="icon" style="background-image:url('<%- cdn %>images/management/add.png'); width:17px; height:18px;"></div>
 						<div class="text" data-localize="common.add"></div>
 					</div>
 				</div>
@@ -543,7 +665,7 @@
 			<div class="scrollable">
 				{{#eachOfObjectValue admin_apps}}
 				<div class="app-container" data-key="{{this.key}}" data-id="{{this._id}}">
-					<div class="logo" style="background-image: url('/appimages/{{this._id}}.png');"></div>
+					<div class="logo" style="background-image: url('<%- cdn %>appimages/{{this._id}}.png');"></div>
 					<div class="name">{{this.name}}</div>
 				</div>
 				{{/eachOfObjectValue}}
@@ -619,8 +741,8 @@
 									<div id="selected" style="float:left; font-size:14px; padding:5px 10px; padding-top:6px; color:#666; font-family:'Ubuntu';"></div>
 									<input type="hidden" value="" id="app-timezone"/>
 									<input type="hidden" value="" id="app-country"/>
-                                </td>
-                            </tr>
+								</td>
+							</tr>
                             <tr class="help-zone-vs" data-help-localize="manage-apps.app-icon">
 								<td data-localize="management-applications.icon"></td>
 								<td>
@@ -647,7 +769,7 @@
 					</div>
 					<div style="float:right; min-width:260px; overflow:hidden; margin-top:6px;">
                         <div style="float:right;" class="icon-button light help-zone-vs" data-help-localize="manage-apps.app-edit-button" id="edit-app">
-                            <div class="icon" style="background-image:url('/images/management/edit.png'); width:22px; height:19px;"></div>
+                            <div class="icon" style="background-image:url('<%- cdn %>images/management/edit.png'); width:22px; height:19px;"></div>
                             <div class="text" data-localize="common.edit"></div>
                         </div>
 						<div style="float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="manage-apps.app-clear-button" id="clear-app-data">
@@ -740,9 +862,9 @@
 										<div id="selected" style="float:left; font-size:14px; padding:5px 10px; padding-top:6px; color:#666; font-family:'Ubuntu';"></div>
 										<input type="hidden" value="" id="app-timezone"/>
 										<input type="hidden" value="" id="app-country"/>
-                                    </div>
-                                </td>
-                            </tr>
+									</div>
+								</td>
+							</tr>
 							<tr class="table-edit-prev help-zone-vs" data-help-localize="manage-apps.app-icon">
 								<td data-localize="management-applications.icon"></td>
 								<td id="app-edit-image">
@@ -776,57 +898,6 @@
 		</div>
 	</script>
 
-	<script id="template-management-export"  type="text/x-handlebars-template">
-		<div class="widget">
-			<div class="widget-header">
-				<div class="left">
-					<div class="title">{{app_name}}</div>
-				</div>
-				<div style="float:right; overflow:hidden; margin-top:6px;">
-					<div class="icon-button light" id="export-select-all">
-						<div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
-						<div class="text">Select all</div>
-					</div>
-					<div class="icon-button light" id="export-deselect-all" style="display:none;">
-						<div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
-						<div class="text">Deselect all</div>
-					</div>
-					<div class="icon-button light create-report" id="create-report">
-						<div class="icon" style="background-image:url('/images/reports/pdf_icon.png'); width:18px; height:19px;"></div>
-						<div class="text">Export</div>
-					</div>
-				</div>
-			</div>
-			<div class="widget-content">
-				<div class="export-description">
-					Select items to export. Event name / segmentation indicates that only event data for the given segmentation will be exported.
-				</div>
-				<div id="export-checkbox-container">
-					{{#eachOfArray events}}
-					<div class="export-checkbox" data-key="{{value.key}}">
-						<div class="option">
-							<div class="checkbox"></div>
-							<div class="text">{{value.name}}</div>
-						</div>
-					</div>
-					{{/eachOfArray}}
-					<span class="stretch"></span>
-				</div>
-			</div>
-		</div>
-		<div class="widget">
-			<div class="widget-header">
-				<div class="left">
-					<div class="title">EXPORT HISTORY</div>
-				</div>
-			</div>
-			<div class="widget-content"></div>
-		</div>
-		{{#eachOfArray exports}}
-		<div>{{value.date}}</div>
-		{{/eachOfArray}}
-	</script>
-
 	<script id="template-events"  type="text/x-handlebars-template">
 		<div id="event-nav">
 			<div id="event-nav-head">
@@ -847,30 +918,30 @@
 		</div>
 		<div id="edit-event-container" style="display:none;">
 			<div id="edit-event-table-container">
-				<table class="events-table" cellpadding="0" cellspacing="0">
-					<thead>
-						<tr>
-                            <th></th>
-                            <th></th>
-							<th data-localize="events.edit.event-key"></th>
-							<th data-localize="events.edit.event-name"></th>
-							<th data-localize="events.table.count"></th>
-							<th data-localize="events.table.sum"></th>
-						</tr>
-					</thead>
-					<tbody>
-						{{#eachOfObjectValue event-map}}
-						<tr>
-                            <td style="text-align:center;"><i class="icon-reorder event-order"></i></td>
-                            <td style="text-align:center;"><i class="icon-trash delete-event" data-event-key="{{this.key}}"></i></td>
-							<td class="event-key">{{this.key}}</td>
-							<td><input class="event-name" type="text" placeholder="Event name"  data-localize="events.edit.event-name" value="{{this.name}}"/></td>
-							<td><input class="event-count" type="text" placeholder="Count" data-localize="events.table.count" value="{{this.count}}"/></td>
-							<td><input class="event-sum" type="text" placeholder="Sum" data-localize="events.table.sum" value="{{this.sum}}"/></td>
-						</tr>
-						{{/eachOfObjectValue}}
-					</tbody>
-				</table>
+                <table class="events-table" cellpadding="0" cellspacing="0">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th data-localize="events.edit.event-key"></th>
+                        <th data-localize="events.edit.event-name"></th>
+                        <th data-localize="events.table.count"></th>
+                        <th data-localize="events.table.sum"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{#eachOfObjectValue event-map}}
+                    <tr>
+                        <td style="text-align:center;"><i class="icon-reorder event-order"></i></td>
+                        <td style="text-align:center;"><i class="icon-trash delete-event" data-event-key="{{this.key}}"></i></td>
+                        <td class="event-key">{{this.key}}</td>
+                        <td><input class="event-name" type="text" placeholder="Event name"  data-localize="events.edit.event-name" value="{{this.name}}"/></td>
+                        <td><input class="event-count" type="text" placeholder="Count" data-localize="events.table.count" value="{{this.count}}"/></td>
+                        <td><input class="event-sum" type="text" placeholder="Sum" data-localize="events.table.sum" value="{{this.sum}}"/></td>
+                    </tr>
+                    {{/eachOfObjectValue}}
+                    </tbody>
+                </table>
 			</div>
 			<div class="buttons">
 				<div id="settings-save-result" class="result-message"></div>
@@ -880,13 +951,13 @@
 		</div>
 		<div id="event-main" style="margin-left:187px;">
 		<div class="widget">
-			<div class="widget-header">
-				<div class="left">
+			<div class="widget-header" style="height:auto; position:static; overflow:auto;">
+				<div class="left" style="width: 50%; height: 35px;">
 					<div id="event-update-area">
 						<div class="title">{{page-title}}</div>
 						<div class="event-segmentation">
 							{{#if segmentations}}
-							<div class="cly-select" style="width:220px;">
+							<div class="cly-select" style="width:220px; position:absolute;">
 								<div class="select-inner">
 									<div class="text-container">
 										<div class="text">{{active-segmentation}}</div>
@@ -906,14 +977,12 @@
 						</div>
 					</div>
 				</div>
-				<div style="position:absolute; right:8px;">
-				{{> date-selector }}
-				</div>
+                {{> date-selector }}
 			</div>
 			<div class="widget-content" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
 				{{#if graph-type-double-pie}}
 				<div class="pie-chart-container">
-					<div style="border-right:1px solid #CCC;">
+					<div style="border-right:1px solid #CCC; width: 100%; height: 100%">
 						<div class="pie-overlay one {{logo-class}}"></div>
 						<div id="dashboard-graph" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>	
 					</div>
@@ -940,7 +1009,7 @@
 							<div class="select">{{this.title}}</div>
 							<div class="color"></div>
 							<div class="number">{{getFormattedNumber this.total}}</div>
-							<div class="trend" style="background-image:url('/images/dashboard/{{this.trend}}trend.png');"></div>
+							<div class="trend" style="background-image:url('<%- cdn %>images/dashboard/{{this.trend}}trend.png');"></div>
 						</div>
 					</div>
 					{{/each}}
@@ -969,191 +1038,57 @@
 			{{/each}}
 		</div>
 		{{/if}}
-		</div>
+        </div>
 	</script>
-
-    <script id="template-enterprise" type="text/x-handlebars-template">
-        <div id="app-management-bar">
-            <div id="app-nav-head">
-                <div id="app-nav-title" style="max-width:110px;" data-localize="">HIGHLIGHTS</div>
-            </div>
-            <div id="enterprise-sections" class="scrollable">
-                <div class="app-container active" data-section="drill">
-                    <div class="name">Drill</div>
-                </div>
-                <div class="app-container" data-section="funnels">
-                    <div class="name">Funnels</div>
-                </div>
-                <div class="app-container" data-section="retention">
-                    <div class="name">Retention</div>
-                </div>
-                <div class="app-container" data-section="revenue">
-                    <div class="name">Revenue Analytics</div>
-                </div>
-                <div class="app-container" data-section="scalability">
-                    <div class="name">∞ Scalability</div>
-                </div>
-                <div class="app-container" data-section="support">
-                    <div class="name">Support</div>
-                </div>
-                <div class="app-container" data-section="raw-data">
-                    <div class="name">Raw Data Access</div>
-                </div>
-            </div>
-        </div>
-        <div class="widget" style="margin-left:187px;">
-        <div>
-            <div class="widget-header">
-                <div class="left">
-                    <div class="title">Game changer for data analytics</div>
-                </div>
-                <div style="float:right; min-width:260px; overflow:hidden; margin-top:6px;">
-                    <div style="float:right;" class="icon-button green help-zone-vs" data-help-localize="manage-apps.app-delete-button" id="delete-app">
-                        <div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
-                        <a href="mailto:hello@count.ly?subject=Countly Enterprise (OSS)"><div class="text" data-localize="">Contact Sales</div></a>
-                    </div>
-                </div>
-            </div>
-            <div class="widget-content">
-                <div class="enterprise-content drill" style="display:block;">
-                    <div class="image"></div>
-                    <div class="text">
-                        Drill enables performing advanced analysis/segmentation on your data by applying AND, OR and BY filters to your segmentation properties as well as user properties such as Device, App Version, Platform, Platform Version, Session Count, Session Duration, First Session, Last Session, Country, City and Carrier.<br/><br/>
-
-                        With Countly Drill, you can:
-
-                        <ul>
-                            <li>View data on a line, pie or bar chart, whichever makes more sense for the current data</li>
-                            <li>Change the time bucket displayed on the chart and table to hourly, daily, weekly or monthly</li>
-                            <li>View how many times your custom event occurred as well as how many users performed it and an average (times/users)</li>
-                        </ul>
-
-                        Drill is something every data analyst should have. Say goodbye to complex SQL queries!
-                    </div>
-                </div>
-                <div class="enterprise-content funnels">
-                    <div class="image"></div>
-                    <div class="text">
-                        Using funnels you can understand where you lose your users throughout conversion paths/goals inside your application. Funnel view shows you the number of users passing through each step as well as how many times that action is performed.<br/><br/>
-                        You can filter your funnel data using any metric including custom segments you send together with your events. This enables A/B testing and comparing conversion rates within different user groups.
-                    </div>
-                </div>
-                <div class="enterprise-content retention">
-                    <div class="image"></div>
-                    <div class="text">
-                        Every company wants its customers to use their application everyday and engage with it. If they find it valuable, then they'll go on with using it, what we call "Retention". Retention is simply condition of keeping your customers. Retention page shows you active days (e.g days your customer used your application) after first session. On the retention page, you'll see a breakdown of daily, weekly and monthly retention.<br/><br/>
-
-                        With retention page, you can consistently monitor how much impact does each application change affect your customer. This is one of the most important metrics for mobile app analytics and is available in Enterprise Edition.
-                    </div>
-                </div>
-                <div class="enterprise-content revenue">
-                    <div class="image"></div>
-                    <div class="text">
-                        Revenue analytics lets you track in app purchase metrics with ease. Below is some of the information you will be getting from revenue analytics;
-                        <ul>
-                            <li>Total revenue</li>
-                            <li>Avg. revenue per user</li>
-                            <li>Avg. revenue per paying user</li>
-                            <li>Paying user count</li>
-                            <li>Paying/total users</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="enterprise-content scalability">
-                    <div class="image"></div>
-                    <div class="text">
-                        Countly Enterprise Edition has a different architecture then Community Edition, where it can serve tens of billions of hits per month on a scalable infrastructure and is available for customers in need of a bigdata solution for mobile analytics.<br/><br/>
-
-                        To meet the sustained performance and scalability of ever increasing data and query, Countly Enterprise Edition has a sharding and replicaset mechanism designed to distribute overhead to several machines. You can deploy any number of servers and scale to your desired environment while preserving single pane of monitoring and reporting.
-                    </div>
-                </div>
-                <div class="enterprise-content support">
-                    <div class="image"></div>
-                    <div class="text">
-                        Countly Enterprise Edition comes with support and SLA agreement from the same team who build Countly from ground up. You can also get 2-day training on-site where you'll learn foundations of Countly, scaling Countly, reporting, dashboard customization and mobile device SDKs thoroughly.<br/><br/>
-
-                        A comprehensive support program for Countly Enterprise Edition includes orientation programs, technical support for IT, one-on-one expert sessions, online tutorials and more.
-                    </div>
-                </div>
-                <div class="enterprise-content raw-data">
-                    <div class="image"></div>
-                    <div class="text">
-                        It's important that you can access your Countly mobile analytics data when you want it, where you want it - whether is it to import it into another service or just create your own copy for your archives. Self-hosted Countly Enterprise Edition does exactly that: You own your database, you own your data - it's solely your property.<br/><br/>
-
-                        Countly Enterprise Edition also allows you download your stored data in CSV and XLS formats, allowing your data scientists to visualize information the way your company managers want. This saves time and energy, instead of spending time with trying to extract data using command line utilities.
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    </div>
-    </script>
 
     <div id="IntercomDefaultWidget" style="visibility: visible;"><span></span></div>
 
 	<script language="javascript" type="text/javascript" src="https://www.google.com/jsapi"></script>
-
-	<% if (production) { %>
+    <% if (production) { %>
     <!-- PRODUCTION -->
-    <script language="javascript" type="text/javascript" src="/javascripts/min/countly.dom.js?<%= countlyVersion %>"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/dom/tablesorter/jquery.tablesorter.min.js?<%= countlyVersion %>"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/min/countly.utils.js?<%= countlyVersion %>"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/countly/countly.config.js?<%= countlyVersion %>"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/min/countly.lib.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.config.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.lib.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.plugins.js?<%= countlyVersion %>"></script>
     <% } else { %>
     <!-- DEVELOPMENT -->
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/utils/underscore-min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/prefixfree.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/moment/moment.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/moment/moment.isocalendar.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/moment/lang-all.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/handlebars.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/backbone-min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/jstz.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/store+json2.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/utils/jquery.idle-timer.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery.form.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/tipsy/jquery.tipsy.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery.noisy.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/tablesorter/jquery.tablesorter.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery.sticky.headers.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jqueryui/jquery-ui-1.8.22.custom.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jqueryui/jquery-ui-i18n.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/slimScroll.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery.easing.1.3.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/dataTables/js/jquery.dataTables.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/dom/dataTables/js/ZeroClipboard.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/dom/dataTables/js/TableTools.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/jquery.peity.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/flot/jquery.flot.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/flot/jquery.flot.tickrotor.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/flot/jquery.flot.pie.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/flot/jquery.flot.resize.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/flot/jquery.flot.stack.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/gauge.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/d3/d3.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/d3/d3.layout.min.js"></script>
-    <script language="javascript" type="text/javascript" src="/javascripts/visualization/rickshaw/rickshaw.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.common.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.config.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.event.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.session.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.city.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.location.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.user.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.device.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.device.detail.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.app.version.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.carrier.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.allapps.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/countly/countly.template.js"></script>
-    <% } %>
-    <% if (member.in_user_id && member.in_user_hash) { %>
-    <!---->
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/textcounter.min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/jquery.peity.min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.tickrotor.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.pie.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.resize.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.stack.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/gauge.min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/d3/d3.min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/d3/d3.layout.min.js"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.js"></script>
+	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.common.js?<%= countlyVersion %>"></script>
+	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.config.js?<%= countlyVersion %>"></script>
+	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.event.js?<%= countlyVersion %>"></script>
+	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.session.js?<%= countlyVersion %>"></script>
+	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.city.js?<%= countlyVersion %>"></script>
+	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.location.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.map.helper.js?<%= countlyVersion %>"></script>
+	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.user.js?<%= countlyVersion %>"></script>
+	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.device.js?<%= countlyVersion %>"></script>
+	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.device.detail.js?<%= countlyVersion %>"></script>
+	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.version.js?<%= countlyVersion %>"></script>
+	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.carrier.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.allapps.js?<%= countlyVersion %>"></script>
+	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.template.js?<%= countlyVersion %>"></script>
+		<% if (plugins) { %>
+			<% for(var i=0, l=plugins.length; i<l; i++) {%>
+	<script language="javascript" type="text/javascript" src="<%- cdn %><%= plugins[i] %>/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+	<script language="javascript" type="text/javascript" src="<%- cdn %><%= plugins[i] %>/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+			<% } %>
+		<% } %>
+	<% } %>
+	<script>
+	Backbone.history.start();
+	</script>
+
+    <% if(intercom && member['global_admin']) { %>
     <script id="IntercomSettingsScriptTag">
         var intercomSettings = {
             app_id: 'pt60eheo',
@@ -1161,6 +1096,7 @@
                 activator: '#IntercomDefaultWidget'
             },
             email: "<%= member.email %>",
+            created_at: parseInt("<%= member.created_at %>") || 1349863810,
             name: "<%= member.full_name %>",
             user_id: "<%= member.in_user_id %>",
             user_hash: "<%= member.in_user_hash %>"
@@ -1184,7 +1120,7 @@
             }
         })();
     </script>
-    <!---->
     <% } %>
+    <!---->
 </body>
 </html>

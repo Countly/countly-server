@@ -14,7 +14,9 @@ module.exports = function(grunt) {
 			node:true,
 			"-W041": true,
 			"-W038": true,
-			"-W082": true
+			"-W082": true,
+			"-W058": true,
+			"-W030": true
 		},
 		all: ['Gruntfile.js', 'api/api.js', 'api/lib/*.js', 'api/parts/**/*.js', 'api/utils/common.js', 'frontend/express/app.js']
     },
@@ -23,7 +25,7 @@ module.exports = function(grunt) {
       test: {
         options: {
           reporter: 'spec',
-		  timeout: 5000
+		  timeout: 10000
         },
         src: ['test/**/*.js']
       }
