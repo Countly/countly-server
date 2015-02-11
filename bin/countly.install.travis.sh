@@ -73,10 +73,10 @@ apt-get -y install build-essential || (echo "Failed to install build-essential."
 #apt-get install iptables-persistent
 
 #install api modules
-( cd $DIR/../api ; npm install --unsafe-perm )
+#( cd $DIR/../api ; npm install )
 
 #install frontend modules
-( cd $DIR/../frontend/express ; npm install --unsafe-perm )
+#( cd $DIR/../frontend/express ; npm install )
 
 #configure and start nginx
 cp /etc/nginx/sites-enabled/default $DIR/config/nginx.default.backup

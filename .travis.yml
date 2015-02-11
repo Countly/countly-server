@@ -4,4 +4,7 @@ node_js:
 services:
   - mongodb
 before_install: sudo bash ./bin/countly.install.travis.sh
-install: sudo npm install
+install: 
+  - ( cd $DIR/../api ; npm install )
+  - ( cd $DIR/../frontend/express ; npm install )
+  - sudo npm install
