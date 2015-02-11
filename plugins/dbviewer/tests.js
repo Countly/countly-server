@@ -27,7 +27,6 @@ describe('Testing DBViewer', function(){
 				ob[0].should.have.property("collections").containEql("app_users"+APP_ID);
 				ob[0].should.have.property("collections").containEql("apps");
 				ob[0].should.have.property("collections").containEql("carriers");
-				ob[0].should.have.property("collections").containEql("cities");
 				ob[0].should.have.property("collections").containEql("device_details");
 				ob[0].should.have.property("collections").containEql("devices");
 				ob[0].should.have.property("collections").containEql("events");
