@@ -187,7 +187,7 @@ var testUtils = function testUtils(){
 				}
 			}
 		}
-		setTimeout(done, 5000)
+		setTimeout(done, 10000)
 	};
 	
 	this.validateDashboard = function(err, res, done, correct){
@@ -229,7 +229,7 @@ var testUtils = function testUtils(){
 			period.should.have.property("period");
 		}
 		
-		setTimeout(done, 5000);
+		setTimeout(done, 10000);
 	};
 	
 	this.validateCountries = function(err, res, done, correct){
@@ -252,7 +252,7 @@ var testUtils = function testUtils(){
 				ob[key][i].should.have.property("n", correct.n);
 			}
 		}
-		setTimeout(done, 5000)
+		setTimeout(done, 10000)
 	};
 	
 	this.validateMetrics = function(err, res, done, correct){
@@ -307,7 +307,7 @@ var testUtils = function testUtils(){
 				}
 			}
 		}
-		setTimeout(done, 5000);
+		setTimeout(done, 10000);
 	};
 	
 	this.validateEvents = function(err, res, done, correct, refresh){
@@ -363,7 +363,7 @@ var testUtils = function testUtils(){
 				}
 			}
 		}
-		setTimeout(done, 5000)
+		setTimeout(done, 10000)
 	};
 }
 
