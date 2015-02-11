@@ -25,7 +25,7 @@ describe('Writing app metrics', function(){
 					var ob = JSON.parse(res.text);
 					for(key in ob)
 						ob.should.have.property(key).and.eql({});
-					setTimeout(done, 100)
+					setTimeout(done, 1000)
 				});
 			});
 		});
@@ -39,7 +39,7 @@ describe('Writing app metrics', function(){
 					var ob = JSON.parse(res.text);
 					for(key in ob)
 						ob.should.have.property(key).and.eql({});
-					setTimeout(done, 100)
+					setTimeout(done, 1000)
 				});
 			});
 		});
@@ -53,7 +53,7 @@ describe('Writing app metrics', function(){
 					var ob = JSON.parse(res.text);
 					for(key in ob)
 						ob.should.have.property(key).and.eql({});
-					setTimeout(done, 100)
+					setTimeout(done, 1000)
 				});
 			});
 		});
@@ -67,7 +67,7 @@ describe('Writing app metrics', function(){
 					var ob = JSON.parse(res.text);
 					for(key in ob)
 						ob.should.have.property(key).and.eql({});
-					setTimeout(done, 100)
+					setTimeout(done, 1000)
 				});
 			});
 		});
@@ -83,7 +83,7 @@ describe('Writing app metrics', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result','Success');
-					setTimeout(done, 100)
+					setTimeout(done, 1000)
 				});
 			});
 		});
@@ -436,6 +436,7 @@ describe('Writing app metrics', function(){
 	describe('reset app', function(){
 		describe('reseting data', function(){
 			it('should reset data', function(done){
+				this.timeout(20000);
 				var params = {app_id:APP_ID};
 				request
 				.get('/i/apps/reset?api_key='+API_KEY_ADMIN+"&args="+JSON.stringify(params))
@@ -444,7 +445,7 @@ describe('Writing app metrics', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result', 'Success');
-					setTimeout(done, 5000)
+					setTimeout(done, 10000)
 				});
 			});
 		});

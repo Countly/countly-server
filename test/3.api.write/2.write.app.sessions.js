@@ -35,7 +35,7 @@ describe('Writing app sessions', function(){
 				.end(function(err, res){
 					if (err) return done(err);
 					res.text.should.eql("{}");
-					setTimeout(done, 100)
+					setTimeout(done, 1000)
 				});
 			});
 		});
@@ -48,7 +48,7 @@ describe('Writing app sessions', function(){
 				.end(function(err, res){
 					if (err) return done(err);
 					res.text.should.eql("{}");
-					setTimeout(done, 100)
+					setTimeout(done, 1000)
 				});
 			});
 		});
@@ -61,7 +61,7 @@ describe('Writing app sessions', function(){
 				.end(function(err, res){
 					if (err) return done(err);
 					res.text.should.eql("{}");
-					setTimeout(done, 100);
+					setTimeout(done, 1000);
 				});
 			});
 		});
@@ -137,7 +137,7 @@ describe('Writing app sessions', function(){
 					ob.should.have.property('30days', []);
 					ob.should.have.property('7days', []);
 					ob.should.have.property('today', []);
-					setTimeout(done, 100)
+					setTimeout(done, 1000)
 				});
 			});
 		});

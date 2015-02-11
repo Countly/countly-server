@@ -21,7 +21,7 @@ describe('Bulk writing', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result', 'Missing parameter "requests"');
-				setTimeout(done, 500)
+				setTimeout(done, 1000)
 			});
 		});
 	});
@@ -432,12 +432,13 @@ describe('Bulk writing', function(){
 					ob.should.have.property("list");
 					ob.list.should.eql(["test", "test1", "test2"]);
 					ob.should.have.property("segments", {"test1":["country","market","version"], "test2":["country","market"]});
-					setTimeout(done, 100)
+					setTimeout(done, 1000)
 				});
 			});
 		});
 		describe('reseting data', function(){
 			it('should reset data', function(done){
+				this.timeout(20000);
 				var params = {app_id:APP_ID};
 				request
 				.get('/i/apps/reset?api_key='+API_KEY_ADMIN+"&args="+JSON.stringify(params))
@@ -446,7 +447,7 @@ describe('Bulk writing', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result', 'Success');
-					setTimeout(done, 5000)
+					setTimeout(done, 10000)
 				});
 			});
 		});

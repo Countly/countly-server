@@ -189,7 +189,7 @@ describe('Checking if app data reset', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.eql({});
-				done()
+				setTimeout(done, 5000)
 			});
 		});
 	});
