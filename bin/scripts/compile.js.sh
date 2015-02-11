@@ -56,6 +56,7 @@ java -jar $DIR/closure-compiler.jar \
 --js=$DIR/../../frontend/express/public/javascripts/countly/countly.city.js \
 --js=$DIR/../../frontend/express/public/javascripts/countly/countly.location.js \
 --js=$DIR/../../frontend/express/public/javascripts/countly/countly.user.js \
+--js=$DIR/../../frontend/express/public/javascripts/countly/countly.device.list.js \
 --js=$DIR/../../frontend/express/public/javascripts/countly/countly.device.js \
 --js=$DIR/../../frontend/express/public/javascripts/countly/countly.device.detail.js \
 --js=$DIR/../../frontend/express/public/javascripts/countly/countly.app.version.js \

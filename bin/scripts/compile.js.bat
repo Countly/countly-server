@@ -53,6 +53,7 @@ java -jar closure-compiler.jar ^
 --js=../frontend/express/public/javascripts/countly/countly.city.js ^
 --js=../frontend/express/public/javascripts/countly/countly.location.js ^
 --js=../frontend/express/public/javascripts/countly/countly.user.js ^
+--js=../frontend/express/public/javascripts/countly/countly.device.list.js ^
 --js=../frontend/express/public/javascripts/countly/countly.device.js ^
 --js=../frontend/express/public/javascripts/countly/countly.device.detail.js ^
 --js=../frontend/express/public/javascripts/countly/countly.app.version.js ^
