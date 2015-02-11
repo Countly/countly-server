@@ -23,4 +23,26 @@ describe('Outputing logs', function(){
 			});
 		});
 	});
+	describe('system messages log', function(){
+		it('should output', function(done){
+			fs.readFile('/var/log/messages', 'utf8', function (err,data) {
+				if (err) {
+					console.log(err);
+				}
+				console.log(data);
+				done();
+			});
+		});
+	});
+	describe('system syslog log', function(){
+		it('should output', function(done){
+			fs.readFile('/var/log/syslog', 'utf8', function (err,data) {
+				if (err) {
+					console.log(err);
+				}
+				console.log(data);
+				done();
+			});
+		});
+	});
 });
