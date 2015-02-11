@@ -68,7 +68,7 @@ var pluginManager = function pluginManager(){
 			var dir = path.resolve(__dirname, '');
 			var child = cp.fork(dir+"/"+plugin+"/install.js");
 			child.on('error', function(err){
-				console.log(plugins + " install errored: " + err);
+				console.log(plugin + " install errored: " + err);
 				var cmd = "cd "+dir+"/"+plugin+"; npm install";
 				var child = exec(cmd, function (error, stdout, stderr) {
 					if(stdout)
@@ -86,7 +86,7 @@ var pluginManager = function pluginManager(){
 				});
 			}); 
 			child.on('exit', function(code){
-				console.log(plugins + " installed with code " + code);
+				console.log(plugin + " installed with code " + code);
 				var cmd = "cd "+dir+"/"+plugin+"; npm install";
 				var child = exec(cmd, function (error, stdout, stderr) {
 					if(stdout)
@@ -117,12 +117,12 @@ var pluginManager = function pluginManager(){
 			var dir = path.resolve(__dirname, '');
 			var child = cp.fork(dir+"/"+plugin+"/uninstall.js");
 			child.on('error', function(err){
-				console.log(plugins + " uninstall errored: " + err);
+				console.log(plugin + " uninstall errored: " + err);
 				if(callback)
 					callback(ret);
 			}); 
 			child.on('exit', function(code){
-				console.log(plugins + " uninstalled with code " + code);
+				console.log(plugin + " uninstalled with code " + code);
 				if(callback)
 					callback(ret);
 			}); 
