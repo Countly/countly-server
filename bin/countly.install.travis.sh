@@ -106,4 +106,4 @@ apt-get -y install default-jre
 bash $DIR/scripts/compile.js.sh
 
 #install plugins
-#bash $DIR/scripts/countly.install.plugins.sh
+bash $DIR/scripts/countly.install.plugins.sh
