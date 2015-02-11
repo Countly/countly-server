@@ -32,11 +32,11 @@ fi
 
 #add node.js repo
 #echo | apt-add-repository ppa:chris-lea/node.js
-wget -qO- https://deb.nodesource.com/setup | bash -
+#wget -qO- https://deb.nodesource.com/setup | bash -
 
 #add mongodb repo
-echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" > /etc/apt/sources.list.d/mongodb-10gen-countly.list
-apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
+#echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" > /etc/apt/sources.list.d/mongodb-10gen-countly.list
+#apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
 
 #update once more after adding new repos
 apt-get update
@@ -45,10 +45,10 @@ apt-get update
 apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 
 #install node.js
-apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
+#apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
 
 #install mongodb
-apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
+#apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
 
 #install supervisor
 apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
@@ -66,8 +66,8 @@ apt-get -y install build-essential || (echo "Failed to install build-essential."
 
 #drop packages coming from 0/0 going through mongodb port
 #allow those coming from localhost
-iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s localhost -j ACCEPT
-iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s 0/0 -j DROP
+#iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s localhost -j ACCEPT
+#iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s 0/0 -j DROP
 
 #install iptables-persistent
 #apt-get install iptables-persistent
