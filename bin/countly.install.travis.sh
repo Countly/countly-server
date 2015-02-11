@@ -32,7 +32,7 @@ fi
 
 #add node.js repo
 #echo | apt-add-repository ppa:chris-lea/node.js
-#wget -qO- https://deb.nodesource.com/setup | bash -
+wget -qO- https://deb.nodesource.com/setup | bash -
 
 #add mongodb repo
 #echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" > /etc/apt/sources.list.d/mongodb-10gen-countly.list
@@ -45,7 +45,7 @@ apt-get update
 apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 
 #install node.js
-#apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
+apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
 
 #install mongodb
 #apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
@@ -73,10 +73,10 @@ apt-get -y install build-essential || (echo "Failed to install build-essential."
 #apt-get install iptables-persistent
 
 #install api modules
-#( cd $DIR/../api ; npm install )
+( cd $DIR/../api ; npm install )
 
 #install frontend modules
-#( cd $DIR/../frontend/express ; npm install )
+( cd $DIR/../frontend/express ; npm install )
 
 #configure and start nginx
 cp /etc/nginx/sites-enabled/default $DIR/config/nginx.default.backup
