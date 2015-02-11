@@ -2,7 +2,9 @@ var plugins = require('./plugins.json'),
 	countlyConfig = require('../frontend/express/config'),
 	path = require("path"),
 	sys = require('sys'),
-	exec = require('child_process').exec;
+	npm = require("npm"),
+	cp = require('child_process'),
+	exec = cp.exec;
 	
 var pluginManager = function pluginManager(){
 	var events = {};
@@ -65,18 +67,9 @@ var pluginManager = function pluginManager(){
 		var ret = "";
 		try{
 			var dir = path.resolve(__dirname, '');
-			var child = exec("node "+dir+"/"+plugin+"/install.js", function (error, stdout, stderr) {
-				if(stdout)
-					ret += stdout+"\n";
-					//console.log('stdout: ' + stdout);
-				if(stderr)
-					ret += stderr+"\n";
-					//console.log('stderr: ' + stderr);
-				if (error)
-					ret += error+"\n";					
-					//console.log('exec error: ' + error);
-				
-				// install dependencies
+			var child = cp.fork(dir+"/"+plugin+"/install.js");
+			child.on('error', function(err){
+				console.log(plugins + " install errored: " + err);
 				var cmd = "cd "+dir+"/"+plugin+"; npm install";
 				var child = exec(cmd, function (error, stdout, stderr) {
 					if(stdout)
@@ -92,7 +85,25 @@ var pluginManager = function pluginManager(){
 					if(callback)
 						callback(ret);
 				});
-			});
+			}); 
+			child.on('exit', function(code){
+				console.log(plugins + " installed with code " + code);
+				var cmd = "cd "+dir+"/"+plugin+"; npm install";
+				var child = exec(cmd, function (error, stdout, stderr) {
+					if(stdout)
+						ret += stdout+"\n";
+						//console.log('stdout: ' + stdout);
+					if(stderr)
+						ret += stderr+"\n";
+						//console.log('stderr: ' + stderr);
+					if (error)
+						ret += error+"\n";					
+						//console.log('exec error: ' + error);
+					
+					if(callback)
+						callback(ret);
+				});
+			}); 
 		}
 		catch(ex){
 			console.log(ex);
@@ -105,19 +116,17 @@ var pluginManager = function pluginManager(){
 		var ret = "";
 		try{
 			var dir = path.resolve(__dirname, '');
-			var child = exec("node "+dir+"/"+plugin+"/uninstall.js", function (error, stdout, stderr) {
-				if(stdout)
-					ret += stdout+"\n";
-					//console.log('stdout: ' + stdout);
-				if(stderr)
-					ret += stderr+"\n";
-					//console.log('stderr: ' + stderr);
-				if (error)
-					ret += error+"\n";					
-					//console.log('exec error: ' + error);
+			var child = cp.fork(dir+"/"+plugin+"/uninstall.js");
+			child.on('error', function(err){
+				console.log(plugins + " uninstall errored: " + err);
 				if(callback)
 					callback(ret);
-			});
+			}); 
+			child.on('exit', function(code){
+				console.log(plugins + " uninstalled with code " + code);
+				if(callback)
+					callback(ret);
+			}); 
 		}
 		catch(ex){
 			console.log(ex);
