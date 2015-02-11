@@ -7,4 +7,3 @@ before_install:
   - ( cd api ; npm install )
   - ( cd frontend/express ; npm install )
   - sudo bash ./bin/countly.install.travis.sh
-install: sudo npm install
