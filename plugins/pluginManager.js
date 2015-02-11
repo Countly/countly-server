@@ -2,7 +2,6 @@ var plugins = require('./plugins.json'),
 	countlyConfig = require('../frontend/express/config'),
 	path = require("path"),
 	sys = require('sys'),
-	npm = require("npm"),
 	cp = require('child_process'),
 	exec = cp.exec;
 	
