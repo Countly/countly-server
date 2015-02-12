@@ -55,6 +55,7 @@ var plugin = {},
 	plugins.register("/o/plugins", function(ob){
 		var params = ob.params;
 		var pluginList = plugins.getPlugins();
+		var ignore = {"empty":true};
 		var walk = function(dir, done) {
 			var results = [];
 			fs.readdir(dir, function(err, list) {
@@ -62,36 +63,40 @@ var plugin = {},
 				var pending = list.length;
 				if (!pending) return done(null, results);
 				list.forEach(function(file) {
-					var fullpath = dir + '/' + file;
-					fs.stat(fullpath, function(err, stat) {
-						if (stat && stat.isDirectory()) {
-							var data
-							try{
-								data = require(fullpath+'/package.json');
-							} catch(ex){}
-							var ob = {};
-							if (data){
-								ob.title = data.title || file;
-								ob.name = data.name || file;
-								ob.description = data.description || file;
-								ob.version = data.version || "unknown";
-								ob.author = data.author || "unknown";
-								ob.homepage = data.homepage || "";
+					if(!ignore[file]){
+						var fullpath = dir + '/' + file;
+						fs.stat(fullpath, function(err, stat) {
+							if (stat && stat.isDirectory()) {
+								var data
+								try{
+									data = require(fullpath+'/package.json');
+								} catch(ex){}
+								var ob = {};
+								if (data){
+									ob.title = data.title || file;
+									ob.name = data.name || file;
+									ob.description = data.description || file;
+									ob.version = data.version || "unknown";
+									ob.author = data.author || "unknown";
+									ob.homepage = data.homepage || "";
+								}
+								else
+									ob = {name:file, title:file, description:file, version:"unknown", author:"unknown", homepage:""};
+								if(pluginList.indexOf(file) > -1)
+									ob.enabled = true;
+								else
+									ob.enabled = false;
+								ob.code = file;
+								results.push(ob);
+								if (!--pending) done(null, results);
 							}
-							else
-								ob = {name:file, title:file, description:file, version:"unknown", author:"unknown", homepage:""};
-							if(pluginList.indexOf(file) > -1)
-								ob.enabled = true;
-							else
-								ob.enabled = false;
-							ob.code = file;
-							results.push(ob);
-							if (!--pending) done(null, results);
-						}
-						else{
-							if (!--pending) done(null, results);
-						}
-					});
+							else{
+								if (!--pending) done(null, results);
+							}
+						});
+					}
+					else
+						if (!--pending) done(null, results);
 				});
 			});
 		};
