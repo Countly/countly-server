@@ -507,6 +507,9 @@ if (cluster.isMaster) {
 					case 'metric':
                         validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMetric);
                         break;
+					case 'tops':
+                        validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTops);
+                        break;
                     default:
 						if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths}))
 							common.returnMessage(params, 400, 'Invalid path, must be one of /dashboard or /countries');

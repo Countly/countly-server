@@ -225,6 +225,29 @@ var fetch = {},
             });
         });
     };
+	
+	fetch.fetchTops = function(params) {
+        fetchTimeObj('users', params, false, function(usersDoc) {
+            fetchTimeObj('device_details', params, false, function(deviceDetailsDoc) {
+                fetchTimeObj('carriers', params, false, function(carriersDoc) {
+                    countlyCommon.setTimezone(params.appTimezone);
+                    countlySession.setDb(usersDoc || {});
+                    countlyDeviceDetails.setDb(deviceDetailsDoc || {});
+                    countlyCarrier.setDb(carriersDoc || {});
+					countlyLocation.setDb(usersDoc || {});
+
+                    var output = {
+						platforms: countlyDeviceDetails.getPlatformBars(),
+						resolutions: countlyDeviceDetails.getResolutionBars(),
+						carriers: countlyCarrier.getCarrierBars(),
+						countries: countlyLocation.getLocationBars()
+                    };
+
+                    common.returnOutput(params, output);
+                });
+            });
+        });
+    };
 
     fetch.fetchCountries = function(params) {
         params.qstring.period = "30days";
@@ -575,6 +598,7 @@ var fetch = {},
             try {
                 params.qstring.period = JSON.parse(params.qstring.period);
             } catch (SyntaxError) {
+				console.log('Parse period JSON failed');
                 return false;
             }
         }
