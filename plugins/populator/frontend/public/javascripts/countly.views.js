@@ -65,7 +65,7 @@ $( document ).ready(function() {
 	document.getElementsByTagName("head")[0].appendChild(fileref);
 
 	var menu = '<a href="#/manage/populate" class="item">'+
-		'<div class="logo applications"></div>'+
+		'<div class="logo-icon icon-random"></div>'+
 		'<div class="text" data-localize="populator.title"></div>'+
 	'</a>';
 	if($('#management-submenu .help-toggle').length)

@@ -119,7 +119,7 @@ app.addPageScript("/manage/logger", function(){
 
 $( document ).ready(function() {
 	var menu = '<a href="#/manage/logger" class="item">'+
-		'<div class="logo applications"></div>'+
+		'<div class="logo-icon icon-screenshot"></div>'+
 		'<div class="text" data-localize="logger.title"></div>'+
 	'</a>';
 	if($('#management-submenu .help-toggle').length)

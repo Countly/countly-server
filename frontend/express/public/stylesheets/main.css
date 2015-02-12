@@ -62,6 +62,7 @@ a:active { color:inherit; }
 		#sidebar-menu .sidebar-submenu .item:hover { opacity:0.6; }
 		#sidebar-menu .sidebar-submenu .item.active:hover { opacity:1; }
 		#sidebar-menu .sidebar-submenu .item:last-child { background-image:none; }
+			#sidebar-menu .sidebar-submenu .item .logo-icon { color:#888; width:30px; height:30px; float:left; margin-left:8px; margin-top:8px; text-align:center;}
 			#sidebar-menu .sidebar-submenu .item .logo { background-image:url('../images/dashboard/analytics_icons.png'); color:#888; width:30px; height:30px; float:left; margin-left:8px; margin-top:1px; }
 	                #sidebar-menu .sidebar-submenu .item.active .logo { color:#4DB339; }
 
