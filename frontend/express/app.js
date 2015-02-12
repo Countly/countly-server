@@ -125,6 +125,17 @@ app.get(countlyConfig.path+'/', function (req, res, next) {
     res.redirect(countlyConfig.path+'/login');
 });
 
+//serve app images
+app.get(countlyConfig.path+'/appimages/*', function(req, res) {
+	fs.exists(__dirname + '/public' + req.url, function(exists) {
+		if (exists) {
+			res.sendfile(__dirname + '/public' + req.url);
+		} else {
+			res.sendfile(__dirname + '/public/images/default_app_icon.png');
+		}
+	});
+});
+
 app.get(countlyConfig.path+'/logout', function (req, res, next) {
     if (req.session) {
         req.session.uid = null;
