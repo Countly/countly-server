@@ -88,8 +88,6 @@ a:active { color:inherit; }
 		                #sidebar-menu .sidebar-submenu .item.active .logo.durations { background-position:-600px; }
                 		#sidebar-menu .sidebar-submenu .item .logo.resolutions { background-position:-690px; }
 		                #sidebar-menu .sidebar-submenu .item.active .logo.resolutions { background-position:-660px; }
-				#sidebar-menu .sidebar-submenu .item .logo.languages { background-position:-810px; } 
-				#sidebar-menu .sidebar-submenu .item.active .logo.languages { background-position:-780px; }
 				#sidebar-menu .sidebar-submenu .item .text { margin-left:17px; float:left; padding-top:8px; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#666; text-shadow:none; }
 				#sidebar-menu .sidebar-submenu .item.active .text { color:#4DB351; }
 				#sidebar-menu .sidebar-submenu .item.help-toggle.active { color:#666; }
@@ -128,7 +126,6 @@ a:active { color:inherit; }
 				.widget-header .logo.sessions { background-position:-38px; }
 				.widget-header .logo.frequency { background-position:-76px; }
 				.widget-header .logo.countries { background-position:-114px; }
-				.widget-header .logo.languages { background-position:-494px; } 
 				.widget-header .logo.devices { background-position:-152px; }
 				.widget-header .logo.carriers { background-position:-190px; }
 				.widget-header .logo.loyalty { background-position:-228px; }

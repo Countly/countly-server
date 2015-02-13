@@ -1,16 +1,9 @@
 var plugin = {},
 	countlyConfig = require('../../../frontend/express/config'),
-	langs = require('../api/utils/langs.js'),
 	stringJS = require('../../../frontend/express/node_modules/string');
 
 (function (plugin) {
 	plugin.init = function(app, countlyDb){
-		app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
-			res.expose({
-				languages: langs.languages
-            }, 'countlyGlobalLang');
-			next();
-		});
 		app.post(countlyConfig.path+'/apps/certificate', function (req, res, next) {
 			if (!req.files.apns_cert) {
 				res.end();

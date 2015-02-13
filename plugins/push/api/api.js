@@ -1,7 +1,6 @@
 var plugin = {},
 	pushly = require('pushly')(),
 	push = require('./parts/pushly/endpoints.js'),
-	langs = require('./utils/langs.js'),
 	scheduler = require('./parts/pushly/scheduler.js'),
 	common = require('../../../api/utils/common.js'),
 	fetch = require('../../../api/parts/data/fetch.js'),
@@ -21,33 +20,9 @@ var plugin = {},
         common.dbUserMap['gcm_0'] = 'ap';                      // production
         common.dbUserMap['gcm_test'] = 'at';                   // testing
         common.dbUserMap['gcm_2'] = 'at';                      // testing
-		common.dbUserMap['locale'] = 'lo';                     // full ISO locale from device
-        common.dbUserMap['lang'] = 'la';                       // language extracted from locale
 	});
 	plugins.register("/worker", function(ob){
 		scheduler();
-	});
-	plugins.register("/session/metrics", function(ob){
-		var predefinedMetrics = ob.predefinedMetrics;
-		var userProps = ob.userProps;
-		var params = ob.params;
-		var user = ob.user;
-		var isNewUser = ob.isNewUser;
-		if (params.qstring.metrics && params.qstring.metrics._locale) {
-            var locale = params.qstring.metrics._locale, lang = langs.languageFromLocale(locale);
-            params.qstring.metrics._lang = lang;
-
-            if (isNewUser || user[common.dbUserMap['locale']] != locale) {
-                userProps[common.dbUserMap['locale']] = locale;
-            }
-        }
-		predefinedMetrics.push( {
-            db: "langs",
-            metrics: [
-                { name: "_lang", set: "langs", short_code: common.dbUserMap['lang'] }
-            ]
-        })
-		
 	});
 	//write api call
 	plugins.register("/i", function(ob){
@@ -131,16 +106,6 @@ var plugin = {},
 
        validateUserForWriteAPI(push.getAllMessages, params);
 	   return true;
-	});
-	
-	plugins.register("/o", function(ob){
-		var params = ob.params;
-		var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
-		if (params.qstring.method == "langs") {
-			validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'users');
-			return true;
-		}
-		return false;
 	});
 	
 	plugins.register("/session/user", function(ob){
