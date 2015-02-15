@@ -67,7 +67,7 @@ iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s localh
 iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s 0/0 -j DROP
 
 #install iptables-persistent
-apt-get install iptables-persistent
+apt-get -y install iptables-persistent
 
 #install api modules
 ( cd $DIR/../api ; npm install --unsafe-perm )
