@@ -35,10 +35,26 @@ window.PopulatorView = countlyView.extend({
 			$("#start-populate").show();
 		});
 		
-		$( "#populate-from" ).val(moment(fromDate).format("YYYY-MM-DD"));
-		$( "#populate-to" ).val(moment(toDate).format("YYYY-MM-DD"));
-		$( "#populate-from" ).datepicker({dateFormat: "yy-mm-dd", defaultDate:-30, constrainInput:true, maxDate: now });
-		$( "#populate-to" ).datepicker({dateFormat: "yy-mm-dd", constrainInput:true, maxDate: now });
+		$("#populate-explain").on('click', function() {
+			CountlyHelpers.alert(jQuery.i18n.map["populator.help"], "green");
+		});
+		
+		if(countlyPopulator.isGenerating()){
+			$("#start-populate").hide();
+			$("#stop-populate").show();
+			countlyPopulator.generateUI();
+			$( "#populate-users" ).val(countlyPopulator.getUserAmount());
+			$( "#populate-from" ).val(moment(countlyPopulator.getStartTime()*1000).format("YYYY-MM-DD"));
+			$( "#populate-to" ).val(moment(countlyPopulator.getEndTime()*1000).format("YYYY-MM-DD"));
+			$( "#populate-from" ).datepicker({dateFormat: "yy-mm-dd", defaultDate:new Date(countlyPopulator.getStartTime()*1000), constrainInput:true, maxDate: now });
+			$( "#populate-to" ).datepicker({dateFormat: "yy-mm-dd", defaultDate:new Date(countlyPopulator.getEndTime()*1000), constrainInput:true, maxDate: now });
+		}
+		else{
+			$( "#populate-from" ).val(moment(fromDate).format("YYYY-MM-DD"));
+			$( "#populate-to" ).val(moment(toDate).format("YYYY-MM-DD"));
+			$( "#populate-from" ).datepicker({dateFormat: "yy-mm-dd", defaultDate:-30, constrainInput:true, maxDate: now });
+			$( "#populate-to" ).datepicker({dateFormat: "yy-mm-dd", constrainInput:true, maxDate: now });
+		}
 		app.localize();
     },
     refresh:function () {}

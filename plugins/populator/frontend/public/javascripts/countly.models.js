@@ -214,6 +214,7 @@
 	var bucket = 50;
 	var generating = false;
 	var users = [];
+	var userAmount = 1000;
 	var queued = 0;
 	var stats = {u:0,s:0,x:0,d:0,e:0,r:0};
 	var totalStats = {u:0,s:0,x:0,d:0,e:0,r:0};
@@ -229,11 +230,28 @@
 	countlyPopulator.setStartTime = function(time){
 		startTs = time;
 	};
+	countlyPopulator.getStartTime = function(time){
+		return startTs;
+	};
 	countlyPopulator.setEndTime = function(time){
 		endTs = time;
 	};
+	countlyPopulator.getEndTime = function(time){
+		return endTs;
+	};
+	countlyPopulator.getUserAmount = function(time){
+		return userAmount;
+	};
+	countlyPopulator.generateUI = function(time){
+		for(var i in totalStats){
+			$("#populate-stats-"+i).text(totalStats[i]);
+		}
+	};
 	countlyPopulator.generateUsers = function (amount) {
+		userAmount = amount;
 		bulk = [];
+		stats = {u:0,s:0,x:0,d:0,e:0,r:0};
+		totalStats = {u:0,s:0,x:0,d:0,e:0,r:0};
 		bucket = Math.max(amount/5, 10);
 		var mult = (Math.round(queued/10)+1);
 		timeout = bucket*100*mult*mult;
@@ -278,6 +296,10 @@
 		}
 		users = [];
 	};
+	
+	countlyPopulator.isGenerating = function(){
+		return generating;
+	}
     
     countlyPopulator.sync = function (force) {
 		if(generating && (force || bulk.length > bucket)){
