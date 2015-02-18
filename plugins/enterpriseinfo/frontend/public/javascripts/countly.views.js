@@ -14,6 +14,7 @@ window.EnterpriseView = countlyView.extend({
             "funnels":"Track completion rates step by step",
             "retention":"See how engaging your application is",
             "revenue":"Calculate your customer's lifetime value",
+            "user-profiles":"Understand what users have been doing in your application",
             "scalability": "Tens of millions of users? No problem",
             "support":"Enterprise support and SLA",
             "raw-data": "Your data, your rules"
