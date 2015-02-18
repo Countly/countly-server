@@ -296,7 +296,7 @@ var fetch = {},
 					return obj;
 				};
 				if (doc['meta'] && doc['meta'][params.qstring.metric]) {
-					var data = countlyCommon.extractMetricData(doc, doc['meta'][params.qstring.metric], clearMetricObject, [
+					var data = countlyCommon.extractMetric(doc, doc['meta'][params.qstring.metric], clearMetricObject, [
 						{
 							name:params.qstring.metric,
 							func:function (rangeArr, dataObj) {
@@ -304,8 +304,8 @@ var fetch = {},
 							}
 						},
 						{ "name":"t" },
-						{ "name":"u" },
-						{ "name":"n" }
+						{ "name":"n" },
+						{ "name":"u" }
 					]);
 					common.returnOutput(params, data);
 				}
@@ -319,11 +319,15 @@ var fetch = {},
 		else{
 			switch (params.qstring.metric) {
                 case 'locations':
+                case 'countries':
                 case 'sessions':
                 case 'users':
 					getMetric('users');
                     break;
                 case 'app_versions':
+                case 'os':
+                case 'os_versions':
+                case 'resolutions':
                 case 'device_details':
 					getMetric('device_details');
                     break;

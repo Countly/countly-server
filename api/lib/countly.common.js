@@ -581,10 +581,13 @@ var countlyCommon = {},
         return underscore.compact(tableData);
     };
 	
-	countlyCommon.extractMetricData = function (db, rangeArray, clearFunction, dataProperties) {
+	countlyCommon.extractMetric = function (db, rangeArray, clearFunction, dataProperties) {
 
         countlyCommon.periodObj = getPeriodObj();
 
+        if (!rangeArray) {
+            return tableData;
+        }
         var periodMin = 0,
             periodMax = 0,
             dataObj = {},
@@ -622,15 +625,17 @@ var countlyCommon = {},
 
                     if (propertyFunctions[k]) {
                         propertyValue = propertyFunctions[k](rangeArray[j], dataObj);
-						tmpPropertyObj["_id"] = propertyValue;
                     } else {
                         propertyValue = dataObj[propertyNames[k]];
-						tmpPropertyObj[propertyNames[k]] = propertyValue;
                     }
 
                     if (typeof propertyValue !== 'string') {
                         propertySum += propertyValue;
                     }
+					if (propertyFunctions[k])
+						tmpPropertyObj["_id"] = propertyValue;
+					else
+						tmpPropertyObj[propertyNames[k]] = propertyValue;
                 }
 
                 if (propertySum > 0) {
@@ -645,8 +650,7 @@ var countlyCommon = {},
 
                 var propertySum = 0,
                     tmpPropertyObj = {},
-                    tmp_x = {},
-					propertyKey = "";
+                    tmp_x = {};
 
                 for (var i = periodMin; i < periodMax; i++) {
                     dataObj = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.currentPeriodArr[i] + "." + rangeArray[j]);
@@ -663,22 +667,25 @@ var countlyCommon = {},
                             propertyValue = 0;
                         } else if (propertyFunctions[k]) {
                             propertyValue = propertyFunctions[k](rangeArray[j], dataObj);
-							propertyKey = "_id";
                         } else {
                             propertyValue = dataObj[propertyNames[k]];
-							propertyKey = propertyNames[k];
                         }
-
-                        if (!tmpPropertyObj[propertyKey]) {
-                            tmpPropertyObj[propertyKey] = 0;
-                        }
-
-                        if (typeof propertyValue === 'string') {
-                            tmpPropertyObj[propertyKey] = propertyValue;
-                        } else {
-                            propertySum += propertyValue;
-                            tmpPropertyObj[propertyKey] += propertyValue;
-                        }
+						
+						if (propertyFunctions[k])
+							tmpPropertyObj["_id"] = propertyValue;
+						else
+						{
+							if (!tmpPropertyObj[propertyNames[k]]) {
+								tmpPropertyObj[propertyNames[k]] = 0;
+							}
+	
+							if (typeof propertyValue === 'string') {
+								tmpPropertyObj[propertyNames[k]] = propertyValue;
+							} else {
+								propertySum += propertyValue;
+								tmpPropertyObj[propertyNames[k]] += propertyValue;
+							}
+						}
                     }
                 }
 
