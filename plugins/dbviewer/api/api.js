@@ -83,7 +83,7 @@ var plugin = {},
 		var coll_parts = full_name.split('.');
 		
 		if (coll_parts.length <= 1) {
-			console.error('Cannot parse collection name!');
+			return { name: coll_parts.join('.'), database: "countly" };
 		}
 		
 		var database = coll_parts.splice(0,1);
