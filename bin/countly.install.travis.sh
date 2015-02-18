@@ -98,6 +98,10 @@ cp $DIR/../api/config.sample.js $DIR/../api/config.js
 #create app configuration file from sample
 cp $DIR/../frontend/express/config.sample.js $DIR/../frontend/express/config.js
 
+if [ ! -f $DIR/../plugins/plugins.json ]; then
+	cp $DIR/../plugins/plugins.ce.json $DIR/../plugins/plugins.json
+fi
+
 #finally start countly api and dashboard
 start countly-supervisor
 
