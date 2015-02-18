@@ -102,5 +102,9 @@ start countly-supervisor
 apt-get -y install default-jre
 bash $DIR/scripts/compile.js.sh
 
+if [ ! -f $DIR/../plugins/plugins.json ]; then
+	cp $DIR/../plugins/plugins.ce.json $DIR/../plugins/plugins.json
+fi
+
 #install plugins
 bash $DIR/scripts/countly.install.plugins.sh
