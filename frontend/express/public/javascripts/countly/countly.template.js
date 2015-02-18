@@ -3113,10 +3113,6 @@ var AppRouter = Backbone.Router.extend({
                 var elNext = $(this).next(),
                     isElActive = $(this).hasClass("active");
 
-                if (isElActive) {
-                    $(".sidebar-submenu").not(elNext).slideUp();
-                }
-
                 if (elNext.hasClass("sidebar-submenu") && !(isElActive)) {
                     elNext.slideToggle();
                 } else {
