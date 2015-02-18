@@ -1,10 +1,11 @@
-#dbviewer{ overflow: hidden; border-bottom-left-radius: 7px; border-bottom-right-radius: 7px;}
+#dbviewer{ overflow: hidden; border-bottom-left-radius: 7px; border-bottom-right-radius: 7px; font-family:Ubuntu,Helvetica,sans-serif;}
 #dbviewer .clear {clear: both;}
 #dbviewer .left-side{ width: 300px; float: left; background-color: #fff; border-right: 1px solid #ccc; padding-bottom: 1000px; margin-bottom: -1000px; overflow: hidden;}
 #dbviewer .right-side{ margin-left: 300px; padding: 10px 25px;}
 #dbviewer .left-side ul {list-style: none; padding:0; margin:0; font-size: 13px;}
 #dbviewer .left-side ul li{padding-top: 3px; padding-bottom: 3px;}
 #dbviewer .left-side ul li:hover{background-color: #eee;}
+#dbviewer .left-side ul li a.selected {font-weight: bold;}
 #dbviewer .left-side .ui-accordion .ui-accordion-content {padding: 10px;}
 #dbviewer .left-side .ui-state-active{
 border: none;

@@ -104,6 +104,8 @@ window.DBViewerView = countlyView.extend({
 			collapsible: true,
 			active: (self.db == "countly_drill") ? 1 : 0
 		});
+		$("#accordion a").removeClass("selected");
+		$("#accordion a[href='#" + Backbone.history.fragment + "']").addClass("selected");
 	}
 });
 
