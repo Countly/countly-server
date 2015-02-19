@@ -4004,6 +4004,41 @@ var AppRouter = Backbone.Router.extend({
 
         var self = this;
         $(document).ready(function () {
+			 $("#sidebar-menu").find("a").removeClass("active");
+
+            var currentMenu = $("#sidebar-menu").find("a[href='#" + Backbone.history.fragment + "']");
+            currentMenu.addClass("active");
+
+            var subMenu = currentMenu.parent(".sidebar-submenu");
+            subMenu.prev(".item").addClass("active");
+
+            if (currentMenu.not(":visible")) {
+                subMenu.slideDown();
+            }
+
+            $(".sidebar-submenu").not(subMenu).slideUp();
+
+            var selectedDateID = countlyCommon.getPeriod();
+
+            if (Object.prototype.toString.call(selectedDateID) !== '[object Array]') {
+                $("#" + selectedDateID).addClass("active");
+            }
+			
+			if (Backbone.history.fragment == "/manage/apps" ||
+                Backbone.history.fragment == "/manage/account" ||
+                Backbone.history.fragment == "/manage/users") {
+                $("#sidebar-app-select").addClass("disabled");
+                $("#sidebar-app-select").removeClass("active");
+            } else {
+                $("#sidebar-app-select").removeClass("disabled");
+            }
+			
+			if(self.pageScripts[Backbone.history.fragment])
+				for(var i = 0, l = self.pageScripts[Backbone.history.fragment].length; i < l; i++)
+					self.pageScripts[Backbone.history.fragment][i]();
+			if(self.pageScripts["#"])
+				for(var i = 0, l = self.pageScripts["#"].length; i < l; i++)
+					self.pageScripts["#"][i]();
 
             // Translate all elements with a data-help-localize or data-localize attribute
             self.localize();
@@ -4026,26 +4061,6 @@ var AppRouter = Backbone.Router.extend({
                         $(this).tipsy("hide");
                     }
                 );
-            }
-
-            $("#sidebar-menu").find("a").removeClass("active");
-
-            var currentMenu = $("#sidebar-menu").find("a[href='#" + Backbone.history.fragment + "']");
-            currentMenu.addClass("active");
-
-            var subMenu = currentMenu.parent(".sidebar-submenu");
-            subMenu.prev(".item").addClass("active");
-
-            if (currentMenu.not(":visible")) {
-                subMenu.slideDown();
-            }
-
-            $(".sidebar-submenu").not(subMenu).slideUp();
-
-            var selectedDateID = countlyCommon.getPeriod();
-
-            if (Object.prototype.toString.call(selectedDateID) !== '[object Array]') {
-                $("#" + selectedDateID).addClass("active");
             }
 
             $(".usparkline").peity("bar", { width:"100%", height:"30", colour:"#6BB96E", strokeColour:"#6BB96E", strokeWidth:2 });
@@ -4170,22 +4185,6 @@ var AppRouter = Backbone.Router.extend({
                     CountlyHelpers.openResource($(this).data("link"));
                 }
             });
-
-            if (Backbone.history.fragment == "/manage/apps" ||
-                Backbone.history.fragment == "/manage/account" ||
-                Backbone.history.fragment == "/manage/users") {
-                $("#sidebar-app-select").addClass("disabled");
-                $("#sidebar-app-select").removeClass("active");
-            } else {
-                $("#sidebar-app-select").removeClass("disabled");
-            }
-
-			if(self.pageScripts[Backbone.history.fragment])
-				for(var i = 0, l = self.pageScripts[Backbone.history.fragment].length; i < l; i++)
-					self.pageScripts[Backbone.history.fragment][i]();
-			if(self.pageScripts["#"])
-				for(var i = 0, l = self.pageScripts["#"].length; i < l; i++)
-					self.pageScripts["#"][i]();
         });
     }
 });
