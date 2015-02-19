@@ -786,27 +786,11 @@ var PushPopup = function(message, duplicate) {
                 countlyPush.createMessage(json, null, function(msg){
                     butt.removeClass('disabled');
                     app.activeView.render();
-                    // Messenger({
-                    //     extraClasses: 'messenger-fixed messenger-on-top messenger-on-right'
-                    // }).post({
-                    //     message: jQuery.i18n.map["management-pushes.sending-message.desc"],
-                    //     type: 'success',
-                    //     hideAfter: 10,
-                    //     showCloseButton: true
-                    // });
                     content.find('.btn-close').trigger('click');
                 }, function(error){
                     butt.removeClass('disabled');
                     CountlyHelpers.alert(error);
                     // butt.removeClass('disabled');
-                    // Messenger({
-                    //     extraClasses: 'messenger-fixed messenger-on-top messenger-on-right'
-                    // }).post({
-                    //     message: error || jQuery.i18n.map["management-pushes.error"],
-                    //     type: 'error',
-                    //     hideAfter: 10,
-                    //     showCloseButton: true
-                    // });
                 });
             }
         });
@@ -1268,12 +1252,6 @@ $( document ).ready(function() {
     Handlebars.registerHelper('ifMessageStatusToStop', function (status, options) {
         return status == MessageStatus.InProcessing || status == MessageStatus.InQueue ? options.fn(this) : '';
     });
-
-    Messenger.options = {
-        extraClasses: 'messenger-fixed messenger-on-top',
-        theme: 'future',
-        parentLocations: ['#content-container']
-    };
 		
 	var menu = '<a class="item messaging" id="sidebar-messaging">'+
         '<div class="logo icon-envelope" style="background-image:none; font-size:24px; text-align:center; width:35px; margin-left:14px; line-height:40px;"></div>'+

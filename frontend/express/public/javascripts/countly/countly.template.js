@@ -133,16 +133,33 @@ $.extend(Template.prototype, {
         } else {
             message = msg;
         }
-
-        Messenger().post({
-            message: message,
-            type: type,
-            hideAfter: 10,
-            showCloseButton: true
-        });
+		
+		$.amaran({
+			content:{
+				title:type,
+				message:message,
+				icon:'icon-info'
+			},
+			theme:'awesome ok'
+		});
 
         delete countlyGlobal["message"];
     };
+	
+	CountlyHelpers.notify = function (msg) {
+		$.amaran({
+			content:{
+				title: msg.title || "Notification",
+				message:msg.message || "",
+				info:msg.info || "",
+				icon:msg.icon || 'icon-info'
+			},
+			theme:'awesome '+ (msg.type || "ok"),
+			position:'top right',
+			sticky:true,
+			closeButton:true
+		});
+	};
 
     CountlyHelpers.popup = function (element, custClass, isHTML) {
         var dialog = $("#cly-popup").clone();

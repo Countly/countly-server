@@ -28,8 +28,7 @@ java -jar closure-compiler.jar ^
 --js=../frontend/express/public/javascripts/utils/jquery.idle-timer.js ^
 --js=../frontend/express/public/javascripts/utils/textcounter.min.js ^
 --js=../frontend/express/public/javascripts/utils/initialAvatar.js ^
---js=../frontend/express/public/javascripts/utils/messenger/messenger.js ^
---js=../frontend/express/public/javascripts/utils/messenger/messenger-theme-future.js ^
+--js=../frontend/express/public/javascripts/utils/jquery.amaran.min.js ^
 --js=../frontend/express/public/javascripts/countly/countly.common.js ^
 --js_output_file=../frontend/express/public/javascripts/min/countly.utils.js
 

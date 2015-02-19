@@ -31,8 +31,7 @@ java -jar $DIR/closure-compiler.jar \
 --js=$DIR/../../frontend/express/public/javascripts/utils/jquery.idle-timer.js \
 --js=$DIR/../../frontend/express/public/javascripts/utils/textcounter.min.js \
 --js=$DIR/../../frontend/express/public/javascripts/utils/initialAvatar.js \
---js=$DIR/../../frontend/express/public/javascripts/utils/messenger/messenger.js \
---js=$DIR/../../frontend/express/public/javascripts/utils/messenger/messenger-theme-future.js \
+--js=$DIR/../../frontend/express/public/javascripts/utils/jquery.amaran.min.js \
 --js=$DIR/../../frontend/express/public/javascripts/countly/countly.common.js \
 --js_output_file=$DIR/../../frontend/express/public/javascripts/min/countly.utils.js
 
