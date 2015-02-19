@@ -6,10 +6,12 @@
 		_device: ["One Touch Idol X", "Kindle Fire HDX", "Fire Phone", "iPhone 5", "iPhone Mini", "iPhone 4S", "iPhone 5C", "iPad 4", "iPad Air","iPhone 6","Nexus 7","Nexus 10","Nexus 4","Nexus 5", "Windows Phone", "One S", "Optimus L5", "Lumia 920", "Galaxy Note", "Xperia Z"],
 		_manufacture: ["Samsung", "Sony Ericsson", "LG", "Google", "HTC", "Nokia", "Apple", "Huaiwei", "Lenovo", "Acer"],
 		_carrier: ["Telus", "Rogers Wireless", "T-Mobile", "Bell Canada", "	AT&T", "Verizon", "Vodafone", "Cricket Communications", "O2", "Tele2", "Turkcell", "Orange", "Sprint", "Metro PCS"],
-		_app_version: ["1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "2.0", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8", "2.9", "3.0", "3.1", "3.2"]
+		_app_version: ["1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "2.0", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8", "2.9", "3.0", "3.1", "3.2"],
+		_density: ["120dpi", "160dpi", "240dpi", "320dpi", "480dpi", "640dpi"],
+		_locale: ["en_CA", "fr_FR", "de_DE", "it_IT", "ja_JP", "ko_KR", "en_US"]
 	};
-	var metrics = ["_os", "_os_version", "_resolution", "_device", "_carrier", "_app_version"];
-	var events = ["Login", "Logout", "Buy", "Purchase", "Lost", "Won", "Achievement", "Shared", "Sound", "Messaged"];
+	var events = ["Login", "Logout", "Lost", "Won", "Achievement","Sound","Shared"];
+	var pushEvents = ["[CLY]_push_sent", "[CLY]_push_open", "[CLY]_push_action"];
 	var segments  = {
 		Login: {referer: ["twitter", "notification", "unknown"]},
 		Buy: {screen: ["End Level", "Main screen", "Before End"]},
@@ -18,6 +20,9 @@
 		Achievement: {name:["Runner", "Jumper", "Shooter", "Berserker", "Tester"]},
 		Sound: {state:["on", "off"]}
 	};
+	segments["[CLY]_push_open"]={i:"123456789012345678901234"};
+	segments["[CLY]_push_action"]={i:"123456789012345678901234"};
+	segments["[CLY]_push_sent"]={i:"123456789012345678901234"};
 	var crashProps = ["root", "ram_current", "ram_total", "disk_current", "disk_total", "bat_current", "bat_total", "orientation", "stack", "log", "custom", "features", "settings", "comment", "os", "os_version", "manufacture", "device", "resolution", "app_version"];
 	function getRandomInt(min, max) {
 		return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -87,6 +92,10 @@
 		var that = this;
 		this.id = this.getId();
 		this.isRegistered = false;
+		this.iap = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].iap_event || "";
+		if(this.iap != ""){
+			events.push(this.iap);
+		}
 
 		this.hasSession = false;
 		this.ip = chance.ip();
@@ -95,10 +104,13 @@
 		this.startTs = startTs;
 		this.endTs = endTs;
 		this.ts = getRandomInt(this.startTs, this.endTs);
-		var prop;
-		for(var i = 0, l = metrics.length; i < l; i++){
-			prop = metrics[i];
-			this.metrics[prop] = this.getProp(prop);
+		for(var i in props){
+			if(i == "_os"){
+				this.platform = this.getProp(i);
+				this.metrics[i] = this.platform;
+			}
+			else
+				this.metrics[i] = this.getProp(i);
 		}
 		
 		this.getCrash = function(){
@@ -141,8 +153,35 @@
 				"key": id,
 				"count": 1
 			};
-			if(id == this.iap)
+			if(id == this.iap){
+				stats.b++;
 				event.sum = getRandomInt(100, 500)/100;
+				var segment;
+				event.segmentation = {};
+				for(var i in segments["Buy"]){
+					segment = segments["Buy"][i];
+					event.segmentation[i] = segment[Math.floor(Math.random()*segment.length)];
+				}
+			}
+			else if(segments[id]){
+				var segment;
+				event.segmentation = {};
+				for(var i in segments[id]){
+					segment = segments[id][i];
+					event.segmentation[i] = segment[Math.floor(Math.random()*segment.length)];
+				}
+			}
+			return [event];
+		};
+		
+		this.getPushEvent = function(id){
+			if(!id){
+				id = pushEvents[Math.floor(Math.random()*pushEvents.length)];
+			}
+			var event = {
+				"key": id,
+				"count": 1
+			};
 			if(segments[id]){
 				var segment;
 				event.segmentation = {};
@@ -161,6 +200,13 @@
 				this.isRegistered = true;
 				stats.u++;
 				this.request({timestamp:this.ts, begin_session:1, metrics:this.metrics, user_details:this.userdetails});
+				if(Math.random() > 0.5){
+					this.hasPush = true;
+					stats.p++;
+					var data = {timestamp:this.ts, token_session:1, test_mode:0};
+					data[this.platform+"_token"] = +randomString(8);
+					this.request(data);
+				}
 			}
 			else{
 				stats.e++;
@@ -178,11 +224,19 @@
 				stats.e++;
 				this.request({timestamp:this.ts, session_duration:30});	
 				this.request({timestamp:this.ts, events:this.getEvent()});	
+				if(this.hasPush){
+					this.request({timestamp:this.ts, events:this.getPushEvent()});
+				}
 				if(Math.random() > 0.5){
 					this.timer = setTimeout(function(){that.extendSession()}, timeout);
 				}
-				else
+				else{
+					stats.c++;
+					if(Math.random() > 0.5){
+						this.request({timestamp:this.ts, crash:this.getCrash()});
+					}
 					this.endSession();
+				}
 			}
 		}
 		
@@ -216,8 +270,8 @@
 	var users = [];
 	var userAmount = 1000;
 	var queued = 0;
-	var stats = {u:0,s:0,x:0,d:0,e:0,r:0};
-	var totalStats = {u:0,s:0,x:0,d:0,e:0,r:0};
+	var stats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
+	var totalStats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
 	
 	function updateUI(stats){
 		for(var i in stats){
@@ -250,8 +304,8 @@
 	countlyPopulator.generateUsers = function (amount) {
 		userAmount = amount;
 		bulk = [];
-		stats = {u:0,s:0,x:0,d:0,e:0,r:0};
-		totalStats = {u:0,s:0,x:0,d:0,e:0,r:0};
+		stats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
+		totalStats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
 		bucket = Math.max(amount/5, 10);
 		var mult = (Math.round(queued/10)+1);
 		timeout = bucket*100*mult*mult;
@@ -307,7 +361,7 @@
 			for(var i in stats){
 				temp[i] = stats[i];
 			}
-			stats = {u:0,s:0,x:0,d:0,e:0,r:0};
+			stats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
 			queued++;
 			var mult = Math.round(queued/10)+1;
 			timeout = bucket*100*mult*mult;
