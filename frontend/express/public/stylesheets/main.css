@@ -191,7 +191,7 @@ a:active { color:inherit; }
 
 		.map-list { background-color:#FFF; height:323px; border:1px solid #A2A2A2; }
 			#geo-chart { text-align:center; padding-top:20px; }
-			#geo-chart>div { margin:0 auto; }
+			#geo-chart>div>div { margin:0 auto; }
 			#geo-chart-outer { background-image:url('../images/dashboard/map_dotted_bg.png'); }
 			.map-list #geo-chart-outer { border-radius:7px; }
 			#map-list-right { border-top-right-radius:0; border-bottom-right-radius:0; width:240px; float:right;  height:100%; margin-top:40px; margin-right:42px; }
