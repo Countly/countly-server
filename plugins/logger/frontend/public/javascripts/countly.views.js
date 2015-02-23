@@ -71,7 +71,7 @@ window.LoggerView = countlyView.extend({
 						return ret;}, "sType":"string", "sTitle": jQuery.i18n.map["logger.location"]},
                     { "mData": function(row, type){
 						if(typeof row.i == "object")
-							return "<pre>"+JSON.stringify(row.i, null, 2)+"</pre>";
+							return "<pre style='white-space:pre-wrap;'>"+JSON.stringify(row.i, null, 2)+"</pre>";
 						else
 							return row.i;}, "sType":"string", "sTitle": jQuery.i18n.map["logger.info"]}
                 ]
