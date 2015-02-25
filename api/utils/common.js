@@ -381,6 +381,13 @@ var common = {},
             params.res.end();
         }
     };
+	
+	common.getIpAddress = function(req) {
+		var ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress;
+	
+		/* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
+		return ipAddress.split(',')[0];
+	};
 
     common.fillTimeObjectZero = function (params, object, property, increment) {
         var tmpIncrement = (increment) ? increment : 1,

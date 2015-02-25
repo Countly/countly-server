@@ -130,13 +130,6 @@ function validateUserForMgmtReadAPI(callback, params) {
     });
 }
 
-function getIpAddress(req) {
-    var ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress;
-
-    /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
-    return ipAddress.split(',')[0];
-}
-
 if (cluster.isMaster) {
 
     var workerCount = (common.config.api.workers)? common.config.api.workers : os.cpus().length;
@@ -214,7 +207,7 @@ if (cluster.isMaster) {
 						var tmpParams = {
 							'app_id':'',
 							'app_cc':'',
-							'ip_address':requests[i].ip_address || getIpAddress(req),
+							'ip_address':requests[i].ip_address || common.getIpAddress(req),
 							'user':{
 								'country':requests[i].country_code || 'Unknown',
 								'city':requests[i].city || 'Unknown'
@@ -331,7 +324,7 @@ if (cluster.isMaster) {
             }
             case '/i':
             {
-                params.ip_address =  params.qstring.ip_address || getIpAddress(req);
+                params.ip_address =  params.qstring.ip_address || common.getIpAddress(req);
                 params.user = {
                     'country':params.qstring.country_code || 'Unknown',
                     'city':params.qstring.city || 'Unknown'
