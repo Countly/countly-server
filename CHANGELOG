@@ -1,16 +1,42 @@
-15.02
+15.03
 
-  * Plugins system
+  * Inroducing Plugins system, allowing other developers to write plugins which would extend Countly functionality without changing/breaking the core.
   
-  * New core and scalable data structure
+  * Lots of plugins with new functionality as Data Populator, Event Logger, DBViewer, etc
+  
+  * New core and scalable data structure, dividing data into years and months to prevent reaching MongoDB document size limit
 
-  * Using new MongoDB drive
+  * Upgraded to using latest Mongoskin version and newer MongoDB driver which supports new connection string format (https://github.com/Countly/countly-server/issues/124)
+  
+  * Using latest MongoDB version
 
-  * Path mounting
+  * Now Countly can be installed and run from subdirectory, more info (https://github.com/Countly/countly-server/issues/19)
+  
+  * All dependencies are now defined in package.json and can be downloaded using install script (https://github.com/Countly/countly-server/issues/4)
+  
+  * All apps view implemented displaying list of all apps and their dashboard statistics (https://github.com/Countly/countly-server/issues/122)
   
   * Accepting bulk requests as post
   
-  * Lots of plugins as Data Populator, Event Logger, DBViewer, etc
+  * Displaying default app icon instead of nothing
+  
+  * You can now login using username or email address
+  
+  * All tables in Countly now use Datatables for more interaction, as sorting, fitlering, etc.
+  
+  * New API enhancements, as providing country and city, or returning precalculated stats for implementing dashboards
+  
+  * Allowing any origin on API to allow CORS for ajax queries on different domains
+  
+  * Fixed bug displaying user roles
+  
+  * Fixed falling back to English if browser language is not defined (https://github.com/Countly/countly-server/issues/101)
+  
+  * Fixed displaying long funnel names (https://github.com/Countly/countly-server/issues/107)
+  
+  * Fixed locked scrolling after using slimscroll in some cases (https://github.com/Countly/countly-server/issues/128)
+  
+  * Numerous other minor fixes and improvements
   
 14.08
 
