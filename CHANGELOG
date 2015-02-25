@@ -28,6 +28,8 @@
   
   * Allowing any origin on API to allow CORS for ajax queries on different domains
   
+  * Added new iOS device identifiers
+  
   * Fixed bug displaying user roles
   
   * Fixed falling back to English if browser language is not defined (https://github.com/Countly/countly-server/issues/101)
