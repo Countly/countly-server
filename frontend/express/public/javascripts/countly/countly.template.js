@@ -2464,6 +2464,27 @@ window.EventsView = countlyView.extend({
 
             countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true); });
         });
+		
+		$("#event-nav .event-container").mouseenter(function(){
+			var elem = $(this);
+			var name = elem.find(".name");
+			if(name[0].scrollWidth >  name.innerWidth()){
+				$("#event-tooltip").html(elem.clone());
+				$("#event-tooltip .event-container").removeClass("active");
+				$("#event-tooltip").css(elem.offset());
+				$("#event-tooltip .name").css({"width":"auto"});
+				$("#event-tooltip").show();
+				$("#event-tooltip").bind("click", function(){
+					elem.trigger("click");
+				});
+			}
+		});
+		$("#event-tooltip").mouseleave(function(){
+			if($("#event-tooltip").is(':visible')){
+				$("#event-tooltip").hide();
+				$("#event-tooltip").unbind("click");
+			}
+		});
 
         $(".segmentation-option").on("click", function () {
             var tmpCurrSegmentation = $(this).data("value");
