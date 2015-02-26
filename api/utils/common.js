@@ -310,7 +310,12 @@ var common = {},
                         if (!Array.isArray(args[arg])) {
                             return false;
                         }
-                    } else {
+                    } else if (argProperties[arg].type === 'Object') {
+                        if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']' || Object.keys(args[arg]).length == 0) {
+                            return false;
+                        }
+                    } 
+					else {
                         return false;
                     }
                 } else {
