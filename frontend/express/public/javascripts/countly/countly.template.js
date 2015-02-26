@@ -3142,6 +3142,18 @@ var AppRouter = Backbone.Router.extend({
                     }
                 }
             });
+			$('#sidebar-menu').slimScroll({
+				height: ($(window).height()-123-46)+'px',
+				railVisible: true,
+				railColor : '#4CC04F',
+				railOpacity : .2,
+				color: '#4CC04F',
+			});
+			$( window ).resize(function() {
+				$('#sidebar-menu').slimScroll({
+					height: ($(window).height()-123-46)+'px'
+				});
+			});
 
             $(".sidebar-submenu").on("click", ".item", function () {
 
