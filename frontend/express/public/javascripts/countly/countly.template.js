@@ -3168,7 +3168,7 @@ var AppRouter = Backbone.Router.extend({
 				railVisible: true,
 				railColor : '#4CC04F',
 				railOpacity : .2,
-				color: '#4CC04F',
+				color: '#4CC04F'
 			});
 			$( window ).resize(function() {
 				$('#sidebar-menu').slimScroll({
