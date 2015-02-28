@@ -35,7 +35,7 @@ a:active { color:inherit; }
 #sidebar-bottom-container .item:hover { color:#848484; }
 #sidebar-bottom-container .username { float:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:120px; }
 
-#sidebar-menu { margin-top:-2px; }
+#sidebar-menu { }
 	#sidebar-menu>.item { margin-top:-1px; margin-left:-1px; width:223px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; height:43px; padding-top:3px; background-image:url('../images/dashboard/menu_button.png'); display:block; cursor:pointer; }
 		#sidebar-menu .item:hover { background-position:446px; }
 		#sidebar-menu .item.active { background-position:223px; }
@@ -64,7 +64,9 @@ a:active { color:inherit; }
 		#sidebar-menu .sidebar-submenu .item:last-child { background-image:none; }
 			#sidebar-menu .sidebar-submenu .item .logo-icon { color:#888; width:30px; height:30px; float:left; margin-left:8px; margin-top:8px; text-align:center;}
 			#sidebar-menu .sidebar-submenu .item .logo { background-image:url('../images/dashboard/analytics_icons.png'); color:#888; width:30px; height:30px; float:left; margin-left:8px; margin-top:1px; }
-	                #sidebar-menu .sidebar-submenu .item.active .logo { color:#4DB339; }
+	                #sidebar-menu .sidebar-submenu .item.active .logo,
+                    #sidebar-menu .sidebar-submenu .item.active .logo-icon { color:#4DB339; }
+
 
 				#sidebar-menu .sidebar-submenu .item .logo.users { background-position:-30px; }
 				#sidebar-menu .sidebar-submenu .item.active .logo.users { background-position:0; }
