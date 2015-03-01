@@ -15,8 +15,7 @@ window.LoggerView = countlyView.extend({
     renderCommon:function (isRefresh) {
         var data = countlyLogger.getData();
         this.templateData = {
-            "page-title":jQuery.i18n.map["logger.title"],
-            "logo-class":"frequency"
+            "page-title":jQuery.i18n.map["logger.title"]
         };
 		var self = this;
         if (!isRefresh) {
@@ -119,7 +118,7 @@ app.addPageScript("/manage/logger", function(){
 
 $( document ).ready(function() {
 	var menu = '<a href="#/manage/logger" class="item">'+
-		'<div class="logo-icon icon-screenshot"></div>'+
+		'<div class="logo-icon fa fa-bars"></div>'+
 		'<div class="text" data-localize="logger.title"></div>'+
 	'</a>';
 	if($('#management-submenu .help-toggle').length)

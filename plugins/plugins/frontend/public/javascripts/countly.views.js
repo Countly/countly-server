@@ -16,8 +16,7 @@ window.PluginsView = countlyView.extend({
 		
         var pluginsData = countlyPlugins.getData();
         this.templateData = {
-            "page-title":jQuery.i18n.map["plugins.title"],
-            "logo-class":"frequency"
+            "page-title":jQuery.i18n.map["plugins.title"]
         };
 		var self = this;
         if (!isRefresh) {
@@ -129,7 +128,7 @@ app.addPageScript("#", function(){
 $( document ).ready(function() {
 	if(countlyGlobal["member"] && countlyGlobal["member"]["global_admin"]){
 		var menu = '<a href="#/manage/plugins" class="item">'+
-			'<div class="logo-icon icon-gears"></div>'+
+			'<div class="logo-icon fa fa-puzzle-piece"></div>'+
 			'<div class="text" data-localize="plugins.title"></div>'+
 		'</a>';
 		if($('#management-submenu .help-toggle').length)

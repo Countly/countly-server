@@ -12,6 +12,7 @@ java -jar closure-compiler.jar ^
 --js=%~dp0/../../frontend/express/public/javascripts/dom/dataTables/js/jquery.dataTables.js ^
 --js=%~dp0/../../frontend/express/public/javascripts/dom/dataTables/js/ZeroClipboard.js ^
 --js=%~dp0/../../frontend/express/public/javascripts/dom/dataTables/js/TableTools.js ^
+--js=%~dp0/../../frontend/express/public/javascripts/dom/tablesorter/jquery.tablesorter.min.js ^
 --js_output_file=%~dp0/../../frontend/express/public/javascripts/min/countly.dom.js
 
 java -jar closure-compiler.jar ^

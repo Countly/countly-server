@@ -11,8 +11,7 @@ window.PopulatorView = countlyView.extend({
     },
     renderCommon:function (isRefresh) {
 		this.templateData = {
-			"page-title":jQuery.i18n.map["populator.title"],
-			"logo-class":"frequency"
+			"page-title":jQuery.i18n.map["populator.title"]
 		};
 		var now = new Date();
 		var fromDate = new Date(now.getTime()-1000*60*60*24*30);
@@ -81,7 +80,7 @@ $( document ).ready(function() {
 	document.getElementsByTagName("head")[0].appendChild(fileref);
 
 	var menu = '<a href="#/manage/populate" class="item">'+
-		'<div class="logo-icon icon-random"></div>'+
+		'<div class="logo-icon fa fa-random"></div>'+
 		'<div class="text" data-localize="populator.title"></div>'+
 	'</a>';
 	if($('#management-submenu .help-toggle').length)

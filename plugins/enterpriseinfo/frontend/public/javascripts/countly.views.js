@@ -47,7 +47,7 @@ app.route( "/enterprise", "enterprise", function () {
 
 $( document ).ready(function() {
 	var menu = '<a class="item" id="enterprise-menu" href="#/enterprise">'+
-		'<div class="logo icon-rocket" style="background-image:none; font-size:24px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px; line-height: 34px;"></div>'+
+		'<div class="logo fa fa-rocket" style="background-image:none; font-size:24px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px; line-height: 34px;"></div>'+
         '<div class="text" data-localize="">Enterprise</div>'+
     '</a>';
 	$('#sidebar-menu').append(menu);

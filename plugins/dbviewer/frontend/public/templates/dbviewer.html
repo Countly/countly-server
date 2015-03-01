@@ -1,21 +1,23 @@
 	<div class="widget">
 		<div class="widget-header">
 			<div class="left">
-				<div class="logo {{logo-class}}"></div>
+                <div class="logo font-logo">
+                    <i class="fa fa-database"></i>
+                </div>
 				<div class="title">{{page-title}}</div>
 			</div>
 			{{#if document}}
 			<div class="right help-zone-vs">
-				<div class="button"><a href="#/manage/db/{{db}}/{{collection}}/page/{{page}}" class="back"><i class="icon-chevron-left"></i><span>{{back}}</span></a></div>
+				<div class="button"><a href="#/manage/db/{{db}}/{{collection}}/page/{{page}}" class="back"><i class="fa fa-chevron-left"></i><span>{{back}}</span></a></div>
 			</div>
 			{{else}}
 				{{#if collection}}
 			<div class="right help-zone-vs">
-				<div class="button"><a href="#/manage/db/{{db}}" class="back"><i class="icon-chevron-left"></i><span>{{back}}</span></a></div>
+				<div class="button"><a href="#/manage/db/{{db}}" class="back"><i class="fa fa-chevron-left"></i><span>{{back}}</span></a></div>
 			</div>
 				{{else}}
 			<div class="right help-zone-vs">
-				<div class="button"><a href="#/manage/db" class="back"><i class="icon-chevron-left"></i><span>{{back}}</span></a></div>
+				<div class="button"><a href="#/manage/db" class="back"><i class="fa fa-chevron-left"></i><span>{{back}}</span></a></div>
 			</div>
 				{{/if}}
 			{{/if}}

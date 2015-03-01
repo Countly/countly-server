@@ -122,7 +122,7 @@
 			</div>
             <a class="item analytics" id="engagement-menu">
                 <!--<div style="background-image:none; font-size:54px; text-align:center; width:35px; margin-left:14px; line-height:14px;" class="logo entypo magnet"></div>-->
-                <div class="logo icon-magnet" style="background-image:none; font-size:28px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>
+                <div class="logo fa fa-magnet" style="background-image:none; font-size:28px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>
                 <div class="text" data-localize="sidebar.engagement"></div>
             </a>
             <div class="sidebar-submenu" id="engagement-submenu">
@@ -146,7 +146,7 @@
             </a>	
 			<% if(member['global_admin'] || adminOfApps.length) { %>
 			<a class="item" id="management-menu">
-                <!--<div class="logo icon-wrench" style="background-image:none; font-size:28px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px;"></div>-->
+                <!--<div class="logo fa fa-wrench" style="background-image:none; font-size:28px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px;"></div>-->
 				<div class="logo management"></div>
 				<div class="text" data-localize="sidebar.management"></div>
 			</a>
@@ -578,7 +578,7 @@
 							<div class="number">
                                 <span class="value">{{getShortNumber this.data.total}}</span>
                                 {{#if this.data.isEstimate}}
-                                    <span id="total-user-estimate-ind"><i class="icon-asterisk"></i></span>
+                                    <span id="total-user-estimate-ind"><i class="fa fa-asterisk"></i></span>
                                     <div id="total-user-estimate-exp" style="display:none;">
                                         <div style="line-height:20px;">
                                             Total (unique) user count for this period is estimated and corrected using the biggest time buckets from available daily, weekly and monthly stats.<br/><br/>
@@ -887,7 +887,7 @@
 					</table>
 				</div>
 				<div style="float:right;">
-					<a target="blank" href="http://count.ly/resources/source/download-sdk" style="margin-right:14px;" class="icon-button light"><i class="icon-mobile-phone"></i> Countly SDKs</a>
+					<a target="blank" href="http://count.ly/resources/source/download-sdk" style="margin-right:14px;" class="icon-button light"><i class="fa fa-mobile-phone"></i> Countly SDKs</a>
 				</div>
 			</div>
 			</div>
@@ -931,8 +931,8 @@
                     <tbody>
                     {{#eachOfObjectValue event-map}}
                     <tr>
-                        <td style="text-align:center;"><i class="icon-reorder event-order"></i></td>
-                        <td style="text-align:center;"><i class="icon-trash delete-event" data-event-key="{{this.key}}"></i></td>
+                        <td style="text-align:center;"><i class="fa fa-reorder event-order"></i></td>
+                        <td style="text-align:center;"><i class="fa fa-trash delete-event" data-event-key="{{this.key}}"></i></td>
                         <td class="event-key">{{this.key}}</td>
                         <td><input class="event-name" type="text" placeholder="Event name"  data-localize="events.edit.event-name" value="{{this.name}}"/></td>
                         <td><input class="event-count" type="text" placeholder="Count" data-localize="events.table.count" value="{{this.count}}"/></td>

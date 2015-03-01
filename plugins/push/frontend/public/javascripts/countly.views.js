@@ -577,7 +577,7 @@ var PushPopup = function(message, duplicate) {
         var ul = content.find('.locales ul'),
             txt = content.find('.msg textarea'),
             li = function(percentage, locale, title){
-                var el = $('<li data-locale="' + locale + '"><span class="percentage">' + percentage + '%</span><span class="locale">' + title + '</span><span class="icon-ok"></span>' + (locale === 'default' ? '' :  ' <span class="icon-remove"></span>') + '</li>')
+                var el = $('<li data-locale="' + locale + '"><span class="percentage">' + percentage + '%</span><span class="locale">' + title + '</span><span class="fa fa-ok"></span>' + (locale === 'default' ? '' :  ' <span class="fa fa-remove"></span>') + '</li>')
                         .on('click', function(){
                             var selected = ul.find('.selected').attr('data-locale');
                             message.messagePerLocale[selected] = txt.val();
@@ -1046,21 +1046,21 @@ function pushAppMgmt(){
         appId = $(this).data("id");
 		countlyGlobal['apps'][appId].apn = countlyGlobal['apps'][appId].apn || {};
 		countlyGlobal['apps'][appId].gcm = countlyGlobal['apps'][appId].gcm || {};
-		$("#push-apn-cert-test-view").removeClass('icon-remove').removeClass('icon-ok').addClass(countlyGlobal['apps'][appId].apn.test ? 'icon-ok' : 'icon-remove');
-		$("#push-apn-cert-prod-view").removeClass('icon-remove').removeClass('icon-ok').addClass(countlyGlobal['apps'][appId].apn.prod ? 'icon-ok' : 'icon-remove');
-		$("#view-apn-id").html(countlyGlobal['apps'][appId].apn.id || '<i class="icon-remove"></i>');
-		$("#view-gcm-id").html(countlyGlobal['apps'][appId].gcm.id || '<i class="icon-remove"></i>');
-		$("#view-gcm-key").html(countlyGlobal['apps'][appId].gcm.key || '<i class="icon-remove"></i>');
+		$("#push-apn-cert-test-view").removeClass('fa fa-remove').removeClass('fa fa-ok').addClass(countlyGlobal['apps'][appId].apn.test ? 'fa fa-ok' : 'fa fa-remove');
+		$("#push-apn-cert-prod-view").removeClass('fa fa-remove').removeClass('fa fa-ok').addClass(countlyGlobal['apps'][appId].apn.prod ? 'fa fa-ok' : 'fa fa-remove');
+		$("#view-apn-id").html(countlyGlobal['apps'][appId].apn.id || '<i class="fa fa-remove"></i>');
+		$("#view-gcm-id").html(countlyGlobal['apps'][appId].gcm.id || '<i class="fa fa-remove"></i>');
+		$("#view-gcm-key").html(countlyGlobal['apps'][appId].gcm.key || '<i class="fa fa-remove"></i>');
 		$("#apn-id").val(countlyGlobal['apps'][appId].apn.id || '');
 		$("#gcm-id").val(countlyGlobal['apps'][appId].gcm.id || '');
 		$("#gcm-key").val(countlyGlobal['apps'][appId].gcm.key || '');
     });
 
-    $("#push-apn-cert-test-view").removeClass('icon-remove').removeClass('icon-ok').addClass(countlyGlobal['apps'][appId].apn.test ? 'icon-ok' : 'icon-remove');
-    $("#push-apn-cert-prod-view").removeClass('icon-remove').removeClass('icon-ok').addClass(countlyGlobal['apps'][appId].apn.prod ? 'icon-ok' : 'icon-remove');
-    $("#view-apn-id").html(countlyGlobal['apps'][appId].apn.id || '<i class="icon-remove"></i>');
-    $("#view-gcm-id").html(countlyGlobal['apps'][appId].gcm.id || '<i class="icon-remove"></i>');
-    $("#view-gcm-key").html(countlyGlobal['apps'][appId].gcm.key || '<i class="icon-remove"></i>');
+    $("#push-apn-cert-test-view").removeClass('fa fa-remove').removeClass('fa fa-ok').addClass(countlyGlobal['apps'][appId].apn.test ? 'fa fa-ok' : 'fa fa-remove');
+    $("#push-apn-cert-prod-view").removeClass('fa fa-remove').removeClass('fa fa-ok').addClass(countlyGlobal['apps'][appId].apn.prod ? 'fa fa-ok' : 'fa fa-remove');
+    $("#view-apn-id").html(countlyGlobal['apps'][appId].apn.id || '<i class="fa fa-remove"></i>');
+    $("#view-gcm-id").html(countlyGlobal['apps'][appId].gcm.id || '<i class="fa fa-remove"></i>');
+    $("#view-gcm-key").html(countlyGlobal['apps'][appId].gcm.key || '<i class="fa fa-remove"></i>');
     $("#apn-id").val(countlyGlobal['apps'][appId].apn.id || '');
     $("#gcm-id").val(countlyGlobal['apps'][appId].gcm.id || '');
     $("#gcm-key").val(countlyGlobal['apps'][appId].gcm.key || '');
@@ -1128,9 +1128,9 @@ function pushAppMgmt(){
 					countlyGlobal['admin_apps'][appId].gcm.key = data.gcm.key;
 				}
 				
-				$("#view-apn-id").html(countlyGlobal['apps'][appId].apn.id || '<i class="icon-remove"></i>');
-				$("#view-gcm-id").html(countlyGlobal['apps'][appId].gcm.id || '<i class="icon-remove"></i>');
-				$("#view-gcm-key").html(countlyGlobal['apps'][appId].gcm.key || '<i class="icon-remove"></i>');
+				$("#view-apn-id").html(countlyGlobal['apps'][appId].apn.id || '<i class="fa fa-remove"></i>');
+				$("#view-gcm-id").html(countlyGlobal['apps'][appId].gcm.id || '<i class="fa fa-remove"></i>');
+				$("#view-gcm-key").html(countlyGlobal['apps'][appId].gcm.key || '<i class="fa fa-remove"></i>');
 
                 if (certTest) {
                     $('#add-edit-apn-creds-test-form').find("input[name=app_id]").val(appId);
@@ -1254,16 +1254,16 @@ $( document ).ready(function() {
     });
 		
 	var menu = '<a class="item messaging" id="sidebar-messaging">'+
-        '<div class="logo icon-envelope" style="background-image:none; font-size:24px; text-align:center; width:35px; margin-left:14px; line-height:40px;"></div>'+
+        '<div class="logo fa fa-envelope" style="background-image:none; font-size:24px; text-align:center; width:35px; margin-left:14px; line-height:40px;"></div>'+
         '<div class="text" data-localize="">Messaging</div>'+
     '</a>'+
     '<div class="sidebar-submenu" id="messaging-submenu">'+
         '<a href="#/messaging" class="item">'+
-            '<div class="logo icon-globe" style="background-image:none; font-size:18px; text-align:center; width:30px; margin-left:7px; line-height:31px;"></div>'+
+            '<div class="logo fa fa-globe" style="background-image:none; font-size:18px; text-align:center; width:30px; margin-left:7px; line-height:31px;"></div>'+
             '<div class="text" data-localize="">Overview</div>'+
         '</a>'+
         '<a href="#/messaging/messages" class="item">'+
-            '<div class="logo icon-inbox" style="background-image:none; font-size:15px; text-align:center; width:30px; margin-left:7px; line-height:30px;"></div>'+
+            '<div class="logo fa fa-inbox" style="background-image:none; font-size:15px; text-align:center; width:30px; margin-left:7px; line-height:30px;"></div>'+
             '<div class="text" data-localize="">Messages</div>'+
         '</a>'+
     '</div>';

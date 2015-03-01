@@ -16,7 +16,6 @@ window.DBViewerView = countlyView.extend({
     renderCommon:function (isRefresh) {
 		this.templateData = {
 			"page-title":jQuery.i18n.map["dbviewer.title"],
-			"logo-class":"frequency",
 			"back":jQuery.i18n.map["dbviewer.back"]
 		};
 		if(this.document){
@@ -175,7 +174,7 @@ $( document ).ready(function() {
 	document.getElementsByTagName("head")[0].appendChild(fileref);
 
 	var menu = '<a href="#/manage/db" class="item">'+
-		'<div class="logo-icon icon-search"></div>'+
+		'<div class="logo-icon fa fa-database"></div>'+
 		'<div class="text" data-localize="dbviewer.title"></div>'+
 	'</a>';
 	if($('#management-submenu .help-toggle').length)

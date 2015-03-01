@@ -138,7 +138,7 @@ $.extend(Template.prototype, {
 			content:{
 				title:type,
 				message:message,
-				icon:'icon-info'
+				icon: 'fa fa-info'
 			},
 			theme:'awesome ok'
 		});
@@ -152,7 +152,7 @@ $.extend(Template.prototype, {
 				title: msg.title || "Notification",
 				message:msg.message || "",
 				info:msg.info || "",
-				icon:msg.icon || 'icon-info'
+				icon:msg.icon || 'fa fa-info'
 			},
 			theme:'awesome '+ (msg.type || "ok"),
 			position:'top right',
@@ -286,7 +286,7 @@ $.extend(Template.prototype, {
                 $(this).addClass("active");
 
                 if (itemCount > 10 && !$(this).hasClass("centered")) {
-                    $("<div class='search'><div class='inner'><input type='text' /><i class='icon-search'></i></div></div>").insertBefore($(this).find(".select-items"));
+                    $("<div class='search'><div class='inner'><input type='text' /><i class= fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
                 }
             }
 
@@ -1128,7 +1128,7 @@ window.AllAppsView = countlyView.extend({
 					$(nRow).attr("id", aData._id);
 				},
                 "aoColumns": [
-					{ "mData": function(row, type){if(self.selectedApps[row._id]) return "<i class='check icon-check'></i>"; else return "<i class='check icon-unchecked'></i>";}, "sWidth":"10px", "bSortable":false},
+					{ "mData": function(row, type){if(self.selectedApps[row._id]) return "<i class='check fa fa-check'></i>"; else return "<i class='check fa fa-unchecked'></i>";}, "sWidth":"10px", "bSortable":false},
                     { "mData": function(row, type){if(type == "display"){ var ret; if(row["_id"] == "all") ret = "<div class='logo' style='background-image: url("+countlyGlobal["path"]+"/images/favicon.png);'></div> "; else ret = "<div class='logo' style='background-image: url("+countlyGlobal["cdn"]+"appimages/" + row["_id"] + ".png);'></div> "; return ret+row.name+"<div class='color'></div>";} else return row.name;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.app-name"] },
                     { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url("+countlyGlobal["cdn"]+"images/dashboard/"+row.sessions.trend+"trend.png);'></div> "+row.sessions.total; else return row.sessions.total;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.total-sessions"] },
                     { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url("+countlyGlobal["cdn"]+"images/dashboard/"+row.users.trend+"trend.png);'></div> "+row.users.total; else return row.users.total;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.total-users"] },
@@ -1148,7 +1148,7 @@ window.AllAppsView = countlyView.extend({
 				if(row.children().first().is(td))
 				{
 					if(self.selectedApps[row.attr("id")]){
-						row.find(".check").removeClass("icon-check").addClass("icon-unchecked");
+						row.find(".check").removeClass("fa fa-check").addClass("fa fa-unchecked");
 						row.find(".color").css("background-color", "transparent");
 						delete self.selectedApps[row.attr("id")];
 						if(row.attr("id") != "all")
@@ -1166,20 +1166,20 @@ window.AllAppsView = countlyView.extend({
 							$(self.selectedView).parents(".big-numbers").addClass("active");
 						}
 						if(row.attr("id") == "all"){
-							$(".check.icon-check").removeClass("icon-check").addClass("icon-unchecked");
+							$(".check.icon-check").removeClass("fa fa-check").addClass("fa fa-unchecked");
 							$('.d-table').find(".color").css("background-color", "transparent");
 							self.selectedApps = {};
 							self.selectedCount = 0;
 						}
 						else{
 							if(self.selectedApps["all"]){
-								$(".d-table #all .check.icon-check").removeClass("icon-check").addClass("icon-unchecked");
+								$(".d-table #all .check.icon-check").removeClass("fa fa-check").addClass("fa fa-unchecked");
 								$('.d-table #all').find(".color").css("background-color", "transparent");
 								delete self.selectedApps["all"];
 							}
 							self.selectedCount++;
 						}
-						row.find(".check").removeClass("icon-unchecked").addClass("icon-check");
+						row.find(".check").removeClass("fa fa-unchecked").addClass("fa fa-check");
 						self.selectedApps[row.attr("id")] = true;
 					}
 					self.drawGraph();
@@ -3453,7 +3453,7 @@ var AppRouter = Backbone.Router.extend({
                                 '<div class="note">' +
                                     '<div class="date" data-dateid="' + noteDateIds[i] + '">' + moment(noteDateIds[i], "YYYYMMDDHH").format("D MMM YYYY, HH:mm") + '</div>' +
                                     '<div class="content">' + currNotes[j] + '</div>' +
-                                    '<div class="delete-note"><i class="icon-trash"></i></div>' +
+                                    '<div class="delete-note"><i class="fa fa-trash"></i></div>' +
                                 '</div>'
                             );
                         }
@@ -3608,10 +3608,10 @@ var AppRouter = Backbone.Router.extend({
                 nNext = document.createElement( 'span' );
                 nLast = document.createElement( 'span' );
 
-                nFirst.innerHTML = "<i class='icon-double-angle-left'></i>";
-                nPrevious.innerHTML = "<i class='icon-angle-left'></i>";
-                nNext.innerHTML = "<i class='icon-angle-right'></i>";
-                nLast.innerHTML = "<i class='icon-double-angle-right'></i>";
+                nFirst.innerHTML = "<i class='fa fa-double-angle-left'></i>";
+                nPrevious.innerHTML = "<i class='fa fa-angle-left'></i>";
+                nNext.innerHTML = "<i class='fa fa-angle-right'></i>";
+                nLast.innerHTML = "<i class='fa fa-double-angle-right'></i>";
 
                 nFirst.className = "paginate_button first";
                 nPrevious.className = "paginate_button previous";
@@ -3949,8 +3949,8 @@ var AppRouter = Backbone.Router.extend({
                 ]
             },
             "fnInitComplete": function(oSettings, json) {
-                var saveHTML = "<div class='save-table-data'><i class='icon-download-alt'></i></div>",
-                    searchHTML = "<div class='search-table-data'><i class='icon-search'></i></div>",
+                var saveHTML = "<div class='save-table-data'><i class='fa fa-download-alt'></i></div>",
+                    searchHTML = "<div class='search-table-data'><i class='fa fa-search'></i></div>",
                     tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
 
                 $(saveHTML).insertBefore(tableWrapper.find(".DTTT_container"));
