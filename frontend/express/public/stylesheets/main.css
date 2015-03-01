@@ -37,7 +37,8 @@ a:active { color:inherit; }
 
 #sidebar-menu { }
 	#sidebar-menu>.item { margin-top:-1px; margin-left:-1px; width:223px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; height:43px; padding-top:3px; background-image:url('../images/dashboard/menu_button.png'); display:block; cursor:pointer; }
-		#sidebar-menu .item:hover { background-position:446px; }
+        #sidebar-menu>.item.hide { display: none; }
+        #sidebar-menu .item:hover { background-position:446px; }
 		#sidebar-menu .item.active { background-position:223px; }
 		#sidebar-menu .item .logo { background-image:url('../images/dashboard/menu_icons.png'); color:#888; width:40px; height:40px; float:left; margin-left:9px; }
         #sidebar-menu>.item>.logo-icon { background-image:none; font-size:24px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px; line-height: 34px; }
