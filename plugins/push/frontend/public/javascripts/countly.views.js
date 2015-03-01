@@ -1254,7 +1254,7 @@ $( document ).ready(function() {
     });
 		
 	var menu = '<a class="item messaging" id="sidebar-messaging">'+
-        '<div class="logo logo-icon fa fa-envelope-square"></div>'+
+        '<div class="logo logo-icon fa fa-envelope-square" style="font-size: 28px;"></div>'+
         '<div class="text" data-localize="">Messaging</div>'+
     '</a>'+
     '<div class="sidebar-submenu" id="messaging-submenu">'+
