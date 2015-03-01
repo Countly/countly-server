@@ -40,6 +40,7 @@ a:active { color:inherit; }
 		#sidebar-menu .item:hover { background-position:446px; }
 		#sidebar-menu .item.active { background-position:223px; }
 		#sidebar-menu .item .logo { background-image:url('../images/dashboard/menu_icons.png'); color:#888; width:40px; height:40px; float:left; margin-left:9px; }
+        #sidebar-menu>.item>.logo-icon { background-image:none; font-size:24px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px; line-height: 34px; }
             #sidebar-menu .item.active .logo { color:#FFF; }
             #sidebar-menu .item .logo.dashboard { background-position:0; }
 			#sidebar-menu .item.active .logo.dashboard { background-position:-40px; }

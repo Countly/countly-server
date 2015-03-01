@@ -1254,16 +1254,16 @@ $( document ).ready(function() {
     });
 		
 	var menu = '<a class="item messaging" id="sidebar-messaging">'+
-        '<div class="logo fa fa-envelope" style="background-image:none; font-size:24px; text-align:center; width:35px; margin-left:14px; line-height:40px;"></div>'+
+        '<div class="logo logo-icon fa fa-envelope-square"></div>'+
         '<div class="text" data-localize="">Messaging</div>'+
     '</a>'+
     '<div class="sidebar-submenu" id="messaging-submenu">'+
         '<a href="#/messaging" class="item">'+
-            '<div class="logo fa fa-globe" style="background-image:none; font-size:18px; text-align:center; width:30px; margin-left:7px; line-height:31px;"></div>'+
+            '<div class="logo-icon fa fa-line-chart"></div>'+
             '<div class="text" data-localize="">Overview</div>'+
         '</a>'+
         '<a href="#/messaging/messages" class="item">'+
-            '<div class="logo fa fa-inbox" style="background-image:none; font-size:15px; text-align:center; width:30px; margin-left:7px; line-height:30px;"></div>'+
+            '<div class="logo-icon fa fa-inbox""></div>'+
             '<div class="text" data-localize="">Messages</div>'+
         '</a>'+
     '</div>';
