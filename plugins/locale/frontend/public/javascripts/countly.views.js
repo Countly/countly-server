@@ -48,9 +48,6 @@ window.LanguageView = countlyView.extend({
             }
             self.renderCommon(true);
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            newPage.find(".sortable").tablesorter({sortList:self.sortList});
-
-            $(self.el).find(".sortable tbody").replaceWith(newPage.find(".sortable tbody"));
 
             var languageData = countlyLanguage.getLanguageData();
             countlyCommon.drawGraph(languageData.chartDPTotal, "#dashboard-graph", "pie");
