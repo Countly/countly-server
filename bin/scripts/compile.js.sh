@@ -10,11 +10,9 @@ java -jar $DIR/closure-compiler.jar \
 --js=$DIR/../../frontend/express/public/javascripts/dom/jqueryui/jquery-ui-i18n.js \
 --js=$DIR/../../frontend/express/public/javascripts/dom/slimScroll.min.js \
 --js=$DIR/../../frontend/express/public/javascripts/dom/jquery.easing.1.3.js \
---js=$DIR/../../frontend/express/public/javascripts/dom/jsonlite.js \
 --js=$DIR/../../frontend/express/public/javascripts/dom/dataTables/js/jquery.dataTables.js \
 --js=$DIR/../../frontend/express/public/javascripts/dom/dataTables/js/ZeroClipboard.js \
 --js=$DIR/../../frontend/express/public/javascripts/dom/dataTables/js/TableTools.js \
---js=$DIR/../../frontend/express/public/javascripts/dom/tablesorter/jquery.tablesorter.min.js \
 --js_output_file=$DIR/../../frontend/express/public/javascripts/min/countly.dom.js
 
 java -jar $DIR/closure-compiler.jar \
