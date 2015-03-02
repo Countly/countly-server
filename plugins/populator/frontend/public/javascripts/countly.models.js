@@ -180,7 +180,8 @@
 			}
 			var event = {
 				"key": id,
-				"count": 1
+				"count": 1,
+                "test": 1 // Events starting with [CLY]_ are ignored by the API (internal events). This flag is to bypass that.
 			};
 			if(segments[id]){
 				var segment;
