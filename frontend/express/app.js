@@ -1,6 +1,6 @@
-var COUNTLY_VERSION = "15.02",
-    COUNTLY_TYPE = "2fb8d2c65f7919fa1ce594302618febe0a46cb2f",
-    COUNTLY_LICENCE_KEY = "",
+var versionInfo = require('./version.info'),
+    COUNTLY_VERSION = versionInfo.version,
+    COUNTLY_TYPE = versionInfo.type,
     http = require('http'),
     express = require('express'),
     SkinStore = require('connect-mongoskin'),
@@ -387,7 +387,7 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
 
                 countlyDb.collection('members').insert({"full_name":req.body.full_name, "username":req.body.username, "password":password, "email":req.body.email, "global_admin":true}, {safe:true}, function (err, member) {
                     if (countlyConfig.web.use_intercom) {
-                        var options = {uri:"https://cloud.count.ly/s", method:"POST", timeout:4E3, json:{email:req.body.email, full_name:req.body.full_name, v:COUNTLY_VERSION, t:COUNTLY_TYPE, l:COUNTLY_LICENCE_KEY}};
+                        var options = {uri:"https://cloud.count.ly/s", method:"POST", timeout:4E3, json:{email:req.body.email, full_name:req.body.full_name, v:COUNTLY_VERSION, t:COUNTLY_TYPE}};
                         request(options, function(a, c, b) {
                             a = {};
                             a.api_key = md5Hash(member[0]._id + (new Date).getTime());
@@ -424,16 +424,28 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
         countlyDb.collection('members').findOne({$or: [ {"username":req.body.username}, {"email":req.body.username} ], "password":password}, function (err, member) {
             if (member) {
                 if (countlyConfig.web.use_intercom && member['global_admin']) {
-                    countlyStats.totalUsers(function(c, d) {
-                        countlyStats.totalEvents(function(e) {
-                            countlyStats.totalReqs(function(f) {
-                                request({uri:"https://cloud.count.ly/s", method:"POST", timeout:4E3, json:{email:member.email, full_name:member.full_name, v:COUNTLY_VERSION, t:COUNTLY_TYPE, l:COUNTLY_LICENCE_KEY, u:c, e:e, r:f, a:d}}, function(a, c, b) {
-                                    a = {};
-                                    b && (b.in_user_id && !member.in_user_id && (a.in_user_id = b.in_user_id), b.in_user_hash && !member.in_user_hash && (a.in_user_hash = b.in_user_hash));
-                                    Object.keys(a).length && countlyDb.collection("members").update({_id:member._id}, {$set:a}, function() {})
-                                })
-                            })
-                        })
+                    countlyStats.getOverall(function(statsObj){
+                        request({
+                            uri:"https://cloud.count.ly/s",
+                            method:"POST",
+                            timeout:4E3,
+                            json:{
+                                email:member.email,
+                                full_name:member.full_name,
+                                v:COUNTLY_VERSION,
+                                t:COUNTLY_TYPE,
+                                u:statsObj["total-users"],
+                                e:statsObj["total-events"],
+                                a:statsObj["total-apps"],
+                                m:statsObj["total-msg-users"],
+                                mc:statsObj["total-msg-created"],
+                                ms:statsObj["total-msg-sent"]
+                            }
+                        }, function(a, c, b) {
+                            a = {};
+                            b && (b.in_user_id && !member.in_user_id && (a.in_user_id = b.in_user_id), b.in_user_hash && !member.in_user_hash && (a.in_user_hash = b.in_user_hash));
+                            Object.keys(a).length && countlyDb.collection("members").update({_id:member._id}, {$set:a}, function() {})
+                        });
                     });
                 }
 

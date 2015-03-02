@@ -3,9 +3,9 @@ var countlyConfig = {
         host: "localhost",
         db: "countly",
         port: 27017,
-        max_pool_size: 1000,
-		//username: test,
-		//password: test
+        //username: test,
+        //password: test,
+        max_pool_size: 1000
     },
     /*  or for a replica set
     mongodb: {
@@ -28,7 +28,7 @@ var countlyConfig = {
         host: "localhost",
         use_intercom: true
     },
-    production: false,
+    production: true,
 	path: "",
 	cdn: ""
 };

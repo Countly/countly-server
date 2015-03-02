@@ -145,17 +145,13 @@ var plugin = {},
                 updateUsersZero['d.' + common.dbMap['messaging-enabled']] = 1;
             }
 
-        } else {
-            common.fillTimeObjectZero(params, updateUsersZero, common.dbMap['messaging-enabled']);
-            common.fillTimeObjectMonth(params, updateUsersMonth, common.dbMap['messaging-enabled']);
-        }
+            if (Object.keys(updateUsersZero).length) {
+                common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, {$set: {m: dbDateIds.zero, a: params.app_id + ""}, '$inc': updateUsersZero}, {'upsert': true},function(){});
+            }
 
-        if (Object.keys(updateUsersZero).length) {
-            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, {$set: {m: dbDateIds.zero, a: params.app_id + ""}, '$inc': updateUsersZero}, {'upsert': true},function(){});
+            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true},function(){});
+            common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': {"lp": params.time.timestamp}}, {'upsert': true}, function() {});
         }
-
-        common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true},function(){});
-        common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': {"lp": params.time.timestamp}}, {'upsert': true}, function() {});
 	});
 	
 	plugins.register("/i/apps/reset", function(ob){
