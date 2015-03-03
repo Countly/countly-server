@@ -3,7 +3,7 @@ var countlyConfig = {
         host: "localhost",
         db: "countly",
         port: 27017,
-        max_pool_size: 500,
+        max_pool_size: 1000,
 		//username: test,
 		//password: test
     },
@@ -13,10 +13,11 @@ var countlyConfig = {
             '192.168.3.1:27017',
             '192.168.3.2:27017'
         ],
+		replicaName: "test",
         db: "countly",
 		username: test,
 		password: test,
-        max_pool_size: 500
+        max_pool_size: 1000
     },
     */
     /*  or define as a url

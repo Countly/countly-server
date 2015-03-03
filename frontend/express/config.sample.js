@@ -14,6 +14,7 @@ var countlyConfig = {
             '192.168.3.2:27017'
         ],
         db: "countly",
+		replicaName: "test",
 		username: test,
 		password: test,
         max_pool_size: 1000

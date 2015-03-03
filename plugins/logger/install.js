@@ -3,22 +3,25 @@ var mongo = require('../../frontend/express/node_modules/mongoskin'),
 	countlyConfig = require('../../frontend/express/config');
 	
 var dbName;
-var dbOptions = { safe:true };
-
+var dbOptions = {
+	server:{auto_reconnect:true, socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 }},
+	replSet:{socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 }},
+	mongos:{socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 }}
+};
 if (typeof countlyConfig.mongodb === "string") {
-    dbName = countlyConfig.mongodb;
-} else if ( typeof countlyConfig.mongodb.replSetServers === 'object'){
+	dbName = countlyConfig.mongodb;
+} else{
 	countlyConfig.mongodb.db = countlyConfig.mongodb.db || 'countly';
-	//mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test
-    dbName = countlyConfig.mongodb.replSetServers.join(",")+"/"+countlyConfig.mongodb.db;
-    dbOptions.replicaSet = countlyConfig.mongodb.db || 'countly';
-} else {
-    dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db);
+	if ( typeof countlyConfig.mongodb.replSetServers === 'object'){
+		//mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test
+		dbName = countlyConfig.mongodb.replSetServers.join(",")+"/"+countlyConfig.mongodb.db;
+	} else {
+		dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db);
+	}
 }
 if(dbName.indexOf("mongodb://") !== 0){
 	dbName = "mongodb://"+dbName;
 }
-
 var countlyDb = mongo.db(dbName, dbOptions);
 console.log("Installing logger plugin");
 countlyDb.collection('apps').find({}).toArray(function (err, apps) {

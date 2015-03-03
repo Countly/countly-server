@@ -52,29 +52,31 @@ var common = {},
 
 	//mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
 	var dbName;
-    var dbOptions = {db:{safe:false}, server:{auto_reconnect:true}};
-	var optString = "?maxPoolSize="+(countlyConfig.mongodb.max_pool_size || 500);
-	countlyConfig.mongodb.db = countlyConfig.mongodb.db || 'countly';
+	var dbOptions = {
+		server:{auto_reconnect:true, poolSize:(countlyConfig.mongodb.max_pool_size || 1000), socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 }},
+		replSet:{socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 }},
+		mongos:{socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 }}
+	};
     if (typeof countlyConfig.mongodb === "string") {
         dbName = countlyConfig.mongodb;
-    } else if ( typeof countlyConfig.mongodb.replSetServers === 'object'){
-		//mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test
-        dbName = countlyConfig.mongodb.replSetServers.join(",")+"/"+countlyConfig.mongodb.db;
-        dbOptions.replSet = {auto_reconnect:true, poolSize: countlyConfig.mongodb.max_pool_size || 500 };
-		if(countlyConfig.mongodb.username && countlyConfig.mongodb.password){
-			dbName = countlyConfig.mongodb.username + ":" + countlyConfig.mongodb.password +"@" + dbName;
+    } else{
+		countlyConfig.mongodb.db = countlyConfig.mongodb.db || 'countly';
+		if ( typeof countlyConfig.mongodb.replSetServers === 'object'){
+			//mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test
+			dbName = countlyConfig.mongodb.replSetServers.join(",")+"/"+countlyConfig.mongodb.db;
+			if(countlyConfig.mongodb.replicaName){
+				dbOptions.replSet.rs_name = countlyConfig.mongodb.replicaName;
+			}
+		} else {
+			dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db);
 		}
-    } else {
-        dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db);
-		if(countlyConfig.mongodb.username && countlyConfig.mongodb.password){
-			dbName = countlyConfig.mongodb.username + ":" + countlyConfig.mongodb.password +"@" + dbName;
-		}
-    }
+	}
+	if(countlyConfig.mongodb.username && countlyConfig.mongodb.password){
+		dbName = countlyConfig.mongodb.username + ":" + countlyConfig.mongodb.password +"@" + dbName;
+	}
 	if(dbName.indexOf("mongodb://") !== 0){
 		dbName = "mongodb://"+dbName;
 	}
-	dbName = dbName+optString;
-	
     common.db = mongo.db(dbName, dbOptions);
 	common.db._emitter.setMaxListeners(0);
 	if(!common.db.ObjectID)
