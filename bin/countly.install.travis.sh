@@ -102,13 +102,6 @@ if [ ! -f $DIR/../plugins/plugins.json ]; then
 	cp $DIR/../plugins/plugins.ce.json $DIR/../plugins/plugins.json
 fi
 
-#finally start countly api and dashboard
-start countly-supervisor
-
-#compile scripts for production
-apt-get -y install default-jre
-bash $DIR/scripts/compile.js.sh
-
 #add all plugins to test
 (
 cd $DIR/../plugins
@@ -121,6 +114,14 @@ echo "Adding all plugins"
 echo $plugins
 echo $plugins > plugins.json
 
+)
+
+#compile scripts for production
+apt-get -y install default-jre
+bash $DIR/scripts/compile.js.sh
+
 #install plugins
 bash $DIR/scripts/countly.install.plugins.sh
-)
+
+#finally start countly api and dashboard
+start countly-supervisor
