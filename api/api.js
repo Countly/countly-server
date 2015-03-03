@@ -1,10 +1,32 @@
 var http = require('http'),
     cluster = require('cluster'),
     os = require('os'),
-    url = require('url'),
+	countlyConfig = require('./config')
+    plugins = require('../plugins/pluginManager.js');
+	
+plugins.init();
+
+http.globalAgent.maxSockets = countlyConfig.api.max_sockets || 1024;
+
+if (cluster.isMaster) {
+
+    var workerCount = (countlyConfig.api.workers)? countlyConfig.api.workers : os.cpus().length;
+
+    for (var i = 0; i < workerCount; i++) {
+        cluster.fork();
+    }
+
+    cluster.on('exit', function(worker) {
+        cluster.fork();
+    });
+	
+	plugins.dispatch("/worker", {});
+
+} else {
+
+	var url = require('url'),
 	querystring = require('querystring'),
     common = require('./utils/common.js'),
-    plugins = require('../plugins/pluginManager.js'),
 	crypto = require('crypto'),
     countlyApi = {
         data:{
@@ -18,133 +40,113 @@ var http = require('http'),
         }
     };
 	
-plugins.init();
-plugins.dispatch("/init", {common:common});
-
-http.globalAgent.maxSockets = common.config.api.max_sockets || 1024;
-
-// Checks app_key from the http request against "apps" collection.
-// This is the first step of every write request to API.
-function validateAppForWriteAPI(params) {
-    common.db.collection('apps').findOne({'key':params.qstring.app_key}, function (err, app) {
-        if (!app) {
-            if (common.config.api.safe) {
-                common.returnMessage(params, 400, 'App does not exist');
-            }
-
-            return false;
-        }
-
-        params.app_id = app['_id'];
-        params.app_cc = app['country'];
-		params.app_name = app['name'];
-        params.appTimezone = app['timezone'];
-        params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-		
-		plugins.dispatch("/i", {params:params, app:app});
-
-        if (params.qstring.events) {
-            countlyApi.data.events.processEvents(params);
-        } else if (common.config.api.safe) {
-            common.returnMessage(params, 200, 'Success');
-        }
-
-        if (params.qstring.begin_session) {
-			countlyApi.data.usage.beginUserSession(params);
-        } else if (params.qstring.end_session) {
-            if (params.qstring.session_duration) {
-                countlyApi.data.usage.processSessionDuration(params, function () {
-                    countlyApi.data.usage.endUserSession(params);
-                });
-            } else {
-                countlyApi.data.usage.endUserSession(params);
-            }
-        } else if (params.qstring.session_duration) {
-            countlyApi.data.usage.processSessionDuration(params);
-        } else {
-            // begin_session, session_duration and end_session handle incrementing request count in usage.js
-            var dbDateIds = common.getDateIds(params),
-                updateUsers = {};
-
-            common.fillTimeObjectMonth(params, updateUsers, common.dbMap['events']);
-            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, {'upsert':true}, function(err, res){});
-
-            return false;
-        }
-    });
-}
-
-function validateUserForWriteAPI(callback, params) {
-    common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
-        if (!member || err) {
-            common.returnMessage(params, 401, 'User does not exist');
-            return false;
-        }
-        params.member = member;
-        callback(params);
-    });
-}
-
-function validateUserForDataReadAPI(params, callback, callbackParam) {
-    common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
-        if (!member || err) {
-            common.returnMessage(params, 401, 'User does not exist');
-            return false;
-        }
-
-        if (!((member.user_of && member.user_of.indexOf(params.qstring.app_id) != -1) || member.global_admin)) {
-            common.returnMessage(params, 401, 'User does not have view right for this application');
-            return false;
-        }
-
-        common.db.collection('apps').findOne({'_id':common.db.ObjectID(params.qstring.app_id + "")}, function (err, app) {
-            if (!app) {
-                common.returnMessage(params, 401, 'App does not exist');
-                return false;
-            }
-
-            params.app_id = app['_id'];
-            params.appTimezone = app['timezone'];
-            params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-			
-			plugins.dispatch("/o/validate", {params:params, app:app});
-
-            if (callbackParam) {
-                callback(callbackParam, params);
-            } else {
-                callback(params);
-            }
-        });
-    });
-}
-
-function validateUserForMgmtReadAPI(callback, params) {
-    common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
-        if (!member || err) {
-            common.returnMessage(params, 401, 'User does not exist');
-            return false;
-        }
-
-        params.member = member;
-        callback(params);
-    });
-}
-
-if (cluster.isMaster) {
-
-    var workerCount = (common.config.api.workers)? common.config.api.workers : os.cpus().length;
-
-    for (var i = 0; i < workerCount; i++) {
-        cluster.fork();
-    }
-
-    cluster.on('exit', function(worker) {
-        cluster.fork();
-    });
+	plugins.dispatch("/init", {common:common});
+	// Checks app_key from the http request against "apps" collection.
+	// This is the first step of every write request to API.
+	function validateAppForWriteAPI(params) {
+		common.db.collection('apps').findOne({'key':params.qstring.app_key}, function (err, app) {
+			if (!app) {
+				if (common.config.api.safe) {
+					common.returnMessage(params, 400, 'App does not exist');
+				}
 	
-	plugins.dispatch("/worker", {});
-
-} else {
+				return false;
+			}
+	
+			params.app_id = app['_id'];
+			params.app_cc = app['country'];
+			params.app_name = app['name'];
+			params.appTimezone = app['timezone'];
+			params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+			
+			plugins.dispatch("/i", {params:params, app:app});
+	
+			if (params.qstring.events) {
+				countlyApi.data.events.processEvents(params);
+			} else if (common.config.api.safe) {
+				common.returnMessage(params, 200, 'Success');
+			}
+	
+			if (params.qstring.begin_session) {
+				countlyApi.data.usage.beginUserSession(params);
+			} else if (params.qstring.end_session) {
+				if (params.qstring.session_duration) {
+					countlyApi.data.usage.processSessionDuration(params, function () {
+						countlyApi.data.usage.endUserSession(params);
+					});
+				} else {
+					countlyApi.data.usage.endUserSession(params);
+				}
+			} else if (params.qstring.session_duration) {
+				countlyApi.data.usage.processSessionDuration(params);
+			} else {
+				// begin_session, session_duration and end_session handle incrementing request count in usage.js
+				var dbDateIds = common.getDateIds(params),
+					updateUsers = {};
+	
+				common.fillTimeObjectMonth(params, updateUsers, common.dbMap['events']);
+				common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, {'upsert':true}, function(err, res){});
+	
+				return false;
+			}
+		});
+	}
+	
+	function validateUserForWriteAPI(callback, params) {
+		common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
+			if (!member || err) {
+				common.returnMessage(params, 401, 'User does not exist');
+				return false;
+			}
+			params.member = member;
+			callback(params);
+		});
+	}
+	
+	function validateUserForDataReadAPI(params, callback, callbackParam) {
+		common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
+			if (!member || err) {
+				common.returnMessage(params, 401, 'User does not exist');
+				return false;
+			}
+	
+			if (!((member.user_of && member.user_of.indexOf(params.qstring.app_id) != -1) || member.global_admin)) {
+				common.returnMessage(params, 401, 'User does not have view right for this application');
+				return false;
+			}
+	
+			common.db.collection('apps').findOne({'_id':common.db.ObjectID(params.qstring.app_id + "")}, function (err, app) {
+				if (!app) {
+					common.returnMessage(params, 401, 'App does not exist');
+					return false;
+				}
+	
+				params.app_id = app['_id'];
+				params.appTimezone = app['timezone'];
+				params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+				
+				plugins.dispatch("/o/validate", {params:params, app:app});
+	
+				if (callbackParam) {
+					callback(callbackParam, params);
+				} else {
+					callback(params);
+				}
+			});
+		});
+	}
+	
+	function validateUserForMgmtReadAPI(callback, params) {
+		common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
+			if (!member || err) {
+				common.returnMessage(params, 401, 'User does not exist');
+				return false;
+			}
+	
+			params.member = member;
+			callback(params);
+		});
+	}
     http.Server(function (req, res) {
         var urlParts = url.parse(req.url, true),
             queryString = urlParts.query,
