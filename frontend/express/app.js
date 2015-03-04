@@ -472,7 +472,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
         countlyDb.collection('members').findOne({$or: [ {"username":req.body.username}, {"email":req.body.username} ], "password":password}, function (err, member) {
             if (member) {
                 if (countlyConfig.web.use_intercom && member['global_admin']) {
-                    countlyStats.getOverall(function(statsObj){
+                    countlyStats.getOverall(countlyDb, function(statsObj){
                         request({
                             uri:"https://cloud.count.ly/s",
                             method:"POST",

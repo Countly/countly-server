@@ -1,10 +1,10 @@
 var stats = {},
-    common = require('./../../utils/common.js'),
     async = require('./../../utils/async.min.js');
 
 (function (stats) {
-
-    stats.getOverall = function (callback) {
+	var countlyDb;
+    stats.getOverall = function (db, callback) {
+		countlyDb = db;
         getTotalUsers(function(totalUsers, totalApps) {
             getTotalEvents(function(totalEvents) {
                 getTotalMsgUsers(function(totalMsgUsers) {
@@ -26,7 +26,7 @@ var stats = {},
     };
 
     function getTotalUsers(callback) {
-        common.db.collection("apps").find({}, {_id:1}).toArray(function (err, allApps) {
+        countlyDb.collection("apps").find({}, {_id:1}).toArray(function (err, allApps) {
 			if(err || !allApps)
 				callback(0, 0);
 			else
@@ -46,7 +46,7 @@ var stats = {},
     }
 
     function getTotalEvents(callback) {
-        common.db.collection("events").find({}, {'list':1}).toArray(function (err, events) {
+        countlyDb.collection("events").find({}, {'list':1}).toArray(function (err, events) {
 			if (err || !events)
                 callback(0);
 			else{
@@ -64,7 +64,7 @@ var stats = {},
     }
 
     function getTotalMsgUsers(callback) {
-        common.db.collection("users").find({_id: {"$regex": ".*:0$"}}, {"d.m":1}).toArray(function (err, msgUsers) {
+        countlyDb.collection("users").find({_id: {"$regex": ".*:0$"}}, {"d.m":1}).toArray(function (err, msgUsers) {
 			if (err || !msgUsers)
                 callback(0);
 			else{
@@ -82,7 +82,7 @@ var stats = {},
     }
 
     function getTotalMsgCreated(callback) {
-        common.db.collection("messages").count(function (err, msgCreated) {
+        countlyDb.collection("messages").count(function (err, msgCreated) {
 			if (err || !msgCreated)
                 callback(0);
 			else
@@ -91,7 +91,7 @@ var stats = {},
     }
 
     function getTotalMsgSent(callback) {
-        common.db.collection("messages").find({}, {"result":1}).toArray(function (err, messages) {
+        countlyDb.collection("messages").find({}, {"result":1}).toArray(function (err, messages) {
 			if (err || !messages)
                 callback(0);
 			else{
@@ -109,7 +109,7 @@ var stats = {},
     }
 
     function getUserCountForApp(app, callback) {
-        common.db.collection("app_users" + app._id).find({}).count(function (err, count) {
+        countlyDb.collection("app_users" + app._id).find({}).count(function (err, count) {
 			if (err || !count)
                 callback(0);
 			else
