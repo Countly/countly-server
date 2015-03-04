@@ -147,6 +147,9 @@ $.extend(Template.prototype, {
     };
 	
 	CountlyHelpers.notify = function (msg) {
+		if(!CountlyHelpers._title)
+			CountlyHelpers._title = document.title;
+		document.title = (msg.title || msg.message || msg.info || "Notification") + " - " + CountlyHelpers._title;
 		$.amaran({
 			content:{
 				title: msg.title || "Notification",
@@ -158,7 +161,11 @@ $.extend(Template.prototype, {
 			position: msg.position || 'top right',
 			delay: msg.delay || 10000,
 			sticky: msg.stikcy || false,
-			closeButton:true
+			closeButton:true,
+			afterEnd: function(){
+				document.title = CountlyHelpers._title;
+				CountlyHelpers._title = null;
+			}
 		});
 	};
 
