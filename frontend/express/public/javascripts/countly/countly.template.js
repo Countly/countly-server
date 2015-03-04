@@ -155,8 +155,9 @@ $.extend(Template.prototype, {
 				icon:msg.icon || 'fa fa-info'
 			},
 			theme:'awesome '+ (msg.type || "ok"),
-			position:'top right',
-			sticky:true,
+			position: msg.position || 'top right',
+			delay: msg.delay || 10000,
+			sticky: msg.stikcy || false,
 			closeButton:true
 		});
 	};
