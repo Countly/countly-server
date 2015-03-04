@@ -5,7 +5,7 @@ var countlyConfig = {
         port: 27017,
         //username: test,
         //password: test,
-        max_pool_size: 1000
+        max_pool_size: 10
     },
     /*  or for a replica set
     mongodb: {
