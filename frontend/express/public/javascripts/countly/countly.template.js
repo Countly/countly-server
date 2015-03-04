@@ -3041,6 +3041,64 @@ var AppRouter = Backbone.Router.extend({
             CountlyHelpers.initializeSelect();
             CountlyHelpers.initializeTextSelect();
             CountlyHelpers.initializeHugeDropdown();
+			
+			if(countlyGlobal["session_timeout"]){
+				var minTimeout, tenSecondTimeout, logoutTimeout, actionTimeout;
+				var shouldRecordAction = false;
+				var extendSession = function(){
+					$.ajax({
+						url:countlyGlobal["path"]+"/session",
+						success:function (result) {
+							if(result == "logout"){
+								$("#user-logout").click();
+								window.location = "/logout";
+							}
+							else if(result == "success"){
+								shouldRecordAction = false;
+								setTimeout(function(){
+									shouldRecordAction = true;
+								}, Math.round(countlyGlobal["session_timeout"]/2));
+								resetSessionTimeouts(countlyGlobal["session_timeout"]);
+							}
+						}
+					});
+				}
+				var resetSessionTimeouts = function(timeout){
+					var minute = timeout - 60*1000;
+					if(minTimeout){
+						clearTimeout(minTimeout);
+						minTimeout = null;
+					}
+					if(minute > 0){
+						minTimeout = setTimeout(function(){
+							CountlyHelpers.notify({title:"Session expiration", message:"Your session will expire in 1 minute", info:"Click to remain login"})
+						}, minute);
+					}
+					var tenSeconds = timeout - 10*1000;
+					if(tenSecondTimeout){
+						clearTimeout(tenSecondTimeout);
+						tenSecondTimeout = null;
+					}
+					if(tenSeconds > 0){
+						tenSecondTimeout = setTimeout(function(){
+							CountlyHelpers.notify({title:"Session expiration", message:"Your session will expire in 10 seconds", info:"Click to remain login"})
+						}, tenSeconds);
+					}
+					if(logoutTimeout){
+						clearTimeout(logoutTimeout);
+						logoutTimeout = null;
+					}
+					logoutTimeout = setTimeout(function(){
+						extendSession();
+					}, timeout+1000);
+				}
+				resetSessionTimeouts(countlyGlobal["session_timeout"]);
+				$(document).click(function (event) {
+					if(shouldRecordAction)
+						extendSession();
+				});
+				extendSession();
+			}
 
             // If date range is selected initialize the calendar with these
             var periodObj = countlyCommon.getPeriod();

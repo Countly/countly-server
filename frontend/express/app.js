@@ -119,6 +119,8 @@ app.configure(function () {
 	app.use(countlyConfig.path, express.static(__dirname + '/public'), { maxAge:oneYear });
 });
 
+
+
 app.configure('development', function () {
     app.use(express.errorHandler({ dumpExceptions:true, showStack:true }));
 });
@@ -141,6 +143,45 @@ app.get(countlyConfig.path+'/appimages/*', function(req, res) {
 		}
 	});
 });
+
+if(countlyConfig.session_timeout){
+	var extendSession = function(req, res, next){
+		req.session.expires = Date.now() + countlyConfig.session_timeout;
+	};
+	var checkRequestForSession = function(req, res, next){
+		if (req.session.uid) {
+			if(Date.now() > req.session.expires){
+				//logout user
+				res.redirect(countlyConfig.path+'/logout');
+			}
+			else{
+				//extend session
+				extendSession(req, res, next);
+				next();
+			}
+		}
+		else
+			next();
+	};
+	
+	app.get(countlyConfig.path+'/session', function(req, res, next) {
+		if (req.session.uid) {
+			if(Date.now() > req.session.expires){
+				//logout user
+				res.send("logout");
+			}
+			else{
+				//extend session
+				extendSession(req, res, next);
+				res.send("success");
+			}
+		}
+		else
+			res.send("login");
+	});
+	app.get(countlyConfig.path+'/dashboard', checkRequestForSession);
+	app.post('*', checkRequestForSession);
+}
 
 app.get(countlyConfig.path+'/logout', function (req, res, next) {
     if (req.session) {
@@ -255,7 +296,8 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             member:member,
 							plugins:plugins.getPlugins(),
 							path:countlyConfig.path || "",
-							cdn:countlyConfig.cdn || ""
+							cdn:countlyConfig.cdn || "",
+							session_timeout: countlyConfig.session_timeout
                         }, 'countlyGlobal');
 
                         if (settings && !err) {
@@ -457,6 +499,8 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
 
                 req.session.uid = member["_id"];
                 req.session.gadm = (member["global_admin"] == true);
+				if(countlyConfig.session_timeout)
+					req.session.expires = Date.now()+countlyConfig.session_timeout;
                 res.redirect(countlyConfig.path+'/dashboard');
             } else {
                 res.render('login', { "message":"login.result", "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });

@@ -31,7 +31,8 @@ var countlyConfig = {
     },
     production: true,
 	path: "",
-	cdn: ""
+	cdn: "",
+	session_timeout: 30*60*1000
 };
 
 module.exports = countlyConfig;
