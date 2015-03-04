@@ -28,6 +28,7 @@ java -jar closure-compiler.jar ^
 --js=%~dp0/../../frontend/express/public/javascripts/utils/textcounter.min.js ^
 --js=%~dp0/../../frontend/express/public/javascripts/utils/initialAvatar.js ^
 --js=%~dp0/../../frontend/express/public/javascripts/utils/jquery.amaran.min.js ^
+--js=%~dp0/../../frontend/express/public/javascripts/utils/jquery.titlealert.js ^
 --js=%~dp0/../../frontend/express/public/javascripts/countly/countly.common.js ^
 --js_output_file=%~dp0/../../frontend/express/public/javascripts/min/countly.utils.js
 
