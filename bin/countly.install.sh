@@ -81,7 +81,7 @@ cp $DIR/config/nginx.server.conf /etc/nginx/sites-enabled/default
 cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
 /etc/init.d/nginx restart
 
-cp $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
+cp -n $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
 
 #kill existing supervisor process
 pkill -SIGTERM supervisord
@@ -90,10 +90,10 @@ pkill -SIGTERM supervisord
 (cat $DIR/config/countly-supervisor.conf ; echo "exec /usr/bin/supervisord --nodaemon --configuration $DIR/config/supervisord.conf") > /etc/init/countly-supervisor.conf
 
 #create api configuration file from sample
-cp $DIR/../api/config.sample.js $DIR/../api/config.js
+cp -n $DIR/../api/config.sample.js $DIR/../api/config.js
 
 #create app configuration file from sample
-cp $DIR/../frontend/express/config.sample.js $DIR/../frontend/express/config.js
+cp -n $DIR/../frontend/express/config.sample.js $DIR/../frontend/express/config.js
 
 if [ ! -f $DIR/../plugins/plugins.json ]; then
 	cp $DIR/../plugins/plugins.ce.json $DIR/../plugins/plugins.json
