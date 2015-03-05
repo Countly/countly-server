@@ -219,9 +219,9 @@ var appsApi = {},
             }
         });
 		if (!fromAppDelete)
-			plugins.dispatch("/i/apps/reset", {appId:appId});
+			plugins.dispatch("/i/apps/reset", {params:params, appId:appId});
 		else
-			plugins.dispatch("/i/apps/delete", {appId:appId});
+			plugins.dispatch("/i/apps/delete", {params:params, appId:appId});
 
         common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
             if (!err && events && events.list) {
