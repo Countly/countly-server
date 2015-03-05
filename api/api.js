@@ -20,7 +20,7 @@ if (cluster.isMaster) {
         cluster.fork();
     });
 	
-	plugins.dispatch("/worker", {});
+	plugins.dispatch("/master", {});
 
 } else {
 
