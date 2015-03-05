@@ -3,7 +3,7 @@ window.LanguageView = countlyView.extend({
         return $.when(countlyLanguage.initialize()).then(function () {});
     },
     renderCommon:function (isRefresh) {
-        var languageData = countlyLanguage.getLanguageData();
+        var languageData = countlyLanguage.getData();
 
         this.templateData = {
             "page-title":jQuery.i18n.map["languages.title"],
@@ -30,7 +30,7 @@ window.LanguageView = countlyView.extend({
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": languageData.chartData,
                 "aoColumns": [
-                    { "mData": "language", "sTitle": jQuery.i18n.map["languages.table.language"] },
+                    { "mData": "langs", "sTitle": jQuery.i18n.map["languages.table.language"] },
                     { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
                     { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
                     { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
@@ -49,7 +49,7 @@ window.LanguageView = countlyView.extend({
             self.renderCommon(true);
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
 
-            var languageData = countlyLanguage.getLanguageData();
+            var languageData = countlyLanguage.getData();
             countlyCommon.drawGraph(languageData.chartDPTotal, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(languageData.chartDPNew, "#dashboard-graph2", "pie");
 
