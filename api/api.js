@@ -136,6 +136,38 @@ if (cluster.isMaster) {
 		});
 	}
 	
+	function validateUserForDataWriteAPI(params, callback, callbackParam) {
+		common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
+			if (!member || err) {
+				common.returnMessage(params, 401, 'User does not exist');
+				return false;
+			}
+	
+			if (!((member.admin_of && member.admin_of.indexOf(params.qstring.app_id) != -1) || member.global_admin)) {
+				common.returnMessage(params, 401, 'User does not have write right for this application');
+				return false;
+			}
+	
+			common.db.collection('apps').findOne({'_id':common.db.ObjectID(params.qstring.app_id + "")}, function (err, app) {
+				if (!app) {
+					common.returnMessage(params, 401, 'App does not exist');
+					return false;
+				}
+	
+				params.app_id = app['_id'];
+				params.appTimezone = app['timezone'];
+				params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+				params.member = member;
+	
+				if (callbackParam) {
+					callback(callbackParam, params);
+				} else {
+					callback(params);
+				}
+			});
+		});
+	}
+	
 	function validateUserForMgmtReadAPI(callback, params) {
 		common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
 			if (!member || err) {
@@ -470,7 +502,7 @@ if (cluster.isMaster) {
                         validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchCollection, 'events');
                         break;
                     default:
-						if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI}))
+						if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, validateUserForDataWriteAPI:validateUserForDataWriteAPI}))
 							common.returnMessage(params, 400, 'Invalid method');
                         break;
                 }
@@ -506,7 +538,7 @@ if (cluster.isMaster) {
                         validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTops);
                         break;
                     default:
-						if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths}))
+						if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI}))
 							common.returnMessage(params, 400, 'Invalid path, must be one of /dashboard or /countries');
                         break;
                 }
@@ -514,7 +546,7 @@ if (cluster.isMaster) {
                 break;
             }
 			default:
-				if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, validateUserForWriteAPI:validateUserForWriteAPI, paths:paths}))
+				if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, validateUserForWriteAPI:validateUserForWriteAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI}))
 					common.returnMessage(params, 400, 'Invalid path');
         }
 
