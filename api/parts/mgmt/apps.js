@@ -170,7 +170,7 @@ var appsApi = {},
 
             common.db.collection('members').update({}, {$pull: {'apps': appId, 'admin_of': appId, 'user_of': appId}}, {multi: true}, function(err, app) {});
 
-            deleteAppData(appId, true);
+            deleteAppData(appId, true, params);
             common.returnMessage(params, 200, 'Success');
             return true;
         });
@@ -190,12 +190,12 @@ var appsApi = {},
         }
 
         if (params.member.global_admin) {
-            deleteAppData(appId);
+            deleteAppData(appId, false, params);
             common.returnMessage(params, 200, 'Success');
         } else {
             common.db.collection('members').findOne({ admin_of : appId, api_key: params.member.api_key}, function(err, member) {
                 if (!err && member) {
-                    deleteAppData(appId);
+                    deleteAppData(appId, false, params);
                     common.returnMessage(params, 200, 'Success');
                 } else {
                     common.returnMessage(params, 401, 'User does not have admin rights for this app');
@@ -206,7 +206,7 @@ var appsApi = {},
         return true;
     };
 
-    function deleteAppData(appId, fromAppDelete) {
+    function deleteAppData(appId, fromAppDelete, params) {
         common.db.collection('users').remove({'_id': {$regex: appId + ".*"}},function(){});
         common.db.collection('carriers').remove({'_id': {$regex: appId + ".*"}},function(){});
         common.db.collection('devices').remove({'_id': {$regex: appId + ".*"}},function(){});
