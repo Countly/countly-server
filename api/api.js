@@ -213,7 +213,7 @@ if (cluster.isMaster) {
             apiPath += "/" + paths[i];
         }
 		
-		plugins.dispatch("/", {params:params, apiPath:apiPath, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForDataWriteAPI:validateUserForDataWriteAPI});
+		plugins.dispatch("/", {params:params, apiPath:apiPath, validateAppForWriteAPI:validateAppForWriteAPI, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForDataWriteAPI:validateUserForDataWriteAPI});
 
         switch (apiPath) {
             case '/i/bulk':
