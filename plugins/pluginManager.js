@@ -45,7 +45,7 @@ var pluginManager = function pluginManager(){
 			try{
 				app.use(countlyConfig.path+'/'+plugins[i], express.static(__dirname + '/'+plugins[i]+"/frontend/public"));
 				var plugin = require("./"+plugins[i]+"/frontend/app");
-				plugin.init(app, countlyDb);
+				plugin.init(app, countlyDb, express);
 				plugs.push(plugin);
 			} catch (ex) {
 				console.error(ex);
