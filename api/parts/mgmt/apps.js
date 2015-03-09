@@ -91,7 +91,7 @@ var appsApi = {},
             newApp.key = appKey;
 
             common.db.collection('app_users' + app[0]._id).insert({_id:"uid-sequence", seq:0},function(err,res){});
-			plugins.dispatch("/i/apps/create", {params:params, appId:app[0]._id});
+			plugins.dispatch("/i/apps/create", {params:params, appId:app[0]._id, data:app[0]});
             common.returnOutput(params, newApp);
         });
     };
@@ -159,23 +159,25 @@ var appsApi = {},
             common.returnMessage(params, 400, 'Not enough args');
             return false;
         }
-
-        common.db.collection('apps').remove({'_id': common.db.ObjectID(appId)}, {safe: true}, function(err, result) {
-
-            if (!result) {
-                common.returnMessage(params, 500, 'Error deleting app');
-                return false;
-            }
-
-            var iconPath = __dirname + '/public/appimages/' + appId + '.png';
-            fs.unlink(iconPath, function() {});
-
-            common.db.collection('members').update({}, {$pull: {'apps': appId, 'admin_of': appId, 'user_of': appId}}, {multi: true}, function(err, app) {});
-
-            deleteAppData(appId, true, params);
-            common.returnMessage(params, 200, 'Success');
-            return true;
-        });
+		common.db.collection('apps').findOne({'_id': common.db.ObjectID(appId)}, function(err, app){
+			if(!err && app)
+				common.db.collection('apps').remove({'_id': common.db.ObjectID(appId)}, {safe: true}, function(err, result) {
+		
+					if (!result) {
+						common.returnMessage(params, 500, 'Error deleting app');
+						return false;
+					}
+		
+					var iconPath = __dirname + '/public/appimages/' + appId + '.png';
+					fs.unlink(iconPath, function() {});
+		
+					common.db.collection('members').update({}, {$pull: {'apps': appId, 'admin_of': appId, 'user_of': appId}}, {multi: true}, function(err, app) {});
+		
+					deleteAppData(appId, true, params, app);
+					common.returnMessage(params, 200, 'Success');
+					return true;
+				});
+		});
 
         return true;
     };
@@ -190,25 +192,27 @@ var appsApi = {},
             common.returnMessage(params, 400, 'Not enough args');
             return false;
         }
-
-        if (params.member.global_admin) {
-            deleteAppData(appId, false, params);
-            common.returnMessage(params, 200, 'Success');
-        } else {
-            common.db.collection('members').findOne({ admin_of : appId, api_key: params.member.api_key}, function(err, member) {
-                if (!err && member) {
-                    deleteAppData(appId, false, params);
-                    common.returnMessage(params, 200, 'Success');
-                } else {
-                    common.returnMessage(params, 401, 'User does not have admin rights for this app');
-                }
-            });
-        }
+		common.db.collection('apps').findOne({'_id': common.db.ObjectID(appId)}, function(err, app){
+			if(!err && app)
+				if (params.member.global_admin) {
+					deleteAppData(appId, false, params, app);
+					common.returnMessage(params, 200, 'Success');
+				} else {
+					common.db.collection('members').findOne({ admin_of : appId, api_key: params.member.api_key}, function(err, member) {
+						if (!err && member) {
+							deleteAppData(appId, false, params, app);
+							common.returnMessage(params, 200, 'Success');
+						} else {
+							common.returnMessage(params, 401, 'User does not have admin rights for this app');
+						}
+					});
+				}
+		});
 
         return true;
     };
 
-    function deleteAppData(appId, fromAppDelete, params) {
+    function deleteAppData(appId, fromAppDelete, params, app) {
         common.db.collection('users').remove({'_id': {$regex: appId + ".*"}},function(){});
         common.db.collection('carriers').remove({'_id': {$regex: appId + ".*"}},function(){});
         common.db.collection('devices').remove({'_id': {$regex: appId + ".*"}},function(){});
@@ -221,9 +225,9 @@ var appsApi = {},
             }
         });
 		if (!fromAppDelete)
-			plugins.dispatch("/i/apps/reset", {params:params, appId:appId});
+			plugins.dispatch("/i/apps/reset", {params:params, appId:appId, data:app});
 		else
-			plugins.dispatch("/i/apps/delete", {params:params, appId:appId});
+			plugins.dispatch("/i/apps/delete", {params:params, appId:appId, data:app});
 
         common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
             if (!err && events && events.list) {
