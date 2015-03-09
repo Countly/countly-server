@@ -187,6 +187,7 @@ app.get(countlyConfig.path+'/logout', function (req, res, next) {
     if (req.session) {
         req.session.uid = null;
         req.session.gadm = null;
+        req.session.email = null;
         res.clearCookie('uid');
         res.clearCookie('gadm');
         req.session.destroy(function () {
@@ -285,6 +286,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 
                         req.session.uid = member["_id"];
                         req.session.gadm = (member["global_admin"] == true);
+                        req.session.email = member["email"];
                         res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
 
                         delete member["password"];
@@ -322,6 +324,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                 if (req.session) {
                     req.session.uid = null;
                     req.session.gadm = null;
+                    req.session.email = null;
                     res.clearCookie('uid');
                     res.clearCookie('gadm');
                     req.session.destroy(function () {});
@@ -444,6 +447,7 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
                             countlyDb.collection("members").update({_id:member[0]._id}, {$set:a}, function() {
                                 req.session.uid = member[0]._id;
                                 req.session.gadm = !0;
+                                req.session.email = member[0].email;
                                 res.redirect(countlyConfig.path+"/dashboard")
                             })
                         });
@@ -454,6 +458,7 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
                         countlyDb.collection("members").update({_id:member[0]._id}, {$set:a}, function() {
                             req.session.uid = member[0]._id;
                             req.session.gadm = !0;
+                            req.session.email = member[0].email;
                             res.redirect(countlyConfig.path+"/dashboard")
                         })
                     }
@@ -499,6 +504,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
 
                 req.session.uid = member["_id"];
                 req.session.gadm = (member["global_admin"] == true);
+				req.session.email = member["email"];
 				if(countlyConfig.session_timeout)
 					req.session.expires = Date.now()+countlyConfig.session_timeout;
                 res.redirect(countlyConfig.path+'/dashboard');
