@@ -710,8 +710,8 @@ $.extend(Template.prototype, {
     function revealDialog(dialog) {
         $("body").append(dialog);
 
-        var dialogHeight = dialog.outerHeight() - 2,
-            dialogWidth = dialog.outerWidth();
+        var dialogHeight = dialog.outerHeight()+5,
+            dialogWidth = dialog.outerWidth()+5;
 
         dialog.css({
             "height":dialogHeight,
