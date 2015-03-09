@@ -1,5 +1,5 @@
 language: node_js
-node_js: "0.10"
+node_js: "stable"
 before_install: sudo bash ./bin/countly.install.travis.sh
 install: sudo npm install
 before_script: sleep 15
