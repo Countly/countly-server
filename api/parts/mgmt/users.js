@@ -1,6 +1,7 @@
 var usersApi = {},
     common = require('./../../utils/common.js'),
     mail = require('./mail.js'),
+	plugins = require('../../../plugins/pluginManager.js'),
     crypto = require('crypto');
 
 (function (usersApi) {
@@ -75,6 +76,7 @@ var usersApi = {},
                 common.returnMessage(params, 200, 'Email or username already exists');
                 return false;
             } else {
+				plugins.dispatch("/i/users/create", {params:params, data:{full_name:newMember.full_name, username:newMember.username, email:newMember.email}});
                 createUser();
                 return true;
             }
@@ -138,6 +140,7 @@ var usersApi = {},
         common.db.collection('members').update({'_id': common.db.ObjectID(params.qstring.args.user_id)}, {'$set': updatedMember}, {safe: true}, function(err, isOk) {
             common.db.collection('members').findOne({'_id': common.db.ObjectID(params.qstring.args.user_id)}, function(err, member) {
                 if (member && !err) {
+					plugins.dispatch("/i/users/update", {params:params, data:{full_name:updatedMember.full_name, username:updatedMember.username, email:updatedMember.email}});
                     if (params.qstring.args.send_notification && passwordNoHash) {
                         mail.sendToUpdatedMember(member, passwordNoHash);
                     }
@@ -172,7 +175,12 @@ var usersApi = {},
             if (!userIds[i] || userIds[i] === params.member._id || userIds[i].length !== 24) {
                 continue;
             } else {
-                common.db.collection('members').remove({'_id': common.db.ObjectID(userIds[i])},function(){});
+				common.db.collection('members').findOne({'_id': common.db.ObjectID(userIds[i])}, function(err, user){
+					if(!err && user)
+						common.db.collection('members').remove({'_id': common.db.ObjectID(userIds[i])},function(){
+							plugins.dispatch("/i/users/delete", {params:params, data:{full_name:user.full_name, username:user.username, email:user.email}});
+						});
+				});
             }
         }
 
