@@ -390,7 +390,7 @@ var common = {},
     };
 	
 	common.getIpAddress = function(req) {
-		var ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress;
+		var ipAddress = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress;
 	
 		/* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
 		return ipAddress.split(',')[0];
