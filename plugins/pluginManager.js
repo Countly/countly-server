@@ -194,7 +194,7 @@ var pluginManager = function pluginManager(){
 	}
 	
 	this.restartCountly = function(){
-		var child = exec("restart countly-supervisor", function (error, stdout, stderr) {
+		var child = exec("sudo restart countly-supervisor", function (error, stdout, stderr) {
 			if(stdout)
 				console.log('stdout: ' + stdout);
 		});
