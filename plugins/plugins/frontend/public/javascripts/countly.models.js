@@ -17,29 +17,25 @@
 		});
     };
 	
-	countlyPlugins.toggle = function (plugin, state, callback) {
-		$("#plugins-message pre").append("<p>"+jQuery.i18n.map["plugins.reloaded"]+"</p>");
+	countlyPlugins.toggle = function (plugins, callback) {
 		$.ajax({
 			type:"GET",
 			url:countlyCommon.API_URL + "/i/plugins",
 			data:{
-				plugin:plugin,
-				state:state,
+				plugin:JSON.stringify(plugins),
 				api_key:countlyGlobal['member'].api_key
 			},
 			success:function (json) {
-				$("#plugins-message pre").append("<p>"+json+"</p>");
 				if(callback)
-					callback();
+					callback(json);
 			},
-			error: function(jqXHR, textStatus, errorThrown){
-				var ret = "";
-				ret += textStatus+"\n";
+			error: function(xhr, textStatus, errorThrown){
+				var ret = textStatus+" ";
+				ret += xhr.status+": "+xhr.responseText;
 				if(errorThrown)
 					ret += errorThrown+"\n";
-				$("#plugins-message pre").append("<p>"+ret+"</p>");
 				if(callback)
-					callback();
+					callback(ret);
 			}
 		});
     };

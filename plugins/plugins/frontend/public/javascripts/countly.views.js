@@ -56,25 +56,45 @@ window.PluginsView = countlyView.extend({
             app.localize();
         });
     },
-	togglePlugin: function(plugin, state){
+	togglePlugin: function(plugins){
 		var self = this;
-		if(state)
-			$("#plugin-install").text(jQuery.i18n.map["plugins.install"]);
-		else
-			$("#plugin-install").text(jQuery.i18n.map["plugins.uninstall"]);
-		$("#plugin-name").text(plugin);
-		$("#plugins-message").fadeIn();
-		countlyPlugins.toggle(plugin, state, function(){
-			var seconds = 10;
-			$("#plugin-restart").text(seconds);
-			$("#plugin-restarting").show();
-			setInterval(function(){
-				seconds--;
-				$("#plugin-restart").text(seconds);
-			}, 1000);
-			setTimeout(function(){
-				window.location.reload(true);
-			}, seconds*1000);
+		var overlay = $("#overlay").clone();
+		$("body").append(overlay);
+		overlay.show();
+		var loader = $(this.el).find("#content-loader");
+		loader.show();
+		countlyPlugins.toggle(plugins, function(res){
+			var msg = {clearAll:true};
+			if(res == "Success" || res == "Errors"){
+				var seconds = 10;
+				if(res == "Success"){
+					msg.title = jQuery.i18n.map["plugins.success"];
+					msg.message = jQuery.i18n.map["plugins.restart"]+" "+seconds+" "+jQuery.i18n.map["plugins.seconds"];
+					msg.info = jQuery.i18n.map["plugins.finish"];
+					msg.delay = seconds*1000;
+				}
+				else if(res == "Errors"){
+					msg.title = jQuery.i18n.map["plugins.errors"];
+					msg.message = jQuery.i18n.map["plugins.errors-msg"];
+					msg.info = jQuery.i18n.map["plugins.restart"]+" "+seconds+" "+jQuery.i18n.map["plugins.seconds"];
+					msg.stikcy = true;
+					msg.type = "error";
+				}
+				CountlyHelpers.notify(msg);
+				setTimeout(function(){
+					window.location.reload(true);
+				}, seconds*1000);
+			}
+			else{
+				overlay.hide();
+				loader.hide();
+				msg.title = jQuery.i18n.map["plugins.error"];
+				msg.message = res;
+				msg.info = jQuery.i18n.map["plugins.retry"];
+				msg.stikcy = true;
+				msg.type = "error";
+				CountlyHelpers.notify(msg);
+			}
 		});
 	},
 	filterPlugins: function(filter){
@@ -102,18 +122,22 @@ app.addPageScript("/manage/plugins", function(){
 		app.activeView.filterPlugins(filter);
     });
 	$("#plugins-table").on("click", ".btn-plugins", function () {
-			var plugin = this.id.toString().replace(/^plugin-/, '');
-			var state = ($(this).hasClass("green")) ? true : false;
-			var text;
-		if(state)
-			text = jQuery.i18n.map["plugins.enable-confirm"];
-		else
+		var plugin = this.id.toString().replace(/^plugin-/, '');
+		var state = ($(this).hasClass("green")) ? true : false;
+		var text = jQuery.i18n.map["plugins.enable-confirm"];
+		var msg = {title:jQuery.i18n.map["plugins.install"], message: jQuery.i18n.map["plugins.wait"], info:jQuery.i18n.map["plugins.hold-on"], sticky:true};
+		if(!state){
+			msg.title=jQuery.i18n.map["plugins.uninstall"];
 			text = jQuery.i18n.map["plugins.disable-confirm"];
+		}
 		CountlyHelpers.confirm(text, "red", function (result) {
 			if (!result) {
 				return true;
 			}
-			app.activeView.togglePlugin(plugin, state);
+			CountlyHelpers.notify(msg);
+			var ob = {};
+			ob[plugin] = state;
+			app.activeView.togglePlugin(ob);
 		});
 	});
 });

@@ -10,8 +10,3 @@
 	#plugins-selector .button:hover { background-color:#F9F9F9; background-image:linear-gradient(top, #F9F9F9 40%, #E0E0E0 100%); background-image:linear-gradient(to bottom, #F9F9F9 40%, #E0E0E0 100%); }
 	#plugins-selector .button:active  { background-color:#E0E0E0; background-image:linear-gradient(top, #E0E0E0 40%, #F9F9F9 100%); background-image:linear-gradient(to bottom, #E0E0E0 40%, #F9F9F9 100%); }
 	#plugins-selector .button.active { background-color:#3C3C3C; background-image:linear-gradient(top, #3C3C3C 10%, #717171 100%); background-image:linear-gradient(to bottom, #3C3C3C 10%, #717171 100%); box-shadow:inset 0 0 1px 0 #2D2D2D; color:#FFF; border-color:#202020; text-shadow:0 -1px #333; }
-
-#plugins-message {display: none; position: absolute; top: 50px; color:#6B6B6B; text-shadow:0 1px #F6F6F6; width: 80%; height: 80%; background-color: #fff; background-color: rgba(255, 255, 255, 0.9); border-radius: 7px; box-shadow:inset 0 0 1px 0 #2D2D2D; border: 3px solid #979797; padding: 50px; overflow: auto;}
-#plugins-message h1 {text-align: center;}
-#plugins-message pre {font-size: 20px;}
-#plugin-restarting{display: none;};

@@ -2,6 +2,7 @@ var plugin = {},
 	fs = require('fs'),
 	path = require("path"),
 	common = require('../../../api/utils/common.js'),
+	async = require('../../../api/utils/async.min.js'),
     plugins = require('../../pluginManager.js');
 
 (function (plugin) {
@@ -13,38 +14,50 @@ var plugin = {},
 				common.returnMessage(params, 401, 'User is not a global administrator');
 				return false;
 			}
-			if(typeof params.qstring.plugin !== 'undefined' && typeof params.qstring.state !== 'undefined' && params.qstring.plugin != "plugins"){
-				var dir = path.resolve(__dirname, "../../plugins.json");
-				var pluginList = plugins.getPlugins();
-				var index = pluginList.indexOf(params.qstring.plugin);
-				var ret = "";
-				var cnt = 0;
-				function handler(add){
-					ret += add;
-					cnt++;
-					if(cnt == 2){
-						common.returnOutput(params, ret);
-						plugins.restartCountly();
+			if(typeof params.qstring.plugin !== 'undefined' && params.qstring.plugin != "plugins"){
+				try{
+					params.qstring.plugin = JSON.parse(params.qstring.plugin);
+				}
+				catch(err){
+					console.log("Error parsing plugins");
+				}
+				
+				if(params.qstring.plugin){
+					var errors = false;
+					var dir = path.resolve(__dirname, "../../plugins.json");
+					var pluginList = plugins.getPlugins();
+					function processPlugin(plugin, state, cb){
+						var index = pluginList.indexOf(plugin);
+						if (index > -1 && !state) {
+							pluginList.splice(index, 1);
+							plugins.uninstallPlugin(plugin, cb);
+						}
+						else if (index == -1 && state) {
+							pluginList.push(plugin);
+							plugins.installPlugin(plugin, cb);
+						}
+						else{
+							cb();
+						}
 					}
-				}
-				if (index > -1 && params.qstring.state+"" == 'false') {
-					pluginList.splice(index, 1);
-					fs.writeFile(dir, JSON.stringify( pluginList ), "utf8", function(){
-						plugins.reloadPlugins();
-						plugins.uninstallPlugin(params.qstring.plugin, handler);
-						plugins.prepareProduction(handler);
-					});
-				}
-				else if (index == -1 && params.qstring.state+"" == "true") {
-					pluginList.push(params.qstring.plugin);
-					fs.writeFile(dir, JSON.stringify( pluginList ), "utf8", function(){
-						plugins.reloadPlugins();
-						plugins.installPlugin(params.qstring.plugin, handler);
-						plugins.prepareProduction(handler);
-					});
-				}
-				else{
-					common.returnOutput(params, "No need to install plugin");
+					async.forEach(Object.keys(params.qstring.plugin), function (i, callback){ 
+						processPlugin(i, params.qstring.plugin[i], function(err){
+							if(err)
+								errors = true;
+							callback();
+						});
+					}, function() {
+						fs.writeFile(dir, JSON.stringify( pluginList ), "utf8", function(){
+							plugins.reloadPlugins();
+							plugins.prepareProduction(function(err){
+								if(errors)
+									common.returnOutput(params, "Errors");
+								else
+									common.returnOutput(params, "Success");
+								plugins.restartCountly();
+							});
+						});
+					});  
 				}
 			}
 			else
@@ -55,7 +68,7 @@ var plugin = {},
 	plugins.register("/o/plugins", function(ob){
 		var params = ob.params;
 		var pluginList = plugins.getPlugins();
-		var ignore = {"empty":true};
+		var ignore = {"empty":true, "plugins":true};
 		var walk = function(dir, done) {
 			var results = [];
 			fs.readdir(dir, function(err, list) {
