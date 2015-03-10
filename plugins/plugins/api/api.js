@@ -47,10 +47,10 @@ var plugin = {},
 							callback();
 						});
 					}, function() {
-						fs.writeFile(dir, JSON.stringify( pluginList ), "utf8", function(){
-							plugins.reloadPlugins();
-							plugins.prepareProduction(function(err){
-								if(errors)
+						plugins.prepareProduction(function(err){
+							fs.writeFile(dir, JSON.stringify( pluginList ), "utf8", function(){
+								plugins.reloadPlugins();
+								if(errors || err)
 									common.returnOutput(params, "Errors");
 								else
 									common.returnOutput(params, "Success");
