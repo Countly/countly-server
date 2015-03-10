@@ -67,47 +67,35 @@ var pluginManager = function pluginManager(){
 		try{
 			var dir = path.resolve(__dirname, '');
 			var child = cp.fork(dir+"/"+plugin+"/install.js");
+			var errors;
+			var handler = function (error, stdout, stderr) {
+				if(stderr){
+					errors = true;
+					console.log('stderr: ' + stderr);
+				}
+				if (error){
+					errors = true;					
+					console.log('error: ' + error);
+				}
+				
+				if(callback)
+					callback(errors);
+			};
 			child.on('error', function(err){
 				console.log(plugin + " install errored: " + err);
 				var cmd = "cd "+dir+"/"+plugin+"; npm install";
-				var child = exec(cmd, function (error, stdout, stderr) {
-					if(stdout)
-						ret += stdout+"\n";
-						//console.log('stdout: ' + stdout);
-					if(stderr)
-						ret += stderr+"\n";
-						//console.log('stderr: ' + stderr);
-					if (error)
-						ret += error+"\n";					
-						//console.log('exec error: ' + error);
-					
-					if(callback)
-						callback(ret);
-				});
+				var child = exec(cmd, handler);
 			}); 
 			child.on('exit', function(code){
-				console.log(plugin + " installed with code " + code);
 				var cmd = "cd "+dir+"/"+plugin+"; npm install";
-				var child = exec(cmd, function (error, stdout, stderr) {
-					if(stdout)
-						ret += stdout+"\n";
-						//console.log('stdout: ' + stdout);
-					if(stderr)
-						ret += stderr+"\n";
-						//console.log('stderr: ' + stderr);
-					if (error)
-						ret += error+"\n";					
-						//console.log('exec error: ' + error);
-					
-					if(callback)
-						callback(ret);
-				});
+				var child = exec(cmd, handler);
 			}); 
 		}
 		catch(ex){
 			console.log(ex);
+			errors = true;
 			if(callback)
-				callback(ret);
+				callback(errors);
 		}
 	}
 	
@@ -116,27 +104,33 @@ var pluginManager = function pluginManager(){
 		try{
 			var dir = path.resolve(__dirname, '');
 			var child = cp.fork(dir+"/"+plugin+"/uninstall.js");
-			child.on('error', function(err){
-				console.log(plugin + " uninstall errored: " + err);
+			var errors;
+			var handler = function (error, stdout, stderr) {
+				if(stderr){
+					errors = true;
+					console.log('stderr: ' + stderr);
+				}
+				if (error){
+					errors = true;					
+					console.log('error: ' + error);
+				}
+				
 				if(callback)
-					callback(ret);
-			}); 
-			child.on('exit', function(code){
-				console.log(plugin + " uninstalled with code " + code);
-				if(callback)
-					callback(ret);
-			}); 
+					callback(errors);
+			};
+			child.on('error', handler); 
+			child.on('exit', handler); 
 		}
 		catch(ex){
 			console.log(ex);
+			errors = true;
 			if(callback)
-				callback(ret);
+				callback(errors);
 		}
 	}
 	
 	this.prepareProduction = function(callback){
 		var ret = "";
-		var cnt = 0;
 		
 		var dir = path.resolve(__dirname, '');
 		var js = '',
@@ -159,44 +153,36 @@ var pluginManager = function pluginManager(){
 		var sys = require('sys')
 		var exec = require('child_process').exec;
 		
+		var errors;
+		var cnt = 0;
+		var handler = function (error, stdout, stderr) {
+			if(stderr){
+				errors = true;
+				console.log('stderr: ' + stderr);
+			}
+			if (error && error != "Error: Command failed: "){
+				errors = true;					
+				console.log('error: ' + error);
+			}
+			cnt++;
+			if(cnt == 3 && callback)
+				callback(errors);
+		};
+		
 		// executes `js`
-		var child = exec(js, function(error, stdout, stderr){
-			if(stdout)
-				ret += stdout+"\n";
-			if(stderr)
-				ret += stderr+"\n";
-			if (error)
-				ret += error+"\n";
-			//executes css
-			var child = exec(css, function(error, stdout, stderr){
-				if(stdout)
-					ret += stdout+"\n";
-				if(stderr)
-					ret += stderr+"\n";
-				if (error)
-					ret += error+"\n";
-				//executes img copy
-				var child = exec(img, function(error, stdout, stderr){
-					if(stdout)
-						ret += stdout+"\n";
-					if(stderr)
-						ret += stderr+"\n";
-					if (error && error != "Error: Command failed: ")
-						ret += error+"\n";
-					//executes img copy
-					if(callback)
-						callback(ret);
-				});
-			});
-		});
-		// executes `img`
-		//var child = exec(img, handler)
+		var child = exec(js, handler);
+		//executes css
+		var child = exec(css, handler);
+		//executes img copy
+		var child = exec(img, handler);
 	}
 	
 	this.restartCountly = function(){
 		var child = exec("sudo restart countly-supervisor", function (error, stdout, stderr) {
-			if(stdout)
-				console.log('stdout: ' + stdout);
+			if(error)
+				console.log('error: ' + error);
+			if(stderr)
+				console.log('stderr: ' + stderr);
 		});
 	}
 }
