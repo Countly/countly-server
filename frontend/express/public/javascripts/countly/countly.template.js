@@ -148,8 +148,8 @@ $.extend(Template.prototype, {
 	
 	CountlyHelpers.notify = function (msg) {
 		$.titleAlert((msg.title || msg.message || msg.info || "Notification"), {
-			requireBlur:false,
-			stopOnFocus:false,
+			requireBlur:true,
+			stopOnFocus:true,
 			duration:(msg.delay || 10000),
 			interval:1000
 		});
@@ -164,6 +164,7 @@ $.extend(Template.prototype, {
 			position: msg.position || 'top right',
 			delay: msg.delay || 10000,
 			sticky: msg.stikcy || false,
+			clearAll: msg.clearAll || false,
 			closeButton:true
 		});
 	};
