@@ -163,7 +163,7 @@ $.extend(Template.prototype, {
 			theme:'awesome '+ (msg.type || "ok"),
 			position: msg.position || 'top right',
 			delay: msg.delay || 10000,
-			sticky: msg.stikcy || false,
+			sticky: msg.sticky || false,
 			clearAll: msg.clearAll || false,
 			closeButton:true
 		});
