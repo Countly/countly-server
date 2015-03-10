@@ -31,7 +31,7 @@
 			},
 			error: function(xhr, textStatus, errorThrown){
 				var ret = textStatus+" ";
-				ret += xhr.status+": "+xhr.responseText;
+				ret += xhr.status+": "+$(xhr.responseText).text();
 				if(errorThrown)
 					ret += errorThrown+"\n";
 				if(callback)
