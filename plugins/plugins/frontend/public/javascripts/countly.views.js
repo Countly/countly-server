@@ -37,7 +37,7 @@ window.PluginsView = countlyView.extend({
                     { "mData": function(row, type){return row.title;}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.name"]},
                     { "mData": function(row, type){return row.description;}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.description"] },
                     { "mData": function(row, type){return row.version;}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.version"], "sClass":"center" },
-                    { "mData": function(row, type){if(type == "display"){ if(!row.enabled) return '<a class="icon-button green btn-header btn-plugins" id="plugin-'+row.code+'">'+jQuery.i18n.map["plugins.enable"]+'</a>'; else return '<a class="icon-button red btn-header btn-plugins" id="plugin-'+row.code+'">'+jQuery.i18n.map["plugins.disable"]+'</a>';}else return row.enabled;}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.action"], "sClass":"shrink center"},
+                    { "mData": function(row, type){if(type == "display"){ if(!row.enabled) return '<a class="icon-button green btn-header btn-plugins" id="plugin-'+row.code+'">'+jQuery.i18n.map["plugins.enable"]+'</a>'; else return '<a class="icon-button red btn-header btn-plugins" id="plugin-'+row.code+'">'+jQuery.i18n.map["plugins.disable"]+'</a>';}else return row.enabled;}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.state"], "sClass":"shrink center"},
 					{ "mData": function(row, type){if(row.homepage != "") return '<a class="icon-button btn-header light" href="'+ row.homepage + '" target="_blank">'+jQuery.i18n.map["plugins.homepage"]+'</a>'; else return "";}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.homepage"], "sClass":"shrink center"}
                 ]
             }));
@@ -45,16 +45,7 @@ window.PluginsView = countlyView.extend({
 			this.dtable.fnSort( [ [0,'asc'] ] );
         }
     },
-    refresh:function () {
-        var self = this;
-        $.when(countlyPlugins.initialize()).then(function () {
-            if (app.activeView != self) {
-                return false;
-            }
-             var pluginsData = countlyPlugins.getData();
-			CountlyHelpers.refreshTable(self.dtable, pluginsData);
-            app.localize();
-        });
+    refresh:function (){
     },
 	togglePlugin: function(plugins){
 		var self = this;
@@ -77,10 +68,9 @@ window.PluginsView = countlyView.extend({
 					msg.title = jQuery.i18n.map["plugins.errors"];
 					msg.message = jQuery.i18n.map["plugins.errors-msg"];
 					msg.info = jQuery.i18n.map["plugins.restart"]+" "+seconds+" "+jQuery.i18n.map["plugins.seconds"];
-					msg.stikcy = true;
+					msg.sticky = true;
 					msg.type = "error";
 				}
-				CountlyHelpers.notify(msg);
 				setTimeout(function(){
 					window.location.reload(true);
 				}, seconds*1000);
@@ -91,10 +81,10 @@ window.PluginsView = countlyView.extend({
 				msg.title = jQuery.i18n.map["plugins.error"];
 				msg.message = res;
 				msg.info = jQuery.i18n.map["plugins.retry"];
-				msg.stikcy = true;
+				msg.sticky = true;
 				msg.type = "error";
-				CountlyHelpers.notify(msg);
 			}
+			CountlyHelpers.notify(msg);
 		});
 	},
 	filterPlugins: function(filter){
@@ -121,23 +111,51 @@ app.addPageScript("/manage/plugins", function(){
 		var filter = $(this).attr("id");
 		app.activeView.filterPlugins(filter);
     });
+	var plugins = countlyGlobal["plugins"].slice();
 	$("#plugins-table").on("click", ".btn-plugins", function () {
+		var show = false;
 		var plugin = this.id.toString().replace(/^plugin-/, '');
-		var state = ($(this).hasClass("green")) ? true : false;
-		var text = jQuery.i18n.map["plugins.enable-confirm"];
-		var msg = {title:jQuery.i18n.map["plugins.install"], message: jQuery.i18n.map["plugins.wait"], info:jQuery.i18n.map["plugins.hold-on"], sticky:true};
-		if(!state){
-			msg.title=jQuery.i18n.map["plugins.uninstall"];
-			text = jQuery.i18n.map["plugins.disable-confirm"];
+		if($(this).hasClass("green")){
+			$(this).removeClass("green").addClass("red");
+			$(this).text(jQuery.i18n.map["plugins.disable"]);
+			plugins.push(plugin);
 		}
+		else if($(this).hasClass("red")){
+			$(this).removeClass("red").addClass("green");
+			$(this).text(jQuery.i18n.map["plugins.enable"]);
+			var index = $.inArray(plugin, plugins);
+			plugins.splice(index, 1);
+		}
+		if(plugins.length != countlyGlobal["plugins"].length)
+			show = true;
+		else{
+			for(var i = 0; i < plugins.length; i++){
+				if($.inArray(plugins[i], countlyGlobal["plugins"]) == -1){
+					show = true;
+					break;
+				}
+			}
+		}
+		if(show)
+			$(".btn-plugin-enabler").show();
+		else
+			$(".btn-plugin-enabler").hide();
+	});
+	$("#plugins-selector").on("click", ".btn-plugin-enabler", function () {
+		var plugins = {};
+		$(".btn-plugins").each(function(){
+			var plugin = this.id.toString().replace(/^plugin-/, '');
+			var state = ($(this).hasClass("green")) ? false : true;
+			plugins[plugin] = state;
+		})
+		var text = jQuery.i18n.map["plugins.confirm"];
+		var msg = {title:jQuery.i18n.map["plugins.processing"], message: jQuery.i18n.map["plugins.wait"], info:jQuery.i18n.map["plugins.hold-on"], sticky:true};
 		CountlyHelpers.confirm(text, "red", function (result) {
 			if (!result) {
 				return true;
 			}
 			CountlyHelpers.notify(msg);
-			var ob = {};
-			ob[plugin] = state;
-			app.activeView.togglePlugin(ob);
+			app.activeView.togglePlugin(plugins);
 		});
 	});
 });
