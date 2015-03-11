@@ -1,6 +1,6 @@
 15.03
 
-  * Inroducing Plugins system, allowing other developers to write plugins which would extend Countly functionality without changing/breaking the core.
+  * Inroducing Plugins system, allowing other developers to write plugins which would extend Countly functionality without changing/breaking the core. For more information on how to write a plugin, see [Countly resources](http://resources.count.ly)
   
   * Lots of plugins with new functionality:
    * Data Populator
