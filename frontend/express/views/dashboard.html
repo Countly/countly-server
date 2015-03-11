@@ -361,6 +361,27 @@
         <div id="content">
             <div id="content-loader"></div>
         </div>
+		<div id="content-footer">
+		 <% if (countlyType) { %>
+			<span>Countly Enterprise Edition v<%= countlyVersion %></span>
+			<ul>
+				<li><a href="#" id="Intercom">Feedback & Support</a></li>
+				<li>|</li>
+				<li><a href="http://resources.count.ly/" target="_blank">Documentation</a></li>
+			</ul>
+		 <% }else { %>
+			<span>Countly Community Edition v<%= countlyVersion %></span>
+			<ul>
+				<li><a href="#" id="Intercom" >Provide feedback</a></li>
+				<li>|</li>
+				<li><a href="http://support.count.ly/" target="_blank">Support</a></li>
+				<li>|</li>
+				<li><a href="http://count.ly/enterprise-edition" target="_blank">Enterprise Edition (supported)</a></li>
+				<li>|</li>
+				<li><a href="http://resources.count.ly/" target="_blank">Documentation</a></li>
+			</ul>
+		 <% } %>
+		</div>
     </div>
 
     <script id="template-date-selector" type="text/x-handlebars-template">
@@ -1039,8 +1060,6 @@
         </div>
 	</script>
 
-    <div id="IntercomDefaultWidget" style="visibility: visible;"><span></span></div>
-
 	<script language="javascript" type="text/javascript" src="https://www.google.com/jsapi"></script>
     <% if (production) { %>
     <!-- PRODUCTION -->
@@ -1092,7 +1111,7 @@
         var intercomSettings = {
             app_id: 'pt60eheo',
             widget: {
-                activator: '#IntercomDefaultWidget'
+                activator: '#Intercom'
             },
             email: "<%= member.email %>",
             created_at: parseInt("<%= member.created_at %>") || 1349863810,

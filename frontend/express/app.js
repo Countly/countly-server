@@ -313,6 +313,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             member:member,
                             intercom:countlyConfig.web.use_intercom,
                             countlyVersion:COUNTLY_VERSION,
+							countlyType: (COUNTLY_TYPE != "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") ? true : false,
 			                production: countlyConfig.production || false,
 							plugins:plugins.getPlugins(),
 							path:countlyConfig.path || "",

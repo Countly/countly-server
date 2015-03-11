@@ -3395,7 +3395,7 @@ var AppRouter = Backbone.Router.extend({
                 }
             });
 			$('#sidebar-menu').slimScroll({
-				height: ($(window).height()-123-46)+'px',
+				height: ($(window).height()-123-96)+'px',
 				railVisible: true,
 				railColor : '#4CC04F',
 				railOpacity : .2,
@@ -3403,7 +3403,7 @@ var AppRouter = Backbone.Router.extend({
 			});
 			$( window ).resize(function() {
 				$('#sidebar-menu').slimScroll({
-					height: ($(window).height()-123-46)+'px'
+					height: ($(window).height()-123-96)+'px'
 				});
 			});
 
