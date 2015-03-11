@@ -164,22 +164,17 @@ var pluginManager = function pluginManager(){
 				errors = true;					
 				console.log('error: ' + error);
 			}
+			cnt++;
+			if(cnt == 3 && callback)
+				callback(errors);
 		};
 		
 		// executes `js`
-		var child = exec(js, function (error, stdout, stderr) {
-			handler(error, stdout, stderr);
-			//executes css
-			var child = exec(css, function (error, stdout, stderr) {
-				handler(error, stdout, stderr);
-				//executes img copy
-				var child = exec(img, function (error, stdout, stderr) {
-					handler(error, stdout, stderr);
-					if(callback)
-						callback(errors);
-				});
-			});
-		});
+		var child = exec(js, handler);
+		//executes css
+		var child = exec(css, handler);
+		//executes img copy
+		var child = exec(img, handler);
 	}
 	
 	this.restartCountly = function(){
