@@ -3241,7 +3241,7 @@ var AppRouter = Backbone.Router.extend({
 					}
 					if(minute > 0){
 						minTimeout = setTimeout(function(){
-							CountlyHelpers.notify({title:"Session expiration", message:"Your session will expire in 1 minute", info:"Click to remain login"})
+							CountlyHelpers.notify({title:jQuery.i18n.map["common.session-expiration"], message:jQuery.i18n.map["common.expire-minute"], info:jQuery.i18n.map["common.click-to-login"]})
 						}, minute);
 					}
 					var tenSeconds = timeout - 10*1000;
@@ -3251,7 +3251,7 @@ var AppRouter = Backbone.Router.extend({
 					}
 					if(tenSeconds > 0){
 						tenSecondTimeout = setTimeout(function(){
-							CountlyHelpers.notify({title:"Session expiration", message:"Your session will expire in 10 seconds", info:"Click to remain login"})
+							CountlyHelpers.notify({title:jQuery.i18n.map["common.session-expiration"], message:jQuery.i18n.map["common.expire-seconds"], info:jQuery.i18n.map["common.click-to-login"]})
 						}, tenSeconds);
 					}
 					if(logoutTimeout){
