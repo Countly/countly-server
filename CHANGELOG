@@ -2,7 +2,11 @@
 
   * Inroducing Plugins system, allowing other developers to write plugins which would extend Countly functionality without changing/breaking the core.
   
-  * Lots of plugins with new functionality as Data Populator, Event Logger, DBViewer, etc
+  * Lots of plugins with new functionality:
+   * Data Populator
+   * Event Logger
+   * Database Viewer
+   * System Logger
   
   * New core and scalable data structure, dividing data into years and months to prevent reaching MongoDB document size limit
 
@@ -22,7 +26,7 @@
   
   * You can now login using username or email address
   
-  * All tables in Countly now use Datatables for more interaction, as sorting, fitlering, etc.
+  * All tables in Countly now use Datatables for more interaction, as sorting, filtering, etc.
   
   * New API enhancements, as providing country and city, or returning precalculated stats for implementing dashboards
   
