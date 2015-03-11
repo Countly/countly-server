@@ -165,7 +165,9 @@ $.extend(Template.prototype, {
 			delay: msg.delay || 10000,
 			sticky: msg.sticky || false,
 			clearAll: msg.clearAll || false,
-			closeButton:true
+			closeButton:true,
+			closeOnClick:(msg.closeOnClick === false) ? false : true,
+			onClick: msg.onClick || null
 		});
 	};
 
