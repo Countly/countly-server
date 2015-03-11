@@ -2,17 +2,17 @@
 
   * Inroducing Plugins system, allowing other developers to write plugins which would extend Countly functionality without changing/breaking the core. For more information on how to write a plugin, see [Countly resources](http://resources.count.ly)
   
-  * Lots of plugins with new functionality:
+  * Lots of plugins come with new functionality in this release, including:
    * Data Populator
    * Event Logger
    * Database Viewer
    * System Logger
   
-  * New core and scalable data structure, dividing data into years and months to prevent reaching MongoDB document size limit
+  * New core and scalable data structure, dividing data into years and months to prevent reaching MongoDB document size limit.
 
   * Upgraded to using latest Mongoskin version and newer MongoDB driver which supports new connection string format (https://github.com/Countly/countly-server/issues/124)
   
-  * Using latest MongoDB version
+  * Countly now ensures that it uses latest MongoDB version.
 
   * Now Countly can be installed and run from subdirectory, more info (https://github.com/Countly/countly-server/issues/19)
   
