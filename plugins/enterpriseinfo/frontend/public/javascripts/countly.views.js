@@ -51,4 +51,9 @@ $( document ).ready(function() {
         '<div class="text" data-localize="">Enterprise</div>'+
     '</a>';
 	$('#sidebar-menu').append(menu);
+	
+	if(countlyGlobalEE && countlyGlobalEE["discount"]){
+		var msg = {title:"5000+ users reached", message: "<a href='https://count.ly/enterprise-edition/' target='_blank'>To get 20% off Enterprise edition contact us with code:<br/><strong>"+countlyGlobalEE["discount"]+"</strong></a>", info:"Thank you for being with us", sticky:true, closeOnClick:false};
+		CountlyHelpers.notify(msg);
+    }
 });
