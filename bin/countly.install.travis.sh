@@ -92,6 +92,13 @@ pkill -SIGTERM supervisord
 #create supervisor upstart script
 (cat $DIR/config/countly-supervisor.conf ; echo "exec /usr/bin/supervisord --nodaemon --configuration $DIR/config/supervisord.conf") > /etc/init/countly-supervisor.conf
 
+#respawning mongod on crash
+echo "respawn" >> /etc/mongod.conf
+
+#restart mongod
+stop mongod
+start mongod
+
 #create api configuration file from sample
 cp $DIR/../api/config.sample.js $DIR/../api/config.js
 
