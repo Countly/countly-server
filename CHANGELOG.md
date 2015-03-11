@@ -16,6 +16,8 @@
 
   * Now Countly can be installed and run from subdirectory, more info (https://github.com/Countly/countly-server/issues/19)
   
+  * Countly can be run with countly user. For more information, see README under /bin directory before running corresponding script to install Countly.
+   
   * All dependencies are now defined in package.json and can be downloaded using install script (https://github.com/Countly/countly-server/issues/4)
   
   * All apps view implemented displaying list of all apps and their dashboard statistics (https://github.com/Countly/countly-server/issues/122)
@@ -32,7 +34,7 @@
   
   * Allowing any origin on API to allow CORS for ajax queries on different domains
   
-  * Added new iOS device identifiers
+  * Added new iOS device identifiers (iPhone 6 and iPhone 6S)
   
   * Fixed bug displaying user roles
   
@@ -41,6 +43,8 @@
   * Fixed displaying long funnel names (https://github.com/Countly/countly-server/issues/107)
   
   * Fixed locked scrolling after using slimscroll in some cases (https://github.com/Countly/countly-server/issues/128)
+  
+  * Navigation bar has scroll. It eases moving between navigation items
   
   * Numerous other minor fixes and improvements
   
