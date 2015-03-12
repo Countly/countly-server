@@ -1,7 +1,7 @@
 Before upgrading:
 
 Assuming countly is installed at /var/countly
-0) Download new countly version 15.02
+0) Download new countly version 15.03
 1) Rename old countly folder to /var/countly.old
 2) Put new countly files in /var/countly
 3) Back up your database, for example by making copy of it in ssh:
@@ -13,8 +13,8 @@ db.copyDatabase("countly", "countly_backup")
 #to verify there is also a backup dbs execute
 show dbs 
 
-(Optionally) you can add plugins by modifying /var/countly/plugins/plugins.json files (adding plugin directory name in the json array)
-That will save you node script restart
+
+
 
 Upgrading
 go to countly directory by typing
