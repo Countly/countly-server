@@ -177,6 +177,8 @@ var appsApi = {},
 					common.returnMessage(params, 200, 'Success');
 					return true;
 				});
+			else
+				common.returnMessage(params, 500, 'Error deleting app');
 		});
 
         return true;
