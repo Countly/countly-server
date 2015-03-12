@@ -152,7 +152,7 @@ if(countlyConfig.session_timeout){
 		if (req.session.uid) {
 			if(Date.now() > req.session.expires){
 				//logout user
-				res.redirect(countlyConfig.path+'/logout');
+				res.redirect(countlyConfig.path+'/logout?message=logout.inactivity');
 			}
 			else{
 				//extend session
@@ -193,7 +193,10 @@ app.get(countlyConfig.path+'/logout', function (req, res, next) {
         req.session.destroy(function () {
         });
     }
-    res.redirect(countlyConfig.path+'/login');
+	if(req.query.message)
+		res.redirect(countlyConfig.path+'/login?message='+req.query.message);
+	else
+		res.redirect(countlyConfig.path+'/login');
 });
 
 app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
@@ -352,6 +355,8 @@ app.get(countlyConfig.path+'/login', function (req, res, next) {
     } else {
         countlyDb.collection('members').count({}, function (err, memberCount) {
             if (memberCount) {
+				if(req.query.message)
+					req.flash('info', req.query.message);
                 res.render('login', { "message":req.flash('info'), "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
             } else {
                 res.redirect(countlyConfig.path+'/setup');
