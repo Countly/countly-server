@@ -175,11 +175,9 @@ var usersApi = {},
             if (!userIds[i] || userIds[i] === params.member._id || userIds[i].length !== 24) {
                 continue;
             } else {
-				common.db.collection('members').findOne({'_id': common.db.ObjectID(userIds[i])}, function(err, user){
-					common.db.collection('members').remove({'_id': common.db.ObjectID(userIds[i])},function(){
-						if(!err && user)
-							plugins.dispatch("/i/users/delete", {params:params, data:{full_name:user.full_name, username:user.username, email:user.email}});
-					});
+				common.db.collection('members').findAndModify({'_id': common.db.ObjectID(userIds[i])},{},{remove:true},function(err, user){
+					if(!err && user)
+						plugins.dispatch("/i/users/delete", {params:params, data:{full_name:user.full_name, username:user.username, email:user.email}});
 				});
             }
         }
