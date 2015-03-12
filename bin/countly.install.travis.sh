@@ -93,7 +93,7 @@ pkill -SIGTERM supervisord
 (cat $DIR/config/countly-supervisor.conf ; echo "exec /usr/bin/supervisord --nodaemon --configuration $DIR/config/supervisord.conf") > /etc/init/countly-supervisor.conf
 
 #respawning mongod on crash
-echo "respawn" >> /etc/mongod.conf
+echo "respawn" >> /etc/init/mongod.conf
 
 #restart mongod
 stop mongod
