@@ -1,4 +1,7 @@
-#Before upgrading:
+
+Follow these instructions if you want to upgrade an old version of Countly (<= 14.08) to a new version (>= 15.03).
+
+##Before upgrading:
 Assuming countly is installed at /var/countly
 
 1) Back up your database, for example by making copy of it in ssh:
