@@ -44,11 +44,11 @@ window.SystemLogsView = countlyView.extend({
     },
     refresh:function () {
         var self = this;
-        $.when(countlyLogger.initialize()).then(function () {
+        $.when(countlySystemLogs.initialize()).then(function () {
             if (app.activeView != self) {
                 return false;
             }
-            var data = countlyLogger.getData();
+            var data = countlySystemLogs.getData();
 			CountlyHelpers.refreshTable(self.dtable, data);
             app.localize();
         });
