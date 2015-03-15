@@ -17,12 +17,12 @@ var countlyConfig = {
 		replicaName: "test",
 		username: test,
 		password: test,
-        max_pool_size: 1000
+        max_pool_size: 10
     },
     */
     /*  or define as a url
 	//mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
-	mongodb: "localhost:27017/countly",
+	mongodb: "mongodb://localhost:27017/countly",
     */
     web: {
         port: 6001,

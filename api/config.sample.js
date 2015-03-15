@@ -22,7 +22,7 @@ var countlyConfig = {
     */
     /*  or define as a url
 	//mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
-	mongodb: "localhost:27017/countly",
+	mongodb: "mongodb://localhost:27017/countly",
     */
     api: {
         port: 3001,
