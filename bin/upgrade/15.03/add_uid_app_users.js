@@ -10,28 +10,10 @@ var currDBName = "countly";
     **************************************************
  */
  
-load("../../../frontend/express/config.js")
+load("parseConnection.js");
 
-//mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
-var dbName;
-countlyConfig.mongodb.db = countlyConfig.mongodb.db || 'countly';
-if (typeof countlyConfig.mongodb === "string") {
-    dbName = countlyConfig.mongodb;
-} else if ( typeof countlyConfig.mongodb.replSetServers === 'object'){
-	//mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test
-    dbName = countlyConfig.mongodb.replSetServers.join(",");
-	if(countlyConfig.mongodb.username && countlyConfig.mongodb.password){
-		dbName = countlyConfig.mongodb.username + ":" + countlyConfig.mongodb.password +"@" + dbName;
-	}
-} else {
-    dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port);
-	if(countlyConfig.mongodb.username && countlyConfig.mongodb.password){
-		dbName = countlyConfig.mongodb.username + ":" + countlyConfig.mongodb.password +"@" + dbName;
-	}
-}
-
-var currDBAddress = dbName;
-var currDBName = countlyConfig.mongodb.db;
+var currDBAddress = dbObject.host;
+var currDBName = dbObject.name;
 
 if (currDBAddress == "IP_ADDRESS:PORT") {
     print("**********************************");
@@ -42,6 +24,9 @@ if (currDBAddress == "IP_ADDRESS:PORT") {
 
 var currConn = new Mongo(currDBAddress);
 var currDB = currConn.getDB(currDBName);
+if(dbObject.username && dbObject.password){
+	currDB.auth(dbObject.username, dbObject.password);
+}
 
 function parseSequence(num) {
     var valSeq = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];

@@ -14,30 +14,12 @@ var targetDBName = "countly";
  **************************************************
  */
  
-load("../../../frontend/express/config.js")
+load("parseConnection.js");
 
-//mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
-var dbName;
-countlyConfig.mongodb.db = countlyConfig.mongodb.db || 'countly';
-if (typeof countlyConfig.mongodb === "string") {
-    dbName = countlyConfig.mongodb;
-} else if ( typeof countlyConfig.mongodb.replSetServers === 'object'){
-	//mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test
-    dbName = countlyConfig.mongodb.replSetServers.join(",");
-	if(countlyConfig.mongodb.username && countlyConfig.mongodb.password){
-		dbName = countlyConfig.mongodb.username + ":" + countlyConfig.mongodb.password +"@" + dbName;
-	}
-} else {
-    dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port);
-	if(countlyConfig.mongodb.username && countlyConfig.mongodb.password){
-		dbName = countlyConfig.mongodb.username + ":" + countlyConfig.mongodb.password +"@" + dbName;
-	}
-}
-
-var currDBAddress = dbName;
-var targetDBAddress = dbName;
-var currDBName = countlyConfig.mongodb.db;
-var targetDBName = countlyConfig.mongodb.db;
+var currDBAddress = dbObject.host;
+var targetDBAddress = dbObject.host;
+var currDBName = dbObject.name;
+var targetDBName = dbObject.name;
 
 if (currDBAddress == "IP_ADDRESS:PORT" || targetDBAddress == "IP_ADDRESS:PORT") {
     print("**********************************");
@@ -50,6 +32,10 @@ var currConn = new Mongo(currDBAddress);
 var targetConn = new Mongo(targetDBAddress);
 var currDB = currConn.getDB(currDBName);
 var targetDB = targetConn.getDB(targetDBName);
+if(dbObject.username && dbObject.password){
+	currDB.auth(dbObject.username, dbObject.password);
+	targetDB.auth(dbObject.username, dbObject.password);
+}
 
 var eventCollNames = [];
 currDB.getCollectionNames().filter(function(name) {
