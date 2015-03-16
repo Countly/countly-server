@@ -515,11 +515,11 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
 					req.session.expires = Date.now()+countlyConfig.session_timeout;
                 res.redirect(countlyConfig.path+'/dashboard');
             } else {
-                res.render('login', { "message":"login.result", "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
+				res.redirect(countlyConfig.path+'/login?message=login.result');
             }
         });
     } else {
-        res.render('login', { "message":"login.result", "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
+        res.redirect(countlyConfig.path+'/login?message=login.result');
     }
 });
 
