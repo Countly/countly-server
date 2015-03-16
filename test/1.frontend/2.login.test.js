@@ -99,7 +99,7 @@ describe('Login in', function(){
 			agent
 			.post('/login')
 			.send({password:testUtils.password, _csrf:testUtils.getCSRF()})
-			.expect(200, done);
+			.expect(302, done);
 		})
 	})
 	describe('Missing password', function(){
@@ -110,7 +110,7 @@ describe('Login in', function(){
 			agent
 			.post('/login')
 			.send({username:testUtils.username, _csrf:testUtils.getCSRF()})
-			.expect(200, done);
+			.expect(302, done);
 		})
 	})
 	describe('Login with username', function(){
