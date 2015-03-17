@@ -37,6 +37,10 @@ var MessageExpiryTime = 1000 * 60 * 60 * 24 * 7,     // one week by default
             }
         });
 
+        if (msg.conditions && typeof msg.conditions !== 'string') {
+            msg.conditions = JSON.stringify(msg.conditions);
+        }
+
         return msg;
     };
 
@@ -47,6 +51,9 @@ module.exports.cleanObj = cleanObj;
 module.exports.Message = function (apps, names) {
     if (_.isObject(apps) && !_.isArray(apps)) {
         _.extend(this, apps);
+        if (this.conditions && typeof this.conditions === 'string') {
+            this.conditions = JSON.parse(this.conditions);
+        }
     } else {
         this.type = undefined;
         this.apps = apps;
@@ -54,27 +61,28 @@ module.exports.Message = function (apps, names) {
         this.status = MessageStatus.Initial;
         this.platforms = [];
         this.conditions = {};
-        this.message = undefined;              	// Simple message for all clients
+        this.geo = undefined;                   // ID of geo object
+        this.message = undefined;               // Simple message for all clients
         this.messagePerLocale = undefined;      // Map of localized messages
-        this.collapseKey = undefined;         	// Collapse key for Android
-        this.contentAvailable = undefined;    	// content-available for iOS
+        this.collapseKey = undefined;           // Collapse key for Android
+        this.contentAvailable = undefined;      // content-available for iOS
         this.newsstandAvailable = undefined;    // newsstand-available for iOS
-        this.delayWhileIdle = undefined;  	    // delay_while_idle for Android
+        this.delayWhileIdle = undefined;        // delay_while_idle for Android
         this.url = undefined;                   // url to open
         this.category = undefined;              // message category (iOS 8+)
-        this.review = undefined;               	// call-to-review app (app ID / package or boolean true should be here)
-        this.update = undefined;               	// call-to-update app (app ID / package or boolean true should be here)
+        this.review = undefined;                // call-to-review app (app ID should be here)
+        this.update = undefined;                // call-to-review app (app ID should be here)
         this.data = undefined;                  // Custom data
-        this.sound = undefined;					// Sound
-        this.badge = undefined;					// Badge
+        this.sound = undefined;                 // Sound
+        this.badge = undefined;                 // Badge
 
-	    this.result = {
-	        status: MessageStatus.Initial,
-	        total: 0,
-	        processed: 0,
-	        sent: 0,
-	        error: undefined,
-	    };
+        this.result = {
+            status: MessageStatus.Initial,
+            total: 0,
+            processed: 0,
+            sent: 0,
+            error: undefined,
+        };
 
         this.expiryDate = new Date(Date.now() + MessageExpiryTime);     // one week by default
         this.created = new Date();
@@ -150,6 +158,12 @@ module.exports.Message = function (apps, names) {
         setConditions: {
             value: function (conds) {
                 this.conditions = conds || {};
+                return this;
+            }
+        },
+        setGeo: {
+            value: function (geo) {
+                this.geo = geo || {};
                 return this;
             }
         },
@@ -308,9 +322,9 @@ module.exports.Message = function (apps, names) {
                 var idComponents = [this._id + ''];
 
                 if (index) {
-                	idComponents = idComponents.concat(index);
+                    idComponents = idComponents.concat(index);
                 } else {
-                	idComponents.push(credentials.platform);
+                    idComponents.push(credentials.platform);
                 }
 
                 content.data.c.i = this._id + '';
@@ -323,9 +337,9 @@ module.exports.Message = function (apps, names) {
                 };
 
                 if (_.isArray(devices)) {
-                	m.devices = devices;
+                    m.devices = devices;
                 } else {
-                	m.devicesQuery = devices;
+                    m.devicesQuery = devices;
                 }
 
                 return new pushly.Message(m);

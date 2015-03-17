@@ -1215,93 +1215,93 @@ window.AllAppsView = countlyView.extend({
 
         app.localize();
     },
-	drawGraph:function() {
+    drawGraph:function() {
         var sessionDP = [];
-		var sessions = countlyAllApps.getSessionData();
-		var data, color;
-		var cnt = 0;
-		for(var i in this.selectedApps){
-			try{
-				data = sessions[i][this.selectedView];
-				color = countlyCommon.GRAPH_COLORS[cnt];
-				if(i == "all")
-					sessionDP.push({data:data.data, label:data.label + " for All Apps", color:color});
-				else
-					sessionDP.push({data:data.data, label:data.label + " for "+countlyGlobal["apps"][i].name, color:color});
-				$("#"+i+" .color").css("background-color", color);
-				cnt++;
-			}
-			catch(err){
-				
-			}
-		}
+        var sessions = countlyAllApps.getSessionData();
+        var data, color;
+        var cnt = 0;
+        for(var i in this.selectedApps){
+            try{
+                data = sessions[i][this.selectedView];
+                color = countlyCommon.GRAPH_COLORS[cnt];
+                if(i == "all")
+                    sessionDP.push({data:data.data, label:data.label + " for All Apps", color:color});
+                else
+                    sessionDP.push({data:data.data, label:data.label + " for "+countlyGlobal["apps"][i].name, color:color});
+                $("#"+i+" .color").css("background-color", color);
+                cnt++;
+            }
+            catch(err){
+
+            }
+        }
         _.defer(function () {
             countlyCommon.drawTimeGraph(sessionDP, "#dashboard-graph");
-			
+
         });
     },
     renderCommon:function (isRefresh) {
-		$("#sidebar-app-select").find(".text").text(jQuery.i18n.map["allapps.title"]);
+        $("#sidebar-app-select").find(".text").text(jQuery.i18n.map["allapps.title"]);
         $("#sidebar-app-select").find(".logo").css("background-image", "url('"+countlyGlobal["cdn"]+"images/favicon.png')");
-		$("#sidebar-menu > .item").addClass("hide");
-		$("#management-menu").removeClass("hide");
-		$("#allapps-menu").removeClass("hide").css("display", "block");
+        $("#sidebar-menu > .item").addClass("hide");
+        $("#management-menu").removeClass("hide");
+        $("#allapps-menu").removeClass("hide").css("display", "block");
         var appData = countlyAllApps.getData();
 
         this.templateData = {
             "page-title":jQuery.i18n.map["allapps.title"],
             "logo-class":"platforms",
-			"usage":[
-				{
-					"title":jQuery.i18n.map["common.total-sessions"],
-					"data":0,
-					"id":"draw-total-sessions",
-					"help":"dashboard.total-sessions"
-				},
-				{
-					"title":jQuery.i18n.map["common.total-users"],
-					"data":0,
-					"id":"draw-total-users",
-					"help":"dashboard.total-users"
-				},
-				{
-					"title":jQuery.i18n.map["common.new-users"],
-					"data":0,
-					"id":"draw-new-users",
-					"help":"dashboard.new-users"
-				},
-				{
-					"title":jQuery.i18n.map["dashboard.time-spent"],
-					"data":0,
-					"id":"draw-total-time-spent",
-					"help":"dashboard.total-time-spent"
-				},
-				{
-					"title":jQuery.i18n.map["dashboard.avg-time-spent"],
-					"data":0,
-					"id":"draw-time-spent",
-					"help":"dashboard.avg-time-spent2"
-				},
-				{
-					"title":jQuery.i18n.map["dashboard.avg-reqs-received"],
-					"data":0,
-					"id":"draw-avg-events-served",
-					"help":"dashboard.avg-reqs-received"
-				}
-			]
+            "usage":[
+                {
+                    "title":jQuery.i18n.map["common.total-sessions"],
+                    "data":0,
+                    "id":"draw-total-sessions",
+                    "help":"dashboard.total-sessions"
+                },
+                {
+                    "title":jQuery.i18n.map["common.total-users"],
+                    "data":0,
+                    "id":"draw-total-users",
+                    "help":"dashboard.total-users"
+                },
+                {
+                    "title":jQuery.i18n.map["common.new-users"],
+                    "data":0,
+                    "id":"draw-new-users",
+                    "help":"dashboard.new-users"
+                },
+                {
+                    "title":jQuery.i18n.map["dashboard.time-spent"],
+                    "data":0,
+                    "id":"draw-total-time-spent",
+                    "help":"dashboard.total-time-spent"
+                },
+                {
+                    "title":jQuery.i18n.map["dashboard.avg-time-spent"],
+                    "data":0,
+                    "id":"draw-time-spent",
+                    "help":"dashboard.avg-time-spent2"
+                },
+                {
+                    "title":jQuery.i18n.map["dashboard.avg-reqs-received"],
+                    "data":0,
+                    "id":"draw-avg-events-served",
+                    "help":"dashboard.avg-reqs-received"
+                }
+            ]
         };
-		var self = this;
+        var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-			$(this.selectedView).parents(".big-numbers").addClass("active");
+            $(this.selectedView).parents(".big-numbers").addClass("active");
             this.pageScript();
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": appData,
-				"fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
-					$(nRow).attr("id", aData._id);
-				},
+                "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+                    $(nRow).attr("id", aData._id);
+                },
                 "aoColumns": [
-					{ "mData": function(row, type){if(self.selectedApps[row._id]) return "<i class='check fa fa-check'></i>"; else return "<i class='check fa fa-unchecked'></i>";}, "sWidth":"10px", "bSortable":false},
+                    { "mData": function(row, type){if(self.selectedApps[row._id]) return "<i class='check fa fa-check'></i>"; else return "<i class='check fa fa-unchecked'></i>";}, "sWidth":"10px", "bSortable":false},
                     { "mData": function(row, type){if(type == "display"){ var ret; if(row["_id"] == "all") ret = "<div class='logo' style='background-image: url("+countlyGlobal["path"]+"/images/favicon.png);'></div> "; else ret = "<div class='logo' style='background-image: url("+countlyGlobal["cdn"]+"appimages/" + row["_id"] + ".png);'></div> "; return ret+row.name+"<div class='color'></div>";} else return row.name;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.app-name"] },
                     { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url("+countlyGlobal["cdn"]+"images/dashboard/"+row.sessions.trend+"trend.png);'></div> "+row.sessions.total; else return row.sessions.total;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.total-sessions"] },
                     { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url("+countlyGlobal["cdn"]+"images/dashboard/"+row.users.trend+"trend.png);'></div> "+row.users.total; else return row.users.total;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.total-users"] },
@@ -1310,66 +1310,66 @@ window.AllAppsView = countlyView.extend({
                     { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url("+countlyGlobal["cdn"]+"images/dashboard/"+row.avgduration.trend+"trend.png);'></div> "+row.avgduration.total; else return row.avgduration.total;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.average-duration"] }
                 ]
             }));
-			this.drawGraph();
-			$(".dataTable-bottom").append("<div clas='dataTables_info' style='float: right; margin-top:2px; margin-right: 10px;'>Maximum number of applications to be compared (10)</div>")
+            this.drawGraph();
+            $(".dataTable-bottom").append("<div clas='dataTables_info' style='float: right; margin-top:2px; margin-right: 10px;'>Maximum number of applications to be compared (10)</div>")
 
             $(".d-table").stickyTableHeaders();
-			
-			$('.allapps tbody').on("click", "tr", function (event){
-				var td = $(event.target).closest("td");
-				var row = $(this);
-				if(row.children().first().is(td))
-				{
-					if(self.selectedApps[row.attr("id")]){
-						row.find(".check").removeClass("fa fa-check").addClass("fa fa-unchecked");
-						row.find(".color").css("background-color", "transparent");
-						delete self.selectedApps[row.attr("id")];
-						if(row.attr("id") != "all")
-							self.selectedCount--;
-						if(self.selectedCount==0){
-							$("#empty-graph").show();
-							$(".big-numbers").removeClass("active");
-							$(".big-numbers .select").removeClass("selected");
-						}
-						
-					}
-					else if(self.selectedCount < 10 || row.attr("id") == "all"){
-						if(self.selectedCount==0){
-							$("#empty-graph").hide();
-							$(self.selectedView).parents(".big-numbers").addClass("active");
-						}
-						if(row.attr("id") == "all"){
-							$(".check.icon-check").removeClass("fa fa-check").addClass("fa fa-unchecked");
-							$('.d-table').find(".color").css("background-color", "transparent");
-							self.selectedApps = {};
-							self.selectedCount = 0;
-						}
-						else{
-							if(self.selectedApps["all"]){
-								$(".d-table #all .check.icon-check").removeClass("fa fa-check").addClass("fa fa-unchecked");
-								$('.d-table #all').find(".color").css("background-color", "transparent");
-								delete self.selectedApps["all"];
-							}
-							self.selectedCount++;
-						}
-						row.find(".check").removeClass("fa fa-unchecked").addClass("fa fa-check");
-						self.selectedApps[row.attr("id")] = true;
-					}
-					self.drawGraph();
-				}
-				else
-				{
-					if(row.attr("id") != "all"){
-						var aData = self.dtable.fnGetData( this );
-						countlyAllApps.setApp(row.attr("id"));
-						$("#sidebar-app-select").find(".logo").css("background-image", "url('"+countlyGlobal["cdn"]+"appimages/" + row.attr("id") + ".png')");
-						$("#sidebar-app-select").find(".text").text(aData["name"]);
-						$("#sidebar-menu > .item").removeClass("hide");
-						$("#allapps-menu").css("display", "none");
-						window.location.hash = "#/";
-					}
-				}
-			});
+
+            $('.allapps tbody').on("click", "tr", function (event){
+                var td = $(event.target).closest("td");
+                var row = $(this);
+                if(row.children().first().is(td))
+                {
+                    if(self.selectedApps[row.attr("id")]){
+                        row.find(".check").removeClass("fa fa-check").addClass("fa fa-unchecked");
+                        row.find(".color").css("background-color", "transparent");
+                        delete self.selectedApps[row.attr("id")];
+                        if(row.attr("id") != "all")
+                            self.selectedCount--;
+                        if(self.selectedCount==0){
+                            $("#empty-graph").show();
+                            $(".big-numbers").removeClass("active");
+                            $(".big-numbers .select").removeClass("selected");
+                        }
+
+                    }
+                    else if(self.selectedCount < 10 || row.attr("id") == "all"){
+                        if(self.selectedCount==0){
+                            $("#empty-graph").hide();
+                            $(self.selectedView).parents(".big-numbers").addClass("active");
+                        }
+                        if(row.attr("id") == "all"){
+                            $(".check.icon-check").removeClass("fa fa-check").addClass("fa fa-unchecked");
+                            $('.d-table').find(".color").css("background-color", "transparent");
+                            self.selectedApps = {};
+                            self.selectedCount = 0;
+                        }
+                        else{
+                            if(self.selectedApps["all"]){
+                                $(".d-table #all .check.icon-check").removeClass("fa fa-check").addClass("fa fa-unchecked");
+                                $('.d-table #all').find(".color").css("background-color", "transparent");
+                                delete self.selectedApps["all"];
+                            }
+                            self.selectedCount++;
+                        }
+                        row.find(".check").removeClass("fa fa-unchecked").addClass("fa fa-check");
+                        self.selectedApps[row.attr("id")] = true;
+                    }
+                    self.drawGraph();
+                }
+                else
+                {
+                    if(row.attr("id") != "all"){
+                        var aData = self.dtable.fnGetData( this );
+                        countlyAllApps.setApp(row.attr("id"));
+                        $("#sidebar-app-select").find(".logo").css("background-image", "url('"+countlyGlobal["cdn"]+"appimages/" + row.attr("id") + ".png')");
+                        $("#sidebar-app-select").find(".text").text(aData["name"]);
+                        $("#sidebar-menu > .item").removeClass("hide");
+                        $("#allapps-menu").css("display", "none");
+                        window.location.hash = "#/";
+                    }
+                }
+            });
         }
     },
     refresh:function () {
@@ -1383,7 +1383,7 @@ window.AllAppsView = countlyView.extend({
 
             var appData = countlyAllApps.getData();
             CountlyHelpers.refreshTable(self.dtable, appData);
-			self.drawGraph();
+            self.drawGraph();
             app.localize();
         });
     }

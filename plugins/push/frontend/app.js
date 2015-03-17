@@ -1,29 +1,33 @@
+'use strict';
+
 var plugin = {},
 	countlyConfig = require('../../../frontend/express/config'),
-	stringJS = require('../../../frontend/express/node_modules/string');
+	apiConfig = require('../../../api/config'),
+	fs = require('fs'),
+	request = require('request');
 
 (function (plugin) {
 	plugin.init = function(app, countlyDb){
-		app.post(countlyConfig.path+'/apps/certificate', function (req, res, next) {
+		app.post(countlyConfig.path+'/apps/certificate', function (req, res) {
 			if (!req.files.apns_cert) {
 				res.end();
 				return true;
 			}
-		
-			var endpoints = require('../../api/parts/pushly/endpoints.js'),
+
+			var endpoints = require('../api/parts/pushly/endpoints.js'),
 				tmp_path = req.files.apns_cert.path,
 				file_name = endpoints.APNCertificateFile(req.body.app_id, req.body.test),
 				target_path = endpoints.APNCertificatePath(req.body.app_id, req.body.test),
 				type = req.files.apns_cert.type;
-		
+
 			console.log(target_path);
-		
-			if (type != "application/x-pkcs12") {
+
+			if (type != 'application/x-pkcs12') {
 				fs.unlink(tmp_path, function () {});
 				res.send({error: 'Only .p12 files are supported'});
 				return true;
 			}
-		
+
 			fs.rename(tmp_path, target_path, function (err) {
 				if (err) {
 					console.log(err);
@@ -35,32 +39,31 @@ var plugin = {},
 					} else {
 						update.$set['apn.prod'] = {key: file_name, passphrase: req.body.passphrase};
 					}
-		
+
 					countlyDb.collection('apps').findAndModify({_id: countlyDb.ObjectID(req.body.app_id)}, [['_id', 1]], update, {new:true}, function(err, app){
 						if (err || !app) res.send({error: 'Server error: cannot find app'});
 						else {
 							fs.unlink(tmp_path, function () {});
-		
+
 							var options = {
 								uri: 'http://' + apiConfig.api.host + ':' + apiConfig.api.port + '/i/pushes/check',
 								method: 'GET',
 								timeout: 20000,
 								qs: {
-									"appId": req.body.app_id,
-									"platform": 'i',
-									"test": (req.body.test ? true : false),
-									"api_key": req.body.api_key
+									'appId': req.body.app_id,
+									'platform': 'i',
+									'test': (req.body.test ? true : false),
+									'api_key': req.body.api_key
 								}
 							};
-		
+
 							console.log('Executing request: %j', options);
-		
+
 							request(options, function (error, response, body) {
 								if (error || !body) {
 									console.log('Error when checking app: %j, %j', error, body);
 									res.send({error: 'Couldn\'t check certificate validity'});
 								} else {
-									console.log('Response when checking app: %j', body);
 									try {
 										body = JSON.parse(body);
 										if (body.ok) {
@@ -73,16 +76,6 @@ var plugin = {},
 									}
 								}
 							});
-		
-		
-							// countlyPush.checkApp(req.body.app_id, 'i', req.body.test, function(err){
-							//     if (err) {
-							//         res.send(false);
-							//     } else {
-							//         res.send(file_name);
-							//     }
-							// });
-		
 						}
 					});
 				}

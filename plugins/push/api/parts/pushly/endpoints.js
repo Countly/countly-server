@@ -1,14 +1,14 @@
 'use strict';
 
-var pushly 			= require('pushly')(),
+var pushly          = require('pushly')(),
     _               = require('../../../../../api/node_modules/underscore'),
-    api 			= {},
+    api             = {},
     async           = require('../../../../../api/utils/async.min.js'),
     moment          = require('../../../../../api/node_modules/moment'),
-    common 			= require('../../../../../api/utils/common.js'),
+    common          = require('../../../../../api/utils/common.js'),
     events          = require('../../../../../api/parts/data/events.js'),
     usage           = require('../../../../../api/parts/data/usage.js'),
-    cluster			= require('cluster'),
+    cluster         = require('cluster'),
     mess            = require('./message.js'),
     Platform        = mess.MessagePlatform,
     Message         = mess.Message,
@@ -16,34 +16,34 @@ var pushly 			= require('pushly')(),
 
 (function (api) {
 
-	var messageId = function(message) {
-		return common.db.ObjectID(message.id.split('|')[0]);
-	};
+    var messageId = function(message) {
+        return common.db.ObjectID(message.id.split('|')[0]);
+    };
 
-	var appId = function(message) {
-		return common.db.ObjectID(message.id.split('|')[1]);
-	};
+    var appId = function(message) {
+        return common.db.ObjectID(message.id.split('|')[1]);
+    };
 
-	var appUsersFields = function(pushlyMessage) {
-		if (pushlyMessage.credentials.platform === Platform.APNS) {
-			if (pushlyMessage.test) {
-				return [common.dbUserMap.tokens + '.' + common.dbUserMap.apn_dev, common.dbUserMap.tokens + '.' + common.dbUserMap.apn_adhoc];
-			} else {
-				return [common.dbUserMap.tokens + '.' + common.dbUserMap.apn_prod];
-			}
-		} else if (pushlyMessage.credentials.platform === Platform.GCM) {
+    var appUsersFields = function(pushlyMessage) {
+        if (pushlyMessage.credentials.platform === Platform.APNS) {
+            if (pushlyMessage.test) {
+                return [common.dbUserMap.tokens + '.' + common.dbUserMap.apn_dev, common.dbUserMap.tokens + '.' + common.dbUserMap.apn_adhoc];
+            } else {
+                return [common.dbUserMap.tokens + '.' + common.dbUserMap.apn_prod];
+            }
+        } else if (pushlyMessage.credentials.platform === Platform.GCM) {
             if (pushlyMessage.test) {
                 return [common.dbUserMap.tokens + '.' + common.dbUserMap.gcm_test];
             } else {
                 return [common.dbUserMap.tokens + '.' + common.dbUserMap.gcm_prod];
             }
-		}
+        }
 
         return [];
-	};
+    };
 
-	if (cluster.isWorker) {
-	    api.pushlyCallbacks = {
+    if (cluster.isWorker) {
+        api.pushlyCallbacks = {
             count: function(message, query, callback){
                 var fields = appUsersFields(message), filter = {}, i, finalQuery = {$or: []}, $or = finalQuery.$or;
 
@@ -74,8 +74,8 @@ var pushly 			= require('pushly')(),
 
                 common.db.collection('app_users' + query.appId).find(finalQuery).count(callback);
             },
-	    	stream: function(message, query, callback){
-	    		var fields = appUsersFields(message), filter = {}, count = 0, i, finalQuery = {$or: []}, $or = finalQuery.$or;
+            stream: function(message, query, callback){
+                var fields = appUsersFields(message), filter = {}, count = 0, i, finalQuery = {$or: []}, $or = finalQuery.$or;
 
                 for (var any in query.conditions) {
                     finalQuery = {$and: [_.extend({}, query.conditions), {$or: []}]};
@@ -95,15 +95,15 @@ var pushly 			= require('pushly')(),
        //              obj[fields[i]] = {$exists: true};
        //              $or.push(obj);
        //          }
-	    		// for (i in fields) filter[fields[i]] = 1;
+                // for (i in fields) filter[fields[i]] = 1;
 
                 if (message.content.messagePerLocale) {
                     filter[common.dbUserMap.lang] = 1;
                 }
 
-	    		common.db.collection('app_users' + query.appId).find(finalQuery, filter).batchSize(common.config.push.batch).each(function(err, user){
-	    			if (err) console.log(err);
-	    			else if (user) {
+                common.db.collection('app_users' + query.appId).find(finalQuery, filter).batchSize(common.config.push ? common.config.push.batch : 100).each(function(err, user){
+                    if (err) console.log(err);
+                    else if (user) {
 
                         count++;
                         callback(common.dot(user, field), user[common.dbUserMap.lang]);
@@ -115,50 +115,50 @@ var pushly 			= require('pushly')(),
                         //     }
                         // }
 
-	    			} else {
-	    				if (count === 0) {
+                    } else {
+                        if (count === 0) {
                             console.log('Aborting message because no users is found');
                             pushly.abort(message);
                         }
-	    			}
-	    		});
-	    	},
-	        onInvalidToken: function(message, tokens, error) {
-	    		var id = messageId(message), app = appId(message);
-	    		common.db.collection('messages').findOne(id, function(err, m){
-	    			if (m) {
-	    				var $unset = {}, unsetQuery = {}, unset = [], update = [], i, fields = [common.dbUserMap.tokens + '.' + message.credentials.id.split('.')[0]]/*appUsersFields(message)*/;
+                    }
+                });
+            },
+            onInvalidToken: function(message, tokens, error) {
+                var id = messageId(message), app = appId(message);
+                common.db.collection('messages').findOne(id, function(err, m){
+                    if (m) {
+                        var $unset = {}, unsetQuery = {}, unset = [], update = [], i, fields = [common.dbUserMap.tokens + '.' + message.credentials.id.split('.')[0]]/*appUsersFields(message)*/;
 
-	    				for (i = tokens.length - 1; i >= 0; i--) {
-	    					var token = tokens[i];
-	    					if (token.good) {
-	    						update.push(token);
-	    					} else {
-	    						unset.push(token.bad);
-	    					}
-	    				}
+                        for (i = tokens.length - 1; i >= 0; i--) {
+                            var token = tokens[i];
+                            if (token.good) {
+                                update.push(token);
+                            } else {
+                                unset.push(token.bad);
+                            }
+                        }
 
-	    				if (unset.length) {
+                        if (unset.length) {
                             fields.forEach(function(field){
                                 $unset[field] = 1;
                                 unsetQuery[field] = {$in: unset};
                             });
-		    				common.db.collection('app_users' + app).update(unsetQuery, {$unset: $unset},function(){});
-	    				}
+                            common.db.collection('app_users' + app).update(unsetQuery, {$unset: $unset},function(){});
+                        }
 
-	    				for (i = update.length - 1; i >= 0; i--) for (var f = fields.length - 1; f >= 0; f--) {
-	    					var field = fields[f], upd = update[i], query = {}, set = {};
+                        for (i = update.length - 1; i >= 0; i--) for (var f = fields.length - 1; f >= 0; f--) {
+                            var field = fields[f], upd = update[i], query = {}, set = {};
 
-	    					query[field] = upd.bad;
-	    					set[field] = upd.good;
-		    				common.db.collection('app_users' + app).update(query, {$set: set},function(){});
-	    				}
-	    			}
-	    		});
-	        }
-	    };
+                            query[field] = upd.bad;
+                            set[field] = upd.good;
+                            common.db.collection('app_users' + app).update(query, {$set: set},function(){});
+                        }
+                    }
+                });
+            }
+        };
         pushly.setCallbacks(api.pushlyCallbacks);
-	}
+    }
 
     pushly.on('status', function(message){
         var id = messageId(message);
@@ -166,12 +166,12 @@ var pushly 			= require('pushly')(),
             if (m) {
                 var previouslySent  = m.result.sent || 0;
 
-                m.result.delivered	= m.result.delivered || 0;
-                m.result.actioned	= m.result.actioned || 0;
-                m.result.total 		= 0;
-                m.result.processed 	= 0;
-                m.result.sent 		= 0;
-                m.result.status		= 0;
+                m.result.delivered  = m.result.delivered || 0;
+                m.result.actioned   = m.result.actioned || 0;
+                m.result.total      = 0;
+                m.result.processed  = 0;
+                m.result.sent       = 0;
+                m.result.status     = 0;
 
                 for (var i = m.pushly.length - 1; i >= 0; i--) {
                     var push = m.pushly[i];
@@ -183,10 +183,10 @@ var pushly 			= require('pushly')(),
                         }
                     }
 
-                    m.result.total 		+= push.result.total;
-                    m.result.processed 	+= push.result.processed;
-                    m.result.sent 		+= push.result.sent;
-                    m.result.status		|= push.result.status;
+                    m.result.total      += push.result.total;
+                    m.result.processed  += push.result.processed;
+                    m.result.sent       += push.result.sent;
+                    m.result.status     |= push.result.status;
                 }
 
                 var update = {
@@ -223,11 +223,11 @@ var pushly 			= require('pushly')(),
     });
 
     api.credentials = function(message, app) {
-    	var array = [];
-    	for (var i = message.platforms.length - 1; i >= 0; i--) {
-    		var platform = message.platforms[i];
+        var array = [];
+        for (var i = message.platforms.length - 1; i >= 0; i--) {
+            var platform = message.platforms[i];
 
-			if (platform == Platform.APNS) {
+            if (platform == Platform.APNS) {
                 if (message.test && app.apn && app.apn.test) {
                     array.push({
                         id: common.dbUserMap.apn_dev + '.' + app._id,
@@ -265,7 +265,7 @@ var pushly 			= require('pushly')(),
                         port: 2195
                     });
                 }
-			} else {
+            } else {
                 if (app.gcm) {
                     array.push({
                         id: (message.test ? common.dbUserMap.gcm_test : common.dbUserMap.gcm_prod) + '.' + app._id,
@@ -274,9 +274,9 @@ var pushly 			= require('pushly')(),
                         key: app.gcm.key,
                     });
                 }
-			}
-		}
-		return array;
+            }
+        }
+        return array;
     };
 
     api.checkApp = function (params) {
@@ -348,11 +348,21 @@ var pushly 			= require('pushly')(),
             }
         });
     };
-	
-	api.updateApp = function(params) {
-		 var argProps = {
-                'apn.id':   { 'required': false, 'type': 'String' },
-                'gcm.id':   { 'required': false, 'type': 'String' },
+
+    var withAppsAndGeo = function(appIds, geoId, callback) {
+        common.db.collection('apps').find({_id: {$in: appIds}}).toArray(function(error, apps){
+            if (geoId) {
+                common.db.collection('geos').findOne({_id: common.db.ObjectID(geoId)}, function(err, geo) {
+                    callback(err || error, apps, geo);
+                });
+            } else {
+                callback(error, apps);
+            }
+        });
+    };
+
+    api.updateApp = function(params) {
+         var argProps = {
                 'gcm.key':  { 'required': false, 'type': 'String' }
             },
             updatedApp = {}, $set = {}, $unset = {};
@@ -365,14 +375,6 @@ var pushly 			= require('pushly')(),
         if (Object.keys(updatedApp).length === 0) {
             common.returnMessage(params, 200, 'Nothing changed');
             return true;
-        }
-
-        if (!updatedApp['apn.id']) {
-            $unset['apn.id'] = true;
-        }
-
-        if (!updatedApp['gcm.id']) {
-            $unset['gcm.id'] = true;
         }
 
         if (!updatedApp['gcm.key']) {
@@ -408,12 +410,13 @@ var pushly 			= require('pushly')(),
         });
 
         return true;
-	};
+    };
 
     api.countAudience = function(params, callback) {
         var argProps = {
                 'apps':             { 'required': true,  'type': 'Array'   },
                 'platforms':        { 'required': true,  'type': 'Array'   },
+                'geo':              { 'required': false, 'type': 'String', 'min-length': 24, 'max-length': 24 },
                 'conditions':       { 'required': false, 'type': 'Object'  },
                 'test':             { 'required': false, 'type': 'Boolean' }
             },
@@ -421,18 +424,24 @@ var pushly 			= require('pushly')(),
 
         if (!(msg = common.validateArgs(params.qstring.args, argProps))) {
             callback({code: 400, message: 'Not enough args'});
+            return;
         }
 
         msg.apps = _.map(msg.apps, common.db.ObjectID);
 
-        common.db.collection('apps').find({_id: {$in: msg.apps}}).toArray(function(err, apps){
+        withAppsAndGeo(msg.apps, msg.geo, function(err, apps, geo){
             if (err || !apps || !apps.length) {
                 callback(null, []);
             } else {
+                if (geo) {
+                    msg.conditions = geoApi.conditions(geo, msg.conditions);
+                }
+
                 var message = new Message(msg.apps, '')
                         .setId(new common.db.ObjectID())
                         .addPlatform(msg.platforms)
                         .setConditions(msg.conditions)
+                        .setGeo(msg.geo)
                         .setTest(msg.test),
                     counters = [];
 
@@ -552,11 +561,12 @@ var pushly 			= require('pushly')(),
                 'messagePerLocale':     { 'required': false, 'type': 'Object'  },
                 'locales':              { 'required': false, 'type': 'Object'  },
                 'conditions':           { 'required': false, 'type': 'Object'  },
+                'geo':                  { 'required': false, 'type': 'String', 'min-length': 24, 'max-length': 24 },
                 'sound':                { 'required': false, 'type': 'String'  },
                 'badge':                { 'required': false, 'type': 'Number'  },
                 'url':                  { 'required': false, 'type': 'URL'     },
                 'category':             { 'required': false, 'type': 'String'  },
-                'contentAvailable':    	{ 'required': false, 'type': 'Boolean' },
+                'contentAvailable':     { 'required': false, 'type': 'Boolean' },
                 'newsstandAvailable':   { 'required': false, 'type': 'Boolean' },
                 'collapseKey':          { 'required': false, 'type': 'String'  },
                 'delayWhileIdle':       { 'required': false, 'type': 'Boolean' },
@@ -625,9 +635,11 @@ var pushly 			= require('pushly')(),
             msg.date = null;
         }
 
-        common.db.collection('apps').find({_id: {$in: msg.apps}}).toArray(function(err, apps) {
+        withAppsAndGeo(msg.apps, msg.geo, function(err, apps, geo){
             if (err || !apps) {
                 common.returnOutput(params, {error: 'Not such apps'});
+            } else if (msg.geo && !geo) {
+                common.returnOutput(params, {error: 'No such geolocation'});
             } else {
                 if (adminOfApps(params.member, apps)) {
 
@@ -646,6 +658,7 @@ var pushly 			= require('pushly')(),
                                 .setReview(msg.review)
                                 .addPlatform(msg.platforms)
                                 .setConditions(msg.conditions)
+                                .setGeo(geo ? msg.geo : undefined)
                                 .setSound(msg.sound)
                                 .setBadge(msg.badge)
                                 .setTest(msg.test)
@@ -743,10 +756,10 @@ var pushly 			= require('pushly')(),
         }
 
         var token, field;
-        if (typeof params.qstring['ios_token'] !== 'undefined' && typeof params.qstring.test_mode !== 'undefined') {
+        if (params.qstring.ios_token && typeof params.qstring.test_mode !== 'undefined') {
             token = params.qstring['ios_token'];
             field = common.dbUserMap.tokens + '.' + common.dbUserMap['apn_' + params.qstring.test_mode];
-        } else if (params.qstring['android_token'] && typeof params.qstring.test_mode !== 'undefined') {
+        } else if (params.qstring.android_token && typeof params.qstring.test_mode !== 'undefined') {
             token = params.qstring['android_token'];
             field = common.dbUserMap.tokens + '.' + common.dbUserMap['gcm_' + params.qstring.test_mode];
         }
@@ -754,8 +767,10 @@ var pushly 			= require('pushly')(),
         if (field) {
             if (token) {
                 $set[field] = token;
-                if (common.dot(dbAppUser, field) != token) {
-                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$set: $set}, {upsert: true},function(){});
+                if (!dbAppUser) {
+                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$set: $set}, {upsert: true}, function(){});
+                } else if (common.dot(dbAppUser, field) != token) {
+                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$set: $set}, {upsert: true}, function(){});
 
                     if (!dbAppUser[common.dbUserMap.tokens]) dbAppUser[common.dbUserMap.tokens] = {};
                     common.dot(dbAppUser, field, token);
@@ -765,12 +780,36 @@ var pushly 			= require('pushly')(),
             } else {
                 $unset[field] = 1;
                 if (common.dot(dbAppUser, field)) {
-                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$unset: $unset}, {upsert: false},function(){});
+                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$unset: $unset}, {upsert: false}, function(){});
                 }
             }
         }
 
     };
+
+    function processChangedMessagingToken(dbAppUser, params) {
+        var updateUsersMonth = {},
+            updateUsersZero = {},
+            dbDateIds = common.getDateIds(params);
+
+        var levels = [
+            common.dbMap['messaging-enabled'],
+        ];
+
+        if (dbAppUser[common.dbUserMap['country_code']]) {
+            levels.push(dbAppUser[common.dbUserMap['country_code']] + common.dbMap['messaging-enabled']);
+        }
+
+        // unique messaging sessions
+        common.fillTimeObjectZero(params, updateUsersZero, levels);
+        common.fillTimeObjectMonth(params, updateUsersMonth, levels);
+
+        if (Object.keys(updateUsersZero).length) {
+            common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.zero}, {$set: {m: dbDateIds.zero, a: params.app_id + ''}, '$inc': updateUsersZero}, {'upsert': true}, function(){});
+        }
+        common.db.collection('users').update({'_id': params.app_id + '_' + dbDateIds.month}, {$set: {m: dbDateIds.month, a: params.app_id + ''}, '$inc': updateUsersMonth}, {'upsert': true}, function(){});
+    }
+
 
     function adminOfApp(member, app) {
         if (member.global_admin) {
@@ -800,38 +839,7 @@ var pushly 			= require('pushly')(),
         return msgsObj;
     }
 
-    api.APNCertificateFile = function(appId, test) {
-        return appId + '.' + (test ? 'test' : 'prod') + '.p12';
-    };
-
-    api.APNCertificatePath = function(appId, test) {
-        return __dirname + '/../../../frontend/express/certificates/' + api.APNCertificateFile(appId, test);
-    };
-	
-	var processChangedMessagingToken = function(dbAppUser, params) {
-        var updateUsersMonth = {},
-            updateUsersZero = {},
-            dbDateIds = common.getDateIds(params);
-
-        var levels = [
-            common.dbMap['messaging-enabled'],
-        ];
-
-        if (dbAppUser[common.dbUserMap['country_code']]) {
-            levels.push(dbAppUser[common.dbUserMap['country_code']] + common.dbMap['messaging-enabled']);
-        }
-
-        // unique messaging sessions
-        common.fillTimeObjectZero(params, updateUsersZero, levels);
-        common.fillTimeObjectMonth(params, updateUsersMonth, levels);
-
-        if (Object.keys(updateUsersZero).length) {
-            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, {$set: {m: dbDateIds.zero, a: params.app_id + ""}, '$inc': updateUsersZero}, {'upsert': true},function(){});
-        }
-        common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true},function(){});
-    };
-	
-	function checkGCM(params, app) {
+    function checkGCM(params, app) {
         api.check('' + app._id, 'a', false, function(ok){
             if (!ok) {
                 common.returnOutput(params, {error: 'Invalid GCM key'});
@@ -839,6 +847,14 @@ var pushly 			= require('pushly')(),
                 common.returnOutput(params, app);
             }
         });
+    }
+
+    api.APNCertificateFile = function(appId, test) {
+        return appId + '.' + (test ? 'test' : 'prod') + '.p12';
+    };
+
+    api.APNCertificatePath = function(appId, test) {
+        return __dirname + '/../../../../../frontend/express/certificates/' + api.APNCertificateFile(appId, test);
     };
 
 }(api));

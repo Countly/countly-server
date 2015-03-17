@@ -160,6 +160,11 @@ var fetch = {},
                 result = {};
             }
 
+            if (result && collection === 'events') {
+                if (result.list) { result.list = _.filter(result.list, function(l){ return l.indexOf('[CLY]') !== 0; }); }
+                if (result.segments) { result.segments = _.filter(result.segments, function(s, k){ return k.indexOf('[CLY]') !== 0; }); }
+            }
+
             common.returnOutput(params, result);
         });
     };

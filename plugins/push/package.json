@@ -12,9 +12,18 @@
     "analytics",
     "mobile",
     "push",
-	"notifications"
+	  "notifications"
   ],
   "dependencies": {
-  },
+    "request": "2.21.0",
+    "dequeue": "1.0.5",
+    "lodash": "2.4.1",
+    "lru-cache": "2.5.0",
+    "merge": "1.2.0",
+    "q": "1.0.1",
+    "retry": "0.6.1",
+    "crazy-ps": "0.1.5",
+    "flat": "1.3.0"
+},
   "private": true
 }

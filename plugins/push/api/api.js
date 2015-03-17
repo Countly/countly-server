@@ -1,5 +1,5 @@
 var plugin = {},
-	pushly = require('pushly')(),
+	pushly = require('pushly'),
 	push = require('./parts/pushly/endpoints.js'),
 	scheduler = require('./parts/pushly/scheduler.js'),
 	common = require('../../../api/utils/common.js'),
@@ -7,9 +7,9 @@ var plugin = {},
     plugins = require('../../pluginManager.js');
 
 (function (plugin) {
-	plugins.register("/init", function(ob){
-		common.dbMap['messaging-enabled'] = 'm';
-		common.dbUserMap['tokens'] = 'tk';
+    function setUpCommons() {
+        common.dbMap['messaging-enabled'] = 'm';
+        common.dbUserMap['tokens'] = 'tk';
         common.dbUserMap['apn_prod'] = 'ip';                   // production
         common.dbUserMap['apn_0'] = 'ip';                      // production
         common.dbUserMap['apn_dev'] = 'id';                    // development
@@ -20,10 +20,18 @@ var plugin = {},
         common.dbUserMap['gcm_0'] = 'ap';                      // production
         common.dbUserMap['gcm_test'] = 'at';                   // testing
         common.dbUserMap['gcm_2'] = 'at';                      // testing
+    }
+
+	plugins.register("/init", function(ob){
+        setUpCommons();
+        pushly();
 	});
-	plugins.register("/worker", function(ob){
+
+	plugins.register("/master", function(ob){
+        setUpCommons();
 		scheduler();
 	});
+
 	//write api call
 	plugins.register("/i", function(ob){
 		var params = ob.params;
@@ -46,15 +54,13 @@ var plugin = {},
 		}
 		if (params.qstring.token_session) {
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, dbAppUser){
-                if (dbAppUser) {
-                    push.processTokenSession(dbAppUser, params);
-                }
+                push.processTokenSession(dbAppUser, params);
             });
         }
 	});
-	
+
 	plugins.register("/i/pushes", function(ob){
-		var params = ob.params, 
+		var params = ob.params,
 			paths = ob.paths,
 			validateUserForWriteAPI = ob.validateUserForWriteAPI;
 		if (params.qstring.args) {
@@ -90,12 +96,12 @@ var plugin = {},
         }
 		return true;
 	});
-	
+
 	plugins.register("/o/pushes", function(ob){
-		var params = ob.params, 
+		var params = ob.params,
 			paths = ob.paths,
 			validateUserForWriteAPI = ob.validateUserForWriteAPI;
-			
+
 		if (params.qstring.args) {
            try {
                params.qstring.args = JSON.parse(params.qstring.args);
@@ -107,7 +113,7 @@ var plugin = {},
        validateUserForWriteAPI(push.getAllMessages, params);
 	   return true;
 	});
-	
+
 	plugins.register("/session/user", function(ob){
 		var params = ob.params,
 			dbAppUser = ob.dbAppUser;
@@ -153,17 +159,17 @@ var plugin = {},
             common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': {"lp": params.time.timestamp}}, {'upsert': true}, function() {});
         }
 	});
-	
+
 	plugins.register("/i/apps/reset", function(ob){
 		var appId = ob.appId;
 		common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]},function(){});
 	});
-	
+
 	plugins.register("/i/apps/delete", function(ob){
 		var appId = ob.appId;
 		common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]},function(){});
 	});
-	
+
 	function messagingTokenKeys(dbAppUser) {
         var a = [];
         for (var k in dbAppUser[common.dbUserMap.tokens]) a.push(common.dbUserMap.tokens + '.' + k);
