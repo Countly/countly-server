@@ -534,6 +534,47 @@ var common = {},
 		return 0;
 	};
 	
+
+    // getter/setter for dot notatons:
+    // getter: dot({a: {b: {c: 'string'}}}, 'a.b.c') === 'string'
+    // getter: dot({a: {b: {c: 'string'}}}, ['a', 'b', 'c']) === 'string'
+    // setter: dot({a: {b: {c: 'string'}}}, 'a.b.c', 5) === 5
+    // getter: dot({a: {b: {c: 'string'}}}, 'a.b.c') === 5
+    common.dot = function(obj, is, value) {
+        if (typeof is == 'string') {
+            return common.dot(obj,is.split('.'), value);
+        } else if (is.length==1 && value!==undefined) {
+            obj[is[0]] = value;
+            return value;
+        } else if (is.length==0) {
+            return obj;
+        } else if (!obj) {
+            return obj;
+        } else {
+            return common.dot(obj[is[0]],is.slice(1), value);
+        }
+    };
+
+    // getter/setter for dot notatons:
+    // getter: dot({a: {b: {c: 'string'}}}, 'a.b.c') === 'string'
+    // getter: dot({a: {b: {c: 'string'}}}, ['a', 'b', 'c']) === 'string'
+    // setter: dot({a: {b: {c: 'string'}}}, 'a.b.c', 5) === 5
+    // getter: dot({a: {b: {c: 'string'}}}, 'a.b.c') === 5
+    common.dot = function(obj, is, value) {
+        if (typeof is == 'string') {
+            return common.dot(obj,is.split('.'), value);
+        } else if (is.length==1 && value!==undefined) {
+            obj[is[0]] = value;
+            return value;
+        } else if (is.length==0) {
+            return obj;
+        } else if (!obj) {
+            return obj;
+        } else {
+            return common.dot(obj[is[0]],is.slice(1), value);
+        }
+    };
+
 }(common));
 
 module.exports = common;
