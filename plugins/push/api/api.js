@@ -22,7 +22,7 @@ var plugin = {},
         common.dbUserMap['gcm_2'] = 'at';                      // testing
     }
 
-	plugins.register("/init", function(ob){
+	plugins.register("/worker", function(ob){
         setUpCommons();
         pushly();
 	});

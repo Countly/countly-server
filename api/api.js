@@ -39,8 +39,8 @@ if (cluster.isMaster) {
             apps:require('./parts/mgmt/apps.js')
         }
     };
-	
-	plugins.dispatch("/init", {common:common});
+
+	plugins.dispatch("/worker", {common:common});
 	// Checks app_key from the http request against "apps" collection.
 	// This is the first step of every write request to API.
 	function validateAppForWriteAPI(params) {

@@ -4,7 +4,7 @@ var plugin = {},
 	fetch = require('../../../api/parts/data/fetch.js');
 
 (function (plugin) {
-	plugins.register("/init", function(ob){
+	plugins.register("/worker", function(ob){
 		common.dbUserMap['density'] = 'dnst';
 	});
 	plugins.register("/session/metrics", function(ob){
