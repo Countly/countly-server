@@ -3,3 +3,5 @@ before_install: sudo bash ./bin/countly.install.travis.sh
 install: sudo npm install
 before_script: sleep 15
 script: npm test
+notifications:
+  email: hello@count.ly
