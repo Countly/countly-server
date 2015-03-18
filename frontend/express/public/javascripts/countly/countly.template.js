@@ -3839,10 +3839,10 @@ var AppRouter = Backbone.Router.extend({
                 nNext = document.createElement( 'span' );
                 nLast = document.createElement( 'span' );
 
-                nFirst.innerHTML = "<i class='fa fa-double-angle-left'></i>";
+                nFirst.innerHTML = "<i class='fa fa-angle-double-left'></i>";
                 nPrevious.innerHTML = "<i class='fa fa-angle-left'></i>";
                 nNext.innerHTML = "<i class='fa fa-angle-right'></i>";
-                nLast.innerHTML = "<i class='fa fa-double-angle-right'></i>";
+                nLast.innerHTML = "<i class='fa fa-angle-double-right'></i>";
 
                 nFirst.className = "paginate_button first";
                 nPrevious.className = "paginate_button previous";
