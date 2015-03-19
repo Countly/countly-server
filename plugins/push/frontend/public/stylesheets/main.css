@@ -45,7 +45,7 @@
 
 	.push-create .field.msg ul li > span { display: inline-block; line-height: 39px; white-space:nowrap; text-overflow: ellipsis; overflow: hidden; }
 	.push-create .field.msg ul li .percentage { width: 50px; text-align: center; }
-	.push-create .field.msg ul li .locale { width: 150px; }
+	.push-create .field.msg ul li .locale { width: 148px; }
 	.push-create .field.msg ul li:hover { cursor: pointer; }
 	.push-create .field.msg ul li span[class^="fa"] { position: absolute; top: 0; right: 0; width: 25px; height: 39px; line-height: 39px; text-align: center; opacity: 0; transition: opacity .2s ease-in-out; color: #636363; font-size: 16px; }
 	.push-create .field.msg ul li span[class^="fa"]:hover { color: #222; }
