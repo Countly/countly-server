@@ -205,7 +205,7 @@
 					this.hasPush = true;
 					stats.p++;
 					var data = {timestamp:this.ts, token_session:1, test_mode:0};
-					data[this.platform+"_token"] = +randomString(8);
+					data[this.platform.toLowerCase()+"_token"] = randomString(8);
 					this.request(data);
 				}
 			}
