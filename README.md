@@ -43,8 +43,7 @@ See our section on [how to contribute to Countly](https://github.com/Countly/cou
 
 * [Countly web page](http://count.ly)
 * [Countly support](http://support.count.ly)
-* [Documentation & user guide](http://resources.count.ly)
-* [Countly API reference guide](http://resources.count.ly)
-* [Countly Enterprise & Cloud Edition](https://count.ly/products/editions/)
+* [Documentation & API reference guide](http://resources.count.ly)
+* [Countly Enterprise & Cloud Edition](https://count.ly/compare)
 * [Packages on Sourceforge for direct download](http://sf.net/projects/countly)
 
