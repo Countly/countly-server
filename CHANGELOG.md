@@ -1,17 +1,7 @@
+
 15.03
 
-* Push notifications for iOS and Android. Notable features of push notification include: 
- * Badge number support
- * Ability to set a custom sound
- * Push notification category (iOS only)
- * Background push (a.k.a silent push introduced with iOS 7+)
- * Optional URL fields
- * Sending to live or test devices
- * Ability to see sent rate, delivery rate and action rate
- * Ability to see enabling percentage (message enabled users)
- * Custom JSON payload support
-
-  * A new plugins system, allowing other developers to write plugins which would extend Countly functionality without changing/breaking the core. For more information on how to write a plugin, see [Countly resources](http://resources.count.ly)
+  * Introducing Plugins system, allowing other developers to write plugins which would extend Countly functionality without changing/breaking the core. For more information on how to write a plugin, see [Countly resources](http://resources.count.ly)
   
   * Lots of plugins come with new functionality in this release, including:
    * Data Populator
@@ -250,3 +240,4 @@
     and cannot edit its settings.
 
   * Added csfr protection to all methods provided through app.js.
+
