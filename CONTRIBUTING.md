@@ -1,7 +1,7 @@
 
 # Contributing to Countly
 
-Countly is a big project and we are happy to receive contributors with different skills: 
+Countly is a big project benefiting from plugin support to make contributions easy, and we are happy to receive contributors with different skills: 
 
 * If you know Javascript and HTML5/CSS you can contribute to core layer and user interface of Countly. 
 * If you know MongoDB and Node.js, you can contribute to database layer. 
