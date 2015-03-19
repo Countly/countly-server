@@ -17,21 +17,13 @@ This repository holds Countly Community Edition. For more information other vers
 
 ##Installing & upgrading Countly server
 
+**Note:** If you are updating from v14.08, [read instructions here](https://github.com/Countly/countly-server/tree/plugins/bin/upgrade/15.03).
+
 You can either download all files from [Sourceforge](http://sf.net/projects/countly), or get code from Github (this page). We provide a beautiful installation sript (`bin/countly.install.sh`) with countly-server package that installs and configures everything required to run Countly Server.
 
 If you feel like doing things manually, or need to upgrade Countly from a previous version, please take a look at the installation & upgrading articles at [http://resources.count.ly](http://resources.count.ly "Countly resources page").
 
 Countly also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/u/countly/countly-server/)
-
-##Installing Countly server with Push Notifications support
-
-![Countly push notifications dashboard](https://a.fsdn.com/con/app/proj/countly/screenshots/push_notifications.png)
-
-Countly includes push notifications support for iOS and Android. In order to checkout this code, use "messaging" branch. This will download all Countly Analytics code plus code required to run Countly server with push notifications support.
-
-`git clone -b messaging https://github.com/Countly/countly-server.git`
-
-In order to download Countly SDK for push notification support, you also need to checkout messaging branches of [Android SDK](https://github.com/countly/countly-sdk-android/tree/messaging) and [iOS SDK](https://github.com/countly/countly-sdk-ios/tree/messaging). Refer to instructions on each SDK page for more information on how to setup SDKs. 
 
 ##Dependencies
 We develop and test Countly on Ubuntu with MongoDB, Node.js and nginx. Installation script only needs a clean, decent Ubuntu Linux without any services listening to port 80 and takes care of every library and software (e.g MongoDB, Nginx, Node.js, Expressjs etc) required to be installed on Ubuntu Linux.
