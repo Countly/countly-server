@@ -162,7 +162,12 @@ var fetch = {},
 
             if (result && collection === 'events') {
                 if (result.list) { result.list = _.filter(result.list, function(l){ return l.indexOf('[CLY]') !== 0; }); }
-                if (result.segments) { result.segments = _.filter(result.segments, function(s, k){ return k.indexOf('[CLY]') !== 0; }); }
+				if (result.segments) {
+					for(var i in result.segments){
+						if(i.indexOf('[CLY]') === 0)
+							delete result.segments[i];
+					}
+				}
             }
 
             common.returnOutput(params, result);
