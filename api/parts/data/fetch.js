@@ -447,102 +447,103 @@ var fetch = {},
         function getMergedObj(dataObjects, isRefresh) {
             var mergedDataObj = {};
 
-            for (var i = 0; i < dataObjects.length; i++) {
-                if (!dataObjects[i] || !dataObjects[i].m) {
-                    continue;
-                }
-
-                var mSplit = dataObjects[i].m.split(":"),
-                    year = mSplit[0],
-                    month = mSplit[1];
-
-                if (!mergedDataObj[year]) {
-                    mergedDataObj[year] = {};
-                }
-
-                if (month == 0) {
-                    if (mergedDataObj['meta']) {
-                        for (var metaEl in dataObjects[i]['meta']) {
-                            if (mergedDataObj['meta'][metaEl]) {
-                                mergedDataObj['meta'][metaEl] = union(mergedDataObj['meta'][metaEl], dataObjects[i]['meta'][metaEl]);
-                            } else {
-                                mergedDataObj['meta'][metaEl] = dataObjects[i]['meta'][metaEl];
-                            }
-                        }
-                    } else {
-                        mergedDataObj['meta'] = dataObjects[i]['meta'] || [];
-                    }
-
-                    if (mergedDataObj[year]) {
-                        for (var prop in dataObjects[i]['d']) {
-                            mergedDataObj[year][prop] = dataObjects[i]['d'][prop];
-                        }
-                    } else {
-                        mergedDataObj[year] = dataObjects[i]['d'] || {};
-                    }
-                } else {
-                    if (mergedDataObj[year][month]) {
-                        for (var prop in dataObjects[i]['d']) {
-                            mergedDataObj[year][month][prop] = dataObjects[i]['d'][prop];
-                        }
-                    } else {
-                        mergedDataObj[year][month] = dataObjects[i]['d'] || {};
-                    }
-
-                    if (!isRefresh) {
-                        for (var day in dataObjects[i]['d']) {
-                            for (var prop in dataObjects[i]['d'][day]) {
-                                if ((collection == 'users' || dataObjects[i]['s'] == 'no-segment') && prop <= 23 && prop >= 0) {
-                                    continue;
-                                }
-
-                                if (typeof dataObjects[i]['d'][day][prop] === 'object') {
-                                    for (var secondLevel in dataObjects[i]['d'][day][prop]) {
-                                        if (secondLevel == common.dbMap.total || secondLevel == common.dbMap.new ||
-                                            secondLevel == common.dbEventMap.count || secondLevel == common.dbEventMap.sum) {
-                                            if (!mergedDataObj[year][month][prop]) {
-                                                mergedDataObj[year][month][prop] = {};
-                                            }
-
-                                            if (mergedDataObj[year][month][prop][secondLevel]) {
-                                                mergedDataObj[year][month][prop][secondLevel] += dataObjects[i]['d'][day][prop][secondLevel];
-                                            } else {
-                                                mergedDataObj[year][month][prop][secondLevel] = dataObjects[i]['d'][day][prop][secondLevel];
-                                            }
-
-                                            if (!mergedDataObj[year][prop]) {
-                                                mergedDataObj[year][prop] = {};
-                                            }
-
-                                            if (mergedDataObj[year][prop][secondLevel]) {
-                                                mergedDataObj[year][prop][secondLevel] += dataObjects[i]['d'][day][prop][secondLevel];
-                                            } else {
-                                                mergedDataObj[year][prop][secondLevel] = dataObjects[i]['d'][day][prop][secondLevel];
-                                            }
-                                        }
-                                    }
-                                } else if (prop == common.dbMap.total || prop == common.dbMap.new ||
-                                    prop == common.dbMap.duration || prop == common.dbMap.events ||
-                                    prop == common.dbEventMap.count || prop == common.dbEventMap.sum) {
-
-                                    if (mergedDataObj[year][month][prop]) {
-                                        mergedDataObj[year][month][prop] += dataObjects[i]['d'][day][prop];
-                                    } else {
-                                        mergedDataObj[year][month][prop] = dataObjects[i]['d'][day][prop];
-                                    }
-
-                                    if (mergedDataObj[year][prop]) {
-                                        mergedDataObj[year][prop] += dataObjects[i]['d'][day][prop];
-                                    } else {
-                                        mergedDataObj[year][prop] = dataObjects[i]['d'][day][prop];
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
+			if(dataObjects && dataObjects.length){
+				for (var i = 0; i < dataObjects.length; i++) {
+					if (!dataObjects[i] || !dataObjects[i].m) {
+						continue;
+					}
+	
+					var mSplit = dataObjects[i].m.split(":"),
+						year = mSplit[0],
+						month = mSplit[1];
+	
+					if (!mergedDataObj[year]) {
+						mergedDataObj[year] = {};
+					}
+	
+					if (month == 0) {
+						if (mergedDataObj['meta']) {
+							for (var metaEl in dataObjects[i]['meta']) {
+								if (mergedDataObj['meta'][metaEl]) {
+									mergedDataObj['meta'][metaEl] = union(mergedDataObj['meta'][metaEl], dataObjects[i]['meta'][metaEl]);
+								} else {
+									mergedDataObj['meta'][metaEl] = dataObjects[i]['meta'][metaEl];
+								}
+							}
+						} else {
+							mergedDataObj['meta'] = dataObjects[i]['meta'] || [];
+						}
+	
+						if (mergedDataObj[year]) {
+							for (var prop in dataObjects[i]['d']) {
+								mergedDataObj[year][prop] = dataObjects[i]['d'][prop];
+							}
+						} else {
+							mergedDataObj[year] = dataObjects[i]['d'] || {};
+						}
+					} else {
+						if (mergedDataObj[year][month]) {
+							for (var prop in dataObjects[i]['d']) {
+								mergedDataObj[year][month][prop] = dataObjects[i]['d'][prop];
+							}
+						} else {
+							mergedDataObj[year][month] = dataObjects[i]['d'] || {};
+						}
+	
+						if (!isRefresh) {
+							for (var day in dataObjects[i]['d']) {
+								for (var prop in dataObjects[i]['d'][day]) {
+									if ((collection == 'users' || dataObjects[i]['s'] == 'no-segment') && prop <= 23 && prop >= 0) {
+										continue;
+									}
+	
+									if (typeof dataObjects[i]['d'][day][prop] === 'object') {
+										for (var secondLevel in dataObjects[i]['d'][day][prop]) {
+											if (secondLevel == common.dbMap.total || secondLevel == common.dbMap.new ||
+												secondLevel == common.dbEventMap.count || secondLevel == common.dbEventMap.sum) {
+												if (!mergedDataObj[year][month][prop]) {
+													mergedDataObj[year][month][prop] = {};
+												}
+	
+												if (mergedDataObj[year][month][prop][secondLevel]) {
+													mergedDataObj[year][month][prop][secondLevel] += dataObjects[i]['d'][day][prop][secondLevel];
+												} else {
+													mergedDataObj[year][month][prop][secondLevel] = dataObjects[i]['d'][day][prop][secondLevel];
+												}
+	
+												if (!mergedDataObj[year][prop]) {
+													mergedDataObj[year][prop] = {};
+												}
+	
+												if (mergedDataObj[year][prop][secondLevel]) {
+													mergedDataObj[year][prop][secondLevel] += dataObjects[i]['d'][day][prop][secondLevel];
+												} else {
+													mergedDataObj[year][prop][secondLevel] = dataObjects[i]['d'][day][prop][secondLevel];
+												}
+											}
+										}
+									} else if (prop == common.dbMap.total || prop == common.dbMap.new ||
+										prop == common.dbMap.duration || prop == common.dbMap.events ||
+										prop == common.dbEventMap.count || prop == common.dbEventMap.sum) {
+	
+										if (mergedDataObj[year][month][prop]) {
+											mergedDataObj[year][month][prop] += dataObjects[i]['d'][day][prop];
+										} else {
+											mergedDataObj[year][month][prop] = dataObjects[i]['d'][day][prop];
+										}
+	
+										if (mergedDataObj[year][prop]) {
+											mergedDataObj[year][prop] += dataObjects[i]['d'][day][prop];
+										} else {
+											mergedDataObj[year][prop] = dataObjects[i]['d'][day][prop];
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
             return mergedDataObj;
         }
     }
