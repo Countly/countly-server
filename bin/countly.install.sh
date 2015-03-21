@@ -21,7 +21,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 #update package index
 apt-get update
 
-apt-get -y install python-software-properties wget
+apt-get -y install python-software-properties wget g++
 
 if !(command -v apt-add-repository >/dev/null) then
     apt-get -y install software-properties-common
