@@ -1,42 +1,39 @@
-FROM ubuntu:trusty
+FROM phusion/baseimage:0.9.16
 
-ENV   DEBIAN_FRONTEND noninteractive
-
-# REPOS
-RUN   apt-get --yes update && \
-      apt-get install -y software-properties-common && \
-      add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe" && \
-      add-apt-repository -y ppa:chris-lea/node.js && \
-      add-apt-repository -y ppa:nginx/stable && \
-      apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10 && \
-      echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | tee /etc/apt/sources.list.d/10gen.list && \
-      mkdir -p /data/db && \
-      apt-get --yes update && \
-      apt-get install -y -q curl git wget mongodb-10gen nodejs supervisor imagemagick nginx build-essential
-
-#SHIMS
-RUN   dpkg-divert --local --rename --add /sbin/initctl && \
-      rm /sbin/initctl && \
-      ln -s /bin/true /sbin/initctl
-
-ENV   DEBIAN_FRONTEND dialog
+CMD ["/sbin/my_init"]
 
 ## Setup Countly
-COPY   / /opt/countly
-RUN   mkdir -p /data/log && \
-      cd /opt/countly/api ; npm install time  && \
-      rm /etc/nginx/sites-enabled/default && \
-      cp /opt/countly/bin/config/nginx.server.conf /etc/nginx/sites-enabled/default && \
-      cp /opt/countly/frontend/express/public/javascripts/countly/countly.config.sample.js  /opt/countly/frontend/express/public/javascripts/countly/countly.config.js && \
-      cp /opt/countly/api/config.sample.js  /opt/countly/api/config.js && \
-      cp /opt/countly/frontend/express/config.sample.js  /opt/countly/frontend/express/config.js
+COPY / /opt/countly
+RUN  useradd -r -M -U -d /opt/countly -s /bin/false countly && \
+	 chown -R countly:countly /opt/countly && \
+	 /opt/countly/bin/countly.install.sh docker
 
-ADD    ./supervisor/supervisord.conf /etc/supervisor/supervisord.conf
-ADD    ./supervisor/conf.d/nginx.conf /etc/supervisor/conf.d/nginx.conf
-ADD    ./supervisor/conf.d/mongodb.conf /etc/supervisor/conf.d/mongodb.conf
-ADD    ./supervisor/conf.d/countly.conf /etc/supervisor/conf.d/countly.conf
+## Add MongoDB data volume
+VOLUME ["/data"]
+
+# Change MongoDB folder permissions and add services folders
+RUN chown -R mongodb:mongodb /data && \
+    mkdir /etc/service/mongodb && \
+    mkdir /etc/service/nginx && \
+    mkdir /etc/service/countly-api && \
+    mkdir /etc/service/countly-dashboard && \
+    echo "" >> /etc/nginx/nginx.conf && \
+    echo "daemon off;" >> /etc/nginx/nginx.conf
+
+# Add services' run scripts
+ADD ./bin/docker/mongodb.sh /etc/service/mongodb/run
+ADD ./bin/docker/nginx.sh /etc/service/nginx/run
+ADD ./bin/docker/countly-api.sh /etc/service/countly-api/run
+ADD ./bin/docker/countly-dashboard.sh /etc/service/countly-dashboard/run
+
+# Only root can change run scripts
+RUN chown mongodb /etc/service/mongodb/run && \
+	chown root /etc/service/nginx/run && \
+	chmod +x /etc/service/mongodb/run && \
+	chmod +x /etc/service/nginx/run && \
+	chmod +x /etc/service/countly-api/run && \
+	chmod +x /etc/service/countly-dashboard/run
 
 EXPOSE 80
-VOLUME ["/data"]
-CMD []
-ENTRYPOINT ["/usr/bin/supervisord"]
+
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

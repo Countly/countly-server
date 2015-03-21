@@ -1,2 +1,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-node $DIR/install_plugins
+
+if ! type "nodejs" > /dev/null; then
+	node $DIR/install_plugins
+else
+	nodejs $DIR/install_plugins
+fi

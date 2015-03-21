@@ -43,12 +43,21 @@ apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 
 #install node.js
 apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
+# docker baseimage requires npm to be installed
+# if dpkg --get-selections | grep -q "^$pkg[[:space:]]*install$" >/dev/null; then
+if [ "$1" == "docker" ]
+then
+	apt-get -y install npm  || (echo "Failed to install npm." ; exit)
+fi
 
 #install mongodb
 apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
 
 #install supervisor
-apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
+if [ "$1" != "docker" ]
+then
+	apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
+fi
 
 #install imagemagick
 apt-get -y install imagemagick
@@ -56,18 +65,21 @@ apt-get -y install imagemagick
 #install sendmail
 apt-get -y install sendmail
 
+#apt-get -y install build-essential || (echo "Failed to install build-essential." ; exit)
+
 #install iptables
-DEBIAN_FRONTEND=noninteractive apt-get -y install iptables-persistent
+if [ "$1" != "docker" ]
+then
+	DEBIAN_FRONTEND=noninteractive apt-get -y install iptables-persistent
 
-apt-get -y install build-essential || (echo "Failed to install build-essential." ; exit)
+	#drop packages coming from 0/0 going through mongodb port
+	#allow those coming from localhost
+	iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s localhost -j ACCEPT
+	iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s 0/0 -j DROP
 
-#drop packages coming from 0/0 going through mongodb port
-#allow those coming from localhost
-iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s localhost -j ACCEPT
-iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s 0/0 -j DROP
-
-#install iptables-persistent
-apt-get -y install iptables-persistent
+	#install iptables-persistent
+	apt-get -y install iptables-persistent
+fi
 
 #install api modules
 ( cd $DIR/../api ; npm install --unsafe-perm )
@@ -79,12 +91,18 @@ apt-get -y install iptables-persistent
 cp /etc/nginx/sites-enabled/default $DIR/config/nginx.default.backup
 cp $DIR/config/nginx.server.conf /etc/nginx/sites-enabled/default
 cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
-/etc/init.d/nginx restart
+if [ "$1" != "docker" ]
+then
+	/etc/init.d/nginx restart
+fi
 
 cp -n $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
 
 #kill existing supervisor process
-pkill -SIGTERM supervisord
+if [ "$1" != "docker" ]
+then
+	pkill -SIGTERM supervisord
+fi
 
 #create supervisor upstart script
 (cat $DIR/config/countly-supervisor.conf ; echo "exec /usr/bin/supervisord --nodaemon --configuration $DIR/config/supervisord.conf") > /etc/init/countly-supervisor.conf
@@ -93,8 +111,11 @@ pkill -SIGTERM supervisord
 echo "respawn" >> /etc/init/mongod.conf
 
 #restart mongod
-stop mongod
-start mongod
+if [ "$1" != "docker" ]
+then
+	stop mongod
+	start mongod
+fi
 
 #create api configuration file from sample
 cp -n $DIR/../api/config.sample.js $DIR/../api/config.js
@@ -114,4 +135,7 @@ bash $DIR/scripts/compile.js.sh
 bash $DIR/scripts/countly.install.plugins.sh
 
 #finally start countly api and dashboard
-start countly-supervisor
+if [ "$1" != "docker" ]
+then
+	start countly-supervisor
+fi
