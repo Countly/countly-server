@@ -21,7 +21,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 #update package index
 apt-get update
 
-apt-get -y install python-software-properties
+apt-get -y install python-software-properties wget
 
 if !(command -v apt-add-repository >/dev/null) then
     apt-get -y install software-properties-common
@@ -43,15 +43,6 @@ apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 
 #install node.js
 apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
-# docker baseimage requires npm to be installed
-# if dpkg --get-selections | grep -q "^$pkg[[:space:]]*install$" >/dev/null; then
-if ! type "npm" > /dev/null; then
-	apt-get -y install npm  || (echo "Failed to install npm." ; exit)
-fi
-
-if ! type "nodejs" > /dev/null; then
-	ln -s /usr/bin/nodejs /usr/bin/node
-fi
 
 #install mongodb
 apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
@@ -105,10 +96,10 @@ cp -n $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.
 if [ "$1" != "docker" ]
 then
 	pkill -SIGTERM supervisord
-fi
 
-#create supervisor upstart script
-(cat $DIR/config/countly-supervisor.conf ; echo "exec /usr/bin/supervisord --nodaemon --configuration $DIR/config/supervisord.conf") > /etc/init/countly-supervisor.conf
+	#create supervisor upstart script
+	(cat $DIR/config/countly-supervisor.conf ; echo "exec /usr/bin/supervisord --nodaemon --configuration $DIR/config/supervisord.conf") > /etc/init/countly-supervisor.conf
+fi
 
 #respawning mongod on crash
 echo "respawn" >> /etc/init/mongod.conf
