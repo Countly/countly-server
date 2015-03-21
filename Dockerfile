@@ -5,7 +5,6 @@ CMD ["/sbin/my_init"]
 ## Setup Countly
 COPY / /opt/countly
 RUN  useradd -r -M -U -d /opt/countly -s /bin/false countly && \
-	 chown -R countly:countly /opt/countly && \
 	 /opt/countly/bin/countly.install.sh docker
 
 ## Add MongoDB data volume
@@ -29,10 +28,7 @@ ADD ./bin/docker/countly-dashboard.sh /etc/service/countly-dashboard/run
 # Only root can change run scripts
 RUN chown mongodb /etc/service/mongodb/run && \
 	chown root /etc/service/nginx/run && \
-	chmod +x /etc/service/mongodb/run && \
-	chmod +x /etc/service/nginx/run && \
-	chmod +x /etc/service/countly-api/run && \
-	chmod +x /etc/service/countly-dashboard/run
+	chown -R countly:countly /opt/countly
 
 EXPOSE 80
 
