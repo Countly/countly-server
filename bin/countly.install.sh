@@ -45,9 +45,12 @@ apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
 # docker baseimage requires npm to be installed
 # if dpkg --get-selections | grep -q "^$pkg[[:space:]]*install$" >/dev/null; then
-if [ "$1" == "docker" ]
-then
+if ! type "npm" > /dev/null; then
 	apt-get -y install npm  || (echo "Failed to install npm." ; exit)
+fi
+
+if ! type "nodejs" > /dev/null; then
+	ln -s /usr/bin/nodejs /usr/bin/node
 fi
 
 #install mongodb
