@@ -33,10 +33,9 @@ common.db.collection('events').find({}, {list:1}).toArray(function (err, events)
 function renameColl(obj, callback) {
 	common.db.renameCollection(obj.o, obj.n, {dropTarget: true}, function(err, coll) {								
 		if (err) {
-			console.log(obj.o);
+			console.log("Could not rename: "+obj.o+" to "+obj.n);
 			console.log(err);
-		} else {
-            callback();
-        }
+		}
+        callback();
 	});
 }
