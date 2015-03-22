@@ -71,11 +71,11 @@ var pluginManager = function pluginManager(){
 			var handler = function (error, stdout, stderr) {
 				if(stderr){
 					errors = true;
-					console.log('stderr: ' + stderr);
+					console.log('stderr: %j', stderr);
 				}
 				if (error){
 					errors = true;					
-					console.log('error: ' + error);
+					console.log('error: %j', error);
 				}
 				
 				if(callback)
@@ -108,11 +108,11 @@ var pluginManager = function pluginManager(){
 			var handler = function (error, stdout, stderr) {
 				if(stderr){
 					errors = true;
-					console.log('stderr: ' + stderr);
+					console.log('stderr: %j', stderr);
 				}
 				if (error){
 					errors = true;					
-					console.log('error: ' + error);
+					console.log('error: %j', error);
 				}
 				
 				if(callback)
@@ -158,11 +158,11 @@ var pluginManager = function pluginManager(){
 		var handler = function (error, stdout, stderr) {
 			if(stderr){
 				errors = true;
-				console.log('stderr: ' + stderr);
+				console.log('stderr: %j', stderr);
 			}
 			if (error && error != "Error: Command failed: "){
 				errors = true;					
-				console.log('error: ' + error);
+				console.log('error: %j', error);
 			}
 			cnt++;
 			if(cnt == 3 && callback)
@@ -181,16 +181,16 @@ var pluginManager = function pluginManager(){
 		if (process.env.INSIDE_DOCKER) {
 			exec("sv restart countly-api countly-frontend", function (error, stdout, stderr) {
 				if(error)
-					console.log('error: ' + error);
+					console.log('error: %j', error);
 				if(stderr)
-					console.log('stderr: ' + stderr);
+					console.log('stderr: %j', stderr);
 			});
 		} else {
 			exec("sudo restart countly-supervisor", function (error, stdout, stderr) {
 				if(error)
-					console.log('error: ' + error);
+					console.log('error: %j', error);
 				if(stderr)
-					console.log('stderr: ' + stderr);
+					console.log('stderr: %j', stderr);
 			});
 		}
 	}
