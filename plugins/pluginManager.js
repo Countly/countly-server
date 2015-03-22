@@ -3,8 +3,7 @@ var plugins = require('./plugins.json'),
 	path = require("path"),
 	sys = require('sys'),
 	cp = require('child_process'),
-	exec = cp.exec,
-	exec = cp.swawn;
+	exec = cp.exec;
 	
 var pluginManager = function pluginManager(){
 	var events = {};
