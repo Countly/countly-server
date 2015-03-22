@@ -3,7 +3,8 @@ var plugins = require('./plugins.json'),
 	path = require("path"),
 	sys = require('sys'),
 	cp = require('child_process'),
-	exec = cp.exec;
+	exec = cp.exec,
+	exec = cp.swawn;
 	
 var pluginManager = function pluginManager(){
 	var events = {};
@@ -179,7 +180,7 @@ var pluginManager = function pluginManager(){
 	
 	this.restartCountly = function(){
 		if (process.env.INSIDE_DOCKER) {
-			exec("sv restart countly-api countly-frontend", function (error, stdout, stderr) {
+			exec("sudo /usr/bin/sv restart countly-api countly-dashboard", function (error, stdout, stderr) {
 				if(error)
 					console.log('error: %j', error);
 				if(stderr)

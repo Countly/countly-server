@@ -5,7 +5,8 @@ CMD ["/sbin/my_init"]
 ## Setup Countly
 COPY / /opt/countly
 RUN  useradd -r -M -U -d /opt/countly -s /bin/false countly && \
-	 /opt/countly/bin/countly.install.sh docker
+	echo "countly ALL=(ALL) NOPASSWD: /usr/bin/sv restart countly-api countly-dashboard" > /etc/sudoers.d/countly && \
+	/opt/countly/bin/countly.install.sh docker
 
 ## Add MongoDB data volume
 VOLUME ["/data"]
