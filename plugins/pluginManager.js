@@ -178,19 +178,21 @@ var pluginManager = function pluginManager(){
 	}
 	
 	this.restartCountly = function(){
-		var child = exec("sudo sv restart countly-api countly-frontend", function (error, stdout, stderr) {
-			if(error) {
-				var child = exec("sudo restart countly-supervisor", function (error, stdout, stderr) {
-					if(error)
-						console.log('error: ' + error);
-					if(stderr)
-						console.log('stderr: ' + stderr);
-				});
-				console.log('error: ' + error);
-			}
-			if(stderr)
-				console.log('stderr: ' + stderr);
-		});
+		if (process.env.INSIDE_DOCKER) {
+			exec("sv restart countly-api countly-frontend", function (error, stdout, stderr) {
+				if(error)
+					console.log('error: ' + error);
+				if(stderr)
+					console.log('stderr: ' + stderr);
+			});
+		} else {
+			exec("sudo restart countly-supervisor", function (error, stdout, stderr) {
+				if(error)
+					console.log('error: ' + error);
+				if(stderr)
+					console.log('stderr: ' + stderr);
+			});
+		}
 	}
 }
 /* ************************************************************************
