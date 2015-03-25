@@ -362,9 +362,10 @@ $.extend(Template.prototype, {
         var oSettings = dTable.fnSettings();
         dTable.fnClearTable(false);
 
-        for (var i=0; i < newDataArr.length; i++) {
-            dTable.oApi._fnAddData(oSettings, newDataArr[i]);
-        }
+		if(newDataArr && newDataArr.length)
+			for (var i=0; i < newDataArr.length; i++) {
+				dTable.oApi._fnAddData(oSettings, newDataArr[i]);
+			}
 
         oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
         dTable.fnStandingRedraw();
