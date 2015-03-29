@@ -434,7 +434,7 @@ var pushly          = require('pushly')(),
                 callback(null, []);
             } else {
                 if (geo) {
-                    msg.conditions = geoApi.conditions(geo, msg.conditions);
+                    //msg.conditions = geoApi.conditions(geo, msg.conditions);
                 }
 
                 var message = new Message(msg.apps, '')

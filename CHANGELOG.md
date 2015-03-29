@@ -1,6 +1,7 @@
+
 15.03
 
-  * Inroducing Plugins system, allowing other developers to write plugins which would extend Countly functionality without changing/breaking the core. For more information on how to write a plugin, see [Countly resources](http://resources.count.ly)
+  * Introducing Plugins system, allowing other developers to write plugins which would extend Countly functionality without changing/breaking the core. For more information on how to write a plugin, see [Countly resources](http://resources.count.ly)
   
   * Lots of plugins come with new functionality in this release, including:
    * Data Populator
@@ -239,3 +240,4 @@
     and cannot edit its settings.
 
   * Added csfr protection to all methods provided through app.js.
+

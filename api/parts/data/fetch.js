@@ -162,7 +162,12 @@ var fetch = {},
 
             if (result && collection === 'events') {
                 if (result.list) { result.list = _.filter(result.list, function(l){ return l.indexOf('[CLY]') !== 0; }); }
-                if (result.segments) { result.segments = _.filter(result.segments, function(s, k){ return k.indexOf('[CLY]') !== 0; }); }
+				if (result.segments) {
+					for(var i in result.segments){
+						if(i.indexOf('[CLY]') === 0)
+							delete result.segments[i];
+					}
+				}
             }
 
             common.returnOutput(params, result);
@@ -283,6 +288,42 @@ var fetch = {},
 			countlySession.setDb(usersDoc || {});
 			common.returnOutput(params, countlySession.getSubperiodData());
         });
+    };
+	
+	fetch.fetchLoyalty = function(params) {
+        fetchTimeObj("users", params, false, function(doc) {
+			var _meta = [];
+			if (doc['meta']) {
+				_meta = (doc['meta']['l-ranges']) ? doc['meta']['l-ranges'] : [];
+			}
+			var chartData = countlyCommon.extractRangeData(doc, "l", _meta, function (index) {return index;});
+
+			common.returnOutput(params, chartData);
+		});
+    };
+	
+	fetch.fetchFrequency = function(params) {
+        fetchTimeObj("users", params, false, function(doc) {
+			var _meta = [];
+			if (doc['meta']) {
+				_meta = (doc['meta']['f-ranges']) ? doc['meta']['f-ranges'] : [];
+			}
+			var chartData = countlyCommon.extractRangeData(doc, "f", _meta, function (index) {return index;});
+
+			common.returnOutput(params, chartData);
+		});
+    };
+	
+	fetch.fetchDurations = function(params) {
+        fetchTimeObj("users", params, false, function(doc) {
+			var _meta = [];
+			if (doc['meta']) {
+				_meta = (doc['meta']['d-ranges']) ? doc['meta']['d-ranges'] : [];
+			}
+			var chartData = countlyCommon.extractRangeData(doc, "ds", _meta, function (index) {return index;});
+
+			common.returnOutput(params, chartData);
+		});
     };
 	
 	fetch.fetchMetric = function(params) {

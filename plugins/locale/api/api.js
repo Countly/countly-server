@@ -5,7 +5,7 @@ var plugin = {},
     plugins = require('../../pluginManager.js');
 
 (function (plugin) {
-	plugins.register("/init", function(ob){
+	plugins.register("/worker", function(ob){
 		common.dbUserMap['locale'] = 'lo';                     // full ISO locale from device
         common.dbUserMap['lang'] = 'la';                       // language extracted from locale
 	});

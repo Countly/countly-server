@@ -3,7 +3,8 @@
   "dependencies": {
     "connect-flash": "0.1.1",
     "connect-mongoskin": "0.1.2",
-    "mongoskin": "1.4.4",
+	"mongodb": "1.4.x",
+    "mongoskin": "1.4.x",
 	"ejs": "0.8.4",
 	"express":"3.2.6",
 	"express-expose":"0.3.3",

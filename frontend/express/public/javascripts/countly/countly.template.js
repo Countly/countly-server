@@ -362,9 +362,10 @@ $.extend(Template.prototype, {
         var oSettings = dTable.fnSettings();
         dTable.fnClearTable(false);
 
-        for (var i=0; i < newDataArr.length; i++) {
-            dTable.oApi._fnAddData(oSettings, newDataArr[i]);
-        }
+		if(newDataArr && newDataArr.length)
+			for (var i=0; i < newDataArr.length; i++) {
+				dTable.oApi._fnAddData(oSettings, newDataArr[i]);
+			}
 
         oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
         dTable.fnStandingRedraw();
@@ -3839,10 +3840,10 @@ var AppRouter = Backbone.Router.extend({
                 nNext = document.createElement( 'span' );
                 nLast = document.createElement( 'span' );
 
-                nFirst.innerHTML = "<i class='fa fa-double-angle-left'></i>";
+                nFirst.innerHTML = "<i class='fa fa-angle-double-left'></i>";
                 nPrevious.innerHTML = "<i class='fa fa-angle-left'></i>";
                 nNext.innerHTML = "<i class='fa fa-angle-right'></i>";
-                nLast.innerHTML = "<i class='fa fa-double-angle-right'></i>";
+                nLast.innerHTML = "<i class='fa fa-angle-double-right'></i>";
 
                 nFirst.className = "paginate_button first";
                 nPrevious.className = "paginate_button previous";
@@ -4180,7 +4181,7 @@ var AppRouter = Backbone.Router.extend({
                 ]
             },
             "fnInitComplete": function(oSettings, json) {
-                var saveHTML = "<div class='save-table-data'><i class='fa fa-download-alt'></i></div>",
+                var saveHTML = "<div class='save-table-data'><i class='fa fa-download'></i></div>",
                     searchHTML = "<div class='search-table-data'><i class='fa fa-search'></i></div>",
                     tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
 
