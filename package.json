@@ -26,6 +26,6 @@
     "supertest": "*"
   },
   "scripts": {
-    "test": "grunt --verbose",
+    "test": "grunt --verbose"
   }
 }

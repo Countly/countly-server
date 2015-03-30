@@ -72,6 +72,9 @@ apt-get -y install build-essential || (echo "Failed to install build-essential."
 #install iptables-persistent
 #apt-get install iptables-persistent
 
+#install grunt
+( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install )
+
 #install api modules
 ( cd $DIR/../api ; npm install )
 

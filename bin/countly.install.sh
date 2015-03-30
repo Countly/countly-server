@@ -75,6 +75,9 @@ then
 	apt-get -y install iptables-persistent
 fi
 
+#install grunt
+( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install )
+
 #install api modules
 ( cd $DIR/../api ; npm install --unsafe-perm )
 
