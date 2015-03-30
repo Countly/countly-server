@@ -132,14 +132,14 @@ var pluginManager = function pluginManager(){
 		var ret = '';
 		
 		var dir = path.resolve(__dirname, ''),
-			cmd = 'cd .. && grunt plugins';
+			cmd = 'cd .. && grunt plugins', errors;
 
 		exec(cmd, function(error, stdout, stderr) {
 			if (stderr){
 				errors = true;
 				console.log('stderr: %j', stderr);
 			}
-			if (error && error != "Error: Command failed: "){
+			if (error && error != 'Error: Command failed: '){
 				errors = true;					
 				console.log('error: %j', error);
 			}
