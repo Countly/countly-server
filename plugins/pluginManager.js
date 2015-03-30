@@ -131,7 +131,7 @@ var pluginManager = function pluginManager(){
 	this.prepareProduction = function(callback) {
 		console.log('Preparing production files');
 		exec('cd .. && grunt plugins locales', function(error, stdout, stderr) {
-			console.log('Done preparing production files with %j / %j', error, stderr);
+			console.log('Done preparing production files with %j / %j / %j', error, stderr, stdout);
 			var errors;
 			if (stderr && (!stderr.toLowerCase || stderr.toLowerCase().indexOf('error') !== -1)) {
 				errors = true;
@@ -152,7 +152,7 @@ var pluginManager = function pluginManager(){
 		if (process.env.INSIDE_DOCKER) {
 			console.log('Restarting runit services ...');
 			exec("sudo /usr/bin/sv restart countly-api countly-dashboard", function (error, stdout, stderr) {
-				console.log('Done restarting runit services with %j / %j', error, stderr);
+				console.log('Done restarting runit services with %j / %j / %j', error, stderr, stdout);
 				if(error)
 					console.log('error: %j', error);
 				if(stderr)
@@ -161,7 +161,7 @@ var pluginManager = function pluginManager(){
 		} else {
 			console.log('Restarting countly-supervisor ...');
 			exec("sudo restart countly-supervisor", function (error, stdout, stderr) {
-				console.log('Done restarting countly-supervisor with %j / %j', error, stderr);
+				console.log('Done restarting countly-supervisor with %j / %j / %j', error, stderr, stdout);
 				if(error)
 					console.log('error: %j', error);
 				if(stderr)
