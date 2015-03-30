@@ -123,12 +123,11 @@ echo $plugins > plugins.json
 
 )
 
-#compile scripts for production
-apt-get -y install default-jre
-bash $DIR/scripts/compile.js.sh
-
 #install plugins
 bash $DIR/scripts/countly.install.plugins.sh
+
+#compile scripts for production
+cd $DIR && grunt dist-all
 
 #finally start countly api and dashboard
 start countly-supervisor

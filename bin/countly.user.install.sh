@@ -106,12 +106,11 @@ if [ ! -f $DIR/../plugins/plugins.json ]; then
 	cp $DIR/../plugins/plugins.default.json $DIR/../plugins/plugins.json
 fi
 
-#compile scripts for production
-apt-get -y install default-jre
-bash $DIR/scripts/compile.js.sh
-
 #install plugins
 bash $DIR/scripts/countly.install.plugins.sh
+
+#compile scripts for production
+cd $DIR && grunt dist-all
 
 if [ `getent passwd countly`x == 'x' ]; then
   useradd -r -M -U -d $COUNTLY_DIR -s /bin/false countly

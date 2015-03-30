@@ -3179,33 +3179,11 @@ var AppRouter = Backbone.Router.extend({
 
 
         jQuery.i18n.properties({
-            name:'help',
+            name:'locale',
             cache:true,
             language:countlyCommon.BROWSER_LANG_SHORT,
-            path:[countlyGlobal["cdn"]+'localization/help/'],
-            mode:'map',
-            callback:function () {
-                countlyCommon.HELP_MAP = jQuery.i18n.map;
-                jQuery.i18n.map = {};
-				
-				var names = ["dashboard"],
-					paths = [countlyGlobal["cdn"]+'localization/dashboard/'];
-				
-				if(countlyGlobal["plugins"]){
-					for(var i = 0, l = countlyGlobal["plugins"].length; i < l; i++){
-						names.push(countlyGlobal["plugins"][i]);
-						paths.push(countlyGlobal["cdn"]+countlyGlobal["plugins"][i]+"/localization/");
-					}
-				}
-
-                jQuery.i18n.properties({
-                    name:names,
-                    cache:true,
-                    language:countlyCommon.BROWSER_LANG_SHORT,
-                    path:paths,
-                    mode:'map'
-                });
-            }
+            path:[countlyGlobal["cdn"]+'localization/min/'],
+            mode:'map'
         });
 
         var self = this;
@@ -3482,36 +3460,15 @@ var AppRouter = Backbone.Router.extend({
                 $("#date-from").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
 
                 jQuery.i18n.properties({
-                    name:'help',
+                    name:'locale',
                     cache:true,
                     language:countlyCommon.BROWSER_LANG_SHORT,
-                    path:[countlyGlobal["cdn"]+'localization/help/'],
+                    path:[countlyGlobal["cdn"]+'localization/min/'],
                     mode:'map',
                     callback:function () {
-                        countlyCommon.HELP_MAP = jQuery.i18n.map;
-                        jQuery.i18n.map = {};
-
-						var names = ["dashboard"],
-						paths = [countlyGlobal["cdn"]+'localization/dashboard/'];
-				
-						if(countlyGlobal["plugins"]){
-							for(var i = 0, l = countlyGlobal["plugins"].length; i < l; i++){
-								names.push(countlyGlobal["plugins"][i]);
-								paths.push(countlyGlobal["cdn"]+countlyGlobal["plugins"][i]+"/localization/");
-							}
-						}
-                        jQuery.i18n.properties({
-                            name:names,
-                            cache:true,
-                            language:countlyCommon.BROWSER_LANG_SHORT,
-                            path:paths,
-                            mode:'map',
-                            callback:function () {
-                                $.when(countlyLocation.changeLanguage()).then(function () {
-                                    self.activeView.render();
-                                    self.pageScript();
-                                });
-                            }
+                        $.when(countlyLocation.changeLanguage()).then(function () {
+                            self.activeView.render();
+                            self.pageScript();
                         });
                     }
                 });
@@ -3574,7 +3531,7 @@ var AppRouter = Backbone.Router.extend({
             });
 
             var help = _.once(function () {
-                CountlyHelpers.alert(countlyCommon.HELP_MAP["help-mode-welcome"], "black");
+                CountlyHelpers.alert(jQuery.i18n.map["help-mode-welcome"], "black");
             });
             $(".help-toggle, #help-toggle").click(function (e) {
 
@@ -4223,7 +4180,7 @@ var AppRouter = Backbone.Router.extend({
         $("[data-help-localize]").each(function () {
             var elem = $(this);
             if (elem.data("help-localize") != undefined) {
-                elem.data("help", countlyCommon.HELP_MAP[elem.data("help-localize")]);
+                elem.data("help", jQuery.i18n.map[elem.data("help-localize")]);
             }
         });
 

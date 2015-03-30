@@ -1,7 +1,6 @@
 var plugins = require('./plugins.json'),
 	countlyConfig = require('../frontend/express/config'),
 	path = require("path"),
-	sys = require('sys'),
 	cp = require('child_process'),
 	exec = cp.exec;
 	
@@ -23,7 +22,7 @@ var pluginManager = function pluginManager(){
 		if(!events[event])
 			events[event] = [];
 		events[event].push(callback);
-	}
+	} 
 	
 	this.dispatch = function(event, params){
 		var used = false;
@@ -130,33 +129,13 @@ var pluginManager = function pluginManager(){
 	}
 	
 	this.prepareProduction = function(callback){
-		var ret = "";
+		var ret = '';
 		
-		var dir = path.resolve(__dirname, '');
-		var js = '',
-			css = '';
-			img = '';
-		js += 'java -jar '+dir+'/../bin/scripts/closure-compiler.jar \\\n';
-		css += 'cat '+dir+'/../frontend/express/public/stylesheets/main.css';
-		img += 'cp -r';
-		for(var i = 0, l = plugins.length; i < l; i++){
-			js += '--js='+dir+'/'+plugins[i]+'/frontend/public/javascripts/countly.models.js \\\n';
-			js += '--js='+dir+'/'+plugins[i]+'/frontend/public/javascripts/countly.views.js \\\n';
-			css += ' '+dir+'/'+plugins[i]+'/frontend/public/stylesheets/main.css';
-			img += ' '+dir+'/'+plugins[i]+'/frontend/public/images/'+plugins[i];
-		}
-		js += '--js_output_file='+dir+'/../frontend/express/public/javascripts/min/countly.plugins.js';
-		css += ' > '+dir+'/../frontend/express/public/stylesheets/main.min.css';
-		img += ' '+dir+'/../frontend/express/public/images/ 2>/dev/null';
-		
-		// http://nodejs.org/api.html#_child_processes
-		var sys = require('sys')
-		var exec = require('child_process').exec;
-		
-		var errors;
-		var cnt = 0;
-		var handler = function (error, stdout, stderr) {
-			if(stderr){
+		var dir = path.resolve(__dirname, ''),
+			cmd = 'cd .. && grunt plugins';
+
+		exec(cmd, function(error, stdout, stderr) {
+			if (stderr){
 				errors = true;
 				console.log('stderr: %j', stderr);
 			}
@@ -164,17 +143,10 @@ var pluginManager = function pluginManager(){
 				errors = true;					
 				console.log('error: %j', error);
 			}
-			cnt++;
-			if(cnt == 3 && callback)
+			if (callback) {
 				callback(errors);
-		};
-		
-		// executes `js`
-		var child = exec(js, handler);
-		//executes css
-		var child = exec(css, handler);
-		//executes img copy
-		var child = exec(img, handler);
+			}
+		});
 	}
 	
 	this.restartCountly = function(){

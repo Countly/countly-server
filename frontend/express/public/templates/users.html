@@ -28,7 +28,7 @@ $(document).ready(function() {
 	$("[data-help-localize]").each(function() {
 		var elem = $(this);
 		if (elem.data("help-localize") != undefined) {
-			elem.data("help", countlyCommon.HELP_MAP[elem.data("help-localize")]);
+			elem.data("help", jQuery.i18n.map[elem.data("help-localize")]);
 		}
 	});
 	

@@ -14,14 +14,18 @@
     "url": "git://github.com/countly/countly-server.git"
   },
   "devDependencies": {
-	"should": "*",
     "grunt": "*",
     "grunt-cli": "*",
+    "grunt-contrib-concat": "^0.5.1",
+    "grunt-contrib-copy": "^0.8.0",
+    "grunt-contrib-cssmin": "^0.12.2",
     "grunt-contrib-jshint": "*",
-	"grunt-mocha-test": "*",
-	"supertest":"*"
+    "grunt-contrib-uglify": "^0.8.0",
+    "grunt-mocha-test": "*",
+    "should": "*",
+    "supertest": "*"
   },
   "scripts": {
-    "test": "grunt --verbose"
+    "test": "grunt --verbose",
   }
 }

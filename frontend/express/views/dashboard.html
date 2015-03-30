@@ -15,50 +15,48 @@
 	<link rel="icon" type="image/png" href="<%- cdn %>images/favicon.png">
     <link rel="stylesheet" href="<%- cdn %>stylesheets/font-awesome/css/font-awesome.min.css" />
 	<link rel="stylesheet" href="<%- cdn %>stylesheets/entypo/css/entypo.css" />
-	<link rel="stylesheet" href="<%- cdn %>stylesheets/amaranjs/amaran.min.css" />
-	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/tipsy/tipsy.css" />
 	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.base.css" />
 	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.theme.css" />
-    <link rel="stylesheet" href="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.css" />
     <% if (production) { %>
-	<link rel="stylesheet" href="<%- cdn %>stylesheets/main.min.css?<%= countlyVersion %>" />
-    <!-- PRODUCTION -->
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.dom.js?<%= countlyVersion %>"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.utils.js?<%= countlyVersion %>"></script>
+		<link rel="stylesheet" href="<%- cdn %>stylesheets/main.min.css?<%= countlyVersion %>" />
+		<link rel="stylesheet" href="<%- cdn %>stylesheets/plugins.min.css?<%= countlyVersion %>" />
+    	<!-- PRODUCTION -->
+    	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.dom.js?<%= countlyVersion %>"></script>
+    	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.utils.js?<%= countlyVersion %>"></script>
     <% } else { %>
-	<link rel="stylesheet" href="<%- cdn %>stylesheets/main.css?<%= countlyVersion %>" />
-	<% if (plugins) { %>
-		<% for(var i=0, l=plugins.length; i<l; i++) {%>
-	<link rel="stylesheet" href="<%- cdn %><%= plugins[i] %>/stylesheets/main.css?<%= countlyVersion %>" />
+		<link rel="stylesheet" href="<%- cdn %>stylesheets/main.css?<%= countlyVersion %>" />
+		<% if (plugins) { %>
+			<% for(var i=0, l=plugins.length; i<l; i++) {%>
+		<link rel="stylesheet" href="<%- cdn %><%= plugins[i] %>/stylesheets/main.css?<%= countlyVersion %>" />
+			<% } %>
 		<% } %>
-	<% } %>
-    <!-- DEVELOPMENT -->
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.form.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/tipsy/jquery.tipsy.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.noisy.min.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.sticky.headers.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jqueryui/jquery-ui-1.8.22.custom.min.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jqueryui/jquery-ui-i18n.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/slimScroll.min.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.easing.1.3.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/underscore-min.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/prefixfree.min.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/moment/moment.min.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/moment/moment.isocalendar.min.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/moment/lang-all.min.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/handlebars.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/backbone-min.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jstz.min.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/store+json2.min.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.idle-timer.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/initialAvatar.js"></script>
-	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.amaran.min.js"></script>
-	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.titlealert.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/jquery.dataTables.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/ZeroClipboard.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js"></script>
+	    <!-- DEVELOPMENT -->
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.form.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/tipsy/jquery.tipsy.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.noisy.min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.sticky.headers.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jqueryui/jquery-ui-1.8.22.custom.min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jqueryui/jquery-ui-i18n.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/slimScroll.min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/jquery.easing.1.3.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/underscore-min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/prefixfree.min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/moment/moment.min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/moment/moment.isocalendar.min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/moment/lang-all.min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/handlebars.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/backbone-min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jstz.min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/store+json2.min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.idle-timer.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/initialAvatar.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.amaran.min.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.titlealert.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/jquery.dataTables.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/ZeroClipboard.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js"></script>
     <% } %>
 </head>
 <body> 
@@ -1064,45 +1062,45 @@
 
 	<script language="javascript" type="text/javascript" src="https://www.google.com/jsapi"></script>
     <% if (production) { %>
-    <!-- PRODUCTION -->
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.config.js?<%= countlyVersion %>"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.lib.js?<%= countlyVersion %>"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.plugins.js?<%= countlyVersion %>"></script>
+	    <!-- PRODUCTION -->
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.config.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.lib.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.plugins.js?<%= countlyVersion %>"></script>
     <% } else { %>
-    <!-- DEVELOPMENT -->
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/textcounter.min.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/jquery.peity.min.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.tickrotor.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.pie.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.resize.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.stack.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/gauge.min.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/d3/d3.min.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/d3/d3.layout.min.js"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.js"></script>
-	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.common.js?<%= countlyVersion %>"></script>
-	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.config.js?<%= countlyVersion %>"></script>
-	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.event.js?<%= countlyVersion %>"></script>
-	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.session.js?<%= countlyVersion %>"></script>
-	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.city.js?<%= countlyVersion %>"></script>
-	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.location.js?<%= countlyVersion %>"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.map.helper.js?<%= countlyVersion %>"></script>
-	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.user.js?<%= countlyVersion %>"></script>
-	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.device.list.js?<%= countlyVersion %>"></script>
-	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.device.js?<%= countlyVersion %>"></script>
-	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.device.detail.js?<%= countlyVersion %>"></script>
-	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.version.js?<%= countlyVersion %>"></script>
-	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.carrier.js?<%= countlyVersion %>"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.allapps.js?<%= countlyVersion %>"></script>
-	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.template.js?<%= countlyVersion %>"></script>
-		<% if (plugins) { %>
-			<% for(var i=0, l=plugins.length; i<l; i++) {%>
-	<script language="javascript" type="text/javascript" src="<%- cdn %><%= plugins[i] %>/javascripts/countly.models.js?<%= countlyVersion %>"></script>
-	<script language="javascript" type="text/javascript" src="<%- cdn %><%= plugins[i] %>/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+	    <!-- DEVELOPMENT -->
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/textcounter.min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/jquery.peity.min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.tickrotor.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.pie.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.resize.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.stack.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/gauge.min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/d3/d3.min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/d3/d3.layout.min.js"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.js"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.common.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.config.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.event.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.session.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.city.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.location.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.map.helper.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.user.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.device.list.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.device.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.device.detail.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.version.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.carrier.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.allapps.js?<%= countlyVersion %>"></script>
+		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.template.js?<%= countlyVersion %>"></script>
+			<% if (plugins) { %>
+				<% for(var i=0, l=plugins.length; i<l; i++) {%>
+					<script language="javascript" type="text/javascript" src="<%- cdn %><%= plugins[i] %>/javascripts/countly.models.js?<%= countlyVersion %>"></script>
+					<script language="javascript" type="text/javascript" src="<%- cdn %><%= plugins[i] %>/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+				<% } %>
 			<% } %>
-		<% } %>
 	<% } %>
 	<script>
 	Backbone.history.start();

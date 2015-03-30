@@ -4,3 +4,10 @@ frontend/express/node_modules/
 api/config.js
 frontend/express/config.js
 frontend/express/public/javascripts/countly/countly.config.js
+frontend/express/certificates
+frontend/express/public/javascripts/min
+frontend/express/public/localization/min
+frontend/express/public/stylesheets/*.min.css
+plugins/plugins.json
+**/.DS_Store
+**/node_modules
