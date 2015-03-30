@@ -128,18 +128,14 @@ var pluginManager = function pluginManager(){
 		}
 	}
 	
-	this.prepareProduction = function(callback){
-		var ret = '';
-		
-		var dir = path.resolve(__dirname, ''),
-			cmd = 'cd .. && grunt plugins', errors;
-
-		exec(cmd, function(error, stdout, stderr) {
-			if (stderr){
+	this.prepareProduction = function(callback) {
+		exec('cd .. && grunt plugins locales', function(error, stdout, stderr) {
+			var errors;
+			if (stderr && (!stderr.toLowerCase || stderr.toLowerCase().indexOf('error') !== -1)) {
 				errors = true;
 				console.log('stderr: %j', stderr);
 			}
-			if (error && error != 'Error: Command failed: '){
+			if (error && error != 'Error: Command failed: ') {
 				errors = true;					
 				console.log('error: %j', error);
 			}
@@ -147,7 +143,7 @@ var pluginManager = function pluginManager(){
 				callback(errors);
 			}
 		});
-	}
+	};
 	
 	this.restartCountly = function(){
 		if (process.env.INSIDE_DOCKER) {
