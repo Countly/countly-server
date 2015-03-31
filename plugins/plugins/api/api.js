@@ -47,6 +47,7 @@ var plugin = {},
 							async.series([fs.writeFile.bind(fs, dir, JSON.stringify(newPluginsList), 'utf8'), plugins.prepareProduction.bind(plugins)], function(error){
 								plugins.reloadPlugins();
 								common.returnOutput(params, error ? 'Errors' : 'Success');
+								setTimeout(plugins.restartCountly.bind(plugins), 500);
 							});
 						}
 					});
