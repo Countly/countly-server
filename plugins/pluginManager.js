@@ -62,16 +62,13 @@ var pluginManager = function pluginManager(){
 	}
 	
 	this.installPlugin = function(plugin, callback){
+		console.log('Installing plugin %j...', plugin);
 		var ret = "";
 		try{
 			var dir = path.resolve(__dirname, '');
 			var child = cp.fork(dir+"/"+plugin+"/install.js");
 			var errors;
-			var handler = function (error, stdout, stderr) {
-				if(stderr){
-					errors = true;
-					console.log('stderr: %j', stderr);
-				}
+			var handler = function (error, stdout) {
 				if (error){
 					errors = true;					
 					console.log('error: %j', error);
@@ -79,6 +76,7 @@ var pluginManager = function pluginManager(){
 				
 				if(callback)
 					callback(errors);
+				console.log('Done installing plugin %j', plugin);
 			};
 			child.on('error', function(err){
 				console.log(plugin + " install errored: " + err);
@@ -99,16 +97,13 @@ var pluginManager = function pluginManager(){
 	}
 	
 	this.uninstallPlugin = function(plugin, callback){
+		console.log('Uninstalling plugin %j...', plugin);
 		var ret = "";
 		try{
 			var dir = path.resolve(__dirname, '');
 			var child = cp.fork(dir+"/"+plugin+"/uninstall.js");
 			var errors;
-			var handler = function (error, stdout, stderr) {
-				if(stderr){
-					errors = true;
-					console.log('stderr: %j', stderr);
-				}
+			var handler = function (error, stdout) {
 				if (error){
 					errors = true;					
 					console.log('error: %j', error);
@@ -116,6 +111,8 @@ var pluginManager = function pluginManager(){
 				
 				if(callback)
 					callback(errors);
+			
+				console.log('Done uninstalling plugin %j', plugin);
 			};
 			child.on('error', handler); 
 			child.on('exit', handler); 
@@ -130,13 +127,9 @@ var pluginManager = function pluginManager(){
 	
 	this.prepareProduction = function(callback) {
 		console.log('Preparing production files');
-		exec('grunt plugins locales', {cwd: path.join(__dirname, '..')}, function(error, stdout, stderr) {
-			console.log('Done preparing production files with %j / %j / %j', error, stderr, stdout);
+		exec('grunt plugins locales', {cwd: path.join(__dirname, '..')}, function(error, stdout) {
+			console.log('Done preparing production files with %j / %j', error, stdout);
 			var errors;
-			if (stderr && (!stderr.toLowerCase || stderr.toLowerCase().indexOf('error') !== -1)) {
-				errors = true;
-				console.log('stderr: %j', stderr);
-			}
 			if (error && error != 'Error: Command failed: ') {
 				errors = true;					
 				console.log('error: %j', error);

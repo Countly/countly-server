@@ -1,12 +1,12 @@
 var plugin = {},
 	fs = require('fs'),
-	path = require("path"),
+	path = require('path'),
 	common = require('../../../api/utils/common.js'),
-	async = require('../../../api/utils/async.min.js'),
+	async = require('async'),
     plugins = require('../../pluginManager.js');
 
 (function (plugin) {
-	plugins.register("/i/plugins", function(ob){
+	plugins.register('/i/plugins', function(ob){
 		var params = ob.params;
 		var validateUserForWriteAPI = ob.validateUserForWriteAPI;
 		validateUserForWriteAPI(function(){
@@ -14,54 +14,46 @@ var plugin = {},
 				common.returnMessage(params, 401, 'User is not a global administrator');
 				return false;
 			}
-			if(typeof params.qstring.plugin !== 'undefined' && params.qstring.plugin != "plugins"){
-				try{
+			if (typeof params.qstring.plugin !== 'undefined' && params.qstring.plugin != 'plugins'){
+				try {
 					params.qstring.plugin = JSON.parse(params.qstring.plugin);
 				}
 				catch(err){
-					console.log("Error parsing plugins");
+					console.log('Error parsing plugins');
 				}
 				
-				if(params.qstring.plugin){
-					var errors = false;
-					var dir = path.resolve(__dirname, "../../plugins.json");
-					var pluginList = plugins.getPlugins();
-					function processPlugin(plugin, state, cb){
-						var index = pluginList.indexOf(plugin);
-						if (index > -1 && !state) {
-							pluginList.splice(index, 1);
-							plugins.uninstallPlugin(plugin, cb);
+				if (params.qstring.plugin && typeof params.qstring.plugin === 'object') {
+					var dir = path.resolve(__dirname, '../../plugins.json');
+					var pluginList = plugins.getPlugins(), newPluginsList = pluginList.slice();
+
+					var transforms = Object.keys(params.qstring.plugin).map(function(plugin){
+						var state = params.qstring.plugin[plugin],
+							index = pluginList.indexOf(plugin);
+						if (index !== -1 && !state) {
+							newPluginsList.splice(newPluginsList.indexOf(plugin), 1);
+							return plugins.uninstallPlugin.bind(plugins, plugin);
+						} else if (index === -1 && state) {
+							newPluginsList.push(plugin);
+							return plugins.installPlugin.bind(plugins, plugin);
+						} else {
+							return function(clb){ clb(); };
 						}
-						else if (index == -1 && state) {
-							pluginList.push(plugin);
-							plugins.installPlugin(plugin, cb);
-						}
-						else{
-							cb();
-						}
-					}
-					async.forEach(Object.keys(params.qstring.plugin), function (i, callback){ 
-						processPlugin(i, params.qstring.plugin[i], function(err){
-							if(err)
-								errors = true;
-							callback();
-						});
-					}, function() {
-						plugins.prepareProduction(function(err){
-							fs.writeFile(dir, JSON.stringify( pluginList ), "utf8", function(){
+					});
+
+					async.parallel(transforms, function(error){
+						if (error) {
+							common.returnOutput(params, 'Errors');
+						} else {
+							async.series([fs.writeFile.bind(fs, dir, JSON.stringify(newPluginsList), 'utf8'), plugins.prepareProduction.bind(plugins)], function(error){
 								plugins.reloadPlugins();
-								if(errors || err)
-									common.returnOutput(params, "Errors");
-								else
-									common.returnOutput(params, "Success");
-								plugins.restartCountly();
+								common.returnOutput(params, error ? 'Errors' : 'Success');
 							});
-						});
-					});  
+						}
+					});
 				}
+			} else {
+				common.returnOutput(params, 'Not enough parameters');
 			}
-			else
-				common.returnOutput(params, "Not enough parameters");
 		}, params);
 		return true;
 	});
