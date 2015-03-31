@@ -1,5 +1,5 @@
 var mongo = require('../../frontend/express/node_modules/mongoskin'),
-	async = require('../../api/utils/async.min.js'),
+	async = require('async'),
 	countlyConfig = require('../../frontend/express/config');
 	
 var dbName;

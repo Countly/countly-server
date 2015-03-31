@@ -1,7 +1,7 @@
 console.log("renaming event collections " + new Date());
 
 var	common = require('../../../api/utils/common.js'),
-    async = require('../../../api/utils/async.min.js'),
+    async = require('async'),
     crypto = require('crypto');
 
 common.db.collection('events').find({}, {list:1}).toArray(function (err, events) {

@@ -3,7 +3,7 @@
 var pushly          = require('pushly')(),
     _               = require('../../../../../api/node_modules/underscore'),
     api             = {},
-    async           = require('../../../../../api/utils/async.min.js'),
+    async           = require('async'),
     moment          = require('../../../../../api/node_modules/moment'),
     common          = require('../../../../../api/utils/common.js'),
     events          = require('../../../../../api/parts/data/events.js'),

@@ -1,6 +1,6 @@
 var plugin = {},
 	countlyConfig = require('../../../frontend/express/config'),
-	async = require('../../../api/utils/async.min.js');
+	async = require('async');
 
 (function (plugin) {
 	plugin.init = function(app, countlyDb){

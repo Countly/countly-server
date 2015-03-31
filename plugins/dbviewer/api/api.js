@@ -1,6 +1,6 @@
 var plugin = {},
 	common = require('../../../api/utils/common.js'),
-	async = require('../../../api/utils/async.min.js'),
+	async = require('async'),
     plugins = require('../../pluginManager.js'),
 	connections = {};
 
