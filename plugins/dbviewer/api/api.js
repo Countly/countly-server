@@ -10,7 +10,7 @@ var plugin = {},
 		var params = ob.params;
 		var validateUserForMgmtReadAPI = ob.validateUserForMgmtReadAPI;
 		validateUserForMgmtReadAPI(function(){
-			if(params.qstring.dbs && params.qstring.collection && params.qstring.document){
+			if(params.qstring.dbs && params.qstring.collection && params.qstring.document && params.qstring.collection.indexOf("system.indexes") == -1 && params.qstring.collection.indexOf("sessions_") == -1){
 				if(dbs[params.qstring.dbs]){
 					if(isObjectId(params.qstring.document)){
 						params.qstring.document = common.db.ObjectID(params.qstring.document);
@@ -23,7 +23,7 @@ var plugin = {},
 					});
 				}
 			}
-			else if(params.qstring.dbs && params.qstring.collection){
+			else if(params.qstring.dbs && params.qstring.collection && params.qstring.collection.indexOf("system.indexes") == -1 && params.qstring.collection.indexOf("sessions_") == -1){
 				var limit = parseInt(params.qstring.limit || 20);
 				var skip = parseInt(params.qstring.skip || 0);
 				var filter = params.qstring.filter || "{}";
@@ -64,8 +64,10 @@ var plugin = {},
 						dbs[name].collectionNames(function (err, results) {
 							var db = {name:name, collections:[]};
 							for (var r in results) {
-								var col = parseCollectionName(results[r].name);
-								db.collections.push(col.name);
+								if(results[r].name.indexOf("system.indexes") == -1 && results[r].name.indexOf("sessions_") == -1){
+									var col = parseCollectionName(results[r].name);
+									db.collections.push(col.name);
+								}
 							}
 							db.collections.sort();
 							callback(err, db);
