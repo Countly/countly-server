@@ -170,7 +170,7 @@ window.MessagingListView = countlyView.extend({
 });
 
 var PushPopup = function(message, duplicate) {
-    var allApps = {}, currentApp = allApps[countlyCommon.ACTIVE_APP_ID], hasPushApps = false, hasPushAdminApps = false, APN = 'i', GCM = 'a',
+    var allApps = {}, hasPushApps = false, hasPushAdminApps = false, APN = 'i', GCM = 'a',
         languages = countlyGlobalLang['languages'],
         locales;
 
@@ -185,6 +185,8 @@ var PushPopup = function(message, duplicate) {
         }
     }
 
+    currentApp = allApps[countlyCommon.ACTIVE_APP_ID];
+
     if (!hasPushApps) {
         CountlyHelpers.alert(jQuery.i18n.map["push.no-apps"], "red");
         return;
@@ -193,7 +195,7 @@ var PushPopup = function(message, duplicate) {
         return;
     }
 
-    if (!((currentApp.apn && (currentApp.apn.test || currentApp.apn.prod)) || (currentApp.gcm && currentApp.gcm.key))) {
+    if (!currentApp || !((currentApp.apn && (currentApp.apn.test || currentApp.apn.prod)) || (currentApp.gcm && currentApp.gcm.key))) {
         for (var a in allApps) { currentApp = allApps[a]; }
     }
 
