@@ -3,7 +3,8 @@ Follow these instructions if you want to upgrade an old version of Countly (<= 1
 
 If you are upgrading from 15.03 to 15.03.01 and up, simply copy over files and restart countly-supervisor
 
-##Before upgrading from Countly (<= 14.08) to a new version (>= 15.03.x)
+<strong>Before upgrading from Countly (<= 14.08) to a new version (>= 15.03.x)</strong>
+
 Assuming countly is installed at /var/countly
 
 1) Back up your database, for example by making copy of it in ssh:
@@ -21,7 +22,7 @@ show dbs
 ```
 2) Back up your existing installation files or at least take note of connection settings in Countly config files
 
-#Upgrading from Countly (<= 14.08) to a new version (>= 15.03.x)
+<strong>Upgrading from Countly (<= 14.08) to a new version (>= 15.03.x)</strong>
 
 Assuming Countly is installed at /var/countly
 
