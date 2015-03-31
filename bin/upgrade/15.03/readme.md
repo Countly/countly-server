@@ -28,7 +28,7 @@ Assuming Countly is installed at /var/countly
 
 1) Download new countly version 15.03.x
 
-2) Unzip package into your Countly directory
+2) Unzip package into your Countly directory overwriting existing files
 
 3) Run the upgrade script
 
