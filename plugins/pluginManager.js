@@ -130,7 +130,7 @@ var pluginManager = function pluginManager(){
 	
 	this.prepareProduction = function(callback) {
 		console.log('Preparing production files');
-		exec('cd .. && grunt plugins locales', function(error, stdout, stderr) {
+		exec('grunt plugins locales', {cwd: path.join(__dirname, '..')}, function(error, stdout, stderr) {
 			console.log('Done preparing production files with %j / %j / %j', error, stderr, stdout);
 			var errors;
 			if (stderr && (!stderr.toLowerCase || stderr.toLowerCase().indexOf('error') !== -1)) {
