@@ -1,5 +1,5 @@
 var stats = {},
-    async = require('./../../utils/async.min.js');
+    async = require('async');
 
 (function (stats) {
 	var countlyDb;

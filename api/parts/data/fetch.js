@@ -1,6 +1,6 @@
 var fetch = {},
     common = require('./../../utils/common.js'),
-    async = require('./../../utils/async.min.js'),
+    async = require('async'),
     countlySession = require('../../lib/countly.session.js'),
     countlyCarrier = require('../../lib/countly.carrier.js'),
     countlyDeviceDetails = require('../../lib/countly.device.detail.js'),

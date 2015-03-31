@@ -1,6 +1,6 @@
 var countlyEvents = {},
     common = require('./../../utils/common.js'),
-    async = require('./../../utils/async.min.js'),
+    async = require('async'),
     crypto = require('crypto'),
 	plugins = require('../../../plugins/pluginManager.js');
 
