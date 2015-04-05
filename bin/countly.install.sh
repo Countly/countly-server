@@ -75,14 +75,8 @@ then
 	apt-get -y install iptables-persistent
 fi
 
-#install grunt
+#install grunt & npm modules
 ( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install )
-
-#install api modules
-( cd $DIR/../api ; npm install --unsafe-perm )
-
-#install frontend modules
-( cd $DIR/../frontend/express ; npm install --unsafe-perm )
 
 #configure and start nginx
 cp /etc/nginx/sites-enabled/default $DIR/config/nginx.default.backup

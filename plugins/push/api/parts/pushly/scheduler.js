@@ -1,6 +1,6 @@
 'use strict';
 
-var _               = require('../../../../../api/node_modules/underscore'),
+var _               = require('underscore'),
     common 			= require('../../../../../api/utils/common.js'),
 	pushly 			= require('pushly')(),
     mess            = require('./message.js'),

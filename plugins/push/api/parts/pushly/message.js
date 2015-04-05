@@ -2,7 +2,7 @@
 
 var pushly = require('pushly')();
 
-var _ = require('../../../../../api/node_modules/underscore'),
+var _ = require('underscore'),
     flatten = require('flat'),
     common = require('../../../../../api/utils/common.js');
 

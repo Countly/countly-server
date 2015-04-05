@@ -15,7 +15,6 @@
 	  "notifications"
   ],
   "dependencies": {
-    "request": "2.21.0",
     "dequeue": "1.0.5",
     "lodash": "2.4.1",
     "lru-cache": "2.5.0",

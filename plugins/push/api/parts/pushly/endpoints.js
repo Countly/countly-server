@@ -1,10 +1,10 @@
 'use strict';
 
 var pushly          = require('pushly')(),
-    _               = require('../../../../../api/node_modules/underscore'),
+    _               = require('underscore'),
     api             = {},
     async           = require('async'),
-    moment          = require('../../../../../api/node_modules/moment'),
+    moment          = require('moment'),
     common          = require('../../../../../api/utils/common.js'),
     events          = require('../../../../../api/parts/data/events.js'),
     usage           = require('../../../../../api/parts/data/usage.js'),

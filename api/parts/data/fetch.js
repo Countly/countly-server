@@ -7,7 +7,7 @@ var fetch = {},
     countlyLocation = require('../../lib/countly.location.js'),
     countlyCommon = require('../../lib/countly.common.js'),
     moment = require('moment'),
-    _ = require('../../node_modules/underscore/underscore.js'),
+    _ = require('underscore'),
     crypto = require('crypto');
 
 (function (fetch) {

@@ -1,4 +1,4 @@
-var mongo = require('../../frontend/express/node_modules/mongoskin'),
+var mongo = require('mongoskin'),
 	async = require('async'),
 	countlyConfig = require('../../frontend/express/config');
 	

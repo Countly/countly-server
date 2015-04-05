@@ -72,14 +72,8 @@ apt-get -y install build-essential || (echo "Failed to install build-essential."
 #install iptables-persistent
 #apt-get install iptables-persistent
 
-#install grunt
+#install grunt & npm modules
 ( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install )
-
-#install api modules
-( cd $DIR/../api ; npm install )
-
-#install frontend modules
-( cd $DIR/../frontend/express ; npm install )
 
 #configure and start nginx
 cp /etc/nginx/sites-enabled/default $DIR/config/nginx.default.backup
