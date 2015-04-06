@@ -496,7 +496,7 @@ var pushly          = require('pushly')(),
     api.getAudience = function (params) {
         api.countAudience(params, function(err, TOTALLY){
             if (err) {
-                common.returnMessage(params, err.code, err.message);
+                common.returnMessage(params, err.code || 500, err.message || 'Unexpected push error');
             } else {
                 common.returnOutput(params, TOTALLY);
             }
