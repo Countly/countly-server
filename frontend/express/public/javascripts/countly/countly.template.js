@@ -3531,7 +3531,7 @@ var AppRouter = Backbone.Router.extend({
             });
 
             var help = _.once(function () {
-                CountlyHelpers.alert(jQuery.i18n.map["help-mode-welcome"], "black");
+                CountlyHelpers.alert(jQuery.i18n.map["help.help-mode-welcome"], "black");
             });
             $(".help-toggle, #help-toggle").click(function (e) {
 

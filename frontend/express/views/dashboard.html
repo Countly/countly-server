@@ -440,7 +440,7 @@
 				</div>
 				{{> date-selector }}
 			</div>
-			<div class="widget-content help-zone-vb" data-help-localize="{{{chart-helper}}}" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
+			<div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
 				{{#if graph-type-double-pie}}
 				<div class="pie-chart-container">
 					<div style="border-right:1px solid #CCC; width: 100%; height: 100%">
@@ -475,7 +475,7 @@
 			<div class="widget-footer" style="background-color:#EEEEEE;">
 				<div id="big-numbers-container">
 					{{#each big-numbers.items}}
-					<div class="big-numbers three-column help-zone-vs" data-help-localize="{{this.help}}">
+					<div class="big-numbers three-column help-zone-vs" data-help-localize="help.{{this.help}}">
 						<div class="inner">
 							<div class="select">{{this.title}}</div>
 							<div class="color"></div>
@@ -491,7 +491,7 @@
 		{{#if bars}}
 		<div class="dashboard-summary three">
 			{{#each bars}}
-			<div class="item help-zone-vs" data-help-localize="{{this.help}}">
+			<div class="item help-zone-vs" data-help-localize="help.{{this.help}}">
 				<div class="inner">
 					<div class="title">{{this.title}}</div>
 					{{#if this.data}}
@@ -509,9 +509,9 @@
 			{{/each}}
 		</div>
 		{{/if}}
-        <table id="dataTableOne" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
+        <table id="dataTableOne" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
         {{#if two-tables}}
-        <table id="dataTableTwo" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
+        <table id="dataTableTwo" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
         {{/if}}
 	</script>
 	
@@ -524,7 +524,7 @@
 			<div class="widget-content" style="border:none;">
 				<div id="big-numbers-container" class="dashboard">
 					{{#each usage}}
-					<div class="big-numbers six-column help-zone-vs" data-help-localize="{{this.help}}">
+					<div class="big-numbers six-column help-zone-vs" data-help-localize="help.{{this.help}}">
 						<div class="inner">
 							<div class="select" id="{{this.id}}">
 								<div class="title">{{this.title}}</div>
@@ -546,8 +546,8 @@
 				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
 			</div>
 		</div>
-		<div class="allapps" data-help-localize="{{{chart-helper}}}">
-			<table class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
+		<div class="allapps" data-help-localize="help.{{{chart-helper}}}">
+			<table class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
 		</div>
 	</script>
 
@@ -560,7 +560,7 @@
 				</div>
 				{{> date-selector }}
 			</div>
-			<div class="widget-content help-zone-vb" data-help-localize="{{{chart-helper}}}" style="height:495px; background-color:#FFF;">
+			<div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="height:495px; background-color:#FFF;">
 				<div style="position:absolute; top:80px; right:30px; z-index:1;">
 					<a id="toggle-map" class="icon-button light"></a>
 				</div>
@@ -569,7 +569,7 @@
 			<div class="widget-footer" style="background-color:#EEEEEE;">
 				<div id="big-numbers-container">
 					{{#each big-numbers.items}}
-					<div class="big-numbers three-column help-zone-vs" data-help-localize="{{this.help}}">
+					<div class="big-numbers three-column help-zone-vs" data-help-localize="help.{{this.help}}">
 						<div class="inner">
 							<div class="select">{{this.title}}</div>
 							<div class="number" style="margin-top: 10px;">{{getFormattedNumber this.total}}</div>
@@ -580,7 +580,7 @@
 				</div>
 			</div>
 		</div>
-		<table class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
+		<table class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
 	</script>
 
 	<script id="dashboard-template" type="text/x-handlebars-template">
@@ -592,7 +592,7 @@
 			<div class="widget-content" style="border:none;">
 				<div id="big-numbers-container" class="dashboard">
 					{{#each usage}}
-					<div class="big-numbers six-column help-zone-vs" data-help-localize="{{this.help}}">
+					<div class="big-numbers six-column help-zone-vs" data-help-localize="help.{{this.help}}">
 						<div class="inner">
 							<div class="logo"></div>
 							<div class="number">
@@ -632,7 +632,7 @@
 		</div>
 		<div class="dashboard-summary">
 			{{#each bars}}
-			<div class="item help-zone-vs" data-help-localize="{{this.help}}">
+			<div class="item help-zone-vs" data-help-localize="help.{{this.help}}">
 				<div class="inner">
 					<div class="title">{{this.title}}</div>
 					{{#if this.data}}
@@ -649,7 +649,7 @@
 			</div>
 			{{/each}}
 		</div>
-		<div class="widget map-list help-zone-vb" data-help-localize="dashboard.map" style="float:right; width:100%;">
+		<div class="widget map-list help-zone-vb" data-help-localize="help.dashboard.map" style="float:right; width:100%;">
 			{{#if country-data}}
 			<div id="map-list-right" style="max-height:236px; overflow:hidden;">
 				<div>
@@ -673,7 +673,7 @@
 				<div id="app-nav-title" data-localize="management-applications.title"></div>
 				<% if(member['global_admin']) { %>
 				<div style="overflow:hidden; position:absolute; top:19px; right:10px;">
-					<div class="icon-button dark help-zone-vs" data-help-localize="manage-apps.app-add-button" id="add-app-button">
+					<div class="icon-button dark help-zone-vs" data-help-localize="help.manage-apps.app-add-button" id="add-app-button">
 						<div class="icon" style="background-image:url('<%- cdn %>images/management/add.png'); width:17px; height:18px;"></div>
 						<div class="text" data-localize="common.add"></div>
 					</div>
@@ -705,13 +705,13 @@
 				<div>
 					<table class="d-table horizontal" cellpadding="0" cellspacing="0">
 						<tbody>
-							<tr class="help-zone-vs" data-help-localize="manage-apps.app-name">
+							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-name">
 								<td data-localize="management-applications.application-name"></td>
 								<td>
 									<input type="text" value="" placeholder="Enter application name..." data-localize="placeholder.app-name" id="app-add-name">
 								</td>
 							</tr>
-							<tr class="help-zone-vs" data-help-localize="manage-apps.app-category">
+							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-category">
 								<td data-localize="management-applications.category"></td>
 								<td>
 									<div class="cly-select" style="width:280px;">
@@ -729,7 +729,7 @@
 									</div>
 								</td>
 							</tr>
-							<tr class="help-zone-vs" data-help-localize="manage-apps.app-timezone">
+							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-timezone">
 								<td data-localize="management-applications.time-zone"></td>
 								<td id="app-add-timezone" >
 									<div style="float:left;">
@@ -761,7 +761,7 @@
 									<input type="hidden" value="" id="app-country"/>
 								</td>
 							</tr>
-                            <tr class="help-zone-vs" data-help-localize="manage-apps.app-icon">
+                            <tr class="help-zone-vs" data-help-localize="help.manage-apps.app-icon">
 								<td data-localize="management-applications.icon"></td>
 								<td>
 									<form action="/apps/icon" enctype="multipart/form-data" id="add-app-image-form" method="post">
@@ -786,15 +786,15 @@
 						<div class="title"></div>
 					</div>
 					<div style="float:right; min-width:260px; overflow:hidden; margin-top:6px;">
-                        <div style="float:right;" class="icon-button light help-zone-vs" data-help-localize="manage-apps.app-edit-button" id="edit-app">
+                        <div style="float:right;" class="icon-button light help-zone-vs" data-help-localize="help.manage-apps.app-edit-button" id="edit-app">
                             <div class="icon" style="background-image:url('<%- cdn %>images/management/edit.png'); width:22px; height:19px;"></div>
                             <div class="text" data-localize="common.edit"></div>
                         </div>
-						<div style="float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="manage-apps.app-clear-button" id="clear-app-data">
+						<div style="float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="help.manage-apps.app-clear-button" id="clear-app-data">
 							<div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
 							<div class="text" data-localize="management-applications.clear-data"></div>
 						</div>
-						<div style="display:none; float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="manage-apps.app-delete-button" id="delete-app">
+						<div style="display:none; float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="help.manage-apps.app-delete-button" id="delete-app">
                             <div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
                             <div class="text" data-localize="common.delete"></div>
                         </div>
@@ -804,11 +804,11 @@
 					<input type="hidden" id="app-edit-id"/>
 					<table class="d-table horizontal" cellpadding="0" cellspacing="0">
 						<tbody>
-                            <tr class="help-zone-vs" data-help-localize="manage-apps.app-id">
+                            <tr class="help-zone-vs" data-help-localize="help.manage-apps.app-id">
                                 <td data-localize="management-applications.app-id"></td>
                                 <td id="view-app-id"></td>
                             </tr>
-							<tr class="help-zone-vs" data-help-localize="manage-apps.app-name">
+							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-name">
 								<td data-localize="management-applications.application-name"></td>
 								<td id="app-edit-name">
 									<div class="read"></div>
@@ -817,7 +817,7 @@
 									</div>
 								</td>
 							</tr>
-							<tr class="help-zone-vs" data-help-localize="manage-apps.app-category">
+							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-category">
 								<td data-localize="management-applications.category"></td>
 								<td id="app-edit-category">
 									<div class="read"></div>
@@ -838,11 +838,11 @@
 									</div>
 								</td>
 							</tr>
-							<tr class="help-zone-vs" data-help-localize="manage-apps.app-key">
+							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-key">
 								<td data-localize="management-applications.app-key"></td>
 								<td id="view-app-key"></td>
 							</tr>
-							<tr class="help-zone-vs" data-help-localize="manage-apps.app-timezone">
+							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-timezone">
 								<td data-localize="management-applications.time-zone"></td>
 								<td id="app-edit-timezone">
 									<div class="read">
@@ -883,7 +883,7 @@
 									</div>
 								</td>
 							</tr>
-							<tr class="table-edit-prev help-zone-vs" data-help-localize="manage-apps.app-icon">
+							<tr class="table-edit-prev help-zone-vs" data-help-localize="help.manage-apps.app-icon">
 								<td data-localize="management-applications.icon"></td>
 								<td id="app-edit-image">
 									<div class="read">

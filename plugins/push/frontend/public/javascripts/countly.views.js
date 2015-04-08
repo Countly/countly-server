@@ -1271,16 +1271,16 @@ $( document ).ready(function() {
 
     var menu = '<a class="item messaging" id="sidebar-messaging">'+
         '<div class="logo logo-icon fa fa-envelope-square" style="font-size: 28px;"></div>'+
-        '<div class="text" data-localize="">Messaging</div>'+
+        '<div class="text" data-localize="push.sidebar.section">Messaging</div>'+
     '</a>'+
     '<div class="sidebar-submenu" id="messaging-submenu">'+
         '<a href="#/messaging" class="item">'+
             '<div class="logo-icon fa fa-line-chart"></div>'+
-            '<div class="text" data-localize="">Overview</div>'+
+            '<div class="text" data-localize="push.sidebar.overview">Overview</div>'+
         '</a>'+
         '<a href="#/messaging/messages" class="item">'+
             '<div class="logo-icon fa fa-inbox""></div>'+
-            '<div class="text" data-localize="">Messages</div>'+
+            '<div class="text" data-localize="push.sidebar.messages">Messages</div>'+
         '</a>'+
     '</div>';
     if($('#management-menu').length)

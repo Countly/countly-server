@@ -8,13 +8,13 @@
 		</div>
 		{{> date-selector }}
 	</div>
-	<div class="widget-content help-zone-vb" data-help-localize="{{{chart-helper}}}" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
+	<div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
 		<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
 	</div>
 	<div class="widget-footer" style="background-color:#EEEEEE;">
 		<div id="big-numbers-container">
 			{{#each big-numbers}}
-			<div class="big-numbers three-column help-zone-vs" data-help-localize="{{this.help}}">
+			<div class="big-numbers three-column help-zone-vs" data-help-localize="help.{{this.help}}">
 				<div class="inner">
 					<div class="select">{{this.title}}</div>
 					<div class="color"></div>
@@ -28,7 +28,7 @@
 	<div class="widget-intermediate" style="background-color:#EEEEEE;">
 		<div id="intermediate-numbers-container">
 			{{#each big-numbers-intermediate}}
-			<div class="big-numbers three-column help-zone-vs" data-help-localize="{{this.help}}">
+			<div class="big-numbers three-column help-zone-vs" data-help-localize="help.{{this.help}}">
 				<div class="inner">
 					<div class="logo"></div>
 					<div class="title">{{this.title}}</div>
@@ -38,13 +38,13 @@
 			{{/each}}
 		</div>
 	</div>
-	<div class="widget-content help-zone-vb" data-help-localize="{{{chart-helper}}}" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
+	<div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
 		<div id="dashboard-graph-secondary" class="graph" style="height:100%; margin-left:-10px;"></div>
 	</div>
 	<div class="widget-footer" style="background-color:#EEEEEE;">
 		<div class="fix-two-columns two-column">
 			{{#each big-numbers-secondary}}
-			<div class="big-numbers help-zone-vs" data-help-localize="{{this.help}}">
+			<div class="big-numbers help-zone-vs" data-help-localize="help.{{this.help}}">
 				<div class="inner">
 					<div class="select">{{this.title}}</div>
 					<div class="color"></div>
