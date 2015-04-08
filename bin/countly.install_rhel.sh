@@ -18,15 +18,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 #install nodejs
 sudo yum -y install openssl-devel gcc-c++ make
-cd /usr/local/src
-wget http://nodejs.org/dist/node-latest.tar.gz
-tar zxvf node-latest.tar.gz
-cd node-v*
-./configure
-make
-make install
-
-cd $DIR
+curl -sL https://rpm.nodesource.com/setup | bash -
+yum install -y nodejs
 
 #install mongodb
 echo "[10gen]
@@ -60,23 +53,44 @@ sudo yum -y install ImageMagick
 sudo yum -y install sendmail
 sudo service sendmail start
 
-#install time module for node
-( cd $DIR/../api ; /usr/local/bin/npm install time )
+#install grunt
+( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install )
+
+#install api modules
+( cd $DIR/../api ; npm install --unsafe-perm )
+
+#install frontend modules
+( cd $DIR/../frontend/express ; npm install --unsafe-perm )
 
 #configure and start nginx
 cp $DIR/config/nginx.server.conf /etc/nginx/conf.d/default.conf
-/etc/init.d/nginx start
+service nginx restart
 
 cp $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
 
 #create supervisor upstart script
 (cat $DIR/config/countly-supervisor.conf ; echo "exec /usr/bin/supervisord --nodaemon --configuration $DIR/config/supervisord.conf") > /etc/init/countly-supervisor.conf
 
+#preparing for rhel 7
+#cat $DIR/config/countly-supervisor >  /etc/rc.d/init.d/countly-supervisor
+#chmod 755 /etc/rc.d/init.d/countly-supervisor
+#cat $DIR/config/supervisord.conf > /etc/countly-supervisor.conf
+
 #create api configuration file from sample
-cp $DIR/../api/config.sample.js $DIR/../api/config.js
+cp -n $DIR/../api/config.sample.js $DIR/../api/config.js
 
 #create app configuration file from sample
-cp $DIR/../frontend/express/config.sample.js $DIR/../frontend/express/config.js
+cp -n $DIR/../frontend/express/config.sample.js $DIR/../frontend/express/config.js
+
+if [ ! -f $DIR/../plugins/plugins.json ]; then
+	cp $DIR/../plugins/plugins.default.json $DIR/../plugins/plugins.json
+fi
+
+#install plugins
+node $DIR/scripts/install_plugins
+
+#compile scripts for production
+cd $DIR && grunt dist-all
 
 #finally start countly api and dashboard
 start countly-supervisor
