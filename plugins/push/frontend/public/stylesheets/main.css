@@ -12,6 +12,9 @@
 
 	.push-create .divide .field { display: inline-block; }
 	.push-create .divide .field:last-child { display: inline-block; margin-left: 22px; }
+	/*.push-create .divide .field .app-names { max-height: 46px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }*/
+	.push-create .divide .field .app-names { display: block; display: -webkit-box; height: 46px; line-height: 15px; -webkit-line-clamp: $lines-to-show; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; }
+
 
 	/*.push-create .button-container { overflow:auto; bottom:8px; right:16px; position:absolute; }*/
 	/*.push-create .row { overflow:auto; border-top:1px solid #EEE; padding:10px; margin:0 1px; }*/
