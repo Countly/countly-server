@@ -64,10 +64,6 @@ pkill -SIGTERM supervisord
 #respawning mongod on crash
 echo "respawn" >> /etc/init/mongod.conf
 
-#restart mongod
-stop mongod
-start mongod
-
 stop countly-supervisor
 
 #create api configuration file from sample
