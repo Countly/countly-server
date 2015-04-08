@@ -89,10 +89,6 @@ pkill -SIGTERM supervisord
 #respawning mongod on crash
 echo "respawn" >> /etc/init/mongod.conf
 
-#restart mongod
-stop mongod
-start mongod
-
 #create api configuration file from sample
 cp -n $DIR/../api/config.sample.js $DIR/../api/config.js
 

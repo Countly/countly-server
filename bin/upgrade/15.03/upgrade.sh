@@ -41,6 +41,9 @@ iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s 0/0 -j
 #install iptables-persistent
 apt-get -y install iptables-persistent
 
+#install grunt
+( cd $DIR/../../.. ; npm install -g grunt-cli --unsafe-perm ; npm install )
+
 #install api modules
 ( cd $DIR/../../../api ; npm install --unsafe-perm )
 
@@ -64,10 +67,6 @@ pkill -SIGTERM supervisord
 #respawning mongod on crash
 echo "respawn" >> /etc/init/mongod.conf
 
-#restart mongod
-stop mongod
-start mongod
-
 stop countly-supervisor
 
 #create api configuration file from sample
@@ -81,8 +80,7 @@ if [ ! -f $DIR/../../../plugins/plugins.json ]; then
 fi
 
 #compile scripts for production
-apt-get -y install default-jre
-bash $DIR/../../scripts/compile.js.sh
+cd $DIR && grunt dist-all
 
 #install plugins
 bash $DIR/../../scripts/countly.install.plugins.sh
