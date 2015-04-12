@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 if [[ $EUID -ne 0 ]]; then
    echo "Please execute Countly update script with a superuser..." 1>&2
@@ -22,6 +22,19 @@ echo "
 "
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+DT=`date +%Y.%m.%d:%H:%M:%S`
+COUNTLY_DIR=`basename $(dirname $(dirname "${DIR}"))`
+BACKUP_FILE="$COUNTLY_DIR.backup.$DT.tar.bz2"
+
+if [ "$1" != "--no-backup" ]
+then
+	cd $DIR/../../..
+	pwd
+	echo "Backing up countly directory ($COUNTLY_DIR) to $BACKUP_FILE file"
+
+	tar cjfv "$BACKUP_FILE" $(basename $COUNTLY_DIR)
+fi
 
 if ! type git >/dev/null 2>&1; then
     apt-get update && apt-get -y install git
