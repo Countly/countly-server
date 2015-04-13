@@ -319,7 +319,7 @@ var common = {},
                             return false;
                         }
                     } else if (argProperties[arg].type === 'Object') {
-                        if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']' || Object.keys(args[arg]).length == 0) {
+                        if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']') {
                             return false;
                         }
                     } 
