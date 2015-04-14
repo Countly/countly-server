@@ -32,6 +32,7 @@
     "async": "^0.9.0",
     "geoip-lite": "*",
     "moment": "1.7.2",
+    "moment-isocalendar": "0.1.0",
     "mongodb": "1.4.x",
     "mongoskin": "1.4.x",
     "nodemailer": "0.4.4",
