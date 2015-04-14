@@ -287,6 +287,9 @@ var pushly          = require('pushly')(),
             },
             options = {};
 
+        if (params.qstring.test === 'false') { params.qstring.test = false; }
+        if (params.qstring.test === 'true') { params.qstring.test = true; }
+
         if (!(options = common.validateArgs(params.qstring, argProps))) {
             common.returnMessage(params, 400, 'Not enough args');
             return false;
@@ -336,7 +339,7 @@ var pushly          = require('pushly')(),
 
                 var credentials = api.credentials(message, app);
                 if (credentials.length) {
-                    pushlyMessage = message.toPushly(credentials[0], ['test token, which we don\'t really care about'], [app._id, credentials.platform]);
+                    pushlyMessage = message.toPushly(credentials[0], ['test token, which we don\'t really care about'], [app._id, credentials[0].platform]);
 
                     pushly.on('status', fun);
                     pushly.push(pushlyMessage);

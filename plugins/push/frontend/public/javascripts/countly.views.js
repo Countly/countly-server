@@ -1070,6 +1070,9 @@ function pushAppMgmt(){
     $(".app-details table tr.table-edit").before(managementAdd);
     app.localize();
     var appId = countlyCommon.ACTIVE_APP_ID;
+
+    if (!appId) { return; }
+    
     countlyGlobal['apps'][appId].apn = countlyGlobal['apps'][appId].apn || {};
     countlyGlobal['apps'][appId].gcm = countlyGlobal['apps'][appId].gcm || {};
 
