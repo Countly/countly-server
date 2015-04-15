@@ -4258,6 +4258,10 @@ var AppRouter = Backbone.Router.extend({
 			if(self.pageScripts[Backbone.history.fragment])
 				for(var i = 0, l = self.pageScripts[Backbone.history.fragment].length; i < l; i++)
 					self.pageScripts[Backbone.history.fragment][i]();
+            for(var k in self.pageScripts) 
+                if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match(k.replace(/#/g, '[A-Za-z_0-9]+')))
+                    for(var i = 0, l = self.pageScripts[k].length; i < l; i++)
+                        self.pageScripts[k][i]();
 			if(self.pageScripts["#"])
 				for(var i = 0, l = self.pageScripts["#"].length; i < l; i++)
 					self.pageScripts["#"][i]();
