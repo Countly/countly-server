@@ -1072,7 +1072,7 @@ function pushAppMgmt(){
     var appId = countlyCommon.ACTIVE_APP_ID;
 
     if (!appId) { return; }
-    
+
     countlyGlobal['apps'][appId].apn = countlyGlobal['apps'][appId].apn || {};
     countlyGlobal['apps'][appId].gcm = countlyGlobal['apps'][appId].gcm || {};
 
@@ -1221,7 +1221,7 @@ app.addPageScript("/drill", function(){
     '<a class="icon-button green btn-header btn-create-message" data-localize="push.create" style="display:none"></a>');
     app.localize();
     $('.btn-create-message').off('click').on('click', function(){
-        var filterData = getFilterObjAndByVal();
+        var filterData = app.drillView.getFilterObjAndByVal();
         var message = {
             apps: [countlyCommon.ACTIVE_APP_ID],
             platforms: [],
@@ -1249,6 +1249,34 @@ app.addPageScript("/drill", function(){
 
         PushPopup(message);
     });
+});
+
+app.addPageScript("/users/#", function(){
+    var userDetails = countlyUserdata.getUserdetails();
+
+    var platforms = [], test = false, prod = false;
+    if (userDetails.tk) {
+        if (userDetails.tk.id || userDetails.tk.ia || userDetails.tk.ip) { platforms.push('i'); }
+        if (userDetails.tk.at || userDetails.tk.ap) { platforms.push('a'); }
+
+        test = !!userDetails.tk.id || !!userDetails.tk.ia || !!userDetails.tk.at;
+        prod = !!userDetails.tk.ip || !!userDetails.tk.ap;
+    }
+    if (platforms.length) {
+        if (!$('.btn-create-message').length) {
+            $('.widget-header .left').append($('<a class="icon-button green btn-header left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
+        }
+        $('.btn-create-message').show().off('click').on('click', function(){
+            PushPopup({
+                platforms: platforms,
+                apps: [countlyCommon.ACTIVE_APP_ID],
+                test: test && !prod,
+                conditions: {_id: app.userdetailsView.user_id}
+            }, true);
+        });
+    } else {
+        $('.btn-create-message').hide();
+    }
 });
 
 app.addPageScript("/messaging/messages", function(){
