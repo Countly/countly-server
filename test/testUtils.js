@@ -78,6 +78,10 @@ var testUtils = function testUtils(){
 			}); 
 		});
 	};
+    
+    this.logout = function(){
+        isLoggedIn = false;
+    };
 	
 	this.waitLogin = function(done){
         if (isLoggedIn) done();

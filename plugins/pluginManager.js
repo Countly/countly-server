@@ -2,6 +2,7 @@ var plugins = require('./plugins.json'),
 	countlyConfig = require('../frontend/express/config'),
 	path = require("path"),
 	cp = require('child_process'),
+    async = require("async"),
 	exec = cp.exec;
 	
 var pluginManager = function pluginManager(){
@@ -24,19 +25,54 @@ var pluginManager = function pluginManager(){
 		events[event].push(callback);
 	} 
 	
-	this.dispatch = function(event, params){
-		var used = false;
-		if(events[event]){
-			try{
-				for(var i = 0, l = events[event].length; i < l; i++){
-					if(events[event][i].call(null, params))
-						used = true;
-				}
-			} catch (ex) {
-				console.error(ex);
-			}
-		}
-		return used;
+	this.dispatch = function(event, params, callback){
+        if(callback){
+            if(events[event]){
+                function runEvent(item, callback){
+                    var ran = false,
+                        timeout = null;
+                    function pluginCallback(){
+                        if(timeout){
+                            clearTimeout(timeout);
+                            timeout = null;
+                        }
+                        if(!ran){
+                            ran = true;
+                            callback(null, null);
+                        }
+                    }
+                    try{
+                        if(!item.call(null, params, pluginCallback)){
+                            //don't wait for callback
+                            pluginCallback();
+                        }
+                    } catch (ex) {
+                        console.error(ex);
+                        //if there was an error, call callback just in case
+                        pluginCallback();
+                    }
+                    //set time out if there is no response from plugin for some time
+                    timeout = setTimeout(pluginCallback, 1000);
+                }
+                async.map(events[event], runEvent, function(){
+                    callback(used);
+                });
+            }
+        }
+        else{
+            var used = false;
+            if(events[event]){
+                try{
+                    for(var i = 0, l = events[event].length; i < l; i++){
+                        if(events[event][i].call(null, params))
+                            used = true;
+                    }
+                } catch (ex) {
+                    console.error(ex);
+                }
+            }
+            return used;
+        }
 	}
 	
 	this.loadAppPlugins = function(app, countlyDb, express){

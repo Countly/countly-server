@@ -226,21 +226,24 @@ var appsApi = {},
                 common.db.collection('app_users' + appId).insert({_id:"uid-sequence", seq:0},function(){});
             }
         });
-		if (!fromAppDelete)
-			plugins.dispatch("/i/apps/reset", {params:params, appId:appId, data:app});
-		else
-			plugins.dispatch("/i/apps/delete", {params:params, appId:appId, data:app});
 
-        common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
-            if (!err && events && events.list) {
-                for (var i = 0; i < events.list.length; i++) {
-                    var collectionNameWoPrefix = crypto.createHash('sha1').update(events.list[i] + appId).digest('hex');
-                    common.db.collection("events" + collectionNameWoPrefix).drop(function(){});
+        function deleteEvents(){
+            common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
+                if (!err && events && events.list) {
+                    for (var i = 0; i < events.list.length; i++) {
+                        var collectionNameWoPrefix = crypto.createHash('sha1').update(events.list[i] + appId).digest('hex');
+                        common.db.collection("events" + collectionNameWoPrefix).drop(function(){});
+                    }
+    
+                    common.db.collection('events').remove({'_id': common.db.ObjectID(appId)},function(){});
                 }
-
-                common.db.collection('events').remove({'_id': common.db.ObjectID(appId)},function(){});
-            }
-        });
+            });
+        }
+        
+        if (!fromAppDelete)
+			plugins.dispatch("/i/apps/reset", {params:params, appId:appId, data:app}, deleteEvents);
+		else
+			plugins.dispatch("/i/apps/delete", {params:params, appId:appId, data:app}, deleteEvents);
 
         if (fromAppDelete) {
             common.db.collection('graph_notes').remove({'_id': common.db.ObjectID(appId)},function(){});

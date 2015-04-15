@@ -23,7 +23,7 @@ echo "
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-DT=`date +%Y.%m.%d:%H:%M:%S`
+DT=`date +%Y.%m.%d_%H.%M.%S`
 COUNTLY_DIR=`basename $(dirname $(dirname "${DIR}"))`
 BACKUP_FILE="$COUNTLY_DIR.backup.$DT.tar.bz2"
 
