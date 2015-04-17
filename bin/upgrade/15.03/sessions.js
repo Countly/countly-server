@@ -212,6 +212,11 @@ currDB.getCollection("sessions").find({}).forEach(function(doc) {
                 if (!zeroObjToInsert.d[month]) { zeroObjToInsert.d[month] = {}; }
                 zeroObjToInsert.d[month].p = doc[year][month].p;
             }
+            
+            if (doc[year][month].m) {
+                if (!zeroObjToInsert.d[month]) { zeroObjToInsert.d[month] = {}; }
+                zeroObjToInsert.d[month].m = doc[year][month].m;
+            }
 
             var monthObjToInsert = {
                 a: doc._id + "",
@@ -245,6 +250,11 @@ currDB.getCollection("sessions").find({}).forEach(function(doc) {
                 if (!zeroObjToInsert.d[week]) { zeroObjToInsert.d[week] = {}; }
                 zeroObjToInsert.d[week].p = doc[year][week].p;
             }
+            
+            if (doc[year][week].m) {
+                if (!zeroObjToInsert.d[week]) { zeroObjToInsert.d[week] = {}; }
+                zeroObjToInsert.d[week].m = doc[year][week].m;
+            }
         }
 
         if (doc[year].u) {
@@ -257,6 +267,10 @@ currDB.getCollection("sessions").find({}).forEach(function(doc) {
 
         if (doc[year].p) {
             zeroObjToInsert.d.p = doc[year].p;
+        }
+        
+        if (doc[year].m) {
+            zeroObjToInsert.d.m = doc[year].m;
         }
 
         targetDB.getCollection(TEST_PREFIX + "users").update({_id:doc._id + "_" + year + ":0"}, {$set:flattenObject(zeroObjToInsert)},{upsert:true});
