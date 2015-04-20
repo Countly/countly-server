@@ -1,4 +1,5 @@
 var plugins = require('./plugins.json'),
+	pluginsApis = {}, 
 	countlyConfig = require('../frontend/express/config'),
 	path = require("path"),
 	cp = require('child_process'),
@@ -12,7 +13,7 @@ var pluginManager = function pluginManager(){
 	this.init = function(){
 		for(var i = 0, l = plugins.length; i < l; i++){
 			try{
-				require("./"+plugins[i]+"/api/api");
+				pluginsApis[plugins[i]] = require("./"+plugins[i]+"/api/api");
 			} catch (ex) {
 				console.error(ex);
 			}
@@ -90,6 +91,14 @@ var pluginManager = function pluginManager(){
 	
 	this.getPlugins = function(){
 		return plugins;
+	}
+	
+	this.getPluginsApis = function(){
+		return pluginsApis;
+	}
+	
+	this.setPluginApi = function(plugin, name, func){
+		return pluginsApis[plugin][name] = func;
 	}
 	
 	this.reloadPlugins = function(){

@@ -887,7 +887,7 @@ var PushPopup = function(message, duplicate) {
             }
             count.text('');
             countlyPush.getAudience(
-                {apps: message.apps, platforms: message.platforms, test: message.test, conditions: message.conditions, geo: message.geo},
+                {apps: message.apps, platforms: message.platforms, test: message.test, conditions: message.conditions, geo: message.geo || undefined},
                 function(resp) {
                     message.count = resp;
 

@@ -1503,6 +1503,12 @@
 			return value
 		return "0"+value;
 	}
+    
+    countlyCommon.round = function(num, digits) {
+        digits = Math.pow(10, digits || 0);
+        return Math.round(num * digits) / digits;
+    };
+
 
     // Private Methods
 

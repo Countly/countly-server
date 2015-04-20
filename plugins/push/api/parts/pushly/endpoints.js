@@ -10,6 +10,7 @@ var pushly          = require('pushly')(),
     usage           = require('../../../../../api/parts/data/usage.js'),
     cluster         = require('cluster'),
     mess            = require('./message.js'),
+    plugins         = require('../../../../pluginManager.js'),
     Platform        = mess.MessagePlatform,
     Message         = mess.Message,
     MessageStatus   = mess.MessageStatus;
@@ -415,6 +416,16 @@ var pushly          = require('pushly')(),
         return true;
     };
 
+    var geoPlugin;
+
+    function getGeoPluginApi() {
+        if (geoPlugin === undefined) {
+            geoPlugin = plugins.getPluginsApis().geo || null;
+        }
+
+        return geoPlugin;
+    }
+
     api.countAudience = function(params, callback) {
         var argProps = {
                 'apps':             { 'required': true,  'type': 'Array'   },
@@ -436,8 +447,8 @@ var pushly          = require('pushly')(),
             if (err || !apps || !apps.length) {
                 callback(null, []);
             } else {
-                if (geo) {
-                    //msg.conditions = geoApi.conditions(geo, msg.conditions);
+                if (geo && getGeoPluginApi()) {
+                    msg.conditions = getGeoPluginApi().conditions(geo, msg.conditions);
                 }
 
                 var message = new Message(msg.apps, '')
@@ -645,6 +656,10 @@ var pushly          = require('pushly')(),
                 common.returnOutput(params, {error: 'No such geolocation'});
             } else {
                 if (adminOfApps(params.member, apps)) {
+
+                    if (geo && getGeoPluginApi()) {
+                        msg.conditions = getGeoPluginApi().conditions(geo, msg.conditions);
+                    }
 
                     api.countAudience(params, function(err, TOTALLY){
                         if (!TOTALLY || !TOTALLY.TOTALLY || TOTALLY.TOTALLY.TOTALLY) { // :)

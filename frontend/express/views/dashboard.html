@@ -58,6 +58,9 @@
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/ZeroClipboard.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js"></script>
     <% } %>
+    <script type="text/javascript">
+    window.production = <%= production ? true : false %>;
+    </script>
 </head>
 <body> 
 	<div id="sidebar">
