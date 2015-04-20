@@ -101,7 +101,10 @@ module.exports = function(grunt) {
     },
     uglify: {
 		options: {
-			banner: '/*! Countly <%= grunt.template.today("dd-mm-yyyy") %> */\n'
+			banner: '/*! Countly <%= grunt.template.today("dd-mm-yyyy") %> */\n',
+            mangle: {
+                except: ["$super"]
+            }
 		},
 		dist: {
 			files: {
