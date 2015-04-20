@@ -26,6 +26,8 @@
     <% } else { %>
 		<link rel="stylesheet" href="<%- cdn %>stylesheets/main.css?<%= countlyVersion %>" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/tipsy/tipsy.css" />
+        <link rel="stylesheet" href="<%- cdn %>stylesheets/amaranjs/amaran.min.css" />
+        <link rel="stylesheet" href="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.css" />
 		<% if (plugins) { %>
 			<% for(var i=0, l=plugins.length; i<l; i++) {%>
 		<link rel="stylesheet" href="<%- cdn %><%= plugins[i] %>/stylesheets/main.css?<%= countlyVersion %>" />
