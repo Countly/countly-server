@@ -89,12 +89,12 @@ window.MessagingListView = countlyView.extend({
     },
     beforeRender: function() {
         if(this.template)
-            return $.when(countlyPush.initialize()).then(function () {});
+            return $.when(countlyPush.initialize(), typeof countlyGeo === 'undefined' ? {} : countlyGeo.initialize()).then(function () {});
         else{
             var self = this;
             return $.when($.get(countlyGlobal["path"]+'/push/templates/messaging-list.html', function(src){
                 self.template = Handlebars.compile(src);
-            }), countlyPush.initialize()).then(function () {});
+            }), countlyPush.initialize(), typeof countlyGeo === 'undefined' ? {} : countlyGeo.initialize()).then(function () {});
         }
     },
     renderTable:function (isRefresh) {
