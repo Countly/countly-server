@@ -53,9 +53,9 @@ var common = {},
     //mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
     var dbName;
     var dbOptions = {
-        server:{auto_reconnect:true, poolSize: countlyConfig.mongodb.max_pool_size, socketOptions: { keepAlive: 1, connectTimeoutMS: 30000, socketTimeoutMS: 30000 }},
-        replSet:{socketOptions: { keepAlive: 1, connectTimeoutMS: 30000, socketTimeoutMS: 30000 }},
-        mongos:{socketOptions: { keepAlive: 1, connectTimeoutMS: 30000, socketTimeoutMS: 30000 }}
+        server:{auto_reconnect:true, poolSize: countlyConfig.mongodb.max_pool_size, socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
+        replSet:{socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
+        mongos:{socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }}
     };
     if (typeof countlyConfig.mongodb === "string") {
         dbName = countlyConfig.mongodb;
