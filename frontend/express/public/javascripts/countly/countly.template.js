@@ -804,8 +804,6 @@ $.expr[":"].contains = $.expr.createPseudo(function(arg) {
 
 window.DashboardView = countlyView.extend({
     selectedView:"#draw-total-sessions",
-    onlineUsersGauge:null,
-    newUsersGauge:null,
     initialize:function () {
         this.template = Handlebars.compile($("#dashboard-template").html());
     },
@@ -977,7 +975,6 @@ window.DashboardView = countlyView.extend({
             self.renderCommon(true);
 
             var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            $(".rev-container").replaceWith(newPage.find(".rev-container"));
             $(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
             $(".widget-header .title").replaceWith(newPage.find(".widget-header .title"));
 
