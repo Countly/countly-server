@@ -1,3 +1,18 @@
+15.03.02
+
+  * Fixed get_events api method
+  * Fixed Docker support
+  * Fixed using specific MongoDB driver (fixes undefined name property crashes after installation)
+  * Fixed socket options for more stable connection to mongodb
+  * Push bug fixes
+  * Improved dashboard loading by combining localizations and css files
+  * Improved Push performance
+  * Added upgrade script to 15.03 version from older versions
+  * Added github core update script, to update installations cloned from github
+  * Moved all dependencies to Countly root folder
+  * New minification through uglify, no need for heavy java dependencies
+  * New API v3 requests for Loyalty, Session frequency and Session durations
+  * Allowing to change device_id
 
 15.03
 
