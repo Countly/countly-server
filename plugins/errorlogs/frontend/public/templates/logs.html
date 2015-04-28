@@ -1,0 +1,30 @@
+<div class="widget">
+	<div class="widget-header">
+		<div class="left">
+			<div class="logo font-logo">
+                <i class="fa fa-exclamation-triangle"></i>
+			</div>
+			<div class="title">{{page-title}}</div>
+		</div>
+	</div>
+</div>
+<div class="errorlogs">
+<div id="tabs">
+    <ul>
+    {{#eachOfObject logs}}
+        <li><a href="#log-{{property}}">{{property}} log</a></li>
+	{{/eachOfObject}}
+    </ul>
+    {{#eachOfObject logs}}
+    <div id="log-{{property}}" class="errorlog">
+        <div style="float: right;">
+			<a class="icon-button red btn-header btn-clear-log" data-id="{{property}}" data-localize="errorlogs.clear"></a>
+			<a href="{{../download}}{{property}}" target="_blank" class="icon-button light btn-header" data-localize="errorlogs.download"></a>
+		</div>
+        <pre>
+        {{value}}
+        </pre>
+    </div>
+    {{/eachOfObject}}
+</div>
+</div>

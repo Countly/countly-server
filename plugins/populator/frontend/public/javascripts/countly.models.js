@@ -7,6 +7,8 @@
 		_manufacture: ["Samsung", "Sony Ericsson", "LG", "Google", "HTC", "Nokia", "Apple", "Huaiwei", "Lenovo", "Acer"],
 		_carrier: ["Telus", "Rogers Wireless", "T-Mobile", "Bell Canada", "	AT&T", "Verizon", "Vodafone", "Cricket Communications", "O2", "Tele2", "Turkcell", "Orange", "Sprint", "Metro PCS"],
 		_app_version: ["1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "2.0", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8", "2.9", "3.0", "3.1", "3.2"],
+		_cpu: ["armv6", "armv7", "x86"],
+		_opengl: ["opengl_es1", "opengl_es2"],
 		_density: ["120dpi", "160dpi", "240dpi", "320dpi", "480dpi", "640dpi"],
 		_locale: ["en_CA", "fr_FR", "de_DE", "it_IT", "ja_JP", "ko_KR", "en_US"]
 	};
@@ -115,22 +117,36 @@
 		
 		this.getCrash = function(){
 			var crash = {};
-			crash._root = (Math.random() > 0.5) ? true : false;
-			crash._wifi = (Math.random() > 0.5) ? true : false;
-			crash._ram_total = getRandomInt(1, 4)*1024;
+            
+            crash._os = "Android";
+			crash._os_version = this.getProp("_os_version");
+			crash._device = this.getProp("_device");
+			crash._manufacture = this.getProp("_manufacture");
+			crash._resolution = this.getProp("_resolution");
+			crash._app_version = this.getProp("_app_version");
+			crash._cpu = this.getProp("_cpu");
+			crash._opengl = this.getProp("_opengl");
+            
+            crash._ram_total = getRandomInt(1, 4)*1024;
 			crash._ram_current = getRandomInt(1, crash._ram_total);
 			crash._disk_total = getRandomInt(1, 20)*1024;
 			crash._disk_current = getRandomInt(1, crash._disk_total);
 			crash._bat_total = 100;
 			crash._bat_current = getRandomInt(1, crash._bat_total);
 			crash._orientation = (Math.random() > 0.5) ? "landscape" : "portrait";
-			crash._os = "Android";
-			crash._os_version = this.getProp("_os_version");
-			crash._device = this.getProp("_device");
-			crash._manufacture = this.getProp("_manufacture");
-			crash._resolution = this.getProp("_resolution");
-			crash._app_version = this.getProp("_app_version");
+            
+			crash._root = (Math.random() > 0.5) ? true : false;
+			crash._online = (Math.random() > 0.5) ? true : false;
+			crash._airplane = (Math.random() > 0.5) ? true : false;
+			crash._background = (Math.random() > 0.5) ? true : false;
+            
 			crash._error = this.getError();
+			crash._log = this.getError();
+            crash._nonfatal = (Math.random() > 0.5) ? true : false;
+            crash._run = getRandomInt(1, 10000);
+            
+            crash._custom = createRandomObj(6);
+            
 			return crash;
 		};
 		
