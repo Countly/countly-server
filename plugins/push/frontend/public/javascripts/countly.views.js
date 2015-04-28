@@ -234,8 +234,8 @@ var PushPopup = function(message, duplicate) {
     } else {
         message = {
             type: 'message',
-            apps: [countlyCommon.ACTIVE_APP_ID],
-            appNames: [allApps[countlyCommon.ACTIVE_APP_ID].name],
+            apps: [currentApp._id],
+            appNames: [currentApp.name],
             platforms: [],
             appsPlatforms: [],
             messagePerLocale: {
