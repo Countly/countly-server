@@ -12,7 +12,7 @@ This repository includes Countly Community Edition. For more information other v
 
 ##Supported devices
 
-[Countly](http://count.ly) supports top-notch devices, including iOS, Android, Windows Phone and Blackberry. You can find a list of [officially and community supported Countly SDK libraries here](https://count.ly/resources/source/download-sdk). Each SDK has its own installation instructions.
+[Countly](http://count.ly) supports top-notch devices, including iOS, Android and Windows Phone. You can find a list of [officially and community supported Countly SDK libraries here](https://count.ly/resources/source/download-sdk). Each SDK has its own installation instructions.
 
 ##Installing & upgrading Countly server
 
