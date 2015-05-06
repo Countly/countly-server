@@ -396,6 +396,10 @@ var fetch = {},
             common.returnOutput(params, output);
         });
     };
+    
+    fetch.getTimeObj = function (collection, params, callback) {
+        fetchTimeObj(collection, params, null, callback);
+    };
 
     function fetchTimeObj(collection, params, isCustomEvent, callback) {
         if (params.qstring.action == "refresh") {

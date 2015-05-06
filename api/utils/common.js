@@ -472,6 +472,47 @@ var common = {},
 
         return true;
     };
+    
+    common.recordCustomMetric = function(params, collection, id, metrics, value, segments){
+		value = value || 1;
+		var updateUsersZero = {},
+		updateUsersMonth = {},
+		tmpSet = {};
+		var dbDateIds = common.getDateIds(params);
+	
+		for(var i = 0; i < metrics.length; i++){
+			var metric = metrics[i],
+				zeroObjUpdate = [],
+				monthObjUpdate = [],
+				escapedMetricVal, escapedMetricKey;
+			
+			zeroObjUpdate.push(metric);
+			monthObjUpdate.push(metric);
+            if(segments){
+                for(var j in segments){
+                    if(segments[j]){
+                        escapedMetricKey = j.replace(/^\$/, "").replace(/\./g, ":");
+                        escapedMetricVal = (segments[j]+"").replace(/^\$/, "").replace(/\./g, ":");
+                        tmpSet["meta." + escapedMetricKey] = escapedMetricVal;
+                        zeroObjUpdate.push(escapedMetricVal+"."+metric);
+                        monthObjUpdate.push(escapedMetricVal+"."+metric);
+                    }
+                }
+            }
+
+			common.fillTimeObjectZero(params, updateUsersZero, zeroObjUpdate, value);
+			common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate, value);
+		}
+		
+		if (Object.keys(updateUsersZero).length && Object.keys(tmpSet).length) {
+			common.db.collection(collection).update({'_id': id + "_" + dbDateIds.zero}, {$set: {m: dbDateIds.zero, a: params.app_id + ""}, '$inc': updateUsersZero, '$addToSet': tmpSet}, {'upsert': true},function(){});
+		}
+		else if (Object.keys(updateUsersZero).length){
+			common.db.collection(collection).update({'_id': id + "_" + dbDateIds.zero}, {$set: {m: dbDateIds.zero, a: params.app_id + ""}, '$inc': updateUsersZero}, {'upsert': true},function(){});
+		}
+		
+		common.db.collection(collection).update({'_id': id + "_" + dbDateIds.month}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true},function(err, res){});
+	};
 
     common.getDateIds = function(params) {
         if (!params || !params.time) {
