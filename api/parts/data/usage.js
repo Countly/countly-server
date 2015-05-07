@@ -213,8 +213,8 @@ var usage = {},
             // current begin_session request and mark this user as having an ongoing session
             var lastEndSession = dbAppUser[common.dbUserMap['last_end_session_timestamp']];
 
-            if (lastEndSession && (params.time.nowWithoutTimestamp.unix() - lastEndSession) < 15) {
-				plugins.dispatch("/session/extend", {params:params});
+            if (!params.qstring.sdk_version || params.qstring.sdk_version < "15.04" && lastEndSession && (params.time.nowWithoutTimestamp.unix() - lastEndSession) < 15) {
+                plugins.dispatch("/session/extend", {params:params});
 
                 var userProps = {};
                 userProps[common.dbUserMap['has_ongoing_session']] = true;
