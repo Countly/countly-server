@@ -1487,6 +1487,19 @@
 		}
 		return str;
 	};
+    
+    countlyCommon.timeString = function(timespent){
+        var timeSpentString = (timespent.toFixed(1)) + " " + jQuery.i18n.map["common.minute.abrv"];
+
+        if (timespent >= 142560) {
+            timeSpentString = (timespent / 525600).toFixed(1) + " " + jQuery.i18n.map["common.year.abrv"];
+        } else if (timespent >= 1440) {
+            timeSpentString = (timespent / 1440).toFixed(1) + " " + jQuery.i18n.map["common.day.abrv"];
+        } else if (timespent >= 60) {
+            timeSpentString = (timespent / 60).toFixed(1) + " " + jQuery.i18n.map["common.hour.abrv"];
+        }
+        return timeSpentString;
+    };
 	
 	countlyCommon.getDate = function(timestamp) {
 		var d = new Date(timestamp*1000);
