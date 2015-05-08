@@ -118,7 +118,7 @@
 		this.getCrash = function(){
 			var crash = {};
             
-            crash._os = "Android";
+            crash._os = this.getProp("_os");
 			crash._os_version = this.getProp("_os_version");
 			crash._device = this.getProp("_device");
 			crash._manufacture = this.getProp("_manufacture");
@@ -137,15 +137,22 @@
             
 			crash._root = (Math.random() > 0.5) ? true : false;
 			crash._online = (Math.random() > 0.5) ? true : false;
-			crash._airplane = (Math.random() > 0.5) ? true : false;
+			crash._signal = (Math.random() > 0.5) ? true : false;
+			crash._muted = (Math.random() > 0.5) ? true : false;
 			crash._background = (Math.random() > 0.5) ? true : false;
             
 			crash._error = this.getError();
 			crash._log = this.getError();
             crash._nonfatal = (Math.random() > 0.5) ? true : false;
-            crash._run = getRandomInt(1, 10000);
+            crash._run = getRandomInt(1, 1800);
             
-            crash._custom = createRandomObj(6);
+            var customs = ["facebook", "gideros", "admob", "chartboost", "googleplay"];
+            crash._custom = {};
+            for(var i = 0; i < customs.length; i++){
+                if(Math.random() > 0.5){
+                    crash._custom[customs[i]] = getRandomInt(1, 2)+"."+getRandomInt(0, 9);
+                }
+            }
             
 			return crash;
 		};
@@ -153,10 +160,9 @@
 		this.getError = function(){
 			var errors = ["java.lang.RuntimeException", "java.lang.NullPointerException", "java.lang.NoSuchMethodError", "java.lang.NoClassDefFoundError", "java.lang.ExceptionInInitializerError", "java.lang.IllegalStateException"];
 			var error = errors[Math.floor(Math.random()*errors.length)]+": com.domain.app.Exception<init>\n";
-			var stacks = getRandomInt(1, 6);
+			var stacks = getRandomInt(5, 9);
 			for(var i = 0; i < stacks; i++){
-				var file = chance.word();
-				error += "at com.domain.app."+file+".<init>("+file+".java:"+getRandomInt(1, 256)+")\n";
+				error += "at com.domain.app.<init>(Activity.java:"+(i*32)+")\n";
 			}
 			return error;
 		};
