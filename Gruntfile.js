@@ -194,18 +194,14 @@ module.exports = function(grunt) {
 
   		try {
   			if (fs.statSync(images).isDirectory()) {
-  				img.push('plugins/' + plugin + '/frontend/public/images/' + plugin + '/**');
+  				img.push({expand: true, cwd:'plugins/' + plugin + '/frontend/public/images/' + plugin + '/', filter:'isFile', src:'**', dest: 'frontend/express/public/images/' + plugin + '/'});
   			}
   		} catch(err) {
   			if (err.code !== 'ENOENT') { throw err; }
   		}
   	});
 
-	grunt.config('copy.plugins.src', img);
-	grunt.config('copy.plugins.dest', 'frontend/express/public/images/');
-	grunt.config('copy.plugins.expand', true);
-	grunt.config('copy.plugins.flatten', true);
-	grunt.config('copy.plugins.filter', 'isFile');
+	grunt.config('copy.plugins.files', img);
 
 	grunt.config('concat.plugins.src', js);
 	grunt.config('concat.plugins.dest', 'frontend/express/public/javascripts/min/countly.plugins.concat.js');
