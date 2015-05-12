@@ -306,7 +306,7 @@ var pushly          = require('pushly')(),
             if (app) {
                 var message = new Message([app._id], ['Test app'])
                     .setId(new common.db.ObjectID())
-                    .setMessage('Test message')
+                    .setMessage('[CLY]_test_message')
                     .addPlatform(platform)
                     .setTest(test),
 

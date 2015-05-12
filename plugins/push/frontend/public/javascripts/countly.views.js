@@ -1161,6 +1161,9 @@ function pushAppMgmt(){
                         },
                         success:function (resp) {
                             if (!resp || resp.error) {
+                                if (countlyGlobal['apps'][appId].apn) {
+                                    delete countlyGlobal['apps'][appId].apn.test;
+                                }
                                 showError(jQuery.i18n.map["management-applications.push-apn-creds-test-error"]);
                             } else {
                                 if (!countlyGlobal['apps'][appId].apn) {
@@ -1185,6 +1188,9 @@ function pushAppMgmt(){
                         },
                         success:function (resp) {
                             if (!resp || resp.error) {
+                                if (countlyGlobal['apps'][appId].apn) {
+                                    delete countlyGlobal['apps'][appId].apn.prod;
+                                }
                                 showError(jQuery.i18n.map["management-applications.push-apn-creds-prod-error"]);
                             } else {
                                 if (!countlyGlobal['apps'][appId].apn) {
