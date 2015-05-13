@@ -25,8 +25,6 @@ Countly also has Docker support - [see our official Docker repository](https://r
 ##Dependencies
 We develop and test Countly on Ubuntu with MongoDB, Node.js and nginx. Installation script only needs a clean, decent Ubuntu Linux without any services listening to port 80 and takes care of every library and software (e.g MongoDB, Nginx, Node.js, Expressjs etc) required to be installed on Ubuntu Linux.
 
-Countly Community also provides scripts to install Countly on [Mac OS X](http://support.count.ly/discussions/questions/161-can-i-install-countly-on-a-mac-server)  or [Debian Wheezy](https://gist.github.com/cbess/6221635)
-
 ##API & Frontend
 
 [API documentation can be found here](http://resources.count.ly).

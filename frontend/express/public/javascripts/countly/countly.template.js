@@ -1942,8 +1942,8 @@ window.ResolutionView = countlyView.extend({
                 "aaData": resolutionData.chartData,
                 "aoColumns": [
                     { "mData": "resolution", "sTitle": jQuery.i18n.map["resolutions.table.resolution"] },
-                    { "mData": "width", "sTitle": jQuery.i18n.map["resolutions.table.width"] },
-                    { "mData": "height", "sTitle": jQuery.i18n.map["resolutions.table.height"] },
+                    { "mData": function(row){return parseInt(row.width.replace(/<(?:.|\n)*?>/gm, ''))}, sType:"numeric","sTitle": jQuery.i18n.map["resolutions.table.width"] },
+                    { "mData": function(row){return parseInt(row.height.replace(/<(?:.|\n)*?>/gm, ''))}, sType:"numeric","sTitle": jQuery.i18n.map["resolutions.table.height"] },
                     { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
                     { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
                     { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
@@ -3342,6 +3342,31 @@ var AppRouter = Backbone.Router.extend({
                     sidebarApp.removeClass("active");
                     self.activeView.appChanged();
                 }});
+            });
+            
+            $(document).on("mouseenter", ".app-container", function(){
+                var elem = $(this);
+                var name = elem.find(".name");
+                if(name[0].scrollWidth >  name.innerWidth()){
+                    if(elem.parents("#app-nav").length)
+                        $("#app-tooltip").css("margin-left", "20px");
+                    else
+                        $("#app-tooltip").css("margin-left", "3px");
+                    $("#app-tooltip").html(elem.clone());
+                    $("#app-tooltip .app-container").removeClass("active");
+                    $("#app-tooltip").css(elem.offset());
+                    $("#app-tooltip .name").css({"width":"auto"});
+                    $("#app-tooltip").show();
+                    $("#app-tooltip").bind("click", function(){
+                        elem.trigger("click");
+                    });
+                }
+            });
+            $("#app-tooltip").mouseleave(function(){
+                if($("#app-tooltip").is(':visible')){
+                    $("#app-tooltip").hide();
+                    $("#app-tooltip").unbind("click");
+                }
             });
 
             $("#sidebar-events").click(function (e) {
