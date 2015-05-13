@@ -49,7 +49,7 @@ rm -rf /tmp/countly-github
 
 git clone https://github.com/Countly/countly-server.git -b plugins /tmp/countly-github || (echo "Failed to checkout Countly core from Github" ; exit)
 
-rsync -avh --exclude='.git/' --exclude='log/' /tmp/countly-github/ $DIR/../  || (echo "Failed to synchronize folder contents" ; exit)
+rsync -rvc --exclude='.git/' --exclude='log/' /tmp/countly-github/ $DIR/../../  || (echo "Failed to synchronize folder contents" ; exit)
 
 rm -rf /tmp/countly-github
 
