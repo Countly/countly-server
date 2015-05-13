@@ -3343,6 +3343,31 @@ var AppRouter = Backbone.Router.extend({
                     self.activeView.appChanged();
                 }});
             });
+            
+            $(document).on("mouseenter", ".app-container", function(){
+                var elem = $(this);
+                var name = elem.find(".name");
+                if(name[0].scrollWidth >  name.innerWidth()){
+                    if(elem.parents("#app-nav").length)
+                        $("#app-tooltip").css("margin-left", "20px");
+                    else
+                        $("#app-tooltip").css("margin-left", "3px");
+                    $("#app-tooltip").html(elem.clone());
+                    $("#app-tooltip .app-container").removeClass("active");
+                    $("#app-tooltip").css(elem.offset());
+                    $("#app-tooltip .name").css({"width":"auto"});
+                    $("#app-tooltip").show();
+                    $("#app-tooltip").bind("click", function(){
+                        elem.trigger("click");
+                    });
+                }
+            });
+            $("#app-tooltip").mouseleave(function(){
+                if($("#app-tooltip").is(':visible')){
+                    $("#app-tooltip").hide();
+                    $("#app-tooltip").unbind("click");
+                }
+            });
 
             $("#sidebar-events").click(function (e) {
                 $.when(countlyEvent.refreshEvents()).then(function () {
