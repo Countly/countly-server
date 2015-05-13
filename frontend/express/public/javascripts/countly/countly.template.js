@@ -1942,8 +1942,8 @@ window.ResolutionView = countlyView.extend({
                 "aaData": resolutionData.chartData,
                 "aoColumns": [
                     { "mData": "resolution", "sTitle": jQuery.i18n.map["resolutions.table.resolution"] },
-                    { "mData": "width", "sTitle": jQuery.i18n.map["resolutions.table.width"] },
-                    { "mData": "height", "sTitle": jQuery.i18n.map["resolutions.table.height"] },
+                    { "mData": function(row){return parseInt(row.width.replace(/<(?:.|\n)*?>/gm, ''))}, sType:"numeric","sTitle": jQuery.i18n.map["resolutions.table.width"] },
+                    { "mData": function(row){return parseInt(row.height.replace(/<(?:.|\n)*?>/gm, ''))}, sType:"numeric","sTitle": jQuery.i18n.map["resolutions.table.height"] },
                     { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
                     { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
                     { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
