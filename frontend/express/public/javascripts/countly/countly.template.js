@@ -3109,7 +3109,7 @@ var AppRouter = Backbone.Router.extend({
         Handlebars.registerHelper('eachOfArray', function (context, options) {
             var ret = "";
             for (var i = 0; i < context.length; i++) {
-                ret = ret + options.fn({value:context[i]});
+                ret = ret + options.fn({index:i, value:context[i]});
             }
             return ret;
         });
@@ -3173,7 +3173,9 @@ var AppRouter = Backbone.Router.extend({
 					return options.inverse(this);
 			}
 		});
-
+        Handlebars.registerHelper('formatTimeAgo', function (context, options) {
+            return countlyCommon.formatTimeAgo(parseInt(context)/1000);
+        });
 
         jQuery.i18n.properties({
             name:'locale',
