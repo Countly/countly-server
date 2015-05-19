@@ -3349,7 +3349,7 @@ var AppRouter = Backbone.Router.extend({
                 var name = elem.find(".name");
                 if(name[0].scrollWidth >  name.innerWidth()){
                     if(elem.parents("#app-nav").length)
-                        $("#app-tooltip").css("margin-left", "20px");
+                        $("#app-tooltip").css("margin-left", "21px");
                     else
                         $("#app-tooltip").css("margin-left", "3px");
                     $("#app-tooltip").html(elem.clone());
