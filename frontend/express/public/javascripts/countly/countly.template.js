@@ -2914,7 +2914,7 @@ window.EventsView = countlyView.extend({
 
                 $(".delete-event").on("click", function() {
                     var eventKey = $(this).data("event-key");
-
+                    var dialog = $(this).parents(".dialog");
                     if (eventKey) {
                         CountlyHelpers.confirm(jQuery.i18n.prop('events.delete-confirm', eventKey), "red", function (result) {
                             if (result) {
@@ -2931,11 +2931,63 @@ window.EventsView = countlyView.extend({
                                         $.when(countlyEvent.initialize(true)).then(function () {
                                             self.render();
                                         });
+                                        $(".dialog #edit-event-table-container tr").each(function(){
+                                            if($(this).find(".delete-event").data("event-key") == eventKey){
+                                                var height = dialog.outerHeight()-$(this).outerHeight();
+                                                $(this).remove();
+                                                dialog.css({
+                                                    "height":height
+                                                });
+                                            }
+                                        });
                                     }
                                 });
                             }
                         });
                     }
+                });
+                
+                $(".delete-event-selected").on("click", function() {
+                    var eventKey = $(this).data("event-key");
+                    var dialog = $(this).parents(".dialog");
+                    CountlyHelpers.confirm(jQuery.i18n.prop('events.delete-confirm-many'), "red", function (result) {
+                        if (result) {
+                            var events = [];
+                            var recheck = {};
+                            var key;
+                            $(".dialog .delete-event-check").each(function(){
+                                if($(this).is(':checked')){
+                                    key = $(this).data("event-key");
+                                    events.push(key);
+                                    recheck[key] = true;
+                                }
+                            });
+                            $.ajax({
+                                type:"POST",
+                                url:countlyGlobal["path"]+"/events/delete_multi",
+                                data:{
+                                    "events":JSON.stringify(events),
+                                    "app_id":countlyCommon.ACTIVE_APP_ID,
+                                    _csrf:countlyGlobal['csrf_token']
+                                },
+                                success:function (result) {
+                                    countlyEvent.reset();
+                                    $.when(countlyEvent.initialize(true)).then(function () {
+                                        self.render();
+                                    });
+                                    $(".dialog #edit-event-table-container tr").each(function(){
+                                        if(recheck[$(this).find(".delete-event").data("event-key")]){
+                                            var height = dialog.outerHeight()-$(this).outerHeight();
+                                            $(this).remove();
+                                            dialog.css({
+                                                "height":height
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
                 });
             });
         }

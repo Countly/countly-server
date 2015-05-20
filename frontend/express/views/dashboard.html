@@ -946,6 +946,7 @@
                     <thead>
                     <tr>
                         <th></th>
+                        <th style="text-align:center;"><i class="fa fa-trash delete-event-selected"></i></th>
                         <th></th>
                         <th data-localize="events.edit.event-key"></th>
                         <th data-localize="events.edit.event-name"></th>
@@ -957,6 +958,7 @@
                     {{#eachOfObjectValue event-map}}
                     <tr>
                         <td style="text-align:center;"><i class="fa fa-reorder event-order"></i></td>
+                        <td style="text-align:center;"><input type="checkbox" class="delete-event-check" data-event-key="{{this.key}}"/></td>
                         <td style="text-align:center;"><i class="fa fa-trash delete-event" data-event-key="{{this.key}}"></i></td>
                         <td class="event-key">{{this.key}}</td>
                         <td><input class="event-name" type="text" placeholder="Event name"  data-localize="events.edit.event-name" value="{{this.name}}"/></td>

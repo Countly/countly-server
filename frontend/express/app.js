@@ -706,50 +706,74 @@ app.post(countlyConfig.path+'/events/map/edit', function (req, res, next) {
     }
 });
 
+function deleteEvent(req, event_key, app_id, callback){
+    var updateThese = {
+        "$unset": {},
+        "$pull": {
+            "list": event_key,
+            "order": event_key
+        }
+    };
+
+    if(event_key.indexOf('.') != -1){
+        updateThese["$unset"]["map." + event_key.replace(/\./g,':')] = 1;
+        updateThese["$unset"]["segments." + event_key.replace(/\./g,':')] = 1;
+    }
+    else{
+        updateThese["$unset"]["map." + event_key] = 1;
+        updateThese["$unset"]["segments." + event_key] = 1;
+    }
+
+    var collectionNameWoPrefix = crypto.createHash('sha1').update(event_key + app_id).digest('hex');
+    if (!isGlobalAdmin(req)) {
+        countlyDb.collection('members').findOne({"_id":countlyDb.ObjectID(req.session.uid)}, function (err, member) {
+            if (!err && member.admin_of && member.admin_of.indexOf(app_id) != -1) {
+                countlyDb.collection('events').update({"_id":countlyDb.ObjectID(app_id)}, updateThese, function (err, events) {
+                    if(callback)
+                        callback(true);
+                });
+                countlyDb.collection("events" + collectionNameWoPrefix).drop();
+                return true;
+            } else {
+                if(callback)
+                    callback(false);
+                return false;
+            }
+        });
+    } else {
+        countlyDb.collection('events').update({"_id":countlyDb.ObjectID(app_id)}, updateThese, function (err, events) {
+            if(callback)
+                callback(true);
+        });
+        countlyDb.collection("events" + collectionNameWoPrefix).drop();
+        return true;
+    }
+}
+
 app.post(countlyConfig.path+'/events/delete', function (req, res, next) {
     if (!req.session.uid || !req.body.app_id || !req.body.event_key) {
         res.end();
         return false;
     }
+    
+    deleteEvent(req, req.body.event_key, req.body.app_id, function(result){
+        res.send(result);
+    })
+});
 
-    var updateThese = {
-        "$unset": {},
-        "$pull": {
-            "list": req.body.event_key,
-            "order": req.body.event_key
-        }
-    };
-
-    if(req.body.event_key.indexOf('.') != -1){
-        updateThese["$unset"]["map." + req.body.event_key.replace(/\./g,':')] = 1;
-        updateThese["$unset"]["segments." + req.body.event_key.replace(/\./g,':')] = 1;
+app.post(countlyConfig.path+'/events/delete_multi', function (req, res, next) {
+    if (!req.session.uid || !req.body.app_id || !req.body.events) {
+        res.end();
+        return false;
     }
-    else{
-        updateThese["$unset"]["map." + req.body.event_key] = 1;
-        updateThese["$unset"]["segments." + req.body.event_key] = 1;
-    }
-
-    var collectionNameWoPrefix = crypto.createHash('sha1').update(req.body.event_key + req.body.app_id).digest('hex');
-    if (!isGlobalAdmin(req)) {
-        countlyDb.collection('members').findOne({"_id":countlyDb.ObjectID(req.session.uid)}, function (err, member) {
-            if (!err && member.admin_of && member.admin_of.indexOf(req.body.app_id) != -1) {
-                countlyDb.collection('events').update({"_id":countlyDb.ObjectID(req.body.app_id)}, updateThese, function (err, events) {});
-                countlyDb.collection("events" + collectionNameWoPrefix).drop();
-
-                res.send(true);
-                return true;
-            } else {
-                res.send(false);
-                return false;
-            }
-        });
-    } else {
-        countlyDb.collection('events').update({"_id":countlyDb.ObjectID(req.body.app_id)}, updateThese, function (err, events) {});
-        countlyDb.collection("events" + collectionNameWoPrefix).drop();
-
+    req.body.events = JSON.parse(req.body.events);
+    async.each(req.body.events, function(key, callback){
+        deleteEvent(req, key, req.body.app_id, function(result){
+            callback();
+        })
+    }, function(err, results) {
         res.send(true);
-        return true;
-    }
+    });
 });
 
 app.post(countlyConfig.path+'/graphnotes/create', function (req, res, next) {

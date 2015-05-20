@@ -681,9 +681,9 @@ table.events-table { width:100%; padding:0; margin:0; }
 	.events-table  thead tr { background-color:transparent; }
 	.events-table  td { padding:5px 10px; padding-bottom:7px; margin:0; border-bottom:1px solid #DDD; border-top:1px solid #fff; border-left:1px solid #ccc; color:#6B6B6B; }
 	.events-table  td:first-child { border-left:none; font-weight:normal; }
-    	.events-table  td:nth-child(4) { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:170px; max-width:170px; }
+    	.events-table  td:nth-child(5) { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:170px; max-width:170px; }
 	.events-table  tr { border-bottom:1px solid #DDD; border-top:1px solid #fff; font:16px Ubuntu,Helvetica,sans-serif; line-height:111%; background-color:#fff}
-	.events-table  td:nth-child(4) input[type=text] { width:170px; }
+	.events-table  td:nth-child(5) input[type=text] { width:170px; }
 	.events-table  tr input[type=text] { border:none; outline:none; width:130px; }
 	.events-table  tr:nth-child(even) input[type=text] { background-color:#F9F9F9}
 	.events-table  tr:first-child { border-top:none; }
@@ -705,8 +705,9 @@ table.events-table { width:100%; padding:0; margin:0; }
 .event-numbers .big-numbers:nth-child(1).selected .color { box-shadow: 0 1px 20px 0 #88BBC8; }
 .event-numbers .big-numbers:nth-child(2).selected .color { box-shadow: 0 1px 20px 0 #ED8662; }
 
-.delete-event { color:#D67678; cursor:pointer; }
-.delete-event:hover { color:#D63E40; }
+.delete-event, .delete-event-selected { color:#D67678; cursor:pointer; font-size:16px;}
+.delete-event:hover, .delete-event-selected:hover { color:#D63E40; }
+
 
 /* EVENTS END */
 
