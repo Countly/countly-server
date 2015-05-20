@@ -39,6 +39,10 @@ var plugin = {},
 			validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'langs');
 			return true;
 		}
+        else if (params.qstring.method == "langmap") {
+			common.returnOutput(params, langs.languages);
+			return true;
+		}
 		return false;
 	});
 	

@@ -452,7 +452,7 @@ $.extend(Template.prototype, {
         }
     };
 	
-	CountlyHelpers.createMetricModel = function (countlyMetric, _name, $) {
+	CountlyHelpers.createMetricModel = function (countlyMetric, _name, $, fetchValue) {
 		//Private Properties
 		var _periodObj = {},
 			_Db = {},
@@ -537,7 +537,10 @@ $.extend(Template.prototype, {
 				{
 					name:_name,
 					func:function (rangeArr, dataObj) {
-						return rangeArr;
+                        if(fetchValue)
+                            return fetchValue(rangeArr);
+                        else
+                            return rangeArr;
 					}
 				},
 				{ "name":"t" },
