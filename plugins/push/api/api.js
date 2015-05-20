@@ -1,5 +1,5 @@
 var plugin = {},
-	pushly = require('pushly'),
+	pushly = require('pushly'), setLoggingEnabled,
 	push = require('./parts/pushly/endpoints.js'),
 	scheduler = require('./parts/pushly/scheduler.js'),
 	common = require('../../../api/utils/common.js'),
@@ -25,11 +25,13 @@ var plugin = {},
 	plugins.register("/worker", function(ob){
         setUpCommons();
         pushly();
+        setLoggingEnabled = pushly().setLoggingEnabled.bind(pushly());
 	});
 
 	plugins.register("/master", function(ob){
         setUpCommons();
 		scheduler();
+        setLoggingEnabled = pushly().setLoggingEnabled.bind(pushly());
 	});
 
 	//write api call
@@ -87,8 +89,21 @@ var plugin = {},
             case 'check':
                 validateUserForWriteAPI(push.checkApp, params);
                 break;
-			case 'update':
+            case 'update':
                 validateUserForWriteAPI(push.updateApp, params);
+                break;
+			case 'logs':
+                validateUserForWriteAPI(function(params){
+                    if (params.qstring.on) {
+                        setLoggingEnabled(true);
+                        common.returnOutput(params, {set: 'ON'});
+                    } else if (params.qstring.off) {
+                        setLoggingEnabled(false);
+                        common.returnOutput(params, {set: 'OFF'});
+                    } else {
+                        common.returnMessage(params, 400, 'Set on or off parameter for this endpoint');
+                    }
+                }, params);
                 break;
             default:
                 common.returnMessage(params, 404, 'Invalid endpoint');
