@@ -117,15 +117,15 @@
             }
 
             if (google.visualization) {
-                draw();
+                draw(options.metric);
             } else {
                 google.load('visualization', '1', {'packages':['geochart'], callback:draw});
             }
         };
 
-        countlyCity.refreshGeoChart = function () {
+        countlyCity.refreshGeoChart = function (metric) {
             if (google.visualization) {
-                reDraw();
+                reDraw(metric);
             } else {
                 google.load('visualization', '1', {'packages':['geochart'], callback:draw});
             }
@@ -169,7 +169,8 @@
     };
 
     //Private Methods
-    function draw() {
+    function draw(ob) {
+        ob = ob || {id:'total', label:jQuery.i18n.map["sidebar.analytics.sessions"], type:'number', metric:"t"};
         var chartData = {cols:[], rows:[]};
 
         _chart = new google.visualization.GeoChart(document.getElementById(_chartElementId));
@@ -181,21 +182,25 @@
                     return rangeArr;
                 }
             },
-            { "name":"t" }
+            { "name":"t" },
+            { "name":"u" },
+            { "name":"n" }
         ]);
 
         chartData.cols = [
-            {id:'city', label:"City", type:'string'},
-            {id:'total', label:jQuery.i18n.map["common.total"], type:'number'}
+            {id:'city', label:"City", type:'string'}
         ];
-
+        chartData.cols.push(ob);
         chartData.rows = _.map(tt.chartData, function (value, key, list) {
             if (value.city == "Unknown") {
-                return {c:[]};
+                return {c:[
+                    {v:""},
+                    {v:value[ob.metric]}
+                ]};
             }
             return {c:[
                 {v:value.city},
-                {v:value["t"]}
+                {v:value[ob.metric]}
             ]};
         });
 
@@ -211,7 +216,8 @@
         _chart.draw(_dataTable, _chartOptions);
     }
 
-    function reDraw() {
+    function reDraw(ob) {
+        ob = ob || {id:'total', label:jQuery.i18n.map["sidebar.analytics.sessions"], type:'number', metric:"t"};
         var chartData = {cols:[], rows:[]};
 
         var tt = countlyCommon.extractTwoLevelData(_locationsDb, _cities, countlyCity.clearLocationObject, [
@@ -221,23 +227,25 @@
                     return rangeArr;
                 }
             },
-            { "name":"t" }
+            { "name":"t" },
+            { "name":"u" },
+            { "name":"n" }
         ]);
 
         chartData.cols = [
-            {id:'city', label:"City", type:'string'},
-            {id:'total', label:jQuery.i18n.map["common.total"], type:'number'}
+            {id:'city', label:"City", type:'string'}
         ];
+        chartData.cols.push(ob);
         chartData.rows = _.map(tt.chartData, function (value, key, list) {
             if (value.city == "Unknown") {
                 return {c:[
                     {v:""},
-                    {v:value["t"]}
+                    {v:value[ob.metric]}
                 ]};
             }
             return {c:[
                 {v:value.city},
-                {v:value["t"]}
+                {v:value[ob.metric]}
             ]};
         });
 

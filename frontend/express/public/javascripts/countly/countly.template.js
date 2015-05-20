@@ -1584,7 +1584,10 @@ window.CountriesView = countlyView.extend({
                 $(".geo-switch .cly-button-group .icon-button").removeClass("active");
                 $(this).addClass("active");
                 self.curMap = $(this).attr("id");
-                countlyLocation.refreshGeoChart(self.maps[self.curMap]);
+                if (self.cityView)
+                    countlyCity.refreshGeoChart(self.maps[self.curMap]);
+                else
+                    countlyLocation.refreshGeoChart(self.maps[self.curMap]);
             });
         }
     },
