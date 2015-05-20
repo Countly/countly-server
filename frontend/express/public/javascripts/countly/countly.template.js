@@ -805,13 +805,20 @@ $.expr[":"].contains = $.expr.createPseudo(function(arg) {
 window.DashboardView = countlyView.extend({
     selectedView:"#draw-total-sessions",
     initialize:function () {
+        this.curMap = "map-list-sessions";
         this.template = Handlebars.compile($("#dashboard-template").html());
     },
     beforeRender: function() {
+        this.maps = {
+            "map-list-sessions": {id:'total', label:jQuery.i18n.map["sidebar.analytics.sessions"], type:'number', metric:"t"},
+            "map-list-users": {id:'total', label:jQuery.i18n.map["sidebar.analytics.users"], type:'number', metric:"u"},
+            "map-list-new": {id:'total', label:jQuery.i18n.map["common.table.new-users"], type:'number', metric:"n"}
+        };
         return $.when(countlyUser.initialize(), countlyCarrier.initialize(), countlyDeviceDetails.initialize()).then(function () {});
     },
     afterRender: function() {
-        countlyLocation.drawGeoChart({height:290});
+        var self = this;
+        countlyLocation.drawGeoChart({height:290, metric:self.maps[self.curMap]});
     },
     pageScript:function () {
         $("#total-user-estimate-ind").on("click", function() {
@@ -851,6 +858,15 @@ window.DashboardView = countlyView.extend({
             self.selectedView = "#" + elID;
             self.drawGraph();
         });
+        
+        this.countryList();
+        $(".map-list .cly-button-group .icon-button").click(function(){
+            $(".map-list .cly-button-group .icon-button").removeClass("active");
+            $(this).addClass("active");
+            self.curMap = $(this).attr("id");
+            countlyLocation.refreshGeoChart(self.maps[self.curMap]);
+            self.countryList();
+        });
 
         app.localize();
     },
@@ -887,7 +903,7 @@ window.DashboardView = countlyView.extend({
             locationData = countlyLocation.getLocationData({maxCountries:7}),
             sessionDP = countlySession.getSessionDPTotal();
 
-        sessionData["country-data"] = locationData;
+        this.locationData = locationData;
         sessionData["page-title"] = countlyCommon.getDateRange();
         sessionData["usage"] = [
             {
@@ -1030,6 +1046,19 @@ window.DashboardView = countlyView.extend({
 
             self.pageScript();
         });
+    },
+    countryList:function(){
+        var self = this;
+        $("#map-list-right").empty();
+        var country;
+        for(var i = 0; i < self.locationData.length; i++){
+            country = self.locationData[i];
+            $("#map-list-right").append('<div class="map-list-item">'+
+                '<div class="flag" style="background-image:url(\''+countlyGlobal["cdn"]+'images/flags/'+country.code+'.png\');"></div>'+
+                '<div class="country-name">'+country.country+'</div>'+
+                '<div class="total">'+country[self.maps[self.curMap].metric]+'</div>'+
+            '</div>');
+        }
     },
     destroy:function () {
         $("#content-top").html("");
@@ -1435,9 +1464,15 @@ window.LoyaltyView = countlyView.extend({
 window.CountriesView = countlyView.extend({
     cityView: (store.get("countly_location_city")) ? store.get("countly_active_app") : false,
     initialize:function () {
+        this.curMap = "map-list-sessions";
         this.template = Handlebars.compile($("#template-analytics-countries").html());
     },
     beforeRender: function() {
+        this.maps = {
+            "map-list-sessions": {id:'total', label:jQuery.i18n.map["sidebar.analytics.sessions"], type:'number', metric:"t"},
+            "map-list-users": {id:'total', label:jQuery.i18n.map["sidebar.analytics.users"], type:'number', metric:"u"},
+            "map-list-new": {id:'total', label:jQuery.i18n.map["common.table.new-users"], type:'number', metric:"n"}
+        };
         return $.when(countlyUser.initialize(), countlyCity.initialize()).then(function () {});
     },
     drawTable: function() {
@@ -1508,7 +1543,7 @@ window.CountriesView = countlyView.extend({
             store.set("countly_location_city", true);
             $("#toggle-map").addClass("active");
 
-            countlyCity.drawGeoChart({height:450});
+            countlyCity.drawGeoChart({height:450, metric:self.maps[self.curMap]});
             self.refresh(true);
         });
 
@@ -1516,10 +1551,10 @@ window.CountriesView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
 
             if (this.cityView) {
-                countlyCity.drawGeoChart({height:450});
+                countlyCity.drawGeoChart({height:450, metric:self.maps[self.curMap]});
                 $("#toggle-map").addClass("active");
             } else {
-                countlyLocation.drawGeoChart({height:450});
+                countlyLocation.drawGeoChart({height:450, metric:self.maps[self.curMap]});
             }
 
             this.drawTable();
@@ -1532,17 +1567,24 @@ window.CountriesView = countlyView.extend({
             $("#toggle-map").on('click', function () {
                 if ($(this).hasClass("active")) {
                     self.cityView = false;
-                    countlyLocation.drawGeoChart({height:450});
+                    countlyLocation.drawGeoChart({height:450, metric:self.maps[self.curMap]});
                     $(this).removeClass("active");
                     self.refresh(true);
                     store.set("countly_location_city", false);
                 } else {
                     self.cityView = true;
-                    countlyCity.drawGeoChart({height:450});
+                    countlyCity.drawGeoChart({height:450, metric:self.maps[self.curMap]});
                     $(this).addClass("active");
                     self.refresh(true);
                     store.set("countly_location_city", true);
                 }
+            });
+            
+            $(".geo-switch .cly-button-group .icon-button").click(function(){
+                $(".geo-switch .cly-button-group .icon-button").removeClass("active");
+                $(this).addClass("active");
+                self.curMap = $(this).attr("id");
+                countlyLocation.refreshGeoChart(self.maps[self.curMap]);
             });
         }
     },
@@ -1563,10 +1605,10 @@ window.CountriesView = countlyView.extend({
                 var locationData;
                 if (self.cityView) {
                     locationData = countlyCity.getLocationData();
-                    countlyCity.refreshGeoChart();
+                    countlyCity.refreshGeoChart(self.maps[self.curMap]);
                 } else {
                     locationData = countlyLocation.getLocationData();
-                    countlyLocation.refreshGeoChart();
+                    countlyLocation.refreshGeoChart(self.maps[self.curMap]);
                 }
 
                 CountlyHelpers.refreshTable(self.dtable, locationData);

@@ -205,13 +205,21 @@ a:active { color:inherit; }
 		.widget-content .big-numbers .change { right:15px; white-space:nowrap; top:-1px; position:absolute; font:10px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#999; text-shadow:0 1px #FFF; }
 			.big-numbers.active .change { color:#333; }
 
-		.map-list { background-color:#FFF; height:323px; border:1px solid #A2A2A2; }
-			#geo-chart { text-align:center; padding-top:20px; }
-			#geo-chart>div>div { margin:0 auto; }
-			#geo-chart-outer { background-image:url('../images/dashboard/map_dotted_bg.png'); }
-			.map-list #geo-chart-outer { border-radius:7px; }
-			#map-list-right { border-top-right-radius:0; border-bottom-right-radius:0; width:240px; float:right;  height:100%; margin-top:40px; margin-right:42px; }
+		.map-list { background-color:#FFF; height:323px; border:1px solid #A2A2A2; position: relative;}
+			#geo-chart { text-align:center; padding-top:20px;}
+			#geo-chart-outer { background-image:url('../images/dashboard/map_dotted_bg.png'); border-radius:7px;}
+            #geo-chart {margin-left:-360px;}
+            #geo-chart-outer>div {margin-left:50%;}
+            .map-list #geo-chart {margin-left:-376px;}
+            .map-list #geo-chart-outer>div {margin-left:50%; border-radius:7px;}
+			#map-list-right { border-top-right-radius:0; border-bottom-right-radius:0; width:240px; float:right;  height:100%; margin-top:40px; margin-right:42px;}
             #map-list-right + #geo-chart-outer #geo-chart { margin-right:282px; }
+            .geo-switch{position:relative;}
+            .geo-switch .cly-button-group {position: absolute; top:0px; left:0px;}
+            .geo-switch .cly-button-group .icon-button:first-child{border-bottom-left-radius:0; border-top-left-radius:0px; border-left:none;}
+            .geo-switch .cly-button-group .icon-button:last-child{border-top-right-radius:0;}
+            .geo-switch .cly-button-group .icon-button{border-top:none;}
+            .map-list.geo-switch .cly-button-group .icon-button:first-child{border-top-left-radius:7px;}
 			.map-list-item { overflow:hidden; padding:4px 12px; }
 			.map-list-item:hover {}
 			.map-list-item:last-child { border-bottom:none; }

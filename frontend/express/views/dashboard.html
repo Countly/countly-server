@@ -567,11 +567,16 @@
 				</div>
 				{{> date-selector }}
 			</div>
-			<div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="height:495px; background-color:#FFF;">
-				<div style="position:absolute; top:80px; right:30px; z-index:1;">
+			<div class="widget-content geo-switch help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="height:495px; background-color:#FFF;">
+				<div style="position:absolute; top:20px; right:20px; z-index:1;">
 					<a id="toggle-map" class="icon-button light"></a>
 				</div>
-				<div id="geo-chart-outer"><div id="geo-chart" style="margin:0 auto; padding:20px;"></div></div>
+                <div class="cly-button-group">
+                    <div id="map-list-sessions" style="padding: 6px 8px 7px 8px;" class="icon-button light active" data-localize="sidebar.analytics.sessions"></div>
+                    <div id="map-list-users" style="padding: 6px 8px 7px 8px;" class="icon-button light" data-localize="sidebar.analytics.users"></div>
+                    <div id="map-list-new" style="padding: 6px 8px 7px 8px;" class="icon-button light" data-localize="common.table.new-users"></div>
+                </div>
+				<div id="geo-chart-outer"><div><div id="geo-chart"></div></div></div>
 			</div>
 			<div class="widget-footer" style="background-color:#EEEEEE;">
 				<div id="big-numbers-container">
@@ -656,21 +661,14 @@
 			</div>
 			{{/each}}
 		</div>
-		<div class="widget map-list help-zone-vb" data-help-localize="help.dashboard.map" style="float:right; width:100%;">
-			{{#if country-data}}
-			<div id="map-list-right" style="max-height:236px; overflow:hidden;">
-				<div>
-					{{#each country-data}}
-					<div class="map-list-item">
-						<div class="flag" style="background-image:url('<%- cdn %>images/flags/{{this.code}}.png');"></div>
-						<div class="country-name">{{this.country}}</div>
-						<div class="total">{{getShortNumber this.t}}</div>
-					</div>
-					{{/each}}
-				</div>
-			</div>
-			{{/if}}
-			<div id="geo-chart-outer" style="padding-bottom: 8px;"><div id="geo-chart"></div></div>
+		<div class="widget map-list geo-switch help-zone-vb" data-help-localize="help.dashboard.map" style="float:right; width:100%;">
+            <div class="cly-button-group">
+                <div id="map-list-sessions" style="padding: 6px 8px 7px 8px;" class="icon-button light active" data-localize="sidebar.analytics.sessions"></div>
+                <div id="map-list-users" style="padding: 6px 8px 7px 8px;" class="icon-button light" data-localize="sidebar.analytics.users"></div>
+                <div id="map-list-new" style="padding: 6px 8px 7px 8px;" class="icon-button light" data-localize="common.table.new-users"></div>
+            </div>
+			<div id="map-list-right" style="max-height:236px; overflow:hidden;"></div>
+			<div id="geo-chart-outer" style="padding-bottom: 8px;"><div><div id="geo-chart"></div></div></div>
 		</div>
 	</script>
 
