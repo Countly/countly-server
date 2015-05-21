@@ -2337,15 +2337,17 @@ window.ManageAppsView = countlyView.extend({
                             CountlyHelpers.alert(jQuery.i18n.map["management-applications.clear-admin"], "red");
                             return false;
                         } else {
-                            countlySession.reset();
-                            countlyLocation.reset();
-                            countlyCity.reset();
-                            countlyUser.reset();
-                            countlyDevice.reset();
-                            countlyCarrier.reset();
-                            countlyDeviceDetails.reset();
-                            countlyAppVersion.reset();
-                            countlyEvent.reset();
+                            if(period == "all"){
+                                countlySession.reset();
+                                countlyLocation.reset();
+                                countlyCity.reset();
+                                countlyUser.reset();
+                                countlyDevice.reset();
+                                countlyCarrier.reset();
+                                countlyDeviceDetails.reset();
+                                countlyAppVersion.reset();
+                                countlyEvent.reset();
+                            }
                             CountlyHelpers.alert(jQuery.i18n.map["management-applications.clear-success"], "black");
                         }
                     }
