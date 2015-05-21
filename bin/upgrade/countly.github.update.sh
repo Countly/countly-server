@@ -21,10 +21,10 @@ echo "
 
 "
 
-if [[ "$(/usr/sbin/service countly-supervisor status)" =~ "start/running" ]]; then
-  echo "Stopping Countly"
-  stop countly-supervisor
-fi
+# if [[ "$(/usr/sbin/service countly-supervisor status)" =~ "start/running" ]]; then
+  # echo "Stopping Countly"
+  #stop countly-supervisor
+# fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -38,7 +38,9 @@ then
 	pwd
 	echo "Backing up countly directory ($COUNTLY_DIR) to $BACKUP_FILE file"
 
-	tar cjf "$BACKUP_FILE" $(basename $COUNTLY_DIR)
+  # Version with node_modules excluded
+  # tar cjf "$BACKUP_FILE" --anchored --no-wildcards-match-slash --exclude='*/.git' --exclude='*/log' --exclude='*/node_modules' --exclude '*/plugins/*/node_modules' --exclude='*/core' $(basename $COUNTLY_DIR)
+	tar cjf "$BACKUP_FILE" --anchored --no-wildcards-match-slash --exclude='*/.git' --exclude='*/log' --exclude='*/core' $(basename $COUNTLY_DIR)
 fi
 
 if ! type git >/dev/null 2>&1; then
@@ -61,12 +63,16 @@ fi
 
 bash $DIR/../scripts/countly.install.plugins.sh
 
-cd $DIR && grunt dist-all
+cd $DIR/../.. && grunt dist-all
 
 if [ `getent passwd countly`x != 'x' ]; then
   chown -R countly:countly $DIR/../..
 fi
 
-start countly-supervisor
+if [[ "$(/usr/sbin/service countly-supervisor status)" =~ "start/running" ]]; then
+  restart countly-supervisor
+else 
+  start countly-supervisor
+fi
 
 echo "Countly has been successfully updated"
