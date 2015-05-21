@@ -35,6 +35,12 @@ var plugin = {},
 		var appId = ob.appId;
 		common.db.collection('density').remove({'_id': {$regex: appId + ".*"}},function(){});
 	});
+    
+    plugins.register("/i/apps/clear", function(ob){
+		var appId = ob.appId;
+        var ids = ob.ids;
+		common.db.collection('density').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:ids}}]},function(){});
+	});
 }(plugin));
 
 module.exports = plugin;

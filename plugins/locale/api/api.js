@@ -39,6 +39,10 @@ var plugin = {},
 			validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'langs');
 			return true;
 		}
+        else if (params.qstring.method == "langmap") {
+			common.returnOutput(params, langs.languages);
+			return true;
+		}
 		return false;
 	});
 	
@@ -50,6 +54,12 @@ var plugin = {},
 	plugins.register("/i/apps/delete", function(ob){
 		var appId = ob.appId;
 		common.db.collection('langs').remove({'_id': {$regex: appId + ".*"}},function(){});
+	});
+    
+    plugins.register("/i/apps/clear", function(ob){
+		var appId = ob.appId;
+        var ids = ob.ids;
+		common.db.collection('langs').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:ids}}]},function(){});
 	});
 }(plugin));
 

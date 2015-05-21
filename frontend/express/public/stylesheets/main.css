@@ -205,13 +205,21 @@ a:active { color:inherit; }
 		.widget-content .big-numbers .change { right:15px; white-space:nowrap; top:-1px; position:absolute; font:10px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#999; text-shadow:0 1px #FFF; }
 			.big-numbers.active .change { color:#333; }
 
-		.map-list { background-color:#FFF; height:323px; border:1px solid #A2A2A2; }
-			#geo-chart { text-align:center; padding-top:20px; }
-			#geo-chart>div>div { margin:0 auto; }
-			#geo-chart-outer { background-image:url('../images/dashboard/map_dotted_bg.png'); }
-			.map-list #geo-chart-outer { border-radius:7px; }
-			#map-list-right { border-top-right-radius:0; border-bottom-right-radius:0; width:240px; float:right;  height:100%; margin-top:40px; margin-right:42px; }
+		.map-list { background-color:#FFF; height:323px; border:1px solid #A2A2A2; position: relative;}
+			#geo-chart { text-align:center; padding-top:20px;}
+			#geo-chart-outer { background-image:url('../images/dashboard/map_dotted_bg.png'); border-radius:7px;}
+            #geo-chart {margin-left:-360px;}
+            #geo-chart-outer>div {margin-left:50%;}
+            .map-list #geo-chart {margin-left:-376px;}
+            .map-list #geo-chart-outer>div {margin-left:50%; border-radius:7px;}
+			#map-list-right { border-top-right-radius:0; border-bottom-right-radius:0; width:240px; float:right;  height:100%; margin-top:40px; margin-right:42px;}
             #map-list-right + #geo-chart-outer #geo-chart { margin-right:282px; }
+            .geo-switch{position:relative;}
+            .geo-switch .cly-button-group {position: absolute; top:0px; left:0px;}
+            .geo-switch .cly-button-group .icon-button:first-child{border-bottom-left-radius:0; border-top-left-radius:0px; border-left:none;}
+            .geo-switch .cly-button-group .icon-button:last-child{border-top-right-radius:0;}
+            .geo-switch .cly-button-group .icon-button{border-top:none;}
+            .map-list.geo-switch .cly-button-group .icon-button:first-child{border-top-left-radius:7px;}
 			.map-list-item { overflow:hidden; padding:4px 12px; }
 			.map-list-item:hover {}
 			.map-list-item:last-child { border-bottom:none; }
@@ -673,9 +681,9 @@ table.events-table { width:100%; padding:0; margin:0; }
 	.events-table  thead tr { background-color:transparent; }
 	.events-table  td { padding:5px 10px; padding-bottom:7px; margin:0; border-bottom:1px solid #DDD; border-top:1px solid #fff; border-left:1px solid #ccc; color:#6B6B6B; }
 	.events-table  td:first-child { border-left:none; font-weight:normal; }
-    	.events-table  td:nth-child(4) { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:170px; max-width:170px; }
+    	.events-table  td:nth-child(5) { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:170px; max-width:170px; }
 	.events-table  tr { border-bottom:1px solid #DDD; border-top:1px solid #fff; font:16px Ubuntu,Helvetica,sans-serif; line-height:111%; background-color:#fff}
-	.events-table  td:nth-child(4) input[type=text] { width:170px; }
+	.events-table  td:nth-child(5) input[type=text] { width:170px; }
 	.events-table  tr input[type=text] { border:none; outline:none; width:130px; }
 	.events-table  tr:nth-child(even) input[type=text] { background-color:#F9F9F9}
 	.events-table  tr:first-child { border-top:none; }
@@ -697,8 +705,9 @@ table.events-table { width:100%; padding:0; margin:0; }
 .event-numbers .big-numbers:nth-child(1).selected .color { box-shadow: 0 1px 20px 0 #88BBC8; }
 .event-numbers .big-numbers:nth-child(2).selected .color { box-shadow: 0 1px 20px 0 #ED8662; }
 
-.delete-event { color:#D67678; cursor:pointer; }
-.delete-event:hover { color:#D63E40; }
+.delete-event, .delete-event-selected { color:#D67678; cursor:pointer; font-size:16px;}
+.delete-event:hover, .delete-event-selected:hover { color:#D63E40; }
+
 
 /* EVENTS END */
 
@@ -815,6 +824,11 @@ table.events-table { width:100%; padding:0; margin:0; }
 .required-border { border-color:#B94A48 !important; }
 
 #graph-tooltip-title { color:#CCC; margin-right:7px; }
+
+.options {display: none; background-color: #E0E0E0; position: absolute; top:50px; right: 0px; list-style: none; margin:0; padding:0; padding:3px;border: 1px solid #979797; border-top: none;}
+.options li{font:14px Ubuntu,Helvetica,sans-serif; color: #666; padding: 2px; padding-right: 5px; cursor:pointer;}
+.options li:hover{background-color: #FFF; color: #666;}
+.options li span {line-height:23px;}
 	
 /* ALL APPS */
 .allapps {margin-top: -16px;}

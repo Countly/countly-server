@@ -57,15 +57,15 @@
         }
 
         if (google.visualization) {
-            draw();
+            draw(options.metric);
         } else {
             google.load('visualization', '1', {'packages':['geochart'], callback:draw});
         }
     };
 
-    countlyLocation.refreshGeoChart = function () {
+    countlyLocation.refreshGeoChart = function (metric) {
         if (google.visualization) {
-            reDraw();
+            reDraw(metric);
         } else {
             google.load('visualization', '1', {'packages':['geochart'], callback:draw});
         }
@@ -139,7 +139,8 @@
     };
 
     //Private Methods
-    function draw() {
+    function draw(ob) {
+        ob = ob || {id:'total', label:jQuery.i18n.map["sidebar.analytics.sessions"], type:'number', metric:"t"};
         var chartData = {cols:[], rows:[]};
 
         _chart = new google.visualization.GeoChart(document.getElementById(_chartElementId));
@@ -151,23 +152,25 @@
                     return countlyLocation.getCountryName(rangeArr);
                 }
             },
-            { "name":"t" }
+            { "name":"t" },
+            { "name":"u" },
+            { "name":"n" }
         ]);
 
         chartData.cols = [
-            {id:'country', label:jQuery.i18n.map["countries.table.country"], type:'string'},
-            {id:'total', label:jQuery.i18n.map["common.total"], type:'number'}
+            {id:'country', label:jQuery.i18n.map["countries.table.country"], type:'string'}
         ];
+        chartData.cols.push(ob);
         chartData.rows = _.map(tt.chartData, function (value, key, list) {
             if (value.country == "European Union" || value.country == "Unknown") {
                 return {c:[
                     {v:""},
-                    {v:value["t"]}
+                    {v:value[ob.metric]}
                 ]};
             }
             return {c:[
                 {v:value.country},
-                {v:value["t"]}
+                {v:value[ob.metric]}
             ]};
         });
 
@@ -195,7 +198,8 @@
         _chart.draw(_dataTable, _chartOptions);
     }
 
-    function reDraw() {
+    function reDraw(ob) {
+        ob = ob || {id:'total', label:jQuery.i18n.map["sidebar.analytics.sessions"], type:'number', metric:"t"};
         var chartData = {cols:[], rows:[]};
 
         var tt = countlyCommon.extractTwoLevelData(_locationsDb, _countries, countlyLocation.clearLocationObject, [
@@ -205,23 +209,25 @@
                     return countlyLocation.getCountryName(rangeArr);
                 }
             },
-            { "name":"t" }
+            { "name":"t" },
+            { "name":"u" },
+            { "name":"n" }
         ]);
 
         chartData.cols = [
-            {id:'country', label:jQuery.i18n.map["countries.table.country"], type:'string'},
-            {id:'total', label:jQuery.i18n.map["common.total"], type:'number'}
+            {id:'country', label:jQuery.i18n.map["countries.table.country"], type:'string'}
         ];
+        chartData.cols.push(ob);
         chartData.rows = _.map(tt.chartData, function (value, key, list) {
             if (value.country == "European Union" || value.country == "Unknown") {
                 return {c:[
                     {v:""},
-                    {v:value["t"]}
+                    {v:value[ob.metric]}
                 ]};
             }
             return {c:[
                 {v:value.country},
-                {v:value["t"]}
+                {v:value[ob.metric]}
             ]};
         });
 

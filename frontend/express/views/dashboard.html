@@ -567,11 +567,16 @@
 				</div>
 				{{> date-selector }}
 			</div>
-			<div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="height:495px; background-color:#FFF;">
-				<div style="position:absolute; top:80px; right:30px; z-index:1;">
+			<div class="widget-content geo-switch help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="height:495px; background-color:#FFF;">
+				<div style="position:absolute; top:20px; right:20px; z-index:1;">
 					<a id="toggle-map" class="icon-button light"></a>
 				</div>
-				<div id="geo-chart-outer"><div id="geo-chart" style="margin:0 auto; padding:20px;"></div></div>
+                <div class="cly-button-group">
+                    <div id="map-list-sessions" style="padding: 6px 8px 7px 8px;" class="icon-button light active" data-localize="sidebar.analytics.sessions"></div>
+                    <div id="map-list-users" style="padding: 6px 8px 7px 8px;" class="icon-button light" data-localize="sidebar.analytics.users"></div>
+                    <div id="map-list-new" style="padding: 6px 8px 7px 8px;" class="icon-button light" data-localize="common.table.new-users"></div>
+                </div>
+				<div id="geo-chart-outer"><div><div id="geo-chart"></div></div></div>
 			</div>
 			<div class="widget-footer" style="background-color:#EEEEEE;">
 				<div id="big-numbers-container">
@@ -656,21 +661,14 @@
 			</div>
 			{{/each}}
 		</div>
-		<div class="widget map-list help-zone-vb" data-help-localize="help.dashboard.map" style="float:right; width:100%;">
-			{{#if country-data}}
-			<div id="map-list-right" style="max-height:236px; overflow:hidden;">
-				<div>
-					{{#each country-data}}
-					<div class="map-list-item">
-						<div class="flag" style="background-image:url('<%- cdn %>images/flags/{{this.code}}.png');"></div>
-						<div class="country-name">{{this.country}}</div>
-						<div class="total">{{getShortNumber this.t}}</div>
-					</div>
-					{{/each}}
-				</div>
-			</div>
-			{{/if}}
-			<div id="geo-chart-outer" style="padding-bottom: 8px;"><div id="geo-chart"></div></div>
+		<div class="widget map-list geo-switch help-zone-vb" data-help-localize="help.dashboard.map" style="float:right; width:100%;">
+            <div class="cly-button-group">
+                <div id="map-list-sessions" style="padding: 6px 8px 7px 8px;" class="icon-button light active" data-localize="sidebar.analytics.sessions"></div>
+                <div id="map-list-users" style="padding: 6px 8px 7px 8px;" class="icon-button light" data-localize="sidebar.analytics.users"></div>
+                <div id="map-list-new" style="padding: 6px 8px 7px 8px;" class="icon-button light" data-localize="common.table.new-users"></div>
+            </div>
+			<div id="map-list-right" style="max-height:236px; overflow:hidden;"></div>
+			<div id="geo-chart-outer" style="padding-bottom: 8px;"><div><div id="geo-chart"></div></div></div>
 		</div>
 	</script>
 
@@ -805,6 +803,14 @@
                             <div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
                             <div class="text" data-localize="common.delete"></div>
                         </div>
+                        <ul id="clear-data" class="options">
+                            <li id="clear-all"><span data-localize="management-applications.clear-all-data"></span></li>
+                            <li id="clear-1month"><span data-localize="management-applications.clear-1month-data"></span></li>
+                            <li id="clear-3month"><span data-localize="management-applications.clear-3month-data"></span></li>
+                            <li id="clear-6month"><span data-localize="management-applications.clear-6month-data"></span></li>
+                            <li id="clear-1year"><span data-localize="management-applications.clear-1year-data"></span></li>
+                            <li id="clear-2year"><span data-localize="management-applications.clear-2year-data"></span></li>
+                        </ul>
 					</div>
 				</div>
 				<div class="app-details">
@@ -948,6 +954,7 @@
                     <thead>
                     <tr>
                         <th></th>
+                        <th style="text-align:center;"><i class="fa fa-trash delete-event-selected"></i></th>
                         <th></th>
                         <th data-localize="events.edit.event-key"></th>
                         <th data-localize="events.edit.event-name"></th>
@@ -959,6 +966,7 @@
                     {{#eachOfObjectValue event-map}}
                     <tr>
                         <td style="text-align:center;"><i class="fa fa-reorder event-order"></i></td>
+                        <td style="text-align:center;"><input type="checkbox" class="delete-event-check" data-event-key="{{this.key}}"/></td>
                         <td style="text-align:center;"><i class="fa fa-trash delete-event" data-event-key="{{this.key}}"></i></td>
                         <td class="event-key">{{this.key}}</td>
                         <td><input class="event-name" type="text" placeholder="Event name"  data-localize="events.edit.event-name" value="{{this.name}}"/></td>
