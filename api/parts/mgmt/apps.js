@@ -1,5 +1,6 @@
 var appsApi = {},
     common = require('./../../utils/common.js'),
+    moment = require('moment'),
     crypto = require('crypto'),
 	plugins = require('../../../plugins/pluginManager.js'),
     fs = require('fs');
@@ -195,7 +196,7 @@ var appsApi = {},
             return false;
         }
 		common.db.collection('apps').findOne({'_id': common.db.ObjectID(appId)}, function(err, app){
-			if(!err && app)
+			if(!err && app){
 				if (params.member.global_admin) {
 					deleteAppData(appId, false, params, app);
 					common.returnMessage(params, 200, 'Success');
@@ -209,12 +210,22 @@ var appsApi = {},
 						}
 					});
 				}
+            }
 		});
 
         return true;
     };
-
+    
     function deleteAppData(appId, fromAppDelete, params, app) {
+        if(fromAppDelete || !params.qstring.args.period || params.qstring.args.period == "all"){
+            deleteAllAppData(appId, fromAppDelete, params, app);
+        }
+        else{
+            deletePeriodAppData(appId, fromAppDelete, params, app);
+        }
+    }
+
+    function deleteAllAppData(appId, fromAppDelete, params, app) {
         common.db.collection('users').remove({'_id': {$regex: appId + ".*"}},function(){});
         common.db.collection('carriers').remove({'_id': {$regex: appId + ".*"}},function(){});
         common.db.collection('devices').remove({'_id': {$regex: appId + ".*"}},function(){});
@@ -248,6 +259,60 @@ var appsApi = {},
         if (fromAppDelete) {
             common.db.collection('graph_notes').remove({'_id': common.db.ObjectID(appId)},function(){});
         }
+    };
+    
+    function deletePeriodAppData(appId, fromAppDelete, params, app) {
+        var periods = {
+            "1month":1,
+            "3month":3,
+            "6month":6,
+            "1year":12,
+            "2year":24
+        };
+        var back = periods[params.qstring.args.period];
+        var skip = {};
+        var dates = {};
+        var now = moment();
+        skip[appId+"_"+now.format('YYYY:M')] = true;
+        dates[now.format('YYYY:M')] = true;
+        for(var i = 0; i < back; i++){
+            skip[appId+"_"+now.subtract("months", 1).format('YYYY:M')] = true;
+            skip[appId+"_"+now.format('YYYY')+":0"] = true;
+            dates[now.format('YYYY:M')] = true;
+            dates[now.format('YYYY')+":0"] = true;
+        }
+        skip = Object.keys(skip);
+        dates = Object.keys(dates);
+        common.db.collection('users').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:skip}}]},function(){});
+        common.db.collection('carriers').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:skip}}]},function(){});
+        common.db.collection('devices').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:skip}}]},function(){});
+        common.db.collection('device_details').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:skip}}]},function(){});
+        common.db.collection('cities').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:skip}}]},function(){});
+        
+        common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
+            if (!err && events && events.list) {
+                for (var i = 0; i < events.list.length; i++) {
+                    var segments = [];
+                    
+                    if(events.list[i] && events.segments && events.segments[events.list[i]])
+                        segments = events.segments[events.list[i]];
+                    
+                    segments.push("no-segment");
+                    console.log(segments);
+                    console.log(dates);
+                    var docs = [];
+                    for(var j = 0; j < segments.length; j++){
+                        for(var k = 0; k < dates.length; k++){
+                            docs.push(segments[j]+"_"+dates[k]);
+                        }
+                    }
+                    var collectionNameWoPrefix = crypto.createHash('sha1').update(events.list[i] + appId).digest('hex');
+                    common.db.collection("events" + collectionNameWoPrefix).remove({'_id': {$nin:docs}},function(){});
+                }
+            }
+        });
+        
+        plugins.dispatch("/i/apps/clear", {params:params, appId:appId, data:app, moment:now, dates:dates, ids:skip});
     }
 
     function packApps(apps) {

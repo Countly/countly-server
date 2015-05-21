@@ -2301,6 +2301,18 @@ window.ManageAppsView = countlyView.extend({
         initCountrySelect("#app-add-timezone");
 
         $("#clear-app-data").click(function () {
+            if ($(this).hasClass("active")){
+                $(this).removeClass("active");
+                $(".options").slideUp();
+            }
+            else{
+                $(this).addClass("active")
+                $(".options").slideDown();
+            }
+        });
+        
+        $("#clear-data.options li").click(function(){
+            var period = $(this).attr("id").replace("clear-", "");
             CountlyHelpers.confirm(jQuery.i18n.map["management-applications.clear-confirm"], "red", function (result) {
                 if (!result) {
                     return true;
@@ -2313,7 +2325,8 @@ window.ManageAppsView = countlyView.extend({
                     url:countlyCommon.API_PARTS.apps.w + '/reset',
                     data:{
                         args:JSON.stringify({
-                            app_id:appId
+                            app_id:appId,
+                            period:period
                         }),
                         api_key:countlyGlobal['member'].api_key
                     },
@@ -3453,7 +3466,7 @@ var AppRouter = Backbone.Router.extend({
                     if(elem.parents("#app-nav").length)
                         $("#app-tooltip").css("margin-left", "21px");
                     else
-                        $("#app-tooltip").css("margin-left", "3px");
+                        $("#app-tooltip").css({"margin-left":"3px", "padding-left":"1px"});
                     $("#app-tooltip").html(elem.clone());
                     $("#app-tooltip .app-container").removeClass("active");
                     $("#app-tooltip").css(elem.offset());
@@ -3461,6 +3474,7 @@ var AppRouter = Backbone.Router.extend({
                     $("#app-tooltip").show();
                     $("#app-tooltip").bind("click", function(){
                         elem.trigger("click");
+                        elem.addClass("active");
                     });
                 }
             });
