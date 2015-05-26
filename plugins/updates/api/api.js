@@ -7,11 +7,12 @@ var plugin = {},
 
 (function () {
 	function updateFromGithub(update) {
+		console.log(path.join(__dirname, '../../..'));
 		cp.exec('sudo ./bin/upgrade/countly.github.update.sh > ./log/upgrade_github-' + update.id + '_' + (new Date()).toISOString() + '.log 2>&1', {cwd: path.join(__dirname, '../../..')}, function(error, stdout, stderr) {
 			console.log('Done updating from github with %j / %j', error, stdout);
 			
 			if (error) {
-				updates[update.key].error = error;
+				updates[update.key].error = error.toString();
 				console.log('error: %j', error);
 			} else if (stderr){
 				updates[update.key].error = stderr.toString();
