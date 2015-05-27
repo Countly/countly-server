@@ -253,6 +253,8 @@ var PushPopup = function(message, duplicate) {
 
     var content = dialog.find('.content');
 
+    app.localize(content);
+
     // View, Create, or Duplicate
     var isView = message._id && !duplicate;
     if (isView) {

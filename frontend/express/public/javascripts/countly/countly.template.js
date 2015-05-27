@@ -728,7 +728,7 @@ $.extend(Template.prototype, {
         });
 
         $("#overlay").fadeIn();
-        dialog.fadeIn();
+        dialog.fadeIn(app.tipsify.bind(app, $("#help-toggle").hasClass("active"), dialog));
     }
 	
 	function changeDialogHeight(dialog, height, animate) {
@@ -3674,36 +3674,21 @@ var AppRouter = Backbone.Router.extend({
                 CountlyHelpers.alert(jQuery.i18n.map["help.help-mode-welcome"], "black");
             });
             $(".help-toggle, #help-toggle").click(function (e) {
-
-                $('.help-zone-vb').tipsy({gravity:$.fn.tipsy.autoNS, trigger:'manual', title:function () {
-                    return ($(this).data("help")) ? $(this).data("help") : "";
-                }, fade:true, offset:5, cssClass:'yellow', opacity:1, html:true});
-                $('.help-zone-vs').tipsy({gravity:$.fn.tipsy.autoNS, trigger:'manual', title:function () {
-                    return ($(this).data("help")) ? $(this).data("help") : "";
-                }, fade:true, offset:5, cssClass:'yellow narrow', opacity:1, html:true});
-
+                e.stopPropagation();
                 $("#help-toggle").toggleClass("active");
+
+                app.tipsify($("#help-toggle").hasClass("active"));
+
                 if ($("#help-toggle").hasClass("active")) {
                     help();
                     $.idleTimer('destroy');
                     clearInterval(self.refreshActiveView);
-
-                    $(".help-zone-vs, .help-zone-vb").hover(
-                        function () {
-                            $(this).tipsy("show");
-                        },
-                        function () {
-                            $(this).tipsy("hide");
-                        }
-                    );
                 } else {
                     self.refreshActiveView = setInterval(function () {
                         self.activeView.refresh();
                     }, countlyCommon.DASHBOARD_REFRESH_MS);
                     $.idleTimer(countlyCommon.DASHBOARD_IDLE_MS);
-                    $(".help-zone-vs, .help-zone-vb").unbind('mouseenter mouseleave');
                 }
-                e.stopPropagation();
             });
 
             $("#user-logout").click(function () {
@@ -4305,7 +4290,7 @@ var AppRouter = Backbone.Router.extend({
 
         $.fn.dataTableExt.sErrMode = 'throw';
     },
-    localize:function () {
+    localize:function (el) {
 
         var helpers = {
             onlyFirstUpper:function (str) {
@@ -4317,7 +4302,7 @@ var AppRouter = Backbone.Router.extend({
         };
 
         // translate help module
-        $("[data-help-localize]").each(function () {
+        (el ? el.find('[data-help-localize]') : $("[data-help-localize]")).each(function () {
             var elem = $(this);
             if (elem.data("help-localize") != undefined) {
                 elem.data("help", jQuery.i18n.map[elem.data("help-localize")]);
@@ -4325,7 +4310,7 @@ var AppRouter = Backbone.Router.extend({
         });
 
         // translate dashboard
-        $("[data-localize]").each(function () {
+        (el ? el.find('[data-localize]') : $("[data-localize]")).each(function () {
             var elem = $(this),
                 toLocal = elem.data("localize").split("!"),
                 localizedValue = "";
@@ -4348,6 +4333,30 @@ var AppRouter = Backbone.Router.extend({
                 elem.text(localizedValue);
             }
         });
+    },
+    tipsify: function(enable, el){
+        var vs = el ? el.find('.help-zone-vs') : $('.help-zone-vs'),
+            vb = el ? el.find('.help-zone-vb') : $('.help-zone-vb'),
+            both = el ? el.find('.help-zone-vs, .help-zone-vb') : $(".help-zone-vs, .help-zone-vb");
+
+        vb.tipsy({gravity:$.fn.tipsy.autoNS, trigger:'manual', title:function () {
+            return $(this).data("help") || "";
+        }, fade:true, offset:5, cssClass:'yellow', opacity:1, html:true});
+        vs.tipsy({gravity:$.fn.tipsy.autoNS, trigger:'manual', title:function () {
+            return $(this).data("help") || "";
+        }, fade:true, offset:5, cssClass:'yellow narrow', opacity:1, html:true});
+
+        if (enable) {
+            both.off('mouseenter mouseleave')
+                .on('mouseenter', function () {
+                    $(this).tipsy("show");
+                })
+                .on('mouseleave', function () {
+                    $(this).tipsy("hide");
+                });
+        } else {
+           both.off('mouseenter mouseleave');
+        }
     },
 	addPageScript:function(view, callback){
 		if(!this.pageScripts[view])
