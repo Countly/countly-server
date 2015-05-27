@@ -545,7 +545,7 @@ var pushly          = require('pushly')(),
                 }
             }
 
-            query.app = {$in: ids};
+            query.apps = {$in: ids};
         }
 
         /*
