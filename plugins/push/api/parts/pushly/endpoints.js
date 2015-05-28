@@ -106,7 +106,7 @@ var pushly          = require('pushly')(),
 
                 if (ask() === 'such no power much sad') {
                     console.log('====== Much sad still no luck, trying again in a second starting from %j', skip);
-                    setTimeout(this.stream.bind(message, query, callback, ask, skip), 1000);
+                    setTimeout(api.pushlyCallbacks.stream.bind(api.pushlyCallbacks, message, query, callback, ask, skip), 1000);
                     return;
                 }
 
@@ -125,7 +125,7 @@ var pushly          = require('pushly')(),
                             if (callback(common.dot(user, field), user[common.dbUserMap.lang]) === 'such no power much sad') {
                                 console.log('====== Much sad, trying again in a second starting from %j', skip);
                                 skipping = true;
-                                setTimeout(this.stream.bind(message, query, callback, ask, skip), 1000);
+                                setTimeout(api.pushlyCallbacks.stream.bind(api.pushlyCallbacks, message, query, callback, ask, skip), 1000);
                             }
                         } else {
                             if (count === 0 && skip === 0) {
@@ -133,7 +133,7 @@ var pushly          = require('pushly')(),
                                 pushly.abort(message);
                             } else if (count !== 0) {
                                 console.log('====== Going to stream next batch starting from %j', skip);
-                                this.stream(message, query, callback, ask, skip);
+                                api.pushlyCallbacks.stream(message, query, callback, ask, skip);
                             }
                         }
                     });
