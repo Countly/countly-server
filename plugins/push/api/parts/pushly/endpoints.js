@@ -75,8 +75,10 @@ var pushly          = require('pushly')(),
 
                 common.db.collection('app_users' + query.appId).find(finalQuery).count(callback);
             },
-            stream: function(message, query, callback){
+            stream: function(message, query, callback, ask, skip){
                 var fields = appUsersFields(message), filter = {}, count = 0, i, finalQuery = {$or: []}, $or = finalQuery.$or;
+
+                skip = skip || 0;
 
                 for (var any in query.conditions) {
                     finalQuery = {$and: [_.extend({}, query.conditions), {$or: []}]};
@@ -102,27 +104,40 @@ var pushly          = require('pushly')(),
                     filter[common.dbUserMap.lang] = 1;
                 }
 
-                common.db.collection('app_users' + query.appId).find(finalQuery, filter).batchSize(common.config.push ? common.config.push.batch : 100).each(function(err, user){
-                    if (err) console.log(err);
-                    else if (user) {
+                if (ask() === 'such no power much sad') {
+                    console.log('====== Much sad still no luck, trying again in a second starting from %j', skip);
+                    setTimeout(this.stream.bind(message, query, callback, ask, skip), 1000);
+                    return;
+                }
 
-                        count++;
-                        callback(common.dot(user, field), user[common.dbUserMap.lang]);
+                console.log('====== Streaming skipping %j', skip);
 
-                        // for (var i in fields) {
-                        //     if (common.dot(user, fields[i])) {
-                        //         count++;
-                        //         callback(common.dot(user, fields[i]), user[common.dbUserMap.lang]);
-                        //     }
-                        // }
+                var skipping = false;
+                // common.db.collection('app_users' + query.appId).find(finalQuery).count(function(err, total){
+                    common.db.collection('app_users' + query.appId).find(finalQuery, filter).skip(skip).limit(10000).each(function(err, user){
+                        if (err) console.log(err);
+                        else if (skipping) {
+                            return;
+                        } else if (user) {
+                            count++;
+                            skip++;
 
-                    } else {
-                        if (count === 0) {
-                            console.log('Aborting message because no users is found');
-                            pushly.abort(message);
+                            if (callback(common.dot(user, field), user[common.dbUserMap.lang]) === 'such no power much sad') {
+                                console.log('====== Much sad, trying again in a second starting from %j', skip);
+                                skipping = true;
+                                setTimeout(this.stream.bind(message, query, callback, ask, skip), 1000);
+                            }
+                        } else {
+                            if (count === 0 && skip === 0) {
+                                console.log('Aborting message because no users found');
+                                pushly.abort(message);
+                            } else if (count !== 0) {
+                                console.log('====== Going to stream next batch starting from %j', skip);
+                                this.stream(message, query, callback, ask, skip);
+                            }
                         }
-                    }
-                });
+                    });
+                // });
             },
             onInvalidToken: function(message, tokens, error) {
                 var id = messageId(message), app = appId(message);
