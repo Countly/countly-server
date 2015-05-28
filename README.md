@@ -1,7 +1,7 @@
 #Countly [![Build Status](https://api.travis-ci.org/Countly/countly-server.png)](https://travis-ci.org/Countly/countly-server) [![Gitter chat](https://badges.gitter.im/CountlyAnalytics/countly-server.png)](https://gitter.im/CountlyAnalytics/countly)
 
 
-**We're hiring:** Countly is looking for full stack node.js developers to work on its core platform. [Click this link for job description](https://count.ly/full-stack-node-js-developer/)
+**HEY! We're hiring:** Countly is looking for full stack node.js developers to work on its core platform. [Click this link for job description](https://count.ly/full-stack-node-js-developer/)
 
 **Note:** [A bug with installer](https://github.com/Countly/countly-server/issues/143) prevents Countly running under Ubuntu 15.04. Please use Ubuntu 13 or 14 series for now.
 
@@ -34,7 +34,14 @@ We develop and test Countly on Ubuntu with MongoDB, Node.js and nginx. Installat
 Countly has a well defined API, that reads from or writes to Node.js. Dashboard is built using this API, so it's possible to fetch any kind of information from Node process directly using Countly API. For those who are interested with building their own dashboard; important files are `frontend/express/app.js` (Countly dashboard that runs on Express server), `frontend/express/public/javascripts/countly` (Contains seperate helper js files for each data visualization),  `countly.session.js` (responsible for calculating session related metrics) and `api/api.js`, which is Countly write and read API. 
 
 ##How can I help you with your efforts?
-See our section on [how to contribute to Countly](https://github.com/Countly/countly-server/blob/master/CONTRIBUTING.md)
+
+1. Fork this repo
+2. Create your feature branch (`git checkout -b my-new-super-feature`)
+3. Commit your changes (`git commit -am 'Add some cool feature'`)
+4. Push to the branch (`git push origin my-new-super-feature`)
+5. Create a new pull request
+
+Also, you are encouraged to read an extended contribution section on [how to contribute to Countly](https://github.com/Countly/countly-server/blob/master/CONTRIBUTING.md)
 
 ##Links
 
@@ -42,3 +49,4 @@ See our section on [how to contribute to Countly](https://github.com/Countly/cou
 * [Countly support](http://support.count.ly)
 * [Documentation & API reference guide](http://resources.count.ly)
 * [Countly Enterprise & Cloud Edition](https://count.ly/compare)
+* [Extended features of Countly Enterprise Edition](https://count.ly/enterprise-edition-features)
