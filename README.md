@@ -1,7 +1,7 @@
 #Countly [![Build Status](https://api.travis-ci.org/Countly/countly-server.png)](https://travis-ci.org/Countly/countly-server) [![Gitter chat](https://badges.gitter.im/CountlyAnalytics/countly-server.png)](https://gitter.im/CountlyAnalytics/countly)
 
 
-**We're hiring:** Countly is looking for full stack node.js developers to work on its core platform. [Click this link for job description](https://count.ly/full-stack-node-js-developer/)
+**HEY! We're hiring:** Countly is looking for full stack node.js developers to work on its core platform. [Click this link for job description](https://count.ly/full-stack-node-js-developer/)
 
 **Note:** [A bug with installer](https://github.com/Countly/countly-server/issues/143) prevents Countly running under Ubuntu 15.04. Please use Ubuntu 13 or 14 series for now.
 
@@ -50,4 +50,3 @@ Also, you are encouraged to read an extended contribution section on [how to con
 * [Documentation & API reference guide](http://resources.count.ly)
 * [Countly Enterprise & Cloud Edition](https://count.ly/compare)
 * [Extended features of Countly Enterprise Edition](https://count.ly/enterprise-edition-features)
-* 
