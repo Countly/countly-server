@@ -8,7 +8,7 @@ Countly is a big project benefiting from plugin support to make contributions ea
 * If you know Java, you can contribute to [Countly Android SDK](https://github.com/countly/countly-sdk-android). 
 * If you know Objective-C, you can contribute to [Countly iOS SDK](https://github.com/countly/countly-sdk-ios). 
 * If you know any other language, you can start writing your own SDK and help others use Countly as a backend. 
-[Here's a list of SDKs that Countly supports](https://count.ly/resources/source/download-sdk).
+[Here's a list of SDKs that Countly supports](http://resources.count.ly/v1.0/docs/downloading-sdks).
 
 ## Contribution areas 
 
