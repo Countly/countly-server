@@ -42,6 +42,10 @@ Countly has a well defined API, that reads from or writes to Node.js. Dashboard 
 
 Also, you are encouraged to read an extended contribution section on [how to contribute to Countly](https://github.com/Countly/countly-server/blob/master/CONTRIBUTING.md)
 
+And, if you like download and use Countly, [why not use one of our badges](https://count.ly/brand-assets/) and give a link back to us, so others know about this wonderful platform? 
+
+![Light badge](https://count.ly/wp-content/uploads/2014/10/countly_badge_5.png)  ![Dark badge](https://count.ly/wp-content/uploads/2014/10/countly_badge_6.png)
+
 ##Links
 
 * [Countly web page](http://count.ly)
