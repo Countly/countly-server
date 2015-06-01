@@ -123,7 +123,7 @@ window.MessagingListView = countlyView.extend({
                     } else {
                         return '<span data-localize="push.message.status.' + d.status + '"></span>';
                     }
-                },
+                }, "sTitle": jQuery.i18n.map["push.table.status"] },
                 { "mData": "local.created", sType:"date", "sTitle": jQuery.i18n.map["push.table.created"] },
                 { "mData": "local", sType:"string", "sTitle": jQuery.i18n.map["push.table.sent-scheduled"], mRender: function(local){
                     return local.sent ? local.sent : local.date;
