@@ -642,13 +642,20 @@ var PushPopup = function(message, duplicate) {
             if ('default' in message.usedLocales) {
                 ul.append(li(Math.round(100 * message.usedLocales['default']), 'default', jQuery.i18n.map["push.locale.default"]).addClass('selected'));
             }
-            for (var locale in message.usedLocales) if (locale !== 'default') {
-                ul.append(li(Math.round(100 * message.usedLocales[locale]), locale, (languages[locale] || '').englishName));
+
+            var sortable = [], locale;
+            for (locale in message.usedLocales) if (locale !== 'default') {
+                sortable.push([locale, message.usedLocales[locale]]);
+            }
+            sortable.sort(function(a, b) { return a[1] - b[1]; });
+
+            for (var i in sortable) {
+                ul.append(li(Math.round(100 * sortable[i][1]), sortable[i][0], (languages[sortable[i][0]] || '').englishName));
             }
 
             var def;
             if ('default' in message.usedLocales) def = 'default';
-            else for (var k in message.usedLocales) { def = k; break; }
+            else for (var k in sortable) { def = sortable[k][0]; break; }
             setMessagePerLocale(def);
         }
 
@@ -706,6 +713,8 @@ var PushPopup = function(message, duplicate) {
         if (message.sound) {
             content.find('.extras .extra-sound-check').attr('checked', 'checked');
             content.find('.extras .extra-sound').val(message.duplicate.sound);
+        } else {
+            content.find('.extras .extra-sound-check').removeAttr('checked');
         }
         if (message.badge) {
             content.find('.extras .extra-badge-check').attr('checked', 'checked');
