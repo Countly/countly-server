@@ -30,4 +30,15 @@ Before starting, you may want to check Github's guide on [contributing open sour
 All translations take place on [Transifex Countly page](transifex.com/projects/p/countly). Please check if your language 
 is not there, or has a small percentage of translation. Create your account and apply to be a translator. 
 
-## 
+## Add a badge to your site
+
+If you like Countly, [why not use one of our badges](https://count.ly/brand-assets/) and give a link back to us, so others know about this wonderful platform? 
+
+### Small badges
+
+![Light badge](https://count.ly/wp-content/uploads/2014/10/countly_badge_5.png)  ![Dark badge](https://count.ly/wp-content/uploads/2014/10/countly_badge_6.png)
+
+### Big badges
+
+![Badge 1](https://count.ly/wp-content/uploads/2014/10/countly_badge_1.png) ![Badge 2](https://count.ly/wp-content/uploads/2014/10/countly_badge_2.png) ![Badge 3](https://count.ly/wp-content/uploads/2014/10/countly_badge_3.png) ![Badge 4](https://count.ly/wp-content/uploads/2014/10/countly_badge_4.png)
+
