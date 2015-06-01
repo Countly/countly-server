@@ -124,7 +124,7 @@ var pushly          = require('pushly')(),
 
                 var skipping = false;
 
-                common.db.collection('app_users' + query.appId).find(finalQuery, filter).limit(10000).each(function(err, user){
+                common.db.collection('app_users' + query.appId).find(finalQuery, filter).sort({_id: 1}).limit(10000).each(function(err, user){
                     if (err) console.log(err);
                     else if (skipping) {
                         return;
