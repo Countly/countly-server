@@ -3,8 +3,7 @@
 var pushly = require('pushly')();
 
 var _ = require('underscore'),
-    flatten = require('flat'),
-    common = require('../../../../../api/utils/common.js');
+    flatten = require('flat');
 
 var MessageStatus = _.extend({}, pushly.MessageStatus, {Deleted: 1 << 10});
 
