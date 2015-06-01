@@ -78,8 +78,6 @@ var pushly          = require('pushly')(),
             stream: function(message, query, callback, ask, skip){
                 var fields = appUsersFields(message), filter = {}, count = 0, i, finalQuery = {$or: []}, $or = finalQuery.$or;
 
-                skip = skip || 0;
-
                 for (var any in query.conditions) {
                     finalQuery = {$and: [_.extend({}, query.conditions), {$or: []}]};
                     $or = finalQuery.$and[1].$or;
@@ -112,32 +110,39 @@ var pushly          = require('pushly')(),
 
                 console.log('====== Streaming skipping %j', skip);
 
-                var skipping = false;
-                // common.db.collection('app_users' + query.appId).find(finalQuery).count(function(err, total){
-                    common.db.collection('app_users' + query.appId).find(finalQuery, filter).skip(skip).limit(10000).each(function(err, user){
-                        if (err) console.log(err);
-                        else if (skipping) {
-                            return;
-                        } else if (user) {
-                            count++;
-                            skip++;
-
-                            if (callback(common.dot(user, field), user[common.dbUserMap.lang]) === 'such no power much sad') {
-                                console.log('====== Much sad, trying again in a second starting from %j', skip);
-                                skipping = true;
-                                setTimeout(api.pushlyCallbacks.stream.bind(api.pushlyCallbacks, message, query, callback, ask, skip), 1000);
-                            }
-                        } else {
-                            if (count === 0 && skip === 0) {
-                                console.log('Aborting message because no users found');
-                                pushly.abort(message);
-                            } else if (count !== 0) {
-                                console.log('====== Going to stream next batch starting from %j', skip);
-                                api.pushlyCallbacks.stream(message, query, callback, ask, skip);
-                            }
-                        }
+                if (skip) {
+                    finalQuery.$and.push({_id: {$gt: skip}});
+                } else {
+                    common.db.collection('app_users' + query.appId).find(finalQuery).count(function(err, total){
+                        common.db.collection('messages').update({_id: messageId(message)}, {$inc: {'result.found': total}}, function(){});
                     });
-                // });
+                }
+
+                var skipping = false;
+
+                common.db.collection('app_users' + query.appId).find(finalQuery, filter).limit(10000).each(function(err, user){
+                    if (err) console.log(err);
+                    else if (skipping) {
+                        return;
+                    } else if (user) {
+                        count++;
+                        skip = user._id;
+
+                        if (callback(common.dot(user, field), user[common.dbUserMap.lang]) === 'such no power much sad') {
+                            console.log('====== Much sad, trying again in a second starting from %j', skip);
+                            skipping = true;
+                            setTimeout(api.pushlyCallbacks.stream.bind(api.pushlyCallbacks, message, query, callback, ask, skip), 1000);
+                        }
+                    } else {
+                        if (count === 0 && !skip) {
+                            console.log('Aborting message because no users found');
+                            pushly.abort(message);
+                        } else if (count !== 0) {
+                            console.log('====== Going to stream next batch starting from %j', skip);
+                            api.pushlyCallbacks.stream(message, query, callback, ask, skip);
+                        }
+                    }
+                });
             },
             onInvalidToken: function(message, tokens, error) {
                 var id = messageId(message), app = appId(message);

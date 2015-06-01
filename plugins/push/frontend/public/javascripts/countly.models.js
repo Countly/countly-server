@@ -174,9 +174,11 @@
             msg.percentSent = 0;
             msg.percentNotSent = 100;
         } else {
-            msg.percentSent = +(100 * msg.result.sent / msg.result.total).toFixed(2);
-            msg.percentNotSent = +(100 * (msg.result.total - msg.result.sent) / msg.result.total).toFixed(2);
+            msg.percentSent = +(100 * msg.result.processed / msg.result.total).toFixed(2);
+            msg.percentNotSent = +(100 * (msg.result.total - msg.result.processed) / msg.result.total).toFixed(2);
         }
+
+        msg.sending = (msg.result.status & 4) > 0 && (msg.result.status & 8) === 0;
 
         msg.local = {
             created: moment(msg.created).format("D MMM, YYYY HH:mm")
