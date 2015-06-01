@@ -167,15 +167,15 @@
             msg.percentNotDelivered = 100;
         } else {
             msg.percentDelivered = +(100 * msg.result.delivered / msg.result.sent).toFixed(2);
-            msg.percentNotDelivered = +(100 * (msg.result.sent - msg.result.delivered) / msg.result.sent).toFixed(2);
+            msg.percentNotDelivered = 100 - msg.percentDelivered;
         }
 
         if (typeof msg.result.total == 'undefined' || msg.result.total == 0) {
             msg.percentSent = 0;
             msg.percentNotSent = 100;
         } else {
-            msg.percentSent = +(100 * msg.result.processed / msg.result.total).toFixed(2);
-            msg.percentNotSent = +(100 * (msg.result.total - msg.result.processed) / msg.result.total).toFixed(2);
+            msg.percentSent = +(100 * msg.result.sent / (msg.result.total - (msg.result.processed - msg.result.sent))).toFixed(2);
+            msg.percentNotSent = 100 - msg.percentSent;
         }
 
         msg.sending = (msg.result.status & 4) > 0 && (msg.result.status & 8) === 0;

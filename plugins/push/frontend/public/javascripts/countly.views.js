@@ -108,12 +108,22 @@ window.MessagingListView = countlyView.extend({
                 { "mData": "apps", sType:"string", "mRender": CountlyHelpers.clip(CountlyHelpers.appIdsToNames), "sTitle": jQuery.i18n.map["push.table.app-names"] },
                 { "mData": "percentDelivered", sType:"string", "mRender": function(d, type, data){
                     return '<div class="bar" data-desc="' + d + '%">' +
-                                '<div class="bar-inner" style="width:' + data.sending ? data.percentSent : data.percentDelivered + '%;" data-item="' + data.sending ? data.percentSent : data.percentDelivered + '%"></div>' +
-                                '<div class="bar-inner" style="width:' + data.sending ? data.percentNotSent : data.percentNotDelivered + '%;" data-item="' + data.sending ? data.percentNotSent : data.percentNotDelivered + '%"></div> ' +
+                                '<div class="bar-inner" style="width:' + data.percentDelivered + '%;" data-item="' + data.percentDelivered + '%"></div>' +
+                                '<div class="bar-inner" style="width:' + data.percentNotDelivered + '%;" data-item="' + data.percentNotDelivered + '%"></div> ' +
                             '</div>' +
-                            '<div class="percent-text">' + jQuery.i18n.prop('push.count.sent', data.sending ? data.percentSent : data.percentDelivered, data.sending ? data.result.total : data.result.sent) + '</div>';
+                            '<div class="percent-text">' + jQuery.i18n.prop('push.count.sent', data.percentDelivered, data.result.sent) + '</div>';
                 }, "sTitle": jQuery.i18n.map["push.table.delivered"] },
-                { "mData": "result", sType:"string", "mRender":function(d) { return '<span data-localize="push.message.status.' + d.status + '"></span>'; }, "sTitle": jQuery.i18n.map["push.table.status"] },
+                { "mData": "result", sType:"string", "mRender":function(d, type, data) { 
+                    if (data.sending) {
+                        return '<div class="bar" data-desc="' + d + '%">' +
+                                 '<div class="bar-inner" style="width:' + data.percentSent + '%;" data-item="' + data.percentSent + '%"></div>' +
+                                 '<div class="bar-inner" style="width:' + data.percentNotSent + '%;" data-item="' + data.percentNotSent + '%"></div> ' +
+                             '</div>' +
+                             '<div class="percent-text">' + jQuery.i18n.prop('push.count.sending', data.percentSent, d.total - (d.processed - d.sent)) + '</div>';
+                    } else {
+                        return '<span data-localize="push.message.status.' + d.status + '"></span>'; }, "sTitle": jQuery.i18n.map["push.table.status"];
+                    }
+                },
                 { "mData": "local.created", sType:"date", "sTitle": jQuery.i18n.map["push.table.created"] },
                 { "mData": "local", sType:"string", "sTitle": jQuery.i18n.map["push.table.sent-scheduled"], mRender: function(local){
                     return local.sent ? local.sent : local.date;

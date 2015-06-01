@@ -111,6 +111,9 @@ var pushly          = require('pushly')(),
                 console.log('====== Streaming skipping %j', skip);
 
                 if (skip) {
+                    if (!finalQuery.$and) {
+                        finalQuery = {$and: [_.extend({}, query.conditions), {$or: finalQuery.$or}]};
+                    } 
                     finalQuery.$and.push({_id: {$gt: skip}});
                 } else {
                     common.db.collection('app_users' + query.appId).find(finalQuery).count(function(err, total){
