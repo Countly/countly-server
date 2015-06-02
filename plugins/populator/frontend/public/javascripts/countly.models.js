@@ -142,7 +142,7 @@
 			crash._background = (Math.random() > 0.5) ? true : false;
             
 			crash._error = this.getError();
-			crash._log = this.getError();
+			crash._logs = this.getError();
             crash._nonfatal = (Math.random() > 0.5) ? true : false;
             crash._run = getRandomInt(1, 1800);
             
