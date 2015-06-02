@@ -116,6 +116,16 @@ var plugin = {},
 		var appId = ob.appId;
 		common.db.createCollection('logs' + appId, {capped: true, size: 10000000, max: 1000}, function(){});
 	});
+    plugins.register("/i/apps/delete", function(ob){
+		var appId = ob.appId;
+		common.db.collection('logs' + appId).drop(function() {});
+	});
+    plugins.register("/i/apps/reset", function(ob){
+		var appId = ob.appId;
+        common.db.collection('logs' + appId).drop(function() {
+            common.db.createCollection('logs' + appId, {capped: true, size: 10000000, max: 1000}, function(){});
+        });
+	});
 }(plugin));
 
 module.exports = plugin;
