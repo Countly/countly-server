@@ -178,7 +178,7 @@
             msg.percentNotSent = 100 - msg.percentSent;
         }
 
-        msg.sending = (msg.result.status & 4) > 0 && (msg.result.status & 8) === 0;
+        msg.sending = (msg.result.status & 4) > 0 && (msg.result.status & (16 | 32)) === 0;
 
         msg.local = {
             created: moment(msg.created).format("D MMM, YYYY HH:mm")
