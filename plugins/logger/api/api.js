@@ -71,6 +71,18 @@ var plugin = {},
 				}
 					
 			}
+            if (params.qstring.user_details) {
+				known = true;
+				var type = "user_details";
+				var info = params.qstring.user_details;
+				common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info}, function () {});
+			}
+            if (params.qstring.crash) {
+				known = true;
+				var type = "crash";
+				var info = params.qstring.crash;
+				common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info}, function () {});
+			}
 			if(!known){
 				var type = "unknown";
 				var info = {};
@@ -97,6 +109,12 @@ var plugin = {},
 			});
 			return true;
 		}
+	});
+    
+    plugins.register("/i/apps/create", function(ob){
+		var params = ob.params;
+		var appId = ob.appId;
+		common.db.createCollection('logs' + appId, {capped: true, size: 10000000, max: 1000}, function(){});
 	});
 }(plugin));
 

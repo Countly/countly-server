@@ -24,7 +24,7 @@ window.LoggerView = countlyView.extend({
 			$.fn.dataTableExt.afnFiltering.push(function( oSettings, aData, iDataIndex ) {
 				if(!$(oSettings.nTable).hasClass("logger-filter"))
 					return true;
-				if((self.filter == "logger-event" && aData[0] != "Event") || (self.filter == "logger-session" && aData[0] != "Session") || (self.filter == "logger-metric" && aData[0] != "Metrics")){
+				if((self.filter == "logger-event" && aData[0] != "Event") || (self.filter == "logger-session" && aData[0] != "Session") || (self.filter == "logger-metric" && aData[0] != "Metrics") || (self.filter == "logger-user" && aData[0] != "User details") || (self.filter == "logger-crash" && aData[0] != "Crash")){
 					return false
 				}
 				return true;
@@ -33,7 +33,7 @@ window.LoggerView = countlyView.extend({
 			this.dtable = $('#logger-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": data,
                 "aoColumns": [
-                    { "mData": function(row, type){return row.t.charAt(0).toUpperCase() + row.t.slice(1);}, "sType":"string", "sTitle": jQuery.i18n.map["logger.type"]},
+                    { "mData": function(row, type){return row.t.charAt(0).toUpperCase() + row.t.slice(1).replace(/_/g, " ");}, "sType":"string", "sTitle": jQuery.i18n.map["logger.type"]},
                     { "mData": function(row, type){
 						if(type == "display"){
 							return moment(row.ts*1000).format("MMMM Do YYYY, hh:mm:ss");
