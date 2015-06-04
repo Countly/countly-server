@@ -114,7 +114,7 @@ window.MessagingListView = countlyView.extend({
                             '<div class="percent-text">' + jQuery.i18n.prop('push.count.sent', data.percentDelivered, data.result.sent) + '</div>';
                 }, "sTitle": jQuery.i18n.map["push.table.delivered"] },
                 { "mData": "result", sType:"string", "mRender":function(d, type, data) { 
-                    if (data.sending && data.found) {
+                    if (data.sending && d.found) {
                         return '<div class="bar" data-desc="' + d + '%">' +
                                  '<div class="bar-inner" style="width:' + data.percentSent + '%;" data-item="' + data.percentSent + '%"></div>' +
                                  '<div class="bar-inner" style="width:' + data.percentNotSent + '%;" data-item="' + data.percentNotSent + '%"></div> ' +
