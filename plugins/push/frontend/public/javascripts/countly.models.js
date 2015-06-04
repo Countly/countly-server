@@ -170,11 +170,11 @@
             msg.percentNotDelivered = 100 - msg.percentDelivered;
         }
 
-        if (typeof msg.result.total == 'undefined' || msg.result.total == 0) {
+        if (typeof msg.result.found == 'undefined' || msg.result.found == 0) {
             msg.percentSent = 0;
             msg.percentNotSent = 100;
         } else {
-            msg.percentSent = +(100 * msg.result.sent / (msg.result.total - (msg.result.processed - msg.result.sent))).toFixed(2);
+            msg.percentSent = +(100 * msg.result.sent / (msg.result.found - (msg.result.processed - msg.result.sent))).toFixed(2);
             msg.percentNotSent = 100 - msg.percentSent;
         }
 

@@ -94,7 +94,7 @@ var periodicCheck = function(){
     if (cluster.isMaster) {
         if (!launched) {
             setTimeout(function(){  // wait for app to start
-                common.db.collection('messages').update({'result.status': {$in: [MessageStatus.Initial, MessageStatus.InProcessing, MessageStatus.InQueue]}}, {$set: {'result.status': MessageStatus.Aborted | MessageStatus.Error}}, {multi: true}, function(){
+                common.db.collection('messages').update({'result.status': {$in: [MessageStatus.Initial, MessageStatus.InProcessing, MessageStatus.InProcessing | MessageStatus.Done, MessageStatus.InQueue]}}, {$set: {'result.status': MessageStatus.Done | MessageStatus.Aborted | MessageStatus.Error}}, {multi: true}, function(){
                     launched = true;
                     check();
                     setTimeout(periodicCheck, 3000);
