@@ -7,9 +7,9 @@ a { color:inherit; text-decoration:none; }
 a:visited { color:inherit; }
 a:hover { color:inherit; }
 a:active { color:inherit; }
-#login-form { width:477px; height:180px; margin-left:-238px; left:50%; top:50%; margin-top:-90px; position:absolute; background-image:url('../../images/pre-login/cly_login_bg.png'); background-position:220px 0px; background-repeat:no-repeat; } 
+#login-form { width:480px; height:180px; margin-left:-240px; left:50%; top:50%; margin-top:-90px; position:absolute; background-image:url('../../images/pre-login/cly_login_bg.png'); background-position:220px 0px; background-repeat:no-repeat; }
 #login-left { margin-right:30px; padding-right:30px; height:100%; float:left; }
-#forgot-form { width:555px; height:218px; margin-left:-276px; left:50%; top:50%; margin-top:-109px; position:absolute; } 
+#forgot-form { width:558px; height:218px; margin-left:-278px; left:50%; top:50%; margin-top:-109px; position:absolute; }
 #forgot-left { margin-bottom:28px; }
 #reset-form { width:704px; height:218px; margin-left:-352px; left:50%; top:50%; margin-top:-109px; position:absolute; } 
 #login-button { font:16px Ubuntu,Helvetica,sans-serif; box-shadow:inset 0 1px 0 0 #AFE7B3; border-radius:5px; border:1px solid #1A691C; padding:11px 26px; padding-left:0; background-color:#6BB96E; background-image: url('../../images/pre-login/cly_login.png'), linear-gradient(top, #6BB96E 10%, #58985A 100%); background-image: url('../../images/pre-login/cly_login.png'), linear-gradient(to bottom, #6BB96E 10%, #58985A 100%); background-position:right; background-repeat:no-repeat; color:#FFF; text-shadow:0 -1px #666; font-weight:400; cursor:pointer; width:227px; margin-top:0; }
