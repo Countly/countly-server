@@ -168,6 +168,7 @@ var pushly          = require('pushly')(),
                                 $unset[field] = 1;
                                 unsetQuery[field] = {$in: unset};
                             });
+                            console.log('Unsetting tokens in %j: %j / %j', 'app_users' + app, unsetQuery, {$unset: $unset});
                             common.db.collection('app_users' + app).update(unsetQuery, {$unset: $unset},function(){});
                         }
 

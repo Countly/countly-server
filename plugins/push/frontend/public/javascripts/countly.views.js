@@ -119,7 +119,7 @@ window.MessagingListView = countlyView.extend({
                                  '<div class="bar-inner" style="width:' + data.percentSent + '%;" data-item="' + data.percentSent + '%"></div>' +
                                  '<div class="bar-inner" style="width:' + data.percentNotSent + '%;" data-item="' + data.percentNotSent + '%"></div> ' +
                              '</div>' +
-                             '<div class="percent-text">' + jQuery.i18n.prop('push.count.sending', data.percentSent, d.total - (d.processed - d.sent)) + '</div>';
+                             '<div class="percent-text">' + jQuery.i18n.prop('push.count.sending', data.percentSent, d.found - (d.processed - d.sent)) + '</div>';
                     } else {
                         return '<span data-localize="push.message.status.' + d.status + '"></span>';
                     }
