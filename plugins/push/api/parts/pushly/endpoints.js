@@ -220,7 +220,7 @@ var pushly          = require('pushly')(),
                         result: m.result
                     }
                 };
-                if (!m.sent && (m.result.status & MessageStatus.Done) > 0) {
+                if ((m.result.status & MessageStatus.Done) > 0) {
                     update.$set.sent = new Date();
                 }
 

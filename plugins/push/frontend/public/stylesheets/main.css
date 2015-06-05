@@ -103,6 +103,7 @@
 .push-create .view-header { border-bottom: 1px solid rgba(0,0,0,0.5); margin: 0 -10px 0; padding: 0 16px; }
 .push-create .view-header .os-segment { display: inline-block; margin-bottom: -10px; }
 .push-create .view-header .view-platforms .title { padding-right: 16px; }
+.push-create .view-header .view-apps { height: 40px; overflow: hidden; }
 .push-create .view-header.divide .field:last-child { margin-left: 10px; }
 
 .push-create .divide-three.view-header { border-bottom: 1px solid rgba(0,0,0,0.5); margin: 0 -10px 0; padding: 0; position: relative; height: 40px; }
