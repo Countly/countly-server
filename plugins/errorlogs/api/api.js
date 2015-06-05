@@ -6,7 +6,7 @@ var plugin = {},
     plugins = require('../../pluginManager.js');
 
 (function (plugin) {
-    var logs = {api: "../../../log/countly-api.log", dashboard: "../../../log/countly-dashboard.log", pushIn: "../../../log/push-in.txt", pushOut: "../../../log/push-out.txt"};
+    var logs = {api: "../../../log/countly-api.log", dashboard: "../../../log/countly-dashboard.log"};
     var dir = path.resolve(__dirname, '');
 	//write api call
 	plugins.register("/o/errorlogs", function(ob){
