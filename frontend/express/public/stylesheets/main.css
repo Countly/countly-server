@@ -825,7 +825,7 @@ table.events-table { width:100%; padding:0; margin:0; }
 
 #graph-tooltip-title { color:#CCC; margin-right:7px; }
 
-.options {display: none; background-color: #E0E0E0; position: absolute; top:50px; right: 0px; list-style: none; margin:0; padding:0; padding:3px;border: 1px solid #979797; border-top: none;}
+.options {display: none; background-color: #E0E0E0; position: absolute; top:50px; right: 0px; list-style: none; margin:0; padding:0; padding:3px;border: 1px solid #979797; border-top: none; margin-right: -1px;}
 .options li{font:14px Ubuntu,Helvetica,sans-serif; color: #666; padding: 2px; padding-right: 5px; cursor:pointer;}
 .options li:hover{background-color: #FFF; color: #666;}
 .options li span {line-height:23px;}

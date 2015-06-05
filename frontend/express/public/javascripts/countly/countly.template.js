@@ -2312,6 +2312,8 @@ window.ManageAppsView = countlyView.extend({
         });
         
         $("#clear-data.options li").click(function(){
+            $("#clear-app-data").removeClass('active');
+            $(".options").slideUp();
             var period = $(this).attr("id").replace("clear-", "");
             CountlyHelpers.confirm(jQuery.i18n.map["management-applications.clear-confirm"], "red", function (result) {
                 if (!result) {
