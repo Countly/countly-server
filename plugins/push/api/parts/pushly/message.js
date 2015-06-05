@@ -162,7 +162,7 @@ module.exports.Message = function (apps, names) {
         },
         setGeo: {
             value: function (geo) {
-                this.geo = geo || {};
+                this.geo = geo || '';
                 return this;
             }
         },
