@@ -102,12 +102,12 @@ var pushly          = require('pushly')(),
                 }
 
                 if (ask() === 'such no power much sad') {
-                    console.log('====== Much sad still no luck, trying again in a second starting from %j', skip);
+                    // console.log('====== Much sad still no luck, trying again in a second starting from %j', skip);
                     setTimeout(api.pushlyCallbacks.stream.bind(api.pushlyCallbacks, message, query, callback, ask, skip), 1000);
                     return;
                 }
 
-                console.log('====== Streaming skipping %j', skip);
+                // console.log('====== Streaming skipping %j', skip);
 
                 if (skip) {
                     if (finalQuery.$and) {
@@ -132,16 +132,16 @@ var pushly          = require('pushly')(),
                         skip = user._id;
 
                         if (callback(common.dot(user, field), user[common.dbUserMap.lang]) === 'such no power much sad') {
-                            console.log('====== Much sad, trying again in a second starting from %j', skip);
+                            // console.log('====== Much sad, trying again in a second starting from %j', skip);
                             skipping = true;
                             setTimeout(api.pushlyCallbacks.stream.bind(api.pushlyCallbacks, message, query, callback, ask, skip), 1000);
                         }
                     } else {
                         if (count === 0 && !skip) {
-                            console.log('Aborting message because no users found');
+                            // console.log('Aborting message because no users found');
                             pushly.abort(message);
                         } else if (count !== 0) {
-                            console.log('====== Going to stream next batch starting from %j', skip);
+                            // console.log('====== Going to stream next batch starting from %j', skip);
                             api.pushlyCallbacks.stream(message, query, callback, ask, skip);
                         }
                     }
@@ -167,7 +167,7 @@ var pushly          = require('pushly')(),
                                 $unset[field] = 1;
                                 unsetQuery[field] = {$in: unset};
                             });
-                            console.log('Unsetting tokens in %j: %j / %j', 'app_users' + app, unsetQuery, {$unset: $unset});
+                            // console.log('Unsetting tokens in %j: %j / %j', 'app_users' + app, unsetQuery, {$unset: $unset});
                             common.db.collection('app_users' + app).update(unsetQuery, {$unset: $unset},function(){});
                         }
 
