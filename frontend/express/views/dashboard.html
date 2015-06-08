@@ -147,7 +147,7 @@
                 <div class="logo events"></div>
                 <div class="text" data-localize="sidebar.events"></div>
             </a>	
-			<% if(member['global_admin'] || adminOfApps.length) { %>
+			<% if(member['global_admin'] || adminOfApps.length  || config.autonomous) { %>
 			<a class="item" id="management-menu">
                 <!--<div class="logo fa fa-wrench" style="background-image:none; font-size:28px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px;"></div>-->
 				<div class="logo management"></div>
@@ -164,7 +164,7 @@
 					<div class="text" data-localize="">Export</div>
 				</a>
 				-->
-				<% if(member['global_admin']) { %>
+				<% if(member['global_admin'] || config.createUsers) { %>
                 <a href="#/manage/users" class="item">
 					<div class="logo mgmt-users"></div>
 					<div class="text" data-localize="sidebar.management.users"></div>
@@ -214,7 +214,7 @@
 		<div id="app-nav-head">
 			<div id="app-nav-title" style="max-width: 105px;" data-localize="management-applications.title"></div>
 			<div class="button-container">
-				<% if(member['global_admin'] && adminOfApps.length > 1) { %>
+				<% if((member['global_admin'] && adminOfApps.length > 1) || config.autonomous) { %>
 				<div class="icon-button dark help-zone-vs" id="sort-app-button">
 					<div class="icon"></div>
 				</div>
@@ -676,7 +676,7 @@
 		<div id="app-management-bar">
 			<div id="app-nav-head">
 				<div id="app-nav-title" data-localize="management-applications.title"></div>
-				<% if(member['global_admin']) { %>
+				<% if(member['global_admin'] || config.autonomous) { %>
 				<div style="overflow:hidden; position:absolute; top:19px; right:10px;">
 					<div class="icon-button dark help-zone-vs" data-help-localize="help.manage-apps.app-add-button" id="add-app-button">
 						<div class="icon" style="background-image:url('<%- cdn %>images/management/add.png'); width:17px; height:18px;"></div>

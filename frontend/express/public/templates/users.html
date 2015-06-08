@@ -560,6 +560,7 @@ $(document).ready(function() {
 		<tr class="user-details">
 			<td colspan="4">
 				<div>
+                    {{#unless is_global_admin}}
 					<div class="row help-zone-vs" data-help-localize="help.manage-users.full-name">
 						<div class="title" data-localize="management-users.full-name"></div>
 						<div class="detail"><input class="full-name-text" type="text" value="{{this.full_name}}"/></div>
@@ -582,7 +583,9 @@ $(document).ready(function() {
 						<div class="title" data-localize="management-users.email"></div>
 						<div class="detail"><input class="email-text" type="text" value="{{this.email}}"/></div>
 					</div>
+                    {{/unless}}
 					{{#unless this.is_current_user}}
+                    {{#if ../../is_global_admin}}
 					<div class="row help-zone-vs" data-help-localize="help.manage-users.global-admin">
 						<div class="title" data-localize="management-users.global-admin"></div>
 						<div class="detail">
@@ -592,6 +595,7 @@ $(document).ready(function() {
 							</div>
 						</div>
 					</div>
+                    {{/if}}
 					<div class="row admin-apps help-zone-vs" data-help-localize="help.manage-users.admin-of" {{#if this.global_admin}}style="display:none;"{{/if}}>
 						<div class="title" data-localize="management-users.admin-of"></div>
 						<div class="select-apps">
