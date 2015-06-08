@@ -109,6 +109,7 @@ app.configure(function () {
     app.use(require('connect-flash')());
     app.use(function(req, res, next) {
         res.locals.flash = req.flash.bind(req);
+        req.config = countlyConfig;
         next();
     });
     app.use(express.methodOverride());
@@ -299,6 +300,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             admin_apps:countlyGlobalAdminApps,
                             csrf_token:req.session._csrf,
                             member:member,
+                            config: req.config,
 							plugins:plugins.getPlugins(),
 							path:countlyConfig.path || "",
 							cdn:countlyConfig.cdn || "",
@@ -309,7 +311,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             adminOfApps = sortBy(adminOfApps, settings.appSortList || []);
                             userOfApps = sortBy(userOfApps, settings.appSortList || []);
                         }
-
+                        
                         res.render('dashboard', {
                             adminOfApps:adminOfApps,
                             userOfApps:userOfApps,
@@ -319,6 +321,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 							countlyType: (COUNTLY_TYPE != "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") ? true : false,
 			                production: countlyConfig.production || false,
 							plugins:plugins.getPlugins(),
+                            config: req.config,
 							path:countlyConfig.path || "",
 							cdn:countlyConfig.cdn || ""
                         });
@@ -651,7 +654,7 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
 });
 
 app.post(countlyConfig.path+'/users/check/email', function (req, res, next) {
-    if (!req.session.uid || !isGlobalAdmin(req) || !req.body.email) {
+    if (!req.session.uid || !req.body.email) {
         res.send(false);
         return false;
     }
@@ -666,7 +669,7 @@ app.post(countlyConfig.path+'/users/check/email', function (req, res, next) {
 });
 
 app.post(countlyConfig.path+'/users/check/username', function (req, res, next) {
-    if (!req.session.uid || !isGlobalAdmin(req) || !req.body.username) {
+    if (!req.session.uid || !req.body.username) {
         res.send(false);
         return false;
     }
