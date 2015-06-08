@@ -654,7 +654,7 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
 });
 
 app.post(countlyConfig.path+'/users/check/email', function (req, res, next) {
-    if (!req.session.uid || !req.body.email) {
+    if (!req.session.uid || !isGlobalAdmin(req) || !req.body.email) {
         res.send(false);
         return false;
     }
@@ -669,7 +669,7 @@ app.post(countlyConfig.path+'/users/check/email', function (req, res, next) {
 });
 
 app.post(countlyConfig.path+'/users/check/username', function (req, res, next) {
-    if (!req.session.uid || !req.body.username) {
+    if (!req.session.uid || !isGlobalAdmin(req) || !req.body.username) {
         res.send(false);
         return false;
     }
