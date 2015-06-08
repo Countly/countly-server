@@ -331,8 +331,14 @@ var testUtils = function testUtils(){
 			{
 				if(!refresh)
 					for(var c in correct){
-						if(c != "meta")
-							ob[i].should.have.property(c, correct[c]);
+						if(c != "meta"){
+                            if(c == "s"){
+                                ob[i].should.have.property(c);
+                                ob[i][c]should.be.approximately(correct[c], 0.0001);
+                            }
+                            else
+                                ob[i].should.have.property(c, correct[c]);
+                        }
 					}
 				for(j in ob[i])
 				{
@@ -340,24 +346,42 @@ var testUtils = function testUtils(){
 					{
 						if(!refresh)
 							for(var c in correct){
-								if(c != "meta")
-									ob[i][j].should.have.property(c, correct[c]);
+								if(c != "meta"){
+                                    if(c == "s"){
+                                        ob[i][j].should.have.property(c);
+                                        ob[i][j][c]should.be.approximately(correct[c], 0.0001);
+                                    }
+                                    else
+                                            ob[i][j].should.have.property(c, correct[c]);
+                                }
 							}
 						for(k in ob[i][j])
 						{
 							if(RE.test(k))
 							{
 								for(var c in correct){
-									if(c != "meta")
-										ob[i][j][k].should.have.property(c, correct[c]);
+									if(c != "meta"){
+                                        if(c == "s"){
+                                            ob[i][j][k].should.have.property(c);
+                                            ob[i][j][k][c]should.be.approximately(correct[c], 0.0001);
+                                        }
+                                        else
+                                            ob[i][j][k].should.have.property(c, correct[c]);
+                                    }
 								}
 								for(n in ob[i][j][k])
 								{
 									if(RE.test(n))
 									{
 										for(var c in correct){
-											if(c != "meta")
-												ob[i][j][k][n].should.have.property(c, correct[c]);
+											if(c != "meta"){
+                                                if(c == "s"){
+                                                    ob[i][j][k][n].should.have.property(c);
+                                                    ob[i][j][k][n][c]should.be.approximately(correct[c], 0.0001);
+                                                }
+                                                else
+                                                    ob[i][j][k][n].should.have.property(c, correct[c]);
+                                            }
 										}
 									}
 								}
