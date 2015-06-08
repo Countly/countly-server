@@ -131,7 +131,7 @@ var appsApi = {},
 					common.db.collection('members').findOne({'_id': params.member._id}, {admin_of: 1}, function(err, member){
 						if (member.admin_of && member.admin_of.indexOf(params.qstring.args.app_id) !== -1) {
 							common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function(err, app) {
-								plugins.dispatch("/i/apps/update", {params:params, appId:app[0]._id, data:updatedApp});
+								plugins.dispatch("/i/apps/update", {params:params, appId:params.qstring.args.app_id, data:updatedApp});
 								common.returnOutput(params, updatedApp);
 							});
 						} else {

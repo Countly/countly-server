@@ -52,4 +52,4 @@ And, if you liked Countly, [why not use one of our badges](https://count.ly/bran
 * [Countly support](http://support.count.ly)
 * [Documentation & API reference guide](http://resources.count.ly)
 * [Countly Enterprise & Cloud Edition](https://count.ly/compare)
-* [Extended features of Countly Enterprise Edition](https://count.ly/enterprise-edition-features)
+* [Extended features of Countly Enterprise Edition](https://count.ly/enterprise-edition-features), including crash reports, referral analytics, user profiles, geolocations with push, detailed segmentation, funnels, real-time dashboard and more.
