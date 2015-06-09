@@ -1,3 +1,37 @@
+15.06
+
+  * Api accepting both GET and POST requests
+  
+  * Added Github update plugin to update source from Github
+  
+  * Improved performance and lots of fixed for push server
+  
+  * Populator plugin sends also crash data
+  
+  * Displaying long app names through tooltip
+  
+  * Sorting resolution dimensions as numbers
+  
+  * Switching between sessions and user metric on map
+  
+  * Deleting multiple events
+  
+  * Displaying full language name for locale plugin
+  
+  * Option to clear older data (older than 1 month, 3 months, 6 months, 1 year, 2 years)
+  
+  * Logger plugin recognizes userdetails and crash requests
+  
+  * Reducing maximal file log size to 50 Mb
+  
+  * Fixed copying images for production using grunt
+  
+  * Fixed long app names in AllApps view
+  
+  * Fixed error on propagating app update event to plugins
+  
+  * Fixed reset page
+  
 15.03.02
 
   * Fixed get_events api method
