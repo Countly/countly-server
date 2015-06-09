@@ -334,7 +334,7 @@ var testUtils = function testUtils(){
 						if(c != "meta"){
                             if(c == "s"){
                                 ob[i].should.have.property(c);
-                                ob[i][c]should.be.approximately(correct[c], 0.0001);
+                                ob[i][c].should.be.approximately(correct[c], 0.0001);
                             }
                             else
                                 ob[i].should.have.property(c, correct[c]);
@@ -349,7 +349,7 @@ var testUtils = function testUtils(){
 								if(c != "meta"){
                                     if(c == "s"){
                                         ob[i][j].should.have.property(c);
-                                        ob[i][j][c]should.be.approximately(correct[c], 0.0001);
+                                        ob[i][j][c].should.be.approximately(correct[c], 0.0001);
                                     }
                                     else
                                             ob[i][j].should.have.property(c, correct[c]);
@@ -363,7 +363,7 @@ var testUtils = function testUtils(){
 									if(c != "meta"){
                                         if(c == "s"){
                                             ob[i][j][k].should.have.property(c);
-                                            ob[i][j][k][c]should.be.approximately(correct[c], 0.0001);
+                                            ob[i][j][k][c].should.be.approximately(correct[c], 0.0001);
                                         }
                                         else
                                             ob[i][j][k].should.have.property(c, correct[c]);
@@ -377,7 +377,7 @@ var testUtils = function testUtils(){
 											if(c != "meta"){
                                                 if(c == "s"){
                                                     ob[i][j][k][n].should.have.property(c);
-                                                    ob[i][j][k][n][c]should.be.approximately(correct[c], 0.0001);
+                                                    ob[i][j][k][n][c].should.be.approximately(correct[c], 0.0001);
                                                 }
                                                 else
                                                     ob[i][j][k][n].should.have.property(c, correct[c]);
