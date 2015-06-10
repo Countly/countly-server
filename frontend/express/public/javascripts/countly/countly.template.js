@@ -2673,7 +2673,8 @@ window.ManageUsersView = countlyView.extend({
             success:function (users) {
                 $('#content').html(self.template({
                     users:users,
-                    apps:countlyGlobal['apps']
+                    apps:countlyGlobal['apps'],
+                    is_global_admin: (countlyGlobal["member"].global_admin) ? true : false
                 }));
             }
         });
