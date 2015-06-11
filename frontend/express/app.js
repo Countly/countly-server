@@ -1,3 +1,5 @@
+require('log-timestamp');
+
 var versionInfo = require('./version.info'),
     COUNTLY_VERSION = versionInfo.version,
     COUNTLY_TYPE = versionInfo.type,

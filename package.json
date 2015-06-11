@@ -37,6 +37,7 @@
     "express-expose": "0.3.3",
     "geoip-lite": "*",
     "imagemagick": "0.1.3",
+    "log-timestamp": "0.1.2",
     "moment": "1.7.2",
     "moment-isocalendar": "0.1.0",
     "mongodb": "1.4.x",

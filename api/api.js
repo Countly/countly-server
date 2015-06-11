@@ -1,3 +1,5 @@
+require('log-timestamp');
+
 var http = require('http'),
     cluster = require('cluster'),
     os = require('os'),
