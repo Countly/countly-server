@@ -121,7 +121,7 @@ var pushly          = require('pushly')(),
                     });
                 }
 
-                var skipping = false;
+                var skipping = false, ids = [];
 
                 common.db.collection('app_users' + query.appId).find(finalQuery, filter).sort({_id: 1}).limit(10000).each(function(err, user){
                     if (err) console.log(err);
@@ -130,6 +130,7 @@ var pushly          = require('pushly')(),
                     } else if (user) {
                         count++;
                         skip = user._id;
+                        ids.push(user._id);
 
                         if (callback(common.dot(user, field), user[common.dbUserMap.lang]) === 'such no power much sad') {
                             // console.log('====== Much sad, trying again in a second starting from %j', skip);
@@ -143,6 +144,7 @@ var pushly          = require('pushly')(),
                         } else if (count !== 0) {
                             // console.log('====== Going to stream next batch starting from %j', skip);
                             api.pushlyCallbacks.stream(message, query, callback, ask, skip);
+                            common.db.collection('app_users' + query.appId).update({_id: {$in: ids}}, {$push: {msgs: messageId(message)}}, function(){});
                         }
                     }
                 });
@@ -168,7 +170,7 @@ var pushly          = require('pushly')(),
                                 unsetQuery[field] = {$in: unset};
                             });
                             // console.log('Unsetting tokens in %j: %j / %j', 'app_users' + app, unsetQuery, {$unset: $unset});
-                            common.db.collection('app_users' + app).update(unsetQuery, {$unset: $unset},function(){});
+                            common.db.collection('app_users' + app).update(unsetQuery, {$unset: $unset, $pull: {msgs: messageId(message)}}, function(){});
                         }
 
                         for (i = update.length - 1; i >= 0; i--) for (var f = fields.length - 1; f >= 0; f--) {

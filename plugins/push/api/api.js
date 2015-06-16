@@ -20,6 +20,7 @@ var plugin = {},
         common.dbUserMap['gcm_0'] = 'ap';                      // production
         common.dbUserMap['gcm_test'] = 'at';                   // testing
         common.dbUserMap['gcm_2'] = 'at';                      // testing
+        common.dbUserMap['messages'] = 'msgs';                 // messages sent
     }
 
 	plugins.register("/worker", function(ob){
