@@ -144,7 +144,7 @@ var pushly          = require('pushly')(),
                         } else if (count !== 0) {
                             // console.log('====== Going to stream next batch starting from %j', skip);
                             api.pushlyCallbacks.stream(message, query, callback, ask, skip);
-                            common.db.collection('app_users' + query.appId).update({_id: {$in: ids}}, {$push: {msgs: messageId(message)}}, function(){});
+                            common.db.collection('app_users' + query.appId).update({_id: {$in: ids}}, {$push: {msgs: messageId(message)}}, {multi: true}, function(){});
                         }
                     }
                 });
