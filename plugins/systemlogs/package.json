@@ -1,0 +1,21 @@
+{
+  "name": "countly-systemlogs",
+  "title": "System Logs",
+  "version": "1.0.0",
+  "description": "Keeping logs of user actions on data",
+  "author": "Count.ly",
+  "homepage": "https://count.ly/marketplace/",
+  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
+  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "keywords": [
+    "countly",
+    "analytics",
+    "mobile",
+    "plugins",
+	"system",
+	"logs"
+  ],
+  "dependencies": {
+  },
+  "private": true
+}

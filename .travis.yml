@@ -1,7 +1,10 @@
-language: node_js
-node_js:
-  - "0.10"
-services:
-  - mongodb
-before_install: sudo bash ./bin/countly.travis.install.sh
+language: c
+before_install: sudo bash ./bin/countly.install.travis.sh
 install: sudo npm install
+before_script: sleep 15
+script: npm test
+notifications:
+  email: hello@count.ly
+  hipchat:
+    rooms:
+      secure: aINedM9Exa+83NKGsgpSmEWBqEY68jD9cKKUZ3m5yNxc373E2U76+nFFkaBEGayJ2stExyHicxGphIq127m8IopjG4DX/bSD8pogtIfGIklb6tz/XQafm/gGkgN2G9SVi/ef0yRisvX01jRRVU+BENQ3G4T6s6iYjoWqvQPCjpE=

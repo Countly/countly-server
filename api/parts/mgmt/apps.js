@@ -1,5 +1,8 @@
 var appsApi = {},
     common = require('./../../utils/common.js'),
+    moment = require('moment'),
+    crypto = require('crypto'),
+	plugins = require('../../../plugins/pluginManager.js'),
     fs = require('fs');
 
 (function (appsApi) {
@@ -88,6 +91,8 @@ var appsApi = {},
             newApp._id = app[0]._id;
             newApp.key = appKey;
 
+            common.db.collection('app_users' + app[0]._id).insert({_id:"uid-sequence", seq:0},function(err,res){});
+			plugins.dispatch("/i/apps/create", {params:params, appId:app[0]._id, data:app[0]});
             common.returnOutput(params, newApp);
         });
     };
@@ -114,21 +119,28 @@ var appsApi = {},
 
         processAppProps(updatedApp);
 
-        if (params.member && params.member.global_admin) {
-            common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function(err, app) {
-                common.returnOutput(params, updatedApp);
-            });
-        } else {
-            common.db.collection('members').findOne({'_id': params.member._id}, {admin_of: 1}, function(err, member){
-                if (member.admin_of && member.admin_of.indexOf(params.qstring.args.app_id) !== -1) {
-                    common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function(err, app) {
-                        common.returnOutput(params, updatedApp);
-                    });
-                } else {
-                    common.returnMessage(params, 401, 'User does not have admin rights for this app');
-                }
-            });
-        }
+		common.db.collection('apps').findOne(common.db.ObjectID(params.qstring.args.app_id), function(err, app){
+            if (err || !app) common.returnMessage(params, 404, 'App not found');
+            else {
+				if (params.member && params.member.global_admin) {
+					common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function(err, app) {
+						plugins.dispatch("/i/apps/update", {params:params, appId:params.qstring.args.app_id, data:updatedApp});
+						common.returnOutput(params, updatedApp);
+					});
+				} else {
+					common.db.collection('members').findOne({'_id': params.member._id}, {admin_of: 1}, function(err, member){
+						if (member.admin_of && member.admin_of.indexOf(params.qstring.args.app_id) !== -1) {
+							common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function(err, app) {
+								plugins.dispatch("/i/apps/update", {params:params, appId:params.qstring.args.app_id, data:updatedApp});
+								common.returnOutput(params, updatedApp);
+							});
+						} else {
+							common.returnMessage(params, 401, 'User does not have admin rights for this app');
+						}
+					});
+				}
+			}
+		});
 
         return true;
     };
@@ -148,23 +160,27 @@ var appsApi = {},
             common.returnMessage(params, 400, 'Not enough args');
             return false;
         }
-
-        common.db.collection('apps').remove({'_id': common.db.ObjectID(appId)}, {safe: true}, function(err, result) {
-
-            if (!result) {
-                common.returnMessage(params, 500, 'Error deleting app');
-                return false;
-            }
-
-            var iconPath = __dirname + '/public/appimages/' + appId + '.png';
-            fs.unlink(iconPath, function() {});
-
-            common.db.collection('members').update({}, {$pull: {'apps': appId, 'admin_of': appId, 'user_of': appId}}, {multi: true}, function(err, app) {});
-
-            deleteAppData(appId);
-            common.returnMessage(params, 200, 'Success');
-            return true;
-        });
+		common.db.collection('apps').findOne({'_id': common.db.ObjectID(appId)}, function(err, app){
+			if(!err && app)
+				common.db.collection('apps').remove({'_id': common.db.ObjectID(appId)}, {safe: true}, function(err, result) {
+		
+					if (!result) {
+						common.returnMessage(params, 500, 'Error deleting app');
+						return false;
+					}
+		
+					var iconPath = __dirname + '/public/appimages/' + appId + '.png';
+					fs.unlink(iconPath, function() {});
+		
+					common.db.collection('members').update({}, {$pull: {'apps': appId, 'admin_of': appId, 'user_of': appId}}, {multi: true}, function(err, app) {});
+		
+					deleteAppData(appId, true, params, app);
+					common.returnMessage(params, 200, 'Success');
+					return true;
+				});
+			else
+				common.returnMessage(params, 500, 'Error deleting app');
+		});
 
         return true;
     };
@@ -179,44 +195,124 @@ var appsApi = {},
             common.returnMessage(params, 400, 'Not enough args');
             return false;
         }
-
-        if (params.member.global_admin) {
-            deleteAppData(appId);
-            common.returnMessage(params, 200, 'Success');
-        } else {
-            common.db.collection('members').findOne({ admin_of : appId, api_key: params.member.api_key}, function(err, member) {
-                if (!err && member) {
-                    deleteAppData(appId);
-                    common.returnMessage(params, 200, 'Success');
-                } else {
-                    common.returnMessage(params, 401, 'User does not have admin rights for this app');
-                }
-            });
-        }
+		common.db.collection('apps').findOne({'_id': common.db.ObjectID(appId)}, function(err, app){
+			if(!err && app){
+				if (params.member.global_admin) {
+					deleteAppData(appId, false, params, app);
+					common.returnMessage(params, 200, 'Success');
+				} else {
+					common.db.collection('members').findOne({ admin_of : appId, api_key: params.member.api_key}, function(err, member) {
+						if (!err && member) {
+							deleteAppData(appId, false, params, app);
+							common.returnMessage(params, 200, 'Success');
+						} else {
+							common.returnMessage(params, 401, 'User does not have admin rights for this app');
+						}
+					});
+				}
+            }
+		});
 
         return true;
     };
+    
+    function deleteAppData(appId, fromAppDelete, params, app) {
+        if(fromAppDelete || !params.qstring.args.period || params.qstring.args.period == "all"){
+            deleteAllAppData(appId, fromAppDelete, params, app);
+        }
+        else{
+            deletePeriodAppData(appId, fromAppDelete, params, app);
+        }
+    }
 
-    function deleteAppData(appId) {
-        common.db.collection('sessions').remove({'_id': common.db.ObjectID(appId)});
-        common.db.collection('users').remove({'_id': common.db.ObjectID(appId)});
-        common.db.collection('carriers').remove({'_id': common.db.ObjectID(appId)});
-        common.db.collection('locations').remove({'_id': common.db.ObjectID(appId)});
-        common.db.collection('cities').remove({'_id': common.db.ObjectID(appId)});
-        common.db.collection('app_users' + appId).drop();
-        common.db.collection('devices').remove({'_id': common.db.ObjectID(appId)});
-        common.db.collection('device_details').remove({'_id': common.db.ObjectID(appId)});
-        common.db.collection('app_versions').remove({'_id': common.db.ObjectID(appId)});
+    function deleteAllAppData(appId, fromAppDelete, params, app) {
+        common.db.collection('users').remove({'_id': {$regex: appId + ".*"}},function(){});
+        common.db.collection('carriers').remove({'_id': {$regex: appId + ".*"}},function(){});
+        common.db.collection('devices').remove({'_id': {$regex: appId + ".*"}},function(){});
+        common.db.collection('device_details').remove({'_id': {$regex: appId + ".*"}},function(){});
+        common.db.collection('cities').remove({'_id': {$regex: appId + ".*"}},function(){});
 
+        common.db.collection('app_users' + appId).drop(function() {
+            if (!fromAppDelete) {
+                common.db.collection('app_users' + appId).insert({_id:"uid-sequence", seq:0},function(){});
+            }
+        });
+
+        function deleteEvents(){
+            common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
+                if (!err && events && events.list) {
+                    for (var i = 0; i < events.list.length; i++) {
+                        var collectionNameWoPrefix = crypto.createHash('sha1').update(events.list[i] + appId).digest('hex');
+                        common.db.collection("events" + collectionNameWoPrefix).drop(function(){});
+                    }
+    
+                    common.db.collection('events').remove({'_id': common.db.ObjectID(appId)},function(){});
+                }
+            });
+        }
+        
+        if (!fromAppDelete)
+			plugins.dispatch("/i/apps/reset", {params:params, appId:appId, data:app}, deleteEvents);
+		else
+			plugins.dispatch("/i/apps/delete", {params:params, appId:appId, data:app}, deleteEvents);
+
+        if (fromAppDelete) {
+            common.db.collection('graph_notes').remove({'_id': common.db.ObjectID(appId)},function(){});
+        }
+    };
+    
+    function deletePeriodAppData(appId, fromAppDelete, params, app) {
+        var periods = {
+            "1month":1,
+            "3month":3,
+            "6month":6,
+            "1year":12,
+            "2year":24
+        };
+        var back = periods[params.qstring.args.period];
+        var skip = {};
+        var dates = {};
+        var now = moment();
+        skip[appId+"_"+now.format('YYYY:M')] = true;
+        dates[now.format('YYYY:M')] = true;
+        for(var i = 0; i < back; i++){
+            skip[appId+"_"+now.subtract("months", 1).format('YYYY:M')] = true;
+            skip[appId+"_"+now.format('YYYY')+":0"] = true;
+            dates[now.format('YYYY:M')] = true;
+            dates[now.format('YYYY')+":0"] = true;
+        }
+        skip = Object.keys(skip);
+        dates = Object.keys(dates);
+        common.db.collection('users').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:skip}}]},function(){});
+        common.db.collection('carriers').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:skip}}]},function(){});
+        common.db.collection('devices').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:skip}}]},function(){});
+        common.db.collection('device_details').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:skip}}]},function(){});
+        common.db.collection('cities').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:skip}}]},function(){});
+        
         common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
             if (!err && events && events.list) {
                 for (var i = 0; i < events.list.length; i++) {
-                    common.db.collection(events.list[i] + appId).drop();
+                    var segments = [];
+                    
+                    if(events.list[i] && events.segments && events.segments[events.list[i]])
+                        segments = events.segments[events.list[i]];
+                    
+                    segments.push("no-segment");
+                    console.log(segments);
+                    console.log(dates);
+                    var docs = [];
+                    for(var j = 0; j < segments.length; j++){
+                        for(var k = 0; k < dates.length; k++){
+                            docs.push(segments[j]+"_"+dates[k]);
+                        }
+                    }
+                    var collectionNameWoPrefix = crypto.createHash('sha1').update(events.list[i] + appId).digest('hex');
+                    common.db.collection("events" + collectionNameWoPrefix).remove({'_id': {$nin:docs}},function(){});
                 }
-
-                common.db.collection('events').remove({'_id': common.db.ObjectID(appId)});
             }
         });
+        
+        plugins.dispatch("/i/apps/clear", {params:params, appId:appId, data:app, moment:now, dates:dates, ids:skip});
     }
 
     function packApps(apps) {

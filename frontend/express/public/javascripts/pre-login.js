@@ -2,34 +2,6 @@ function showMessage(key) {
 	$("#message").text(jQuery.i18n.map[key]);
 }
 
-function showInstruction(x) {
-	var InstructionTitle;
-	var InstructionImg;
-	var InstructionContent;
-
-    x=x%3;
-
-	switch(x) {
-		case 0:
-            InstructionTitle="sdnfkldslkmkcl msckmdskm dfmsmldsl;dsfldsm";
-            InstructionImg="/images/dashboard/bg.png";
-            InstructionContent="We've conducted a careful analysis of the ways in which Wikihelp was successful in meeting your needs, and we've concluded that we can do better. Accordingly, we have retired the site and migrated the content.";
-            break;
-		case 1:
-            InstructionTitle="Content2";
-            InstructionImg="/images/dashboard/logo_bg.png";
-            InstructionContent="We've conducted a careful analysis of the ways in which Wikihelp was successful in meeting your needs, and we've concluded that we can do better. Accordingly, we have retired the site and migrated the content.";
-		    break;
-		case 2:
-		    InstructionTitle="Content3";
-            InstructionContent="We've conducted a careful analysis of the ways in which Wikihelp was successful in meeting your needs, and we've concluded that we can do better. Accordingly, we have retired the site and migrated the content.";
-            InstructionImg="/images/dashboard/menu_bg.png";
-		    break;
-	}
-
-	$("#InstructionMessage").html("<img  src='"+InstructionImg+"'/><div class='InstructionMsg'>"+InstructionContent+"</div>");
-}
-
 $(document).ready(function() {
 
 	var lang = "en";
@@ -40,7 +12,7 @@ $(document).ready(function() {
 	
 	jQuery.i18n.properties({
 		name:'pre-login', 
-		path:'/localization/pre-login/',
+		path:[countlyGlobal["cdn"]+'localization/pre-login/'],
 		mode:'map',
 		language: lang,
 		callback: function() {
@@ -91,7 +63,7 @@ $(document).ready(function() {
 		
 		jQuery.i18n.properties({
 			name:'pre-login', 
-			path:'/localization/pre-login/',
+			path:[countlyGlobal["cdn"]+'localization/pre-login/'],
 			mode:'map',
 			language: langCode,
 			callback: function() {
@@ -117,19 +89,4 @@ $(document).ready(function() {
 			}
 		});
 	});
-
-	function ScaleSlider() {
-        var parentWidth = jssor_slider2.$Elmt.parentNode.clientWidth;
-
-        if (parentWidth) {
-            var sliderWidth = parentWidth;
-
-            //keep the slider width no more than 602
-            sliderWidth = Math.min(sliderWidth, 602);
-
-            jssor_slider2.$SetScaleWidth(sliderWidth);
-        } else {
-            $JssorUtils$.$Delay(ScaleSlider, 30);
-        }
-    }
 });

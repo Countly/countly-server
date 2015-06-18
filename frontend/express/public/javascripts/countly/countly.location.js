@@ -3,7 +3,6 @@
     // Private Properties
     var _periodObj = {},
         _locationsDb = {},
-        _activeAppKey = 0,
         _countries = [],
         _chart,
         _dataTable,
@@ -17,73 +16,22 @@
             backgroundColor:"transparent",
             datalessRegionColor:"#FFF"
         },
-        _countryMap = {},
-        _initialized = false;
+        _countryMap = {};
 
     // Load local country names
-    $.get('/localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function (data) {
+    $.get('localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function (data) {
         _countryMap = data;
     });
 
     // Public Methods
     countlyLocation.initialize = function () {
-        if (_initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
-            return countlyLocation.refresh();
-        }
-
-        if (!countlyCommon.DEBUG) {
-            _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
-            _initialized = true;
-
-            return $.ajax({
-                type:"GET",
-                url:countlyCommon.API_PARTS.data.r,
-                data:{
-                    "api_key":countlyGlobal.member.api_key,
-                    "app_id":countlyCommon.ACTIVE_APP_ID,
-                    "method":"locations"
-                },
-                dataType:"jsonp",
-                success:function (json) {
-                    _locationsDb = json;
-                    setMeta();
-                }
-            });
-        } else {
-            _locationsDb = {"2012":{}};
-            return true;
-        }
+        _locationsDb = countlyUser.getDbObj();
+        setMeta();
     };
 
-    countlyLocation.refresh = function () {
-        _periodObj = countlyCommon.periodObj;
-
-        if (!countlyCommon.DEBUG) {
-
-            if (_activeAppKey != countlyCommon.ACTIVE_APP_KEY) {
-                _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
-                return countlyLocation.initialize();
-            }
-
-            return $.ajax({
-                type:"GET",
-                url:countlyCommon.API_PARTS.data.r,
-                data:{
-                    "api_key":countlyGlobal.member.api_key,
-                    "app_id":countlyCommon.ACTIVE_APP_ID,
-                    "method":"locations",
-                    "action":"refresh"
-                },
-                dataType:"jsonp",
-                success:function (json) {
-                    countlyCommon.extendDbObj(_locationsDb, json);
-                    setMeta();
-                }
-            });
-        } else {
-            _locationsDb = {"2012":{}};
-            return true;
-        }
+    countlyLocation.refresh = function (newJSON) {
+        countlyCommon.extendDbObj(_locationsDb, newJSON);
+        extendMeta();
     };
 
     countlyLocation.reset = function () {
@@ -109,15 +57,15 @@
         }
 
         if (google.visualization) {
-            draw();
+            draw(options.metric);
         } else {
             google.load('visualization', '1', {'packages':['geochart'], callback:draw});
         }
     };
 
-    countlyLocation.refreshGeoChart = function () {
+    countlyLocation.refreshGeoChart = function (metric) {
         if (google.visualization) {
-            reDraw();
+            reDraw(metric);
         } else {
             google.load('visualization', '1', {'packages':['geochart'], callback:draw});
         }
@@ -143,19 +91,21 @@
             { "name":"n" }
         ]);
 
+        locationData.chartData = _.sortBy(locationData.chartData, function(obj) { return -obj.t; });
+
         if (options && options.maxCountries && locationData.chartData) {
             if (locationData.chartData.length > options.maxCountries) {
                 locationData.chartData = locationData.chartData.splice(0, options.maxCountries);
             }
         }
-		
-		for (var i = 0; i < locationData.chartData.length; i++) {
+
+        for (var i = 0; i < locationData.chartData.length; i++) {
             locationData.chartData[i]['country_flag'] =
-                "<div class='flag' style='background-image:url(/images/flags/" + locationData.chartData[i]['code'] + ".png);'></div>" +
+                "<div class='flag' style='background-image:url("+countlyGlobal["path"]+"/images/flags/" + locationData.chartData[i]['code'] + ".png);'></div>" +
                 locationData.chartData[i]['country'];
         }
 
-        return _.sortBy(locationData.chartData, function(obj) { return -obj.t; });
+        return locationData.chartData;
     };
 
     countlyLocation.clearLocationObject = function (obj) {
@@ -183,13 +133,14 @@
 
     countlyLocation.changeLanguage = function () {
         // Load local country names
-        return $.get('/localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function (data) {
+        return $.get('localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function (data) {
             _countryMap = data;
         });
     };
 
     //Private Methods
-    function draw() {
+    function draw(ob) {
+        ob = ob || {id:'total', label:jQuery.i18n.map["sidebar.analytics.sessions"], type:'number', metric:"t"};
         var chartData = {cols:[], rows:[]};
 
         _chart = new google.visualization.GeoChart(document.getElementById(_chartElementId));
@@ -201,23 +152,25 @@
                     return countlyLocation.getCountryName(rangeArr);
                 }
             },
-            { "name":"t" }
+            { "name":"t" },
+            { "name":"u" },
+            { "name":"n" }
         ]);
 
         chartData.cols = [
-            {id:'country', label:jQuery.i18n.map["countries.table.country"], type:'string'},
-            {id:'total', label:jQuery.i18n.map["common.total"], type:'number'}
+            {id:'country', label:jQuery.i18n.map["countries.table.country"], type:'string'}
         ];
+        chartData.cols.push(ob);
         chartData.rows = _.map(tt.chartData, function (value, key, list) {
             if (value.country == "European Union" || value.country == "Unknown") {
                 return {c:[
                     {v:""},
-                    {v:value["t"]}
+                    {v:value[ob.metric]}
                 ]};
             }
             return {c:[
                 {v:value.country},
-                {v:value["t"]}
+                {v:value[ob.metric]}
             ]};
         });
 
@@ -245,33 +198,36 @@
         _chart.draw(_dataTable, _chartOptions);
     }
 
-    function reDraw() {
+    function reDraw(ob) {
+        ob = ob || {id:'total', label:jQuery.i18n.map["sidebar.analytics.sessions"], type:'number', metric:"t"};
         var chartData = {cols:[], rows:[]};
 
-        var tt = countlyCommon.extractTwoLevelData(_locationsDb, _locationsDb["countries"], countlyLocation.clearLocationObject, [
+        var tt = countlyCommon.extractTwoLevelData(_locationsDb, _countries, countlyLocation.clearLocationObject, [
             {
                 "name":"country",
                 "func":function (rangeArr, dataObj) {
                     return countlyLocation.getCountryName(rangeArr);
                 }
             },
-            { "name":"t" }
+            { "name":"t" },
+            { "name":"u" },
+            { "name":"n" }
         ]);
 
         chartData.cols = [
-            {id:'country', label:jQuery.i18n.map["countries.table.country"], type:'string'},
-            {id:'total', label:jQuery.i18n.map["common.total"], type:'number'}
+            {id:'country', label:jQuery.i18n.map["countries.table.country"], type:'string'}
         ];
+        chartData.cols.push(ob);
         chartData.rows = _.map(tt.chartData, function (value, key, list) {
             if (value.country == "European Union" || value.country == "Unknown") {
                 return {c:[
                     {v:""},
-                    {v:value["t"]}
+                    {v:value[ob.metric]}
                 ]};
             }
             return {c:[
                 {v:value.country},
-                {v:value["t"]}
+                {v:value[ob.metric]}
             ]};
         });
 
@@ -279,15 +235,17 @@
         _chart.draw(_dataTable, _chartOptions);
     }
 
-    function geoDataSortHelper(a, b) {
-        return ((a["t"] > b["t"]) ? -1 : ((a["t"] < b["t"]) ? 1 : 0));
-    }
-
     function setMeta() {
         if (_locationsDb['meta']) {
             _countries = (_locationsDb['meta']['countries']) ? _locationsDb['meta']['countries'] : [];
         } else {
             _countries = [];
+        }
+    }
+
+    function extendMeta() {
+        if (_locationsDb['meta']) {
+            _countries = countlyCommon.union(_countries, _locationsDb['meta']['countries']);
         }
     }
 

@@ -1,0 +1,1 @@
+CountlyHelpers.createMetricModel(window.countlyDensity = window.countlyDensity || {}, "density", jQuery);

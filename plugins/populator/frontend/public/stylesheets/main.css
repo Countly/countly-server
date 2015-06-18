@@ -1,0 +1,10 @@
+#stop-populate{display: none;}
+#populator{ overflow: hidden; border-bottom-left-radius: 7px; border-bottom-right-radius: 7px; font-family:Ubuntu;}
+#populator .clear {clear: both;}
+#populator h3{margin: 10px 0px 10px 0px; color: #646464; font-size: 20px; font-family:Ubuntu; text-align: center;}
+#populator .left-side{ padding-top: 10px; width: 350px; float: left; background-color: #fff; border-right: 1px solid #ccc; padding-bottom: 1000px; margin-bottom: -1000px; overflow: hidden; position: relative;}
+#populator .right-side{ margin-left: 350px; padding: 10px 25px;}
+#populator #date-selector {float: none; clear: both; display: inline; }
+#ui-datepicker-div.ui-widget-content{background-color: #fff;}
+#populator .icon-button{padding:10px; margin: 0 auto; float: none;}
+#populate-explain{cursor: pointer; text-align: center; color:#4CC04F; font-size: 25px; position: absolute; top:20px; right:75px;}

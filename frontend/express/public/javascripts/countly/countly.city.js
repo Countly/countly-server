@@ -4,7 +4,7 @@
     var _periodObj = {},
         _locationsDb = {},
         _activeAppKey = 0,
-        _countries = [],
+        _cities = [],
         _chart,
         _dataTable,
         _chartElementId = "geo-chart",
@@ -18,8 +18,8 @@
             datalessRegionColor:"#FFF",
             region:"TR"
         },
-        _countryMap = {},
-        _initialized = false;
+        _initialized = false,
+        _period = null;
 
     if (countlyCommon.CITY_DATA === false) {
         countlyCity.initialize = function() { return true; };
@@ -31,9 +31,11 @@
         // Public Methods
         countlyCity.initialize = function () {
 
-            if (_initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+            if (_initialized && _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
                 return countlyCity.refresh();
             }
+
+            _period = countlyCommon.getPeriodForAjax();
 
             if (!countlyCommon.DEBUG) {
                 _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
@@ -45,7 +47,8 @@
                     data:{
                         "api_key":countlyGlobal.member.api_key,
                         "app_id":countlyCommon.ACTIVE_APP_ID,
-                        "method":"cities"
+                        "method":"cities",
+                        "period":_period
                     },
                     dataType:"jsonp",
                     success:function (json) {
@@ -114,15 +117,15 @@
             }
 
             if (google.visualization) {
-                draw();
+                draw(options.metric);
             } else {
                 google.load('visualization', '1', {'packages':['geochart'], callback:draw});
             }
         };
 
-        countlyCity.refreshGeoChart = function () {
+        countlyCity.refreshGeoChart = function (metric) {
             if (google.visualization) {
-                reDraw();
+                reDraw(metric);
             } else {
                 google.load('visualization', '1', {'packages':['geochart'], callback:draw});
             }
@@ -130,9 +133,9 @@
 
         countlyCity.getLocationData = function (options) {
 
-            var locationData = countlyCommon.extractTwoLevelData(_locationsDb, _countries, countlyCity.clearLocationObject, [
+            var locationData = countlyCommon.extractTwoLevelData(_locationsDb, _cities, countlyCity.clearLocationObject, [
                 {
-                    "name":"country",
+                    "name":"city",
                     "func":function (rangeArr, dataObj) {
                         return rangeArr;
                     }
@@ -166,33 +169,38 @@
     };
 
     //Private Methods
-    function draw() {
+    function draw(ob) {
+        ob = ob || {id:'total', label:jQuery.i18n.map["sidebar.analytics.sessions"], type:'number', metric:"t"};
         var chartData = {cols:[], rows:[]};
 
         _chart = new google.visualization.GeoChart(document.getElementById(_chartElementId));
 
-        var tt = countlyCommon.extractTwoLevelData(_locationsDb, _countries, countlyCity.clearLocationObject, [
+        var tt = countlyCommon.extractTwoLevelData(_locationsDb, _cities, countlyCity.clearLocationObject, [
             {
-                "name":"country",
+                "name":"city",
                 "func":function (rangeArr, dataObj) {
                     return rangeArr;
                 }
             },
-            { "name":"t" }
+            { "name":"t" },
+            { "name":"u" },
+            { "name":"n" }
         ]);
 
         chartData.cols = [
-            {id:'city', label:"City", type:'string'},
-            {id:'total', label:jQuery.i18n.map["common.total"], type:'number'}
+            {id:'city', label:"City", type:'string'}
         ];
-
+        chartData.cols.push(ob);
         chartData.rows = _.map(tt.chartData, function (value, key, list) {
-            if (value.country == "European Union" || value.country == "Unknown") {
-                return {c:[]};
+            if (value.city == "Unknown") {
+                return {c:[
+                    {v:""},
+                    {v:value[ob.metric]}
+                ]};
             }
             return {c:[
-                {v:value.country},
-                {v:value["t"]}
+                {v:value.city},
+                {v:value[ob.metric]}
             ]};
         });
 
@@ -208,33 +216,36 @@
         _chart.draw(_dataTable, _chartOptions);
     }
 
-    function reDraw() {
+    function reDraw(ob) {
+        ob = ob || {id:'total', label:jQuery.i18n.map["sidebar.analytics.sessions"], type:'number', metric:"t"};
         var chartData = {cols:[], rows:[]};
 
-        var tt = countlyCommon.extractTwoLevelData(_locationsDb, _locationsDb["cities"], countlyCity.clearLocationObject, [
+        var tt = countlyCommon.extractTwoLevelData(_locationsDb, _cities, countlyCity.clearLocationObject, [
             {
-                "name":"country",
+                "name":"city",
                 "func":function (rangeArr, dataObj) {
                     return rangeArr;
                 }
             },
-            { "name":"t" }
+            { "name":"t" },
+            { "name":"u" },
+            { "name":"n" }
         ]);
 
         chartData.cols = [
-            {id:'country', label:"City", type:'string'},
-            {id:'total', label:jQuery.i18n.map["common.total"], type:'number'}
+            {id:'city', label:"City", type:'string'}
         ];
+        chartData.cols.push(ob);
         chartData.rows = _.map(tt.chartData, function (value, key, list) {
-            if (value.country == "European Union" || value.country == "Unknown") {
+            if (value.city == "Unknown") {
                 return {c:[
                     {v:""},
-                    {v:value["t"]}
+                    {v:value[ob.metric]}
                 ]};
             }
             return {c:[
-                {v:value.country},
-                {v:value["t"]}
+                {v:value.city},
+                {v:value[ob.metric]}
             ]};
         });
 
@@ -242,15 +253,11 @@
         _chart.draw(_dataTable, _chartOptions);
     }
 
-    function geoDataSortHelper(a, b) {
-        return ((a["t"] > b["t"]) ? -1 : ((a["t"] < b["t"]) ? 1 : 0));
-    }
-
     function setMeta() {
         if (_locationsDb['meta']) {
-            _countries = (_locationsDb['meta']['cities']) ? _locationsDb['meta']['cities'] : [];
+            _cities = (_locationsDb['meta']['cities']) ? _locationsDb['meta']['cities'] : [];
         } else {
-            _countries = [];
+            _cities = [];
         }
     }
 

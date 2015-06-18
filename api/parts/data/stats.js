@@ -1,62 +1,119 @@
 var stats = {},
-    common = require('./../../utils/common.js'),
-    async = require('./../../utils/async.min.js');
+    async = require('async');
 
 (function (stats) {
-
-    stats.totalUsers = function (callback) {
-        common.db.collection("apps").find({}, {_id:1}).toArray(function (err, allApps) {
-            async.map(allApps, getUserCountForApp, function (err, results) {
-                if (err) {
-                    callback(0);
-                }
-
-                var userCount = 0;
-
-                for (var i = 0; i < results.length; i++) {
-                    userCount += results[i];
-                }
-
-                callback(userCount, allApps.length);
+	var countlyDb;
+    stats.getOverall = function (db, callback) {
+		countlyDb = db;
+        getTotalUsers(function(totalUsers, totalApps) {
+            getTotalEvents(function(totalEvents) {
+                getTotalMsgUsers(function(totalMsgUsers) {
+                    getTotalMsgCreated(function(totalMsgCreated) {
+                        getTotalMsgSent(function(totalMsgSent) {
+                            callback({
+                                "total-users": totalUsers,
+                                "total-apps": totalApps,
+                                "total-events": totalEvents,
+                                "total-msg-users": totalMsgUsers,
+                                "total-msg-created": totalMsgCreated,
+                                "total-msg-sent": totalMsgSent
+                            });
+                        });
+                    });
+                });
             });
         });
     };
 
-    stats.totalReqs = function (callback) {
-        common.db.collection("sessions").find({}, {'2012.e':1, '2013.e':1}).toArray(function (err, sessions) {
-            var reqCount = 0;
-
-            for (var i = 0; i < sessions.length; i++) {
-                if (sessions[i] && sessions[i]["2012"] && sessions[i]["2012"]["e"]) {
-                    reqCount += sessions[i]["2012"]["e"];
-                }
-
-                if (sessions[i] && sessions[i]["2013"] && sessions[i]["2013"]["e"]) {
-                    reqCount += sessions[i]["2013"]["e"];
-                }
-            }
-
-            callback(reqCount);
+    function getTotalUsers(callback) {
+        countlyDb.collection("apps").find({}, {_id:1}).toArray(function (err, allApps) {
+			if(err || !allApps)
+				callback(0, 0);
+			else
+				async.map(allApps, getUserCountForApp, function (err, results) {
+					if (err)
+						callback(0, 0);
+	
+					var userCount = 0;
+	
+					for (var i = 0; i < results.length; i++) {
+						userCount += results[i];
+					}
+	
+					callback(userCount, allApps.length);
+				});
         });
-    };
+    }
 
-    stats.totalEvents = function (callback) {
-        common.db.collection("events").find({}, {'list':1}).toArray(function (err, events) {
-            var eventCount = 0;
-
-            for (var i = 0; i < events.length; i++) {
-                if (events[i] && events[i]["list"]) {
-                    eventCount += events[i]["list"].length;
-                }
-            }
-
-            callback(eventCount);
+    function getTotalEvents(callback) {
+        countlyDb.collection("events").find({}, {'list':1}).toArray(function (err, events) {
+			if (err || !events)
+                callback(0);
+			else{
+				var eventCount = 0;
+	
+				for (var i = 0; i < events.length; i++) {
+					if (events[i] && events[i]["list"]) {
+						eventCount += events[i]["list"].length;
+					}
+				}
+	
+				callback(eventCount);
+			}
         });
-    };
+    }
+
+    function getTotalMsgUsers(callback) {
+        countlyDb.collection("users").find({_id: {"$regex": ".*:0$"}}, {"d.m":1}).toArray(function (err, msgUsers) {
+			if (err || !msgUsers)
+                callback(0);
+			else{
+				var msgUserCount = 0;
+	
+				for (var i = 0; i < msgUsers.length; i++) {
+					if (msgUsers[i] && msgUsers[i]["d"] && msgUsers[i]["d"]["m"]) {
+						msgUserCount += msgUsers[i]["d"]["m"];
+					}
+				}
+	
+				callback(msgUserCount);
+			}
+        });
+    }
+
+    function getTotalMsgCreated(callback) {
+        countlyDb.collection("messages").count(function (err, msgCreated) {
+			if (err || !msgCreated)
+                callback(0);
+			else
+				callback(msgCreated);
+        });
+    }
+
+    function getTotalMsgSent(callback) {
+        countlyDb.collection("messages").find({}, {"result":1}).toArray(function (err, messages) {
+			if (err || !messages)
+                callback(0);
+			else{
+				var sentMsgCount = 0;
+	
+				for (var i = 0; i < messages.length; i++) {
+					if (messages[i] && messages[i]["result"] && messages[i]["result"]["sent"]) {
+						sentMsgCount += messages[i]["result"]["sent"];
+					}
+				}
+	
+				callback(sentMsgCount);
+			}
+        });
+    }
 
     function getUserCountForApp(app, callback) {
-        common.db.collection("app_users" + app._id).find({}).count(function (err, count) {
-            callback(err, count);
+        countlyDb.collection("app_users" + app._id).find({}).count(function (err, count) {
+			if (err || !count)
+                callback(0);
+			else
+				callback(err, count);
         });
     }
 

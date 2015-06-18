@@ -1,6 +1,7 @@
 var usersApi = {},
     common = require('./../../utils/common.js'),
     mail = require('./mail.js'),
+	plugins = require('../../../plugins/pluginManager.js'),
     crypto = require('crypto');
 
 (function (usersApi) {
@@ -34,8 +35,8 @@ var usersApi = {},
                     'full_name':members[i].full_name,
                     'username':members[i].username,
                     'email':members[i].email,
-                    'admin_of':members[i].admin_of,
-                    'user_of':members[i].user_of,
+                    'admin_of':((members[i].admin_of && members[i].admin_of.length > 0 && members[i].admin_of[0] != "") ? members[i].admin_of : []),
+                    'user_of':((members[i].user_of && members[i].user_of.length > 0 && members[i].user_of[0] != "") ? members[i].user_of : []),
                     'global_admin':(members[i].global_admin === true),
                     'is_current_user':(members[i].api_key == params.member.api_key)
                 };
@@ -75,6 +76,7 @@ var usersApi = {},
                 common.returnMessage(params, 200, 'Email or username already exists');
                 return false;
             } else {
+				plugins.dispatch("/i/users/create", {params:params, data:{full_name:newMember.full_name, username:newMember.username, email:newMember.email}});
                 createUser();
                 return true;
             }
@@ -89,7 +91,7 @@ var usersApi = {},
                 if (member && member.length && !err) {
 
                     member[0].api_key = common.md5Hash(member[0]._id + (new Date().getTime()));
-                    common.db.collection('members').update({'_id': member[0]._id}, {$set: {api_key: member[0].api_key}});
+                    common.db.collection('members').update({'_id': member[0]._id}, {$set: {api_key: member[0].api_key}},function(){});
 
                     mail.sendToNewMember(member[0], passwordNoHash);
 
@@ -138,6 +140,7 @@ var usersApi = {},
         common.db.collection('members').update({'_id': common.db.ObjectID(params.qstring.args.user_id)}, {'$set': updatedMember}, {safe: true}, function(err, isOk) {
             common.db.collection('members').findOne({'_id': common.db.ObjectID(params.qstring.args.user_id)}, function(err, member) {
                 if (member && !err) {
+					plugins.dispatch("/i/users/update", {params:params, data:{full_name:updatedMember.full_name, username:updatedMember.username, email:updatedMember.email}});
                     if (params.qstring.args.send_notification && passwordNoHash) {
                         mail.sendToUpdatedMember(member, passwordNoHash);
                     }
@@ -169,10 +172,13 @@ var usersApi = {},
 
         for (var i = 0; i < userIds.length; i++) {
             // Each user id should be 24 chars long and a user can't delete his own account
-            if (userIds[i] === params.member._id || userIds[i].length !== 24) {
+            if (!userIds[i] || userIds[i] === params.member._id || userIds[i].length !== 24) {
                 continue;
             } else {
-                common.db.collection('members').remove({'_id': common.db.ObjectID(userIds[i])});
+				common.db.collection('members').findAndModify({'_id': common.db.ObjectID(userIds[i])},{},{},{remove:true},function(err, user){
+					if(!err && user)
+						plugins.dispatch("/i/users/delete", {params:params, data:{full_name:user.full_name, username:user.username, email:user.email}});
+				});
             }
         }
 

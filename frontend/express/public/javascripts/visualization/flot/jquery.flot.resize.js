@@ -38,27 +38,34 @@ plots, you can just fix the size of their placeholders.
             plot.setupGrid();
             plot.draw();
 
-						var graphWidth = plot.width();
+            var graphWidth = plot.width();
 
-						// update positions of key event labels
-						// each label has data-points attribute for storing 
-						// their corresponding [index, value]
-						$("#dashboard-graph .graph-key-event-label").each(function(){
-							
-							var o = plot.pointOffset({x: $(this).data("points")[0], y: $(this).data("points")[1]});
+            // update positions of key event labels
+            // each label has data-points attribute for storing
+            // their corresponding [index, value]
+            $("#dashboard-graph .graph-key-event-label").each(function() {
+                var o = plot.pointOffset({x: $(this).data("points")[0], y: $(this).data("points")[1]});
 
-							if (o.left <= 15) {
-								o.left = 15;
-							}
-				
-							if (o.left >= (graphWidth - 15)) {
-								o.left = (graphWidth - 15);
-							}
+                if (o.left <= 15) {
+                    o.left = 15;
+                }
 
-							$(this).css({
-								left: o.left
-							})
-						});
+                if (o.left >= (graphWidth - 15)) {
+                    o.left = (graphWidth - 15);
+                }
+
+                $(this).css({
+                    left: o.left
+                })
+            });
+
+            $("#dashboard-graph .graph-note-label").each(function() {
+                var o = plot.pointOffset({x: $(this).data("points")[0], y: $(this).data("points")[1]});
+
+                $(this).css({
+                    left: o.left
+                })
+            });
         }
         
         function bindEvents(plot, eventHolder) {

@@ -1,5 +1,5 @@
 countlyCommon.DEBUG = false;
-countlyCommon.API_URL = "";
+countlyCommon.API_URL = countlyGlobal["path"] || "";
 countlyCommon.API_PARTS = {
     data:{
         "w":countlyCommon.API_URL + "/i",

@@ -5,13 +5,16 @@
         _deviceDb = {},
         _devices = [],
         _activeAppKey = 0,
-        _initialized = false;
+        _initialized = false,
+        _period = null;
 
     //Public Methods
     countlyDevice.initialize = function () {
-        if (_initialized && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+        if (_initialized && _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
             return countlyDevice.refresh();
         }
+
+        _period = countlyCommon.getPeriodForAjax();
 
         if (!countlyCommon.DEBUG) {
             _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
@@ -23,7 +26,8 @@
                 data:{
                     "api_key":countlyGlobal.member.api_key,
                     "app_id":countlyCommon.ACTIVE_APP_ID,
-                    "method":"devices"
+                    "method":"devices",
+                    "period":_period
                 },
                 dataType:"jsonp",
                 success:function (json) {
@@ -59,7 +63,7 @@
                 dataType:"jsonp",
                 success:function (json) {
                     countlyCommon.extendDbObj(_deviceDb, json);
-                    setMeta();
+                    extendMeta();
                 }
             });
         } else {
@@ -109,7 +113,7 @@
         }, 0);
 
         for (var i = 0; i < deviceNames.length; i++) {
-            var percent = (deviceNew[i] / sum) * 100;
+            var percent = (deviceNew[i] / sum2) * 100;
             chartData3[i] = {data:[
                 [0, deviceNew[i]]
             ], label:deviceNames[i]};
@@ -188,146 +192,9 @@
     };
 
     countlyDevice.getDeviceFullName = function(shortName) {
-        var fullName = "";
-
-        switch (shortName) {
-            case "iPhone1,1":
-                fullName = "iPhone 1G";
-                break;
-            case "iPhone1,2":
-                fullName = "iPhone 3G";
-                break;
-            case "iPhone2,1":
-                fullName = "iPhone 3GS";
-                break;
-            case "iPhone3,1":
-                fullName = "iPhone 4 (GSM)";
-                break;
-            case "iPhone3,2":
-                fullName = "iPhone 4 (GSM Rev A)";
-                break;
-            case "iPhone3,3":
-                fullName = "iPhone 4 (CDMA)";
-                break;
-            case "iPhone4,1":
-                fullName = "iPhone 4S";
-                break;
-            case "iPhone5,1":
-                fullName = "iPhone 5 (GSM)";
-                break;
-            case "iPhone5,2":
-                fullName = "iPhone 5 (Global)";
-                break;
-            case "iPhone5,3":
-                fullName = "iPhone 5C (GSM)";
-                break;
-            case "iPhone5,4":
-                fullName = "iPhone 5C (Global)";
-                break;
-            case "iPhone6,1":
-                fullName = "iPhone 5S (GSM)";
-                break;
-            case "iPhone6,2":
-                fullName = "iPhone 5S (Global)";
-                break;
-            case "iPhone7,1":
-                fullName = "iPhone 6 Plus";
-                break;
-            case "iPhone7,2":
-                fullName = "iPhone 6";
-                break;
-            case "iPod1,1":
-                fullName = "iPod Touch 1G";
-                break;
-            case "iPod2,1":
-                fullName = "iPod Touch 2G";
-                break;
-            case "iPod3,1":
-                fullName = "iPod Touch 3G";
-                break;
-            case "iPod4,1":
-                fullName = "iPod Touch 4G";
-                break;
-            case "iPod5,1":
-                fullName = "iPod Touch 5G";
-                break;
-            case "iPad1,1":
-                fullName = "iPad";
-                break;
-            case "iPad2,1":
-                fullName = "iPad 2 (WiFi)";
-                break;
-            case "iPad2,2":
-                fullName = "iPad 2 (GSM)";
-                break;
-            case "iPad2,3":
-                fullName = "iPad 2 (CDMA)";
-                break;
-            case "iPad2,4":
-                fullName = "iPad 2 (WiFi Rev A)";
-                break;
-            case "iPad3,1":
-                fullName = "iPad 3 (WiFi)";
-                break;
-            case "iPad3,2":
-                fullName = "iPad 3 (CDMA)";
-                break;
-            case "iPad3,3":
-                fullName = "iPad 3 (Global)";
-                break;
-            case "iPad3,4":
-                fullName = "iPad 4 (WiFi)";
-                break;
-            case "iPad3,5":
-                fullName = "iPad 4 (GSM)";
-                break;
-            case "iPad3,6":
-                fullName = "iPad 4 (Global)";
-                break;
-            case "iPad4,1":
-                fullName = "iPad Air (WiFi)";
-                break;
-            case "iPad4,2":
-                fullName = "iPad Air (Global)";
-                break;
-            case "iPad5,3":
-                fullName = "iPad Air 2G (WiFi)";
-                break;
-            case "iPad5,4":
-                fullName = "iPad Air 2G (Global)";
-                break;
-            case "iPad2,5":
-                fullName = "iPad Mini (WiFi)";
-                break;
-            case "iPad2,6":
-                fullName = "iPad Mini (GSM)";
-                break;
-            case "iPad2,7":
-                fullName = "iPad Mini (Global)";
-                break;
-            case "iPad4,4":
-                fullName = "iPad Mini 2G (WiFi)";
-                break;
-            case "iPad4,5":
-                fullName = "iPad Mini 2G (Global)";
-                break;
-            case "iPad4,7":
-                fullName = "iPad Mini 3G (WiFi)";
-                break;
-            case "iPad4,8":
-                fullName = "iPad Mini 3G (Global)";
-                break;
-            case "i386":
-                fullName = "Simulator";
-                break;
-            case "x86_64":
-                fullName = "Simulator";
-                break;
-            default:
-                fullName = shortName;
-        }
-
-        return fullName;
+		if(countlyDeviceList && countlyDeviceList[shortName])
+			return countlyDeviceList[shortName];
+        return shortName;
     };
 
     function setMeta() {
@@ -335,6 +202,12 @@
             _devices = (_deviceDb['meta']['devices']) ? _deviceDb['meta']['devices'] : [];
         } else {
             _devices = [];
+        }
+    }
+
+    function extendMeta() {
+        if (_deviceDb['meta']) {
+            _devices = countlyCommon.union(_devices, _deviceDb['meta']['devices']);
         }
     }
 

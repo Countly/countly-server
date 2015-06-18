@@ -1,0 +1,167 @@
+	<div class="widget">
+		<div class="widget-header">
+			<div class="left">
+                <div class="logo font-logo">
+                    <i class="fa fa-database"></i>
+                </div>
+				<div class="title">{{page-title}}</div>
+			</div>
+			{{#if document}}
+			<div class="right help-zone-vs">
+				<div class="button"><a href="#/manage/db/{{db}}/{{collection}}/page/{{page}}" class="back"><i class="fa fa-chevron-left"></i><span>{{back}}</span></a></div>
+			</div>
+			{{else}}
+				{{#if collection}}
+			<div class="right help-zone-vs">
+				<div class="button"><a href="#/manage/db/{{db}}" class="back"><i class="fa fa-chevron-left"></i><span>{{back}}</span></a></div>
+			</div>
+				{{else}}
+			<div class="right help-zone-vs">
+				<div class="button"><a href="#/manage/db" class="back"><i class="fa fa-chevron-left"></i><span>{{back}}</span></a></div>
+			</div>
+				{{/if}}
+			{{/if}}
+		</div>
+		<div id="dbviewer" class="widget-content">
+			<div class="left-side">
+				<div id="accordion">
+				{{#eachOfArray dbs}}
+					<h3>{{value.name}}</h3>
+					<div>
+						<ul>
+						{{#eachOfArray value.collections}}
+							<li><a href='#/manage/db/{{../value.name}}/{{value}}'>{{value}}</a></li>
+						{{/eachOfArray}}
+						</ul>
+					</div>
+				{{/eachOfArray}}
+				</div>
+			</div>
+			<div class="right-side">
+				<p class="breadcrumbs">
+					<a href='#/manage/db'>/</a>
+					{{#if db}}
+						{{#if collection}}
+					<a href='#/manage/db/{{db}}'>{{db}}</a>
+							{{#if document}}
+					<a href='#/manage/db/{{db}}/{{collection}}'>/{{collection}}</a>
+							{{else}}
+					/{{collection}}
+							{{/if}}
+						{{else}}
+					{{db}}
+						{{/if}}
+					{{/if}}
+				</p>
+				{{#if document}}
+				<div id="mongodocument">
+				</div>
+				</table>
+				{{else}}
+					{{#if collection}}
+					<p>Filter: <a id="collection-filter">Apply Filter</a></p>
+					<p><textarea class="collection-filter" placeholder='{{prettyJSON placeholder}}'></textarea></p>
+					<p>Showing {{data.start}} - {{data.end}} from {{data.total}} documents</p>
+					<p class='pagination'>
+					{{#ifCond data.pages ">" 1}}
+						<a href='#/manage/db/{{db}}/{{collection}}/page/1'>First</a>
+						<a href='#/manage/db/{{db}}/{{collection}}/page/{{prev}}'>Prev</a>
+						&nbsp;
+						{{#ifCond start ">" 1}}
+						...
+						&nbsp;
+						{{/ifCond}}
+						{{#for start end 1}}
+							{{#ifCond this "==" ../data.curPage}}
+							<a href='#/manage/db/{{../../db}}/{{../../collection}}/page/{{this}}' class="current">{{this}}</a>
+							{{else}}
+							<a href='#/manage/db/{{../../db}}/{{../../collection}}/page/{{this}}'>{{this}}</a>
+							{{/ifCond}}
+						{{/for}}
+						{{#ifCond end "<" data.pages}}
+						&nbsp;
+						...
+						{{/ifCond}}
+						&nbsp;
+						<a href='#/manage/db/{{db}}/{{collection}}/page/{{next}}'>Next</a>
+						<a href='#/manage/db/{{db}}/{{collection}}/page/{{data.pages}}'>Last</a>
+					{{/ifCond}}
+					&nbsp;Show results: <select class='result-limit'>
+							<option value='10'>10</option>
+							<option value='20'>20</option>
+							<option value='30'>30</option>
+							<option value='40'>40</option>
+							<option value='50'>50</option>
+						</select>
+					</p>
+					<table class="jh-type-object jh-root" id="dbviewer-collections">
+					{{#eachOfArray data.collections}}
+					<tr>
+						<th class="jh-key jh-object-key"><p><strong>_id:</strong> {{value._id}} (<span class="jh-type-string"><a href='#/manage/db/{{../db}}/{{../collection}}/{{value._id}}' >View</a></span>)</p></th>
+					</tr>
+					<tr>
+						<td class="jh-value jh-object-value">{{prettyJSON value}}</td>
+					</tr>
+					{{/eachOfArray}}
+					</table>
+					<p class='pagination'>
+					{{#ifCond data.pages ">" 1}}
+						<a href='#/manage/db/{{db}}/{{collection}}/page/1'>First</a>
+						<a href='#/manage/db/{{db}}/{{collection}}/page/{{prev}}'>Prev</a>
+						&nbsp;
+						{{#ifCond start ">" 1}}
+						...
+						&nbsp;
+						{{/ifCond}}
+						{{#for start end 1}}
+							{{#ifCond this "==" ../data.curPage}}
+							<a href='#/manage/db/{{../../db}}/{{../../collection}}/page/{{this}}' class="current">{{this}}</a>
+							{{else}}
+							<a href='#/manage/db/{{../../db}}/{{../../collection}}/page/{{this}}'>{{this}}</a>
+							{{/ifCond}}
+						{{/for}}
+						{{#ifCond end "<" data.pages}}
+						&nbsp;
+						...
+						{{/ifCond}}
+						&nbsp;
+						<a href='#/manage/db/{{db}}/{{collection}}/page/{{next}}'>Next</a>
+						<a href='#/manage/db/{{db}}/{{collection}}/page/{{data.pages}}'>Last</a>
+					{{/ifCond}}
+					&nbsp;Show results: <select class='result-limit'>
+							<option value='10'>10</option>
+							<option value='20'>20</option>
+							<option value='30'>30</option>
+							<option value='40'>40</option>
+							<option value='50'>50</option>
+						</select>
+					</p>
+					<p>Showing {{data.start}} - {{data.end}} from {{data.total}} documents</p>
+					{{else}}
+						{{#if db}}
+						{{#eachOfArray dbs}}
+							{{#ifCond value.name "==" ../db}}
+								<table class="jh-type-object jh-root" id="dbviewer-collections">
+								{{#eachOfArray value.collections}}
+								<tr>
+								<th class="jh-key jh-object-key"><a href="#/manage/db/{{../../../db}}/{{value}}">{{value}}</a></th>
+								</tr>
+								{{/eachOfArray}}
+								</table>
+							{{/ifCond}}
+						{{/eachOfArray}}
+						{{else}}
+							<table class="jh-type-object jh-root" id="dbviewer-collections">
+							{{#eachOfArray dbs}}
+								<tr>
+								<th class="jh-key jh-object-key"><a href="#/manage/db/{{value.name}}">{{value.name}}</a></th>
+								</tr>
+							{{/eachOfArray}}
+							</table>
+						{{/if}}
+					{{/if}}
+				{{/if}}
+			</div>
+			<div class="clear"></div>
+		</div>
+	</div>

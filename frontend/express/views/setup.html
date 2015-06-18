@@ -1,17 +1,18 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!--
-   ______                  __  __     
+   ______                  __  __
   / ____/___  __  ______  / /_/ /_  __
  / /   / __ \/ / / / __ \/ __/ / / / /
-/ /___/ /_/ / /_/ / / / / /_/ / /_/ / 
-\____/\____/\__,_/_/ /_/\__/_/\__, /  
-              http://count.ly/____/   
+/ /___/ /_/ / /_/ / / / / /_/ / /_/ /
+\____/\____/\__,_/_/ /_/\__/_/\__, /
+              http://count.ly/____/
 -->
 <html>
 <head>
-	<link href='/stylesheets/pre-login/main.css' rel='stylesheet' type='text/css'>
-	<link rel="icon" type="image/png" href="/images/favicon.png">
+	<link href='stylesheets/pre-login/main.css' rel='stylesheet' type='text/css'>
+	<link rel="icon" type="image/png" href="images/favicon.png">
 	<title>Countly</title>
+	<script>window.countlyGlobal = window.countlyGlobal || {}; countlyGlobal["cdn"] = "<%- cdn %>";</script>
 </head>
 <body>
 	<div id="message" style="width:550px; margin-left:-275px; font-size:15px; line-height:18px;" data-localize="setup.explanation"></div>
@@ -21,20 +22,22 @@
 			<div id="active-lang">EN</div>
 			<div id="langs">
                 <div class="group">
-                    <a data-language-code="de" class="item">Deutsch</a>
-                    <a data-language-code="en" class="item">English</a>
-                    <a data-language-code="es" class="item">Español</a>
-                    <a data-language-code="fr" class="item">Français</a>
-                    <a data-language-code="it" class="item">Italiano</a>
+					<a data-language-code="de" class="item">Deutsch</a>
+					<a data-language-code="en" class="item">English</a>
+					<a data-language-code="es" class="item">Español</a>
+					<a data-language-code="fr" class="item">Français</a>
+					<a data-language-code="it" class="item">Italiano</a>
                     <a data-language-code="nl" class="item">Nederlands</a>
-                </div>
-                <div class="group">
+					<a data-language-code="lv" class="item">Latviski</a>
+				</div>
+				<div class="group">
+					<a data-language-code="et" class="item">Eesti</a>
                     <a data-language-code="pt" class="item">Português</a>
                     <a data-language-code="ru" class="item">Русский язык</a>
-                    <a data-language-code="tr" class="item">Türkçe</a>
-                    <a data-language-code="zh" class="item">中文</a>
-                    <a data-language-code="ja" class="item">日本語</a>
-                </div>
+					<a data-language-code="tr" class="item">Türkçe</a>
+					<a data-language-code="zh" class="item">中文</a>
+					<a data-language-code="ja" class="item">日本語</a>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -63,12 +66,12 @@
 			</form>
 		</div>
 	</div>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/utils/prefixfree.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery.noisy.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/utils/store+json2.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/pre-login.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/prefixfree.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery.noisy.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/store+json2.min.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
+	<script language="javascript" type="text/javascript" src="javascripts/pre-login.js"></script>
 	<script>
 		$(document).ready(function() {
 			document.title = "Countly | " + jQuery.i18n.map["setup.title"];
@@ -78,5 +81,8 @@
 			document.title = "Countly | " + jQuery.i18n.map["setup.title"];
 		});
 	</script>
+	<% if (typeof javascript != 'undefined') { %>
+	<script><%- javascript %></script>
+	<% } %>
 </body>
 </html>

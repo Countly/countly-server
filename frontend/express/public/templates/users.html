@@ -28,7 +28,7 @@ $(document).ready(function() {
 	$("[data-help-localize]").each(function() {
 		var elem = $(this);
 		if (elem.data("help-localize") != undefined) {
-			elem.data("help", countlyCommon.HELP_MAP[elem.data("help-localize")]);
+			elem.data("help", jQuery.i18n.map[elem.data("help-localize")]);
 		}
 	});
 	
@@ -300,7 +300,7 @@ $(document).ready(function() {
 		var self = $(this);
 		$.ajax({
 			type: "POST",
-			url: "/users/check/username",
+			url: countlyGlobal["path"]+"/users/check/username",
 			data: data,
 			success: function(result) {
 				$(".username-check").remove();
@@ -338,7 +338,7 @@ $(document).ready(function() {
 		var self = $(this);
 		$.ajax({
 			type: "POST",
-			url: "/users/check/email",
+			url: countlyGlobal["path"]+"/users/check/email",
 			data: data,
 			success: function(result) {
 				$(".email-check").remove();
@@ -538,10 +538,10 @@ $(document).ready(function() {
 				{{#if this.global_admin}}
 					<span data-localize="management-users.global-admin"></span>
 				{{else}}
-					{{#if this.admin_of}}
+					{{#if this.admin_of.length}}
 						<span data-localize="management-users.admin"></span>
 					{{else}}
-						{{#if this.user_of}}
+						{{#if this.user_of.length}}
 							<span data-localize="management-users.user"></span>
 						{{else}}
 							<span data-localize="management-users.no-role"></span>
@@ -560,11 +560,12 @@ $(document).ready(function() {
 		<tr class="user-details">
 			<td colspan="4">
 				<div>
-					<div class="row help-zone-vs" data-help-localize="manage-users.full-name">
+                    {{#unless is_global_admin}}
+					<div class="row help-zone-vs" data-help-localize="help.manage-users.full-name">
 						<div class="title" data-localize="management-users.full-name"></div>
 						<div class="detail"><input class="full-name-text" type="text" value="{{this.full_name}}"/></div>
 					</div>
-					<div class="row help-zone-vs" data-help-localize="manage-users.username">
+					<div class="row help-zone-vs" data-help-localize="help.manage-users.username">
 						<div class="title" data-localize="management-users.username"></div>
 						<div class="detail">
 							<input class="username-text" type="text" value="{{this.username}}"/><br/>
@@ -578,12 +579,14 @@ $(document).ready(function() {
 							<div class="small-link generate-password" data-localize="management-users.generate-password"></div>
 						</div>
 					</div>
-					<div class="row help-zone-vs" data-help-localize="manage-users.email">
+					<div class="row help-zone-vs" data-help-localize="help.manage-users.email">
 						<div class="title" data-localize="management-users.email"></div>
 						<div class="detail"><input class="email-text" type="text" value="{{this.email}}"/></div>
 					</div>
+                    {{/unless}}
 					{{#unless this.is_current_user}}
-					<div class="row help-zone-vs" data-help-localize="manage-users.global-admin">
+                    {{#if ../../is_global_admin}}
+					<div class="row help-zone-vs" data-help-localize="help.manage-users.global-admin">
 						<div class="title" data-localize="management-users.global-admin"></div>
 						<div class="detail">
 							<div class="option">
@@ -592,7 +595,8 @@ $(document).ready(function() {
 							</div>
 						</div>
 					</div>
-					<div class="row admin-apps help-zone-vs" data-help-localize="manage-users.admin-of" {{#if this.global_admin}}style="display:none;"{{/if}}>
+                    {{/if}}
+					<div class="row admin-apps help-zone-vs" data-help-localize="help.manage-users.admin-of" {{#if this.global_admin}}style="display:none;"{{/if}}>
 						<div class="title" data-localize="management-users.admin-of"></div>
 						<div class="select-apps">
 							<input type="hidden" value="{{this.admin_of}}" class="app-list"/>
@@ -606,7 +610,7 @@ $(document).ready(function() {
 						</div>
 						<div class="no-apps" data-localize="management-users.admin-of.tip"></div>
 					</div>
-					<div class="row user-apps help-zone-vs" data-help-localize="manage-users.user-of" {{#if this.global_admin}}style="display:none;"{{/if}}>
+					<div class="row user-apps help-zone-vs" data-help-localize="help.manage-users.user-of" {{#if this.global_admin}}style="display:none;"{{/if}}>
 						<div class="title" data-localize="management-users.user-of"></div>
 						<div class="select-apps">
 							<input type="hidden" value="{{this.user_of}}" class="app-list"/>
@@ -641,11 +645,11 @@ $(document).ready(function() {
 		<tr class="user-details">
 			<td colspan="4">
 				<div>
-					<div class="row help-zone-vs" data-help-localize="manage-users.full-name">
+					<div class="row help-zone-vs" data-help-localize="help.manage-users.full-name">
 						<div class="title" data-localize="management-users.full-name"></div>
 						<div class="detail"><input class="full-name-text" type="text" value=""/></div>
 					</div>
-					<div class="row help-zone-vs" data-help-localize="manage-users.username">
+					<div class="row help-zone-vs" data-help-localize="help.manage-users.username">
 						<div class="title" data-localize="management-users.username"></div>
 						<div class="detail"><input class="username-text" type="text" value=""/></div>
 					</div>
@@ -656,11 +660,11 @@ $(document).ready(function() {
 							<div class="small-link generate-password" data-localize="management-users.generate-password"></div>
 						</div>
 					</div>
-					<div class="row help-zone-vs" data-help-localize="manage-users.email">
+					<div class="row help-zone-vs" data-help-localize="help.manage-users.email">
 						<div class="title" data-localize="management-users.email"></div>
 						<div class="detail"><input class="email-text" type="text" value=""/></div>
 					</div>
-					<div class="row help-zone-vs" data-help-localize="manage-users.global-admin">
+					<div class="row help-zone-vs" data-help-localize="help.manage-users.global-admin">
 						<div class="title" data-localize="management-users.global-admin"></div>
 						<div class="detail">
 							<div class="option">
@@ -669,7 +673,7 @@ $(document).ready(function() {
 							</div>
 						</div>
 					</div>
-					<div class="row admin-apps help-zone-vs" data-help-localize="manage-users.admin-of">
+					<div class="row admin-apps help-zone-vs" data-help-localize="help.manage-users.admin-of">
 						<div class="title" data-localize="management-users.admin-of"></div>
 						<div class="select-apps">
 							<input type="hidden" value="" class="app-list"/>
@@ -679,7 +683,7 @@ $(document).ready(function() {
 						</div>
 						<div class="no-apps" data-localize="management-users.admin-of.tip"></div>
 					</div>
-					<div class="row user-apps help-zone-vs" data-help-localize="manage-users.user-of">
+					<div class="row user-apps help-zone-vs" data-help-localize="help.manage-users.user-of">
 						<div class="title" data-localize="management-users.user-of"></div>
 						<div class="select-apps">
 							<input type="hidden" value="" class="app-list"/>

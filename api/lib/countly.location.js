@@ -64,6 +64,10 @@ var countlyLocation = {},
 
         return obj;
     };
+	
+	countlyLocation.getLocationBars = function () {
+        return countlyCommon.extractBarData(_locationsDb, _countries, countlyLocation.clearLocationObject);
+    };
 
     countlyLocation.getCountryName = function (cc) {
         var countryName = _countryMap[cc.toUpperCase()];

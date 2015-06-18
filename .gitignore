@@ -1,7 +1,13 @@
-api/node_modules/time
+api/node_modules/
 .idea
-frontend/express/node_modules/time
+frontend/express/node_modules/
 api/config.js
 frontend/express/config.js
 frontend/express/public/javascripts/countly/countly.config.js
-closure-compiler.jar
+frontend/express/certificates
+frontend/express/public/javascripts/min
+frontend/express/public/localization/min
+frontend/express/public/stylesheets/*.min.css
+plugins/plugins.json
+**/.DS_Store
+**/node_modules

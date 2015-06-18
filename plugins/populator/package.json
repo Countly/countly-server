@@ -1,0 +1,20 @@
+{
+  "name": "countly-populator",
+  "title": "Data Populator",
+  "version": "0.1.0",
+  "description": "Populate Countly with random data",
+  "author": "Count.ly",
+  "homepage": "https://count.ly/marketplace/",
+  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
+  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "keywords": [
+    "countly",
+    "analytics",
+    "mobile",
+    "data",
+    "populate"
+  ],
+  "dependencies": {
+  },
+  "private": true
+}

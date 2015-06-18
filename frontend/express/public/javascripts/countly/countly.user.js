@@ -3,13 +3,20 @@
     //Private Properties
     var _periodObj = {},
         _userDb = {},
-        _lolayties = [],
+        _loyalties = [],
         _frequencies = [],
         _activeAppKey = 0,
-        _initialized = false;
+        _initialized = false,
+        _period = null;
 
     //Public Methods
     countlyUser.initialize = function () {
+        if (_initialized && _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
+            return countlyUser.refresh();
+        }
+
+        _period = countlyCommon.getPeriodForAjax();
+
         if (!countlyCommon.DEBUG) {
             _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
             _initialized = true;
@@ -20,21 +27,53 @@
                 data:{
                     "api_key":countlyGlobal.member.api_key,
                     "app_id":countlyCommon.ACTIVE_APP_ID,
-                    "method":"users"
+                    "method":"users",
+                    "period":_period
                 },
                 dataType:"jsonp",
                 success:function (json) {
                     _userDb = json;
                     setMeta();
+
+                    countlySession.initialize();
+                    countlyLocation.initialize();
                 }
             });
         } else {
-            _userDb = {"2012":{}};
             return true;
         }
     };
 
-    countlyUser.refresh = countlyUser.initialize;
+    countlyUser.refresh = function () {
+        if (!countlyCommon.DEBUG) {
+
+            if (_activeAppKey != countlyCommon.ACTIVE_APP_KEY) {
+                _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
+                return countlyUser.initialize();
+            }
+
+            return $.ajax({
+                type:"GET",
+                url:countlyCommon.API_PARTS.data.r,
+                data:{
+                    "api_key":countlyGlobal.member.api_key,
+                    "app_id":countlyCommon.ACTIVE_APP_ID,
+                    "method":"users",
+                    "action":"refresh"
+                },
+                dataType:"jsonp",
+                success:function (json) {
+                    countlyCommon.extendDbObj(_userDb, json);
+                    extendMeta();
+
+                    countlySession.refresh(json);
+                    countlyLocation.refresh(json);
+                }
+            });
+        } else {
+            return true;
+        }
+    };
 
     countlyUser.reset = function () {
         _userDb = {};
@@ -77,7 +116,7 @@
 
         var chartData = {chartData:{}, chartDP:{dp:[], ticks:[]}};
 
-        chartData.chartData = countlyCommon.extractRangeData(_userDb, "l", _lolayties, countlyUser.explainLoyaltyRange);
+        chartData.chartData = countlyCommon.extractRangeData(_userDb, "l", _loyalties, countlyUser.explainLoyaltyRange);
 
         var loyalties = _.pluck(chartData.chartData, "l"),
             loyaltyTotals = _.pluck(chartData.chartData, 't'),
@@ -116,7 +155,7 @@
             ticks = [],
             rangeUsers;
 
-        for (var j = 0; j < _lolayties.length; j++) {
+        for (var j = 0; j < _loyalties.length; j++) {
 
             rangeUsers = 0;
 
@@ -126,12 +165,12 @@
                     var tmp_x = countlyCommon.getDescendantProp(_userDb, _periodObj.activePeriod + "." + i + "." + "l");
                     tmp_x = clearLoyaltyObject(tmp_x);
 
-                    rangeUsers += tmp_x[_lolayties[j]];
+                    rangeUsers += tmp_x[_loyalties[j]];
                 }
 
                 if (rangeUsers != 0) {
                     dataArr[0]["data"][dataArr[0]["data"].length] = [j, rangeUsers];
-                    ticks[j] = [j, _lolayties[j]];
+                    ticks[j] = [j, _loyalties[j]];
                 }
             } else {
                 for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
@@ -139,12 +178,12 @@
                     var tmp_x = countlyCommon.getDescendantProp(_userDb, _periodObj.currentPeriodArr[i] + "." + "l");
                     tmp_x = clearLoyaltyObject(tmp_x);
 
-                    rangeUsers += tmp_x[_lolayties[j]];
+                    rangeUsers += tmp_x[_loyalties[j]];
                 }
 
                 if (rangeUsers != 0) {
                     dataArr[0]["data"][dataArr[0]["data"].length] = [j, rangeUsers];
-                    ticks[j] = [j, _lolayties[j]];
+                    ticks[j] = [j, _loyalties[j]];
                 }
             }
         }
@@ -177,8 +216,8 @@
 
         return frequencyRange[index];
     };
-	
-	countlyUser.getFrequencyIndex = function (frequency) {
+
+    countlyUser.getFrequencyIndex = function (frequency) {
         var localHours = jQuery.i18n.map["user-loyalty.range.hours"],
             localDay = jQuery.i18n.map["user-loyalty.range.day"],
             localDays = jQuery.i18n.map["user-loyalty.range.days"];
@@ -216,8 +255,8 @@
 
         return loyaltyRange[index];
     };
-	
-	countlyUser.getLoyaltyIndex = function (loyalty) {
+
+    countlyUser.getLoyaltyIndex = function (loyalty) {
         var loyaltyRange = [
             "1",
             "2",
@@ -233,13 +272,29 @@
         return loyaltyRange.indexOf(loyalty);
     };
 
+    countlyUser.isInitialized = function() {
+        return _initialized;
+    };
+
+    countlyUser.getDbObj = function() {
+        return _userDb;
+    };
+
     function setMeta() {
         if (_userDb['meta']) {
-            _lolayties = (_userDb['meta']['l-ranges']) ? _userDb['meta']['l-ranges'] : [];
+            _loyalties = (_userDb['meta']['l-ranges']) ? _userDb['meta']['l-ranges'] : [];
             _frequencies = (_userDb['meta']['f-ranges']) ? _userDb['meta']['f-ranges'] : [];
         } else {
-            _lolayties = [];
+            _loyalties = [];
             _frequencies = [];
         }
     }
+
+    function extendMeta() {
+        if (_userDb['meta']) {
+            _loyalties = countlyCommon.union(_loyalties, _userDb['meta']['l-ranges']);
+            _frequencies = countlyCommon.union(_frequencies, _userDb['meta']['f-ranges']);
+        }
+    }
+
 }(window.countlyUser = window.countlyUser || {}, jQuery));

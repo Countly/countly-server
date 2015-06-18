@@ -1,0 +1,28 @@
+{
+  "name": "countly-push",
+  "title": "Push Notifications",
+  "version": "1.0.0",
+  "description": "Increase loyalty, user retention & satisfaction with push notifications",
+  "author": "Count.ly",
+  "homepage": "https://count.ly/marketplace/",
+  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
+  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "keywords": [
+    "countly",
+    "analytics",
+    "mobile",
+    "push",
+	  "notifications"
+  ],
+  "dependencies": {
+    "dequeue": "1.0.5",
+    "lodash": "2.4.1",
+    "lru-cache": "2.5.0",
+    "merge": "1.2.0",
+    "q": "1.0.1",
+    "retry": "0.6.1",
+    "crazy-ps": "0.1.5",
+    "flat": "1.3.0"
+},
+  "private": true
+}

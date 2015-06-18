@@ -1,0 +1,225 @@
+<div id="push-create">
+	<div class="message">
+		<div class="divide-three view-header">
+			<div class="field view-apps help-zone-vs" data-help-localize="help.push.apps-view">
+				<span class="title" data-localize="push.apps"></span>
+				<span class="view-value"></span>
+			</div>
+			<div class="field view-platforms">
+				<div class="view-platforms-holder help-zone-vs" data-help-localize="help.push.platforms-view">
+					<span data-localize="push.platforms"></span>
+                    <div class="os-segment ios"></div>
+                    <div class="os-segment android"></div>
+				</div>
+			</div>
+			<div class="test-switch-holder help-zone-vs" data-help-localize="help.push.test-view">
+				<input type="checkbox" class="extra-test-check" data-attr="test">
+				<span class="title" data-localize="push.extra-test">
+				</span>
+			</div>
+			<div class="clearfix"></div>
+		</div>
+		<div class="divide-three divide-large view-header">
+			<div class="field view-type help-zone-vs" data-help-localize="help.push.type-view">
+				<div class="title" data-localize="push.type"></div>
+				<div class="view-value"></div>
+			</div>
+			<div class="field view-date help-zone-vs" data-help-localize="help.push.date-view">
+				<div class="title" data-localize="push.date.sent"></div>
+				<div class="view-value"></div>
+			</div>
+			<div class="field view-sent help-zone-vs" data-help-localize="help.push.sent-view">
+				<div class="title" data-localize="push.sent"></div>
+				<div class="view-value"></div>
+			</div>
+		</div>
+		<div class="count create-header">
+			<span class="count-value help-zone-vs" data-help-localize="help.push.count"></span>
+			<div class="test-switch-holder help-zone-vs" data-help-localize="help.push.test">
+				<input type="checkbox" class="extra-test-check" data-attr="test">
+                <label data-localize="push.extra-test"></label>
+			</div>
+		</div>
+		<div class="divide-three create-header">
+			<div class="field apps help-zone-vs" data-help-localize="help.push.apps">
+				<div class="title" data-localize="push.apps"></div>
+                <div class="details">
+					<div class="select-apps">
+					</div>
+					<div class="app-names">
+					</div>
+					<div class="no-apps" data-localize="push.app-names"></div>
+                </div>
+			</div>
+			<div class="field platforms help-zone-vs" data-help-localize="help.push.platforms">
+				<div class="title" data-localize="push.platforms"></div>
+				<div class="details">
+                    <input class="platforms-text" type="hidden" value=""/>
+                    <div class="graph-segment-container" style="display: inline-block;">
+                        <div class="cly-button-group platform-buttons">
+                            <div style="display:none;" class="icon-button light graph-segment push-platform android" data-platform="a">
+                                <div class="os-segment android"></div>
+                            </div>
+                            <div style="display:none;" class="icon-button light graph-segment push-platform ios" data-platform="i">
+                                <div class="os-segment ios"></div>
+                            </div>
+                        </div>
+                    </div>
+				</div>
+			</div>
+			<div class="field geos help-zone-vs" data-help-localize="help.push.geos">
+				<div class="title" data-localize="push.geos"></div>
+				<div class="details cly-select">
+					<div class="select-inner">
+						<div class="text-container">
+							<div class="text"></div>
+						</div>
+						<div class="right combo"></div>
+					</div>
+					<div class="select-items square">
+						<div>
+							<div data-value="" class="item" data-localize="push.geo.locations.all"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="field link help-zone-vs" data-help-localize="help.push.link">
+			<div class="title" data-localize="push.link"></div>
+			<div class="details">
+				<input type="text" class="push-link" data-localize="push.placeholder.extra-link">
+			</div>
+		</div>
+		<div class="field category help-zone-vs" data-help-localize="help.push.category">
+			<div class="title" data-localize="push.category"></div>
+			<div class="details">
+				<input type="text" class="push-category" data-localize="push.placeholder.extra-category">
+			</div>
+		</div>
+		<div class="divide create-header help-zone-vs" data-help-localize="help.push.type">
+			<div class="field type">
+				<div class="title" data-localize="push.type"></div>
+				<div class="details cly-select">
+					<div class="select-inner">
+						<div class="text-container">
+							<div class="text"></div>
+						</div>
+						<div class="right combo"></div>
+					</div>
+					<div class="select-items square">
+						<div>
+							<div data-value="message" class="item" data-localize="push.type.message"></div>
+							<div data-value="link" class="item" data-localize="push.type.link"></div>
+							<div data-value="category" class="item" data-localize="push.type.category"></div>
+							<div data-value="update" class="item" data-localize="push.type.update"></div>
+							<div data-value="review" class="item" data-localize="push.type.review"></div>
+							<div data-value="data" class="item" data-localize="push.type.data"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="field date help-zone-vs" data-help-localize="help.push.date">
+				<div class="title" data-localize="push.date"></div>
+                <div class="details">
+                    <input class="send-later date-checkbox help-zone-vs" type="checkbox" value="" data-help-localize="help.push.date-tip"/>
+                    <label data-localize="push.date-later"></label>
+                    <span class="send-later-date" style="color: #999; font-size: 13px; margin-left: 10px;"></span>
+                    <div class="date-picker-push" style="margin-left:-21px; margin-top:8px;">
+                        <div class="tip" style="margin-left:16px;"></div>
+                        <div class="calendar-container" style="padding:9px; display:block;">
+                            <div class="send-later-datepicker calendar" style="margin-right:0;"></div>
+                        </div>
+                        <div class="time-picker-push calendar-container" style="padding:9px; display:block; overflow: auto; white-space: nowrap; max-width:172px;"></div>
+                    </div>
+                </div>
+			</div>
+		</div>
+		<div class="field msg help-zone-vs" data-help-localize="help.push.message">
+			<div class="title" data-localize="push.message"></div>
+			<div class="details">
+				<div class="locales">
+					<ul>
+						<li>
+							<span class="percentage">20%</span>
+							<span class="locale" data-localize="push.locale.default"></span>
+						</li>
+						<li>
+							<span class="percentage">20%</span>
+							<span class="locale">English</span>
+							<span class="fa fa-check"></span>
+							<span class="fa fa-remove"></span>
+						</li>
+						<li class="selected">
+							<span class="percentage">100%</span>
+							<span class="locale">Arabic</span>
+							<span class="fa fa-check"></span>
+							<span class="fa fa-remove"></span>
+						</li>
+						<li class="set">
+							<span class="percentage">100%</span>
+							<span class="locale">Spanish</span>
+							<span class="fa fa-check"></span>
+							<span class="fa fa-remove"></span>
+						</li>
+						<li class="selected set">
+							<span class="percentage">1%</span>
+							<span class="locale">French</span>
+							<span class="fa fa-check"></span>
+							<span class="fa fa-remove"></span>
+						</li>
+						<li>
+							<span class="percentage">100%</span>
+							<span class="locale">Russian</span>
+							<span class="fa fa-check"></span>
+							<span class="fa fa-remove"></span>
+						</li>
+					</ul>
+				</div>
+				<div class="text">
+					<textarea data-localize="push.type.message.placeholder"></textarea>
+				</div>
+			</div>
+		</div>
+		<div class="field extras">
+			<div class="title" data-localize="push.extras"></div>
+			<div class="details">
+				<table>
+					<tr>
+						<td class="td-check">
+							<input type="checkbox" class="extra-sound-check" data-attr="sound" checked="checked">
+	                        <label data-localize="push.extra-sound"></label>
+						</td>
+						<td class="td-value help-zone-vs" data-help-localize="help.push.sound">
+							<input type="text" class="extra-sound" data-localize="push.placeholder.extra-sound" value="default">
+						</td>
+						<td class="td-check">
+							<input type="checkbox" class="extra-badge-check" data-attr="badge">
+	                        <label data-localize="push.extra-badge"></label>
+						</td>
+						<td class="td-value help-zone-vs" data-help-localize="help.push.badge">
+							<input type="text" class="extra-badge" data-localize="push.placeholder.extra-badge" disabled="disabled">
+						</td>
+					</tr>
+					<tr>
+					</tr>
+					<tr>
+						<td class="td-check">
+							<input type="checkbox" class="extra-data-check" data-attr="data">
+	                        <label data-localize="push.extra-data"></label>
+						</td>
+						<td colspan="3" class="td-value help-zone-vs" data-help-localize="help.push.data">
+							<input type="text" class="extra-data" data-localize="push.placeholder.extra-data" disabled="disabled">
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="buttons">
+		<!-- <div id="settings-save-result" class="result-message"></div> -->
+		<a class="icon-button green btn-send" data-localize="push.send"></a>
+		<a class="icon-button red btn-delete" data-localize="common.delete"></a>
+		<a class="icon-button light btn-duplicate" data-localize="push.duplicate"></a>
+		<a class="icon-button light btn-close" data-localize="common.close"></a>
+	</div>
+</div>
