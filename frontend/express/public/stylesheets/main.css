@@ -248,7 +248,7 @@ a:active { color:inherit; }
 #app-management-bar { z-index:3; }
 #app-management-bar #app-nav-head { padding-left:15px; }
 #app-nav-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px; float:left; padding-top:3px; }
-#app-nav { width:190px; display:none; text-align:right; background-color:#CCC; height:100%; position:fixed; left:31px; z-index:997; background-image:url('../images/dashboard/dropdown_bg.png'); }
+#app-nav { width:190px; display:none; text-align:right; background-color:#CCC; height:100%; position:fixed; left:31px; z-index:997; background-image:url('../images/dashboard/dropdown_bg.png'); padding-bottom: 46px; box-sizing: border-box;}
 #app-nav-head { height:27px; padding:20px; padding-left:32px; color:#BFBFBF; text-shadow:0 -1px #232323; font:18px Ubuntu,Helvetica,sans-serif; line-height:111%; background-image:url('../images/dashboard/dropdown_head.png'); text-align:left; }
 	#app-nav-head .button-container { overflow:hidden; position:absolute; top:19px; right:10px; }
 .app-container { cursor:pointer; height:30px; background-image:url('../images/dashboard/dropdown_item.png'); padding:8px 12px; padding-left:32px; overflow:auto; }
@@ -264,7 +264,7 @@ a:active { color:inherit; }
 #sort-app-button .icon { margin:0; width:21px; height:18px; background-image:url('../images/dashboard/app-order-activate.png'); }
 /* APP NAVIGATION END */
 
-#app-management-bar { width:190px; position:fixed; left:220px; top:0; text-align:right; background-color:#CCC; height:100%; background-image:url('../images/dashboard/dropdown_bg.png'); }
+#app-management-bar { width:190px; position:fixed; left:220px; top:0; text-align:right; background-color:#CCC; height:100%; background-image:url('../images/dashboard/dropdown_bg.png'); padding-bottom: 46px; box-sizing: border-box;}
 #app-management-bar .app-container { padding-left:15px; }
 #app-management-bar .app-container.active { background-image:url('../images/dashboard/dropdown_item_active.png'), url('../images/dashboard/dropdown_item.png'); background-repeat:no-repeat; background-position:right; }
 #app-management-bar .app-container.active:hover { opacity:1; }
