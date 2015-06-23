@@ -18,16 +18,15 @@ var usersApi = {},
             common.returnMessage(params, 401, 'User is not a global administrator');
             return false;
         }
-
         common.db.collection('members').find({}).toArray(function (err, members) {
-
+    
             if (!members || err) {
                 common.returnOutput(params, {});
                 return false;
             }
-
+    
             var membersObj = {};
-
+    
             for (var i = 0; i < members.length ;i++) {
                 membersObj[members[i]._id] = {
                     '_id':members[i]._id,
@@ -41,11 +40,10 @@ var usersApi = {},
                     'is_current_user':(members[i].api_key == params.member.api_key)
                 };
             }
-
+    
             common.returnOutput(params, membersObj);
             return true;
         });
-
         return true;
     };
 
@@ -76,7 +74,6 @@ var usersApi = {},
                 common.returnMessage(params, 200, 'Email or username already exists');
                 return false;
             } else {
-				plugins.dispatch("/i/users/create", {params:params, data:{full_name:newMember.full_name, username:newMember.username, email:newMember.email}});
                 createUser();
                 return true;
             }
@@ -94,7 +91,7 @@ var usersApi = {},
                     common.db.collection('members').update({'_id': member[0]._id}, {$set: {api_key: member[0].api_key}},function(){});
 
                     mail.sendToNewMember(member[0], passwordNoHash);
-
+                    plugins.dispatch("/i/users/create", {params:params, data:member[0]});
                     delete member[0].password;
 
                     common.returnOutput(params, member[0]);
@@ -140,7 +137,7 @@ var usersApi = {},
         common.db.collection('members').update({'_id': common.db.ObjectID(params.qstring.args.user_id)}, {'$set': updatedMember}, {safe: true}, function(err, isOk) {
             common.db.collection('members').findOne({'_id': common.db.ObjectID(params.qstring.args.user_id)}, function(err, member) {
                 if (member && !err) {
-					plugins.dispatch("/i/users/update", {params:params, data:{full_name:updatedMember.full_name, username:updatedMember.username, email:updatedMember.email}});
+					plugins.dispatch("/i/users/update", {params:params, data:updatedMember, member:member});
                     if (params.qstring.args.send_notification && passwordNoHash) {
                         mail.sendToUpdatedMember(member, passwordNoHash);
                     }
@@ -177,7 +174,7 @@ var usersApi = {},
             } else {
 				common.db.collection('members').findAndModify({'_id': common.db.ObjectID(userIds[i])},{},{},{remove:true},function(err, user){
 					if(!err && user)
-						plugins.dispatch("/i/users/delete", {params:params, data:{full_name:user.full_name, username:user.username, email:user.email}});
+						plugins.dispatch("/i/users/delete", {params:params, data:user});
 				});
             }
         }
