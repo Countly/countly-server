@@ -26,7 +26,7 @@ echo "
   #stop countly-supervisor
 # fi
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIR="$(cd $(dirname $0) && pwd)"
 
 DT=`date +%Y.%m.%d_%H.%M.%S`
 COUNTLY_DIR=`basename $(dirname $(dirname "${DIR}"))`
