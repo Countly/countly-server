@@ -15,7 +15,7 @@ var pluginManager = function pluginManager(){
 			try{
 				pluginsApis[plugins[i]] = require("./"+plugins[i]+"/api/api");
 			} catch (ex) {
-				console.error(ex);
+				console.error(ex.stack);
 			}
 		}
 	}
@@ -48,7 +48,7 @@ var pluginManager = function pluginManager(){
                             pluginCallback();
                         }
                     } catch (ex) {
-                        console.error(ex);
+                        console.error(ex.stack);
                         //if there was an error, call callback just in case
                         pluginCallback();
                     }
