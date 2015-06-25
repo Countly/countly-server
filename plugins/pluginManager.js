@@ -9,6 +9,7 @@ var plugins = require('./plugins.json'),
 var pluginManager = function pluginManager(){
 	var events = {};
 	var plugs = [];
+    var methodCache = {};
 
 	this.init = function(){
 		for(var i = 0, l = plugins.length; i < l; i++){
@@ -89,15 +90,38 @@ var pluginManager = function pluginManager(){
 		}
 	}
     
-    this.skipCSRF = function(req, res, next){
-        var skip = false;
-		for(var i = 0; i < plugs.length; i++){
-			if(plugs[i].skipCSRF && plugs[i].skipCSRF(req, res, next)){
-                skip = true;
+    this.callMethod = function(method, params){
+        var res = false;
+        if(methodCache[method]){
+            if(methodCache[method].length > 0){
+                for(var i = 0; i < methodCache[method].length; i++){
+                    try{
+                        if(methodCache[method][i][method](params)){
+                            res = true;
+                        }
+                    } catch (ex) {
+                        console.error(ex.stack);
+                    }
+                }
             }
-		}
-        return skip;
-	}
+        }
+        else{
+            methodCache[method] = [];
+            for(var i = 0; i < plugs.length; i++){
+                try{
+                    if(plugs[i][method]){
+                        methodCache[method].push(plugs[i]);
+                        if(plugs[i][method](params)){
+                            res = true;
+                        }
+                    }
+                } catch (ex) {
+                    console.error(ex.stack);
+                }
+            }
+        }
+        return res;
+    }
 	
 	this.getPlugins = function(){
 		return plugins;
