@@ -201,6 +201,7 @@ if(countlyConfig.session_timeout){
 
 app.get(countlyConfig.path+'/logout', function (req, res, next) {
     if (req.session) {
+        plugins.callMethod("userLogout", {req:req, res:res, next:next, data:{uid:req.session.uid, email:req.session.email}});
         req.session.uid = null;
         req.session.gadm = null;
         req.session.email = null;
@@ -293,7 +294,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                                     countlyGlobalApps[user_of[i]["_id"]] = user_of[i];
 									countlyGlobalApps[user_of[i]["_id"]]["_id"] = "" + user_of[i]["_id"];
                                 }
-
+                                
                                 renderDashboard();
                             });
                         });
@@ -302,7 +303,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 
                 function renderDashboard() {
                     countlyDb.collection('settings').findOne({}, function (err, settings) {
-
+                        plugins.callMethod("renderDashboard", {req:req, res:res, next:next, data:{member:member, adminApps:countlyGlobalAdminApps, userApps:countlyGlobalApps}});
                         req.session.uid = member["_id"];
                         req.session.gadm = (member["global_admin"] == true);
                         req.session.email = member["email"];
@@ -420,6 +421,7 @@ app.post(countlyConfig.path+'/reset', function (req, res, next) {
 
         countlyDb.collection('password_reset').findOne({prid:req.body.prid}, function (err, passwordReset) {
             countlyDb.collection('members').update({_id:passwordReset.user_id}, {'$set':{ "password":password }}, function (err, member) {
+                plugins.callMethod("passwordReset", {req:req, res:res, next:next, data:member[0]});
                 req.flash('info', 'reset.result');
                 res.redirect(countlyConfig.path+'/login');
             });
@@ -440,7 +442,7 @@ app.post(countlyConfig.path+'/forgot', function (req, res, next) {
 
                 countlyDb.collection('password_reset').insert({"prid":prid, "user_id":member._id, "timestamp":timestamp}, {safe:true}, function (err, password_reset) {
                     countlyMail.sendPasswordResetInfo(member, prid);
-
+                    plugins.callMethod("passwordRequest", {req:req, res:res, next:next, data:req.body});
                     res.render('forgot', { "message":"forgot.result", "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
                 });
             } else {
@@ -468,7 +470,8 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
                             a.api_key = md5Hash(member[0]._id + (new Date).getTime());
                             b && (b.in_user_id && (a.in_user_id = b.in_user_id), b.in_user_hash && (a.in_user_hash = b.in_user_hash));
 
-                            countlyDb.collection("members").update({_id:member[0]._id}, {$set:a}, function() {
+                            countlyDb.collection("members").update({_id:member[0]._id}, {$set:a}, function(err, mem) {
+                                plugins.callMethod("setup", {req:req, res:res, next:next, data:member[0]});
                                 req.session.uid = member[0]._id;
                                 req.session.gadm = !0;
                                 req.session.email = member[0].email;
@@ -500,6 +503,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
 
         countlyDb.collection('members').findOne({$or: [ {"username":req.body.username}, {"email":req.body.username} ], "password":password}, function (err, member) {
             if (member) {
+                plugins.callMethod("loginSuccessful", {req:req, res:res, next:next, data:member});
                 if (countlyConfig.web.use_intercom && member['global_admin']) {
                     countlyStats.getOverall(countlyDb, function(statsObj){
                         request({
@@ -533,6 +537,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
 					req.session.expires = Date.now()+countlyConfig.session_timeout;
                 res.redirect(countlyConfig.path+'/dashboard');
             } else {
+                plugins.callMethod("loginFailed", {req:req, res:res, next:next, data:req.body});
 				res.redirect(countlyConfig.path+'/login?message=login.result');
             }
         });
@@ -544,14 +549,19 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
 var auth = express.basicAuth(function(user, pass, callback) {
     var password = sha1Hash(pass);
     countlyDb.collection('members').findOne({$or: [ {"username":user}, {"email":user} ], "password":password}, function (err, member) {
-        callback(null, member);
+        if(member)
+			callback(null, member);
+		else
+			callback(null, user);
     });
 });
 
 app.get(countlyConfig.path+'/api-key', auth, function (req, res, next) {
-    if (req.user) {
+    if (req.user && req.user._id) {
+        plugins.callMethod("apikeySuccessful", {req:req, res:res, next:next, data:req.user});
         res.send(req.user.api_key);
     } else {
+        plugins.callMethod("apikeyFailed", {req:req, res:res, next:next, data:{username:req.user}});
         res.send("-1");
     }
 });
@@ -562,8 +572,10 @@ app.post(countlyConfig.path+'/mobile/login', function (req, res, next) {
 
         countlyDb.collection('members').findOne({$or: [ {"username":req.body.username}, {"email":req.body.username} ], "password":password}, function (err, member) {
             if (member) {
+                plugins.callMethod("mobileloginSuccessful", {req:req, res:res, next:next, data:member});
                 res.render('mobile/key', { "key": member.api_key || -1 });
             } else {
+                plugins.callMethod("mobileloginFailed", {req:req, res:res, next:next, data:req.body});
                 res.render('mobile/login', { "message":"login.result", "csrf":req.session._csrf });
             }
         });
@@ -608,7 +620,7 @@ app.post(countlyConfig.path+'/apps/icon', function (req, res) {
         res.send(false);
         return true;
     }
-
+    plugins.callMethod("iconUpload", {req:req, res:res, next:next, data:req.body});
     fs.rename(tmp_path, target_path, function (err) {
         fs.unlink(tmp_path, function () {});
         im.crop({
@@ -643,7 +655,7 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
                         newPassword = sha1Hash(req.body.new_pwd);
 
                     updatedUser.password = newPassword;
-
+                    plugins.callMethod("userSettings", {req:req, res:res, next:next, data:member});
                     countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid), "password":password}, {'$set':updatedUser}, {safe:true}, function (err, member) {
                         if (member && !err) {
                             res.send(true);
