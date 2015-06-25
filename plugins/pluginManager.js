@@ -84,9 +84,19 @@ var pluginManager = function pluginManager(){
 				plugin.init(app, countlyDb, express);
 				plugs.push(plugin);
 			} catch (ex) {
-				console.error(ex);
+				console.error(ex.stack);
 			}
 		}
+	}
+    
+    this.skipCSRF = function(req, res, next){
+        var skip = false;
+		for(var i = 0; i < plugs.length; i++){
+			if(plugs[i].skipCSRF && plugs[i].skipCSRF(req, res, next)){
+                skip = true;
+            }
+		}
+        return skip;
 	}
 	
 	this.getPlugins = function(){
