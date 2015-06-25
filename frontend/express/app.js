@@ -115,7 +115,14 @@ app.configure(function () {
         next();
     });
     app.use(express.methodOverride());
-    app.use(express.csrf());
+    var csrf = express.csrf();
+    app.use(function (req, res, next) {
+        if (req.method != "GET" && !plugins.skipCSRF(req, res, next)) {
+            csrf(req, res, next);
+        } else {
+            next();
+        }
+    });
     app.use(app.router);
     var oneYear = 31557600000;
 	plugins.loadAppPlugins(app, countlyDb, express);
