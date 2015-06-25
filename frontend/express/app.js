@@ -117,9 +117,15 @@ app.configure(function () {
     app.use(express.methodOverride());
     var csrf = express.csrf();
     app.use(function (req, res, next) {
-        if (req.method != "GET" && !plugins.skipCSRF(req, res, next)) {
+        if (req.method == "GET" || req.method == 'HEAD' || req.method == 'OPTIONS'){
+            //csrf not used, but lets regenerate token
+            csrf(req, res, next);
+        }
+        else if (!plugins.callMethod("skipCSRF", {req:req, res:res, next:next})) {
+            //none of the plugins requested to skip csrf for this request
             csrf(req, res, next);
         } else {
+            //skipping csrf step, some plugin needs it without csrf
             next();
         }
     });
