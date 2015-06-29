@@ -605,7 +605,7 @@ app.post(countlyConfig.path+'/dashboard/settings', function (req, res, next) {
     countlyDb.collection('settings').update({}, {'$set':{'appSortList':newAppOrder}}, {'upsert':true});
 });
 
-app.post(countlyConfig.path+'/apps/icon', function (req, res) {
+app.post(countlyConfig.path+'/apps/icon', function (req, res, next) {
     if (!req.files.app_image || !req.body.app_image_id) {
         res.end();
         return true;
