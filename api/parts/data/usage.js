@@ -1,6 +1,7 @@
 var usage = {},
     common = require('./../../utils/common.js'),
     geoip = require('geoip-lite'),
+    countlyConfig = require('./../../config'),
 	plugins = require('../../../plugins/pluginManager.js');
 
 (function (usage) {
@@ -26,64 +27,70 @@ var usage = {},
             }
         }
         common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, dbAppUser){
+            //process duration from unproperly ended previous session
+            if (dbAppUser && dbAppUser[common.dbUserMap['session_duration']]) {
+                processSessionDurationRange(dbAppUser[common.dbUserMap['session_duration']], params);
+            }
             processUserSession(dbAppUser, params);
         });
     };
 
     usage.endUserSession = function (params) {
-        // As soon as we receive the end_session we set the timestamp
-        // This timestamp is used inside processUserSession
-        var userProps = {};
-        userProps[common.dbUserMap['last_end_session_timestamp']] = params.time.nowWithoutTimestamp.unix();
-
-        common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': userProps}, function() {});
-
-        setTimeout(function() {
-            common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, dbAppUser){
-                if (!dbAppUser || err) {
-                    return true;
-                }
-
-                var lastBeginSession = dbAppUser[common.dbUserMap['last_begin_session_timestamp']],
-                    currDateWithoutTimestamp = new Date();
-
-                // We can't use the params.time.timestamp since we are inside a setTimeout
-                // and we need the actual timestamp
-				currDateWithoutTimestamp.setTimezone(params.appTimezone);
-                var currTimestamp = Math.round(currDateWithoutTimestamp.getTime() / 1000);
-
-
-                // If ongoing session flag is set and there is a 11 second difference between the current
-                // timestamp and the timestamp when the last begin_session received then remove the flag
-                // to let the next end_session complete the session
-                if (dbAppUser[common.dbUserMap['has_ongoing_session']] && (currTimestamp - lastBeginSession) > 11) {
-                    var userProps = {};
-                    userProps[common.dbUserMap['has_ongoing_session']] = 1;
-
-                    common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$unset': userProps}, function() {
-                        endSession(true);
-                    });
-                } else {
-                    endSession();
-                }
-                function endSession(overrideFlag) {
-                    // If user does not have an ongoing session end it
-                    // Ongoing session flag is set inside processUserSession
-                    if (overrideFlag || !dbAppUser[common.dbUserMap['has_ongoing_session']]) {
-						
-						plugins.dispatch("/session/end", {params:params, dbAppUser:dbAppUser});
-
-                        // If the user does not exist in the app_users collection or she does not have any
-                        // previous session duration stored than we dont need to calculate the session
-                        // duration range for this user.
-                        if (dbAppUser[common.dbUserMap['session_duration']]) {
-                            processSessionDurationRange(dbAppUser[common.dbUserMap['session_duration']], params);
+        //check if end_session is not too old and ignore if it is
+        if(params.time.timestamp >= params.time.nowWithoutTimestamp.unix() - countlyConfig.api.session_duration_limit){
+            // As soon as we receive the end_session we set the timestamp
+            // This timestamp is used inside processUserSession
+            var userProps = {};
+            userProps[common.dbUserMap['last_end_session_timestamp']] = params.time.timestamp;
+    
+            common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': userProps}, function() {});
+    
+            setTimeout(function() {
+                common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, dbAppUser){
+                    if (!dbAppUser || err) {
+                        return true;
+                    }
+    
+                    var lastBeginSession = dbAppUser[common.dbUserMap['last_begin_session_timestamp']],
+                        currDateWithoutTimestamp = new Date();
+    
+                    // We can't use the params.time.timestamp since we are inside a setTimeout
+                    // and we need the actual timestamp
+                    currDateWithoutTimestamp.setTimezone(params.appTimezone);
+                    var currTimestamp = Math.round(currDateWithoutTimestamp.getTime() / 1000);
+    
+    
+                    // If ongoing session flag is set and there is a 11 second difference between the current
+                    // timestamp and the timestamp when the last begin_session received then remove the flag
+                    // to let the next end_session complete the session
+                    if (dbAppUser[common.dbUserMap['has_ongoing_session']] && (currTimestamp - lastBeginSession) > 11) {
+                        var userProps = {};
+                        userProps[common.dbUserMap['has_ongoing_session']] = 1;
+    
+                        common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$unset': userProps}, function() {
+                            endSession(true);
+                        });
+                    } else {
+                        endSession();
+                    }
+                    function endSession(overrideFlag) {
+                        // If user does not have an ongoing session end it
+                        // Ongoing session flag is set inside processUserSession
+                        if (overrideFlag || !dbAppUser[common.dbUserMap['has_ongoing_session']]) {
+                            
+                            plugins.dispatch("/session/end", {params:params, dbAppUser:dbAppUser});
+    
+                            // If the user does not exist in the app_users collection or she does not have any
+                            // previous session duration stored than we dont need to calculate the session
+                            // duration range for this user.
+                            if (dbAppUser[common.dbUserMap['session_duration']]) {
+                                processSessionDurationRange(dbAppUser[common.dbUserMap['session_duration']], params);
+                            }
                         }
                     }
-                }
-            });
-        }, 10000);
-
+                });
+            }, 10000);
+        }
     };
 
     usage.processSessionDuration = function (params, callback) {
