@@ -28,9 +28,7 @@ var mail = {},
  });
 */
 
-function sendMail(message) {
-    message.from = "Countly";
-
+mail.sendMail = function(message) {
     smtpTransport.sendMail(message, function (error) {
         if (error) {
             console.log('Error sending email');
@@ -44,6 +42,7 @@ mail.sendToNewMember = function (member, memberPassword) {
     lookup(function(err, host) {
         var message = {
             to:member.email,
+            from:"Countly",
             subject:'Your Countly Account',
             html:'Hi ' + getUserFirstName(member) + ',<br/><br/>' +
                 'Your Countly account on <a href="' + host + '">' + host + '</a> is created with the following details;<br/><br/>' +
@@ -53,7 +52,7 @@ mail.sendToNewMember = function (member, memberPassword) {
                 'A fellow Countly Admin'
         };
 
-        sendMail(message);
+        mail.sendMail(message);
     });
 };
 
@@ -61,6 +60,7 @@ mail.sendToUpdatedMember = function (member, memberPassword) {
     lookup(function(err, host) {
         var message = {
             to:member.email,
+            from:"Countly",
             subject:'Countly Account - Password Change',
             html:'Hi ' + getUserFirstName(member) + ',<br/><br/>' +
                 'Your password for your Countly account on <a href="' + host + '">' + host + '</a> has been changed. Below you can find your updated account details;<br/><br/>' +
@@ -70,7 +70,7 @@ mail.sendToUpdatedMember = function (member, memberPassword) {
                 'A fellow Countly Admin'
         };
 
-        sendMail(message);
+        mail.sendMail(message);
     });
 };
 
@@ -78,6 +78,7 @@ mail.sendPasswordResetInfo = function (member, prid) {
     lookup(function(err, host) {
         var message = {
             to:member.email,
+            from:"Countly",
             subject:'Countly Account - Password Reset',
             html:'Hi ' + getUserFirstName(member) + ',<br/><br/>' +
                 'You can reset your Countly account password by following ' +
@@ -87,7 +88,7 @@ mail.sendPasswordResetInfo = function (member, prid) {
                 'A fellow Countly Admin'
         };
 
-        sendMail(message);
+        mail.sendMail(message);
     });
 };
 
