@@ -20,6 +20,14 @@ var pluginManager = function pluginManager(){
 			}
 		}
 	}
+    
+    this.extendModule = function(name, object){
+        for(var i = 0, l = plugins.length; i < l; i++){
+			try{
+				require("./"+plugins[i]+"/extend/"+name)(object);
+			} catch (ex) {}
+		}
+    }
 	
 	this.register = function(event, callback){
 		if(!events[event])
