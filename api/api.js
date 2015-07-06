@@ -3,7 +3,7 @@ require('log-timestamp');
 var http = require('http'),
     cluster = require('cluster'),
     os = require('os'),
-	countlyConfig = require('./config')
+	countlyConfig = require('./config'),
     plugins = require('../plugins/pluginManager.js');
 	
 plugins.init();
