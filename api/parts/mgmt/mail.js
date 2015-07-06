@@ -2,6 +2,7 @@ var mail = {},
     nodemailer = require('nodemailer'),
     request = require('request'),
     countlyConfig = require('./../../config'),
+    plugins = require('../../../plugins/pluginManager.js'),
     smtpTransport = nodemailer.createTransport("Sendmail", "/usr/sbin/sendmail");
 /*
  Use the below transport to send mails through Gmail
@@ -115,5 +116,5 @@ function lookup(callback) {
         });
     }
 }
-
+plugins.extendModule("mail", mail);
 module.exports = mail;
