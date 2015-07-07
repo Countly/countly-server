@@ -232,12 +232,6 @@ var appsApi = {},
         common.db.collection('device_details').remove({'_id': {$regex: appId + ".*"}},function(){});
         common.db.collection('cities').remove({'_id': {$regex: appId + ".*"}},function(){});
 
-        common.db.collection('app_users' + appId).drop(function() {
-            if (!fromAppDelete) {
-                common.db.collection('app_users' + appId).insert({_id:"uid-sequence", seq:0},function(){});
-            }
-        });
-
         function deleteEvents(){
             common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
                 if (!err && events && events.list) {
@@ -250,11 +244,15 @@ var appsApi = {},
                 }
             });
         }
-        
-        if (!fromAppDelete)
-			plugins.dispatch("/i/apps/reset", {params:params, appId:appId, data:app}, deleteEvents);
-		else
-			plugins.dispatch("/i/apps/delete", {params:params, appId:appId, data:app}, deleteEvents);
+        common.db.collection('app_users' + appId).drop(function() {
+            if (!fromAppDelete) {
+                common.db.collection('app_users' + appId).insert({_id:"uid-sequence", seq:0},function(){});
+            }
+            if (!fromAppDelete)
+                plugins.dispatch("/i/apps/reset", {params:params, appId:appId, data:app}, deleteEvents);
+            else
+                plugins.dispatch("/i/apps/delete", {params:params, appId:appId, data:app}, deleteEvents);
+        });
 
         if (fromAppDelete) {
             common.db.collection('graph_notes').remove({'_id': common.db.ObjectID(appId)},function(){});
