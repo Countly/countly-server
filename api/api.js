@@ -61,6 +61,18 @@ if (cluster.isMaster) {
 			params.appTimezone = app['timezone'];
 			params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
             
+            if (params.qstring.location && params.qstring.location.length > 0) {
+                var coords = params.qstring.location.split(',');
+                if (coords.length === 2) {
+                    var lat = parseFloat(coords[0]), lon = parseFloat(coords[1]);
+    
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        params.user.lat = lat;
+                        params.user.lng = lon;
+                    }
+                }
+            }
+            
             plugins.dispatch("/sdk", {params:params, app:app});
             if(!params.cancelRequest){
                 //check if device id was changed

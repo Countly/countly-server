@@ -21,7 +21,7 @@ var usage = {},
             }
 
             // Coordinate values of the user location has no use for now
-            if (locationData.ll) {
+            if (locationData.ll && (!params.user.lat || !params.user.lng)) {
                 params.user.lat = locationData.ll[0];
                 params.user.lng = locationData.ll[1];
             }
@@ -111,9 +111,14 @@ var usage = {},
 
             var dbDateIds = common.getDateIds(params);
             common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, function(){});
+            
+            var update = {'$inc': {'sd': session_duration, 'tsd': session_duration}};
+            if(params.user.lat && params.user.lng){
+                update["$set"] = {lat:params.user.lat, lng:params.user.lng};
+            }
 
             // sd: session duration, tsd: total session duration. common.dbUserMap is not used here for readability purposes.
-            common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$inc': {'sd': session_duration, 'tsd': session_duration}}, {'upsert': true}, function() {
+            common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, update, {'upsert': true}, function() {
 				
 				plugins.dispatch("/session/duration", {params:params, session_duration:session_duration});
 
@@ -368,6 +373,10 @@ var usage = {},
             userProps[common.dbUserMap['device_id']] = params.qstring.device_id;
             userProps[common.dbUserMap['country_code']] = params.user.country;
             userProps[common.dbUserMap['city']] = params.user.city;
+            if(params.user.lat && params.user.lng){
+                userProps["lat"] = params.user.lat;
+                userProps["lng"] = params.user.lng;
+            }
         } else {
             if (parseInt(user[common.dbUserMap['last_seen']], 10) < params.time.timestamp) {
                 userProps[common.dbUserMap['last_seen']] = params.time.timestamp;
@@ -383,6 +392,11 @@ var usage = {},
 
             if (user[common.dbUserMap['device_id']] != params.qstring.device_id) {
                 userProps[common.dbUserMap['device_id']] = params.qstring.device_id;
+            }
+            
+            if(params.user.lat && params.user.lng && (user["lat"] != params.user.lat || user["lng"] != params.user.lng)){
+                userProps["lat"] = params.user.lat;
+                userProps["lng"] = params.user.lng;
             }
         }
 
