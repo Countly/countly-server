@@ -172,7 +172,7 @@
             changeMsgEnabled = countlyCommon.getPercentChange(previousMsgEnabledTotal, currentMsgEnabledTotal),
             sparkLines = calcSparklineData();
 
-        var timeSpentString = (sessionDuration.toFixed(1)) + " " + jQuery.i18n.map["common.minute.abrv"];
+        /*var timeSpentString = (sessionDuration.toFixed(1)) + " " + jQuery.i18n.map["common.minute.abrv"];
 
         if (sessionDuration >= 142560) {
             timeSpentString = (sessionDuration / 525600).toFixed(1) + " " + jQuery.i18n.map["common.year.abrv"];
@@ -180,7 +180,9 @@
             timeSpentString = (sessionDuration / 1440).toFixed(1) + " " + jQuery.i18n.map["common.day.abrv"];
         } else if (sessionDuration >= 60) {
             timeSpentString = (sessionDuration / 60).toFixed(1) + " " + jQuery.i18n.map["common.hour.abrv"];
-        }
+        }*/
+        
+        var timeSpentString = countlyCommon.timeString(sessionDuration);
 
         dataArr =
         {
@@ -233,7 +235,7 @@
                     "sparkline":sparkLines["total-time"]
                 },
                 "avg-duration-per-session":{
-                    "total":(durationPerUser.toFixed(1)) + " " + jQuery.i18n.map["common.minute.abrv"],
+                    "total":countlyCommon.timeString(durationPerUser),
                     "change":changeDurationPerUser.percent,
                     "trend":changeDurationPerUser.trend,
                     "sparkline":sparkLines["avg-time"]

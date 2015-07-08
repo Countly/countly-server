@@ -1489,7 +1489,7 @@
 	};
     
     countlyCommon.timeString = function(timespent){
-        var timeSpentString = (timespent.toFixed(1)) + " " + jQuery.i18n.map["common.minute.abrv"];
+        /*var timeSpentString = (timespent.toFixed(1)) + " " + jQuery.i18n.map["common.minute.abrv"];
 
         if (timespent >= 142560) {
             timeSpentString = (timespent / 525600).toFixed(1) + " " + jQuery.i18n.map["common.year.abrv"];
@@ -1497,6 +1497,35 @@
             timeSpentString = (timespent / 1440).toFixed(1) + " " + jQuery.i18n.map["common.day.abrv"];
         } else if (timespent >= 60) {
             timeSpentString = (timespent / 60).toFixed(1) + " " + jQuery.i18n.map["common.hour.abrv"];
+        }
+        return timeSpentString;*/
+        
+        
+        var timeSpentString = "";
+        if(timespent > 1){
+            timeSpentString = Math.floor(timespent) + " " + jQuery.i18n.map["common.minute.abrv"]+" ";
+            var left = Math.floor((timespent - Math.floor(timespent))*60);
+            if(left > 0)
+                timeSpentString += left + " s";
+        }
+        else
+            timeSpentString += Math.floor((timespent - Math.floor(timespent))*60) + " s";
+
+        if (timespent >= 142560) {
+            timeSpentString = Math.floor(timespent / 525600) + " " + jQuery.i18n.map["common.year.abrv"];
+            var left = Math.floor((timespent - Math.floor(timespent / 525600)*525600)/1440);
+            if(left > 0)
+                timeSpentString += " "+left + " " + jQuery.i18n.map["common.day.abrv"];
+        } else if (timespent >= 1440) {
+            timeSpentString = Math.floor(timespent / 1440) + " " + jQuery.i18n.map["common.day.abrv"];
+            var left = Math.floor((timespent - Math.floor(timespent / 1440)*1440)/60);
+            if(left > 0)
+                timeSpentString += " "+left + " " + jQuery.i18n.map["common.hour.abrv"];
+        } else if (timespent >= 60) {
+            timeSpentString = Math.floor(timespent / 60) + " " + jQuery.i18n.map["common.hour.abrv"];
+            var left = Math.floor(timespent - Math.floor(timespent / 60)*60)
+            if(left > 0)
+                timeSpentString += " "+left + " " + jQuery.i18n.map["common.minute.abrv"];
         }
         return timeSpentString;
     };
