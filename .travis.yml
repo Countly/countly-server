@@ -1,4 +1,5 @@
 language: c
+sudo: false
 before_install: sudo bash ./bin/countly.install.travis.sh
 install: sudo npm install
 before_script: sleep 15
