@@ -15,5 +15,5 @@
         else
             return code;
     }
-    CountlyHelpers.createMetricModel(window.countlyLanguage = window.countlyLanguage || {}, "langs", jQuery, getLanguageName);
+    CountlyHelpers.createMetricModel(window.countlyLanguage = window.countlyLanguage || {getLanguageName:getLanguageName}, "langs", jQuery, getLanguageName);
 }());
