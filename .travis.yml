@@ -4,15 +4,6 @@ before_install: sudo bash ./bin/countly.install.travis.sh
 install: sudo npm install
 before_script: sleep 15
 script: npm test
-addons:
-  apt:
-    sources:
-    - python-software-properties
-    - software-properties-common
-    - nginx
-    - supervisor
-    - imagemagick
-    - build-essential
 notifications:
   email: hello@count.ly
   hipchat:
