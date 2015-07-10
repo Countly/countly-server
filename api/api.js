@@ -59,6 +59,7 @@ if (cluster.isMaster) {
 			params.app_cc = app['country'];
 			params.app_name = app['name'];
 			params.appTimezone = app['timezone'];
+            params.app = app;
 			params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
             
             if (params.qstring.location && params.qstring.location.length > 0) {
