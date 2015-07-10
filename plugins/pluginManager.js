@@ -262,6 +262,7 @@ pluginManager.instance = null;
 pluginManager.getInstance = function(){
     if(this.instance === null){
         this.instance = new pluginManager();
+        this.instance.extendModule("pluginManager", this.instance);
     }
     return this.instance;
 }
