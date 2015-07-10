@@ -303,15 +303,14 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 
                 function renderDashboard() {
                     countlyDb.collection('settings').findOne({}, function (err, settings) {
-                        plugins.callMethod("renderDashboard", {req:req, res:res, next:next, data:{member:member, adminApps:countlyGlobalAdminApps, userApps:countlyGlobalApps}});
                         req.session.uid = member["_id"];
                         req.session.gadm = (member["global_admin"] == true);
                         req.session.email = member["email"];
                         res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
 
                         delete member["password"];
-
-                        res.expose({
+                        
+                        var countlyGlobal = {
                             apps:countlyGlobalApps,
                             admin_apps:countlyGlobalAdminApps,
                             csrf_token:req.session._csrf,
@@ -321,14 +320,14 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 							path:countlyConfig.path || "",
 							cdn:countlyConfig.cdn || "",
 							session_timeout: countlyConfig.session_timeout
-                        }, 'countlyGlobal');
-
+                        };
+                        
                         if (settings && !err) {
                             adminOfApps = sortBy(adminOfApps, settings.appSortList || []);
                             userOfApps = sortBy(userOfApps, settings.appSortList || []);
                         }
                         
-                        res.render('dashboard', {
+                        var toDashboard = {
                             adminOfApps:adminOfApps,
                             userOfApps:userOfApps,
                             member:member,
@@ -340,7 +339,13 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             config: req.config,
 							path:countlyConfig.path || "",
 							cdn:countlyConfig.cdn || ""
-                        });
+                        };
+                        
+                        plugins.callMethod("renderDashboard", {req:req, res:res, next:next, data:{member:member, adminApps:countlyGlobalAdminApps, userApps:countlyGlobalApps, countlyGlobal:countlyGlobal, toDashboard:toDashboard}});
+
+                        res.expose(countlyGlobal, 'countlyGlobal');
+                        
+                        res.render('dashboard', toDashboard);
                     });
                 }
             } else {
