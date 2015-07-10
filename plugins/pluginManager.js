@@ -78,7 +78,7 @@ var pluginManager = function pluginManager(){
                             used = true;
                     }
                 } catch (ex) {
-                    console.error(ex);
+                    console.error(ex.stack);
                 }
             }
             return used;
@@ -176,7 +176,7 @@ var pluginManager = function pluginManager(){
 			}); 
 		}
 		catch(ex){
-			console.log(ex);
+			console.log(ex.stack);
 			errors = true;
 			if(callback)
 				callback(errors);
@@ -205,7 +205,7 @@ var pluginManager = function pluginManager(){
 			child.on('exit', handler); 
 		}
 		catch(ex){
-			console.log(ex);
+			console.log(ex.stack);
 			errors = true;
 			if(callback)
 				callback(errors);
