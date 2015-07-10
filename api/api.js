@@ -330,7 +330,7 @@ if (cluster.isMaster) {
     
                 apiPath += "/" + paths[i];
             }
-            plugins.dispatch("/", {params:params, apiPath:apiPath, validateAppForWriteAPI:validateAppForWriteAPI, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForDataWriteAPI:validateUserForDataWriteAPI, paths:paths});
+            plugins.dispatch("/", {params:params, apiPath:apiPath, validateAppForWriteAPI:validateAppForWriteAPI, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForDataWriteAPI:validateUserForDataWriteAPI, paths:paths, urlParts:urlParts});
     
             if(!params.cancelRequest){
                 switch (apiPath) {
