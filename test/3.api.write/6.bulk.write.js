@@ -56,7 +56,7 @@ describe('Bulk writing', function(){
 				.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=sessions')
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateSessionData(err, res, done, {meta:{"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"],"d-ranges":["2"]}, f:{"0":3},l:{"0":3},ds:{"2":1},u:3,n:3,t:3,e:7,d:60,Unknown:true});
+					testUtils.validateSessionData(err, res, done, {meta:{"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"]}, f:{"0":3},l:{"0":3},u:3,n:3,t:3,e:7,d:60,Unknown:true});
 				});
 			});
 		});
@@ -66,7 +66,7 @@ describe('Bulk writing', function(){
 				.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=users')
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateSessionData(err, res, done, {meta:{"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"],"d-ranges":["2"]}, f:{"0":3},l:{"0":3},ds:{"2":1},u:3,n:3,t:3,e:7,d:60,Unknown:true});
+					testUtils.validateSessionData(err, res, done, {meta:{"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"]}, f:{"0":3},l:{"0":3},u:3,n:3,t:3,e:7,d:60,Unknown:true});
 				});
 			});
 		});
@@ -76,7 +76,7 @@ describe('Bulk writing', function(){
 				.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=locations')
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateSessionData(err, res, done, {meta:{"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"],"d-ranges":["2"]}, f:{"0":3},l:{"0":3},ds:{"2":1},u:3,n:3,t:3,e:7,d:60,Unknown:true});
+					testUtils.validateSessionData(err, res, done, {meta:{"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"]}, f:{"0":3},l:{"0":3},u:3,n:3,t:3,e:7,d:60,Unknown:true});
 				});
 			});
 		});
@@ -86,7 +86,7 @@ describe('Bulk writing', function(){
 				.get('/o/analytics/dashboard?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateDashboard(err, res, done, {total_sessions:3,total_users:3,new_users:3,total_time:"1.0 min",avg_time:"0.3 min",avg_requests:"2.3", platforms:[],carriers:[],resolutions:[]});
+					testUtils.validateDashboard(err, res, done, {total_sessions:3,total_users:3,new_users:3,total_time:"0.5 min",avg_time:"0.3 min",avg_requests:"2.3", platforms:[],carriers:[],resolutions:[]});
 				});
 			});
 		});
