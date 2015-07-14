@@ -284,6 +284,27 @@ if (cluster.isMaster) {
 			});
 		});
 	}
+    
+    function validateUserForGlobalAdmin(params, callback, callbackParam) {
+		common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
+			if (!member || err) {
+				common.returnMessage(params, 401, 'User does not exist');
+				return false;
+			}
+	
+			if (!member.global_admin) {
+				common.returnMessage(params, 401, 'User does not have global admin right');
+				return false;
+			}
+			params.member = member;
+	
+			if (callbackParam) {
+				callback(callbackParam, params);
+			} else {
+				callback(params);
+			}
+		});
+	}
 	
 	function validateUserForMgmtReadAPI(callback, params) {
 		common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
@@ -330,7 +351,7 @@ if (cluster.isMaster) {
     
                 apiPath += "/" + paths[i];
             }
-            plugins.dispatch("/", {params:params, apiPath:apiPath, validateAppForWriteAPI:validateAppForWriteAPI, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForDataWriteAPI:validateUserForDataWriteAPI, paths:paths, urlParts:urlParts});
+            plugins.dispatch("/", {params:params, apiPath:apiPath, validateAppForWriteAPI:validateAppForWriteAPI, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin, paths:paths, urlParts:urlParts});
     
             if(!params.cancelRequest){
                 switch (apiPath) {
@@ -605,7 +626,7 @@ if (cluster.isMaster) {
                                 validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchCollection, 'events');
                                 break;
                             default:
-                                if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, validateUserForDataWriteAPI:validateUserForDataWriteAPI}))
+                                if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
                                     common.returnMessage(params, 400, 'Invalid method');
                                 break;
                         }
@@ -650,7 +671,7 @@ if (cluster.isMaster) {
                                 validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchDurations);
                                 break;
                             default:
-                                if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI}))
+                                if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
                                     common.returnMessage(params, 400, 'Invalid path, must be one of /dashboard or /countries');
                                 break;
                         }
@@ -658,7 +679,7 @@ if (cluster.isMaster) {
                         break;
                     }
                     default:
-                        if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, validateUserForWriteAPI:validateUserForWriteAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI}))
+                        if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, validateUserForWriteAPI:validateUserForWriteAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
                             common.returnMessage(params, 400, 'Invalid path');
                 }
             }
