@@ -10,7 +10,8 @@
 		_cpu: ["armv6", "armv7", "x86"],
 		_opengl: ["opengl_es1", "opengl_es2"],
 		_density: ["120dpi", "160dpi", "240dpi", "320dpi", "480dpi", "640dpi"],
-		_locale: ["en_CA", "fr_FR", "de_DE", "it_IT", "ja_JP", "ko_KR", "en_US"]
+		_locale: ["en_CA", "fr_FR", "de_DE", "it_IT", "ja_JP", "ko_KR", "en_US"],
+        _store: ["com.android.vending", "com.google.android.feedback", "com.slideme.sam.manager", "com.amazon.venezia"]
 	};
 	var events = ["Login", "Logout", "Lost", "Won", "Achievement","Sound","Shared"];
 	var pushEvents = ["[CLY]_push_sent", "[CLY]_push_open", "[CLY]_push_action"];
@@ -111,9 +112,11 @@
 				this.platform = this.getProp(i);
 				this.metrics[i] = this.platform;
 			}
-			else
+			else if(i != "_store")
 				this.metrics[i] = this.getProp(i);
 		}
+        if(this.platform == "Android")
+            this.metrics["_store"] = this.getProp("_store");
 		
 		this.getCrash = function(){
 			var crash = {};
