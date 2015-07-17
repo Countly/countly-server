@@ -76,7 +76,7 @@ describe('Testing Store metrics', function(){
 			.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=stores')
 			.expect(200)
 			.end(function(err, res){
-				testUtils.validateMetrics(err, res, done, {meta:{"stores":["com:android:vending", "com:google:android:feedback", "com:slideme:sam:manager", "com:amazon:venezia", "iOS"]}, "com:android:vending":{"n":2,"t":2,"u":2}, "com:google:android:feedback":{"n":1,"t":1,"u":1}, "com:slideme:sam:manager":{"n":1,"t":1,"u":1},"com:amazon:venezia":{"n":1,"t":1,"u":1}, "iOS":{"n":1,"t":1,"u":1}});
+				testUtils.validateMetrics(err, res, done, {meta:{"stores":["com:android:vending", "com:slideme:sam:manager", "com:amazon:venezia", "iOS"]}, "com:android:vending":{"n":3,"t":3,"u":3}, "com:slideme:sam:manager":{"n":1,"t":1,"u":1},"com:amazon:venezia":{"n":1,"t":1,"u":1}, "iOS":{"n":1,"t":1,"u":1}});
 			});
 		});
 	});
