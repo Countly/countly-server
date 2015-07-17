@@ -8,7 +8,9 @@ var plugin = {},
     var map = {
         "com.google.android.feedback":"com.android.vending",
         "com.google.vending":"com.android.vending",
-        "com.miui.supermarket":"com.xiaomi.market"
+        "com.miui.supermarket":"com.xiaomi.market",
+        "com.hiapk.marketpad":"com.hiapk.marketpho",
+        "com.lenovo.leos.appstore.pad":"com.lenovo.leos.appstore"
     };
 	plugins.register("/worker", function(ob){
 		common.dbUserMap['store'] = 'str';
