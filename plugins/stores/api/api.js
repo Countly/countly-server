@@ -13,11 +13,11 @@ var plugin = {},
 		var predefinedMetrics = ob.predefinedMetrics;
         var params = ob.params;
         var user = ob.user;
-        if (!user || (typeof user[common.dbUserMap['store']] == "undefined" && params.qstring.metrics)) {
+        if (params.qstring.metrics && (!user || typeof user[common.dbUserMap['store']] == "undefined")) {
             if(typeof params.qstring.metrics._store == "undefined" && params.qstring.metrics._os){
                 params.qstring.metrics._store = params.qstring.metrics._os;
             }
-            else if(map[params.qstring.metrics._store])
+            else if(params.qstring.metrics._store && map[params.qstring.metrics._store])
                 params.qstring.metrics._store = map[params.qstring.metrics._store];
         }
 		predefinedMetrics.push({
