@@ -53,11 +53,11 @@ describe('Testing Store metrics', function(){
 	describe('write bulk stores', function(){
 		it('should success', function(done){
 			var params = [
-				{"device_id":DEVICE_ID+"1", "app_key":APP_KEY, "begin_session":1, "metrics":{"_stores": "com.android.vending"}},
-				{"device_id":DEVICE_ID+"2", "app_key":APP_KEY, "begin_session":1, "metrics":{"_stores": "com.google.android.feedback"}},
-				{"device_id":DEVICE_ID+"3", "app_key":APP_KEY, "begin_session":1, "metrics":{"_stores": "com.slideme.sam.manager"}},
-				{"device_id":DEVICE_ID+"4", "app_key":APP_KEY, "begin_session":1, "metrics":{"_stores": "com.amazon.venezia"}},
-				{"device_id":DEVICE_ID+"5", "app_key":APP_KEY, "begin_session":1, "metrics":{"_stores": "iOS"}}
+				{"device_id":DEVICE_ID+"1", "app_key":APP_KEY, "begin_session":1, "metrics":{"_store": "com.android.vending"}},
+				{"device_id":DEVICE_ID+"2", "app_key":APP_KEY, "begin_session":1, "metrics":{"_store": "com.google.android.feedback"}},
+				{"device_id":DEVICE_ID+"3", "app_key":APP_KEY, "begin_session":1, "metrics":{"_store": "com.slideme.sam.manager"}},
+				{"device_id":DEVICE_ID+"4", "app_key":APP_KEY, "begin_session":1, "metrics":{"_store": "com.amazon.venezia"}},
+				{"device_id":DEVICE_ID+"5", "app_key":APP_KEY, "begin_session":1, "metrics":{"_store": "iOS"}}
 			];
 			request
 			.get('/i/bulk?requests='+JSON.stringify(params))
