@@ -5,7 +5,10 @@ var plugin = {},
 	fetch = require('../../../api/parts/data/fetch.js');
 
 (function (plugin) {
-    var map = {"com.google.android.feedback":"com.android.vending"};
+    var map = {
+        "com.google.android.feedback":"com.android.vending",
+        "com.google.vending":"com.android.vending"
+    };
 	plugins.register("/worker", function(ob){
 		common.dbUserMap['store'] = 'str';
 	});
