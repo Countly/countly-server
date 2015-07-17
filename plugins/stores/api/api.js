@@ -7,7 +7,8 @@ var plugin = {},
 (function (plugin) {
     var map = {
         "com.google.android.feedback":"com.android.vending",
-        "com.google.vending":"com.android.vending"
+        "com.google.vending":"com.android.vending",
+        "com.miui.supermarket":"com.xiaomi.market"
     };
 	plugins.register("/worker", function(ob){
 		common.dbUserMap['store'] = 'str';
