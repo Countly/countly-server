@@ -122,6 +122,13 @@
                     graphProperties.series = {stack:true, bars:{ show:true, align:"center", barWidth:0.6, tickLength:0 }};
                     graphProperties.xaxis.ticks = dataPoints.ticks;
                     break;
+                case "separate-bar":
+                    if (dataPoints.ticks.length > 20) {
+                        graphProperties.xaxis.rotateTicks = 45;
+                    }
+                    graphProperties.series = {bars:{ show:true, align:"center", barWidth:0.6 }};
+                    graphProperties.xaxis.ticks = dataPoints.ticks;
+                    break;
                 case "pie":
                     graphProperties.series = { pie:{
                         show:true,
@@ -148,7 +155,7 @@
 
             $.plot($(container), dataPoints.dp, graphProperties);
 
-            if (graphType == "bar") {
+            if (graphType == "bar" || graphType == "separate-bar") {
                 var previousBar;
 
                 $(container).unbind("plothover");
