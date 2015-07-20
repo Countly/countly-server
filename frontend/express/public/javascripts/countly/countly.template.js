@@ -2103,6 +2103,9 @@ window.ManageAppsView = countlyView.extend({
     initialize:function () {
         this.template = Handlebars.compile($("#template-management-applications").html());
     },
+    destroy:function () {
+        app.closeAppTooltip();
+    },
     renderCommon:function () {
         $(this.el).html(this.template({
             admin_apps:countlyGlobal['admin_apps']
@@ -3460,6 +3463,7 @@ var AppRouter = Backbone.Router.extend({
             });
 
             $(".app-navigate").live("click", function () {
+                self.closeAppTooltip();
                 var appKey = $(this).data("key"),
                     appId = $(this).data("id"),
                     appName = $(this).find(".name").text(),
@@ -3489,7 +3493,7 @@ var AppRouter = Backbone.Router.extend({
 
                 self.activeAppName = appName;
                 self.activeAppKey = appKey;
-
+                
                 $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack', complete:function () {
                     countlyCommon.setActiveApp(appId);
                     sidebarApp.find(".text").text(appName);
@@ -3518,12 +3522,7 @@ var AppRouter = Backbone.Router.extend({
                     });
                 }
             });
-            $("#app-tooltip").mouseleave(function(){
-                if($("#app-tooltip").is(':visible')){
-                    $("#app-tooltip").hide();
-                    $("#app-tooltip").unbind("click");
-                }
-            });
+            $("#app-tooltip").mouseleave(self.closeAppTooltip);
 
             $("#sidebar-events").click(function (e) {
                 $.when(countlyEvent.refreshEvents()).then(function () {
@@ -3546,6 +3545,7 @@ var AppRouter = Backbone.Router.extend({
                     $(this).addClass("active");
 
                     if ($("#app-nav").offset().left == 201) {
+                        self.closeAppTooltip();
                         $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack'});
                         $("#sidebar-app-select").removeClass("active");
                     }
@@ -4396,6 +4396,12 @@ var AppRouter = Backbone.Router.extend({
            both.off('mouseenter mouseleave');
         }
     },
+    closeAppTooltip: function(){
+        if($("#app-tooltip").is(':visible')){
+            $("#app-tooltip").hide();
+            $("#app-tooltip").unbind("click");
+        }
+    },
 	addPageScript:function(view, callback){
 		if(!this.pageScripts[view])
 			this.pageScripts[view] = [];
@@ -4413,7 +4419,8 @@ var AppRouter = Backbone.Router.extend({
 
         var self = this;
         $(document).ready(function () {
-			 $("#sidebar-menu").find("a").removeClass("active");
+  
+			$("#sidebar-menu").find("a").removeClass("active");
 
             var currentMenu = $("#sidebar-menu").find("a[href='#" + Backbone.history.fragment + "']");
             currentMenu.addClass("active");
