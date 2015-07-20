@@ -168,11 +168,7 @@ app.addPageScript("#", function(){
 });
 
 $( document ).ready(function() {
-	var fileref=document.createElement('script');
-	fileref.setAttribute("type","text/javascript");
-	fileref.setAttribute("src", "dbviewer/javascripts/json.human.js");
-	document.getElementsByTagName("head")[0].appendChild(fileref);
-
+    CountlyHelpers.loadJS("dbviewer/javascripts/json.human.js");
 	var menu = '<a href="#/manage/db" class="item">'+
 		'<div class="logo-icon fa fa-database"></div>'+
 		'<div class="text" data-localize="dbviewer.title"></div>'+
