@@ -431,6 +431,39 @@ $.extend(Template.prototype, {
 
         return ret;
     };
+    
+    CountlyHelpers.loadJS = function(js, callback){
+		var fileref=document.createElement('script'),
+        loaded;
+        fileref.setAttribute("type","text/javascript");
+        fileref.setAttribute("src", js);
+        if (callback) {
+            fileref.onreadystatechange = fileref.onload = function() {
+                if (!loaded) {
+                    callback();
+                }
+                loaded = true;
+            };
+        }
+        document.getElementsByTagName("head")[0].appendChild(fileref);
+	};
+    
+    CountlyHelpers.loadCSS = function(css, callback){
+		var fileref=document.createElement("link"),
+        loaded;
+        fileref.setAttribute("rel", "stylesheet");
+        fileref.setAttribute("type", "text/css");
+        fileref.setAttribute("href", css);
+        if (callback) {
+            fileref.onreadystatechange = fileref.onload = function() {
+                if (!loaded) {
+                    callback();
+                }
+                loaded = true;
+            };
+        }
+        document.getElementsByTagName("head")[0].appendChild(fileref)
+	};
 
     CountlyHelpers.messageText = function(messagePerLocale) {
         if (!messagePerLocale) {
