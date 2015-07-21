@@ -283,6 +283,16 @@
     countlyDeviceDetails.fixOSVersion = function(osName) {
         return osName
             .replace(/:/g, ".")
+            .replace(/^unk/g, "Unknown ")
+            .replace(/^qnx/g, "QNX ")
+            .replace(/^os2/g, "OS/2 ")
+            .replace(/^mw/g, "Windows ")
+            .replace(/^ob/g, "Open BSD ")
+            .replace(/^sb/g, "SearchBot ")
+            .replace(/^so/g, "Sun OS ")
+            .replace(/^bo/g, "BeOS ")
+            .replace(/^l/g, "Linux ")
+            .replace(/^u/g, "UNIX ")
             .replace(/^i/g, "iOS ")
             .replace(/^a/g, "Android ")
             .replace(/^b/g, "BlackBerry ")

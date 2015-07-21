@@ -41,6 +41,18 @@ if (cluster.isMaster) {
             apps:require('./parts/mgmt/apps.js')
         }
     };
+    
+    var os_mapping = {
+        "unknown":"unk",
+        "qnx":"qnx",
+        "os/2":"os2",
+        "windows":"mw",
+        "open bsd":"ob",
+        "searchbot":"sb",
+        "sun os":"so",
+        "beos":"bo",
+        "mac osx":"o"
+    };
 
 	plugins.dispatch("/worker", {common:common});
 	// Checks app_key from the http request against "apps" collection.
@@ -403,7 +415,10 @@ if (cluster.isMaster) {
                                 }
             
                                 if (tmpParams.qstring.metrics["_os"] && tmpParams.qstring.metrics["_os_version"]) {
-                                    tmpParams.qstring.metrics["_os_version"] = tmpParams.qstring.metrics["_os"][0].toLowerCase() + tmpParams.qstring.metrics["_os_version"];
+                                    if(os_mapping[tmpParams.qstring.metrics["_os"].toLowerCase()])
+                                        tmpParams.qstring.metrics["_os_version"] = os_mapping[tmpParams.qstring.metrics["_os"].toLowerCase()] + tmpParams.qstring.metrics["_os_version"];
+                                    else
+                                        tmpParams.qstring.metrics["_os_version"] = tmpParams.qstring.metrics["_os"][0].toLowerCase() + tmpParams.qstring.metrics["_os_version"];
                                 }
                             }
                             validateAppForWriteAPI(tmpParams);
@@ -507,7 +522,10 @@ if (cluster.isMaster) {
                                 }
         
                                 if (params.qstring.metrics["_os"] && params.qstring.metrics["_os_version"]) {
-                                    params.qstring.metrics["_os_version"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_os_version"];
+                                    if(os_mapping[params.qstring.metrics["_os"].toLowerCase()])
+                                        params.qstring.metrics["_os_version"] = os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_os_version"];
+                                    else
+                                        params.qstring.metrics["_os_version"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_os_version"];
                                 }
         
                             } catch (SyntaxError) {
