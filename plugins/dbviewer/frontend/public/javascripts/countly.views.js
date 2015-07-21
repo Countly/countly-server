@@ -168,7 +168,9 @@ app.addPageScript("#", function(){
 });
 
 $( document ).ready(function() {
-    CountlyHelpers.loadJS("dbviewer/javascripts/json.human.js");
+    if(!production){
+        CountlyHelpers.loadJS("dbviewer/javascripts/json.human.js");
+    }
 	var menu = '<a href="#/manage/db" class="item">'+
 		'<div class="logo-icon fa fa-database"></div>'+
 		'<div class="text" data-localize="dbviewer.title"></div>'+
