@@ -49,7 +49,7 @@ fi
 
 rm -rf /tmp/countly-github
 
-git clone https://github.com/Countly/countly-server.git -b plugins /tmp/countly-github || (echo "Failed to checkout Countly core from Github" ; exit)
+git clone https://github.com/Countly/countly-server.git -b master /tmp/countly-github || (echo "Failed to checkout Countly core from Github" ; exit)
 
 rsync -rvc --exclude='.git/' --exclude='log/' /tmp/countly-github/ $DIR/../../  || (echo "Failed to synchronize folder contents" ; exit)
 
