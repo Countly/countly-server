@@ -2,6 +2,7 @@ require('log-timestamp');
 
 var http = require('http'),
     cluster = require('cluster'),
+    formidable = require('formidable'),
     os = require('os'),
 	countlyConfig = require('./config'),
     plugins = require('../plugins/pluginManager.js');
@@ -704,16 +705,15 @@ if (cluster.isMaster) {
         };
         
         if(req.method.toLowerCase() == 'post'){
-			var body = "";
-			req.on('data', function(chunk) {
-				body += chunk.toString();
-			});
-			
-			req.on('end', function() {					
-				// parse the received body data
-                params.qstring = querystring.parse(body);
-				processRequest();
-			});
+			var form = new formidable.IncomingForm();
+
+            form.parse(req, function(err, fields, files) {
+                params.files = files;
+                for(var i in fields){
+                    params.qstring[i] = fields[i];
+                }
+                processRequest();
+            });
 		}
 		else
 			//attempt process GET request
