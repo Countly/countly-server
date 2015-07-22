@@ -10,7 +10,8 @@ var plugin = {},
         "com.google.vending":"com.android.vending",
         "com.miui.supermarket":"com.xiaomi.market",
         "com.hiapk.marketpad":"com.hiapk.marketpho",
-        "com.lenovo.leos.appstore.pad":"com.lenovo.leos.appstore"
+        "com.lenovo.leos.appstore.pad":"com.lenovo.leos.appstore",
+        "com.aptoide.partners":"cm.aptoide.pt"
     };
 	plugins.register("/worker", function(ob){
 		common.dbUserMap['store'] = 'str';
