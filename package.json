@@ -46,6 +46,7 @@
     "request": "2.51.0",
     "string": "3.0.0",
     "time": "*",
-    "underscore": "1.7.0"
+    "underscore": "1.7.0",
+    "formidable": "1.0.17"
   }
 }
