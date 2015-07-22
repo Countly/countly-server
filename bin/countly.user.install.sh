@@ -56,19 +56,6 @@ apt-get -y install imagemagick
 #install sendmail
 apt-get -y install sendmail
 
-#install iptables
-DEBIAN_FRONTEND=noninteractive apt-get -y install iptables-persistent
-
-apt-get -y install build-essential || (echo "Failed to install build-essential." ; exit)
-
-#drop packages coming from 0/0 going through mongodb port
-#allow those coming from localhost
-iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s localhost -j ACCEPT
-iptables -A INPUT -m state --state NEW -p tcp --destination-port 27019 -s 0/0 -j DROP
-
-#install iptables-persistent
-apt-get -y install iptables-persistent
-
 #install grunt & npm modules
 ( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install )
 
