@@ -377,7 +377,7 @@ if (cluster.isMaster) {
                             try {
                                 requests = JSON.parse(requests);
                             } catch (SyntaxError) {
-                                console.log('Parse bulk JSON failed');
+                                console.log('Parse bulk JSON failed', requests);
                             }
                         } else {
                             common.returnMessage(params, 400, 'Missing parameter "requests"');
@@ -530,7 +530,7 @@ if (cluster.isMaster) {
                                 }
         
                             } catch (SyntaxError) {
-                                console.log('Parse metrics JSON failed');
+                                console.log('Parse metrics JSON failed', params.qstring.metrics);
                             }
                         }
         
@@ -538,7 +538,7 @@ if (cluster.isMaster) {
                             try {
                                 params.qstring.events = JSON.parse(params.qstring.events);
                             } catch (SyntaxError) {
-                                console.log('Parse events JSON failed');
+                                console.log('Parse events JSON failed', params.qstring.events);
                             }
                         }
         
@@ -633,7 +633,7 @@ if (cluster.isMaster) {
                                     try {
                                         params.qstring.events = JSON.parse(params.qstring.events);
                                     } catch (SyntaxError) {
-                                        console.log('Parse events array failed');
+                                        console.log('Parse events array failed', params.qstring.events);
                                     }
         
                                     validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventData);
