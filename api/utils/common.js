@@ -527,6 +527,25 @@ var common = {},
             month: params.time.yearly + ":" + params.time.month
         };
     };
+    
+    common.getDiff = function(moment1, moment2, measure){
+        var divider = 1;
+        switch (measure) {
+            case "minutes":
+                divider = 60;
+                break;
+            case "hours":
+                divider = 60*60;
+                break;
+            case "days":
+                divider = 60*60*24;
+                break;
+            case "weeks":
+                divider = 60*60*24*7;
+                break;
+        }
+        return Math.ceil((moment1.unix() - moment2.unix())/divider);
+    };
 	
 	common.versionCompare = function(v1, v2, options) {
 		var lexicographical = options && options.lexicographical,
