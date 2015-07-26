@@ -29,6 +29,8 @@
 				_appData["all"].avgduration = {total:0, trend:0};
 				_sessions["all"] = {};
 				for(var appID in countlyGlobal["apps"]){
+                    _appData[appID].duration.total = 0;
+                    _appData[appID].avgduration.total = 0;
 					var sessionData = _sessionData[appID];
 					for(var i in _sessions[appID]){
 						for(var j = 0, l = _sessions[appID][i].data.length; j < l; j++){
@@ -42,8 +44,10 @@
 							}
 							_sessions["all"][i].data[j][0] = _sessions[appID][i].data[j][0];
 							_sessions["all"][i].data[j][1] += parseFloat(_sessions[appID][i].data[j][1]);
-							if(i == "#draw-total-time-spent")
+							if(i == "#draw-total-time-spent"){
 								_appData["all"].duration.total += parseFloat(_sessions[appID][i].data[j][1]);
+								_appData[appID].duration.total += parseFloat(_sessions[appID][i].data[j][1]);
+                            }
 						}
 					}
 					_appData["all"].sessions.total += sessionData.usage['total-sessions'].total;
@@ -54,6 +58,7 @@
 					_appData["all"].newusers.trend += fromShortNumber(sessionData.usage['new-users'].change);
 					_appData["all"].duration.trend += fromShortNumber(sessionData.usage['total-duration'].change);
 					_appData["all"].avgduration.trend += fromShortNumber(sessionData.usage['avg-duration-per-session'].change);
+                    _appData[appID].avgduration.total = (_appData[appID].sessions.total == 0 ) ? 0 : _appData[appID].duration.total/_appData[appID].sessions.total;
 				}
 				for(var i in _appData["all"]){
 					if(_appData["all"][i].trend < 0)
@@ -62,27 +67,6 @@
 						_appData["all"][i].trend = "u";
 				}
 				_appData["all"].avgduration.total = (_appData["all"].sessions.total == 0 ) ? 0 : _appData["all"].duration.total/_appData["all"].sessions.total;
-				//transform total duration
-				var timeSpentString = (_appData["all"].duration.total.toFixed(1)) + " " + jQuery.i18n.map["common.minute.abrv"];
-				if (_appData["all"].duration.total >= 142560) {
-					timeSpentString = (_appData["all"].duration.total / 525600).toFixed(1) + " " + jQuery.i18n.map["common.year.abrv"];
-				} else if (_appData["all"].duration.total >= 1440) {
-					timeSpentString = (_appData["all"].duration.total / 1440).toFixed(1) + " " + jQuery.i18n.map["common.day.abrv"];
-				} else if (_appData["all"].duration.total >= 60) {
-					timeSpentString = (_appData["all"].duration.total / 60).toFixed(1) + " " + jQuery.i18n.map["common.hour.abrv"];
-				}
-				_appData["all"].duration.total = timeSpentString;
-				
-				//transform avg duration
-				var timeSpentString = (_appData["all"].avgduration.total.toFixed(1)) + " " + jQuery.i18n.map["common.minute.abrv"];
-				if (_appData["all"].avgduration.total >= 142560) {
-					timeSpentString = (_appData["all"].avgduration.total / 525600).toFixed(1) + " " + jQuery.i18n.map["common.year.abrv"];
-				} else if (_appData["all"].avgduration.total >= 1440) {
-					timeSpentString = (_appData["all"].avgduration.total / 1440).toFixed(1) + " " + jQuery.i18n.map["common.day.abrv"];
-				} else if (_appData["all"].avgduration.total >= 60) {
-					timeSpentString = (_appData["all"].avgduration.total / 60).toFixed(1) + " " + jQuery.i18n.map["common.hour.abrv"];
-				}
-				_appData["all"].avgduration.total = timeSpentString;
 			});
         } else {
             return true;
