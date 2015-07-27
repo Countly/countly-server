@@ -580,7 +580,7 @@ $.extend(Template.prototype, {
 				{ "name":"u" },
 				{ "name":"n" }
 			]);
-	
+            chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, _name);
 			var namesData = _.pluck(chartData.chartData, _name),
 				totalData = _.pluck(chartData.chartData, 't'),
 				newData = _.pluck(chartData.chartData, 'n'),
