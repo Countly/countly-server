@@ -97,10 +97,11 @@ window.PluginsView = countlyView.extend({
 
 //register views
 app.pluginsView = new PluginsView();
-
-app.route('/manage/plugins', 'plugins', function () {
-	this.renderWhenReady(this.pluginsView);
-});
+if(countlyGlobal["member"].global_admin){
+    app.route('/manage/plugins', 'plugins', function () {
+        this.renderWhenReady(this.pluginsView);
+    });
+}
 app.addPageScript("/manage/plugins", function(){
    $("#plugins-selector").find(">.button").click(function () {
         if ($(this).hasClass("selected")) {

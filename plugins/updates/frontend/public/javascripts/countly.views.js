@@ -85,15 +85,19 @@ window.UpdatesView = countlyView.extend({
 //register views
 app.updatesView = new UpdatesView();
 
-app.route('/manage/updates', 'updates', function () {
-	this.renderWhenReady(this.updatesView);
-});
+if(countlyGlobal["member"].global_admin){
+    app.route('/manage/updates', 'updates', function () {
+        this.renderWhenReady(this.updatesView);
+    });
+}
 
 $( document ).ready(function() {
-	var menu = '<a href="#/manage/updates" class="item">'+
-		'<div class="logo-icon fa fa-exclamation-triangle"></div>'+
-		'<div class="text" data-localize="updates.title"></div>'+
-	'</a>';
-	if($('#management-submenu .help-toggle').length)
-		$('#management-submenu .help-toggle').before(menu);
+    if(countlyGlobal["member"].global_admin){
+        var menu = '<a href="#/manage/updates" class="item">'+
+            '<div class="logo-icon fa fa-exclamation-triangle"></div>'+
+            '<div class="text" data-localize="updates.title"></div>'+
+        '</a>';
+        if($('#management-submenu .help-toggle').length)
+            $('#management-submenu .help-toggle').before(menu);
+    }
 });

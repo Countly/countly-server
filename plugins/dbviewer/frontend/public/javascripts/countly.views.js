@@ -111,6 +111,7 @@ window.DBViewerView = countlyView.extend({
 //register views
 app.dbviewerView = new DBViewerView();
 
+if(countlyGlobal["member"].global_admin){
 app.route('/manage/db', 'db', function () {
 	this.dbviewerView.db = null;
 	this.dbviewerView.collection = null;
@@ -159,7 +160,7 @@ app.route('/manage/db/:dbs/:collection/page/:page', 'dbs', function (db, collect
 	}
 	this.renderWhenReady(this.dbviewerView);
 });
-
+}
 app.addPageScript("#", function(){
 	if (Backbone.history.fragment.indexOf("/manage/db") > -1) {
         $("#sidebar-app-select").addClass("disabled");
@@ -171,10 +172,12 @@ $( document ).ready(function() {
     if(!production){
         CountlyHelpers.loadJS("dbviewer/javascripts/json.human.js");
     }
-	var menu = '<a href="#/manage/db" class="item">'+
-		'<div class="logo-icon fa fa-database"></div>'+
-		'<div class="text" data-localize="dbviewer.title"></div>'+
-	'</a>';
-	if($('#management-submenu .help-toggle').length)
-		$('#management-submenu .help-toggle').before(menu);
+    if(countlyGlobal["member"].global_admin){
+        var menu = '<a href="#/manage/db" class="item">'+
+            '<div class="logo-icon fa fa-database"></div>'+
+            '<div class="text" data-localize="dbviewer.title"></div>'+
+        '</a>';
+        if($('#management-submenu .help-toggle').length)
+            $('#management-submenu .help-toggle').before(menu);
+    }
 });

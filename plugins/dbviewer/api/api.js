@@ -8,8 +8,8 @@ var plugin = {},
 	plugins.register("/o/db", function(ob){
 		var dbs = {countly:common.db, countly_drill:common.drillDb};
 		var params = ob.params;
-		var validateUserForMgmtReadAPI = ob.validateUserForMgmtReadAPI;
-		validateUserForMgmtReadAPI(function(){
+		var validateUserForGlobalAdmin = ob.validateUserForGlobalAdmin;
+		validateUserForGlobalAdmin(params, function(){
 			if(params.qstring.dbs && params.qstring.collection && params.qstring.document && params.qstring.collection.indexOf("system.indexes") == -1 && params.qstring.collection.indexOf("sessions_") == -1){
 				if(dbs[params.qstring.dbs]){
 					if(isObjectId(params.qstring.document)){
@@ -77,7 +77,7 @@ var plugin = {},
 						callback(null, null);
 				}
 			}
-		}, params);		
+		});		
 		return true;
 	});
 	

@@ -62,9 +62,11 @@ window.PopulatorView = countlyView.extend({
 //register views
 app.populatorView = new PopulatorView();
 
-app.route('/manage/populate', 'populate', function () {
-	this.renderWhenReady(this.populatorView);
-});
+if(countlyGlobal["member"].global_admin){
+    app.route('/manage/populate', 'populate', function () {
+        this.renderWhenReady(this.populatorView);
+    });
+}
 
 app.addPageScript("#", function(){
 	if (Backbone.history.fragment.indexOf("/manage/populate") > -1) {
@@ -78,11 +80,12 @@ $( document ).ready(function() {
 	fileref.setAttribute("type","text/javascript");
 	fileref.setAttribute("src", "populator/javascripts/chance.js");
 	document.getElementsByTagName("head")[0].appendChild(fileref);
-
-	var menu = '<a href="#/manage/populate" class="item">'+
-		'<div class="logo-icon fa fa-random"></div>'+
-		'<div class="text" data-localize="populator.title"></div>'+
-	'</a>';
-	if($('#management-submenu .help-toggle').length)
-		$('#management-submenu .help-toggle').before(menu);
+    if(countlyGlobal["member"].global_admin){
+        var menu = '<a href="#/manage/populate" class="item">'+
+            '<div class="logo-icon fa fa-random"></div>'+
+            '<div class="text" data-localize="populator.title"></div>'+
+        '</a>';
+        if($('#management-submenu .help-toggle').length)
+            $('#management-submenu .help-toggle').before(menu);
+    }
 });

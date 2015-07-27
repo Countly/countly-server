@@ -28,44 +28,53 @@ var plugin = {},
 	}
 
 	plugins.register('/o/updates', function(ob){
-		if (ob.paths.length > 3 && ob.paths[3] === 'check') {
-			if (ob.params.qstring.key in updates) {
-	            common.returnOutput(ob.params, {status: updates[ob.params.qstring.key].error || 'pending' });
-			} else {
-	            common.returnOutput(ob.params, {status: 'success' });
-			}
-		} else {
-		    common.returnOutput(ob.params, [
-		    	{title: 'Latest version from Github', desc: 'Update Countly server to HEAD of Github repository. WARNING! This is not stable release!', type: 'github', id: 'HEAD'}
-			]);
-		}
+        console.log("/o/updates");
+        var params = ob.params
+		var validate = ob.validateUserForGlobalAdmin;
+        validate(params, function (params) {
+            if (ob.paths.length > 3 && ob.paths[3] === 'check') {
+                if (ob.params.qstring.key in updates) {
+                    common.returnOutput(ob.params, {status: updates[ob.params.qstring.key].error || 'pending' });
+                } else {
+                    common.returnOutput(ob.params, {status: 'success' });
+                }
+            } else {
+                common.returnOutput(ob.params, [
+                    {title: 'Latest version from Github', desc: 'Update Countly server to HEAD of Github repository. WARNING! This is not stable release!', type: 'github', id: 'HEAD'}
+                ]);
+            }
+        });
     	return true;
 	});
 
 	plugins.register('/i/updates', function(ob){
-		var argProps = {
-		        'id':               { 'required': true,  'type': 'String'   },
-		        'type':        		{ 'required': true,  'type': 'String'   },
-		    },
-		    update = {},
-		    params = ob.params;
-
-		if (!(update = common.validateArgs(params.qstring, argProps))) {
-            common.returnOutput(params, {error: 'Not enough args'});
-		    return false;
-		}
-
-		if (update.type === 'github') {
-			if (update.id === 'HEAD') {
-				update.key = Math.round(Math.random() * 100000000);
-				updates[update.key] = update;
-				common.returnOutput(params, update);
-				setTimeout(updateFromGithub.bind(this, update), 500);
-				return true;
-			}
-		}
-
-        common.returnOutput(params, {error: 'Update type not supported yet'});
+        var params = ob.params
+		var validate = ob.validateUserForGlobalAdmin;
+        validate(params, function (params) {
+            var argProps = {
+                    'id':               { 'required': true,  'type': 'String'   },
+                    'type':        		{ 'required': true,  'type': 'String'   },
+                },
+                update = {},
+                params = ob.params;
+    
+            if (!(update = common.validateArgs(params.qstring, argProps))) {
+                common.returnOutput(params, {error: 'Not enough args'});
+                return false;
+            }
+    
+            if (update.type === 'github') {
+                if (update.id === 'HEAD') {
+                    update.key = Math.round(Math.random() * 100000000);
+                    updates[update.key] = update;
+                    common.returnOutput(params, update);
+                    setTimeout(updateFromGithub.bind(this, update), 500);
+                    return true;
+                }
+            }
+    
+            common.returnOutput(params, {error: 'Update type not supported yet'});
+        });
 		return true;
 	});
 }(plugin));

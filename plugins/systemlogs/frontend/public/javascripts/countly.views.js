@@ -57,16 +57,19 @@ window.SystemLogsView = countlyView.extend({
 
 //register views
 app.systemLogsView = new SystemLogsView();
-
-app.route('/manage/systemlogs', 'systemlogs', function () {
-	this.renderWhenReady(this.systemLogsView);
-});
+if(countlyGlobal["member"].global_admin){
+    app.route('/manage/systemlogs', 'systemlogs', function () {
+        this.renderWhenReady(this.systemLogsView);
+    });
+}
 
 $( document ).ready(function() {
-	var menu = '<a href="#/manage/systemlogs" class="item">'+
-		'<div class="logo-icon fa fa-user-secret"></div>'+
-		'<div class="text" data-localize="systemlogs.title"></div>'+
-	'</a>';
-	if($('#management-submenu .help-toggle').length)
-		$('#management-submenu .help-toggle').before(menu);
+    if(countlyGlobal["member"].global_admin){
+        var menu = '<a href="#/manage/systemlogs" class="item">'+
+            '<div class="logo-icon fa fa-user-secret"></div>'+
+            '<div class="text" data-localize="systemlogs.title"></div>'+
+        '</a>';
+        if($('#management-submenu .help-toggle').length)
+            $('#management-submenu .help-toggle').before(menu);
+    }
 });

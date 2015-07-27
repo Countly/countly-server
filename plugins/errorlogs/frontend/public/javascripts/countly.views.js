@@ -52,16 +52,19 @@ window.ErrorLogsView = countlyView.extend({
 
 //register views
 app.errorLogsView = new ErrorLogsView();
-
-app.route('/manage/errorlogs', 'errorlogs', function () {
-	this.renderWhenReady(this.errorLogsView);
-});
+if(countlyGlobal["member"].global_admin){
+    app.route('/manage/errorlogs', 'errorlogs', function () {
+        this.renderWhenReady(this.errorLogsView);
+    });
+}
 
 $( document ).ready(function() {
-	var menu = '<a href="#/manage/errorlogs" class="item">'+
-		'<div class="logo-icon fa fa-exclamation-triangle"></div>'+
-		'<div class="text" data-localize="errorlogs.title"></div>'+
-	'</a>';
-	if($('#management-submenu .help-toggle').length)
-		$('#management-submenu .help-toggle').before(menu);
+    if(countlyGlobal["member"].global_admin){
+        var menu = '<a href="#/manage/errorlogs" class="item">'+
+            '<div class="logo-icon fa fa-exclamation-triangle"></div>'+
+            '<div class="text" data-localize="errorlogs.title"></div>'+
+        '</a>';
+        if($('#management-submenu .help-toggle').length)
+            $('#management-submenu .help-toggle').before(menu);
+    }
 });

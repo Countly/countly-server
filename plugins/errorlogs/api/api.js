@@ -12,7 +12,7 @@ var plugin = {},
 	plugins.register("/o/errorlogs", function(ob){
 		//get parameters
         var params = ob.params; //request params
-        var validate = ob.validateUserForDataReadAPI; //user validation
+        var validate = ob.validateUserForGlobalAdmin; //user validation
         var paths = ob.paths;
         
         validate(params, function (params) {
@@ -57,7 +57,7 @@ var plugin = {},
     plugins.register("/i/errorlogs", function(ob){
 		//get parameters
         var params = ob.params; //request params
-        var validate = ob.validateUserForDataWriteAPI; //user validation
+        var validate = ob.validateUserForGlobalAdmin; //user validation
         
         validate(params, function (params) {
             if(params.qstring.log && logs[params.qstring.log]){
