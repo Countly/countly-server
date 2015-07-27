@@ -90,7 +90,7 @@
             { "name":"u" },
             { "name":"n" }
         ]);
-
+        locationData.chartData = countlyCommon.mergeMetricsByName(locationData.chartData, "country");
         locationData.chartData = _.sortBy(locationData.chartData, function(obj) { return -obj.t; });
 
         if (options && options.maxCountries && locationData.chartData) {
