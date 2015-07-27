@@ -805,6 +805,29 @@
 
         return {"chartData":_.compact(tableData)};
     };
+    
+    countlyCommon.mergeMetricsByName = function(chartData, metric){
+        var uniqueNames = {},
+            data;
+        for(var i = 0; i < chartData.length; i++){
+            data = chartData[i];
+            if(data[metric] && !uniqueNames[data[metric]]){
+                uniqueNames[data[metric]] = data
+            }
+            else{
+                for(var key in data){
+                    if(typeof data[key] == "string")
+                       uniqueNames[data[metric]][key] = data[key];
+                    else if(typeof data[key] == "number"){
+                        if(!uniqueNames[data[metric]][key])
+                            uniqueNames[data[metric]][key] = 0;
+                        uniqueNames[data[metric]][key] += data[key];
+                    }
+                }
+            }
+        }
+        return _.values(uniqueNames);
+    };
 
     // Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
     countlyCommon.extractBarData = function (db, rangeArray, clearFunction) {
