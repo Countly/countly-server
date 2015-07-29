@@ -78,7 +78,7 @@ if (cluster.isMaster) {
 	function validateAppForWriteAPI(params) {
 		common.db.collection('apps').findOne({'key':params.qstring.app_key}, function (err, app) {
 			if (!app) {
-				if (common.config.api.safe) {
+				if (plugins.getConfig("api").safe) {
 					common.returnMessage(params, 400, 'App does not exist');
 				}
 	
@@ -209,7 +209,7 @@ if (cluster.isMaster) {
         
                 if (params.qstring.events) {
                     countlyApi.data.events.processEvents(params);
-                } else if (common.config.api.safe) {
+                } else if (plugins.getConfig("api").safe) {
                     common.returnMessage(params, 200, 'Success');
                 }
         

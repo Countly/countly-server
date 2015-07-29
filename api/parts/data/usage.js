@@ -1,7 +1,6 @@
 var usage = {},
     common = require('./../../utils/common.js'),
     geoip = require('geoip-lite'),
-    countlyConfig = require('./../../config'),
 	plugins = require('../../../plugins/pluginManager.js');
 
 (function (usage) {
@@ -37,7 +36,7 @@ var usage = {},
 
     usage.endUserSession = function (params) {
         //check if end_session is not too old and ignore if it is
-        if(params.time.timestamp >= params.time.nowWithoutTimestamp.unix() - countlyConfig.api.session_duration_limit){
+        if(params.time.timestamp >= params.time.nowWithoutTimestamp.unix() - plugins.getConfig("api").session_duration_limit){
             // As soon as we receive the end_session we set the timestamp
             // This timestamp is used inside processUserSession
             var userProps = {};
@@ -98,8 +97,8 @@ var usage = {},
             session_duration = parseInt(params.qstring.session_duration);
 
         if (session_duration == (session_duration | 0)) {
-            if (common.config.api.session_duration_limit && session_duration > common.config.api.session_duration_limit) {
-                session_duration = common.config.api.session_duration_limit;
+            if (plugins.getConfig("api").session_duration_limit && session_duration > plugins.getConfig("api").session_duration_limit) {
+                session_duration = plugins.getConfig("api").session_duration_limit;
             }
 
             if (session_duration < 0) {
@@ -446,7 +445,7 @@ var usage = {},
                 }
 
                 // We check if city data logging is on and user's country is the configured country of the app
-                if (tmpMetric.name == "city" && (common.config.api.city_data === false || params.app_cc != params.user.country)) {
+                if (tmpMetric.name == "city" && (plugins.getConfig("api").city_data === false || params.app_cc != params.user.country)) {
                     continue;
                 }
 

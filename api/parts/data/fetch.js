@@ -8,7 +8,8 @@ var fetch = {},
     countlyCommon = require('../../lib/countly.common.js'),
     moment = require('moment'),
     _ = require('underscore'),
-    crypto = require('crypto');
+    crypto = require('crypto'),
+    plugins = require('../../../plugins/pluginManager.js');
 
 (function (fetch) {
 
@@ -378,7 +379,7 @@ var fetch = {},
 					getMetric('device_details');
                     break;
                 case 'cities':
-                    if (common.config.api.city_data !== false) {
+                    if (plugins.getConfig("api").city_data !== false) {
 						getMetric(params.qstring.metric);
                     } else {
                         common.returnOutput(params, []);

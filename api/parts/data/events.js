@@ -30,8 +30,8 @@ var countlyEvents = {},
                     continue;
                 }
 
-                if (common.config.api.event_limit &&
-                    appEvents.length >= common.config.api.event_limit &&
+                if (plugins.getConfig("api").event_limit &&
+                    appEvents.length >= plugins.getConfig("api").event_limit &&
                     appEvents.indexOf(currEvent.key) === -1) {
                     continue;
                 }
@@ -104,8 +104,8 @@ var countlyEvents = {},
                 continue;
             }
 
-            if (common.config.api.event_limit &&
-                appEvents.length >= common.config.api.event_limit &&
+            if (plugins.getConfig("api").event_limit &&
+                appEvents.length >= plugins.getConfig("api").event_limit &&
                 appEvents.indexOf(currEvent.key) === -1) {
                 continue;
             }
@@ -153,10 +153,10 @@ var countlyEvents = {},
 
                 for (var segKey in currEvent.segmentation) {
 
-                    if (common.config.api.event_segmentation_limit &&
+                    if (plugins.getConfig("api").event_segmentation_limit &&
                         appSegments[currEvent.key] &&
                         appSegments[currEvent.key].indexOf(segKey) === -1 &&
-                        appSegments[currEvent.key].length >= common.config.api.event_segmentation_limit) {
+                        appSegments[currEvent.key].length >= plugins.getConfig("api").event_segmentation_limit) {
                         continue;
                     }
 
@@ -174,11 +174,11 @@ var countlyEvents = {},
                         tmpSegVal = "[CLY]" + tmpSegVal;
                     }
 
-                    if (common.config.api.event_segmentation_value_limit &&
+                    if (plugins.getConfig("api").event_segmentation_value_limit &&
                         appSgValues[eventCollectionName] &&
                         appSgValues[eventCollectionName][segKey] &&
                         appSgValues[eventCollectionName][segKey].indexOf(tmpSegVal) === -1 &&
-                        appSgValues[eventCollectionName][segKey].length >= common.config.api.event_segmentation_value_limit) {
+                        appSgValues[eventCollectionName][segKey].length >= plugins.getConfig("api").event_segmentation_value_limit) {
                         continue;
                     }
 
@@ -226,7 +226,7 @@ var countlyEvents = {},
             mergeEvents(eventCollections[eventCollectionName], tmpEventColl);
         }
 
-        if (!common.config.api.safe) {
+        if (!plugins.getConfig("api").safe) {
             for (var collection in eventCollections) {
                 if (eventSegmentsZeroes[collection] && eventSegmentsZeroes[collection].length) {
                     for (var i = 0; i < eventSegmentsZeroes[collection].length; i++) {

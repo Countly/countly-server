@@ -1,7 +1,6 @@
 var mail = {},
     nodemailer = require('nodemailer'),
     request = require('request'),
-    countlyConfig = require('./../../config'),
     plugins = require('../../../plugins/pluginManager.js'),
     smtpTransport = nodemailer.createTransport("Sendmail", "/usr/sbin/sendmail");
 /*
@@ -108,8 +107,8 @@ function getUserFirstName(member) {
 
 function lookup(callback) {
     // If host is set in config.js use that, otherwise get the external IP from ifconfig.me
-    if (countlyConfig.host) {
-        callback(false, countlyConfig.host);
+    if (plugins.getConfig("api").domain) {
+        callback(false, plugins.getConfig("api").domain);
     } else {
         request('http://ifconfig.me/ip', function(error, response, body) {
             callback(error, body);

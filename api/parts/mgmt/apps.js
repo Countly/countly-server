@@ -331,18 +331,16 @@ var appsApi = {},
     }
 
     function processAppProps(app) {
-        var countlyConfig = require('./../../config.js');
-
         if (!app.country || !isValidCountry(app.country)) {
-            app.country = countlyConfig.apps.country;
+            app.country = plugins.getConfig("apps").country;
         }
 
         if (!app.timezone || !isValidTimezone(app.timezone)) {
-            app.timezone = countlyConfig.apps.timezone;
+            app.timezone = plugins.getConfig("apps").timezone;
         }
 
         if (!app.category || !isValidCategory(app.category)) {
-            app.category = countlyConfig.apps.category;
+            app.category = plugins.getConfig("apps").category;
         }
     }
 
