@@ -95,13 +95,247 @@ window.PluginsView = countlyView.extend({
 	}
 });
 
+window.ConfigurationsView = countlyView.extend({
+	initialize:function () {
+		this.predefinedInputs = {};
+        this.configsData = {};
+        this.cache = {};
+        this.changes = {};
+        
+        //register some common system config inputs
+        this.registerInput("apps-category", function(value){
+            var categories = app.manageAppsView.getAppCategories();
+            var select = '<div class="cly-select" id="apps-category">'+
+				'<div class="select-inner">'+
+					'<div class="text-container">';
+            if(!categories[value])
+                select += '<div class="text"></div>';
+            else
+                select += '<div class="text">'+categories[value]+'</div>';
+			select += '</div>'+
+					'<div class="right combo"></div>'+
+				'</div>'+
+				'<div class="select-items square">'+
+					'<div>';
+                    
+                for(var i in categories){
+                    select += '<div data-value="'+i+'" class="segmentation-option item">'+categories[i]+'</div>';
+                }
+
+			select += '</div>'+
+				'</div>'+
+			'</div>';
+            return select;
+        });
+        
+        this.registerInput("apps-country", function(value){
+            var zones = app.manageAppsView.getTimeZones();
+            var select = '<div class="cly-select" id="apps-country">'+
+				'<div class="select-inner">'+
+					'<div class="text-container">';
+            if(!zones[value])
+				select += '<div class="text"></div>';
+            else
+                select += '<div class="text"><div class="flag" style="background-image:url(images/flags/'+value.toLowerCase()+'.png)"></div>'+zones[value].n+'</div>';
+            
+			select += '</div>'+
+					'<div class="right combo"></div>'+
+				'</div>'+
+				'<div class="select-items square">'+
+					'<div>';
+                    
+                for(var i in zones){
+                    select += '<div data-value="'+i+'" class="segmentation-option item"><div class="flag" style="background-image:url(images/flags/'+i.toLowerCase()+'.png)"></div>'+zones[i].n+'</div>';
+                }
+
+			select += '</div>'+
+				'</div>'+
+			'</div>';
+            return select;
+        });
+        
+        this.registerInput("apps-timezone", function(value){
+            return null;
+        });
+    },
+    beforeRender: function() {
+		if(this.template)
+			return $.when(countlyPlugins.initializeConfigs()).then(function () {});
+		else{
+			var self = this;
+			return $.when($.get(countlyGlobal["path"]+'/plugins/templates/configurations.html', function(src){
+				self.template = Handlebars.compile(src);
+			}), countlyPlugins.initializeConfigs()).then(function () {});
+		}
+    },
+    renderCommon:function (isRefresh) {
+        this.configsData = countlyPlugins.getConfigsData();
+        var configsHTML = this.generateConfigsTable(this.configsData);
+        this.templateData = {
+            "page-title":jQuery.i18n.map["plugins.configs"],
+            "configs":configsHTML
+        };
+		var self = this;
+        if (!isRefresh) {
+            $(this.el).html(this.template(this.templateData));
+            this.changes = {};
+            this.cache = JSON.parse(JSON.stringify(this.configsData));
+
+			$(".boolean-selector>.button").click(function () {
+                var dictionary = {"plugins.enable":true, "plugins.disable":false};
+                var cur = $(this);
+                if (cur.hasClass("selected")) {
+                    return true;
+                }
+                var prev = cur.parent(".button-selector").find(">.button.selected");
+                prev.removeClass("selected").removeClass("active");
+                cur.addClass("selected").addClass("active");
+                var id = $(this).parent(".button-selector").attr("id");
+                var value = dictionary[$(this).data("localize")];
+                self.updateConfig(id, value);
+            });
+            
+            $(".configs input").keyup(function () {
+                var id = $(this).attr("id");
+                var value = $(this).val();
+                if($(this).attr("type") == "number")
+                    value = parseFloat(value);
+                self.updateConfig(id, value);
+            });
+            
+            $(".configs .segmentation-option").on("click", function () {
+                var id = $(this).closest(".cly-select").attr("id");
+				var value = $(this).data("value");
+                self.updateConfig(id, value);
+			});
+            
+            $("#configs-apply-changes").click(function () {
+                countlyPlugins.updateConfigs(self.changes, function(err, services){
+                    if(err){
+                        CountlyHelpers.notify({
+                            title: "Configs not changed",
+                            message: "Could not save changes",
+                            type: "error"
+                        });
+                    }
+                    else{
+                        CountlyHelpers.notify({
+                            title: "Configs changed",
+                            message: "Changes were successfully saved"
+                        });
+                        self.configsData = JSON.parse(JSON.stringify(self.cache));
+                        $("#configs-apply-changes").hide();
+                        self.changes = {};
+                    }
+                });
+            });
+        }
+    },
+    updateConfig: function(id, value){
+        var configs = id.split("-");
+                
+        //update cache
+        var data = this.cache;
+        for(var i = 0; i < configs.length; i++){
+            if(typeof data[configs[i]] == "undefined"){
+                break;
+            }
+            else if(i == configs.length-1){
+                data[configs[i]] = value;
+            }
+            else{
+                data = data[configs[i]];
+            }
+        }
+        
+        //add to changes
+        var data = this.changes;
+        for(var i = 0; i < configs.length; i++){
+            if(i == configs.length-1){
+                data[configs[i]] = value;
+            }
+            else if(typeof data[configs[i]] == "undefined"){
+                data[configs[i]] = {};
+            }
+            data = data[configs[i]];
+        }
+
+        if(JSON.stringify(this.configsData) != JSON.stringify(this.cache)){
+            $("#configs-apply-changes").show();
+        }
+        else{
+            $("#configs-apply-changes").hide();
+            this.changes = {};
+        }  
+    },
+    generateConfigsTable: function(configsData, id){
+        id = id || "";
+        var first = true;
+        if(id != ""){
+            first = false;
+        }
+        var configsHTML = "<table class='d-table help-zone-vb ";
+        if(first)
+            configsHTML +=  "no-fix";
+        configsHTML += "' cellpadding='0' cellspacing='0'>";
+        for(var i in configsData){
+            if(typeof configsData[i] == "object"){
+                if(configsData[i] != null){
+                    configsHTML += "<tr><td>"+i+"</td><td>"+this.generateConfigsTable(configsData[i], id+"-"+i)+"</td></tr>";
+                }
+            }
+            else{
+                var input = this.getInputByType((id+"-"+i).substring(1), configsData[i]);
+                if(input)
+                    configsHTML += "<tr><td>"+i+"</td><td>"+input+"</td></tr>";
+            }
+        }
+        configsHTML += "</table>";
+        return configsHTML;
+    },
+    getInputByType: function(id, value){
+        if(this.predefinedInputs[id]){
+            return this.predefinedInputs[id](value);
+        }
+        else if(typeof value == "boolean"){
+            var input = '<div id="'+id+'" class="button-selector boolean-selector">';
+            if(value){
+                input += '<div class="button active selected" data-localize="plugins.enable"></div>';
+                input += '<div class="button" data-localize="plugins.disable"></div>';
+            }
+            else{
+                input += '<div class="button" data-localize="plugins.enable"></div>';
+                input += '<div class="button active selected" data-localize="plugins.disable"></div>';
+            }
+            input += '</div>';
+            return input;
+        }
+        else if(typeof value == "number"){
+            return "<input type='number' id='"+id+"' value='"+value+"'/>";
+        }
+        else
+            return "<input type='text' id='"+id+"' value='"+value+"'/>";
+    },
+    registerInput: function(id, callback){
+        this.predefinedInputs[id] = callback;
+    },
+    refresh:function (){
+    }
+});
+
 //register views
 app.pluginsView = new PluginsView();
+app.configurationsView = new ConfigurationsView();
 if(countlyGlobal["member"].global_admin){
     app.route('/manage/plugins', 'plugins', function () {
         this.renderWhenReady(this.pluginsView);
     });
+    
+    app.route('/manage/configurations', 'configurations', function () {
+        this.renderWhenReady(this.configurationsView);
+    });
 }
+
 app.addPageScript("/manage/plugins", function(){
    $("#plugins-selector").find(">.button").click(function () {
         if ($(this).hasClass("selected")) {
@@ -166,6 +400,10 @@ app.addPageScript("#", function(){
         $("#sidebar-app-select").addClass("disabled");
         $("#sidebar-app-select").removeClass("active");
     }
+    if (Backbone.history.fragment == '/manage/configurations') {
+        $("#sidebar-app-select").addClass("disabled");
+        $("#sidebar-app-select").removeClass("active");
+    }
 });
 
 $( document ).ready(function() {
@@ -173,6 +411,13 @@ $( document ).ready(function() {
 		var menu = '<a href="#/manage/plugins" class="item">'+
 			'<div class="logo-icon fa fa-puzzle-piece"></div>'+
 			'<div class="text" data-localize="plugins.title"></div>'+
+		'</a>';
+		if($('#management-submenu .help-toggle').length)
+			$('#management-submenu .help-toggle').before(menu);
+        
+        var menu = '<a href="#/manage/configurations" class="item">'+
+			'<div class="logo-icon fa fa-wrench"></div>'+
+			'<div class="text" data-localize="plugins.configs"></div>'+
 		'</a>';
 		if($('#management-submenu .help-toggle').length)
 			$('#management-submenu .help-toggle').before(menu);

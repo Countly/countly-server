@@ -2,6 +2,7 @@
 
     //Private Properties
     var _pluginsData = {};
+    var _configsData = {};
 
     //Public Methods
     countlyPlugins.initialize = function (id) {
@@ -13,6 +14,40 @@
             },
 			success:function (json) {
 				_pluginsData = json;
+			}
+		});
+    };
+    
+    //Public Methods
+    countlyPlugins.initializeConfigs = function (id) {
+		return $.ajax({
+			type:"GET",
+			url:countlyCommon.API_URL + "/o/configs",
+			data:{
+                api_key:countlyGlobal['member'].api_key
+            },
+			success:function (json) {
+				_configsData = json;
+			}
+		});
+    };
+    
+    countlyPlugins.updateConfigs = function (configs, callback) {
+		$.ajax({
+			type:"GET",
+			url:countlyCommon.API_URL + "/i/configs",
+			data:{
+                configs:JSON.stringify(configs),
+                api_key:countlyGlobal['member'].api_key
+            },
+			success:function (json) {
+				_configsData = json;
+                if(callback)
+                    callback(null, json);
+			},
+			error:function (json) {
+                if(callback)
+                    callback(true, json);
 			}
 		});
     };
@@ -42,6 +77,10 @@
 	
 	countlyPlugins.getData = function () {
 		return _pluginsData;
+    };
+    
+    countlyPlugins.getConfigsData = function () {
+		return _configsData;
     };
 	
 }(window.countlyPlugins = window.countlyPlugins || {}, jQuery));
