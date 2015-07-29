@@ -27,19 +27,7 @@ var countlyConfig = {
     api: {
         port: 3001,
         host: "localhost",
-        safe: false,
-        session_duration_limit: 120,
-        max_sockets: 1024,
-        city_data: true,
-        event_limit: 500,
-        event_segmentation_limit: 100,
-        event_segmentation_value_limit:1000
-    },
-    apps: {
-        country: "TR",
-        timezone: "Europe/Istanbul",
-        category: "6",
-        expire_online_after: 180
+        max_sockets: 1024
     },
 	path: ""
 };
