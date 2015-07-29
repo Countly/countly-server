@@ -6,6 +6,23 @@ var http = require('http'),
     os = require('os'),
 	countlyConfig = require('./config'),
     plugins = require('../plugins/pluginManager.js');
+    
+plugins.setConfigs("api", {
+    domain: "localhost",
+    safe: false,
+    session_duration_limit: 120,
+    city_data: true,
+    event_limit: 500,
+    event_segmentation_limit: 100,
+    event_segmentation_value_limit:1000
+});
+
+plugins.setConfigs("apps", {
+    country: "TR",
+    timezone: "Europe/Istanbul",
+    category: "6",
+    expire_online_after: 180
+});
 	
 plugins.init();
 
