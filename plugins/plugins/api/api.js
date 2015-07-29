@@ -23,34 +23,14 @@ var plugin = {},
 				}
 				
 				if (params.qstring.plugin && typeof params.qstring.plugin === 'object') {
-					var dir = path.resolve(__dirname, '../../plugins.json');
-					var pluginList = plugins.getPlugins(), newPluginsList = pluginList.slice();
-
-					var transforms = Object.keys(params.qstring.plugin).map(function(plugin){
-						var state = params.qstring.plugin[plugin],
-							index = pluginList.indexOf(plugin);
-						if (index !== -1 && !state) {
-							newPluginsList.splice(newPluginsList.indexOf(plugin), 1);
-							return plugins.uninstallPlugin.bind(plugins, plugin);
-						} else if (index === -1 && state) {
-							newPluginsList.push(plugin);
-							return plugins.installPlugin.bind(plugins, plugin);
-						} else {
-							return function(clb){ clb(); };
-						}
-					});
-
-					async.parallel(transforms, function(error){
-						if (error) {
-							common.returnOutput(params, 'Errors');
-						} else {
-							async.series([fs.writeFile.bind(fs, dir, JSON.stringify(newPluginsList), 'utf8'), plugins.prepareProduction.bind(plugins)], function(error){
-								plugins.reloadPlugins();
-								common.returnOutput(params, error ? 'Errors' : 'Success');
-								setTimeout(plugins.restartCountly.bind(plugins), 500);
-							});
-						}
-					});
+                    plugins.syncPlugins(params.qstring.plugin, function(err){
+                        if(err)
+                            common.returnOutput(params, 'Errors');
+                        else{
+                            common.returnOutput(params, 'Success');
+                            plugins.updateConfigs(common.db, "plugins", params.qstring.plugin);
+                        }
+                    })
 				}
 			} else {
 				common.returnOutput(params, 'Not enough parameters');

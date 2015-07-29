@@ -1,7 +1,8 @@
 var plugins = require('./plugins.json'),
 	pluginsApis = {}, 
 	countlyConfig = require('../frontend/express/config'),
-	path = require("path"),
+	fs = require('fs'),
+	path = require('path'),
 	cp = require('child_process'),
     async = require("async"),
 	exec = cp.exec;
@@ -225,6 +226,64 @@ var pluginManager = function pluginManager(){
 		delete require.cache[require.resolve('./plugins.json')];
 		plugins = require('./plugins.json');
 	}
+    
+    this.checkPlugins = function(db){
+        var plugs = this.getConfig("plugins");
+        if(Object.keys(plugs).length == 0){
+            //no plugins inserted yet, upgrading by inserting current plugins
+            var list = this.getPlugins();
+            for(var i = 0; i < list.length; i++){
+                plugs[list[i]] = true;
+            }
+            this.updateConfigs(db, "plugins", plugs);
+        }
+        else{
+            this.syncPlugins(plugs);
+        }
+    };
+    
+    this.syncPlugins = function(pluginState, callback){
+        var self = this;
+        var dir = path.resolve(__dirname, './plugins.json');
+        var pluginList = this.getPlugins().slice(), newPluginsList = pluginList.slice();
+        var changes = 0;
+		var transforms = Object.keys(pluginState).map(function(plugin){
+			var state = pluginState[plugin],
+				index = pluginList.indexOf(plugin);
+			if (index !== -1 && !state) {
+                changes++;
+				newPluginsList.splice(newPluginsList.indexOf(plugin), 1);
+				plugins.splice(plugins.indexOf(plugin), 1);
+				return self.uninstallPlugin.bind(self, plugin);
+			} else if (index === -1 && state) {
+                changes++;
+                plugins.push(plugin);
+				newPluginsList.push(plugin);
+				return self.installPlugin.bind(self, plugin);
+			} else {
+				return function(clb){ clb(); };
+			}
+		});
+
+		async.parallel(transforms, function(error){
+			if (error) {
+                if(callback)
+                    callback(true);
+			} else {
+                if(changes > 0){
+                    async.series([fs.writeFile.bind(fs, dir, JSON.stringify(newPluginsList), 'utf8'), self.prepareProduction.bind(self)], function(error){
+                        self.reloadPlugins();
+                        if(callback)
+                            callback(error ? true : false);
+                        setTimeout(self.restartCountly.bind(self), 500);
+                    });
+                }
+                else if(callback){
+                    callback(false);
+                }
+			}
+		});
+    }
 	
 	this.installPlugin = function(plugin, callback){
 		console.log('Installing plugin %j...', plugin);
