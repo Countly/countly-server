@@ -29,10 +29,8 @@ var countlyConfig = {
         host: "localhost",
         use_intercom: true
     },
-    production: true,
 	path: "",
-	cdn: "",
-	session_timeout: 30*60*1000
+	cdn: ""
 };
 
 module.exports = countlyConfig;
