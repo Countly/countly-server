@@ -10,6 +10,9 @@ var pluginManager = function pluginManager(){
 	var events = {};
 	var plugs = [];
     var methodCache = {};
+    var configs = {};
+    var defaultConfigs = {};
+    var excludeFromUI = {};
 
 	this.init = function(){
 		for(var i = 0, l = plugins.length; i < l; i++){
@@ -20,6 +23,73 @@ var pluginManager = function pluginManager(){
 			}
 		}
 	}
+    
+    this.loadConfigs = function(db, callback){
+        var self = this;
+        db.collection("plugins").findOne({_id:"plugins"}, function(err, res){
+            if(!err){
+                configs = res || {};
+                delete configs._id;
+                self.checkConfigs(db, configs, defaultConfigs, callback);
+            }
+            else if(callback)
+                callback();
+        });
+    }
+    
+    this.setConfigs = function(namespace, conf, exclude){
+        defaultConfigs[namespace] = conf;
+        if(exclude)
+            excludeFromUI[namespace] = true;
+    };
+    
+    this.getConfig = function(namespace){
+        if(configs[namespace])
+            return configs[namespace]
+        return defaultConfigs[namespace] || {};
+    };
+    
+    this.getAllConfigs = function(){
+        //get unique namespaces
+        var a = Object.keys(configs);
+        var b = Object.keys(defaultConfigs);
+        var c = a.concat(b.filter(function (item) { return a.indexOf(item) < 0; }));
+        var ret = {};
+        for(var i = 0; i < c.length; i++){
+            if(!excludeFromUI[c[i]])
+                ret[c[i]] = this.getConfig(c[i]);
+        }
+        return ret;
+    }
+    
+    this.checkConfigs = function(db, current, provided, callback){
+        var diff = getObjectDiff(current, provided);
+        if(Object.keys(diff).length > 0){
+            db.collection("plugins").update({_id:"plugins"}, {$set:flattenObject(diff)}, {upsert:true}, function(err, res){
+                if(callback)
+                    callback();
+            });
+        }
+        else if(callback)
+            callback();
+    };
+    
+    this.updateConfigs = function(db, namespace, configs, callback){
+        var update = {};
+        if(namespace != "_id")
+            update[namespace] = configs;
+        db.collection("plugins").update({_id:"plugins"}, {$set:flattenObject(update)}, {upsert:true}, function(err, res){
+            if(callback)
+                callback();
+        });
+    };
+    
+    this.updateAllConfigs = function(db, configs, callback){
+        db.collection("plugins").update({_id:"plugins"}, {$set:flattenObject(configs)}, {upsert:true}, function(err, res){
+            if(callback)
+                callback();
+        });
+    };
     
     this.extendModule = function(name, object){
         for(var i = 0, l = plugins.length; i < l; i++){
@@ -86,9 +156,17 @@ var pluginManager = function pluginManager(){
 	}
 	
 	this.loadAppPlugins = function(app, countlyDb, express){
+        var self = this;
 		for(var i = 0, l = plugins.length; i < l; i++){
+            app.use(countlyConfig.path+'/'+plugins[i], express.static(__dirname + '/'+plugins[i]+"/frontend/public"));
+        }
+        app.use(function(req, res, next) {
+            self.loadConfigs(countlyDb, function(){
+                next();
+            })
+        });
+        for(var i = 0, l = plugins.length; i < l; i++){
 			try{
-				app.use(countlyConfig.path+'/'+plugins[i], express.static(__dirname + '/'+plugins[i]+"/frontend/public"));
 				var plugin = require("./"+plugins[i]+"/frontend/app");
 				plugin.init(app, countlyDb, express);
 				plugs.push(plugin);
@@ -249,6 +327,42 @@ var pluginManager = function pluginManager(){
 			});
 		}
 	}
+    
+    var getObjectDiff = function(current, provided){
+        var toReturn = {};
+        
+        for (var i in provided) {
+            if(typeof current[i] == "undefined"){
+                toReturn[i] = provided[i];
+            }
+            else if((typeof provided[i]) == 'object' && provided[i] != null) {
+                var diff = getObjectDiff(current[i], provided[i]);
+                if(Object.keys(diff).length > 0)
+                    toReturn[i] = diff;
+            }
+        }
+        return toReturn;
+    };
+    
+    var flattenObject = function(ob) {
+        var toReturn = {};
+        
+        for (var i in ob) {
+            if (!ob.hasOwnProperty(i)) continue;
+            
+            if ((typeof ob[i]) == 'object' && ob[i] != null) {
+                var flatObject = flattenObject(ob[i]);
+                for (var x in flatObject) {
+                    if (!flatObject.hasOwnProperty(x)) continue;
+                    
+                    toReturn[i + '.' + x] = flatObject[x];
+                }
+            } else {
+                toReturn[i] = ob[i];
+            }
+        }
+        return toReturn;
+    };
 }
 /* ************************************************************************
 SINGLETON CLASS DEFINITION
