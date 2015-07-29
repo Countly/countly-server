@@ -108,6 +108,10 @@ var plugin = {},
 		};
 		var validateUserForMgmtReadAPI = ob.validateUserForMgmtReadAPI;
 		validateUserForMgmtReadAPI(function(){
+            if (!params.member.global_admin) {
+				common.returnMessage(params, 401, 'User is not a global administrator');
+				return false;
+			}
 			var dir = path.resolve(__dirname, "../../");
 			walk(dir, function(err, results) {
 				if (err) console.error(err);
@@ -116,6 +120,50 @@ var plugin = {},
 		}, params);
 		return true;
 	});
+    
+    plugins.register("/i/configs", function(ob){
+		var params = ob.params;
+        var validateUserForWriteAPI = ob.validateUserForWriteAPI;
+		validateUserForWriteAPI(function(){
+			if (!params.member.global_admin) {
+				common.returnMessage(params, 401, 'User is not a global administrator');
+				return false;
+			}
+            var data = {}
+            if(params.qstring.configs){
+                try{
+                    data = JSON.parse(params.qstring.configs);
+                }
+                catch(err){
+                    console.log("Error parsing configs", params.qstring.configs);
+                }
+            }
+            if(Object.keys(data).length > 0){
+                plugins.updateAllConfigs(common.db, data, function(){
+                    plugins.loadConfigs(common.db, function(){
+                        common.returnOutput(params, plugins.getAllConfigs());
+                    });
+                });
+            }
+            else{
+                common.returnMessage(params, 400, 'Error updating configs');
+            }
+        }, params);
+        return true;
+    });
+    
+    plugins.register("/o/configs", function(ob){
+		var params = ob.params;
+        var validateUserForMgmtReadAPI = ob.validateUserForMgmtReadAPI;
+		validateUserForMgmtReadAPI(function(){
+			if (!params.member.global_admin) {
+				common.returnMessage(params, 401, 'User is not a global administrator');
+				return false;
+			}
+            common.returnOutput(params, plugins.getAllConfigs());
+        }, params);
+        return true;
+    });
 }(plugin));
 
 module.exports = plugin;
