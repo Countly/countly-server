@@ -18,6 +18,11 @@ var versionInfo = require('./version.info'),
     countlyStats = require('../../api/parts/data/stats.js'),
 	plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config');
+    
+plugins.setConfigs("frontend", {
+    production: false,
+    session_timeout: 30*60*1000,
+});
 
 //mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
 var dbName;
