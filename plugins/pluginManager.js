@@ -13,7 +13,7 @@ var pluginManager = function pluginManager(){
     var methodCache = {};
     var configs = {};
     var defaultConfigs = {};
-    var excludeFromUI = {};
+    var excludeFromUI = {plugins:true};
 
 	this.init = function(){
 		for(var i = 0, l = plugins.length; i < l; i++){
@@ -25,13 +25,15 @@ var pluginManager = function pluginManager(){
 		}
 	}
     
-    this.loadConfigs = function(db, callback){
+    this.loadConfigs = function(db, callback, api){
         var self = this;
         db.collection("plugins").findOne({_id:"plugins"}, function(err, res){
             if(!err){
                 configs = res || {};
                 delete configs._id;
                 self.checkConfigs(db, configs, defaultConfigs, callback);
+                if(api)
+                    self.checkPlugins(db);
             }
             else if(callback)
                 callback();

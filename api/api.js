@@ -736,7 +736,7 @@ if (cluster.isMaster) {
             else
                 //attempt process GET request
                 processRequest();
-        });
+        }, true);
 
     }).listen(common.config.api.port, common.config.api.host || '');
 }
