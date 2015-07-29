@@ -116,7 +116,7 @@ app.configure(function () {
     app.use(require('connect-flash')());
     app.use(function(req, res, next) {
         res.locals.flash = req.flash.bind(req);
-        req.config = countlyConfig;
+        req.config = plugins.getConfig("frontend");
         next();
     });
     app.use(express.methodOverride());
@@ -165,9 +165,9 @@ app.get(countlyConfig.path+'/appimages/*', function(req, res) {
 	});
 });
 
-if(countlyConfig.session_timeout){
+if(plugins.getConfig("frontend").session_timeout){
 	var extendSession = function(req, res, next){
-		req.session.expires = Date.now() + countlyConfig.session_timeout;
+		req.session.expires = Date.now() + plugins.getConfig("frontend").session_timeout;
 	};
 	var checkRequestForSession = function(req, res, next){
 		if (req.session.uid) {
@@ -323,8 +323,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             config: req.config,
 							plugins:plugins.getPlugins(),
 							path:countlyConfig.path || "",
-							cdn:countlyConfig.cdn || "",
-							session_timeout: countlyConfig.session_timeout
+							cdn:countlyConfig.cdn || ""
                         };
                         
                         if (settings && !err) {
@@ -339,7 +338,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             intercom:countlyConfig.web.use_intercom,
                             countlyVersion:COUNTLY_VERSION,
 							countlyType: (COUNTLY_TYPE != "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") ? true : false,
-			                production: countlyConfig.production || false,
+			                production: plugins.getConfig("frontend").production || false,
 							plugins:plugins.getPlugins(),
                             config: req.config,
 							path:countlyConfig.path || "",
@@ -543,8 +542,8 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                 req.session.uid = member["_id"];
                 req.session.gadm = (member["global_admin"] == true);
 				req.session.email = member["email"];
-				if(countlyConfig.session_timeout)
-					req.session.expires = Date.now()+countlyConfig.session_timeout;
+				if(plugins.getConfig("frontend").session_timeout)
+					req.session.expires = Date.now()+plugins.getConfig("frontend").session_timeout;
                 res.redirect(countlyConfig.path+'/dashboard');
             } else {
                 plugins.callMethod("loginFailed", {req:req, res:res, next:next, data:req.body});
