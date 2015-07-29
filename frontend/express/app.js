@@ -134,10 +134,10 @@ app.configure(function () {
             next();
         }
     });
-    app.use(app.router);
     var oneYear = 31557600000;
+    app.use(countlyConfig.path, express.static(__dirname + '/public'), { maxAge:oneYear });
 	plugins.loadAppPlugins(app, countlyDb, express);
-	app.use(countlyConfig.path, express.static(__dirname + '/public'), { maxAge:oneYear });
+    app.use(app.router);
 });
 
 
