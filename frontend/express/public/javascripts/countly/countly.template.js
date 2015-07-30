@@ -3469,17 +3469,23 @@ var AppRouter = Backbone.Router.extend({
 
             $(".app-navigate").live("click", function () {
                 self.closeAppTooltip();
+                self.disableAppTooltip();
                 var appKey = $(this).data("key"),
                     appId = $(this).data("id"),
                     appName = $(this).find(".name").text(),
                     appImage = $(this).find(".logo").css("background-image"),
                     sidebarApp = $("#sidebar-app-select");
-					
+
 				if (appId == "allapps") {
 					window.location.hash = "/all";
 					sidebarApp.removeClass("active");
                     $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack'});
 					self.activeAppKey = appKey;
+                    setTimeout(function(){
+                        $("#sidebar-menu > .item").addClass("hide");
+                        $("#management-menu").removeClass("hide");
+                        $("#allapps-menu").removeClass("hide").css("display", "block");
+                    },500);
                     return false;
 				}
 				else{
