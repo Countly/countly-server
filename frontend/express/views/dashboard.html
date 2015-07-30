@@ -441,7 +441,13 @@
 		<div class="widget">
 			<div class="widget-header">
 				<div class="left">
+                    {{#if logo-class}}
 					<div class="logo {{logo-class}}"></div>
+                    {{else}}
+                        <div class="logo font-logo2">
+                            <i class="fa {{font-logo-class}}"></i>
+                        </div>
+                    {{/if}}
 					<div class="title">{{page-title}}</div>     
 				</div>
 				{{> date-selector }}
