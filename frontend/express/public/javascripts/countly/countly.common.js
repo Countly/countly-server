@@ -1519,7 +1519,7 @@
 	};
     
     countlyCommon.timeString = function(timespent){
-        /*var timeSpentString = (timespent.toFixed(1)) + " " + jQuery.i18n.map["common.minute.abrv"];
+        var timeSpentString = (timespent.toFixed(1)) + " " + jQuery.i18n.map["common.minute.abrv"];
 
         if (timespent >= 142560) {
             timeSpentString = (timespent / 525600).toFixed(1) + " " + jQuery.i18n.map["common.year.abrv"];
@@ -1528,10 +1528,10 @@
         } else if (timespent >= 60) {
             timeSpentString = (timespent / 60).toFixed(1) + " " + jQuery.i18n.map["common.hour.abrv"];
         }
-        return timeSpentString;*/
+        return timeSpentString;
         
         
-        var timeSpentString = "";
+        /*var timeSpentString = "";
         if(timespent > 1){
             timeSpentString = Math.floor(timespent) + " " + jQuery.i18n.map["common.minute.abrv"]+" ";
             var left = Math.floor((timespent - Math.floor(timespent))*60);
@@ -1557,7 +1557,7 @@
             if(left > 0)
                 timeSpentString += " "+left + " " + jQuery.i18n.map["common.minute.abrv"];
         }
-        return timeSpentString;
+        return timeSpentString;*/
     };
 	
 	countlyCommon.getDate = function(timestamp) {
