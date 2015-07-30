@@ -3515,25 +3515,27 @@ var AppRouter = Backbone.Router.extend({
             });
             
             $(document).on("mouseenter", ".app-container", function(){
-                var elem = $(this);
-                var name = elem.find(".name");
-                if(name[0].scrollWidth >  name.innerWidth()){
-                    if(elem.parents("#app-nav").length)
-                        $("#app-tooltip").css("margin-left", "21px");
-                    else
-                        $("#app-tooltip").css({"margin-left":"3px", "padding-left":"1px"});
-                    $("#app-tooltip").html(elem.clone());
-                    $("#app-tooltip .app-container").removeClass("active");
-                    $("#app-tooltip").css(elem.offset());
-                    $("#app-tooltip .name").css({"width":"auto"});
-                    $("#app-tooltip").show();
-                    $("#app-tooltip").bind("click", function(){
-                        elem.trigger("click");
-                        elem.addClass("active");
-                    });
+                if(self.appTooltip){
+                    var elem = $(this);
+                    var name = elem.find(".name");
+                    if(name[0].scrollWidth >  name.innerWidth()){
+                        if(elem.parents("#app-nav").length)
+                            $("#app-tooltip").css("margin-left", "21px");
+                        else
+                            $("#app-tooltip").css({"margin-left":"3px", "padding-left":"1px"});
+                        $("#app-tooltip").html(elem.clone());
+                        $("#app-tooltip .app-container").removeClass("active");
+                        $("#app-tooltip").css(elem.offset());
+                        $("#app-tooltip .name").css({"width":"auto"});
+                        $("#app-tooltip").show();
+                        $("#app-tooltip").bind("click", function(){
+                            elem.trigger("click");
+                            elem.addClass("active");
+                        });
+                    }
                 }
             });
-            $("#app-tooltip").mouseleave(self.closeAppTooltip);
+            $("#app-tooltip").mouseleave(function(){self.closeAppTooltip()});
 
             $("#sidebar-events").click(function (e) {
                 $.when(countlyEvent.refreshEvents()).then(function () {
@@ -3607,9 +3609,9 @@ var AppRouter = Backbone.Router.extend({
                 var left = $("#app-nav").offset().left;
 
                 if (left == 201) {
-                    $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack'});
+                    $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack', complete:function(){self.disableAppTooltip();}});
                 } else {
-                    $("#app-nav").animate({left:'201px'}, {duration:500, easing:'easeOutBack'});
+                    $("#app-nav").animate({left:'201px'}, {duration:500, easing:'easeOutBack', complete:function(){self.enableAppTooltip();}});
                 }
 
             });
@@ -4406,6 +4408,12 @@ var AppRouter = Backbone.Router.extend({
         } else {
            both.off('mouseenter mouseleave');
         }
+    },
+    enableAppTooltip: function(){
+        this.appTooltip = true;
+    },
+    disableAppTooltip: function(){
+        this.appTooltip = false;
     },
     closeAppTooltip: function(){
         if($("#app-tooltip").is(':visible')){
