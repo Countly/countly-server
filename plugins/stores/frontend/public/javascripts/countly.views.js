@@ -6,7 +6,7 @@ window.StoresView = countlyView.extend({
         var data = countlyStores.getData();
         this.templateData = {
             "page-title":jQuery.i18n.map["stores.title"],
-            "logo-class":"stores",
+            "font-logo-class":"fa-shopping-cart",
             "graph-type-double-pie":true,
             "pie-titles":{
                 "left":jQuery.i18n.map["common.total-users"],
