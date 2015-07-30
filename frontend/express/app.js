@@ -134,6 +134,7 @@ app.configure(function () {
             next();
         }
     });
+    plugins.loadAppStatic(app, countlyDb, express);
     var oneYear = 31557600000;
     app.use(countlyConfig.path, express.static(__dirname + '/public'), { maxAge:oneYear });
 	plugins.loadAppPlugins(app, countlyDb, express);

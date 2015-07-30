@@ -157,6 +157,20 @@ var pluginManager = function pluginManager(){
             return used;
         }
 	}
+    
+    this.loadAppStatic = function(app, countlyDb, express){
+        var self = this;
+        for(var i = 0, l = plugins.length; i < l; i++){
+			try{
+				var plugin = require("./"+plugins[i]+"/frontend/app");
+                plugs.push(plugin);
+                if(plugin.staticPaths)
+                    plugin.staticPaths(app, countlyDb, express);
+			} catch (ex) {
+				console.error(ex.stack);
+			}
+		}
+	};
 	
 	this.loadAppPlugins = function(app, countlyDb, express){
         var self = this;
@@ -168,11 +182,9 @@ var pluginManager = function pluginManager(){
                 next();
             })
         });
-        for(var i = 0, l = plugins.length; i < l; i++){
+        for(var i = 0; i < plugs.length; i++){
 			try{
-				var plugin = require("./"+plugins[i]+"/frontend/app");
-				plugin.init(app, countlyDb, express);
-				plugs.push(plugin);
+				plugs[i].init(app, countlyDb, express);
 			} catch (ex) {
 				console.error(ex.stack);
 			}
