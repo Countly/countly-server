@@ -12,8 +12,7 @@ window.DensityView = countlyView.extend({
             "pie-titles":{
                 "left":jQuery.i18n.map["common.total-users"],
                 "right":jQuery.i18n.map["common.new-users"]
-            },
-            "chart-helper":"resolutions.chart"
+            }
         };
 
         if (!isRefresh) {
