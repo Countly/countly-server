@@ -1,0 +1,20 @@
+{
+  "name": "countly-browsers",
+  "title": "Browsers metric",
+  "version": "0.1.0",
+  "description": "Allow gathering and displaying browsers metric",
+  "author": "Count.ly",
+  "homepage": "https://count.ly/marketplace/",
+  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
+  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "keywords": [
+    "countly",
+    "analytics",
+    "mobile",
+    "browsers",
+	"web"
+  ],
+  "dependencies": {
+  },
+  "private": true
+}
