@@ -21,9 +21,13 @@ var versionInfo = require('./version.info'),
     
     var COUNTLY_NAMED_TYPE = "Countly Community Edition v"+COUNTLY_VERSION;
     var COUNTLY_TYPE_CE = true;
-    switch (COUNTLY_TYPE) {
-        case "2fb8d2c65f7919fa1ce594302618febe0a46cb2f": { COUNTLY_NAMED_TYPE = "Countly Enterprise Edition v"+COUNTLY_VERSION; COUNTLY_TYPE_CE = false; break; }
-        case "2e4ed1ca03ef16794de6ca487f2d2a2e9f25ae01": { COUNTLY_NAMED_TYPE = "Countly Cloud"; COUNTLY_TYPE_CE = false; break; }
+    if(versionInfo.footer){
+        COUNTLY_NAMED_TYPE = versionInfo.footer;
+        COUNTLY_TYPE_CE = false;
+    }
+    else if(COUNTLY_TYPE == "2fb8d2c65f7919fa1ce594302618febe0a46cb2f"){
+        COUNTLY_NAMED_TYPE = "Countly Enterprise Edition v"+COUNTLY_VERSION; 
+        COUNTLY_TYPE_CE = false;
     }
     
 plugins.setConfigs("frontend", {
