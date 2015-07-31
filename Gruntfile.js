@@ -75,8 +75,7 @@ module.exports = function(grunt) {
 				'frontend/express/public/javascripts/visualization/flot/jquery.flot.resize.js',
 				'frontend/express/public/javascripts/visualization/flot/jquery.flot.stack.js',
 				'frontend/express/public/javascripts/visualization/gauge.min.js',
-				'frontend/express/public/javascripts/visualization/d3/d3.v2.min.js',
-				'frontend/express/public/javascripts/visualization/d3/d3.layout.min.js',
+				'frontend/express/public/javascripts/visualization/d3/d3.min.js',
 				'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.js',
 			],
 			dest: 'frontend/express/public/javascripts/min/countly.visualization.concat.js'
