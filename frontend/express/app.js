@@ -27,7 +27,7 @@ var versionInfo = require('./version.info'),
     }
     
 plugins.setConfigs("frontend", {
-    production: false,
+    production: true,
     session_timeout: 30*60*1000,
 });
 
