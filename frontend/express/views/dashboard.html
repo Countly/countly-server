@@ -368,15 +368,14 @@
             <div id="content-loader"></div>
         </div>
 		<div id="content-footer">
-		 <% if (countlyType) { %>
-			<span>Countly Enterprise Edition v<%= countlyVersion %></span>
+            <span><%= countlyTypeName %></span>
+		 <% if (!countlyType) { %>
 			<ul>
 				<li><a href="#" id="Intercom">Feedback & Support</a></li>
 				<li>|</li>
 				<li><a href="http://resources.count.ly/" target="_blank">Documentation</a></li>
 			</ul>
 		 <% }else { %>
-			<span>Countly Community Edition v<%= countlyVersion %></span>
 			<ul>
 				<li><a href="#" id="Intercom" >Provide feedback</a></li>
 				<li>|</li>
