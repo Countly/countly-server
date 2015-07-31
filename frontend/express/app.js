@@ -21,6 +21,7 @@ var versionInfo = require('./version.info'),
     
     var COUNTLY_NAMED_TYPE = "Countly Community Edition v"+COUNTLY_VERSION;
     var COUNTLY_TYPE_CE = true;
+    var COUNTLY_TRIAL = (versionInfo.trial) ? true : false;
     if(versionInfo.footer){
         COUNTLY_NAMED_TYPE = versionInfo.footer;
         COUNTLY_TYPE_CE = false;
@@ -350,6 +351,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             intercom:countlyConfig.web.use_intercom,
                             countlyVersion:COUNTLY_VERSION,
 							countlyType: COUNTLY_TYPE_CE,
+							countlyTrial: COUNTLY_TRIAL,
 							countlyTypeName: COUNTLY_NAMED_TYPE,
 			                production: plugins.getConfig("frontend").production || false,
 							plugins:plugins.getPlugins(),

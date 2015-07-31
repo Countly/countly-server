@@ -1124,7 +1124,7 @@
 	Backbone.history.start();
 	</script>
 
-    <% if(intercom && member['global_admin']) { %>
+    <% if(intercom && member['global_admin'] || config.autonomous) { %>
     <script id="IntercomSettingsScriptTag">
         var intercomSettings = {
             app_id: 'pt60eheo',
@@ -1135,7 +1135,8 @@
             created_at: parseInt("<%= member.created_at %>") || 1349863810,
             name: "<%= member.full_name %>",
             user_id: "<%= member.in_user_id %>",
-            user_hash: "<%= member.in_user_hash %>"
+            user_hash: "<%= member.in_user_hash %>",
+            trial_user: "<%= countlyTrial %>"
         };
     </script>
     <script>
