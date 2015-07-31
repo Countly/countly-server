@@ -212,7 +212,7 @@ a:active { color:inherit; }
             #geo-chart-outer>div {margin-left:50%;}
             .map-list #geo-chart {margin-left:-376px;}
             .map-list #geo-chart-outer>div {margin-left:50%; border-radius:7px;}
-			#map-list-right { border-top-right-radius:0; border-bottom-right-radius:0; width:240px; float:right;  height:100%; margin-top:40px; margin-right:42px;}
+			#map-list-right { border-top-right-radius:0; border-bottom-right-radius:0; width:auto; float:right;  height:100%; margin-top:40px; margin-right:42px;}
             #map-list-right + #geo-chart-outer #geo-chart { margin-right:282px; }
             .geo-switch{position:relative;}
             .geo-switch .cly-button-group {position: absolute; top:0px; left:0px;}
