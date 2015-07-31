@@ -3558,6 +3558,8 @@ var AppRouter = Backbone.Router.extend({
                 } else {
                     $("#sidebar-menu>.item").removeClass("active");
                     $(this).addClass("active");
+                    var subMenu = $(this).parent(".sidebar-submenu");
+                    subMenu.prev(".item").addClass("active");
 
                     if ($("#app-nav").offset().left == 201) {
                         self.closeAppTooltip();
