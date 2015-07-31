@@ -19,6 +19,13 @@ var versionInfo = require('./version.info'),
 	plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config');
     
+    var COUNTLY_NAMED_TYPE = "Countly Community Edition v"+COUNTLY_VERSION;
+    var COUNTLY_TYPE_CE = true;
+    switch (COUNTLY_TYPE) {
+        case "2fb8d2c65f7919fa1ce594302618febe0a46cb2f": { COUNTLY_NAMED_TYPE = "Countly Enterprise Edition v"+COUNTLY_VERSION; COUNTLY_TYPE_CE = false; break; }
+        case "2e4ed1ca03ef16794de6ca487f2d2a2e9f25ae01": { COUNTLY_NAMED_TYPE = "Countly Cloud"; COUNTLY_TYPE_CE = false; break; }
+    }
+    
 plugins.setConfigs("frontend", {
     production: false,
     session_timeout: 30*60*1000,
@@ -338,7 +345,8 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             member:member,
                             intercom:countlyConfig.web.use_intercom,
                             countlyVersion:COUNTLY_VERSION,
-							countlyType: (COUNTLY_TYPE != "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6") ? true : false,
+							countlyType: COUNTLY_TYPE_CE,
+							countlyTypeName: COUNTLY_NAMED_TYPE,
 			                production: plugins.getConfig("frontend").production || false,
 							plugins:plugins.getPlugins(),
                             config: req.config,
