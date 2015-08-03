@@ -133,15 +133,8 @@ $.extend(Template.prototype, {
         } else {
             message = msg;
         }
-		
-		$.amaran({
-			content:{
-				title:type,
-				message:message,
-				icon: 'fa fa-info'
-			},
-			theme:'awesome ok'
-		});
+        
+        CountlyHelpers.notify({type:type, message:message});
 
         delete countlyGlobal["message"];
     };
@@ -3229,6 +3222,10 @@ var AppRouter = Backbone.Router.extend({
 				for(var i = 0, l = self.refreshScripts["#"].length; i < l; i++)
 					self.refreshScripts["#"][i]();
         }, countlyCommon.DASHBOARD_REFRESH_MS);
+        
+        if(countlyGlobal && countlyGlobal["message"]){
+            CountlyHelpers.parseAndShowMsg(countlyGlobal["message"]);
+        }
     },
     initialize:function () { //initialize the dashboard, register helpers etc.
 		this.pageScripts = {};
