@@ -337,7 +337,8 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             config: req.config,
 							plugins:plugins.getPlugins(),
 							path:countlyConfig.path || "",
-							cdn:countlyConfig.cdn || ""
+							cdn:countlyConfig.cdn || "",
+                            message: req.flash("message")
                         };
                         
                         if (settings && !err) {
