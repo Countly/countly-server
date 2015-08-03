@@ -14,6 +14,7 @@ var versionInfo = require('./version.info'),
     request = require('request'),
     async = require('async'),
     stringJS = require('string'),
+    flash = require('connect-flash'),
     countlyMail = require('../../api/parts/mgmt/mail.js'),
     countlyStats = require('../../api/parts/data/stats.js'),
 	plugins = require('../../plugins/pluginManager.js'),
@@ -119,13 +120,16 @@ app.configure(function () {
     app.set('views', __dirname + '/views');
     app.set('view engine', 'html');
     app.set('view options', {layout:false});
+    plugins.loadAppStatic(app, countlyDb, express);
+    var oneYear = 31557600000;
+    app.use(countlyConfig.path, express.static(__dirname + '/public'), { maxAge:oneYear });
     app.use(express.bodyParser({uploadDir:__dirname + '/uploads'}));
     app.use(express.cookieParser());
     app.use(express.session({
         secret:'countlyss',
         store:new SkinStore(countlyDb)
     }));
-    app.use(require('connect-flash')());
+    app.use(flash());
     app.use(function(req, res, next) {
         res.locals.flash = req.flash.bind(req);
         req.config = plugins.getConfig("frontend");
@@ -146,9 +150,6 @@ app.configure(function () {
             next();
         }
     });
-    plugins.loadAppStatic(app, countlyDb, express);
-    var oneYear = 31557600000;
-    app.use(countlyConfig.path, express.static(__dirname + '/public'), { maxAge:oneYear });
 	plugins.loadAppPlugins(app, countlyDb, express);
     app.use(app.router);
 });
@@ -327,7 +328,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                         res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
 
                         delete member["password"];
-                        
+
                         var countlyGlobal = {
                             apps:countlyGlobalApps,
                             admin_apps:countlyGlobalAdminApps,

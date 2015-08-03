@@ -164,6 +164,7 @@ var pluginManager = function pluginManager(){
 			try{
 				var plugin = require("./"+plugins[i]+"/frontend/app");
                 plugs.push(plugin);
+                app.use(countlyConfig.path+'/'+plugins[i], express.static(__dirname + '/'+plugins[i]+"/frontend/public"));
                 if(plugin.staticPaths)
                     plugin.staticPaths(app, countlyDb, express);
 			} catch (ex) {
@@ -174,9 +175,6 @@ var pluginManager = function pluginManager(){
 	
 	this.loadAppPlugins = function(app, countlyDb, express){
         var self = this;
-		for(var i = 0, l = plugins.length; i < l; i++){
-            app.use(countlyConfig.path+'/'+plugins[i], express.static(__dirname + '/'+plugins[i]+"/frontend/public"));
-        }
         app.use(function(req, res, next) {
             self.loadConfigs(countlyDb, function(){
                 next();
