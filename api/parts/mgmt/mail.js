@@ -1,8 +1,9 @@
 var mail = {},
     nodemailer = require('nodemailer'),
     request = require('request'),
-    plugins = require('../../../plugins/pluginManager.js'),
-    smtpTransport = nodemailer.createTransport("Sendmail", "/usr/sbin/sendmail");
+    plugins = require('../../../plugins/pluginManager.js');
+    
+mail.smtpTransport = nodemailer.createTransport("Sendmail", "/usr/sbin/sendmail");
 /*
  Use the below transport to send mails through Gmail
 
@@ -29,7 +30,7 @@ var mail = {},
 */
 
 mail.sendMail = function(message) {
-    smtpTransport.sendMail(message, function (error) {
+    mail.smtpTransport.sendMail(message, function (error) {
         if (error) {
             console.log('Error sending email');
             console.log(error.message);
