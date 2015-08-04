@@ -10,6 +10,7 @@ a:active { color:inherit; }
 #app-tooltip{display: none; position: absolute; z-index: 1000; background-color: #CCC; height: 45px; margin-left:5px;}
 #app-tooltip .app-container{padding-left:11px;}
 .break {word-wrap: break-word;}
+.over {z-index:100;}
 
 /* FOOTER */
 #content-footer{position: fixed; bottom:0; left:0px; width: 100%; background-color: #282828; font: 13px Ubuntu,Helvetica,sans-serif; color: #888; height: 35px; z-index:999;}
@@ -372,7 +373,7 @@ div.datatablesubrow {display: none;}
 	#date-selector>.calendar { background-color:#3C3C3C; background-image:linear-gradient(top, #3C3C3C 10%, #717171 100%); background-image:linear-gradient(to bottom, #3C3C3C 10%, #717171 100%); box-shadow:inset 0 0 1px 0 #2D2D2D; color:#FFF; border-color:#202020; text-shadow:0 -1px #333; }
 	#date-selector>.calendar { background-color:#3C3C3C; cursor:pointer; background-image:url('../images/dashboard/date-time-icon.png'), linear-gradient(top, #3C3C3C 10%, #717171 100%); background-image:url('../images/dashboard/date-time-icon.png'), linear-gradient(to bottom, #3C3C3C 10%, #717171 100%); background-repeat:no-repeat; background-position:center; float:left; border-radius:4px; margin-right:10px; width:29px; height:29px; }
 
-#date-picker, .date-picker { display:none; position:absolute; z-index:10; margin-top:38px; margin-left:-174px; padding:2px 3px 6px 3px; background-color:rgba(85,85,85,1); border:1px solid #333; box-shadow:inset 0 0 0 1px #777; border-radius:5px; background-image:url('../images/dashboard/calendar_bg.png'); }
+#date-picker, .date-picker { display:none; position:absolute; z-index:1000; margin-top:38px; margin-left:-174px; padding:2px 3px 6px 3px; background-color:rgba(85,85,85,1); border:1px solid #333; box-shadow:inset 0 0 0 1px #777; border-radius:5px; background-image:url('../images/dashboard/calendar_bg.png'); }
 	#date-picker .tip, .date-picker .tip { width:14px; margin:0 auto; margin-top:-10px; height:9px; background-image:url('../images/dashboard/calendar_tip.png'); z-index:20; }
 	#date-picker .calendar-container, .date-picker .calendar-container { overflow:auto; box-shadow:inset 0 0 1px 1px #999, 0 1px 0 0 #777; padding:6px; background-color:#CCC; border-radius:4px; border:1px solid #333; margin:3px; margin-top:5px; }
 	#date-picker .calendar-container .calendar, .date-picker .calendar-container .calendar { float:left; margin-right:6px; border:1px solid #666; border-radius:3px; }
@@ -482,7 +483,7 @@ div.datatablesubrow {display: none;}
         .cly-select .search .icon-search { position: absolute; right:5px; top:5px; color:#CCC; font-size: 10px; }
         .cly-select .search .inner { position:relative; margin:5px 8px; padding:4px 6px; padding-right:20px; background-color:#FFF; border-radius: 10px; border:1px solid #CCC; font:13px Ubuntu; line-height:111%; }
         .cly-select .search input { height:14px; padding:0; margin:0; border:none; outline:none; width:100%; font:13px Ubuntu; line-height:111%; }
-    .cly-select .select-items { box-shadow:inset 0 -1px 0 0 #B5B5B5; z-index:2; display:none; position:absolute; margin-left:-1px; border-radius:5px; background-color:#F5F5F5; border:1px solid #B5B5B5; border-bottom:none; border-radius:6px; border-top-left-radius:0; border-top-right-radius:0; width:135px; }
+    .cly-select .select-items { box-shadow:inset 0 -1px 0 0 #B5B5B5; z-index:1000; display:none; position:absolute; margin-left:-1px; border-radius:5px; background-color:#F5F5F5; border:1px solid #B5B5B5; border-bottom:none; border-radius:6px; border-top-left-radius:0; border-top-right-radius:0; width:135px; }
     .cly-select.dark .select-items { border-color:#666; }
     .cly-select .select-items.square { border-radius:0; }
 	.cly-select .select-items.square .item:last-child { border-radius:0; }
@@ -510,7 +511,7 @@ div.datatablesubrow {display: none;}
 .cly-text-select .select-inner { position:relative; width:100%; height:100%; }
 .cly-text-select.active { border-bottom-left-radius:0; border-bottom-right-radius:0; }
 .cly-text-select.active .right { border-bottom-right-radius:0; }
-.cly-text-select .select-items { box-shadow:inset 0 -1px 0 0 #B5B5B5; z-index:2; display:none; position:absolute; margin-left:-1px; border-radius:5px; background-color:#F5F5F5; border:1px solid #B5B5B5; border-bottom:none; border-radius:6px; border-top-left-radius:0; border-top-right-radius:0; width:135px; }
+.cly-text-select .select-items { box-shadow:inset 0 -1px 0 0 #B5B5B5; z-index:1000; display:none; position:absolute; margin-left:-1px; border-radius:5px; background-color:#F5F5F5; border:1px solid #B5B5B5; border-bottom:none; border-radius:6px; border-top-left-radius:0; border-top-right-radius:0; width:135px; }
 .cly-text-select.dark .select-items { border-color:#666; }
 .cly-text-select .select-items.square { border-radius:0; }
 .cly-text-select .select-items.square .item:last-child { border-radius:0; }
@@ -543,7 +544,7 @@ div.datatablesubrow {display: none;}
 .green-text { font-size:12px; color:#50C354; vertical-align:text-top; padding-left:5px; }
 .required-color { color:#B94A48 !important; }
 
-#overlay { display:none; background-color:#000; opacity:0.2; width:100%; height:100%; position:fixed; z-index:999; top:0; }
+#overlay { display:none; background-color:#000; opacity:0.2; width:100%; height:100%; position:fixed; z-index:1001; top:0; }
 .dialog { display:none; position:fixed; max-width:368px; left:50%; top:50%; background-color:#FFF; border:1px solid #999; box-shadow:0 0 10px 0 #666; border-radius:3px; z-index:1000; }
 	.dialog.events { max-width:850px; }
 	.dialog.red { border:1px solid #AD0303; }
@@ -589,7 +590,7 @@ div.datatablesubrow {display: none;}
 #user-table tr:last-child td>div { margin-bottom:-2px; }
 #user-table tr.user-details { background-color:#f9f9f9; }
 #user-table tr.user-details:hover { background-color:#f9f9f9; }
-#listof-apps { width:200px; display:none; position:absolute; margin-top:12px; z-index:10; padding:5px; padding-bottom:7px; background-color:rgba(85,85,85,1); border:1px solid #333; box-shadow:inset 0 0 0 1px #777; border-radius:5px; background-image:url('../images/dashboard/calendar_bg.png'); }
+#listof-apps { width:200px; display:none; position:absolute; margin-top:12px; z-index:1000; padding:5px; padding-bottom:7px; background-color:rgba(85,85,85,1); border:1px solid #333; box-shadow:inset 0 0 0 1px #777; border-radius:5px; background-image:url('../images/dashboard/calendar_bg.png'); }
 	#listof-apps .button-container { overflow:auto; margin-top:5px; }
 	#listof-apps .button-container .icon-button { float:right; font-size:11px; }
 	#listof-apps .scrollable { min-height:36px; max-height:221px; overflow:auto; box-shadow:inset 0 0 1px 1px #999, 0 1px 0 0 #777; background-color:#CCC; border:1px solid #333; }
@@ -798,7 +799,7 @@ table.events-table { width:100%; padding:0; margin:0; }
 .owner-indicator {font-size:16px; margin-left:9px; padding-top:11px; float:left; display:none; }
 .resource-link {cursor:pointer;}
 
-.popup-menu-container { display:none; position:absolute; z-index:10; margin-top:38px; margin-left:-174px; padding:2px 3px 6px 3px; background-color:rgba(85,85,85,1); border:1px solid #333; box-shadow:inset 0 0 0 1px #777; border-radius:5px; background-image:url('../images/dashboard/calendar_bg.png'); }
+.popup-menu-container { display:none; position:absolute; z-index:1000; margin-top:38px; margin-left:-174px; padding:2px 3px 6px 3px; background-color:rgba(85,85,85,1); border:1px solid #333; box-shadow:inset 0 0 0 1px #777; border-radius:5px; background-image:url('../images/dashboard/calendar_bg.png'); }
     .popup-menu-container .tip { width:14px; margin:0 auto; margin-top:-10px; height:9px; background-image:url('../images/dashboard/calendar_tip.png'); z-index:20; }
     .popup-menu-container .calendar-container { overflow:auto; box-shadow:inset 0 0 1px 1px #999, 0 1px 0 0 #777; padding:6px; background-color:#CCC; border-radius:4px; border:1px solid #333; margin:3px; margin-top:5px; }
     .popup-menu-container .calendar-container .calendar { float:left; margin-right:6px; border:1px solid #666; border-radius:3px; }
@@ -808,7 +809,7 @@ table.events-table { width:100%; padding:0; margin:0; }
 .cly-huge-dropdown-activator { border-left: 1px solid #BBB; border-right: 1px solid #BBB; cursor: pointer; width: 48.5%; position: absolute; top: 0; height: 35px; left: 10px; padding-top: 14px !important; padding-left: 6px; box-shadow: inset 1px 0 0 0 #F9F9F9, inset -1px 0 0 0 #F2F2F2; }
 .cly-huge-dropdown-activator .text { display:block; margin-right:20px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cly-huge-dropdown-activator .icon { float: right; font-size: 20px; margin-right: 6px; color: #CCC; margin-top: 1px; }
-.cly-huge-dropdown { user-select:none; display:none; position:absolute; z-index:10; margin-top:-7px; background-color:rgba(85,85,85,0); border:1px solid #999; border-bottom-left-radius:5px; border-bottom-right-radius:5px; margin-left:3px; width: 50%;}
+.cly-huge-dropdown { user-select:none; display:none; position:absolute; z-index:1000; margin-top:-7px; background-color:rgba(85,85,85,0); border:1px solid #999; border-bottom-left-radius:5px; border-bottom-right-radius:5px; margin-left:3px; width: 50%;}
 .cly-huge-dropdown .tip { width:14px; margin:0 auto; margin-top:-10px; height:9px; background-image:url('../images/dashboard/calendar_tip.png'); z-index:20; }
 .cly-huge-dropdown .inner-container { background-image:url('../images/dashboard/blck_grain_trans_bg.png'); padding:5px; }
 .cly-huge-dropdown .inner { overflow:auto; border-radius:4px; border:1px solid #888; opacity:0.8; }
