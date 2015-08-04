@@ -62,7 +62,7 @@ window.PopulatorView = countlyView.extend({
 //register views
 app.populatorView = new PopulatorView();
 
-if(countlyGlobal["member"].global_admin){
+if(countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]){
     app.route('/manage/populate', 'populate', function () {
         this.renderWhenReady(this.populatorView);
     });
@@ -80,7 +80,7 @@ $( document ).ready(function() {
 	fileref.setAttribute("type","text/javascript");
 	fileref.setAttribute("src", "populator/javascripts/chance.js");
 	document.getElementsByTagName("head")[0].appendChild(fileref);
-    if(countlyGlobal["member"].global_admin){
+    if(countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]){
         var menu = '<a href="#/manage/populate" class="item">'+
             '<div class="logo-icon fa fa-random"></div>'+
             '<div class="text" data-localize="populator.title"></div>'+
