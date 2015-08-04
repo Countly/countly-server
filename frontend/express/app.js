@@ -120,14 +120,14 @@ app.configure(function () {
     app.set('views', __dirname + '/views');
     app.set('view engine', 'html');
     app.set('view options', {layout:false});
+    plugins.loadAppStatic(app, countlyDb, express);
+    var oneYear = 31557600000;
+    app.use(countlyConfig.path, express.static(__dirname + '/public'), { maxAge:oneYear });
     app.use(express.cookieParser());
     app.use(express.session({
         secret:'countlyss',
         store:new SkinStore(countlyDb)
     }));
-    plugins.loadAppStatic(app, countlyDb, express);
-    var oneYear = 31557600000;
-    app.use(countlyConfig.path, express.static(__dirname + '/public'), { maxAge:oneYear });
     app.use(express.bodyParser({uploadDir:__dirname + '/uploads'}));
     app.use(flash());
     app.use(function(req, res, next) {
