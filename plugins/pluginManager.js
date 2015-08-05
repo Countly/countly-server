@@ -11,6 +11,7 @@ var pluginManager = function pluginManager(){
 	var events = {};
 	var plugs = [];
     var methodCache = {};
+    var configCache = {};
     var configs = {};
     var defaultConfigs = {};
     var excludeFromUI = {plugins:true};
@@ -47,9 +48,13 @@ var pluginManager = function pluginManager(){
     };
     
     this.getConfig = function(namespace){
+        var ob = {};
         if(configs[namespace])
-            return configs[namespace]
-        return defaultConfigs[namespace] || {};
+            ob = configs[namespace];
+        else
+            ob = defaultConfigs[namespace];
+        
+        return JSON.parse(JSON.stringify(ob));
     };
     
     this.getAllConfigs = function(){
