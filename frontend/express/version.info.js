@@ -1,6 +1,9 @@
+var plugins = require('../../plugins/pluginManager.js');
 var versionInfo = {
     version: "15.06",
-    type: "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6"
+    type: "2fb8d2c65f7919fa1ce594302618febe0a46cb2f",
+    footer: "Countly Development Server",
+    title: "Countly Test"
 };
-
+plugins.extendModule("versionInfo", versionInfo);
 module.exports = versionInfo;
