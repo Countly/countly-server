@@ -1,5 +1,6 @@
 var plugin = {},
 	countlyConfig = require('../../../frontend/express/config'),
+	versionInfo = require('../../../frontend/express/version.info'),
 	async = require('async');
 
 (function (plugin) {
@@ -38,7 +39,7 @@ var plugin = {},
 			} else {
 				countlyDb.collection('members').count({}, function (err, memberCount) {
 					if (memberCount) {
-						res.render('../../../plugins/enterpriseinfo/frontend/public/templates/login', { "message":req.flash('info'), "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
+						res.render('../../../plugins/enterpriseinfo/frontend/public/templates/login', {"countlyTitle":versionInfo.title, "countlyPage":versionInfo.page, "message":req.flash('info'), "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
 					} else {
 						res.redirect(countlyConfig.path+'/setup');
 					}

@@ -12,7 +12,7 @@
 	<link href='./stylesheets/pre-login/main.css' rel='stylesheet' type='text/css'>
 	<link href='./enterpriseinfo/stylesheets/pre-login.css' rel='stylesheet' type='text/css'>
 	<link rel="icon" type="image/png" href="./images/favicon.png">
-	<title>Countly</title>
+	<title><%- countlyTitle %></title>
 	<script>window.countlyGlobal = window.countlyGlobal || {}; countlyGlobal["cdn"] = "<%- cdn %>"; countlyGlobal["path"] = "<%- path %>";</script>
 </head>
 <body style="background-color: #222;">
@@ -20,7 +20,9 @@
 		<div id="message"></div>
 	 <% } %>
 	<div id="top-container">
-		<a class="top-button" href="http://count.ly">Countly</a>
+		<% if (countlyPage){ %>
+		<a class="top-button" href="<%- countlyPage %>"><%- countlyTitle %></a>
+        <% } %>
 		<div class="top-button" id="select-lang">
 			<div id="active-lang">EN</div>
 			<div id="langs">
@@ -129,16 +131,17 @@
 	<script language="javascript" type="text/javascript" src="/javascripts/pre-login.js"></script>
 
     <script>
+        var countlyTitle = "<%- countlyTitle %>";
 		$(document).ready(function() {
 			<% if (message){ %>
 				showMessage("<%= message %>");
 			<% } %>			
 			
-			document.title = "Countly | " + jQuery.i18n.map["login.title"];
+			document.title = countlyTitle + " | " + jQuery.i18n.map["login.title"];
 		});
 		
 		$(document).bind('clyLangChange', function() {
-			document.title = "Countly | " + jQuery.i18n.map["login.title"];
+			document.title = countlyTitle + " | " + jQuery.i18n.map["login.title"];
 		});
 	</script>
 	<% if (typeof javascript != 'undefined') { %>
