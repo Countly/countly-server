@@ -42,7 +42,13 @@ var pluginManager = function pluginManager(){
     }
     
     this.setConfigs = function(namespace, conf, exclude){
-        defaultConfigs[namespace] = conf;
+        if(!defaultConfigs[namespace])
+            defaultConfigs[namespace] = conf;
+        else{
+            for(var i in conf){
+                defaultConfigs[i] = conf[i];
+            }
+        }
         if(exclude)
             excludeFromUI[namespace] = true;
     };
