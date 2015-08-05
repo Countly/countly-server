@@ -358,6 +358,9 @@ window.ConfigurationsView = countlyView.extend({
     registerInput: function(id, callback){
         this.predefinedInputs[id] = callback;
     },
+    registerLabel: function(id, html){
+        this.predefinedLabels[id] = html;
+    },
     refresh:function (){
     }
 });
