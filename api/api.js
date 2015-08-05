@@ -20,8 +20,7 @@ plugins.setConfigs("api", {
 plugins.setConfigs("apps", {
     country: "TR",
     timezone: "Europe/Istanbul",
-    category: "6",
-    expire_online_after: 180
+    category: "6"
 });
 	
 plugins.init();
