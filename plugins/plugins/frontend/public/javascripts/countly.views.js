@@ -327,8 +327,8 @@ window.ConfigurationsView = countlyView.extend({
         return configsHTML;
     },
     getInputLabel: function(id, value){
-        if(this.predefinedLabels[id])
-            return this.predefinedLabels[id]
+        if(typeof this.predefinedLabels[id] != "undefined")
+            return this.predefinedLabels[id];
         else
             return value;
     },
