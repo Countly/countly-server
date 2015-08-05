@@ -98,6 +98,22 @@ window.PluginsView = countlyView.extend({
 window.ConfigurationsView = countlyView.extend({
 	initialize:function () {
 		this.predefinedInputs = {};
+		this.predefinedLabels = {
+            "frontend":"Frontend",
+            "api":"API",
+            "apps":"Apps",
+            "frontend-production":"Production mode",
+            "frontend-session_timeout":"Session timeout in ms",
+            "api-domain":"Domain in emails",
+            "api-safe":"Safer API responses",
+            "api-session_duration_limit":"Maximal Session Duration",
+            "api-city_data":"Track city data",
+            "api-event_limit":"Max unique event keys",
+            "api-event_segmentation_limit":"Max segmentation in each event",
+            "api-event_segmentation_value_limit":"Max unique values in each segmentation",
+            "apps-country":"Default Country",
+            "apps-category":"Default Category"
+        };
         this.configsData = {};
         this.cache = {};
         this.changes = {};
@@ -281,17 +297,26 @@ window.ConfigurationsView = countlyView.extend({
         for(var i in configsData){
             if(typeof configsData[i] == "object"){
                 if(configsData[i] != null){
-                    configsHTML += "<tr><td>"+i+"</td><td>"+this.generateConfigsTable(configsData[i], id+"-"+i)+"</td></tr>";
+                    var label = this.getInputLabel((id+"-"+i).substring(1), i);
+                    if(label)
+                        configsHTML += "<tr><td>"+label+"</td><td>"+this.generateConfigsTable(configsData[i], id+"-"+i)+"</td></tr>";
                 }
             }
             else{
                 var input = this.getInputByType((id+"-"+i).substring(1), configsData[i]);
-                if(input)
-                    configsHTML += "<tr><td>"+i+"</td><td>"+input+"</td></tr>";
+                var label = this.getInputLabel((id+"-"+i).substring(1), i);
+                if(input && label)
+                    configsHTML += "<tr><td>"+label+"</td><td>"+input+"</td></tr>";
             }
         }
         configsHTML += "</table>";
         return configsHTML;
+    },
+    getInputLabel: function(id, value){
+        if(this.predefinedLabels[id])
+            return this.predefinedLabels[id]
+        else
+            return value;
     },
     getInputByType: function(id, value){
         if(this.predefinedInputs[id]){
