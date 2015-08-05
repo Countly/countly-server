@@ -10,6 +10,7 @@
 .configs > table {border-radius: 0;}
 
 #configs-apply-changes{margin-top: 3px; padding: 8px; display: none;}
+#configs-back{margin-top: 3px; padding: 8px;}
 
 .btn-plugin-enabler{padding: 7px; margin-right: 20px; display: none; float: left;}
 #plugins-selector { float:right; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#6B6B6B; text-shadow:0 1px #F6F6F6; padding:6px; padding-right:0; overflow:auto; user-select:none; }

@@ -186,16 +186,30 @@ window.ConfigurationsView = countlyView.extend({
     },
     renderCommon:function (isRefresh) {
         this.configsData = countlyPlugins.getConfigsData();
-        var configsHTML = this.generateConfigsTable(this.configsData);
+        var configsHTML;
+        var title = jQuery.i18n.map["plugins.configs"];
+        if(this.namespace && this.configsData[this.namespace]){
+            configsHTML = this.generateConfigsTable(this.configsData[this.namespace], "-"+this.namespace);
+            title = this.getInputLabel(this.namespace, this.namespace) + " " + title;
+        }
+        else
+            configsHTML = this.generateConfigsTable(this.configsData);
+        
+        
         this.templateData = {
-            "page-title":jQuery.i18n.map["plugins.configs"],
-            "configs":configsHTML
+            "page-title":title,
+            "configs":configsHTML,
+            "namespace":this.namespace
         };
 		var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             this.changes = {};
             this.cache = JSON.parse(JSON.stringify(this.configsData));
+            
+            $("#configs-back").click(function(){
+                window.history.back();
+            });
 
 			$(".boolean-selector>.button").click(function () {
                 var dictionary = {"plugins.enable":true, "plugins.disable":false};
@@ -357,6 +371,12 @@ if(countlyGlobal["member"].global_admin){
     });
     
     app.route('/manage/configurations', 'configurations', function () {
+        this.configurationsView.namespace = null;
+        this.renderWhenReady(this.configurationsView);
+    });
+    
+    app.route('/manage/configurations/:namespace', 'configurations_namespace', function (namespace) {
+        this.configurationsView.namespace = namespace;
         this.renderWhenReady(this.configurationsView);
     });
 }
