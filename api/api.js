@@ -8,7 +8,7 @@ var http = require('http'),
     plugins = require('../plugins/pluginManager.js');
     
 plugins.setConfigs("api", {
-    domain: "localhost",
+    domain: "",
     safe: false,
     session_duration_limit: 120,
     city_data: true,
