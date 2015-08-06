@@ -4,6 +4,20 @@ var testUtils = require("../testUtils");
 var agent = request.agent(testUtils.url);
 
 describe('Accessing without setup', function(){
+    describe('GET /i', function(){
+		it('should bad request', function(done){
+			agent
+			.get('/i')
+			.expect(400, done);
+		})
+	})
+    describe('GET /o', function(){
+		it('should bad request', function(done){
+			agent
+			.get('/o')
+			.expect(400, done);
+		})
+	})
 	describe('GET /', function(){
 		it('should redirect to login', function(done){
 			agent
