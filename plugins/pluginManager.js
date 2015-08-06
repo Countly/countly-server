@@ -57,9 +57,8 @@ var pluginManager = function pluginManager(){
         var ob = {};
         if(configs[namespace])
             ob = configs[namespace];
-        else
+        else if(defaultConfigs[namespace])
             ob = defaultConfigs[namespace];
-        
         return JSON.parse(JSON.stringify(ob));
     };
     
