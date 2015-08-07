@@ -1,0 +1,56 @@
+<html>
+<head>
+<style>
+h2,h3{ margin-bottom:0px; }
+.trend { width:12px; height:9px; display: inline-block; margin-top: 5px; margin-right: 5px;}
+</style>
+</head>
+<body>
+<table width="100%">
+    <tr>
+        <th valign="bottom"><img src="<%= host %>/images/dashboard/logo.png" width="144px" valign="middle"/></th>
+        <th valign="bottom"><h2><%= version.title %> <%= report.frequency %> report from <%= report.startDate %> to <%= report.endDate %></h2></th>
+        <th valign="bottom"><a href='<%= host %>/dashboard' target='_blank' style="color: green;">Go to dashboard</a></th>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+<% for(var i=0; i<apps.length; i++) {%>
+    <% if (apps[i]) { %>
+    <tr>
+        <td align="right" valign="middle"><img src="<%= host %>/appimages/<%= apps[i]._id %>.png" width="25px" valign="middle"/>&nbsp;</td>
+        <td valign="bottom"><h3><%= apps[i].name %></h3></td>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+        <% for(var j=0; j<apps[i].results.length; j++) {%>
+    <tr>
+        <td>&nbsp;</td>
+        <td>
+            <% if (apps[i].results[j].metric == "users") { %>
+                <table width="100%">
+                <% for(var key in apps[i].results[j].data) {%>
+                    <% if (report.metrics[key]) { %>
+                    <tr>
+                        <td width="50%"><%= properties["reports."+key] %></td>
+                        <td width="20%"><%= apps[i].results[j].data[key].total %></td>
+                        <td width="30%"><img src="<%= host %>/images/dashboard/<%= apps[i].results[j].data[key].trend %>trend.png"/>&nbsp;<%= apps[i].results[j].data[key].change %></td>
+                    </tr>
+                    <% } %>
+                <% } %>
+                </table>
+            <% } %>
+        </td>
+        <td>&nbsp;</td>
+    </tr>
+        <% } %>
+    <tr>
+        <td colspan="3">&nbsp;</td>
+    </tr>
+    <% } %>
+<% } %>
+</table>
+</body>
+</html>

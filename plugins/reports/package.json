@@ -1,0 +1,22 @@
+{
+  "name": "countly-reports",
+  "title": "Email reports",
+  "version": "0.0.0",
+  "description": "Send email reports",
+  "author": "Count.ly",
+  "homepage": "https://count.ly/plugins/",
+  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
+  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "keywords": [
+    "countly",
+    "analytics",
+    "mobile",
+    "email",
+	"reports"
+  ],
+  "dependencies": {
+    "crontab":"1.1.0",
+    "properties-parser":"0.2.3"
+  },
+  "private": true
+}
