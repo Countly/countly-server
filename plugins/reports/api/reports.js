@@ -10,10 +10,10 @@ var reports = {},
     countlySession = require('../../../api/lib/countly.session.js'),
     versionInfo = require('../../../frontend/express/version.info');
     
-    versionInfo.page = (!versionInfo.title) ? "http://count.ly" : null;
-    versionInfo.title = versionInfo.title || "Countly";
-
-(function (reports) {
+versionInfo.page = (!versionInfo.title) ? "http://count.ly" : null;
+versionInfo.title = versionInfo.title || "Countly";
+var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+(function report(reports) {
     reports.sendReport = function(db, id, callback){
         reports.getReport(db, id, function(err, ob){
             if(!err){
@@ -33,8 +33,9 @@ var reports = {},
                     report.start = report.end - 7*24*60*60*1000;
                 
                 var startDate = new Date(report.start);
-                report.startDate = startDate.getFullYear()+"-"+leadingZeros(startDate.getMonth()+1)+"-"+leadingZeros(startDate.getDate());
-                report.endDate = endDate.getFullYear()+"-"+leadingZeros(endDate.getMonth()+1)+"-"+leadingZeros(endDate.getDate());
+                report.date = startDate.getDate()+" "+months[startDate.getMonth()];
+                if(report.frequency == "weekly")
+                    report.date += " - "+endDate.getDate()+" "+months[endDate.getMonth()];
                 var params = {qstring:{period:"["+report.start+","+report.end+"]"}};
                 
                 function metricIterator(metric, done){
@@ -61,41 +62,54 @@ var reports = {},
                     });
                 };
                 async.map(report.apps, appIterator, function(err, results) {
+                    report.total_new = 0;
                     for(var i = 0; i < results.length; i++){
                         for(var j = 0; j < results[i].results.length; j++){
                             if(results[i].results[j].metric == "users"){
                                 countlySession.setDb(results[i].results[j].data || {});
                                 results[i].results[j].data = countlySession.getSessionData();
+                                report.total_new += results[i].results[j].data.new_users.total;
                             }
                         }
                     }
-
-                    mail.lookup(function(err, host) {
-                        //generate html
-                        var dir = path.resolve(__dirname, '../frontend/public');
-                        //get template
-                        fs.readFile(dir+'/templates/email.html', 'utf8', function (err,template) {
-                            if (err) {
-                                if(callback)
-                                    callback(err, {report:report});
-                            }
-                            else{
-                                //get language property file
-                                fs.readFile(dir+'/localization/reports.properties', 'utf8', function (err,properties) {
-                                   if (err) {
-                                       if(callback)
-                                           callback(err, {report:report});
-                                   }
-                                   else{
-                                       var props = parser.parse(properties);
-                                       var message = ejs.render(template, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props});
-                                       if(callback)
-                                           callback(err, {report:report, message:message});
-                                   }
-                                });
-                            }
+                    
+                    function process(){
+                        mail.lookup(function(err, host) {
+                            //generate html
+                            var dir = path.resolve(__dirname, '../frontend/public');
+                            //get template
+                            fs.readFile(dir+'/templates/email.html', 'utf8', function (err,template) {
+                                if (err) {
+                                    if(callback)
+                                        callback(err, {report:report});
+                                }
+                                else{
+                                    //get language property file
+                                    fs.readFile(dir+'/localization/reports.properties', 'utf8', function (err,properties) {
+                                        if (err) {
+                                        if(callback)
+                                            callback(err, {report:report});
+                                        }
+                                        else{
+                                        var props = parser.parse(properties);
+                                        report.properties = props;
+                                        var message = ejs.render(template, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props});
+                                        if(callback)
+                                            callback(err, {report:report, message:message});
+                                        }
+                                    });
+                                }
+                            });
                         });
-                    });
+                    }
+                    
+                    if(versionInfo.title.indexOf("Countly") > -1){
+                        report.universe = [{link:"", text:"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed varius, leo a ullamcorper feugiat, ante purus sodales justo."}];
+                        process();
+                    }
+                    else{
+                        process();
+                    }
                 });
             }
             else if(callback)
@@ -109,7 +123,7 @@ var reports = {},
                 var msg = {
                     to:report.emails[i],
                     from:versionInfo.title,
-                    subject:'Your '+report.frequency+' '+versionInfo.title+' report',
+                    subject:versionInfo.title+': You had '+report.total_new+' new users '+report.properties["reports.time-"+report.frequency]+'!',
                     html: message
                 };
                 mail.sendMail(msg)
@@ -118,7 +132,7 @@ var reports = {},
     };
     
     function metricsToCollections(metrics){
-        var collections = {};
+        var collections = {users:true};
         for(var i in metrics){
             if(metrics[i]){
                 if(i == "total_sessions" || i == "total_users" || i == "new_users" || i == "total_time" || i == "avg_time")
@@ -126,12 +140,6 @@ var reports = {},
             }
         }
         return Object.keys(collections);
-    }
-    
-    function leadingZeros(value){
-        if(value < 10)
-            return "0"+value;
-        return value;
     }
     
 }(reports));

@@ -1,56 +1,327 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<style>
-h2,h3{ margin-bottom:0px; }
-.trend { width:12px; height:9px; display: inline-block; margin-top: 5px; margin-right: 5px;}
+<title><%= version.title %> Report</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<style type="text/css">
+    /* CLIENT-SPECIFIC STYLES */
+    #outlook a{padding:0;} /* Force Outlook to provide a "view in browser" message */
+    .ReadMsgBody{width:100%;} .ExternalClass{width:100%;} /* Force Hotmail to display emails at full width */
+    .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div {line-height: 100%;} /* Force Hotmail to display normal line spacing */
+    body, table, td, a{-webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;} /* Prevent WebKit and Windows mobile changing default text sizes */
+    table, td{mso-table-lspace:0pt; mso-table-rspace:0pt;} /* Remove spacing between tables in Outlook 2007 and up */
+    img{-ms-interpolation-mode:bicubic;} /* Allow smoother rendering of resized image in Internet Explorer */
+
+    /* RESET STYLES */
+    body{margin:0; padding:0;}
+    img{border:0; height:auto; line-height:100%; outline:none; text-decoration:none;}
+    table{border-collapse:collapse !important;}
+    body{height:100% !important; margin:0; padding:0; width:100% !important;}
+
+    /* iOS BLUE LINKS */
+    .appleBody a {color:#68440a; text-decoration: none;}
+    .appleFooter a {color:#999999; text-decoration: none;}
+
+    /* MOBILE STYLES */
+    @media screen and (max-width: 525px) {
+
+        /* ALLOWS FOR FLUID TABLES */
+        table[class="wrapper"]{
+          width:100% !important;
+        }
+
+        /* ADJUSTS LAYOUT OF LOGO IMAGE */
+        td[class="logo"]{
+          text-align: left;
+          padding: 20px 0 20px 0 !important;
+        }
+
+        td[class="logo"] img{
+          margin:0 auto!important;
+        }
+
+        /* USE THESE CLASSES TO HIDE CONTENT ON MOBILE */
+        td[class="mobile-hide"]{
+          display:none;}
+
+        img[class="mobile-hide"]{
+          display: none !important;
+        }
+
+        img[class="img-max"]{
+          max-width: 100% !important;
+          height:auto !important;
+        }
+
+        /* FULL-WIDTH TABLES */
+        table[class="responsive-table"]{
+          width:100%!important;
+        }
+
+        /* UTILITY CLASSES FOR ADJUSTING PADDING ON MOBILE */
+        td[class="padding"]{
+          padding: 10px 5% 15px 5% !important;
+        }
+
+        td[class="padding-copy"]{
+          padding: 10px 5% 10px 5% !important;
+          text-align: left !important;
+        }
+
+        td[class="padding-meta"]{
+          padding: 30px 5% 0px 5% !important;
+          text-align: center;
+        }
+
+        td[class="no-pad"]{
+          padding: 0 0 20px 0 !important;
+        }
+
+        td[class="no-padding"]{
+          padding: 0 !important;
+        }
+
+        td[class="section-padding"]{
+          padding: 10px 15px 10px 15px !important;
+        }
+
+        td[class="section-padding-bottom-image"]{
+          padding: 50px 15px 0 15px !important;
+        }
+
+        /* ADJUST BUTTONS ON MOBILE */
+        td[class="mobile-wrapper"]{
+            padding: 10px 5% 15px 5% !important;
+        }
+
+        table[class="mobile-button-container"]{
+            margin:0 auto;
+            width:100% !important;
+        }
+
+        a[class="mobile-button"]{
+            width:90% !important;
+            padding: 15px !important;
+            border: 0 !important;
+            font-size: 16px !important;
+        }
+
+    }
 </style>
 </head>
-<body>
-<table width="100%">
+<body style="margin: 0; padding: 0;">
+
+<!-- HEADER -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
-        <th valign="bottom"><img src="<%= host %>/images/dashboard/logo.png" width="144px" valign="middle"/></th>
-        <th valign="bottom"><h2><%= version.title %> <%= report.frequency %> report from <%= report.startDate %> to <%= report.endDate %></h2></th>
-        <th valign="bottom"><a href='<%= host %>/dashboard' target='_blank' style="color: green;">Go to dashboard</a></th>
+        <td bgcolor="#ffffff" align="center">            
+            <table border="0" cellpadding="0" cellspacing="0" width="500" class="wrapper">
+                <!-- LOGO/PREHEADER TEXT -->
+                <tr>
+                    <td style="padding: 20px 0px 20px 0px;" class="logo" align="center">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" >
+                            <tr>
+                                <td bgcolor="#ffffff" width="100" align="center"><a href="<%= version.page %>" target="_blank"><img alt="Logo" src="<%= host %>/images/dashboard/logo.png" width="200" style="display: block; font-family: Helvetica, Arial, sans-serif; color: #666666; font-size: 16px;" border="0"></a></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
     </tr>
+</table>
+
+<!-- ONE COLUMN SECTION -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
-        <td colspan="3">&nbsp;</td>
+        <td bgcolor="#F5F5F5" align="center" style="padding: 20px 20px 20px 20px;" class="section-padding">
+            <table border="0" cellpadding="0" cellspacing="0" width="500" class="responsive-table">
+                <tr>
+                    <td>
+                        <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td align="center" style="font-size: 26px; font-family: Helvetica, Arial, sans-serif; color: #AAAAAA; padding-top: 0px;" >Your <%= properties["reports."+report.frequency] %> Report for <%= report.date %></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
     </tr>
+</table>
+
 <% for(var i=0; i<apps.length; i++) {%>
     <% if (apps[i]) { %>
+<!-- THREE COLUMN SECTION -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
     <tr>
-        <td align="right" valign="middle"><img src="<%= host %>/appimages/<%= apps[i]._id %>.png" width="25px" valign="middle"/>&nbsp;</td>
-        <td valign="bottom"><h3><%= apps[i].name %></h3></td>
-        <td>&nbsp;</td>
-    </tr>
-    <tr>
-        <td colspan="3">&nbsp;</td>
-    </tr>
-        <% for(var j=0; j<apps[i].results.length; j++) {%>
-    <tr>
-        <td>&nbsp;</td>
-        <td>
-            <% if (apps[i].results[j].metric == "users") { %>
-                <table width="100%">
-                <% for(var key in apps[i].results[j].data) {%>
-                    <% if (report.metrics[key]) { %>
-                    <tr>
-                        <td width="50%"><%= properties["reports."+key] %></td>
-                        <td width="20%"><%= apps[i].results[j].data[key].total %></td>
-                        <td width="30%"><img src="<%= host %>/images/dashboard/<%= apps[i].results[j].data[key].trend %>trend.png"/>&nbsp;<%= apps[i].results[j].data[key].change %></td>
-                    </tr>
+        <td bgcolor="#ffffff" align="center" style="padding: 35px 15px 15px 15px;" class="section-padding">
+            <table border="0" cellpadding="0" cellspacing="0" width="500" class="responsive-table">
+                <tr>
+                    <td style="padding: 10px 0 10px 0;">
+                        <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                            <tr>
+                                <td valign="top" class="mobile-wrapper">                                    
+                                    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="width: 100%;" align="left">
+                                        <tr>
+                                            <td style="padding: 0 0 10px 0;">
+                                                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                                    <tr>
+                                                        <td align="left" style="font-family: Arial, sans-serif; color: #333333; font-size: 20px; font-weight:bold;">
+                                                            <img src="<%= host %>/appimages/<%= apps[i]._id %>.png" style="float:left; width:20px; height:20px; border-radius:5px; border:1px solid #DDD;"/>
+                                                            <div style="float:left; padding-top:0px; margin-left:10px;"><%= apps[i].name %></div>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <% for(var j=0; j<apps[i].results.length; j++) {%>
+                    <% if (apps[i].results[j].metric == "users") { %>
+                        <% for(var key in apps[i].results[j].data) {%>
+                            <% if (report.metrics[key]) { %>
+                <tr>
+                    <td style="padding: 10px 0 0 0; border-top: 1px dashed #DDDDDD;">
+                        <table cellspacing="0" cellpadding="0" border="0" width="100%">
+                            <tr>
+                                <td valign="top" class="mobile-wrapper">
+                                    <!-- LEFT COLUMN -->
+                                    <table cellpadding="0" cellspacing="0" border="0" width="32%" style="width: 32%;" align="left">
+                                        <tr>
+                                            <td style="padding: 0 0 10px 0;">
+                                                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                                    <tr>
+                                                        <td align="left" style="font-family: Arial, sans-serif; color: #333333; font-size: 16px;"><%= properties["reports."+key] %></td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <table cellpadding="0" cellspacing="0" border="0" width="32%" style="width: 32%;" align="left">
+                                        <tr>
+                                            <td style="padding: 0 0 10px 0;">
+                                                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                                    <tr>
+                                                        <td align="right" style="font-family: Arial, sans-serif; color: #333333; font-size: 16px;"><%= apps[i].results[j].data[key].total %></td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <table cellpadding="0" cellspacing="0" border="0" width="32%" style="width: 32%;" align="right">
+                                        <tr>
+                                            <td style="padding: 0 0 10px 0;">
+                                                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                                    <tr>
+                                                        <td align="right" style="font-family: Arial, sans-serif; <% if (apps[i].results[j].data[key].trend == "d") { %>color: red;<% } else{ %> color: green;<% } %> font-size: 16px;"><%= apps[i].results[j].data[key].change %></td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                            <% } %>
+                        <% } %>
                     <% } %>
                 <% } %>
-                </table>
-            <% } %>
+            </table>
         </td>
-        <td>&nbsp;</td>
     </tr>
-        <% } %>
-    <tr>
-        <td colspan="3">&nbsp;</td>
-    </tr>
+</table>
     <% } %>
 <% } %>
+
+<!-- ONE COLUMN SECTION -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td bgcolor="#ffffff" align="center" style="padding: 0px 15px 15px 15px;" class="section-padding">
+            <table border="0" cellpadding="0" cellspacing="0" width="500" class="responsive-table">
+                <tr>
+                    <td>
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td align="center">
+                                    <!-- BULLETPROOF BUTTON -->
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0" class="mobile-button-container">
+                                        <tr>
+                                            <td align="center" style="padding: 25px 0 0 0;" class="padding-copy">
+                                                <table border="0" cellspacing="0" cellpadding="0" class="responsive-table">
+                                                    <tr>
+                                                        <td align="center"><a href="<%= host %>/dashboard" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; font-weight: normal; color: #ffffff; text-decoration: none; background-color: #3a9d3e; border-top: 15px solid #3a9d3e; border-bottom: 15px solid #3a9d3e; border-left: 25px solid #3a9d3e; border-right: 25px solid #3a9d3e; border-radius: 3px; -webkit-border-radius: 3px; -moz-border-radius: 3px; display: inline-block;" class="mobile-button">Go to your dashboard</a></td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
 </table>
+    
+<% if (report.universe) { %>
+    <!-- ONE COLUMN SECTION -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td bgcolor="#ffffff" align="center" style="padding: 35px 15px 15px 15px;" class="section-padding">
+            <table border="0" cellpadding="0" cellspacing="0" width="500" class="responsive-table">
+                <tr>
+                    <td>
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <!-- COPY -->
+                                <td align="center" style="font-size: 26px; font-family: Helvetica, Arial, sans-serif; color: #333333; padding-top: 30px;" class="padding-copy">From Countly Universe</td>
+                            </tr>
+                            <% for(var i=0; i<report.universe.length; i++) {%>
+                            <tr>
+                                <td align="left" style="padding: 20px 0 0 0; font-size: 16px; line-height: 25px; font-family: Helvetica, Arial, sans-serif; color: #666666;" class="padding-copy"><%= report.universe[i].text %> <a href="<%= report.universe[i].link %>" target="_blank" style="color:#3a9d3e;">more</a></td>
+                            </tr>
+                            <% } %>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+<% } %>
+
+<!-- FOOTER -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td bgcolor="#ffffff" align="center">
+            <table border="0" cellspacing="0" cellpadding="0" width="100%" align="center">
+                <tr>
+                    <td style="padding: 70px 0px 20px 0px;" align="center">
+                        <!-- UNSUBSCRIBE COPY -->
+                        <table width="500" border="0" cellspacing="0" cellpadding="0" align="center" class="responsive-table">
+                            <tr>
+                                <td align="center" style="font-size: 12px; line-height: 18px; font-family: Helvetica, Arial, sans-serif; color:#666666;">
+                                    <a style="color: #3a9d3e; text-decoration: none;" href="<%= version.page %>" target="_blank"><%= version.title %></a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
 </body>
 </html>
