@@ -6,6 +6,7 @@ if(myArgs[0]){
     //start db connection
     var mongo = require('mongoskin'),
         countlyConfig = require('../../../frontend/express/config'),
+        plugins = require('../../pluginManager.js'),
         reports = require("./reports");
     var dbName;
     var dbOptions = {
@@ -38,10 +39,12 @@ if(myArgs[0]){
     countlyDb._emitter.setMaxListeners(0);
     if(!countlyDb.ObjectID)
         countlyDb.ObjectID = mongo.ObjectID;
-    
-    //send report
-    reports.sendReport(countlyDb, myArgs[0], function(err, res){
-        //close db to stop process
-        countlyDb.close();
+    //load configs
+    plugins.loadConfigs(countlyDb, function(){
+        //send report
+        reports.sendReport(countlyDb, myArgs[0], function(err, res){
+            //close db to stop process
+            countlyDb.close();
+        });
     });
 }
