@@ -6,6 +6,7 @@ var plugin = {},
     plugins = require('../../pluginManager.js');
     
 var dir = path.resolve(__dirname, '');
+var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
 var crontab;
 cron.load(function(err, tab){
     crontab = tab;
@@ -245,7 +246,7 @@ cron.load(function(err, tab){
 	});
     
     function createCronjob(id, props){
-        var job = crontab.create('nodejs '+dir+'/process_reports.js '+id);
+        var job = crontab.create('nodejs '+dir+'/process_reports.js '+id+' > '+logpath+' 2>&1');
         job.comment(id);
         job.minute().at(props.minute);
         job.hour().at(props.hour);
@@ -259,7 +260,7 @@ cron.load(function(err, tab){
     }
     
     function deleteCronjob(id){
-        crontab.remove({command:'nodejs '+dir+'/process_reports.js '+id, comment:id});
+        crontab.remove({command:'nodejs '+dir+'/process_reports.js '+id+' > '+logpath+' 2>&1', comment:id});
     }
 }(plugin));
 
