@@ -1,1 +1,4 @@
 .reports-dow{display: none;}
+.reports-table .user-details .row {overflow: visible;}
+.reports-timezone{width: 300px;}
+.reports-timezone .select-items{width: 300px;}

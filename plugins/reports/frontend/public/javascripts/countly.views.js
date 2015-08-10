@@ -30,7 +30,39 @@ window.ReportingView = countlyView.extend({
                 return "";
         }
     },
+    getDayNumber: function(day){
+        switch(day){
+            case jQuery.i18n.map["reports.monday"]:
+                return "1";
+            case jQuery.i18n.map["reports.tuesday"]:
+                return "2";
+            case jQuery.i18n.map["reports.wednesday"]:
+                return "3";
+            case jQuery.i18n.map["reports.thursday"]:
+                return "4";
+            case jQuery.i18n.map["reports.friday"]:
+                return "5";
+            case jQuery.i18n.map["reports.saturday"]:
+                return "6";
+            case jQuery.i18n.map["reports.sunday"]:
+                return "7";
+            default:
+                return "1";
+        }
+    },
     renderCommon:function (isRefresh) {
+        var cnts = app.manageAppsView.getTimeZones();
+        var zones = {};
+        var zoneNames = [];
+        for(var i in cnts){
+            for(var j = 0; j < cnts[i].z.length; j++){
+                for(var k in cnts[i].z[j]){
+                    zoneNames.push(k);
+                    zones[cnts[i].z[j][k]] = k;
+                }
+            }
+        }
+        
         var data = countlyReporting.getData();
         for(var i = 0; i < data.length; i++){
             if(data[i].apps && data[i].apps.length){
@@ -41,13 +73,22 @@ window.ReportingView = countlyView.extend({
                     data[i].minute = "0"+data[i].minute;
                 
                 data[i].dayname = this.getDayName(data[i].day);
+                data[i].zoneName = zones[data[i].timezone] || "(GMT+00:00) GMT (no daylight saving)";
             }
         }
-
+        
+        zoneNames.sort(function(a, b){
+            a = parseFloat(a.split(")")[0].replace(":", ".").substring(4));
+            b = parseFloat(b.split(")")[0].replace(":", ".").substring(4));
+            if(a < b) return -1;
+            if(a > b) return 1;
+            return 0;
+        });
         this.templateData = {
             "page-title":jQuery.i18n.map["reports.title"],
             "data":data,
             "apps":countlyGlobal['apps'],
+            "zoneNames":zoneNames,
             "member":countlyGlobal["member"]
         };
 		var self = this;

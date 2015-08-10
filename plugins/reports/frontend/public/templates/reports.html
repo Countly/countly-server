@@ -8,6 +8,15 @@ $(document).ready(function() {
 		previousSelectAppPos = {};
         
     var data = countlyReporting.getData();
+    var cnts = app.manageAppsView.getTimeZones();
+    var zones = {};
+    for(var i in cnts){
+        for(var j = 0; j < cnts[i].z.length; j++){
+            for(var k in cnts[i].z[j]){
+                zones[k] = cnts[i].z[j][k];
+            }
+        }
+    }
 	
 	function closeActiveEdit() {
 		if (previousUserDetails) {
@@ -99,9 +108,11 @@ $(document).ready(function() {
 			currUserDetails = $(".user-details:visible");
 		
 		data.frequency = currUserDetails.find("input[name=frequency]:checked").val();
-		data.hour = currUserDetails.find(".reports-hour").val();
-		data.minute = currUserDetails.find(".reports-minute").val();
-		data.day = currUserDetails.find(".reports-day").val();
+        var time = currUserDetails.find(".reports-time .text").text().split(":");
+		data.hour = time[0];
+		data.minute = time[1];
+		data.day = app.reportingView.getDayNumber(currUserDetails.find(".reports-day .text").text());
+		data.timezone = zones[currUserDetails.find(".reports-timezone .text").text()] || "Etc/GMT";
 		data.emails = [];
         var lines = currUserDetails.find(".reports-emails").val().split(/\n/);
         for (var i=0; i < lines.length; i++) {
@@ -173,9 +184,11 @@ $(document).ready(function() {
 			currUserDetails = $(".user-details:visible");
 		
 		data.frequency = currUserDetails.find("input[name=frequency]:checked").val();
-		data.hour = currUserDetails.find(".reports-hour").val();
-		data.minute = currUserDetails.find(".reports-minute").val();
-		data.day = currUserDetails.find(".reports-day").val();
+		var time = currUserDetails.find(".reports-time .text").text().split(":");
+		data.hour = time[0];
+		data.minute = time[1];
+		data.day = app.reportingView.getDayNumber(currUserDetails.find(".reports-day .text").text());
+		data.timezone = zones[currUserDetails.find(".reports-timezone .text").text()] || "Etc/GMT";
 		data.emails = [];
         var lines = currUserDetails.find(".reports-emails").val().split(/\n/);
         for (var i=0; i < lines.length; i++) {
@@ -408,7 +421,7 @@ $(document).ready(function() {
 });
 </script>
 <div id="content-loader" style="display:none; opacity: 0.5;"></div>
-<table id="user-table" cellspacing="0" class="d-table">
+<table id="user-table" cellspacing="0" class="d-table reports-table">
 	<thead>
 		<tr>
 			<th data-localize="reports.apps"></th>
@@ -428,6 +441,7 @@ $(document).ready(function() {
 			<td>
                 <div>
                     <span data-localize="reports.at"></span> {{this.hour}}:{{this.minute}}
+                    <br/>{{this.zoneName}}
                     {{#ifCond this.frequency "==" "weekly"}}
                     <br/><span data-localize="reports.on"></span> {{this.dayname}}
                     {{/ifCond}}
@@ -451,44 +465,90 @@ $(document).ready(function() {
                             {{/ifCond}}
                         </div>
 					</div>
-					<div class="row help-zone-vs">
+                    <div class="row help-zone-vs">
 						<div class="title" data-localize="reports.time"></div>
 						<div class="detail">
-                            <table>
-                            <tr>
-                                <td style="width: 200px;">
-                                    <span data-localize="reports.hour"></span>:
-                                </td>
-                                <td style="width: 200px;">
-                                    <input type="number" class="reports-hour" name="hour" min="0" max="23" value="{{this.hour}}" size="2" maxlength="2"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <span data-localize="reports.minutes"></span>:
-                                </td>
-                                <td>
-                                    <input type="number" class="reports-minute" name="minute" min="0" max="59" value="{{this.minute}}"  size="2" maxlength="2"/>
-                                </td>
-                            </tr>
-                            <tr class="reports-dow">
-                                <td>
-                                    <span data-localize="reports.dow"></span>:
-                                </td>
-                                <td>
-                                    <select class="reports-day" name="day" class="reports-day">
-                                        <option value="1" data-localize="reports.monday" {{#ifCond this.day "==" "1"}}checked{{/ifCond}}></option>
-                                        <option value="2" data-localize="reports.tuesday" {{#ifCond this.day "==" "2"}}checked{{/ifCond}}></option>
-                                        <option value="3" data-localize="reports.wednesday" {{#ifCond this.day "==" "3"}}checked{{/ifCond}}></option>
-                                        <option value="4" data-localize="reports.thursday" {{#ifCond this.day "==" "4"}}checked{{/ifCond}}></option>
-                                        <option value="5" data-localize="reports.friday" {{#ifCond this.day "==" "5"}}checked{{/ifCond}}></option>
-                                        <option value="6" data-localize="reports.saturday" {{#ifCond this.day "==" "6"}}checked{{/ifCond}}></option>
-                                        <option value="7" data-localize="reports.sunday" {{#ifCond this.day "==" "7"}}checked{{/ifCond}}></option>
-                                    </select>
-                                </td>
-                            </tr>
-                            </table>
+                            <div class="cly-select reports-time">
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div class="text">{{this.hour}}:{{this.minute}}</div>
+                                    </div>
+                                    <div class="right combo"></div>
+                                </div>
+                                <div class="select-items square">
+                                    <div>
+                                        <div data-value="00:00" class="segmentation-option item">00:00</div>
+                                        <div data-value="01:00" class="segmentation-option item">01:00</div>
+                                        <div data-value="02:00" class="segmentation-option item">02:00</div>
+                                        <div data-value="03:00" class="segmentation-option item">03:00</div>
+                                        <div data-value="04:00" class="segmentation-option item">04:00</div>
+                                        <div data-value="05:00" class="segmentation-option item">05:00</div>
+                                        <div data-value="06:00" class="segmentation-option item">06:00</div>
+                                        <div data-value="07:00" class="segmentation-option item">07:00</div>
+                                        <div data-value="08:00" class="segmentation-option item">08:00</div>
+                                        <div data-value="09:00" class="segmentation-option item">09:00</div>
+                                        <div data-value="10:00" class="segmentation-option item">10:00</div>
+                                        <div data-value="11:00" class="segmentation-option item">11:00</div>
+                                        <div data-value="12:00" class="segmentation-option item">12:00</div>
+                                        <div data-value="13:00" class="segmentation-option item">13:00</div>
+                                        <div data-value="14:00" class="segmentation-option item">14:00</div>
+                                        <div data-value="15:00" class="segmentation-option item">15:00</div>
+                                        <div data-value="16:00" class="segmentation-option item">16:00</div>
+                                        <div data-value="17:00" class="segmentation-option item">17:00</div>
+                                        <div data-value="18:00" class="segmentation-option item">18:00</div>
+                                        <div data-value="19:00" class="segmentation-option item">19:00</div>
+                                        <div data-value="20:00" class="segmentation-option item">20:00</div>
+                                        <div data-value="21:00" class="segmentation-option item">21:00</div>
+                                        <div data-value="22:00" class="segmentation-option item">22:00</div>
+                                        <div data-value="23:00" class="segmentation-option item">23:00</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+					</div>
+                    <div class="row help-zone-vs">
+						<div class="title" data-localize="reports.timezone"></div>
+						<div class="detail">
+                            <div class="cly-select reports-timezone">
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div class="text">{{this.zoneName}}</div>
+                                    </div>
+                                    <div class="right combo"></div>
+                                </div>
+                                <div class="select-items square">
+                                    <div>
+                                        {{#each ../zoneNames}}
+                                            <div data-value="{{this}}" class="segmentation-option item">{{this}}</div>
+                                        {{/each}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+					</div>
+                    <div class="row reports-dow">
+						<div class="title"><span data-localize="reports.dow"></span></div>
+						<div class="detail">
+							<div class="cly-select reports-day">
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div class="text">{{this.dayname}}</div>
+                                    </div>
+                                    <div class="right combo"></div>
+                                </div>
+                                <div class="select-items square">
+                                    <div>
+                                        <div data-value="1" class="segmentation-option item" data-localize="reports.monday"></div>
+                                        <div data-value="2" class="segmentation-option item" data-localize="reports.tuesday"></div>
+                                        <div data-value="3" class="segmentation-option item" data-localize="reports.wednesday"></div>
+                                        <div data-value="4" class="segmentation-option item" data-localize="reports.thursday"></div>
+                                        <div data-value="5" class="segmentation-option item" data-localize="reports.friday"></div>
+                                        <div data-value="6" class="segmentation-option item" data-localize="reports.saturday"></div>
+                                        <div data-value="7" class="segmentation-option item" data-localize="reports.sunday"></div>
+                                    </div>
+                                </div>
+                            </div>
+						</div>
 					</div>
 					<div class="row">
 						<div class="title"><span data-localize="reports.emails"></span><br/>
@@ -553,41 +613,87 @@ $(document).ready(function() {
 					<div class="row help-zone-vs">
 						<div class="title" data-localize="reports.time"></div>
 						<div class="detail">
-                            <table>
-                            <tr>
-                                <td style="width: 200px;">
-                                    <span data-localize="reports.hour"></span>:
-                                </td>
-                                <td style="width: 200px;">
-                                    <input type="number" class="reports-hour" name="hour" min="0" max="23" value="0" size="2" maxlength="2"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <span data-localize="reports.minutes"></span>:
-                                </td>
-                                <td>
-                                    <input type="number" class="reports-minute" name="minute" min="0" max="59" value="0"  size="2" maxlength="2"/>
-                                </td>
-                            </tr>
-                            <tr class="reports-dow">
-                                <td>
-                                    <span data-localize="reports.dow"></span>:
-                                </td>
-                                <td>
-                                    <select class="reports-day" name="day" class="reports-day">
-                                        <option value="1" data-localize="reports.monday"></option>
-                                        <option value="2" data-localize="reports.tuesday"></option>
-                                        <option value="3" data-localize="reports.wednesday"></option>
-                                        <option value="4" data-localize="reports.thursday"></option>
-                                        <option value="5" data-localize="reports.friday"></option>
-                                        <option value="6" data-localize="reports.saturday"></option>
-                                        <option value="7" data-localize="reports.sunday"></option>
-                                    </select>
-                                </td>
-                            </tr>
-                            </table>
+                            <div class="cly-select reports-time">
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div class="text">00:00</div>
+                                    </div>
+                                    <div class="right combo"></div>
+                                </div>
+                                <div class="select-items square">
+                                    <div>
+                                        <div data-value="00:00" class="segmentation-option item">00:00</div>
+                                        <div data-value="01:00" class="segmentation-option item">01:00</div>
+                                        <div data-value="02:00" class="segmentation-option item">02:00</div>
+                                        <div data-value="03:00" class="segmentation-option item">03:00</div>
+                                        <div data-value="04:00" class="segmentation-option item">04:00</div>
+                                        <div data-value="05:00" class="segmentation-option item">05:00</div>
+                                        <div data-value="06:00" class="segmentation-option item">06:00</div>
+                                        <div data-value="07:00" class="segmentation-option item">07:00</div>
+                                        <div data-value="08:00" class="segmentation-option item">08:00</div>
+                                        <div data-value="09:00" class="segmentation-option item">09:00</div>
+                                        <div data-value="10:00" class="segmentation-option item">10:00</div>
+                                        <div data-value="11:00" class="segmentation-option item">11:00</div>
+                                        <div data-value="12:00" class="segmentation-option item">12:00</div>
+                                        <div data-value="13:00" class="segmentation-option item">13:00</div>
+                                        <div data-value="14:00" class="segmentation-option item">14:00</div>
+                                        <div data-value="15:00" class="segmentation-option item">15:00</div>
+                                        <div data-value="16:00" class="segmentation-option item">16:00</div>
+                                        <div data-value="17:00" class="segmentation-option item">17:00</div>
+                                        <div data-value="18:00" class="segmentation-option item">18:00</div>
+                                        <div data-value="19:00" class="segmentation-option item">19:00</div>
+                                        <div data-value="20:00" class="segmentation-option item">20:00</div>
+                                        <div data-value="21:00" class="segmentation-option item">21:00</div>
+                                        <div data-value="22:00" class="segmentation-option item">22:00</div>
+                                        <div data-value="23:00" class="segmentation-option item">23:00</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+					</div>
+                    <div class="row help-zone-vs">
+						<div class="title" data-localize="reports.timezone"></div>
+						<div class="detail">
+                            <div class="cly-select reports-timezone">
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div class="text">(GMT+00:00) GMT (no daylight saving)</div>
+                                    </div>
+                                    <div class="right combo"></div>
+                                </div>
+                                <div class="select-items square">
+                                    <div>
+                                        {{#each zoneNames}}
+                                            <div data-value="{{this}}" class="segmentation-option item">{{this}}</div>
+                                        {{/each}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+					</div>
+                    <div class="row reports-dow">
+						<div class="title"><span data-localize="reports.dow"></span></div>
+						<div class="detail">
+							<div class="cly-select reports-day">
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div class="text">Monday</div>
+                                    </div>
+                                    <div class="right combo"></div>
+                                </div>
+                                <div class="select-items square">
+                                    <div>
+                                        <div data-value="1" class="segmentation-option item" data-localize="reports.monday"></div>
+                                        <div data-value="2" class="segmentation-option item" data-localize="reports.tuesday"></div>
+                                        <div data-value="3" class="segmentation-option item" data-localize="reports.wednesday"></div>
+                                        <div data-value="4" class="segmentation-option item" data-localize="reports.thursday"></div>
+                                        <div data-value="5" class="segmentation-option item" data-localize="reports.friday"></div>
+                                        <div data-value="6" class="segmentation-option item" data-localize="reports.saturday"></div>
+                                        <div data-value="7" class="segmentation-option item" data-localize="reports.sunday"></div>
+                                    </div>
+                                </div>
+                            </div>
+						</div>
 					</div>
 					<div class="row">
 						<div class="title"><span data-localize="reports.emails"></span><br/>
