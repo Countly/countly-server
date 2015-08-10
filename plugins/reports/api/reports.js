@@ -1,6 +1,5 @@
 var reports = {},
     async = require("async"),
-    fetch = require("../../../api/parts/data/fetch"),
     moment = require("moment"),
     ejs = require("ejs"),
     fs = require('fs'),
@@ -9,6 +8,7 @@ var reports = {},
     request = require('request'),
     mail = require("../../../api/parts/mgmt/mail"),
     countlySession = require('../../../api/lib/countly.session.js'),
+    countlyCommon = require('../../../api/lib/countly.common.js'),
     versionInfo = require('../../../frontend/express/version.info');
     
 versionInfo.page = (!versionInfo.title) ? "http://count.ly" : null;
@@ -37,15 +37,14 @@ var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oc
                 report.date = startDate.getDate()+" "+months[startDate.getMonth()];
                 if(report.frequency == "weekly")
                     report.date += " - "+endDate.getDate()+" "+months[endDate.getMonth()];
-                var params = {qstring:{period:"["+report.start+","+report.end+"]"}};
-                
-                function metricIterator(metric, done){
-                    fetch.getTimeObj(metric, params, function(output){
-                        done(null, {metric:metric, data:output});
-                    })
-                };
                 
                 function appIterator(app_id, done){
+                    var params = {qstring:{period:"["+report.start+","+report.end+"]"}};
+                    function metricIterator(metric, done){
+                        fetchTimeObj(db, metric, params, null, function(output){
+                            done(null, {metric:metric, data:output});
+                        })
+                    };
                     db.collection('apps').findOne({_id:db.ObjectID(app_id)},function(err, app){
                         if (app) {
                             params.app_id = app['_id'];
@@ -62,6 +61,7 @@ var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oc
                            done(null, null); 
                     });
                 };
+
                 async.map(report.apps, appIterator, function(err, results) {
                     report.total_new = 0;
                     for(var i = 0; i < results.length; i++){
@@ -155,6 +155,156 @@ var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oc
             }
         }
         return Object.keys(collections);
+    }
+    
+    function fetchTimeObj(db, collection, params, isCustomEvent, callback) {
+        var periodObj = getPeriodObj(params),
+            documents = [];
+
+        if (isCustomEvent) {
+            var segment = params.qstring.segmentation || "no-segment";
+
+            for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
+                documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]);
+            }
+
+            for (var i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
+                documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i]);
+            }
+        } else {
+            for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
+                documents.push(params.app_id + "_" + periodObj.reqZeroDbDateIds[i]);
+            }
+
+            for (var i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
+                documents.push(params.app_id + "_" + periodObj.reqMonthDbDateIds[i]);
+            }
+        }
+
+        db.collection(collection).find({'_id': {$in: documents}}, {}).toArray(function(err, dataObjects) {
+            callback(getMergedObj(dataObjects));
+        });
+
+        function getMergedObj(dataObjects, isRefresh) {
+            var mergedDataObj = {};
+
+            if(dataObjects){
+                for (var i = 0; i < dataObjects.length; i++) {
+                    if (!dataObjects[i] || !dataObjects[i].m) {
+                        continue;
+                    }
+    
+                    var mSplit = dataObjects[i].m.split(":"),
+                        year = mSplit[0],
+                        month = mSplit[1];
+    
+                    if (!mergedDataObj[year]) {
+                        mergedDataObj[year] = {};
+                    }
+    
+                    if (month == 0) {
+                        if (mergedDataObj['meta']) {
+                            for (var metaEl in dataObjects[i]['meta']) {
+                                if (mergedDataObj['meta'][metaEl]) {
+                                    mergedDataObj['meta'][metaEl] = union(mergedDataObj['meta'][metaEl], dataObjects[i]['meta'][metaEl]);
+                                } else {
+                                    mergedDataObj['meta'][metaEl] = dataObjects[i]['meta'][metaEl];
+                                }
+                            }
+                        } else {
+                            mergedDataObj['meta'] = dataObjects[i]['meta'] || [];
+                        }
+    
+                        if (mergedDataObj[year]) {
+                            for (var prop in dataObjects[i]['d']) {
+                                mergedDataObj[year][prop] = dataObjects[i]['d'][prop];
+                            }
+                        } else {
+                            mergedDataObj[year] = dataObjects[i]['d'] || {};
+                        }
+                    } else {
+                        if (mergedDataObj[year][month]) {
+                            for (var prop in dataObjects[i]['d']) {
+                                mergedDataObj[year][month][prop] = dataObjects[i]['d'][prop];
+                            }
+                        } else {
+                            mergedDataObj[year][month] = dataObjects[i]['d'] || {};
+                        }
+    
+                        if (!isRefresh) {
+                            for (var day in dataObjects[i]['d']) {
+                                for (var prop in dataObjects[i]['d'][day]) {
+                                    if ((collection == 'users' || dataObjects[i]['s'] == 'no-segment') && prop <= 23 && prop >= 0) {
+                                        continue;
+                                    }
+    
+                                    if (typeof dataObjects[i]['d'][day][prop] === 'object') {
+                                        for (var secondLevel in dataObjects[i]['d'][day][prop]) {
+                                            if (secondLevel == "t" || secondLevel == 'n' ||
+                                                secondLevel == 'c' || secondLevel == 's') {
+                                                if (!mergedDataObj[year][month][prop]) {
+                                                    mergedDataObj[year][month][prop] = {};
+                                                }
+    
+                                                if (mergedDataObj[year][month][prop][secondLevel]) {
+                                                    mergedDataObj[year][month][prop][secondLevel] += dataObjects[i]['d'][day][prop][secondLevel];
+                                                } else {
+                                                    mergedDataObj[year][month][prop][secondLevel] = dataObjects[i]['d'][day][prop][secondLevel];
+                                                }
+    
+                                                if (!mergedDataObj[year][prop]) {
+                                                    mergedDataObj[year][prop] = {};
+                                                }
+    
+                                                if (mergedDataObj[year][prop][secondLevel]) {
+                                                    mergedDataObj[year][prop][secondLevel] += dataObjects[i]['d'][day][prop][secondLevel];
+                                                } else {
+                                                    mergedDataObj[year][prop][secondLevel] = dataObjects[i]['d'][day][prop][secondLevel];
+                                                }
+                                            }
+                                        }
+                                    } else if (prop == 't' || prop == 'n' ||
+                                        prop == 'd' || prop == 'e' ||
+                                        prop == 'c' || prop == 's') {
+    
+                                        if (mergedDataObj[year][month][prop]) {
+                                            mergedDataObj[year][month][prop] += dataObjects[i]['d'][day][prop];
+                                        } else {
+                                            mergedDataObj[year][month][prop] = dataObjects[i]['d'][day][prop];
+                                        }
+    
+                                        if (mergedDataObj[year][prop]) {
+                                            mergedDataObj[year][prop] += dataObjects[i]['d'][day][prop];
+                                        } else {
+                                            mergedDataObj[year][prop] = dataObjects[i]['d'][day][prop];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return mergedDataObj;
+        }
+    };
+    
+    function getPeriodObj(params) {
+		params.qstring.period = params.qstring.period || "month";
+        if (params.qstring.period && params.qstring.period.indexOf(",") !== -1) {
+            try {
+                params.qstring.period = JSON.parse(params.qstring.period);
+            } catch (SyntaxError) {
+				console.log('Parse period JSON failed');
+                return false;
+            }
+        }
+
+        countlyCommon.setPeriod(params.qstring.period);
+        countlyCommon.setTimezone(params.appTimezone);
+
+        return countlyCommon.periodObj;
     }
     
 }(reports));
