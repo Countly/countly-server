@@ -13,7 +13,7 @@ var reports = {},
 versionInfo.page = (!versionInfo.title) ? "http://count.ly" : null;
 versionInfo.title = versionInfo.title || "Countly";
 var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-(function report(reports) {
+(function (reports) {
     reports.sendReport = function(db, id, callback){
         reports.getReport(db, id, function(err, ob){
             if(!err){
@@ -68,6 +68,8 @@ var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oc
                             if(results[i].results[j].metric == "users"){
                                 countlySession.setDb(results[i].results[j].data || {});
                                 results[i].results[j].data = countlySession.getSessionData();
+                                if(results[i].results[j].data.total_sessions.total > 0)
+                                    results[i].display = true;
                                 report.total_new += results[i].results[j].data.new_users.total;
                             }
                         }
