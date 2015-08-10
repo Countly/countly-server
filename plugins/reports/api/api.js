@@ -3,6 +3,7 @@ var plugin = {},
     path = require("path"),
     cron = require("crontab"),
     reports = require("./reports"),
+    time = require('time'),
     plugins = require('../../pluginManager.js');
     
 var dir = path.resolve(__dirname, '');
@@ -68,12 +69,13 @@ cron.load(function(err, tab){
                                 'apps':     { 'required': true, 'type': 'Array'},
                                 'hour':     { 'required': false, 'type': 'String' },
                                 'minute':   { 'required': false, 'type': 'String' },
+                                'timezone': { 'required': false, 'type': 'String' },
                                 'day':      { 'required': false, 'type': 'String' },
                                 'emails':   { 'required': true, 'type': 'Array' },
                                 'metrics':	{ 'required': true, 'type': 'Object' }
                             },
                             props = {};
-    
+
                         if (!(props = common.validateArgs(params.qstring.args, argProps))) {
                             common.returnMessage(params, 200, 'Not enough args');
                             return false;
@@ -82,6 +84,8 @@ cron.load(function(err, tab){
                         props.minute = (props.minute) ? parseInt(props.minute) : 0;
                         props.hour = (props.hour) ? parseInt(props.hour) : 0;
                         props.day = (props.day) ? parseInt(props.day) : 0;
+                        props.timezone = props.timezone || "Etc/GMT";
+                        
                         common.db.collection('reports').insert(props, function(err, result) {
                             if(err){
                                 err = err.err;
@@ -115,6 +119,7 @@ cron.load(function(err, tab){
                                 'apps':     { 'required': false, 'type': 'Array'},
                                 'hour':     { 'required': false, 'type': 'String' },
                                 'minute':   { 'required': false, 'type': 'String' },
+                                'timezone': { 'required': false, 'type': 'String' },
                                 'day':      { 'required': false, 'type': 'String' },
                                 'emails':   { 'required': false, 'type': 'Array' },
                                 'metrics':	{ 'required': false, 'type': 'Object' }
@@ -135,6 +140,8 @@ cron.load(function(err, tab){
                             props.hour = parseInt(props.hour);
                         if(props.day)
                             props.day = parseInt(props.day);
+                        props.timezone = props.timezone || "Etc/GMT";
+                        
                         common.db.collection('reports').update({_id:common.db.ObjectID(id)}, {$set:props}, function(err, app) {
                             if(err){
                                 err = err.err;
