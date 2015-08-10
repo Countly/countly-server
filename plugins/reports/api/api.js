@@ -253,12 +253,47 @@ cron.load(function(err, tab){
 	});
     
     function createCronjob(id, props){
+        //convert time
+        var date = new time.Date();
+        var serverOffset = date.getTimezoneOffset();
+        date.setTimezone(props.timezone);
+        var clientOffset = date.getTimezoneOffset()
+        var diff = serverOffset - clientOffset;
+        var day = props.day;
+        var hour = props.hour - Math.floor(diff/60);
+        var minute = props.minute - diff%60;
+        
+        if(minute < 0){
+            minute = 60 - minute;
+            hour--;
+        }
+        else if(minute > 59){
+            minute = minute - 60;
+            hour++;
+        }
+        
+        if(hour < 0){
+            hour = 24 - hour;
+            day--;
+        }
+        else if(hour > 23){
+            hour = hour - 24;
+            day++;
+        }
+        
+        if(day < 1){
+            day = 7 - day;
+        }
+        else if(day > 7){
+            day = day - 7;
+        }
+                        
         var job = crontab.create('nodejs '+dir+'/process_reports.js '+id+' > '+logpath+' 2>&1');
         job.comment(id);
-        job.minute().at(props.minute);
-        job.hour().at(props.hour);
+        job.minute().at(minute);
+        job.hour().at(hour);
         if(props.frequency == "weekly"){
-            job.dow().at(props.day);
+            job.dow().at(day);
         }
     }
     
