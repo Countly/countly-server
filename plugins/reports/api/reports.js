@@ -6,6 +6,7 @@ var reports = {},
     fs = require('fs'),
     path = require('path'),
     parser = require('properties-parser'),
+    request = require('request'),
     mail = require("../../../api/parts/mgmt/mail"),
     countlySession = require('../../../api/lib/countly.session.js'),
     versionInfo = require('../../../frontend/express/version.info');
@@ -106,8 +107,20 @@ var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oc
                     }
                     
                     if(versionInfo.title.indexOf("Countly") > -1){
-                        report.universe = [{link:"", text:"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed varius, leo a ullamcorper feugiat, ante purus sodales justo."}];
-                        process();
+                        var options = {
+                            uri: 'http://count.ly/email-news.json',
+                            method: 'GET'
+                        };
+                
+                        request(options, function (error, response, body) {
+                            if(!error){
+                                try{
+                                    report.universe = JSON.parse(body);
+                                }
+                                catch(ex){}
+                            }
+                            process();
+                        });
                     }
                     else{
                         process();
