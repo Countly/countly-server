@@ -15,7 +15,7 @@ cron.load(function(err, tab){
 (function (plugin) {
 	plugins.register("/o/reports", function(ob){
 		var params = ob.params;
-		var validate = ob.validateUserForGlobalAdmin;
+		var validate = validateAnyAdmin;
 		var paths = ob.paths;
 		if (params.qstring.args) {
             try {
@@ -46,7 +46,7 @@ cron.load(function(err, tab){
     
 	plugins.register("/i/reports", function(ob){
 		var params = ob.params;
-		var validate = ob.validateUserForGlobalAdmin;
+		var validate = validateAnyAdmin;
 		var paths = ob.paths;
 		if (params.qstring.args) {
             try {
@@ -304,6 +304,27 @@ cron.load(function(err, tab){
     function deleteCronjob(id){
         crontab.remove({command:'nodejs '+dir+'/process_reports.js '+id+' > '+logpath+' 2>&1', comment:id});
     }
+    
+    function validateAnyAdmin(params, callback, callbackParam) {
+        common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
+            if (!member || err) {
+                common.returnMessage(params, 401, 'User does not exist');
+                return false;
+            }
+    
+            if (!member.global_admin && !member.admin_of.length) {
+                common.returnMessage(params, 401, 'User does not have right to access this information');
+                return false;
+            }
+            params.member = member;
+    
+            if (callbackParam) {
+                callback(callbackParam, params);
+            } else {
+                callback(params);
+            }
+        });
+    };
 }(plugin));
 
 module.exports = plugin;
