@@ -32,7 +32,7 @@ cron.load(function(err, tab){
 		switch (paths[3]) {
             case 'all':
                 validate(params, function (params) {
-					common.db.collection('reports').find({}).toArray(function(err, result){
+					common.db.collection('reports').find({user:common.db.ObjectID(params.member._id)}).toArray(function(err, result){
                         common.returnOutput(params, result);
                     });
 				});
@@ -85,6 +85,7 @@ cron.load(function(err, tab){
                         props.hour = (props.hour) ? parseInt(props.hour) : 0;
                         props.day = (props.day) ? parseInt(props.day) : 0;
                         props.timezone = props.timezone || "Etc/GMT";
+                        props.user = params.member._id;
                         
                         common.db.collection('reports').insert(props, function(err, result) {
                             if(err){
@@ -142,7 +143,7 @@ cron.load(function(err, tab){
                             props.day = parseInt(props.day);
                         props.timezone = props.timezone || "Etc/GMT";
                         
-                        common.db.collection('reports').update({_id:common.db.ObjectID(id)}, {$set:props}, function(err, app) {
+                        common.db.collection('reports').update({_id:common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, {$set:props}, function(err, app) {
                             if(err){
                                 err = err.err;
                                 common.returnMessage(params, 200, err);
@@ -178,7 +179,7 @@ cron.load(function(err, tab){
                             common.returnMessage(params, 200, 'Not enough args');
                             return false;
                         }
-                        common.db.collection('reports').remove({'_id': common.db.ObjectID(id)}, {safe: true}, function(err, result) {
+                        common.db.collection('reports').remove({'_id': common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, {safe: true}, function(err, result) {
                             if (err) {
                                 common.returnMessage(params, 200, 'Error deleting report');
                                 return false;
@@ -210,13 +211,19 @@ cron.load(function(err, tab){
                         common.returnMessage(params, 200, 'Not enough args');
                         return false;
                     }
-                    reports.sendReport(common.db, id, function(err, res){
-                        if(err){
-                            common.returnMessage(params, 200, err);
+                    common.db.collection('reports').findOne({_id:common.db.ObjectID(id), user:common.db.ObjectID(params.member._id)}, function(err, result){
+                        if(err || !result){
+                            common.returnMessage(params, 200, 'Report not found');
+                            return false;
                         }
-                        else{
-                            common.returnMessage(params, 200, "Success");
-                        }
+                        reports.sendReport(common.db, id, function(err, res){
+                            if(err){
+                                common.returnMessage(params, 200, err);
+                            }
+                            else{
+                                common.returnMessage(params, 200, "Success");
+                            }
+                        });
                     });
 				});
                 break;
@@ -231,17 +238,23 @@ cron.load(function(err, tab){
                         common.returnMessage(params, 200, 'Not enough args');
                         return false;
                     }
-                    reports.getReport(common.db, id, function(err, res){
-                        if(err){
-                            common.returnMessage(params, 200, err);
+                    common.db.collection('reports').findOne({_id:common.db.ObjectID(id), user:common.db.ObjectID(params.member._id)}, function(err, result){
+                        if(err || !result){
+                            common.returnMessage(params, 200, 'Report not found');
+                            return false;
                         }
-                        else{
-                            if (params && params.res) {
-                                params.res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
-                                params.res.write(res.message);
-                                params.res.end();
+                        reports.getReport(common.db, id, function(err, res){
+                            if(err){
+                                common.returnMessage(params, 200, err);
                             }
-                        }
+                            else{
+                                if (params && params.res) {
+                                    params.res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+                                    params.res.write(res.message);
+                                    params.res.end();
+                                }
+                            }
+                        });
                     });
 				});
                 break;

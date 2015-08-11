@@ -102,12 +102,14 @@ window.ReportingView = countlyView.extend({
 //register views
 app.reportingView = new ReportingView();
 
-app.route('/manage/reports', 'reports', function () {
-	this.renderWhenReady(this.reportingView);
-});
+if(countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].length){
+    app.route('/manage/reports', 'reports', function () {
+        this.renderWhenReady(this.reportingView);
+    });
+}
 
 $( document ).ready(function() {
-	if(countlyGlobal["member"].global_admin){
+	if(countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].length){
         var menu = '<a href="#/manage/reports" class="item">'+
             '<div class="logo-icon fa fa-envelope"></div>'+
             '<div class="text" data-localize="reports.title"></div>'+
