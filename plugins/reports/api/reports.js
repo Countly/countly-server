@@ -64,6 +64,7 @@ var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oc
 
                 async.map(report.apps, appIterator, function(err, results) {
                     report.total_new = 0;
+                    var total = 0;
                     for(var i = 0; i < results.length; i++){
                         for(var j = 0; j < results[i].results.length; j++){
                             if(results[i].results[j].metric == "users"){
@@ -71,60 +72,65 @@ var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oc
                                 results[i].results[j].data = countlySession.getSessionData();
                                 if(results[i].results[j].data.total_sessions.total > 0)
                                     results[i].display = true;
+                                total += results[i].results[j].data.total_sessions.total;
                                 report.total_new += results[i].results[j].data.new_users.total;
                             }
                         }
                     }
                     
-                    function process(){
-                        mail.lookup(function(err, host) {
-                            //generate html
-                            var dir = path.resolve(__dirname, '../frontend/public');
-                            //get template
-                            fs.readFile(dir+'/templates/email.html', 'utf8', function (err,template) {
-                                if (err) {
-                                    if(callback)
-                                        callback(err, {report:report});
-                                }
-                                else{
-                                    //get language property file
-                                    fs.readFile(dir+'/localization/reports.properties', 'utf8', function (err,properties) {
-                                        if (err) {
+                    if(total > 0){                  
+                        function process(){
+                            mail.lookup(function(err, host) {
+                                //generate html
+                                var dir = path.resolve(__dirname, '../frontend/public');
+                                //get template
+                                fs.readFile(dir+'/templates/email.html', 'utf8', function (err,template) {
+                                    if (err) {
                                         if(callback)
                                             callback(err, {report:report});
-                                        }
-                                        else{
-                                        var props = parser.parse(properties);
-                                        report.properties = props;
-                                        var message = ejs.render(template, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props});
-                                        if(callback)
-                                            callback(err, {report:report, message:message});
-                                        }
-                                    });
-                                }
+                                    }
+                                    else{
+                                        //get language property file
+                                        fs.readFile(dir+'/localization/reports.properties', 'utf8', function (err,properties) {
+                                            if (err) {
+                                            if(callback)
+                                                callback(err, {report:report});
+                                            }
+                                            else{
+                                            var props = parser.parse(properties);
+                                            report.properties = props;
+                                            var message = ejs.render(template, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props});
+                                            if(callback)
+                                                callback(err, {report:report, message:message});
+                                            }
+                                        });
+                                    }
+                                });
                             });
-                        });
-                    }
+                        }
+                        
+                        if(versionInfo.title.indexOf("Countly") > -1){
+                            var options = {
+                                uri: 'http://count.ly/email-news.json',
+                                method: 'GET'
+                            };
                     
-                    if(versionInfo.title.indexOf("Countly") > -1){
-                        var options = {
-                            uri: 'http://count.ly/email-news.json',
-                            method: 'GET'
-                        };
-                
-                        request(options, function (error, response, body) {
-                            if(!error){
-                                try{
-                                    report.universe = JSON.parse(body);
+                            request(options, function (error, response, body) {
+                                if(!error){
+                                    try{
+                                        report.universe = JSON.parse(body);
+                                    }
+                                    catch(ex){}
                                 }
-                                catch(ex){}
-                            }
+                                process();
+                            });
+                        }
+                        else{
                             process();
-                        });
+                        }
                     }
-                    else{
-                        process();
-                    }
+                    else if(callback)
+                        callback("No data to report", {report:report});
                 });
             }
             else if(callback)
