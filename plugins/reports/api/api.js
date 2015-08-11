@@ -87,6 +87,20 @@ cron.load(function(err, tab){
                         props.timezone = props.timezone || "Etc/GMT";
                         props.user = params.member._id;
                         
+                        //add only allowed apps
+                        if(!params.member.global_admin){
+                            var apps = [];
+                            for(var i = 0; i < props.apps.length; i++){
+                                for(var j = 0; j < params.member.admin_of.length; j++){
+                                    if(props.apps[i] == params.member.admin_of[j]){
+                                        apps.push(props.apps[i]);
+                                        break;
+                                    }
+                                }
+                            }
+                            props.apps = apps;
+                        }
+                        
                         common.db.collection('reports').insert(props, function(err, result) {
                             if(err){
                                 err = err.err;
@@ -142,6 +156,20 @@ cron.load(function(err, tab){
                         if(props.day)
                             props.day = parseInt(props.day);
                         props.timezone = props.timezone || "Etc/GMT";
+                        
+                        //add only allowed apps
+                        if(!params.member.global_admin){
+                            var apps = [];
+                            for(var i = 0; i < props.apps.length; i++){
+                                for(var j = 0; j < params.member.admin_of.length; j++){
+                                    if(props.apps[i] == params.member.admin_of[j]){
+                                        apps.push(props.apps[i]);
+                                        break;
+                                    }
+                                }
+                            }
+                            props.apps = apps;
+                        }
                         
                         common.db.collection('reports').update({_id:common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, {$set:props}, function(err, app) {
                             if(err){

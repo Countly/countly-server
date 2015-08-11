@@ -87,7 +87,7 @@ window.ReportingView = countlyView.extend({
         this.templateData = {
             "page-title":jQuery.i18n.map["reports.title"],
             "data":data,
-            "apps":countlyGlobal['apps'],
+            "apps":(countlyGlobal["member"].global_admin) ? countlyGlobal['apps'] : countlyGlobal['admin_apps'],
             "zoneNames":zoneNames,
             "member":countlyGlobal["member"]
         };
