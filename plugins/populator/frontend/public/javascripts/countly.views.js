@@ -62,11 +62,14 @@ window.PopulatorView = countlyView.extend({
 //register views
 app.populatorView = new PopulatorView();
 
-if(countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]){
-    app.route('/manage/populate', 'populate', function () {
+app.route('/manage/populate', 'populate', function () {
+    if(countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]){
         this.renderWhenReady(this.populatorView);
-    });
-}
+    }
+    else{
+        app.navigate("/", true);
+    }
+});
 
 app.addPageScript("#", function(){
 	if (Backbone.history.fragment.indexOf("/manage/populate") > -1) {
@@ -76,16 +79,32 @@ app.addPageScript("#", function(){
 });
 
 $( document ).ready(function() {
-	var fileref=document.createElement('script');
-	fileref.setAttribute("type","text/javascript");
-	fileref.setAttribute("src", "populator/javascripts/chance.js");
-	document.getElementsByTagName("head")[0].appendChild(fileref);
-    if(countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]){
-        var menu = '<a href="#/manage/populate" class="item">'+
-            '<div class="logo-icon fa fa-random"></div>'+
-            '<div class="text" data-localize="populator.title"></div>'+
-        '</a>';
-        if($('#management-submenu .help-toggle').length)
-            $('#management-submenu .help-toggle').before(menu);
+    if(!production){
+        CountlyHelpers.loadJS("populator/javascripts/chance.js");
     }
+    var style = "display:none;";
+    if(countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]){
+        style = "";
+    }
+    var menu = '<a href="#/manage/populate" class="item" id="populator-menu" style="'+style+'">'+
+        '<div class="logo-icon fa fa-random"></div>'+
+        '<div class="text" data-localize="populator.title"></div>'+
+    '</a>';
+    if($('#management-submenu .help-toggle').length)
+        $('#management-submenu .help-toggle').before(menu);
+    
+    //listen for UI app change
+    $(".app-container:not(#app-container-new)").live("click", function () {
+        setTimeout(function(){   
+            alert(countlyCommon.ACTIVE_APP_ID);
+            if(countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]){
+                alert("showing");
+                $("#populator-menu").show();
+            }
+            else{
+                alert("hiding");
+                $("#populator-menu").hide();
+            }
+        }, 1000);
+    });
 });
