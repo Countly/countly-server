@@ -24,6 +24,7 @@ var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oc
                 callback(err, ob.message);
         });
     };
+    
     reports.getReport = function(db, id, callback){
         db.collection('reports').findOne({_id:db.ObjectID(id)},function(err, report){
             if(report && report.apps){
@@ -101,7 +102,7 @@ var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oc
                                             report.properties = props;
                                             var message = ejs.render(template, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props});
                                             if(callback)
-                                                callback(err, {report:report, message:message});
+                                                callback(err, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, message:message});
                                             }
                                         });
                                     }
