@@ -548,10 +548,12 @@ div.datatablesubrow {display: none;}
 .dialog { display:none; position:fixed; max-width:368px; left:50%; top:50%; background-color:#FFF; border:1px solid #999; box-shadow:0 0 10px 0 #666; border-radius:3px; z-index:1002; }
 	.dialog.events { max-width:850px; }
 	.dialog.red { border:1px solid #AD0303; }
+	.dialog.green { border:1px solid green; }
 	.dialog.black { border:1px solid #000; }
 	.dialog .indicator { height:7px; margin-bottom:10px; border-top-left-radius:2px; border-top-right-radius:2px; }
 	.events .indicator { margin-bottom:0; }
 	.dialog.red .indicator { background-color:#D63E40; border-bottom:1px solid #AD0303; box-shadow:inset 0 1px 0 #c; }
+	.dialog.green .indicator { background-color:green; border-bottom:1px solid green; box-shadow:inset 0 1px 0 #c; }
 	.dialog.black .indicator { background-color:#666; border-bottom:1px solid #000; box-shadow:inset 0 1px 0 #999; }
 	.dialog .message { color:#333; font:15px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:0 10px; }
 	.dialog .buttons { margin-top:15px; overflow:auto; padding:10px; padding-top:0; }
