@@ -96,13 +96,10 @@ $( document ).ready(function() {
     //listen for UI app change
     $(".app-container:not(#app-container-new)").live("click", function () {
         setTimeout(function(){   
-            alert(countlyCommon.ACTIVE_APP_ID);
             if(countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]){
-                alert("showing");
                 $("#populator-menu").show();
             }
             else{
-                alert("hiding");
                 $("#populator-menu").hide();
             }
         }, 1000);
