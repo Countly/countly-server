@@ -432,7 +432,13 @@ var usage = {},
                 needsUpdate = false,
                 zeroObjUpdate = [],
                 monthObjUpdate = [];
-
+            
+            if (params.qstring.metrics["_app_version"]) {
+                params.qstring.metrics["_app_version"] += "";
+                if(params.qstring.metrics["_app_version"].indexOf('.') === -1)
+                    params.qstring.metrics["_app_version"] += ".0";
+            }
+                                    
             for (var j=0; j < predefinedMetrics[i].metrics.length; j++) {
                 var tmpMetric = predefinedMetrics[i].metrics[j],
                     recvMetricValue = "",
