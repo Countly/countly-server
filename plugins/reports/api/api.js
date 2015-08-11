@@ -111,7 +111,7 @@ cron.load(function(err, tab){
                                 createCronjob(id, props);
                                 saveCronjob(function(err, crontab) {
                                     if(err){
-                                        common.returnMessage(params, 200, err);
+                                        common.returnMessage(params, 200, err.message);
                                     }
                                     else{
                                         common.returnMessage(params, 200, "Success");
@@ -305,7 +305,7 @@ cron.load(function(err, tab){
         var minute = props.minute - diff%60;
         
         if(minute < 0){
-            minute = 60 - minute;
+            minute = 60 + minute;
             hour--;
         }
         else if(minute > 59){
@@ -314,7 +314,7 @@ cron.load(function(err, tab){
         }
         
         if(hour < 0){
-            hour = 24 - hour;
+            hour = 24 + hour;
             day--;
         }
         else if(hour > 23){
@@ -323,7 +323,7 @@ cron.load(function(err, tab){
         }
         
         if(day < 1){
-            day = 7 - day;
+            day = 7 + day;
         }
         else if(day > 7){
             day = day - 7;
