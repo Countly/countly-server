@@ -433,7 +433,7 @@ var usage = {},
                 zeroObjUpdate = [],
                 monthObjUpdate = [];
             
-            if (params.qstring.metrics["_app_version"]) {
+            if (params.qstring.metrics && params.qstring.metrics["_app_version"]) {
                 params.qstring.metrics["_app_version"] += "";
                 if(params.qstring.metrics["_app_version"].indexOf('.') === -1)
                     params.qstring.metrics["_app_version"] += ".0";
