@@ -353,6 +353,7 @@ if (cluster.isMaster) {
                 paths = urlParts.pathname.split("/"),
                 apiPath = "",
                 params = {
+                    'href':urlParts.href,
                     'qstring':queryString,
                     'res':res,
                     'req':req
