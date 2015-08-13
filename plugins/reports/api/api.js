@@ -271,7 +271,7 @@ cron.load(function(err, tab){
                             common.returnMessage(params, 200, 'Report not found');
                             return false;
                         }
-                        reports.getReport(common.db, id, function(err, res){
+                        reports.getReport(common.db, result, function(err, res){
                             if(err){
                                 common.returnMessage(params, 200, err);
                             }

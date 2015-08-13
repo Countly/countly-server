@@ -43,31 +43,44 @@ var metrics = {
 };
 (function (reports) {
     reports.sendReport = function(db, id, callback){
-        reports.getReport(db, id, function(err, ob){
-            if(!err){
-                reports.send(ob.report, ob.message);
-            }
-            if(callback)
-                callback(err, ob.message);
+        reports.loadReport(db, id, function(err, report){
+            reports.getReport(db, report, function(err, ob){
+                if(!err){
+                    reports.send(ob.report, ob.message, function(){
+                        if(callback)
+                            callback(err, ob.message);
+                    });
+                }
+                else if(callback)
+                    callback(err, ob.message);
+            });
         });
     };
     
-    reports.getReport = function(db, id, callback){
+    reports.loadReport = function(db, id, callback){
         db.collection('reports').findOne({_id:db.ObjectID(id)},function(err, report){
-            if(report && report.apps){
-                var endDate = new Date();
-                report.end = endDate.getTime();
-                report.start = report.end - 24*60*60*1000;
-                if(report.frequency == "weekly")
-                    report.start = report.end - 7*24*60*60*1000;
-                
-                var startDate = new Date(report.start);
-                report.date = startDate.getDate()+" "+months[startDate.getMonth()];
-                if(report.frequency == "weekly")
-                    report.date += " - "+endDate.getDate()+" "+months[endDate.getMonth()];
-                
-                function appIterator(app_id, done){
-                    var params = {qstring:{period:"["+report.start+","+report.end+"]"}};
+            if(callback)
+                callback(err, report)
+        });
+    };
+    
+    reports.getReport = function(db, report, callback, cache){
+        cache = cache || {};
+        if(report && report.apps){
+            var endDate = new Date();
+            report.end = endDate.getTime();
+            report.start = report.end - 24*60*60*1000;
+            if(report.frequency == "weekly")
+                report.start = report.end - 7*24*60*60*1000;
+            
+            var startDate = new Date(report.start);
+            report.date = startDate.getDate()+" "+months[startDate.getMonth()];
+            if(report.frequency == "weekly")
+                report.date += " - "+endDate.getDate()+" "+months[endDate.getMonth()];
+            
+            function appIterator(app_id, done){
+                var params = {qstring:{period:"["+report.start+","+report.end+"]"}};
+                if(!cache[app_id]){
                     function metricIterator(metric, done){
                         if(metric.indexOf("events") == 0){
                             var parts = metric.split(".");
@@ -109,135 +122,139 @@ var metrics = {
                                     if(results[i] && results[i].metric)
                                         app.results[results[i].metric] = results[i].data;
                                 }
+                                cache[app_id] = JSON.parse(JSON.stringify(app));
                                 done(null, app);
                             });
                         }
                         else
-                           done(null, null); 
+                        done(null, null); 
                     });
-                };
+                }
+                else{
+                    done(null, JSON.parse(JSON.stringify(cache[app_id])));
+                }
+            };
 
-                async.map(report.apps, appIterator, function(err, results) {
-                    report.total_new = 0;
-                    var total = 0;
-                    for(var i = 0; i < results.length; i++){
-                        for(var j in results[i].results){
-                            if(j == "users"){
-                                results[i].results[j] = getSessionData(results[i].results[j] || {});
-                                if(results[i].results[j].total_sessions.total > 0)
-                                    results[i].display = true;
-                                total += results[i].results[j].total_sessions.total;
-                                report.total_new += results[i].results[j].new_users.total;
-                                
-                                results[i].results["analytics"] = results[i].results[j];
-                                delete results[i].results[j];
-                                
-                                if(results[i].iap_event && results[i].iap_event != ""){
-                                    if(!results[i].results["revenue"]){
-                                        results[i].results["revenue"] = {};
-                                    }
-                                    results[i].results["revenue"].paying_users = results[i].results["analytics"].paying_users;
-                                }
-                                delete results[i].results["analytics"].paying_users;
-                                
-                                if((results[i].gcm && Object.keys(results[i].gcm).length) || (results[i].apn && Object.keys(results[i].apn).length)){
-                                    if(!results[i].results["push"]){
-                                        results[i].results["push"] = {};
-                                    }
-                                    results[i].results["push"].messaging_users = results[i].results["analytics"].messaging_users;
-                                }
-                                delete results[i].results["analytics"].messaging_users;
-                            }
-                            else if(j == "crashdata"){
-                                results[i].results["crash"] = getCrashData(results[i].results[j] || {});
-                                delete results[i].results[j];
-                            }
-                            else if(j == "[CLY]_push_sent" || j == "[CLY]_push_open" || j == "[CLY]_push_action"){
-                                if(!results[i].results["push"]){
-                                    results[i].results["push"] = {};
-                                }
-                                results[i].results["push"][j.replace("[CLY]_", "")] = getEventData(results[i].results[j] || {});
-                                delete results[i].results[j];
-                            }
-                            else if(j == "purchases"){
+            async.map(report.apps, appIterator, function(err, results) {
+                report.total_new = 0;
+                var total = 0;
+                for(var i = 0; i < results.length; i++){
+                    for(var j in results[i].results){
+                        if(j == "users"){
+                            results[i].results[j] = getSessionData(results[i].results[j] || {});
+                            if(results[i].results[j].total_sessions.total > 0)
+                                results[i].display = true;
+                            total += results[i].results[j].total_sessions.total;
+                            report.total_new += results[i].results[j].new_users.total;
+                            
+                            results[i].results["analytics"] = results[i].results[j];
+                            delete results[i].results[j];
+                            
+                            if(results[i].iap_event && results[i].iap_event != ""){
                                 if(!results[i].results["revenue"]){
                                     results[i].results["revenue"] = {};
                                 }
-                                results[i].results["revenue"][j] = getEventData(results[i].results[j] || {});
-                                delete results[i].results[j];
+                                results[i].results["revenue"].paying_users = results[i].results["analytics"].paying_users;
                             }
+                            delete results[i].results["analytics"].paying_users;
+                            
+                            if((results[i].gcm && Object.keys(results[i].gcm).length) || (results[i].apn && Object.keys(results[i].apn).length)){
+                                if(!results[i].results["push"]){
+                                    results[i].results["push"] = {};
+                                }
+                                results[i].results["push"].messaging_users = results[i].results["analytics"].messaging_users;
+                            }
+                            delete results[i].results["analytics"].messaging_users;
+                        }
+                        else if(j == "crashdata"){
+                            results[i].results["crash"] = getCrashData(results[i].results[j] || {});
+                            delete results[i].results[j];
+                        }
+                        else if(j == "[CLY]_push_sent" || j == "[CLY]_push_open" || j == "[CLY]_push_action"){
+                            if(!results[i].results["push"]){
+                                results[i].results["push"] = {};
+                            }
+                            results[i].results["push"][j.replace("[CLY]_", "")] = getEventData(results[i].results[j] || {});
+                            delete results[i].results[j];
+                        }
+                        else if(j == "purchases"){
+                            if(!results[i].results["revenue"]){
+                                results[i].results["revenue"] = {};
+                            }
+                            results[i].results["revenue"][j] = getEventData(results[i].results[j] || {});
+                            delete results[i].results[j];
                         }
                     }
-                    
-                    if(total > 0){                  
-                        function process(){
-                            mail.lookup(function(err, host) {
-                                //generate html
-                                var dir = path.resolve(__dirname, '../frontend/public');
-                                //get template
-                                fs.readFile(dir+'/templates/email.html', 'utf8', function (err,template) {
-                                    if (err) {
+                }
+                
+                if(total > 0){                  
+                    function process(){
+                        mail.lookup(function(err, host) {
+                            //generate html
+                            var dir = path.resolve(__dirname, '../frontend/public');
+                            //get template
+                            fs.readFile(dir+'/templates/email.html', 'utf8', function (err,template) {
+                                if (err) {
+                                    if(callback)
+                                        callback(err, {report:report});
+                                }
+                                else{
+                                    //get language property file
+                                    fs.readFile(dir+'/localization/reports.properties', 'utf8', function (err,properties) {
+                                        if (err) {
                                         if(callback)
                                             callback(err, {report:report});
-                                    }
-                                    else{
-                                        //get language property file
-                                        fs.readFile(dir+'/localization/reports.properties', 'utf8', function (err,properties) {
-                                            if (err) {
-                                            if(callback)
-                                                callback(err, {report:report});
-                                            }
-                                            else{
-                                            var props = parser.parse(properties);
-                                            report.properties = props;
-                                            var allowedMetrics = {};
-                                            for(var i in report.metrics){
-                                                if(metrics[i]){
-                                                    for(var j in metrics[i]){
-                                                        allowedMetrics[j] = true;
-                                                    }
+                                        }
+                                        else{
+                                        var props = parser.parse(properties);
+                                        report.properties = props;
+                                        var allowedMetrics = {};
+                                        for(var i in report.metrics){
+                                            if(metrics[i]){
+                                                for(var j in metrics[i]){
+                                                    allowedMetrics[j] = true;
                                                 }
                                             }
-                                            var message = ejs.render(template, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, metrics:allowedMetrics});
-                                            if(callback)
-                                                callback(err, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, message:message});
-                                            }
-                                        });
-                                    }
-                                });
-                            });
-                        }
-                        
-                        if(versionInfo.title.indexOf("Countly") > -1){
-                            var options = {
-                                uri: 'http://count.ly/email-news.json',
-                                method: 'GET'
-                            };
-                    
-                            request(options, function (error, response, body) {
-                                if(!error){
-                                    try{
-                                        report.universe = JSON.parse(body);
-                                    }
-                                    catch(ex){}
+                                        }
+                                        var message = ejs.render(template, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, metrics:allowedMetrics});
+                                        if(callback)
+                                            callback(err, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, message:message});
+                                        }
+                                    });
                                 }
-                                process();
                             });
-                        }
-                        else{
-                            process();
-                        }
+                        });
                     }
-                    else if(callback)
-                        callback("No data to report", {report:report});
-                });
-            }
-            else if(callback)
-                callback("Report not found", {report:report});
-        });
+                    
+                    if(versionInfo.title.indexOf("Countly") > -1){
+                        var options = {
+                            uri: 'http://count.ly/email-news.json',
+                            method: 'GET'
+                        };
+                
+                        request(options, function (error, response, body) {
+                            if(!error){
+                                try{
+                                    report.universe = JSON.parse(body);
+                                }
+                                catch(ex){}
+                            }
+                            process();
+                        });
+                    }
+                    else{
+                        process();
+                    }
+                }
+                else if(callback)
+                    callback("No data to report", {report:report});
+            });
+        }
+        else if(callback)
+            callback("Report not found", {report:report});
     };
     
-    reports.send = function(report, message){
+    reports.send = function(report, message, callback){
         if(report.emails){
             for(var i = 0; i < report.emails.length; i++){
                 var msg = {
@@ -246,7 +263,7 @@ var metrics = {
                     subject:versionInfo.title+': You had '+report.total_new+' new users '+report.properties["reports.time-"+report.frequency]+'!',
                     html: message
                 };
-                mail.sendMail(msg)
+                mail.sendMail(msg, callback);
             }
         }
     };
