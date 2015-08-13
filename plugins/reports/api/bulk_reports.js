@@ -38,13 +38,8 @@ if(!countlyDb.ObjectID)
 //load configs
 plugins.loadConfigs(countlyDb, function(){
     var cache = {};
-    countlyDb.collection("members").find().toArray(function(err, res){
-        var arr = [];
-        for(var i = 0; i <  res.length; i++){
-            if(!res[i].global_admin)
-            arr.push({emails:[res[i].email], apps:res[i].admin_of || [], metrics:{"analytics":true, "revenue":true, "push":true, "crash":true }, frequency:"daily"})
-        }
-        async.eachSeries(arr, function(report, done){
+    countlyDb.collection("reports").find({}).toArray(function(err, res){
+        async.eachSeries(res, function(report, done){
             reports.getReport(countlyDb, report, function(err, ob){
                 if(!err){
                     reports.send(ob.report, ob.message, function(){
@@ -63,9 +58,4 @@ plugins.loadConfigs(countlyDb, function(){
             process.exit();
         });
     })
-    /*//send report
-    reports.sendReport(countlyDb, myArgs[0], function(err, res){
-        //close db to stop process
-        countlyDb.close();
-    });*/
 });
