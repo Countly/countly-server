@@ -576,11 +576,16 @@ $(document).ready(function() {
                     <div class="row help-zone-vs">
 						<div class="title reports-include" data-localize="reports.include-metrics"></div>
 						<div class="detail">
-                            <input type="checkbox" class="reports-metrics" name="total_sessions" {{#if this.metrics.total_sessions}}checked{{/if}}/>&nbsp;<span data-localize="reports.total_sessions"></span><br/>
-                            <input type="checkbox" class="reports-metrics" name="total_users" {{#if this.metrics.total_users}}checked{{/if}}/>&nbsp;<span data-localize="reports.total_users"></span><br/>
-                            <input type="checkbox" class="reports-metrics" name="new_users" {{#if this.metrics.new_users}}checked{{/if}}/>&nbsp;<span data-localize="reports.new_users"></span><br/>
-                            <input type="checkbox" class="reports-metrics" name="total_time" {{#if this.metrics.total_time}}checked{{/if}}/>&nbsp;<span data-localize="reports.total_time"></span><br/>
-                            <input type="checkbox" class="reports-metrics" name="avg_time" {{#if this.metrics.avg_time}}checked{{/if}}/>&nbsp;<span data-localize="reports.avg_time"></span><br/>
+                            <input type="checkbox" class="reports-metrics" name="analytics" {{#if this.metrics.analytics}}checked{{/if}}/>&nbsp;<span data-localize="reports.analytics"></span><br/>
+                            {{#if ../hasRevenue}}
+                            <input type="checkbox" class="reports-metrics" name="revenue" {{#if this.metrics.revenue}}checked{{/if}}/>&nbsp;<span data-localize="reports.revenue"></span><br/>
+                            {{/if}}
+                            {{#if ../hasPush}}
+                            <input type="checkbox" class="reports-metrics" name="push" {{#if this.metrics.push}}checked{{/if}}/>&nbsp;<span data-localize="reports.push"></span><br/>
+                            {{/if}}
+                            {{#if ../hasCrash}}
+                            <input type="checkbox" class="reports-metrics" name="crash" {{#if this.metrics.crash}}checked{{/if}}/>&nbsp;<span data-localize="reports.crash"></span><br/>
+                            {{/if}}
                         </div>
 					</div>
 					<div class="button-container">
@@ -716,11 +721,16 @@ $(document).ready(function() {
                     <div class="row help-zone-vs">
 						<div class="title reports-include" data-localize="reports.include-metrics"></div>
 						<div class="detail">
-                            <input type="checkbox" class="reports-metrics" name="total_sessions"/>&nbsp;<span data-localize="reports.total_sessions"></span><br/>
-                            <input type="checkbox" class="reports-metrics" name="total_users"/>&nbsp;<span data-localize="reports.total_users"></span><br/>
-                            <input type="checkbox" class="reports-metrics" name="new_users"/>&nbsp;<span data-localize="reports.new_users"></span><br/>
-                            <input type="checkbox" class="reports-metrics" name="total_time"/>&nbsp;<span data-localize="reports.total_time"></span><br/>
-                            <input type="checkbox" class="reports-metrics" name="avg_time"/>&nbsp;<span data-localize="reports.avg_time"></span><br/>
+                            <input type="checkbox" class="reports-metrics" name="analytics"/>&nbsp;<span data-localize="reports.analytics"></span><br/>
+                            {{#if hasRevenue}}
+                            <input type="checkbox" class="reports-metrics" name="revenue"/>&nbsp;<span data-localize="reports.revenue"></span><br/>
+                            {{/if}}
+                            {{#if hasPush}}
+                            <input type="checkbox" class="reports-metrics" name="push"/>&nbsp;<span data-localize="reports.push"></span><br/>
+                            {{/if}}
+                            {{#if hasCrash}}
+                            <input type="checkbox" class="reports-metrics" name="crash"/>&nbsp;<span data-localize="reports.crash"></span><br/>
+                            {{/if}}
                         </div>
 					</div>
 					<div class="button-container">

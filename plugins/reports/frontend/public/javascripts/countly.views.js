@@ -89,7 +89,10 @@ window.ReportingView = countlyView.extend({
             "data":data,
             "apps":(countlyGlobal["member"].global_admin) ? countlyGlobal['apps'] : countlyGlobal['admin_apps'],
             "zoneNames":zoneNames,
-            "member":countlyGlobal["member"]
+            "member":countlyGlobal["member"],
+            "hasCrash":(typeof countlyCrashes != "undefined"),
+            "hasPush":(typeof countlyPush != "undefined"),
+            "hasRevenue":(typeof countlyRevenue != "undefined")
         };
 		var self = this;
         if (!isRefresh) {
