@@ -60,6 +60,7 @@ plugins.loadConfigs(countlyDb, function(){
         }, function(err, results) {
             console.log("all reports sent");
             countlyDb.close();
+            process.exit();
         });
     })
     /*//send report

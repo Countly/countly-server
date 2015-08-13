@@ -45,6 +45,7 @@ if(myArgs[0]){
         reports.sendReport(countlyDb, myArgs[0], function(err, res){
             //close db to stop process
             countlyDb.close();
+            process.exit();
         });
     });
 }
