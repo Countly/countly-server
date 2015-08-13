@@ -92,7 +92,8 @@ window.ReportingView = countlyView.extend({
             "member":countlyGlobal["member"],
             "hasCrash":(typeof countlyCrashes != "undefined"),
             "hasPush":(typeof countlyPush != "undefined"),
-            "hasRevenue":(typeof countlyRevenue != "undefined")
+            "hasRevenue":(typeof countlyRevenue != "undefined"),
+            "useCron":countlyGlobal["use_cron"]
         };
 		var self = this;
         if (!isRefresh) {
@@ -119,5 +120,11 @@ $( document ).ready(function() {
         '</a>';
         if($('#management-submenu .help-toggle').length)
             $('#management-submenu .help-toggle').before(menu);
+    }
+    
+    //check if configuration view exists
+    if(app.configurationsView){
+        app.configurationsView.registerLabel("reports", "Reports");
+        app.configurationsView.registerLabel("reports-use_cron", "Create cronjobs for reports");
     }
 });
