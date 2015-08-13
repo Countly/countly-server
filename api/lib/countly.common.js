@@ -758,6 +758,19 @@ var countlyCommon = {},
 
         return underscore.compact(tableData);
     };
+    
+    countlyCommon.timeString = function(timespent){
+        var timeSpentString = (timespent.toFixed(1)) + " min";
+
+        if (timespent >= 142560) {
+            timeSpentString = (timespent / 525600).toFixed(1) + " years";
+        } else if (timespent >= 1440) {
+            timeSpentString = (timespent / 1440).toFixed(1) + " days";
+        } else if (timespent >= 60) {
+            timeSpentString = (timespent / 60).toFixed(1) + " hours";
+        }
+        return timeSpentString;
+    };
 
     // Private Methods
 
