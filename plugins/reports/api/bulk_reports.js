@@ -42,7 +42,7 @@ plugins.loadConfigs(countlyDb, function(){
         var arr = [];
         for(var i = 0; i <  res.length; i++){
             if(!res[i].global_admin)
-            arr.push({emails:[res[i].email], apps:res[i].admin_of, metrics:{"analytics":true, "revenue":true, "push":true, "crash":true }, frequency:"daily"})
+            arr.push({emails:[res[i].email], apps:res[i].admin_of || [], metrics:{"analytics":true, "revenue":true, "push":true, "crash":true }, frequency:"daily"})
         }
         async.eachSeries(arr, function(report, done){
             reports.getReport(countlyDb, report, function(err, ob){
