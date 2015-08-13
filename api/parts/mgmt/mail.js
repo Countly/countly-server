@@ -29,13 +29,15 @@ mail.smtpTransport = nodemailer.createTransport("Sendmail", "/usr/sbin/sendmail"
  });
 */
 
-mail.sendMail = function(message) {
+mail.sendMail = function(message, callback) {
     mail.smtpTransport.sendMail(message, function (error) {
         if (error) {
             console.log('Error sending email');
             console.log(error.message);
             return;
         }
+        if(callback)
+            callback(error);
     });
 }
 
