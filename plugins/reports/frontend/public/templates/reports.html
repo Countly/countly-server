@@ -107,14 +107,12 @@ $(document).ready(function() {
 		var data = {},
 			currUserDetails = $(".user-details:visible");
 		
-        if(countlyGlobal["use_cron"]){
-            data.frequency = currUserDetails.find("input[name=frequency]:checked").val();
-            var time = currUserDetails.find(".reports-time .text").text().split(":");
-            data.hour = time[0];
-            data.minute = time[1];
-            data.day = app.reportingView.getDayNumber(currUserDetails.find(".reports-day .text").text());
-            data.timezone = zones[currUserDetails.find(".reports-timezone .text").text()] || "Etc/GMT";
-        }
+        data.frequency = currUserDetails.find("input[name=frequency]:checked").val();
+        var time = currUserDetails.find(".reports-time .text").text().split(":");
+        data.hour = time[0];
+        data.minute = time[1];
+        data.day = app.reportingView.getDayNumber(currUserDetails.find(".reports-day .text").text());
+        data.timezone = zones[currUserDetails.find(".reports-timezone .text").text()] || "Etc/GMT";
 		data.emails = [];
         var lines = currUserDetails.find(".reports-emails").val().split(/\n/);
         for (var i=0; i < lines.length; i++) {
@@ -131,19 +129,19 @@ $(document).ready(function() {
 		$(".required").fadeOut().remove();
 		var reqSpan = $("<span>").addClass("required").text("*");
 		
-		if (countlyGlobal["use_cron"] && (!data.frequency || !data.frequency.length)) {
+		if (!data.frequency || !data.frequency.length) {
 			currUserDetails.find(".reports-frequency-title").after(reqSpan.clone());
 		}
 		
-		if (countlyGlobal["use_cron"] && !data.hour.length) {
+		if (!data.hour.length) {
 			currUserDetails.find(".reports-hour").after(reqSpan.clone());
 		}
 		
-		if (countlyGlobal["use_cron"] && !data.minute.length) {
+		if (!data.minute.length) {
 			currUserDetails.find(".reports-minute").after(reqSpan.clone());
 		}
         
-        if (countlyGlobal["use_cron"] && !data.day.length) {
+        if (!data.day.length) {
 			currUserDetails.find(".reports-day").after(reqSpan.clone());
 		}
         
@@ -185,14 +183,12 @@ $(document).ready(function() {
 		var data = {},
 			currUserDetails = $(".user-details:visible");
 		
-        if(countlyGlobal["use_cron"]){
-            data.frequency = currUserDetails.find("input[name=frequency]:checked").val();
-            var time = currUserDetails.find(".reports-time .text").text().split(":");
-            data.hour = time[0];
-            data.minute = time[1];
-            data.day = app.reportingView.getDayNumber(currUserDetails.find(".reports-day .text").text());
-            data.timezone = zones[currUserDetails.find(".reports-timezone .text").text()] || "Etc/GMT";
-        }
+        data.frequency = currUserDetails.find("input[name=frequency]:checked").val();
+        var time = currUserDetails.find(".reports-time .text").text().split(":");
+        data.hour = time[0];
+        data.minute = time[1];
+        data.day = app.reportingView.getDayNumber(currUserDetails.find(".reports-day .text").text());
+        data.timezone = zones[currUserDetails.find(".reports-timezone .text").text()] || "Etc/GMT";
 		data.emails = [];
         var lines = currUserDetails.find(".reports-emails").val().split(/\n/);
         for (var i=0; i < lines.length; i++) {
@@ -210,19 +206,19 @@ $(document).ready(function() {
 		$(".required").fadeOut().remove();
 		var reqSpan = $("<span>").addClass("required").text("*");
 		
-		if (countlyGlobal["use_cron"] && (!data.frequency || !data.frequency.length)) {
+		if (!data.frequency || !data.frequency.length) {
 			currUserDetails.find(".reports-frequency-title").after(reqSpan.clone());
 		}
 		
-		if (countlyGlobal["use_cron"] && !data.hour.length) {
+		if (!data.hour.length) {
 			currUserDetails.find(".reports-hour").after(reqSpan.clone());
 		}
 		
-		if (countlyGlobal["use_cron"] && !data.minute.length) {
+		if (!data.minute.length) {
 			currUserDetails.find(".reports-minute").after(reqSpan.clone());
 		}
         
-        if (countlyGlobal["use_cron"] && !data.day.length) {
+        if (!data.day.length) {
 			currUserDetails.find(".reports-day").after(reqSpan.clone());
 		}
         
@@ -431,10 +427,8 @@ $(document).ready(function() {
 			<th data-localize="reports.apps"></th>
             <th data-localize="reports.emails"></th>
             <th data-localize="reports.metrics"></th>
-            {{#if useCron}}
 			<th data-localize="reports.frequency"></th>
 			<th data-localize="reports.time"></th>
-            {{/if}}
 		</tr>
 	</thead>
 	<tbody>
@@ -443,7 +437,6 @@ $(document).ready(function() {
             <td>{{#each this.appNames}}{{this}}<br/>{{/each}}</td>
             <td><span class="user-email">{{#each this.emails}}{{this}}<br/>{{/each}}</span></td>
             <td>{{#eachOfObject this.metrics}}<span data-localize="reports.{{this.property}}"></span><br/>{{/eachOfObject}}</td>
-            {{#if useCron}}
 			<td data-localize="reports.{{this.frequency}}"></td>
 			<td>
                 <div>
@@ -456,16 +449,10 @@ $(document).ready(function() {
                     <div class="help-close" data-localize="management-users.close"></div>
                 </div>
             </td>
-            {{/if}}
 		</tr>
 		<tr class="user-details">
-            {{#if useCron}}
 			<td colspan="5">
-            {{else}}
-            <td colspan="3">
-            {{/if}}
 				<div>
-                    {{#if useCron}}
                     <div class="row help-zone-vs">
 						<div class="title reports-frequency-title" data-localize="reports.frequency"></div>
 						<div class="detail">
@@ -563,7 +550,6 @@ $(document).ready(function() {
                             </div>
 						</div>
 					</div>
-                    {{/if}}
 					<div class="row">
 						<div class="title"><span data-localize="reports.emails"></span><br/>
                         (<span data-localize="reports.help-emails"></span>)</div>
@@ -615,22 +601,13 @@ $(document).ready(function() {
 		</tr>
 		{{/eachOfObjectValue}}
 		<tr>
-			{{#if useCron}}
 			<td colspan="5">
-            {{else}}
-            <td colspan="3">
-            {{/if}}
 				<div data-localize="reports.create"></div>
 			</td>
 		</tr>
 		<tr class="user-details">
-			{{#if useCron}}
 			<td colspan="5">
-            {{else}}
-            <td colspan="3">
-            {{/if}}
 				<div>
-                    {{#if useCron}}
 					<div class="row help-zone-vs">
 						<div class="title reports-frequency-title" data-localize="reports.frequency"></div>
 						<div class="detail">
@@ -723,7 +700,6 @@ $(document).ready(function() {
                             </div>
 						</div>
 					</div>
-                    {{/if}}
 					<div class="row">
 						<div class="title"><span data-localize="reports.emails"></span><br/>
                         (<span data-localize="reports.help-emails"></span>)</div>
