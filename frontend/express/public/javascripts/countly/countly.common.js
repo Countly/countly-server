@@ -1580,6 +1580,76 @@
         digits = Math.pow(10, digits || 0);
         return Math.round(num * digits) / digits;
     };
+    
+    countlyCommon.getDashboardData = function(data, properties, _periodObj){
+        function clearObject(obj){
+            if (obj) {
+                for(var i = 0; i < properties.length; i++){
+                    if (!obj[properties[i]]) obj[properties[i]] = 0;
+                }
+            }
+            else {
+                obj = {}
+                for(var i = 0; i < properties.length; i++){
+                    obj[properties[i]] = 0;
+                }
+            }
+    
+            return obj;
+        };
+
+        var dataArr = {},
+            tmp_x,
+            tmp_y,
+            current = {},
+            previous = {},
+            change = {};
+            
+            for(var i = 0; i < properties.length; i++){
+                current[properties[i]] = 0;
+                previous[properties[i]] = 0;
+            }
+
+        if (_periodObj.isSpecialPeriod) {
+
+            for (var j = 0; j < (_periodObj.currentPeriodArr.length); j++) {
+                tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[j]);
+                tmp_x = clearObject(tmp_x);
+                for(var i = 0; i < properties.length; i++){
+                    current[properties[i]] += tmp_x[properties[i]];
+                }
+            }
+
+            for (var j = 0; j < (_periodObj.previousPeriodArr.length); j++) {
+                tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriodArr[j]);
+                tmp_y = clearObject(tmp_y);
+                for(var i = 0; i < properties.length; i++){
+                    previous[properties[i]] += tmp_y[properties[i]];
+                }
+            }
+        } else {
+            tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod);
+            tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriod);
+            tmp_x = clearObject(tmp_x);
+            tmp_y = clearObject(tmp_y);
+            
+            for(var i = 0; i < properties.length; i++){
+                current[properties[i]] = tmp_x[properties[i]];
+                previous[properties[i]] = tmp_y[properties[i]];
+            }
+        }
+
+        for(var i = 0; i < properties.length; i++){
+            change[properties[i]] = countlyCommon.getPercentChange(previous[properties[i]], current[properties[i]]);
+            dataArr[properties[i]] = {
+                "total":current[properties[i]],
+                "change":change[properties[i]].percent,
+                "trend":change[properties[i]].trend,
+            };
+        }
+
+        return dataArr;
+    }
 
 
     // Private Methods
