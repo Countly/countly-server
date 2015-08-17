@@ -73,17 +73,21 @@ fi
 
 cp -n $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
 
-#kill existing supervisor process
-if [ "$1" != "docker" ]
-then
-	pkill -SIGTERM supervisord
+# use available init system
+INITSYS="systemd"
 
-	#create supervisor upstart script
-	(cat $DIR/config/countly-supervisor.conf ; echo "exec /usr/bin/supervisord --nodaemon --configuration $DIR/config/supervisord.conf") > /etc/init/countly-supervisor.conf
+if [ "$1" = "docker" ]
+then
+	INITSYS="docker" 
+elif [[ `/sbin/init --version` =~ upstart ]];
+then
+    INITSYS="upstart"
 fi
 
-#respawning mongod on crash
-echo "respawn" >> /etc/init/mongod.conf
+bash $DIR/commands/$INITSYS/install.sh
+
+chmod +x $DIR/commands/$INITSYS/countly.sh
+ln -sf $DIR/commands/$INITSYS/countly.sh /usr/bin/countly
 
 #create api configuration file from sample
 cp -n $DIR/../api/config.sample.js $DIR/../api/config.js
@@ -102,7 +106,4 @@ bash $DIR/scripts/countly.install.plugins.sh
 cd $DIR && grunt dist-all
 
 #finally start countly api and dashboard
-if [ "$1" != "docker" ]
-then
-	start countly-supervisor
-fi
+countly start
