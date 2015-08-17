@@ -69,10 +69,6 @@ if [ `getent passwd countly`x != 'x' ]; then
   chown -R countly:countly $DIR/../..
 fi
 
-if [[ "$(/usr/sbin/service countly-supervisor status)" =~ "start/running" ]]; then
-  restart countly-supervisor
-else 
-  start countly-supervisor
-fi
+countly restart
 
 echo "Countly has been successfully updated"
