@@ -333,9 +333,9 @@
                                 <!-- COPY -->
                                 <td align="center" style="font-size: 26px; font-family: Helvetica, Arial, sans-serif; color: #333333; padding-top: 30px;" class="padding-copy">From Countly Universe</td>
                             </tr>
-                            <% for(var i=0; i<report.universe.length; i++) {%>
+                            <% if(report.universe) {%>
                             <tr>
-                                <td align="left" style="padding: 20px 0 0 0; font-size: 16px; line-height: 25px; font-family: Helvetica, Arial, sans-serif; color: #666666;" class="padding-copy"><%= report.universe[i].text %> <a href="<%= report.universe[i].link %>" target="_blank" style="color:#3a9d3e;">more</a></td>
+                                <td align="center" style="padding: 20px 0 0 0; font-size: 16px; line-height: 25px; font-family: Helvetica, Arial, sans-serif; color: #666666;" class="padding-copy"><%- report.universe.text %> <% if (report.universe.link) { %><a href="<%= report.universe.link %>" target="_blank" style="color:#3a9d3e;">more</a><% } %></td>
                             </tr>
                             <% } %>
                         </table>

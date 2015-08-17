@@ -228,14 +228,15 @@ var metrics = {
                     
                     if(versionInfo.title.indexOf("Countly") > -1){
                         var options = {
-                            uri: 'http://count.ly/email-news.json',
+                            uri: 'http://count.ly/wp-content/uploads/2015/08/email-news.txt',
                             method: 'GET'
                         };
                 
                         request(options, function (error, response, body) {
                             if(!error){
                                 try{
-                                    report.universe = JSON.parse(body);
+                                    var arr = JSON.parse(body);
+                                    report.universe = arr[Math.floor(Math.random()*arr.length)];
                                 }
                                 catch(ex){}
                             }
