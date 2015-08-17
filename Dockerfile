@@ -21,10 +21,10 @@ RUN chown -R mongodb:mongodb /data && \
     echo "daemon off;" >> /etc/nginx/nginx.conf
 
 # Add services' run scripts
-ADD ./bin/docker/mongodb.sh /etc/service/mongodb/run
-ADD ./bin/docker/nginx.sh /etc/service/nginx/run
-ADD ./bin/docker/countly-api.sh /etc/service/countly-api/run
-ADD ./bin/docker/countly-dashboard.sh /etc/service/countly-dashboard/run
+ADD ./bin/commands/docker/mongodb.sh /etc/service/mongodb/run
+ADD ./bin/commands/docker/nginx.sh /etc/service/nginx/run
+ADD ./bin/commands/docker/countly-api.sh /etc/service/countly-api/run
+ADD ./bin/commands/docker/countly-dashboard.sh /etc/service/countly-dashboard/run
 
 # Only root can change run scripts
 RUN chown mongodb /etc/service/mongodb/run && \
