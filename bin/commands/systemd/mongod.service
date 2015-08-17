@@ -1,0 +1,19 @@
+[Unit]
+Description=An object/document-oriented database
+Documentation=man:mongod(1)
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+User=mongodb
+LimitFSIZE=unlimited
+LimitCPU=unlimited
+LimitAS=unlimited
+LimitNOFILE=64000
+LimitRSS=unlimited
+LimitNPROC=32000
+TimeoutStopSec=300
+Restart=on-failure
+ExecStartPre=mkdir -p /var/lib/mongodb/
+ExecStartPre=mkdir -p /var/log/mongodb/
