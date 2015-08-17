@@ -18,7 +18,7 @@ elif [ "$1" = "upgrade" ]; then
     (cd $DIR ;
     npm install ;
     grunt dist-all;
-    restart countly-supervisor;
+    countly restart;
     )
 else
     echo "";
