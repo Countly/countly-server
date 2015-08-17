@@ -7,11 +7,11 @@ WantedBy=multi-user.target
 
 [Service]
 User=mongodb
-LimitFSIZE=unlimited
-LimitCPU=unlimited
-LimitAS=unlimited
+LimitFSIZE=infinity
+LimitCPU=infinity
+LimitAS=infinity
 LimitNOFILE=64000
-LimitRSS=unlimited
+LimitRSS=infinity
 LimitNPROC=32000
 TimeoutStopSec=300
 Restart=on-failure
