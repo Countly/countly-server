@@ -16,19 +16,37 @@ window.PopulatorView = countlyView.extend({
 		var now = new Date();
 		var fromDate = new Date(now.getTime()-1000*60*60*24*30);
 		var toDate = now;
+        var maxTime = 60;
+        var maxTimeout;
 		
 		
 		$(this.el).html(this.template(this.templateData));
 		$("#start-populate").on('click', function() {
-			fromDate = $( "#populate-from" ).datepicker( "getDate" ) || fromDate;
-			toDate = $( "#populate-to" ).datepicker( "getDate" ) || toDate;
-			countlyPopulator.setStartTime(fromDate.getTime()/1000);
-			countlyPopulator.setEndTime(toDate.getTime()/1000);
-			countlyPopulator.generateUsers(parseInt($("#populate-users").val()));
-			$("#start-populate").hide();
-			$("#stop-populate").show();
+            CountlyHelpers.confirm(jQuery.i18n.map["populator.warning1"]+" ("+countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].name+").<br/>"+jQuery.i18n.map["populator.warning2"], "red", function (result) {
+                if (!result) {
+					return true;
+				}
+                maxTime = $( "#populate-maxtime" ).val() || maxTime;
+                maxTimeout = setTimeout(function(){
+                    countlyPopulator.stopGenerating();
+                    $("#stop-populate").hide();
+                    $("#start-populate").show();
+                }, maxTime*1000);
+                
+                fromDate = $( "#populate-from" ).datepicker( "getDate" ) || fromDate;
+                toDate = $( "#populate-to" ).datepicker( "getDate" ) || toDate;
+                countlyPopulator.setStartTime(fromDate.getTime()/1000);
+                countlyPopulator.setEndTime(toDate.getTime()/1000);
+                countlyPopulator.generateUsers(parseInt($("#populate-users").val()));
+                $("#start-populate").hide();
+                $("#stop-populate").show();
+            });
 		});
 		$("#stop-populate").on('click', function() {
+            if(maxTimeout){
+                clearTimeout(maxTimeout);
+                maxTimeout = null;
+            }
 			countlyPopulator.stopGenerating();
 			$("#stop-populate").hide();
 			$("#start-populate").show();
