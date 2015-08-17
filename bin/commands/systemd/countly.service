@@ -7,5 +7,4 @@ WantedBy=multi-user.target
 
 [Service]
 LimitNOFILE=10000
-Type=forking
 Restart=on-failure
