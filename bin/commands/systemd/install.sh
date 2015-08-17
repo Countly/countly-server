@@ -21,3 +21,6 @@ systemctl daemon-reload
 #enable services on boot
 systemctl enable countly.service
 systemctl enable mongod.service
+
+#start mongod by default
+systemctl start mongod
