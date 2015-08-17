@@ -68,13 +68,21 @@ service nginx restart
 
 cp $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
 
-#create supervisor upstart script
-(cat $DIR/config/countly-supervisor.conf ; echo "exec /usr/bin/supervisord --nodaemon --configuration $DIR/config/supervisord.conf") > /etc/init/countly-supervisor.conf
+# use available init system
+INITSYS="systemd"
 
-#preparing for rhel 7
-#cat $DIR/config/countly-supervisor >  /etc/rc.d/init.d/countly-supervisor
-#chmod 755 /etc/rc.d/init.d/countly-supervisor
-#cat $DIR/config/supervisord.conf > /etc/countly-supervisor.conf
+if [ "$1" = "docker" ]
+then
+	INITSYS="docker" 
+elif [[ `/sbin/init --version` =~ upstart ]];
+then
+    INITSYS="upstart"
+fi
+
+bash $DIR/commands/$INITSYS/install.sh
+
+chmod +x $DIR/commands/$INITSYS/countly.sh
+ln -sf $DIR/commands/$INITSYS/countly.sh /usr/bin/countly
 
 #create api configuration file from sample
 cp -n $DIR/../api/config.sample.js $DIR/../api/config.js
@@ -93,4 +101,4 @@ node $DIR/scripts/install_plugins
 cd $DIR && grunt dist-all
 
 #finally start countly api and dashboard
-start countly-supervisor
+countly start
