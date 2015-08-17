@@ -388,25 +388,13 @@ var pluginManager = function pluginManager(){
 	
 	this.restartCountly = function(){
 		console.log('Restarting Countly ...');
-		if (process.env.INSIDE_DOCKER) {
-			console.log('Restarting runit services ...');
-			exec("sudo /usr/bin/sv restart countly-api countly-dashboard", function (error, stdout, stderr) {
-				console.log('Done restarting runit services with %j / %j / %j', error, stderr, stdout);
-				if(error)
-					console.log('error: %j', error);
-				if(stderr)
-					console.log('stderr: %j', stderr);
-			});
-		} else {
-			console.log('Restarting countly-supervisor ...');
-			exec("sudo restart countly-supervisor", function (error, stdout, stderr) {
-				console.log('Done restarting countly-supervisor with %j / %j / %j', error, stderr, stdout);
-				if(error)
-					console.log('error: %j', error);
-				if(stderr)
-					console.log('stderr: %j', stderr);
-			});
-		}
+		exec("sudo countly restart", function (error, stdout, stderr) {
+			console.log('Done restarting countly with %j / %j / %j', error, stderr, stdout);
+			if(error)
+				console.log('error: %j', error);
+			if(stderr)
+				console.log('stderr: %j', stderr);
+		});
 	}
     
     var getObjectDiff = function(current, provided){
