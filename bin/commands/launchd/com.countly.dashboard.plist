@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Debug</key>
+	<true/>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/local/bin/node</string>
+		<string>/usr/local/countly/frontend/express/app.js</string>
+	</array>
+	<key>Label</key>
+	<string>com.countly.dashboard</string>
+	<key>KeepAlive</key>
+	<true/>
+	<key>Disabled</key>
+	<false/>
+	<key>WorkingDirectory</key>
+	<string>/usr/local/countly/bin/config/</string>
+	<key>StandardOutPath</key>
+	<string>/usr/local/countly/log/countly-dashboard.log</string>
+	<key>StandardErrorPath</key>
+	<string>/usr/local/countly/log/countly-dashboard.err</string>
+</dict>
+</plist>
