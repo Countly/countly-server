@@ -70,21 +70,7 @@ cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
 
 cp $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
 
-# use available init system
-INITSYS="systemd"
-
-if [ "$1" = "docker" ]
-then
-	INITSYS="docker" 
-elif [[ `/sbin/init --version` =~ upstart ]];
-then
-    INITSYS="upstart"
-fi
-
-bash $DIR/commands/$INITSYS/install.sh
-
-chmod +x $DIR/commands/$INITSYS/countly.sh
-ln -sf $DIR/commands/$INITSYS/countly.sh /usr/bin/countly
+bash $DIR/scripts/detect.init.sh
 
 #create api configuration file from sample
 cp $DIR/../api/config.sample.js $DIR/../api/config.js
