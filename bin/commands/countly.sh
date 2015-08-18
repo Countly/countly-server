@@ -9,6 +9,9 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
+#get current countly version
+VERSION="$(grep -oP '"version":\s*"\K[0-9\.]*' $DIR/../../package.json)"
+
 #stub commands to be overwritten
 countly_start (){
     echo "start stub";
@@ -31,6 +34,10 @@ countly_upgrade (){
     )
 }
 
+countly_version (){
+     echo $VERSION;
+}
+
 #load real platform/init sys file to overwrite stubs
 source $DIR/enabled/countly.sh
 
@@ -43,6 +50,8 @@ elif [ "$1" = "restart" ]; then
     countly_restart;
 elif [ "$1" = "upgrade" ]; then
     countly_upgrade
+elif [ "$1" = "version" ]; then
+    countly_version
 else
     echo "";
     echo "usage:";
@@ -50,5 +59,7 @@ else
     echo "    countly stop    # stops countly process";
     echo "    countly restart # restarts countly process";
     echo "    countly upgrade # standard upgrade process (install dependencies, minify files, restart countly)";
+    echo "    countly version # outputs current countly version";
+    echo "    countly usage   # prints this out, but so as basically everything else does";
     echo "";
 fi
