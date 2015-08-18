@@ -32,13 +32,26 @@ sudo yum -y install mongodb-org
 sudo service mongod start
 
 #install nginx
+sudo yum -y install policycoreutils-python
+
 echo "[nginx]
 name=nginx repo
-baseurl=http://nginx.org/packages/rhel/6/x86_64/
+baseurl=http://nginx.org/packages/rhel/7/x86_64/
 gpgcheck=0
 enabled=1" > /etc/yum.repos.d/nginx.repo
 
 sudo yum -y install nginx
+
+#configure and start nginx
+useradd www-data
+unalias cp
+cp /etc/nginx/conf.d/default.conf $DIR/config/nginx.default.backup
+cp $DIR/config/nginx.server.conf /etc/nginx/conf.d/default.conf
+cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
+service nginx restart
+
+sudo cat /var/log/audit/audit.log | grep nginx | grep denied | audit2allow -M mynginx
+sudo semodule -i mynginx.pp
 
 #for easy_install
 sudo yum -y install python-setuptools
