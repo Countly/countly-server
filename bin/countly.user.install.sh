@@ -90,7 +90,7 @@ if [ `getent passwd countly`x == 'x' ]; then
   chown -R countly:countly $COUNTLY_DIR
 fi
 
-echo "countly ALL=(ALL) NOPASSWD: /sbin/start countly-supervisor, /sbin/stop countly-supervisor, /sbin/restart countly-supervisor, /sbin/status countly-supervisor" > /etc/sudoers.d/countly
+echo "countly ALL=(ALL) NOPASSWD: /usr/bin/countly start, /usr/bin/countly stop, /usr/bin/countly restart, /usr/bin/countly upgrade" > /etc/sudoers.d/countly
 
 #finally start countly api and dashboard
 countly start
