@@ -10,11 +10,17 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 #stub commands to be overwritten
-function countly_start { } 
+function countly_start {
+    echo "start stub";
+} 
 
-function countly_stop { } 
+function countly_stop {
+    echo "stop stub";
+} 
 
-function countly_restart { } 
+function countly_restart {
+    echo "restart stub";
+} 
 
 #real commands, can also be overwritten
 function countly_upgrade { 
