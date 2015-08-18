@@ -228,7 +228,7 @@ var metrics = {
                     
                     if(versionInfo.title.indexOf("Countly") > -1){
                         var options = {
-                            uri: 'http://count.ly/wp-content/uploads/2015/08/email-news.txt',
+                            uri: 'http://count.ly/email-news.txt',
                             method: 'GET'
                         };
                 
