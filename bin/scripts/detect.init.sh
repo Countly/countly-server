@@ -15,5 +15,7 @@ fi
 
 bash $DIR/commands/$INITSYS/install.sh
 
-chmod +x $DIR/commands/$INITSYS/countly.sh
-ln -sf $DIR/commands/$INITSYS/countly.sh /usr/bin/countly
+cp $DIR/commands/$INITSYS/countly.sh $DIR/commands/enabled
+
+chmod +x $DIR/commands/countly.sh
+ln -sf $DIR/commands/countly.sh /usr/bin/countly
