@@ -33,7 +33,7 @@ sudo service mongod start
 
 #install nginx
 sudo yum -y install policycoreutils-python
-
+sudo yum -y install wget
 echo "[nginx]
 name=nginx repo
 baseurl=http://nginx.org/packages/rhel/7/x86_64/
@@ -49,6 +49,8 @@ cp /etc/nginx/conf.d/default.conf $DIR/config/nginx.default.backup
 cp $DIR/config/nginx.server.conf /etc/nginx/conf.d/default.conf
 cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
 service nginx restart
+
+wget http://127.0.0.1:3001/i
 
 sudo cat /var/log/audit/audit.log | grep nginx | grep denied | audit2allow -M mynginx
 sudo semodule -i mynginx.pp
