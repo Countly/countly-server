@@ -10,20 +10,20 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 #stub commands to be overwritten
-function countly_start {
+countly_start (){
     echo "start stub";
 } 
 
-function countly_stop {
+countly_stop (){
     echo "stop stub";
 } 
 
-function countly_restart {
+countly_restart (){
     echo "restart stub";
 } 
 
 #real commands, can also be overwritten
-function countly_upgrade { 
+countly_upgrade (){ 
     (cd $DIR/../.. ;
     npm install ;
     grunt dist-all;

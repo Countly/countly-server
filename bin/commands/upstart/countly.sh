@@ -1,13 +1,13 @@
 #!/bin/bash
 
-function countly_start { 
+countly_start (){ 
     start countly-supervisor;
 } 
 
-function countly_stop { 
+countly_stop (){ 
     stop countly-supervisor;
 } 
 
-function countly_restart { 
+countly_restart (){ 
     restart countly-supervisor;
 } 

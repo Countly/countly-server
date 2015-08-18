@@ -1,13 +1,13 @@
 #!/bin/bash
 
-function countly_start { 
+countly_start () { 
     systemctl start countly;
 }
 
-function countly_stop { 
+countly_stop () { 
     systemctl stop countly;
 }
 
-function countly_restart {
+countly_restart () {
     systemctl restart countly;
 }
