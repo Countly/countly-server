@@ -139,50 +139,52 @@ var metrics = {
                 report.total_new = 0;
                 var total = 0;
                 for(var i = 0; i < results.length; i++){
-                    for(var j in results[i].results){
-                        if(j == "users"){
-                            results[i].results[j] = getSessionData(results[i].results[j] || {});
-                            if(results[i].results[j].total_sessions.total > 0)
-                                results[i].display = true;
-                            total += results[i].results[j].total_sessions.total;
-                            report.total_new += results[i].results[j].new_users.total;
-                            
-                            results[i].results["analytics"] = results[i].results[j];
-                            delete results[i].results[j];
-                            
-                            if(results[i].iap_event && results[i].iap_event != ""){
-                                if(!results[i].results["revenue"]){
-                                    results[i].results["revenue"] = {};
+                    if(results[i] && results[i].results){
+                        for(var j in results[i].results){
+                            if(j == "users"){
+                                results[i].results[j] = getSessionData(results[i].results[j] || {});
+                                if(results[i].results[j].total_sessions.total > 0)
+                                    results[i].display = true;
+                                total += results[i].results[j].total_sessions.total;
+                                report.total_new += results[i].results[j].new_users.total;
+                                
+                                results[i].results["analytics"] = results[i].results[j];
+                                delete results[i].results[j];
+                                
+                                if(results[i].iap_event && results[i].iap_event != ""){
+                                    if(!results[i].results["revenue"]){
+                                        results[i].results["revenue"] = {};
+                                    }
+                                    results[i].results["revenue"].paying_users = results[i].results["analytics"].paying_users;
                                 }
-                                results[i].results["revenue"].paying_users = results[i].results["analytics"].paying_users;
+                                delete results[i].results["analytics"].paying_users;
+                                
+                                if((results[i].gcm && Object.keys(results[i].gcm).length) || (results[i].apn && Object.keys(results[i].apn).length)){
+                                    if(!results[i].results["push"]){
+                                        results[i].results["push"] = {};
+                                    }
+                                    results[i].results["push"].messaging_users = results[i].results["analytics"].messaging_users;
+                                }
+                                delete results[i].results["analytics"].messaging_users;
                             }
-                            delete results[i].results["analytics"].paying_users;
-                            
-                            if((results[i].gcm && Object.keys(results[i].gcm).length) || (results[i].apn && Object.keys(results[i].apn).length)){
+                            else if(j == "crashdata"){
+                                results[i].results["crash"] = getCrashData(results[i].results[j] || {});
+                                delete results[i].results[j];
+                            }
+                            else if(j == "[CLY]_push_sent" || j == "[CLY]_push_open" || j == "[CLY]_push_action"){
                                 if(!results[i].results["push"]){
                                     results[i].results["push"] = {};
                                 }
-                                results[i].results["push"].messaging_users = results[i].results["analytics"].messaging_users;
+                                results[i].results["push"][j.replace("[CLY]_", "")] = getEventData(results[i].results[j] || {});
+                                delete results[i].results[j];
                             }
-                            delete results[i].results["analytics"].messaging_users;
-                        }
-                        else if(j == "crashdata"){
-                            results[i].results["crash"] = getCrashData(results[i].results[j] || {});
-                            delete results[i].results[j];
-                        }
-                        else if(j == "[CLY]_push_sent" || j == "[CLY]_push_open" || j == "[CLY]_push_action"){
-                            if(!results[i].results["push"]){
-                                results[i].results["push"] = {};
+                            else if(j == "purchases"){
+                                if(!results[i].results["revenue"]){
+                                    results[i].results["revenue"] = {};
+                                }
+                                results[i].results["revenue"][j] = getEventData(results[i].results[j] || {});
+                                delete results[i].results[j];
                             }
-                            results[i].results["push"][j.replace("[CLY]_", "")] = getEventData(results[i].results[j] || {});
-                            delete results[i].results[j];
-                        }
-                        else if(j == "purchases"){
-                            if(!results[i].results["revenue"]){
-                                results[i].results["revenue"] = {};
-                            }
-                            results[i].results["revenue"][j] = getEventData(results[i].results[j] || {});
-                            delete results[i].results[j];
                         }
                     }
                 }
