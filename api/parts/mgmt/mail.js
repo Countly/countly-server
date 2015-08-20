@@ -1,32 +1,37 @@
 var mail = {},
     nodemailer = require('nodemailer'),
     request = require('request'),
+    sendmailTransport = require('nodemailer-sendmail-transport'),
+    smtpTransport = require('nodemailer-smtp-transport'),
     plugins = require('../../../plugins/pluginManager.js');
     
-mail.smtpTransport = nodemailer.createTransport("Sendmail", "/usr/sbin/sendmail");
+mail.smtpTransport = nodemailer.createTransport(sendmailTransport({
+    path: "/usr/sbin/sendmail"
+}));
 /*
  Use the below transport to send mails through Gmail
 
- smtpTransport = nodemailer.createTransport("SMTP",{
-     service: "Gmail",
-     auth: {
-         user: "YOUR_GMAIL_OR_GOOGLE_APPS_EMAIL",
-         pass: "PASSWORD"
-     }
- });
+    mail.smtpTransport = nodemailer.createTransport(smtpTransport({
+        host: 'localhost',
+        port: 25,
+        auth: {
+            user: 'username',
+            pass: 'password'
+        }
+    }));
 */
 /*
  Use the below transport to send mails through your own SMTP server
 
- smtpTransport = nodemailer.createTransport("SMTP", {
-     host: "smtp.gmail.com", // hostname
-     secureConnection: true, // use SSL
-     port: 465, // port for secure SMTP
-     auth: {
-         user: "gmail.user@gmail.com",
-         pass: "userpass"
-     }
- });
+    mail.smtpTransport = nodemailer.createTransport(smtpTransport({
+        host: "smtp.gmail.com", // hostname
+        secureConnection: true, // use SSL
+        port: 465, // port for secure SMTP
+        auth: {
+            user: "gmail.user@gmail.com",
+            pass: "userpass"
+        }
+    });
 */
 
 mail.sendMail = function(message, callback) {
