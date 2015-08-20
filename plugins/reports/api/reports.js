@@ -264,7 +264,10 @@ var metrics = {
                     subject:versionInfo.title+': You had '+report.total_new+' new users '+report.properties["reports.time-"+report.frequency]+'!',
                     html: message
                 };
-                mail.sendMail(msg, callback);
+                if(mail.sendPoolMail)
+                    mail.sendPoolMail(msg, callback);
+                else
+                    mail.sendMail(msg, callback);
             }
         }
     };
