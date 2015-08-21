@@ -1,1 +1,1 @@
-CountlyHelpers.createMetricModel(window.countlyBrowser = window.countlyDensity || {}, "browser", jQuery);
+CountlyHelpers.createMetricModel(window.countlyBrowser = window.countlyBrowser || {}, "browser", jQuery);
