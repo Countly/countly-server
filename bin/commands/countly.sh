@@ -42,16 +42,12 @@ countly_version (){
 source $DIR/enabled/countly.sh
 
 #process command
-if [ "$1" = "start" ]; then
-    countly_start;
-elif [ "$1" = "stop" ]; then
-    countly_stop;
-elif [ "$1" = "restart" ]; then
-    countly_restart;
-elif [ "$1" = "upgrade" ]; then
-    countly_upgrade
-elif [ "$1" = "version" ]; then
-    countly_version
+if [ -n "$(type -t countly_$1)" ] && [ "$(type -t countly_$1)" = function ]; then
+    NAME=$1;
+    shift;
+    countly_${NAME} "$@";
+elif [ -f $DIR/scripts/$1.sh ]; then
+    bash $DIR/scripts/$1.sh;
 else
     echo "";
     echo "usage:";
