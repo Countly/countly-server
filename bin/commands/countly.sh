@@ -47,7 +47,8 @@ if [ -n "$(type -t countly_$1)" ] && [ "$(type -t countly_$1)" = function ]; the
     shift;
     countly_${NAME} "$@";
 elif [ -f $DIR/scripts/$1.sh ]; then
-    bash $DIR/scripts/$1.sh;
+    shift;
+    bash $DIR/scripts/$1.sh "$@";
 else
     echo "";
     echo "usage:";
