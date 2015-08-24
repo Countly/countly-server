@@ -1,5 +1,101 @@
-@import url(https://fonts.googleapis.com/css?family=Ubuntu:400,500&subset=latin,latin-ext);
-@import url(https://fonts.googleapis.com/css?family=Oswald:400,500&subset=latin,latin-ext);
+@font-face {
+  font-family: 'Ubuntu';
+  font-weight: 400;
+  font-style: normal;
+  src: url('../fonts/Ubuntu-regular/Ubuntu-regular.eot');
+  src: url('../fonts/Ubuntu-regular/Ubuntu-regular.eot?#iefix') format('embedded-opentype'),
+       local('Ubuntu'),
+       local('Ubuntu-regular'),
+       url('../fonts/Ubuntu-regular/Ubuntu-regular.woff2') format('woff2'),
+       url('../fonts/Ubuntu-regular/Ubuntu-regular.woff') format('woff'),
+       url('../fonts/Ubuntu-regular/Ubuntu-regular.ttf') format('truetype'),
+       url('../fonts/Ubuntu-regular/Ubuntu-regular.svg#Ubuntu') format('svg');
+}
+
+@font-face {
+  font-family: 'Ubuntu';
+  font-weight: 500;
+  font-style: normal;
+  src: url('../fonts/Ubuntu-500/Ubuntu-500.eot');
+  src: url('../fonts/Ubuntu-500/Ubuntu-500.eot?#iefix') format('embedded-opentype'),
+       local('Ubuntu Medium'),
+       local('Ubuntu-500'),
+       url('../fonts/Ubuntu-500/Ubuntu-500.woff2') format('woff2'),
+       url('../fonts/Ubuntu-500/Ubuntu-500.woff') format('woff'),
+       url('../fonts/Ubuntu-500/Ubuntu-500.ttf') format('truetype'),
+       url('../fonts/Ubuntu-500/Ubuntu-500.svg#Ubuntu') format('svg');
+}
+
+@font-face {
+  font-family: 'Ubuntu';
+  font-weight: 400;
+  font-style: italic;
+  src: url('../fonts/Ubuntu-italic/Ubuntu-italic.eot');
+  src: url('../fonts/Ubuntu-italic/Ubuntu-italic.eot?#iefix') format('embedded-opentype'),
+       local('Ubuntu Italic'),
+       local('Ubuntu-italic'),
+       url('../fonts/Ubuntu-italic/Ubuntu-italic.woff2') format('woff2'),
+       url('../fonts/Ubuntu-italic/Ubuntu-italic.woff') format('woff'),
+       url('../fonts/Ubuntu-italic/Ubuntu-italic.ttf') format('truetype'),
+       url('../fonts/Ubuntu-italic/Ubuntu-italic.svg#Ubuntu') format('svg');
+}
+
+@font-face {
+  font-family: 'Ubuntu';
+  font-weight: 500;
+  font-style: italic;
+  src: url('../fonts/Ubuntu-500italic/Ubuntu-500italic.eot');
+  src: url('../fonts/Ubuntu-500italic/Ubuntu-500italic.eot?#iefix') format('embedded-opentype'),
+       local('Ubuntu Medium Italic'),
+       local('Ubuntu-500italic'),
+       url('../fonts/Ubuntu-500italic/Ubuntu-500italic.woff2') format('woff2'),
+       url('../fonts/Ubuntu-500italic/Ubuntu-500italic.woff') format('woff'),
+       url('../fonts/Ubuntu-500italic/Ubuntu-500italic.ttf') format('truetype'),
+       url('../fonts/Ubuntu-500italic/Ubuntu-500italic.svg#Ubuntu') format('svg');
+}
+@font-face {
+  font-family: 'Oswald';
+  font-weight: 300;
+  font-style: normal;
+  src: url('../fonts/Oswald-300/Oswald-300.eot');
+  src: url('../fonts/Oswald-300/Oswald-300.eot?#iefix') format('embedded-opentype'),
+       local('Oswald Light'),
+       local('Oswald-300'),
+       url('../fonts/Oswald-300/Oswald-300.woff2') format('woff2'),
+       url('../fonts/Oswald-300/Oswald-300.woff') format('woff'),
+       url('../fonts/Oswald-300/Oswald-300.ttf') format('truetype'),
+       url('../fonts/Oswald-300/Oswald-300.svg#Oswald') format('svg');
+}
+
+@font-face {
+  font-family: 'Oswald';
+  font-weight: 400;
+  font-style: normal;
+  src: url('../fonts/Oswald-regular/Oswald-regular.eot');
+  src: url('../fonts/Oswald-regular/Oswald-regular.eot?#iefix') format('embedded-opentype'),
+       local('Oswald Regular'),
+       local('Oswald-regular'),
+       url('../fonts/Oswald-regular/Oswald-regular.woff2') format('woff2'),
+       url('../fonts/Oswald-regular/Oswald-regular.woff') format('woff'),
+       url('../fonts/Oswald-regular/Oswald-regular.ttf') format('truetype'),
+       url('../fonts/Oswald-regular/Oswald-regular.svg#Oswald') format('svg');
+}
+
+@font-face {
+  font-family: 'Oswald';
+  font-weight: 700;
+  font-style: normal;
+  src: url('../fonts/Oswald-700/Oswald-700.eot');
+  src: url('../fonts/Oswald-700/Oswald-700.eot?#iefix') format('embedded-opentype'),
+       local('Oswald Bold'),
+       local('Oswald-700'),
+       url('../fonts/Oswald-700/Oswald-700.woff2') format('woff2'),
+       url('../fonts/Oswald-700/Oswald-700.woff') format('woff'),
+       url('../fonts/Oswald-700/Oswald-700.ttf') format('truetype'),
+       url('../fonts/Oswald-700/Oswald-700.svg#Oswald') format('svg');
+}
+
+
 body { margin:0; padding:0; overflow:auto; /*background-image:url('../images/dashboard/bg.png');*/ background-color:#F5F5F5; user-select:text; }
 #content-container { margin-left:224px; min-width:768px; min-height: 400px; padding:16px; padding-bottom:35px; overflow:auto;}
 #content {padding-bottom: 50px; }
