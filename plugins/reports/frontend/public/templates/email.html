@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title><%= version.title %> Report</title>
+<title><%= version.title %> <%= properties["reports.report"] %></title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -142,7 +142,7 @@
                     <td>
                         <table width="100%" align="center" border="0" cellspacing="0" cellpadding="0">
                             <tr>
-                                <td align="center" style="font-size: 26px; font-family: Helvetica, Arial, sans-serif; color: #AAAAAA; padding-top: 0px;" >Your <%= properties["reports."+report.frequency] %> Report for <%= report.date %></td>
+                                <td align="center" style="font-size: 26px; font-family: Helvetica, Arial, sans-serif; color: #AAAAAA; padding-top: 0px;" ><%= properties["reports.your"] %> <%= properties["reports."+report.frequency] %> <%= properties["reports.report-for"] %> <%= report.date %></td>
                             </tr>
                         </table>
                     </td>
@@ -304,7 +304,7 @@
                                             <td align="center" style="padding: 25px 0 0 0;" class="padding-copy">
                                                 <table border="0" cellspacing="0" cellpadding="0" class="responsive-table">
                                                     <tr>
-                                                        <td align="center"><a href="<%= host %>/dashboard" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; font-weight: normal; color: #ffffff; text-decoration: none; background-color: #3a9d3e; border-top: 15px solid #3a9d3e; border-bottom: 15px solid #3a9d3e; border-left: 25px solid #3a9d3e; border-right: 25px solid #3a9d3e; border-radius: 3px; -webkit-border-radius: 3px; -moz-border-radius: 3px; display: inline-block;" class="mobile-button">Go to your dashboard</a></td>
+                                                        <td align="center"><a href="<%= host %>/dashboard" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; font-weight: normal; color: #ffffff; text-decoration: none; background-color: #3a9d3e; border-top: 15px solid #3a9d3e; border-bottom: 15px solid #3a9d3e; border-left: 25px solid #3a9d3e; border-right: 25px solid #3a9d3e; border-radius: 3px; -webkit-border-radius: 3px; -moz-border-radius: 3px; display: inline-block;" class="mobile-button"><%= properties["reports.to-dashboard"] %></a></td>
                                                     </tr>
                                                 </table>
                                             </td>
@@ -335,7 +335,7 @@
                             </tr>
                             <% if(report.universe) {%>
                             <tr>
-                                <td align="center" style="padding: 20px 0 0 0; font-size: 16px; line-height: 25px; font-family: Helvetica, Arial, sans-serif; color: #666666;" class="padding-copy"><%- report.universe.text %> <% if (report.universe.link) { %><a href="<%= report.universe.link %>" target="_blank" style="color:#3a9d3e;">more</a><% } %></td>
+                                <td align="center" style="padding: 20px 0 0 0; font-size: 16px; line-height: 25px; font-family: Helvetica, Arial, sans-serif; color: #666666;" class="padding-copy"><%- report.universe.text %> <% if (report.universe.link) { %><a href="<%= report.universe.link %>" target="_blank" style="color:#3a9d3e;"><%= properties["reports.more"] %></a><% } %></td>
                             </tr>
                             <% } %>
                         </table>
@@ -358,6 +358,7 @@
                         <table width="500" border="0" cellspacing="0" cellpadding="0" align="center" class="responsive-table">
                             <tr>
                                 <td align="center" style="font-size: 12px; line-height: 18px; font-family: Helvetica, Arial, sans-serif; color:#666666;">
+                                    <a style="color: #3a9d3e; text-decoration: none;" href="<%= host %>/dashboard#/manage/reports" target="_blank"><%= properties["reports.settings"] %></a> | 
                                     <a style="color: #3a9d3e; text-decoration: none;" href="<%= version.page %>" target="_blank"><%= version.title %></a>
                                 </td>
                             </tr>
