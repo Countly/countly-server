@@ -323,55 +323,53 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                 }
 
                 function renderDashboard() {
-                    countlyDb.collection('settings').findOne({}, function (err, settings) {
-                        req.session.uid = member["_id"];
-                        req.session.gadm = (member["global_admin"] == true);
-                        req.session.email = member["email"];
-                        res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+                    req.session.uid = member["_id"];
+                    req.session.gadm = (member["global_admin"] == true);
+                    req.session.email = member["email"];
+                    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
 
-                        delete member["password"];
+                    delete member["password"];
 
-                        var countlyGlobal = {
-                            countlyTitle:COUNTLY_NAME,
-                            apps:countlyGlobalApps,
-                            admin_apps:countlyGlobalAdminApps,
-                            csrf_token:req.session._csrf,
-                            member:member,
-                            config: req.config,
-							plugins:plugins.getPlugins(),
-							path:countlyConfig.path || "",
-							cdn:countlyConfig.cdn || "",
-                            message: req.flash("message")
-                        };
-                        
-                        if (settings && !err) {
-                            adminOfApps = sortBy(adminOfApps, settings.appSortList || []);
-                            userOfApps = sortBy(userOfApps, settings.appSortList || []);
-                        }
-                        
-                        var toDashboard = {
-                            countlyTitle:COUNTLY_NAME,
-                            adminOfApps:adminOfApps,
-                            userOfApps:userOfApps,
-                            member:member,
-                            intercom:countlyConfig.web.use_intercom,
-                            countlyVersion:COUNTLY_VERSION,
-							countlyType: COUNTLY_TYPE_CE,
-							countlyTrial: COUNTLY_TRIAL,
-							countlyTypeName: COUNTLY_NAMED_TYPE,
-			                production: plugins.getConfig("frontend").production || false,
-							plugins:plugins.getPlugins(),
-                            config: req.config,
-							path:countlyConfig.path || "",
-							cdn:countlyConfig.cdn || ""
-                        };
-                        
-                        plugins.callMethod("renderDashboard", {req:req, res:res, next:next, data:{member:member, adminApps:countlyGlobalAdminApps, userApps:countlyGlobalApps, countlyGlobal:countlyGlobal, toDashboard:toDashboard}});
+                    var countlyGlobal = {
+                        countlyTitle:COUNTLY_NAME,
+                        apps:countlyGlobalApps,
+                        admin_apps:countlyGlobalAdminApps,
+                        csrf_token:req.session._csrf,
+                        member:member,
+                        config: req.config,
+						plugins:plugins.getPlugins(),
+						path:countlyConfig.path || "",
+						cdn:countlyConfig.cdn || "",
+                        message: req.flash("message")
+                    };
+                    
+                    
+                    adminOfApps = sortBy(adminOfApps, member.appSortList || []);
+                    userOfApps = sortBy(userOfApps, member.appSortList || []);
+                    
+                    
+                    var toDashboard = {
+                        countlyTitle:COUNTLY_NAME,
+                        adminOfApps:adminOfApps,
+                        userOfApps:userOfApps,
+                        member:member,
+                        intercom:countlyConfig.web.use_intercom,
+                        countlyVersion:COUNTLY_VERSION,
+						countlyType: COUNTLY_TYPE_CE,
+						countlyTrial: COUNTLY_TRIAL,
+						countlyTypeName: COUNTLY_NAMED_TYPE,
+			            production: plugins.getConfig("frontend").production || false,
+						plugins:plugins.getPlugins(),
+                        config: req.config,
+						path:countlyConfig.path || "",
+						cdn:countlyConfig.cdn || ""
+                    };
+                    
+                    plugins.callMethod("renderDashboard", {req:req, res:res, next:next, data:{member:member, adminApps:countlyGlobalAdminApps, userApps:countlyGlobalApps, countlyGlobal:countlyGlobal, toDashboard:toDashboard}});
 
-                        res.expose(countlyGlobal, 'countlyGlobal');
-                        
-                        res.render('dashboard', toDashboard);
-                    });
+                    res.expose(countlyGlobal, 'countlyGlobal');
+                    
+                    res.render('dashboard', toDashboard);
                 }
             } else {
                 if (req.session) {
@@ -620,11 +618,6 @@ app.post(countlyConfig.path+'/dashboard/settings', function (req, res, next) {
         return false;
     }
 
-    if (!isGlobalAdmin(req)) {
-        res.end();
-        return false;
-    }
-
     var newAppOrder = req.body.app_sort_list;
 
     if (!newAppOrder || newAppOrder.length == 0) {
@@ -632,7 +625,7 @@ app.post(countlyConfig.path+'/dashboard/settings', function (req, res, next) {
         return false;
     }
 
-    countlyDb.collection('settings').update({}, {'$set':{'appSortList':newAppOrder}}, {'upsert':true}, function(){
+    countlyDb.collection('members').update({_id:countlyDb.ObjectID(req.session.uid)}, {'$set':{'appSortList':newAppOrder}}, {'upsert':true}, function(){
         res.end();
         return false;
     });
