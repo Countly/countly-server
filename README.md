@@ -3,15 +3,15 @@
 **HEY! We're hiring:** Countly is looking for full stack node.js developers to work on its core platform. [Click this link for job description](https://count.ly/full-stack-node-js-developer/)
 
 ##What's Countly?
-[Countly](http://count.ly) is an innovative, real-time, open source mobile analytics and push notifications platform. It collects data from mobile phones, tablets, [Apple Watch](http://blog.count.ly/post/119031457543/countly-on-apple-watch) and other internet-connected devices, and visualizes this information to analyze mobile application usage and end-user behavior. There are two parts of Countly: the server that collects and analyzes data, and mobile SDK that sends this data.
+[Countly](http://count.ly) is an innovative, real-time, open source mobile analytics, [push notifications](http://count.ly/push-notifications) and [crash reporting](http://count.ly/crash-reports) platform powering nearly 3000 mobile applications. It collects data from mobile phones, tablets, Apple Watch and other internet-connected devices, and visualizes this information to analyze mobile application usage and end-user behavior. There are two parts of Countly: the server that collects and analyzes data, and a mobile SDK that sends this data.
 
-This repository includes Countly Community Edition. For more information other versions (e.g Enterprise Edition), see [comparison of different Countly editions](https://count.ly/compare)
+This repository includes Countly Community Edition (server side). For more information other versions (e.g Enterprise Edition), see [comparison of different Countly editions](https://count.ly/compare)
 
 ![Countly dashboard screenshot](http://a.fsdn.com/con/app/proj/countly/screenshots/dashboard_without_realtime.png)
 
 ##Supported devices
 
-[Countly](http://count.ly) supports top-notch devices, including iOS, Android and Windows Phone. You can find a list of [officially and community supported Countly SDK libraries here](https://count.ly/resources/source/download-sdk). Each SDK has its own installation instructions.
+[Countly](http://count.ly) supports top-notch devices, including iOS, Android and Windows Phone. You can find a list of [official and community supported Countly SDK libraries here](https://count.ly/resources/source/download-sdk). Each SDK has its own installation instructions.
 
 ##Installing & upgrading Countly server
 
@@ -26,9 +26,9 @@ We develop and test Countly on Ubuntu with MongoDB, Node.js and nginx. Installat
 
 ##API & Frontend
 
-[API documentation can be found here](http://resources.count.ly).
+Countly has a [well defined API](http://resources.count.ly), that reads from or writes to Node.js. Dashboard is built using this API, so it's possible to fetch any kind of information from Node process directly using Countly API. For those who are interested with building their own dashboard; important files are `frontend/express/app.js` (Countly dashboard that runs on Express server), `frontend/express/public/javascripts/countly` (Contains seperate helper js files for each data visualization),  `countly.session.js` (responsible for calculating session related metrics) and `api/api.js`, which is Countly write and read API. 
 
-Countly has a well defined API, that reads from or writes to Node.js. Dashboard is built using this API, so it's possible to fetch any kind of information from Node process directly using Countly API. For those who are interested with building their own dashboard; important files are `frontend/express/app.js` (Countly dashboard that runs on Express server), `frontend/express/public/javascripts/countly` (Contains seperate helper js files for each data visualization),  `countly.session.js` (responsible for calculating session related metrics) and `api/api.js`, which is Countly write and read API. 
+If you want to extend Countly with [plugins](http://count.ly/plugins), then we suggest [you read this document](http://resources.count.ly/docs/plugins-development-introduction) and start writing your own.
 
 ##How can I help you with your efforts?
 
