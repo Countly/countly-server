@@ -67,190 +67,193 @@ var metrics = {
     reports.getReport = function(db, report, callback, cache){
         cache = cache || {};
         if(report && report.apps){
-            var endDate = new Date();
-            report.end = endDate.getTime();
-            report.start = report.end - 24*60*60*1000;
-            if(report.frequency == "weekly")
-                report.start = report.end - 7*24*60*60*1000;
-            
-            var startDate = new Date(report.start);
-            report.date = startDate.getDate()+" "+months[startDate.getMonth()];
-            if(report.frequency == "weekly")
-                report.date += " - "+endDate.getDate()+" "+months[endDate.getMonth()];
-            
-            function appIterator(app_id, done){
-                var params = {qstring:{period:"["+report.start+","+report.end+"]"}};
-                if(!cache[app_id]){
-                    function metricIterator(metric, done){
-                        if(metric.indexOf("events") == 0){
-                            var parts = metric.split(".");
-                            var event = null;
-                            //replace with app's iap_key
-                            if(parts[1] == "purchases"){
-                                if(params.app.iap_event && params.app.iap_event != "")
-                                    event = params.app.iap_event;
-                            }
-                            else if(parts[1] == "[CLY]_push_sent" || parts[1] == "[CLY]_push_open" || parts[1] == "[CLY]_push_action"){
-                                if((params.app.gcm && Object.keys(params.app.gcm).length) || (params.app.apn && Object.keys(params.app.apn).length))
-                                    event = parts[1];
-                            }
-                            if(event){
-                                var collectionName = "events" + crypto.createHash('sha1').update(event + app_id).digest('hex');
-                                fetchTimeObj(db, collectionName, params, true, function(output){
-                                    done(null, {metric:parts[1], data:output});
-                                });
-                            }
-                            else{
-                                done(null, null);
-                            }
-                        }
-                        else
-                            fetchTimeObj(db, metric, params, null, function(output){
-                                done(null, {metric:metric, data:output});
-                            });
-                    };
-                    db.collection('apps').findOne({_id:db.ObjectID(app_id)},function(err, app){
-                        if (app) {
-                            params.app_id = app['_id'];
-                            params.app_cc = app['country'];
-                            params.app_name = app['name'];
-                            params.appTimezone = app['timezone'];
-                            params.app = app;
-                            async.map(metricsToCollections(report.metrics), metricIterator, function(err, results) {
-                                app.results = {};
-                                for(var i = 0; i < results.length; i++){
-                                    if(results[i] && results[i].metric)
-                                        app.results[results[i].metric] = results[i].data;
-                                }
-                                cache[app_id] = JSON.parse(JSON.stringify(app));
-                                done(null, app);
-                            });
-                        }
-                        else
-                        done(null, null); 
-                    });
-                }
-                else{
-                    done(null, JSON.parse(JSON.stringify(cache[app_id])));
-                }
-            };
-
-            async.map(report.apps, appIterator, function(err, results) {
-                report.total_new = 0;
-                var total = 0;
-                for(var i = 0; i < results.length; i++){
-                    if(results[i] && results[i].results){
-                        for(var j in results[i].results){
-                            if(j == "users"){
-                                results[i].results[j] = getSessionData(results[i].results[j] || {});
-                                if(results[i].results[j].total_sessions.total > 0)
-                                    results[i].display = true;
-                                total += results[i].results[j].total_sessions.total;
-                                report.total_new += results[i].results[j].new_users.total;
-                                
-                                results[i].results["analytics"] = results[i].results[j];
-                                delete results[i].results[j];
-                                
-                                if(results[i].iap_event && results[i].iap_event != ""){
-                                    if(!results[i].results["revenue"]){
-                                        results[i].results["revenue"] = {};
-                                    }
-                                    results[i].results["revenue"].paying_users = results[i].results["analytics"].paying_users;
-                                }
-                                delete results[i].results["analytics"].paying_users;
-                                
-                                if((results[i].gcm && Object.keys(results[i].gcm).length) || (results[i].apn && Object.keys(results[i].apn).length)){
-                                    if(!results[i].results["push"]){
-                                        results[i].results["push"] = {};
-                                    }
-                                    results[i].results["push"].messaging_users = results[i].results["analytics"].messaging_users;
-                                }
-                                delete results[i].results["analytics"].messaging_users;
-                            }
-                            else if(j == "crashdata"){
-                                results[i].results["crash"] = getCrashData(results[i].results[j] || {});
-                                delete results[i].results[j];
-                            }
-                            else if(j == "[CLY]_push_sent" || j == "[CLY]_push_open" || j == "[CLY]_push_action"){
-                                if(!results[i].results["push"]){
-                                    results[i].results["push"] = {};
-                                }
-                                results[i].results["push"][j.replace("[CLY]_", "")] = getEventData(results[i].results[j] || {});
-                                delete results[i].results[j];
-                            }
-                            else if(j == "purchases"){
-                                if(!results[i].results["revenue"]){
-                                    results[i].results["revenue"] = {};
-                                }
-                                results[i].results["revenue"][j] = getEventData(results[i].results[j] || {});
-                                delete results[i].results[j];
-                            }
-                        }
-                    }
-                }
+            db.collection('settings').findOne({}, function (err, settings) {
+                report.apps = sortBy(report.apps, settings.appSortList || []);
+                var endDate = new Date();
+                report.end = endDate.getTime();
+                report.start = report.end - 24*60*60*1000;
+                if(report.frequency == "weekly")
+                    report.start = report.end - 7*24*60*60*1000;
                 
-                if(total > 0){                  
-                    function process(){
-                        mail.lookup(function(err, host) {
-                            //generate html
-                            var dir = path.resolve(__dirname, '../frontend/public');
-                            //get template
-                            fs.readFile(dir+'/templates/email.html', 'utf8', function (err,template) {
-                                if (err) {
-                                    if(callback)
-                                        callback(err, {report:report});
+                var startDate = new Date(report.start);
+                report.date = startDate.getDate()+" "+months[startDate.getMonth()];
+                if(report.frequency == "weekly")
+                    report.date += " - "+endDate.getDate()+" "+months[endDate.getMonth()];
+                
+                function appIterator(app_id, done){
+                    var params = {qstring:{period:"["+report.start+","+report.end+"]"}};
+                    if(!cache[app_id]){
+                        function metricIterator(metric, done){
+                            if(metric.indexOf("events") == 0){
+                                var parts = metric.split(".");
+                                var event = null;
+                                //replace with app's iap_key
+                                if(parts[1] == "purchases"){
+                                    if(params.app.iap_event && params.app.iap_event != "")
+                                        event = params.app.iap_event;
                                 }
-                                else{
-                                    //get language property file
-                                    fs.readFile(dir+'/localization/reports.properties', 'utf8', function (err,properties) {
-                                        if (err) {
-                                        if(callback)
-                                            callback(err, {report:report});
-                                        }
-                                        else{
-                                        var props = parser.parse(properties);
-                                        report.properties = props;
-                                        var allowedMetrics = {};
-                                        for(var i in report.metrics){
-                                            if(metrics[i]){
-                                                for(var j in metrics[i]){
-                                                    allowedMetrics[j] = true;
-                                                }
-                                            }
-                                        }
-                                        var message = ejs.render(template, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, metrics:allowedMetrics});
-                                        if(callback)
-                                            callback(err, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, message:message});
-                                        }
+                                else if(parts[1] == "[CLY]_push_sent" || parts[1] == "[CLY]_push_open" || parts[1] == "[CLY]_push_action"){
+                                    if((params.app.gcm && Object.keys(params.app.gcm).length) || (params.app.apn && Object.keys(params.app.apn).length))
+                                        event = parts[1];
+                                }
+                                if(event){
+                                    var collectionName = "events" + crypto.createHash('sha1').update(event + app_id).digest('hex');
+                                    fetchTimeObj(db, collectionName, params, true, function(output){
+                                        done(null, {metric:parts[1], data:output});
                                     });
                                 }
-                            });
-                        });
-                    }
-                    
-                    if(versionInfo.title.indexOf("Countly") > -1){
-                        var options = {
-                            uri: 'http://count.ly/email-news.txt',
-                            method: 'GET'
-                        };
-                
-                        request(options, function (error, response, body) {
-                            if(!error){
-                                try{
-                                    var arr = JSON.parse(body);
-                                    report.universe = arr[Math.floor(Math.random()*arr.length)];
+                                else{
+                                    done(null, null);
                                 }
-                                catch(ex){}
                             }
-                            process();
+                            else
+                                fetchTimeObj(db, metric, params, null, function(output){
+                                    done(null, {metric:metric, data:output});
+                                });
+                        };
+                        db.collection('apps').findOne({_id:db.ObjectID(app_id)},function(err, app){
+                            if (app) {
+                                params.app_id = app['_id'];
+                                params.app_cc = app['country'];
+                                params.app_name = app['name'];
+                                params.appTimezone = app['timezone'];
+                                params.app = app;
+                                async.map(metricsToCollections(report.metrics), metricIterator, function(err, results) {
+                                    app.results = {};
+                                    for(var i = 0; i < results.length; i++){
+                                        if(results[i] && results[i].metric)
+                                            app.results[results[i].metric] = results[i].data;
+                                    }
+                                    cache[app_id] = JSON.parse(JSON.stringify(app));
+                                    done(null, app);
+                                });
+                            }
+                            else
+                            done(null, null); 
                         });
                     }
                     else{
-                        process();
+                        done(null, JSON.parse(JSON.stringify(cache[app_id])));
                     }
-                }
-                else if(callback)
-                    callback("No data to report", {report:report});
+                };
+    
+                async.map(report.apps, appIterator, function(err, results) {
+                    report.total_new = 0;
+                    var total = 0;
+                    for(var i = 0; i < results.length; i++){
+                        if(results[i] && results[i].results){
+                            for(var j in results[i].results){
+                                if(j == "users"){
+                                    results[i].results[j] = getSessionData(results[i].results[j] || {});
+                                    if(results[i].results[j].total_sessions.total > 0)
+                                        results[i].display = true;
+                                    total += results[i].results[j].total_sessions.total;
+                                    report.total_new += results[i].results[j].new_users.total;
+                                    
+                                    results[i].results["analytics"] = results[i].results[j];
+                                    delete results[i].results[j];
+                                    
+                                    if(results[i].iap_event && results[i].iap_event != ""){
+                                        if(!results[i].results["revenue"]){
+                                            results[i].results["revenue"] = {};
+                                        }
+                                        results[i].results["revenue"].paying_users = results[i].results["analytics"].paying_users;
+                                    }
+                                    delete results[i].results["analytics"].paying_users;
+                                    
+                                    if((results[i].gcm && Object.keys(results[i].gcm).length) || (results[i].apn && Object.keys(results[i].apn).length)){
+                                        if(!results[i].results["push"]){
+                                            results[i].results["push"] = {};
+                                        }
+                                        results[i].results["push"].messaging_users = results[i].results["analytics"].messaging_users;
+                                    }
+                                    delete results[i].results["analytics"].messaging_users;
+                                }
+                                else if(j == "crashdata"){
+                                    results[i].results["crash"] = getCrashData(results[i].results[j] || {});
+                                    delete results[i].results[j];
+                                }
+                                else if(j == "[CLY]_push_sent" || j == "[CLY]_push_open" || j == "[CLY]_push_action"){
+                                    if(!results[i].results["push"]){
+                                        results[i].results["push"] = {};
+                                    }
+                                    results[i].results["push"][j.replace("[CLY]_", "")] = getEventData(results[i].results[j] || {});
+                                    delete results[i].results[j];
+                                }
+                                else if(j == "purchases"){
+                                    if(!results[i].results["revenue"]){
+                                        results[i].results["revenue"] = {};
+                                    }
+                                    results[i].results["revenue"][j] = getEventData(results[i].results[j] || {});
+                                    delete results[i].results[j];
+                                }
+                            }
+                        }
+                    }
+                    
+                    if(total > 0){                  
+                        function process(){
+                            mail.lookup(function(err, host) {
+                                //generate html
+                                var dir = path.resolve(__dirname, '../frontend/public');
+                                //get template
+                                fs.readFile(dir+'/templates/email.html', 'utf8', function (err,template) {
+                                    if (err) {
+                                        if(callback)
+                                            callback(err, {report:report});
+                                    }
+                                    else{
+                                        //get language property file
+                                        fs.readFile(dir+'/localization/reports.properties', 'utf8', function (err,properties) {
+                                            if (err) {
+                                            if(callback)
+                                                callback(err, {report:report});
+                                            }
+                                            else{
+                                            var props = parser.parse(properties);
+                                            report.properties = props;
+                                            var allowedMetrics = {};
+                                            for(var i in report.metrics){
+                                                if(metrics[i]){
+                                                    for(var j in metrics[i]){
+                                                        allowedMetrics[j] = true;
+                                                    }
+                                                }
+                                            }
+                                            var message = ejs.render(template, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, metrics:allowedMetrics});
+                                            if(callback)
+                                                callback(err, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, message:message});
+                                            }
+                                        });
+                                    }
+                                });
+                            });
+                        }
+                        
+                        if(versionInfo.title.indexOf("Countly") > -1){
+                            var options = {
+                                uri: 'http://count.ly/email-news.txt',
+                                method: 'GET'
+                            };
+                    
+                            request(options, function (error, response, body) {
+                                if(!error){
+                                    try{
+                                        var arr = JSON.parse(body);
+                                        report.universe = arr[Math.floor(Math.random()*arr.length)];
+                                    }
+                                    catch(ex){}
+                                }
+                                process();
+                            });
+                        }
+                        else{
+                            process();
+                        }
+                    }
+                    else if(callback)
+                        callback("No data to report", {report:report});
+                });
             });
         }
         else if(callback)
@@ -843,6 +846,36 @@ var metrics = {
 
         return obj;
     };
+    
+    function sortBy(arrayToSort, sortList) {
+        if (!sortList.length) {
+            return arrayToSort;
+        }
+    
+        var tmpArr = [],
+            retArr = [];
+    
+        for (var i = 0; i < arrayToSort.length; i++) {
+            var objId = arrayToSort[i];
+            if (sortList.indexOf(objId) !== -1) {
+                tmpArr[sortList.indexOf(objId)] = arrayToSort[i];
+            }
+        }
+    
+        for (var i = 0; i < tmpArr.length; i++) {
+            if (tmpArr[i]) {
+                retArr[retArr.length] = tmpArr[i];
+            }
+        }
+    
+        for (var i = 0; i < arrayToSort.length; i++) {
+            if (retArr.indexOf(arrayToSort[i]) === -1) {
+                retArr[retArr.length] = arrayToSort[i];
+            }
+        }
+    
+        return retArr;
+    }
     
 }(reports));
 
