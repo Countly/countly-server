@@ -3461,9 +3461,16 @@ var AppRouter = Backbone.Router.extend({
                     });
                 }
             });
-
             $("#sort-app-button").click(function () {
                 $(".app-container.app-navigate .drag").fadeToggle();
+                setTimeout(function(){
+                    if($(".app-container.app-navigate .drag").is(":visible")){
+                        self.disableAppTooltip();
+                    }
+                    else{
+                        self.enableAppTooltip();
+                    }
+                },500);
             });
 
             $(".app-navigate").live("click", function () {
