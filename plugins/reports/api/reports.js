@@ -67,8 +67,9 @@ var metrics = {
     reports.getReport = function(db, report, callback, cache){
         cache = cache || {};
         if(report && report.apps){
-            db.collection('settings').findOne({}, function (err, settings) {
-                report.apps = sortBy(report.apps, settings.appSortList || []);
+            db.collection('members').findOne({_id:db.ObjectID(report.user)}, function (err, member) {
+                if(member)
+                    report.apps = sortBy(report.apps, member.appSortList || []);
                 var endDate = new Date();
                 report.end = endDate.getTime();
                 report.start = report.end - 24*60*60*1000;
