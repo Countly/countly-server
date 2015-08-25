@@ -632,7 +632,10 @@ app.post(countlyConfig.path+'/dashboard/settings', function (req, res, next) {
         return false;
     }
 
-    countlyDb.collection('settings').update({}, {'$set':{'appSortList':newAppOrder}}, {'upsert':true});
+    countlyDb.collection('settings').update({}, {'$set':{'appSortList':newAppOrder}}, {'upsert':true}, function(){
+        res.end();
+        return false;
+    });
 });
 
 app.post(countlyConfig.path+'/apps/icon', function (req, res, next) {
