@@ -112,13 +112,13 @@ countly_restore (){
 source $DIR/enabled/countly.sh
 
 #process command
+NAME=$1;
 if [ -n "$(type -t countly_$1)" ] && [ "$(type -t countly_$1)" = function ]; then
-    NAME=$1;
     shift;
     countly_${NAME} "$@";
-elif [ -f $DIR/scripts/$1.sh ]; then
+elif [ -f $DIR/scripts/$NAME.sh ]; then
     shift;
-    bash $DIR/scripts/$1.sh "$@";
+    bash $DIR/scripts/$NAME.sh "$@";
 else
     echo "";
     echo "usage:";
