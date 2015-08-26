@@ -1,0 +1,195 @@
+	<div class="widget">
+		<div class="widget-header">
+			<div class="left">
+                <div class="logo font-logo2">
+                    <i class="fa fa-remove"></i>
+                </div>
+				<div class="title">{{fatal}} {{page-title}}</div>
+				<div class="cly-select" style="width:220px; position:absolute; top: 10px; margin-left: 10px;">
+					<div class="select-inner">
+						<div class="text-container">
+							<div class="text">{{active-segmentation}}</div>
+						</div>
+						<div class="right combo"></div>
+					</div>
+					<div class="select-items square" style="width:220px;">
+						<div>
+							{{#eachOfObject segmentations}}
+							<div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
+							{{/eachOfObject}}
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="right crash-buttons help-zone-vs">
+                {{#unless external}}
+                <a class="icon-button red btn-header btn-delete-crash" data-id="{{id}}"><span data-localize="crashes.delete"></span></a>
+                <a class="icon-button light btn-header btn-share-crash" data-id="{{id}}"><span data-localize="crashes.share"></span></a>
+                {{#if data.is_hidden}}
+                <a class="icon-button light btn-header btn-show-crash" data-id="{{id}}"><span data-localize="crashes.show"></span></a>
+                <a class="icon-button light btn-header btn-hide-crash" style="display:none;" data-id="{{id}}"><span data-localize="crashes.hide"></span></a>
+                {{else}}
+                <a class="icon-button light btn-header btn-show-crash" style="display:none;" data-id="{{id}}"><span data-localize="crashes.show"></span></a>
+                <a class="icon-button light btn-header btn-hide-crash" data-id="{{id}}"><span data-localize="crashes.hide"></span></a>
+                {{/if}}
+				<a href="#/crashes" class="icon-button light btn-header"><i class="fa fa-chevron-left"></i><span data-localize="crashes.back-to-crashes"></span></a>
+                <ul id="crash-share-list">
+                    <li class="crash-share"><input id="crash-share-url" readonly onclick='this.select()' value="{{url}}"/></li>
+                    <li class="crash-share"><input type="checkbox" id="crash-share-reports"/>&nbsp;<span data-localize="crashes.public-reports"></span></li>
+                    <li class="crash-share"><input type="checkbox" id="crash-share-loss"/>&nbsp;<span data-localize="crashes.public-loss"></span></li>
+                    <li class="crash-share"><input type="checkbox" id="crash-share-users"/>&nbsp;<span data-localize="crashes.public-users"></span></li>
+                    <li><input type="checkbox" id="crash-share-public"/>&nbsp;<span data-localize="crashes.public-crashes"></span></li>
+                </ul>
+                {{/unless}}
+			</div>
+		</div>
+		<div class="widget-content help-zone-vb" data-help-localize="{{{chart-helper}}}" style="height:300px; padding-top:20px; padding-bottom:10px;">
+			<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
+		</div>
+	</div>
+	<div id="crash-numbers-container">
+	{{#if big-numbers}}
+	<div class="widget-footer" style="background-color:#EEEEEE;">
+		<div id="big-numbers-container">
+			{{#each big-numbers.items}}
+            <div class="big-numbers {{../big-numbers.class}} help-zone-vs" data-help-localize="{{this.help}}">
+				<div class="inner">
+					<div class="select">{{this.title}}</div>
+					<div class="number">{{getFormattedNumber this.total}}</div>
+				</div>
+			</div>
+			{{/each}}
+		</div>
+	</div>
+	{{/if}}
+	<div class="dashboard-summary crash-ranges">
+		{{#each ranges}}
+            {{#if ../frequency}}
+		<div class="five-column help-zone-vs" data-help-localize="{{this.help}}">
+            {{else}}
+        <div class="four-column help-zone-vs" data-help-localize="{{this.help}}">
+            {{/if}}
+		<table cellpadding="0" cellspacing="0">
+		<tr>
+			<td class="range-main">{{this.title}}<i class="{{this.icon}}"></i></td>
+			<td><span data-localize="crashes.min"></span><br/>{{this.min}}</td>
+			<td><span data-localize="crashes.max"></span><br/>{{this.max}}</td>
+			<td><span data-localize="crashes.avg"></span><br/>{{this.avg}}</td>
+		</tr>
+		</table>
+		</div>
+		{{/each}}
+	</div>
+	</div>
+    {{#if bars}}
+		<div class="dashboard-summary four crash-bars">
+			{{#each bars}}
+			<div class="item help-zone-vs" data-help-localize="{{this.help}}">
+				<div class="inner">
+					<div class="title">{{this.title}}</div>
+					{{#if this.data}}
+					<div class="bar">
+						{{#each this.data}}
+                            {{#if this.background}}
+                            <div class="bar-inner" style="width:{{this.percent}}%; background-color:{{this.background}};" data-item="{{this.name}}"></div>
+                            {{else}}
+							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+                            {{/if}}
+						{{/each}}
+					</div>
+					<div class="number" data-item="{{this.data.0.name}}">{{this.data.0.name}}</div>
+					{{else}}
+					<div class="no-data" data-localize="common.bar.no-data"></div>
+					{{/if}}
+				</div>
+			</div>
+			{{/each}}
+		</div>
+		{{/if}}
+	<div class="widget">
+		<div class="widget-header">
+			<div class="left">
+				<div class="logo font-logo2">
+                    <i class="fa fa-remove"></i>
+                </div>
+				<div class="title">
+					<span>{{error}}</span>
+                    {{#unless external}}
+					{{#if data.is_resolved}}
+						<span id="resolved-text"><span data-localize="crashes.resolved-for"></span> <span id="resolved-version">{{data.resolved_version}}</span></span>
+						<span id="unresolved-text" style="display: none;"><span data-localize="crashes.unresolved"></span></span>
+					{{else}}
+						<span id="resolved-text" style="display: none;"><span data-localize="crashes.resolved-for"></span> <span id="resolved-version">{{data.latest_version}}</span></span>
+						<span id="unresolved-text"><span data-localize="crashes.unresolved"></span></span>
+					{{/if}}
+                    {{/unless}}
+				</div>
+			</div>
+			<div class="right help-zone-vs">
+            {{#unless external}}
+				{{#if data.is_resolved}}
+					<div class="button"><a class="back" id="mark-unresolved"><i class="fa fa-remove"></i><span data-localize="crashes.mark-unresolved"></span></a></div>
+					<div class="button"><a class="back" id="mark-resolved" style="display: none;"><i class="fa fa-check"></i><span data-localize="crashes.mark-resolved"></span></a></div>
+				{{else}}
+					<div class="button"><a class="back" id="mark-unresolved" style="display: none;"><i class="fa fa-remove"></i><span data-localize="crashes.mark-unresolved"></span></a></div>
+					<div class="button"><a class="back" id="mark-resolved"><i class="fa fa-check"></i><span data-localize="crashes.mark-resolved"></span></a></div>
+				{{/if}}
+            {{/unless}}
+			</div>
+		</div>
+		<div class="widget-content help-zone-vb crash-stack" data-help-localize="{{{chart-helper}}}">
+             {{#if external}}
+                <div style="overflow: auto; padding: 20px; padding-top:0;">
+                    <pre><code>{{data.error}}</code></pre>
+                </div>
+             {{else}}
+			<div style="overflow: auto; padding: 20px; padding-top:0;" id="tabs">
+                 <ul>
+                    <li><a href="#error" data-localize="crashes.error"></a></li>
+                    <li><a href="#notes" id="crash-notes"><span data-localize="crashes.comments"></span>&nbsp;<span class='crash-comment-count'>(<span></span>)</span></a></li>
+                </ul>
+                <div id="error">
+                    <pre><code>{{data.error}}</code></pre>
+                </div>
+                <div id="notes">
+                    <br/>
+                    <div id="comments">
+                    {{#if data.comments}}
+                    {{#eachOfArray data.comments}}
+                    <div class="comment" id="comment_{{value._id}}">
+                        <div class="comment-meta">
+                        {{#if value.is_owner}}
+                            <a class="icon-button red btn-header crash-comment-delete" data-id="{{value._id}}"><span data-localize="crashes.delete"></span></a>
+                            <a class="icon-button light btn-header crash-comment-edit" data-id="{{value._id}}"><span data-localize="crashes.edit"></span></a> 
+                        {{/if}}
+                            <div class="author"><span data-localize="crashes.author"></span>: {{value.author}}</div>
+                            <div class="time"><span data-localize="crashes.posted_comment"></span>: {{{formatTimeAgo value.time}} 
+                                {{#if value.edit_time}}
+                                    | <span data-localize="crashes.edited_comment"></span>: {{{formatTimeAgo value.edit_time}}} 
+                                {{/if}}
+                            </div>
+                        </div>
+                        <div class="text">{{{value.html}}}</div>
+                    </div>
+                    {{/eachOfArray}}
+                    {{/if}}
+                    </div>
+                    <p><textarea id="comment"></textarea></p>
+                    <a class="icon-button green btn-header" id="add_comment"><span data-localize="crashes.add_comment"></span></a>
+                    <div style="display:none">
+                        <div id="comment_edit">
+                            <textarea id="edited_comment"></textarea><br/>
+                            <a class="icon-button green btn-header edit_comment"><span data-localize="crashes.edit"></span></a>
+                            <a class="icon-button light btn-header cancel_comment"><span data-localize="crashes.cancel"></span></a>
+                        </div>
+                    </div>
+                </div>
+			</div>
+            {{/if}}
+		</div>
+	</div>
+    {{#if data.data}}
+	<div class="crash-reports" data-help-localize="{{{chart-helper}}}">
+		<table class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
+	</div>
+    {{/if}}

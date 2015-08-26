@@ -1,0 +1,106 @@
+	<div class="widget crashoveral">
+		<div class="widget-header">
+			<div class="left">
+				<div class="logo font-logo2">
+                    <i class="fa fa-remove"></i>
+                </div>
+				<div class="title">{{page-title}}</div>
+			</div>
+			{{> date-selector }}
+		</div>
+        <div class="widget-content">
+            <div id="big-numbers-container" class="dashboard">
+                {{#each usage}}
+                <div class="big-numbers four-column help-zone-vs" data-help-localize="{{this.help}}">
+                    <div class="inner">
+                        <div class="number">
+                            <span class="value">{{getShortNumber this.data.total}}</span>
+                            {{#if this.data.isEstimate}}
+                                <span><i class="fa fa-asterisk"></i></span>
+                            {{/if}}
+                        </div>
+                        <div class="trend" style="background-image:url('images/dashboard/{{this.data.trend}}trend.png');">
+                            <div class="change">{{this.data.change}}</div>
+                        </div>
+                        <div class="select" id="{{this.id}}">
+                            <div class="title">{{this.title}}</div>
+                        </div>
+                        <div class="arrow"></div>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+		<div class="widget-footer help-zone-vb" data-help-localize="{{{chart-helper}}}" style="height:300px; padding-top:20px; padding-bottom:10px;">
+             <div id="graph-note">
+                <div class="main">
+                    Notes
+                    <div class="tail"></div>
+                </div>
+            </div>
+            <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
+		</div>
+	</div>
+    <h2 id="crashstats" data-localize="crashes.total-stats">Overall statistics</h2>
+    {{#if big-numbers}}
+		<div id="big-numbers-container" class='crash-style'>
+			{{#each big-numbers.items}}
+                {{#if ../loss}}
+			<div class="big-numbers five-column help-zone-vs" data-help-localize="{{this.help}}">
+                {{else}}
+            <div class="big-numbers four-column help-zone-vs" data-help-localize="{{this.help}}">
+                {{/if}}
+				<div class="inner">
+					<div class="select">{{this.title}}</div>
+					<div class="number">{{getFormattedNumber this.total}}</div>
+				</div>
+			</div>
+			{{/each}}
+		</div>
+	{{/if}}
+
+		{{#if bars}}
+		<div class="dashboard-summary four">
+			{{#each bars}}
+			<div class="item help-zone-vs" data-help-localize="{{this.help}}">
+				<div class="inner">
+					<div class="title">{{this.title}}</div>
+					{{#if this.data}}
+					<div class="bar">
+						{{#each this.data}}
+							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+						{{/each}}
+					</div>
+					<div class="number" data-item="{{this.data.0.name}}">{{this.data.0.name}}</div>
+					{{else}}
+					<div class="no-data" data-localize="common.bar.no-data"></div>
+					{{/if}}
+				</div>
+			</div>
+			{{/each}}
+		</div>
+		{{/if}}
+	<div class="widget">
+		<div class="widget-header">
+			<div class="left">
+				<div class="logo font-logo2">
+                    <i class="fa fa-remove"></i>
+                </div>
+				<div class="title">{{page-title}}</div>
+			</div>
+			<div id="crash-selector" class="help-zone-vs">
+				<div class="button crash-selector" id="crash-all" data-localize="crashes.all"></div>
+				<div class="button crash-selector" id="crash-resolved" data-localize="crashes.resolved"></div>
+				<div class="button crash-selector" id="crash-unresolved" data-localize="crashes.unresolved"></div>
+				<div class="button crash-selector" id="crash-new" data-localize="crashes.new"></div>
+				<div class="button crash-selector" id="crash-viewed" data-localize="crashes.viewed"></div>
+				<div class="button crash-selector" id="crash-reoccurred" data-localize="crashes.renew-crashes"></div>
+                <div class="button crash-selector" id="crash-fatal" data-localize="crashes.fatal"></div>
+				<div class="button crash-selector" id="crash-nonfatal" data-localize="crashes.nonfatal"></div>
+				<div class="button crash-selector" id="crash-hidden" data-localize="crashes.hidden"></div>
+			</div>
+		</div>
+	</div>
+	<div class="crashes" data-help-localize="{{{chart-helper}}}">
+		<table id="crash-table" class="d-table help-zone-vb crash-filter" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
+	</div>
