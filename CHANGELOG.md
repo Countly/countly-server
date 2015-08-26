@@ -1,8 +1,8 @@
-15.08
+## Version 15.08
 
   * Introduction of crash analytics ([Issue #152](https://github.com/Countly/countly-server/issues/152))
   
-  * Countly [command line](http://blog.count.ly/post/127181109353/countly-behind-the-curtains-heres-how-we-make)
+  * Countly can now be run via [command line](http://blog.count.ly/post/127181109353/countly-behind-the-curtains-heres-how-we-make)
   
   * Email reports plugin sending daily or weekly summary of your app statistics ([Issue #3](https://github.com/Countly/countly-server/issues/3))
   
@@ -10,17 +10,11 @@
   
   * Browser plugin displaying browser metric for Web SDK and other web platforms
   
-  * Stores plugin to track from which store was the app installed
+  * Stores plugin to track from which store was the app installed (Android)
   
   * Enhancements to plugin mechanism (shared configs) ([Issue #175](https://github.com/Countly/countly-server/issues/175))
   
-  * New metrics added to User Profiles, e.g crashes, attribution and other ([Issue #170] (https://github.com/Countly/countly-server/issues/170))
-  
-  * Enhanced Drill with new metrics, user properties, custom properties, attribution campaigns and crashes
-  
   * Funnel segment applied to all steps ([Issue #173](https://github.com/Countly/countly-server/issues/173))
-  
-  * Added Organic data to Referal Analytics ([Issue #153](https://github.com/Countly/countly-server/issues/153))
   
   * Display time with logs ([Issue #155](https://github.com/Countly/countly-server/issues/155))
   
@@ -35,8 +29,14 @@
   * Ability to run under Ubuntu 15.04 with systemd ([Issue #143](https://github.com/Countly/countly-server/issues/143))
   
   * Languages should show long language names instead of language codes ([Issue #140](https://github.com/Countly/countly-server/issues/140))
+  
+  * New metrics added to User Profiles, e.g crashes, attribution and other ([Issue #170] (https://github.com/Countly/countly-server/issues/170)) (Enterprise Edition)
+  
+  * Enhanced Drill (Query Builder) with new metrics, user properties, custom properties, attribution campaigns and crashes (Enterprise Edition)
+  
+  * Added Organic data to Referal Analytics ([Issue #153](https://github.com/Countly/countly-server/issues/153)) (Enterprise Edition)
 
-15.06
+## Version 15.06
 
   * Api accepting both GET and POST requests
   
@@ -70,7 +70,8 @@
   
   * Fixed reset page
   
-15.03.02
+
+## Version 15.03.02
 
   * Fixed get_events api method
   
@@ -98,7 +99,7 @@
   
   * Allowing to change device_id
 
-15.03
+## Version 15.03
 
   * Introducing Plugins system, allowing other developers to write plugins which would extend Countly functionality without changing/breaking the core. For more information on how to write a plugin, see [Countly resources](http://resources.count.ly)
   
@@ -148,7 +149,8 @@
   
   * Numerous other minor fixes and improvements
   
-14.08
+
+## Version 14.08
 
   * Added density reporting for Android
 
@@ -166,7 +168,7 @@
 
   * Fix issue #96 (https://github.com/Countly/countly-server/issues/96)
 
-13.11
+## Version 13.11
 
   * Fix issue #88 (https://github.com/Countly/countly-server/issues/88)
   
@@ -176,7 +178,7 @@
   
   * Renamed LICENCE.md to LICENSE.md
 
-13.10
+## Version 13.10
 
   * Add new iPhone device names (iPhone 5S and iPhone 5C)
 
@@ -184,7 +186,7 @@
 
   * Fix issue #77 (https://github.com/Countly/countly-server/issues/77)
 
-13.09
+## Version 13.09
 
   * Optimizations and fixes to the API for viewing the data on Countly for iPhone
 
@@ -198,7 +200,7 @@
 
   * General UI optimizations
 
-13.06
+## Version 13.06
 
   * Added session durations view that shows users categorized into predefined
     session duration buckets. User is categorized into one of 0-10 seconds, 
@@ -236,7 +238,7 @@
     (/frontend/express/config.js and /api/config.js) to make it possible to 
     run dashboard and application on different servers (defaults to localhost)
 
-12.12
+## Version 12.12
 
   * Added Windows Phone and Blackberry WebWorks support.
 
@@ -263,7 +265,7 @@
 
   * Added awesome animation for closing popups with ESC key :)
 
-12.09
+## Version 12.09
 
   * Added localization support. All the pages have translations in the 
     following languages: Chinese, Dutch, French, German, Italian, Japanese, 
@@ -283,7 +285,7 @@
   * Optimized total user calculation for date ranges other than current 
     year, month and day which already show the absolute number.
 
-12.08
+## Version 12.08
 
   * Added custom event support. Each event has a key as well as a count and 
     an optional sum property. There can be unlimited number of segmentation 
@@ -307,7 +309,7 @@
     page reload. Active application and selected date are stored in 
     localStorage until user logs out.
 
-12.07
+## Version 12.07
 
   * Added platforms view under analytics section.
 
@@ -330,7 +332,7 @@
   * Fixed JSON escape issue for the read API when device name, carrier name 
     etc. contained a single quote.
 
-12.06
+## Version 12.06
 
   * Added user management support. A user can be created as a global admin to 
     manage & view all apps or can be assigned to any application as an
