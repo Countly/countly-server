@@ -1,10 +1,10 @@
 15.08
 
-  * Crash analytics (https://github.com/Countly/countly-server/issues/152)
+  * Introduction of crash analytics ([Issue #152](https://github.com/Countly/countly-server/issues/152))
   
-  * Countly command line (http://blog.count.ly/post/127181109353/countly-behind-the-curtains-heres-how-we-make)
+  * Countly [command line](http://blog.count.ly/post/127181109353/countly-behind-the-curtains-heres-how-we-make)
   
-  * Email reports plugin sending daily or weekly summary of your app statistics (https://github.com/Countly/countly-server/issues/3)
+  * Email reports plugin sending daily or weekly summary of your app statistics ([Issue #3](https://github.com/Countly/countly-server/issues/3))
   
   * App sorting is now user specific
   
@@ -12,29 +12,29 @@
   
   * Stores plugin to track from which store was the app installed
   
-  * Enhancements to plugin mechanism (shared configs (https://github.com/Countly/countly-server/issues/175), extending modules)
+  * Enhancements to plugin mechanism (shared configs) ([Issue #175](https://github.com/Countly/countly-server/issues/175))
   
-  * New metrics added to User Profiles (crashes, attribution and other) (https://github.com/Countly/countly-server/issues/170)
+  * New metrics added to User Profiles, e.g crashes, attribution and other ([Issue #170] (https://github.com/Countly/countly-server/issues/170))
   
   * Enhanced Drill with new metrics, user properties, custom properties, attribution campaigns and crashes
   
-  * Funnel segment applied to all steps (https://github.com/Countly/countly-server/issues/173)
+  * Funnel segment applied to all steps ([Issue #173](https://github.com/Countly/countly-server/issues/173))
   
-  * Added Organic data to Referal Analytics (https://github.com/Countly/countly-server/issues/153)
+  * Added Organic data to Referal Analytics ([Issue #153](https://github.com/Countly/countly-server/issues/153))
   
-  * Display time with logs (https://github.com/Countly/countly-server/issues/155)
+  * Display time with logs ([Issue #155](https://github.com/Countly/countly-server/issues/155))
   
-  * Merging multiple same value metrics (https://github.com/Countly/countly-server/issues/148)
+  * Merging multiple same value metrics ([Issue #148](https://github.com/Countly/countly-server/issues/148))
   
-  * App Apps View fixes (https://github.com/Countly/countly-server/issues/144)
+  * App Apps View fixes ([Issue #144](https://github.com/Countly/countly-server/issues/144))
   
-  * Metric switching on map (https://github.com/Countly/countly-server/issues/141)
+  * Metric switching on map ([Issue #141](https://github.com/Countly/countly-server/issues/141))
   
-  * Push plugin should stop sending notifications and return error for Mistmatch Sender ID GCM error (https://github.com/Countly/countly-server/issues/163)
+  * Push plugin should stop sending notifications and return error for Mistmatch Sender ID GCM error ([Issue #163](https://github.com/Countly/countly-server/issues/163))
   
-  * Ability to run under Ubuntu 15.04 with systemd (https://github.com/Countly/countly-server/issues/143) 
+  * Ability to run under Ubuntu 15.04 with systemd ([Issue #143](https://github.com/Countly/countly-server/issues/143))
   
-  * Languages should show long language names instead of language codes (https://github.com/Countly/countly-server/issues/140)
+  * Languages should show long language names instead of language codes ([Issue #140](https://github.com/Countly/countly-server/issues/140))
 
 15.06
 
