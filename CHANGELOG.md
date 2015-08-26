@@ -1,3 +1,41 @@
+15.08
+
+  * Crash analytics (https://github.com/Countly/countly-server/issues/152)
+  
+  * Countly command line (http://blog.count.ly/post/127181109353/countly-behind-the-curtains-heres-how-we-make)
+  
+  * Email reports plugin sending daily or weekly summary of your app statistics (https://github.com/Countly/countly-server/issues/3)
+  
+  * App sorting is now user specific
+  
+  * Browser plugin displaying browser metric for Web SDK and other web platforms
+  
+  * Stores plugin to track from which store was the app installed
+  
+  * Enhancements to plugin mechanism (shared configs (https://github.com/Countly/countly-server/issues/175), extending modules)
+  
+  * New metrics added to User Profiles (crashes, attribution and other) (https://github.com/Countly/countly-server/issues/170)
+  
+  * Enhanced Drill with new metrics, user properties, custom properties, attribution campaigns and crashes
+  
+  * Funnel segment applied to all steps (https://github.com/Countly/countly-server/issues/173)
+  
+  * Added Organic data to Referal Analytics (https://github.com/Countly/countly-server/issues/153)
+  
+  * Display time with logs (https://github.com/Countly/countly-server/issues/155)
+  
+  * Merging multiple same value metrics (https://github.com/Countly/countly-server/issues/148)
+  
+  * App Apps View fixes (https://github.com/Countly/countly-server/issues/144)
+  
+  * Metric switching on map (https://github.com/Countly/countly-server/issues/141)
+  
+  * Push plugin should stop sending notifications and return error (https://github.com/Countly/countly-server/issues/163)
+  
+  * Ability to run under Ubuntu 15.04 with systemd (https://github.com/Countly/countly-server/issues/143) 
+  
+  * Languages should show long language names instead of language codes (https://github.com/Countly/countly-server/issues/140)
+
 15.06
 
   * Api accepting both GET and POST requests
