@@ -129,6 +129,7 @@ else
     echo "    countly version # outputs current countly version";
     echo "    countly backup path/to/backup # backups countly db and config files";
     echo "    countly restore path/to/backup # restores countly db and config files from provided backup";
+    echo "    countly update-translations # fetch latest translations from transifex";
     echo "    countly usage   # prints this out, but so as basically everything else does";
     echo "";
 fi

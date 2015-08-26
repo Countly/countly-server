@@ -3,8 +3,10 @@ var fs = require('fs');
 var path = require("path");
 var dir = path.resolve(__dirname, '../../../');
 
+var default_langs = [{"language_code": "ar"},{"language_code": "bs_BA"},{"language_code": "my"},{"language_code": "ca"},{"language_code": "zh"},{"language_code": "nl_NL"},{"language_code": "et"},{"language_code": "fr"},{"language_code": "de"},{"language_code": "el"},{"language_code": "hi"},{"language_code": "it"},{"language_code": "ja"},{"language_code": "ko"},{"language_code": "lv_LV"},{"language_code": "nb_NO"},{"language_code": "fa"},{"language_code": "pl_PL"},{"language_code": "pt_BR"},{"language_code": "ro"},{"language_code": "ru"},{"language_code": "sl_SI"},{"language_code": "es"},{"language_code": "sv"},{"language_code": "tr"},{"language_code": "uk"},{"language_code": "vi"},{"language_code": "vi_VN"}];
+
 function makeRequest(url, callback){
-    var auth = "Basic " + new Buffer("username:password").toString("base64");
+    var auth = "Basic " + new Buffer("countly:countly").toString("base64");
     var options = {
         uri: url,
         method: 'GET',
@@ -74,10 +76,11 @@ makeRequest("https://www.transifex.com/api/2/project/countly/resources/", functi
     }
     //get languages
     makeRequest("http://www.transifex.com/api/2/project/countly/languages/", function(err, languages){
-        if(err || !languages){
+        if(err){
             console.log("Can't update translations: " + err);
             return false;
         }
+        languages = languages || default_langs;
         languages.push({"language_code": "en"});
         //get translation files
         for(var i = 0; i < resources.length; i++){
