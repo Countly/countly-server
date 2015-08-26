@@ -68,13 +68,13 @@ function getFile(resource, language){
 
 //get resources
 makeRequest("https://www.transifex.com/api/2/project/countly/resources/", function(err, resources){
-    if(err){
+    if(err || !resources){
         console.log("Can't update translations: " + err);
         return false;
     }
     //get languages
     makeRequest("http://www.transifex.com/api/2/project/countly/languages/", function(err, languages){
-        if(err){
+        if(err || !languages){
             console.log("Can't update translations: " + err);
             return false;
         }
