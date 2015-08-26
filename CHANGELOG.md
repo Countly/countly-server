@@ -30,7 +30,7 @@
   
   * Metric switching on map (https://github.com/Countly/countly-server/issues/141)
   
-  * Push plugin should stop sending notifications and return error (https://github.com/Countly/countly-server/issues/163)
+  * Push plugin should stop sending notifications and return error for Mistmatch Sender ID GCM error (https://github.com/Countly/countly-server/issues/163)
   
   * Ability to run under Ubuntu 15.04 with systemd (https://github.com/Countly/countly-server/issues/143) 
   
