@@ -1270,7 +1270,7 @@ app.addPageScript("/drill", function(){
             if (k.indexOf('up.') === 0) message.conditions[k.substr(3)] = filterData.dbFilter[k];
         }
 
-        PushPopup(message);
+        PushPopup(message, false, true);
     });
     $("#bookmark-view").on("click", ".bookmark-action.send", function() {
         var filter = $(this).data("query");
@@ -1285,7 +1285,7 @@ app.addPageScript("/drill", function(){
             if (k.indexOf('up.') === 0) message.conditions[k.substr(3)] = filter[k];
         }
 
-        PushPopup(message);
+        PushPopup(message, false, true);
     });
 });
 
@@ -1310,7 +1310,7 @@ app.addPageScript("/users/#", function(){
                 apps: [countlyCommon.ACTIVE_APP_ID],
                 test: test && !prod,
                 conditions: {_id: app.userdetailsView.user_id}
-            }, true);
+            }, true, true);
         });
     } else {
         $('.btn-create-message').hide();
