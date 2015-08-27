@@ -282,9 +282,15 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
     if (typeof countlyGeo !== 'undefined') {
         var geos = countlyGeo.getAll();
         if (geos.length) {
-            var all = content.find('.geos .select-items > div');
+            var all = content.find('.geos .select-items > div'), doesntMatter = content.find('.geos .select-items > div').text();
             for (var k in geos) {
                 all.append($('<div data-value="' + geos[k]._id + '" class="item">' + geos[k].title + '</div>'));
+                if (message.geo === geos[k]._id) {
+                    content.find('.geos .cly-select .text').text(geos[k].title);
+                }
+            }
+            if (!message.geo) {
+                content.find('.geos .cly-select .text').text(doesntMatter);
             }
             content.find(".geos .cly-select .text").on('changeData', function(e){
                 message.geo = $(this).data('value');
@@ -474,7 +480,7 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
 
         function setMessageType(type) {
             message.type = type;
-            content.find('.cly-select .text').text(jQuery.i18n.map['push.type.' + type]);
+            content.find('.type .cly-select .text').text(jQuery.i18n.map['push.type.' + type]);
 
             if (type === 'message' || type === 'update' || type === 'review') {
                 link.slideUp();
