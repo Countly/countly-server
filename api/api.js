@@ -266,7 +266,7 @@ if (cluster.isMaster) {
 					common.returnMessage(params, 401, 'App does not exist');
 					return false;
 				}
-	
+                params.member = member;
 				params.app_id = app['_id'];
 				params.appTimezone = app['timezone'];
 				params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
