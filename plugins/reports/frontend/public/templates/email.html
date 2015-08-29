@@ -127,6 +127,15 @@
                             </tr>
                         </table>
                     </td>
+                    <% if(report.universe) {%>
+                    <td style="padding: 20px 0px 20px 0px;" class="logo" align="center">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" >
+                            <tr>
+                                <td align="center" style="padding: 20px 0 0 20px; font-size: 13px; line-height: 16px; font-family: Helvetica, Arial, sans-serif; color: #666666;" class="padding-copy"><%- report.universe.text %> <% if (report.universe.link) { %><a href="<%= report.universe.link %>" target="_blank" style="color:#3a9d3e;"><%= properties["reports.more"] %></a><% } %></td>
+                            </tr>
+                        </table>
+                    </td>
+                    <% } %>
                 </tr>
             </table>
         </td>
@@ -319,33 +328,6 @@
         </td>
     </tr>
 </table>
-    
-<% if (report.universe) { %>
-    <!-- ONE COLUMN SECTION -->
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-    <tr>
-        <td bgcolor="#ffffff" align="center" style="padding: 35px 15px 15px 15px;" class="section-padding">
-            <table border="0" cellpadding="0" cellspacing="0" width="500" class="responsive-table">
-                <tr>
-                    <td>
-                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                            <tr>
-                                <!-- COPY -->
-                                <td align="center" style="font-size: 26px; font-family: Helvetica, Arial, sans-serif; color: #333333; padding-top: 30px;" class="padding-copy">From Countly Universe</td>
-                            </tr>
-                            <% if(report.universe) {%>
-                            <tr>
-                                <td align="center" style="padding: 20px 0 0 0; font-size: 16px; line-height: 25px; font-family: Helvetica, Arial, sans-serif; color: #666666;" class="padding-copy"><%- report.universe.text %> <% if (report.universe.link) { %><a href="<%= report.universe.link %>" target="_blank" style="color:#3a9d3e;"><%= properties["reports.more"] %></a><% } %></td>
-                            </tr>
-                            <% } %>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-</table>
-<% } %>
 
 <!-- FOOTER -->
 <table border="0" cellpadding="0" cellspacing="0" width="100%">
