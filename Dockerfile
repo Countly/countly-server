@@ -7,7 +7,7 @@ ENV INSIDE_DOCKER 1
 
 COPY / /opt/countly
 RUN  useradd -r -M -U -d /opt/countly -s /bin/false countly && \
-	echo "countly ALL=(ALL) NOPASSWD: /usr/bin/sv restart countly-api countly-dashboard" > /etc/sudoers.d/countly && \
+	echo "countly ALL=(ALL) NOPASSWD: /usr/bin/countly start, /usr/bin/countly stop, /usr/bin/countly restart, /usr/bin/countly upgrade" > /etc/sudoers.d/countly && \
 	/opt/countly/bin/countly.install.sh
 
 ## Add MongoDB data volume
