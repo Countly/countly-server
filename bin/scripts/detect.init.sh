@@ -5,7 +5,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 # use available init system
 INITSYS="systemd"
 
-if [ "$1" = "docker" ]
+if [ "$INSIDE_DOCKER" = "1" ]
 then
 	INITSYS="docker" 
 elif [[ `/sbin/init --version` =~ upstart ]];
