@@ -92,4 +92,7 @@ bash $DIR/scripts/countly.install.plugins.sh
 cd $DIR && grunt dist-all
 
 #finally start countly api and dashboard
-countly start
+if [ "$INSIDE_DOCKER" != "1" ]
+then
+	countly start
+fi
