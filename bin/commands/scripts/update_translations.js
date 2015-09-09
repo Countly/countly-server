@@ -33,6 +33,7 @@ function getFile(resource, language){
             return false;
         }
         if(stats.completed != "0%"){
+            console.log("Updating "+resource.name+" for "+language.language_code);
             makeRequest("https://www.transifex.com/api/2/project/countly/resource/"+resource.slug+"/translation/"+language.language_code+"/", function(err, file){
                 if(err){
                     console.log("ignoring "+resource.slug+": " + err);
@@ -74,12 +75,14 @@ makeRequest("https://www.transifex.com/api/2/project/countly/resources/", functi
         console.log("Can't update translations: " + err);
         return false;
     }
+    console.log("Connected to transifex");
     //get languages
     makeRequest("http://www.transifex.com/api/2/project/countly/languages/", function(err, languages){
         if(err){
             console.log("Can't update translations: " + err);
             return false;
         }
+        console.log("Got list of translations");
         languages = languages || default_langs;
         languages.push({"language_code": "en"});
         //get translation files
