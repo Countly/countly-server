@@ -53,16 +53,18 @@ function getFile(resource, language){
                 else{
                     location += "/plugins/"+parts[0]+"/frontend/public/localization/";
                 }
-                if(resource.source_language_code == language.language_code){
-                    fs.writeFile(location+resource.name, file.content, function (err) {
-                        if (err) return console.log(err);
-                    });
-                }
-                else{
-                    var code = language.language_code.split("_")[0];
-                    fs.writeFile(location+parts[0]+"_"+code+"."+parts[1], file.content, function (err) {
-                        if (err) return console.log(err);
-                    });
+                if (fs.existsSync(location)) {
+                    if(resource.source_language_code == language.language_code){
+                        fs.writeFile(location+resource.name, file.content, function (err) {
+                            if (err) return console.log(err);
+                        });
+                    }
+                    else{
+                        var code = language.language_code.split("_")[0];
+                        fs.writeFile(location+parts[0]+"_"+code+"."+parts[1], file.content, function (err) {
+                            if (err) return console.log(err);
+                        });
+                    }
                 }
             });
         }

@@ -28,8 +28,11 @@ countly_restart (){
 #real commands, can also be overwritten
 countly_upgrade (){ 
     (cd $DIR/../.. ;
+    echo "Installing dependencies...";
     npm install ;
+    echo "Preparing production files...";
     grunt dist-all;
+    echo "Restarting Countly...";
     countly restart;
     )
 }
@@ -45,8 +48,10 @@ countly_backup (){
         return 0;
     fi
     (cd $1 ;
+    echo "Backing up mongodb...";
     mongodump --db countly > /dev/null;
     mongodump --db countly_drill > /dev/null;
+    echo "Backing up Countly configurations and files...";
     mkdir -p files/frontend/express/public/appimages ;
     mkdir -p files/frontend/express/public/userimages ;
     mkdir -p files/frontend/express/certificates ;
@@ -75,8 +80,10 @@ countly_restore (){
         echo "Please provide path" ;
         return 0;
     fi
+    echo "Restoring mongodb...";
     mongorestore --db countly $1/dump/countly > /dev/null;
     mongorestore --db countly_drill $1/dump/countly_drill > /dev/null;
+    echo "Restoring Countly configurations and files...";
     (cd $1 ;
     mkdir -p $DIR/../../frontend/express/public/appimages ;
     mkdir -p $DIR/../../frontend/express/public/userimages ;
@@ -103,7 +110,7 @@ countly_restore (){
             cp $d/config.js $DIR/../../plugins/$PLUGIN/config.js ;
         fi
     done
-    
+    echo "Restarting Countly...";
     countly restart;
     )
 }
