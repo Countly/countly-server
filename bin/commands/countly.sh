@@ -57,12 +57,24 @@ countly_backup (){
     mkdir -p files/frontend/express/certificates ;
     mkdir -p files/frontend/express/public/javascripts/countly ;
     mkdir -p files/api ;
-    cp $DIR/../../frontend/express/config.js files/frontend/express/config.js
-    cp $DIR/../../frontend/express/public/javascripts/countly/countly.config.js files/frontend/express/public/javascripts/countly/countly.config.js
-    cp $DIR/../../api/config.js files/api/config.js
-    cp -a $DIR/../../frontend/express/public/appimages/. files/frontend/express/public/appimages/
-    cp -a $DIR/../../frontend/express/public/userimages/. files/frontend/express/public/userimages/
-    cp -a $DIR/../../frontend/express/certificates/. files/frontend/express/certificates/
+    if [ -f $DIR/../../frontend/express/config.js ]; then
+        cp $DIR/../../frontend/express/config.js files/frontend/express/config.js
+    fi
+    if [ -f $DIR/../../frontend/express/public/javascripts/countly/countly.config.js ]; then
+        cp $DIR/../../frontend/express/public/javascripts/countly/countly.config.js files/frontend/express/public/javascripts/countly/countly.config.js
+    fi
+    if [ -f $DIR/../../api/config.js ]; then
+        cp $DIR/../../api/config.js files/api/config.js
+    fi
+    if [ -d $DIR/../../frontend/express/public/appimages ]; then
+        cp -a $DIR/../../frontend/express/public/appimages/. files/frontend/express/public/appimages/
+    fi
+    if [ -d $DIR/../../frontend/express/public/userimages ]; then
+        cp -a $DIR/../../frontend/express/public/userimages/. files/frontend/express/public/userimages/
+    fi
+    if [ -d $DIR/../../frontend/express/certificates ]; then
+        cp -a $DIR/../../frontend/express/certificates/. files/frontend/express/certificates/
+    fi
     
     for d in $DIR/../../plugins/*; do
         PLUGIN=$(basename $d);
@@ -71,6 +83,8 @@ countly_backup (){
             cp $d/config.js files/plugins/$PLUGIN/config.js ;
         fi
     done
+    
+    echo "Your backup is available at $(pwd $1)";
     )
 }
 
@@ -99,9 +113,15 @@ countly_restore (){
     if [ -f files/api/config.js ]; then
         cp files/api/config.js $DIR/../../api/config.js
     fi
-    cp -a files/frontend/express/public/appimages/. $DIR/../../frontend/express/public/appimages/ 
-    cp -a files/frontend/express/public/userimages/. $DIR/../../frontend/express/public/userimages/
-    cp -a files/frontend/express/certificates/. $DIR/../../frontend/express/certificates/
+    if [ -d files/frontend/express/public/appimages ]; then
+        cp -a files/frontend/express/public/appimages/. $DIR/../../frontend/express/public/appimages/
+    fi
+    if [ -d files/frontend/express/public/userimages ]; then
+        cp -a files/frontend/express/public/userimages/. $DIR/../../frontend/express/public/userimages/
+    fi
+    if [ -d files/frontend/express/certificates ]; then
+        cp -a files/frontend/express/certificates/. $DIR/../../frontend/express/certificates/
+    fi
     
     for d in files/plugins/*; do
         PLUGIN=$(basename $d);
