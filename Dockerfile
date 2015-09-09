@@ -3,12 +3,14 @@ FROM phusion/baseimage:0.9.16
 CMD ["/sbin/my_init"]
 
 ## Setup Countly
+ENV INSIDE_DOCKER 1
+
 COPY / /opt/countly
 RUN  useradd -r -M -U -d /opt/countly -s /bin/false countly && \
-	echo "countly ALL=(ALL) NOPASSWD: /usr/bin/sv restart countly-api countly-dashboard" > /etc/sudoers.d/countly && \
-	/opt/countly/bin/countly.install.sh docker
+	echo "countly ALL=(ALL) NOPASSWD: /usr/bin/sv restart countly-api countly-dashboard" >> /etc/sudoers.d/countly && \
+	/opt/countly/bin/countly.install.sh
 
-## Add MongoDB data volume
+## Add MongoDB data volume  
 VOLUME ["/data"]
 
 # Change MongoDB folder permissions and add services folders
@@ -32,7 +34,5 @@ RUN chown mongodb /etc/service/mongodb/run && \
 	chown -R countly:countly /opt/countly
 
 EXPOSE 80
-
-ENV INSIDE_DOCKER 1
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

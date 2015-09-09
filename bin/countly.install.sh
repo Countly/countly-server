@@ -48,7 +48,7 @@ apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exi
 apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
 
 #install supervisor
-if [ "$1" != "docker" ]
+if [ "$INSIDE_DOCKER" != "1" ]
 then
 	apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
 fi
@@ -66,7 +66,7 @@ apt-get -y install sendmail
 cp /etc/nginx/sites-enabled/default $DIR/config/nginx.default.backup
 cp $DIR/config/nginx.server.conf /etc/nginx/sites-enabled/default
 cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
-if [ "$1" != "docker" ]
+if [ "$INSIDE_DOCKER" != "1" ]
 then
 	/etc/init.d/nginx restart
 fi
@@ -92,4 +92,7 @@ bash $DIR/scripts/countly.install.plugins.sh
 cd $DIR && grunt dist-all
 
 #finally start countly api and dashboard
-countly start
+if [ "$INSIDE_DOCKER" != "1" ]
+then
+	countly start
+fi
