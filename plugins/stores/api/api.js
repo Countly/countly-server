@@ -5,15 +5,6 @@ var plugin = {},
 	fetch = require('../../../api/parts/data/fetch.js');
 
 (function (plugin) {
-    var map = {
-        "com.google.android.feedback":"com.android.vending",
-        "com.google.vending":"com.android.vending",
-        "com.nokia.payment.iapenabler":"com.nokia.nstore",
-        "com.miui.supermarket":"com.xiaomi.market",
-        "com.hiapk.marketpad":"com.hiapk.marketpho",
-        "com.lenovo.leos.appstore.pad":"com.lenovo.leos.appstore",
-        "com.aptoide.partners":"cm.aptoide.pt"
-    };
 	plugins.register("/worker", function(ob){
 		common.dbUserMap['store'] = 'str';
 	});
@@ -25,8 +16,6 @@ var plugin = {},
             if(typeof params.qstring.metrics._store == "undefined" && params.qstring.metrics._os){
                 params.qstring.metrics._store = params.qstring.metrics._os;
             }
-            else if(params.qstring.metrics._store && map[params.qstring.metrics._store])
-                params.qstring.metrics._store = map[params.qstring.metrics._store];
         }
 		predefinedMetrics.push({
             db: "stores",
