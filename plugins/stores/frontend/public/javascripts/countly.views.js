@@ -6,7 +6,7 @@ window.StoresView = countlyView.extend({
         var data = countlyStores.getData();
         this.templateData = {
             "page-title":jQuery.i18n.map["stores.title"],
-            "font-logo-class":"fa-shopping-cart",
+            "font-logo-class":"fa-crosshairs",
             "graph-type-double-pie":true,
             "pie-titles":{
                 "left":jQuery.i18n.map["common.total-users"],
@@ -64,7 +64,7 @@ app.route("/analytics/stores", 'stores', function () {
 
 $( document ).ready(function() {
 	var menu = '<a href="#/analytics/stores" class="item">'+
-		'<div class="logo-icon fa fa-shopping-cart"></div>'+
+		'<div class="logo-icon fa fa-crosshairs"></div>'+
 		'<div class="text" data-localize="stores.title"></div>'+
 	'</a>';
 	$('#analytics-submenu').append(menu);
