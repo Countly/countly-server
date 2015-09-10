@@ -13,8 +13,14 @@
         if(stores && stores[pack]){
             return stores[pack];
         }
-        else
-            return code;
+        else{
+            for(var i in stores){
+                if(pack.indexOf(i) == 0){
+                    return stores[i];
+                }
+            }
+            return pack;
+        }
     }
     CountlyHelpers.createMetricModel(window.countlyStores = window.countlyStores || {getStoreName:getStoreName}, "stores", jQuery, getStoreName);
 }());
