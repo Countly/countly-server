@@ -212,6 +212,7 @@ plugins.setConfigs("crashes", {
 						else
 							report[props[i]] = params.qstring.crash["_"+props[i]];
 				}
+                report.cd = new Date();
                 report.nonfatal = (report.nonfatal && report.nonfatal !== "false") ? true : false;
                 var hash = common.crypto.createHash('sha1').update(report.os + error + params.app_id + report.nonfatal + "").digest('hex');
 				function checkUser(err, dbAppUser, tries){
