@@ -1416,6 +1416,7 @@ window.AllAppsView = countlyView.extend({
                 else
                 {
                     if(row.attr("id") != "all"){
+                        app.onAppSwitch(row.attr("id"));
                         var aData = self.dtable.fnGetData( this );
                         countlyAllApps.setApp(row.attr("id"));
                         $("#sidebar-app-select").find(".logo").css("background-image", "url('"+countlyGlobal["cdn"]+"appimages/" + row.attr("id") + ".png')");
@@ -3229,6 +3230,7 @@ var AppRouter = Backbone.Router.extend({
     },
     initialize:function () { //initialize the dashboard, register helpers etc.
 		this.pageScripts = {};
+        this.appSwitchCallbacks = [];
 		this.refreshScripts = {};
         this.dashboardView = new DashboardView();
         this.sessionView = new SessionView();
@@ -3497,6 +3499,7 @@ var AppRouter = Backbone.Router.extend({
 				else{
 					$("#sidebar-menu > .item").removeClass("hide");
 					$("#allapps-menu").css("display", "none");
+                    app.onAppSwitch(appId);
 				}
 
 				if(window.location.hash.toString() == "#/all")
@@ -4429,6 +4432,9 @@ var AppRouter = Backbone.Router.extend({
             $("#app-tooltip").unbind("click");
         }
     },
+    addAppSwitchCallback:function(callback){
+        this.appSwitchCallbacks.push(callback);
+    },
 	addPageScript:function(view, callback){
 		if(!this.pageScripts[view])
 			this.pageScripts[view] = [];
@@ -4439,6 +4445,11 @@ var AppRouter = Backbone.Router.extend({
 			this.refreshScripts[view] = [];
 		this.refreshScripts[view].push(callback);
 	},
+    onAppSwitch:function(appId){
+        for(var i = 0; i < this.appSwitchCallbacks.length; i++){
+            this.appSwitchCallbacks[i](appId);
+        }
+    },
     pageScript:function () { //scripts to be executed on each view change
         $("#month").text(moment().year());
         $("#day").text(moment().format("MMM"));
