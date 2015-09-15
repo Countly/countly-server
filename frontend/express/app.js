@@ -260,6 +260,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             }
 
                             for (var i = 0; i < apps.length; i++) {
+                                apps[i].type = apps[i].type || "mobile";
 								apps[i]["notes"] = appNotes[apps[i]["_id"]] || null;
                                 countlyGlobalApps[apps[i]["_id"]] = apps[i];
 								countlyGlobalApps[apps[i]["_id"]]["_id"] = "" + apps[i]["_id"];
