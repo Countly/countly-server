@@ -2109,8 +2109,13 @@ window.ManageAppsView = countlyView.extend({
     },
     renderCommon:function () {
         app.enableAppTooltip();
+        var appTypes = {};
+        for(var i = 0; i < app.appTypes.length; i++){
+            appTypes[app.appTypes[i]] = jQuery.i18n.map["management-applications.types."+app.appTypes[i]] || app.appTypes[i];
+        }
         $(this.el).html(this.template({
-            admin_apps:countlyGlobal['admin_apps']
+            admin_apps:countlyGlobal['admin_apps'],
+            app_types:appTypes
         }));
         var appCategories = this.getAppCategories();
         var timezones = this.getTimeZones();
@@ -2152,6 +2157,9 @@ window.ManageAppsView = countlyView.extend({
             $("#app-edit-name").find(".edit input").val(countlyGlobal['apps'][appId].name);
             $("#view-app-key").text(countlyGlobal['apps'][appId].key);
             $("#view-app-id").text(appId);
+            $("#app-edit-type").find(".cly-select .text").text(appTypes[countlyGlobal['apps'][appId].type]);
+            $("#app-edit-type").find(".cly-select .text").data("value", countlyGlobal['apps'][appId].type);
+            $("#app-edit-type").find(".read").text(appTypes[countlyGlobal['apps'][appId].type]);
             $("#app-edit-category").find(".cly-select .text").text(appCategories[countlyGlobal['apps'][appId].category]);
             $("#app-edit-category").find(".cly-select .text").data("value", countlyGlobal['apps'][appId].category);
             $("#app-edit-timezone").find(".cly-select .text").data("value", countlyGlobal['apps'][appId].timezone);
@@ -3229,6 +3237,7 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     initialize:function () { //initialize the dashboard, register helpers etc.
+		this.appTypes = [];
 		this.pageScripts = {};
         this.appSwitchCallbacks = [];
 		this.refreshScripts = {};
@@ -4431,6 +4440,9 @@ var AppRouter = Backbone.Router.extend({
             $("#app-tooltip").hide();
             $("#app-tooltip").unbind("click");
         }
+    },
+    addAppType:function(name){
+        this.appTypes.push(name);
     },
     addAppSwitchCallback:function(callback){
         this.appSwitchCallbacks.push(callback);

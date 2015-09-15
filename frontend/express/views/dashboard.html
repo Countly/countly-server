@@ -720,6 +720,26 @@
 									<input type="text" value="" placeholder="Enter application name..." data-localize="placeholder.app-name" id="app-add-name">
 								</td>
 							</tr>
+                            <tr class="help-zone-vs" data-help-localize="help.manage-apps.app-type">
+								<td data-localize="management-applications.type"></td>
+								<td>
+									<div class="cly-select" style="width:280px;">
+										<div class="select-inner">
+											<div class="text-container">
+												<div class="text" id="app-add-type" data-localize="management-applications.type.tip"></div>
+											</div>
+											<div class="right combo"></div>
+										</div>
+										<div class="select-items square" style="width:280px;">
+											<div>
+												{{#eachOfObject app_types}}
+                                                    <div data-value="{{property}}" class="item">{{value}}</div>
+                                                {{/eachOfObject}}
+											</div>
+										</div>
+									</div>
+								</td>
+							</tr>
 							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-category">
 								<td data-localize="management-applications.category"></td>
 								<td>
@@ -831,6 +851,29 @@
 									<div class="read"></div>
 									<div class="edit">
 										<input type="text" value="">
+									</div>
+								</td>
+							</tr>
+                            <tr class="help-zone-vs" data-help-localize="help.manage-apps.app-type">
+								<td data-localize="management-applications.type"></td>
+								<td id="app-edit-type">
+									<div class="read"></div>
+									<div class="edit">
+										<div class="cly-select">
+											<div class="select-inner">
+												<div class="text-container">
+													<div class="text"></div>
+												</div>
+												<div class="right combo"></div>
+											</div>
+											<div class="select-items square">
+												<div>
+													{{#eachOfObject app_types}}
+                                                        <div data-value="{{property}}" class="item">{{value}}</div>
+                                                    {{/eachOfObject}}
+												</div>
+											</div>
+										</div>
 									</div>
 								</td>
 							</tr>
