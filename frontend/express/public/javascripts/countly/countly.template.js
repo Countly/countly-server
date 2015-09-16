@@ -1878,6 +1878,7 @@ window.ManageAppsView = countlyView.extend({
                     $("#delete-app").hide();
                 }
             }
+            app.onAppSwitch(appId);
 
             if ($("#new-install-overlay").is(":visible")) {
                 $("#no-app-warning").hide();
@@ -3705,6 +3706,7 @@ var AppRouter = Backbone.Router.extend({
             if (!countlyCommon.ACTIVE_APP_ID) {
                 for (var appId in countlyGlobal['apps']) {
                     countlyCommon.setActiveApp(appId);
+                    app.onAppSwitch(appId);
                     self.activeAppName = countlyGlobal['apps'][appId].name;
                     break;
                 }
@@ -4105,6 +4107,11 @@ var AppRouter = Backbone.Router.extend({
         });
 
         $.fn.dataTableExt.sErrMode = 'throw';
+        $(document).ready(function () {
+            setTimeout(function(){
+                self.onAppSwitch(countlyCommon.ACTIVE_APP_ID);
+            },1)
+        });
     },
     localize:function (el) {
 
