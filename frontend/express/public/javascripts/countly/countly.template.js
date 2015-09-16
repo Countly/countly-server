@@ -2024,6 +2024,8 @@ window.ManageAppsView = countlyView.extend({
 
         function resetAdd() {
             $("#app-add-name").val("");
+            $("#app-add-type").text(jQuery.i18n.map["management-applications.type.tip"]);
+            $("#app-add-type").data("value", "");
             $("#app-add-category").text(jQuery.i18n.map["management-applications.category.tip"]);
             $("#app-add-category").data("value", "");
             $("#app-add-timezone #selected").text("");
@@ -2228,6 +2230,7 @@ window.ManageAppsView = countlyView.extend({
                     args:JSON.stringify({
                         app_id:appId,
                         name:appName,
+                        type:$("#app-edit-type .cly-select .text").data("value") + '',
                         category:$("#app-edit-category .cly-select .text").data("value") + '',
                         timezone:$("#app-edit-timezone #app-timezone").val(),
                         country:$("#app-edit-timezone #app-country").val()
@@ -2325,6 +2328,7 @@ window.ManageAppsView = countlyView.extend({
             }
 
             var appName = $("#app-add-name").val(),
+                type = $("#app-add-type").data("value") + "",
                 category = $("#app-add-category").data("value") + "",
                 timezone = $("#app-add-timezone #app-timezone").val(),
                 country = $("#app-add-timezone #app-country").val();
@@ -2334,6 +2338,10 @@ window.ManageAppsView = countlyView.extend({
 
             if (!appName) {
                 $("#app-add-name").after(reqSpan.clone());
+            }
+            
+            if (!type) {
+                $("#app-add-type").parents(".cly-select").after(reqSpan.clone());
             }
 
             if (!category) {
@@ -2363,6 +2371,7 @@ window.ManageAppsView = countlyView.extend({
                 data:{
                     args:JSON.stringify({
                         name:appName,
+                        type:type,
                         category:category,
                         timezone:timezone,
                         country:country
