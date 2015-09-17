@@ -10,7 +10,7 @@ var plugin = {},
 		var validate = ob.validateUserForGlobalAdmin;
 		if(params.qstring.method == 'systemlogs'){
             validate(params, function(params){
-				common.db.collection('systemlogs').find().limit(1000).toArray(function(err, items) {
+				common.db.collection('systemlogs').find().sort( { $natural: -1 } ).limit(1000).toArray(function(err, items) {
 					if(err)
 						console.log(err);
 					common.returnOutput(params, items);
