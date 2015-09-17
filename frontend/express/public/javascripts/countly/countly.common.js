@@ -599,7 +599,7 @@
                     tableData[i] = {};
                 }
 
-                tableData[i]["date"] = formattedDate.format(countlyCommon.periodObj.dateString);
+                tableData[i]["date"] = countlyCommon.formatDate(formattedDate, countlyCommon.periodObj.dateString);
 
                 if (propertyFunctions[j]) {
                     propertyValue = propertyFunctions[j](dataObj);
@@ -996,8 +996,8 @@
             formattedDateEnd = moment(countlyCommon.periodObj.currentPeriodArr[(countlyCommon.periodObj.currentPeriodArr.length - 1)], "YYYY.M.D");
         }
 
-        var fromStr = formattedDateStart.format(countlyCommon.periodObj.dateString),
-            toStr = formattedDateEnd.format(countlyCommon.periodObj.dateString);
+        var fromStr = countlyCommon.formatDate(formattedDateStart,countlyCommon.periodObj.dateString),
+            toStr = countlyCommon.formatDate(formattedDateEnd,countlyCommon.periodObj.dateString);
 
         if (fromStr == toStr) {
             return fromStr;
@@ -1235,7 +1235,7 @@
                 for (var i = 0; i < allWeeks.length; i++) {
                     ticks.push([i, "W" + allWeeks[i]]);
 
-                    var weekText = moment().isoweek(allWeeks[i]).isoday(1).format(", MMM D");
+                    var weekText = countlyCommon.formatDate(moment().isoweek(allWeeks[i]).isoday(1), ", MMM D");
                     tickTexts[i] = "W" + allWeeks[i] + weekText;
                 }
             } else if (bucket == "hourly") {
@@ -1244,17 +1244,17 @@
 
                     for (var j = 0; j < 24; j++) {
                         if (j == 0) {
-                            ticks.push([((24 * i) + j), start.format("D MMM") + " 0:00"]);
+                            ticks.push([((24 * i) + j), countlyCommon.formatDate(start,"D MMM") + " 0:00"]);
                         }
 
-                        tickTexts.push(start.format("D MMM, ") + j + ":00");
+                        tickTexts.push(countlyCommon.formatDate(start,"D MMM, ") + j + ":00");
                     }
                 }
             } else {
                 for (var i = 0; i < days; i++) {
                     start.add('days', 1);
-                    ticks.push([i, start.format("D MMM")]);
-                    tickTexts[i] = start.format("D MMM");
+                    ticks.push([i, countlyCommon.formatDate(start,"D MMM")]);
+                    tickTexts[i] = countlyCommon.formatDate(start,"D MMM");
                 }
             }
 
@@ -1651,6 +1651,13 @@
         return dataArr;
     }
 
+    countlyCommon.formatDate = function(date, format){
+        if(countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "ko")
+            format = format.replace("MMM D", "MMM D[일]").replace("D MMM", "MMM D[일]");
+        else if(countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "ja")
+            format = format.replace("MMM D", "MMM D[日]").replace("D MMM", "MMM D[日]");
+        return date.format(format);
+    }
 
     // Private Methods
 
