@@ -2827,6 +2827,10 @@ var AppRouter = Backbone.Router.extend({
 			if(self.refreshScripts[Backbone.history.fragment])
 				for(var i = 0, l = self.refreshScripts[Backbone.history.fragment].length; i < l; i++)
 					self.refreshScripts[Backbone.history.fragment][i]();
+            for(var k in self.refreshScripts) 
+                if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match(k.replace(/#/g, '.*')))
+                    for(var i = 0, l = self.refreshScripts[k].length; i < l; i++)
+                        self.refreshScripts[k][i]();
 			if(self.refreshScripts["#"])
 				for(var i = 0, l = self.refreshScripts["#"].length; i < l; i++)
 					self.refreshScripts["#"][i]();
@@ -4105,7 +4109,7 @@ var AppRouter = Backbone.Router.extend({
 				for(var i = 0, l = self.pageScripts[Backbone.history.fragment].length; i < l; i++)
 					self.pageScripts[Backbone.history.fragment][i]();
             for(var k in self.pageScripts) 
-                if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match(k.replace(/#/g, '[A-Za-z_0-9]+')))
+                if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match(k.replace(/#/g, '.*')))
                     for(var i = 0, l = self.pageScripts[k].length; i < l; i++)
                         self.pageScripts[k][i]();
 			if(self.pageScripts["#"])
