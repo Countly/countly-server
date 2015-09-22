@@ -105,6 +105,12 @@ var pluginManager = function pluginManager(){
     };
     
     this.extendModule = function(name, object){
+        //global extend
+        try{
+			require("../extend/"+name)(object);
+		} catch (ex) {}
+        
+        //plugin specific extend
         for(var i = 0, l = plugins.length; i < l; i++){
 			try{
 				require("./"+plugins[i]+"/extend/"+name)(object);
