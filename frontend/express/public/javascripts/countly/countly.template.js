@@ -1878,7 +1878,6 @@ window.ManageAppsView = countlyView.extend({
                     $("#delete-app").hide();
                 }
             }
-            app.onAppSwitch(appId);
 
             if ($("#new-install-overlay").is(":visible")) {
                 $("#no-app-warning").hide();
