@@ -85,52 +85,17 @@
                     <div class="text" data-localize="sidebar.dashboard"></div>
                 </a>
                 <a class="item analytics" id="analytics-menu">
-                    <!--<div style="background-image:none; font-size:54px; text-align:center; width:35px; margin-left:14px; line-height:14px;" class="logo entypo line-graph"></div>-->
                     <div class="logo analytics"></div>
                     <div class="text" data-localize="sidebar.analytics"></div>
                 </a>
                 <div class="sidebar-submenu" id="analytics-submenu">
-                    <a href="#/analytics/users" class="item active">
-                        <div class="logo users"></div>
-                        <div class="text" data-localize="sidebar.analytics.users"></div>
-                    </a>
-                    <a href="#/analytics/sessions" class="item">
-                        <div class="logo sessions"></div>
-                        <div class="text" data-localize="sidebar.analytics.sessions"></div>
-                    </a>
-                    <a href="#/analytics/countries" class="item">
-                        <div class="logo country"></div>
-                        <div class="text" data-localize="sidebar.analytics.countries"></div>
-                    </a>
-                    <a href="#/analytics/devices" class="item">
-                        <div class="logo devices"></div>
-                        <div class="text" data-localize="sidebar.analytics.devices"></div>
-                    </a>
-                    <a href="#/analytics/resolutions" class="item">
-                        <div class="logo resolutions"></div>
-                        <div class="text" data-localize="sidebar.analytics.resolutions"></div>
-                    </a>
-                    <a href="#/analytics/versions" class="item">
-                        <div class="logo app-versions"></div>
-                        <div class="text" data-localize="sidebar.analytics.app-versions"></div>
-                    </a>
-                    <a href="#/analytics/carriers" class="item">
-                        <div class="logo carrier"></div>
-                        <div class="text" data-localize="sidebar.analytics.carriers"></div>
-                    </a>
-                    <a href="#/analytics/platforms" class="item">
-                        <div class="logo platforms"></div>
-                        <div class="text" data-localize="sidebar.analytics.platforms"></div>
-                    </a>
                 </div>
                 <a href="#/analytics/events" class="item analytics" id="sidebar-events">
-                    <!--<div style="background-image:none; font-size:54px; text-align:center; width:35px; margin-left:14px; line-height:14px;" class="logo entypo share"></div>-->
                     <div class="logo events"></div>
                     <div class="text" data-localize="sidebar.events"></div>
                 </a>	
                 <% if(member['global_admin'] || adminOfApps.length  || config.autonomous) { %>
                 <a class="item" id="management-menu">
-                    <!--<div class="logo fa fa-wrench" style="background-image:none; font-size:28px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px;"></div>-->
                     <div class="logo management"></div>
                     <div class="text" data-localize="sidebar.management"></div>
                 </a>
@@ -139,12 +104,6 @@
                         <div class="logo applications"></div>
                         <div class="text" data-localize="sidebar.management.applications"></div>
                     </a>
-                    <!--
-                    <a href="#/manage/export" class="item">
-                        <div class="logo applications"></div>
-                        <div class="text" data-localize="">Export</div>
-                    </a>
-                    -->
                     <% if(member['global_admin'] || config.createUsers) { %>
                     <a href="#/manage/users" class="item">
                         <div class="logo mgmt-users"></div>
