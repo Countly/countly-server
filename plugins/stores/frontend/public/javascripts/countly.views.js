@@ -22,7 +22,7 @@ window.StoresView = countlyView.extend({
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": data.chartData,
                 "aoColumns": [
-                    { "mData": "stores", sType:"string", "sTitle": jQuery.i18n.map["stores.store"] },
+                    { "mData": "stores", sType:"string", "sTitle": jQuery.i18n.map["stores.store"], "sClass": "break" },
                     { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
                     { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
                     { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
