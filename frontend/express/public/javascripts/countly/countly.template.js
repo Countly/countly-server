@@ -4069,7 +4069,10 @@ var AppRouter = Backbone.Router.extend({
     onAppSwitch:function(appId){
         $("#sidebar-menu .sidebar-menu").hide();
         var type = countlyGlobal["apps"][appId].type;
-        $("#sidebar-menu #"+type+"-type").show();
+        if($("#sidebar-menu #"+type+"-type").length)
+            $("#sidebar-menu #"+type+"-type").show();
+        else
+            $("#sidebar-menu #default-type").show();
         for(var i = 0; i < this.appSwitchCallbacks.length; i++){
             this.appSwitchCallbacks[i](appId);
         }
