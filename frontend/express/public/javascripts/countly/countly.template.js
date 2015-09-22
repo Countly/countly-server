@@ -3560,7 +3560,6 @@ var AppRouter = Backbone.Router.extend({
             if (!countlyCommon.ACTIVE_APP_ID) {
                 for (var appId in countlyGlobal['apps']) {
                     countlyCommon.setActiveApp(appId);
-                    app.onAppSwitch(appId);
                     self.activeAppName = countlyGlobal['apps'][appId].name;
                     break;
                 }
