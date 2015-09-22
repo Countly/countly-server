@@ -268,3 +268,78 @@ window.MobileDashboardView = countlyView.extend({
 });
 
 app.addAppType("mobile", MobileDashboardView);
+
+$( document ).ready(function() {
+	var menu = '<a href="#/analytics/users" class="item">'+
+		'<div class="logo users"></div>'+
+		'<div class="text" data-localize="sidebar.analytics.users"></div>'+
+	'</a>';
+	$('#mobile-type #analytics-submenu').append(menu);
+    
+    menu = '<a href="#/analytics/sessions" class="item">'+
+		'<div class="logo sessions"></div>'+
+		'<div class="text" data-localize="sidebar.analytics.sessions"></div>'+
+	'</a>';
+	$('#mobile-type #analytics-submenu').append(menu);
+    
+    menu = '<a href="#/analytics/countries" class="item">'+
+		'<div class="logo country"></div>'+
+		'<div class="text" data-localize="sidebar.analytics.countries"></div>'+
+	'</a>';
+	$('#mobile-type #analytics-submenu').append(menu);
+    
+    menu = '<a href="#/analytics/devices" class="item">'+
+		'<div class="logo devices"></div>'+
+		'<div class="text" data-localize="sidebar.analytics.devices"></div>'+
+	'</a>';
+	$('#mobile-type #analytics-submenu').append(menu);
+    
+    menu = '<a href="#/analytics/resolutions" class="item">'+
+		'<div class="logo resolutions"></div>'+
+		'<div class="text" data-localize="sidebar.analytics.resolutions"></div>'+
+	'</a>';
+	$('#mobile-type #analytics-submenu').append(menu);
+    
+    menu = '<a href="#/analytics/versions" class="item">'+
+		'<div class="logo app-versions"></div>'+
+		'<div class="text" data-localize="sidebar.analytics.app-versions"></div>'+
+	'</a>';
+	$('#mobile-type #analytics-submenu').append(menu);
+    
+    menu = '<a href="#/analytics/carriers" class="item">'+
+		'<div class="logo carrier"></div>'+
+		'<div class="text" data-localize="sidebar.analytics.carriers"></div>'+
+	'</a>';
+	$('#mobile-type #analytics-submenu').append(menu);
+    
+    menu = '<a href="#/analytics/platforms" class="item">'+
+		'<div class="logo platforms"></div>'+
+		'<div class="text" data-localize="sidebar.analytics.platforms"></div>'+
+	'</a>';
+	$('#mobile-type #analytics-submenu').append(menu);
+    
+    menu = '<a class="item analytics" id="engagement-menu">' +
+                '<div class="logo fa fa-magnet" style="background-image:none; font-size:28px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>' +
+                '<div class="text" data-localize="sidebar.engagement"></div>' +
+            '</a>' +
+            '<div class="sidebar-submenu" id="engagement-submenu">' +
+                '<a href="#/analytics/loyalty" class="item">' +
+                    '<div class="logo loyalty"></div>' +
+                    '<div class="text" data-localize="sidebar.analytics.user-loyalty"></div>' +
+                '</a>' +
+                '<a href="#/analytics/frequency" class="item">' +
+                    '<div class="logo frequency"></div>' +
+                    '<div class="text" data-localize="sidebar.analytics.session-frequency"></div>' +
+                '</a>' +
+                '<a href="#/analytics/durations" class="item">' +
+                    '<div class="logo durations"></div>' +
+                    '<div class="text" data-localize="sidebar.engagement.durations"></div>' +
+                '</a>' +
+            '</div>';
+	if($('#mobile-type #analytics-submenu').length)
+		$('#mobile-type #analytics-submenu').after(menu);
+	else
+		$('#mobile-type a:nth-child(3)').append(menu);
+    
+    
+});
