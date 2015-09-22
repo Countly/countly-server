@@ -4049,6 +4049,9 @@ var AppRouter = Backbone.Router.extend({
     },
     addAppType:function(name, view){
         this.appTypes[name] = new view();
+        var menu = $("#default-type").clone();
+        menu.attr("id",name+"-type");
+        $("#sidebar-menu").append(menu);
     },
     addAppSwitchCallback:function(callback){
         this.appSwitchCallbacks.push(callback);
@@ -4064,6 +4067,9 @@ var AppRouter = Backbone.Router.extend({
 		this.refreshScripts[view].push(callback);
 	},
     onAppSwitch:function(appId){
+        $("#sidebar-menu .sidebar-menu").hide();
+        var type = countlyGlobal["apps"][appId].type;
+        $("#sidebar-menu #"+type+"-type").show();
         for(var i = 0; i < this.appSwitchCallbacks.length; i++){
             this.appSwitchCallbacks[i](appId);
         }
