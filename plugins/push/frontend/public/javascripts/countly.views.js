@@ -234,7 +234,7 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
             test: message.test,
             date: message.date,
             sent: message.sent,
-            conditions: message.conditions === '{}' ? undefined : message.conditions,
+            conditions: message.conditions === '{}' ? undefined : (typeof message.conditions === 'string' ? JSON.parse(message.conditions) : message.conditions),
             geo: typeof message.geo === 'undefined' ? undefined : ((typeof message.geo === 'string' && message.geo) ? message.geo : undefined),
             noTests: false,
             noApps: false,
