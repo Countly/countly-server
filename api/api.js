@@ -2,8 +2,9 @@ var http = require('http'),
     cluster = require('cluster'),
     formidable = require('formidable'),
     os = require('os'),
-	countlyConfig = require('./config'),
-    plugins = require('../plugins/pluginManager.js');
+    countlyConfig = require('./config'),
+    plugins = require('../plugins/pluginManager.js'),
+    jobsWorker;
     
 plugins.setConfigs("api", {
     domain: "",
@@ -36,8 +37,11 @@ if (cluster.isMaster) {
     cluster.on('exit', function(worker) {
         cluster.fork();
     });
-	
-	plugins.dispatch("/master", {});
+    
+
+    jobsWorker = require('child_process').fork(__dirname + '/parts/mgmt/jobsRunner.js');
+
+    plugins.dispatch("/master", {});
 
 } else {
 
