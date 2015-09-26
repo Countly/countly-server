@@ -44,6 +44,7 @@ var common = {},
         'last_begin_session_timestamp': 'lbst',
         'last_end_session_timestamp': 'lest',
         'has_ongoing_session': 'hos',
+        'previous_events': 'pe',
         'resolution': 'r'
     };
 
@@ -52,7 +53,8 @@ var common = {},
         'timestamp':'ts',
         'segmentations':'sg',
         'count':'c',
-        'sum':'s'
+        'sum':'s',
+        'previous_events': 'pe'
     };
 
     //mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
