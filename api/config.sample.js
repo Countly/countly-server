@@ -29,7 +29,11 @@ var countlyConfig = {
         host: "localhost",
         max_sockets: 1024
     },
-	path: ""
+	path: "",
+    logging: {
+        info: ["jobs", "push"],
+        default: "warn"
+    }
 };
 
 // Set your host IP or domain to be used in the emails sent

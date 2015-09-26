@@ -1,5 +1,3 @@
-require('log-timestamp');
-
 var http = require('http'),
     cluster = require('cluster'),
     formidable = require('formidable'),

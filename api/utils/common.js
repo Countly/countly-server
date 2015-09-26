@@ -3,9 +3,14 @@ var common = {},
     time = require('time')(Date),
     crypto = require('crypto'),
     mongo = require('mongoskin'),
+    logger = require('./log.js'),
     countlyConfig = require('./../config');
 
 (function (common) {
+
+    var log = logger('common');
+
+    common.log = logger;
 
     common.dbMap = {
         'events': 'e',
@@ -615,24 +620,35 @@ var common = {},
         }
     };
 
-    // getter/setter for dot notatons:
-    // getter: dot({a: {b: {c: 'string'}}}, 'a.b.c') === 'string'
-    // getter: dot({a: {b: {c: 'string'}}}, ['a', 'b', 'c']) === 'string'
-    // setter: dot({a: {b: {c: 'string'}}}, 'a.b.c', 5) === 5
-    // getter: dot({a: {b: {c: 'string'}}}, 'a.b.c') === 5
-    common.dot = function(obj, is, value) {
-        if (typeof is == 'string') {
-            return common.dot(obj,is.split('.'), value);
-        } else if (is.length==1 && value!==undefined) {
-            obj[is[0]] = value;
-            return value;
-        } else if (is.length==0) {
-            return obj;
-        } else if (!obj) {
-            return obj;
-        } else {
-            return common.dot(obj[is[0]],is.slice(1), value);
+    // Return plain object with key set to value
+    common.o = function() {
+        var o = {};
+        for (var i = 0; i < arguments.length; i += 2) {
+            o[arguments[i]] = arguments[i + 1];
         }
+        return o;
+    };
+
+    // Return index of array element with property = value
+    common.indexOf = function(array, property, value) {
+        for (var i = 0; i < array.length; i += 1) {
+            if (array[i][property] === value) { return i; }
+        }
+        return -1;
+    };
+
+    common.optional = function(module, options){
+        try {
+            if (module[0] in {'.': 1}) {
+                module = process.cwd() + module.substr(1);
+            }
+            return require(module);
+        } catch(err) { 
+            if (err.code !== 'MODULE_NOT_FOUND' && options && options.rethrow) {
+                throw err;
+            }
+        }
+        return null;
     };
 
 }(common));
