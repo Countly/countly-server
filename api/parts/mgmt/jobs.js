@@ -59,7 +59,7 @@ var Job = function(name, data) {
 	}
 
 	var save = function(clb){
-		common.db.collection('jobs', {strict: true}, function(err, collection){
+		withCollection(this, function(err, collection){
 			if (err || !collection) { 
 				log.w('Error while saving job: %j', err);
 				setTimeout(save.bind(null, clb), 1000); 
@@ -71,11 +71,21 @@ var Job = function(name, data) {
 					log.i('replacing job %j with', query, json);
 					collection.findAndModify(query, [['_id', 1]], {$set: json}, {new: true}, function(err, job){
 						if (err) {
-							log.e('job replacing error, saving new job', err, job);
-							collection.save(json, clb || function(){});
+							log.e('job replacement error, saving new job', err, job);
+							collection.save(json, clb || function(err){
+								if (err) { 
+									log.w('Error while saving new job on job replacement error: %j', err);
+									setTimeout(save.bind(null, clb), 1000); 
+								}
+							});
 						} else if (!job){
-							log.i('no job foudn to replace, saving new job', err, job);
-							collection.save(json, clb || function(){});
+							log.i('no job found to replace, saving new job', err, job);
+							collection.save(json, clb || function(err){
+								if (err) { 
+									log.w('Error while saving job on no job to replace: %j', err);
+									setTimeout(save.bind(null, clb), 1000); 
+								}
+							});
 						} else {
 							log.i('job replacing done', job);
 							if (clb) { clb(); }
@@ -83,7 +93,12 @@ var Job = function(name, data) {
 					});
 				} else {
 					log.d('saving %j', json);
-					collection.save(json, clb || function(){});
+					collection.save(json, clb || function(err){
+						if (err) { 
+							log.w('Error while saving job: %j', err);
+							setTimeout(save.bind(null, clb), 1000); 
+						}
+					});
 				}
 			}
 		});
@@ -202,9 +217,10 @@ var JobWorker = function(processors){
 		this.processors[name] = new Processor(this, conc, fun, name);
 	}.bind(this));
 
-	common.db.createCollection('jobs', {strict: true, autoIndexId: true, capped: true, size: 1e7}, function(err, coll){
-		this.collection = coll || common.db.collection('jobs');
-		this.collection.update({status: STATUS.RUNNING, started: {$lt: Date.now() - 60 * 60 * 1000}}, {$set: {status: STATUS.DONE, error: 'Cancelled on restart'}}, {multi: true}, this.next.bind(this));
+	withCollection(this, function(err, collection){
+		if (collection) {
+			this.collection.update({status: STATUS.RUNNING, started: {$lt: Date.now() - 60 * 60 * 1000}}, {$set: {status: STATUS.DONE, error: 'Cancelled on restart'}}, {multi: true}, this.next.bind(this));
+		}
 	}.bind(this));
 
 	this.next = function(){
@@ -215,7 +231,6 @@ var JobWorker = function(processors){
 				find.name = {$in: this.types};
 			}
 
-			this.collection.find(find, {tailable: true}).sort({next: 1}).stream().on;
 			this.cursor = this.collection.find(find, {tailable: true, awaitdata: true, numberOfRetries: Number.MAX_VALUE, tailableRetryInterval: 1000}).sort({next: 1});
 			this.stream = this.cursor.stream();
 			this.stream.__created = Date.now();
@@ -355,14 +370,47 @@ var JobWorker = function(processors){
 		async.parallel(shutdowns, function(err){
 			if (err) { log.e('Error when shutting down job processors', err); }
 			log.i('Done shutting down jobs');
-			process.exit(0);
-		});
+			this.db.close(function(err){
+				if (err) { log.e('Error when closing db connection on shut down', err); }
+				process.exit(0);
+			});
+		}.bind(this));
 	}.bind(this);
 
 	process.on('SIGTERM', shutdown);
 	process.on('SIGINT', shutdown);
 
 	log.i('Jobs worker created');
+};
+
+var withCollection = function(self, callback) {
+	if (self.collection) { callback(null, self.collection); }
+	else {
+		common.mongodbNativeConnection(function(err, db){
+			if (err) { log.e('Error during db connection', err); callback(err); }
+			else {
+				log.i('Connected to the database');
+				this.db = db;
+				db.createCollection('jobs', {strict: true, autoIndexId: true, capped: true, size: 1e7}, function(err, coll){
+					if (coll) {
+						log.d('Created jobs collection');
+						this.collection = coll;
+						callback(null, this.collection);
+					} else {
+						log.d('Jobs collection is already there, getting it');
+						db.collection('jobs', {strict: true}, function(err, coll){
+							if (err) { log.e('Couldn\'t get jobs collection', err); callback(err); } 
+							else {
+								log.d('Got jobs collection');
+								this.collection = coll;
+								callback(null, this.collection);
+							}
+						}.bind(this));
+					}
+				}.bind(this));
+			}
+		}.bind(self));
+	}
 };
 
 module.exports = {
