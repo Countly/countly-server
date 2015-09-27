@@ -89,6 +89,11 @@ var common = {},
 	if(!common.db.ObjectID)
 		common.db.ObjectID = mongo.ObjectID;
 
+    common.mongodbNativeConnection = function(callback){
+        var MongoClient = require('mongodb').MongoClient;
+        return MongoClient.connect(dbName, callback);
+    };
+
     common.config = countlyConfig;
 
     common.time = time;
