@@ -401,8 +401,39 @@ var pluginManager = function pluginManager(){
 			if(stderr)
 				console.log('stderr: %j', stderr);
 		});
-	}
+	};
     
+    this.dbConnection = function(drill) {
+        var mongo = require('mongoskin'),
+            countlyConfig = require('../frontend/express/config');
+            
+        var dbName;
+        var dbOptions = {
+            server:{auto_reconnect:true, socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 }},
+            replSet:{socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 }},
+            mongos:{socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 }}
+        };
+        if (typeof countlyConfig.mongodb === 'string') {
+            dbName = drill ? countlyConfig.mongodb.replace(new RegExp('countly$'), 'countly_drill') : countlyConfig.mongodb;
+        } else{
+            countlyConfig.mongodb.db = drill ? 'countly_drill' : (countlyConfig.mongodb.db || 'countly');
+            if ( typeof countlyConfig.mongodb.replSetServers === 'object'){
+                //mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test
+                dbName = countlyConfig.mongodb.replSetServers.join(',')+'/'+countlyConfig.mongodb.db;
+            } else {
+                dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db);
+            }
+        }
+
+        if(dbName.indexOf('mongodb://') !== 0){
+            dbName = 'mongodb://'+dbName;
+        }
+
+        console.log('Installing funnels plugin');
+
+        return mongo.db(dbName, dbOptions);
+    };
+
     var getObjectDiff = function(current, provided){
         var toReturn = {};
         
