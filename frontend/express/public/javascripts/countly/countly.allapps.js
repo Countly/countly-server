@@ -4,8 +4,9 @@
     var _appData = {"all":{_id:"all", name:"All apps"}},
 		_appIds = {},
 		_sessions = {},
-		_sessionData = {};
-	var _tempApp;
+		_sessionData = {},
+        _type = "mobile",
+        _tempApp;
 
     //Public Methods
     countlyAllApps.initialize = function () {
@@ -17,8 +18,10 @@
 			this.reset();
 			var deffereds = [];
 			_tempApp = countlyCommon.ACTIVE_APP_ID;
+            _type = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type;
 			for(var i in countlyGlobal["apps"]){
-				deffereds.push(loadApp(i));
+                if(countlyGlobal["apps"][i].type == _type)
+                    deffereds.push(loadApp(i));
 			}
 			return $.when.apply($, deffereds).then(function(){
 				countlyCommon.setActiveApp(_tempApp);
@@ -29,36 +32,38 @@
 				_appData["all"].avgduration = {total:0, trend:0};
 				_sessions["all"] = {};
 				for(var appID in countlyGlobal["apps"]){
-                    _appData[appID].duration.total = 0;
-                    _appData[appID].avgduration.total = 0;
-					var sessionData = _sessionData[appID];
-					for(var i in _sessions[appID]){
-						for(var j = 0, l = _sessions[appID][i].data.length; j < l; j++){
-							if(!_sessions["all"][i]){
-								_sessions["all"][i] = {};
-								_sessions["all"][i].label = _sessions[appID][i].label;
-								_sessions["all"][i].data = [];
-							}
-							if(!_sessions["all"][i].data[j]){
-								_sessions["all"][i].data[j] = [0,0];
-							}
-							_sessions["all"][i].data[j][0] = _sessions[appID][i].data[j][0];
-							_sessions["all"][i].data[j][1] += parseFloat(_sessions[appID][i].data[j][1]);
-							if(i == "#draw-total-time-spent"){
-								_appData["all"].duration.total += parseFloat(_sessions[appID][i].data[j][1]);
-								_appData[appID].duration.total += parseFloat(_sessions[appID][i].data[j][1]);
+                    if(countlyGlobal["apps"][appID].type == _type){
+                        _appData[appID].duration.total = 0;
+                        _appData[appID].avgduration.total = 0;
+                        var sessionData = _sessionData[appID];
+                        for(var i in _sessions[appID]){
+                            for(var j = 0, l = _sessions[appID][i].data.length; j < l; j++){
+                                if(!_sessions["all"][i]){
+                                    _sessions["all"][i] = {};
+                                    _sessions["all"][i].label = _sessions[appID][i].label;
+                                    _sessions["all"][i].data = [];
+                                }
+                                if(!_sessions["all"][i].data[j]){
+                                    _sessions["all"][i].data[j] = [0,0];
+                                }
+                                _sessions["all"][i].data[j][0] = _sessions[appID][i].data[j][0];
+                                _sessions["all"][i].data[j][1] += parseFloat(_sessions[appID][i].data[j][1]);
+                                if(i == "#draw-total-time-spent"){
+                                    _appData["all"].duration.total += parseFloat(_sessions[appID][i].data[j][1]);
+                                    _appData[appID].duration.total += parseFloat(_sessions[appID][i].data[j][1]);
+                                }
                             }
-						}
-					}
-					_appData["all"].sessions.total += sessionData.usage['total-sessions'].total;
-					_appData["all"].users.total += sessionData.usage['total-users'].total;
-					_appData["all"].newusers.total += sessionData.usage['new-users'].total;
-					_appData["all"].sessions.trend += fromShortNumber(sessionData.usage['total-sessions'].change);
-					_appData["all"].users.trend += fromShortNumber(sessionData.usage['total-users'].change);
-					_appData["all"].newusers.trend += fromShortNumber(sessionData.usage['new-users'].change);
-					_appData["all"].duration.trend += fromShortNumber(sessionData.usage['total-duration'].change);
-					_appData["all"].avgduration.trend += fromShortNumber(sessionData.usage['avg-duration-per-session'].change);
-                    _appData[appID].avgduration.total = (_appData[appID].sessions.total == 0 ) ? 0 : _appData[appID].duration.total/_appData[appID].sessions.total;
+                        }
+                        _appData["all"].sessions.total += sessionData.usage['total-sessions'].total;
+                        _appData["all"].users.total += sessionData.usage['total-users'].total;
+                        _appData["all"].newusers.total += sessionData.usage['new-users'].total;
+                        _appData["all"].sessions.trend += fromShortNumber(sessionData.usage['total-sessions'].change);
+                        _appData["all"].users.trend += fromShortNumber(sessionData.usage['total-users'].change);
+                        _appData["all"].newusers.trend += fromShortNumber(sessionData.usage['new-users'].change);
+                        _appData["all"].duration.trend += fromShortNumber(sessionData.usage['total-duration'].change);
+                        _appData["all"].avgduration.trend += fromShortNumber(sessionData.usage['avg-duration-per-session'].change);
+                        _appData[appID].avgduration.total = (_appData[appID].sessions.total == 0 ) ? 0 : _appData[appID].duration.total/_appData[appID].sessions.total;
+                    }
 				}
 				for(var i in _appData["all"]){
 					if(_appData["all"][i].trend < 0)
