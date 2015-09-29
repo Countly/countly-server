@@ -3221,10 +3221,6 @@ var AppRouter = Backbone.Router.extend({
                     appImage = $(this).find(".logo").css("background-image"),
                     sidebarApp = $("#sidebar-app-select");
 
-				
-				$("#sidebar-menu > .item").removeClass("hide");
-                app.onAppSwitch(appId);
-
                 if (self.activeAppKey == appKey) {
                     sidebarApp.removeClass("active");
                     $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack'});
@@ -3239,6 +3235,7 @@ var AppRouter = Backbone.Router.extend({
                     sidebarApp.find(".text").text(appName);
                     sidebarApp.find(".logo").css("background-image", appImage);
                     sidebarApp.removeClass("active");
+                    app.onAppSwitch(appId);
                     self.activeView.appChanged();
                 }});
             });
@@ -4176,11 +4173,10 @@ var AppRouter = Backbone.Router.extend({
 			this.refreshScripts[view] = [];
 		this.refreshScripts[view].push(callback);
 	},
-    onAppSwitch:function(appId, refresh){
+    onAppSwitch:function(appId, refresh){   
         if(window.location.hash != "#/" && !refresh){
-            window.location.hash = "#/";
+            app.main();
         }
-        
         $("#sidebar-menu .sidebar-menu").hide();
         var type = countlyGlobal["apps"][appId].type;
         if($("#sidebar-menu #"+type+"-type").length)
