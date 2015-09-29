@@ -4073,7 +4073,7 @@ var AppRouter = Backbone.Router.extend({
         $.fn.dataTableExt.sErrMode = 'throw';
         $(document).ready(function () {
             setTimeout(function(){
-                self.onAppSwitch(countlyCommon.ACTIVE_APP_ID);
+                self.onAppSwitch(countlyCommon.ACTIVE_APP_ID, true);
             },1)
         });
     },
@@ -4176,9 +4176,11 @@ var AppRouter = Backbone.Router.extend({
 			this.refreshScripts[view] = [];
 		this.refreshScripts[view].push(callback);
 	},
-    onAppSwitch:function(appId){
-        if(window.location.hash != "#/");
+    onAppSwitch:function(appId, refresh){
+        if(window.location.hash != "#/" && !refresh){
             window.location.hash = "#/";
+        }
+        
         $("#sidebar-menu .sidebar-menu").hide();
         var type = countlyGlobal["apps"][appId].type;
         if($("#sidebar-menu #"+type+"-type").length)
