@@ -47,7 +47,8 @@ countly_backup (){
         echo "Please provide path" ;
         return 0;
     fi
-    (cd $1 ;
+    (mkdir -p $1 ;
+    cd $1 ;
     echo "Backing up mongodb...";
     mongodump --db countly > /dev/null;
     mongodump --db countly_drill > /dev/null;
