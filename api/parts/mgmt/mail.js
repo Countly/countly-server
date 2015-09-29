@@ -117,10 +117,13 @@ mail.lookup = function(callback) {
     // If host is set in config.js use that, otherwise get the external IP from ifconfig.me
     var domain = plugins.getConfig("api").domain;
     if (typeof domain != "undefined" && domain != "") {
-        callback(false, plugins.getConfig("api").domain);
+        if(domain.indexOf("://") == -1){
+            domain = "http://"+domain;
+        }
+        callback(false, domain);
     } else {
         request('http://ifconfig.me/ip', function(error, response, body) {
-            callback(error, body);
+            callback(error, "http://"+body);
         });
     }
 }
