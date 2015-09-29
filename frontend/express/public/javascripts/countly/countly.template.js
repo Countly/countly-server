@@ -2872,8 +2872,11 @@ var AppRouter = Backbone.Router.extend({
     dateFromSelected:null, //date from selected from the date picker
     activeAppName:'',
     activeAppKey:'',
-    main:function () {
+    main:function (forced) {
         this.navigate("/", true);
+        if(forced && self.activeView != this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type]){
+            this.dashboard();
+        }
     },
     dashboard:function () {
         this.renderWhenReady(this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type]);
@@ -4174,8 +4177,8 @@ var AppRouter = Backbone.Router.extend({
 		this.refreshScripts[view].push(callback);
 	},
     onAppSwitch:function(appId, refresh){   
-        if(window.location.hash != "#/" && !refresh){
-            app.main();
+        if(!refresh){
+            app.main(true);
         }
         $("#sidebar-menu .sidebar-menu").hide();
         var type = countlyGlobal["apps"][appId].type;
