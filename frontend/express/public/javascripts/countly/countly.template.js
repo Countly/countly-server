@@ -1030,15 +1030,9 @@ window.AllAppsView = countlyView.extend({
         }
         _.defer(function () {
             countlyCommon.drawTimeGraph(sessionDP, "#dashboard-graph");
-
         });
     },
     renderCommon:function (isRefresh) {
-        $("#sidebar-app-select").find(".text").text(jQuery.i18n.map["allapps.title"]);
-        $("#sidebar-app-select").find(".logo").css("background-image", "url('"+countlyGlobal["cdn"]+"images/favicon.png')");
-        $("#sidebar-menu > .item").addClass("hide");
-        $("#management-menu").removeClass("hide");
-        $("#allapps-menu").removeClass("hide").css("display", "block");
         var appData = countlyAllApps.getData();
 
         this.templateData = {
@@ -1111,58 +1105,43 @@ window.AllAppsView = countlyView.extend({
             $('.allapps tbody').on("click", "tr", function (event){
                 var td = $(event.target).closest("td");
                 var row = $(this);
-                if(row.children().first().is(td))
-                {
-                    if(self.selectedApps[row.attr("id")]){
-                        row.find(".check").removeClass("fa fa-check").addClass("fa fa-unchecked");
-                        row.find(".color").css("background-color", "transparent");
-                        delete self.selectedApps[row.attr("id")];
-                        if(row.attr("id") != "all")
-                            self.selectedCount--;
-                        if(self.selectedCount==0){
-                            $("#empty-graph").show();
-                            $(".big-numbers").removeClass("active");
-                            $(".big-numbers .select").removeClass("selected");
-                        }
 
+                if(self.selectedApps[row.attr("id")]){
+                    row.find(".check").removeClass("fa fa-check").addClass("fa fa-unchecked");
+                    row.find(".color").css("background-color", "transparent");
+                    delete self.selectedApps[row.attr("id")];
+                    if(row.attr("id") != "all")
+                        self.selectedCount--;
+                    if(self.selectedCount==0){
+                        $("#empty-graph").show();
+                        $(".big-numbers").removeClass("active");
+                        $(".big-numbers .select").removeClass("selected");
                     }
-                    else if(self.selectedCount < 10 || row.attr("id") == "all"){
-                        if(self.selectedCount==0){
-                            $("#empty-graph").hide();
-                            $(self.selectedView).parents(".big-numbers").addClass("active");
-                        }
-                        if(row.attr("id") == "all"){
-                            $(".check.icon-check").removeClass("fa fa-check").addClass("fa fa-unchecked");
-                            $('.d-table').find(".color").css("background-color", "transparent");
-                            self.selectedApps = {};
-                            self.selectedCount = 0;
-                        }
-                        else{
-                            if(self.selectedApps["all"]){
-                                $(".d-table #all .check.icon-check").removeClass("fa fa-check").addClass("fa fa-unchecked");
-                                $('.d-table #all').find(".color").css("background-color", "transparent");
-                                delete self.selectedApps["all"];
-                            }
-                            self.selectedCount++;
-                        }
-                        row.find(".check").removeClass("fa fa-unchecked").addClass("fa fa-check");
-                        self.selectedApps[row.attr("id")] = true;
-                    }
-                    self.drawGraph();
+
                 }
-                else
-                {
-                    if(row.attr("id") != "all"){
-                        app.onAppSwitch(row.attr("id"));
-                        var aData = self.dtable.fnGetData( this );
-                        countlyAllApps.setApp(row.attr("id"));
-                        $("#sidebar-app-select").find(".logo").css("background-image", "url('"+countlyGlobal["cdn"]+"appimages/" + row.attr("id") + ".png')");
-                        $("#sidebar-app-select").find(".text").text(aData["name"]);
-                        $("#sidebar-menu > .item").removeClass("hide");
-                        $("#allapps-menu").css("display", "none");
-                        window.location.hash = "#/";
+                else if(self.selectedCount < 10 || row.attr("id") == "all"){
+                    if(self.selectedCount==0){
+                        $("#empty-graph").hide();
+                        $(self.selectedView).parents(".big-numbers").addClass("active");
                     }
+                    if(row.attr("id") == "all"){
+                        $(".check").removeClass("fa fa-check").addClass("fa fa-unchecked");
+                        $('.d-table').find(".color").css("background-color", "transparent");
+                        self.selectedApps = {};
+                        self.selectedCount = 0;
+                    }
+                    else{
+                        if(self.selectedApps["all"]){
+                            $(".d-table #all .check").removeClass("fa fa-check").addClass("fa fa-unchecked");
+                            $('.d-table #all').find(".color").css("background-color", "transparent");
+                            delete self.selectedApps["all"];
+                        }
+                        self.selectedCount++;
+                    }
+                    row.find(".check").removeClass("fa fa-unchecked").addClass("fa fa-check");
+                    self.selectedApps[row.attr("id")] = true;
                 }
+                self.drawGraph();
             });
         }
     },
@@ -3242,26 +3221,9 @@ var AppRouter = Backbone.Router.extend({
                     appImage = $(this).find(".logo").css("background-image"),
                     sidebarApp = $("#sidebar-app-select");
 
-				if (appId == "allapps") {
-					window.location.hash = "/all";
-					sidebarApp.removeClass("active");
-                    $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack'});
-					self.activeAppKey = appKey;
-                    setTimeout(function(){
-                        $("#sidebar-menu > .item").addClass("hide");
-                        $("#management-menu").removeClass("hide");
-                        $("#allapps-menu").removeClass("hide").css("display", "block");
-                    },500);
-                    return false;
-				}
-				else{
-					$("#sidebar-menu > .item").removeClass("hide");
-					$("#allapps-menu").css("display", "none");
-                    app.onAppSwitch(appId);
-				}
-
-				if(window.location.hash.toString() == "#/all")
-					window.location.hash = "/";
+				
+				$("#sidebar-menu > .item").removeClass("hide");
+                app.onAppSwitch(appId);
 
                 if (self.activeAppKey == appKey) {
                     sidebarApp.removeClass("active");

@@ -80,10 +80,6 @@
                     <div class="logo dashboard"></div>
                     <div class="text" data-localize="sidebar.dashboard"></div>
                 </a>
-                <a href="#/all" id="allapps-menu" class="item analytics active" style='display: none;'>
-                    <div class="logo dashboard"></div>
-                    <div class="text" data-localize="sidebar.dashboard"></div>
-                </a>
                 <a class="item analytics" id="analytics-menu">
                     <div class="logo analytics"></div>
                     <div class="text" data-localize="sidebar.analytics"></div>
@@ -164,10 +160,6 @@
 			</div>
 		</div>
 		<div class="apps-scrollable">
-			<div class="app-container app-navigate" data-id="allapps">
-				<div class="logo" style="background-image: url('<%- cdn %>images/favicon.png');"></div>
-				<div class="name" data-localize="allapps.title"></div>
-			</div>
 			<% for (var i = 0; i < userOfApps.length; i++) { %>
 				<div class="app-container app-navigate" data-key="<%= userOfApps[i].key %>" data-id="<%= userOfApps[i]['_id'] %>">
 					<div class="logo" style="background-image: url('<%- cdn %>appimages/<%= userOfApps[i]['_id'] %>.png');"></div>
