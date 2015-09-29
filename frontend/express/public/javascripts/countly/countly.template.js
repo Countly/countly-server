@@ -4177,6 +4177,8 @@ var AppRouter = Backbone.Router.extend({
 		this.refreshScripts[view].push(callback);
 	},
     onAppSwitch:function(appId){
+        if(window.location.hash != "#/");
+            window.location.hash = "#/";
         $("#sidebar-menu .sidebar-menu").hide();
         var type = countlyGlobal["apps"][appId].type;
         if($("#sidebar-menu #"+type+"-type").length)
