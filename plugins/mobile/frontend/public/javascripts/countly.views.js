@@ -270,6 +270,12 @@ window.MobileDashboardView = countlyView.extend({
 app.addAppType("mobile", MobileDashboardView);
 
 $( document ).ready(function() {
+    var menu = '<a href="#/all" id="allapps-menu" class="item analytics active">'+
+		'<div class="logo dashboard"></div>'+
+		'<div class="text" data-localize="allapps.title"></div>'+
+	'</a>';
+	$('#mobile-type a').first().before(menu);
+    
 	var menu = '<a href="#/analytics/users" class="item">'+
 		'<div class="logo users"></div>'+
 		'<div class="text" data-localize="sidebar.analytics.users"></div>'+
