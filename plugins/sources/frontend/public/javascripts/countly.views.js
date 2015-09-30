@@ -24,7 +24,7 @@ window.SourcesView = countlyView.extend({
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": data.chartData,
                 "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
-					$(nRow).attr("id", aData.sources.replace(/\./g, '_'));
+					$(nRow).attr("id", aData.sources.replace(/\./g, '-').replace(/ /g, '_').replace(/[^\w]/g,''));
 				},
                 "aoColumns": [
                     { "mData": "sources", sType:"string", "sTitle": jQuery.i18n.map["sources.source"], "sClass": "break" },
