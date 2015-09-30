@@ -276,53 +276,53 @@ $( document ).ready(function() {
 	'</a>';
 	$('#mobile-type a').first().before(menu);
     
-	var menu = '<a href="#/analytics/users" class="item">'+
-		'<div class="logo users"></div>'+
-		'<div class="text" data-localize="sidebar.analytics.users"></div>'+
+    menu = '<a href="#/analytics/platforms" class="item">'+
+		'<div class="logo platforms"></div>'+
+		'<div class="text" data-localize="sidebar.analytics.platforms"></div>'+
 	'</a>';
-	$('#mobile-type #analytics-submenu').append(menu);
-    
-    menu = '<a href="#/analytics/sessions" class="item">'+
-		'<div class="logo sessions"></div>'+
-		'<div class="text" data-localize="sidebar.analytics.sessions"></div>'+
-	'</a>';
-	$('#mobile-type #analytics-submenu').append(menu);
-    
-    menu = '<a href="#/analytics/countries" class="item">'+
-		'<div class="logo country"></div>'+
-		'<div class="text" data-localize="sidebar.analytics.countries"></div>'+
-	'</a>';
-	$('#mobile-type #analytics-submenu').append(menu);
-    
-    menu = '<a href="#/analytics/devices" class="item">'+
-		'<div class="logo devices"></div>'+
-		'<div class="text" data-localize="sidebar.analytics.devices"></div>'+
-	'</a>';
-	$('#mobile-type #analytics-submenu').append(menu);
-    
-    menu = '<a href="#/analytics/resolutions" class="item">'+
-		'<div class="logo resolutions"></div>'+
-		'<div class="text" data-localize="sidebar.analytics.resolutions"></div>'+
-	'</a>';
-	$('#mobile-type #analytics-submenu').append(menu);
-    
-    menu = '<a href="#/analytics/versions" class="item">'+
-		'<div class="logo app-versions"></div>'+
-		'<div class="text" data-localize="sidebar.analytics.app-versions"></div>'+
-	'</a>';
-	$('#mobile-type #analytics-submenu').append(menu);
+	$('#mobile-type #analytics-submenu').prepend(menu);
     
     menu = '<a href="#/analytics/carriers" class="item">'+
 		'<div class="logo carrier"></div>'+
 		'<div class="text" data-localize="sidebar.analytics.carriers"></div>'+
 	'</a>';
-	$('#mobile-type #analytics-submenu').append(menu);
+	$('#mobile-type #analytics-submenu').prepend(menu);
     
-    menu = '<a href="#/analytics/platforms" class="item">'+
-		'<div class="logo platforms"></div>'+
-		'<div class="text" data-localize="sidebar.analytics.platforms"></div>'+
+    menu = '<a href="#/analytics/versions" class="item">'+
+		'<div class="logo app-versions"></div>'+
+		'<div class="text" data-localize="sidebar.analytics.app-versions"></div>'+
 	'</a>';
-	$('#mobile-type #analytics-submenu').append(menu);
+	$('#mobile-type #analytics-submenu').prepend(menu);
+    
+    menu = '<a href="#/analytics/resolutions" class="item">'+
+		'<div class="logo resolutions"></div>'+
+		'<div class="text" data-localize="sidebar.analytics.resolutions"></div>'+
+	'</a>';
+	$('#mobile-type #analytics-submenu').prepend(menu);
+    
+    menu = '<a href="#/analytics/devices" class="item">'+
+		'<div class="logo devices"></div>'+
+		'<div class="text" data-localize="sidebar.analytics.devices"></div>'+
+	'</a>';
+	$('#mobile-type #analytics-submenu').prepend(menu);
+    
+    menu = '<a href="#/analytics/countries" class="item">'+
+		'<div class="logo country"></div>'+
+		'<div class="text" data-localize="sidebar.analytics.countries"></div>'+
+	'</a>';
+	$('#mobile-type #analytics-submenu').prepend(menu);
+    
+    menu = '<a href="#/analytics/sessions" class="item">'+
+		'<div class="logo sessions"></div>'+
+		'<div class="text" data-localize="sidebar.analytics.sessions"></div>'+
+	'</a>';
+	$('#mobile-type #analytics-submenu').prepend(menu);
+    
+	menu = '<a href="#/analytics/users" class="item">'+
+		'<div class="logo users"></div>'+
+		'<div class="text" data-localize="sidebar.analytics.users"></div>'+
+	'</a>';
+	$('#mobile-type #analytics-submenu').prepend(menu);
     
     menu = '<a class="item analytics" id="engagement-menu">' +
                 '<div class="logo fa fa-magnet" style="background-image:none; font-size:28px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>' +
