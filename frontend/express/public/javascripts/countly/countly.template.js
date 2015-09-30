@@ -364,7 +364,7 @@ $.extend(Template.prototype, {
         dTable.fnStandingRedraw();
     };
 	
-	CountlyHelpers.expandRows = function(dTable, getData){
+	CountlyHelpers.expandRows = function(dTable, getData, context){
 		dTable.aOpen = [];
 		dTable.on("click", "tr", function (e){
 			var nTr = this;
@@ -377,7 +377,7 @@ $.extend(Template.prototype, {
 			
 				if ( i === -1 ) {
 					$(nTr).addClass("selected");
-					var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr )), 'details' );
+					var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr ), context), 'details' );
 					$('div.datatablesubrow', nDetailsRow).slideDown();
 					dTable.aOpen.push( id );
 				}
@@ -392,14 +392,14 @@ $.extend(Template.prototype, {
 		});
 	};
 	
-	CountlyHelpers.reopenRows = function(dTable, getData){
+	CountlyHelpers.reopenRows = function(dTable, getData, context){
 		var nTr;
 		var oSettings = dTable.fnSettings();
 		if(dTable.aOpen){
 			$.each( dTable.aOpen, function ( i, id ) {
 				var nTr = $("#"+id)[0];
 				$(nTr).addClass("selected");
-				var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr )), 'details' );
+				var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr ), context), 'details' );
 				$('div.datatablesubrow', nDetailsRow).show();
 			});
 		}
