@@ -69,5 +69,5 @@ $( document ).ready(function() {
 		'<div class="logo densities"></div>'+
 		'<div class="text" data-localize="sidebar.analytics.densities"></div>'+
 	'</a>';
-	$('#analytics-submenu').append(menu);
+	$('#mobile-type #analytics-submenu').append(menu);
 });

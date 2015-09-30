@@ -1352,8 +1352,8 @@ $( document ).ready(function() {
             '<div class="text" data-localize="push.sidebar.messages">Messages</div>'+
         '</a>'+
     '</div>';
-    if($('#management-menu').length)
-        $('#management-menu').before(menu);
+    if($('#mobile-type #management-menu').length)
+        $('#mobile-type #management-menu').before(menu);
     else
-        $('#sidebar-menu').append(menu);
+        $('#mobile-type').append(menu);
 });

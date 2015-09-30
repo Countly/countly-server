@@ -69,5 +69,5 @@ $( document ).ready(function() {
 		'<div class="logo-icon fa fa-globe"></div>'+
 		'<div class="text" data-localize="browser.title"></div>'+
 	'</a>';
-	$('#analytics-submenu').append(menu);
+	$('#web-type #analytics-submenu').append(menu);
 });

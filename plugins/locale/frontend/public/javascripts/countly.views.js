@@ -77,5 +77,5 @@ $( document ).ready(function() {
 		'<div class="logo languages"></div>'+
 		'<div class="text" data-localize="sidebar.analytics.languages"></div>'+
 	'</a>';
-	$('#analytics-submenu').append(menu);
+	$('.sidebar-menu #analytics-submenu').append(menu);
 });
