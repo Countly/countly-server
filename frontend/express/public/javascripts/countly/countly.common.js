@@ -830,18 +830,17 @@
     };
 
     // Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
-    countlyCommon.extractBarData = function (db, rangeArray, clearFunction) {
-
+    countlyCommon.extractBarData = function (db, rangeArray, clearFunction, fetchFunction) {
+        fetchFunction = fetchFunction || function (rangeArr, dataObj) {return rangeArr;};
+        
         var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, [
             {
                 name:"range",
-                func:function (rangeArr, dataObj) {
-                    return rangeArr;
-                }
+                func:fetchFunction
             },
             { "name":"t" }
         ]);
-
+        rangeData.chartData = countlyCommon.mergeMetricsByName(rangeData.chartData, "range");
         rangeData.chartData = _.sortBy(rangeData.chartData, function(obj) { return -obj.t; });
 
         var rangeNames = _.pluck(rangeData.chartData, 'range'),
