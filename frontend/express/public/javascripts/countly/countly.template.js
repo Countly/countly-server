@@ -557,13 +557,13 @@ $.extend(Template.prototype, {
 			setMeta();
 		};
 	
-		countlyMetric.getData = function () {
+		countlyMetric.getData = function (clean) {
 	
 			var chartData = countlyCommon.extractTwoLevelData(_Db, _metrics, this.clearObject, [
 				{
 					name:_name,
 					func:function (rangeArr, dataObj) {
-                        if(fetchValue)
+                        if(fetchValue && !clean)
                             return fetchValue(rangeArr);
                         else
                             return rangeArr;
@@ -625,7 +625,7 @@ $.extend(Template.prototype, {
 		};
 	
 		countlyMetric.getBars = function () {
-			return countlyCommon.extractBarData(_Db, _metrics, this.clearObject);
+			return countlyCommon.extractBarData(_Db, _metrics, this.clearObject, fetchValue);
 		};
 	
 		function setMeta() {
