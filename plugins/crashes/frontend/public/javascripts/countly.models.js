@@ -465,14 +465,28 @@
 	
 	countlyCrashes.getPlatformBars = function () {
 		var res = [];
+        var data = [];
 		var total = 0;
-		for(var i in _crashData.crashes.os){
-			total += _crashData.crashes.os[i];
-		}
+        
 		for(var i in _crashData.crashes.os){
             if(_crashData.crashes.os[i] > 0)
-                res.push({"name":i,"percent":(_crashData.crashes.os[i]/total)*100});
+                data.push([i, _crashData.crashes.os[i]]);
 		}
+        
+        data.sort(function(a, b) {return b[1] - a[1]});
+        
+        var maxItems = 3;
+        if(data.length < maxItems)
+            maxItems = data.length;
+        
+		for(var i = 0; i < maxItems; i++){
+            total += data[i][1];
+        }
+        
+		for(var i = 0; i < maxItems; i++){
+            res.push({"name":data[i][0],"percent":(data[i][1]/total)*100});
+		}
+        
 		return res;
     };
     
