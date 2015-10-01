@@ -1,4 +1,3 @@
-#sidebar-menu .sidebar-submenu .item .logo.stores { background-position:-750px; }
-#sidebar-menu .sidebar-submenu .item.active .logo.stores { background-position:-720px; }
-
-.widget-header .logo.stores { background-position:-456px; }
+.source-table tr{cursor: pointer;}
+.source-20{width: 20%;}
+.source-40{width: 40%;}

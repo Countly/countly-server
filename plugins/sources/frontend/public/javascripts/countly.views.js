@@ -27,15 +27,16 @@ window.SourcesView = countlyView.extend({
 					$(nRow).attr("id", aData.sources.replace(/\./g, '-').replace(/ /g, '_').replace(/[^\w]/g,''));
 				},
                 "aoColumns": [
-                    { "mData": "sources", sType:"string", "sTitle": jQuery.i18n.map["sources.source"], "sClass": "break" },
-                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
-                    { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
-                    { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
+                    { "mData": "sources", sType:"string", "sTitle": jQuery.i18n.map["sources.source"], "sClass": "break source-40" },
+                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"], "sClass": "source-20" },
+                    { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"], "sClass": "source-20" },
+                    { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"], "sClass": "source-20" }
                 ]
             }));
 
             this.dtable.stickyTableHeaders();
             this.dtable.fnSort( [ [1,'desc'] ] );
+            this.dtable.addClass("source-table");
             countlyCommon.drawGraph(data.chartDPTotal, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(data.chartDPNew, "#dashboard-graph2", "pie");
             
@@ -68,15 +69,21 @@ window.SourcesView = countlyView.extend({
 		if(d && d.sources && self.dataMap[d.sources]){
 			str += '<div class="datatablesubrow">'+
 				'<table cellpadding="5" cellspacing="0" border="0" class="subtable">';
+                    str += '<tr>';
+                    str += '<th class="source-40">' + jQuery.i18n.map["sources.source"] + '</th>';
+					str += '<th class="source-20">' + jQuery.i18n.map["common.table.total-sessions"] + '</th>';
+					str += '<th class="source-20">' + jQuery.i18n.map["common.table.total-users"] + '</th>';
+					str += '<th class="source-20">' + jQuery.i18n.map["common.table.new-users"] + '</th>';
+					str += '</tr>';
 					for(var i in self.dataMap[d.sources]){
 						str += '<tr>';
                             if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "mobile" || self.dataMap[d.sources][i].sources.indexOf("://") == -1)
-                                str += '<td>' + self.dataMap[d.sources][i].sources + '</td>';
+                                str += '<td class="source-40">' + self.dataMap[d.sources][i].sources + '</td>';
                             else
-                                str += '<td><a href="' + self.dataMap[d.sources][i].sources + '" target="_blank">' + self.dataMap[d.sources][i].sources + '</a></td>';
-							str += '<td>' + self.dataMap[d.sources][i].t + '</td>';
-							str += '<td>' + self.dataMap[d.sources][i].u + '</td>';
-							str += '<td>' + self.dataMap[d.sources][i].n + '</td>';
+                                str += '<td class="source-40"><a href="' + self.dataMap[d.sources][i].sources + '" target="_blank">' + self.dataMap[d.sources][i].sources + '</a></td>';
+							str += '<td class="source-20">' + self.dataMap[d.sources][i].t + '</td>';
+							str += '<td class="source-20">' + self.dataMap[d.sources][i].u + '</td>';
+							str += '<td class="source-20">' + self.dataMap[d.sources][i].n + '</td>';
 						str += '</tr>';
 					}
 				str += '</table>'+
