@@ -112,14 +112,12 @@ $( document ).ready(function() {
         $('#management-submenu .help-toggle').before(menu);
     
     //listen for UI app change
-    $(".app-container:not(#app-container-new)").live("click", function () {
-        setTimeout(function(){   
-            if(countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]){
-                $("#populator-menu").show();
-            }
-            else{
-                $("#populator-menu").hide();
-            }
-        }, 1000);
+    app.addAppSwitchCallback(function(appId){
+        if(countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][appId]){
+            $("#populator-menu").show();
+        }
+        else{
+            $("#populator-menu").hide();
+        }
     });
 });

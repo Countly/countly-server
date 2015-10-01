@@ -71,6 +71,7 @@ var appsApi = {},
         var argProps = {
                 'name':     { 'required': true, 'type': 'String' },
                 'country':  { 'required': false, 'type': 'String' },
+                'type':     { 'required': false, 'type': 'String' },
                 'category': { 'required': false, 'type': 'String' },
                 'timezone': { 'required': false, 'type': 'String' }
             },
@@ -101,6 +102,7 @@ var appsApi = {},
         var argProps = {
                 'app_id':   { 'required': true, 'type': 'String', 'min-length': 24, 'max-length': 24, 'exclude-from-ret-obj': true },
                 'name':     { 'required': false, 'type': 'String' },
+                'type':     { 'required': false, 'type': 'String' },
                 'category': { 'required': false, 'type': 'String' },
                 'timezone': { 'required': false, 'type': 'String' },
                 'country':  { 'required': false, 'type': 'String' }

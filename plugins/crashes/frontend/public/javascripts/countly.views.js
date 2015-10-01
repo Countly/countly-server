@@ -899,10 +899,10 @@ $( document ).ready(function() {
         '<div class="logo fa fa-remove" style="background-image:none; font-size:24px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>'+
         '<div class="text" data-localize="crashes.title"></div>'+
     '</a>';
-	if($('#management-menu').length)
-		$('#management-menu').before(menu);
+	if($('.sidebar-menu #management-menu').length)
+		$('.sidebar-menu #management-menu').before(menu);
 	else
-		$('#sidebar-menu').append(menu);
+		$('.sidebar-menu').append(menu);
     
     //check if configuration view exists
     if(app.configurationsView){

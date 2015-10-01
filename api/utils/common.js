@@ -201,6 +201,9 @@ var common = {},
         var currTimestamp,
             currDate,
             currDateWithoutTimestamp = new Date();
+            
+        if(common.isNumber(reqTimestamp))
+            reqTimestamp = Math.round(reqTimestamp);
 
         // Check if the timestamp parameter exists in the request and is a 10 or 13 digit integer
         if (reqTimestamp && (reqTimestamp + "").length === 10 && common.isNumber(reqTimestamp)) {

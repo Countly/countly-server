@@ -104,7 +104,7 @@ window.ConfigurationsView = countlyView.extend({
             "apps":"Apps",
             "frontend-production":"Production mode",
             "frontend-session_timeout":"Session timeout in ms",
-            "api-domain":"Domain in emails",
+            "api-domain":"Server URL (used in outgoing emails)",
             "api-safe":"Safer API responses",
             "api-session_duration_limit":"Maximal Session Duration",
             "api-city_data":"Track city data",

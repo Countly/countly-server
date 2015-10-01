@@ -1,8 +1,8 @@
 {
-  "name": "countly-stores",
-  "title": "Store metric",
-  "version": "0.1.0",
-  "description": "Display stores that install your app",
+  "name": "countly-web",
+  "title": "Web Analytics",
+  "version": "1.0.0",
+  "description": "Plugin for adding website types to Countly",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/",
   "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
@@ -10,9 +10,9 @@
   "keywords": [
     "countly",
     "analytics",
-    "mobile",
-    "store",
-	"app"
+    "web",
+    "plugins",
+	"website"
   ],
   "dependencies": {
   },
