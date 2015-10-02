@@ -28,9 +28,8 @@ var plugin = {},
                             common.returnOutput(params, 'Errors');
                         else{
                             common.returnOutput(params, 'Success');
-                            plugins.updateConfigs(common.db, "plugins", params.qstring.plugin);
                         }
-                    })
+                    }, common.db);
 				}
 			} else {
 				common.returnOutput(params, 'Not enough parameters');

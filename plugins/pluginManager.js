@@ -270,7 +270,7 @@ var pluginManager = function pluginManager(){
         }
     };
     
-    this.syncPlugins = function(pluginState, callback){
+    this.syncPlugins = function(pluginState, callback, db){
         var self = this;
         var dir = path.resolve(__dirname, './plugins.json');
         var pluginList = this.getPlugins().slice(), newPluginsList = pluginList.slice();
@@ -299,6 +299,8 @@ var pluginManager = function pluginManager(){
                     callback(true);
 			} else {
                 if(changes > 0){
+                    if(db)
+                        self.updateConfigs(db, "plugins", pluginState);
                     async.series([fs.writeFile.bind(fs, dir, JSON.stringify(newPluginsList), 'utf8'), self.prepareProduction.bind(self)], function(error){
                         self.reloadPlugins();
                         if(callback)
