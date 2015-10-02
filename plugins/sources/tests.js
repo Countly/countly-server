@@ -41,12 +41,12 @@ describe('Testing Store metrics', function(){
 	});
 	
 	describe('Verify sources', function(){
-		it('should have store', function(done){
+		it('should have sources', function(done){
 			request
 			.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=sources')
 			.expect(200)
 			.end(function(err, res){
-				testUtils.validateMetrics(err, res, done, {meta:{"sources":['com:android:vending']},"com:android:vending":{"n":1,"t":1,"u":1}});
+				testUtils.validateMetrics(err, res, done, {meta:{"sources":['com&#46;android&#46;vending']},"com&#46;android&#46;vending":{"n":1,"t":1,"u":1}});
 			});
 		});
 	});
@@ -76,7 +76,7 @@ describe('Testing Store metrics', function(){
 			.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=sources')
 			.expect(200)
 			.end(function(err, res){
-				testUtils.validateMetrics(err, res, done, {meta:{"sources":["com:android:vending", "com:slideme:sam:manager", "com:amazon:venezia", "iOS"]}, "com:android:vending":{"n":3,"t":3,"u":3}, "com:slideme:sam:manager":{"n":1,"t":1,"u":1},"com:amazon:venezia":{"n":1,"t":1,"u":1}, "iOS":{"n":1,"t":1,"u":1}});
+				testUtils.validateMetrics(err, res, done, {meta:{"sources":["com&#46;android&#46;vending", "com&#46;slideme&#46;sam&#46;manager", "com&#46;amazon&#46;venezia", "iOS"]}, "com&#46;android&#46;vending":{"n":3,"t":3,"u":3}, "com&#46;slideme&#46;sam&#46;manager":{"n":1,"t":1,"u":1},"com&#46;amazon&#46;venezia":{"n":1,"t":1,"u":1}, "iOS":{"n":1,"t":1,"u":1}});
 			});
 		});
 	});
