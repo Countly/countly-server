@@ -76,7 +76,7 @@ describe('Testing Store metrics', function(){
 			.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=sources')
 			.expect(200)
 			.end(function(err, res){
-				testUtils.validateMetrics(err, res, done, {meta:{"sources":["com&#46;android&#46;vending", "com&#46;slideme&#46;sam&#46;manager", "com&#46;amazon&#46;venezia", "iOS"]}, "com&#46;android&#46;vending":{"n":3,"t":3,"u":3}, "com&#46;slideme&#46;sam&#46;manager":{"n":1,"t":1,"u":1},"com&#46;amazon&#46;venezia":{"n":1,"t":1,"u":1}, "iOS":{"n":1,"t":1,"u":1}});
+				testUtils.validateMetrics(err, res, done, {meta:{"sources":["com&#46;android&#46;vending", "com&#46;google&#46;android&#46;feedback", "com&#46;slideme&#46;sam&#46;manager", "com&#46;amazon&#46;venezia", "iOS"]}, "com&#46;android&#46;vending":{"n":2,"t":2,"u":2},"com&#46;google&#46;android&#46;feedback":{"n":1,"t":1,"u":1}, "com&#46;slideme&#46;sam&#46;manager":{"n":1,"t":1,"u":1},"com&#46;amazon&#46;venezia":{"n":1,"t":1,"u":1}, "iOS":{"n":1,"t":1,"u":1}});
 			});
 		});
 	});
