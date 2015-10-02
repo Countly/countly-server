@@ -839,14 +839,6 @@ app.addPageScript("/crashes", function(){
     });
 });
 
-app.addPageScript("#", function(){
-	if (Backbone.history.fragment.indexOf("/crashes/") > -1) {
-        $("#sidebar-app-select").addClass("disabled");
-        $("#sidebar-app-select").removeClass("active");
-		$("#sidebar-menu").find("a[href='#/crashes']").addClass("active");
-    }
-});
-
 app.addPageScript("/drill", function(){
     var drillClone;
     var self = app.drillView;
