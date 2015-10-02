@@ -153,7 +153,7 @@ elif [ -f $DIR/scripts/$NAME.sh ]; then
     bash $DIR/scripts/$NAME.sh "$@";
 else
     echo "";
-    echo "usage:";
+    echo "countly usage:";
     echo "    countly start   # starts countly process";
     echo "    countly stop    # stops countly process";
     echo "    countly restart # restarts countly process";
@@ -164,5 +164,5 @@ else
     echo "    countly restore path/to/backup # restores countly db and config files from provided backup";
     echo "    countly update-translations # fetch latest translations from transifex";
     echo "    countly usage   # prints this out, but so as basically everything else does";
-    echo "";
+    countly plugin ;
 fi
