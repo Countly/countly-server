@@ -41,6 +41,10 @@ countly_version (){
     echo $VERSION;
 }
 
+countly_dir (){
+    echo "$( cd "$DIR/../.." && pwd )";
+}
+
 countly_backup (){
     if [ $# -eq 0 ]
     then
@@ -155,6 +159,7 @@ else
     echo "    countly restart # restarts countly process";
     echo "    countly upgrade # standard upgrade process (install dependencies, minify files, restart countly)";
     echo "    countly version # outputs current countly version";
+    echo "    countly dir     # outputs countly install directory";
     echo "    countly backup path/to/backup # backups countly db and config files";
     echo "    countly restore path/to/backup # restores countly db and config files from provided backup";
     echo "    countly update-translations # fetch latest translations from transifex";
