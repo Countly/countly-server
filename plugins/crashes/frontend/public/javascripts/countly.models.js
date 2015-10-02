@@ -10,6 +10,7 @@
         _initialized = false,
 		_periodObj = {},
 		_metrics = {},
+        _lastId = null,
         _usable_metrics = {};
         
     if(countlyGlobal.member && countlyGlobal.member.api_key){
@@ -46,6 +47,7 @@
         
 		
 		if(id){
+            _lastId = id;
 			return $.ajax({
 				type:"GET",
 				url:countlyCommon.API_PARTS.data.r,
@@ -109,6 +111,16 @@
             return _list[id];
         return id;
     }
+    
+    countlyCrashes.getRequestData =  function(){
+        return {
+					"api_key":countlyGlobal.member.api_key,
+					"app_id":countlyCommon.ACTIVE_APP_ID,
+					"method":"crashes",
+					"group":_lastId,
+                    "userlist":true
+				};
+    };
     
     countlyCrashes.common = function (id, path, callback) {
 		$.ajax({

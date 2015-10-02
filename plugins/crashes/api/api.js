@@ -477,33 +477,44 @@ plugins.setConfigs("crashes", {
 		if(params.qstring.method == 'crashes'){
             validate(params, function(params){
 				if (params.qstring.group) {
-					common.db.collection('app_users' + params.app_id).count({},function(err, total) {
-						common.db.collection('app_crashgroups' + params.app_id).findOne({_id:params.qstring.group}, function(err, result){
-							if(result){
-								result.total = total-1
-                                result.url = common.crypto.createHash('sha1').update(params.app_id + result._id+"").digest('hex');
-                                if(result.comments)
-                                    for(var i = 0; i < result.comments.length; i++){
-                                        if(result.comments[i].author_id == params.member._id+""){
-                                            result.comments[i].is_owner = true;
+                    if (params.qstring.userlist) {
+                        common.db.collection('app_crashusers' + params.app_id).find({group:params.qstring.group},{uid:1,_id:0}).toArray(function(err, uids){
+                            var res = [];
+                            for(var i = 0; i < uids.length; i++){
+                                res.push(uids[i].uid);
+                            }
+                            common.returnOutput(params, res);
+                        });
+                    }
+                    else{
+                        common.db.collection('app_users' + params.app_id).count({},function(err, total) {
+                            common.db.collection('app_crashgroups' + params.app_id).findOne({_id:params.qstring.group}, function(err, result){
+                                if(result){
+                                    result.total = total-1
+                                    result.url = common.crypto.createHash('sha1').update(params.app_id + result._id+"").digest('hex');
+                                    if(result.comments)
+                                        for(var i = 0; i < result.comments.length; i++){
+                                            if(result.comments[i].author_id == params.member._id+""){
+                                                result.comments[i].is_owner = true;
+                                            }
                                         }
+                                    var cursor = common.db.collection('app_crashes' + params.app_id).find({group:result._id}).sort( { $natural: -1 } );
+                                    cursor.limit(plugins.getConfig("crashes").report_limit);
+                                    cursor.toArray(function(err, res){
+                                        result.data = res;
+                                        common.returnOutput(params, result);
+                                    });
+                                    if(result.is_new){
+                                        common.db.collection('app_crashgroups' + params.app_id).update({_id:params.qstring.group},{$set:{is_new:false}}, function(err, result){});
+                                        common.db.collection('app_crashgroups' + params.app_id).update({_id:"meta"},{$inc:{isnew:-1}}, function(err,result){});
                                     }
-								var cursor = common.db.collection('app_crashes' + params.app_id).find({group:result._id}).sort( { $natural: -1 } );
-                                cursor.limit(plugins.getConfig("crashes").report_limit);
-                                cursor.toArray(function(err, res){
-									result.data = res;
-									common.returnOutput(params, result);
-								});
-                                if(result.is_new){
-                                    common.db.collection('app_crashgroups' + params.app_id).update({_id:params.qstring.group},{$set:{is_new:false}}, function(err, result){});
-                                    common.db.collection('app_crashgroups' + params.app_id).update({_id:"meta"},{$inc:{isnew:-1}}, function(err,result){});
                                 }
-							}
-							else{
-								common.returnMessage(params, 400, 'Crash group not found');
-							}
-						});
-					});
+                                else{
+                                    common.returnMessage(params, 400, 'Crash group not found');
+                                }
+                            });
+                        });
+                    }
 				}
                 else if (params.qstring.list) {
                     common.db.collection('app_crashgroups' + params.app_id).find({_id:{$ne:"meta"}},{name:1}).toArray(function(err, res){
