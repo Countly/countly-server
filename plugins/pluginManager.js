@@ -431,8 +431,6 @@ var pluginManager = function pluginManager(){
             dbName = 'mongodb://'+dbName;
         }
 
-        console.log('Installing funnels plugin');
-
         return mongo.db(dbName, dbOptions);
     };
 
