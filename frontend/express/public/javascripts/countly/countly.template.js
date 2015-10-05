@@ -3079,15 +3079,18 @@ var AppRouter = Backbone.Router.extend({
             return countlyCommon.formatTimeAgo(parseInt(context)/1000);
         });
 
+        var self = this;
         jQuery.i18n.properties({
             name:'locale',
             cache:true,
             language:countlyCommon.BROWSER_LANG_SHORT,
             path:[countlyGlobal["cdn"]+'localization/min/'],
-            mode:'map'
+            mode:'map',
+            callback:function () {
+                self.origLang = JSON.stringify(jQuery.i18n.map);
+            }
         });
 
-        var self = this;
         $(document).ready(function () {
 
             CountlyHelpers.initializeSelect();
@@ -3388,6 +3391,7 @@ var AppRouter = Backbone.Router.extend({
                     path:[countlyGlobal["cdn"]+'localization/min/'],
                     mode:'map',
                     callback:function () {
+                        self.origLang = JSON.stringify(jQuery.i18n.map);
                         $.when(countlyLocation.changeLanguage()).then(function () {
                             self.activeView.render();
                             self.pageScript();
@@ -4176,7 +4180,8 @@ var AppRouter = Backbone.Router.extend({
 			this.refreshScripts[view] = [];
 		this.refreshScripts[view].push(callback);
 	},
-    onAppSwitch:function(appId, refresh){   
+    onAppSwitch:function(appId, refresh){
+        jQuery.i18n.map = JSON.parse(app.origLang);
         if(!refresh){
             app.main(true);
         }
