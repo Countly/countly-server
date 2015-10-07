@@ -2849,6 +2849,19 @@ window.EventsView = countlyView.extend({
     }
 });
 
+window.DashboardView = countlyView.extend({
+    renderCommon:function () {
+        if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID]){
+            var type = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type;
+            type = jQuery.i18n.map["management-applications.types."+type] || type;
+            $(this.el).html("<div id='no-app-type'><h1>"+jQuery.i18n.map["common.missing-type"]+": "+type+"</h1><h3><a href='#/manage/plugins'>"+jQuery.i18n.map["common.install-plugin"]+"</a><br/>"+jQuery.i18n.map["common.or"]+"<br/><a href='#/manage/apps'>"+jQuery.i18n.map["common.change-app-type"]+"</a></h3></div>");
+        }
+        else{
+            $(this.el).html("<div id='no-app-type'><h1>"+jQuery.i18n.map["management-applications.no-app-warning"]+"</h1><h3><a href='#/manage/apps'>"+jQuery.i18n.map["common.add-new-app"]+"</a></h3></div>");
+        }
+    }
+});
+
 var AppRouter = Backbone.Router.extend({
     routes:{
         "/":"dashboard",
@@ -2881,7 +2894,12 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     dashboard:function () {
-        this.renderWhenReady(this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type]);
+        if(_.isEmpty(countlyGlobal['apps']))
+            this.renderWhenReady(this.manageAppsView);
+        else if(typeof this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type] != "undefined")
+            this.renderWhenReady(this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type]);
+        else
+            this.renderWhenReady(this.dashboardView);
     },
     sessions:function () {
         this.renderWhenReady(this.sessionView);
@@ -2975,6 +2993,7 @@ var AppRouter = Backbone.Router.extend({
 		this.pageScripts = {};
         this.appSwitchCallbacks = [];
 		this.refreshScripts = {};
+        this.dashboardView = new DashboardView();
         this.sessionView = new SessionView();
         this.countriesView = new CountriesView();
         this.userView = new UserView();
