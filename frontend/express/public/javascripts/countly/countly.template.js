@@ -1865,6 +1865,7 @@ window.ManageAppsView = countlyView.extend({
                 countlyCommon.setActiveApp(appId);
                 $("#sidebar-app-select").find(".logo").css("background-image", "url('"+countlyGlobal["cdn"]+"appimages/" + appId + ".png')");
                 $("#sidebar-app-select").find(".text").text(countlyGlobal['apps'][appId].name);
+                app.onAppSwitch(appId, true);
             }
 
             $("#app-edit-id").val(appId);
@@ -2367,6 +2368,7 @@ window.ManageAppsView = countlyView.extend({
                         "name":data.name,
                         "key":data.key,
                         "category":data.category,
+                        "type":data.type,
                         "timezone":data.timezone,
                         "country":data.country
                     };
@@ -4181,18 +4183,20 @@ var AppRouter = Backbone.Router.extend({
 		this.refreshScripts[view].push(callback);
 	},
     onAppSwitch:function(appId, refresh){
-        jQuery.i18n.map = JSON.parse(app.origLang);
-        if(!refresh){
-            app.main(true);
-        }
-        $("#sidebar-menu .sidebar-menu").hide();
-        var type = countlyGlobal["apps"][appId].type;
-        if($("#sidebar-menu #"+type+"-type").length)
-            $("#sidebar-menu #"+type+"-type").show();
-        else
-            $("#sidebar-menu #default-type").show();
-        for(var i = 0; i < this.appSwitchCallbacks.length; i++){
-            this.appSwitchCallbacks[i](appId);
+        if(appId != 0){
+            jQuery.i18n.map = JSON.parse(app.origLang);
+            if(!refresh){
+                app.main(true);
+            }
+            $("#sidebar-menu .sidebar-menu").hide();
+            var type = countlyGlobal["apps"][appId].type;
+            if($("#sidebar-menu #"+type+"-type").length)
+                $("#sidebar-menu #"+type+"-type").show();
+            else
+                $("#sidebar-menu #default-type").show();
+            for(var i = 0; i < this.appSwitchCallbacks.length; i++){
+                this.appSwitchCallbacks[i](appId);
+            }
         }
     },
     pageScript:function () { //scripts to be executed on each view change
