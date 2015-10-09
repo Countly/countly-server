@@ -405,26 +405,33 @@ var pluginManager = function pluginManager(){
 		});
 	};
     
-    this.dbConnection = function(drill) {
+    this.dbConnection = function(db) {
         var mongo = require('mongoskin'),
             countlyConfig = require('../frontend/express/config');
             
         var dbName;
         var dbOptions = {
-            server:{auto_reconnect:true, socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 }},
-            replSet:{socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 }},
-            mongos:{socketOptions: { keepAlive: 1, connectTimeoutMS: 30000 }}
+            server:{auto_reconnect:true, socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
+            replSet:{socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
+            mongos:{socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }}
         };
         if (typeof countlyConfig.mongodb === 'string') {
-            dbName = drill ? countlyConfig.mongodb.replace(new RegExp('countly$'), 'countly_drill') : countlyConfig.mongodb;
+            dbName = db ? countlyConfig.mongodb.replace(new RegExp('countly$'), db) : countlyConfig.mongodb;
         } else{
-            countlyConfig.mongodb.db = drill ? 'countly_drill' : (countlyConfig.mongodb.db || 'countly');
+            countlyConfig.mongodb.db = db ? db : (countlyConfig.mongodb.db || 'countly');
             if ( typeof countlyConfig.mongodb.replSetServers === 'object'){
                 //mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test
                 dbName = countlyConfig.mongodb.replSetServers.join(',')+'/'+countlyConfig.mongodb.db;
+                if(countlyConfig.mongodb.replicaName){
+                    dbOptions.replSet.rs_name = countlyConfig.mongodb.replicaName;
+                }
             } else {
                 dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db);
             }
+        }
+        
+        if(countlyConfig.mongodb.username && countlyConfig.mongodb.password){
+            dbName = countlyConfig.mongodb.username + ":" + countlyConfig.mongodb.password +"@" + dbName;
         }
 
         if(dbName.indexOf('mongodb://') !== 0){
