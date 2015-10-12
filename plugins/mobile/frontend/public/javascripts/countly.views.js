@@ -2,6 +2,7 @@ window.MobileDashboardView = countlyView.extend({
     selectedView:"#draw-total-sessions",
     initialize:function () {
         this.curMap = "map-list-sessions";
+        this.template = Handlebars.compile($("#dashboard-template").html());
     },
     beforeRender: function() {
         this.maps = {
@@ -9,14 +10,7 @@ window.MobileDashboardView = countlyView.extend({
             "map-list-users": {id:'total', label:jQuery.i18n.map["sidebar.analytics.users"], type:'number', metric:"u"},
             "map-list-new": {id:'total', label:jQuery.i18n.map["common.table.new-users"], type:'number', metric:"n"}
         };
-        if(this.template)
-			return $.when(countlyUser.initialize(), countlyCarrier.initialize(), countlyDeviceDetails.initialize()).then(function () {});
-		else{
-			var self = this;
-			return $.when($.get(countlyGlobal["path"]+'/mobile/templates/mobile-dashboard.html', function(src){
-				self.template = Handlebars.compile(src);
-			}), countlyUser.initialize(), countlyCarrier.initialize(), countlyDeviceDetails.initialize()).then(function () {});
-		}
+		return $.when(countlyUser.initialize(), countlyCarrier.initialize(), countlyDeviceDetails.initialize()).then(function () {});
     },
     afterRender: function() {
         var self = this;
