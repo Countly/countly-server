@@ -3,7 +3,7 @@ var countlyConfig = {
         host: "localhost",
         db: "countly",
         port: 27017,
-        max_pool_size: 500,
+        max_pool_size: 100,
 		//username: test,
 		//password: test
     },
