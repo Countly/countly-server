@@ -6,6 +6,7 @@ window.WebDashboardView = countlyView.extend({
             CountlyHelpers.createMetricModel(window.countlyBrowser = window.countlyBrowser || {}, "browser", jQuery);
         if(typeof window.countlySources == "undefined")
             CountlyHelpers.createMetricModel(window.countlySources = window.countlySources || {}, "sources", jQuery);
+        this.template = Handlebars.compile($("#dashboard-template").html());
     },
     beforeRender: function() {
         this.maps = {
@@ -13,14 +14,7 @@ window.WebDashboardView = countlyView.extend({
             "map-list-users": {id:'total', label:jQuery.i18n.map["sidebar.analytics.users"], type:'number', metric:"u"},
             "map-list-new": {id:'total', label:jQuery.i18n.map["common.table.new-users"], type:'number', metric:"n"}
         };
-        if(this.template)
-			return $.when(countlyUser.initialize(), countlyBrowser.initialize(), countlySources.initialize(), countlyDeviceDetails.initialize()).then(function () {});
-		else{
-			var self = this;
-			return $.when($.get(countlyGlobal["path"]+'/web/templates/web-dashboard.html', function(src){
-				self.template = Handlebars.compile(src);
-			}), countlyUser.initialize(), countlyBrowser.initialize(), countlySources.initialize(), countlyDeviceDetails.initialize()).then(function () {});
-		}
+		return $.when(countlyUser.initialize(), countlyBrowser.initialize(), countlySources.initialize(), countlyDeviceDetails.initialize()).then(function () {});
     },
     afterRender: function() {
         var self = this;
