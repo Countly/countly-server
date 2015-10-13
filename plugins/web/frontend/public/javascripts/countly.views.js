@@ -2,10 +2,6 @@ window.WebDashboardView = countlyView.extend({
     selectedView:"#draw-total-sessions",
     initialize:function () {
         this.curMap = "map-list-sessions";
-        if(typeof window.countlyBrowser == "undefined")
-            CountlyHelpers.createMetricModel(window.countlyBrowser = window.countlyBrowser || {}, "browser", jQuery);
-        if(typeof window.countlySources == "undefined")
-            CountlyHelpers.createMetricModel(window.countlySources = window.countlySources || {}, "sources", jQuery);
         this.template = Handlebars.compile($("#dashboard-template").html());
     },
     beforeRender: function() {
@@ -14,7 +10,13 @@ window.WebDashboardView = countlyView.extend({
             "map-list-users": {id:'total', label:jQuery.i18n.map["sidebar.analytics.users"], type:'number', metric:"u"},
             "map-list-new": {id:'total', label:jQuery.i18n.map["common.table.new-users"], type:'number', metric:"n"}
         };
-		return $.when(countlyUser.initialize(), countlyBrowser.initialize(), countlySources.initialize(), countlyDeviceDetails.initialize()).then(function () {});
+        var defs = [countlyUser.initialize(), countlyDeviceDetails.initialize()];
+        if(typeof window.countlyBrowser != "undefined")
+            defs.push(countlyBrowser.initialize());
+        if(typeof window.countlySources != "undefined")
+            defs.push(countlySources.initialize());
+        
+		return $.when.apply($, defs).then(function () {});
     },
     afterRender: function() {
         var self = this;
@@ -151,12 +153,12 @@ window.WebDashboardView = countlyView.extend({
             },
             {
                 "title":jQuery.i18n.map["common.bar.top-sources"],
-                "data":countlySources.getBars(),
+                "data":(typeof countlySources != "undefined") ? countlySources.getBars() : [],
                 "help":"dashboard.top-sources"
             },
             {
                 "title":jQuery.i18n.map["common.bar.top-browsers"],
-                "data":countlyBrowser.getBars(),
+                "data":(typeof countlyBrowser != "undefined") ? countlyBrowser.getBars() : [],
                 "help":"dashboard.top-browsers"
             },
             {
