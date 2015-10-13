@@ -3694,11 +3694,8 @@ var AppRouter = Backbone.Router.extend({
 
         if (!_.isEmpty(countlyGlobal['apps'])) {
             if (!countlyCommon.ACTIVE_APP_ID) {
-                for (var appId in countlyGlobal['apps']) {
-                    countlyCommon.setActiveApp(appId);
-                    self.activeAppName = countlyGlobal['apps'][appId].name;
-                    break;
-                }
+                countlyCommon.setActiveApp(countlyGlobal["defaultApp"]._id);
+                self.activeAppName = countlyGlobal["defaultApp"].name;
             } else {
                 $("#sidebar-app-select").find(".logo").css("background-image", "url('"+countlyGlobal["cdn"]+"appimages/" + countlyCommon.ACTIVE_APP_ID + ".png')");
                 $("#sidebar-app-select .text").text(countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].name);

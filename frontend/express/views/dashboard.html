@@ -70,8 +70,8 @@
 		<div id="sidebar-top">
 			<a href="#/"><div id="sidebar-logo"></div></a>
 			<div id="sidebar-app-select">
-				<div class="logo" <% if (userOfApps[0]){ %>style="background-image:url('<%- cdn %>appimages/<%= userOfApps[0]._id %>.png')"<% } %>></div>
-				<div class="text"><% if (userOfApps[0]){ %><%= userOfApps[0].name %><% } %></div>
+				<div class="logo" <% if (defaultApp){ %>style="background-image:url('<%- cdn %>appimages/<%= defaultApp._id %>.png')"<% } %>></div>
+				<div class="text"><% if (defaultApp){ %><%= defaultApp.name %><% } %></div>
 			</div>
 		</div>
 		<div id="sidebar-menu">
