@@ -1243,15 +1243,16 @@ function pushAppMgmt(){
     });
 };
 
-if(managementAdd == "")
-    app.addPageScript("/manage/apps", function(){
+app.addPageScript("/manage/apps", function(){
+    if(managementAdd == "")
         $.get(countlyGlobal["path"]+'/push/templates/push-management.html', function(src){
             managementAdd = src;
             pushAppMgmt();
         });
-    });
-else
-    app.addPageScript("/manage/apps", pushAppMgmt);
+    else
+        pushAppMgmt();
+});
+
 
 app.addPageScript("/drill", function(){
     $("#bookmark-filter").after(
