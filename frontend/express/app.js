@@ -313,6 +313,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 									user_of[i]["notes"] = appNotes[user_of[i]["_id"]] || null;
                                     countlyGlobalApps[user_of[i]["_id"]] = user_of[i];
 									countlyGlobalApps[user_of[i]["_id"]]["_id"] = "" + user_of[i]["_id"];
+                                    countlyGlobalApps[user_of[i]["_id"]].type = countlyGlobalApps[user_of[i]["_id"]].type || "mobile";
                                 }
                                 
                                 renderDashboard();
