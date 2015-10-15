@@ -1867,6 +1867,8 @@ window.ManageAppsView = countlyView.extend({
                 $("#sidebar-app-select").find(".text").text(countlyGlobal['apps'][appId].name);
                 app.onAppSwitch(appId, true);
             }
+            
+            app.onAppManagementSwitch(appId);
 
             $("#app-edit-id").val(appId);
             $("#view-app").find(".widget-header .title").text(countlyGlobal['apps'][appId].name);
@@ -2997,6 +2999,7 @@ var AppRouter = Backbone.Router.extend({
 		this.appTypes = {};
 		this.pageScripts = {};
         this.appSwitchCallbacks = [];
+        this.appManagementSwitchCallbacks = [];
 		this.refreshScripts = {};
         this.dashboardView = new DashboardView();
         this.sessionView = new SessionView();
@@ -4193,6 +4196,9 @@ var AppRouter = Backbone.Router.extend({
     addAppSwitchCallback:function(callback){
         this.appSwitchCallbacks.push(callback);
     },
+    addAppManagementSwitchCallback:function(callback){
+        this.appManagementSwitchCallbacks.push(callback);
+    },
 	addPageScript:function(view, callback){
 		if(!this.pageScripts[view])
 			this.pageScripts[view] = [];
@@ -4218,6 +4224,11 @@ var AppRouter = Backbone.Router.extend({
             for(var i = 0; i < this.appSwitchCallbacks.length; i++){
                 this.appSwitchCallbacks[i](appId);
             }
+        }
+    },
+    onAppManagementSwitch:function(appId, type){
+        for(var i = 0; i < this.appManagementSwitchCallbacks.length; i++){
+            this.appManagementSwitchCallbacks[i](appId, type || countlyGlobal["apps"][appId].type);
         }
     },
     pageScript:function () { //scripts to be executed on each view change
