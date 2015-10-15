@@ -27,7 +27,8 @@
  * - if error happened, arg1 is a first argument AFTER error, it's not an error
  */
 
-var prefs = require('../config.js').logging;
+var prefs = require('../config.js').logging,
+	deflt = prefs.default || 'error';
 
 for (var level in prefs) {
 	if (prefs[level].sort) { prefs[level].sort(); }
@@ -42,7 +43,6 @@ for (var level in prefs) {
  * @api private
  */
 var log = function(prefix, enabled, outer, out) {
-
 	return function() {
 		if (enabled()) {
 			var args = Array.prototype.slice.call(arguments, 0);
@@ -77,7 +77,7 @@ var logLevel = function(name) {
 				// }
 			}
 		}
-		return prefs.default || 'error';
+		return deflt;
 	}
 };
 
@@ -92,6 +92,10 @@ var setLevel = function(module, level) {
 	levels[module] = level;
 };
 
+var setDefault = function(level) {
+	deflt = level;
+};
+
 var getLevel = function(module) {
 	return levels[module];
 };
@@ -101,8 +105,37 @@ var getEnabledWithLevel = function(acceptable, module) {
 		// if (acceptable.indexOf(levels[module]) === -1) {
 		// 	console.log('Won\'t log %j because %j doesn\'t have %j', module, acceptable, levels[module]);
 		// }
-		return acceptable.indexOf(levels[module]) !== -1;
+		return acceptable.indexOf(levels[module] || deflt) !== -1;
 	};
+};
+
+var ipcHandler = function(msg){
+    if (msg.cmd === 'log') {
+    	var all = [];
+    	for (var l in msg.config) { 
+    		all.concat(msg.config[l].split(',').map(function(v){ return v.trim(); }));
+    	}
+
+    	// modules missing in new config must be removed
+    	Object.keys(levels).forEach(function(k){
+    		if (all.indexOf(k) === -1) {
+    			delete levels[k];
+    		}
+    	});
+
+    	// set levels from message
+        for (var level in msg.config) {
+            var val = msg.config[level];
+            if (level === 'default') {
+                setDefault(val);
+            } else {
+                var comps = val.split(',').map(function(v){ return v.trim(); });
+                for (var i = 0; i < comps.length; i++) { if (comps[i]) {
+                    setLevel(comps[i], level);
+                }}
+            }
+        }
+    }
 };
 
 module.exports = function(name) {
@@ -143,4 +176,6 @@ module.exports = function(name) {
 };
 
 module.exports.setLevel = setLevel;
+module.exports.setDefault = setDefault;
 module.exports.getLevel = getLevel;
+module.exports.ipcHandler = ipcHandler;
