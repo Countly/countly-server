@@ -2146,7 +2146,7 @@ window.ManageAppsView = countlyView.extend({
                         var activeApp = $(".app-container").filter(function () {
                             return $(this).data("id") && $(this).data("id") == appId;
                         });
-
+                        
                         var changeApp = (activeApp.prev().length) ? activeApp.prev() : activeApp.next();
                         initAppManagement(changeApp.data("id"));
                         activeApp.fadeOut("slow").remove();
@@ -2155,6 +2155,11 @@ window.ManageAppsView = countlyView.extend({
                             $("#new-install-overlay").show();
                             $("#sidebar-app-select .logo").css("background-image", "");
                             $("#sidebar-app-select .text").text("");
+                        }
+                        else if(countlyCommon.ACTIVE_APP_ID == appId){
+                            countlyCommon.setActiveApp(changeApp.data("id"));
+                            $("#sidebar-app-select .logo").css("background-image", "url(appimages/"+changeApp.data("id")+".png)");
+                            $("#sidebar-app-select .text").text(countlyGlobal['apps'][changeApp.data("id")].name);
                         }
                     },
                     error:function () {
