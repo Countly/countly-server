@@ -107,6 +107,8 @@ a:active { color:inherit; }
 #app-tooltip .app-container{padding-left:11px;}
 .break {word-wrap: break-word;}
 .over {z-index:100;}
+#no-app-type{width: 100%; padding: 20px 0; text-align: center; border: 1px dashed #CCC; font: 13px Ubuntu,Helvetica,sans-serif;}
+#no-app-type a{color:#72AE4B; text-decoration: underline;}
 
 /* FOOTER */
 #content-footer{position: fixed; bottom:0; left:0px; width: 100%; background-color: #282828; font: 13px Ubuntu,Helvetica,sans-serif; color: #888; height: 35px; z-index:999;}

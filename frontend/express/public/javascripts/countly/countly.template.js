@@ -1865,7 +1865,10 @@ window.ManageAppsView = countlyView.extend({
                 countlyCommon.setActiveApp(appId);
                 $("#sidebar-app-select").find(".logo").css("background-image", "url('"+countlyGlobal["cdn"]+"appimages/" + appId + ".png')");
                 $("#sidebar-app-select").find(".text").text(countlyGlobal['apps'][appId].name);
+                app.onAppSwitch(appId, true);
             }
+            
+            app.onAppManagementSwitch(appId);
 
             $("#app-edit-id").val(appId);
             $("#view-app").find(".widget-header .title").text(countlyGlobal['apps'][appId].name);
@@ -2145,7 +2148,7 @@ window.ManageAppsView = countlyView.extend({
                         var activeApp = $(".app-container").filter(function () {
                             return $(this).data("id") && $(this).data("id") == appId;
                         });
-
+                        
                         var changeApp = (activeApp.prev().length) ? activeApp.prev() : activeApp.next();
                         initAppManagement(changeApp.data("id"));
                         activeApp.fadeOut("slow").remove();
@@ -2154,6 +2157,11 @@ window.ManageAppsView = countlyView.extend({
                             $("#new-install-overlay").show();
                             $("#sidebar-app-select .logo").css("background-image", "");
                             $("#sidebar-app-select .text").text("");
+                        }
+                        else if(countlyCommon.ACTIVE_APP_ID == appId){
+                            countlyCommon.setActiveApp(changeApp.data("id"));
+                            $("#sidebar-app-select .logo").css("background-image", "url(appimages/"+changeApp.data("id")+".png)");
+                            $("#sidebar-app-select .text").text(countlyGlobal['apps'][changeApp.data("id")].name);
                         }
                     },
                     error:function () {
@@ -2367,6 +2375,7 @@ window.ManageAppsView = countlyView.extend({
                         "name":data.name,
                         "key":data.key,
                         "category":data.category,
+                        "type":data.type,
                         "timezone":data.timezone,
                         "country":data.country
                     };
@@ -2847,6 +2856,19 @@ window.EventsView = countlyView.extend({
     }
 });
 
+window.DashboardView = countlyView.extend({
+    renderCommon:function () {
+        if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID]){
+            var type = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type;
+            type = jQuery.i18n.map["management-applications.types."+type] || type;
+            $(this.el).html("<div id='no-app-type'><h1>"+jQuery.i18n.map["common.missing-type"]+": "+type+"</h1><h3><a href='#/manage/plugins'>"+jQuery.i18n.map["common.install-plugin"]+"</a><br/>"+jQuery.i18n.map["common.or"]+"<br/><a href='#/manage/apps'>"+jQuery.i18n.map["common.change-app-type"]+"</a></h3></div>");
+        }
+        else{
+            $(this.el).html("<div id='no-app-type'><h1>"+jQuery.i18n.map["management-applications.no-app-warning"]+"</h1><h3><a href='#/manage/apps'>"+jQuery.i18n.map["common.add-new-app"]+"</a></h3></div>");
+        }
+    }
+});
+
 var AppRouter = Backbone.Router.extend({
     routes:{
         "/":"dashboard",
@@ -2879,7 +2901,12 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     dashboard:function () {
-        this.renderWhenReady(this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type]);
+        if(_.isEmpty(countlyGlobal['apps']))
+            this.renderWhenReady(this.manageAppsView);
+        else if(typeof this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type] != "undefined")
+            this.renderWhenReady(this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type]);
+        else
+            this.renderWhenReady(this.dashboardView);
     },
     sessions:function () {
         this.renderWhenReady(this.sessionView);
@@ -2972,7 +2999,9 @@ var AppRouter = Backbone.Router.extend({
 		this.appTypes = {};
 		this.pageScripts = {};
         this.appSwitchCallbacks = [];
+        this.appManagementSwitchCallbacks = [];
 		this.refreshScripts = {};
+        this.dashboardView = new DashboardView();
         this.sessionView = new SessionView();
         this.countriesView = new CountriesView();
         this.userView = new UserView();
@@ -3673,11 +3702,8 @@ var AppRouter = Backbone.Router.extend({
 
         if (!_.isEmpty(countlyGlobal['apps'])) {
             if (!countlyCommon.ACTIVE_APP_ID) {
-                for (var appId in countlyGlobal['apps']) {
-                    countlyCommon.setActiveApp(appId);
-                    self.activeAppName = countlyGlobal['apps'][appId].name;
-                    break;
-                }
+                countlyCommon.setActiveApp(countlyGlobal["defaultApp"]._id);
+                self.activeAppName = countlyGlobal["defaultApp"].name;
             } else {
                 $("#sidebar-app-select").find(".logo").css("background-image", "url('"+countlyGlobal["cdn"]+"appimages/" + countlyCommon.ACTIVE_APP_ID + ".png')");
                 $("#sidebar-app-select .text").text(countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].name);
@@ -4170,6 +4196,9 @@ var AppRouter = Backbone.Router.extend({
     addAppSwitchCallback:function(callback){
         this.appSwitchCallbacks.push(callback);
     },
+    addAppManagementSwitchCallback:function(callback){
+        this.appManagementSwitchCallbacks.push(callback);
+    },
 	addPageScript:function(view, callback){
 		if(!this.pageScripts[view])
 			this.pageScripts[view] = [];
@@ -4181,18 +4210,25 @@ var AppRouter = Backbone.Router.extend({
 		this.refreshScripts[view].push(callback);
 	},
     onAppSwitch:function(appId, refresh){
-        jQuery.i18n.map = JSON.parse(app.origLang);
-        if(!refresh){
-            app.main(true);
+        if(appId != 0){
+            jQuery.i18n.map = JSON.parse(app.origLang);
+            if(!refresh){
+                app.main(true);
+            }
+            $("#sidebar-menu .sidebar-menu").hide();
+            var type = countlyGlobal["apps"][appId].type;
+            if($("#sidebar-menu #"+type+"-type").length)
+                $("#sidebar-menu #"+type+"-type").show();
+            else
+                $("#sidebar-menu #default-type").show();
+            for(var i = 0; i < this.appSwitchCallbacks.length; i++){
+                this.appSwitchCallbacks[i](appId);
+            }
         }
-        $("#sidebar-menu .sidebar-menu").hide();
-        var type = countlyGlobal["apps"][appId].type;
-        if($("#sidebar-menu #"+type+"-type").length)
-            $("#sidebar-menu #"+type+"-type").show();
-        else
-            $("#sidebar-menu #default-type").show();
-        for(var i = 0; i < this.appSwitchCallbacks.length; i++){
-            this.appSwitchCallbacks[i](appId);
+    },
+    onAppManagementSwitch:function(appId, type){
+        for(var i = 0; i < this.appManagementSwitchCallbacks.length; i++){
+            this.appManagementSwitchCallbacks[i](appId, type || countlyGlobal["apps"][appId].type);
         }
     },
     pageScript:function () { //scripts to be executed on each view change

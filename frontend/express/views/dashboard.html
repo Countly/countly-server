@@ -70,8 +70,8 @@
 		<div id="sidebar-top">
 			<a href="#/"><div id="sidebar-logo"></div></a>
 			<div id="sidebar-app-select">
-				<div class="logo" <% if (userOfApps[0]){ %>style="background-image:url('<%- cdn %>appimages/<%= userOfApps[0]._id %>.png')"<% } %>></div>
-				<div class="text"><% if (userOfApps[0]){ %><%= userOfApps[0].name %><% } %></div>
+				<div class="logo" <% if (defaultApp){ %>style="background-image:url('<%- cdn %>appimages/<%= defaultApp._id %>.png')"<% } %>></div>
+				<div class="text"><% if (defaultApp){ %><%= defaultApp.name %><% } %></div>
 			</div>
 		</div>
 		<div id="sidebar-menu">
@@ -977,6 +977,83 @@
 		</div>
 		{{/if}}
         </div>
+	</script>
+    
+    <script id="dashboard-template" type="text/x-handlebars-template">
+		<div class="widget">
+			<div class="widget-header">
+				<div class="title" style="letter-spacing:-1px; font-size:19px; margin-top:10px; margin-left:5px;">{{toUpperCase page-title}}</div>
+				{{> date-selector }}
+			</div>
+			<div class="widget-content" style="border:none;">
+				<div id="big-numbers-container" class="dashboard">
+					{{#each usage}}
+					<div class="big-numbers six-column help-zone-vs" data-help-localize="help.{{this.help}}">
+						<div class="inner">
+							<div class="logo"></div>
+							<div class="number">
+                                <span class="value">{{getShortNumber this.data.total}}</span>
+                                {{#if this.data.isEstimate}}
+                                    <span id="total-user-estimate-ind"><i class="fa fa-asterisk"></i></span>
+                                    <div id="total-user-estimate-exp" style="display:none;">
+                                        <div style="line-height:20px;">
+                                            Total (unique) user count for this period is estimated and corrected using the biggest time buckets from available daily, weekly and monthly stats.<br/><br/>
+                                            Exact total user counts are available for this year, month and day.
+                                        </div>
+                                    </div>
+                                {{/if}}
+                            </div>
+							<div class="trend" style="background-image:url('../images/dashboard/{{this.data.trend}}trend.png');">
+								<div class="change">{{this.data.change}}</div>
+							</div>
+							<div class="spark"><span class="{{this.data.trend}}sparkline">{{this.data.sparkline}}</span></div>
+							<div class="select" id="{{this.id}}">
+								<div class="title">{{this.title}}</div>
+							</div>
+							<div class="arrow"></div>
+						</div>
+					</div>
+					{{/each}}
+				</div>
+			</div>
+			<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none; position:relative;">
+                <div id="graph-note">
+                    <div class="main">
+                        Notes
+                        <div class="tail"></div>
+                    </div>
+                </div>
+				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
+			</div>
+		</div>
+		<div class="dashboard-summary">
+			{{#each bars}}
+			<div class="item help-zone-vs" data-help-localize="help.{{this.help}}">
+				<div class="inner">
+					<div class="title">{{this.title}}</div>
+					{{#if this.data}}
+					<div class="bar">
+						{{#each this.data}}
+							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+						{{/each}}
+					</div>
+					<div class="number" data-item="{{this.data.0.name}}">{{this.data.0.name}}</div>
+					{{else}}
+					<div class="no-data" data-localize="common.bar.no-data"></div>
+					{{/if}}
+				</div>
+			</div>
+			{{/each}}
+		</div>
+		<div class="widget map-list geo-switch help-zone-vb" data-help-localize="help.dashboard.map" style="float:right; width:100%;">
+            <div class="cly-button-group over">
+                <div id="map-list-sessions" style="padding: 6px 8px 7px 8px;" class="icon-button light active" data-localize="sidebar.analytics.sessions"></div>
+                <div id="map-list-users" style="padding: 6px 8px 7px 8px;" class="icon-button light" data-localize="sidebar.analytics.users"></div>
+                <div id="map-list-new" style="padding: 6px 8px 7px 8px;" class="icon-button light" data-localize="common.table.new-users"></div>
+            </div>
+			<div id="map-list-right" style="max-height:236px; overflow:hidden;"></div>
+			<div id="geo-chart-outer" style="padding-bottom: 8px;"><div><div id="geo-chart"></div></div></div>
+		</div>
 	</script>
 
 	<script language="javascript" type="text/javascript" src="https://www.google.com/jsapi"></script>

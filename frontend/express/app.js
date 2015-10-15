@@ -313,6 +313,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 									user_of[i]["notes"] = appNotes[user_of[i]["_id"]] || null;
                                     countlyGlobalApps[user_of[i]["_id"]] = user_of[i];
 									countlyGlobalApps[user_of[i]["_id"]]["_id"] = "" + user_of[i]["_id"];
+                                    countlyGlobalApps[user_of[i]["_id"]].type = countlyGlobalApps[user_of[i]["_id"]].type || "mobile";
                                 }
                                 
                                 renderDashboard();
@@ -328,10 +329,16 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                     res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
 
                     delete member["password"];
+                    
+                    adminOfApps = sortBy(adminOfApps, member.appSortList || []);
+                    userOfApps = sortBy(userOfApps, member.appSortList || []);
+                    
+                    var defaultApp = userOfApps[0];
 
                     var countlyGlobal = {
                         countlyTitle:COUNTLY_NAME,
                         apps:countlyGlobalApps,
+                        defaultApp:defaultApp,
                         admin_apps:countlyGlobalAdminApps,
                         csrf_token:req.session._csrf,
                         member:member,
@@ -340,17 +347,13 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 						path:countlyConfig.path || "",
 						cdn:countlyConfig.cdn || "",
                         message: req.flash("message")
-                    };
-                    
-                    
-                    adminOfApps = sortBy(adminOfApps, member.appSortList || []);
-                    userOfApps = sortBy(userOfApps, member.appSortList || []);
-                    
+                    }; 
                     
                     var toDashboard = {
                         countlyTitle:COUNTLY_NAME,
                         adminOfApps:adminOfApps,
                         userOfApps:userOfApps,
+                        defaultApp:defaultApp,
                         member:member,
                         intercom:countlyConfig.web.use_intercom,
                         countlyVersion:COUNTLY_VERSION,

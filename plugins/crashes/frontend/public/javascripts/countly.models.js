@@ -461,7 +461,7 @@
 	countlyCrashes.getResolvedBars = function () {
 		if(_crashData.crashes.unique > 0){
             var ret = [];
-            var total = _crashData.crashes.resolved + _crashData.crashes.unresolved;
+            var total = Math.max(_crashData.crashes.resolved, 0) + Math.max(_crashData.crashes.unresolved,0);
 			var resolved = (_crashData.crashes.resolved/total)*100;
 			var unresolved = (_crashData.crashes.unresolved/total)*100;
 			var name1 = Math.round(resolved)+"% "+jQuery.i18n.map["crashes.resolved"];
