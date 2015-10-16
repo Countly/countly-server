@@ -145,7 +145,7 @@
 			crash._background = (Math.random() > 0.5) ? true : false;
             
 			crash._error = this.getError();
-			crash._logs = this.getError();
+			crash._logs = this.getLog();
             crash._nonfatal = (Math.random() > 0.5) ? true : false;
             crash._run = getRandomInt(1, 1800);
             
@@ -169,6 +169,36 @@
 			}
 			return error;
 		};
+        
+        this.getLog = function(){
+            var actions = [
+                "clicked button 1",
+                "clicked button 2",
+                "clicked button 3",
+                "clicked button 4",
+                "clicked button 5",
+                "rotated phone",
+                "clicked back",
+                "entered screen",
+                "left screen",
+                "touched screen",
+                "taped screen",
+                "long touched screen",
+                "swipe left detected",
+                "swipe right detected",
+                "swipe up detected",
+                "swipe down detected",
+                "gesture detected",
+                "shake detected"
+            ];
+            
+            var items = getRandomInt(5, 10);
+            var logs = [];
+            for(var i = 0; i < items; i++){
+                logs.push(actions[getRandomInt(0, actions.length-1)]);
+            }
+            return logs.join("\n");
+        };
 		
 		this.getEvent = function(id){
 			if(!id){
