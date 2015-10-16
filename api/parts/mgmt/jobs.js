@@ -169,6 +169,16 @@ var Processor = function(worker, concurrency, fun, name) {
 		this.check();
 	};
 
+	this.done = function(job, err) {
+		for (var i = this.running.length - 1; i >= 0; i--) {
+			if (this.running[i]._id === job._id) {
+				this.running.splice(i, 1);
+				this.check();
+			}
+		}
+		worker.result(err, job);
+	};
+
 	this.check = function(){
 		if (this.queue.length > 0 &&
 			this.running.length < MAXIMUM_CONCURRENT_JOBS_PER_NAME && 
@@ -177,15 +187,11 @@ var Processor = function(worker, concurrency, fun, name) {
 
 			var job = this.queue.shift();
 			this.running.push(job);
-			fun(job, function(err){
-				for (var i = this.running.length - 1; i >= 0; i--) {
-					if (this.running[i]._id === job._id) {
-						this.running.splice(i, 1);
-						this.check();
-					}
-				}
-				worker.result(err, job);
-			}.bind(this));
+			try {
+				fun(job, this.done.bind(this, job));
+			} catch (err) {
+				this.done(job, err);
+			}
 		}
 	};
 
@@ -219,7 +225,7 @@ var JobWorker = function(processors){
 
 	withCollection(this, function(err, collection){
 		if (collection) {
-			this.collection.update({status: STATUS.RUNNING, started: {$lt: Date.now() - 60 * 60 * 1000}}, {$set: {status: STATUS.DONE, error: 'Cancelled on restart'}}, {multi: true}, this.next.bind(this));
+			this.collection.update({status: STATUS.RUNNING, started: {$lt: Date.now() - 60 * 60 * 1000}}, {$set: {status: STATUS.CANCELLED, error: 'Cancelled on restart'}}, {multi: true}, this.next.bind(this));
 		}
 	}.bind(this));
 
@@ -360,17 +366,19 @@ var JobWorker = function(processors){
 	};
 
 	var shutdown = function(){
-		log.i('Got SIGTERM in jobs, shutting down all tasks in queue');
 		var shutdowns = [];
 		for (var name in this.processors) {
 			var processor = this.processors[name];
 			shutdowns.push(processor.shutdown());
 		}
 
+		log.w('Got SIGTERM in jobs, shutting down all tasks for %d processors', shutdowns.length);
+
 		async.parallel(shutdowns, function(err){
 			if (err) { log.e('Error when shutting down job processors', err); }
-			log.i('Done shutting down jobs');
+			log.w('Done shutting down jobs with %j', err);
 			this.db.close(function(err){
+				log.w('Closed DB connection with %j', err);
 				if (err) { log.e('Error when closing db connection on shut down', err); }
 				process.exit(0);
 			});
