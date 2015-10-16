@@ -385,6 +385,7 @@ var JobWorker = function(processors){
 		}.bind(this));
 	}.bind(this);
 
+	process.on('disconnect', shutdown);
 	process.on('SIGTERM', shutdown);
 	process.on('SIGINT', shutdown);
 
