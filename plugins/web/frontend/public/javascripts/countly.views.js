@@ -312,12 +312,9 @@ $( document ).ready(function() {
 	'</a>';
 	$('#web-type #analytics-submenu').prepend(menu);
     
-    menu = '<a class="item analytics" id="engagement-menu">' +
-                '<div class="logo fa fa-magnet" style="background-image:none; font-size:28px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>' +
-                '<div class="text" data-localize="sidebar.engagement"></div>' +
-            '</a>' +
-            '<div class="sidebar-submenu" id="engagement-submenu">' +
-                '<a href="#/analytics/loyalty" class="item">' +
+    $("#web-type #engagement-menu").show();
+    
+    menu =      '<a href="#/analytics/loyalty" class="item">' +
                     '<div class="logo loyalty"></div>' +
                     '<div class="text" data-localize="sidebar.analytics.user-loyalty"></div>' +
                 '</a>' +
@@ -328,12 +325,8 @@ $( document ).ready(function() {
                 '<a href="#/analytics/durations" class="item">' +
                     '<div class="logo durations"></div>' +
                     '<div class="text" data-localize="sidebar.engagement.durations"></div>' +
-                '</a>' +
-            '</div>';
-	if($('#web-type #analytics-submenu').length)
-		$('#web-type #analytics-submenu').after(menu);
-	else
-		$('#web-type a:nth-child(3)').append(menu);
+                '</a>';
+	$('#web-type #engagement-submenu').append(menu);
     
     
 });
