@@ -1516,7 +1516,7 @@ window.PlatformView = countlyView.extend({
     },
     pageScript:function () {
         var self = this;
-
+        
         if (self.activePlatform) {
             $(".graph-segment[data-name='" + self.activePlatform + "']").addClass("active");
         } else {
@@ -1534,6 +1534,7 @@ window.PlatformView = countlyView.extend({
         app.localize();
     },
     renderCommon:function (isRefresh) {
+        var self = this;
         var oSVersionData = countlyDeviceDetails.getOSVersionData(this.activePlatform),
             platformData = countlyDeviceDetails.getPlatformData();
 
@@ -1558,8 +1559,23 @@ window.PlatformView = countlyView.extend({
             countlyCommon.drawGraph(platformData.chartDP, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(oSVersionData.chartDP, "#dashboard-graph2", "pie");
 
+            var first = true;
             this.dtable = $('#dataTableOne').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": platformData.chartData,
+                "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+					$(nRow).data("name", aData.os_);
+					$(nRow).addClass("os-rows");
+                    if (self.activePlatform) {
+                        first = false;
+                        if(self.activePlatform == aData.os_){
+                            $(nRow).addClass("active");
+                        }
+                    }
+                    else if(first){
+                        first = false;
+                        $(nRow).addClass("active");
+                    }
+				},
                 "aoColumns": [
                     { "mData": "os_", "sTitle": jQuery.i18n.map["platforms.table.platform"] },
                     { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
@@ -1567,6 +1583,14 @@ window.PlatformView = countlyView.extend({
                     { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
                 ]
             }));
+            
+            $('#dataTableOne tbody').on("click", "tr", function (){
+                self.activePlatform = $(this).data("name");
+                $(".os-rows").removeClass("active");
+                $(this).addClass("active");
+
+                self.refresh();
+			});
 
             this.dtableTwo = $('#dataTableTwo').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": oSVersionData.chartData,
