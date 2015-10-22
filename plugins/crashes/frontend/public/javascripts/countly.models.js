@@ -122,6 +122,10 @@
 				};
     };
     
+    countlyCrashes.getId = function(){
+        return _lastId;
+    }
+    
     countlyCrashes.common = function (id, path, callback) {
 		$.ajax({
 			type:"GET",
