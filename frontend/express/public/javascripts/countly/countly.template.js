@@ -1833,12 +1833,17 @@ window.ManageAppsView = countlyView.extend({
             admin_apps:countlyGlobal['admin_apps'],
             app_types:appTypes
         }));
+        
         var appCategories = this.getAppCategories();
         var timezones = this.getTimeZones();
 
         var appId = countlyCommon.ACTIVE_APP_ID;
         $("#app-management-bar .app-container").removeClass("active");
         $("#app-management-bar .app-container[data-id='" + appId + "']").addClass("active");
+        
+        $(".select-app-types").on("click",".item", function(){
+            app.onAppManagementSwitch($("#app-edit-id").val(), $(this).data("value"));
+        });
 
         function initAppManagement(appId) {
             if (jQuery.isEmptyObject(countlyGlobal['apps'])) {
