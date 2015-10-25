@@ -1,0 +1,25 @@
+version: 0.0
+os: linux
+files:
+   - source: /
+     destination: /home/ubuntu/countly/
+permissions:
+   - object: /home/ubuntu/countly/
+     pattern: "**"
+     owner: ubuntu
+     group: ubuntu
+     mode: 755
+     type:
+       - file
+hooks:
+  ApplicationStop:
+    - location: codedeploy/stop_app
+      timeout: 300
+      runas: root
+  ApplicationStart:
+    - location: codedeploy/install
+      timeout: 300
+      runas: root
+    - location: codedeploy/start_app
+      timeout: 300
+      runas: root

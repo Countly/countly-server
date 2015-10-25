@@ -1,0 +1,66 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+    "Description" : "IAM role for CodeDeploy",
+
+    "Resources" : {
+        "CodeDeployRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                    {
+                        "Sid": "",
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": [
+                                "codedeploy.amazonaws.com"
+                            ]
+                        },
+                        "Action": [
+                            "sts:AssumeRole"
+                        ]
+                    }
+                    ]
+                },
+                "Path": "/"
+            }
+        },
+
+        "CodeDeployRolePolicies": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "CodeDeployRole",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Action": [
+                            "autoscaling:PutLifecycleHook",
+                            "autoscaling:DeleteLifecycleHook",
+                            "autoscaling:RecordLifecycleActionHeartbeat",
+                            "autoscaling:CompleteLifecycleAction",
+                            "autoscaling:DescribeAutoscalingGroups",
+                            "autoscaling:PutInstanceInStandby",
+                            "autoscaling:PutInstanceInService",
+                            "ec2:Describe*"
+                        ],
+                        "Resource": "*"
+                    }]
+                },
+                "Roles": [
+                {
+                    "Ref": "CodeDeployRole"
+                }]
+            }
+        }
+    },
+
+    "Outputs" : {
+        "RoleName" : {
+            "Description" : "Use this role in CodeDeploy",
+            "Value" :  { "Ref": "CodeDeployRole" }
+        }
+    }
+}

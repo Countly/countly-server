@@ -1,0 +1,4 @@
+rm -fr /home/ubuntu/countly
+git clone https://github.com/Countly/countly-server.git /home/ubuntu/countly-server
+/home/ubuntu/countly-server/bin/countly.install.sh
+countly stop

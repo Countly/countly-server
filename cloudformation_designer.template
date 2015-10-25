@@ -1,0 +1,1431 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "nodejs application + mongodb",
+  "Parameters": {
+    "InstanceType": {
+      "Description": "Worker EC2 instance type",
+      "Type": "String",
+      "Default": "t1.micro",
+      "AllowedValues": [
+        "t1.micro",
+        "m1.small",
+        "m1.medium",
+        "m1.large",
+        "m1.xlarge",
+        "m2.xlarge",
+        "m2.2xlarge",
+        "m2.4xlarge",
+        "c1.medium",
+        "c1.xlarge",
+        "cc1.4xlarge",
+        "cc2.8xlarge",
+        "cg1.4xlarge"
+      ],
+      "ConstraintDescription": "must be a valid EC2 instance type."
+    },
+    "OperatorEMail": {
+      "Description": "Email address to notify if there are any scaling operations",
+      "Type": "String",
+      "Default": "sugarhillmountain@gmail.com",
+      "AllowedPattern": "([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)",
+      "ConstraintDescription": "must be a valid email address."
+    },
+    "MinInstances": {
+      "Description": "The minimum number of Workers",
+      "Type": "Number",
+      "MinValue": "1",
+      "Default": "1",
+      "ConstraintDescription": "Enter a number >=1"
+    },
+    "MaxInstances": {
+      "Description": "The maximum number of Workers",
+      "Type": "Number",
+      "MinValue": "1",
+      "Default": "1",
+      "ConstraintDescription": "Enter a number >=1"
+    },
+    "MongoRaidVolumeSize": {
+      "Description": "Raid volumes size for mongodb",
+      "Type": "Number",
+      "MinValue": "1",
+      "Default": "10",
+      "ConstraintDescription": "GB"
+    },
+    "KeyName": {
+      "Description": "The EC2 Key Pair to allow SSH access to the instances",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Default": "hello_and_wellcome",
+      "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+    },
+    "VPCCIDR": {
+      "Description": "CIDR Block for the VPC",
+      "Type": "String",
+      "Default": "10.0.0.0/16",
+      "AllowedPattern": "[a-zA-Z0-9]+\\..+"
+    }
+  },
+  "Mappings": {
+    "AWSInstanceType2Arch": {
+      "t1.micro": {
+        "Arch": "64"
+      },
+      "m1.small": {
+        "Arch": "64"
+      },
+      "m1.medium": {
+        "Arch": "64"
+      },
+      "m1.large": {
+        "Arch": "64"
+      },
+      "m1.xlarge": {
+        "Arch": "64"
+      },
+      "m2.xlarge": {
+        "Arch": "64"
+      },
+      "m2.2xlarge": {
+        "Arch": "64"
+      },
+      "m2.4xlarge": {
+        "Arch": "64"
+      },
+      "c1.medium": {
+        "Arch": "64"
+      },
+      "c1.xlarge": {
+        "Arch": "64"
+      },
+      "cc1.4xlarge": {
+        "Arch": "64HVM"
+      },
+      "cc2.8xlarge": {
+        "Arch": "64HVM"
+      },
+      "cg1.4xlarge": {
+        "Arch": "64HVM"
+      }
+    },
+    "AWSRegionArch2AMI": {
+      "us-east-1": {
+        "32": "ami-31814f58",
+        "64": "ami-d85e75b0",
+        "64HVM": "ami-0da96764"
+      },
+      "us-west-2": {
+        "32": "ami-38fe7308",
+        "64": "ami-30fe7300",
+        "64HVM": "NOT_YET_SUPPORTED"
+      },
+      "us-west-1": {
+        "32": "ami-11d68a54",
+        "64": "ami-1bd68a5e",
+        "64HVM": "ubuntu for t1.micro, other Amazon Linux AMI"
+      },
+      "eu-west-1": {
+        "32": "ami-973b06e3",
+        "64": "ami-953b06e1",
+        "64HVM": "NOT_YET_SUPPORTED"
+      },
+      "ap-southeast-1": {
+        "32": "ami-b4b0cae6",
+        "64": "ami-beb0caec",
+        "64HVM": "NOT_YET_SUPPORTED"
+      },
+      "ap-northeast-1": {
+        "32": "ami-0644f007",
+        "64": "ami-0a44f00b",
+        "64HVM": "NOT_YET_SUPPORTED"
+      },
+      "sa-east-1": {
+        "32": "ami-3e3be423",
+        "64": "ami-3c3be421",
+        "64HVM": "NOT_YET_SUPPORTED"
+      }
+    }
+  },
+  "Resources": {
+    "VPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": {
+          "Ref": "VPCCIDR"
+        },
+        "EnableDnsHostnames": "true",
+        "EnableDnsSupport": "true",
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "MongoDB on AWS"
+          }
+        ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "76e88cd1-924f-42cb-b651-2460fd6f4de2"
+        }
+      }
+    },
+    "LoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "AvailabilityZones": [
+          "us-east-1a"
+        ],
+        "Listeners": [
+          {
+            "LoadBalancerPort": "80",
+            "InstancePort": "80",
+            "Protocol": "HTTP"
+          }
+        ],
+        "HealthCheck": {
+          "Target": "TCP:80",
+          "HealthyThreshold": "2",
+          "UnhealthyThreshold": "2",
+          "Interval": "10",
+          "Timeout": "5"
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "ff31f545-8dac-45cf-8bdc-923a128a86c4"
+        }
+      }
+    },
+    "InstanceUser": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "root",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sns:Publish",
+                    "sns:GetTopicAttributes",
+                    "sns:List*",
+                    "sqs:ReceiveMessage",
+                    "sqs:DeleteMessage",
+                    "s3:Get*",
+                    "s3:List*"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "ceb3b5b5-3ecb-491d-815b-808da821d5e6"
+        }
+      }
+    },
+    "InstanceKeys": {
+      "Type": "AWS::IAM::AccessKey",
+      "Properties": {
+        "UserName": {
+          "Ref": "InstanceUser"
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "8c0c1133-b5f4-4394-9506-97c6c2cc04f2"
+        }
+      }
+    },
+    "InstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/"
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "d2369899-7b2a-41e0-9976-c20637db9169"
+        }
+      }
+    },
+    "InstanceRolePolicies": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "InstanceRole",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "autoscaling:Describe*",
+                "cloudformation:Describe*",
+                "cloudformation:GetTemplate"
+              ],
+              "Resource": "*"
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "InstanceRole"
+          }
+        ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "2f5ff73d-acf2-4d30-a711-a3c318e1147c"
+        }
+      }
+    },
+    "CloudWatchPolicies": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "CloudWatchRole",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "logs:Create*",
+                "logs:PutLogEvents",
+                "s3:GetObject"
+              ],
+              "Resource": [
+                "arn:aws:logs:*:*:*",
+                "arn:aws:s3:::*"
+              ]
+            }
+          ]
+        },
+        "Roles": [
+          {
+            "Ref": "InstanceRole"
+          }
+        ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "62709250-e0ed-4722-8200-7ef3ff345f20"
+        }
+      }
+    },
+    "InstanceRoleInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [
+          {
+            "Ref": "InstanceRole"
+          }
+        ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "aaf395c6-cd85-4840-b6ae-bb19ecaa77d0"
+        }
+      }
+    },
+    "InstanceSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Enable access to nodejs app from the load balancer only. Mongodb isolated in VPC.",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "SourceSecurityGroupOwnerId": {
+              "Fn::GetAtt": [
+                "LoadBalancer",
+                "SourceSecurityGroup.OwnerAlias"
+              ]
+            },
+            "SourceSecurityGroupName": {
+              "Fn::GetAtt": [
+                "LoadBalancer",
+                "SourceSecurityGroup.GroupName"
+              ]
+            }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "27017",
+            "ToPort": "27017",
+            "CidrIp": {
+              "Ref": "VPCCIDR"
+            }
+          }
+        ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "3688aad5-c8e5-466b-8f42-2499ca0cd806"
+        }
+      }
+    },
+    "AutoScalingGroup": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AvailabilityZones": [
+          "us-east-1a"
+        ],
+        "LaunchConfigurationName": {
+          "Ref": "LaunchConfig"
+        },
+        "MinSize": {
+          "Ref": "MinInstances"
+        },
+        "MaxSize": {
+          "Ref": "MaxInstances"
+        },
+        "LoadBalancerNames": [
+          {
+            "Ref": "LoadBalancer"
+          }
+        ],
+        "NotificationConfigurations": [
+          {
+            "TopicARN": {
+              "Ref": "NotificationTopic"
+            },
+            "NotificationTypes": [
+              "autoscaling:EC2_INSTANCE_LAUNCH",
+              "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+              "autoscaling:EC2_INSTANCE_TERMINATE",
+              "autoscaling:EC2_INSTANCE_TERMINATE_ERROR"
+            ]
+          }
+        ]
+      },
+      "CreationPolicy": {
+        "ResourceSignal": {
+          "Timeout": "PT15M",
+          "Count": "1"
+        }
+      },
+      "UpdatePolicy": {
+        "AutoScalingRollingUpdate": {
+          "MinInstancesInService": "1",
+          "MaxBatchSize": "1",
+          "PauseTime": "PT15M",
+          "WaitOnResourceSignals": "true"
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "a328a355-e523-489b-abbc-d2470fa85211"
+        }
+      }
+    },
+    "LaunchConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Metadata": {
+        "Comment": "Install a simple application",
+        "AWS::CloudFormation::Init": {
+          "config": {
+            "packages": {
+              "apt-get": {
+                "mdadm": [],
+                "sysstat": []
+              }
+            },
+            "files": {
+              "/tmp/cwlogs/applogs.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[general]\n",
+                      "state_file= /var/awslogs/agent-state\n",
+                      "[/home/ec2-user/app.log]\n",
+                      "file = /home/ec2-user/app.log\n",
+                      "log_group_name = ",
+                      {
+                        "Ref": "WebServerLogGroup"
+                      },
+                      "\n",
+                      "log_stream_name = {instance_id}/nodeapp.log\n",
+                      "datetime_format = %d/%b/%Y:%H:%M:%S",
+                      "[/home/ec2-user/app.error.log]\n",
+                      "file = /home/ec2-user/app.error.log\n",
+                      "log_group_name = ",
+                      {
+                        "Ref": "WebServerLogGroup"
+                      },
+                      "\n",
+                      "log_stream_name = {instance_id}/nodeapp.error.log\n",
+                      "datetime_format = %d/%b/%Y:%H:%M:%S"
+                    ]
+                  ]
+                }
+              },
+              "/etc/cfn/cfn-hup.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[main]\n",
+                      "stack=",
+                      {
+                        "Ref": "AWS::StackId"
+                      },
+                      "\n",
+                      "region=",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\n"
+                    ]
+                  ]
+                },
+                "mode": "000400",
+                "owner": "root",
+                "group": "root"
+              },
+              "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "[cfn-auto-reloader-hook]\n",
+                      "triggers=post.update\n",
+                      "path=Resources.LaunchConfig.Metadata.AWS::CloudFormation::Init\n",
+                      "action=/opt/aws/bin/cfn-init -v ",
+                      "  --stack ",
+                      {
+                        "Ref": "AWS::StackName"
+                      },
+                      "  --resource LaunchConfig ",
+                      "  --region ",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "\n",
+                      "runas=root\n"
+                    ]
+                  ]
+                }
+              }
+            },
+            "services": {
+              "sysvinit": {
+                "cfn-hup": {
+                  "enabled": "true",
+                  "ensureRunning": "true",
+                  "files": [
+                    "/etc/cfn/cfn-hup.conf",
+                    "/etc/cfn/hooks.d/cfn-auto-reloader.conf"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "AWS::CloudFormation::Designer": {
+          "id": "2c4ba40d-c00b-435a-b732-b6dfed31620d"
+        }
+      },
+      "Properties": {
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "SecurityGroups": [
+          {
+            "Ref": "InstanceSecurityGroup"
+          }
+        ],
+        "InstanceType": {
+          "Ref": "InstanceType"
+        },
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash -xe\n",
+                "apt-get update\n",
+                "apt-get -y install python-setuptools\n",
+                "cd /home/ubuntu\n",
+                "mkdir aws-cfn-bootstrap-latest\n",
+                "curl https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz | tar xz -C aws-cfn-bootstrap-latest --strip-components 1\n",
+                "easy_install aws-cfn-bootstrap-latest\n",
+                "/usr/local/bin/cfn-init ",
+                "         --stack ",
+                {
+                  "Ref": "AWS::StackName"
+                },
+                "         --resource LaunchConfig ",
+                "         --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\n",
+                "/usr/local/bin/cfn-hup || error_exit 'Failed to start cfn-hup'\n",
+                "wget https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py\n",
+                "python awslogs-agent-setup.py -n -r ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                " -c /tmp/cwlogs/applogs.conf || error_exit 'Failed to run CloudWatch Logs agent setup'\n",
+                "apt-get install -y ruby\n",
+                "apt-get install -y aws-cli\n",
+                "curl https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -o awscli-bundle.zip\n",
+                "unzip awscli-bundle.zip\n",
+                "./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws\n",
+                "cd /home/ubuntu/\n",
+                "aws s3 cp 's3://aws-codedeploy-us-east-1/latest/codedeploy-agent.noarch.rpm' . \n",
+                "apt-get -y install codedeploy-agent.noarch.rpm \n",
+                "apt-get -y install mongo-10gen-server > /tmp/yum-mongo.log 2>&1\n",
+                "apt-get install -y node > /tmp/node_install.log 2>&1\n",
+                "npm install -g forever\n",
+                "while [ ! -e /dev/xvda ]; do echo waiting for /dev/xvda to attach; sleep 10; done\n",
+                "while [ ! -e /dev/xvdb ]; do echo waiting for /dev/xvdb to attach; sleep 10; done\n",
+                "while [ ! -e /dev/xvdc ]; do echo waiting for /dev/xvdc to attach; sleep 10; done\n",
+                "while [ ! -e /dev/xvde ]; do echo waiting for /dev/xvde to attach; sleep 10; done\n",
+                "mdadm --verbose --create /dev/md0 --level=10 --chunk=256 --raid-devices=4 /dev/xvda /dev/xvdb /dev/xvdc /dev/xvde > /tmp/mdadm.log 2>&1\n",
+                "echo '`mdadm --detail --scan`' | tee -a /etc/mdadm.conf\n",
+                "## Set read-ahead on each device\n",
+                "blockdev --setra 128 /dev/md0\n",
+                "blockdev --setra 128 /dev/xvda\n",
+                "blockdev --setra 128 /dev/xvdb\n",
+                "blockdev --setra 128 /dev/xvdc\n",
+                "blockdev --setra 128 /dev/xvde\n",
+                "dd if=/dev/zero of=/dev/md0 bs=512 count=1\n",
+                "pvcreate /dev/md0\n",
+                "vgcreate vg0 /dev/md0\n",
+                "lvcreate -l 80%vg -n data vg0\n",
+                "lvcreate -l 5%vg -n log vg0\n",
+                "lvcreate -l 15%vg -n journal vg0\n",
+                "mke2fs -t ext4 -F /dev/vg0/data > /tmp/mke2fs1.log 2>&1\n",
+                "mke2fs -t ext4 -F /dev/vg0/log > /tmp/mke2fs2.log 2>&1\n",
+                "mke2fs -t ext4 -F /dev/vg0/journal > /tmp/mke2fs3.log 2>&1\n",
+                "mkdir /data\n",
+                "mkdir /log\n",
+                "mkdir /journal\n",
+                "echo '/dev/vg0/data /data ext4 defaults,auto,noatime,noexec 0 0' | tee -a /etc/fstab\n",
+                "echo '/dev/vg0/log /log ext4 defaults,auto,noatime,noexec 0 0' | tee -a /etc/fstab\n",
+                "echo '/dev/vg0/journal /journal ext4 defaults,auto,noatime,noexec 0 0' | tee -a /etc/fstab\n",
+                "mount /data > /tmp/mount1.log 2>&1\n",
+                "mount /log > /tmp/mount2.log 2>&1\n",
+                "mount /journal > /tmp/mount3.log 2>&1\n",
+                "ln -s /journal /data/journal\n",
+                "chown -R mongod:mongod /data > /tmp/chown1.log 2>&1\n",
+                "chown -R mongod:mongod /log > /tmp/chown2.log 2>&1\n",
+                "chown -R mongod:mongod /journal > /tmp/chown3.log 2>&1\n",
+                "cat <<EOF > /etc/mongod.conf\n",
+                "logpath=/log/mongod.log\n",
+                "logappend=true\n",
+                "fork = true\n",
+                "dbpath=/data\n",
+                "rest=true\n",
+                "smallfiles=true\n",
+                "pidfilepath=/var/run/mongodb/mongod.pid\n",
+                "EOF\n",
+                "/etc/init.d/mongod start > /tmp/mongod-start.log 2>&1\n",
+                "/usr/local/bin/cfn-signal -e $? ",
+                "         --stack ",
+                {
+                  "Ref": "AWS::StackName"
+                },
+                "         --resource AutoScalingGroup ",
+                "         --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\n"
+              ]
+            ]
+          }
+        },
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/xvda",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "DeleteOnTermination": "true",
+              "VolumeSize": {
+                "Ref": "MongoRaidVolumeSize"
+              }
+            }
+          },
+          {
+            "DeviceName": "/dev/xvdb",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "DeleteOnTermination": "true",
+              "VolumeSize": {
+                "Ref": "MongoRaidVolumeSize"
+              }
+            }
+          },
+          {
+            "DeviceName": "/dev/xvdc",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "DeleteOnTermination": "true",
+              "VolumeSize": {
+                "Ref": "MongoRaidVolumeSize"
+              }
+            }
+          },
+          {
+            "DeviceName": "/dev/xvde",
+            "Ebs": {
+              "VolumeType": "gp2",
+              "DeleteOnTermination": "true",
+              "VolumeSize": {
+                "Ref": "MongoRaidVolumeSize"
+              }
+            }
+          }
+        ],
+        "IamInstanceProfile": {
+          "Ref": "InstanceRoleInstanceProfile"
+        }
+      }
+    },
+    "WebServerScaleUpPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AdjustmentType": "ChangeInCapacity",
+        "AutoScalingGroupName": {
+          "Ref": "AutoScalingGroup"
+        },
+        "Cooldown": "60",
+        "ScalingAdjustment": "1"
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "87beaa60-6e43-4531-83ee-8f87a0170529"
+        }
+      },
+      "DependsOn": [
+        "I3R4S2"
+      ]
+    },
+    "WebServerScaleDownPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AdjustmentType": "ChangeInCapacity",
+        "AutoScalingGroupName": {
+          "Ref": "AutoScalingGroup"
+        },
+        "Cooldown": "60",
+        "ScalingAdjustment": "-1"
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "4cf184c9-42a8-4a5f-aa35-c4493b18c79f"
+        }
+      }
+    },
+    "CPUAlarmHigh": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Scale-up if CPU > 90% for 10 minutes",
+        "MetricName": "CPUUtilization",
+        "Namespace": "AWS/EC2",
+        "Statistic": "Average",
+        "Period": "600",
+        "EvaluationPeriods": "2",
+        "Threshold": "90",
+        "AlarmActions": [
+          {
+            "Ref": "WebServerScaleUpPolicy"
+          }
+        ],
+        "Dimensions": [
+          {
+            "Name": "AutoScalingGroupName",
+            "Value": {
+              "Ref": "AutoScalingGroup"
+            }
+          }
+        ],
+        "ComparisonOperator": "GreaterThanThreshold"
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "c64f8cd6-d5df-4458-9e49-f2f9641531f7"
+        }
+      }
+    },
+    "CPUAlarmLow": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Scale-down if CPU < 70% for 10 minutes",
+        "MetricName": "CPUUtilization",
+        "Namespace": "AWS/EC2",
+        "Statistic": "Average",
+        "Period": "300",
+        "EvaluationPeriods": "2",
+        "Threshold": "70",
+        "AlarmActions": [
+          {
+            "Ref": "WebServerScaleDownPolicy"
+          }
+        ],
+        "Dimensions": [
+          {
+            "Name": "AutoScalingGroupName",
+            "Value": {
+              "Ref": "AutoScalingGroup"
+            }
+          }
+        ],
+        "ComparisonOperator": "LessThanThreshold"
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "bc649540-6c6f-4227-9ded-cdb9da13305c"
+        }
+      }
+    },
+    "WebServerLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "RetentionInDays": 7
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "97c6a47f-ec02-4255-9380-83542fbbf1c8"
+        }
+      }
+    },
+    "NotificationTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "Subscription": [
+          {
+            "Endpoint": {
+              "Ref": "OperatorEMail"
+            },
+            "Protocol": "email"
+          }
+        ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "02db62b0-5041-4991-aafb-018cdd3d9906"
+        }
+      }
+    },
+    "I3R4S2": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {},
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "ff1e4479-1617-453b-83be-9d2b9510ad68"
+        }
+      }
+    },
+    "VOLME1Y": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {},
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "e636c1b9-1255-4efa-9eae-5c3ff9462bf8"
+        }
+      },
+      "DependsOn": [
+        "LF2DMBZ"
+      ]
+    },
+    "VOL1C2VC": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {},
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "3902c651-6729-4261-b6c3-87e1537ec2f6"
+        }
+      }
+    },
+    "VOL491F6": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {},
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "c8c474ce-bd7a-4699-9338-7d591ee751ef"
+        }
+      }
+    },
+    "VOL68K0": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {},
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "8983bd4f-dab0-4b3d-af28-113b347a4367"
+        }
+      }
+    },
+    "LF2DMBZ": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {},
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "4135d673-7e8d-4a9f-b4fa-fb732af28e3b"
+        }
+      },
+      "DependsOn": [
+        "VOL2499D",
+        "VOLME1Y"
+      ]
+    },
+    "VATT3I5GA": {
+      "Type": "AWS::EC2::VolumeAttachment",
+      "Properties": {
+        "VolumeId": {
+          "Ref": "VOL1C2VC"
+        },
+        "InstanceId": {
+          "Ref": "I3R4S2"
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "d77664a0-f63f-4180-9b02-9275a09764c7"
+        }
+      }
+    },
+    "VATT3RTLB": {
+      "Type": "AWS::EC2::VolumeAttachment",
+      "Properties": {
+        "VolumeId": {
+          "Ref": "VOLME1Y"
+        },
+        "InstanceId": {
+          "Ref": "I3R4S2"
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "5d044750-5ca8-4dce-a395-ded84e341c90"
+        }
+      }
+    },
+    "VOL2499D": {
+      "Type": "AWS::EC2::Volume",
+      "Properties": {},
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "1a616e95-9672-4a15-a8db-516e4f0f200c"
+        }
+      }
+    },
+    "VATT56FQF": {
+      "Type": "AWS::EC2::VolumeAttachment",
+      "Properties": {
+        "InstanceId": {
+          "Ref": "I3R4S2"
+        },
+        "VolumeId": {
+          "Ref": "VOL491F6"
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "0bd55d49-70a9-41b4-aa21-f76ee43ad57f"
+        }
+      }
+    },
+    "VATT1LZG1": {
+      "Type": "AWS::EC2::VolumeAttachment",
+      "Properties": {
+        "VolumeId": {
+          "Ref": "VOL68K0"
+        },
+        "InstanceId": {
+          "Ref": "I3R4S2"
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "4a5109ff-5970-4c78-8bf2-ec0936d8d645"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "BalancerUrl": {
+      "Description": "Put it in Route53",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "http://",
+            {
+              "Fn::GetAtt": [
+                "LoadBalancer",
+                "DNSName"
+              ]
+            }
+          ]
+        ]
+      }
+    },
+    "AutoscaleName": {
+      "Description": "Use it in CodeDeploy",
+      "Value": {
+        "Ref": "AutoScalingGroup"
+      }
+    },
+    "CloudWatchLogGroupName": {
+      "Description": "The name of the CloudWatch log group",
+      "Value": {
+        "Ref": "WebServerLogGroup"
+      }
+    }
+  },
+  "Metadata": {
+    "AWS::CloudFormation::Designer": {
+      "02db62b0-5041-4991-aafb-018cdd3d9906": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 60,
+          "y": 270
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "97c6a47f-ec02-4255-9380-83542fbbf1c8": {
+        "size": {
+          "width": 120,
+          "height": 120
+        },
+        "position": {
+          "x": 240,
+          "y": 90
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "d2369899-7b2a-41e0-9976-c20637db9169": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 180,
+          "y": 270
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "aaf395c6-cd85-4840-b6ae-bb19ecaa77d0": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 300,
+          "y": 270
+        },
+        "z": 1,
+        "embeds": [],
+        "isassociatedwith": [
+          "d2369899-7b2a-41e0-9976-c20637db9169"
+        ]
+      },
+      "62709250-e0ed-4722-8200-7ef3ff345f20": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 60,
+          "y": 390
+        },
+        "z": 1,
+        "embeds": [],
+        "isassociatedwith": [
+          "d2369899-7b2a-41e0-9976-c20637db9169"
+        ]
+      },
+      "2f5ff73d-acf2-4d30-a711-a3c318e1147c": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 180,
+          "y": 390
+        },
+        "z": 1,
+        "embeds": [],
+        "isassociatedwith": [
+          "d2369899-7b2a-41e0-9976-c20637db9169"
+        ]
+      },
+      "ceb3b5b5-3ecb-491d-815b-808da821d5e6": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 300,
+          "y": 390
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "8c0c1133-b5f4-4394-9506-97c6c2cc04f2": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 420,
+          "y": 90
+        },
+        "z": 1,
+        "embeds": [],
+        "isrelatedto": [
+          "ceb3b5b5-3ecb-491d-815b-808da821d5e6"
+        ]
+      },
+      "ff31f545-8dac-45cf-8bdc-923a128a86c4": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 420,
+          "y": 210
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "3688aad5-c8e5-466b-8f42-2499ca0cd806": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 420,
+          "y": 330
+        },
+        "z": 1,
+        "embeds": [],
+        "isrelatedto": [
+          "ff31f545-8dac-45cf-8bdc-923a128a86c4"
+        ]
+      },
+      "2c4ba40d-c00b-435a-b732-b6dfed31620d": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 420,
+          "y": 450
+        },
+        "z": 1,
+        "embeds": [],
+        "ismemberof": [
+          "3688aad5-c8e5-466b-8f42-2499ca0cd806"
+        ],
+        "isrelatedto": [
+          "aaf395c6-cd85-4840-b6ae-bb19ecaa77d0"
+        ]
+      },
+      "a328a355-e523-489b-abbc-d2470fa85211": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 540,
+          "y": 90
+        },
+        "z": 1,
+        "embeds": [],
+        "isconnectedto": [
+          "ff31f545-8dac-45cf-8bdc-923a128a86c4"
+        ],
+        "isassociatedwith": [
+          "2c4ba40d-c00b-435a-b732-b6dfed31620d"
+        ],
+        "isrelatedto": [
+          "02db62b0-5041-4991-aafb-018cdd3d9906"
+        ]
+      },
+      "4cf184c9-42a8-4a5f-aa35-c4493b18c79f": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 540,
+          "y": 210
+        },
+        "z": 1,
+        "embeds": [],
+        "isassociatedwith": [
+          "a328a355-e523-489b-abbc-d2470fa85211"
+        ]
+      },
+      "bc649540-6c6f-4227-9ded-cdb9da13305c": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 540,
+          "y": 330
+        },
+        "z": 1,
+        "embeds": [],
+        "isrelatedto": [
+          "4cf184c9-42a8-4a5f-aa35-c4493b18c79f",
+          "a328a355-e523-489b-abbc-d2470fa85211"
+        ]
+      },
+      "87beaa60-6e43-4531-83ee-8f87a0170529": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 540,
+          "y": 450
+        },
+        "z": 1,
+        "embeds": [],
+        "isassociatedwith": [
+          "a328a355-e523-489b-abbc-d2470fa85211"
+        ],
+        "dependson": [
+          "ff1e4479-1617-453b-83be-9d2b9510ad68"
+        ]
+      },
+      "c64f8cd6-d5df-4458-9e49-f2f9641531f7": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 60,
+          "y": 510
+        },
+        "z": 1,
+        "embeds": [],
+        "isrelatedto": [
+          "87beaa60-6e43-4531-83ee-8f87a0170529",
+          "a328a355-e523-489b-abbc-d2470fa85211"
+        ]
+      },
+      "76e88cd1-924f-42cb-b651-2460fd6f4de2": {
+        "size": {
+          "width": 120,
+          "height": 120
+        },
+        "position": {
+          "x": 60,
+          "y": 90
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "ff1e4479-1617-453b-83be-9d2b9510ad68": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 750,
+          "y": 120
+        },
+        "z": 0
+      },
+      "e636c1b9-1255-4efa-9eae-5c3ff9462bf8": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 840,
+          "y": -20
+        },
+        "z": 0,
+        "dependson": [
+          "4135d673-7e8d-4a9f-b4fa-fb732af28e3b"
+        ]
+      },
+      "3902c651-6729-4261-b6c3-87e1537ec2f6": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 840,
+          "y": 70
+        },
+        "z": 0
+      },
+      "c8c474ce-bd7a-4699-9338-7d591ee751ef": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 840,
+          "y": 250
+        },
+        "z": 0
+      },
+      "8983bd4f-dab0-4b3d-af28-113b347a4367": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 840,
+          "y": 160
+        },
+        "z": 0
+      },
+      "4135d673-7e8d-4a9f-b4fa-fb732af28e3b": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 950,
+          "y": -20
+        },
+        "z": 0,
+        "dependson": [
+          "1a616e95-9672-4a15-a8db-516e4f0f200c",
+          "e636c1b9-1255-4efa-9eae-5c3ff9462bf8"
+        ]
+      },
+      "d77664a0-f63f-4180-9b02-9275a09764c7": {
+        "source": {
+          "id": "3902c651-6729-4261-b6c3-87e1537ec2f6"
+        },
+        "target": {
+          "id": "ff1e4479-1617-453b-83be-9d2b9510ad68"
+        },
+        "z": 12
+      },
+      "5d044750-5ca8-4dce-a395-ded84e341c90": {
+        "source": {
+          "id": "e636c1b9-1255-4efa-9eae-5c3ff9462bf8"
+        },
+        "target": {
+          "id": "ff1e4479-1617-453b-83be-9d2b9510ad68"
+        },
+        "z": 13
+      },
+      "1a616e95-9672-4a15-a8db-516e4f0f200c": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 1050,
+          "y": -20
+        },
+        "z": 0
+      },
+      "daa64988-1257-4ac4-a438-f97686ebf631": {
+        "source": {
+          "id": "e636c1b9-1255-4efa-9eae-5c3ff9462bf8"
+        },
+        "target": {
+          "id": "4135d673-7e8d-4a9f-b4fa-fb732af28e3b"
+        },
+        "z": 16
+      },
+      "1cb89394-d016-4e9b-8c6c-6b75d72b3e8a": {
+        "source": {
+          "id": "4135d673-7e8d-4a9f-b4fa-fb732af28e3b"
+        },
+        "target": {
+          "id": "1a616e95-9672-4a15-a8db-516e4f0f200c"
+        },
+        "z": 17
+      },
+      "2ddffa99-9cfc-4717-8207-69e903c59238": {
+        "source": {
+          "id": "4135d673-7e8d-4a9f-b4fa-fb732af28e3b"
+        },
+        "target": {
+          "id": "e636c1b9-1255-4efa-9eae-5c3ff9462bf8"
+        },
+        "z": 18
+      },
+      "0bd55d49-70a9-41b4-aa21-f76ee43ad57f": {
+        "source": {
+          "id": "c8c474ce-bd7a-4699-9338-7d591ee751ef"
+        },
+        "target": {
+          "id": "ff1e4479-1617-453b-83be-9d2b9510ad68"
+        },
+        "z": 19
+      },
+      "4a5109ff-5970-4c78-8bf2-ec0936d8d645": {
+        "source": {
+          "id": "8983bd4f-dab0-4b3d-af28-113b347a4367"
+        },
+        "target": {
+          "id": "ff1e4479-1617-453b-83be-9d2b9510ad68"
+        },
+        "z": 20
+      },
+      "ae2782e0-919c-4730-932f-1dc29c4a8b09": {
+        "source": {
+          "id": "87beaa60-6e43-4531-83ee-8f87a0170529"
+        },
+        "target": {
+          "id": "ff1e4479-1617-453b-83be-9d2b9510ad68"
+        },
+        "z": 21
+      }
+    }
+  }
+}
