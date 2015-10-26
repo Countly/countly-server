@@ -1,2 +1,2 @@
-forever -o /home/ubuntu/countly_app.log -e /home/ubuntu/countly_app.error.log start /home/ubuntu/countly-server/frontend/express/app.js --flags --here
-forever -o /home/ubuntu/countly_api.log -e /home/ubuntu/countly_api.error.log start /home/ubuntu/countly-server/api/api.js --flags --here
+forever -o /home/ubuntu/countly_app.log -e /home/ubuntu/countly_app.error.log start /home/ubuntu/countly/frontend/express/app.js --flags --here
+forever -o /home/ubuntu/countly_api.log -e /home/ubuntu/countly_api.error.log start /home/ubuntu/countly/api/api.js --flags --here
