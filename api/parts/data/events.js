@@ -131,7 +131,7 @@ var countlyEvents = {},
             common.arrayAddUniq(events, shortEventName);
 
             if (currEvent.sum && common.isNumber(currEvent.sum)) {
-                currEvent.sum = parseFloat(currEvent.sum.toFixed(5));
+                currEvent.sum = parseFloat(parseFloat(currEvent.sum).toFixed(5));
                 common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap['sum'], currEvent.sum);
             }
 

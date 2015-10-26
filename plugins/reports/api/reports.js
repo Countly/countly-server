@@ -71,18 +71,23 @@ var metrics = {
                 if(member)
                     report.apps = sortBy(report.apps, member.appSortList || []);
                 var endDate = new Date();
+                endDate.setDate(endDate.getDate()-1);
+                endDate.setHours(23, 59);
                 report.end = endDate.getTime();
-                report.start = report.end - 24*60*60*1000;
+                report.start = report.end - 24*60*59*1000;
                 if(report.frequency == "weekly")
-                    report.start = report.end - 7*24*60*60*1000;
+                    report.start = report.end - 7*24*60*59*1000;
                 
                 var startDate = new Date(report.start);
                 report.date = startDate.getDate()+" "+months[startDate.getMonth()];
-                if(report.frequency == "weekly")
+                report.period = "yesterday";
+                if(report.frequency == "weekly"){
+                    report.period = "["+report.start+","+report.end+"]";
                     report.date += " - "+endDate.getDate()+" "+months[endDate.getMonth()];
+                }
                 
                 function appIterator(app_id, done){
-                    var params = {qstring:{period:"["+report.start+","+report.end+"]"}};
+                    var params = {qstring:{period:report.period}};
                     if(!cache[app_id]){
                         function metricIterator(metric, done){
                             if(metric.indexOf("events") == 0){
