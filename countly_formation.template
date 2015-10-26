@@ -11,8 +11,7 @@
         },
         "OperatorEMail": {
             "Description": "Email address to notify if there are any scaling operations",
-            "Type": "String",
-            "Default"  : "sugarhillmountain@gmail.com",
+            "Type": "String",            
             "AllowedPattern": "([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)",
             "ConstraintDescription": "must be a valid email address."
         },
@@ -310,15 +309,25 @@
                                         [
                                             "[general]\n",
                                             "state_file= /var/awslogs/agent-state\n",
-                                            "[/home/ec2-user/app.log]\n",
-                                            "file = /home/ec2-user/app.log\n",
+                                            "[/home/ubuntu/countly_api.log]\n",
+                                            "file = /home/ubuntu/countly_api.log\n",
                                             "log_group_name = ", {"Ref": "WebServerLogGroup"}, "\n",
-                                            "log_stream_name = {instance_id}/nodeapp.log\n",
+                                            "log_stream_name = {instance_id}/countly_api.log\n",
                                             "datetime_format = %d/%b/%Y:%H:%M:%S",
-                                            "[/home/ec2-user/app.error.log]\n",
-                                            "file = /home/ec2-user/app.error.log\n",
+                                            "[/home/ubuntu/countly_api.error.log]\n",
+                                            "file = /home/ubuntu/countly_api.error.log\n",
                                             "log_group_name = ", {"Ref": "WebServerLogGroup"}, "\n",
-                                            "log_stream_name = {instance_id}/nodeapp.error.log\n",
+                                            "log_stream_name = {instance_id}/countly_api.error.log\n",
+                                            "datetime_format = %d/%b/%Y:%H:%M:%S",
+                                            "[/home/ubuntu/countly_app.log]\n",
+                                            "file = /home/ubuntu/countly_app.log\n",
+                                            "log_group_name = ", {"Ref": "WebServerLogGroup"}, "\n",
+                                            "log_stream_nemailame = {instance_id}/countly_app.log\n",
+                                            "datetime_format = %d/%b/%Y:%H:%M:%S",
+                                            "[/home/ubuntu/countly_app.error.log]\n",
+                                            "file = /home/ubuntu/countly_app.error.log\n",
+                                            "log_group_name = ", {"Ref": "WebServerLogGroup"}, "\n",
+                                            "log_stream_name = {instance_id}/countly_app.error.log\n",
                                             "datetime_format = %d/%b/%Y:%H:%M:%S"
                                         ]
                                     ]
