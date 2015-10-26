@@ -156,6 +156,10 @@ var fetch = {},
     };
 
     fetch.fetchCollection = function (collection, params) {
+
+        console.log("fetchCollection:", collection);
+        console.log(params);
+        
         common.db.collection(collection).findOne({'_id':params.app_id}, function (err, result) {
             if (!result) {
                 result = {};
@@ -236,7 +240,7 @@ var fetch = {},
             });
         });
     };
-	
+
 	fetch.fetchTops = function(params) {
         fetchTimeObj('users', params, false, function(usersDoc) {
             fetchTimeObj('device_details', params, false, function(deviceDetailsDoc) {
@@ -283,14 +287,14 @@ var fetch = {},
             common.returnOutput(params, output);
         });
     };
-	
+
 	fetch.fetchSessions = function(params) {
         fetchTimeObj('users', params, false, function(usersDoc) {
 			countlySession.setDb(usersDoc || {});
 			common.returnOutput(params, countlySession.getSubperiodData());
         });
     };
-	
+
 	fetch.fetchLoyalty = function(params) {
         fetchTimeObj("users", params, false, function(doc) {
 			var _meta = [];
@@ -302,7 +306,7 @@ var fetch = {},
 			common.returnOutput(params, chartData);
 		});
     };
-	
+
 	fetch.fetchFrequency = function(params) {
         fetchTimeObj("users", params, false, function(doc) {
 			var _meta = [];
@@ -314,7 +318,7 @@ var fetch = {},
 			common.returnOutput(params, chartData);
 		});
     };
-	
+
 	fetch.fetchDurations = function(params) {
         fetchTimeObj("users", params, false, function(doc) {
 			var _meta = [];
@@ -326,7 +330,7 @@ var fetch = {},
 			common.returnOutput(params, chartData);
 		});
     };
-	
+
 	fetch.fetchMetric = function(params) {
 		function getMetric(metric){
 			fetchTimeObj(metric, params, false, function(doc) {
@@ -339,7 +343,7 @@ var fetch = {},
 					else {
 						obj = {"t":0, "n":0, "u":0};
 					}
-			
+
 					return obj;
 				};
 				if (doc['meta'] && doc['meta'][params.qstring.metric]) {
@@ -397,7 +401,7 @@ var fetch = {},
             common.returnOutput(params, output);
         });
     };
-    
+
     fetch.getTimeObj = function (collection, params, callback) {
         fetchTimeObj(collection, params, null, callback);
     };
@@ -493,15 +497,15 @@ var fetch = {},
                     if (!dataObjects[i] || !dataObjects[i].m) {
                         continue;
                     }
-    
+
                     var mSplit = dataObjects[i].m.split(":"),
                         year = mSplit[0],
                         month = mSplit[1];
-    
+
                     if (!mergedDataObj[year]) {
                         mergedDataObj[year] = {};
                     }
-    
+
                     if (month == 0) {
                         if (mergedDataObj['meta']) {
                             for (var metaEl in dataObjects[i]['meta']) {
@@ -514,7 +518,7 @@ var fetch = {},
                         } else {
                             mergedDataObj['meta'] = dataObjects[i]['meta'] || [];
                         }
-    
+
                         if (mergedDataObj[year]) {
                             for (var prop in dataObjects[i]['d']) {
                                 mergedDataObj[year][prop] = dataObjects[i]['d'][prop];
@@ -530,14 +534,14 @@ var fetch = {},
                         } else {
                             mergedDataObj[year][month] = dataObjects[i]['d'] || {};
                         }
-    
+
                         if (!isRefresh) {
                             for (var day in dataObjects[i]['d']) {
                                 for (var prop in dataObjects[i]['d'][day]) {
                                     if ((collection == 'users' || dataObjects[i]['s'] == 'no-segment') && prop <= 23 && prop >= 0) {
                                         continue;
                                     }
-    
+
                                     if (typeof dataObjects[i]['d'][day][prop] === 'object') {
                                         for (var secondLevel in dataObjects[i]['d'][day][prop]) {
                                             if (secondLevel == common.dbMap.total || secondLevel == common.dbMap.new ||
@@ -545,17 +549,17 @@ var fetch = {},
                                                 if (!mergedDataObj[year][month][prop]) {
                                                     mergedDataObj[year][month][prop] = {};
                                                 }
-    
+
                                                 if (mergedDataObj[year][month][prop][secondLevel]) {
                                                     mergedDataObj[year][month][prop][secondLevel] += dataObjects[i]['d'][day][prop][secondLevel];
                                                 } else {
                                                     mergedDataObj[year][month][prop][secondLevel] = dataObjects[i]['d'][day][prop][secondLevel];
                                                 }
-    
+
                                                 if (!mergedDataObj[year][prop]) {
                                                     mergedDataObj[year][prop] = {};
                                                 }
-    
+
                                                 if (mergedDataObj[year][prop][secondLevel]) {
                                                     mergedDataObj[year][prop][secondLevel] += dataObjects[i]['d'][day][prop][secondLevel];
                                                 } else {
@@ -566,13 +570,13 @@ var fetch = {},
                                     } else if (prop == common.dbMap.total || prop == common.dbMap.new ||
                                         prop == common.dbMap.duration || prop == common.dbMap.events ||
                                         prop == common.dbEventMap.count || prop == common.dbEventMap.sum) {
-    
+
                                         if (mergedDataObj[year][month][prop]) {
                                             mergedDataObj[year][month][prop] += dataObjects[i]['d'][day][prop];
                                         } else {
                                             mergedDataObj[year][month][prop] = dataObjects[i]['d'][day][prop];
                                         }
-    
+
                                         if (mergedDataObj[year][prop]) {
                                             mergedDataObj[year][prop] += dataObjects[i]['d'][day][prop];
                                         } else {
