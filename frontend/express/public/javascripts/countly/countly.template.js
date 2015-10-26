@@ -3245,12 +3245,7 @@ var AppRouter = Backbone.Router.extend({
                 containment:"parent",
                 tolerance:"pointer",
                 stop:function () {
-                    var orderArr = [];
-                    $(".app-container.app-navigate").each(function () {
-                        if ($(this).data("id")) {
-                            orderArr.push($(this).data("id"))
-                        }
-                    });
+                    var orderArr = $(".apps-scrollable").sortable( "toArray", {attribute:"data-id"} );
 
                     $.ajax({
                         type:"POST",
@@ -3266,14 +3261,6 @@ var AppRouter = Backbone.Router.extend({
             });
             $("#sort-app-button").click(function () {
                 $(".app-container.app-navigate .drag").fadeToggle();
-                setTimeout(function(){
-                    if($(".app-container.app-navigate .drag").is(":visible")){
-                        self.disableAppTooltip();
-                    }
-                    else{
-                        self.enableAppTooltip();
-                    }
-                },500);
             });
 
             $(".app-navigate").live("click", function () {
@@ -3305,7 +3292,7 @@ var AppRouter = Backbone.Router.extend({
             });
             
             $(document).on("mouseenter", ".app-container", function(){
-                if(self.appTooltip){
+                if(!$(this).find(".drag").is(":visible") && self.appTooltip){
                     var elem = $(this);
                     var name = elem.find(".name");
                     if(name[0].scrollWidth >  name.innerWidth()){
