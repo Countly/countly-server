@@ -1098,7 +1098,7 @@ window.AllAppsView = countlyView.extend({
                 ]
             }));
             this.drawGraph();
-            $(".dataTable-bottom").append("<div clas='dataTables_info' style='float: right; margin-top:2px; margin-right: 10px;'>Maximum number of applications to be compared (10)</div>")
+            $(".dataTable-bottom").append("<div clas='dataTables_info' style='float: right; margin-top:2px; margin-right: 10px;'>"+jQuery.i18n.map["allapps.maximum-items"]+" (10)</div>")
 
             $(".d-table").stickyTableHeaders();
 
@@ -4016,19 +4016,27 @@ var AppRouter = Backbone.Router.extend({
             return ((x < y) ?  1 : ((x > y) ? -1 : 0));
         };
 
-        $.extend($.fn.dataTable.defaults, {
+        $.extend(true, $.fn.dataTable.defaults, {
             "sDom": '<"dataTable-top"fpT>t<"dataTable-bottom"i>',
             "bAutoWidth": false,
             "sPaginationType": "four_button",
             "iDisplayLength": 50,
             "bDestroy": true,
             "bDeferRender": true,
+            "oLanguage": {
+				"sZeroRecords": jQuery.i18n.map["common.table.no-data"],
+				"sInfoEmpty": jQuery.i18n.map["common.table.no-data"],
+				"sEmptyTable": jQuery.i18n.map["common.table.no-data"],
+				"sInfo": jQuery.i18n.map["common.showing"],
+				"sInfoFiltered": jQuery.i18n.map["common.filtered"],
+				"sSearch": jQuery.i18n.map["common.search"]
+			},
             "oTableTools": {
                 "sSwfPath": countlyGlobal["cdn"]+"javascripts/dom/dataTables/swf/copy_csv_xls.swf",
                 "aButtons": [
                     {
                         "sExtends": "csv",
-                        "sButtonText": "Save to CSV",
+                        "sButtonText": jQuery.i18n.map["common.save-to-csv"],
                         "fnClick": function (nButton, oConfig, flash) {
                             var tableCols = $(nButton).parents(".dataTables_wrapper").find(".dataTable").dataTable().fnSettings().aoColumns,
                                 tableData = this.fnGetTableData(oConfig).split(/\r\n|\r|\n/g).join('","').split('","'),
@@ -4059,7 +4067,7 @@ var AppRouter = Backbone.Router.extend({
                     },
                     {
                         "sExtends": "xls",
-                        "sButtonText": "Save for Excel",
+                        "sButtonText": jQuery.i18n.map["common.save-to-excel"],
                         "fnClick": function (nButton, oConfig, flash) {
                             var tableCols = $(nButton).parents(".dataTables_wrapper").find(".dataTable").dataTable().fnSettings().aoColumns,
                                 tableData = this.fnGetTableData(oConfig).split(/\r\n|\r|\n/g).join('\t').split('\t'),
