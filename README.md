@@ -19,6 +19,8 @@
 
 ![alt tag](https://s3.amazonaws.com/countlygithubimages/auto_scaling.png)
 
+Put the Countly repository:
+
 ![alt tag](https://s3.amazonaws.com/countlygithubimages/deploy.png)
 
 ![alt tag](https://s3.amazonaws.com/countlygithubimages/deployment.png)
