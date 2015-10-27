@@ -4,12 +4,12 @@
 ![alt tag](https://s3.amazonaws.com/countlygithubimages/logo2.png)
 
 
-## The creation of an auto scale secure cluster:
+## The creation of an auto scale secure cluster.
 
 
 ![alt tag](https://s3.amazonaws.com/countlygithubimages/create_cluster.png)
 
-### Cluster servers
+### Cluster servers:
 
 ![alt tag](https://s3.amazonaws.com/countlygithubimages/Initializing.png)
 
