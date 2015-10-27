@@ -9,6 +9,8 @@
 
 ![alt tag](https://s3.amazonaws.com/countlygithubimages/create_cluster.png)
 
+### Cluster servers
+
 ![alt tag](https://s3.amazonaws.com/countlygithubimages/Initializing.png)
 
 
