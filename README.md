@@ -4,8 +4,9 @@
 ![alt tag](https://s3.amazonaws.com/countlygithubimages/logo2.png)
 
 
-## The creation of an auto scale secure cluster.
+# The creation of an auto scale secure cluster.
 
+### Run "countly_formation.template" in the CloudFormation.
 
 ![alt tag](https://s3.amazonaws.com/countlygithubimages/create_cluster.png)
 
