@@ -951,9 +951,9 @@
 			</div>
 			{{#if big-numbers}}
 			<div class="widget-footer event-numbers" style="background-color:#EEEEEE;">
-				<div id="big-numbers-container" class="{{big-numbers.class}}">
+				<div id="big-numbers-container" class="{{big-numbers.class}} event-numbers">
 					{{#each big-numbers.items}}
-					<div class="big-numbers selected">
+					<div class="big-numbers selected {{this.class}}" data-type="{{this.class}}">
 						<div class="inner">
 							<div class="select">{{this.title}}</div>
 							<div class="color"></div>

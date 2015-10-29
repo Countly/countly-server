@@ -22,6 +22,7 @@ var common = {},
         'frequency': 'f',
         'loyalty': 'l',
         'sum': 's',
+        'duration': 'dur',
         'count': 'c'
     };
 
@@ -54,6 +55,7 @@ var common = {},
         'segmentations':'sg',
         'count':'c',
         'sum':'s',
+        'duration': 'dur',
         'previous_events': 'pe'
     };
 

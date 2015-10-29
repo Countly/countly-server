@@ -47,6 +47,7 @@ var fetch = {},
         if (params.qstring.date == "today") {
             fetchFields[params.time.daily + "." + common.dbMap.count] = 1;
             fetchFields[params.time.daily + "." + common.dbMap.sum] = 1;
+            fetchFields[params.time.daily + "." + common.dbMap.duration] = 1;
         }
 
         var idToFetch = params.qstring.segmentation || "no-segment";
@@ -541,7 +542,7 @@ var fetch = {},
                                     if (typeof dataObjects[i]['d'][day][prop] === 'object') {
                                         for (var secondLevel in dataObjects[i]['d'][day][prop]) {
                                             if (secondLevel == common.dbMap.total || secondLevel == common.dbMap.new ||
-                                                secondLevel == common.dbEventMap.count || secondLevel == common.dbEventMap.sum) {
+                                                secondLevel == common.dbEventMap.count || secondLevel == common.dbEventMap.sum || secondLevel == common.dbEventMap.duration) {
                                                 if (!mergedDataObj[year][month][prop]) {
                                                     mergedDataObj[year][month][prop] = {};
                                                 }
@@ -565,7 +566,7 @@ var fetch = {},
                                         }
                                     } else if (prop == common.dbMap.total || prop == common.dbMap.new ||
                                         prop == common.dbMap.duration || prop == common.dbMap.events ||
-                                        prop == common.dbEventMap.count || prop == common.dbEventMap.sum) {
+                                        prop == common.dbEventMap.count || prop == common.dbEventMap.sum || prop == common.dbEventMap.duration) {
     
                                         if (mergedDataObj[year][month][prop]) {
                                             mergedDataObj[year][month][prop] += dataObjects[i]['d'][day][prop];

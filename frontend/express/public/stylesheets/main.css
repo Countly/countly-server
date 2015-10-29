@@ -479,6 +479,8 @@ div.datatablesubrow {display: none;}
 	#date-picker .button-container { overflow:auto; margin-top:6px; padding:3px; }
 #date-picker-button:hover { box-shadow:0 0 5px 2px #fff; }
 
+.threes-column .big-numbers { width:33%; }
+.threes-column .big-numbers:last-child { width:34%; }
 .two-column .big-numbers { width:50%; }
 .one-column .big-numbers { width:100%; position:relative; }
 
@@ -810,6 +812,14 @@ table.events-table { width:100%; padding:0; margin:0; }
 
 .delete-event, .delete-event-selected { color:#D67678; cursor:pointer; font-size:16px;}
 .delete-event:hover, .delete-event-selected:hover { color:#D63E40; }
+
+.event-numbers .big-numbers.event-count .color { background-color:#88BBC8; } 
+.event-numbers .big-numbers.event-sum .color { background-color:#ED8662; } 
+.event-numbers .big-numbers.event-dur .color { background-color:#BEEB9F; } 
+
+.event-numbers .big-numbers.event-count.selected .color { box-shadow: 0 1px 20px 0 #88BBC8; }
+.event-numbers .big-numbers.event-sum.selected .color { box-shadow: 0 1px 20px 0 #ED8662; }
+.event-numbers .big-numbers.event-dur.selected .color { box-shadow: 0 1px 20px 0 #BEEB9F; }
 
 
 /* EVENTS END */
