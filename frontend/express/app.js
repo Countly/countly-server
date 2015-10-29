@@ -147,6 +147,16 @@ app.configure(function () {
     app.use(function(req, res, next) {
         res.locals.flash = req.flash.bind(req);
         req.config = plugins.getConfig("frontend");
+        var _render = res.render;
+        res.render = function(view, opts, fn, parent, sub){
+            if(!opts["path"])
+                opts["path"] = countlyConfig.path || "";
+            if(!opts["cdn"])
+                opts["cdn"] = countlyConfig.cdn || "";
+            if(!opts["themeFiles"])
+                opts["themeFiles"] = themeFiles;
+            _render.call(res, view, opts, fn, parent, sub);
+        };
         next();
     });
     app.use(express.methodOverride());
