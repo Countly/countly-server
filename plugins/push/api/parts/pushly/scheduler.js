@@ -25,7 +25,9 @@ var check = function() {
                 common.db.collection('messages').update(
                     {_id: message._id},
                     upd, 
-                    log.callback(pushly.push.bind(pushly, msg))
+                    function(){
+                    	pushly.push(msg);
+                    }
                 );
             }
         });
