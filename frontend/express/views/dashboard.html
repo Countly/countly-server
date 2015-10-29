@@ -60,6 +60,11 @@
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/ZeroClipboard.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js"></script>
     <% } %>
+    <% if (themeFiles && themeFiles.css) { %>
+        <% for(var i=0, l=themeFiles.css.length; i<l; i++) {%>
+    <link href='<%= themeFiles.css[i]%>' rel='stylesheet' type='text/css'>
+        <% } %>
+    <% } %>
     <script type="text/javascript">
     window.production = <%= production ? true : false %>;
     </script>
@@ -1103,6 +1108,11 @@
 				<% } %>
 			<% } %>
 	<% } %>
+    <% if (themeFiles && themeFiles.js) { %>
+        <% for(var i=0, l=themeFiles.js.length; i<l; i++) {%>
+    <script language="javascript" type="text/javascript" src="<%=themeFiles.js[i]%>"></script>
+        <% } %>
+    <% } %>
 	<script>
 	Backbone.history.start();
 	</script>
