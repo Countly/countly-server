@@ -301,7 +301,7 @@ a:active { color:inherit; }
 
 		.widget-content .big-numbers .trend { width:12px; height:9px; right:7%; top:11px; position:absolute; }
 		.widget-footer .big-numbers .trend { width:12px; height:9px; right:20px; top:62px; position:absolute; }
-		.widget-footer .big-numbers .check { width:12px; height:9px; left:20px; top:53px; position:absolute; font-size:30px;}
+		.widget-footer .big-numbers .check {width: 12px; height: 9px; left: 20px; top: 57px; position: absolute; font-size: 19px; color: #bbb;}
 		.widget-content .big-numbers .change { right:15px; white-space:nowrap; top:-1px; position:absolute; font:10px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#999; text-shadow:0 1px #FFF; }
 			.big-numbers.active .change { color:#333; }
 
