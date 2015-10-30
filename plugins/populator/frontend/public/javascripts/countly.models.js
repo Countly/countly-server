@@ -226,6 +226,7 @@
 					event.segmentation[i] = segment[Math.floor(Math.random()*segment.length)];
 				}
 			}
+            event.dur = getRandomInt(0, 10);
 			return [event];
 		};
 		
