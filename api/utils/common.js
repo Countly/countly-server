@@ -22,7 +22,7 @@ var common = {},
         'frequency': 'f',
         'loyalty': 'l',
         'sum': 's',
-        'duration': 'dur',
+        'dur': 'dur',
         'count': 'c'
     };
 

@@ -47,7 +47,7 @@ var fetch = {},
         if (params.qstring.date == "today") {
             fetchFields[params.time.daily + "." + common.dbMap.count] = 1;
             fetchFields[params.time.daily + "." + common.dbMap.sum] = 1;
-            fetchFields[params.time.daily + "." + common.dbMap.duration] = 1;
+            fetchFields[params.time.daily + "." + common.dbMap.dur] = 1;
         }
 
         var idToFetch = params.qstring.segmentation || "no-segment";
