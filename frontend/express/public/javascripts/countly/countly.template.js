@@ -2588,7 +2588,11 @@ window.EventsView = countlyView.extend({
         for(var i in this.showOnGraph){
             if(this.showOnGraph[i]){
                 $(".big-numbers."+i).addClass("selected");
+                $(".big-numbers."+i+" .check").removeClass("fa-square-o").addClass("fa-check-square-o");
                 use.push(cnt);
+            }
+            else{
+                $(".big-numbers."+i+" .check").removeClass("fa-check-square-o").addClass("fa-square-o");
             }
             cnt++;
         }
