@@ -1516,20 +1516,6 @@ window.PlatformView = countlyView.extend({
     },
     pageScript:function () {
         var self = this;
-        
-        if (self.activePlatform) {
-            $(".graph-segment[data-name='" + self.activePlatform + "']").addClass("active");
-        } else {
-            $(".graph-segment:first-child").addClass("active");
-        }
-
-        $(".graph-segment").on("click", function () {
-            self.activePlatform = $(this).data("name");
-            $(".graph-segment").removeClass("active");
-            $(this).addClass("active");
-
-            self.refresh();
-        });
 
         app.localize();
     },
@@ -1546,7 +1532,6 @@ window.PlatformView = countlyView.extend({
                 "left":jQuery.i18n.map["platforms.pie-left"],
                 "right":jQuery.i18n.map["platforms.pie-right"]
             },
-            "graph-segmentation":oSVersionData.os,
             "chart-helper":"platform-versions.chart",
             "table-helper":"",
             "two-tables": true
@@ -1618,7 +1603,6 @@ window.PlatformView = countlyView.extend({
                 newPage = $("<div>" + self.template(self.templateData) + "</div>");
 
             $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
-            $(self.el).find(".graph-segment-container").replaceWith(newPage.find(".graph-segment-container"));
 
             countlyCommon.drawGraph(platformData.chartDP, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(oSVersionData.chartDP, "#dashboard-graph2", "pie");
