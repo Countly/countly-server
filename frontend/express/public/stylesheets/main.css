@@ -204,7 +204,7 @@ a:active { color:inherit; }
 				#sidebar-menu .sidebar-menu .sidebar-submenu .item.active .text { color:#4DB351; }
 				#sidebar-menu .sidebar-menu .sidebar-submenu .item.help-toggle.active { color:#666; }
 
-			#management-submenu.sidebar-submenu .item .logo { background-image:url('../images/dashboard/management_icons.png'); }
+			#sidebar-menu #management-submenu.sidebar-submenu .item .logo { background-image:url('../images/dashboard/management_icons.png'); }
 				.sidebar-submenu .item .logo.applications { background-position:-30px; }
 				.sidebar-submenu .item.active .logo.applications { background-position:0; }
 				.sidebar-submenu .item .logo.mgmt-users { background-position:-90px; }
