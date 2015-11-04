@@ -27,6 +27,7 @@ var usage = {},
         }
         common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, dbAppUser){
             //process duration from unproperly ended previous session
+            plugins.dispatch("/session/post", {params:params, dbAppUser:dbAppUser});
             if (dbAppUser && dbAppUser[common.dbUserMap['session_duration']]) {
                 processSessionDurationRange(dbAppUser[common.dbUserMap['session_duration']], params);
             }
@@ -78,6 +79,7 @@ var usage = {},
                         if (overrideFlag || !dbAppUser[common.dbUserMap['has_ongoing_session']]) {
                             
                             plugins.dispatch("/session/end", {params:params, dbAppUser:dbAppUser});
+                            plugins.dispatch("/session/post", {params:params, dbAppUser:dbAppUser});
     
                             // If the user does not exist in the app_users collection or she does not have any
                             // previous session duration stored than we dont need to calculate the session
