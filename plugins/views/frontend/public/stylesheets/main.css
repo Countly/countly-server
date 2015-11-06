@@ -1,0 +1,13 @@
+.views-widget {margin-top: -16px;}
+.views-widget .dataTable-top {border-radius: 0;}
+.views-widget .trend { width:12px; height:9px; display: inline-block; margin-top: 5px; margin-right: 5px;}
+.views-widget tbody tr {cursor: pointer;}
+
+.views-widget .widget-content .big-numbers .inner{height: 30px;}
+.views-widget .widget-footer{border-radius: 0;}
+.views-widget #empty-graph {position: absolute; text-align: center; font-size: 35px; width:100%; top:50%; margin-top: -20px; display: none;}
+.views-widget div.color{ width: 10px; height: 20px; float: right;}
+
+.seven-column { width:14%; }
+.seven-column:first-child { width:15%; }
+.seven-column:last-child { width:15%; }
