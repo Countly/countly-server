@@ -328,5 +328,12 @@ $( document ).ready(function() {
                 '</a>';
 	$('#web-type #engagement-submenu').append(menu);
     
-    
+    app.addAppSwitchCallback(function(appId){
+        if(countlyGlobal["apps"][appId].type == "web"){
+            jQuery.i18n.map["drill.lv"] = jQuery.i18n.map["web.drill.lv"];
+            jQuery.i18n.map["views.title"] = jQuery.i18n.map["web.views.title"];
+            jQuery.i18n.map["views.view"] = jQuery.i18n.map["web.views.view"];
+            
+        }
+    });
 });
