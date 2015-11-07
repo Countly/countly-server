@@ -11,9 +11,11 @@
 		_opengl: ["opengl_es1", "opengl_es2"],
 		_density: ["120dpi", "160dpi", "240dpi", "320dpi", "480dpi", "640dpi"],
 		_locale: ["en_CA", "fr_FR", "de_DE", "it_IT", "ja_JP", "ko_KR", "en_US"],
-        _store: ["com.android.vending","com.google.android.feedback","com.google.vending","com.slideme.sam.manager","com.amazon.venezia","com.sec.android.app.samsungapps","com.nokia.payment.iapenabler","com.qihoo.appstore","cn.goapk.market","com.wandoujia.phoenix2","com.hiapk.marketpho","com.hiapk.marketpad","com.dragon.android.pandaspace","me.onemobile.android","com.aspire.mm","com.xiaomi.market","com.miui.supermarket","com.baidu.appsearch","com.tencent.android.qqdownloader","com.android.browser","com.bbk.appstore","cm.aptoide.pt","com.nduoa.nmarket","com.rim.marketintent","com.lenovo.leos.appstore","com.lenovo.leos.appstore.pad","com.keenhi.mid.kitservice","com.yingyonghui.market","com.moto.mobile.appstore","com.aliyun.wireless.vos.appstore","com.appslib.vending","com.mappn.gfan","com.diguayouxi","um.market.android","com.huawei.appmarket","com.oppo.market","com.taobao.appcenter"]
+        _browser: ["Opera", "Chrome", "Internet Explorer", "Safari", "Firefox"],
+        _store: ["com.android.vending","com.google.android.feedback","com.google.vending","com.slideme.sam.manager","com.amazon.venezia","com.sec.android.app.samsungapps","com.nokia.payment.iapenabler","com.qihoo.appstore","cn.goapk.market","com.wandoujia.phoenix2","com.hiapk.marketpho","com.hiapk.marketpad","com.dragon.android.pandaspace","me.onemobile.android","com.aspire.mm","com.xiaomi.market","com.miui.supermarket","com.baidu.appsearch","com.tencent.android.qqdownloader","com.android.browser","com.bbk.appstore","cm.aptoide.pt","com.nduoa.nmarket","com.rim.marketintent","com.lenovo.leos.appstore","com.lenovo.leos.appstore.pad","com.keenhi.mid.kitservice","com.yingyonghui.market","com.moto.mobile.appstore","com.aliyun.wireless.vos.appstore","com.appslib.vending","com.mappn.gfan","com.diguayouxi","um.market.android","com.huawei.appmarket","com.oppo.market","com.taobao.appcenter"],
+        _source: ["https://www.google.lv", "https://www.google.co.in/", "https://www.google.ru/", "http://stackoverflow.com/questions", "http://stackoverflow.com/unanswered", "http://stackoverflow.com/tags", "http://r.search.yahoo.com/"]
 	};
-	var events = ["Login", "Logout", "Lost", "Won", "Achievement","Sound","Shared"];
+	var events = ["Login", "Logout", "Lost", "Won", "Achievement","Sound","Shared", "[CLY]_view"];
 	var pushEvents = ["[CLY]_push_sent", "[CLY]_push_open", "[CLY]_push_action"];
 	var segments  = {
 		Login: {referer: ["twitter", "notification", "unknown"]},
@@ -26,6 +28,13 @@
 	segments["[CLY]_push_open"]={i:"123456789012345678901234"};
 	segments["[CLY]_push_action"]={i:"123456789012345678901234"};
 	segments["[CLY]_push_sent"]={i:"123456789012345678901234"};
+	segments["[CLY]_view"]={
+        name:["/", "/blog", "/contact", "/search", "/about", "prices"],
+        visit:[1],
+        start:[0,1],
+        exit:[0,1],
+        bounce:[0,1]
+    };
 	var crashProps = ["root", "ram_current", "ram_total", "disk_current", "disk_total", "bat_current", "bat_total", "orientation", "stack", "log", "custom", "features", "settings", "comment", "os", "os_version", "manufacture", "device", "resolution", "app_version"];
 	function getRandomInt(min, max) {
 		return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -112,10 +121,12 @@
 				this.platform = this.getProp(i);
 				this.metrics[i] = this.platform;
 			}
-			else if(i != "_store")
+			else if(i != "_store" && i != "_source")
 				this.metrics[i] = this.getProp(i);
 		}
-        if(this.platform == "Android")
+        if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web")
+            this.metrics["_store"] = this.getProp("_source");
+        else if(this.platform == "Android")
             this.metrics["_store"] = this.getProp("_store");
 		
 		this.getCrash = function(){
@@ -226,7 +237,10 @@
 					event.segmentation[i] = segment[Math.floor(Math.random()*segment.length)];
 				}
 			}
-            event.dur = getRandomInt(0, 10);
+            if(id == "[CLY]_view")
+                event.dur = getRandomInt(0, 100);
+            else
+                event.dur = getRandomInt(0, 10);
 			return [event];
 		};
 		
