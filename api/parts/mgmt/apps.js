@@ -298,8 +298,6 @@ var appsApi = {},
                         segments = events.segments[events.list[i]];
                     
                     segments.push("no-segment");
-                    console.log(segments);
-                    console.log(dates);
                     var docs = [];
                     for(var j = 0; j < segments.length; j++){
                         for(var k = 0; k < dates.length; k++){
