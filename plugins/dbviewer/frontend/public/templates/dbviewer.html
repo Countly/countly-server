@@ -29,8 +29,8 @@
 					<h3>{{value.name}}</h3>
 					<div>
 						<ul>
-						{{#eachOfArray value.collections}}
-							<li><a href='#/manage/db/{{../value.name}}/{{value}}'>{{value}}</a></li>
+						{{#eachOfArray value.list}}
+							<li><a href='#/manage/db/{{../value.name}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}'>{{value}}</a></li>
 						{{/eachOfArray}}
 						</ul>
 					</div>
@@ -142,9 +142,9 @@
 						{{#eachOfArray dbs}}
 							{{#ifCond value.name "==" ../db}}
 								<table class="jh-type-object jh-root" id="dbviewer-collections">
-								{{#eachOfArray value.collections}}
+								{{#eachOfArray value.list}}
 								<tr>
-								<th class="jh-key jh-object-key"><a href="#/manage/db/{{../../../db}}/{{value}}">{{value}}</a></th>
+								<th class="jh-key jh-object-key"><a href="#/manage/db/{{../../../db}}/{{#withItem ../value.collections key=value}}{{this}}{{/withItem}}">{{value}}</a></th>
 								</tr>
 								{{/eachOfArray}}
 								</table>
