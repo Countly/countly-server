@@ -4,6 +4,7 @@
 		_Db = {},
 		_metrics = [],
         _frequency = [],
+        _actionData = {},
 		_activeAppKey = 0,
 		_initialized = false,
 		_period = null;
@@ -76,8 +77,32 @@
 	countlyMetric.reset = function () {
 		_Db = {};
         _frequency = [];
+        _actionData = {};
 		setMeta();
 	};
+    
+    countlyMetric.loadActionsData = function (view) {
+		_period = countlyCommon.getPeriodForAjax();
+
+		return $.ajax({
+			type:"GET",
+			url:countlyCommon.API_PARTS.data.r+"/actions",
+			data:{
+				"api_key":countlyGlobal.member.api_key,
+				"app_id":countlyCommon.ACTIVE_APP_ID,
+				"view":view,
+				"period":_period
+			},
+			dataType:"json",
+			success:function (json) {
+				_actionData = json;
+			}
+		});
+	};
+    
+    countlyMetric.getActionsData = function (view) {
+        return _actionData;
+    };
     
     countlyMetric.getChartData = function(path, metric, name){
 		var chartData = [
@@ -203,7 +228,7 @@
     };
 
     countlyMetric.getFrequencyIndex = function (value) {
-        var visits = jQuery.i18n.map["views.visits"];
+        var visits = jQuery.i18n.map["views.visits"].toLowerCase();
 
         var range = [
             "1-2 " + visits,

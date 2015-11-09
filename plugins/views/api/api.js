@@ -23,7 +23,7 @@ var plugin = {},
 			validateUserForDataReadAPI(params, function(){
                 var result = {types:[], data:[]};
                 var collectionName = "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex');
-                common.drillDb.collection(collectionName).findOne( {"_id": "meta"},{_id:0, "sg.type":1} ,function(err,meta){
+                common.drillDb.collection(collectionName).findOne( {"_id": "meta"},{_id:0, "sg.type":1, "sg.domain":1} ,function(err,meta){
                     result.types = meta.sg.type.values
                     if (params.qstring.period) {
                         //check if period comes from datapicker
