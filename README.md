@@ -24,13 +24,18 @@ If you want to upgrade Countly from a previous version, please take a look at [u
 Countly also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/u/countly/countly-server/)
 
 ##Dependencies
-We develop and test Countly on Ubuntu with MongoDB, Node.js and nginx. Installation script only needs a clean, decent Ubuntu Linux without any services listening to port 80 and takes care of every library and software (e.g MongoDB, Nginx, Node.js, Expressjs etc) required to be installed on Ubuntu Linux.
+We develop and test Countly on Ubuntu with MongoDB, Node.js and Nginx. Installation script only needs a clean, decent Ubuntu Linux without any services listening to port 80 and takes care of every library and software (e.g MongoDB, Nginx, Node.js, Expressjs etc) required to be installed on Ubuntu Linux. 
 
 ##API & Frontend
 
-Countly has a [well defined API](http://resources.count.ly), that reads from or writes to Node.js. Dashboard is built using this API, so it's possible to fetch any kind of information from Node process directly using Countly API. For those who are interested with building their own dashboard; important files are `frontend/express/app.js` (Countly dashboard that runs on Express server), `frontend/express/public/javascripts/countly` (Contains seperate helper js files for each data visualization),  `countly.session.js` (responsible for calculating session related metrics) and `api/api.js`, which is Countly write and read API. 
+Countly has a [well defined API](http://resources.count.ly), that reads from or writes to Node.js. Dashboard is built using this API, so it's possible to fetch any kind of information from Node process directly using Countly API. For those who are interested with building their own dashboard; important files are:
 
-If you want to extend Countly with [plugins](http://count.ly/plugins), then we suggest [you read this document](http://resources.count.ly/docs/plugins-development-introduction) and start writing your own.
+- `frontend/express/app.js`, Countly dashboard that runs on Express server 
+- `frontend/express/public/javascripts/countly`, that contains seperate helper js files for each data visualization
+- `countly.session.js`, responsible for calculating session related metrics and 
+- `api/api.js`, which is Countly write and read API. 
+
+Countly is extensible with [plugins](http://count.ly/plugins). We suggest [you read this document](http://resources.count.ly/docs/plugins-development-introduction) and start writing your plugin. We support companies with know-how in need to write their own plugins.
 
 ##How can I help you with your efforts?
 
