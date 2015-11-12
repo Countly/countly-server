@@ -3,17 +3,17 @@
 **HEY! We're hiring:** Countly is looking for full stack node.js developers to work on its core platform. [Click this link for job description](https://count.ly/full-stack-node-js-developer/)
 
 ##What's Countly?
-[Countly](http://count.ly) is an innovative, real-time, open source mobile & web analytics, [push notifications](http://count.ly/push-notifications) and [crash reporting](http://count.ly/crash-reports) platform powering nearly 3000 mobile applications. It collects data from mobile phones, tablets, Apple Watch and other internet-connected devices, and visualizes this information to analyze mobile application usage and end-user behavior. 
+[Countly](http://count.ly) is an innovative, real-time, open source mobile & [web analytics](http://count.ly/web-analytics), [push notifications](http://count.ly/push-notifications) and [crash reporting](http://count.ly/crash-reports) platform powering nearly 3000 mobile applications. It collects data from mobile phones, tablets, Apple Watch and other internet-connected devices, and visualizes this information to analyze mobile application usage and end-user behavior. 
 
 With the help of [Javascript API](http://github.com/countly/countly-sdk-web), Countly is a web analytics platform with features on par with mobile SDKs. For more information about web analytics capabilities, [see this link](http://count.ly/web-analytics).
 
-There are two parts of Countly: the server that collects and analyzes data, and a mobile SDK that sends this data. This repository includes Countly Community Edition (server side). For more information other versions (e.g Enterprise Edition), see [comparison of different Countly editions](https://count.ly/compare)
+There are two parts of Countly: the server that collects and analyzes data, and an SDK (mobile, web or desktop) that sends this data. This repository includes Countly Community Edition (server side). For more information other versions (e.g Enterprise Edition), see [comparison of different Countly editions](https://count.ly/compare)
 
 ![Countly dashboard screenshot](http://a.fsdn.com/con/app/proj/countly/screenshots/dashboard_without_realtime.png)
 
 ##Supported devices
 
-[Countly](http://count.ly) supports top-notch devices, including iOS, Android and Windows Phone. You can find a list of [official and community supported Countly SDK libraries here](https://count.ly/resources/source/download-sdk). Each SDK has its own installation instructions.
+[Countly](http://count.ly) supports top-notch devices, including iOS, Android, Windows Phone and web apps. You can find a list of [official and community supported Countly SDK libraries here](https://count.ly/resources/source/download-sdk). Each SDK has its own installation instructions.
 
 ##Installing & upgrading Countly server
 
@@ -21,9 +21,10 @@ All public Community Edition versions are [available from Github](https://github
 
 If you want to upgrade Countly from a previous version, please take a look at [upgrading documentation](resources.count.ly/v1.0/docs/upgrading-countly-server).
 
-Countly also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/u/countly/countly-server/)
+Countly also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/u/countly/countly-server/) and [installation instructions for Docker](http://resources.count.ly/docs/installing-countly-server)
 
 ##Dependencies
+
 We develop and test Countly on Ubuntu with MongoDB, Node.js and Nginx. Installation script only needs a clean, decent Ubuntu Linux without any services listening to port 80 and takes care of every library and software (e.g MongoDB, Nginx, Node.js, Expressjs etc) required to be installed on Ubuntu Linux. 
 
 ##API & Frontend
