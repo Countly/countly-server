@@ -83,6 +83,11 @@ service nginx restart
 
 cp $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
 
+sed -e "s/Defaults requiretty/#Defaults requiretty/" /etc/sudoers > /etc/sudoers2
+mv /etc/sudoers /etc/sudoers.bak
+mv /etc/sudoers2 /etc/sudoers
+chmod 0440 /etc/sudoers
+
 bash $DIR/scripts/detect.init.sh
 
 #create api configuration file from sample
