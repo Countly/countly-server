@@ -238,7 +238,7 @@ var JobWorker = function(processors){
 				find.name = {$in: this.types};
 			}
 
-			this.cursor = this.collection.find(find, {tailable: true, awaitdata: true, numberOfRetries: Number.MAX_VALUE, tailableRetryInterval: 1000}).sort({next: 1});
+			this.cursor = this.collection.find(find, {tailable: true, awaitdata: true, numberOfRetries: Number.MAX_VALUE, tailableRetryInterval: 1000});
 			this.stream = this.cursor.stream();
 			this.stream.__created = Date.now();
 			this.stream.on('data', function(job){
