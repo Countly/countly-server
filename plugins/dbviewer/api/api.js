@@ -90,11 +90,12 @@ var plugin = {},
                             
                         function getCollections(name, callback) {
                             if(dbs[name]){
-                                dbs[name].collectionNames(function (err, results) {
+                                dbs[name].collections(function (err, results) {
                                     var db = {name:name, collections:{}};
-                                    for (var r in results) {
-                                        if(results[r].name.indexOf("system.indexes") == -1 && results[r].name.indexOf("sessions_") == -1){
-                                            var col = parseCollectionName(results[r].name, lookup, eventList);
+                                    for (var i = 0; i < results.length; i++) {
+                                        
+                                        if(results[i].s.name.indexOf("system.indexes") == -1 && results[i].s.name.indexOf("sessions_") == -1){
+                                            var col = parseCollectionName(results[i].s.name, lookup, eventList);
                                             db.collections[col.pretty] = col.name;
                                         }
                                     }
