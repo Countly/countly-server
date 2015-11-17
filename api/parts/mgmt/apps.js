@@ -85,15 +85,15 @@ var appsApi = {},
         processAppProps(newApp);
 
         common.db.collection('apps').insert(newApp, function(err, app) {
-            var appKey = common.sha1Hash(app[0]._id, true);
+            var appKey = common.sha1Hash(app.ops[0]._id, true);
 
-            common.db.collection('apps').update({'_id': app[0]._id}, {$set: {key: appKey}}, function(err, app) {});
+            common.db.collection('apps').update({'_id': app.ops[0]._id}, {$set: {key: appKey}}, function(err, app) {});
 
-            newApp._id = app[0]._id;
+            newApp._id = app.ops[0]._id;
             newApp.key = appKey;
 
-            common.db.collection('app_users' + app[0]._id).insert({_id:"uid-sequence", seq:0},function(err,res){});
-			plugins.dispatch("/i/apps/create", {params:params, appId:app[0]._id, data:app[0]});
+            common.db.collection('app_users' + app.ops[0]._id).insert({_id:"uid-sequence", seq:0},function(err,res){});
+			plugins.dispatch("/i/apps/create", {params:params, appId:app.ops[0]._id, data:app.ops[0]});
             common.returnOutput(params, newApp);
         });
     };

@@ -518,6 +518,7 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
                 var password = sha1Hash(req.body.password);
 
                 countlyDb.collection('members').insert({"full_name":req.body.full_name, "username":req.body.username, "password":password, "email":req.body.email, "global_admin":true}, {safe:true}, function (err, member) {
+                    member = member.ops;
                     if (countlyConfig.web.use_intercom) {
                         var options = {uri:"https://cloud.count.ly/s", method:"POST", timeout:4E3, json:{email:req.body.email, full_name:req.body.full_name, v:COUNTLY_VERSION, t:COUNTLY_TYPE}};
                         request(options, function(a, c, b) {
