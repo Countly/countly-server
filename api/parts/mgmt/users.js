@@ -173,6 +173,7 @@ var usersApi = {},
                 continue;
             } else {
 				common.db.collection('members').findAndModify({'_id': common.db.ObjectID(userIds[i])},{},{},{remove:true},function(err, user){
+                    user = user.value;
 					if(!err && user)
 						plugins.dispatch("/i/users/delete", {params:params, data:user});
 				});

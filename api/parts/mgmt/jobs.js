@@ -70,6 +70,7 @@ var Job = function(name, data) {
 
 					log.i('replacing job %j with', query, json);
 					collection.findAndModify(query, [['_id', 1]], {$set: json}, {new: true}, function(err, job){
+                        job = job.value;
 						if (err) {
 							log.e('job replacement error, saving new job', err, job);
 							collection.save(json, clb || function(err){
@@ -265,6 +266,7 @@ var JobWorker = function(processors){
 				}
 
 				this.collection.findAndModify({_id: job._id, status: STATUS.SCHEDULED}, [['_id', 1]], update, {new: true}, function(err, job){
+                    job = job.value;
 					if (!err && job) {
 						this.process(job);
 

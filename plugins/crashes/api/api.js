@@ -234,6 +234,7 @@ plugins.setConfigs("crashes", {
                         if(dbAppUser && dbAppUser.sc)
                             set.sessions = dbAppUser.sc;
                         common.db.collection('app_crashusers' + params.app_id).findAndModify({group:hash, 'uid':report.uid},{}, {$set:set, $inc:{reports:1}},{upsert:true, new:false}, function (err, user){
+                            user = user.value;
                             if(user && user.sessions && dbAppUser && dbAppUser.sc && dbAppUser.sc > user.sessions)
                                 report.session = dbAppUser.sc - user.sessions;
                             common.db.collection('app_crashes' + params.app_id).insert(report, function (err, res){});
@@ -387,6 +388,7 @@ plugins.setConfigs("crashes", {
                                     update["$max"] = groupMax;
                                 
                                 common.db.collection('app_crashgroups' + params.app_id).findAndModify({'_id': hash },{},update,{upsert:true, new:true}, function(err,crashGroup){
+                                    crashGroup = crashGroup.value;
                                     var isNew = (crashGroup && crashGroup.reports == 1) ? true : false;
                                     
                                     var metrics = ["cr"];
@@ -452,6 +454,7 @@ plugins.setConfigs("crashes", {
                                     inc.fatal = 1;
                         
                                 common.db.collection('app_crashusers' + params.app_id).findAndModify({group:0, 'uid':report.uid},{}, {$set:{group:0, 'uid':report.uid}, $inc:inc},{upsert:true, new:true}, function (err, userAll){
+                                    userAll = userAll.value;
                                     processCrash(userAll);
                                 });
                             }
@@ -463,6 +466,7 @@ plugins.setConfigs("crashes", {
                     }
 				}
                 common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id },{},{ $addToSet: { crashes: hash } },{upsert:true, new:false}, function(err, dbAppUser){
+                    dbAppUser = dbAppUser.value;
                     checkUser(err, dbAppUser, 0);
                 });
 			}

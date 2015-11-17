@@ -516,6 +516,7 @@ var usage = {},
 
         if (isNewUser) {
             common.db.collection('app_users' + params.app_id).findAndModify({_id:"uid-sequence"},{},{$inc:{seq:1}},{new:true}, function(err,result){
+                result = result.value;
                 if (result && result.length != 0) {
                     userProps[common.dbUserMap['user_id']] = parseSequence(result.seq);
                 }
