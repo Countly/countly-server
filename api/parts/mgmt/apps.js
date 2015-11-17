@@ -166,7 +166,7 @@ var appsApi = {},
 			if(!err && app)
 				common.db.collection('apps').remove({'_id': common.db.ObjectID(appId)}, {safe: true}, function(err, result) {
 		
-					if (!result) {
+					if (err) {
 						common.returnMessage(params, 500, 'Error deleting app');
 						return false;
 					}
