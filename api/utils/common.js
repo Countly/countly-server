@@ -4,6 +4,7 @@ var common = {},
     crypto = require('crypto'),
     mongo = require('mongoskin'),
     logger = require('./log.js'),
+    plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./../config');
 
 (function (common) {
@@ -58,40 +59,36 @@ var common = {},
         'duration': 'dur',
         'previous_events': 'pe'
     };
-
-    //mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
-    var dbName;
-    var dbOptions = {
-        server:{auto_reconnect:true, poolSize: countlyConfig.mongodb.max_pool_size, socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
-        replSet:{socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
-        mongos:{socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }}
-    };
-    if (typeof countlyConfig.mongodb === "string") {
-        dbName = countlyConfig.mongodb;
-    } else{
-		countlyConfig.mongodb.db = countlyConfig.mongodb.db || 'countly';
-		if ( typeof countlyConfig.mongodb.replSetServers === 'object'){
-			//mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test
-			dbName = countlyConfig.mongodb.replSetServers.join(",")+"/"+countlyConfig.mongodb.db;
-			if(countlyConfig.mongodb.replicaName){
-				dbOptions.replSet.rs_name = countlyConfig.mongodb.replicaName;
-			}
-		} else {
-			dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db);
-		}
-	}
-	if(countlyConfig.mongodb.username && countlyConfig.mongodb.password){
-		dbName = countlyConfig.mongodb.username + ":" + countlyConfig.mongodb.password +"@" + dbName;
-	}
-	if(dbName.indexOf("mongodb://") !== 0){
-		dbName = "mongodb://"+dbName;
-	}
-    common.db = mongo.db(dbName, dbOptions);
-	common.db._emitter.setMaxListeners(0);
-	if(!common.db.ObjectID)
-		common.db.ObjectID = mongo.ObjectID;
+    
+    common.db = plugins.dbConnection(countlyConfig);
 
     common.mongodbNativeConnection = function(callback){
+        var dbName;
+        var dbOptions = {
+            server:{poolSize: countlyConfig.mongodb.max_pool_size, socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 0, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
+            replSet:{poolSize: countlyConfig.mongodb.max_pool_size, socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 0, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
+            mongos:{poolSize: countlyConfig.mongodb.max_pool_size, socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 0, connectTimeoutMS: 0, socketTimeoutMS: 0 }}
+        };
+        if (typeof countlyConfig.mongodb === "string") {
+            dbName = countlyConfig.mongodb;
+        } else{
+            countlyConfig.mongodb.db = countlyConfig.mongodb.db || 'countly';
+            if ( typeof countlyConfig.mongodb.replSetServers === 'object'){
+                //mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test
+                dbName = countlyConfig.mongodb.replSetServers.join(",")+"/"+countlyConfig.mongodb.db;
+                if(countlyConfig.mongodb.replicaName){
+                    dbOptions.replSet.rs_name = countlyConfig.mongodb.replicaName;
+                }
+            } else {
+                dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db);
+            }
+        }
+        if(countlyConfig.mongodb.username && countlyConfig.mongodb.password){
+            dbName = countlyConfig.mongodb.username + ":" + countlyConfig.mongodb.password +"@" + dbName;
+        }
+        if(dbName.indexOf("mongodb://") !== 0){
+            dbName = "mongodb://"+dbName;
+        }
         var MongoClient = require('mongodb').MongoClient;
         return MongoClient.connect(dbName, callback);
     };
