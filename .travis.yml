@@ -1,7 +1,9 @@
 language: c
 before_install: sudo bash ./bin/countly.install.travis.sh
 install: sudo npm install
-before_script: sleep 15
+before_script: 
+  - until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
+  - mongod --version
 script: npm test
 notifications:
   email: hello@count.ly
