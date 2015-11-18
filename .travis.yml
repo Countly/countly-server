@@ -2,7 +2,6 @@ language: c
 before_install: sudo bash ./bin/countly.install.travis.sh
 install: sudo npm install
 before_script:
-  - stop mongod
   - start mongod
   - mongod --version
   - cat /var/log/mongodb/mongod.log
