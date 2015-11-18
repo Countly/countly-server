@@ -1,8 +1,15 @@
 language: c
+services:
+  - mongodb
+addons:
+  apt:
+    sources:
+      - mongodb-3.0-precise
+    packages:
+      - mongodb-org-server
 before_install: sudo bash ./bin/countly.install.travis.sh
 install: sudo npm install
 before_script:
-  - sudo apt-get install libstdc++6
   - sudo start mongod
   - mongod --version
   - cat /var/log/mongodb/mongod.log
