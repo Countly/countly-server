@@ -309,7 +309,7 @@ plugins.setConfigs("crashes", {
                                 if(!report.nonfatal && dbAppUser.sc && dbAppUser.sc > 0 && dbAppUser.tp)
                                     groupInc.loss = dbAppUser.tp/dbAppUser.sc;
                                 
-                                if(user && !user.reports)
+                                if(!user || !user.reports)
                                     groupInc.users = 1;
                                 
                                 groupInsert.is_new = true;
@@ -444,11 +444,11 @@ plugins.setConfigs("crashes", {
                                     groupInc["os."+report.os.replace(/^\$/, "").replace(/\./g, ":")] = 1;
                                     groupInc["app_version."+report.app_version.replace(/^\$/, "").replace(/\./g, ":")] = 1;
                                     
-                                    common.db.collection('app_crashgroups' + params.app_id).update({'_id': "meta" }, {$inc:groupInc}, function(){})
+                                    common.db.collection('app_crashgroups' + params.app_id).update({'_id': "meta" }, {$inc:groupInc}, function(err, res){})
                                 });
                             };
                             
-                            if(user && !user.reports){
+                            if(!user || !user.reports){
                                 var inc = {crashes:1};
                                 if(!report.nonfatal)
                                     inc.fatal = 1;
