@@ -66,6 +66,8 @@ var plugin = {},
                                 for (var i = 0; i < events.list.length; i++) {
                                     result[crypto.createHash('sha1').update(events.list[i] + app._id + "").digest('hex')] = "("+app.name+": "+events.list[i]+")";
                                 }
+                                result[crypto.createHash('sha1').update("[CLY]_session" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_session)";
+                                result[crypto.createHash('sha1').update("[CLY]_crash" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_crash)";
                             }
                             callback(null, result);
                         });
