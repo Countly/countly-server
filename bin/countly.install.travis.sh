@@ -51,7 +51,7 @@ apt-get -y install gcc-4.8 g++-4.8
 
 export CXX="g++-4.8"
 export CC="gcc-4.8"
-update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8
+update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
 g++ --version
 
 #install nginx
