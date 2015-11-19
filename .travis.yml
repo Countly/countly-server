@@ -1,12 +1,16 @@
 language: nodejs
 services:
   - mongodb
+env:
+  - CXX=g++-4.8
 addons:
   apt:
     sources:
       - mongodb-3.0-precise
+      - ubuntu-toolchain-r-test
     packages:
       - mongodb-org-server
+      - g++-4.8
 before_install: sudo bash ./bin/countly.install.travis.sh
 install: sudo npm install
 before_script:

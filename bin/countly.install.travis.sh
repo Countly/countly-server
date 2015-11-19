@@ -24,7 +24,7 @@ bash $DIR/scripts/make.swap.sh
 #update package index
 apt-get update
 
-apt-get -y install python-software-properties g++ build-essential
+apt-get -y install python-software-properties build-essential
 
 if !(command -v apt-add-repository >/dev/null) then
     apt-get -y install software-properties-common
