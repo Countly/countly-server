@@ -34,6 +34,9 @@ fi
 #echo | apt-add-repository ppa:chris-lea/node.js
 wget -qO- https://deb.nodesource.com/setup_4.x | bash -
 
+#update g++ to 4.8
+add-apt-repository ppa:ubuntu-toolchain-r/test
+
 #add mongodb repo
 #echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" > /etc/apt/sources.list.d/mongodb-10gen-countly.list
 #apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
@@ -43,6 +46,8 @@ wget -qO- https://deb.nodesource.com/setup_4.x | bash -
 
 #update once more after adding new repos
 apt-get update
+
+apt-get -y install gcc-4.8 g++-4.8
 
 #install nginx
 apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
