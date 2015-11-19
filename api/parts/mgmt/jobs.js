@@ -209,11 +209,11 @@ var Processor = function(worker, concurrency, fun, name) {
 					complete = true;
 				}.bind(this));
 
-				// setTimeout(function(){
-				// 	if (!complete) {
-				// 		this.done(job, 'Aborted on timeout');
-				// 	}
-				// }.bind(this), MAXIMUM_JOB_TIMEOUT);
+				setTimeout(function(){
+					if (!complete) {
+						this.done(job, 'Aborted on timeout');
+					}
+				}.bind(this), MAXIMUM_JOB_TIMEOUT);
 
 			} catch (err) {
 				this.done(job, err);
