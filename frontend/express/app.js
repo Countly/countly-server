@@ -576,7 +576,7 @@ var auth = express.basicAuth(function(user, pass, callback) {
         if(member)
 			callback(null, member);
 		else
-			callback(null, user);
+			callback("err", user);
     });
 });
 
