@@ -45,6 +45,10 @@ countly_dir (){
     echo "$( cd "$DIR/../.." && pwd )";
 }
 
+countly_test (){
+    bash $DIR/../scripts/countly.run.tests.sh ;
+}
+
 countly_backup (){
     if [ $# -eq 0 ]
     then
@@ -160,6 +164,7 @@ else
     echo "    countly upgrade # standard upgrade process (install dependencies, minify files, restart countly)";
     echo "    countly version # outputs current countly version";
     echo "    countly dir     # outputs countly install directory";
+    echo "    countly test    # run countly tests";
     echo "    countly backup path/to/backup # backups countly db and config files";
     echo "    countly restore path/to/backup # restores countly db and config files from provided backup";
     echo "    countly usage   # prints this out, but so as basically everything else does";
