@@ -24,7 +24,7 @@ bash $DIR/scripts/make.swap.sh
 #update package index
 apt-get update
 
-apt-get -y install python-software-properties
+apt-get -y install python-software-properties build-essential libkrb5-dev
 
 if !(command -v apt-add-repository >/dev/null) then
     apt-get -y install software-properties-common
@@ -32,7 +32,7 @@ fi
 
 #add node.js repo
 #echo | apt-add-repository ppa:chris-lea/node.js
-wget -qO- https://deb.nodesource.com/setup | bash -
+wget -qO- https://deb.nodesource.com/setup_4.x | -E bash -
 
 #add mongodb repo
 #echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" > /etc/apt/sources.list.d/mongodb-10gen-countly.list
