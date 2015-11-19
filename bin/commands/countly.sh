@@ -46,7 +46,7 @@ countly_dir (){
 }
 
 countly_test (){
-    bash $DIR/../scripts/countly.run.tests.sh ;
+    bash $DIR/scripts/countly.run.tests.sh ;
 }
 
 countly_backup (){
