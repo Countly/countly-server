@@ -1,4 +1,6 @@
-language: c
+language: nodejs
+node_js:
+  - "4.2"
 services:
   - mongodb
 addons:
