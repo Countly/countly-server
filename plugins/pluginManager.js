@@ -433,9 +433,9 @@ var pluginManager = function pluginManager(){
             
         var dbName;
         var dbOptions = {
-            server:{poolSize: config.mongodb.max_pool_size, socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 0, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
-            replSet:{poolSize: config.mongodb.max_pool_size, socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 0, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
-            mongos:{poolSize: config.mongodb.max_pool_size, socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 0, connectTimeoutMS: 0, socketTimeoutMS: 0 }}
+            server:{poolSize: config.mongodb.max_pool_size, socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
+            replSet:{poolSize: config.mongodb.max_pool_size, socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
+            mongos:{poolSize: config.mongodb.max_pool_size, socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }}
         };
         if (typeof config.mongodb === 'string') {
             dbName = db ? config.mongodb.replace(new RegExp('countly$'), db) : config.mongodb;
