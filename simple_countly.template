@@ -1,0 +1,501 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+    "Description" : "nodejs application + mongodb",
+    "Parameters" : {
+        "InstanceType" : {
+            "Description" : "Worker EC2 instance type",
+            "Type" : "String",
+            "Default" : "t1.micro",
+            "AllowedValues" : [ "t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m2.xlarge","m2.2xlarge","m2.4xlarge","c1.medium","c1.xlarge","cc1.4xlarge","cc2.8xlarge","cg1.4xlarge"],
+            "ConstraintDescription" : "must be a valid EC2 instance type."
+        },
+        "OperatorEMail": {
+            "Description": "Email address to notify if there are any scaling operations",
+            "Type": "String",
+            "AllowedPattern": "([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)",
+            "ConstraintDescription": "must be a valid email address."
+        },
+        "MongoVolumeSize" : {
+            "Description" : "Volume size for mongodb",
+            "Type" : "Number",
+            "MinValue" : "1",
+            "Default"  : "10",
+            "ConstraintDescription" : "GB"
+        },
+        "KeyName" : {
+            "Description" : "The EC2 Key Pair to allow SSH access to the instances",
+            "Type" : "AWS::EC2::KeyPair::KeyName",
+            "Default"  : "hello_and_wellcome",
+            "ConstraintDescription" : "must be the name of an existing EC2 KeyPair."
+        }
+    },
+    "Mappings" : {
+        "AWSInstanceType2Arch" : {
+            "t1.micro"    : { "Arch" : "64" },
+            "m1.small"    : { "Arch" : "64" },
+            "m1.medium"   : { "Arch" : "64" },
+            "m1.large"    : { "Arch" : "64" },
+            "m1.xlarge"   : { "Arch" : "64" },
+            "m2.xlarge"   : { "Arch" : "64" },
+            "m2.2xlarge"  : { "Arch" : "64" },
+            "m2.4xlarge"  : { "Arch" : "64" },
+            "c1.medium"   : { "Arch" : "64" },
+            "c1.xlarge"   : { "Arch" : "64" },
+            "cc1.4xlarge" : { "Arch" : "64HVM" },
+            "cc2.8xlarge" : { "Arch" : "64HVM" },
+            "cg1.4xlarge" : { "Arch" : "64HVM" }
+        },
+        "AWSRegionArch2AMI" : {
+            "us-east-1"      : { "64" : "ami-d85e75b0", "64HVM" : "ami-0da96764" },
+            "us-west-2"      : { "64" : "ami-30fe7300", "64HVM" : "NOT_YET_SUPPORTED" },
+            "us-west-1"      : { "64" : "ami-1bd68a5e", "64HVM" : "ubuntu for t1.micro, other Amazon Linux AMI" },
+            "eu-west-1"      : { "64" : "ami-953b06e1", "64HVM" : "NOT_YET_SUPPORTED" },
+            "ap-southeast-1" : { "64" : "ami-beb0caec", "64HVM" : "NOT_YET_SUPPORTED" },
+            "ap-northeast-1" : { "64" : "ami-0a44f00b", "64HVM" : "NOT_YET_SUPPORTED" },
+            "sa-east-1"      : { "64" : "ami-3c3be421", "64HVM" : "NOT_YET_SUPPORTED" }
+        }
+    },
+    "Resources" : {
+
+        "InstanceUser" : {
+            "Type" : "AWS::IAM::User",
+            "Properties" : {
+                "Path": "/",
+                "Policies": [{
+                    "PolicyName": "root",
+                    "PolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement":[{
+                            "Effect": "Allow",
+                            "Action": [
+                                "sns:Publish",
+                                "sns:GetTopicAttributes",
+                                "sns:List*",
+                                "sqs:ReceiveMessage",
+                                "sqs:DeleteMessage",
+                                "s3:Get*",
+                                "s3:List*"
+                            ],
+                            "Resource": "*"
+                        }]
+                    }
+                }]
+            }
+        },
+
+        "InstanceKeys" : {
+            "Type" : "AWS::IAM::AccessKey",
+            "Properties" : {
+                "UserName" : {"Ref": "InstanceUser"}
+            }
+        },
+
+        "InstanceRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": [
+                                "ec2.amazonaws.com"
+                            ]
+                        },
+                        "Action": [
+                            "sts:AssumeRole"
+                        ]
+                    }]
+                },
+                "Path": "/"
+            }
+        },
+
+        "InstanceRolePolicies": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "InstanceRole",
+                "PolicyDocument": {
+                    "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Action": [                            
+                            "cloudformation:Describe*",
+                            "cloudformation:GetTemplate"
+                        ],
+                        "Resource": "*"
+                    }]
+                },
+                "Roles": [
+                    {
+                        "Ref": "InstanceRole"
+                    }
+                ]
+            }
+        },
+
+        "CloudWatchPolicies": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "CloudWatchRole",
+                "PolicyDocument": {
+                    "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Action": [
+                            "logs:Create*",
+                                "logs:PutLogEvents",
+                                "s3:GetObject"
+                            ],
+                        "Resource": [
+                                "arn:aws:logs:*:*:*",
+                                "arn:aws:s3:::*"
+                            ]
+                    }]
+                },
+                "Roles": [
+                {
+                    "Ref": "InstanceRole"
+                }]
+            }
+        },
+
+        "InstanceRoleInstanceProfile": {
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "Path": "/",
+                "Roles": [
+                {
+                    "Ref": "InstanceRole"
+                }]
+            }
+        },
+
+        "InstanceSecurityGroup" : {
+            "Type" : "AWS::EC2::SecurityGroup",
+            "Properties" : {
+                "GroupDescription" : ".",
+                "SecurityGroupIngress" : [ {
+                    "IpProtocol" : "tcp",
+                    "FromPort"   : "22",
+                    "ToPort"     : "22",
+                    "CidrIp"     : "0.0.0.0/0"
+                },
+                {
+                    "IpProtocol" : "tcp",
+                    "FromPort"   : "80",
+                    "ToPort"     : "80",
+                    "CidrIp"     : "0.0.0.0/0"
+                } ]
+            }
+        },
+        
+        "MongoDbVolume" : {
+             "Type" : "AWS::EC2::Volume",
+             "Properties" : {
+                 "Size" : { "Ref" : "MongoVolumeSize" },
+                 "VolumeType" : "gp2",            
+                 "AvailabilityZone" : { "Fn::GetAtt" : [ "CountlyInstance", "AvailabilityZone" ]}
+             },
+             "DeletionPolicy" : "Snapshot"
+        },
+
+        "MountPoint" : {
+               "Type" : "AWS::EC2::VolumeAttachment",
+               "Properties" : {
+                 "InstanceId" : { "Ref" : "CountlyInstance" },
+                 "VolumeId"  : { "Ref" : "MongoDbVolume" },
+                 "Device" : "/dev/sdf"
+               }
+        },        
+
+        "CountlyInstance" : {
+            "Type" : "AWS::EC2::Instance",
+            "Metadata" : {
+                "Comment" : "Install a simple application",
+                "AWS::CloudFormation::Init" : {
+                    "config" : {                 
+                        "files" : {
+                            "/tmp/cwlogs/applogs.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[general]\n",
+                                            "state_file= /var/awslogs/agent-state\n",
+                                            "[/home/ubuntu/countly_api.log]\n",
+                                            "file = /home/ubuntu/countly_api.log\n",
+                                            "log_group_name = ", {"Ref": "WebServerLogGroup"}, "\n",
+                                            "log_stream_name = {instance_id}/countly_api.log\n",
+                                            "datetime_format = %d/%b/%Y:%H:%M:%S",
+                                            "[/home/ubuntu/countly_api.error.log]\n",
+                                            "file = /home/ubuntu/countly_api.error.log\n",
+                                            "log_group_name = ", {"Ref": "WebServerLogGroup"}, "\n",
+                                            "log_stream_name = {instance_id}/countly_api.error.log\n",
+                                            "datetime_format = %d/%b/%Y:%H:%M:%S",
+                                            "[/home/ubuntu/countly_app.log]\n",
+                                            "file = /home/ubuntu/countly_app.log\n",
+                                            "log_group_name = ", {"Ref": "WebServerLogGroup"}, "\n",
+                                            "log_stream_nemailame = {instance_id}/countly_app.log\n",
+                                            "datetime_format = %d/%b/%Y:%H:%M:%S",
+                                            "[/home/ubuntu/countly_app.error.log]\n",
+                                            "file = /home/ubuntu/countly_app.error.log\n",
+                                            "log_group_name = ", {"Ref": "WebServerLogGroup"}, "\n",
+                                            "log_stream_name = {instance_id}/countly_app.error.log\n",
+                                            "datetime_format = %d/%b/%Y:%H:%M:%S"
+                                        ]
+                                    ]
+                                }
+                            },
+
+                            "/etc/cfn/cfn-hup.conf" : {
+                                "content" : {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "[main]\n",
+                                            "stack=", { "Ref" : "AWS::StackId" }, "\n",
+                                            "region=", { "Ref" : "AWS::Region" }, "\n"
+                                        ]
+                                    ]},
+                                "mode"    : "000400",
+                                "owner"   : "root",
+                                "group"   : "root"
+                            },
+
+                            "/etc/cfn/hooks.d/cfn-auto-reloader.conf" : {
+                                "content": {
+                                    "Fn::Join" : [
+                                        "",
+                                        [
+                                            "[cfn-auto-reloader-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.LaunchConfig.Metadata.AWS::CloudFormation::Init\n",
+                                            "action=/opt/aws/bin/cfn-init -v ",
+                                            "  --stack ", { "Ref" : "AWS::StackName" },
+                                            "  --resource LaunchConfig ",
+                                            "  --region ", { "Ref" : "AWS::Region" }, "\n",
+                                            "runas=root\n"
+                                        ]
+                                    ]
+                                }
+                            }
+                        }                        
+                    }
+                }
+            },
+            "Properties" : {
+                "KeyName" : { "Ref" : "KeyName" },
+                "ImageId" : { "Fn::FindInMap" : [
+                                  "AWSRegionArch2AMI",
+                                  { "Ref" : "AWS::Region" },
+                                  { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
+                "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+                "InstanceType" : { "Ref" : "InstanceType" },
+                "UserData"     : { "Fn::Base64" : { "Fn::Join" : ["", [
+
+                    "#!/bin/bash -xe\n",
+                    "sudo -s\n",
+                    "apt-get update\n",
+                    "apt-get -y install python-setuptools\n",
+                    "cd /home/ubuntu\n",
+                    "mkdir aws-cfn-bootstrap-latest\n",
+                    "curl https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz | tar xz -C aws-cfn-bootstrap-latest --strip-components 1\n",
+                    "sudo easy_install aws-cfn-bootstrap-latest\n",
+
+                    "sudo /usr/local/bin/cfn-init --stack ",
+                        { "Ref":"AWS::StackName" },
+                        " --resource CountlyInstance",
+                        " --region ",
+                        { "Ref": "AWS::Region" },
+                        "|| echo 'Failed to start cfn-hup 1 '\n",
+
+                    "sudo /usr/local/bin/cfn-hup || echo 'Failed to start cfn-hup'\n",
+
+                    "wget https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py\n",
+
+                    "python awslogs-agent-setup.py -n -r ", { "Ref" : "AWS::Region" }, " -c /tmp/cwlogs/applogs.conf || error_exit 'Failed to run CloudWatch Logs agent setup'\n",
+
+                    "apt-get install -y ruby2.0\n",
+
+                    "apt-get install -y unzip\n",
+                    "curl https://s3.amazonaws.com/aws-cli/awscli-bundle.zip -o awscli-bundle.zip\n",
+                    "unzip awscli-bundle.zip\n",
+                    "./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws\n",
+
+                    "cd /home/ubuntu\n",
+                    "/usr/local/bin/aws s3 cp s3://aws-codedeploy-us-east-1/latest/install . --region ", { "Ref" : "AWS::Region" }, " \n",
+                    "chmod +x ./install \n",
+                    "./install auto \n",
+
+                    "apt-get -y install mongodb > /tmp/apt-mongo.log 2>&1\n",
+
+                    "apt-get install -y nodejs > /tmp/node_install.log 2>&1\n",
+                    "apt-get install -y npm > /tmp/npm_install.log 2>&1\n",
+                    "npm install -g forever\n",
+
+                    "while [ ! -e /dev/xvdf ]; do echo waiting for /dev/xvdf to attach; sleep 2; done\n",
+                    
+                    "mkfs -t ext4 /dev/xvdf", "\n",
+                    
+                    "mount /dev/xvdf /media", "\n",
+                    
+                    "mkdir /media/mongodb", "\n",
+                    
+                    "chown -R mongodb:mongodb /media/mongodb", "\n",
+                                        
+                    "sed -i -e 's/dbpath=\\/var\\/lib\\/mongodb/dbpath=\\/media\\/mongodb/g' /etc/mongodb.conf", " \n",
+                        
+                    "service mongodb restart \n",
+
+                    "apt-get install -y git-core \n",
+                    
+                    "echo '", { "Ref" : "InstanceWaitHandle" }, "' > /tmp/insw.log ", " \n",
+                        
+                    "curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",\"Reason\" : \"Configuration Complete\",\"UniqueId\" : \"ID1234\",\"Data\" : \"Application has completed configuration.\"}' '", { "Ref" : "InstanceWaitHandle" }, "'", "\n",                                    
+                                        
+                    "/usr/local/bin/cfn-signal -e $? ",
+                    "         --stack ", { "Ref" : "AWS::StackName" },
+                    "         --resource CountlyInstance ",
+                    "         --region ", { "Ref" : "AWS::Region" }, "\n"
+                    
+                    
+                ]]}},
+                "IamInstanceProfile": {
+                    "Ref": "InstanceRoleInstanceProfile"
+                },
+                "Tags" : [ { 
+                             "Key" : "Name",
+                             "Value" : "Countly-server"
+                           }]
+            }
+        },
+
+        "WebServerLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+                "RetentionInDays": 7
+            }
+        },
+
+        "NotificationTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "Subscription": [ { "Endpoint": { "Ref": "OperatorEMail" }, "Protocol": "email" } ]
+            }
+        },        
+            
+        "CodeDeployRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                    {
+                        "Sid": "",
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": [
+                                "codedeploy.amazonaws.com"
+                            ]
+                        },
+                        "Action": [
+                            "sts:AssumeRole"
+                        ]
+                    }
+                    ]
+                },
+                "Path": "/"
+            }
+        },
+
+        "CodeDeployRolePolicies": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "CodeDeployRole",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Action": [         
+                            "ec2:*"
+                        ],
+                        "Resource": "*"
+                    }]
+                },
+                "Roles": [
+                {
+                    "Ref": "CodeDeployRole"
+                }]
+            }
+        },
+        
+        "InstanceWaitHandle" : {
+            "Type" : "AWS::CloudFormation::WaitConditionHandle",
+            "Properties" : { }
+        },
+        
+        "InstanceWait" : {
+            "Type" : "AWS::CloudFormation::WaitCondition",
+            "DependsOn" : "CountlyInstance",
+            "Properties" : {
+                "Handle" : { "Ref" : "InstanceWaitHandle" },
+                "Timeout" : "600"
+            }
+        },
+                
+        "CountlyServer" : {
+            "Type" : "AWS::CodeDeploy::Application"
+        },
+        
+        "DeploymentGroup" : {
+            "Type" : "AWS::CodeDeploy::DeploymentGroup",
+            "Properties" : {
+                "ApplicationName" : {"Ref" : "CountlyServer" },
+                "Ec2TagFilters" : [ {
+                                    "Key" : "Name",
+                                    "Type" : "KEY_AND_VALUE",
+                                    "Value" : "Countly-server"
+                                } ],
+                "Deployment" : {
+                    "Description" : "Countly",
+                    "IgnoreApplicationStopFailures" : "true",
+                    "Revision" : {
+                        "RevisionType" : "GitHub",
+                        "GitHubLocation" : {
+                            "CommitId"   : "850e03957f304b99427188fba66ebda883b3eb7d",
+                            "Repository" : "Countly/countly-server"
+                        }
+                    }
+                },
+                "ServiceRoleArn" : { "Fn::GetAtt" : [ "CodeDeployRole" , "Arn" ] }              
+                
+            },
+            "DependsOn" : "InstanceWait"
+        }
+        
+    },
+
+    "Outputs" : {
+                         
+        "PublicIp": {
+            "Description": "Instance ip",
+            "Value": {
+                "Fn::GetAtt" : [ "CountlyInstance" , "PublicIp" ]
+            }
+        },
+        "InstanceId": {
+            "Description": "Instance id",
+            "Value": {
+                "Ref": "CountlyInstance"
+            }
+        },
+        "CloudWatchLogGroupName": {
+            "Description": "The name of the CloudWatch log group",
+            "Value": {
+                "Ref": "WebServerLogGroup"
+            }
+        }
+    }
+}
