@@ -22,6 +22,7 @@ var common = {},
         'frequency': 'f',
         'loyalty': 'l',
         'sum': 's',
+        'dur': 'dur',
         'count': 'c'
     };
 
@@ -54,6 +55,7 @@ var common = {},
         'segmentations':'sg',
         'count':'c',
         'sum':'s',
+        'duration': 'dur',
         'previous_events': 'pe'
     };
 
@@ -459,7 +461,7 @@ var common = {},
         return true;
     };
 
-    common.fillTimeObjectMonth = function (params, object, property, increment) {
+    common.fillTimeObjectMonth = function (params, object, property, increment, forceHour) {
         var tmpIncrement = (increment) ? increment : 1,
             timeObj = params.time;
 
@@ -473,7 +475,7 @@ var common = {},
 
                 // If the property parameter contains a dot, hourly data is not saved in
                 // order to prevent two level data (such as 2012.7.20.TR.u) to get out of control.
-                if (property[i].indexOf('.') === -1) {
+                if (forceHour || property[i].indexOf('.') === -1) {
                     object['d.' + timeObj.day + '.' + timeObj.hour + '.' + property[i]] = tmpIncrement;
                 }
             }

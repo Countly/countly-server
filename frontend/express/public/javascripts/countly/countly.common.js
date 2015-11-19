@@ -541,8 +541,11 @@
         return dataArr;
     };
 
-    countlyCommon.extractChartData = function (db, clearFunction, chartData, dataProperties) {
-
+    countlyCommon.extractChartData = function (db, clearFunction, chartData, dataProperties, metric) {
+        if(metric)
+            metric = "."+metric;
+        else
+            metric = "";
         countlyCommon.periodObj = getPeriodObj();
 
         var periodMin = countlyCommon.periodObj.periodMin,
@@ -587,10 +590,10 @@
                         formattedDate = moment((activeDate + "/" + i).replace(/\./g, "/"));
                     }
 
-                    dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i);
+                    dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i+metric);
                 } else {
                     formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"));
-                    dataObj = countlyCommon.getDescendantProp(db, activeDateArr[i]);
+                    dataObj = countlyCommon.getDescendantProp(db, activeDateArr[i]+metric);
                 }
 
                 dataObj = clearFunction(dataObj);

@@ -10,6 +10,7 @@ var versionInfo = require('./version.info'),
     mongo = require('mongoskin'),
     crypto = require('crypto'),
     fs = require('fs'),
+    path = require('path'),
     im = require('imagemagick'),
     request = require('request'),
     async = require('async'),
@@ -35,6 +36,19 @@ var versionInfo = require('./version.info'),
 plugins.setConfigs("frontend", {
     production: true,
     session_timeout: 30*60*1000,
+});
+
+var themeDir = path.resolve(__dirname, "public/theme/");
+var themeFiles = {css:[], js:[]};
+fs.readdir(themeDir, function(err, list) {
+    if (err) return ;
+    var ext;
+    for(var i = 0; i < list.length; i++){
+        ext = list[i].split(".").pop();
+        if(!themeFiles[ext])
+            themeFiles[ext] = [];
+        themeFiles[ext].push(countlyConfig.path+'/theme/'+list[i]);
+    }
 });
 
 //mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
@@ -133,6 +147,16 @@ app.configure(function () {
     app.use(function(req, res, next) {
         res.locals.flash = req.flash.bind(req);
         req.config = plugins.getConfig("frontend");
+        var _render = res.render;
+        res.render = function(view, opts, fn, parent, sub){
+            if(!opts["path"])
+                opts["path"] = countlyConfig.path || "";
+            if(!opts["cdn"])
+                opts["cdn"] = countlyConfig.cdn || "";
+            if(!opts["themeFiles"])
+                opts["themeFiles"] = themeFiles;
+            _render.call(res, view, opts, fn, parent, sub);
+        };
         next();
     });
     app.use(express.methodOverride());
@@ -364,7 +388,8 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 						plugins:plugins.getPlugins(),
                         config: req.config,
 						path:countlyConfig.path || "",
-						cdn:countlyConfig.cdn || ""
+						cdn:countlyConfig.cdn || "",
+                        themeFiles:themeFiles
                     };
                     
                     plugins.callMethod("renderDashboard", {req:req, res:res, next:next, data:{member:member, adminApps:countlyGlobalAdminApps, userApps:countlyGlobalApps, countlyGlobal:countlyGlobal, toDashboard:toDashboard}});
@@ -393,7 +418,7 @@ app.get(countlyConfig.path+'/setup', function (req, res, next) {
         if (memberCount) {
             res.redirect(countlyConfig.path+'/login');
         } else {
-            res.render('setup', {countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || ""});
+            res.render('setup', {countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles});
         }
     });
 });
@@ -406,7 +431,7 @@ app.get(countlyConfig.path+'/login', function (req, res, next) {
             if (memberCount) {
 				if(req.query.message)
 					req.flash('info', req.query.message);
-                res.render('login', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "message":req.flash('info'), "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
+                res.render('login', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "message":req.flash('info'), "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
             } else {
                 res.redirect(countlyConfig.path+'/setup');
             }
@@ -418,7 +443,7 @@ app.get(countlyConfig.path+'/forgot', function (req, res, next) {
     if (req.session.uid) {
         res.redirect(countlyConfig.path+'/dashboard');
     } else {
-        res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "message":req.flash('info'), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
+        res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "message":req.flash('info'), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
     }
 });
 
@@ -432,7 +457,7 @@ app.get(countlyConfig.path+'/reset/:prid', function (req, res, next) {
                     req.flash('info', 'reset.invalid');
                     res.redirect(countlyConfig.path+'/forgot');
                 } else {
-                    res.render('reset', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "prid":req.params.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
+                    res.render('reset', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "prid":req.params.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
                 }
             } else {
                 req.flash('info', 'reset.invalid');
@@ -459,7 +484,7 @@ app.post(countlyConfig.path+'/reset', function (req, res, next) {
             countlyDb.collection('password_reset').remove({prid:req.body.prid}, function () {});
         });
     } else {
-        res.render('reset', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "prid":req.body.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
+        res.render('reset', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "prid":req.body.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
     }
 });
 
@@ -473,10 +498,10 @@ app.post(countlyConfig.path+'/forgot', function (req, res, next) {
                 countlyDb.collection('password_reset').insert({"prid":prid, "user_id":member._id, "timestamp":timestamp}, {safe:true}, function (err, password_reset) {
                     countlyMail.sendPasswordResetInfo(member, prid);
                     plugins.callMethod("passwordRequest", {req:req, res:res, next:next, data:req.body});
-                    res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "message":"forgot.result", "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
+                    res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "message":"forgot.result", "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
                 });
             } else {
-                res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE,"message":"forgot.result", "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
+                res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE,"message":"forgot.result", "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
             }
         });
     } else {

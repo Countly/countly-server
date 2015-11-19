@@ -271,7 +271,7 @@ app.addAppType("web", WebDashboardView);
 
 $( document ).ready(function() {
     var menu = '<a href="#/all" id="allapps-menu" class="item analytics active">'+
-		'<div class="logo dashboard"></div>'+
+		'<div class="logo fa fa-list-alt" style="background-image:none; font-size:24px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>'+
 		'<div class="text" data-localize="web.all-websites"></div>'+
 	'</a>';
 	$('#web-type a').first().before(menu);
@@ -328,5 +328,12 @@ $( document ).ready(function() {
                 '</a>';
 	$('#web-type #engagement-submenu').append(menu);
     
-    
+    app.addAppSwitchCallback(function(appId){
+        if(countlyGlobal["apps"][appId].type == "web"){
+            jQuery.i18n.map["drill.lv"] = jQuery.i18n.map["web.drill.lv"];
+            jQuery.i18n.map["views.title"] = jQuery.i18n.map["web.views.title"];
+            jQuery.i18n.map["views.view"] = jQuery.i18n.map["web.views.view"];
+            
+        }
+    });
 });

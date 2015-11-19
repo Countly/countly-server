@@ -12,17 +12,23 @@ var check = function() {
     function addPushly(appId, match, creds, query, message, pushly) {
         common.db.collection('app_users' + appId).count(match, function(err, count){
             if (count) {
-                var msg = message.toPushly(creds, query, [''+ appId, creds.id]);
+                var updateQuery = _.extend({}, query);
+                if (typeof updateQuery.conditions === 'object') {
+                    updateQuery.conditions = JSON.stringify(updateQuery.conditions);
+                }
+                var msg = message.toPushly(creds, query, [''+ appId, creds.id]),
+                    upd = {
+                        $addToSet: {pushly: {id: msg.id, query: updateQuery, result: msg.result}},
+                        $set: {'result.status': MessageStatus.InQueue}
+                    };
 
                 common.db.collection('messages').update(
                     {_id: message._id},
-                    {
-                        $addToSet: {pushly: {id: msg.id, query: query, result: msg.result}},
-                        $set: {'result.status': MessageStatus.InQueue}
-                    },function(){}
+                    upd, 
+                    function(){
+                    	pushly.push(msg);
+                    }
                 );
-
-                pushly.push(msg);
             }
         });
     }

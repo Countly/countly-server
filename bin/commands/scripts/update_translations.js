@@ -86,7 +86,6 @@ makeRequest("https://www.transifex.com/api/2/project/countly/resources/", functi
         }
         console.log("Got list of translations");
         languages = languages || default_langs;
-        languages.push({"language_code": "en"});
         //get translation files
         for(var i = 0; i < resources.length; i++){
             for(var j = 0; j <  languages.length; j++){

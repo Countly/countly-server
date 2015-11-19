@@ -888,7 +888,7 @@ $( document ).ready(function() {
         CountlyHelpers.loadJS("crashes/javascripts/marked.min.js");
     }
 	var menu = '<a href="#/crashes" class="item" id="crash-menu">'+
-        '<div class="logo fa fa-remove" style="background-image:none; font-size:24px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>'+
+        '<div class="logo fa fa-exclamation-triangle" style="background-image:none; font-size:24px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>'+
         '<div class="text" data-localize="crashes.title"></div>'+
     '</a>';
 	if($('.sidebar-menu #management-menu').length)

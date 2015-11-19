@@ -60,6 +60,11 @@
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/ZeroClipboard.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js"></script>
     <% } %>
+    <% if (themeFiles && themeFiles.css) { %>
+        <% for(var i=0, l=themeFiles.css.length; i<l; i++) {%>
+    <link href='<%= themeFiles.css[i]%>' rel='stylesheet' type='text/css'>
+        <% } %>
+    <% } %>
     <script type="text/javascript">
     window.production = <%= production ? true : false %>;
     </script>
@@ -311,19 +316,19 @@
             <span><%= countlyTypeName %></span>
 		 <% if (!countlyType) { %>
 			<ul>
-				<li><a href="#" id="Intercom">Feedback & Support</a></li>
+				<li><a href="#" id="Intercom" data-localize="common.feedback-and-support">Feedback & Support</a></li>
 				<li>|</li>
-				<li><a href="http://resources.count.ly/" target="_blank">Documentation</a></li>
+				<li><a href="http://resources.count.ly/" target="_blank" data-localize="common.documentation">Documentation</a></li>
 			</ul>
 		 <% }else { %>
 			<ul>
-				<li><a href="#" id="Intercom" >Provide feedback</a></li>
+				<li><a href="#" id="Intercom" data-localize="common.provide-feedback">Provide feedback</a></li>
 				<li>|</li>
-				<li><a href="http://support.count.ly/" target="_blank">Support</a></li>
+				<li><a href="http://support.count.ly/" target="_blank" data-localize="common.support">Support</a></li>
 				<li>|</li>
-				<li><a href="http://count.ly/enterprise-edition" target="_blank">Enterprise Edition (supported)</a></li>
+				<li><a href="http://count.ly/enterprise-edition" target="_blank" data-localize="common.enterprise-edition">Enterprise Edition (supported)</a></li>
 				<li>|</li>
-				<li><a href="http://resources.count.ly/" target="_blank">Documentation</a></li>
+				<li><a href="http://resources.count.ly/" target="_blank" data-localize="common.documentation">Documentation</a></li>
 			</ul>
 		 <% } %>
 		</div>
@@ -402,17 +407,6 @@
 					</div>
 				</div>
 				<div class="pie-chart-container">
-					<div class="graph-segment-container">
-					{{#if graph-segmentation}}
-                        <div class="cly-button-group">
-                            {{#each graph-segmentation}}
-                            <div class="icon-button light graph-segment" data-name="{{this.name}}">
-                                <div class="os-segment {{this.class}}"></div>
-                            </div>
-                            {{/each}}
-                        </div>
-					{{/if}}
-					</div>
 					<div class="pie-overlay two {{logo-class}}">
 						<div class="title">{{pie-titles.right}}</div>
 					</div>
@@ -586,7 +580,7 @@
                             <tr class="help-zone-vs" data-help-localize="help.manage-apps.app-type">
 								<td data-localize="management-applications.type"></td>
 								<td>
-									<div class="cly-select" style="width:280px;">
+									<div class="cly-select select-app-types" style="width:280px;">
 										<div class="select-inner">
 											<div class="text-container">
 												<div class="text" id="app-add-type" data-localize="management-applications.type.tip"></div>
@@ -722,7 +716,7 @@
 								<td id="app-edit-type">
 									<div class="read"></div>
 									<div class="edit">
-										<div class="cly-select">
+										<div class="cly-select select-app-types">
 											<div class="select-inner">
 												<div class="text-container">
 													<div class="text"></div>
@@ -870,6 +864,7 @@
                         <th data-localize="events.edit.event-name"></th>
                         <th data-localize="events.table.count"></th>
                         <th data-localize="events.table.sum"></th>
+                        <th data-localize="events.table.dur"></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -882,6 +877,7 @@
                         <td><input class="event-name" type="text" placeholder="Event name"  data-localize="events.edit.event-name" value="{{this.name}}"/></td>
                         <td><input class="event-count" type="text" placeholder="Count" data-localize="events.table.count" value="{{this.count}}"/></td>
                         <td><input class="event-sum" type="text" placeholder="Sum" data-localize="events.table.sum" value="{{this.sum}}"/></td>
+                        <td><input class="event-dur" type="text" placeholder="Duration" data-localize="events.table.dur" value="{{this.dur}}"/></td>
                     </tr>
                     {{/eachOfObjectValue}}
                     </tbody>
@@ -946,14 +942,15 @@
 			</div>
 			{{#if big-numbers}}
 			<div class="widget-footer event-numbers" style="background-color:#EEEEEE;">
-				<div id="big-numbers-container" class="{{big-numbers.class}}">
+				<div id="big-numbers-container" class="{{big-numbers.class}} event-numbers">
 					{{#each big-numbers.items}}
-					<div class="big-numbers selected">
+					<div class="big-numbers selected {{this.class}}" data-type="{{this.class}}">
 						<div class="inner">
 							<div class="select">{{this.title}}</div>
 							<div class="color"></div>
 							<div class="number">{{getFormattedNumber this.total}}</div>
 							<div class="trend" style="background-image:url('<%- cdn %>images/dashboard/{{this.trend}}trend.png');"></div>
+							<div class="check fa fa-square-o"></div>
 						</div>
 					</div>
 					{{/each}}
@@ -1103,6 +1100,11 @@
 				<% } %>
 			<% } %>
 	<% } %>
+    <% if (themeFiles && themeFiles.js) { %>
+        <% for(var i=0, l=themeFiles.js.length; i<l; i++) {%>
+    <script language="javascript" type="text/javascript" src="<%=themeFiles.js[i]%>"></script>
+        <% } %>
+    <% } %>
 	<script>
 	Backbone.history.start();
 	</script>

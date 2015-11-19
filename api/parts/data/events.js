@@ -134,6 +134,11 @@ var countlyEvents = {},
                 currEvent.sum = parseFloat(parseFloat(currEvent.sum).toFixed(5));
                 common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap['sum'], currEvent.sum);
             }
+            
+            if (currEvent.dur && common.isNumber(currEvent.dur)) {
+                currEvent.dur = parseFloat(currEvent.dur);
+                common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap['dur'], currEvent.dur);
+            }
 
             common.fillTimeObjectMonth(params, tmpEventObj, common.dbMap['count'], currEvent.count);
 
@@ -184,6 +189,10 @@ var countlyEvents = {},
 
                     if (currEvent.sum && common.isNumber(currEvent.sum)) {
                         common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap['sum'], currEvent.sum);
+                    }
+                    
+                    if (currEvent.dur && common.isNumber(currEvent.dur)) {
+                        common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap['dur'], currEvent.dur);
                     }
 
                     common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap['count'], currEvent.count);

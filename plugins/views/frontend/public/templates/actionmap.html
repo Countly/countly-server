@@ -1,0 +1,74 @@
+<div class="widget">
+	<div class="widget-header">
+		<div class="left">
+            {{#if logo-class}}
+			<div class="logo {{logo-class}}"></div>
+            {{else}}
+                <div class="logo font-logo2">
+                    <i class="fa {{font-logo-class}}"></i>
+                </div>
+            {{/if}}
+			<div class="title">{{page-title}}</div>    
+                <div class="cly-select" id="action-map-type" style="width:220px;  position:absolute; top: 10px; margin-left: 10px;">
+                    <div class="select-inner">
+                        <div class="text-container">
+                            <div class="text">{{first-type}}</div>
+                        </div>
+                        <div class="right combo"></div>
+                    </div>
+                    <div class="select-items square" style="width:220px;">
+                        <div>
+                            {{#each data.types}}
+                            <div data-value="{{this}}" class="segmentation-option item">{{this}}</div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>            
+		</div>
+		{{> date-selector }}
+	</div>
+    <div class="widget-content" id="view-map-container">
+		<div id="view-map">
+            {{#if data.image}}
+            <img src='{{data.image}}'/>
+            {{else}}
+            <iframe id="view-map-iframe" frameborder="0" scrolling="no"></iframe>
+            {{/if}}
+            <canvas id="view-canvas-map"></canvas>
+            <!--<div id='action-map-tools'>
+                <span>Select action: </span>
+                <div class="cly-select" id="action-map-type" style="width:220px;">
+                    <div class="select-inner">
+                        <div class="text-container">
+                            <div class="text">{{first-type}}</div>
+                        </div>
+                        <div class="right combo"></div>
+                    </div>
+                    <div class="select-items square" style="width:220px;">
+                        <div>
+                            {{#each data.types}}
+                            <div data-value="{{this}}" class="segmentation-option item">{{this}}</div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+                <span>Select resolution: </span>
+                <div class="cly-select" id="action-map-resolution" style="width:220px;">
+                    <div class="select-inner">
+                        <div class="text-container">
+                            <div class="text">{{first-resolution}}</div>
+                        </div>
+                        <div class="right combo"></div>
+                    </div>
+                    <div class="select-items square" style="width:220px;">
+                        <div>
+                            {{#each resolutions}}
+                            <div data-value="{{this}}" class="segmentation-option item">{{this}}</div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+            </div>-->
+        </div>
+	</div>
+</div>

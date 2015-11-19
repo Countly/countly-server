@@ -178,9 +178,11 @@
     countlyEvent.getEventData = function () {
 
         var eventData = {},
+        
             eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
             countString = (eventMap[_activeEvent] && eventMap[_activeEvent].count) ? eventMap[_activeEvent].count : jQuery.i18n.map["events.table.count"],
-            sumString = (eventMap[_activeEvent] && eventMap[_activeEvent].sum) ? eventMap[_activeEvent].sum : jQuery.i18n.map["events.table.sum"];
+            sumString = (eventMap[_activeEvent] && eventMap[_activeEvent].sum) ? eventMap[_activeEvent].sum : jQuery.i18n.map["events.table.sum"],
+            durString = (eventMap[_activeEvent] && eventMap[_activeEvent].dur) ? eventMap[_activeEvent].dur : jQuery.i18n.map["events.table.dur"];
 
         if (_activeSegmentation) {
             eventData = {chartData:{}, chartDP:{dp:[], ticks:[]}};
@@ -193,7 +195,8 @@
                     }
                 },
                 { "name":"c" },
-                { "name":"s" }
+                { "name":"s" },
+                { "name":"dur" }
             ]);
 
             eventData.chartData = tmpEventData.chartData;
@@ -201,6 +204,7 @@
             var segments = _.pluck(eventData.chartData, "curr_segment").slice(0,15),
                 segmentsCount = _.pluck(eventData.chartData, 'c'),
                 segmentsSum = _.without(_.pluck(eventData.chartData, 's'), false, null, "", undefined, NaN),
+                segmentsDur = _.without(_.pluck(eventData.chartData, 'dur'), false, null, "", undefined, NaN),
                 chartDP = [
                     {data:[], color: countlyCommon.GRAPH_COLORS[0]}
                 ];
@@ -208,12 +212,18 @@
             if (_.reduce(segmentsSum, function(memo, num) { return memo + num;  }, 0) == 0) {
                 segmentsSum = [];
             }
-
-            if (segmentsSum.length) {
-                chartDP[chartDP.length] = {data:[], color: countlyCommon.GRAPH_COLORS[1]};
-                chartDP[1]["data"][0] = [-1, null];
-                chartDP[1]["data"][segments.length + 1] = [segments.length, null];
+            
+            if (_.reduce(segmentsDur, function(memo, num) { return memo + num;  }, 0) == 0) {
+                segmentsDur = [];
             }
+
+            chartDP[chartDP.length] = {data:[], color: countlyCommon.GRAPH_COLORS[1]};
+            chartDP[1]["data"][0] = [-1, null];
+            chartDP[1]["data"][segments.length + 1] = [segments.length, null];
+
+            chartDP[chartDP.length] = {data:[], color: countlyCommon.GRAPH_COLORS[2]};
+            chartDP[2]["data"][0] = [-1, null];
+            chartDP[2]["data"][segments.length + 1] = [segments.length, null];
 
             chartDP[0]["data"][0] = [-1, null];
             chartDP[0]["data"][segments.length + 1] = [segments.length, null];
@@ -223,9 +233,8 @@
 
             for (var i = 0; i < segments.length; i++) {
                 chartDP[0]["data"][i + 1] = [i, segmentsCount[i]];
-                if (segmentsSum.length) {
-                    chartDP[1]["data"][i + 1] = [i, segmentsSum[i]];
-                }
+                chartDP[1]["data"][i + 1] = [i, segmentsSum[i]];
+                chartDP[2]["data"][i + 1] = [i, segmentsDur[i]];
                 eventData.chartDP.ticks.push([i, segments[i]]);
             }
 
@@ -234,8 +243,11 @@
             eventData["eventName"] = countlyEvent.getEventLongName(_activeEvent);
             eventData["dataLevel"] = 2;
             eventData["tableColumns"] = [jQuery.i18n.map["events.table.segmentation"], countString];
-            if (segmentsSum.length) {
-                eventData["tableColumns"][eventData["tableColumns"].length] = sumString;
+            if (segmentsSum.length || segmentsDur.length) {
+                if (segmentsSum.length)
+                    eventData["tableColumns"][eventData["tableColumns"].length] = sumString;
+                if (segmentsDur.length)
+                    eventData["tableColumns"][eventData["tableColumns"].length] = durString;
             } else {
                 _.each(eventData.chartData, function (element, index, list) {
                     list[index] = _.pick(element, "curr_segment", "c");
@@ -244,11 +256,13 @@
         } else {
             var chartData = [
                     { data:[], label:countString, color: countlyCommon.GRAPH_COLORS[0] },
-                    { data:[], label:sumString, color: countlyCommon.GRAPH_COLORS[1] }
+                    { data:[], label:sumString, color: countlyCommon.GRAPH_COLORS[1] },
+                    { data:[], label:durString, color: countlyCommon.GRAPH_COLORS[2] }
                 ],
                 dataProps = [
                     { name:"c" },
-                    { name:"s" }
+                    { name:"s" },
+                    { name:"dur" }
                 ];
 
             eventData = countlyCommon.extractChartData(_activeEventDb, countlyEvent.clearEventsObject, chartData, dataProps);
@@ -258,9 +272,16 @@
             eventData["tableColumns"] = [jQuery.i18n.map["common.date"], countString];
 
             var cleanSumCol = _.without(_.pluck(eventData.chartData, 's'), false, null, "", undefined, NaN);
+            var cleanDurCol = _.without(_.pluck(eventData.chartData, 'dur'), false, null, "", undefined, NaN);
+            
+            var reducedSum = _.reduce(cleanSumCol, function(memo, num) { return memo + num;  }, 0);
+            var reducedDur = _.reduce(cleanDurCol, function(memo, num) { return memo + num;  }, 0);
 
-            if (_.reduce(cleanSumCol, function(memo, num) { return memo + num;  }, 0) != 0) {
-                eventData["tableColumns"][eventData["tableColumns"].length] = sumString;
+            if (reducedSum != 0 || reducedDur != 0) {
+                if(reducedSum != 0)
+                    eventData["tableColumns"][eventData["tableColumns"].length] = sumString;
+                if(reducedDur != 0)
+                    eventData["tableColumns"][eventData["tableColumns"].length] = durString;
             } else {
                 eventData.chartDP[1] = false;
                 eventData.chartDP = _.compact(eventData.chartDP);
@@ -280,6 +301,12 @@
 
         if (sumArr.length) {
             eventData.totalSum = _.reduce(sumArr, function(memo, num){ return memo + num; }, 0);
+        }
+        
+        var durArr = _.pluck(eventData.chartData, "dur");
+
+        if (durArr.length) {
+            eventData.totalDur = _.reduce(durArr, function(memo, num){ return memo + num; }, 0);
         }
 
         return eventData;
@@ -305,6 +332,7 @@
                     "name": eventMap[events[i]]["name"],
                     "count": eventMap[events[i]]["count"],
                     "sum": eventMap[events[i]]["sum"],
+                    "dur": eventMap[events[i]]["dur"],
                     "is_active": (_activeEvent == events[i])
                 });
             } else {
@@ -313,6 +341,7 @@
                     "name": events[i],
                     "count": "",
                     "sum": "",
+                    "dur": "",
                     "is_active": (_activeEvent == events[i])
                 });
             }
@@ -390,9 +419,10 @@
         if (obj) {
             if (!obj["c"]) obj["c"] = 0;
             if (!obj["s"]) obj["s"] = 0;
+            if (!obj["dur"]) obj["dur"] = 0;
         }
         else {
-            obj = {"c":0, "s":0};
+            obj = {"c":0, "s":0, "dur":0};
         }
 
         return obj;
@@ -408,7 +438,9 @@
             currentTotal = 0,
             previousTotal = 0,
             currentSum = 0,
-            previousSum = 0;
+            previousSum = 0,
+            currentDur = 0,
+            previousDur = 0;
 
         if (_periodObj.isSpecialPeriod) {
             for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
@@ -420,17 +452,21 @@
                 if (_activeSegmentation) {
                     var tmpCurrCount = _.reduce(_.map(_.filter(tmp_x, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.c || 0; }), function(memo, num){ return memo + num; }, 0),
                         tmpCurrSum = _.reduce(_.map(_.filter(tmp_x, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.s || 0; }), function(memo, num){ return memo + num; }, 0),
+                        tmpCurrDur = _.reduce(_.map(_.filter(tmp_x, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.dur || 0; }), function(memo, num){ return memo + num; }, 0),
                         tmpPrevCount = _.reduce(_.map(_.filter(tmp_y, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.c || 0; }), function(memo, num){ return memo + num; }, 0),
-                        tmpPrevSum = _.reduce(_.map(_.filter(tmp_y, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.s || 0; }), function(memo, num){ return memo + num; }, 0);
+                        tmpPrevSum = _.reduce(_.map(_.filter(tmp_y, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.s || 0; }), function(memo, num){ return memo + num; }, 0),
+                        tmpPrevDur = _.reduce(_.map(_.filter(tmp_y, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.dur || 0; }), function(memo, num){ return memo + num; }, 0);
 
                     tmp_x = {
                         "c": tmpCurrCount,
-                        "s": tmpCurrSum
+                        "s": tmpCurrSum,
+                        "dur": tmpCurrDur
                     };
 
                     tmp_y = {
                         "c": tmpPrevCount,
-                        "s": tmpPrevSum
+                        "s": tmpPrevSum,
+                        "dur": tmpPrevDur
                     };
                 }
 
@@ -438,6 +474,8 @@
                 previousTotal += tmp_y["c"];
                 currentSum += tmp_x["s"];
                 previousSum += tmp_y["s"];
+                currentDur += tmp_x["dur"];
+                previousDur += tmp_y["dur"];
             }
         } else {
             tmp_x = countlyCommon.getDescendantProp(_activeEventDb, _periodObj.activePeriod);
@@ -448,17 +486,21 @@
             if (_activeSegmentation) {
                 var tmpCurrCount = _.reduce(_.map(_.filter(tmp_x, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.c || 0; }), function(memo, num){ return memo + num; }, 0),
                     tmpCurrSum = _.reduce(_.map(_.filter(tmp_x, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.s || 0; }), function(memo, num){ return memo + num; }, 0),
+                    tmpCurrDur = _.reduce(_.map(_.filter(tmp_x, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.dur || 0; }), function(memo, num){ return memo + num; }, 0),
                     tmpPrevCount = _.reduce(_.map(_.filter(tmp_y, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.c || 0; }), function(memo, num){ return memo + num; }, 0),
-                    tmpPrevSum = _.reduce(_.map(_.filter(tmp_y, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.s || 0; }), function(memo, num){ return memo + num; }, 0);
+                    tmpPrevSum = _.reduce(_.map(_.filter(tmp_y, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.s || 0; }), function(memo, num){ return memo + num; }, 0),
+                    tmpPrevDur = _.reduce(_.map(_.filter(tmp_y, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.dur || 0; }), function(memo, num){ return memo + num; }, 0);
 
                 tmp_x = {
                     "c": tmpCurrCount,
-                    "s": tmpCurrSum
+                    "s": tmpCurrSum,
+                    "dur": tmpCurrDur
                 };
 
                 tmp_y = {
                     "c": tmpPrevCount,
-                    "s": tmpPrevSum
+                    "s": tmpPrevSum,
+                    "dur": tmpPrevDur
                 };
             }
 
@@ -466,10 +508,13 @@
             previousTotal = tmp_y["c"];
             currentSum = tmp_x["s"];
             previousSum = tmp_y["s"];
+            currentDur = tmp_x["dur"];
+            previousDur = tmp_y["dur"];
         }
 
         var	changeTotal = countlyCommon.getPercentChange(previousTotal, currentTotal),
-            changeSum = countlyCommon.getPercentChange(previousSum, currentSum);
+            changeSum = countlyCommon.getPercentChange(previousSum, currentSum),
+            changeDur = countlyCommon.getPercentChange(previousDur, currentDur);
 
         dataArr =
         {
@@ -483,31 +528,63 @@
                     "total":currentSum,
                     "change":changeSum.percent,
                     "trend":changeSum.trend
+                },
+                "event-dur":{
+                    "total":currentDur,
+                    "change":changeDur.percent,
+                    "trend":changeDur.trend
                 }
             }
         };
 
         var eventMap = (_activeEvents)? ((_activeEvents.map)? _activeEvents.map : {}) : {},
             countString = (eventMap[_activeEvent] && eventMap[_activeEvent].count)? eventMap[_activeEvent].count.toUpperCase() : jQuery.i18n.map["events.count"],
-            sumString = (eventMap[_activeEvent] && eventMap[_activeEvent].sum)? eventMap[_activeEvent].sum.toUpperCase() : jQuery.i18n.map["events.sum"];
+            sumString = (eventMap[_activeEvent] && eventMap[_activeEvent].sum)? eventMap[_activeEvent].sum.toUpperCase() : jQuery.i18n.map["events.sum"],
+            durString = (eventMap[_activeEvent] && eventMap[_activeEvent].dur)? eventMap[_activeEvent].dur.toUpperCase() : jQuery.i18n.map["events.dur"];
 
         var bigNumbers = {
             "class": "one-column",
             "items": [
                 {
                     "title": countString,
+                    "class": "event-count",
                     "total": dataArr.usage["event-total"].total,
                     "trend": dataArr.usage["event-total"].trend
                 }
             ]
         };
 
-        if (currentSum != 0) {
+        if (currentSum != 0 && currentDur == 0) {
             bigNumbers["class"] = "two-column";
             bigNumbers.items[bigNumbers.items.length] = {
                 "title": sumString,
+                "class": "event-sum",
                 "total": dataArr.usage["event-sum"].total,
                 "trend": dataArr.usage["event-sum"].trend
+            }
+        }
+        else if(currentSum == 0 && currentDur != 0){
+            bigNumbers["class"] = "two-column";
+            bigNumbers.items[bigNumbers.items.length] = {
+                "title": durString,
+                "class": "event-dur",
+                "total": dataArr.usage["event-dur"].total,
+                "trend": dataArr.usage["event-dur"].trend
+            }
+        }
+        else if(currentSum != 0 && currentDur != 0){
+            bigNumbers["class"] = "threes-column";
+            bigNumbers.items[bigNumbers.items.length] = {
+                "title": sumString,
+                "class": "event-sum",
+                "total": dataArr.usage["event-sum"].total,
+                "trend": dataArr.usage["event-sum"].trend
+            }
+            bigNumbers.items[bigNumbers.items.length] = {
+                "title": durString,
+                "class": "event-dur",
+                "total": dataArr.usage["event-dur"].total,
+                "trend": dataArr.usage["event-dur"].trend
             }
         }
 
@@ -535,15 +612,18 @@
             var eventData = {},
                 eventMap = (_activeEvents) ? ((_activeEvents.map) ? _activeEvents.map : {}) : {},
                 countString = (eventMap[_activeEvent] && eventMap[_activeEvent].count) ? eventMap[_activeEvent].count : jQuery.i18n.map["events.table.count"],
-                sumString = (eventMap[_activeEvent] && eventMap[_activeEvent].sum) ? eventMap[_activeEvent].sum : jQuery.i18n.map["events.table.sum"];
+                sumString = (eventMap[_activeEvent] && eventMap[_activeEvent].sum) ? eventMap[_activeEvent].sum : jQuery.i18n.map["events.table.sum"],
+                durString = (eventMap[_activeEvent] && eventMap[_activeEvent].dur) ? eventMap[_activeEvent].dur : jQuery.i18n.map["events.table.dur"];
 
             var chartData = [
                     { data:[], label:countString, color: countlyCommon.GRAPH_COLORS[0] },
-                    { data:[], label:sumString, color: countlyCommon.GRAPH_COLORS[1] }
+                    { data:[], label:sumString, color: countlyCommon.GRAPH_COLORS[1] },
+                    { data:[], label:durString, color: countlyCommon.GRAPH_COLORS[2] }
                 ],
                 dataProps = [
                     { name:"c" },
-                    { name:"s" }
+                    { name:"s" },
+                    { name:"dur" }
                 ];
 
             eventData = countlyCommon.extractChartData(dataFromDb, countlyEvent.clearEventsObject, chartData, dataProps);
@@ -553,9 +633,16 @@
             eventData["tableColumns"] = [jQuery.i18n.map["common.date"], countString];
 
             var cleanSumCol = _.without(_.pluck(eventData.chartData, 's'), false, null, "", undefined, NaN);
+            var cleanDurCol = _.without(_.pluck(eventData.chartData, 'dur'), false, null, "", undefined, NaN);
+            
+            var reducedSum = _.reduce(cleanSumCol, function(memo, num) { return memo + num;  }, 0);
+            var reducedDur = _.reduce(cleanDurCol, function(memo, num) { return memo + num;  }, 0)
 
-            if (_.reduce(cleanSumCol, function(memo, num) { return memo + num;  }, 0) != 0) {
-                eventData["tableColumns"][eventData["tableColumns"].length] = sumString;
+            if (reducedSum != 0 || reducedDur != 0) {
+                if (reducedSum != 0)
+                    eventData["tableColumns"][eventData["tableColumns"].length] = sumString;
+                if (reducedDur != 0)
+                    eventData["tableColumns"][eventData["tableColumns"].length] = durString;
             } else {
                 eventData.chartDP[1] = false;
                 eventData.chartDP = _.compact(eventData.chartDP);
@@ -574,6 +661,12 @@
 
             if (sumArr.length) {
                 eventData.totalSum = _.reduce(sumArr, function(memo, num){ return memo + num; }, 0);
+            }
+            
+            var durArr = _.pluck(eventData.chartData, "dur");
+
+            if (durArr.length) {
+                eventData.totalDur = _.reduce(durArr, function(memo, num){ return memo + num; }, 0);
             }
 
             return eventData;

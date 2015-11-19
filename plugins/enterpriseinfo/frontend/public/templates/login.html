@@ -12,6 +12,11 @@
 	<link href='./stylesheets/pre-login/main.css' rel='stylesheet' type='text/css'>
 	<link href='./enterpriseinfo/stylesheets/pre-login.css' rel='stylesheet' type='text/css'>
 	<link rel="icon" type="image/png" href="./images/favicon.png">
+    <% if (themeFiles && themeFiles.css) { %>
+        <% for(var i=0, l=themeFiles.css.length; i<l; i++) {%>
+    <link href='<%= themeFiles.css[i]%>' rel='stylesheet' type='text/css'>
+        <% } %>
+    <% } %>
 	<title><%- countlyTitle %></title>
 	<script>window.countlyGlobal = window.countlyGlobal || {}; countlyGlobal["cdn"] = "<%- cdn %>"; countlyGlobal["path"] = "<%- path %>";</script>
 </head>
@@ -148,5 +153,10 @@
 	<% if (typeof javascript != 'undefined') { %>
 	<script><%- javascript %></script>
 	<% } %>
+    <% if (themeFiles && themeFiles.js) { %>
+        <% for(var i=0, l=themeFiles.js.length; i<l; i++) {%>
+    <script language="javascript" type="text/javascript" src="<%=themeFiles.js[i]%>"></script>
+        <% } %>
+    <% } %>
 </body>
 </html>

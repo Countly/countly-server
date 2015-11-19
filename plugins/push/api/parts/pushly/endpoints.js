@@ -748,9 +748,11 @@ var pushly          = require('pushly')(),
             }
 
             if ((message.result.status & MessageStatus.InProcessing) > 0) {
-                message.pushly.forEach(function(pushlyMessage){
-                    pushly.abort(pushlyMessage);
-                });
+                if (message.pushly && message.pushly.length) {
+                    message.pushly.forEach(function(pushlyMessage){
+                        pushly.abort(pushlyMessage);
+                    });
+                }
                 common.db.collection('messages').update({_id: message._id}, {$set: {'deleted': true}},function(){});
                 message.deleted = true;
                 common.returnOutput(params, message);
