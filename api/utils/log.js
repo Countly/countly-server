@@ -28,11 +28,32 @@
  */
 
 var prefs = require('../config.js').logging,
+	colors = require('colors'),
 	deflt = prefs.default || 'error';
 
 for (var level in prefs) {
 	if (prefs[level].sort) { prefs[level].sort(); }
 }
+
+var styles = {
+	moduleColors: {
+//		'push:*api': 0 // green
+		'[last]': -1
+	},
+	colors: ['green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'gray', 'red'],
+	stylers: {
+		warn: function(args) {
+			for (var i = 0; i < args.length; i++) {
+				if (typeof args[i] === 'string') { args[i] = colors.bgYellow.black(args[i].black); }
+			}
+		},
+		error: function(args) {
+			for (var i = 0; i < args.length; i++) {
+				if (typeof args[i] === 'string') { args[i] = colors.bgRed.white(args[i].white); }
+			}
+		}
+	}
+};
 
 /**
  * Returns logger function for given preferences
@@ -42,11 +63,23 @@ for (var level in prefs) {
  * @param out output function (console or debug)
  * @api private
  */
-var log = function(prefix, enabled, outer, out) {
+var log = function(level, prefix, enabled, outer, out, styler) {
 	return function() {
 		if (enabled()) {
 			var args = Array.prototype.slice.call(arguments, 0);
-			args[0] = new Date().toISOString() + ': ' + (prefix || '') + args[0];
+			var color = styles.moduleColors[prefix];
+			if (color === undefined) {
+				color = (++styles.moduleColors['[last]']) % styles.colors.length;
+				styles.moduleColors[prefix] = color;
+			}
+			color = styles.colors[color];
+			if (styler) {
+				args[0] = new Date().toISOString() + ': ' + level + '\t' + '[' + (prefix || '') + ']\t' + args[0];
+				styler(args);
+			} else {
+				args[0] = (new Date().toISOString() + ': ' + level + '\t').gray + colors[color]('[' + (prefix || '') + ']\t') + args[0];
+			}
+			// args[0] = (new Date().toISOString() + ': ' + (prefix || '')).gray + args[0];
 			// console.log('Logging %j', args);
 			if (typeof out === 'function') { out.apply(outer, args); }
 			else {
@@ -110,10 +143,9 @@ var getEnabledWithLevel = function(acceptable, module) {
 };
 
 var ipcHandler = function(msg){
-
 	var m, l, modules, i;
 
-	if (!msg || !msg.config) {
+	if (!msg || msg.cmd !== 'log' || !msg.config) {
 		return;
 	}
 
@@ -140,7 +172,9 @@ var ipcHandler = function(msg){
 				modules = msg.config[l].split(',').map(function(v){ return v.trim(); });
 
 				for (i = 0; i < modules.length; i++) {
-					if (modules[i].indexOf(m + ':') === 0) {
+					if (modules[i].indexOf('*') === -1 && modules[i] === m.split(':')[0]) {
+						found = l;
+					} else if (modules[i].indexOf('*') !== -1 && modules[i].split(':')[1] === '*' && modules[i].split(':')[0] === m.split(':')[0]) {
 						found = l;
 					}
 				}
@@ -159,10 +193,10 @@ module.exports = function(name) {
 	setLevel(name, logLevel(name));
 	// console.log('Got level for ' + name + ': ' + levels[name], typeof debug(name));
 	return {
-		d: log('DEBUG\t[' + name + ']\t', getEnabledWithLevel(['debug'], name), this, console.log),
-		i: log('INFO\t[' + name + ']\t', getEnabledWithLevel(['debug', 'info'], name), this, console.log),
-		w: log('WARN\t[' + name + ']\t', getEnabledWithLevel(['debug', 'info', 'warn'], name), this, console.log),
-		e: log('ERROR\t[' + name + ']\t', getEnabledWithLevel(['debug', 'info', 'warn', 'error'], name), this, console.log),
+		d: log('DEBUG', name, getEnabledWithLevel(['debug'], name), this, console.log),
+		i: log('INFO', name, getEnabledWithLevel(['debug', 'info'], name), this, console.info),
+		w: log('WARN', name, getEnabledWithLevel(['debug', 'info', 'warn'], name), this, console.warn, styles.stylers.warn),
+		e: log('ERROR', name, getEnabledWithLevel(['debug', 'info', 'warn', 'error'], name), this, console.error, styles.stylers.error),
 		callback: function(next){
 			var self = this;
 			return function(err) {
