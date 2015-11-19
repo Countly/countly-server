@@ -20,6 +20,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 sudo yum -y install openssl-devel gcc-c++ make
 curl -sL https://rpm.nodesource.com/setup_4.x | bash -
 yum install -y nodejs
+sudo ln -s `which node` /usr/bin/nodejs
 
 #install mongodb
 echo "[mongodb-org-3.0]
