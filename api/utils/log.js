@@ -149,7 +149,7 @@ var ipcHandler = function(msg){
 		return;
 	}
 
-	console.log('Setting logging config to %j', msg.config);
+	console.log('%d: Setting logging config to %j', process.pid, msg.config);
 
 	if (msg.config.default) {
 		deflt = msg.config.default;

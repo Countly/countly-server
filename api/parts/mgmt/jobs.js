@@ -460,7 +460,7 @@ var withCollection = function(callback) {
 		common.mongodbNativeConnection(function(err, db){
 			if (err) { 
 				connecting = false;
-				console.trace('Error during db connection', err);
+				// console.trace('Error during db connection', err);
 				// log.e('Error during db connection', err); 
 				callback(err); 
 			} else {
@@ -470,8 +470,8 @@ var withCollection = function(callback) {
 					jobsCollection = null;
 					jobsDb = null;
 				});
-				console.trace('Connected to the database');
-				// log.i('Connected to the database');
+				// console.trace('Connected to the database');
+				log.i('Connected to the database');
 				jobsDb = db;
 				db.createCollection('jobs', {strict: true, autoIndexId: true, capped: true, size: 1e7}, function(err, coll){
 					if (coll) {
