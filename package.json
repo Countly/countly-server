@@ -21,6 +21,7 @@
     "grunt-contrib-cssmin": "^0.12.2",
     "grunt-contrib-jshint": "*",
     "grunt-contrib-uglify": "^0.8.0",
+    "mocha": ">=1.20.0",
     "grunt-mocha-test": "*",
     "should": "*",
     "supertest": "*"
@@ -50,6 +51,7 @@
     "string": "3.0.0",
     "time": "*",
     "underscore": "1.7.0",
-    "formidable": "1.0.17"
+    "formidable": "1.0.17",
+    "kerberos": "~0.0"
   }
 }
