@@ -47,12 +47,14 @@
         },
         "AWSRegionArch2AMI" : {
             "us-east-1"      : { "64" : "ami-d85e75b0", "64HVM" : "ami-0da96764" },
-            "us-west-2"      : { "64" : "ami-30fe7300", "64HVM" : "NOT_YET_SUPPORTED" },
-            "us-west-1"      : { "64" : "ami-1bd68a5e", "64HVM" : "ubuntu for t1.micro, other Amazon Linux AMI" },
-            "eu-west-1"      : { "64" : "ami-953b06e1", "64HVM" : "NOT_YET_SUPPORTED" },
-            "ap-southeast-1" : { "64" : "ami-beb0caec", "64HVM" : "NOT_YET_SUPPORTED" },
-            "ap-northeast-1" : { "64" : "ami-0a44f00b", "64HVM" : "NOT_YET_SUPPORTED" },
-            "sa-east-1"      : { "64" : "ami-3c3be421", "64HVM" : "NOT_YET_SUPPORTED" }
+            "us-west-2"      : { "64" : "ami-6989a659", "64HVM" : "ami-5189a661" },
+            "us-west-1"      : { "64" : "ami-d16a8b95", "64HVM" : "ami-df6a8b9b" },
+            "eu-west-1"      : { "64" : "ami-5da23a2a", "64HVM" : "ami-47a23a30" },            
+            "eu-central-1"   : { "64" : "ami-b6cff2ab", "64HVM" : "ami-accff2b1" },            
+            "ap-southeast-1" : { "64" : "ami-e8f1c1ba", "64HVM" : "ami-96f1c1c4" },     
+            "ap-northeast-1" : { "64" : "ami-936d9d93", "64HVM" : "ami-8d6d9d8d" },
+            "ap-southeast-2" : { "64" : "ami-7163104b", "64HVM" : "ami-69631053" },  
+            "sa-east-1"      : { "64" : "ami-55883348", "64HVM" : "ami-4d883350" }
         }
     },
     "Resources" : {
