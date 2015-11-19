@@ -62,6 +62,7 @@ if (cluster.isMaster) {
                     if (w !== worker) { w.send({cmd: 'log', config: msg.config}); }
                 });
                 if (worker !== jobsWorker) { jobsWorker.send({cmd: 'log', config: msg.config}); }
+                require('./utils/log.js').ipcHandler(msg);
             }
         });
     };
