@@ -9,12 +9,6 @@
             "AllowedValues" : [ "t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m2.xlarge","m2.2xlarge","m2.4xlarge","c1.medium","c1.xlarge","cc1.4xlarge","cc2.8xlarge","cg1.4xlarge"],
             "ConstraintDescription" : "must be a valid EC2 instance type."
         },
-        "OperatorEMail": {
-            "Description": "Email address to notify if there are any scaling operations",
-            "Type": "String",
-            "AllowedPattern": "([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)",
-            "ConstraintDescription": "must be a valid email address."
-        },
         "MongoVolumeSize" : {
             "Description" : "Volume size for mongodb",
             "Type" : "Number",
@@ -379,13 +373,6 @@
                 "RetentionInDays": 7
             }
         },
-
-        "NotificationTopic": {
-            "Type": "AWS::SNS::Topic",
-            "Properties": {
-                "Subscription": [ { "Endpoint": { "Ref": "OperatorEMail" }, "Protocol": "email" } ]
-            }
-        },        
             
         "CodeDeployRole": {
             "Type": "AWS::IAM::Role",
