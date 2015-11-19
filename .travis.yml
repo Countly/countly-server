@@ -1,6 +1,4 @@
 language: nodejs
-node_js:
-  - "4.1"
 services:
   - mongodb
 addons:
@@ -12,6 +10,7 @@ addons:
 before_install: sudo bash ./bin/countly.install.travis.sh
 install: sudo npm install
 before_script:
+  - nodejs --version
   - mongod --version
   - cat /var/log/mongodb/mongod.log
   - until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
