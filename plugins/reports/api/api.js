@@ -107,6 +107,7 @@ cron.load(function(err, tab){
                         convertToTimezone(props);
                         
                         common.db.collection('reports').insert(props, function(err, result) {
+                            result = result.ops;
                             if(err){
                                 err = err.err;
                                 common.returnMessage(params, 200, err);

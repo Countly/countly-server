@@ -1,8 +1,23 @@
-language: c
+language: nodejs
+services:
+  - mongodb
+env:
+  - CXX=g++-4.8
+addons:
+  apt:
+    sources:
+      - mongodb-3.0-precise
+    packages:
+      - mongodb-org-server
 before_install: sudo bash ./bin/countly.install.travis.sh
 install: sudo npm install
-before_script: sleep 15
+before_script:
+  - nodejs --version
+  - mongod --version
+  - cat /var/log/mongodb/mongod.log
+  - until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
 script: npm test
+after_script: cat /var/log/mongodb/mongod.log
 notifications:
   email: hello@count.ly
   hipchat:

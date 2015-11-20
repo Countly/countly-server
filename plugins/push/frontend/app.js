@@ -49,6 +49,7 @@ var plugin = {},
 						}
 
 						countlyDb.collection('apps').findAndModify({_id: countlyDb.ObjectID(req.body.app_id)}, [['_id', 1]], update, {new:true}, function(err, app){
+                            app = app.value;
 							if (err || !app) res.send({error: 'Server error: cannot find app'});
 							else {
 								fs.unlink(tmp_path, function () {});

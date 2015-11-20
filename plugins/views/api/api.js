@@ -122,6 +122,7 @@ var plugin = {},
         var dbAppUser = ob.dbAppUser;
         if(dbAppUser && dbAppUser.vc){
             common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id },{}, {$set:{vc:0}},{upsert:true, new:false}, function (err, user){
+                user = user.value;
                 if(user && user.vc){
                     var ranges = [
                         [0,2],

@@ -21,6 +21,7 @@
     "grunt-contrib-cssmin": "^0.12.2",
     "grunt-contrib-jshint": "*",
     "grunt-contrib-uglify": "^0.8.0",
+    "mocha": ">=1.20.0",
     "grunt-mocha-test": "*",
     "should": "*",
     "supertest": "*"
@@ -41,8 +42,8 @@
     "later": "^1.1.6",
     "moment": "1.7.2",
     "moment-isocalendar": "0.1.0",
-    "mongodb": "1.4.x",
-    "mongoskin": "1.4.x",
+    "mongodb": "~2.0",
+    "mongoskin": "2.0.3",
     "nodemailer": "1.4.0",
     "nodemailer-smtp-transport": "1.0.3",
     "nodemailer-smtp-pool": "1.1.1",
@@ -51,6 +52,7 @@
     "string": "3.0.0",
     "time": "*",
     "underscore": "1.7.0",
-    "formidable": "1.0.17"
+    "formidable": "1.0.17",
+    "kerberos": "~0.0"
   }
 }

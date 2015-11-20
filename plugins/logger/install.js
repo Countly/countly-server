@@ -1,5 +1,4 @@
-var mongo = require('mongoskin'),
-	async = require('async'),
+var async = require('async'),
     pluginManager = require('../pluginManager.js'),
 	countlyDb = pluginManager.dbConnection();
 

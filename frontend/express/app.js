@@ -7,7 +7,6 @@ var versionInfo = require('./version.info'),
     express = require('express'),
     SkinStore = require('connect-mongoskin'),
     expose = require('express-expose'),
-    mongo = require('mongoskin'),
     crypto = require('crypto'),
     fs = require('fs'),
     path = require('path'),
@@ -51,38 +50,7 @@ fs.readdir(themeDir, function(err, list) {
     }
 });
 
-//mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
-var dbName;
-var dbOptions = {
-	server:{auto_reconnect:true, poolSize: countlyConfig.mongodb.max_pool_size, socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
-	replSet:{socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
-	mongos:{socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }}
-};
-
-if (typeof countlyConfig.mongodb === "string") {
-    dbName = countlyConfig.mongodb;
-} else{
-	countlyConfig.mongodb.db = countlyConfig.mongodb.db || 'countly';
-	if ( typeof countlyConfig.mongodb.replSetServers === 'object'){
-		//mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test
-		dbName = countlyConfig.mongodb.replSetServers.join(",")+"/"+countlyConfig.mongodb.db;
-		if(countlyConfig.mongodb.replicaName){
-			dbOptions.replSet.rs_name = countlyConfig.mongodb.replicaName;
-		}
-	} else {
-		dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db);
-	}
-}
-if(countlyConfig.mongodb.username && countlyConfig.mongodb.password){
-	dbName = countlyConfig.mongodb.username + ":" + countlyConfig.mongodb.password +"@" + dbName;
-}
-if(dbName.indexOf("mongodb://") !== 0){
-	dbName = "mongodb://"+dbName;
-}
-var countlyDb = mongo.db(dbName, dbOptions);
-countlyDb._emitter.setMaxListeners(0);
-if(!countlyDb.ObjectID)
-	countlyDb.ObjectID = mongo.ObjectID;
+var countlyDb = plugins.dbConnection(countlyConfig);
 
 function sha1Hash(str, addSalt) {
     var salt = (addSalt) ? new Date().getTime() : "";
@@ -518,6 +486,7 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
                 var password = sha1Hash(req.body.password);
 
                 countlyDb.collection('members').insert({"full_name":req.body.full_name, "username":req.body.username, "password":password, "email":req.body.email, "global_admin":true}, {safe:true}, function (err, member) {
+                    member = member.ops;
                     if (countlyConfig.web.use_intercom) {
                         var options = {uri:"https://cloud.count.ly/s", method:"POST", timeout:4E3, json:{email:req.body.email, full_name:req.body.full_name, v:COUNTLY_VERSION, t:COUNTLY_TYPE}};
                         request(options, function(a, c, b) {
@@ -607,7 +576,7 @@ var auth = express.basicAuth(function(user, pass, callback) {
         if(member)
 			callback(null, member);
 		else
-			callback(null, user);
+			callback("err", user);
     });
 });
 

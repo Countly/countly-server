@@ -24,7 +24,7 @@ bash $DIR/scripts/make.swap.sh
 #update package index
 apt-get update
 
-apt-get -y install python-software-properties
+apt-get -y install python-software-properties build-essential
 
 if !(command -v apt-add-repository >/dev/null) then
     apt-get -y install software-properties-common
@@ -32,14 +32,27 @@ fi
 
 #add node.js repo
 #echo | apt-add-repository ppa:chris-lea/node.js
-wget -qO- https://deb.nodesource.com/setup | bash -
+wget -qO- https://deb.nodesource.com/setup_4.x | bash -
+
+#update g++ to 4.8
+add-apt-repository ppa:ubuntu-toolchain-r/test -y
 
 #add mongodb repo
-echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" > /etc/apt/sources.list.d/mongodb-10gen-countly.list
-apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
+#echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" > /etc/apt/sources.list.d/mongodb-10gen-countly.list
+#apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
+
+#sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+#echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
 
 #update once more after adding new repos
 apt-get update
+
+apt-get -y install gcc-4.8 g++-4.8
+
+export CXX="g++-4.8"
+export CC="gcc-4.8"
+update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
+g++ --version
 
 #install nginx
 apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
@@ -48,7 +61,7 @@ apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
 
 #install mongodb
-apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
+#apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
 
 #install supervisor
 apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
