@@ -14,7 +14,8 @@ var STATUS = {
 
 var DELAY_BETWEEN_CHECKS = 1000,
 	MAXIMUM_CONCURRENT_JOBS_PER_NAME = 10000,
-	MAXIMUM_IN_LINE_JOBS_PER_NAME = 20;
+	MAXIMUM_IN_LINE_JOBS_PER_NAME = 20,
+	MAXIMUM_JOB_TIMEOUT = 20000;
 
 /**
  * Job scheduling library which runs jobs in a separate process. It persists jobs in mongodb so they can be run after restart.
@@ -59,7 +60,7 @@ var Job = function(name, data) {
 	}
 
 	var save = function(clb){
-		withCollection(this, function(err, collection){
+		withCollection(function(err, collection){
 			if (err || !collection) { 
 				log.w('Error while saving job: %j', err);
 				setTimeout(save.bind(null, clb), 1000); 
@@ -148,6 +149,11 @@ var Job = function(name, data) {
 		save(clb);
 	};
 
+	this.in = function(seconds, clb) {
+		json.next = Date.now() + seconds * 1000;
+		save(clb);
+	};
+
 	this.replace = function() {
 		replace = true;
 		return this;
@@ -171,16 +177,22 @@ var Processor = function(worker, concurrency, fun, name) {
 	};
 
 	this.done = function(job, err) {
+		if (err) {
+			log.e('Done running %j with error %j', job._id, err);
+		} else {
+			log.d('Done running %j', job._id);
+		}
 		for (var i = this.running.length - 1; i >= 0; i--) {
 			if (this.running[i]._id === job._id) {
 				this.running.splice(i, 1);
 				this.check();
+				worker.result(err, job);
 			}
 		}
-		worker.result(err, job);
 	};
 
 	this.check = function(){
+		log.d('Checking processor: queue %j / running %j (concurrency allowed %j)', this.queue.length, this.running.length, concurrency);
 		if (this.queue.length > 0 &&
 			this.running.length < MAXIMUM_CONCURRENT_JOBS_PER_NAME && 
 			(typeof concurrency === 'undefined' || concurrency > this.running.length) &&
@@ -189,7 +201,21 @@ var Processor = function(worker, concurrency, fun, name) {
 			var job = this.queue.shift();
 			this.running.push(job);
 			try {
-				fun(job, this.done.bind(this, job));
+				log.d('Running job %j (%j)', job._id, typeof fun);
+
+				var complete = false;
+				
+				fun(job, function(err){
+					this.done(job, err);
+					complete = true;
+				}.bind(this));
+
+				setTimeout(function(){
+					if (!complete) {
+						this.done(job, 'Aborted on timeout');
+					}
+				}.bind(this), MAXIMUM_JOB_TIMEOUT);
+
 			} catch (err) {
 				this.done(job, err);
 			}
@@ -223,33 +249,41 @@ var JobWorker = function(processors){
 		}
 		this.processors[name] = new Processor(this, conc, fun, name);
 	}.bind(this));
+	log.d('Loaded processors %j', processors);
 
-	withCollection(this, function(err, collection){
+	withCollection(function(err, collection){
 		if (collection) {
-			this.collection.update({status: STATUS.RUNNING, started: {$lt: Date.now() - 60 * 60 * 1000}}, {$set: {status: STATUS.CANCELLED, error: 'Cancelled on restart'}}, {multi: true}, this.next.bind(this));
+			collection.update({status: STATUS.RUNNING, started: {$lt: Date.now() - 60 * 60 * 1000}}, {$set: {status: STATUS.CANCELLED, error: 'Cancelled on restart'}}, {multi: true}, this.next.bind(this));
 		}
 	}.bind(this));
 
 	this.next = function(){
-		if (!this.stream) {			
-			var find = {status: STATUS.SCHEDULED};
-			// var find = {status: STATUS.SCHEDULED, next: {$lt: Date.now()}};
+		// if (!this.stream) {			
+			// var find = {status: STATUS.SCHEDULED};
+			var find = {status: STATUS.SCHEDULED, next: {$lt: Date.now()}};
 			if (this.types && this.types.length) {
 				find.name = {$in: this.types};
 			}
 
-			this.cursor = this.collection.find(find, {tailable: true, awaitdata: true, numberOfRetries: Number.MAX_VALUE, tailableRetryInterval: 1000});
-			this.stream = this.cursor.stream();
-			this.stream.__created = Date.now();
-			this.stream.on('data', function(job){
+			log.d('Looking for jobs ...'); 
+			jobsCollection.find(find).sort({next: 1}).limit(10).toArray(function(err, jobs){
+				if (err) { 
+					log.e('Error while looking for jobs: %j', err); 
+					this.nextAfterDelay();
+				} else if (!jobs) {
+					log.d('No jobs so far');
+					this.nextAfterDelay();
+				} else {
+					for (var i = 0; i < jobs.length; i++) {
+						var job = jobs[i];
 				if (job.next > Date.now()) {
 					// return console.log('Skipping job %j', job);
-					return;
+							break;
 				}
 
 				if (!this.canProcess(job)) {
-					return log.i('Cannot process job %j yet', job);
-					// return;
+							log.d('Cannot process job %j yet', job);
+							break;
 				}
 
 				log.i('Got a job %j', job);
@@ -265,9 +299,15 @@ var JobWorker = function(processors){
 					}
 				}
 
-				this.collection.findAndModify({_id: job._id, status: STATUS.SCHEDULED}, [['_id', 1]], update, {new: true}, function(err, job){
+				jobsCollection.findAndModify({_id: job._id, status: {$in: [STATUS.RUNNING, STATUS.SCHEDULED]}}, [['_id', 1]], update, function(err, job){
                     job = job.value;
-					if (!err && job) {
+					if (err) {
+						log.e('Couldn\'t update a job: %j', err);
+					} else if (!job) {
+						// ignore
+					} else if (job.status === STATUS.RUNNING) {
+						log.i('The job is running on another server, won\'t start it here');
+					} else if (job.status === STATUS.SCHEDULED) {
 						this.process(job);
 
 						if (job.schedule) {
@@ -283,39 +323,45 @@ var JobWorker = function(processors){
 										if (next.length < 2) { return; }
 									}
 								}
-								new Job(job.name, job.data).schedule(job.schedule, job.strict, null, next[1].getTime());
+										new Job(job.name, job.data, this).schedule(job.schedule, job.strict, null, next[1].getTime());
 							}
 						}
-					} else {
-						log.e('Couldn\'t update a job %j: %j', job, err);
 					}
 				}.bind(this));
 
-				if ((Date.now() - this.stream.__created) > 10) {
-					this.cursor.close();
+						// if ((Date.now() - this.stream.__created) > 10) {
+						// 	this.cursor.close();
+						// }
+					}
+					this.nextAfterDelay();
 				}
 			}.bind(this));
+			// this.cursor = jobsCollection.find(find, {tailable: true, awaitdata: true, numberOfRetries: Number.MAX_VALUE, tailableRetryInterval: 1000}).sort({next: 1});
+			// this.stream = this.cursor.stream();
+			// this.stream.__created = Date.now();
+			// this.stream.on('data', function(job){
+			// }.bind(this));
 
-			setTimeout(function(){
-				if (this.stream && (Date.now() - this.stream.__created) > 10) {
-					log.d('closing stream manually');
-					this.cursor.close();
-				}
-			}.bind(this), 10000);
+			// setTimeout(function(){
+			// 	if (this.stream && (Date.now() - this.stream.__created) > 10) {
+			// 		log.d('closing stream manually');
+			// 		this.cursor.close();
+			// 	}
+			// }.bind(this), 10000);
 
-			this.stream.on('close', function(){
-				log.d('Stream closed');
-				this.nextAfterDelay();
-			}.bind(this));
+			// this.stream.on('close', function(){
+			// 	log.d('Stream closed');
+			// 	this.nextAfterDelay();
+			// }.bind(this));
 
-			this.stream.on('error', function(err){
-				if (err && err.name !== 'MongoError') { log.e('Jobs stream error: %j', err); }
-				this.nextAfterDelay();
-			}.bind(this));
+			// this.stream.on('error', function(err){
+			// 	if (err && err.name !== 'MongoError') { log.e('Jobs stream error: %j', err); }
+			// 	this.nextAfterDelay();
+			// }.bind(this));
 			// this.stream.on('close', this.nextAfterDelay.bind(this));
 			// this.stream.on('error', this.nextAfterDelay.bind(this));
-			log.d('Stream created');
-		}
+			// log.d('Stream created');
+		// }
 	};
 
 	this.nextAfterDelay = function(){
@@ -324,7 +370,6 @@ var JobWorker = function(processors){
 	
 			setTimeout(function(){
 				this.nextingAlready = false;
-				this.stream = null;
 				this.next();
 			}.bind(this), DELAY_BETWEEN_CHECKS);
 		}
@@ -355,13 +400,13 @@ var JobWorker = function(processors){
 		if (err) {
 			update.$set.error = err.toString().substr(0, 50);
 		}
-		this.collection.update({_id: job._id}, update, log.callback());
+		jobsCollection.update({_id: job._id}, update, log.callback());
 	};
 
 	this.putBack = function(job, callback) {
 		log.w('Putting back', job);
-		this.collection.update({_id: job._id, status: STATUS.RUNNING}, {$set: {status: STATUS.SCHEDULED}}, function(err){
-			if (err) { log.e(err); }
+		jobsCollection.update({_id: job._id, status: STATUS.RUNNING}, {$set: {status: STATUS.SCHEDULED}}, function(err){
+			if (err) { log.e('Couldn\'t put back job %j because of %j, ', job, err); }
 			// ignoring error here
 			callback();
 		});
@@ -379,11 +424,13 @@ var JobWorker = function(processors){
 		async.parallel(shutdowns, function(err){
 			if (err) { log.e('Error when shutting down job processors', err); }
 			log.w('Done shutting down jobs with %j', err);
-			this.db.close(function(err){
+			if (jobsDb) {
+				jobsDb.close(function(err){
 				log.w('Closed DB connection with %j', err);
 				if (err) { log.e('Error when closing db connection on shut down', err); }
 				process.exit(0);
 			});
+			}
 		}.bind(this));
 	}.bind(this);
 
@@ -394,33 +441,61 @@ var JobWorker = function(processors){
 	log.i('Jobs worker created');
 };
 
-var withCollection = function(self, callback) {
-	if (self.collection) { callback(null, self.collection); }
+var checkConnection = function(callback){ 
+	if (connecting) { 
+		setTimeout(checkConnection.bind(null, callback), 500); 
+	} else if (jobsCollection) {
+		callback(null, jobsCollection);
+	} else {
+		withCollection(callback);
+	}
+};
+
+var jobsCollection, jobsDb, connecting = false;
+var withCollection = function(callback) {
+	if (connecting) {
+		return checkConnection(callback);
+	}
+	if (jobsCollection) { callback(null, jobsCollection); }
 	else {
+		connecting = true;
 		common.mongodbNativeConnection(function(err, db){
-			if (err) { log.e('Error during db connection', err); callback(err); }
-			else {
+			if (err) { 
+				connecting = false;
+				// console.trace('Error during db connection', err);
+				// log.e('Error during db connection', err); 
+				callback(err); 
+			} else {
+				db.on('close', function(){
+					log.d('Connection closed');
+					connecting = false;
+					jobsCollection = null;
+					jobsDb = null;
+				});
+				// console.trace('Connected to the database');
 				log.i('Connected to the database');
-				this.db = db;
+				jobsDb = db;
 				db.createCollection('jobs', {strict: true, autoIndexId: true, capped: true, size: 1e7}, function(err, coll){
 					if (coll) {
+						connecting = false;
 						log.d('Created jobs collection');
-						this.collection = coll;
-						callback(null, this.collection);
+						jobsCollection = coll;
+						callback(null, jobsCollection);
 					} else {
 						log.d('Jobs collection is already there, getting it');
 						db.collection('jobs', {strict: true}, function(err, coll){
+							connecting = false;
 							if (err) { log.e('Couldn\'t get jobs collection', err); callback(err); } 
 							else {
 								log.d('Got jobs collection');
-								this.collection = coll;
-								callback(null, this.collection);
+								jobsCollection = coll;
+								callback(null, jobsCollection);
 							}
-						}.bind(this));
+						});
 					}
-				}.bind(this));
+				});
 			}
-		}.bind(self));
+		});
 	}
 };
 
@@ -456,27 +531,33 @@ module.exports = {
 				if (!err && results) {
 					for (var i = results.length - 1; i >= 0; i--) {
 						if (results[i]) {
-							var pluginJobs = require(plugins[i]);
+							var pluginJobs = require(plugins[i]),
+								pluginName = plugins[i].split('/');
+
+							pluginName = pluginName[pluginName.length - 3];
 							for (var name in pluginJobs) {
 								if (!types || types.indexOf(name) !== -1) { 
-									log.i('Found job %s in plugin %s', name, plugins[i].split('.').pop());
+									log.i('Found job %s in plugin %s', name, pluginName);
 									jobs[name] = pluginJobs[name];
 								} else {
-									log.i('Job %s in plugin %s is disabled', name, plugins[i].split('.').pop());
+									log.i('Job %s in plugin %s is disabled', name, pluginName);
 								}
 							}
 						}
 					}
 
 					if (Object.keys(jobs).length) {
+						setTimeout(function(){
+							log.d('Starting worker for jobs %j', jobs);
 						var worker = new JobWorker(jobs);
 						module.exports.workers.push(worker);
-						started(null, worker);
+						}, 1000);
+						started(null, Object.keys(jobs));
 					} else {
 						started(null, null);
 					}
 				} else {
-					log.e(err);
+					log.e('Check returned errror: %j', err);
 					started(err);
 				}
 			});

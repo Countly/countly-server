@@ -30,8 +30,9 @@ plugins.setConfigs('logs', {
     error:      countlyConfig.logging.error     ?  countlyConfig.logging.error.join(', ')    : '',
     default:    countlyConfig.logging.default   || 'warning'
 }, undefined, function(config){ 
-    var cfg = plugins.getConfig('logs');
-    process.send({cmd: 'log', config: cfg}); 
+    var cfg = plugins.getConfig('logs'), msg = {cmd: 'log', config: cfg};
+    process.send(msg);
+    require('./utils/log.js').ipcHandler(msg);
 });
 
 plugins.init();
@@ -62,6 +63,7 @@ if (cluster.isMaster) {
                     if (w !== worker) { w.send({cmd: 'log', config: msg.config}); }
                 });
                 if (worker !== jobsWorker) { jobsWorker.send({cmd: 'log', config: msg.config}); }
+                require('./utils/log.js').ipcHandler(msg);
             }
         });
     };
