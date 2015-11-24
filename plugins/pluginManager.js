@@ -425,9 +425,10 @@ var pluginManager = function pluginManager(){
     
     this.dbConnection = function(config) {
         var db;
-        config = countlyConfig;
-        if(typeof config == "string")
+        if(typeof config == "string"){
             db = config;
+            config = countlyConfig;
+        }
         else
             config = config || countlyConfig;
             
@@ -440,7 +441,7 @@ var pluginManager = function pluginManager(){
         if (typeof config.mongodb === 'string') {
             dbName = db ? config.mongodb.replace(new RegExp('countly$'), db) : config.mongodb;
         } else{
-            config.mongodb.db = db ? db : (config.mongodb.db || 'countly');
+            config.mongodb.db = db || config.mongodb.db || 'countly';
             if ( typeof config.mongodb.replSetServers === 'object'){
                 //mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test
                 dbName = config.mongodb.replSetServers.join(',')+'/'+config.mongodb.db;
@@ -455,7 +456,7 @@ var pluginManager = function pluginManager(){
         if(config.mongodb.username && config.mongodb.password){
             dbName = config.mongodb.username + ":" + config.mongodb.password +"@" + dbName;
         }
-
+        
         if(dbName.indexOf('mongodb://') !== 0){
             dbName = 'mongodb://'+dbName;
         }
