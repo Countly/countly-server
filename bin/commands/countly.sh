@@ -170,4 +170,5 @@ else
     echo "    countly usage   # prints this out, but so as basically everything else does";
     countly plugin ;
     countly update ;
+    echo "";
 fi

@@ -6,7 +6,6 @@ usage (){
     echo "countly update usage:";
     echo "    countly update translations   # get latest translation files";
     echo "    countly update geoip          # get latest geoip-lite translation files";
-    echo "";
 } 
 if [ "$1" = "translations" ]; then
     nodejs $DIR/update_translations.js ;
