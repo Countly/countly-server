@@ -22,6 +22,9 @@ then
     nodejs $DIR/../plugins/crashes/install.js
 fi
 
+#uninstall mognodb
+rm /etc/apt/sources.list.d/mongodb-10gen-countly.list
+
 #update repos
 wget -qO- https://deb.nodesource.com/setup_4.x | bash -
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
