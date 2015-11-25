@@ -3,9 +3,19 @@ var countlyConfig = {
         host: "localhost",
         db: "countly",
         port: 27017,
+        max_pool_size: 10,
         //username: test,
         //password: test,
-        max_pool_size: 10
+        /*
+        dbOptions:{
+            //db options
+            native_parser: true
+        },
+        serverOptions:{
+            //server options
+            ssl:true
+        }
+        */
     },
     /*  or for a replica set
     mongodb: {
@@ -17,7 +27,17 @@ var countlyConfig = {
 		replicaName: "test",
 		username: test,
 		password: test,
-        max_pool_size: 10
+        max_pool_size: 10,
+        /*
+        dbOptions:{
+            //db options
+            native_parser: true
+        },
+        serverOptions:{
+            //server options
+            ssl:true
+        }
+        */
     },
     */
     /*  or define as a url
