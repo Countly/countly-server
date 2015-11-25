@@ -142,6 +142,10 @@
     function draw(ob) {
         ob = ob || {id:'total', label:jQuery.i18n.map["sidebar.analytics.sessions"], type:'number', metric:"t"};
         var chartData = {cols:[], rows:[]};
+		
+		if(!google.visualization.GeoChart){
+			return;
+		}
 
         _chart = new google.visualization.GeoChart(document.getElementById(_chartElementId));
 
