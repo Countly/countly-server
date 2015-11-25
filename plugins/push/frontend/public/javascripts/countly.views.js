@@ -1103,7 +1103,7 @@ function pushAppMgmt(){
     app.localize();
     var appId = countlyCommon.ACTIVE_APP_ID;
     
-    if(countlyGlobal["apps"][appId].type == "mobile"){
+    if(!countlyGlobal["apps"][appId] || countlyGlobal["apps"][appId].type == "mobile"){
         $(".appmng-push").show();
     } 
     else{
