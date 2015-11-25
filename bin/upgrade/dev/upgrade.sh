@@ -23,8 +23,7 @@ then
 fi
 
 #uninstall mognodb
-apt-get remove -y mongodb-org
-apt-get autoremove -y
+apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
 rm /etc/apt/sources.list.d/mongodb-10gen-countly.list
 
 #update repos
