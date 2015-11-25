@@ -24,11 +24,11 @@ plugins.setConfigs("apps", {
 });
     
 plugins.setConfigs('logs', {
-    debug:      countlyConfig.logging.debug     ?  countlyConfig.logging.debug.join(', ')    : '',
-    info:       countlyConfig.logging.info      ?  countlyConfig.logging.info.join(', ')     : '',
-    warning:    countlyConfig.logging.warning   ?  countlyConfig.logging.warning.join(', ')  : '',
-    error:      countlyConfig.logging.error     ?  countlyConfig.logging.error.join(', ')    : '',
-    default:    countlyConfig.logging.default   || 'warning'
+    debug:      (countlyConfig.logging && countlyConfig.logging.debug)     ?  countlyConfig.logging.debug.join(', ')    : '',
+    info:       (countlyConfig.logging && countlyConfig.logging.info)      ?  countlyConfig.logging.info.join(', ')     : '',
+    warning:    (countlyConfig.logging && countlyConfig.logging.warning)   ?  countlyConfig.logging.warning.join(', ')  : '',
+    error:      (countlyConfig.logging && countlyConfig.logging.error)     ?  countlyConfig.logging.error.join(', ')    : '',
+    default:    (countlyConfig.logging && countlyConfig.logging.default)   ?  countlyConfig.logging.default : 'warning'
 }, undefined, function(config){ 
     var cfg = plugins.getConfig('logs'), msg = {cmd: 'log', config: cfg};
     process.send(msg);
