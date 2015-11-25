@@ -29,7 +29,7 @@
 
 var prefs = require('../config.js').logging,
 	colors = require('colors'),
-	deflt = prefs.default || 'error';
+	deflt = (prefs && prefs.default) ?  prefs.default : 'error';
 
 for (var level in prefs) {
 	if (prefs[level].sort) { prefs[level].sort(); }
