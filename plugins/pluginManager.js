@@ -111,8 +111,8 @@ var pluginManager = function pluginManager(){
     
     this.updateAllConfigs = function(db, changes, callback){
         for (var k in changes) {
+            _.extend(configs[k], changes[k]);
             if (k in configsOnchanges) { 
-                _.extend(configs[k], changes[k]);
                 configsOnchanges[k](configs[k]); 
             }
         }
