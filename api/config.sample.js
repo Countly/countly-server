@@ -14,7 +14,7 @@ var countlyConfig = {
         },
         serverOptions:{
             //server options
-            ssl:true
+            ssl:false
         }
         */
     },
@@ -29,16 +29,14 @@ var countlyConfig = {
 		username: test,
 		password: test,
         max_pool_size: 1000,
-        /*
         dbOptions:{
             //db options
             native_parser: true
         },
         serverOptions:{
             //server options
-            ssl:true
+            ssl:false
         }
-        */
     },
     */
     /*  or define as a url
