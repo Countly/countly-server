@@ -667,6 +667,9 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
 
     if (req.body.username) {
         updatedUser.username = req.body["username"];
+        if (req.body.lang) {
+            updatedUser.lang = req.body.lang;
+        }
 
         countlyDb.collection('members').findOne({username:req.body.username}, function (err, member) {
             if ((member && member._id != req.session.uid) || err) {

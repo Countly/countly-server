@@ -3463,6 +3463,17 @@ var AppRouter = Backbone.Router.extend({
 
                 $("#date-to").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
                 $("#date-from").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
+                
+                $.ajax({
+                    type:"POST",
+                    url:countlyGlobal["path"]+"/user/settings",
+                    data:{
+                        "username":countlyGlobal["member"].username,
+                        "lang":countlyCommon.BROWSER_LANG_SHORT,
+                        _csrf:countlyGlobal['csrf_token']
+                    },
+                    success:function (result) {}
+                });
 
                 jQuery.i18n.properties({
                     name:'locale',
