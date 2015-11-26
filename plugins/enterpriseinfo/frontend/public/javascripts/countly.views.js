@@ -10,14 +10,14 @@ window.EnterpriseView = countlyView.extend({
     },
     pageScript:function () {
         var titles = {
-            "drill":"Game changer for data analytics",
-            "funnels":"Track completion rates step by step",
-            "retention":"See how engaging your application is",
-            "revenue":"Calculate your customer's lifetime value",
-            "user-profiles":"Understand what users have been doing in your application",
-            "scalability": "Tens of millions of users? No problem",
-            "support":"Enterprise support and SLA",
-            "raw-data": "Your data, your rules"
+            "drill":jQuery.i18n.map["enterpriseinfo.drill-pitch"],
+            "funnels":jQuery.i18n.map["enterpriseinfo.funnels-pitch"],
+            "retention":jQuery.i18n.map["enterpriseinfo.retention-pitch"],
+            "revenue":jQuery.i18n.map["enterpriseinfo.revenue-pitch"],
+            "user-profiles":jQuery.i18n.map["enterpriseinfo.user-profiles-pitch"],
+            "scalability": jQuery.i18n.map["enterpriseinfo.scalability-pitch"],
+            "support":jQuery.i18n.map["enterpriseinfo.support-pitch"],
+            "raw-data":jQuery.i18n.map["enterpriseinfo.raw-data-pitch"]
         }
 
         $("#enterprise-sections").find(".app-container").on("click", function() {
@@ -25,12 +25,15 @@ window.EnterpriseView = countlyView.extend({
 
             $(".enterprise-content").hide();
             $(".enterprise-content." + section).show();
+            var localize = $(".enterprise-content." + section + " .text").data("localization");
+            $(".enterprise-content." + section + " .text").html(jQuery.i18n.map[localize]);
 
             $("#enterprise-sections").find(".app-container").removeClass("active");
             $(this).addClass("active");
 
             $(".widget-header .title").text(titles[section] || "");
         });
+        $("#enterprise-sections").find(".app-container").first().click();
     },
     renderCommon:function () {
         $(this.el).html(this.template(this.templateData));
@@ -48,7 +51,7 @@ app.route( "/enterprise", "enterprise", function () {
 $( document ).ready(function() {
 	var menu = '<a class="item" id="enterprise-menu" href="#/enterprise">'+
 		'<div class="logo logo-icon fa fa-rocket"></div>'+
-        '<div class="text" data-localize="">Enterprise</div>'+
+        '<div class="text" data-localize="enterpriseinfo.title">Enterprise</div>'+
     '</a>';
 	$('#sidebar-menu .sidebar-menu').append(menu);
 	

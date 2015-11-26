@@ -47,7 +47,7 @@ var plugin = {},
 			}
 		});
 		app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
-			if (req.session.uid) {
+			if (req.session.uid && versionInfo.type == "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6" && !versionInfo.footer) {
 				countlyDb.collection('members').findOne({"_id":countlyDb.ObjectID(req.session.uid)}, function (err, member) {
 					if(typeof member.offer == "undefined" || member.offer < 2){
 						countlyDb.collection('members').findAndModify({_id:countlyDb.ObjectID(req.session.uid)},{},{$inc:{offer:1}}, function(err,member){});
