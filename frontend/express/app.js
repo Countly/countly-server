@@ -27,7 +27,7 @@ var versionInfo = require('./version.info'),
         COUNTLY_NAMED_TYPE = versionInfo.footer;
         COUNTLY_TYPE_CE = false;
     }
-    else if(COUNTLY_TYPE == "2fb8d2c65f7919fa1ce594302618febe0a46cb2f"){
+    else if(COUNTLY_TYPE != "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6"){
         COUNTLY_NAMED_TYPE = "Countly Enterprise Edition v"+COUNTLY_VERSION; 
         COUNTLY_TYPE_CE = false;
     }
@@ -667,6 +667,9 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
 
     if (req.body.username) {
         updatedUser.username = req.body["username"];
+        if (req.body.lang) {
+            updatedUser.lang = req.body.lang;
+        }
 
         countlyDb.collection('members').findOne({username:req.body.username}, function (err, member) {
             if ((member && member._id != req.session.uid) || err) {

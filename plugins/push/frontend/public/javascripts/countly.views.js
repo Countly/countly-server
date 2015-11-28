@@ -526,7 +526,11 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
         content.find('.view-date .view-value').text(message.date ? moment(message.date).format(fmt) : '');
         content.find('.view-sent .view-value').text(message.sent ? moment(message.sent).format(fmt) : '');
     } else {
-        var hidePicker = function(){
+        //ignore clicks inside calendar
+        content.find(".date-picker-push").click(function(e){
+            e.stopPropagation();
+        });
+        var hidePicker = function(e){
             $(document.body).off('click', hidePicker);
             content.find(".date-picker-push").hide();
         };

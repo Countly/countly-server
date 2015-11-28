@@ -127,7 +127,7 @@
         if (countryName) {
             return countryName;
         } else {
-            return "Unknown";
+            return jQuery.i18n.map["common.unknown"] || "Unknown";
         }
     };
 
@@ -166,7 +166,7 @@
         ];
         chartData.cols.push(ob);
         chartData.rows = _.map(tt.chartData, function (value, key, list) {
-            if (value.country == "European Union" || value.country == "Unknown") {
+            if (value.country == "European Union" || value.country == jQuery.i18n.map["common.unknown"]) {
                 return {c:[
                     {v:""},
                     {v:value[ob.metric]}
@@ -223,7 +223,7 @@
         ];
         chartData.cols.push(ob);
         chartData.rows = _.map(tt.chartData, function (value, key, list) {
-            if (value.country == "European Union" || value.country == "Unknown") {
+            if (value.country == "European Union" || value.country == jQuery.i18n.map["common.unknown"]) {
                 return {c:[
                     {v:""},
                     {v:value[ob.metric]}
