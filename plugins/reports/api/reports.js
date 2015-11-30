@@ -10,6 +10,7 @@ var reports = {},
     mail = require("../../../api/parts/mgmt/mail"),
     plugins = require("../../pluginManager"),
     countlyCommon = require('../../../api/lib/countly.common.js'),
+    localize = require('../../../api/utils/localization.js'),
     versionInfo = require('../../../frontend/express/version.info');
     
 versionInfo.page = (!versionInfo.title) ? "http://count.ly" : null;
@@ -209,48 +210,31 @@ var metrics = {
                                             callback(err, {report:report});
                                     }
                                     else{
+                                        member.lang = member.lang || "en";
                                         //get language property file
-                                        fs.readFile(dir+'/localization/reports.properties', 'utf8', function (err,properties) {
+                                        localize.getProperties(member.lang, function (err,props) {
                                             if (err) {
                                                 if(callback)
                                                     callback(err, {report:report});
                                             }
                                             else{
-                                                properties = parser.parse(properties);
-                                                if(member.lang && member.lang != "en"){
-                                                    //get localized texts
-                                                    fs.readFile(dir+'/localization/reports_'+member.lang+'.properties', 'utf8', function (err,local_properties) {
-                                                        if(!err && local_properties){
-                                                            local_properties = parser.parse(local_properties);
-                                                            for(var i in local_properties)
-                                                                properties[i] = local_properties[i];
+                                                report.properties = props;
+                                                var allowedMetrics = {};
+                                                for(var i in report.metrics){
+                                                    if(metrics[i]){
+                                                        for(var j in metrics[i]){
+                                                            allowedMetrics[j] = true;
                                                         }
-                                                        processTemplate(template, properties);
-                                                    });
+                                                    }
                                                 }
-                                                else{
-                                                    processTemplate(template, properties);
+                                                var message = ejs.render(template, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, metrics:allowedMetrics});
+                                                if(callback){
+                                                    callback(err, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, message:message});
                                                 }
                                             }
                                         });
                                     }
                                 });
-                                
-                                function processTemplate(template, props){
-                                    report.properties = props;
-                                    var allowedMetrics = {};
-                                    for(var i in report.metrics){
-                                        if(metrics[i]){
-                                            for(var j in metrics[i]){
-                                                allowedMetrics[j] = true;
-                                            }
-                                        }
-                                    }
-                                    var message = ejs.render(template, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, metrics:allowedMetrics});
-                                    if(callback){
-                                        callback(err, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, message:message});
-                                    }
-                                }
                             });
                         }
                         
