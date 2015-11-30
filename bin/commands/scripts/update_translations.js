@@ -47,6 +47,9 @@ function getFile(resource, language){
                 else if(resource.slug == "pre-loginproperties"){
                     location += "/frontend/express/public/localization/pre-login/";
                 }
+                else if(resource.slug == "mailproperties"){
+                    location += "/frontend/express/public/localization/mail/";
+                }
                 else if(resource.slug == "helpproperties_1"){
                     location += "/frontend/express/public/localization/help/";
                 }
