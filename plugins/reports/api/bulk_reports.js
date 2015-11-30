@@ -2,7 +2,7 @@
 var plugins = require('../../pluginManager.js'),
     async = require("async"),
     reports = require("./reports");
-var countlyDb = pluginManager.dbConnection();
+var countlyDb = plugins.dbConnection();
 //load configs
 plugins.loadConfigs(countlyDb, function(){
     var cache = {};

@@ -212,27 +212,45 @@ var metrics = {
                                         //get language property file
                                         fs.readFile(dir+'/localization/reports.properties', 'utf8', function (err,properties) {
                                             if (err) {
-                                            if(callback)
-                                                callback(err, {report:report});
+                                                if(callback)
+                                                    callback(err, {report:report});
                                             }
                                             else{
-                                            var props = parser.parse(properties);
-                                            report.properties = props;
-                                            var allowedMetrics = {};
-                                            for(var i in report.metrics){
-                                                if(metrics[i]){
-                                                    for(var j in metrics[i]){
-                                                        allowedMetrics[j] = true;
-                                                    }
+                                                properties = parser.parse(properties);
+                                                if(member.lang && member.lang != "en"){
+                                                    //get localized texts
+                                                    fs.readFile(dir+'/localization/reports_'+member.lang+'.properties', 'utf8', function (err,local_properties) {
+                                                        if(!err && local_properties){
+                                                            local_properties = parser.parse(local_properties);
+                                                            for(var i in local_properties)
+                                                                properties[i] = local_properties[i];
+                                                        }
+                                                        processTemplate(template, properties);
+                                                    });
                                                 }
-                                            }
-                                            var message = ejs.render(template, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, metrics:allowedMetrics});
-                                            if(callback)
-                                                callback(err, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, message:message});
+                                                else{
+                                                    processTemplate(template, properties);
+                                                }
                                             }
                                         });
                                     }
                                 });
+                                
+                                function processTemplate(template, props){
+                                    report.properties = props;
+                                    var allowedMetrics = {};
+                                    for(var i in report.metrics){
+                                        if(metrics[i]){
+                                            for(var j in metrics[i]){
+                                                allowedMetrics[j] = true;
+                                            }
+                                        }
+                                    }
+                                    var message = ejs.render(template, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, metrics:allowedMetrics});
+                                    if(callback){
+                                        callback(err, {"apps":results, "host":host, "report":report, "version":versionInfo, "properties":props, message:message});
+                                    }
+                                }
                             });
                         }
                         
