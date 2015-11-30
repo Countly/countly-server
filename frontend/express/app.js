@@ -484,8 +484,11 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
         } else {
             if (req.body.full_name && req.body.username && req.body.password && req.body.email) {
                 var password = sha1Hash(req.body.password);
-
-                countlyDb.collection('members').insert({"full_name":req.body.full_name, "username":req.body.username, "password":password, "email":req.body.email, "global_admin":true}, {safe:true}, function (err, member) {
+                
+                var doc = {"full_name":req.body.full_name, "username":req.body.username, "password":password, "email":req.body.email, "global_admin":true};
+                if(req.body.lang)
+                    doc.lang = req.body.lang;
+                countlyDb.collection('members').insert(doc, {safe:true}, function (err, member) {
                     member = member.ops;
                     if (countlyConfig.web.use_intercom) {
                         var options = {uri:"https://cloud.count.ly/s", method:"POST", timeout:4E3, json:{email:req.body.email, full_name:req.body.full_name, v:COUNTLY_VERSION, t:COUNTLY_TYPE}};
@@ -557,6 +560,9 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                 req.session.uid = member["_id"];
                 req.session.gadm = (member["global_admin"] == true);
 				req.session.email = member["email"];
+                if(req.body.lang && req.body.lang != member["lang"]){
+                    countlyDb.collection('members').update({_id:member["_id"]}, {$set:{lang:req.body.lang}}, function(){});
+                }
 				if(plugins.getConfig("frontend").session_timeout)
 					req.session.expires = Date.now()+plugins.getConfig("frontend").session_timeout;
                 res.redirect(countlyConfig.path+'/dashboard');

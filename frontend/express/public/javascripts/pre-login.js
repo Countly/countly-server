@@ -8,6 +8,7 @@ $(document).ready(function() {
 	if (store.get("countly_lang")) {
 		lang = store.get("countly_lang");
 		$("#active-lang").text(lang.toUpperCase());
+		$("#form-lang").val(lang);
 	}
 	
 	jQuery.i18n.properties({
@@ -60,6 +61,7 @@ $(document).ready(function() {
 		
 		store.set("countly_lang", langCode);
 		$("#active-lang").text(langCodeUpper);
+        $("#form-lang").val(langCode);
 		
 		jQuery.i18n.properties({
 			name:'pre-login', 
