@@ -462,7 +462,7 @@ app.post(countlyConfig.path+'/forgot', function (req, res, next) {
             if (member) {
                 var timestamp = Math.round(new Date().getTime() / 1000),
                     prid = sha1Hash(member.username + member.full_name, timestamp);
-
+                member.lang = member.lang || req.body.lang || "en";
                 countlyDb.collection('password_reset').insert({"prid":prid, "user_id":member._id, "timestamp":timestamp}, {safe:true}, function (err, password_reset) {
                     countlyMail.sendPasswordResetInfo(member, prid);
                     plugins.callMethod("passwordRequest", {req:req, res:res, next:next, data:req.body});
