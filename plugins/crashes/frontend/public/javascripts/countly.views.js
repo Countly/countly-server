@@ -839,7 +839,7 @@ app.addPageScript("/crashes", function(){
     });
 });
 
-app.addPageScript("/drill", function(){
+app.addPageScript("/drill#", function(){
     var drillClone;
     var self = app.drillView;
 	$("#drill-types").append('<div id="drill-type-crashes" style="padding: 6px 8px 7px 8px;" class="icon-button light">'+jQuery.i18n.map["crashes.title"]+'</div>');
