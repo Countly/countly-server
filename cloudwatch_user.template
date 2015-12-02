@@ -1,0 +1,45 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+    "Description" : "User for share CloudWatch logs",
+
+    "Resources" : {
+
+        "watchuser" : {
+            
+           "Type" : "AWS::IAM::User",
+           "Properties" : {
+              "Path" : "/",
+              "LoginProfile" : {
+                 "Password" : "truetech7"
+              },
+              "Policies" : [ {
+                 "PolicyName" : "cloudwatchread",
+                 "PolicyDocument" : {
+                    "Version": "2012-10-17",
+                    "Statement" : [ {
+                       "Effect" : "Allow",
+                       "Action" : [ 
+                                    "cloudwatch:Describe*",
+                                    "cloudwatch:Get*",
+                                    "cloudwatch:List*",
+                                    "logs:Get*",
+                                    "logs:Describe*",
+                                    "logs:TestMetricFilter" ],
+                       "Resource" : "*"
+                    }]
+                 }
+              }]
+           }
+        }
+    },
+    
+    "Outputs" : {                         
+        "UserName": {
+            "Description": "Cloudwatch user name",
+            "Value": {
+                "Ref": "watchuser"
+            }
+        }        
+    }
+}
+

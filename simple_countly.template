@@ -1,46 +1,65 @@
 {
     "AWSTemplateFormatVersion" : "2010-09-09",
-    "Description" : "nodejs application + mongodb",
+    "Description" : "Countly Community Edition server with Node.js and MongoDB",
     "Parameters" : {
         "InstanceType" : {
-            "Description" : "Worker EC2 instance type",
+            "Description" : "EC2 instance type",
             "Type" : "String",
-            "Default" : "t1.micro",
-            "AllowedValues" : [ "t1.micro","m1.small","m1.medium","m1.large","m1.xlarge","m2.xlarge","m2.2xlarge","m2.4xlarge","c1.medium","c1.xlarge","cc1.4xlarge","cc2.8xlarge","cg1.4xlarge"],
+            "Default" : "t2.micro-1CPU.1GB-RAM.10usd-month",
+            "AllowedValues" : [ "t2.micro-1CPU.1GB-RAM.10usd-month",
+                                "t2.small-1CPU.2GB-RAM.20usd-month",
+                                "t2.medium-2CPU.4GB-RAM.39usd-month",
+                                "t2.large-2CPU.8GB-RAM.78usd-month",
+                                "m3.medium-1CPU.3.75GB-RAM.50usd-month",
+                                "m4.large-2CPU.8GB-RAM.94usd-month",
+                                "m4.xlarge-4CPU.16GB-RAM.188usd-month",
+                                "m4.2xlarge-8CPU.32GB-RAM.375usd-month",
+                                "m4.4xlarge-16CPU.64GB-RAM.750usd-month",
+                                "m4.10xlarge-40CPU.160GB-RAM.1875usd-month"
+                                ],
             "ConstraintDescription" : "must be a valid EC2 instance type."
         },
         "MongoVolumeSize" : {
-            "Description" : "Volume size for mongodb",
+            "Description" : "Volume size for mongodb (in GB)",
             "Type" : "Number",
             "MinValue" : "1",
             "Default"  : "10",
             "ConstraintDescription" : "GB"
         },
         "KeyName" : {
-            "Description" : "The EC2 Key Pair to allow SSH access to the instances",
+            "Description" : "Your EC2 Key Pair, created in the first step",
             "Type" : "AWS::EC2::KeyPair::KeyName",
-            "Default"  : "hello_and_wellcome",
+            "Default"  : "",
             "ConstraintDescription" : "must be the name of an existing EC2 KeyPair."
         }
     },
     "Mappings" : {
+        "InstanceLabel2Type" : {
+            "t2.micro-1CPU.1GB-RAM.10usd-month"  : { "Type" : "t2.micro" },
+            "t2.small-1CPU.2GB-RAM.20usd-month"  : { "Type" : "t2.small" },
+            "t2.medium-2CPU.4GB-RAM.39usd-month" : { "Type" : "t2.medium" },
+            "t2.large-2CPU.8GB-RAM.78usd-month"  : { "Type" : "t2.large" },
+            "m3.medium-1CPU.3.75GB-RAM.50usd-month" : { "Type" : "m3.medium" },
+            "m4.large-2CPU.8GB-RAM.94usd-month"   : { "Type" : "m4.large" },
+            "m4.xlarge-4CPU.16GB-RAM.188usd-month"   : { "Type" : "m4.xlarge" },
+            "m4.2xlarge-8CPU.32GB-RAM.375usd-month"  : { "Type" : "m4.2xlarge" },
+            "m4.4xlarge-16CPU.64GB-RAM.750usd-month"  : { "Type" : "m4.4xlarge" },
+            "m4.10xlarge-40CPU.160GB-RAM.1875usd-month" : { "Type" : "m4.10xlarge" }          
+        },
         "AWSInstanceType2Arch" : {
-            "t1.micro"    : { "Arch" : "64" },
-            "m1.small"    : { "Arch" : "64" },
-            "m1.medium"   : { "Arch" : "64" },
-            "m1.large"    : { "Arch" : "64" },
-            "m1.xlarge"   : { "Arch" : "64" },
-            "m2.xlarge"   : { "Arch" : "64" },
-            "m2.2xlarge"  : { "Arch" : "64" },
-            "m2.4xlarge"  : { "Arch" : "64" },
-            "c1.medium"   : { "Arch" : "64" },
-            "c1.xlarge"   : { "Arch" : "64" },
-            "cc1.4xlarge" : { "Arch" : "64HVM" },
-            "cc2.8xlarge" : { "Arch" : "64HVM" },
-            "cg1.4xlarge" : { "Arch" : "64HVM" }
+            "t2.micro"  : { "Arch" : "64HVM" },
+            "t2.small"  : { "Arch" : "64HVM" },
+            "t2.medium" : { "Arch" : "64HVM" },
+            "t2.large"  : { "Arch" : "64HVM" },
+            "m3.medium" : { "Arch" : "64HVM" },
+            "m4.large"   : { "Arch" : "64HVM" },
+            "m4.xlarge"   : { "Arch" : "64HVM" },
+            "m4.2xlarge"  : { "Arch" : "64HVM" },
+            "m4.4xlarge"  : { "Arch" : "64HVM" },
+            "m4.10xlarge" : { "Arch" : "64HVM" }          
         },
         "AWSRegionArch2AMI" : {
-            "us-east-1"      : { "64" : "ami-d85e75b0", "64HVM" : "ami-0da96764" },
+            "us-east-1"      : { "64" : "ami-d85e75b0", "64HVM" : "ami-d05e75b8" },
             "us-west-2"      : { "64" : "ami-6989a659", "64HVM" : "ami-5189a661" },
             "us-west-1"      : { "64" : "ami-d16a8b95", "64HVM" : "ami-df6a8b9b" },
             "eu-west-1"      : { "64" : "ami-5da23a2a", "64HVM" : "ami-47a23a30" },            
@@ -140,8 +159,9 @@
                         "Effect": "Allow",
                         "Action": [
                             "logs:Create*",
-                                "logs:PutLogEvents",
-                                "s3:GetObject"
+                            "logs:PutLogEvents",
+                            "s3:GetObject",
+                            "logs:DescribeLogStreams"
                             ],
                         "Resource": [
                                 "arn:aws:logs:*:*:*",
@@ -218,27 +238,17 @@
                                         "",
                                         [
                                             "[general]\n",
-                                            "state_file= /var/awslogs/agent-state\n",
-                                            "[/home/ubuntu/countly_api.log]\n",
+                                            "state_file= /var/awslogs/agent-state\n", "\n",
+                                            "[countly_api]\n",
                                             "file = /home/ubuntu/countly_api.log\n",
-                                            "log_group_name = ", {"Ref": "WebServerLogGroup"}, "\n",
-                                            "log_stream_name = {instance_id}/countly_api.log\n",
-                                            "datetime_format = %d/%b/%Y:%H:%M:%S",
-                                            "[/home/ubuntu/countly_api.error.log]\n",
+                                            "log_group_name = ", {"Ref": "CountlyServerLogGroup"}, "\n",
+                                            "log_stream_name = countly_api\n",
+                                            "datetime_format = %d/%b/%Y:%H:%M:%S", "\n", "\n",
+                                            "[countly_api_error]\n",
                                             "file = /home/ubuntu/countly_api.error.log\n",
-                                            "log_group_name = ", {"Ref": "WebServerLogGroup"}, "\n",
-                                            "log_stream_name = {instance_id}/countly_api.error.log\n",
-                                            "datetime_format = %d/%b/%Y:%H:%M:%S",
-                                            "[/home/ubuntu/countly_app.log]\n",
-                                            "file = /home/ubuntu/countly_app.log\n",
-                                            "log_group_name = ", {"Ref": "WebServerLogGroup"}, "\n",
-                                            "log_stream_nemailame = {instance_id}/countly_app.log\n",
-                                            "datetime_format = %d/%b/%Y:%H:%M:%S",
-                                            "[/home/ubuntu/countly_app.error.log]\n",
-                                            "file = /home/ubuntu/countly_app.error.log\n",
-                                            "log_group_name = ", {"Ref": "WebServerLogGroup"}, "\n",
-                                            "log_stream_name = {instance_id}/countly_app.error.log\n",
-                                            "datetime_format = %d/%b/%Y:%H:%M:%S"
+                                            "log_group_name = ", {"Ref": "CountlyServerLogGroup"}, "\n",
+                                            "log_stream_name = countly_api_error\n",
+                                            "datetime_format = %d/%b/%Y:%H:%M:%S", "\n"                          
                                         ]
                                     ]
                                 }
@@ -285,13 +295,18 @@
                 "ImageId" : { "Fn::FindInMap" : [
                                   "AWSRegionArch2AMI",
                                   { "Ref" : "AWS::Region" },
-                                  { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
+                                  { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Fn::FindInMap" : [ "InstanceLabel2Type", { "Ref" : "InstanceType" }, "Type" ] }, "Arch" ] } ] },
                 "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-                "InstanceType" : { "Ref" : "InstanceType" },
+                "InstanceType" : { "Fn::FindInMap" : [ "InstanceLabel2Type", { "Ref" : "InstanceType" }, "Type" ] },
                 "UserData"     : { "Fn::Base64" : { "Fn::Join" : ["", [
 
                     "#!/bin/bash -xe\n",
                     "sudo -s\n",
+                    "fallocate -l 2G /swapfile", "\n",
+                    "chmod 600 /swapfile", "\n",
+                    "mkswap /swapfile", "\n",
+                    "swapon /swapfile", "\n",
+                    "echo '/swapfile   none    swap    sw    0   0' > /etc/fstab", "\n",                  
                     "apt-get update\n",
                     "apt-get -y install python-setuptools\n",
                     "cd /home/ubuntu\n",
@@ -311,6 +326,8 @@
                     "wget https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py\n",
 
                     "python awslogs-agent-setup.py -n -r ", { "Ref" : "AWS::Region" }, " -c /tmp/cwlogs/applogs.conf || error_exit 'Failed to run CloudWatch Logs agent setup'\n",
+                    "cp /tmp/cwlogs/applogs.conf /var/awslogs/etc/awslogs.conf \n",                    
+                    "sudo service awslogs restart \n",                    
 
                     "apt-get install -y ruby2.0\n",
 
@@ -363,11 +380,17 @@
                 "Tags" : [ { 
                              "Key" : "Name",
                              "Value" : "Countly-server"
-                           }]
+                           }],
+                "BlockDeviceMappings" : [{
+                    "DeviceName" : "/dev/sda1",
+                    "Ebs" : {
+                        "VolumeSize" : "12"
+                    }
+                }]
             }
         },
 
-        "WebServerLogGroup": {
+        "CountlyServerLogGroup": {
             "Type": "AWS::Logs::LogGroup",
             "Properties": {
                 "RetentionInDays": 7
@@ -483,7 +506,7 @@
         "CloudWatchLogGroupName": {
             "Description": "The name of the CloudWatch log group",
             "Value": {
-                "Ref": "WebServerLogGroup"
+                "Ref": "CountlyServerLogGroup"
             }
         }
     }
