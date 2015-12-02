@@ -4333,6 +4333,20 @@ var AppRouter = Backbone.Router.extend({
 			$("#sidebar-menu").find("a").removeClass("active");
 
             var currentMenu = $("#sidebar-menu").find("a[href='#" + Backbone.history.fragment + "']");
+            if(currentMenu.length == 0){
+                $("#"+countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type+"-type a").each(function(){
+                    if(this.hash != "#/" && this.hash != ""){
+                        if(location.hash == this.hash){
+                            currentMenu = $(this);
+                            return false;
+                        }
+                        else if(location.hash.indexOf(this.hash) == 0){
+                            currentMenu = $(this);
+                            return false;
+                        }
+                    }
+                });
+            }
             currentMenu.addClass("active");
 
             var subMenu = currentMenu.parent(".sidebar-submenu");
