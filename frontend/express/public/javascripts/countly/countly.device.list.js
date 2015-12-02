@@ -1,4 +1,5 @@
 countlyDeviceList = {
+    //phones
 	"iPhone1,1":"iPhone 1G",
 	"iPhone1,2":"iPhone 3G",
 	"iPhone2,1":"iPhone 3GS",
@@ -14,11 +15,16 @@ countlyDeviceList = {
 	"iPhone6,2":"iPhone 5S (Global)",
 	"iPhone7,1":"iPhone 6 Plus",
 	"iPhone7,2":"iPhone 6",
+	"iPhone8,1":"iPhone 6s",
+	"iPhone8,2":"iPhone 6s Plus",
+    //ipods
 	"iPod1,1":"iPod Touch 1G",
 	"iPod2,1":"iPod Touch 2G",
 	"iPod3,1":"iPod Touch 3G",
 	"iPod4,1":"iPod Touch 4G",
 	"iPod5,1":"iPod Touch 5G",
+	"iPod7,1":"iPod touch 6G",
+    //ipads
 	"iPad1,1":"iPad",
 	"iPad2,1":"iPad 2 (WiFi)",
 	"iPad2,2":"iPad 2 (GSM)",
@@ -35,6 +41,9 @@ countlyDeviceList = {
 	"iPad4,3":"iPad Air (Global)",
 	"iPad5,3":"iPad Air 2G (WiFi)",
 	"iPad5,4":"iPad Air 2G (Global)",
+    "iPad6,7":"iPad Pro",
+	"iPad6,8":"iPad Pro",
+    //ipad mini
 	"iPad2,5":"iPad Mini (WiFi)",
 	"iPad2,6":"iPad Mini (GSM)",
 	"iPad2,7":"iPad Mini (Global)",
@@ -44,6 +53,17 @@ countlyDeviceList = {
 	"iPad4,7":"iPad Mini 3G (WiFi)",
 	"iPad4,8":"iPad Mini 3G (Global)",
 	"iPad4,9":"iPad Mini 3G (Global)",
+	"iPad5,1":"iPad mini 4",
+	"iPad5,2":"iPad mini 4",
+    //apple watch
+    "Watch1,1":"Apple Watch",
+    "Watch1,2":"Apple Watch",
+    //apple tv
+    "AppleTV2,1":"Apple TV 2G",
+    "AppleTV3,1":"Apple TV 3G",
+    "AppleTV3,2":"Apple TV 3G",
+    "AppleTV5,3":"Apple TV 4G",
+    //simulators
 	"i386":"Simulator",
 	"x86_64":"Simulator"
 }
