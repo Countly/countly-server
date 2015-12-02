@@ -73,6 +73,9 @@ window.PopulatorView = countlyView.extend({
 			$( "#populate-to" ).datepicker({dateFormat: "yy-mm-dd", constrainInput:true, maxDate: now });
 		}
 		app.localize();
+        if(this.state == "/autostart"){
+            $("#start-populate").click();
+        }
     },
     refresh:function () {}
 });
@@ -80,8 +83,9 @@ window.PopulatorView = countlyView.extend({
 //register views
 app.populatorView = new PopulatorView();
 
-app.route('/manage/populate', 'populate', function () {
+app.route('/manage/populate*state', 'populate', function (state) {
     if(countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]){
+        this.populatorView.state = state;
         this.renderWhenReady(this.populatorView);
     }
     else{
@@ -89,10 +93,40 @@ app.route('/manage/populate', 'populate', function () {
     }
 });
 
-app.addPageScript("#", function(){
-	if (Backbone.history.fragment.indexOf("/manage/populate") > -1) {
-        $("#sidebar-app-select").addClass("disabled");
-        $("#sidebar-app-select").removeClass("active");
+var start_populating = false;
+app.addPageScript("/manage/apps", function(){
+	var populateApp = '<tr>'+
+		'<td>'+
+			'<span data-localize="populator.demo-data"></span>'+
+		'</td>'+
+		'<td>'+
+			'<input type="checkbox" id="populate-app-after"/>&nbsp;&nbsp;&nbsp;<span data-localize="populator.tooltip"></span>'+
+		'</td>'+
+	'</tr>';
+	
+	$("#add-new-app table .table-add").before(populateApp);
+	
+	$("#save-app-add").click(function () {
+		if($("#add-new-app table #populate-app-after").is(':checked')){
+            start_populating = true;
+            setTimeout(function(){
+                start_populating = false;
+            }, 5000);
+        }
+	});
+});
+
+app.addAppManagementSwitchCallback(function(appId, type){
+    if(start_populating){
+        start_populating = false;
+        setTimeout(function(){
+            var appId = $("#view-app-id").text();
+            countlyCommon.setActiveApp(appId);
+            $("#sidebar-app-select").find(".logo").css("background-image", "url('"+countlyGlobal["cdn"]+"appimages/" + appId + ".png')");
+            $("#sidebar-app-select").find(".text").text(countlyGlobal['apps'][appId].name);
+            app.onAppSwitch(appId, true);
+            app.navigate("/manage/populate/autostart", true);
+        }, 1000);
     }
 });
 
