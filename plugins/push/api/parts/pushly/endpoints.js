@@ -421,6 +421,7 @@ var pushly          = require('pushly')(),
 
                 if (params.member && params.member.global_admin) {
                     common.db.collection('apps').findAndModify({_id: common.db.ObjectID(params.qstring.args.app_id)}, [['_id', 1]], update, {new:true}, function(err, app){
+                        app = app.value;
                         if (needToCheckGCM) checkGCM(params, app);
                         else common.returnOutput(params, app);
                     });
@@ -428,6 +429,7 @@ var pushly          = require('pushly')(),
                     common.db.collection('members').findOne({'_id': params.member._id}, {admin_of: 1}, function(err, member){
                         if (member.admin_of && member.admin_of.indexOf(params.qstring.args.app_id) !== -1) {
                             common.db.collection('apps').findAndModify({_id: common.db.ObjectID(params.qstring.args.app_id)}, [['_id', 1]], update, {new:true}, function(err, app){
+                                app = app.value;
                                 if (needToCheckGCM) checkGCM(params, app);
                                 else common.returnOutput(params, app);
                             });

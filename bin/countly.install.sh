@@ -21,7 +21,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 #update package index
 apt-get update
 
-apt-get -y install python-software-properties wget g++
+apt-get -y install python-software-properties wget g++ build-essential libkrb5-dev
 
 if !(command -v apt-add-repository >/dev/null) then
     apt-get -y install software-properties-common
@@ -29,11 +29,15 @@ fi
 
 #add node.js repo
 #echo | apt-add-repository ppa:chris-lea/node.js
-wget -qO- https://deb.nodesource.com/setup | bash -
+wget -qO- https://deb.nodesource.com/setup_4.x | bash -
 
 #add mongodb repo
-echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" > /etc/apt/sources.list.d/mongodb-10gen-countly.list
-apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
+#echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" > /etc/apt/sources.list.d/mongodb-10gen-countly.list
+#apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
+
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
+
 
 #update once more after adding new repos
 apt-get update

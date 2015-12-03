@@ -6,7 +6,7 @@ window.CrashesView = countlyView.extend({
         this.metrics = {
 			cr:jQuery.i18n.map["crashes.total"],
 			cru:jQuery.i18n.map["crashes.unique"],
-			crnf:jQuery.i18n.map["crashes.nonfatal"]+" "+jQuery.i18n.map["crashes.title"],
+			crnf:jQuery.i18n.map["crashes.nonfatal-crashes"],
 			crf:jQuery.i18n.map["crashes.fatal"]+" "+jQuery.i18n.map["crashes.title"],
 			crru:jQuery.i18n.map["crashes.resolved-users"]
 		};
@@ -41,7 +41,7 @@ window.CrashesView = countlyView.extend({
                     "help":"crashes.help-unique"
 				},
 				{
-					"title":jQuery.i18n.map["crashes.nonfatal"]+" "+jQuery.i18n.map["crashes.title"],
+					"title":jQuery.i18n.map["crashes.nonfatal-crashes"],
 					"data":dashboard.usage['nonfatal'],
 					"id":"crash-crnf",
                     "help":"crashes.help-nonfatal"
@@ -153,7 +153,7 @@ window.CrashesView = countlyView.extend({
 					{ "mData": function(row, type){if(type == "display"){if(row.nonfatal) return jQuery.i18n.map["crashes.nonfatal"]; else return jQuery.i18n.map["crashes.fatal"];}else return (row.nonfatal) ? true : false;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.fatal"], "sWidth":"80px"} ,
 					{ "mData": function(row, type){if(type == "display"){if(row.session){return ((Math.round(row.session.total/row.session.count)*100)/100)+" "+jQuery.i18n.map["crashes.sessions"];} else {return jQuery.i18n.map["crashes.first-crash"];}}else{if(row.session)return row.session.total/row.session.count; else return 0;}}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.frequency"], "sWidth":"80px" },
 					{ "mData": "reports", "sType":"numeric", "sTitle": jQuery.i18n.map["crashes.reports"], "sWidth":"80px" },
-					{ "mData": function(row, type){if(type == "display") return row.users+" ("+Math.round((row.users/crashData.users.total)*100)+"%)"; else return row.users}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.users"], "sWidth":"60px" },
+					{ "mData": function(row, type){if(type == "display") return row.users+" ("+((row.users/crashData.users.total)*100).toFixed(2)+"%)"; else return row.users}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.users"], "sWidth":"60px" },
                     { "mData": "os", "sType":"string", "sTitle": jQuery.i18n.map["crashes.platform"], "sWidth":"70px" },
                     { "mData": function(row, type){return "<div class='truncated'>"+row.name+"</div>";}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.error"] },
                     { "mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.lastTs); else return row.lastTs;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.last_time"], "sWidth":"100px" },
@@ -839,7 +839,7 @@ app.addPageScript("/crashes", function(){
     });
 });
 
-app.addPageScript("/drill", function(){
+app.addPageScript("/drill#", function(){
     var drillClone;
     var self = app.drillView;
 	$("#drill-types").append('<div id="drill-type-crashes" style="padding: 6px 8px 7px 8px;" class="icon-button light">'+jQuery.i18n.map["crashes.title"]+'</div>');
@@ -888,7 +888,7 @@ $( document ).ready(function() {
         CountlyHelpers.loadJS("crashes/javascripts/marked.min.js");
     }
 	var menu = '<a href="#/crashes" class="item" id="crash-menu">'+
-        '<div class="logo fa fa-remove" style="background-image:none; font-size:24px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>'+
+        '<div class="logo fa fa-exclamation-triangle" style="background-image:none; font-size:24px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>'+
         '<div class="text" data-localize="crashes.title"></div>'+
     '</a>';
 	if($('.sidebar-menu #management-menu').length)

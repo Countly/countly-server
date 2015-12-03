@@ -3,6 +3,7 @@ var mail = {},
     request = require('request'),
     sendmailTransport = require('nodemailer-sendmail-transport'),
     smtpTransport = require('nodemailer-smtp-transport'),
+    localize = require('../../utils/localization.js'),
     plugins = require('../../../plugins/pluginManager.js');
     
 mail.smtpTransport = nodemailer.createTransport(sendmailTransport({
@@ -46,57 +47,54 @@ mail.sendMail = function(message, callback) {
     });
 }
 
-mail.sendToNewMember = function (member, memberPassword) {
-    mail.lookup(function(err, host) {
-        var message = {
-            to:member.email,
-            from:"Countly",
-            subject:'Your Countly Account',
-            html:'Hi ' + mail.getUserFirstName(member) + ',<br/><br/>' +
-                'Your Countly account on <a href="' + host + '">' + host + '</a> is created with the following details;<br/><br/>' +
-                'Username: ' + member.username + '<br/>' +
-                'Password: ' + memberPassword + '<br/><br/>' +
-                'Enjoy,<br/>' +
-                'A fellow Countly Admin'
-        };
+mail.sendMessage = function (to, subject, message, callback) {
+    mail.sendMail({
+        to:to,
+        from:"Countly",
+        subject:subject || "",
+        html:message || ""
+    }, callback);
+};
 
-        mail.sendMail(message);
+mail.sendLocalizedMessage = function (lang, to, subject, message, callback) {
+    localize.getProperties(lang, function(err, properties){
+        if (err) {
+            if(callback)
+                callback(err);
+        }
+        else{
+            mail.sendMessage(to, properties[subject], properties[message], callback);
+        }
+    });
+};
+
+mail.sendToNewMember = function (member, memberPassword) {
+    member.lang = member.lang || "en";
+    mail.lookup(function(err, host) {
+        localize.getProperties(member.lang, function(err, properties){
+            var message = localize.format(properties["mail.new-member"], mail.getUserFirstName(member), host, member.username, memberPassword);
+            mail.sendMessage(member.email, properties["mail.new-member-subject"], message);
+        });
     });
 };
 
 mail.sendToUpdatedMember = function (member, memberPassword) {
+    member.lang = member.lang || "en";
     mail.lookup(function(err, host) {
-        var message = {
-            to:member.email,
-            from:"Countly",
-            subject:'Countly Account - Password Change',
-            html:'Hi ' + mail.getUserFirstName(member) + ',<br/><br/>' +
-                'Your password for your Countly account on <a href="' + host + '">' + host + '</a> has been changed. Below you can find your updated account details;<br/><br/>' +
-                'Username: ' + member.username + '<br/>' +
-                'Password: ' + memberPassword + '<br/><br/>' +
-                'Best,<br/>' +
-                'A fellow Countly Admin'
-        };
-
-        mail.sendMail(message);
+        localize.getProperties(member.lang, function(err, properties){
+            var message = localize.format(properties["mail.password-change"], mail.getUserFirstName(member), host, member.username, memberPassword);
+            mail.sendMessage(member.email, properties["mail.password-change-subject"], message);
+        });
     });
 };
 
 mail.sendPasswordResetInfo = function (member, prid) {
+    member.lang = member.lang || "en";
     mail.lookup(function(err, host) {
-        var message = {
-            to:member.email,
-            from:"Countly",
-            subject:'Countly Account - Password Reset',
-            html:'Hi ' + mail.getUserFirstName(member) + ',<br/><br/>' +
-                'You can reset your Countly account password by following ' +
-                '<a href="' + host + '/reset/' + prid + '">this link</a>.<br/><br/>' +
-                'If you did not request to reset your password ignore this email.<br/><br/>' +
-                'Best,<br/>' +
-                'A fellow Countly Admin'
-        };
-
-        mail.sendMail(message);
+        localize.getProperties(member.lang, function(err, properties){
+            var message = localize.format(properties["mail.password-reset"], mail.getUserFirstName(member), host, prid);
+            mail.sendMessage(member.email, properties["mail.password-reset-subject"], message);
+        });
     });
 };
 

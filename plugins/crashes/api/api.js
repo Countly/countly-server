@@ -28,12 +28,15 @@ plugins.setConfigs("crashes", {
         "iPhone6,1":"ARMv8-A A7",
         "iPhone6,2":"ARMv8-A A7",
         "iPhone7,1":"ARMv8-A A8",
-        "iPhone7,2": "ARMv8-A A8",
+        "iPhone7,2":"ARMv8-A A8",
+        "iPhone8,1":"ARMv8-A A9",
+	    "iPhone8,2":"ARMv8-A A8",
         "iPod1,1":"ARM11",
         "iPod2,1":"ARM11",
         "iPod3,1":"ARMv7-A",
         "iPod4,1": "ARMv7-A A4",
         "iPod5,1":"ARMv7-A A5",
+        "iPod7,1":"ARMv8-A A8",
         "iPad1,1":"ARMv7 A4",
         "iPad2,1":"ARMv7 A5",
         "iPad2,2":"ARMv7 A5",
@@ -57,8 +60,13 @@ plugins.setConfigs("crashes", {
         "iPad4,7":"ARMv8-A A7",
         "iPad4,8":"ARMv8-A A7",
         "iPad4,9":"ARMv8-A A7",
+        "iPad5,1":"ARMv8-A A8",
+        "iPad5,2":"ARMv8-A A8",
         "iPad5,3":"ARMv8 A8X",
         "iPad5,4":"ARMv8 A8X",
+        "iPad6,7":"ARMv8-A A9X",
+	    "iPad6,8":"ARMv8-A A9X",
+        "AppleTV5,3":"ARMv8-A A8",
         "i386":"Simulator",
         "x86_64":"Simulator"
     };
@@ -234,6 +242,7 @@ plugins.setConfigs("crashes", {
                         if(dbAppUser && dbAppUser.sc)
                             set.sessions = dbAppUser.sc;
                         common.db.collection('app_crashusers' + params.app_id).findAndModify({group:hash, 'uid':report.uid},{}, {$set:set, $inc:{reports:1}},{upsert:true, new:false}, function (err, user){
+                            user = user.value;
                             if(user && user.sessions && dbAppUser && dbAppUser.sc && dbAppUser.sc > user.sessions)
                                 report.session = dbAppUser.sc - user.sessions;
                             common.db.collection('app_crashes' + params.app_id).insert(report, function (err, res){});
@@ -308,7 +317,7 @@ plugins.setConfigs("crashes", {
                                 if(!report.nonfatal && dbAppUser.sc && dbAppUser.sc > 0 && dbAppUser.tp)
                                     groupInc.loss = dbAppUser.tp/dbAppUser.sc;
                                 
-                                if(user && !user.reports)
+                                if(!user || !user.reports)
                                     groupInc.users = 1;
                                 
                                 groupInsert.is_new = true;
@@ -387,6 +396,7 @@ plugins.setConfigs("crashes", {
                                     update["$max"] = groupMax;
                                 
                                 common.db.collection('app_crashgroups' + params.app_id).findAndModify({'_id': hash },{},update,{upsert:true, new:true}, function(err,crashGroup){
+                                    crashGroup = crashGroup.value;
                                     var isNew = (crashGroup && crashGroup.reports == 1) ? true : false;
                                     
                                     var metrics = ["cr"];
@@ -442,16 +452,17 @@ plugins.setConfigs("crashes", {
                                     groupInc["os."+report.os.replace(/^\$/, "").replace(/\./g, ":")] = 1;
                                     groupInc["app_version."+report.app_version.replace(/^\$/, "").replace(/\./g, ":")] = 1;
                                     
-                                    common.db.collection('app_crashgroups' + params.app_id).update({'_id': "meta" }, {$inc:groupInc}, function(){})
+                                    common.db.collection('app_crashgroups' + params.app_id).update({'_id': "meta" }, {$inc:groupInc}, function(err, res){})
                                 });
                             };
                             
-                            if(user && !user.reports){
+                            if(!user || !user.reports){
                                 var inc = {crashes:1};
                                 if(!report.nonfatal)
                                     inc.fatal = 1;
                         
                                 common.db.collection('app_crashusers' + params.app_id).findAndModify({group:0, 'uid':report.uid},{}, {$set:{group:0, 'uid':report.uid}, $inc:inc},{upsert:true, new:true}, function (err, userAll){
+                                    userAll = userAll.value;
                                     processCrash(userAll);
                                 });
                             }
@@ -463,6 +474,7 @@ plugins.setConfigs("crashes", {
                     }
 				}
                 common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id },{},{ $addToSet: { crashes: hash } },{upsert:true, new:false}, function(err, dbAppUser){
+                    dbAppUser = dbAppUser.value;
                     checkUser(err, dbAppUser, 0);
                 });
 			}

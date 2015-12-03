@@ -1516,20 +1516,6 @@ window.PlatformView = countlyView.extend({
     },
     pageScript:function () {
         var self = this;
-        
-        if (self.activePlatform) {
-            $(".graph-segment[data-name='" + self.activePlatform + "']").addClass("active");
-        } else {
-            $(".graph-segment:first-child").addClass("active");
-        }
-
-        $(".graph-segment").on("click", function () {
-            self.activePlatform = $(this).data("name");
-            $(".graph-segment").removeClass("active");
-            $(this).addClass("active");
-
-            self.refresh();
-        });
 
         app.localize();
     },
@@ -1546,7 +1532,6 @@ window.PlatformView = countlyView.extend({
                 "left":jQuery.i18n.map["platforms.pie-left"],
                 "right":jQuery.i18n.map["platforms.pie-right"]
             },
-            "graph-segmentation":oSVersionData.os,
             "chart-helper":"platform-versions.chart",
             "table-helper":"",
             "two-tables": true
@@ -1618,7 +1603,6 @@ window.PlatformView = countlyView.extend({
                 newPage = $("<div>" + self.template(self.templateData) + "</div>");
 
             $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
-            $(self.el).find(".graph-segment-container").replaceWith(newPage.find(".graph-segment-container"));
 
             countlyCommon.drawGraph(platformData.chartDP, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(oSVersionData.chartDP, "#dashboard-graph2", "pie");
@@ -2490,7 +2474,7 @@ window.ManageUsersView = countlyView.extend({
 });
 
 window.EventsView = countlyView.extend({
-    showOnGraph: 2,
+    showOnGraph: {"event-count":true, "event-sum":true, "event-dur":true},
     beforeRender: function() {},
     initialize:function () {
         this.template = Handlebars.compile($("#template-events").html());
@@ -2501,9 +2485,12 @@ window.EventsView = countlyView.extend({
         $(".big-numbers").unbind("click");
 
         var self = this;
+
         $(".event-container").on("click", function () {
             var tmpCurrEvent = $(this).data("key");
-            self.showOnGraph = 2;
+            for(var i in self.showOnGraph){
+                self.showOnGraph[i] = true;
+            }
             $(".event-container").removeClass("active");
             $(this).addClass("active");
 
@@ -2555,15 +2542,20 @@ window.EventsView = countlyView.extend({
         });
 
         $(".big-numbers").on("click", function () {
-            if ($(".big-numbers.selected").length == 2) {
-                self.showOnGraph = 1 - $(this).index();
-            } else if ($(".big-numbers.selected").length == 1) {
+            if ($(".big-numbers.selected").length == 1) {
                 if ($(this).hasClass("selected")) {
                     return true;
                 } else {
-                    self.showOnGraph = 2;
+                    self.showOnGraph[$(this).data("type")] = true;
                 }
             }
+            else if ($(".big-numbers.selected").length > 1) {
+                if ($(this).hasClass("selected"))
+                    self.showOnGraph[$(this).data("type")] = false;
+                else
+                    self.showOnGraph[$(this).data("type")] = true;
+            }
+            
             $(this).toggleClass("selected");
 
             self.drawGraph(countlyEvent.getEventData());
@@ -2574,22 +2566,35 @@ window.EventsView = countlyView.extend({
         }
     },
     drawGraph:function(eventData) {
-        if (this.showOnGraph != 2) {
-            $(".big-numbers").removeClass("selected");
-            $(".big-numbers").eq(this.showOnGraph).addClass("selected");
-
-            if (eventData.dataLevel == 2) {
-                eventData.chartDP.dp = eventData.chartDP.dp.slice(this.showOnGraph, this.showOnGraph + 1);
-            } else {
-                eventData.chartDP = eventData.chartDP.slice(this.showOnGraph, this.showOnGraph + 1);
+        $(".big-numbers").removeClass("selected");
+        var use = [];
+        var cnt = 0;
+        for(var i in this.showOnGraph){
+            if(this.showOnGraph[i]){
+                $(".big-numbers."+i).addClass("selected");
+                $(".big-numbers."+i+" .check").removeClass("fa-square-o").addClass("fa-check-square-o");
+                use.push(cnt);
             }
-        } else {
-            $(".big-numbers").addClass("selected");
+            else{
+                $(".big-numbers."+i+" .check").removeClass("fa-check-square-o").addClass("fa-square-o");
+            }
+            cnt++;
+        }
+        
+        var data = [];
+        for(var i = 0; i < use.length; i++){
+            if (eventData.dataLevel == 2) {
+                data.push(eventData.chartDP.dp[use[i]]);
+            } else {
+                data.push(eventData.chartDP[use[i]]);
+            }
         }
 
         if (eventData.dataLevel == 2) {
+            eventData.chartDP.dp = data;
             countlyCommon.drawGraph(eventData.chartDP, "#dashboard-graph", "bar", {series:{stack:null}});
         } else {
+            eventData.chartDP = data;
             countlyCommon.drawTimeGraph(eventData.chartDP, "#dashboard-graph");
         }
     },
@@ -2611,9 +2616,21 @@ window.EventsView = countlyView.extend({
         aaColumns.push({"mData":"c", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":eventData.tableColumns[1]});
 
         if (eventData.tableColumns[2]) {
-            aaColumns.push({"mData":"s", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":eventData.tableColumns[2]});
+            if(eventData.tableColumns[2] == jQuery.i18n.map["events.table.dur"]){
+                aaColumns.push({"mData":"dur", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":eventData.tableColumns[2]});
+                aaColumns.push({"mData":function(row, type){if(row.c == 0 || row.dur == 0) return 0; else return (row.dur/row.c);}, sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":jQuery.i18n.map["events.table.avg-dur"]});
+            }
+            else{
+                aaColumns.push({"mData":"s", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":eventData.tableColumns[2]});
+                aaColumns.push({"mData":function(row, type){if(row.c == 0 || row.s == 0) return 0; else return (row.s/row.c);}, sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":jQuery.i18n.map["events.table.avg-sum"]});
+            }
         }
-
+        
+        if (eventData.tableColumns[3]) {
+            aaColumns.push({"mData":"dur", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":eventData.tableColumns[3]});
+            aaColumns.push({"mData":function(row, type){if(row.c == 0 || row.dur == 0) return 0; else return (row.dur/row.c);}, sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":jQuery.i18n.map["events.table.avg-dur"]});
+        }
+        
         this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "aaData": eventData.chartData,
             "aoColumns": aaColumns
@@ -2652,7 +2669,9 @@ window.EventsView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-
+            for(var i in this.showOnGraph){
+                self.showOnGraph[i] = $(".big-numbers.selected."+i).length;
+            }
             this.drawGraph(eventData);
             this.drawTable(eventData);
             this.pageScript();
@@ -2717,6 +2736,13 @@ window.EventsView = countlyView.extend({
                                 eventMap[eventKey] = {}
                             }
                             eventMap[eventKey]["sum"] = currEvent.find(".event-sum").val();
+                        }
+                        
+                        if (currEvent.find(".event-dur").val()) {
+                            if (!eventMap[eventKey]) {
+                                eventMap[eventKey] = {}
+                            }
+                            eventMap[eventKey]["dur"] = currEvent.find(".event-dur").val();
                         }
                     });
 
@@ -2869,6 +2895,15 @@ window.EventsView = countlyView.extend({
             $(self.el).find("#edit-event-container").replaceWith(newPage.find("#edit-event-container"));
 
             var eventData = countlyEvent.getEventData();
+            for(var i in self.showOnGraph){
+                if(!$(".big-numbers."+i).length)
+                    self.showOnGraph[i] = false;
+            }
+            for(var i in self.showOnGraph){
+                if(self.showOnGraph[i])
+                    $(".big-numbers."+i).addClass("selected");
+            }
+
             self.drawGraph(eventData);
             self.pageScript();
 
@@ -2924,9 +2959,30 @@ var AppRouter = Backbone.Router.extend({
     activeAppName:'',
     activeAppKey:'',
     main:function (forced) {
-        this.navigate("/", true);
-        if(forced && self.activeView != this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type]){
-            this.dashboard();
+        var change = true,
+            redirect = false;
+        if(location.hash != "#/"){
+            $("#"+countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type+"-type a").each(function(){
+                if(this.hash != "#/" && this.hash != ""){
+                    if(location.hash == this.hash){
+                        change = false;
+                        return false;
+                    }
+                    else if(location.hash.indexOf(this.hash) == 0){
+                        redirect = this.hash;
+                        return false;
+                    }
+                }
+            });
+        }
+        if(redirect){
+            app.navigate(redirect, true);
+        }
+        else if(change){
+            this.navigate("/", true);
+            if(forced && this.activeView != this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type]){
+                this.dashboard();
+            }
         }
     },
     dashboard:function () {
@@ -3428,6 +3484,17 @@ var AppRouter = Backbone.Router.extend({
 
                 $("#date-to").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
                 $("#date-from").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
+                
+                $.ajax({
+                    type:"POST",
+                    url:countlyGlobal["path"]+"/user/settings",
+                    data:{
+                        "username":countlyGlobal["member"].username,
+                        "lang":countlyCommon.BROWSER_LANG_SHORT,
+                        _csrf:countlyGlobal['csrf_token']
+                    },
+                    success:function (result) {}
+                });
 
                 jQuery.i18n.properties({
                     name:'locale',
@@ -4266,6 +4333,20 @@ var AppRouter = Backbone.Router.extend({
 			$("#sidebar-menu").find("a").removeClass("active");
 
             var currentMenu = $("#sidebar-menu").find("a[href='#" + Backbone.history.fragment + "']");
+            if(currentMenu.length == 0){
+                $("#"+countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type+"-type a").each(function(){
+                    if(this.hash != "#/" && this.hash != ""){
+                        if(location.hash == this.hash){
+                            currentMenu = $(this);
+                            return false;
+                        }
+                        else if(location.hash.indexOf(this.hash) == 0){
+                            currentMenu = $(this);
+                            return false;
+                        }
+                    }
+                });
+            }
             currentMenu.addClass("active");
 
             var subMenu = currentMenu.parent(".sidebar-submenu");

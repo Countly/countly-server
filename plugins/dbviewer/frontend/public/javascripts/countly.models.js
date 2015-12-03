@@ -15,6 +15,16 @@
             },
 			success:function (json) {
 				_data = json;
+                for(var i = 0; i < _data.length; i++){
+                    if(_data[i].collections){
+                        var list = [];
+                        for(var j in _data[i].collections){
+                            list.push(j);
+                        }
+                        list.sort();
+                        _data[i].list = list;
+                    }
+                }
 			}
 		});
     };

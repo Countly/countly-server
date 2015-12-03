@@ -40,6 +40,7 @@ var check = function() {
 		{'new': true},
 
 		function(err, message){
+            message = message.value;
 			if (message) {
 				message = new Message(message);
 				var conditions = message.getUserCollectionConditions(), toPush = [];

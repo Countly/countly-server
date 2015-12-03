@@ -8,7 +8,6 @@ usage (){
     echo "    countly plugin uninstall pluginname   # uninstall plugin";
     echo "    countly plugin status pluginname      # status of plugin";
     echo "    countly plugin version pluginname     # version of plugin";
-    echo "";
 } 
 if [ -d "$DIR/../../../plugins/$2" ]; then
     if [ "$1" = "install" ]; then

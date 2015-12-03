@@ -234,7 +234,7 @@ module.exports = function(grunt) {
   		locales[lang].push(path);
   	};
 
-  	[path.join(__dirname, 'frontend/express/public/localization/dashboard'), path.join(__dirname, 'frontend/express/public/localization/help')].forEach(function(dir){
+  	[path.join(__dirname, 'frontend/express/public/localization/dashboard'), path.join(__dirname, 'frontend/express/public/localization/help'), path.join(__dirname, 'frontend/express/public/localization/mail')].forEach(function(dir){
   		fs.readdirSync(dir).forEach(function(name){
   			var file = path.join(dir, name);
   		  	if (fs.statSync(file).isFile()) {

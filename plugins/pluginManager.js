@@ -1,5 +1,6 @@
 var plugins = require('./plugins.json'),
     pluginsApis = {}, 
+    mongo = require('mongoskin'),
     countlyConfig = require('../frontend/express/config'),
     fs = require('fs'),
     path = require('path'),
@@ -110,8 +111,8 @@ var pluginManager = function pluginManager(){
     
     this.updateAllConfigs = function(db, changes, callback){
         for (var k in changes) {
+            _.extend(configs[k], changes[k]);
             if (k in configsOnchanges) { 
-                _.extend(configs[k], changes[k]);
                 configsOnchanges[k](configs[k]); 
             }
         }
@@ -422,40 +423,72 @@ var pluginManager = function pluginManager(){
         });
     };
     
-    this.dbConnection = function(db) {
-        var mongo = require('mongoskin'),
-            countlyConfig = require('../frontend/express/config');
+    this.dbConnection = function(config) {
+        var db;
+        if(typeof config == "string"){
+            db = config;
+            config = countlyConfig;
+        }
+        else
+            config = config || countlyConfig;
             
         var dbName;
-        var dbOptions = {
-            server:{auto_reconnect:true, socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
-            replSet:{socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
-            mongos:{socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }}
+        var options = {
+            poolSize: config.mongodb.max_pool_size, 
+            socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }
         };
-        if (typeof countlyConfig.mongodb === 'string') {
-            dbName = db ? countlyConfig.mongodb.replace(new RegExp('countly$'), db) : countlyConfig.mongodb;
+        var dbOptions = {};
+        if (typeof config.mongodb === 'string') {
+            dbName = db ? config.mongodb.replace(new RegExp('countly$'), db) : config.mongodb;
         } else{
-            countlyConfig.mongodb.db = db ? db : (countlyConfig.mongodb.db || 'countly');
-            if ( typeof countlyConfig.mongodb.replSetServers === 'object'){
+            config.mongodb.db = db || config.mongodb.db || 'countly';
+            if ( typeof config.mongodb.replSetServers === 'object'){
                 //mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test
-                dbName = countlyConfig.mongodb.replSetServers.join(',')+'/'+countlyConfig.mongodb.db;
-                if(countlyConfig.mongodb.replicaName){
-                    dbOptions.replSet.rs_name = countlyConfig.mongodb.replicaName;
-                }
+                dbName = config.mongodb.replSetServers.join(',')+'/'+config.mongodb.db;
             } else {
-                dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db);
+                dbName = (config.mongodb.host + ':' + config.mongodb.port + '/' + config.mongodb.db);
             }
         }
         
-        if(countlyConfig.mongodb.username && countlyConfig.mongodb.password){
-            dbName = countlyConfig.mongodb.username + ":" + countlyConfig.mongodb.password +"@" + dbName;
+        if(config.mongodb.dbOptions){
+            dbOptions.db = config.mongodb.dbOptions;
         }
-
+        
+        if(config.mongodb.replSetServers){
+            dbOptions.replSet = options;
+            if(config.mongodb.replicaName){
+                dbOptions.replSet.replicaSet = config.mongodb.replicaName;
+            }
+            if(config.mongodb.serverOptions)
+                _.extend(dbOptions.replSet, config.mongodb.serverOptions);
+        }
+        
+        if(config.mongodb.mongos){
+            dbOptions.mongos = options;
+            if(config.mongodb.serverOptions)
+                _.extend(dbOptions.mongos, config.mongodb.serverOptions);
+        }
+        
+        if(!config.mongodb.mongos && !config.mongodb.replSetServers){
+            dbOptions.server = options;
+            if(config.mongodb.serverOptions)
+                _.extend(dbOptions.server, config.mongodb.serverOptions);
+        }
+        
+        if(config.mongodb.username && config.mongodb.password){
+            dbName = config.mongodb.username + ":" + config.mongodb.password +"@" + dbName;
+        }
+        
         if(dbName.indexOf('mongodb://') !== 0){
             dbName = 'mongodb://'+dbName;
         }
 
-        return mongo.db(dbName, dbOptions);
+        var countlyDb = mongo.db(dbName, dbOptions);
+        countlyDb._emitter.setMaxListeners(0);
+		if(!countlyDb.ObjectID)
+			countlyDb.ObjectID = mongo.ObjectID;
+        
+        return countlyDb;
     };
 
     var getObjectDiff = function(current, provided){

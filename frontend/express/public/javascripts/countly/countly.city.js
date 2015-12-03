@@ -137,6 +137,8 @@
                 {
                     "name":"city",
                     "func":function (rangeArr, dataObj) {
+                        if(rangeArr == "Unknown")
+                            return jQuery.i18n.map["common.unknown"];
                         return rangeArr;
                     }
                 },
@@ -179,6 +181,8 @@
             {
                 "name":"city",
                 "func":function (rangeArr, dataObj) {
+                    if(rangeArr == "Unknown")
+                        return jQuery.i18n.map["common.unknown"];
                     return rangeArr;
                 }
             },
@@ -192,7 +196,7 @@
         ];
         chartData.cols.push(ob);
         chartData.rows = _.map(tt.chartData, function (value, key, list) {
-            if (value.city == "Unknown") {
+            if (value.city == jQuery.i18n.map["common.unknown"]) {
                 return {c:[
                     {v:""},
                     {v:value[ob.metric]}
@@ -224,6 +228,8 @@
             {
                 "name":"city",
                 "func":function (rangeArr, dataObj) {
+                    if(rangeArr == "Unknown")
+                        return jQuery.i18n.map["common.unknown"];
                     return rangeArr;
                 }
             },
@@ -237,7 +243,7 @@
         ];
         chartData.cols.push(ob);
         chartData.rows = _.map(tt.chartData, function (value, key, list) {
-            if (value.city == "Unknown") {
+            if (value.city == jQuery.i18n.map["common.unknown"]) {
                 return {c:[
                     {v:""},
                     {v:value[ob.metric]}

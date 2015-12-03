@@ -18,15 +18,16 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 #install nodejs
 sudo yum -y install openssl-devel gcc-c++ make
-curl -sL https://rpm.nodesource.com/setup | bash -
+curl -sL https://rpm.nodesource.com/setup_4.x | bash -
 yum install -y nodejs
+sudo ln -s `which node` /usr/bin/nodejs
 
 #install mongodb
-echo "[10gen]
-name=10gen Repository
-baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64
+echo "[mongodb-org-3.0]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/3.0/x86_64/
 gpgcheck=0
-enabled=1" > /etc/yum.repos.d/10gen.repo
+enabled=1" > /etc/yum.repos.d/mongodb-org-3.0.repo
 
 sudo yum -y install mongodb-org
 sudo service mongod start
@@ -82,6 +83,11 @@ cp $DIR/config/nginx.server.conf /etc/nginx/conf.d/default.conf
 service nginx restart
 
 cp $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
+
+sed -e "s/Defaults requiretty/#Defaults requiretty/" /etc/sudoers > /etc/sudoers2
+mv /etc/sudoers /etc/sudoers.bak
+mv /etc/sudoers2 /etc/sudoers
+chmod 0440 /etc/sudoers
 
 bash $DIR/scripts/detect.init.sh
 

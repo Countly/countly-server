@@ -7,9 +7,9 @@ var versionInfo = require('./version.info'),
     express = require('express'),
     SkinStore = require('connect-mongoskin'),
     expose = require('express-expose'),
-    mongo = require('mongoskin'),
     crypto = require('crypto'),
     fs = require('fs'),
+    path = require('path'),
     im = require('imagemagick'),
     request = require('request'),
     async = require('async'),
@@ -27,7 +27,7 @@ var versionInfo = require('./version.info'),
         COUNTLY_NAMED_TYPE = versionInfo.footer;
         COUNTLY_TYPE_CE = false;
     }
-    else if(COUNTLY_TYPE == "2fb8d2c65f7919fa1ce594302618febe0a46cb2f"){
+    else if(COUNTLY_TYPE != "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6"){
         COUNTLY_NAMED_TYPE = "Countly Enterprise Edition v"+COUNTLY_VERSION; 
         COUNTLY_TYPE_CE = false;
     }
@@ -37,38 +37,20 @@ plugins.setConfigs("frontend", {
     session_timeout: 30*60*1000,
 });
 
-//mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]]
-var dbName;
-var dbOptions = {
-	server:{auto_reconnect:true, poolSize: countlyConfig.mongodb.max_pool_size, socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
-	replSet:{socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
-	mongos:{socketOptions: { keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }}
-};
+var themeDir = path.resolve(__dirname, "public/theme/");
+var themeFiles = {css:[], js:[]};
+fs.readdir(themeDir, function(err, list) {
+    if (err) return ;
+    var ext;
+    for(var i = 0; i < list.length; i++){
+        ext = list[i].split(".").pop();
+        if(!themeFiles[ext])
+            themeFiles[ext] = [];
+        themeFiles[ext].push(countlyConfig.path+'/theme/'+list[i]);
+    }
+});
 
-if (typeof countlyConfig.mongodb === "string") {
-    dbName = countlyConfig.mongodb;
-} else{
-	countlyConfig.mongodb.db = countlyConfig.mongodb.db || 'countly';
-	if ( typeof countlyConfig.mongodb.replSetServers === 'object'){
-		//mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test
-		dbName = countlyConfig.mongodb.replSetServers.join(",")+"/"+countlyConfig.mongodb.db;
-		if(countlyConfig.mongodb.replicaName){
-			dbOptions.replSet.rs_name = countlyConfig.mongodb.replicaName;
-		}
-	} else {
-		dbName = (countlyConfig.mongodb.host + ':' + countlyConfig.mongodb.port + '/' + countlyConfig.mongodb.db);
-	}
-}
-if(countlyConfig.mongodb.username && countlyConfig.mongodb.password){
-	dbName = countlyConfig.mongodb.username + ":" + countlyConfig.mongodb.password +"@" + dbName;
-}
-if(dbName.indexOf("mongodb://") !== 0){
-	dbName = "mongodb://"+dbName;
-}
-var countlyDb = mongo.db(dbName, dbOptions);
-countlyDb._emitter.setMaxListeners(0);
-if(!countlyDb.ObjectID)
-	countlyDb.ObjectID = mongo.ObjectID;
+var countlyDb = plugins.dbConnection(countlyConfig);
 
 function sha1Hash(str, addSalt) {
     var salt = (addSalt) ? new Date().getTime() : "";
@@ -133,6 +115,16 @@ app.configure(function () {
     app.use(function(req, res, next) {
         res.locals.flash = req.flash.bind(req);
         req.config = plugins.getConfig("frontend");
+        var _render = res.render;
+        res.render = function(view, opts, fn, parent, sub){
+            if(!opts["path"])
+                opts["path"] = countlyConfig.path || "";
+            if(!opts["cdn"])
+                opts["cdn"] = countlyConfig.cdn || "";
+            if(!opts["themeFiles"])
+                opts["themeFiles"] = themeFiles;
+            _render.call(res, view, opts, fn, parent, sub);
+        };
         next();
     });
     app.use(express.methodOverride());
@@ -364,7 +356,8 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 						plugins:plugins.getPlugins(),
                         config: req.config,
 						path:countlyConfig.path || "",
-						cdn:countlyConfig.cdn || ""
+						cdn:countlyConfig.cdn || "",
+                        themeFiles:themeFiles
                     };
                     
                     plugins.callMethod("renderDashboard", {req:req, res:res, next:next, data:{member:member, adminApps:countlyGlobalAdminApps, userApps:countlyGlobalApps, countlyGlobal:countlyGlobal, toDashboard:toDashboard}});
@@ -393,7 +386,7 @@ app.get(countlyConfig.path+'/setup', function (req, res, next) {
         if (memberCount) {
             res.redirect(countlyConfig.path+'/login');
         } else {
-            res.render('setup', {countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || ""});
+            res.render('setup', {countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles});
         }
     });
 });
@@ -406,7 +399,7 @@ app.get(countlyConfig.path+'/login', function (req, res, next) {
             if (memberCount) {
 				if(req.query.message)
 					req.flash('info', req.query.message);
-                res.render('login', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "message":req.flash('info'), "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
+                res.render('login', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "message":req.flash('info'), "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
             } else {
                 res.redirect(countlyConfig.path+'/setup');
             }
@@ -418,7 +411,7 @@ app.get(countlyConfig.path+'/forgot', function (req, res, next) {
     if (req.session.uid) {
         res.redirect(countlyConfig.path+'/dashboard');
     } else {
-        res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "message":req.flash('info'), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
+        res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "message":req.flash('info'), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
     }
 });
 
@@ -432,7 +425,7 @@ app.get(countlyConfig.path+'/reset/:prid', function (req, res, next) {
                     req.flash('info', 'reset.invalid');
                     res.redirect(countlyConfig.path+'/forgot');
                 } else {
-                    res.render('reset', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "prid":req.params.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
+                    res.render('reset', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "prid":req.params.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
                 }
             } else {
                 req.flash('info', 'reset.invalid');
@@ -459,7 +452,7 @@ app.post(countlyConfig.path+'/reset', function (req, res, next) {
             countlyDb.collection('password_reset').remove({prid:req.body.prid}, function () {});
         });
     } else {
-        res.render('reset', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "prid":req.body.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
+        res.render('reset', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "prid":req.body.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
     }
 });
 
@@ -469,14 +462,14 @@ app.post(countlyConfig.path+'/forgot', function (req, res, next) {
             if (member) {
                 var timestamp = Math.round(new Date().getTime() / 1000),
                     prid = sha1Hash(member.username + member.full_name, timestamp);
-
+                member.lang = member.lang || req.body.lang || "en";
                 countlyDb.collection('password_reset').insert({"prid":prid, "user_id":member._id, "timestamp":timestamp}, {safe:true}, function (err, password_reset) {
                     countlyMail.sendPasswordResetInfo(member, prid);
                     plugins.callMethod("passwordRequest", {req:req, res:res, next:next, data:req.body});
-                    res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "message":"forgot.result", "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
+                    res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "message":"forgot.result", "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
                 });
             } else {
-                res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE,"message":"forgot.result", "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
+                res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE,"message":"forgot.result", "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
             }
         });
     } else {
@@ -491,8 +484,12 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
         } else {
             if (req.body.full_name && req.body.username && req.body.password && req.body.email) {
                 var password = sha1Hash(req.body.password);
-
-                countlyDb.collection('members').insert({"full_name":req.body.full_name, "username":req.body.username, "password":password, "email":req.body.email, "global_admin":true}, {safe:true}, function (err, member) {
+                
+                var doc = {"full_name":req.body.full_name, "username":req.body.username, "password":password, "email":req.body.email, "global_admin":true};
+                if(req.body.lang)
+                    doc.lang = req.body.lang;
+                countlyDb.collection('members').insert(doc, {safe:true}, function (err, member) {
+                    member = member.ops;
                     if (countlyConfig.web.use_intercom) {
                         var options = {uri:"https://cloud.count.ly/s", method:"POST", timeout:4E3, json:{email:req.body.email, full_name:req.body.full_name, v:COUNTLY_VERSION, t:COUNTLY_TYPE}};
                         request(options, function(a, c, b) {
@@ -563,6 +560,9 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                 req.session.uid = member["_id"];
                 req.session.gadm = (member["global_admin"] == true);
 				req.session.email = member["email"];
+                if(req.body.lang && req.body.lang != member["lang"]){
+                    countlyDb.collection('members').update({_id:member["_id"]}, {$set:{lang:req.body.lang}}, function(){});
+                }
 				if(plugins.getConfig("frontend").session_timeout)
 					req.session.expires = Date.now()+plugins.getConfig("frontend").session_timeout;
                 res.redirect(countlyConfig.path+'/dashboard');
@@ -582,7 +582,7 @@ var auth = express.basicAuth(function(user, pass, callback) {
         if(member)
 			callback(null, member);
 		else
-			callback(null, user);
+			callback("err", user);
     });
 });
 
@@ -673,6 +673,9 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
 
     if (req.body.username) {
         updatedUser.username = req.body["username"];
+        if (req.body.lang) {
+            updatedUser.lang = req.body.lang;
+        }
 
         countlyDb.collection('members').findOne({username:req.body.username}, function (err, member) {
             if ((member && member._id != req.session.uid) || err) {

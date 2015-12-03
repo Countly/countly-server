@@ -58,6 +58,7 @@ var usersApi = {},
                 'username':     { 'required': true, 'type': 'String' },
                 'password':     { 'required': true, 'type': 'String' },
                 'email':        { 'required': true, 'type': 'String' },
+                'lang':         { 'required': false, 'type': 'String' },
                 'admin_of':     { 'required': false, 'type': 'Array' },
                 'user_of':      { 'required': false, 'type': 'Array' },
                 'global_admin': { 'required': false, 'type': 'Boolean' }
@@ -85,6 +86,7 @@ var usersApi = {},
             newMember.created_at = Math.floor(((new Date()).getTime()) / 1000); //TODO: Check if UTC
 
             common.db.collection('members').insert(newMember, {safe: true}, function(err, member) {
+                member = member.ops;
                 if (member && member.length && !err) {
 
                     member[0].api_key = common.md5Hash(member[0]._id + (new Date().getTime()));
@@ -111,6 +113,7 @@ var usersApi = {},
                 'username':     { 'required': false, 'type': 'String' },
                 'password':     { 'required': false, 'type': 'String' },
                 'email':        { 'required': false, 'type': 'String' },
+                'lang':         { 'required': false, 'type': 'String' },
                 'admin_of':     { 'required': false, 'type': 'Array' },
                 'user_of':      { 'required': false, 'type': 'Array' },
                 'global_admin': { 'required': false, 'type': 'Boolean' },
@@ -173,6 +176,7 @@ var usersApi = {},
                 continue;
             } else {
 				common.db.collection('members').findAndModify({'_id': common.db.ObjectID(userIds[i])},{},{},{remove:true},function(err, user){
+                    user = user.value;
 					if(!err && user)
 						plugins.dispatch("/i/users/delete", {params:params, data:user});
 				});

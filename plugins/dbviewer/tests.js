@@ -23,8 +23,7 @@ describe('Testing DBViewer', function(){
 				ob.should.not.be.empty;
 				ob.should.be.an.instanceOf(Array);
 				ob[0].should.have.property("name", "countly");
-				ob[0].should.have.property("collections").and.be.an.instanceOf(Array);
-				ob[0].should.have.property("collections").containEql("app_users"+APP_ID);
+				ob[0].should.have.property("collections");
 				ob[0].should.have.property("collections").containEql("apps");
 				ob[0].should.have.property("collections").containEql("carriers");
 				ob[0].should.have.property("collections").containEql("device_details");

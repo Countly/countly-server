@@ -99,21 +99,21 @@ window.ConfigurationsView = countlyView.extend({
     initialize:function () {
         this.predefinedInputs = {};
         this.predefinedLabels = {
-            "frontend":"Frontend",
-            "api":"API",
-            "apps":"Apps",
-            "logs": "Logs",
-            "frontend-production":"Production mode",
-            "frontend-session_timeout":"Session timeout in ms",
-            "api-domain":"Server URL (used in outgoing emails)",
-            "api-safe":"Safer API responses",
-            "api-session_duration_limit":"Maximal Session Duration",
-            "api-city_data":"Track city data",
-            "api-event_limit":"Max unique event keys",
-            "api-event_segmentation_limit":"Max segmentation in each event",
-            "api-event_segmentation_value_limit":"Max unique values in each segmentation",
-            "apps-country":"Default Country",
-            "apps-category":"Default Category"
+            "frontend":jQuery.i18n.map["configs.frontend"],
+            "api":jQuery.i18n.map["configs.api"],
+            "apps":jQuery.i18n.map["configs.apps"],
+            "logs": jQuery.i18n.map["configs.logs"],
+            "frontend-production":jQuery.i18n.map["configs.frontend-production"],
+            "frontend-session_timeout":jQuery.i18n.map["configs.frontend-session_timeout"],
+            "api-domain":jQuery.i18n.map["configs.api-domain"],
+            "api-safe":jQuery.i18n.map["configs.api-safe"],
+            "api-session_duration_limit":jQuery.i18n.map["configs.api-session_duration_limit"],
+            "api-city_data":jQuery.i18n.map["configs.api-city_data"],
+            "api-event_limit":jQuery.i18n.map["configs.api-event_limit"],
+            "api-event_segmentation_limit":jQuery.i18n.map["configs.api-event_segmentation_limit"],
+            "api-event_segmentation_value_limit":jQuery.i18n.map["configs.api-event_segmentation_value_limit"],
+            "apps-country":jQuery.i18n.map["configs.apps-country"],
+            "apps-category":jQuery.i18n.map["configs.apps-category"]
         };
         this.configsData = {};
         this.cache = {};
@@ -244,15 +244,15 @@ window.ConfigurationsView = countlyView.extend({
                 countlyPlugins.updateConfigs(self.changes, function(err, services){
                     if(err){
                         CountlyHelpers.notify({
-                            title: "Configs not changed",
-                            message: "Could not save changes",
+                            title: jQuery.i18n.map["configs.not-changed"],
+                            message: jQuery.i18n.map["configs.not-saved"],
                             type: "error"
                         });
                     }
                     else{
                         CountlyHelpers.notify({
-                            title: "Configs changed",
-                            message: "Changes were successfully saved"
+                            title: jQuery.i18n.map["configs.changed"],
+                            message: jQuery.i18n.map["configs.saved"]
                         });
                         self.configsData = JSON.parse(JSON.stringify(self.cache));
                         $("#configs-apply-changes").hide();
