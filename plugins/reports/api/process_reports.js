@@ -6,7 +6,7 @@ if(myArgs[0]){
     //start db connection
     var plugins = require('../../pluginManager.js'),
         reports = require("./reports");
-    var countlyDb = pluginManager.dbConnection();
+    var countlyDb = plugins.dbConnection();
     //load configs
     plugins.loadConfigs(countlyDb, function(){
         //send report

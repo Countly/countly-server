@@ -2959,9 +2959,30 @@ var AppRouter = Backbone.Router.extend({
     activeAppName:'',
     activeAppKey:'',
     main:function (forced) {
-        this.navigate("/", true);
-        if(forced && self.activeView != this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type]){
-            this.dashboard();
+        var change = true,
+            redirect = false;
+        if(location.hash != "#/"){
+            $("#"+countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type+"-type a").each(function(){
+                if(this.hash != "#/" && this.hash != ""){
+                    if(location.hash == this.hash){
+                        change = false;
+                        return false;
+                    }
+                    else if(location.hash.indexOf(this.hash) == 0){
+                        redirect = this.hash;
+                        return false;
+                    }
+                }
+            });
+        }
+        if(redirect){
+            app.navigate(redirect, true);
+        }
+        else if(change){
+            this.navigate("/", true);
+            if(forced && this.activeView != this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type]){
+                this.dashboard();
+            }
         }
     },
     dashboard:function () {
@@ -4312,6 +4333,20 @@ var AppRouter = Backbone.Router.extend({
 			$("#sidebar-menu").find("a").removeClass("active");
 
             var currentMenu = $("#sidebar-menu").find("a[href='#" + Backbone.history.fragment + "']");
+            if(currentMenu.length == 0){
+                $("#"+countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type+"-type a").each(function(){
+                    if(this.hash != "#/" && this.hash != ""){
+                        if(location.hash == this.hash){
+                            currentMenu = $(this);
+                            return false;
+                        }
+                        else if(location.hash.indexOf(this.hash) == 0){
+                            currentMenu = $(this);
+                            return false;
+                        }
+                    }
+                });
+            }
             currentMenu.addClass("active");
 
             var subMenu = currentMenu.parent(".sidebar-submenu");

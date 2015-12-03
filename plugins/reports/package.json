@@ -15,8 +15,7 @@
 	"reports"
   ],
   "dependencies": {
-    "crontab":"1.1.0",
-    "properties-parser":"0.2.3"
+    "crontab":"1.1.0"
   },
   "private": true
 }

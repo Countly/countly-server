@@ -53,6 +53,7 @@
     "time": "*",
     "underscore": "1.7.0",
     "formidable": "1.0.17",
-    "kerberos": "~0.0"
+    "kerberos": "~0.0",
+    "properties-parser":"0.2.3"
   }
 }
