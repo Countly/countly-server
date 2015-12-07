@@ -1337,11 +1337,6 @@ app.addPageScript("/users/#", function(){
     }
 });
 
-app.addPageScript("/messaging/messages", function(){
-    $("#sidebar-app-select").addClass("disabled");
-    $("#sidebar-app-select").removeClass("active");
-});
-
 $( document ).ready(function() {
     $.get(countlyGlobal["path"]+'/push/templates/push-create.html', function(src){
         $("body").append(src);

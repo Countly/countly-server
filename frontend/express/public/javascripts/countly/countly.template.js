@@ -4364,9 +4364,7 @@ var AppRouter = Backbone.Router.extend({
                 $("#" + selectedDateID).addClass("active");
             }
 			
-			if (Backbone.history.fragment == "/manage/apps" ||
-                Backbone.history.fragment == "/manage/account" ||
-                Backbone.history.fragment == "/manage/users") {
+			if (Backbone.history.fragment == "/manage/apps") {
                 $("#sidebar-app-select").addClass("disabled");
                 $("#sidebar-app-select").removeClass("active");
             } else {

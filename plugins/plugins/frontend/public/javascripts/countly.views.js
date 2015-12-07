@@ -444,17 +444,6 @@ app.addPageScript("/manage/plugins", function(){
     });
 });
 
-app.addPageScript("#", function(){
-    if (Backbone.history.fragment == '/manage/plugins') {
-        $("#sidebar-app-select").addClass("disabled");
-        $("#sidebar-app-select").removeClass("active");
-    }
-    if (Backbone.history.fragment == '/manage/configurations') {
-        $("#sidebar-app-select").addClass("disabled");
-        $("#sidebar-app-select").removeClass("active");
-    }
-});
-
 $( document ).ready(function() {
     if(countlyGlobal["member"] && countlyGlobal["member"]["global_admin"]){
         var menu = '<a href="#/manage/plugins" class="item">'+

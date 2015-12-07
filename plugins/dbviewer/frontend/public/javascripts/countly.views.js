@@ -161,12 +161,6 @@ app.route('/manage/db/:dbs/:collection/page/:page', 'dbs', function (db, collect
 	this.renderWhenReady(this.dbviewerView);
 });
 }
-app.addPageScript("#", function(){
-	if (Backbone.history.fragment.indexOf("/manage/db") > -1) {
-        $("#sidebar-app-select").addClass("disabled");
-        $("#sidebar-app-select").removeClass("active");
-    }
-});
 
 $( document ).ready(function() {
     Handlebars.registerHelper('withItem', function(object, options) {
