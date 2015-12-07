@@ -1274,66 +1274,101 @@ app.addAppManagementSwitchCallback(function(appId, type){
 });
 
 app.addPageScript("/drill", function(){
-    $("#bookmark-filter").after(
-    '<div id="create-message-connector" style="display:none; float:left; height:1px; border-top:1px solid #999; width:50px; margin-top:14px; margin-left:5px;"></div>'+
-    '<a class="icon-button green btn-header btn-create-message" data-localize="push.create" style="display:none"></a>');
-    app.localize();
-    $('.btn-create-message').off('click').on('click', function(){
-        var filterData = app.drillView.getFilterObjAndByVal();
-        var message = {
-            apps: [countlyCommon.ACTIVE_APP_ID],
-            platforms: [],
-            conditions: {}
-        };
-
-        for (var k in filterData.dbFilter) {
-            if (k.indexOf('up.') === 0) message.conditions[k.substr(3)] = filterData.dbFilter[k];
-        }
-
-        PushPopup(message, false, true);
-    });
-    $("#bookmark-view").on("click", ".bookmark-action.send", function() {
-        var filter = $(this).data("query");
-
-        var message = {
-            apps: [countlyCommon.ACTIVE_APP_ID],
-            platforms: [],
-            conditions: {}
-        };
-
-        for (var k in filter) {
-            if (k.indexOf('up.') === 0) message.conditions[k.substr(3)] = filter[k];
-        }
-
-        PushPopup(message, false, true);
-    });
+    if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "mobile"){
+        $("#bookmark-filter").after(
+        '<div id="create-message-connector" style="display:none; float:left; height:1px; border-top:1px solid #999; width:50px; margin-top:14px; margin-left:5px;"></div>'+
+        '<a class="icon-button green btn-header btn-create-message" data-localize="push.create" style="display:none"></a>');
+        app.localize();
+        $('.btn-create-message').off('click').on('click', function(){
+            var filterData = app.drillView.getFilterObjAndByVal();
+            var message = {
+                apps: [countlyCommon.ACTIVE_APP_ID],
+                platforms: [],
+                conditions: {}
+            };
+    
+            for (var k in filterData.dbFilter) {
+                if (k.indexOf('up.') === 0) message.conditions[k.substr(3)] = filterData.dbFilter[k];
+            }
+    
+            PushPopup(message, false, true);
+        });
+        $("#bookmark-view").on("click", ".bookmark-action.send", function() {
+            var filter = $(this).data("query");
+    
+            var message = {
+                apps: [countlyCommon.ACTIVE_APP_ID],
+                platforms: [],
+                conditions: {}
+            };
+    
+            for (var k in filter) {
+                if (k.indexOf('up.') === 0) message.conditions[k.substr(3)] = filter[k];
+            }
+    
+            PushPopup(message, false, true);
+        });
+    }
 });
 
 app.addPageScript("/users/#", function(){
-    var userDetails = countlyUserdata.getUserdetails();
-
-    var platforms = [], test = false, prod = false;
-    if (userDetails.tk) {
-        if (userDetails.tk.id || userDetails.tk.ia || userDetails.tk.ip) { platforms.push('i'); }
-        if (userDetails.tk.at || userDetails.tk.ap) { platforms.push('a'); }
-
-        test = !!userDetails.tk.id || !!userDetails.tk.ia || !!userDetails.tk.at;
-        prod = !!userDetails.tk.ip || !!userDetails.tk.ap;
-    }
-    if (platforms.length) {
-        if (!$('.btn-create-message').length) {
-            $('.widget-header .left').append($('<a class="icon-button green btn-header left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
+    if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "mobile"){
+        //check if it is profile view
+        if(app.activeView.updateEngagement){
+            var userDetails = countlyUserdata.getUserdetails();
+        
+            var platforms = [], test = false, prod = false;
+            if (userDetails.tk) {
+                if (userDetails.tk.id || userDetails.tk.ia || userDetails.tk.ip) { platforms.push('i'); }
+                if (userDetails.tk.at || userDetails.tk.ap) { platforms.push('a'); }
+        
+                test = !!userDetails.tk.id || !!userDetails.tk.ia || !!userDetails.tk.at;
+                prod = !!userDetails.tk.ip || !!userDetails.tk.ap;
+            }
+            if (platforms.length) {
+                if (!$('.btn-create-message').length) {
+                    $('.widget-header .left').append($('<a class="icon-button green btn-header left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
+                }
+                $('.btn-create-message').show().off('click').on('click', function(){
+                    PushPopup({
+                        platforms: platforms,
+                        apps: [countlyCommon.ACTIVE_APP_ID],
+                        test: test && !prod,
+                        conditions: {_id: app.userdetailsView.user_id}
+                    }, true, true);
+                });
+            } else {
+                $('.btn-create-message').hide();
+            }
         }
-        $('.btn-create-message').show().off('click').on('click', function(){
-            PushPopup({
-                platforms: platforms,
-                apps: [countlyCommon.ACTIVE_APP_ID],
-                test: test && !prod,
-                conditions: {_id: app.userdetailsView.user_id}
-            }, true, true);
-        });
-    } else {
-        $('.btn-create-message').hide();
+        else{
+            //list view
+            if (!$('.btn-create-message').length) {
+                $('.widget-header .left').append($('<a class="icon-button green btn-header left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
+            }
+            $('.btn-create-message').off('click').on('click', function(){
+                //drill filter
+                var filterData = app.userdataView._query || {};
+                
+                //known/anonymous filter
+                if(app.userdataView.filter == "user-known")
+                    filterData["hasInfo"] = true;
+                else if(app.userdataView.filter == "user-anonymous")
+                    filterData["hasInfo"] = {"$ne": true};
+                
+                //text search filter
+                if($('.dataTables_filter input').val().length)
+                    filterData["$text"] = { "$search": "\""+$('.dataTables_filter input').val()+"\"" };
+                
+                var message = {
+                    apps: [countlyCommon.ACTIVE_APP_ID],
+                    platforms: [],
+                    conditions: filterData
+                };
+                
+                PushPopup(message, false, true);
+            });
+        }
     }
 });
 
