@@ -17,7 +17,7 @@ function save_changes(data){
 }
 
 //check if we have a command
-if(myArgs[0] == "install" && myArgs[1]){
+if(myArgs[0] == "enable" && myArgs[1]){
     if(plugins.indexOf(myArgs[1]) == -1){
         manager.installPlugin(myArgs[1]);
         plugins.push(myArgs[1]);
@@ -29,7 +29,7 @@ if(myArgs[0] == "install" && myArgs[1]){
         console.log("Plugin already installed");
     }
 }
-else if(myArgs[0] == "uninstall" && myArgs[1]){
+else if(myArgs[0] == "disable" && myArgs[1]){
     if(plugins.indexOf(myArgs[1]) > -1){
         manager.uninstallPlugin(myArgs[1]);
         plugins.splice(plugins.indexOf(myArgs[1]), 1);
