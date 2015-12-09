@@ -1,2 +1,3 @@
-forever stopall
+#forever stopall
+countly stop
 rm -fr /home/ubuntu/countly
