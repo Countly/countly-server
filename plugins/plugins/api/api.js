@@ -139,8 +139,26 @@ var plugin = {},
 				common.returnMessage(params, 401, 'User is not a global administrator');
 				return false;
 			}
-            common.returnOutput(params, plugins.getAllConfigs());
+            var confs = plugins.getAllConfigs();
+            delete confs.services;
+            common.returnOutput(params, confs);
         }, params);
+        return true;
+    });
+    
+    plugins.register("/o/themes", function(ob){
+		var params = ob.params;
+        var themeDir = path.resolve(__dirname, "../../../frontend/express/public/themes/");
+        fs.readdir(themeDir, function(err, list) {
+            if(!Array.isArray(list))
+                list = [];
+            list.unshift("");
+            var index = list.indexOf(".gitignore");
+            if (index > -1) {
+                list.splice(index, 1);
+            }
+            common.returnOutput(params, list);
+        });
         return true;
     });
 }(plugin));

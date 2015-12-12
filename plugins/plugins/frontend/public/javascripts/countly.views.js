@@ -105,6 +105,7 @@ window.ConfigurationsView = countlyView.extend({
             "logs": jQuery.i18n.map["configs.logs"],
             "frontend-production":jQuery.i18n.map["configs.frontend-production"],
             "frontend-session_timeout":jQuery.i18n.map["configs.frontend-session_timeout"],
+            "frontend-theme":jQuery.i18n.map["configs.frontend-theme"],
             "api-domain":jQuery.i18n.map["configs.api-domain"],
             "api-safe":jQuery.i18n.map["configs.api-safe"],
             "api-session_duration_limit":jQuery.i18n.map["configs.api-session_duration_limit"],
@@ -163,6 +164,35 @@ window.ConfigurationsView = countlyView.extend({
                     
                 for(var i in zones){
                     select += '<div data-value="'+i+'" class="segmentation-option item"><div class="flag" style="background-image:url(images/flags/'+i.toLowerCase()+'.png)"></div>'+zones[i].n+'</div>';
+                }
+
+            select += '</div>'+
+                '</div>'+
+            '</div>';
+            return select;
+        });
+        
+        this.registerInput("frontend-theme", function(value){
+            var themes = countlyPlugins.getThemeList();
+            var select = '<div class="cly-select" id="frontend-theme">'+
+                '<div class="select-inner">'+
+                    '<div class="text-container">';
+            if(value && value.length)
+                select += '<div class="text">'+countlyGlobal["config"].theme+'</div>';
+            else
+                select += '<div class="text">'+jQuery.i18n.map["configs.no-theme"]+'</div>';
+            
+            select += '</div>'+
+                    '<div class="right combo"></div>'+
+                '</div>'+
+                '<div class="select-items square">'+
+                    '<div>';
+                    
+                for(var i = 0; i < themes.length; i++){
+                    if(themes[i] == "")
+                        select += '<div data-value="" class="segmentation-option item">'+jQuery.i18n.map["configs.no-theme"]+'</div>';
+                    else
+                        select += '<div data-value="'+themes[i]+'" class="segmentation-option item">'+themes[i]+'</div>';
                 }
 
             select += '</div>'+

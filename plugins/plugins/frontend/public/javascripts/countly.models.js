@@ -3,6 +3,7 @@
     //Private Properties
     var _pluginsData = {};
     var _configsData = {};
+    var _themeList = [];
 
     //Public Methods
     countlyPlugins.initialize = function (id) {
@@ -20,16 +21,30 @@
     
     //Public Methods
     countlyPlugins.initializeConfigs = function (id) {
-		return $.ajax({
-			type:"GET",
-			url:countlyCommon.API_URL + "/o/configs",
-			data:{
-                api_key:countlyGlobal['member'].api_key
-            },
-			success:function (json) {
-				_configsData = json;
-			}
-		});
+		return $.when(
+            $.ajax({
+                type:"GET",
+                url:countlyCommon.API_URL + "/o/themes",
+                data:{
+                    api_key:countlyGlobal['member'].api_key
+                },
+                success:function (json) {
+                    _themeList = json;
+                }
+            }),
+            $.ajax({
+                type:"GET",
+                url:countlyCommon.API_URL + "/o/configs",
+                data:{
+                    api_key:countlyGlobal['member'].api_key
+                },
+                success:function (json) {
+                    _configsData = json;
+                }
+            })
+        ).then(function(){
+            return true;
+        });
     };
     
     countlyPlugins.updateConfigs = function (configs, callback) {
@@ -81,6 +96,10 @@
     
     countlyPlugins.getConfigsData = function () {
 		return _configsData;
+    };
+    
+    countlyPlugins.getThemeList = function () {
+		return _themeList;
     };
 	
 }(window.countlyPlugins = window.countlyPlugins || {}, jQuery));

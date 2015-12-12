@@ -211,6 +211,7 @@ var pluginManager = function pluginManager(){
         var self = this;
         app.use(function(req, res, next) {
             self.loadConfigs(countlyDb, function(){
+                app.loadThemeFiles(self.getConfig("frontend").theme);
                 next();
             })
         });

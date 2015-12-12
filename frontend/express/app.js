@@ -34,20 +34,8 @@ var versionInfo = require('./version.info'),
     
 plugins.setConfigs("frontend", {
     production: true,
+    theme: "",
     session_timeout: 30*60*1000,
-});
-
-var themeDir = path.resolve(__dirname, "public/theme/");
-var themeFiles = {css:[], js:[]};
-fs.readdir(themeDir, function(err, list) {
-    if (err) return ;
-    var ext;
-    for(var i = 0; i < list.length; i++){
-        ext = list[i].split(".").pop();
-        if(!themeFiles[ext])
-            themeFiles[ext] = [];
-        themeFiles[ext].push(countlyConfig.path+'/theme/'+list[i]);
-    }
 });
 
 var countlyDb = plugins.dbConnection(countlyConfig);
@@ -97,12 +85,59 @@ function sortBy(arrayToSort, sortList) {
 
 var app = express();
 
+var themeFiles = {css:[], js:[]};
+var curTheme;
+app.loadThemeFiles = function(theme){
+    if(curTheme != theme){
+        curTheme = theme;
+        themeFiles = {css:[], js:[]};
+        if(theme && theme.length){
+            var themeDir = path.resolve(__dirname, "public/themes/"+theme+"/");
+            fs.readdir(themeDir, function(err, list) {
+                if (err) return ;
+                var ext;
+                for(var i = 0; i < list.length; i++){
+                    ext = list[i].split(".").pop();
+                    if(!themeFiles[ext])
+                        themeFiles[ext] = [];
+                    themeFiles[ext].push(countlyConfig.path+'/themes/'+theme+"/"+list[i]);
+                }
+            });
+        }
+    }
+};
+
+plugins.loadConfigs(countlyDb, function(){
+    app.loadThemeFiles(plugins.getConfig("frontend").theme);
+});
+
 app.configure(function () {
     app.engine('html', require('ejs').renderFile);
     app.set('views', __dirname + '/views');
     app.set('view engine', 'html');
     app.set('view options', {layout:false});
     plugins.loadAppStatic(app, countlyDb, express);
+    //server theme images
+    app.use(function(req, res, next) {
+        if(req.url.indexOf(countlyConfig.path+'/images/') === 0){
+            var url = req.url.replace(countlyConfig.path, "");
+            if(curTheme && curTheme.length){
+                fs.exists(__dirname + '/public/themes/'+curTheme + url, function(exists) {
+                    if (exists) {
+                        res.sendfile(__dirname + '/public/themes/'+curTheme + url);
+                    } else {
+                        res.sendfile(__dirname + '/public' + url);
+                    }
+                });
+            }
+            else{ //serve default location
+                res.sendfile(__dirname + '/public' + url);
+            }
+        }
+        else{
+            next();
+        }
+    });
     var oneYear = 31557600000;
     app.use(countlyConfig.path, express.static(__dirname + '/public'), { maxAge:oneYear });
     app.use(express.cookieParser());
@@ -162,13 +197,7 @@ app.get(countlyConfig.path+'/', function (req, res, next) {
 
 //serve app images
 app.get(countlyConfig.path+'/appimages/*', function(req, res) {
-	fs.exists(__dirname + '/public' + req.url, function(exists) {
-		if (exists) {
-			res.sendfile(__dirname + '/public' + req.url);
-		} else {
-			res.sendfile(__dirname + '/public/images/default_app_icon.png');
-		}
-	});
+    res.sendfile(__dirname + '/public/images/default_app_icon.png');
 });
 
 if(plugins.getConfig("frontend").session_timeout){
