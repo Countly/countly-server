@@ -1,4 +1,6 @@
 language: nodejs
+services:
+  - mongodb
 env:
   - CXX=g++-4.8
 addons:
