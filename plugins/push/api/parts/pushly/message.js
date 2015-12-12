@@ -287,11 +287,11 @@ module.exports.Message = function (apps, names) {
                     content.delayWhileIdle = this.delayWhileIdle;
                 }
 
-                if (this.sound) {
+                if (typeof this.sound !== 'undefined') {
                     content.sound = this.sound;
                 }
 
-                if (this.badge) {
+                if (typeof this.badge !== 'undefined') {
                     content.badge = this.badge;
                 }
 
