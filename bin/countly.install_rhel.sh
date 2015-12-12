@@ -109,3 +109,4 @@ cd $DIR && grunt dist-all
 
 #finally start countly api and dashboard
 countly start
+countly update sdk-web

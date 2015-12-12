@@ -46,3 +46,4 @@ rm -rf $DIR/../node_modules
 
 #install dependencies, process files and restart countly
 countly upgrade
+countly update sdk-web

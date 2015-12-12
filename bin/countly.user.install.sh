@@ -97,3 +97,4 @@ echo "countly ALL=(ALL) NOPASSWD: /usr/bin/countly start, /usr/bin/countly stop,
 
 #finally start countly api and dashboard
 countly start
+countly update sdk-web

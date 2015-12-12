@@ -100,3 +100,4 @@ if [ "$INSIDE_DOCKER" != "1" ]
 then
 	countly start
 fi
+countly update sdk-web
