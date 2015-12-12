@@ -178,7 +178,7 @@ window.ConfigurationsView = countlyView.extend({
                 '<div class="select-inner">'+
                     '<div class="text-container">';
             if(value && value.length)
-                select += '<div class="text">'+countlyGlobal["config"].theme+'</div>';
+                select += '<div class="text">'+value+'</div>';
             else
                 select += '<div class="text">'+jQuery.i18n.map["configs.no-theme"]+'</div>';
             
