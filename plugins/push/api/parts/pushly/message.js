@@ -291,7 +291,7 @@ module.exports.Message = function (apps, names) {
                     content.sound = this.sound;
                 }
 
-                if (this.badge) {
+                if (_.isNumber(this.badge)) {
                     content.badge = this.badge;
                 }
 
