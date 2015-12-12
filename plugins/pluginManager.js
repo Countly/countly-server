@@ -433,10 +433,10 @@ var pluginManager = function pluginManager(){
             config = config || countlyConfig;
             
         var dbName;
-        var options = {
-            poolSize: config.mongodb.max_pool_size, 
-            reconnectInterval: 100,
-            socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 30000, connectTimeoutMS: 0, socketTimeoutMS: 0 }
+        var dbOptions = {
+            server:{poolSize: config.mongodb.max_pool_size, reconnectInterval: 100, socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 1, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
+            replSet:{poolSize: config.mongodb.max_pool_size, reconnectInterval: 100, socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 1, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
+            mongos:{poolSize: config.mongodb.max_pool_size, reconnectInterval: 100, socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 1, connectTimeoutMS: 0, socketTimeoutMS: 0 }}
         };
         var dbOptions = {};
         if (typeof config.mongodb === 'string') {
@@ -446,6 +446,9 @@ var pluginManager = function pluginManager(){
             if ( typeof config.mongodb.replSetServers === 'object'){
                 //mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test
                 dbName = config.mongodb.replSetServers.join(',')+'/'+config.mongodb.db;
+                if(config.mongodb.replicaName){
+                    dbOptions.replSet.replicaSet = config.mongodb.replicaName;
+                }
             } else {
                 dbName = (config.mongodb.host + ':' + config.mongodb.port + '/' + config.mongodb.db);
             }
@@ -455,25 +458,10 @@ var pluginManager = function pluginManager(){
             dbOptions.db = config.mongodb.dbOptions;
         }
         
-        if(config.mongodb.replSetServers){
-            dbOptions.replSet = options;
-            if(config.mongodb.replicaName){
-                dbOptions.replSet.replicaSet = config.mongodb.replicaName;
-            }
-            if(config.mongodb.serverOptions)
-                _.extend(dbOptions.replSet, config.mongodb.serverOptions);
-        }
-        
-        if(config.mongodb.mongos){
-            dbOptions.mongos = options;
-            if(config.mongodb.serverOptions)
-                _.extend(dbOptions.mongos, config.mongodb.serverOptions);
-        }
-        
-        if(!config.mongodb.mongos && !config.mongodb.replSetServers){
-            dbOptions.server = options;
-            if(config.mongodb.serverOptions)
-                _.extend(dbOptions.server, config.mongodb.serverOptions);
+        if(config.mongodb.serverOptions){
+            _.extend(dbOptions.server, config.mongodb.serverOptions);
+            _.extend(dbOptions.replSet, config.mongodb.serverOptions);
+            _.extend(dbOptions.mongos, config.mongodb.serverOptions);   
         }
         
         if(config.mongodb.username && config.mongodb.password){
