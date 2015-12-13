@@ -29,7 +29,7 @@
 	segments["[CLY]_push_action"]={i:"123456789012345678901234"};
 	segments["[CLY]_push_sent"]={i:"123456789012345678901234"};
 	segments["[CLY]_view"]={
-        name:["/", "/blog", "/contact", "/search", "/about", "prices"],
+        name:["Settings Page", "Purchase Page", "Credit Card Entry", "Profile page", "Start page", "Message page"],
         visit:[1],
         start:[0,1],
         exit:[0,1],
