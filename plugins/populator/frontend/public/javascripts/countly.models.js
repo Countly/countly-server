@@ -217,7 +217,10 @@
 			}
 			var event = {
 				"key": id,
-				"count": 1
+				"count": 1,
+                "timestamp": this.ts,
+                "hour": getRandomInt(0, 23),
+                "dow": getRandomInt(0, 6)
 			};
 			if(id == this.iap){
 				stats.b++;
@@ -251,6 +254,9 @@
 			var event = {
 				"key": id,
 				"count": 1,
+                "timestamp": this.ts,
+                "hour": getRandomInt(0, 23),
+                "dow": getRandomInt(0, 6),
                 "test": 1 // Events starting with [CLY]_ are ignored by the API (internal events). This flag is to bypass that.
 			};
 			if(segments[id]){
@@ -327,6 +333,8 @@
 			stats.r++;
 			params.device_id = this.id;
 			params.ip_address = this.ip;
+            params.hour = getRandomInt(0, 23);
+            params.dow = getRandomInt(0, 6);
 			bulk.push(params);
 			countlyPopulator.sync();
 		};
