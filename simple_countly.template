@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion" : "2010-09-09",
-    "Description" : "Countly Community Edition server with Node.js and MongoDB",
+    "Description" : "Countly Community Edition server",
     "Parameters" : {
         "InstanceType" : {
             "Description" : "EC2 instance type",
@@ -29,8 +29,8 @@
         "KeyName" : {
             "Description" : "Your EC2 Key Pair, created in the first step",
             "Type" : "AWS::EC2::KeyPair::KeyName",
-            "Default"  : "",
-            "ConstraintDescription" : "must be the name of an existing EC2 KeyPair."
+            "MinLength" : "2",
+            "ConstraintDescription" : "must be the name of an existing EC2 KeyPair"
         }
     },
     "Mappings" : {
@@ -71,7 +71,7 @@
         }
     },
     "Resources" : {
-
+                
         "InstanceUser" : {
             "Type" : "AWS::IAM::User",
             "Properties" : {
@@ -186,26 +186,7 @@
                 }]
             }
         },
-
-        "InstanceSecurityGroup" : {
-            "Type" : "AWS::EC2::SecurityGroup",
-            "Properties" : {
-                "GroupDescription" : ".",
-                "SecurityGroupIngress" : [ {
-                    "IpProtocol" : "tcp",
-                    "FromPort"   : "22",
-                    "ToPort"     : "22",
-                    "CidrIp"     : "0.0.0.0/0"
-                },
-                {
-                    "IpProtocol" : "tcp",
-                    "FromPort"   : "80",
-                    "ToPort"     : "80",
-                    "CidrIp"     : "0.0.0.0/0"
-                } ]
-            }
-        },
-        
+           
         "MongoDbVolume" : {
              "Type" : "AWS::EC2::Volume",
              "Properties" : {
@@ -290,14 +271,16 @@
                     }
                 }
             },
+            
             "Properties" : {
                 "KeyName" : { "Ref" : "KeyName" },
                 "ImageId" : { "Fn::FindInMap" : [
                                   "AWSRegionArch2AMI",
                                   { "Ref" : "AWS::Region" },
-                                  { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Fn::FindInMap" : [ "InstanceLabel2Type", { "Ref" : "InstanceType" }, "Type" ] }, "Arch" ] } ] },
-                "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+                                  { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Fn::FindInMap" : [ "InstanceLabel2Type", { "Ref" : "InstanceType" }, "Type" ] }, "Arch" ] } ] },              
                 "InstanceType" : { "Fn::FindInMap" : [ "InstanceLabel2Type", { "Ref" : "InstanceType" }, "Type" ] },
+                "SubnetId" : { "Ref" : "CountlySubnet" },             
+                "SecurityGroupIds": [{ "Ref" : "InstanceSecurityGroup" }],
                 "UserData"     : { "Fn::Base64" : { "Fn::Join" : ["", [
 
                     "#!/bin/bash -xe\n",
@@ -387,6 +370,97 @@
                         "VolumeSize" : "12"
                     }
                 }]
+            }            
+        },
+        
+        "CountlyVPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "172.31.0.0/16"               
+            }    
+        },
+        
+        "InstanceSecurityGroup" : {
+            "Type" : "AWS::EC2::SecurityGroup",
+            "Properties" : {
+                "GroupDescription" : ".",
+                "SecurityGroupIngress" : [ {
+                    "IpProtocol" : "tcp",
+                    "FromPort"   : "22",
+                    "ToPort"     : "22",
+                    "CidrIp"     : "0.0.0.0/0"
+                },
+                {
+                    "IpProtocol" : "tcp",
+                    "FromPort"   : "80",
+                    "ToPort"     : "80",
+                    "CidrIp"     : "0.0.0.0/0"
+                } ],
+                "VpcId" : { "Ref" : "CountlyVPC" }        
+            }               
+        },
+        
+        "CountlySubnet" : {
+           "Type" : "AWS::EC2::Subnet",
+           "Properties" : {             
+              "CidrBlock" : "172.31.0.0/16",             
+              "VpcId" : { "Ref" : "CountlyVPC" }
+           }
+        },    
+        
+        "CountlyIp" : {
+            "Type" : "AWS::EC2::EIP",
+            "Properties": {
+                "Domain" : "vpc"
+            }
+        },
+        
+        "CountlyIpAssociation" : {
+           "Type": "AWS::EC2::EIPAssociation",
+           "Properties": {
+              "AllocationId": { "Fn::GetAtt" : [ "CountlyIp", "AllocationId" ]},             
+              "InstanceId" : { "Ref" : "CountlyInstance" }         
+           }
+        },
+        
+        "CountlyInternetGateway" : {
+            "Type" : "AWS::EC2::InternetGateway",
+                "Properties" : {
+                    "Tags" : [ {"Key" : "Name", "Value" : "CountlyInternetGateway"}]
+            }
+        },
+        
+        "InternetGatewayAttachment" : {
+           "Type" : "AWS::EC2::VPCGatewayAttachment",
+           "Properties" : {
+              "VpcId" : { "Ref" : "CountlyVPC" },
+              "InternetGatewayId" : { "Ref" : "CountlyInternetGateway" }
+           }
+        },
+        
+        "CountlyRouteTable" : {
+            "Type" : "AWS::EC2::RouteTable",
+            "Properties" : {
+                "VpcId" : { "Ref" : "CountlyVPC" },
+                "Tags" : [ { "Key" : "Name", "Value" : "CountlyRouteTable" } ]
+            }
+        },
+        
+        "Route" : {
+            "Type" : "AWS::EC2::Route",      
+            "DependsOn" : "InternetGatewayAttachment",      
+            "Properties" : {
+                "RouteTableId" : { "Ref" : "CountlyRouteTable" },
+                "DestinationCidrBlock" : "0.0.0.0/0",
+                "GatewayId" : { "Ref" : "CountlyInternetGateway" }
+            }
+        },
+        
+        "SubnetRouteTableAssociation" : {
+            "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties" : {
+                "SubnetId" : { "Ref" : "CountlySubnet" },
+                "RouteTableId" : { "Ref" : "CountlyRouteTable" }
             }
         },
 
@@ -476,7 +550,7 @@
                     "Revision" : {
                         "RevisionType" : "GitHub",
                         "GitHubLocation" : {
-                            "CommitId"   : "850e03957f304b99427188fba66ebda883b3eb7d",
+                            "CommitId"   : "c077cc15eb7e5c398fb546800e08184f1063db23",
                             "Repository" : "Countly/countly-server"
                         }
                     }
