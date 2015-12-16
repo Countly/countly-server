@@ -63,6 +63,7 @@ countly_backup (){
     echo "Backing up Countly configurations and files...";
     mkdir -p files/frontend/express/public/appimages ;
     mkdir -p files/frontend/express/public/userimages ;
+    mkdir -p files/frontend/express/public/themes ;
     mkdir -p files/frontend/express/certificates ;
     mkdir -p files/frontend/express/public/javascripts/countly ;
     mkdir -p files/api ;
@@ -80,6 +81,9 @@ countly_backup (){
     fi
     if [ -d $DIR/../../frontend/express/public/userimages ]; then
         cp -a $DIR/../../frontend/express/public/userimages/. files/frontend/express/public/userimages/
+    fi
+    if [ -d $DIR/../../frontend/express/public/themes ]; then
+        cp -a $DIR/../../frontend/express/public/themes/. files/frontend/express/public/themes/
     fi
     if [ -d $DIR/../../frontend/express/certificates ]; then
         cp -a $DIR/../../frontend/express/certificates/. files/frontend/express/certificates/
@@ -110,6 +114,7 @@ countly_restore (){
     (cd $1 ;
     mkdir -p $DIR/../../frontend/express/public/appimages ;
     mkdir -p $DIR/../../frontend/express/public/userimages ;
+    mkdir -p $DIR/../../frontend/express/public/themes ;
     mkdir -p $DIR/../../frontend/express/certificates ;
     mkdir -p $DIR/../../frontend/express/public/javascripts/countly ;
     mkdir -p $DIR/../../api ;
@@ -127,6 +132,9 @@ countly_restore (){
     fi
     if [ -d files/frontend/express/public/userimages ]; then
         cp -a files/frontend/express/public/userimages/. $DIR/../../frontend/express/public/userimages/
+    fi
+    if [ -d files/frontend/express/public/themes ]; then
+        cp -a files/frontend/express/public/themes/. $DIR/../../frontend/express/public/themes/
     fi
     if [ -d files/frontend/express/certificates ]; then
         cp -a files/frontend/express/certificates/. $DIR/../../frontend/express/certificates/

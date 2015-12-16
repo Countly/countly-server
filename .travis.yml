@@ -17,7 +17,10 @@ before_script:
   - cat /var/log/mongodb/mongod.log
   - until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
 script: npm test
-after_script: cat /var/log/mongodb/mongod.log
+after_script: 
+  - cat log/countly-api.log
+  - cat log/countly-dashboard.log
+  - cat /var/log/mongodb/mongod.log
 notifications:
   email: hello@count.ly
   hipchat:

@@ -1288,7 +1288,7 @@ app.addPageScript("/drill", function(){
             };
     
             for (var k in filterData.dbFilter) {
-                if (k.indexOf('up.') === 0) message.conditions[k.substr(3)] = filterData.dbFilter[k];
+                if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filterData.dbFilter[k];
             }
     
             PushPopup(message, false, true);
@@ -1303,7 +1303,7 @@ app.addPageScript("/drill", function(){
             };
     
             for (var k in filter) {
-                if (k.indexOf('up.') === 0) message.conditions[k.substr(3)] = filter[k];
+                if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filter[k];
             }
     
             PushPopup(message, false, true);
