@@ -2961,7 +2961,7 @@ var AppRouter = Backbone.Router.extend({
     main:function (forced) {
         var change = true,
             redirect = false;
-        if(location.hash != "#/"){
+        if(location.hash != "#/" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID]){
             $("#"+countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type+"-type a").each(function(){
                 if(this.hash != "#/" && this.hash != ""){
                     if(location.hash == this.hash){
