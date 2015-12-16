@@ -254,7 +254,12 @@
 		
 		this.getPushEvent = function(id){
 			if(!id){
-				id = pushEvents[Math.floor(Math.random()*pushEvents.length)];
+                if(Math.random() > 0.5)
+                    id = "[CLY]_push_sent";
+                else if(Math.random() > 0.5)
+                    id = "[CLY]_push_open";
+                else
+                    id = "[CLY]_push_action";
 			}
 			var event = {
 				"key": id,
