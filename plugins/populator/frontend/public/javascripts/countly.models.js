@@ -281,7 +281,7 @@
 		};
 		
 		this.startSession = function(){
-			this.ts = getRandomInt(this.startTs, this.endTs);
+			this.ts = this.ts + 60*60*24+1;
 			stats.s++;
 			if(!this.isRegistered){
 				this.isRegistered = true;
