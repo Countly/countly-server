@@ -59,51 +59,46 @@ var Job = function(name, data) {
 		json.data = data;
 	}
 
-	var save = function(clb){
-		withCollection(function(err, collection){
-			if (err || !collection) { 
-				log.w('Error while saving job: %j', err);
-				setTimeout(save.bind(null, clb), 1000); 
-			} else {
-				if (replace) {
-					var query = {status: STATUS.SCHEDULED, name: name};
-					if (data) { query.data = data; }
+	var collection = common.db.collection('jobs');
 
-					log.i('replacing job %j with', query, json);
-					collection.findAndModify(query, [['_id', 1]], {$set: json}, {new: true}, function(err, job){
-                        job = job.value;
-						if (err) {
-							log.e('job replacement error, saving new job', err, job);
-							collection.save(json, clb || function(err){
-								if (err) { 
-									log.w('Error while saving new job on job replacement error: %j', err);
-									setTimeout(save.bind(null, clb), 1000); 
-								}
-							});
-						} else if (!job){
-							log.i('no job found to replace, saving new job', err, job);
-							collection.save(json, clb || function(err){
-								if (err) { 
-									log.w('Error while saving job on no job to replace: %j', err);
-									setTimeout(save.bind(null, clb), 1000); 
-								}
-							});
-						} else {
-							log.i('job replacing done', job);
-							if (clb) { clb(); }
-						}
-					});
-				} else {
-					log.d('saving %j', json);
+	var save = function(clb){
+		if (replace) {
+			var query = {status: STATUS.SCHEDULED, name: name};
+			if (data) { query.data = data; }
+
+			log.i('replacing job %j with', query, json);
+			collection.findAndModify(query, [['_id', 1]], {$set: json}, {new: true}, function(err, job){
+                job = job.value;
+				if (err) {
+					log.e('job replacement error, saving new job', err, job);
 					collection.save(json, clb || function(err){
 						if (err) { 
-							log.w('Error while saving job: %j', err);
+							log.w('Error while saving new job on job replacement error: %j', err);
 							setTimeout(save.bind(null, clb), 1000); 
 						}
 					});
+				} else if (!job){
+					log.i('no job found to replace, saving new job', err, job);
+					collection.save(json, clb || function(err){
+						if (err) { 
+							log.w('Error while saving job on no job to replace: %j', err);
+							setTimeout(save.bind(null, clb), 1000); 
+						}
+					});
+				} else {
+					log.i('job replacing done', job);
+					if (clb) { clb(); }
 				}
-			}
-		});
+			});
+		} else {
+			log.d('saving %j', json);
+			collection.save(json, clb || function(err){
+				if (err) { 
+					log.w('Error while saving job: %j', err);
+					setTimeout(save.bind(null, clb), 1000); 
+				}
+			});
+		}
 	};
 
 	this.schedule = function(schedule, strict, clb, nextTime) {
@@ -251,11 +246,7 @@ var JobWorker = function(processors){
 	}.bind(this));
 	log.d('Loaded processors %j', processors);
 
-	withCollection(function(err, collection){
-		if (collection) {
-			collection.update({status: STATUS.RUNNING, started: {$lt: Date.now() - 60 * 60 * 1000}}, {$set: {status: STATUS.CANCELLED, error: 'Cancelled on restart'}}, {multi: true}, this.next.bind(this));
-		}
-	}.bind(this));
+	var collection = common.db.collection('jobs');
 
 	this.next = function(){
 		// if (!this.stream) {			
@@ -266,7 +257,7 @@ var JobWorker = function(processors){
 			}
 
 			log.d('Looking for jobs ...'); 
-			jobsCollection.find(find).sort({next: 1}).limit(10).toArray(function(err, jobs){
+			collection.find(find).sort({next: 1}).limit(10).toArray(function(err, jobs){
 				if (err) { 
 					log.e('Error while looking for jobs: %j', err); 
 					this.nextAfterDelay();
@@ -276,93 +267,65 @@ var JobWorker = function(processors){
 				} else {
 					for (var i = 0; i < jobs.length; i++) {
 						var job = jobs[i];
-				if (job.next > Date.now()) {
-					// return console.log('Skipping job %j', job);
+						if (job.next > Date.now()) {
+							// return console.log('Skipping job %j', job);
 							break;
-				}
+						}
 
-				if (!this.canProcess(job)) {
+						if (!this.canProcess(job)) {
 							log.d('Cannot process job %j yet', job);
 							break;
-				}
+						}
 
-				log.i('Got a job %j', job);
-				var update = {
-					$set: {status: STATUS.RUNNING, started: Date.now()}
-				};
+						log.i('Got a job %j', job);
+						var update = {
+							$set: {status: STATUS.RUNNING, started: Date.now()}
+						};
 
-				if (job.strict !== null) {
-					if ((Date.now() - job.next) > job.strict) {
-						update.$set.status = STATUS.DONE;
-						update.$set.error = 'Job expired';
-						delete update.$set.next;
-					}
-				}
-
-				jobsCollection.findAndModify({_id: job._id, status: {$in: [STATUS.RUNNING, STATUS.SCHEDULED]}}, [['_id', 1]], update, function(err, job){
-                    job = job.value;
-					if (err) {
-						log.e('Couldn\'t update a job: %j', err);
-					} else if (!job) {
-						// ignore
-					} else if (job.status === STATUS.RUNNING) {
-						log.i('The job is running on another server, won\'t start it here');
-					} else if (job.status === STATUS.SCHEDULED) {
-						this.process(job);
-
-						if (job.schedule) {
-							var schedule = typeof job.schedule === 'string' ? later.parse.text(job.schedule) : job.schedule,
-								nextFrom = new Date(job.next);
-							var next = later.schedule(schedule).next(2, nextFrom);
-							if (next && next.length > 1) {
-								if (job.strict === null) { 
-									// for strict jobs we're going to repeat all missed tasks up to current date after restart
-									// for non-strict ones, we want to start from current date
-									while (next[1].getTime() < Date.now()) {
-										next = later.schedule(schedule).next(2, next[1]);
-										if (next.length < 2) { return; }
-									}
-								}
-										new Job(job.name, job.data, this).schedule(job.schedule, job.strict, null, next[1].getTime());
+						if (job.strict !== null) {
+							if ((Date.now() - job.next) > job.strict) {
+								update.$set.status = STATUS.DONE;
+								update.$set.error = 'Job expired';
+								delete update.$set.next;
 							}
 						}
-					}
-				}.bind(this));
 
-						// if ((Date.now() - this.stream.__created) > 10) {
-						// 	this.cursor.close();
-						// }
+						collection.findAndModify({_id: job._id, status: {$in: [STATUS.RUNNING, STATUS.SCHEDULED]}}, [['_id', 1]], update, function(err, job){
+		                    job = job.value;
+							if (err) {
+								log.e('Couldn\'t update a job: %j', err);
+							} else if (!job) {
+								// ignore
+							} else if (job.status === STATUS.RUNNING) {
+								log.i('The job is running on another server, won\'t start it here');
+							} else if (job.status === STATUS.SCHEDULED) {
+								this.process(job);
+
+								if (job.schedule) {
+									var schedule = typeof job.schedule === 'string' ? later.parse.text(job.schedule) : job.schedule,
+										nextFrom = new Date(job.next);
+									var next = later.schedule(schedule).next(2, nextFrom);
+									if (next && next.length > 1) {
+										if (job.strict === null) { 
+											// for strict jobs we're going to repeat all missed tasks up to current date after restart
+											// for non-strict ones, we want to start from current date
+											while (next[1].getTime() < Date.now()) {
+												next = later.schedule(schedule).next(2, next[1]);
+												if (next.length < 2) { return; }
+											}
+										}
+										new Job(job.name, job.data, this).schedule(job.schedule, job.strict, null, next[1].getTime());
+									}
+								}
+							}
+						}.bind(this));
 					}
 					this.nextAfterDelay();
 				}
 			}.bind(this));
-			// this.cursor = jobsCollection.find(find, {tailable: true, awaitdata: true, numberOfRetries: Number.MAX_VALUE, tailableRetryInterval: 1000}).sort({next: 1});
-			// this.stream = this.cursor.stream();
-			// this.stream.__created = Date.now();
-			// this.stream.on('data', function(job){
-			// }.bind(this));
-
-			// setTimeout(function(){
-			// 	if (this.stream && (Date.now() - this.stream.__created) > 10) {
-			// 		log.d('closing stream manually');
-			// 		this.cursor.close();
-			// 	}
-			// }.bind(this), 10000);
-
-			// this.stream.on('close', function(){
-			// 	log.d('Stream closed');
-			// 	this.nextAfterDelay();
-			// }.bind(this));
-
-			// this.stream.on('error', function(err){
-			// 	if (err && err.name !== 'MongoError') { log.e('Jobs stream error: %j', err); }
-			// 	this.nextAfterDelay();
-			// }.bind(this));
-			// this.stream.on('close', this.nextAfterDelay.bind(this));
-			// this.stream.on('error', this.nextAfterDelay.bind(this));
-			// log.d('Stream created');
-		// }
 	};
+
+	collection.update({status: STATUS.RUNNING, started: {$lt: Date.now() - 60 * 60 * 1000}}, {$set: {status: STATUS.CANCELLED, error: 'Cancelled on restart'}}, {multi: true}, setTimeout(this.next.bind(this), 5000));
 
 	this.nextAfterDelay = function(){
 		if (!this.nextingAlready) {
@@ -400,12 +363,12 @@ var JobWorker = function(processors){
 		if (err) {
 			update.$set.error = err.toString().substr(0, 50);
 		}
-		jobsCollection.update({_id: job._id}, update, log.callback());
+		collection.update({_id: job._id}, update, log.callback());
 	};
 
 	this.putBack = function(job, callback) {
 		log.w('Putting back', job);
-		jobsCollection.update({_id: job._id, status: STATUS.RUNNING}, {$set: {status: STATUS.SCHEDULED}}, function(err){
+		collection.update({_id: job._id, status: STATUS.RUNNING}, {$set: {status: STATUS.SCHEDULED}}, function(err){
 			if (err) { log.e('Couldn\'t put back job %j because of %j, ', job, err); }
 			// ignoring error here
 			callback();
@@ -424,13 +387,6 @@ var JobWorker = function(processors){
 		async.parallel(shutdowns, function(err){
 			if (err) { log.e('Error when shutting down job processors', err); }
 			log.w('Done shutting down jobs with %j', err);
-			if (jobsDb) {
-				jobsDb.close(function(err){
-				log.w('Closed DB connection with %j', err);
-				if (err) { log.e('Error when closing db connection on shut down', err); }
-				process.exit(0);
-			});
-			}
 		}.bind(this));
 	}.bind(this);
 
@@ -439,64 +395,6 @@ var JobWorker = function(processors){
 	process.on('SIGINT', shutdown);
 
 	log.i('Jobs worker created');
-};
-
-var checkConnection = function(callback){ 
-	if (connecting) { 
-		setTimeout(checkConnection.bind(null, callback), 500); 
-	} else if (jobsCollection) {
-		callback(null, jobsCollection);
-	} else {
-		withCollection(callback);
-	}
-};
-
-var jobsCollection, jobsDb, connecting = false;
-var withCollection = function(callback) {
-	if (connecting) {
-		return checkConnection(callback);
-	}
-	if (jobsCollection) { callback(null, jobsCollection); }
-	else {
-		connecting = true;
-		common.mongodbNativeConnection(function(err, db){
-			if (err) { 
-				connecting = false;
-				// console.trace('Error during db connection', err);
-				// log.e('Error during db connection', err); 
-				callback(err); 
-			} else {
-				db.on('close', function(){
-					log.d('Connection closed');
-					connecting = false;
-					jobsCollection = null;
-					jobsDb = null;
-				});
-				// console.trace('Connected to the database');
-				log.i('Connected to the database');
-				jobsDb = db;
-				db.createCollection('jobs', {strict: true, autoIndexId: true, capped: true, size: 1e7}, function(err, coll){
-					if (coll) {
-						connecting = false;
-						log.d('Created jobs collection');
-						jobsCollection = coll;
-						callback(null, jobsCollection);
-					} else {
-						log.d('Jobs collection is already there, getting it');
-						db.collection('jobs', {strict: true}, function(err, coll){
-							connecting = false;
-							if (err) { log.e('Couldn\'t get jobs collection', err); callback(err); } 
-							else {
-								log.d('Got jobs collection');
-								jobsCollection = coll;
-								callback(null, jobsCollection);
-							}
-						});
-					}
-				});
-			}
-		});
-	}
 };
 
 module.exports = {
