@@ -314,7 +314,7 @@
 				if(this.hasPush){
 					this.request({timestamp:this.ts, events:this.getPushEvent()});
 				}
-				if(Math.random() > 0.5){
+				if(Math.random() > 0.8){
 					this.timer = setTimeout(function(){that.extendSession()}, timeout);
 				}
 				else{
