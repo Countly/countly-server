@@ -376,7 +376,7 @@
 			data:{
 				api_key:countlyGlobal["member"].api_key,
 				args:JSON.stringify({
-                    "_id":id,
+                    "_id":id+countlyCommon.ACTIVE_APP_ID,
                     "name":name,
                     "link":"http://count.ly",
                     "cost":cost,
@@ -396,7 +396,7 @@
         ip_address.push(ip);
         $.ajax({
 			type:"GET",
-			url:countlyCommon.API_URL + "/i/campaign/click/"+name,
+			url:countlyCommon.API_URL + "/i/campaign/click/"+name+countlyCommon.ACTIVE_APP_ID,
             data:{ip_address:ip}
 		});
     }
