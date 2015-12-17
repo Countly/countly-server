@@ -49,7 +49,7 @@ countly_test (){
     bash $DIR/scripts/countly.run.tests.sh ;
 }
 
-countly_backup (){
+countly_backupfiles (){
     if [ $# -eq 0 ]
     then
         echo "Please provide path" ;
@@ -57,10 +57,8 @@ countly_backup (){
     fi
     (mkdir -p $1 ;
     cd $1 ;
-    echo "Backing up mongodb...";
-    mongodump --db countly > /dev/null;
-    mongodump --db countly_drill > /dev/null;
     echo "Backing up Countly configurations and files...";
+    mkdir -p files/extend ;
     mkdir -p files/frontend/express/public/appimages ;
     mkdir -p files/frontend/express/public/userimages ;
     mkdir -p files/frontend/express/public/themes ;
@@ -75,6 +73,9 @@ countly_backup (){
     fi
     if [ -f $DIR/../../api/config.js ]; then
         cp $DIR/../../api/config.js files/api/config.js
+    fi
+    if [ -d $DIR/../../extend ]; then
+        cp -a $DIR/../../extend/. files/extend/
     fi
     if [ -d $DIR/../../frontend/express/public/appimages ]; then
         cp -a $DIR/../../frontend/express/public/appimages/. files/frontend/express/public/appimages/
@@ -95,23 +96,47 @@ countly_backup (){
             mkdir -p files/plugins/$PLUGIN ;
             cp $d/config.js files/plugins/$PLUGIN/config.js ;
         fi
+        if [ -d $d/extend ]; then
+            mkdir -p files/plugins/$PLUGIN/extend ;
+            cp -a $d/extend/. files/plugins/$PLUGIN/extend/ ;
+        fi
     done
-    
-    echo "Your backup is available at $(pwd $1)";
     )
 }
 
-countly_restore (){
+countly_backupdb (){
     if [ $# -eq 0 ]
     then
         echo "Please provide path" ;
         return 0;
     fi
-    echo "Restoring mongodb...";
-    mongorestore --db countly $1/dump/countly > /dev/null;
-    mongorestore --db countly_drill $1/dump/countly_drill > /dev/null;
+    (mkdir -p $1 ;
+    cd $1 ;
+    echo "Backing up mongodb...";
+    mongodump --db countly > /dev/null;
+    mongodump --db countly_drill > /dev/null;
+    )
+}
+
+countly_backup (){
+    if [ $# -eq 0 ]
+    then
+        echo "Please provide path" ;
+        return 0;
+    fi
+    countly_backupfiles "$@";
+    countly_backupdb "$@";
+}
+
+countly_restorefiles (){
+    if [ $# -eq 0 ]
+    then
+        echo "Please provide path" ;
+        return 0;
+    fi
     echo "Restoring Countly configurations and files...";
     (cd $1 ;
+    mkdir -p $DIR/../../extend ;
     mkdir -p $DIR/../../frontend/express/public/appimages ;
     mkdir -p $DIR/../../frontend/express/public/userimages ;
     mkdir -p $DIR/../../frontend/express/public/themes ;
@@ -126,6 +151,9 @@ countly_restore (){
     fi
     if [ -f files/api/config.js ]; then
         cp files/api/config.js $DIR/../../api/config.js
+    fi
+    if [ -d files/extend ]; then
+        cp -a files/extend/. $DIR/../../extend/
     fi
     if [ -d files/frontend/express/public/appimages ]; then
         cp -a files/frontend/express/public/appimages/. $DIR/../../frontend/express/public/appimages/
@@ -146,10 +174,40 @@ countly_restore (){
             mkdir -p $DIR/../../plugins/$PLUGIN ;
             cp $d/config.js $DIR/../../plugins/$PLUGIN/config.js ;
         fi
+        if [ -d $d/extend ]; then
+            mkdir -p $DIR/../../plugins/$PLUGIN/extend ;
+            cp -a $d/extend/. $DIR/../../plugins/$PLUGIN/extend/ ;
+        fi
     done
+    
     echo "Restarting Countly...";
     countly restart;
     )
+}
+
+countly_restoredb (){
+    if [ $# -eq 0 ]
+    then
+        echo "Please provide path" ;
+        return 0;
+    fi
+    echo "Restoring mongodb...";
+    if [ -d $1/dump/countly ]; then
+        mongorestore --db countly $1/dump/countly > /dev/null;
+    fi
+    if [ -d $1/dump/countly_drill ]; then
+        mongorestore --db countly_drill $1/dump/countly_drill > /dev/null;
+    fi
+}
+
+countly_restore (){
+    if [ $# -eq 0 ]
+    then
+        echo "Please provide path" ;
+        return 0;
+    fi
+    countly_restorefiles "$@";
+    countly_restoredb "$@";
 }
 
 #load real platform/init sys file to overwrite stubs
@@ -173,9 +231,13 @@ else
     echo "    countly version # outputs current countly version";
     echo "    countly dir     # outputs countly install directory";
     echo "    countly test    # run countly tests";
-    echo "    countly backup path/to/backup # backups countly db and config files";
-    echo "    countly restore path/to/backup # restores countly db and config files from provided backup";
     echo "    countly usage   # prints this out, but so as basically everything else does";
+    echo "    countly backupfiles path/to/backup # backups countly user/config files";
+    echo "    countly backupdb path/to/backup # backups countly database";
+    echo "    countly backup path/to/backup # backups countly db and user/config files";
+    echo "    countly restorefiles path/to/backup # restores user/config files from provided backup";
+    echo "    countly restoredb path/to/backup # restores countly db from provided backup";
+    echo "    countly restore path/to/backup # restores countly db and config files from provided backup";
     countly plugin ;
     countly update ;
     countly config ;
