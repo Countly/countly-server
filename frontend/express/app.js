@@ -126,12 +126,12 @@ app.configure(function () {
                     if (exists) {
                         res.sendfile(__dirname + '/public/themes/'+curTheme + url);
                     } else {
-                        res.sendfile(__dirname + '/public' + url);
+                        next();
                     }
                 });
             }
             else{ //serve default location
-                res.sendfile(__dirname + '/public' + url);
+                next();
             }
         }
         else{
