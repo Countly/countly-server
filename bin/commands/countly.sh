@@ -238,6 +238,7 @@ else
     echo "    countly restorefiles path/to/backup # restores user/config files from provided backup";
     echo "    countly restoredb path/to/backup # restores countly db from provided backup";
     echo "    countly restore path/to/backup # restores countly db and config files from provided backup";
+    countly api ;
     countly plugin ;
     countly update ;
     countly config ;
