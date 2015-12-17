@@ -254,9 +254,9 @@
 		
 		this.getPushEvent = function(id){
 			if(!id){
-                if(Math.random() > 0.5)
+                if(Math.random() >= 0.4)
                     id = "[CLY]_push_sent";
-                else if(Math.random() > 0.5)
+                else if(Math.random() >= 0.4)
                     id = "[CLY]_push_open";
                 else
                     id = "[CLY]_push_action";
