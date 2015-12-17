@@ -281,7 +281,7 @@
 		};
 		
 		this.startSession = function(){
-			this.ts = this.ts + 60*60*24+1;
+			this.ts = this.ts+60*60*24+100;
 			stats.s++;
 			if(!this.isRegistered){
 				this.isRegistered = true;
@@ -393,11 +393,16 @@
     
     function clickCampaign(name){
         var ip = chance.ip();
-        ip_address.push(ip);
+        if(ip_address.length && Math.random() > 0.5){
+            ip = ip_address[Math.floor(Math.random()*ip_address.length)];
+        }
+        else{
+            ip_address.push(ip);
+        }
         $.ajax({
 			type:"GET",
 			url:countlyCommon.API_URL + "/i/campaign/click/"+name+countlyCommon.ACTIVE_APP_ID,
-            data:{ip_address:ip}
+            data:{ip_address:ip, test:true}
 		});
     }
     
@@ -406,12 +411,66 @@
         createCampaign("social", "Social Campaign", "0.5", "click", function(){
             createCampaign("ads", "Ads Campaign", "1", "install", function(){
                 createCampaign("landing", "Landing page", "30", "campaign", function(){
-                    for(var i = 0; i < 150; i++){
+                    for(var i = 0; i < 200; i++){
                         setTimeout(function(){
                             clickCampaign(campaigns[getRandomInt(0, campaigns.length-1)]);
                         },1);
                     }
                     setTimeout(callback, 3000);
+                });
+            });
+        });
+    }
+    
+    function generateRetentionUser(ts, users, ids, callback){
+        var bulk = [];
+        for(var i = 0; i < users; i++){
+            for(var j = 0; j < ids.length; j++){
+                bulk.push({ip_address:chance.ip(), device_id:i+""+ids[j], begin_session:1, timestamp:ts});
+            }
+        }
+        $.ajax({
+            type:"GET",
+            url:countlyCommon.API_URL + "/i/bulk",
+            data:{
+				app_key:countlyCommon.ACTIVE_APP_KEY,
+				requests:JSON.stringify(bulk)
+			},
+            success:callback,
+            error:callback
+        });
+    }
+    
+    function generateRetention(callback){
+        var ts = endTs - 60*60*24*9;
+        var ids = [ts];
+        var users = 10;
+        generateRetentionUser(ts, users--, ids, function(){
+            ts += 60*60*24;
+            ids.push(ts);
+            generateRetentionUser(ts, users--, ids, function(){
+                ts += 60*60*24;
+                ids.push(ts);
+                generateRetentionUser(ts, users--, ids, function(){
+                    ts += 60*60*24;
+                    ids.push(ts);
+                    generateRetentionUser(ts, users--, ids, function(){
+                        ts += 60*60*24;
+                        ids.push(ts);
+                        generateRetentionUser(ts, users--, ids, function(){
+                            ts += 60*60*24;
+                            ids.push(ts);
+                            generateRetentionUser(ts, users--, ids, function(){
+                                ts += 60*60*24;
+                                ids.push(ts);
+                                generateRetentionUser(ts, users--, ids, function(){
+                                    ts += 60*60*24;
+                                    ids.push(ts);
+                                    generateRetentionUser(ts, users--, ids, callback);
+                                });
+                            });
+                        });
+                    });
                 });
             });
         });
@@ -470,20 +529,22 @@
 			else
 				countlyPopulator.sync(true);
 		}
-		if(typeof countlyAttribution != "undefined"){
-            genereateCampaigns(function(){
+        generateRetention(function(){
+            if(typeof countlyAttribution != "undefined"){
+                genereateCampaigns(function(){
+                    for(var i = 0; i < amount; i++){
+                        createUser();
+                    }
+                    setTimeout(processUsers, timeout);
+                });
+            }
+            else{
                 for(var i = 0; i < amount; i++){
                     createUser();
                 }
                 setTimeout(processUsers, timeout);
-            });
-        }
-        else{
-            for(var i = 0; i < amount; i++){
-                createUser();
             }
-            setTimeout(processUsers, timeout);
-        }
+        });
 	};
 	
 	countlyPopulator.stopGenerating = function () {
