@@ -200,44 +200,48 @@ app.get(countlyConfig.path+'/appimages/*', function(req, res) {
     res.sendfile(__dirname + '/public/images/default_app_icon.png');
 });
 
-if(plugins.getConfig("frontend").session_timeout){
-	var extendSession = function(req, res, next){
-		req.session.expires = Date.now() + plugins.getConfig("frontend").session_timeout;
-	};
-	var checkRequestForSession = function(req, res, next){
-		if (req.session.uid) {
-			if(Date.now() > req.session.expires){
-				//logout user
-				res.redirect(countlyConfig.path+'/logout?message=logout.inactivity');
-			}
-			else{
-				//extend session
-				extendSession(req, res, next);
-				next();
-			}
+
+var extendSession = function(req, res, next){
+	req.session.expires = Date.now() + plugins.getConfig("frontend").session_timeout;
+};
+var checkRequestForSession = function(req, res, next){
+    if(parseInt(plugins.getConfig("frontend").session_timeout)){
+        if (req.session.uid) {
+            if(Date.now() > req.session.expires){
+                //logout user
+                res.redirect(countlyConfig.path+'/logout?message=logout.inactivity');
+            }
+            else{
+                //extend session
+                extendSession(req, res, next);
+                next();
+            }
+        }
+        else
+            next();
+    }
+    else
+        next();
+};
+
+app.get(countlyConfig.path+'/session', function(req, res, next) {
+	if (req.session.uid) {
+		if(Date.now() > req.session.expires){
+			//logout user
+			res.send("logout");
 		}
-		else
-			next();
-	};
-	
-	app.get(countlyConfig.path+'/session', function(req, res, next) {
-		if (req.session.uid) {
-			if(Date.now() > req.session.expires){
-				//logout user
-				res.send("logout");
-			}
-			else{
-				//extend session
-				extendSession(req, res, next);
-				res.send("success");
-			}
+		else{
+			//extend session
+			extendSession(req, res, next);
+			res.send("success");
 		}
-		else
-			res.send("login");
-	});
-	app.get(countlyConfig.path+'/dashboard', checkRequestForSession);
-	app.post('*', checkRequestForSession);
-}
+	}
+	else
+		res.send("login");
+});
+app.get(countlyConfig.path+'/dashboard', checkRequestForSession);
+app.post('*', checkRequestForSession);
+
 
 app.get(countlyConfig.path+'/logout', function (req, res, next) {
     if (req.session) {
