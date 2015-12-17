@@ -8,3 +8,5 @@
 #ui-datepicker-div.ui-widget-content{background-color: #fff;}
 #populator .icon-button{padding:10px; margin: 0 auto; float: none;}
 #populate-explain{cursor: pointer; text-align: center; color:#4CC04F; font-size: 25px; position: absolute; top:20px; right:75px;}
+#populate-bar {margin: 5px; border: 1px solid green; border-radius: 5px; position:relative; height: 30px;}
+#populate-bar  div{background-color: green; position: absolute; top:0; left:0; width:0;height: 30px;}

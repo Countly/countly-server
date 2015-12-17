@@ -40,6 +40,7 @@ window.PopulatorView = countlyView.extend({
                 countlyPopulator.generateUsers(parseInt($("#populate-users").val()));
                 $("#start-populate").hide();
                 $("#stop-populate").show();
+                $("#populate-bar div").animate({width:"100%"}, 60000);
             });
 		});
 		$("#stop-populate").on('click', function() {
@@ -50,6 +51,8 @@ window.PopulatorView = countlyView.extend({
 			countlyPopulator.stopGenerating();
 			$("#stop-populate").hide();
 			$("#start-populate").show();
+            $("#populate-bar div").stop(true);
+            $("#populate-bar div").width(0);
 		});
 		
 		$("#populate-explain").on('click', function() {
