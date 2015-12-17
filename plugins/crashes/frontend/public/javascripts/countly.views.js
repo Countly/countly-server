@@ -884,6 +884,9 @@ app.addPageScript("/drill#", function(){
 });
 
 $( document ).ready(function() {
+    app.addAppSwitchCallback(function(appId){
+        countlyCrashes.loadList(appId);
+    });
     if(!production){
         CountlyHelpers.loadJS("crashes/javascripts/marked.min.js");
     }

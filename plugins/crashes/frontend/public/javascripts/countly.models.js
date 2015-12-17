@@ -13,13 +13,13 @@
         _lastId = null,
         _usable_metrics = {};
         
-    if(countlyGlobal.member && countlyGlobal.member.api_key){
+    countlyCrashes.loadList = function (id) {
         $.ajax({
             type:"GET",
             url:countlyCommon.API_PARTS.data.r,
             data:{
                 "api_key":countlyGlobal.member.api_key,
-                "app_id":countlyCommon.ACTIVE_APP_ID,
+                "app_id":id,
                 "method":"crashes",
                 "list":1
             },
@@ -30,6 +30,10 @@
                 }
             }
         });
+    }
+    
+    if(countlyGlobal.member && countlyGlobal.member.api_key){
+        countlyCrashes.loadList(countlyCommon.ACTIVE_APP_ID);
     }
 
     //Public Methods
