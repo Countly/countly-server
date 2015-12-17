@@ -346,6 +346,12 @@ window.ConfigurationsView = countlyView.extend({
                     if(label)
                         configsHTML += "<tr><td>"+label+"</td><td>"+this.generateConfigsTable(configsData[i], id+"-"+i)+"</td></tr>";
                 }
+                else{
+                    var input = this.getInputByType((id+"-"+i).substring(1), "");
+                    var label = this.getInputLabel((id+"-"+i).substring(1), i);
+                    if(input && label)
+                        configsHTML += "<tr><td>"+label+"</td><td>"+input+"</td></tr>";
+                }
             }
             else{
                 var input = this.getInputByType((id+"-"+i).substring(1), configsData[i]);
