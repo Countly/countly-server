@@ -3211,7 +3211,7 @@ var AppRouter = Backbone.Router.extend({
             CountlyHelpers.initializeTextSelect();
             CountlyHelpers.initializeHugeDropdown();
 			
-			if(countlyGlobal.config["session_timeout"]){
+			if(parseInt(countlyGlobal.config["session_timeout"])){
 				var minTimeout, tenSecondTimeout, logoutTimeout, actionTimeout;
 				var shouldRecordAction = false;
 				var extendSession = function(){
