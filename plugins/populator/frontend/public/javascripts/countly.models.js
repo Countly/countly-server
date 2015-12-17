@@ -402,7 +402,7 @@
         $.ajax({
 			type:"GET",
 			url:countlyCommon.API_URL + "/i/campaign/click/"+name+countlyCommon.ACTIVE_APP_ID,
-            data:{ip_address:ip, test:true}
+            data:{ip_address:ip, test:true, timestamp:getRandomInt(startTs, endTs)}
 		});
     }
     
