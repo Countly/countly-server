@@ -31,6 +31,8 @@ elif [ -d "$DIR/../../../plugins/$2" ]; then
         nodejs $DIR/plugin.js enable $2 ;
     elif [ "$1" = "disable" ]; then
         nodejs $DIR/plugin.js disable $2 ;
+    elif [ "$1" = "upgrade" ]; then
+        nodejs $DIR/plugin.js upgrade $2 ;
     elif [ "$1" = "status" ]; then
         if grep -Fq "\"$2\"" $DIR/../../../plugins/plugins.json
         then
