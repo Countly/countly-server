@@ -134,8 +134,8 @@ countly_restorefiles (){
         echo "Please provide path" ;
         return 0;
     fi
-    echo "Restoring Countly configurations and files...";
     if [ -d $1/files ]; then
+        echo "Restoring Countly configurations and files...";
         (cd $1 ;
         mkdir -p $DIR/../../extend ;
         mkdir -p $DIR/../../frontend/express/public/appimages ;
@@ -183,6 +183,8 @@ countly_restorefiles (){
         )
         echo "Restarting Countly...";
         countly restart;
+    else
+        echo "No files to restore from";
     fi
 }
 
@@ -192,12 +194,17 @@ countly_restoredb (){
         echo "Please provide path" ;
         return 0;
     fi
-    echo "Restoring mongodb...";
     if [ -d $1/dump/countly ]; then
+        echo "Restoring countly database...";
         mongorestore --db countly $1/dump/countly > /dev/null;
+    else
+        echo "No countly database dump to restore from";
     fi
     if [ -d $1/dump/countly_drill ]; then
+        echo "Restoring countly_drill database...";
         mongorestore --db countly_drill $1/dump/countly_drill > /dev/null;
+    else
+        echo "No countly_drill database dump to restore from";
     fi
 }
 
