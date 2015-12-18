@@ -135,54 +135,55 @@ countly_restorefiles (){
         return 0;
     fi
     echo "Restoring Countly configurations and files...";
-    (cd $1 ;
-    mkdir -p $DIR/../../extend ;
-    mkdir -p $DIR/../../frontend/express/public/appimages ;
-    mkdir -p $DIR/../../frontend/express/public/userimages ;
-    mkdir -p $DIR/../../frontend/express/public/themes ;
-    mkdir -p $DIR/../../frontend/express/certificates ;
-    mkdir -p $DIR/../../frontend/express/public/javascripts/countly ;
-    mkdir -p $DIR/../../api ;
-    if [ -f files/frontend/express/config.js ]; then
-        cp files/frontend/express/config.js $DIR/../../frontend/express/config.js
-    fi
-    if [ -f files/frontend/express/public/javascripts/countly/countly.config.js ]; then
-        cp files/frontend/express/public/javascripts/countly/countly.config.js $DIR/../../frontend/express/public/javascripts/countly/countly.config.js
-    fi
-    if [ -f files/api/config.js ]; then
-        cp files/api/config.js $DIR/../../api/config.js
-    fi
-    if [ -d files/extend ]; then
-        cp -a files/extend/. $DIR/../../extend/
-    fi
-    if [ -d files/frontend/express/public/appimages ]; then
-        cp -a files/frontend/express/public/appimages/. $DIR/../../frontend/express/public/appimages/
-    fi
-    if [ -d files/frontend/express/public/userimages ]; then
-        cp -a files/frontend/express/public/userimages/. $DIR/../../frontend/express/public/userimages/
-    fi
-    if [ -d files/frontend/express/public/themes ]; then
-        cp -a files/frontend/express/public/themes/. $DIR/../../frontend/express/public/themes/
-    fi
-    if [ -d files/frontend/express/certificates ]; then
-        cp -a files/frontend/express/certificates/. $DIR/../../frontend/express/certificates/
-    fi
-    
-    for d in files/plugins/*; do
-        PLUGIN=$(basename $d);
-        if [ -f $d/config.js ]; then
-            mkdir -p $DIR/../../plugins/$PLUGIN ;
-            cp $d/config.js $DIR/../../plugins/$PLUGIN/config.js ;
+    if [ -d $1/files ]; then
+        (cd $1 ;
+        mkdir -p $DIR/../../extend ;
+        mkdir -p $DIR/../../frontend/express/public/appimages ;
+        mkdir -p $DIR/../../frontend/express/public/userimages ;
+        mkdir -p $DIR/../../frontend/express/public/themes ;
+        mkdir -p $DIR/../../frontend/express/certificates ;
+        mkdir -p $DIR/../../frontend/express/public/javascripts/countly ;
+        mkdir -p $DIR/../../api ;
+        if [ -f files/frontend/express/config.js ]; then
+            cp files/frontend/express/config.js $DIR/../../frontend/express/config.js
         fi
-        if [ -d $d/extend ]; then
-            mkdir -p $DIR/../../plugins/$PLUGIN/extend ;
-            cp -a $d/extend/. $DIR/../../plugins/$PLUGIN/extend/ ;
+        if [ -f files/frontend/express/public/javascripts/countly/countly.config.js ]; then
+            cp files/frontend/express/public/javascripts/countly/countly.config.js $DIR/../../frontend/express/public/javascripts/countly/countly.config.js
         fi
-    done
-    
-    echo "Restarting Countly...";
-    countly restart;
-    )
+        if [ -f files/api/config.js ]; then
+            cp files/api/config.js $DIR/../../api/config.js
+        fi
+        if [ -d files/extend ]; then
+            cp -a files/extend/. $DIR/../../extend/
+        fi
+        if [ -d files/frontend/express/public/appimages ]; then
+            cp -a files/frontend/express/public/appimages/. $DIR/../../frontend/express/public/appimages/
+        fi
+        if [ -d files/frontend/express/public/userimages ]; then
+            cp -a files/frontend/express/public/userimages/. $DIR/../../frontend/express/public/userimages/
+        fi
+        if [ -d files/frontend/express/public/themes ]; then
+            cp -a files/frontend/express/public/themes/. $DIR/../../frontend/express/public/themes/
+        fi
+        if [ -d files/frontend/express/certificates ]; then
+            cp -a files/frontend/express/certificates/. $DIR/../../frontend/express/certificates/
+        fi
+        
+        for d in files/plugins/*; do
+            PLUGIN=$(basename $d);
+            if [ -f $d/config.js ]; then
+                mkdir -p $DIR/../../plugins/$PLUGIN ;
+                cp $d/config.js $DIR/../../plugins/$PLUGIN/config.js ;
+            fi
+            if [ -d $d/extend ]; then
+                mkdir -p $DIR/../../plugins/$PLUGIN/extend ;
+                cp -a $d/extend/. $DIR/../../plugins/$PLUGIN/extend/ ;
+            fi
+        done
+        )
+        echo "Restarting Countly...";
+        countly restart;
+    fi
 }
 
 countly_restoredb (){
