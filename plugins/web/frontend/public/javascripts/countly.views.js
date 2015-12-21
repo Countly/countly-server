@@ -333,6 +333,32 @@ $( document ).ready(function() {
             jQuery.i18n.map["drill.lv"] = jQuery.i18n.map["web.drill.lv"];
             jQuery.i18n.map["views.title"] = jQuery.i18n.map["web.views.title"];
             jQuery.i18n.map["views.view"] = jQuery.i18n.map["web.views.view"];
+            jQuery.i18n.map["crashes.title"] = jQuery.i18n.map["web.crashes.title"];
+            jQuery.i18n.map["crashes.unresolved-crashes"] = jQuery.i18n.map["web.crashes.unresolved-crashes"];
+            jQuery.i18n.map["crashes.groupid"] = jQuery.i18n.map["web.crashes.groupid"];
+            jQuery.i18n.map["crashes.crashed"] = jQuery.i18n.map["web.crashes.crashed"];
+            jQuery.i18n.map["crashes.last-crash"] = jQuery.i18n.map["web.crashes.last-crash"];
+            jQuery.i18n.map["crashes.online"] = jQuery.i18n.map["web.crashes.online"];
+            jQuery.i18n.map["crashes.muted"] = jQuery.i18n.map["web.crashes.muted"];
+            jQuery.i18n.map["crashes.background"] = jQuery.i18n.map["web.crashes.background"];
+            jQuery.i18n.map["crashes.back-to-crashes"] = jQuery.i18n.map["web.crashes.back-to-crashes"];
+            jQuery.i18n.map["crashes.back-to-crash"] = jQuery.i18n.map["web.crashes.back-to-crash"];
+            jQuery.i18n.map["crashes.crashes-by"] = jQuery.i18n.map["web.crashes.crashes-by"];
+            jQuery.i18n.map["crashes.unique"] = jQuery.i18n.map["web.crashes.unique"];
+            jQuery.i18n.map["crashes.rate"] = jQuery.i18n.map["web.crashes.rate"];
+            jQuery.i18n.map["crashes.top-crash"] = jQuery.i18n.map["web.crashes.top-crash"];
+            jQuery.i18n.map["crashes.new-crashes"] = jQuery.i18n.map["web.crashes.new-crashes"];
+            jQuery.i18n.map["crashes.fatality"] = jQuery.i18n.map["web.crashes.fatality"];
+            jQuery.i18n.map["crashes.nonfatal-crashes"] = jQuery.i18n.map["web.crashes.nonfatal-crashes"];
+            jQuery.i18n.map["crashes.confirm-delete"] = jQuery.i18n.map["web.crashes.confirm-delete"];
+            jQuery.i18n.map["revenue.iap"] = jQuery.i18n.map["web.revenue.iap"];
+            jQuery.i18n.map["revenue.tooltip"] = jQuery.i18n.map["web.revenue.tooltip"];
+            jQuery.i18n.map["placeholder.iap-event-key"] = jQuery.i18n.map["web.placeholder.iap-event-key"];
+            jQuery.i18n.map["placeholder.iap-help"] = jQuery.i18n.map["web.placeholder.iap-help"];
+            jQuery.i18n.map["management-applications.iap-event"] = jQuery.i18n.map["web.management-applications.iap-event"];
+            jQuery.i18n.map["drill.crash"] = jQuery.i18n.map["web.drill.crash"];
+            jQuery.i18n.map["drill.crash-segments"] = jQuery.i18n.map["web.drill.crash-segments"];
+            jQuery.i18n.map["userdata.crashes"] = jQuery.i18n.map["web.userdata.crashes"];
             
         }
     });
