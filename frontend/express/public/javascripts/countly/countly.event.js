@@ -191,7 +191,7 @@
                 {
                     name:"curr_segment",
                     func:function (rangeArr, dataObj) {
-                        return rangeArr.replace(/:/g, ".").replace(/\[CLY\]/g,"");
+                        return rangeArr.replace(/:/g, ".").replace(/\[CLY\]/g,"").replace(/.\/\//g, "://");
                     }
                 },
                 { "name":"c" },
