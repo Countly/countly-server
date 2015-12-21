@@ -330,9 +330,11 @@ $( document ).ready(function() {
     
     app.addAppSwitchCallback(function(appId){
         if(countlyGlobal["apps"][appId].type == "web"){
+            //views = page views
             jQuery.i18n.map["drill.lv"] = jQuery.i18n.map["web.drill.lv"];
             jQuery.i18n.map["views.title"] = jQuery.i18n.map["web.views.title"];
             jQuery.i18n.map["views.view"] = jQuery.i18n.map["web.views.view"];
+            //crashes = errors
             jQuery.i18n.map["crashes.title"] = jQuery.i18n.map["web.crashes.title"];
             jQuery.i18n.map["crashes.unresolved-crashes"] = jQuery.i18n.map["web.crashes.unresolved-crashes"];
             jQuery.i18n.map["crashes.groupid"] = jQuery.i18n.map["web.crashes.groupid"];
@@ -359,6 +361,49 @@ $( document ).ready(function() {
             jQuery.i18n.map["drill.crash"] = jQuery.i18n.map["web.drill.crash"];
             jQuery.i18n.map["drill.crash-segments"] = jQuery.i18n.map["web.drill.crash-segments"];
             jQuery.i18n.map["userdata.crashes"] = jQuery.i18n.map["web.userdata.crashes"];
+            //users = visitors
+            jQuery.i18n.map["common.total-users"] = jQuery.i18n.map["web.common.total-users"];
+            jQuery.i18n.map["common.new-users"] = jQuery.i18n.map["web.common.new-users"];
+            jQuery.i18n.map["common.returning-users"] = jQuery.i18n.map["web.common.returning-users"];
+            jQuery.i18n.map["common.number-of-users"] = jQuery.i18n.map["web.common.number-of-users"];
+            jQuery.i18n.map["common.table.total-users"] = jQuery.i18n.map["web.common.table.total-users"];
+            jQuery.i18n.map["common.table.new-users"] = jQuery.i18n.map["web.common.table.new-users"];
+            jQuery.i18n.map["common.table.returning-users"] = jQuery.i18n.map["web.common.table.returning-users"];
+            jQuery.i18n.map["common.bar.top-users"] = jQuery.i18n.map["web.common.bar.top-users"];
+            jQuery.i18n.map["sidebar.analytics.users"] = jQuery.i18n.map["web.sidebar.analytics.users"];
+            jQuery.i18n.map["sidebar.analytics.user-loyalty"] = jQuery.i18n.map["web.sidebar.analytics.user-loyalty"];
+            jQuery.i18n.map["users.title"] = jQuery.i18n.map["web.users.title"];
+            jQuery.i18n.map["allapps.total-users"] = jQuery.i18n.map["web.allapps.total-users"];
+            jQuery.i18n.map["allapps.new-users"] = jQuery.i18n.map["web.allapps.new-users"];
+            jQuery.i18n.map["crashes.users"] = jQuery.i18n.map["web.crashes.users"];
+            jQuery.i18n.map["crashes.affected-users"] = jQuery.i18n.map["web.crashes.affected-users"];
+            jQuery.i18n.map["crashes.public-users"] = jQuery.i18n.map["web.crashes.public-users"];
+            jQuery.i18n.map["drill.users"] = jQuery.i18n.map["web.drill.users"];
+            jQuery.i18n.map["drill.times-users"] = jQuery.i18n.map["web.drill.times-users"];
+            jQuery.i18n.map["drill.sum-users"] = jQuery.i18n.map["web.drill.sum-users"];
+            jQuery.i18n.map["funnels.total-users"] = jQuery.i18n.map["web.funnels.total-users"];
+            jQuery.i18n.map["funnels.users"] = jQuery.i18n.map["web.funnels.users"];
+            jQuery.i18n.map["common.online-users"] = jQuery.i18n.map["web.common.online-users"];
+            jQuery.i18n.map["live.new-users"] = jQuery.i18n.map["web.live.new-users"];
+            jQuery.i18n.map["populator.amount-users"] = jQuery.i18n.map["web.populator.amount-users"];
+            jQuery.i18n.map["sidebar.engagement.retention"] = jQuery.i18n.map["web.sidebar.engagement.retention"];
+            jQuery.i18n.map["retention.users-first-session"] = jQuery.i18n.map["web.retention.users-first-session"];
+            jQuery.i18n.map["userdata.title"] = jQuery.i18n.map["web.userdata.title"];
+            jQuery.i18n.map["userdata.users"] = jQuery.i18n.map["web.userdata.users"];
+            jQuery.i18n.map["userdata.user"] = jQuery.i18n.map["web.userdata.user"];
+            jQuery.i18n.map["userdata.back-to-list"] = jQuery.i18n.map["web.userdata.back-to-list"];
+            jQuery.i18n.map["userdata.no-users"] = jQuery.i18n.map["web.userdata.no-users"];          
+            jQuery.i18n.map["attribution.per-user"] = jQuery.i18n.map["web.attribution.per-user"];
+            jQuery.i18n.map["attribution.user-conversion"] = jQuery.i18n.map["web.attribution.user-conversion"];
+            jQuery.i18n.map["attribution.organic"] = jQuery.i18n.map["web.attribution.organic"];
+            jQuery.i18n.map["reports.total_users"] = jQuery.i18n.map["web.reports.total_users"];
+            jQuery.i18n.map["reports.new_users"] = jQuery.i18n.map["web.reports.new_users"];
+            jQuery.i18n.map["reports.paying_users"] = jQuery.i18n.map["web.reports.paying_users"];
+            jQuery.i18n.map["reports.messaging_users"] = jQuery.i18n.map["web.reports.messaging_users"];
+            jQuery.i18n.map["reports.returning_users"] = jQuery.i18n.map["web.reports.returning_users"];
+            jQuery.i18n.map["common.per-user"] = jQuery.i18n.map["web.common.per-user"];
+            jQuery.i18n.map["common.per-paying-user"] = jQuery.i18n.map["web.common.per-paying-user"];
+            jQuery.i18n.map["common.users"] = jQuery.i18n.map["web.common.users"];
             
         }
     });
