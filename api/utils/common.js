@@ -448,7 +448,7 @@ var common = {},
         } else {
             object['d.' + timeObj.day + '.' + property] = tmpIncrement;
 
-            if (property.indexOf('.') === -1) {
+            if (forceHour || property.indexOf('.') === -1) {
                 object['d.' + timeObj.day + '.' + timeObj.hour + '.' + property] = tmpIncrement;
             }
         }
