@@ -299,6 +299,7 @@
 				stats.e++;
 				this.request({timestamp:this.ts, begin_session:1, events:this.getEvent("Login")});
 			}
+            this.request({timestamp:this.ts, events:this.getEvent("[CLY]_view")});
 			this.hasSession = true;
 			this.timer = setTimeout(function(){that.extendSession()}, timeout);
 		};
