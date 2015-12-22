@@ -9,6 +9,26 @@
                 </div>
             {{/if}}
 			<div class="title">{{page-title}}</div>     
+            <div class="event-segmentation" style="margin-left:5px;">
+				{{#if segmentations}}
+				<div class="cly-select" style="width:220px; position:absolute;">
+					<div class="select-inner">
+						<div class="text-container">
+							<div class="text">{{active-segmentation}}</div>
+						</div>
+						<div class="right combo"></div>
+					</div>
+					<div class="select-items square" style="width:220px;">
+						<div>
+							<div data-value="" class="segmentation-option item" data-localize="views.all-segments"></div>
+							{{#eachOfArray segmentations}}
+							<div data-value="{{value}}" class="segmentation-option item">{{value}}</div>
+							{{/eachOfArray}}
+						</div>
+					</div>
+				</div>
+				{{/if}}
+			</div>
 		</div>
 		{{> date-selector }}
 	</div>
@@ -33,6 +53,7 @@
                 <div class="tail"></div>
             </div>
         </div>
+        <div id="empty-graph" data-localize="views.empty-graph"></div>
 		<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
 	</div>
 </div>

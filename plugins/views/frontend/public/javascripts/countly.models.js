@@ -7,6 +7,8 @@
         _actionData = {},
 		_activeAppKey = 0,
 		_initialized = false,
+        _segment = null,
+        _segments = [],
 		_period = null;
 
 	//Public Methods
@@ -21,21 +23,45 @@
 			_activeAppKey = countlyCommon.ACTIVE_APP_KEY;
 			_initialized = true;
 
-			return $.ajax({
-				type:"GET",
-				url:countlyCommon.API_PARTS.data.r,
-				data:{
-					"api_key":countlyGlobal.member.api_key,
-					"app_id":countlyCommon.ACTIVE_APP_ID,
-					"method":_name,
-					"period":_period
-				},
-				dataType:"jsonp",
-				success:function (json) {
-					_Db = json;
-					setMeta();
-				}
-			});
+			return $.when(
+                $.ajax({
+                    type:"GET",
+                    url:countlyCommon.API_PARTS.data.r,
+                    data:{
+                        "api_key":countlyGlobal.member.api_key,
+                        "app_id":countlyCommon.ACTIVE_APP_ID,
+                        "method":"get_view_segments",
+                        "period":_period
+                    },
+                    dataType:"jsonp",
+                    success:function (json) {
+                        if(json && json.segments){
+                            for(var i = 0; i < json.segments.length; i++){
+                                json.segments[i] = json.segments[i].replace(/&#46;/g, ".");
+                            }
+                            _segments = json.segments;
+                        }
+                    }
+                }),
+                $.ajax({
+                    type:"GET",
+                    url:countlyCommon.API_PARTS.data.r,
+                    data:{
+                        "api_key":countlyGlobal.member.api_key,
+                        "app_id":countlyCommon.ACTIVE_APP_ID,
+                        "method":_name,
+                        "segmentation": _segment,
+                        "period":_period
+                    },
+                    dataType:"jsonp",
+                    success:function (json) {
+                        _Db = json;
+                        setMeta();
+                    }
+                })
+            ).then(function(){
+                return true;
+            });
 		} else {
 			_Db = {"2012":{}};
 			return true;
@@ -51,22 +77,49 @@
 				_activeAppKey = countlyCommon.ACTIVE_APP_KEY;
 				return this.initialize();
 			}
+            
+            if(!_initialized)
+                return this.initialize();
 
-			return $.ajax({
-				type:"GET",
-				url:countlyCommon.API_PARTS.data.r,
-				data:{
-					"api_key":countlyGlobal.member.api_key,
-					"app_id":countlyCommon.ACTIVE_APP_ID,
-					"method":_name,
-					"action":"refresh"
-				},
-				dataType:"jsonp",
-				success:function (json) {
-					countlyCommon.extendDbObj(_Db, json);
-					extendMeta();
-				}
-			});
+			return $.when(
+                $.ajax({
+                    type:"GET",
+                    url:countlyCommon.API_PARTS.data.r,
+                    data:{
+                        "api_key":countlyGlobal.member.api_key,
+                        "app_id":countlyCommon.ACTIVE_APP_ID,
+                        "method":"get_view_segments",
+                        "period":_period
+                    },
+                    dataType:"jsonp",
+                    success:function (json) {
+                        if(json && json.segments){
+                            for(var i = 0; i < json.segments.length; i++){
+                                json.segments[i] = json.segments[i].replace(/&#46;/g, ".");
+                            }
+                            _segments = json.segments;
+                        }
+                    }
+                }),
+                $.ajax({
+                    type:"GET",
+                    url:countlyCommon.API_PARTS.data.r,
+                    data:{
+                        "api_key":countlyGlobal.member.api_key,
+                        "app_id":countlyCommon.ACTIVE_APP_ID,
+                        "method":_name,
+                        "segmentation": _segment,
+                        "action":"refresh"
+                    },
+                    dataType:"jsonp",
+                    success:function (json) {
+                        countlyCommon.extendDbObj(_Db, json);
+                        extendMeta();
+                    }
+                })
+            ).then(function(){
+                return true;
+            });
 		} else {
 			_Db = {"2012":{}};
 
@@ -78,27 +131,76 @@
 		_Db = {};
         _frequency = [];
         _actionData = {};
+        _segment - null;
+        _initialized = false;
 		setMeta();
 	};
+    
+    countlyMetric.setSegment = function(segment){
+        _segment = segment.replace(/\./g, "&#46;");
+    };
+    
+    countlyMetric.getSegments = function(){
+        return _segments;
+    };
     
     countlyMetric.loadActionsData = function (view) {
 		_period = countlyCommon.getPeriodForAjax();
 
-		return $.ajax({
-			type:"GET",
-			url:countlyCommon.API_PARTS.data.r+"/actions",
-			data:{
-				"api_key":countlyGlobal.member.api_key,
-				"app_id":countlyCommon.ACTIVE_APP_ID,
-				"view":view,
-				"period":_period
-			},
-			dataType:"json",
-			success:function (json) {
-				_actionData = json;
-			}
-		});
+		return $.when(
+            $.ajax({
+                type:"GET",
+                url:countlyCommon.API_PARTS.data.r,
+                data:{
+                    "api_key":countlyGlobal.member.api_key,
+                    "app_id":countlyCommon.ACTIVE_APP_ID,
+                    "method":"get_view_segments",
+                    "period":_period
+                },
+                dataType:"jsonp",
+                success:function (json) {
+                    if(json && json.segments){
+                        for(var i = 0; i < json.segments.length; i++){
+                            json.segments[i] = json.segments[i].replace(/&#46;/g, ".");
+                        }
+                        _segments = json.segments;
+                    }
+                }
+            }),
+            $.ajax({
+                type:"GET",
+                url:countlyCommon.API_PARTS.data.r+"/actions",
+                data:{
+                    "api_key":countlyGlobal.member.api_key,
+                    "app_id":countlyCommon.ACTIVE_APP_ID,
+                    "view":view,
+                    "segment": _segment,
+                    "period":_period
+                },
+                dataType:"json",
+                success:function (json) {
+                    _actionData = json;
+                }
+            })
+        ).then(function(){
+            return true;
+        });
 	};
+    
+    countlyMetric.testUrl = function(url, callback){
+        $.ajax({
+            type:"GET",
+            url:countlyCommon.API_PARTS.data.r+"/urltest",
+            data:{
+                "url":url
+            },
+            dataType:"json",
+            success:function (json) {
+                if(callback)
+                    callback(json.result);
+            }
+        });
+    };
     
     countlyMetric.getActionsData = function (view) {
         return _actionData;

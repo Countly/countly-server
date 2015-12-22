@@ -19,3 +19,6 @@
 #action-map-tools {position: absolute; top: 20px; right: 20px; z-index: 3; background-color: rgba(255, 255, 255, 0.8); width: 90%; padding: 10px;}
 #action-map-tools span {position: relative; top:-7px; font: 16px Ubuntu,Helvetica,sans-serif; line-height: 111%; color: #333;}
 #action-map-type {margin-right: 30px;}
+
+.views-table div.color{ width: 10px; height: 20px; float: left; margin-right: 5px; margin-left:-5px;}
+.btn-view-map {display: block;}

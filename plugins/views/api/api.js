@@ -1,5 +1,6 @@
 var plugin = {},
     crypto = require('crypto'),
+    request = require('request'),
 	common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
@@ -10,11 +11,39 @@ var plugin = {},
 		var params = ob.params;
 		var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
 		if (params.qstring.method == "views") {
-			validateUserForDataReadAPI(params, fetch.fetchTimeObj, 'views');
+			validateUserForDataReadAPI(params, function(){
+                fetch.fetchTimeObj("app_viewdata"+params.app_id, params, true);
+            });
+			return true;
+		}
+        else if (params.qstring.method == "get_view_segments") {
+			validateUserForDataReadAPI(params, function(){
+                common.db.collection("app_viewdata"+params.app_id).findOne({'_id': "meta"}, function(err, res){
+                    common.returnOutput(params,res);
+                });
+            });
 			return true;
 		}
 		return false;
 	});
+    
+    plugins.register("/o/urltest", function(ob){
+        var params = ob.params;
+        if(params.qstring.url){
+            request(params.qstring.url, function (error, response, body) {
+                if (!error && response.statusCode == 200) {
+                    common.returnOutput(params,{result:true});
+                }
+                else{
+                    common.returnOutput(params,{result:false});
+                }
+            });
+        }
+        else{
+            common.returnOutput(params,{result:false});
+        }
+        return true;
+    });
     
     plugins.register("/o/actions", function(ob){
 		var params = ob.params;
@@ -23,8 +52,15 @@ var plugin = {},
 			validateUserForDataReadAPI(params, function(){
                 var result = {types:[], data:[]};
                 var collectionName = "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex');
-                common.drillDb.collection(collectionName).findOne( {"_id": "meta"},{_id:0, "sg.type":1} ,function(err,meta){
-                    result.types = meta.sg.type.values
+                common.drillDb.collection(collectionName).findOne( {"_id": "meta"},{_id:0, "sg.type":1, "sg.domain":1} ,function(err,meta){
+                    if(meta && meta.sg && meta.sg.type)
+                        result.types = meta.sg.type.values || values
+                    else
+                        result.types = [];
+                    if(meta && meta.sg && meta.sg.domain)
+                        result.domains = meta.sg.domain.values || values
+                    else
+                        result.domains = [];
                     if (params.qstring.period) {
                         //check if period comes from datapicker
                         if (params.qstring.period.indexOf(",") !== -1) {
@@ -107,6 +143,9 @@ var plugin = {},
                     queryObject.ts.$lt.setDate(queryObject.ts.$lt.getDate() + 1);
                     queryObject.ts.$lt.setTimezone(params.appTimezone);
                     queryObject.ts.$lt = queryObject.ts.$lt.getTime() + queryObject.ts.$lt.getTimezoneOffset()*60000;
+                    
+                    if(params.qstring.segment)
+                        queryObject["sg.segment"] = params.qstring.segment;
                     common.drillDb.collection(collectionName).find( queryObject,{_id:0, c:1, "sg.type":1, "sg.x":1, "sg.y":1, "sg.width":1, "sg.height":1}).toArray(function(err,data){
                         result.data = data;
                         common.returnOutput(params,result);
@@ -117,6 +156,7 @@ var plugin = {},
 		}
 		return false;
 	});
+    
     plugins.register("/session/post", function(ob){
         var params = ob.params;
         var dbAppUser = ob.dbAppUser;
@@ -279,9 +319,14 @@ var plugin = {},
             common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + '.' + common.dbMap['duration'], currEvent.dur, true);
         }
         
+        if(typeof currEvent.segmentation.segment != "undefined"){
+            currEvent.segmentation.segment = (currEvent.segmentation.segment+"").replace(/^\$/, "").replace(/\./g, "&#46;");
+            common.db.collection("app_viewdata"+params.app_id).update({'_id': "meta"}, {$addToSet: {"segments":currEvent.segmentation.segment}}, {'upsert': true}, function(){});
+        }
+        
         var dateIds = common.getDateIds(params),
-            tmpZeroId = params.app_id + "_" + dateIds.zero,
-            tmpMonthId = params.app_id + "_" + dateIds.month;
+            tmpZeroId = "no-segment_" + dateIds.zero,
+            tmpMonthId = "no-segment_" + dateIds.month;
         
         if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
             var update = {$set: {m: dateIds.zero, a: params.app_id + ""}};
@@ -289,11 +334,19 @@ var plugin = {},
                 update["$inc"] = tmpTimeObjZero;
             if(Object.keys(tmpSet).length)
                 update["$addToSet"] = tmpSet;
-            common.db.collection("views").update({'_id': tmpZeroId}, update, {'upsert': true}, function(){});
+            common.db.collection("app_viewdata"+params.app_id).update({'_id': tmpZeroId}, update, {'upsert': true}, function(){});
+            if(typeof currEvent.segmentation.segment != "undefined"){
+                common.db.collection("app_viewdata"+params.app_id).update({'_id': currEvent.segmentation.segment+"_"+dateIds.zero}, update, {'upsert': true}, function(){});
+            }
         }
         
-        if (Object.keys(tmpTimeObjMonth).length)
-            common.db.collection("views").update({'_id': tmpMonthId}, {$set: {m: dateIds.month, a: params.app_id + ""}, '$inc': tmpTimeObjMonth}, {'upsert': true}, function(){});
+        if (Object.keys(tmpTimeObjMonth).length){
+            common.db.collection("app_viewdata"+params.app_id).update({'_id': tmpMonthId}, {$set: {m: dateIds.month, a: params.app_id + ""}, '$inc': tmpTimeObjMonth}, {'upsert': true}, function(){});
+            if(typeof currEvent.segmentation.segment != "undefined"){
+                common.db.collection("app_viewdata"+params.app_id).update({'_id': currEvent.segmentation.segment+"_"+dateIds.month}, {$set: {m: dateIds.month, a: params.app_id + ""}, '$inc': tmpTimeObjMonth}, {'upsert': true}, function(){});
+            }
+        }
+        
     }
 	
 }(plugin));
