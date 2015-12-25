@@ -209,7 +209,7 @@
         "CountlyInstance" : {
             "Type" : "AWS::EC2::Instance",
             "Metadata" : {
-                "Comment" : "Install a simple application",
+                "Comment" : "initialization",
                 "AWS::CloudFormation::Init" : {
                     "config" : {                 
                         "files" : {
