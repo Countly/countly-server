@@ -550,7 +550,7 @@
                     "Revision" : {
                         "RevisionType" : "GitHub",
                         "GitHubLocation" : {
-                            "CommitId"   : "c077cc15eb7e5c398fb546800e08184f1063db23",
+                            "CommitId"   : "b0f1b0559055d8bef3d98c8664ab453951de4764",
                             "Repository" : "Countly/countly-server"
                         }
                     }
