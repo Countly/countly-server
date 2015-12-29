@@ -44,7 +44,7 @@
             "m4.xlarge-4CPU.16GB-RAM.188usd-month"   : { "Type" : "m4.xlarge" },
             "m4.2xlarge-8CPU.32GB-RAM.375usd-month"  : { "Type" : "m4.2xlarge" },
             "m4.4xlarge-16CPU.64GB-RAM.750usd-month"  : { "Type" : "m4.4xlarge" },
-            "m4.10xlarge-40CPU.160GB-RAM.1875usd-month" : { "Type" : "m4.10xlarge" }          
+            "m4.10xlarge-40CPU.160GB-RAM.1875usd-month" : { "Type" : "m4.10xlarge" }
         },
         "AWSInstanceType2Arch" : {
             "t2.micro"  : { "Arch" : "64HVM" },
@@ -56,22 +56,22 @@
             "m4.xlarge"   : { "Arch" : "64HVM" },
             "m4.2xlarge"  : { "Arch" : "64HVM" },
             "m4.4xlarge"  : { "Arch" : "64HVM" },
-            "m4.10xlarge" : { "Arch" : "64HVM" }          
+            "m4.10xlarge" : { "Arch" : "64HVM" }
         },
         "AWSRegionArch2AMI" : {
             "us-east-1"      : { "64" : "ami-d85e75b0", "64HVM" : "ami-d05e75b8" },
             "us-west-2"      : { "64" : "ami-6989a659", "64HVM" : "ami-5189a661" },
             "us-west-1"      : { "64" : "ami-d16a8b95", "64HVM" : "ami-df6a8b9b" },
-            "eu-west-1"      : { "64" : "ami-5da23a2a", "64HVM" : "ami-47a23a30" },            
-            "eu-central-1"   : { "64" : "ami-b6cff2ab", "64HVM" : "ami-accff2b1" },            
-            "ap-southeast-1" : { "64" : "ami-e8f1c1ba", "64HVM" : "ami-96f1c1c4" },     
+            "eu-west-1"      : { "64" : "ami-5da23a2a", "64HVM" : "ami-47a23a30" },
+            "eu-central-1"   : { "64" : "ami-b6cff2ab", "64HVM" : "ami-accff2b1" },
+            "ap-southeast-1" : { "64" : "ami-e8f1c1ba", "64HVM" : "ami-96f1c1c4" },
             "ap-northeast-1" : { "64" : "ami-936d9d93", "64HVM" : "ami-8d6d9d8d" },
-            "ap-southeast-2" : { "64" : "ami-7163104b", "64HVM" : "ami-69631053" },  
+            "ap-southeast-2" : { "64" : "ami-7163104b", "64HVM" : "ami-69631053" },
             "sa-east-1"      : { "64" : "ami-55883348", "64HVM" : "ami-4d883350" }
         }
     },
     "Resources" : {
-                
+
         "InstanceUser" : {
             "Type" : "AWS::IAM::User",
             "Properties" : {
@@ -134,7 +134,7 @@
                     "Statement": [
                     {
                         "Effect": "Allow",
-                        "Action": [                            
+                        "Action": [
                             "cloudformation:Describe*",
                             "cloudformation:GetTemplate"
                         ],
@@ -186,12 +186,12 @@
                 }]
             }
         },
-           
+
         "MongoDbVolume" : {
              "Type" : "AWS::EC2::Volume",
              "Properties" : {
                  "Size" : { "Ref" : "MongoVolumeSize" },
-                 "VolumeType" : "gp2",            
+                 "VolumeType" : "gp2",
                  "AvailabilityZone" : { "Fn::GetAtt" : [ "CountlyInstance", "AvailabilityZone" ]}
              },
              "DeletionPolicy" : "Snapshot"
@@ -204,14 +204,14 @@
                  "VolumeId"  : { "Ref" : "MongoDbVolume" },
                  "Device" : "/dev/sdf"
                }
-        },        
+        },
 
         "CountlyInstance" : {
             "Type" : "AWS::EC2::Instance",
             "Metadata" : {
                 "Comment" : "initialization",
                 "AWS::CloudFormation::Init" : {
-                    "config" : {                 
+                    "config" : {
                         "files" : {
                             "/tmp/cwlogs/applogs.conf": {
                                 "content": {
@@ -229,7 +229,7 @@
                                             "file = /home/ubuntu/countly_api.error.log\n",
                                             "log_group_name = ", {"Ref": "CountlyServerLogGroup"}, "\n",
                                             "log_stream_name = countly_api_error\n",
-                                            "datetime_format = %d/%b/%Y:%H:%M:%S", "\n"                          
+                                            "datetime_format = %d/%b/%Y:%H:%M:%S", "\n"
                                         ]
                                     ]
                                 }
@@ -267,19 +267,19 @@
                                     ]
                                 }
                             }
-                        }                        
+                        }
                     }
                 }
             },
-            
+
             "Properties" : {
                 "KeyName" : { "Ref" : "KeyName" },
                 "ImageId" : { "Fn::FindInMap" : [
                                   "AWSRegionArch2AMI",
                                   { "Ref" : "AWS::Region" },
-                                  { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Fn::FindInMap" : [ "InstanceLabel2Type", { "Ref" : "InstanceType" }, "Type" ] }, "Arch" ] } ] },              
+                                  { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Fn::FindInMap" : [ "InstanceLabel2Type", { "Ref" : "InstanceType" }, "Type" ] }, "Arch" ] } ] },
                 "InstanceType" : { "Fn::FindInMap" : [ "InstanceLabel2Type", { "Ref" : "InstanceType" }, "Type" ] },
-                "SubnetId" : { "Ref" : "CountlySubnet" },             
+                "SubnetId" : { "Ref" : "CountlySubnet" },
                 "SecurityGroupIds": [{ "Ref" : "InstanceSecurityGroup" }],
                 "UserData"     : { "Fn::Base64" : { "Fn::Join" : ["", [
 
@@ -289,7 +289,7 @@
                     "chmod 600 /swapfile", "\n",
                     "mkswap /swapfile", "\n",
                     "swapon /swapfile", "\n",
-                    "echo '/swapfile   none    swap    sw    0   0' > /etc/fstab", "\n",                  
+                    "echo '/swapfile   none    swap    sw    0   0' > /etc/fstab", "\n",
                     "apt-get update\n",
                     "apt-get -y install python-setuptools\n",
                     "cd /home/ubuntu\n",
@@ -309,8 +309,8 @@
                     "wget https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py\n",
 
                     "python awslogs-agent-setup.py -n -r ", { "Ref" : "AWS::Region" }, " -c /tmp/cwlogs/applogs.conf || error_exit 'Failed to run CloudWatch Logs agent setup'\n",
-                    "cp /tmp/cwlogs/applogs.conf /var/awslogs/etc/awslogs.conf \n",                    
-                    "sudo service awslogs restart \n",                    
+                    "cp /tmp/cwlogs/applogs.conf /var/awslogs/etc/awslogs.conf \n",
+                    "sudo service awslogs restart \n",
 
                     "apt-get install -y ruby2.0\n",
 
@@ -331,36 +331,36 @@
                     "npm install -g forever\n",
 
                     "while [ ! -e /dev/xvdf ]; do echo waiting for /dev/xvdf to attach; sleep 2; done\n",
-                    
+
                     "mkfs -t ext4 /dev/xvdf", "\n",
-                    
+
                     "mount /dev/xvdf /media", "\n",
-                    
+
                     "mkdir /media/mongodb", "\n",
-                    
+
                     "chown -R mongodb:mongodb /media/mongodb", "\n",
-                                        
+
                     "sed -i -e 's/dbpath=\\/var\\/lib\\/mongodb/dbpath=\\/media\\/mongodb/g' /etc/mongodb.conf", " \n",
-                        
+
                     "service mongodb restart \n",
 
                     "apt-get install -y git-core \n",
-                    
+
                     "echo '", { "Ref" : "InstanceWaitHandle" }, "' > /tmp/insw.log ", " \n",
-                        
-                    "curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",\"Reason\" : \"Configuration Complete\",\"UniqueId\" : \"ID1234\",\"Data\" : \"Application has completed configuration.\"}' '", { "Ref" : "InstanceWaitHandle" }, "'", "\n",                                    
-                                        
+
+                    "curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",\"Reason\" : \"Configuration Complete\",\"UniqueId\" : \"ID1234\",\"Data\" : \"Application has completed configuration.\"}' '", { "Ref" : "InstanceWaitHandle" }, "'", "\n",
+
                     "/usr/local/bin/cfn-signal -e $? ",
                     "         --stack ", { "Ref" : "AWS::StackName" },
                     "         --resource CountlyInstance ",
                     "         --region ", { "Ref" : "AWS::Region" }, "\n"
-                    
-                    
+
+
                 ]]}},
                 "IamInstanceProfile": {
                     "Ref": "InstanceRoleInstanceProfile"
                 },
-                "Tags" : [ { 
+                "Tags" : [ {
                              "Key" : "Name",
                              "Value" : "Countly-server"
                            }],
@@ -370,16 +370,16 @@
                         "VolumeSize" : "12"
                     }
                 }]
-            }            
+            }
         },
-        
+
         "CountlyVPC": {
             "Type": "AWS::EC2::VPC",
             "Properties": {
-                "CidrBlock": "172.31.0.0/16"               
-            }    
+                "CidrBlock": "172.31.0.0/16"
+            }
         },
-        
+
         "InstanceSecurityGroup" : {
             "Type" : "AWS::EC2::SecurityGroup",
             "Properties" : {
@@ -396,40 +396,40 @@
                     "ToPort"     : "80",
                     "CidrIp"     : "0.0.0.0/0"
                 } ],
-                "VpcId" : { "Ref" : "CountlyVPC" }        
-            }               
+                "VpcId" : { "Ref" : "CountlyVPC" }
+            }
         },
-        
+
         "CountlySubnet" : {
            "Type" : "AWS::EC2::Subnet",
-           "Properties" : {             
-              "CidrBlock" : "172.31.0.0/16",             
+           "Properties" : {
+              "CidrBlock" : "172.31.0.0/16",
               "VpcId" : { "Ref" : "CountlyVPC" }
            }
-        },    
-        
+        },
+
         "CountlyIp" : {
             "Type" : "AWS::EC2::EIP",
             "Properties": {
                 "Domain" : "vpc"
             }
         },
-        
+
         "CountlyIpAssociation" : {
            "Type": "AWS::EC2::EIPAssociation",
            "Properties": {
-              "AllocationId": { "Fn::GetAtt" : [ "CountlyIp", "AllocationId" ]},             
-              "InstanceId" : { "Ref" : "CountlyInstance" }         
+              "AllocationId": { "Fn::GetAtt" : [ "CountlyIp", "AllocationId" ]},
+              "InstanceId" : { "Ref" : "CountlyInstance" }
            }
         },
-        
+
         "CountlyInternetGateway" : {
             "Type" : "AWS::EC2::InternetGateway",
                 "Properties" : {
                     "Tags" : [ {"Key" : "Name", "Value" : "CountlyInternetGateway"}]
             }
         },
-        
+
         "InternetGatewayAttachment" : {
            "Type" : "AWS::EC2::VPCGatewayAttachment",
            "Properties" : {
@@ -437,7 +437,7 @@
               "InternetGatewayId" : { "Ref" : "CountlyInternetGateway" }
            }
         },
-        
+
         "CountlyRouteTable" : {
             "Type" : "AWS::EC2::RouteTable",
             "Properties" : {
@@ -445,17 +445,17 @@
                 "Tags" : [ { "Key" : "Name", "Value" : "CountlyRouteTable" } ]
             }
         },
-        
+
         "Route" : {
-            "Type" : "AWS::EC2::Route",      
-            "DependsOn" : "InternetGatewayAttachment",      
+            "Type" : "AWS::EC2::Route",
+            "DependsOn" : "InternetGatewayAttachment",
             "Properties" : {
                 "RouteTableId" : { "Ref" : "CountlyRouteTable" },
                 "DestinationCidrBlock" : "0.0.0.0/0",
                 "GatewayId" : { "Ref" : "CountlyInternetGateway" }
             }
         },
-        
+
         "SubnetRouteTableAssociation" : {
             "Type" : "AWS::EC2::SubnetRouteTableAssociation",
             "Properties" : {
@@ -470,7 +470,7 @@
                 "RetentionInDays": 7
             }
         },
-            
+
         "CodeDeployRole": {
             "Type": "AWS::IAM::Role",
             "Properties": {
@@ -504,7 +504,7 @@
                     "Statement": [
                     {
                         "Effect": "Allow",
-                        "Action": [         
+                        "Action": [
                             "ec2:*"
                         ],
                         "Resource": "*"
@@ -516,12 +516,12 @@
                 }]
             }
         },
-        
+
         "InstanceWaitHandle" : {
             "Type" : "AWS::CloudFormation::WaitConditionHandle",
             "Properties" : { }
         },
-        
+
         "InstanceWait" : {
             "Type" : "AWS::CloudFormation::WaitCondition",
             "DependsOn" : "CountlyInstance",
@@ -530,11 +530,11 @@
                 "Timeout" : "600"
             }
         },
-                
+
         "CountlyServer" : {
             "Type" : "AWS::CodeDeploy::Application"
         },
-        
+
         "DeploymentGroup" : {
             "Type" : "AWS::CodeDeploy::DeploymentGroup",
             "Properties" : {
@@ -550,21 +550,21 @@
                     "Revision" : {
                         "RevisionType" : "GitHub",
                         "GitHubLocation" : {
-                            "CommitId"   : "b0f1b0559055d8bef3d98c8664ab453951de4764",
+                            "CommitId"   : "c960fa31fa6ec1bbda2c939017097b2d3f9a64d7",
                             "Repository" : "Countly/countly-server"
                         }
                     }
                 },
-                "ServiceRoleArn" : { "Fn::GetAtt" : [ "CodeDeployRole" , "Arn" ] }              
-                
+                "ServiceRoleArn" : { "Fn::GetAtt" : [ "CodeDeployRole" , "Arn" ] }
+
             },
             "DependsOn" : "InstanceWait"
         }
-        
+
     },
 
     "Outputs" : {
-                         
+
         "PublicIp": {
             "Description": "Instance ip",
             "Value": {
