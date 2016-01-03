@@ -318,7 +318,8 @@ window.ActionMapView = countlyView.extend({
             this.loadIframe();
             this.map = simpleheat("view-canvas-map");
             this.map.data(this.getData(data.data));
-            this.map.radius(50, 100);
+            var r = Math.max((48500-35*data.data.length)/900, 5);
+            this.map.radius(r, r*1.6);
             this.map.draw();
             
             $("#date-selector").after('<a class="icon-button light btn-header btn-back-view" data-localize="views.back"><i class="fa fa-chevron-left"></i> Back</a>');
@@ -371,6 +372,8 @@ window.ActionMapView = countlyView.extend({
             var data = countlyViews.getActionsData();
             self.map.clear();
             self.map.data(self.getData(data.data));
+            var r = Math.max((48500-35*data.data.length)/900, 5);
+            self.map.radius(r, r*1.6);
             self.map.draw();
         });
     }
