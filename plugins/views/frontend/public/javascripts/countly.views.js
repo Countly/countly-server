@@ -391,7 +391,7 @@ app.route("/analytics/view-frequency", 'views', function () {
 	this.renderWhenReady(this.viewFrequencyView);
 });
 
-app.route("/analytics/action-map/*view", 'views', function (view) {
+app.route("/analytics/views/action-map/*view", 'views', function (view) {
     this.actionMapView.view = view;
 	this.renderWhenReady(this.actionMapView);
 });
