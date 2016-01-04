@@ -284,8 +284,10 @@
         return osName
             .replace(/:/g, ".")
             .replace(/^unk/g, "Unknown ")
+            .replace(/^uty/g, "Unity ")
             .replace(/^qnx/g, "QNX ")
             .replace(/^os2/g, "OS/2 ")
+            .replace(/^atv/g, "Apple TV ")
             .replace(/^mw/g, "Windows ")
             .replace(/^ob/g, "Open BSD ")
             .replace(/^sb/g, "SearchBot ")
@@ -299,6 +301,8 @@
             .replace(/^w/g, "Windows Phone ")
             .replace(/^o/g, "OS X ")
             .replace(/^m/g, "Mac ")
+            .replace(/^r/g, "Roku ")
+            .replace(/^s/g, "Symbian ")
             .replace(/^t/g, "Tizen ");
     };
 
