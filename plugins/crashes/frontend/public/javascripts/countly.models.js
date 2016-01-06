@@ -8,6 +8,7 @@
         _list = {},
         _activeAppKey = 0,
         _initialized = false,
+        _period = {},
 		_periodObj = {},
 		_metrics = {},
         _lastId = null,
@@ -49,7 +50,7 @@
 			"cpu":jQuery.i18n.map["crashes.cpu"],
 			"opengl":jQuery.i18n.map["crashes.opengl"]};
         
-		
+		_period = countlyCommon.getPeriodForAjax();
 		if(id){
             _lastId = id;
 			return $.ajax({
@@ -59,6 +60,7 @@
 					"api_key":countlyGlobal.member.api_key,
 					"app_id":countlyCommon.ACTIVE_APP_ID,
 					"method":"crashes",
+                    "period":_period,
 					"group":id
 				},
 				dataType:"jsonp",
@@ -88,6 +90,7 @@
 				data:{
 					"api_key":countlyGlobal.member.api_key,
 					"app_id":countlyCommon.ACTIVE_APP_ID,
+                    "period":_period,
 					"method":"crashes"
 				},
 				dataType:"jsonp",
@@ -280,6 +283,7 @@
     };
 
     countlyCrashes.refresh = function (id) {		
+        _period = countlyCommon.getPeriodForAjax();
 		if(id){
 			return $.ajax({
 				type:"GET",
@@ -288,6 +292,7 @@
 					"api_key":countlyGlobal.member.api_key,
 					"app_id":countlyCommon.ACTIVE_APP_ID,
 					"method":"crashes",
+                    "period":_period,
 					"group":id
 				},
 				dataType:"jsonp",
@@ -317,6 +322,7 @@
 				data:{
 					"api_key":countlyGlobal.member.api_key,
 					"app_id":countlyCommon.ACTIVE_APP_ID,
+                    "period":_period,
 					"method":"crashes"
 				},
 				dataType:"jsonp",
