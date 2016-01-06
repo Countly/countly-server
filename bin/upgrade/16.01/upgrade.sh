@@ -5,21 +5,21 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 bash $DIR/scripts/detect.init.sh
 
 #force mobile plugin for default mobile dashboard
-countly plugin install mobile ;
+countly plugin enable mobile ;
 
 #replace stores with sources
 STORESTATE=$(countly plugin status stores);
-if [ "$STORESTATE" == "installed" ] 
+if [ "$STORESTATE" == "enabled" ] 
 then
-    countly plugin uninstall stores ;
-    countly plugin install sources ;
+    countly plugin disable stores ;
+    countly plugin enable sources ;
 fi
 
 #update crashes dependencies
 CRASHSTATE=$(countly plugin status crashes);
-if [ "$CRASHSTATE" == "installed" ] 
+if [ "$CRASHSTATE" == "enabled" ] 
 then
-    nodejs $DIR/../plugins/crashes/install.js
+    countly plugin upgrade crashes ;
 fi
 
 #uninstall mognodb
