@@ -6,10 +6,13 @@ NC='\033[0m'
 usage (){
     echo "";
     echo "countly plugin usage:";
+    echo "    countly plugin list                   # list plugins";
+    echo "    countly plugin list states            # list plugins and their states";
     echo "    countly plugin enable <pluginname>    # enables plugin";
     echo "    countly plugin disable <pluginname>   # disables plugin";
-    echo "    countly plugin status pluginname      # status of plugin";
-    echo "    countly plugin version pluginname     # version of plugin";
+    echo "    countly plugin upgrade <pluginname>   # run plugin install script";
+    echo "    countly plugin status <pluginname>    # status of plugin";
+    echo "    countly plugin version <pluginname>   # version of plugin";
 } 
 
 if [ "$1" = "list" ]; then
