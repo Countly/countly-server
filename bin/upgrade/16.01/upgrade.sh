@@ -2,6 +2,9 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 
+## each separate version number must be less than 3 digit wide !
+function version { echo "$@" | gawk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'; }
+
 bash $DIR/scripts/detect.init.sh
 
 #force mobile plugin for default mobile dashboard
@@ -30,7 +33,21 @@ fi
 wget -qO- https://deb.nodesource.com/setup_4.x | bash -
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
 #echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
+
+gcc_need=4.8.0
+gcc_have=$(gcc --version | grep ^gcc | sed 's/^.* //g')
+if [ "$(version "$gcc_need")" -lt "$(version "$gcc_have")" ]; then
+    add-apt-repository ppa:ubuntu-toolchain-r/test -y ;
+fi
+
 apt-get update
+
+if [ "$(version "$gcc_need")" -lt "$(version "$gcc_have")" ]; then
+    apt-get -y install gcc-4.8 g++-4.8 ;
+    export CXX="g++-4.8" ;
+    export CC="gcc-4.8" ;
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90 ;
+fi
 
 #install new nodejs dependencies
 apt-get install -y build-essential libkrb5-dev
