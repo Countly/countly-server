@@ -99,6 +99,7 @@ if (cluster.isMaster) {
         "unknown":"unk",
         "undefined":"unk",
         "tvos":"atv",
+        "watchos":"wos",
         "unity editor":"uty",
         "qnx":"qnx",
         "os/2":"os2",

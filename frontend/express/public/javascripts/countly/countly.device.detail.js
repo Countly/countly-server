@@ -288,6 +288,7 @@
             .replace(/^qnx/g, "QNX ")
             .replace(/^os2/g, "OS/2 ")
             .replace(/^atv/g, "Apple TV ")
+            .replace(/^wos/g, "Apple Watch ")
             .replace(/^mw/g, "Windows ")
             .replace(/^ob/g, "Open BSD ")
             .replace(/^sb/g, "SearchBot ")
