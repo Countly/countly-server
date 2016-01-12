@@ -2964,11 +2964,11 @@ var AppRouter = Backbone.Router.extend({
         if(location.hash != "#/" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID]){
             $("#"+countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type+"-type a").each(function(){
                 if(this.hash != "#/" && this.hash != ""){
-                    if(location.hash == this.hash){
+                    if(location.hash == this.hash && $(this).is(":visible")){
                         change = false;
                         return false;
                     }
-                    else if(location.hash.indexOf(this.hash) == 0){
+                    else if(location.hash.indexOf(this.hash) == 0 && $(this).is(":visible")){
                         redirect = this.hash;
                         return false;
                     }
