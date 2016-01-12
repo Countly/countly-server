@@ -57,7 +57,7 @@ countlyDeviceList = {
 	"iPad5,2":"iPad mini 4",
     //apple watch
     "Watch1,1":"Apple Watch",
-    "Watch1,2":"Apple Watch",
+    "Watch1,2":"Apple Watch 42mm",
     //apple tv
     "AppleTV2,1":"Apple TV 2G",
     "AppleTV3,1":"Apple TV 3G",
