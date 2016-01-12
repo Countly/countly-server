@@ -141,7 +141,7 @@ $( document ).ready(function() {
     if(countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]){
         style = "";
     }
-    var menu = '<a href="#/manage/populate" class="item" id="populator-menu" style="'+style+'">'+
+    var menu = '<a href="#/manage/populate" class="item populator-menu" style="'+style+'">'+
         '<div class="logo-icon fa fa-random"></div>'+
         '<div class="text" data-localize="populator.title"></div>'+
     '</a>';
@@ -151,10 +151,10 @@ $( document ).ready(function() {
     //listen for UI app change
     app.addAppSwitchCallback(function(appId){
         if(countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][appId]){
-            $("#populator-menu").show();
+            $(".populator-menu").show();
         }
         else{
-            $("#populator-menu").hide();
+            $(".populator-menu").hide();
         }
     });
 });
