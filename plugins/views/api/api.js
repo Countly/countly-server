@@ -348,6 +348,51 @@ var plugin = {},
         }
         
     }
+    
+    plugins.register("/i/apps/create", function(ob){
+		var params = ob.params;
+		var appId = ob.appId;
+        common.db.collection("app_viewdata" + appId).insert({_id:"meta"},function(){});
+	});
+	
+	plugins.register("/i/apps/delete", function(ob){
+		var appId = ob.appId;
+		common.db.collection('app_viewdata' + appId).drop(function() {});
+		common.db.collection('app_views' + appId).drop(function() {});
+        if(common.drillDb){
+            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + appId).digest('hex')).drop(function() {});
+            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_view" + appId).digest('hex')).drop(function() {});
+        }
+	});
+    
+    plugins.register("/i/apps/clear", function(ob){
+		var appId = ob.appId;
+        var ids = ob.ids;
+        common.db.collection('app_viewdata' + appId).findOne({_id:"meta"}, function(err, doc){
+            if(!err && doc && doc.segments){
+                doc.segments.push("no-segment");
+                for(var i = 0; i < doc.segments.length; i++){
+                    common.db.collection('app_viewdata' + appId).remove({$and:[{'_id': {$regex: doc.segments[i] + ".*"}}, {'_id': {$nin:ids}}]},function(){}); 
+                }
+            }
+        });
+        if(common.drillDb){
+            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + appId).digest('hex')).remove({ts:{$lt:ob.moment.valueOf()}}, function() {});
+            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_view" + appId).digest('hex')).remove({ts:{$lt:ob.moment.valueOf()}}, function() {});
+        }
+	});
+	
+	plugins.register("/i/apps/reset", function(ob){
+		var appId = ob.appId;
+        common.db.collection('app_viewdata' + appId).drop(function() {
+            common.db.collection("app_viewdata" + appId).insert({_id:"meta"},function(){});
+        });
+		common.db.collection('app_views' + appId).drop(function() {});
+        if(common.drillDb){
+            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_action" + appId).digest('hex')).drop(function() {});
+            common.drillDb.collection("drill_events" + crypto.createHash('sha1').update("[CLY]_view" + appId).digest('hex')).drop(function() {});
+        }
+	});
 	
 }(plugin));
 
