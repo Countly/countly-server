@@ -147,14 +147,14 @@ window.CrashesView = countlyView.extend({
                         $(nRow).addClass("renewedcrash");
 				},
                 "aoColumns": [
-					{ "mData": function(row, type){return (row.is_new) ? true : false;}, "bVisible": false} ,
+					{ "mData":function(row, type){return (row.is_new) ? true : false;}, "bVisible": false} ,
 					{ "mData": function(row, type){return (row.is_renewed) ? true : false;}, "bVisible": false} ,
 					{ "mData": function(row, type){return (row.is_hidden) ? true : false;}, "bVisible": false} ,
 					{ "mData": function(row, type){if(type == "display"){if(row.nonfatal) return jQuery.i18n.map["crashes.nonfatal"]; else return jQuery.i18n.map["crashes.fatal"];}else return (row.nonfatal) ? true : false;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.fatal"], "sWidth":"80px"} ,
 					{ "mData": function(row, type){if(type == "display"){if(row.session){return ((Math.round(row.session.total/row.session.count)*100)/100)+" "+jQuery.i18n.map["crashes.sessions"];} else {return jQuery.i18n.map["crashes.first-crash"];}}else{if(row.session)return row.session.total/row.session.count; else return 0;}}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.frequency"], "sWidth":"80px" },
 					{ "mData": "reports", "sType":"numeric", "sTitle": jQuery.i18n.map["crashes.reports"], "sWidth":"80px" },
 					{ "mData": function(row, type){if(type == "display") return row.users+" ("+((row.users/crashData.users.total)*100).toFixed(2)+"%)"; else return row.users}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.users"], "sWidth":"60px" },
-                    { "mData": "os", "sType":"string", "sTitle": jQuery.i18n.map["crashes.platform"], "sWidth":"70px" },
+                    { "mData": function(row, type){return (row.not_os_specific) ? jQuery.i18n.map["crashes.varies"] : row.os;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.platform"], "sWidth":"70px" },
                     { "mData": function(row, type){return "<div class='truncated'>"+row.name+"</div>";}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.error"] },
                     { "mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.lastTs); else return row.lastTs;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.last_time"], "sWidth":"100px" },
                     { "mData": function(row, type){return row.latest_version.replace(/:/g, '.');}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.latest_app"], "sWidth":"100px" },
@@ -311,8 +311,11 @@ window.CrashgroupView = countlyView.extend({
 		
 		if (!isRefresh) {
 			this.metrics = countlyCrashes.getMetrics();
-			this.curMetric = "app_version";
-			this.curTitle = jQuery.i18n.map["crashes.app_version"];
+            for(var i in this.metrics){
+                this.curMetric = i;
+                this.curTitle = this.metrics[i];
+                break;
+            }
 		}
         var ranges = ["ram", "disk", "bat", "run"];
         for(var i = 0; i < ranges.length; i++){
@@ -335,7 +338,7 @@ window.CrashgroupView = countlyView.extend({
                 "items":[
 					{
                         "title":jQuery.i18n.map["crashes.platform"],
-                        "total":crashData.os,
+                        "total":(crashData.not_os_specific) ? jQuery.i18n.map["crashes.varies"] : crashData.os,
                         "help":"crashes.help-platform"
                     },
                     {

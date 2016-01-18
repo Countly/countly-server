@@ -41,7 +41,11 @@
     countlyCrashes.initialize = function (id) {
 		_activeAppKey = countlyCommon.ACTIVE_APP_KEY;
 		_initialized = true;
-		_metrics = {"app_version":jQuery.i18n.map["crashes.app_version"], 
+		_metrics = {
+            "os_name":jQuery.i18n.map["crashes.os"], 
+            "browser":jQuery.i18n.map["crashes.browser"], 
+            "view":jQuery.i18n.map["crashes.view"], 
+            "app_version":jQuery.i18n.map["crashes.app_version"], 
             "os_version":jQuery.i18n.map["crashes.os_version"],
 			"manufacture":jQuery.i18n.map["crashes.manufacture"], 
 			"device":jQuery.i18n.map["crashes.device"], 
@@ -49,6 +53,8 @@
 			"orientation":jQuery.i18n.map["crashes.orientation"],
 			"cpu":jQuery.i18n.map["crashes.cpu"],
 			"opengl":jQuery.i18n.map["crashes.opengl"]};
+            
+        
         
 		_period = countlyCommon.getPeriodForAjax();
 		if(id){
@@ -402,7 +408,11 @@
     };
     
     countlyCrashes.setGroupData = function (data) {
-        _metrics = {"os_version":jQuery.i18n.map["crashes.os_version"], 
+        _metrics = {
+            "os_name":jQuery.i18n.map["crashes.os"], 
+            "browser":jQuery.i18n.map["crashes.browser"], 
+            "view":jQuery.i18n.map["crashes.view"], 
+            "os_version":jQuery.i18n.map["crashes.os_version"], 
 			"app_version":jQuery.i18n.map["crashes.app_version"], 
 			"manufacture":jQuery.i18n.map["crashes.manufacture"], 
 			"device":jQuery.i18n.map["crashes.device"], 

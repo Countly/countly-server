@@ -11,7 +11,7 @@ plugins.setConfigs("crashes", {
 
 (function (plugin) {
     var ranges = ["ram", "bat", "disk", "run", "session"];
-	var segments = ["os_version", "manufacture", "device", "resolution", "app_version", "cpu", "opengl", "orientation"];
+	var segments = ["os_version", "os_name", "manufacture", "device", "resolution", "app_version", "cpu", "opengl", "orientation", "view", "browser"];
 	var bools = {"root":true, "online":true, "muted":true, "signal":true, "background":true};
     var ios_cpus = {
         "iPhone1,1":"RISC ARM 11",
@@ -169,6 +169,8 @@ plugins.setConfigs("crashes", {
                 "app_version",
                 "cpu", //type of cpu used on device (for ios will be based on device)
                 "opengl", //version of open gl supported
+                "view", //screen, view or page where error happened
+                "browser", //browser in which error happened, if applicable
                 
                 //state of device
                 "ram_current", //in megabytes
@@ -209,6 +211,9 @@ plugins.setConfigs("crashes", {
                         else if(segments[props[i]]){
 							report[props[i]] = params.qstring.crash["_"+props[i]]+"";
                         }
+                        else if(props[i] == "os" && params.qstring.crash._not_os_specific){
+                            report[props[i]+"_name"] = params.qstring.crash["_"+props[i]]+"";
+                        }
                         else if(props[i] == "custom"){
                             report[props[i]] = {};
                             for(var key in params.qstring.crash["_"+props[i]]){
@@ -222,7 +227,11 @@ plugins.setConfigs("crashes", {
 				}
                 report.cd = new Date();
                 report.nonfatal = (report.nonfatal && report.nonfatal !== "false") ? true : false;
-                var hash = common.crypto.createHash('sha1').update(report.os + error + params.app_id + report.nonfatal + "").digest('hex');
+                report.not_os_specific = (params.qstring.crash._not_os_specific) ? true : false;
+                var seed = error + params.app_id + report.nonfatal + "";
+                if(!params.qstring.crash._not_os_specific)
+                    seed = report.os + seed;
+                var hash = common.crypto.createHash('sha1').update(seed).digest('hex');
 				function checkUser(err, dbAppUser, tries){
                     if(!dbAppUser || !dbAppUser.uid){
                         setTimeout(function(){
@@ -255,6 +264,9 @@ plugins.setConfigs("crashes", {
                                     { name:"manufacture", type: "l" },
                                     { name:"cpu", type: "l" },
                                     { name:"opengl", type: "l" },
+                                    { name:"view", type: "l" },
+                                    { name:"browser", type: "l" },
+                                    { name:"os", type: "l" },
                                     { name:"orientation", type: "l" },
                                     { name:"nonfatal", type: "l" },
                                     { name:"root", type: "l" },
@@ -311,6 +323,8 @@ plugins.setConfigs("crashes", {
                                 groupSet.name = report.name || report.error.split('\n')[0];
                                 groupSet.error = report.error;
                                 groupSet.nonfatal = (report.nonfatal) ? true : false;
+                                if(report.not_os_specific)
+                                    groupSet.not_os_specific = true;
                                 
                                 groupInc.reports = 1;
                                 
@@ -578,7 +592,7 @@ plugins.setConfigs("crashes", {
 								}
                             }
                             
-                            common.db.collection('app_crashgroups' + params.app_id).find({_id:{$ne:"meta"}},{uid:1, is_new:1, is_renewed:1, is_hidden:1, os:1, name:1, error:1, users:1, lastTs:1, reports:1, latest_version:1, is_resolved:1, resolved_version:1, nonfatal:1, session:1}).toArray(function(err, res){
+                            common.db.collection('app_crashgroups' + params.app_id).find({_id:{$ne:"meta"}},{uid:1, is_new:1, is_renewed:1, is_hidden:1, os:1, not_os_specific:1, name:1, error:1, users:1, lastTs:1, reports:1, latest_version:1, is_resolved:1, resolved_version:1, nonfatal:1, session:1}).toArray(function(err, res){
                                 result.groups = res || [];
                                 fetch.getTimeObj("crashdata", params, function(data){
                                     result.data = data;
