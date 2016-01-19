@@ -31,6 +31,7 @@ window.PopulatorView = countlyView.extend({
                     countlyPopulator.stopGenerating();
                     $("#stop-populate").hide();
                     $("#start-populate").show();
+                    CountlyHelpers.alert(jQuery.i18n.map["populator.success"], "green");
                 }, maxTime*1000);
                 
                 fromDate = $( "#populate-from" ).datepicker( "getDate" ) || fromDate;
@@ -53,6 +54,7 @@ window.PopulatorView = countlyView.extend({
 			$("#start-populate").show();
             $("#populate-bar div").stop(true);
             $("#populate-bar div").width(0);
+            CountlyHelpers.alert(jQuery.i18n.map["populator.success"], "green");
 		});
 		
 		$("#populate-explain").on('click', function() {
