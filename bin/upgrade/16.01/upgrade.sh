@@ -18,13 +18,6 @@ then
     countly plugin enable sources ;
 fi
 
-#update crashes dependencies
-CRASHSTATE=$(countly plugin status crashes);
-if [ "$CRASHSTATE" == "enabled" ] 
-then
-    countly plugin upgrade crashes ;
-fi
-
 #uninstall mognodb
 #apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
 #rm /etc/apt/sources.list.d/mongodb-10gen-countly.list
