@@ -211,9 +211,6 @@ plugins.setConfigs("crashes", {
                         else if(segments[props[i]]){
 							report[props[i]] = params.qstring.crash["_"+props[i]]+"";
                         }
-                        else if(props[i] == "os" && params.qstring.crash._not_os_specific){
-                            report[props[i]+"_name"] = params.qstring.crash["_"+props[i]]+"";
-                        }
                         else if(props[i] == "custom"){
                             report[props[i]] = {};
                             for(var key in params.qstring.crash["_"+props[i]]){
@@ -222,8 +219,12 @@ plugins.setConfigs("crashes", {
                                     report[props[i]][safeKey] = params.qstring.crash["_"+props[i]][key];
                             }
                         }
-						else
+						else{
 							report[props[i]] = params.qstring.crash["_"+props[i]];
+                            if(props[i] == "os" && params.qstring.crash._not_os_specific){
+                                report[props[i]+"_name"] = params.qstring.crash["_"+props[i]]+"";
+                            }
+                        }
 				}
                 report.cd = new Date();
                 report.nonfatal = (report.nonfatal && report.nonfatal !== "false") ? true : false;
