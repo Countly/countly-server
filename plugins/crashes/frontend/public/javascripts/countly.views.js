@@ -275,6 +275,7 @@ window.CrashgroupView = countlyView.extend({
         this.loaded = true;
     },
     beforeRender: function() {
+        countlyCrashes.reset();
 		if(this.template)
 			return $.when(countlyCrashes.initialize(this.id)).then(function () {});
 		else{

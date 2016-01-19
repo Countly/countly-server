@@ -356,6 +356,8 @@
 		_groupData = {};
 		_reportData = {};
         _crashTimeline = {};
+        _metrics = {};
+        _usable_metrics = {};
     };
 	
 	countlyCrashes.processMetric = function (data, metric, label) {
