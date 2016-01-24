@@ -10,7 +10,7 @@ window.WebDashboardView = countlyView.extend({
             "map-list-users": {id:'total', label:jQuery.i18n.map["sidebar.analytics.users"], type:'number', metric:"u"},
             "map-list-new": {id:'total', label:jQuery.i18n.map["common.table.new-users"], type:'number', metric:"n"}
         };
-        var defs = [countlyUser.initialize(), countlyDeviceDetails.initialize()];
+        var defs = [countlyUser.initialize(), countlyDeviceDetails.initialize(), countlyWebDashboard.initialize()];
         if(typeof window.countlyBrowser != "undefined")
             defs.push(countlyBrowser.initialize());
         if(typeof window.countlySources != "undefined")
@@ -172,6 +172,44 @@ window.WebDashboardView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
+            $(".map-list").after('<table id="last-visitors" class="d-table help-zone-vb" cellpadding="0" cellspacing="0"></table>');
+            var users = countlyWebDashboard.getLatestUsers();
+            var sort = 3;
+            var columns = [
+				{ "mData": function(row){var c = (!row["cc"]) ? "Unknown" : row["cc"]; if(c != "Unknown") c = '<div class="flag" style="background-image: url(images/flags/'+ c.toLowerCase() + '.png);"></div>'+c; if(row["cty"] != "Unknown") c += " ("+row["cty"]+")"; return c;}, "sType":"string", "sTitle": jQuery.i18n.map["countries.table.country"], "bSortable":false },
+                { "mData": function(row){return (!row["p"]) ? jQuery.i18n.map["common.unknown"] : row["p"]}, "sType":"string", "sTitle": jQuery.i18n.map["platforms.table.platform"] , "bSortable":false }
+            ];
+            
+            if(users[0] && users[0].brw){
+                columns.push({ "mData": function(row){return (!row["brw"]) ? jQuery.i18n.map["common.unknown"] : row["brw"]}, "sType":"string", "sTitle": jQuery.i18n.map["web.browser"] , "bSortable":false });
+                sort++;
+            }
+            
+            if(users[0] && users[0].lv){
+                columns.push({ "mData": function(row){return (!row["lv"]) ? jQuery.i18n.map["common.unknown"] : row["lv"]}, "sType":"string", "sTitle": jQuery.i18n.map["web.views.view"] , "bSortable":false, "sClass": "break web-20" });
+                sort++;
+            }
+            
+            if(users[0] && users[0].src){
+                columns.push({ "mData": function(row){if(!row["src"]) return jQuery.i18n.map["common.unknown"]; else if(row["src"].indexOf("http") == 0) return "<a href='"+row["src"]+"' target='_blank'>"+((typeof countlySources != "undefined") ? countlySources.getSourceName(row["src"]) : row["src"])+"</a>"; else return (typeof countlySources != "undefined") ? countlySources.getSourceName(row["src"]) : row["src"];}, "sType":"string", "sTitle": jQuery.i18n.map["web.from-source"] , "bSortable":false, "sClass": "break web-20" });
+                sort++;
+            }
+            
+            columns.push({ "mData": function(row){return (!row["sc"]) ? 0 : row["sc"]}, "sType":"numeric", "sTitle": jQuery.i18n.map["web.total-sessions"] , "bSortable":false },
+				{ "mData": function(row, type){if(type == "display") return (row["ls"]) ? countlyCommon.formatTimeAgo(row["ls"]) : jQuery.i18n.map["web.never"]; else return (row["ls"]) ? row["ls"] : 0;}, "sType":"numeric", "sTitle": jQuery.i18n.map["web.last-seen"] , "bSortable":false },
+				{ "mData": function(row){return countlyCommon.formatTime((row["tsd"]) ? parseInt(row["tsd"]) : 0);}, "sType":"numeric", "sTitle": jQuery.i18n.map["web.time-spent"], "bSortable":false });
+            
+            this.dtable = $('#last-visitors').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": users,
+                "iDisplayLength": 10,
+                "aoColumns": columns
+            }));
+			this.dtable.stickyTableHeaders();
+            this.dtable.fnSort( [ [sort,'desc'] ] );
+            $(".dataTable-top .search-table-data").hide();
+            $(".dataTable-top .save-table-data").hide();
+            $(".dataTable-top").append("<div style='font:15px Ubuntu,Helvetica,sans-serif; color:#636363; text-shadow:0 1px #F6F6F6; letter-spacing:-1px; margin-left:10px; margin-top: 8px; text-transform: uppercase;'>"+jQuery.i18n.map["web.latest-visitors"]+"</div>");
+            
             $(this.selectedView).parents(".big-numbers").addClass("active");
             this.pageScript();
 
@@ -191,6 +229,8 @@ window.WebDashboardView = countlyView.extend({
                 return false;
             }
             self.renderCommon(true);
+            
+            CountlyHelpers.refreshTable(self.dtable, countlyWebDashboard.getLatestUsers());
 
             var newPage = $("<div>" + self.template(self.templateData) + "</div>");
             $(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
