@@ -86,7 +86,11 @@
                             _usable_metrics[i] = i.charAt(0).toUpperCase() + i.slice(1);
                         }
                     }
-				}
+				}, 
+                error:function(){
+                    CountlyHelpers.alert(jQuery.i18n.map["crashes.not-found"], "red");
+                    app.navigate("/crashes", true);
+                }
 			});
 		}
 		else
