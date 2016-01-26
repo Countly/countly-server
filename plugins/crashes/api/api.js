@@ -148,6 +148,9 @@ plugins.setConfigs("crashes", {
                 var rPlus = /\s\+\s([0-9]*)$/gim;
                 error = error.replace(rHex, "0x%%%%%% ").replace(rPlus, " + ");
             }
+            //there can be multiple stacks separated by blank line
+            //use the first one
+            error = error.split("\n\n")[0];
             //remove same lines for recursive overflows (on different devices may have different amount of internal calls)
             //removing duplicates will result in same stack on different devices
             var lines = error.split("\n");
