@@ -14,3 +14,8 @@ countly_restart () {
     countly start;
     countly stop;
 }
+
+countly_status () { 
+    launchctl list | grep com.countly.api;
+    launchctl list | grep com.countly.dashboard;
+}

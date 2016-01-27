@@ -11,3 +11,7 @@ countly_stop (){
 countly_restart (){ 
     restart countly-supervisor;
 } 
+
+countly_status (){ 
+    status countly-supervisor;
+} 

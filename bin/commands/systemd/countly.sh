@@ -11,3 +11,7 @@ countly_stop () {
 countly_restart () {
     systemctl restart countly;
 }
+
+countly_status () {
+    systemctl status countly;
+}

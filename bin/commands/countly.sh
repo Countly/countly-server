@@ -23,6 +23,10 @@ countly_stop (){
 
 countly_restart (){
     echo "restart stub";
+}
+
+countly_status (){
+    echo "status stub";
 } 
 
 #real commands, can also be overwritten
