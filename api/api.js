@@ -50,7 +50,7 @@ if (cluster.isMaster) {
 
     cluster.on('exit', function(worker) {
         workers = workers.filter(function(w){
-            return w === worker;
+            return w !== worker;
         });
         workers.push(cluster.fork());
     });
