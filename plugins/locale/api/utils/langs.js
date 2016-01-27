@@ -7,7 +7,7 @@ var langs = {},
 
     var regexp = /[\-_]+/;
     langs.languageFromLocale = function(locale) {
-        var comps = locale.toLowerCase().split(regexp), lang = comps[0];
+        var comps = (locale+"").toLowerCase().split(regexp), lang = comps[0];
         if (lang == 'zh') {
             if (comps.length != 2) {
                 return '';
