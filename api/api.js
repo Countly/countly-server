@@ -48,13 +48,6 @@ if (cluster.isMaster) {
         workers.push(worker);
     }
 
-    cluster.on('exit', function(worker) {
-        workers = workers.filter(function(w){
-            return w === worker;
-        });
-        workers.push(cluster.fork());
-    });
-
     var passToMaster = function(worker){
         worker.on('message', function(msg){
             if (msg.cmd === 'log') {
@@ -72,6 +65,15 @@ if (cluster.isMaster) {
 
     workers.forEach(passToMaster);
     passToMaster(jobsWorker);
+
+    cluster.on('exit', function(worker) {
+        workers = workers.filter(function(w){
+            return w !== worker;
+        });
+        var newWorker = cluster.fork();
+        workers.push(newWorker);
+        passToMaster(newWorker)
+    });
 
     plugins.dispatch("/master", {});
 
