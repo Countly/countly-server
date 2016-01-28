@@ -24,6 +24,24 @@ var stats = {},
             });
         });
     };
+    
+    stats.getUser = function (db, user, callback) {
+		countlyDb = db;
+        getTotalEvents(function(totalEvents) {
+            getTotalMsgSent(function(totalMsgSent) {
+                getCrashGroups(function(totalCrashgroups) {
+                    getAllPlatforms(function(platforms) {
+                        callback({
+                            "total-events": totalEvents,
+                            "total-msg-sent": totalMsgSent,
+                            "total-crash-groups": totalCrashgroups,
+                            "total-platforms": platforms
+                        });
+                    }, user.user_of || []);
+                }, user.user_of || []);
+            }, user.user_of || []);
+        }, user.user_of || []);
+    };
 
     function getTotalUsers(callback) {
         countlyDb.collection("apps").find({}, {_id:1}).toArray(function (err, allApps) {
@@ -45,8 +63,16 @@ var stats = {},
         });
     }
 
-    function getTotalEvents(callback) {
-        countlyDb.collection("events").find({}, {'list':1}).toArray(function (err, events) {
+    function getTotalEvents(callback, apps) {
+        var query = {};
+        if(typeof apps != "undefined"){
+            var inarray = [];
+            for(var i = 0; i <  apps.length; i++){
+                inarray.push(countlyDb.ObjectID(apps[i]));
+            }
+            query._id = {$in:inarray};
+        }
+        countlyDb.collection("events").find(query, {'list':1}).toArray(function (err, events) {
 			if (err || !events)
                 callback(0);
 			else{
@@ -90,8 +116,16 @@ var stats = {},
         });
     }
 
-    function getTotalMsgSent(callback) {
-        countlyDb.collection("messages").find({}, {"result":1}).toArray(function (err, messages) {
+    function getTotalMsgSent(callback, apps) {
+        var query = {};
+        if(typeof apps != "undefined"){
+            var inarray = [];
+            for(var i = 0; i <  apps.length; i++){
+                inarray.push(countlyDb.ObjectID(apps[i]));
+            }
+            query.apps = {$in:inarray};
+        }
+        countlyDb.collection("messages").find(query, {"result":1}).toArray(function (err, messages) {
 			if (err || !messages)
                 callback(0);
 			else{
@@ -114,6 +148,71 @@ var stats = {},
                 callback(0);
 			else
 				callback(err, count);
+        });
+    }
+    
+    function getCrashGroupsForApp(app, callback) {
+        countlyDb.collection("app_crashgroups" + app).find({}).count(function (err, count) {
+			if (err || !count)
+                callback(null, 0);
+			else
+				callback(err, count);
+        });
+    }
+    
+    function getCrashGroups(callback, apps){
+        if(typeof apps != "undefined"){
+            async.map(apps, getCrashGroupsForApp, function (err, results) {
+                if (err)
+                    callback(0, 0);
+        
+                var userCount = 0;
+        
+                for (var i = 0; i < results.length; i++) {
+                    userCount += results[i];
+                }
+        
+                callback(userCount, apps.length);
+            });
+        }
+        else{
+            countlyDb.collection("apps").find({}, {_id:1}).toArray(function (err, allApps) {
+                if(err || !allApps)
+                    callback(0, 0);
+                else
+                    async.map(allApps, getCrashGroupsForApp, function (err, results) {
+                        if (err)
+                            callback(0, 0);
+        
+                        var userCount = 0;
+        
+                        for (var i = 0; i < results.length; i++) {
+                            userCount += results[i];
+                        }
+        
+                        callback(userCount, allApps.length);
+                    });
+            });
+        }
+    }
+    
+    function getAllPlatforms(callback, apps) {
+        countlyDb.collection("device_details").find({_id: {"$regex": ".*:0$"}}, {"a":1, "meta":1}).toArray(function (err, arr) {
+			if (err || !arr)
+                callback(0);
+			else{
+				var platforms = {};
+	
+				for (var i = 0; i < arr.length; i++) {
+					if (arr[i] && arr[i].meta && arr[i].meta.os && (typeof apps == "undefined" || apps.indexOf(arr[i].a) > -1)) {
+						for(var j = 0; j < arr[i].meta.os.length; j++){
+                            platforms[arr[i].meta.os[j]] = true;
+                        }
+					}
+				}
+	
+				callback(Object.keys(platforms));
+			}
         });
     }
 
