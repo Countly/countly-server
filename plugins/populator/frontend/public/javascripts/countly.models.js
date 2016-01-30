@@ -232,6 +232,14 @@
                 event.dur = getRandomInt(0, 10);
 			return [event];
 		};
+        
+        this.getEvents = function(count){
+            var events = [];
+            for(var i = 0; i < count; i++){
+                events.push(this.getEvent()[0]);
+            }
+            return events;
+        };
 		
 		this.getPushEvent = function(id){
 			if(!id){
@@ -267,7 +275,10 @@
 			if(!this.isRegistered){
 				this.isRegistered = true;
 				stats.u++;
-				this.request({timestamp:this.ts, begin_session:1, metrics:this.metrics, user_details:this.userdetails});
+                var events = this.getEvents(6);
+                events.push(this.getEvent("[CLY]_view")[0]);
+                events.push(this.getEvent("Login")[0]);
+				this.request({timestamp:this.ts, begin_session:1, metrics:this.metrics, user_details:this.userdetails, events:events});
 				if(Math.random() > 0.5){
 					this.hasPush = true;
 					stats.p++;
@@ -278,9 +289,11 @@
 			}
 			else{
 				stats.e++;
-				this.request({timestamp:this.ts, begin_session:1, events:this.getEvent("Login")});
+                var events = this.getEvents(6);
+                events.push(this.getEvent("[CLY]_view")[0]);
+                events.push(this.getEvent("Login")[0]);
+				this.request({timestamp:this.ts, begin_session:1, events:events});
 			}
-            this.request({timestamp:this.ts, events:this.getEvent("[CLY]_view")});
 			this.hasSession = true;
 			this.timer = setTimeout(function(){that.extendSession()}, timeout);
 		};
@@ -291,11 +304,12 @@
 				stats.x++;
 				stats.d += 30;
 				stats.e++;
-				this.request({timestamp:this.ts, session_duration:30});	
-				this.request({timestamp:this.ts, events:this.getEvent()});	
-				if(this.hasPush){
-					this.request({timestamp:this.ts, events:this.getPushEvent()});
+				var events = this.getEvents(6);
+                events.push(this.getEvent("[CLY]_view")[0]);
+                if(this.hasPush){
+                    events.push(this.getPushEvent()[0]);
 				}
+                this.request({timestamp:this.ts, session_duration:30, events:events});
 				if(Math.random() > 0.8){
 					this.timer = setTimeout(function(){that.extendSession()}, timeout);
 				}
@@ -317,7 +331,9 @@
 			if(this.hasSession){
 				this.hasSession = false;
 				stats.e++;
-				this.request({timestamp:this.ts, end_session:1, events:this.getEvent("Logout")});
+                var events = this.getEvents(6);
+                events.push(this.getEvent("Logout")[0]);
+				this.request({timestamp:this.ts, end_session:1, events:events});
 			}
 		};
 		
@@ -574,6 +590,5 @@
 			});
 			bulk = [];
 		}
-    };
-	
+    };	
 }(window.countlyPopulator = window.countlyPopulator || {}, jQuery));
