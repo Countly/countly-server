@@ -44,38 +44,19 @@
 	{
 		return string.charAt(0).toUpperCase() + string.slice(1);
 	}
-	function createRandomObj(fieldCount)
+	function createRandomObj()
 	{
-		var generatedObj = {};
-	
-		for(var i = 0; i < fieldCount; i++) {
-			var generatedObjField;
-	
-			switch(getRandomInt(0,4)) {
-	
-				case 0:
-				generatedObjField = getRandomInt(0,1000);
-				break;
-	
-				case 1:
-				generatedObjField = Math.random();
-				break;
-	
-				case 2:
-				generatedObjField = Math.random() < 0.5 ? true : false;
-				break;
-	
-				case 3:
-				generatedObjField = randomString(getRandomInt(0,4) + 4);
-				break;
-	
-				case 4:
-				generatedObjField = null;
-				break;
-			}
-			generatedObj[randomString(8)] = generatedObjField;
-		}
-		return generatedObj;
+        var ob = {
+            "Facebook Login": (Math.random() > 0.5) ? true : false,
+            "Twitter Login": (Math.random() > 0.5) ? true : false
+        }
+        
+        if(ob["Twitter Login"])
+            ob["Twitter Login name"] = chance.twitter();
+        
+        if((Math.random() > 0.5))
+            ob["Has Apple Watch OS"] = (Math.random() > 0.5) ? true : false;
+		return ob;
 	}
 	
 	// helper functions
@@ -116,7 +97,7 @@
         }
         else
             this.ip = chance.ip();
-		this.userdetails = {name: chance.name(), username: chance.twitter().substring(1), email:chance.email(), organization:capitaliseFirstLetter(chance.word()), phone:chance.phone(), gender:chance.gender().charAt(0), byear:chance.birthday().getFullYear(), custom:createRandomObj(6)};
+		this.userdetails = {name: chance.name(), username: chance.twitter().substring(1), email:chance.email(), organization:capitaliseFirstLetter(chance.word()), phone:chance.phone(), gender:chance.gender().charAt(0), byear:chance.birthday().getFullYear(), custom:createRandomObj()};
 		this.metrics = {};
 		this.startTs = startTs;
 		this.endTs = endTs;
