@@ -1795,7 +1795,7 @@ window.DurationView = countlyView.extend({
                 "aaData": durationData.chartData,
                 "aoColumns": [
                     { "mData": "ds", sType:"session-duration", "sTitle": jQuery.i18n.map["session-duration.table.duration"] },
-                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.number-of-users"] },
+                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.number-of-sessions"] },
                     { "mData": "percent", "sType":"percent", "sTitle": jQuery.i18n.map["common.percent"] }
                 ]
             }));
