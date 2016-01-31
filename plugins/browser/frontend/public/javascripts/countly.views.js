@@ -12,7 +12,8 @@ window.BrowserView = countlyView.extend({
             "pie-titles":{
                 "left":jQuery.i18n.map["common.total-users"],
                 "right":jQuery.i18n.map["common.new-users"]
-            }
+            },
+            "chart-helper":"browser.chart"
         };
 
         if (!isRefresh) {
