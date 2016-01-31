@@ -2701,7 +2701,7 @@ window.EventsView = countlyView.extend({
                         return elem;
                     },
                     cursor:"move",
-                    containment:"parent",
+                    containment:false,
                     tolerance:"pointer",
                     placeholder:"event-row-placeholder",
                     stop:function (e, elem) {
