@@ -316,13 +316,13 @@
     countlyMetric.explainFrequencyRange = function (index) {
         var visits = jQuery.i18n.map["views.visits"].toLowerCase();
         var range = [
-            "1-2 " + visits,
-            "3-5 " + visits,
-            "6-10 " + visits,
-            "11-15 " + visits,
-            "16-30 " + visits,
-            "31-50 " + visits,
-            "51-100 " + visits,
+            "1 - 2 " + visits,
+            "3 - 5 " + visits,
+            "6 - 10 " + visits,
+            "11 - 15 " + visits,
+            "16 - 30 " + visits,
+            "31 - 50 " + visits,
+            "51 - 100 " + visits,
             "> 100 " + visits
         ];
 
@@ -333,13 +333,13 @@
         var visits = jQuery.i18n.map["views.visits"].toLowerCase();
 
         var range = [
-            "1-2 " + visits,
-            "3-5 " + visits,
-            "6-10 " + visits,
-            "11-15 " + visits,
-            "16-30 " + visits,
-            "31-50 " + visits,
-            "51-100 " + visits,
+            "1 - 2 " + visits,
+            "3 - 5 " + visits,
+            "6 - 10 " + visits,
+            "11 - 15 " + visits,
+            "16 - 30 " + visits,
+            "31 - 50 " + visits,
+            "51 - 100 " + visits,
             "> 100 " + visits
         ];
 
