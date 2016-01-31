@@ -21,7 +21,8 @@ function makeRequest(url, callback){
             try{
                 data = JSON.parse(body);
             }
-            catch(ex){}
+            catch(ex){
+            }
         }
         callback(error, data);
     });
@@ -32,7 +33,7 @@ function getFile(resource, language){
         if(err){
             return false;
         }
-        if(stats.completed != "0%"){
+        if(stats && stats.completed != "0%"){
             console.log("Updating "+resource.name+" for "+language.language_code);
             makeRequest("https://www.transifex.com/api/2/project/countly/resource/"+resource.slug+"/translation/"+language.language_code+"/", function(err, file){
                 if(err){
