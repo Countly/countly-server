@@ -1659,7 +1659,7 @@
         else if(countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "ja")
             format = format.replace("MMM D", "MMM D[日]").replace("D MMM", "MMM D[日]");
         else if(countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "zh")
-            format = format.replace("MMM", "MM").replace("DDD", "DD").replace("DD MM YYYY", "YYYY MM DD").replace("DD MM", "MM DD").replace("DD", "DD[日]").replace("MMM", "MM[月]").replace("YYYY", "YYYY[年]");
+            format = format.replace("MMMM", "M").replace("MMM", "M").replace("MM", "M").replace("DD", "D").replace("D M, YYYY", "YYYY M D").replace("D M", "M D").replace("D", "D[日]").replace("M", "M[月]").replace("YYYY", "YYYY[年]");
         return date.format(format);
     }
 
