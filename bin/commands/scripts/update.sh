@@ -18,7 +18,7 @@ elif [ "$1" = "devices" ]; then
 elif [ "$1" = "sdk-web" ]; then
     mkdir -p $DIR/../../../frontend/express/public/sdk/web;
     wget -nv https://raw.githubusercontent.com/Countly/countly-sdk-web/master/lib/countly.min.js -O $DIR/../../../frontend/express/public/sdk/web/countly.min.js
-    wget-nv https://raw.githubusercontent.com/Countly/countly-sdk-web/master/lib/countly.js -O $DIR/../../../frontend/express/public/sdk/web/countly.js
+    wget -nv https://raw.githubusercontent.com/Countly/countly-sdk-web/master/lib/countly.js -O $DIR/../../../frontend/express/public/sdk/web/countly.js
 else
     usage ;
 fi
