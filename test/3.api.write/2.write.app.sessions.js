@@ -206,7 +206,7 @@ describe('Writing app sessions', function(){
 				.get('/o/analytics/countries?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateCountries(err, res, done, {country:"Unknown",code:"unknown",t:1,u:1,u2:2,n:1});
+					testUtils.validateCountries(err, res, done, {country:"Unknown",code:"unknown",t:1,u:1,u2:3,n:1});
 				});
 			});
 		});
@@ -275,7 +275,7 @@ describe('Writing app sessions', function(){
 				.get('/o/analytics/countries?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateCountries(err, res, done, {country:"Unknown",code:"unknown",t:2,u:1,u2:2,n:1});
+					testUtils.validateCountries(err, res, done, {country:"Unknown",code:"unknown",t:2,u:1,u2:3,n:1});
 				});
 			});
 		});
@@ -344,7 +344,7 @@ describe('Writing app sessions', function(){
 				.get('/o/analytics/countries?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateCountries(err, res, done, {country:"Unknown",code:"unknown",t:3,u:2,u2:4,n:2});
+					testUtils.validateCountries(err, res, done, {country:"Unknown",code:"unknown",t:3,u:2,u2:6,n:2});
 				});
 			});
 		});
@@ -413,7 +413,7 @@ describe('Writing app sessions', function(){
 				.get('/o/analytics/countries?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateCountries(err, res, done, {country:"Unknown",code:"unknown",t:3,u:2,u2:4,n:2});
+					testUtils.validateCountries(err, res, done, {country:"Unknown",code:"unknown",t:3,u:2,u2:6,n:2});
 				});
 			});
 		});
@@ -483,7 +483,7 @@ describe('Writing app sessions', function(){
 				.get('/o/analytics/countries?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateCountries(err, res, done, {country:"Unknown",code:"unknown",t:3,u:2,u2:4,n:2});
+					testUtils.validateCountries(err, res, done, {country:"Unknown",code:"unknown",t:3,u:2,u2:6,n:2});
 				});
 			});
 		});
@@ -552,7 +552,7 @@ describe('Writing app sessions', function(){
 				.get('/o/analytics/countries?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateCountries(err, res, done, {country:"Unknown",code:"unknown",t:3,u:2,u2:4,n:2});
+					testUtils.validateCountries(err, res, done, {country:"Unknown",code:"unknown",t:3,u:2,u2:6,n:2});
 				});
 			});
 		});
@@ -621,7 +621,7 @@ describe('Writing app sessions', function(){
 				.get('/o/analytics/countries?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateCountries(err, res, done, {country:"Unknown",code:"unknown",t:3,u:2,u2:4,n:2});
+					testUtils.validateCountries(err, res, done, {country:"Unknown",code:"unknown",t:3,u:2,u2:6,n:2});
 				});
 			});
 		});
