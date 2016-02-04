@@ -19,8 +19,10 @@ window.WebDashboardView = countlyView.extend({
 		return $.when.apply($, defs).then(function () {});
     },
     afterRender: function() {
-        var self = this;
-        countlyLocation.drawGeoChart({height:290, metric:self.maps[self.curMap]});
+        if(countlyGlobal["config"].use_google){
+            var self = this;
+            countlyLocation.drawGeoChart({height:290, metric:self.maps[self.curMap]});
+        }
     },
     pageScript:function () {
         $("#total-user-estimate-ind").on("click", function() {
@@ -61,14 +63,16 @@ window.WebDashboardView = countlyView.extend({
             self.drawGraph();
         });
         
-        this.countryList();
-        $(".map-list .cly-button-group .icon-button").click(function(){
-            $(".map-list .cly-button-group .icon-button").removeClass("active");
-            $(this).addClass("active");
-            self.curMap = $(this).attr("id");
-            countlyLocation.refreshGeoChart(self.maps[self.curMap]);
-            self.countryList();
-        });
+        if(countlyGlobal["config"].use_google){
+            this.countryList();
+            $(".map-list .cly-button-group .icon-button").click(function(){
+                $(".map-list .cly-button-group .icon-button").removeClass("active");
+                $(this).addClass("active");
+                self.curMap = $(this).attr("id");
+                countlyLocation.refreshGeoChart(self.maps[self.curMap]);
+                self.countryList();
+            });
+        }
 
         app.localize();
     },
@@ -172,6 +176,9 @@ window.WebDashboardView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
+            if(!countlyGlobal["config"].use_google){
+                $(".map-list.geo-switch").hide();
+            }
             $(".map-list").after('<table id="last-visitors" class="d-table help-zone-vb" cellpadding="0" cellspacing="0"></table>');
             var users = countlyWebDashboard.getLatestUsers();
             var sort = 3;
