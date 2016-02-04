@@ -1296,11 +1296,16 @@ window.CountriesView = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
 
-            if (this.cityView) {
-                countlyCity.drawGeoChart({height:450, metric:self.maps[self.curMap]});
-                $("#toggle-map").addClass("active");
-            } else {
-                countlyLocation.drawGeoChart({height:450, metric:self.maps[self.curMap]});
+            if(countlyGlobal["config"].use_google){
+                if (this.cityView) {
+                    countlyCity.drawGeoChart({height:450, metric:self.maps[self.curMap]});
+                    $("#toggle-map").addClass("active");
+                } else {
+                    countlyLocation.drawGeoChart({height:450, metric:self.maps[self.curMap]});
+                }
+            }
+            else{
+                $(".widget-content.geo-switch").hide();
             }
 
             this.drawTable();
@@ -1354,10 +1359,12 @@ window.CountriesView = countlyView.extend({
                 var locationData;
                 if (self.cityView) {
                     locationData = countlyCity.getLocationData();
-                    countlyCity.refreshGeoChart(self.maps[self.curMap]);
+                    if(countlyGlobal["config"].use_google)
+                        countlyCity.refreshGeoChart(self.maps[self.curMap]);
                 } else {
                     locationData = countlyLocation.getLocationData();
-                    countlyLocation.refreshGeoChart(self.maps[self.curMap]);
+                    if(countlyGlobal["config"].use_google)
+                        countlyLocation.refreshGeoChart(self.maps[self.curMap]);
                 }
 
                 CountlyHelpers.refreshTable(self.dtable, locationData);

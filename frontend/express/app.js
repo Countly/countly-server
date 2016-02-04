@@ -41,7 +41,8 @@ var versionInfo = require('./version.info'),
 plugins.setConfigs("frontend", {
     production: true,
     theme: "",
-    session_timeout: 30*60*1000
+    session_timeout: 30*60*1000,
+    use_google: true
 });
 
 var countlyDb = plugins.dbConnection(countlyConfig);
@@ -400,6 +401,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                         config: req.config,
 						path:countlyConfig.path || "",
 						cdn:countlyConfig.cdn || "",
+						use_google:plugins.getConfig("frontend").use_google || false,
                         themeFiles:themeFiles
                     };
                     
