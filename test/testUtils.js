@@ -251,8 +251,6 @@ var testUtils = function testUtils(){
 				ob[key][i].should.have.property("t", correct.t);
 				if(key == "today")
 					ob[key][i].should.have.property("u", correct.u);
-				else
-					ob[key][i].should.have.property("u", correct.u2);
 				ob[key][i].should.have.property("n", correct.n);
 			}
 		}
