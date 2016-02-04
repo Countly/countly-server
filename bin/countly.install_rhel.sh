@@ -104,9 +104,11 @@ fi
 #install plugins
 node $DIR/scripts/install_plugins
 
+#get web sdk
+countly update sdk-web
+
 #compile scripts for production
 cd $DIR && grunt dist-all
 
 #finally start countly api and dashboard
 countly start
-countly update sdk-web

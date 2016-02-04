@@ -92,6 +92,9 @@ fi
 #install plugins
 bash $DIR/scripts/countly.install.plugins.sh
 
+#get web sdk
+countly update sdk-web
+
 #compile scripts for production
 cd $DIR && grunt dist-all
 
@@ -100,4 +103,3 @@ if [ "$INSIDE_DOCKER" != "1" ]
 then
 	countly start
 fi
-countly update sdk-web

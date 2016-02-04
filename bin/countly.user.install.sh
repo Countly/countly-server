@@ -85,6 +85,9 @@ fi
 #install plugins
 bash $DIR/scripts/countly.install.plugins.sh
 
+#get web sdk
+countly update sdk-web
+
 #compile scripts for production
 cd $DIR && grunt dist-all
 
@@ -97,4 +100,3 @@ echo "countly ALL=(ALL) NOPASSWD: /usr/bin/countly start, /usr/bin/countly stop,
 
 #finally start countly api and dashboard
 countly start
-countly update sdk-web
