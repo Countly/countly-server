@@ -23,19 +23,25 @@ var versionInfo = require('./version.info'),
     var COUNTLY_NAMED_TYPE = "Countly Community Edition v"+COUNTLY_VERSION;
     var COUNTLY_TYPE_CE = true;
     var COUNTLY_TRIAL = (versionInfo.trial) ? true : false;
+    var COUNTLY_TRACK_TYPE = "OSS";
     if(versionInfo.footer){
         COUNTLY_NAMED_TYPE = versionInfo.footer;
         COUNTLY_TYPE_CE = false;
+        if(COUNTLY_NAMED_TYPE == "Countly Cloud")
+            COUNTLY_TRACK_TYPE = "Cloud";
+        else if(COUNTLY_TYPE != "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6")
+            COUNTLY_TRACK_TYPE = "Enterprise";
     }
     else if(COUNTLY_TYPE != "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6"){
         COUNTLY_NAMED_TYPE = "Countly Enterprise Edition v"+COUNTLY_VERSION; 
         COUNTLY_TYPE_CE = false;
+        COUNTLY_TRACK_TYPE = "Enterprise";
     }
     
 plugins.setConfigs("frontend", {
     production: true,
     theme: "",
-    session_timeout: 30*60*1000,
+    session_timeout: 30*60*1000
 });
 
 var countlyDb = plugins.dbConnection(countlyConfig);
@@ -381,10 +387,14 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                         defaultApp:defaultApp,
                         member:member,
                         intercom:countlyConfig.web.use_intercom,
+                        track:countlyConfig.web.track || false,
+                        installed: req.session.install || false,
+                        cpus: require('os').cpus().length,
                         countlyVersion:COUNTLY_VERSION,
 						countlyType: COUNTLY_TYPE_CE,
 						countlyTrial: COUNTLY_TRIAL,
 						countlyTypeName: COUNTLY_NAMED_TYPE,
+						countlyTypeTrack: COUNTLY_TRACK_TYPE,
 			            production: plugins.getConfig("frontend").production || false,
 						plugins:plugins.getPlugins(),
                         config: req.config,
@@ -392,6 +402,11 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 						cdn:countlyConfig.cdn || "",
                         themeFiles:themeFiles
                     };
+                    
+                    if(req.session.install){
+                        req.session.install = null;
+                        res.clearCookie('install');
+                    }
                     
                     plugins.callMethod("renderDashboard", {req:req, res:res, next:next, data:{member:member, adminApps:countlyGlobalAdminApps, userApps:countlyGlobalApps, countlyGlobal:countlyGlobal, toDashboard:toDashboard}});
 
@@ -535,6 +550,7 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
                                 req.session.uid = member[0]._id;
                                 req.session.gadm = !0;
                                 req.session.email = member[0].email;
+                                req.session.install = true;
                                 res.redirect(countlyConfig.path+"/dashboard")
                             })
                         });
@@ -546,6 +562,7 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
                             req.session.uid = member[0]._id;
                             req.session.gadm = !0;
                             req.session.email = member[0].email;
+                            req.session.install = true;
                             res.redirect(countlyConfig.path+"/dashboard")
                         })
                     }
@@ -587,6 +604,36 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                             b && (b.in_user_id && !member.in_user_id && (a.in_user_id = b.in_user_id), b.in_user_hash && !member.in_user_hash && (a.in_user_hash = b.in_user_hash));
                             Object.keys(a).length && countlyDb.collection("members").update({_id:member._id}, {$set:a}, function() {})
                         });
+                    });
+                }
+                if (!countlyConfig.web.track || countlyConfig.web.track == "GA" && member['global_admin'] || countlyConfig.web.track == "noneGA" && !member['global_admin']) {
+                    countlyStats.getUser(countlyDb, member, function(statsObj){
+                        var date = new Date();
+                        request({
+                            uri:"https://stats.count.ly/i",
+                            method:"GET",
+                            timeout:4E3,
+                            qs:{
+                                device_id:member.email,
+                                app_key:"386012020c7bf7fcb2f1edf215f1801d6146913f",
+                                timestamp: Math.round(date.getMilliseconds()/1000),
+                                hour: date.getHours(),
+                                dow: date.getDay(),
+                                user_details:JSON.stringify(
+                                    {
+                                        custom:{
+                                            apps: (member.user_of) ? member.user_of.length : 0,
+                                            platforms:{"$addToSet":statsObj["total-platforms"]},
+                                            events:statsObj["total-events"],
+                                            pushes:statsObj["total-msg-sent"],
+                                            crashes:statsObj["total-crash-groups"],
+                                            users:statsObj["total-users"]
+                                        }
+                                    }
+                                )
+                                
+                            }
+                        }, function(a, c, b) {});
                     });
                 }
 

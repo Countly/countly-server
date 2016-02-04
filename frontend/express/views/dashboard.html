@@ -1108,8 +1108,60 @@
 	<script>
 	Backbone.history.start();
 	</script>
+<% if (!track || track == "GA" && member['global_admin'] || track == "noneGA" && !member['global_admin']) { %>
+<!--Countly script-->
+<script type='text/javascript' src='<%- cdn %>sdk/web/countly.min.js'></script>
+<script type='text/javascript'>
 
-    <% if(intercom && member['global_admin'] || config.autonomous) { %>
+//initializing countly with params
+Countly.init({
+	app_key: "386012020c7bf7fcb2f1edf215f1801d6146913f",
+	url: "https://stats.count.ly/",
+    device_id: countlyGlobal["member"]["email"],
+    app_version: "<%= countlyVersion %>",
+	interval:1000
+});
+
+//track sessions automatically
+Countly.track_sessions();
+
+//track pageviews automatically
+Countly.track_pageview(window.location.pathname+window.location.hash);
+
+$(window).on('hashchange', function() {
+    Countly.track_pageview(window.location.pathname+window.location.hash);
+});
+
+//track any clicks to webpages automatically
+Countly.track_clicks();
+
+//track javascript errors
+Countly.track_errors();
+
+Countly.user_details({
+    "name": countlyGlobal["member"]["full_name"] || "",
+    "username": countlyGlobal["member"]["username"] || "",
+    "email": countlyGlobal["member"]["email"]
+ });
+ 
+ Countly.userData.set("lastServer", window.location.hostname);
+ Countly.userData.set("lastVersion", "<%= countlyVersion %>");
+ Countly.userData.set("lastEdition", "<%= countlyTypeTrack %>");
+ Countly.userData.set("isTrial", <%= countlyTrial %>);
+ Countly.userData.set("cpus", <%= cpus %>);
+ Countly.userData.push_unique("servers", window.location.hostname);
+ Countly.userData.push_unique("versions", "<%= countlyVersion %>");
+ Countly.userData.push_unique("editions", "<%= countlyTypeTrack %>");
+ Countly.userData.save();
+ 
+ <% if(installed) { %>
+ Countly.add_event({
+    key:"INSTALL"
+  });
+ <% } %>
+</script>
+<% } %>
+<% if(intercom && member['global_admin'] || config.autonomous) { %>
     <script id="IntercomSettingsScriptTag">
         var intercomSettings = {
             app_id: 'pt60eheo',
