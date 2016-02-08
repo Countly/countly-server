@@ -387,6 +387,7 @@ var JobWorker = function(processors){
 		async.parallel(shutdowns, function(err){
 			if (err) { log.e('Error when shutting down job processors', err); }
 			log.w('Done shutting down jobs with %j', err);
+			process.exit(0);
 		}.bind(this));
 	}.bind(this);
 
