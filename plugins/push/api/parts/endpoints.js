@@ -1,20 +1,22 @@
 'use strict';
 
-var pushly          = require('pushly')(),
+var common          = require('../../../../api/utils/common.js'),
+    log             = common.log('push:endpoints'),
     _               = require('underscore'),
     api             = {},
     async           = require('async'),
     moment          = require('moment'),
-    common          = require('../../../../../api/utils/common.js'),
-    events          = require('../../../../../api/parts/data/events.js'),
+    events          = require('../../../../api/parts/data/events.js'),
     cluster         = require('cluster'),
     mess            = require('./message.js'),
-    plugins         = require('../../../../pluginManager.js'),
+    plugins         = require('../../../pluginManager.js'),
     Platform        = mess.MessagePlatform,
     Message         = mess.Message,
     MessageStatus   = mess.MessageStatus;
 
 (function (api) {
+
+    var pushly = require('./lib')();
 
     var messageId = function(message) {
         return common.db.ObjectID(message.id.split('|')[0]);
@@ -72,6 +74,7 @@ var pushly          = require('pushly')(),
                     filter[common.dbUserMap.lang] = 1;
                 }
 
+                log.d('Counting: %j', finalQuery);
                 common.db.collection('app_users' + query.appId).find(finalQuery).count(callback);
             },
             stream: function(message, query, callback, ask, skip){
@@ -102,12 +105,12 @@ var pushly          = require('pushly')(),
                 }
 
                 if (ask() === 'such no power much sad') {
-                    // console.log('====== Much sad still no luck, trying again in a second starting from %j', skip);
+                    log.d('====== Much sad still no luck, trying again in a second starting from %j', skip);
                     setTimeout(api.pushlyCallbacks.stream.bind(api.pushlyCallbacks, message, query, callback, ask, skip), 1000);
                     return;
                 }
 
-                // console.log('====== Streaming skipping %j', skip);
+                log.d('Streaming skipping: %j', skip);
 
                 if (skip) {
                     if (finalQuery.$and) {
@@ -133,16 +136,16 @@ var pushly          = require('pushly')(),
                         ids.push(user._id);
 
                         if (callback(common.dot(user, field), user[common.dbUserMap.lang]) === 'such no power much sad') {
-                            // console.log('====== Much sad, trying again in a second starting from %j', skip);
+                            log.d('====== Much sad, trying again in a second starting from %j', skip);
                             skipping = true;
                             setTimeout(api.pushlyCallbacks.stream.bind(api.pushlyCallbacks, message, query, callback, ask, skip), 1000);
                         }
                     } else {
                         if (count === 0 && !skip) {
-                            // console.log('Aborting message because no users found');
+                            log.d('Aborting message because no users found');
                             pushly.abort(message);
                         } else if (count !== 0) {
-                            // console.log('====== Going to stream next batch starting from %j', skip);
+                            log.d('====== Going to stream next batch starting from %j', skip);
                             api.pushlyCallbacks.stream(message, query, callback, ask, skip);
                             common.db.collection('app_users' + query.appId).update({_id: {$in: ids}}, {$push: {msgs: messageId(message)}}, {multi: true}, function(){});
                         }
@@ -190,6 +193,7 @@ var pushly          = require('pushly')(),
     pushly.on('status', function(message){
         var id = messageId(message);
         common.db.collection('messages').findOne(id, function(err, m){
+            log.d('on status of %j: %j / %j', id, m ? m.result : null, m ? m.pushly : null);
             if (m) {
                 var previouslySent  = m.result.sent || 0;
 
@@ -255,42 +259,72 @@ var pushly          = require('pushly')(),
             var platform = message.platforms[i];
 
             if (platform == Platform.APNS) {
-                if (message.test && app.apn && app.apn.test) {
-                    array.push({
-                        id: common.dbUserMap.apn_dev + '.' + app._id,
-                        platform: pushly.Platform.APNS,
-                        platformId: app.apn.id,
-                        key: api.APNCertificatePath(app._id.toString(), true),
-                        passphrase: app.apn.test.passphrase,
-                        gateway: 'gateway.sandbox.push.apple.com',
-                        port: 2195
-                    });
-                }
-
-                // Ad Hoc build requires production certificate
-                if (message.test && app.apn && app.apn.prod) {
-                    array.push({
-                        id: common.dbUserMap.apn_adhoc + '.' + app._id,
-                        platform: pushly.Platform.APNS,
-                        platformId: app.apn.id,
-                        key: api.APNCertificatePath(app._id.toString(), false),
-                        passphrase: app.apn.prod.passphrase,
-                        gateway: 'gateway.push.apple.com',
-                        port: 2195
-                    });
-                }
-
-                // Normal production certificate case
-                if (!message.test && app.apn && app.apn.prod) {
-                    array.push({
-                        id: common.dbUserMap.apn_prod + '.' + app._id,
-                        platform: pushly.Platform.APNS,
-                        platformId: app.apn.id,
-                        key: api.APNCertificatePath(app._id.toString(), false),
-                        passphrase: app.apn.prod.passphrase,
-                        gateway: 'gateway.push.apple.com',
-                        port: 2195
-                    });
+                if (message.test) {
+                    if (app.apn && app.apn.universal) {
+                        array.push({
+                            id: common.dbUserMap.apn_dev + '.' + app._id,
+                            platform: pushly.Platform.APNS,
+                            platformId: app.apn.id,
+                            key: api.APNCertificatePath(app._id.toString()),
+                            passphrase: app.apn.universal.passphrase,
+                            gateway: 'api.development.push.apple.com',
+                            port: 443
+                        });
+                        array.push({
+                            id: common.dbUserMap.apn_adhoc + '.' + app._id,
+                            platform: pushly.Platform.APNS,
+                            platformId: app.apn.id,
+                            key: api.APNCertificatePath(app._id.toString()),
+                            passphrase: app.apn.universal.passphrase,
+                            gateway: 'api.development.push.apple.com',
+                            port: 443
+                        });
+                    } else {
+                        if (app.apn && app.apn.test) {
+                            array.push({
+                                id: common.dbUserMap.apn_dev + '.' + app._id,
+                                platform: pushly.Platform.APNS,
+                                platformId: app.apn.id,
+                                key: api.APNCertificatePath(app._id.toString(), true),
+                                passphrase: app.apn.test.passphrase,
+                                gateway: 'api.development.push.apple.com',
+                                port: 443
+                            });
+                        }
+                        if (app.apn && app.apn.prod) {
+                            array.push({
+                                id: common.dbUserMap.apn_adhoc + '.' + app._id,
+                                platform: pushly.Platform.APNS,
+                                platformId: app.apn.id,
+                                key: api.APNCertificatePath(app._id.toString(), false),
+                                passphrase: app.apn.prod.passphrase,
+                                gateway: 'api.push.apple.com',
+                                port: 443
+                            });
+                        }
+                    }
+                } else {
+                    if (app.apn && app.apn.universal) {
+                        array.push({
+                            id: common.dbUserMap.apn_prod + '.' + app._id,
+                            platform: pushly.Platform.APNS,
+                            platformId: app.apn.id,
+                            key: api.APNCertificatePath(app._id.toString()),
+                            passphrase: app.apn.universal.passphrase,
+                            gateway: 'api.push.apple.com',
+                            port: 443
+                        });
+                    } else if (app.apn && app.apn.prod) {
+                        array.push({
+                            id: common.dbUserMap.apn_prod + '.' + app._id,
+                            platform: pushly.Platform.APNS,
+                            platformId: app.apn.id,
+                            key: api.APNCertificatePath(app._id.toString(), false),
+                            passphrase: app.apn.prod.passphrase,
+                            gateway: 'api.push.apple.com',
+                            port: 443
+                        });
+                    }
                 }
             } else {
                 if (app.gcm) {
@@ -366,7 +400,7 @@ var pushly          = require('pushly')(),
 
                 var credentials = api.credentials(message, app);
                 if (credentials.length) {
-                    pushlyMessage = message.toPushly(credentials[0], ['test token, which we don\'t really care about'], [app._id, credentials[0].platform]);
+                    pushlyMessage = message.toPushly(credentials[0], ['test_token.which_we_don.t_really_care_about'], [app._id, credentials[0].platform]);
 
                     pushly.on('status', fun);
                     pushly.push(pushlyMessage);
@@ -421,7 +455,6 @@ var pushly          = require('pushly')(),
 
                 if (params.member && params.member.global_admin) {
                     common.db.collection('apps').findAndModify({_id: common.db.ObjectID(params.qstring.args.app_id)}, [['_id', 1]], update, {new:true}, function(err, app){
-                        app = app.value;
                         if (needToCheckGCM) checkGCM(params, app);
                         else common.returnOutput(params, app);
                     });
@@ -429,7 +462,6 @@ var pushly          = require('pushly')(),
                     common.db.collection('members').findOne({'_id': params.member._id}, {admin_of: 1}, function(err, member){
                         if (member.admin_of && member.admin_of.indexOf(params.qstring.args.app_id) !== -1) {
                             common.db.collection('apps').findAndModify({_id: common.db.ObjectID(params.qstring.args.app_id)}, [['_id', 1]], update, {new:true}, function(err, app){
-                                app = app.value;
                                 if (needToCheckGCM) checkGCM(params, app);
                                 else common.returnOutput(params, app);
                             });
@@ -690,6 +722,7 @@ var pushly          = require('pushly')(),
                     }
 
                     api.countAudience(params, function(err, TOTALLY){
+                        log.d('counted: %j', TOTALLY);
                         if (!TOTALLY || !TOTALLY.TOTALLY || TOTALLY.TOTALLY.TOTALLY) { // :)
                             common.returnOutput(params, {error: 'No push enabled users found for the selected apps-platforms-test combinations'});
                         } else {
@@ -898,11 +931,11 @@ var pushly          = require('pushly')(),
     }
 
     api.APNCertificateFile = function(appId, test) {
-        return appId + '.' + (test ? 'test' : 'prod') + '.p12';
+        return appId + (typeof test === 'undefined' ? '' : test ? '.test' : '.prod') + '.p12';
     };
 
     api.APNCertificatePath = function(appId, test) {
-        return __dirname + '/../../../../../frontend/express/certificates/' + api.APNCertificateFile(appId, test);
+        return __dirname + '/../../../../frontend/express/certificates/' + api.APNCertificateFile(appId, test);
     };
 
 }(api));

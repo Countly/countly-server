@@ -1,6 +1,6 @@
 'use strict';
 
-var pushly = require('pushly')();
+var pushly = require('./lib')();
 
 var _ = require('underscore'),
     flatten = require('flat');

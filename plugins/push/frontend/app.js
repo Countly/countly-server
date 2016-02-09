@@ -3,6 +3,9 @@
 var plugin = {},
 	countlyConfig = require('../../../frontend/express/config'),
 	apiConfig = require('../../../api/config'),
+	apn = require('../api/parts/lib/apn'),
+    common = require('../../../api/utils/common.js'),
+    log = common.log('push:api'),
 	fs = require('fs'),
 	request = require('request');
 
@@ -14,10 +17,10 @@ var plugin = {},
 				return true;
 			}
 
-			var endpoints = require('../api/parts/pushly/endpoints.js'),
+			var endpoints = require('../api/parts/endpoints.js'),
 				tmp_path = req.files.apns_cert.path,
-				file_name = endpoints.APNCertificateFile(req.body.app_id, req.body.test),
-				target_path = endpoints.APNCertificatePath(req.body.app_id, req.body.test),
+				file_name = endpoints.APNCertificateFile(req.body.app_id),
+				target_path = endpoints.APNCertificatePath(req.body.app_id),
 				type = req.files.apns_cert.type;
 
 			if (type != 'application/x-pkcs12') {
@@ -28,30 +31,45 @@ var plugin = {},
 				try { fs.unlinkSync(target_path); } catch (e){}
 			}
 
-			var unset = {$unset:{}};
-			if (req.body.test) {
-				unset.$unset['apn.test'] = 1;
-			} else {
-				unset.$unset['apn.prod'] = 1;
+			try {
+				var p12 = apn.readP12(tmp_path);
+				if (!p12.dev || !p12.prod) {
+					res.send({error: 'Countly now requires universal HTTP/2 certificates. Please see our guide at http://resources.count.ly/docs/countly-sdk-for-ios-and-os-x '});
+					return true;
+				}
+			} catch (e) {
+				res.send({error: 'Couldn\'t read certificate'});
+				return true;
 			}
 
-			countlyDb.collection('apps').findAndModify({_id: countlyDb.ObjectID(req.body.app_id)}, [['_id', 1]], unset, function(){
+			var unset = {
+				$unset: {
+					'apn.universal': 1,
+					'apn.test': 1,
+					'apn.prod': 1
+				}
+			};
+
+			countlyDb.collection('apps').findAndModify({_id: countlyDb.ObjectID(req.body.app_id)}, [['_id', 1]], unset, function(err, resp){
+				var oldApp = resp ? resp.value : undefined;
 				fs.rename(tmp_path, target_path, function (err) {
 					if (err) {
-						console.log(err);
+						log.e('Cannot rename certificate file', err);
 						res.send({error: 'Server error: cannot save file'});
+						countlyDb.collection('apps').update({_id: countlyDb.ObjectID(req.body.app_id)}, {$set: {apn: oldApp.apn}}, function(){});
 					} else {
-						var update = {$set:{}};
-						if (req.body.test) {
-							update.$set['apn.test'] = {key: file_name, passphrase: req.body.passphrase};
-						} else {
-							update.$set['apn.prod'] = {key: file_name, passphrase: req.body.passphrase};
-						}
+						var update = {
+							$set: {
+								'apn.universal': {key: file_name, passphrase: req.body.passphrase}
+							}
+						};
 
-						countlyDb.collection('apps').findAndModify({_id: countlyDb.ObjectID(req.body.app_id)}, [['_id', 1]], update, {new:true}, function(err, app){
-                            app = app.value;
-							if (err || !app) res.send({error: 'Server error: cannot find app'});
-							else {
+						countlyDb.collection('apps').findAndModify({_id: countlyDb.ObjectID(req.body.app_id)}, [['_id', 1]], update, {new:true}, function(err, resp){
+                            var app = resp ? resp.value : undefined;
+							if (err || !app) {
+								res.send({error: 'Server error: cannot find app'});
+								countlyDb.collection('apps').update({_id: countlyDb.ObjectID(req.body.app_id)}, {$set: {apn: oldApp.apn}}, function(){});
+							} else {
 								fs.unlink(tmp_path, function () {});
 
 								var options = {
@@ -61,21 +79,25 @@ var plugin = {},
 									qs: {
 										'appId': req.body.app_id,
 										'platform': 'i',
-										'test': (req.body.test ? true : false),
 										'api_key': req.body.api_key
 									}
 								};
 
 								request(options, function (error, response, body) {
 									if (error || !body) {
-										console.log('Error when checking app: %j, %j', error, body);
+										log.e('Error when checking app: %j, %j', error, body);
 										try { fs.unlinkSync(target_path); } catch (e){}
-										countlyDb.collection('apps').update({_id: countlyDb.ObjectID(req.body.app_id)}, unset, function(){});
+										countlyDb.collection('apps').update({_id: countlyDb.ObjectID(req.body.app_id)}, {$set: {apn: oldApp.apn}}, function(){});
 										res.send({error: 'Couldn\'t check certificate validity'});
 									} else {
 										try {
 											body = JSON.parse(body);
 											if (body.ok) {
+												try {
+													fs.unlink(endpoints.APNCertificatePath(req.body.app_id, true), function () {});
+													fs.unlink(endpoints.APNCertificatePath(req.body.app_id, false), function () {});
+												} catch (e) { }
+												
 												res.send({key: file_name, passphrase: req.body.passphrase});
 											} else {
 												try { fs.unlinkSync(target_path); } catch (e){}

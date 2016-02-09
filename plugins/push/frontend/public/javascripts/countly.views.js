@@ -186,7 +186,7 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
 
     for (var id in countlyGlobal['apps']) {
         var a = countlyGlobal['apps'][id];
-        if ((a.apn && (a.apn.test || a.apn.prod)) || (a.gcm && a.gcm.key)) {
+        if ((a.apn && (a.apn.test || a.apn.prod || a.apn.universal)) || (a.gcm && a.gcm.key)) {
             hasPushApps = true;
             if (countlyGlobal['admin_apps'][a._id]) {
                 hasPushAdminApps = true;
@@ -205,7 +205,7 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
         return;
     }
 
-    if (!currentApp || !((currentApp.apn && (currentApp.apn.test || currentApp.apn.prod)) || (currentApp.gcm && currentApp.gcm.key))) {
+    if (!currentApp || !((currentApp.apn && (currentApp.apn.test || currentApp.apn.prod || currentApp.apn.universal)) || (currentApp.gcm && currentApp.gcm.key))) {
         if (dontReplaceApp) {
             CountlyHelpers.alert(jQuery.i18n.map["push.no-app"], "red");
             return;
@@ -234,6 +234,7 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
             test: message.test,
             date: message.date,
             sent: message.sent,
+            result: message.result,
             conditions: message.conditions === '{}' ? undefined : (typeof message.conditions === 'string' ? JSON.parse(message.conditions) : message.conditions),
             geo: typeof message.geo === 'undefined' ? undefined : ((typeof message.geo === 'string' && message.geo) ? message.geo : undefined),
             noTests: false,
@@ -524,7 +525,28 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
     if (isView) {
         var fmt = 'MMM DD, YYYY HH:mm';
         content.find('.view-date .view-value').text(message.date ? moment(message.date).format(fmt) : '');
-        content.find('.view-sent .view-value').text(message.sent ? moment(message.sent).format(fmt) : '');
+        if (message.result && message.result.error) {
+            var msg = typeof message.result.error === 'string' ? message.result.error : (message.result.error.message || message.result.error.toString());
+            var code = typeof message.result.error === 'object' ? message.result.error.code : undefined;
+
+            var title = jQuery.i18n.map['push.error'] + (message.result.error.code ? ' #' + message.result.error.code : '');
+            content.find('.view-sent .title').text(title);
+
+            if (msg.length > 20) {
+                content.find('.view-sent .view-value').html('<a class="icon-button delete-app">Show</a>');
+                content.find('.view-sent .view-value .delete-app').on('click', function(){
+                    CountlyHelpers.alert(msg, "red");
+                });
+            } else {
+                content.find('.view-sent .view-value').addClass('error').text(msg);
+            }
+
+        } else if (message.result && ((message.result.status & 16) || (message.result.status & 32))) {
+            content.find('.view-sent .title').text(jQuery.i18n.map['push.error']);
+            content.find('.view-sent .view-value').addClass('error').text(jQuery.i18n.map['push.message.status.' + message.result.status]);
+        } else {
+           content.find('.view-sent .view-value').text(message.sent ? moment(message.sent).format(fmt) : '');
+        }
     } else {
         //ignore clicks inside calendar
         content.find(".date-picker-push").click(function(e){
@@ -1032,7 +1054,7 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
 
         message.apps.forEach(function(appId){
             var app = allApps[appId];
-            if (app.apn && (app.apn.test || app.apn.prod)) {
+            if (app.apn && (app.apn.test || app.apn.prod || app.apn.universal)) {
                 if (!skipPlatforms) addToArray(APN, message.platforms);
                 addToArray(APN, message.appsPlatforms);
             }
@@ -1101,9 +1123,7 @@ app.route('/messaging/messages', 'messagingListView', function () {
     this.renderWhenReady(this.messagingListView);
 });
 
-var managementAdd = "";
 function pushAppMgmt(){
-    $(".app-details table tr.table-edit").before(managementAdd);
     app.localize();
     var appId = countlyCommon.ACTIVE_APP_ID;
     
@@ -1116,32 +1136,29 @@ function pushAppMgmt(){
 
     if (!appId) { return; }
 
-    countlyGlobal['apps'][appId].apn = countlyGlobal['apps'][appId].apn || {};
-    countlyGlobal['apps'][appId].gcm = countlyGlobal['apps'][appId].gcm || {};
+    var apn = countlyGlobal['apps'][appId].apn = countlyGlobal['apps'][appId].apn || {};
+    var gcm = countlyGlobal['apps'][appId].gcm = countlyGlobal['apps'][appId].gcm || {};
 
     //app was changed
     $(".app-container:not(#app-container-new)").live("click", function () {
         appId = $(this).data("id");
-        countlyGlobal['apps'][appId].apn = countlyGlobal['apps'][appId].apn || {};
-        countlyGlobal['apps'][appId].gcm = countlyGlobal['apps'][appId].gcm || {};
-        $("#push-apn-cert-test-view").removeClass('fa fa-remove').removeClass('fa fa-check').addClass(countlyGlobal['apps'][appId].apn.test ? 'fa fa-check' : 'fa fa-remove');
-        $("#push-apn-cert-prod-view").removeClass('fa fa-remove').removeClass('fa fa-check').addClass(countlyGlobal['apps'][appId].apn.prod ? 'fa fa-check' : 'fa fa-remove');
+        apn = countlyGlobal['apps'][appId].apn = countlyGlobal['apps'][appId].apn || {};
+        gcm = countlyGlobal['apps'][appId].gcm = countlyGlobal['apps'][appId].gcm || {};
+        $("#push-apn-cert-uni-view").removeClass('fa fa-remove').removeClass('fa fa-check').addClass(apn.universal ? 'fa fa-check' : 'fa fa-remove');
         $("#view-gcm-key").html(countlyGlobal['apps'][appId].gcm.key || '<i class="fa fa-remove"></i>');
         $("#gcm-key").val(countlyGlobal['apps'][appId].gcm.key || '');
     });
 
-    $("#push-apn-cert-test-view").removeClass('fa fa-remove').removeClass('fa fa-check').addClass(countlyGlobal['apps'][appId].apn.test ? 'fa fa-check' : 'fa fa-remove');
-    $("#push-apn-cert-prod-view").removeClass('fa fa-remove').removeClass('fa fa-check').addClass(countlyGlobal['apps'][appId].apn.prod ? 'fa fa-check' : 'fa fa-remove');
+    $("#push-apn-cert-uni-view").removeClass('fa fa-remove').removeClass('fa fa-check').addClass(apn.universal ? 'fa fa-check' : 'fa fa-remove');
     $("#view-gcm-key").html(countlyGlobal['apps'][appId].gcm.key || '<i class="fa fa-remove"></i>');
     $("#gcm-key").val(countlyGlobal['apps'][appId].gcm.key || '');
 
-    $("#save-app-edit").click(function () {
-        var certTest = $('#apns_cert_test').val().split('.').pop().toLowerCase();
-        if (certTest && $.inArray(certTest, ['p12']) == -1) {
-            CountlyHelpers.alert(jQuery.i18n.map["management-applications.push-error"], "red");
-            return false;
-        }
+    $('.app-apn-cert-old')[apn.prod || apn.test ? 'show' : 'hide']();
+    $('.app-apn-cert-old .dev')[apn.test ? 'show' : 'hide']();
+    $('.app-apn-cert-old .prod')[apn.prod ? 'show' : 'hide']();
 
+
+    $("#save-app-edit").click(function () {
         var certProd = $('#apns_cert_prod').val().split('.').pop().toLowerCase();
         if (certProd && $.inArray(certProd, ['p12']) == -1) {
             CountlyHelpers.alert(jQuery.i18n.map["management-applications.push-error"], "red");
@@ -1150,14 +1167,16 @@ function pushAppMgmt(){
 
         var loading = CountlyHelpers.loading(jQuery.i18n.map["management-applications.checking"]);
 
-        var forms = 1 + (certTest ? 1 : 0) + (certProd ? 1 : 0),
+        var forms = 1 + (certProd ? 1 : 0),
         reactivateForm = function() {
             forms--;
             if (forms == 0) {
                 CountlyHelpers.removeDialog(loading);
             }
-            $("#push-apn-cert-test-view").removeClass('fa fa-remove').removeClass('fa fa-check').addClass(countlyGlobal['apps'][appId].apn.test ? 'fa fa-check' : 'fa fa-remove');
-            $("#push-apn-cert-prod-view").removeClass('fa fa-remove').removeClass('fa fa-check').addClass(countlyGlobal['apps'][appId].apn.prod ? 'fa fa-check' : 'fa fa-remove');
+            apn = countlyGlobal['apps'][appId].apn = countlyGlobal['apps'][appId].apn || {};
+            gcm = countlyGlobal['apps'][appId].gcm = countlyGlobal['apps'][appId].gcm || {};
+            $("#push-apn-cert-uni-view").removeClass('fa fa-remove').removeClass('fa fa-check').addClass(apn.universal ? 'fa fa-check' : 'fa fa-remove');
+            $('.app-apn-cert-old')[apn.universal ? 'hide' : 'show']();
         },
         showError = function(msg){
             CountlyHelpers.removeDialog(loading);
@@ -1194,36 +1213,9 @@ function pushAppMgmt(){
 
                 $("#view-gcm-key").html(countlyGlobal['apps'][appId].gcm.key || '<i class="fa fa-remove"></i>');
 
-                if (certTest) {
-                    $('#add-edit-apn-creds-test-form').find("input[name=app_id]").val(appId);
-                    $('#add-edit-apn-creds-test-form').ajaxSubmit({
-                        resetForm:true,
-                        beforeSubmit:function (formData, jqForm, options) {
-                            formData.push({ name:'_csrf', value:countlyGlobal['csrf_token'] });
-                            formData.push({ name:'api_key', value:countlyGlobal.member.api_key });
-                        },
-                        success:function (resp) {
-                            if (!resp || resp.error) {
-                                if (countlyGlobal['apps'][appId].apn) {
-                                    delete countlyGlobal['apps'][appId].apn.test;
-                                }
-                                showError(jQuery.i18n.map["management-applications.push-apn-creds-test-error"]);
-                            } else {
-                                if (!countlyGlobal['apps'][appId].apn) {
-                                    countlyGlobal['apps'][appId].apn = {test: resp};
-                                } else {
-                                    countlyGlobal['apps'][appId].apn.test = resp;
-                                }
-                            }
-
-                            reactivateForm();
-                        }
-                    });
-                }
-
                 if (certProd) {
-                    $('#add-edit-apn-creds-prod-form').find("input[name=app_id]").val(appId);
-                    $('#add-edit-apn-creds-prod-form').ajaxSubmit({
+                    $('#add-edit-apn-creds-uni-form').find("input[name=app_id]").val(appId);
+                    $('#add-edit-apn-creds-uni-form').ajaxSubmit({
                         resetForm:true,
                         beforeSubmit:function (formData, jqForm, options) {
                             formData.push({ name:'_csrf', value:countlyGlobal['csrf_token'] });
@@ -1232,14 +1224,14 @@ function pushAppMgmt(){
                         success:function (resp) {
                             if (!resp || resp.error) {
                                 if (countlyGlobal['apps'][appId].apn) {
-                                    delete countlyGlobal['apps'][appId].apn.prod;
+                                    delete countlyGlobal['apps'][appId].apn.universal;
                                 }
-                                showError(jQuery.i18n.map["management-applications.push-apn-creds-prod-error"]);
+                                showError(jQuery.i18n.map["management-applications.push-apn-creds-prod-error"] + (resp.error ? ' (' + resp.error + ')' : ''));
                             } else {
                                 if (!countlyGlobal['apps'][appId].apn) {
-                                    countlyGlobal['apps'][appId].apn = {prod: resp};
+                                    countlyGlobal['apps'][appId].apn = {universal: resp};
                                 } else {
-                                    countlyGlobal['apps'][appId].apn.prod = resp;
+                                    countlyGlobal['apps'][appId].apn.universal = resp;
                                 }
                             }
 
@@ -1254,10 +1246,13 @@ function pushAppMgmt(){
     });
 };
 
+var managementAdd = "";
 app.addPageScript("/manage/apps", function(){
     if(managementAdd == "")
         $.get(countlyGlobal["path"]+'/push/templates/push-management.html', function(src){
             managementAdd = src;
+            $(".app-details table tr.table-edit").before(managementAdd);
+            $('.appmng-push').prev().removeClass('table-edit-prev');
             pushAppMgmt();
         });
     else
@@ -1267,6 +1262,7 @@ app.addPageScript("/manage/apps", function(){
 app.addAppManagementSwitchCallback(function(appId, type){
     if(type == "mobile"){
         $(".appmng-push").show();
+        pushAppMgmt();
     } 
     else{
         $(".appmng-push").hide();
