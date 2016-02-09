@@ -4,32 +4,25 @@
         <div class="read">
             <table cellspacing="0" style="width:100%;">
                 <tr class="help-zone-vs" data-help-localize="help.manage-apps.push-apn-certificate">
-                    <td><span data-localize="management-applications.push-apn-creds-test"></span></td>
-                    <td><i id="push-apn-cert-test-view" class="fa fa-remove"></i></td>
+                    <td><span data-localize="management-applications.push-apn-creds-uni"></span></td>
+                    <td><i id="push-apn-cert-uni-view" class="fa fa-remove"></i></td>
                 </tr>
-                <tr class="help-zone-vs" data-help-localize="help.manage-apps.push-apn-certificate">
-                    <td><span data-localize="management-applications.push-apn-creds-prod"></span></td>
-                    <td><i id="push-apn-cert-prod-view" class="fa fa-remove"></i></td>
+                <tr class="app-apn-cert-old help-zone-vs" data-help-localize="help.manage-apps.push-apn-certificate-old">
+                    <td><span data-localize="management-applications.push-apn-creds-old"></span></td>
+                    <td>
+                        <div class="dev" data-localize="management-applications.push-apn-creds-test"> </div>
+                        <div class="prod" data-localize="management-applications.push-apn-creds-prod"> </div>
+                        <div class="note" data-localize="management-applications.push-apn-creds-old-note"> </div>
+                    </td>
                 </tr>
             </table>
         </div>
         <div class="edit">
             <table cellspacing="0" style="width:100%;">
                 <tr class="help-zone-vs" data-help-localize="help.manage-apps.push-apn-certificate">
-                    <td><span data-localize="management-applications.push-apn-creds-test"></span></td>
+                    <td><span data-localize="management-applications.push-apn-creds-uni"></span></td>
                     <td>
-                        <form action="./apps/certificate" enctype="multipart/form-data" id="add-edit-apn-creds-test-form" method="post">
-                            <input type="file" id="apns_cert_test" name="apns_cert" />
-                            <input placeholder="Passphrase" style="margin-top:5px;" type="text" name="passphrase" />
-                            <input type="hidden" name="app_id" />
-                            <input type="hidden" name="test" value="true" />
-                        </form>
-                    </td>
-                </tr>
-                <tr class="help-zone-vs" data-help-localize="help.manage-apps.push-apn-certificate">
-                    <td><span data-localize="management-applications.push-apn-creds-prod"></span></td>
-                    <td>
-                        <form action="./apps/certificate" enctype="multipart/form-data" id="add-edit-apn-creds-prod-form" method="post">
+                        <form action="./apps/certificate" enctype="multipart/form-data" id="add-edit-apn-creds-uni-form" method="post">
                             <input type="file" id="apns_cert_prod" name="apns_cert" />
                             <input type="hidden" name="app_id" />
                             <input placeholder="Passphrase" style="margin-top:5px;" type="text" name="passphrase" />

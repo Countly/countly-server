@@ -1,9 +1,10 @@
 var plugin = {},
-	pushly = require('pushly'), setLoggingEnabled,
-	push = require('./parts/pushly/endpoints.js'),
-	scheduler = require('./parts/pushly/scheduler.js'),
-	common = require('../../../api/utils/common.js'),
-	fetch = require('../../../api/parts/data/fetch.js'),
+    pushly = require('./parts/lib'),
+    push = require('./parts/endpoints.js'),
+    scheduler = require('./parts/scheduler.js'),
+    common = require('../../../api/utils/common.js'),
+    log = common.log('push:api'),
+    fetch = require('../../../api/parts/data/fetch.js'),
     plugins = require('../../pluginManager.js');
 
 (function (plugin) {
@@ -23,26 +24,24 @@ var plugin = {},
         common.dbUserMap['messages'] = 'msgs';                 // messages sent
     }
 
-	plugins.register("/worker", function(ob){
+    plugins.register('/worker', function(ob){
         setUpCommons();
         pushly();
-        setLoggingEnabled = pushly().setLoggingEnabled.bind(pushly());
-	});
+    });
 
-	plugins.register("/master", function(ob){
+    plugins.register('/master', function(ob){
         setUpCommons();
-		scheduler();
-        setLoggingEnabled = pushly().setLoggingEnabled.bind(pushly());
-	});
+        scheduler();
+    });
 
-	//write api call
-	plugins.register("/i", function(ob){
-		var params = ob.params;
-		if (params.qstring.events) {
+    //write api call
+    plugins.register('/i', function(ob){
+        var params = ob.params;
+        if (params.qstring.events) {
             for (var i = 0; i < params.qstring.events.length; i++) {
                 var event = params.qstring.events[i];
 
-                if (event.key && event.key.indexOf('[CLY]_push') == 0 && event.segmentation && event.segmentation.i && event.segmentation.i.length == 24) {
+                if (event.key && event.key.indexOf('[CLY]_push') === 0 && event.segmentation && event.segmentation.i && event.segmentation.i.length == 24) {
                     var $inc = {};
 
                     if (event.key == '[CLY]_push_open') {
@@ -54,19 +53,19 @@ var plugin = {},
                     common.db.collection('messages').update({_id: common.db.ObjectID(event.segmentation.i)}, {$inc: $inc},function(){});
                 }
             }
-		}
-		if (params.qstring.token_session) {
+        }
+        if (params.qstring.token_session) {
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, dbAppUser){
                 push.processTokenSession(dbAppUser, params);
             });
         }
-	});
+    });
 
-	plugins.register("/i/pushes", function(ob){
-		var params = ob.params,
-			paths = ob.paths,
-			validateUserForWriteAPI = ob.validateUserForWriteAPI;
-		if (params.qstring.args) {
+    plugins.register('/i/pushes', function(ob){
+        var params = ob.params,
+            paths = ob.paths,
+            validateUserForWriteAPI = ob.validateUserForWriteAPI;
+        if (params.qstring.args) {
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
             } catch (SyntaxError) {
@@ -93,32 +92,18 @@ var plugin = {},
             case 'update':
                 validateUserForWriteAPI(push.updateApp, params);
                 break;
-			case 'logs':
-                validateUserForWriteAPI(function(params){
-                    if (params.qstring.on) {
-                        setLoggingEnabled(true);
-                        common.returnOutput(params, {set: 'ON'});
-                    } else if (params.qstring.off) {
-                        setLoggingEnabled(false);
-                        common.returnOutput(params, {set: 'OFF'});
-                    } else {
-                        common.returnMessage(params, 400, 'Set on or off parameter for this endpoint');
-                    }
-                }, params);
-                break;
             default:
                 common.returnMessage(params, 404, 'Invalid endpoint');
                 break;
         }
-		return true;
-	});
+        return true;
+    });
 
-	plugins.register("/o/pushes", function(ob){
-		var params = ob.params,
-			paths = ob.paths,
-			validateUserForWriteAPI = ob.validateUserForWriteAPI;
+    plugins.register('/o/pushes', function(ob){
+        var params = ob.params,
+            validateUserForWriteAPI = ob.validateUserForWriteAPI;
 
-		if (params.qstring.args) {
+        if (params.qstring.args) {
            try {
                params.qstring.args = JSON.parse(params.qstring.args);
            } catch (SyntaxError) {
@@ -127,13 +112,13 @@ var plugin = {},
        }
 
        validateUserForWriteAPI(push.getAllMessages, params);
-	   return true;
-	});
+       return true;
+    });
 
-	plugins.register("/session/user", function(ob){
-		var params = ob.params,
-			dbAppUser = ob.dbAppUser;
-		var updateUsersZero = {},
+    plugins.register('/session/user', function(ob){
+        var params = ob.params,
+            dbAppUser = ob.dbAppUser;
+        var updateUsersZero = {},
             updateUsersMonth = {},
             dbDateIds = common.getDateIds(params);
 
@@ -173,19 +158,19 @@ var plugin = {},
 
             common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true},function(){});
         }
-	});
+    });
 
-	plugins.register("/i/apps/reset", function(ob){
-		var appId = ob.appId;
-		common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]},function(){});
-	});
+    plugins.register("/i/apps/reset", function(ob){
+        var appId = ob.appId;
+        common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]},function(){});
+    });
 
-	plugins.register("/i/apps/delete", function(ob){
-		var appId = ob.appId;
-		common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]},function(){});
-	});
+    plugins.register("/i/apps/delete", function(ob){
+        var appId = ob.appId;
+        common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]},function(){});
+    });
 
-	function messagingTokenKeys(dbAppUser) {
+    function messagingTokenKeys(dbAppUser) {
         var a = [];
         for (var k in dbAppUser[common.dbUserMap.tokens]) a.push(common.dbUserMap.tokens + '.' + k);
         return a;

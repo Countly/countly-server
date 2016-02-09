@@ -126,6 +126,8 @@
 .push-create .divide-three.create-header .field .details.cly-select { padding-left: 0;}
 .push-create .view-value { color: #4ebd52; font-size: 14px; }
 .push-create span.view-value { padding-left: 16px; }
+.push-create .view-value.error { color: red; }
+.push-create .view-value .delete-app { float: inherit; }
 
 /*.push-create .message .title { margin-bottom: 0; }*/
 .push-create .view-header .field { margin-bottom: 0; }
@@ -177,3 +179,6 @@ tr.push-no-messages:hover { background-color: white; }
 	background-image:url('../images/push/messaging_icons.png');
 	background-position: -175px;
 }
+
+.d-table tr.app-apn-cert-old .note { font-size: 12px; color: #999;}
+.d-table tr tr td { border-bottom: none; }
