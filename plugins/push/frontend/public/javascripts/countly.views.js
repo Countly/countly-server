@@ -1123,10 +1123,7 @@ app.route('/messaging/messages', 'messagingListView', function () {
     this.renderWhenReady(this.messagingListView);
 });
 
-var managementAdd = "";
 function pushAppMgmt(){
-    $(".app-details table tr.table-edit").before(managementAdd);
-    $('.appmng-push').prev().removeClass('table-edit-prev');
     app.localize();
     var appId = countlyCommon.ACTIVE_APP_ID;
     
@@ -1249,10 +1246,13 @@ function pushAppMgmt(){
     });
 };
 
+var managementAdd = "";
 app.addPageScript("/manage/apps", function(){
     if(managementAdd == "")
         $.get(countlyGlobal["path"]+'/push/templates/push-management.html', function(src){
             managementAdd = src;
+            $(".app-details table tr.table-edit").before(managementAdd);
+            $('.appmng-push').prev().removeClass('table-edit-prev');
             pushAppMgmt();
         });
     else
@@ -1262,6 +1262,7 @@ app.addPageScript("/manage/apps", function(){
 app.addAppManagementSwitchCallback(function(appId, type){
     if(type == "mobile"){
         $(".appmng-push").show();
+        pushAppMgmt();
     } 
     else{
         $(".appmng-push").hide();
