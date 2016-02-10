@@ -22,6 +22,8 @@ var HTTP = function(options, logger){
 
 	this.initialized = true;
 
+	this.notesInFlight = 0;
+
 	EventEmitter.call(this);
 };
 util.inherits(HTTP, EventEmitter);
@@ -131,7 +133,7 @@ HTTP.prototype.request = function(note, callback) {
 HTTP.prototype.transmit = function(note) {
 	this.requesting = true;
 
-	this.request(note, res => {
+	var req = this.request(note, res => {
 		var data = '';
 		res.on('data', d => {
             data += d;
@@ -155,11 +157,12 @@ HTTP.prototype.transmit = function(note) {
 	});
 };
 
-HTTP.prototype.onRequestSocket = function(socket) {
+HTTP.prototype.onRequestSocket = function(note, socket) {
 	this.socket = socket;
 };
 
-HTTP.prototype.onRequestError = function(err) {
+HTTP.prototype.onRequestError = function(note, err) {
+    this.notesInFlight -= noteDevice(note).length;
 	log.d('socket error %j', err);
 	this.requesting = false;
 	this.handlerr(note, Err.CONNECTION, err);
@@ -257,7 +260,11 @@ HTTP.prototype.send = function (messageId, content, encoding, expiry, device, lo
 		}
 	}
 
-    this.add(device, content, messageId, expiry);
+  	if (!util.isArray(device)) {
+		device = [device];
+	}
+	
+	this.add(device, content, messageId, expiry);
 
 	this.serviceImmediate();
 

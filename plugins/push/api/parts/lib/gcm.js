@@ -25,6 +25,8 @@ util.inherits(GCM, HTTP);
 GCM.prototype.onRequestDone = function(note, response, data) {
 	var code = response.statusCode;
 
+    this.notesInFlight -= this.noteDevice(note).length;
+
     this.emit(EVENTS.MESSAGE, this.noteMessageId(note), this.noteDevice(note).length);
 	if (code >= 500) {
         log.w('GCM Unavailable', code, data);
@@ -111,6 +113,8 @@ GCM.prototype.request = function(note, callback) {
 	var devices = this.noteDevice(note), content = this.noteData(note);
     log.d('Constructing request with content %j for devices %j', content, devices);
 
+    this.notesInFlight += devices.length;
+
     content.registration_ids = devices;
 	content = JSON.stringify(content);
     log.d('Final content %j', content);
@@ -134,18 +138,16 @@ GCM.prototype.request = function(note, callback) {
 
 	options.agent = this.agent;
 
+
 	var req = https.request(options, callback);
-    req.on('socket', this.onRequestSocket.bind(this));
-    req.on('error', this.onRequestError.bind(this));
+    req.on('socket', this.onRequestSocket.bind(this, note));
+    req.on('error', this.onRequestError.bind(this, note));
     req.end(content);
 
 	return req;
 };
 
 GCM.prototype.add = function (device, content, messageId) {
-	if (!util.isArray(device)) {
-		device = [device];
-	}
 	this.notifications.push([device, content, messageId]);
 };
 

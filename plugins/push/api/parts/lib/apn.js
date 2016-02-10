@@ -179,6 +179,8 @@ util.inherits(APN, HTTP);
  * @private
  */
 APN.prototype.onRequestDone = function(note, response, data) {
+    this.notesInFlight -= 1;
+	
 	if (data && typeof data === 'string') {
 		try {
 			data = JSON.parse(data);
@@ -218,11 +220,29 @@ APN.prototype.onRequestDone = function(note, response, data) {
 	}
 };
 
+APN.prototype.onRequestError = function(note, device, err) {
+    this.notesInFlight -= 1;
+
+    var idx = note[0].indexOf(device);
+    if (idx !== -1) {
+	    note[0].splice(idx, 1);
+    }
+
+    var failed = note.slice(0);
+    failed[0] = [device];
+
+	log.d('socket error %j', err);
+	this.requesting = false;
+	this.handlerr(failed, Err.CONNECTION, err);
+};
+
 /**
  * @private
  */
 APN.prototype.request = function(note, callback) {
-	var device = this.noteDevice(note), content = this.noteData(note), expiry = this.noteExpiry(note);
+	var devices = this.noteDevice(note), content = this.noteData(note), expiry = this.noteExpiry(note);
+
+    this.notesInFlight += devices.length;
 
 	var headers = {
 		'apns-expiration': Math.floor(expiry.getTime() / 1000),
@@ -236,19 +256,17 @@ APN.prototype.request = function(note, callback) {
 	var options = {
 		host: this.options.gateway,
 		port: this.options.port,
-		path: '/3/device/' + device,
 		method: 'POST',
 		headers: headers,
 	};
 
-	// log.d('Constructing request %j / %j', options, content);
+	for (var i = 0; i < devices.length; i++) {
+		options.path = '/3/device/' + devices[i];
 
-	var request = this.agent.request(options, callback);
-	request.on('socket', this.onRequestSocket.bind(this));
-	request.on('error', this.onRequestError.bind(this));
-	request.end(content);
-
-	return request;
+		var request = this.agent.request(options, callback);
+		request.on('error', this.onRequestError.bind(this, note, devices[i]));
+		request.end(content);
+	}
 };
 
 var clearFromCredentials = function(key) {
