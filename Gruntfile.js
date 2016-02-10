@@ -12,6 +12,7 @@ module.exports = function(grunt) {
 			shadow:true,
 			sub:true,
 			node:true,
+            esversion: 6,
 			'-W041': true,
 			'-W038': true,
 			'-W082': true,
