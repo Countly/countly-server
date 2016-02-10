@@ -130,7 +130,8 @@ HTTP.prototype.request = function(note, callback) {
  */
 HTTP.prototype.transmit = function(note) {
 	this.requesting = true;
-	var req = this.request(note, res => {
+
+	this.request(note, res => {
 		var data = '';
 		res.on('data', d => {
             data += d;
@@ -152,16 +153,16 @@ HTTP.prototype.transmit = function(note) {
 			}
         });
 	});
+};
 
-	req.on('socket', socket => {
-		this.socket = socket;
-	});
+HTTP.prototype.onRequestSocket = function(socket) {
+	this.socket = socket;
+};
 
-	req.on('error', err => {
-		log.d('socket error %j', err);
-		this.requesting = false;
-		this.handlerr(note, Err.CONNECTION, err);
-	});
+HTTP.prototype.onRequestError = function(err) {
+	log.d('socket error %j', err);
+	this.requesting = false;
+	this.handlerr(note, Err.CONNECTION, err);
 };
 
 /**

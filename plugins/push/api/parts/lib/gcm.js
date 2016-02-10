@@ -135,7 +135,9 @@ GCM.prototype.request = function(note, callback) {
 	options.agent = this.agent;
 
 	var req = https.request(options, callback);
-	req.end(content);
+    req.on('socket', this.onRequestSocket.bind(this));
+    req.on('error', this.onRequestError.bind(this));
+    req.end(content);
 
 	return req;
 };

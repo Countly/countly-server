@@ -244,7 +244,8 @@ APN.prototype.request = function(note, callback) {
 	// log.d('Constructing request %j / %j', options, content);
 
 	var request = this.agent.request(options, callback);
-
+	request.on('socket', this.onRequestSocket.bind(this));
+	request.on('error', this.onRequestError.bind(this));
 	request.end(content);
 
 	return request;
