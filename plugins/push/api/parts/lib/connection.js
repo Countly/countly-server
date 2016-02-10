@@ -27,7 +27,7 @@ var Connection = function(cluster, idx, credentials, profiler) {
 	// this.inflow.tick = this.inflow.mark;
 	// this.drain.tick = this.drain.mark;
 
-	this.connection = new platforms[credentials.platform](credentials, profiler);
+	this.connection = new platforms[credentials.platform](credentials, profiler, idx);
 
 	// Notification is sent (one or more tokens)
 	this.connection.on(SP.MESSAGE, function(messageId, size){
@@ -71,7 +71,7 @@ Connection.prototype.send = function(messageId, content, encoding, expiry, devic
 };
 
 Connection.prototype.add = function(notification){
-	this.connection.add(notification);
+	this.connection.add.apply(this.connection, arguments);
 };
 
 Connection.prototype.close = function(clb){
@@ -327,7 +327,7 @@ Cluster.prototype.closeConnection = function(idx){
 					if (!this.connections[i].closed) {
 						log.d('[0|%j] %d notifications will be moved into connection %d', this.credentials.id, notes.length, i);
 						for (j = notes.length - 1; j >= 0; j--) {
-						 	this.connections[i].add(notes[j]);
+						 	this.connections[i].add.apply(this.connections[i], notes[j]);
 						}
 					 	return;
 					}
@@ -336,7 +336,7 @@ Cluster.prototype.closeConnection = function(idx){
 				log.d('[0|%j] Growing back by 1 because %d notifications need to be placed somewhere', this.credentials.id, notes.length);
 				var newConnection = this.grow();
 				for (j = notes.length - 1; j >= 0; j--) {
-				 	newConnection.add(notes[j]);
+					newConnection.add.apply(newConnection, notes[j]);
 				}
 			}
 		}.bind(this));

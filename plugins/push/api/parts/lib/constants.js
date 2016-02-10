@@ -73,8 +73,8 @@ exports = module.exports = {
 		maxImmediatePoolChange: 2,
 
 		apn: {
-			/** APN doesn't support notification batches yet */
-			transmitAtOnce: 1,
+			/** Send 10 or less requests each event loop */
+			transmitAtOnce: 10,
 			/** How much certificates to hold in memory instead of reading from file */
 			certificatesCache: 50,
 			/** Keep no more than 50000 messages per connection in memory. Whenever sending is slower than messages stream,
