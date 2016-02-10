@@ -133,23 +133,23 @@ HTTP.prototype.request = function(note, callback) {
 HTTP.prototype.transmit = function(note) {
 	this.requesting = true;
 
-	var req = this.request(note, res => {
+	this.request(note, res => {
 		var data = '';
 		res.on('data', d => {
             data += d;
 		});
         res.on('end', () => {
         	// log.d('response ended');
-			if (!req.onRequestDone) {
-				req.onRequestDone = true;
+			if (!res.onRequestDone) {
+				res.onRequestDone = true;
 				this.requesting = false;
 	        	this.onRequestDone(note, res, data);
 			}
         });
         res.on('close', () => {
         	// log.d('response closed');
-			if (!req.onRequestDone) {
-				req.onRequestDone = true;
+			if (!res.onRequestDone) {
+				res.onRequestDone = true;
 				this.requesting = false;
 	        	this.onRequestDone(note, res, data);
 			}
