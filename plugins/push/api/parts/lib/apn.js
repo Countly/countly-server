@@ -117,7 +117,7 @@ var readP12 = function(path, password) {
 
 var certificates;
 
-var APN = function(options){
+var APN = function(options, profiler, idx){
 	if (false === (this instanceof APN)) {
 		return new APN(options);
 	}
@@ -170,7 +170,7 @@ var APN = function(options){
 		pfx: this.certificate.pfx,
 		passphrase: this.certificate.passphrase,
 		rejectUnauthorized: true,
-		endpointKey: this.options.gateway + ':' + this.certificate.id
+		endpointKey: this.options.gateway + ':' + this.certificate.id + ':' + idx
 	});
 };
 util.inherits(APN, HTTP);
