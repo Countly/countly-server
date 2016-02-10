@@ -83,8 +83,6 @@ HTTP.prototype.service = function() {
  * @private
  */
 HTTP.prototype.handlerr = function (note, code, name, messageId, deviceTokens, credentialsId) {
-	log.d('Handling error code %d, name %j for note %j, message ID %j, device token %j, credentialsId %j', code, name, note, messageId, deviceTokens, credentialsId);
-
 	var err = new Err(code, name, messageId, deviceTokens), que = new Dequeue(), notification, id = noteMessageId(note);
 	err.credentialsId = credentialsId;
 
@@ -94,10 +92,12 @@ HTTP.prototype.handlerr = function (note, code, name, messageId, deviceTokens, c
 		this.emit(EVENTS.ERROR, err);
 		this.serviceImmediate();
 	} else if (code & Err.IS_RECOVERABLE) {
+		log.d('Handling error code %d (recoverable), name %j for note %j, message ID %j, device token %j, credentialsId %j', code, name, note, messageId, deviceTokens, credentialsId);
 		this.notifications.unshift(note);
 		this.emit(EVENTS.ERROR, err);
 		this.serviceImmediate();
 	} else if (code & Err.IS_NON_RECOVERABLE) {
+		log.d('Handling error code %d (non-recoverable), name %j for note %j, message ID %j, device token %j, credentialsId %j', code, name, note, messageId, deviceTokens, credentialsId);
 		this.emit(EVENTS.ERROR, err);
 		while (this.notifications.length) {
 			notification = this.notifications.shift();
@@ -136,7 +136,7 @@ HTTP.prototype.transmit = function(note) {
             data += d;
 		});
         res.on('end', () => {
-        	log.d('response ended');
+        	// log.d('response ended');
 			if (!req.onRequestDone) {
 				req.onRequestDone = true;
 				this.requesting = false;
@@ -144,7 +144,7 @@ HTTP.prototype.transmit = function(note) {
 			}
         });
         res.on('close', () => {
-        	log.d('response closed');
+        	// log.d('response closed');
 			if (!req.onRequestDone) {
 				req.onRequestDone = true;
 				this.requesting = false;
@@ -158,6 +158,7 @@ HTTP.prototype.transmit = function(note) {
 	});
 
 	req.on('error', err => {
+		log.d('socket error %j', err);
 		this.requesting = false;
 		this.handlerr(note, Err.CONNECTION, err);
 	});
@@ -263,7 +264,7 @@ HTTP.prototype.send = function (messageId, content, encoding, expiry, device, lo
 };
 
 HTTP.prototype.add = function (device, content, messageId, expiry) {
-	log.d('Adding into queue: %j', [device, content, messageId, expiry]);
+	// log.d('Adding into queue: %j', [device, content, messageId, expiry]);
 	this.notifications.push([device, content, messageId, expiry]);
 };
 

@@ -179,8 +179,6 @@ util.inherits(APN, HTTP);
  * @private
  */
 APN.prototype.onRequestDone = function(note, response, data) {
-	log.d('onRequestDone', note, data);
-
 	if (data && typeof data === 'string') {
 		try {
 			data = JSON.parse(data);
@@ -196,6 +194,7 @@ APN.prototype.onRequestDone = function(note, response, data) {
 	this.emit(EVENTS.MESSAGE, this.noteMessageId(note), 1);
 
 	if (code >= 500) {
+		log.w('APN unavailable', code, response.headers, data);
 		this.handlerr(note, Err.CONNECTION, code + ': Service unavailable');
 	} else if (APN_ERRORS[reason] === Err.CREDENTIALS || code === 401 || code === 403) {
 		clearFromCredentials(this.options.key);
@@ -203,10 +202,12 @@ APN.prototype.onRequestDone = function(note, response, data) {
 	} else if (APN_ERRORS[reason]) {
 		this.handlerr(note, APN_ERRORS[reason], combined, this.noteMessageId(note), APN_ERRORS[reason] === Err.TOKEN ? [{bad: this.noteDevice(note)}] : undefined);
 	} else if (code === 400 || code === 413) {
+		log.w('APN Bad message', code, response.headers, data);
 		this.handlerr(note, Err.MESSAGE, combined + ': Bad message', this.noteMessageId(note));
 	} else if (code === 410) {
 		this.handlerr(note, Err.TOKEN, combined + ': Invalid token', this.noteMessageId(note), [{bad: this.noteDevice(note)}]);
 	} else if (code === 429) {
+		log.w('APN Too many requests', code, response.headers, data);
 		this.handlerr(note,Err.CONNECTION, combined + ': Too many requests for single device', this.noteMessageId(note));
 	} else if (code !== 200 || reason) {
 		log.w('Received unexpected response from APN: %j / %j, %j / %j', code, reason, response.headers, data);
@@ -240,7 +241,7 @@ APN.prototype.request = function(note, callback) {
 		headers: headers,
 	};
 
-	log.d('Constructing request %j / %j', options, content);
+	// log.d('Constructing request %j / %j', options, content);
 
 	var request = this.agent.request(options, callback);
 

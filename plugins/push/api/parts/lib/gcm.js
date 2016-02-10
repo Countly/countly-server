@@ -27,12 +27,15 @@ GCM.prototype.onRequestDone = function(note, response, data) {
 
     this.emit(EVENTS.MESSAGE, this.noteMessageId(note), this.noteDevice(note).length);
 	if (code >= 500) {
+        log.w('GCM Unavailable', code, data);
 		this.handlerr(note, Err.CONNECTION, 'GCM Unavailable');
     } else if (code === 401) {
 		this.handlerr(note, Err.CREDENTIALS, 'GCM Unauthorized', this.noteMessageId(note));
     } else if (code === 400) {
+        log.w('GCM Bad message', code, data);
 		this.handlerr(note, Err.MESSAGE, 'GCM Bad message', this.noteMessageId(note));
     } else if (code !== 200) {
+        log.w('GCM Bad response code', code, data);
 		this.handlerr(note, Err.CONNECTION, 'GCM Bad response code ' + code);
     } else {
 		this.requesting = false;
