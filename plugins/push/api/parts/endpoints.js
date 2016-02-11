@@ -147,7 +147,7 @@ var common          = require('../../../../api/utils/common.js'),
                         } else if (count !== 0) {
                             log.d('====== Going to stream next batch starting from %j', skip);
                             api.pushlyCallbacks.stream(message, query, callback, ask, skip);
-                            common.db.collection('app_users' + query.appId).update({_id: {$in: ids}}, {$push: {msgs: messageId(message)}}, {multi: true}, function(){});
+                            // common.db.collection('app_users' + query.appId).update({_id: {$in: ids}}, {$push: {msgs: messageId(message)}}, {multi: true}, function(){});
                         }
                     }
                 });

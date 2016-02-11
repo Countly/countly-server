@@ -63,8 +63,8 @@ exports = module.exports = {
 		 * 100 000 devices / 1000 = 100, but no more than 20 = 20 connections will be open when sending a message to 100 000 devices.
 		 */
 		connectionDivider: 10,
-		/** 1 minute connection TTL */
-		connectionTTL: 1000 * 60 * 100,
+		/** 60 minute connection TTL */
+		connectionTTL: 60 * 60 * 1000,
 		/** Part of worker picking algorithm: ( (hasConnection ? 0 : priceOfConnection) + priceOfQueue * queueLength ) */
 		priceOfConnection: 100,
 		/** Part of worker picking algorithm: ( (hasConnection ? 0 : priceOfConnection) + priceOfQueue * queueLength ) */
