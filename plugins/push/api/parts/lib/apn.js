@@ -258,7 +258,7 @@ APN.prototype.request = function(note) {
 		headers: headers,
 	};
 
-	devices.forEach(function(device) {
+	devices.forEach(device => {
 		options.path = '/3/device/' + device;
 
 		var request = this.agent.request(options, (res) => {
