@@ -55,5 +55,8 @@
     "formidable": "1.0.17",
     "kerberos": "~0.0",
     "properties-parser":"0.2.3"
+  },
+  "jshintConfig": {
+    "node": true
   }
 }
