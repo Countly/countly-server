@@ -7,7 +7,6 @@ var util = require('util'),
 	EVENTS = constants.SP,
 	log,
 	Dequeue = require('dequeue'),
-	https = require('https'),
 	_ = require('underscore');
 
 var HTTP = function(options, logger){
@@ -32,7 +31,7 @@ util.inherits(HTTP, EventEmitter);
 var noteDevice = HTTP.prototype.noteDevice = function(note){ return note ? note[0] : undefined; };
 var noteData = HTTP.prototype.noteData = function(note){ return note ? note[1] : undefined; };
 var noteMessageId = HTTP.prototype.noteMessageId = function(note){ return note ? note[2] : undefined; };
-var noteExpiry = HTTP.prototype.noteExpiry = function(note){ return note ? note[3] : undefined; };
+HTTP.prototype.noteExpiry = function(note){ return note ? note[3] : undefined; };
 
 /**
  * @private
@@ -57,13 +56,13 @@ HTTP.prototype.service = function() {
 	} else if (!this.initialized) {
 		return log.d('Not initialized, won\'t service');
 	}
-	if (this.notifications.length && !this.requesting) {
+	if (this.notifications.length && this.notesInFlight < this.options.transmitAtOnce) {
 		var notification = this.notifications.shift(), merged = 1;
 		while (this.notifications.length > 0 && merged < this.options.transmitAtOnce) {
 			var next = this.notifications.shift();
-			log.d('next is %j, %j, %j', next[0], next[1], next[2]);
+			// log.d('next is %j, %j, %j', next[0], next[1], next[2]);
 			if (noteMessageId(notification) === noteMessageId(next) && _.isEqual(noteData(notification), noteData(next))) {
-				log.d('merging');
+				// log.d('merging');
 				for (var i = 0; i < noteDevice(next).length; i++) {
 					merged++;
 					noteDevice(notification).push(noteDevice(next)[i]);
@@ -73,10 +72,10 @@ HTTP.prototype.service = function() {
 				break;
 			}
 		}
-		if (merged > 1) {
-			log.d('merged %d, %d left to send', merged, this.notifications.length);
-		}
-		this.transmit(notification);
+		// if (merged > 1) {
+			// log.d('merged %d, %d left to send', merged, this.notifications.length);
+		// }
+		this.request(notification);
 	}
 };
 
@@ -87,8 +86,6 @@ HTTP.prototype.service = function() {
 HTTP.prototype.handlerr = function (note, code, name, messageId, deviceTokens, credentialsId) {
 	var err = new Err(code, name, messageId, deviceTokens), que = new Dequeue(), notification, id = noteMessageId(note);
 	err.credentialsId = credentialsId;
-
-	this.requesting = false;
 
 	if (code === Err.TOKEN) {
 		this.emit(EVENTS.ERROR, err);
@@ -116,45 +113,15 @@ HTTP.prototype.handlerr = function (note, code, name, messageId, deviceTokens, c
 /**
  * @private
  */
-HTTP.prototype.onRequestDone = function(note, code, data) {
+HTTP.prototype.onRequestDone = function(/*note, code, data*/) {
 	throw new Error('onRequestDone() must be overridden');
 };
 
 /**
  * @private
  */
-HTTP.prototype.request = function(note, callback) {
+HTTP.prototype.request = function(/*note, callback*/) {
 	throw new Error('request() must be overridden');
-};
-
-/**
- * @private
- */
-HTTP.prototype.transmit = function(note) {
-	this.requesting = true;
-
-	this.request(note, res => {
-		var data = '';
-		res.on('data', d => {
-            data += d;
-		});
-        res.on('end', () => {
-        	// log.d('response ended');
-			if (!res.onRequestDone) {
-				res.onRequestDone = true;
-				this.requesting = false;
-	        	this.onRequestDone(note, res, data);
-			}
-        });
-        res.on('close', () => {
-        	// log.d('response closed');
-			if (!res.onRequestDone) {
-				res.onRequestDone = true;
-				this.requesting = false;
-	        	this.onRequestDone(note, res, data);
-			}
-        });
-	});
 };
 
 HTTP.prototype.onRequestSocket = function(note, socket) {
@@ -164,7 +131,6 @@ HTTP.prototype.onRequestSocket = function(note, socket) {
 HTTP.prototype.onRequestError = function(note, err) {
     this.notesInFlight -= noteDevice(note).length;
 	log.d('socket error %j', err);
-	this.requesting = false;
 	this.handlerr(note, Err.CONNECTION, err);
 };
 

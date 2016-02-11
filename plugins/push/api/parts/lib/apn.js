@@ -178,7 +178,7 @@ util.inherits(APN, HTTP);
 /**
  * @private
  */
-APN.prototype.onRequestDone = function(note, response, data) {
+APN.prototype.onRequestDone = function(response, note, device, data) {
     this.notesInFlight -= 1;
 	
 	if (data && typeof data === 'string') {
@@ -202,12 +202,12 @@ APN.prototype.onRequestDone = function(note, response, data) {
 		clearFromCredentials(this.options.key);
 		this.handlerr(note, APN_ERRORS[reason] || Err.CREDENTIALS, combined + ': Unauthorized', this.noteMessageId(note));
 	} else if (APN_ERRORS[reason]) {
-		this.handlerr(note, APN_ERRORS[reason], combined, this.noteMessageId(note), APN_ERRORS[reason] === Err.TOKEN ? [{bad: this.noteDevice(note)}] : undefined);
+		this.handlerr(note, APN_ERRORS[reason], combined, this.noteMessageId(note), APN_ERRORS[reason] === Err.TOKEN ? [{bad: [device]}] : undefined);
 	} else if (code === 400 || code === 413) {
 		log.w('APN Bad message', code, response.headers, data);
 		this.handlerr(note, Err.MESSAGE, combined + ': Bad message', this.noteMessageId(note));
 	} else if (code === 410) {
-		this.handlerr(note, Err.TOKEN, combined + ': Invalid token', this.noteMessageId(note), [{bad: this.noteDevice(note)}]);
+		this.handlerr(note, Err.TOKEN, combined + ': Invalid token', this.noteMessageId(note), [{bad: [device]}]);
 	} else if (code === 429) {
 		log.w('APN Too many requests', code, response.headers, data);
 		this.handlerr(note,Err.CONNECTION, combined + ': Too many requests for single device', this.noteMessageId(note));
@@ -215,7 +215,6 @@ APN.prototype.onRequestDone = function(note, response, data) {
 		log.w('Received unexpected response from APN: %j / %j, %j / %j', code, reason, response.headers, data);
 		this.handlerr(note, APN_ERRORS[reason] || Err.ILLEGAL_STATE, 'Bad response ' + combined);
 	} else {
-		this.requesting = false;
 		this.serviceImmediate();
 	}
 };
@@ -232,14 +231,13 @@ APN.prototype.onRequestError = function(note, device, err) {
     failed[0] = [device];
 
 	log.d('socket error %j', err);
-	this.requesting = false;
 	this.handlerr(failed, Err.CONNECTION, err);
 };
 
 /**
  * @private
  */
-APN.prototype.request = function(note, callback) {
+APN.prototype.request = function(note) {
 	var devices = this.noteDevice(note), content = this.noteData(note), expiry = this.noteExpiry(note);
 
     this.notesInFlight += devices.length;
@@ -260,13 +258,32 @@ APN.prototype.request = function(note, callback) {
 		headers: headers,
 	};
 
-	for (var i = 0; i < devices.length; i++) {
-		options.path = '/3/device/' + devices[i];
+	devices.forEach(function(device) {
+		options.path = '/3/device/' + device;
 
-		var request = this.agent.request(options, callback);
-		request.on('error', this.onRequestError.bind(this, note, devices[i]));
+		var request = this.agent.request(options, (res) => {
+			var data = '';
+			res.on('data', d => {
+	            data += d;
+			});
+	        res.on('end', () => {
+	        	// log.d('response ended');
+				if (!res.done) {
+					res.done = true;
+					this.onRequestDone(res, note, device, data);
+				}
+	        });
+	        res.on('close', () => {
+	        	// log.d('response closed');
+				if (!res.done) {
+					res.done = true;
+					this.onRequestDone(res, note, device, data);
+				}
+	        });
+		});
+		request.on('error', this.onRequestError.bind(this, note, device));
 		request.end(content);
-	}
+	});
 };
 
 var clearFromCredentials = function(key) {

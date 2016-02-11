@@ -22,7 +22,7 @@ util.inherits(GCM, HTTP);
 /**
  * @private
  */
-GCM.prototype.onRequestDone = function(note, response, data) {
+GCM.prototype.onRequestDone = function(response, note, devices, data) {
 	var code = response.statusCode;
 
     this.notesInFlight -= this.noteDevice(note).length;
@@ -40,7 +40,6 @@ GCM.prototype.onRequestDone = function(note, response, data) {
         log.w('GCM Bad response code', code, data);
 		this.handlerr(note, Err.CONNECTION, 'GCM Bad response code ' + code);
     } else {
-		this.requesting = false;
     	try {
             var obj = JSON.parse(data);
             if (obj.failure === 0 && obj.canonical_ids === 0) {
@@ -109,7 +108,7 @@ GCM.prototype.onRequestDone = function(note, response, data) {
 /**
  * @private
  */
-GCM.prototype.request = function(note, callback) {
+GCM.prototype.request = function(note) {
 	var devices = this.noteDevice(note), content = this.noteData(note);
     log.d('Constructing request with content %j for devices %j', content, devices);
 
@@ -138,8 +137,26 @@ GCM.prototype.request = function(note, callback) {
 
 	options.agent = this.agent;
 
-
-	var req = https.request(options, callback);
+	var req = https.request(options, (res) => {
+        var data = '';
+        res.on('data', d => {
+            data += d;
+        });
+        res.on('end', () => {
+            // log.d('response ended');
+            if (!res.done) {
+                res.done = true;
+                this.onRequestDone(res, note, devices, data);
+            }
+        });
+        res.on('close', () => {
+            // log.d('response closed');
+            if (!res.done) {
+                res.done = true;
+                this.onRequestDone(res, note, devices, data);
+            }
+        });
+    });
     req.on('socket', this.onRequestSocket.bind(this, note));
     req.on('error', this.onRequestError.bind(this, note));
     req.end(content);

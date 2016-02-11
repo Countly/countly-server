@@ -73,7 +73,7 @@ exports = module.exports = {
 		maxImmediatePoolChange: 2,
 
 		apn: {
-			/** Send 10 or less requests each event loop */
+			/** Send 10 or less requests each event loop (HTTP/2 streams) */
 			transmitAtOnce: 10,
 			/** How much certificates to hold in memory instead of reading from file */
 			certificatesCache: 50,
