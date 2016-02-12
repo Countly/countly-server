@@ -65,6 +65,8 @@ exports = module.exports = {
 		connectionDivider: 10,
 		/** 60 minute connection TTL */
 		connectionTTL: 60 * 60 * 1000,
+		/** 1 minute event TTL (waiting for tokens, freeing event loop, etc.) */
+		eventTTL: 60 * 60 * 1000,
 		/** Part of worker picking algorithm: ( (hasConnection ? 0 : priceOfConnection) + priceOfQueue * queueLength ) */
 		priceOfConnection: 100,
 		/** Part of worker picking algorithm: ( (hasConnection ? 0 : priceOfConnection) + priceOfQueue * queueLength ) */
@@ -133,5 +135,9 @@ exports = module.exports = {
 		 */
 		ratesToLeftSeconds: 60, 				// 60 seconds or more to send queue with current rate -> grow
 		ratesToLeftWeight: 0.25, 				// weight of ratesToLeftSeconds as opposed to growth / shrink ratio, 0.25 means that rates to left is 3 times less important than growth / shrink ratio
+
+		eventLoopDelayToThrottleDown: 300,
+
+		eventLoopWait: 5000
 	},
 };

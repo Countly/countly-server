@@ -55,6 +55,12 @@ HTTP.prototype.service = function() {
 		return log.d('Already closed, doing nothing');
 	} else if (!this.initialized) {
 		return log.d('Not initialized, won\'t service');
+	} else if (this.freeingEventLoop) {
+		if (this.freeingEventLoop > Date.now()) {
+			return log.d('Freeing event loop, %dms left', this.freeingEventLoop - Date.now());
+		} else {
+			this.freeingEventLoop = undefined;
+		}
 	}
 	if (this.notifications.length && this.notesInFlight < this.options.transmitAtOnce) {
 		var notification = this.notifications.shift(), merged = 1;
@@ -147,6 +153,7 @@ HTTP.prototype.close = function (clb) {
 
 HTTP.prototype.waitAndClose = function(clb) {
 	if (this.notesInFlight <= 0 || this.closeAttempts > 30) {
+		log.d('Finally closing this connection (%d notes in flight)', this.notesInFlight);
 		if (this.socket) {
 			this.socket.emit('agentRemove');
 		}
@@ -171,7 +178,7 @@ HTTP.prototype.waitAndClose = function(clb) {
 		}
 		this.emit(EVENTS.CLOSED);
 	} else {
-		log.d('Not yet emiting closed event - %d notes are in flight', this.notesInFlight);
+		log.d('Not emiting closed event yet - %d notes are in flight', this.notesInFlight);
 		this.closeAttempts = this.closeAttempts ? ++this.closeAttempts : 1;
 		setTimeout(this.waitAndClose.bind(this), 1000);
 	}

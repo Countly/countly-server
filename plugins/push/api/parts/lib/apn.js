@@ -173,6 +173,7 @@ var APN = function(options, profiler, idx){
 		endpointKey: this.options.gateway + ':' + this.certificate.id + ':' + idx
 	});
 
+	this.agent.setMaxListeners(20);
 	this.agent.once(this.options.gateway + ':' + this.certificate.id + ':' + idx, function(endpoint) {
 		endpoint.on('peerError', function() {
 			log.w('GOAWAY received:', arguments);

@@ -57,13 +57,13 @@ var Connection = function(cluster, idx, credentials, profiler) {
 		}
 
 		if (cluster.connections.length === 0) {
-			log.d('No connections in cluster, will closing it in %dms if no connections added');
+			log.d('No connections in cluster, will close it in %dms if no connections added', 2 * DEFAULTS.eventTTL);
 			setTimeout(function(){
 				if (cluster.connections.length === 0) {
 					log.d('No connections anymore, cluster closed');
 					cluster.emit(SP.CLOSED, cluster);
 				}
-			}, 2 * DEFAULTS.connectionTTL);
+			}, 2 * DEFAULTS.eventTTL);
 		}
 	}.bind(this));
 };
@@ -112,14 +112,14 @@ util.inherits(Cluster, EventEmitter);
 Cluster.prototype.close = function(){
 	if (!this.queue.length) {
 		if (!this.closing) {
-			log.d('Going to close the cluster on timeout after %dms', 2 * DEFAULTS.connectionTTL);
+			log.d('Going to close the cluster on timeout after %dms', 2 * DEFAULTS.eventTTL);
 			this.closing = setTimeout(function(){
 				if (!this.queue.length) {
 					log.d('Cluster is closing on timeout');
 					this.closed = true;
 					this.emit(SP.CLOSED, this);
 				}
-			}.bind(this), 2 * DEFAULTS.connectionTTL);
+			}.bind(this), 2 * DEFAULTS.eventTTL);
 		}
 	} else if (this.closing) {
 		clearTimeout(this.closing);
@@ -146,7 +146,7 @@ Cluster.prototype.shouldGrow = function(){
 
 Cluster.prototype.shouldShrink = function(){
 	// return this.clusterJson.clusterInflow.currentRate / this.clusterJson.clusterDrain.currentRate < 0.5;
-	return this.clusterInflow.secondsFromLastValue() > DEFAULTS.connectionTTL / 3 ||
+	return this.clusterInflow.secondsFromLastValue() > DEFAULTS.eventTTL / 3 ||
 		   this.clusterInflow.value / this.clusterDrain.value < 0.5;
 };
 
@@ -197,7 +197,7 @@ Cluster.prototype.countAllConnections = function() {
 
 Cluster.prototype.service = function() {
 	this.nextTickService = false;
-	if (this.queue.length === 0 && this.connections.length === 0) { 
+	if (this.queue.length === 0 && this.connections.length === 0 && this.countAllConnections() <= 0) { 
 		this.stopMonitor();
 		return; 
 	} else {
@@ -418,7 +418,27 @@ Cluster.prototype.startMonitor = function(seconds) {
 
 		var now = Date.now();
 		setImmediate(function(){
-			log.d('[loop]: %j', Date.now() - now);
+			var delay = Date.now() - now, i, c;
+			log.d('[loop]: %j', delay);
+
+			if (delay > DEFAULTS.eventLoopDelayToThrottleDown) {
+				var time = Date.now() + DEFAULTS.eventLoopWait;
+				for (i = this.connections.length - 1; i >= 0; i--) {
+					c = this.connections[i];
+					if (!c.connection.freeingEventLoop) {
+						log.d('Connection %d will wait for %dms because loop is %d (more than %d)', c.idx, DEFAULTS.eventLoopWait, delay, DEFAULTS.eventLoopDelayToThrottleDown);
+						c.connection.freeingEventLoop = time;
+					}
+				}
+			} else {
+				for (i = this.connections.length - 1; i >= 0; i--) {
+					c = this.connections[i];
+					if (c.connection.freeingEventLoop < Date.now()) {
+						log.d('Resurrecting connection %d', c.idx);
+						c.connection.serviceImmediate();
+					}
+				}
+			}
 		}); 
 
 		if (!this.closed) {
