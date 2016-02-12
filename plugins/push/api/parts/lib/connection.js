@@ -280,7 +280,7 @@ Cluster.prototype.service = function() {
 		}
 
 		if (c.counter.count === 0) {
-			log.d('Connection [%j:%j] is empty, closing', c.idx, this.credentials.id);
+			log.d('Connection [%j:%j] is empty, closing with notes in flight %d', c.idx, this.credentials.id, c.connection.notesInFlight);
 			this.closeConnection(i);
 		}
 	}

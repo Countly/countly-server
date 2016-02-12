@@ -251,6 +251,8 @@ APN.prototype.request = function(note) {
 
     this.notesInFlight += devices.length;
 
+    log.d('Requesting %d, total notesInFlight is %d', devices.length, this.notesInFlight);
+
 	var headers = {
 		'apns-expiration': Math.floor(expiry.getTime() / 1000),
 		'apns-priority': 10,
@@ -277,15 +279,15 @@ APN.prototype.request = function(note) {
 			});
 	        res.on('end', () => {
 	        	// log.d('response ended');
-				if (!res.done) {
-					res.done = true;
+				if (!res.onRequestDone) {
+					res.onRequestDone = true;
 					this.onRequestDone(res, note, device, data);
 				}
 	        });
 	        res.on('close', () => {
 	        	// log.d('response closed');
-				if (!res.done) {
-					res.done = true;
+				if (!res.onRequestDone) {
+					res.onRequestDone = true;
 					this.onRequestDone(res, note, device, data);
 				}
 	        });
