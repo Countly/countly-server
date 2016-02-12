@@ -171,7 +171,7 @@ var common          = require('../../../../api/utils/common.js'),
                         if (unset.length) {
                             fields.forEach(function(field){
                                 $unset[field] = 1;
-                                if (unset.length) {
+                                if (unset.length > 1) {
                                     unsetQuery[field] = {$in: unset};
                                 } else {
                                     unsetQuery[field] = unset[0];

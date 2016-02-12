@@ -211,12 +211,12 @@ APN.prototype.onRequestDone = function(response, note, device, data) {
 		clearFromCredentials(this.options.key);
 		this.handlerr(note, APN_ERRORS[reason] || Err.CREDENTIALS, combined + ': Unauthorized', this.noteMessageId(note));
 	} else if (APN_ERRORS[reason]) {
-		this.handlerr(note, APN_ERRORS[reason], combined, this.noteMessageId(note), APN_ERRORS[reason] === Err.TOKEN ? [{bad: [device]}] : undefined);
+		this.handlerr(note, APN_ERRORS[reason], combined, this.noteMessageId(note), APN_ERRORS[reason] === Err.TOKEN ? [{bad: device}] : undefined);
 	} else if (code === 400 || code === 413) {
 		log.w('APN Bad message', code, response.headers, data);
 		this.handlerr(note, Err.MESSAGE, combined + ': Bad message', this.noteMessageId(note));
 	} else if (code === 410) {
-		this.handlerr(note, Err.TOKEN, combined + ': Invalid token', this.noteMessageId(note), [{bad: [device]}]);
+		this.handlerr(note, Err.TOKEN, combined + ': Invalid token', this.noteMessageId(note), [{bad: device}]);
 	} else if (code === 429) {
 		log.w('APN Too many requests', code, response.headers, data);
 		this.handlerr(note,Err.CONNECTION, combined + ': Too many requests for single device', this.noteMessageId(note));
