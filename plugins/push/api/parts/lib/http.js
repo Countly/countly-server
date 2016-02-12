@@ -142,28 +142,39 @@ HTTP.prototype.close = function (clb) {
 		return clb ? clb() : undefined;
 	}
 	this.closed = true;
-	if (this.socket) {
-		this.socket.emit('agentRemove');
-	}
-	if (this.agent && this.agent.destroy) {
-		this.agent.destroy();
-	} else if (this.agent && this.agent.endpoints) {
-		for (var k in this.agent.endpoints) {
-			if (this.agent.endpoints[k]) {
-				log.d('Closing endpoint %j', k);
-				this.agent.endpoints[k].close();
-				delete this.agent.endpoints[k];
+	this.waitAndClose(clb);
+};
+
+HTTP.prototype.waitAndClose = function(clb) {
+	if (this.notesInFlight <= 0 || this.closeAttempts > 30) {
+		if (this.socket) {
+			this.socket.emit('agentRemove');
+		}
+		if (this.agent && this.agent.destroy) {
+			this.agent.destroy();
+		} else if (this.agent && this.agent.endpoints) {
+			for (var k in this.agent.endpoints) {
+				if (this.agent.endpoints[k]) {
+					log.d('Closing endpoint %j', k);
+					this.agent.endpoints[k].close();
+					delete this.agent.endpoints[k];
+				}
 			}
 		}
-	}
-	if (clb) {
-		var arr = [];
-		while (this.notifications.length) {
-			arr.push(this.notifications.shift());
+
+		if (clb) {
+			var arr = [];
+			while (this.notifications.length) {
+				arr.push(this.notifications.shift());
+			}
+			setTimeout(clb.bind(null, arr.length ? arr : undefined), 10);
 		}
-		setTimeout(clb.bind(null, arr.length ? arr : undefined), 1000);
+		this.emit(EVENTS.CLOSED);
+	} else {
+		log.d('Not yet emiting closed event - %d notes are in flight', this.notesInFlight);
+		this.closeAttempts = this.closeAttempts ? ++this.closeAttempts : 1;
+		setTimeout(this.waitAndClose.bind(this), 1000);
 	}
-	this.emit(EVENTS.CLOSED);
 };
 
 /**

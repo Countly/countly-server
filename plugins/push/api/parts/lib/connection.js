@@ -75,8 +75,10 @@ Connection.prototype.send = function(messageId, content, encoding, expiry, devic
 	return ret;
 };
 
-Connection.prototype.add = function(/*notification*/){
-	this.connection.add.apply(this.connection, arguments);
+Connection.prototype.add = function(notification){
+	this.inflow.tick();
+	this.counter.inc(1);
+	this.connection.notifications.push(notification);
 };
 
 Connection.prototype.close = function(clb){
@@ -121,6 +123,7 @@ Cluster.prototype.close = function(){
 		}
 	} else if (this.closing) {
 		clearTimeout(this.closing);
+		this.closing = undefined;
 	}
 };
 
@@ -332,7 +335,7 @@ Cluster.prototype.closeConnection = function(idx){
 					if (!this.connections[i].closed) {
 						log.d('[0|%j] %d notifications will be moved into connection %d', this.credentials.id, notes.length, i);
 						for (j = notes.length - 1; j >= 0; j--) {
-						 	this.connections[i].add.apply(this.connections[i], notes[j]);
+						 	this.connections[i].add(notes[j]);
 						}
 					 	return;
 					}
@@ -341,7 +344,7 @@ Cluster.prototype.closeConnection = function(idx){
 				log.d('[0|%j] Growing back by 1 because %d notifications need to be placed somewhere', this.credentials.id, notes.length);
 				var newConnection = this.grow();
 				for (j = notes.length - 1; j >= 0; j--) {
-					newConnection.add.apply(newConnection, notes[j]);
+					newConnection.add(notes[j]);
 				}
 			}
 		}.bind(this));

@@ -128,10 +128,18 @@ var common          = require('../../../../api/utils/common.js'),
                 var skipping = false, ids = [];
 
                 common.db.collection('app_users' + query.appId).find(finalQuery, filter).sort({_id: 1}).limit(10000).each(function(err, user){
-                    if (err) log.e('Error while streaming tokens', e);
-                    else if (skipping) {
+                    if (err) {
+                        log.e('====== Error while streaming tokens: %j', err);
+                        if (skip) {
+                            log.w('====== Continuing streaming from %j', skip);
+                            api.pushlyCallbacks.stream(message, query, callback, ask, skip);
+                        }
+                    } else if (skipping) {
                         return;
                     } else if (user) {
+                        if (count % 100 === 0) {
+                            log.d('====== Streamed %d', count);
+                        } 
                         count++;
                         skip = user._id;
                         ids.push(user._id);

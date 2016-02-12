@@ -74,7 +74,7 @@ exports = module.exports = {
 
 		apn: {
 			/** Send 10 or less requests each event loop (HTTP/2 streams) */
-			transmitAtOnce: 5,
+			transmitAtOnce: 200,
 			/** How much certificates to hold in memory instead of reading from file */
 			certificatesCache: 50,
 			/** Keep no more than 50000 messages per connection in memory. Whenever sending is slower than messages stream,
