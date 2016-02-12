@@ -57,6 +57,7 @@
     "properties-parser":"0.2.3"
   },
   "jshintConfig": {
+    "esversion": 6,
     "node": true
   }
 }
