@@ -171,7 +171,11 @@ var common          = require('../../../../api/utils/common.js'),
                         if (unset.length) {
                             fields.forEach(function(field){
                                 $unset[field] = 1;
-                                unsetQuery[field] = {$in: unset};
+                                if (unset.length) {
+                                    unsetQuery[field] = {$in: unset};
+                                } else {
+                                    unsetQuery[field] = unset[0];
+                                }
                             });
                             log.d('Unsetting tokens in %j: %j / %j', 'app_users' + app, unsetQuery, {$unset: $unset, $pull: {msgs: messageId(message)}});
                             common.db.collection('app_users' + app).update(unsetQuery, {$unset: $unset, $pull: {msgs: messageId(message)}}, function(){});
