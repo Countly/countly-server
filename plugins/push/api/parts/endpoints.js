@@ -78,6 +78,7 @@ var common          = require('../../../../api/utils/common.js'),
                 common.db.collection('app_users' + query.appId).find(finalQuery).count(callback);
             },
             stream: function(message, query, callback, ask, skip){
+                log.d('====== Streaming');
                 var fields = appUsersFields(message), filter = {}, count = 0, i, finalQuery = {$or: []}, $or = finalQuery.$or;
 
                 for (var any in query.conditions) {
@@ -110,7 +111,7 @@ var common          = require('../../../../api/utils/common.js'),
                     return;
                 }
 
-                log.d('Streaming skipping: %j', skip);
+                log.d('====== Streaming skipping: %j', skip);
 
                 if (skip) {
                     if (finalQuery.$and) {
@@ -127,7 +128,7 @@ var common          = require('../../../../api/utils/common.js'),
                 var skipping = false, ids = [];
 
                 common.db.collection('app_users' + query.appId).find(finalQuery, filter).sort({_id: 1}).limit(10000).each(function(err, user){
-                    if (err) console.log(err);
+                    if (err) log.e('Error while streaming tokens', e);
                     else if (skipping) {
                         return;
                     } else if (user) {
@@ -142,7 +143,7 @@ var common          = require('../../../../api/utils/common.js'),
                         }
                     } else {
                         if (count === 0 && !skip) {
-                            log.d('Aborting message because no users found');
+                            log.d('====== Aborting message because no users found');
                             pushly.abort(message);
                         } else if (count !== 0) {
                             log.d('====== Going to stream next batch starting from %j', skip);
@@ -172,7 +173,7 @@ var common          = require('../../../../api/utils/common.js'),
                                 $unset[field] = 1;
                                 unsetQuery[field] = {$in: unset};
                             });
-                            // console.log('Unsetting tokens in %j: %j / %j', 'app_users' + app, unsetQuery, {$unset: $unset});
+                            log.d('Unsetting tokens in %j: %j / %j', 'app_users' + app, unsetQuery, {$unset: $unset, $pull: {msgs: messageId(message)}});
                             common.db.collection('app_users' + app).update(unsetQuery, {$unset: $unset, $pull: {msgs: messageId(message)}}, function(){});
                         }
 

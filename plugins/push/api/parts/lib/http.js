@@ -203,7 +203,7 @@ HTTP.prototype.send = function (messageId, content, encoding, expiry, device, lo
 	} else if (this.initializationError) {
 		log.d('Attempt to send a message on not-initialized http connection');
 		this.handlerr([device, content, messageId, expiry], this.initializationError.code, this.initializationError.message, messageId);
-		return 0;
+		return -1;
 	}
 
 	if (typeof content === 'string' || (content.time_to_live && content.data)) {
@@ -215,14 +215,14 @@ HTTP.prototype.send = function (messageId, content, encoding, expiry, device, lo
 			content = content['default'];
 		} else {
 			this.handlerr([device, content, messageId], Err.MESSAGE, 'No default locale in localized message', messageId);
-			return;
+			return -1;
 		}
 	} else {
 		if (content['default']) {
 			content = content['default'];
 		} else {
 			this.handlerr([device, content, messageId], Err.MESSAGE, 'No locale provided for device when sending localized message', messageId);
-			return;
+			return -1;
 		}
 	}
 

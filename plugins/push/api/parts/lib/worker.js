@@ -78,7 +78,7 @@ PushlyWorker.prototype.connect = function(message, closeBeforeOpening) {
 		// Notification is sent (one or more tokens)
 		connection.on(SP.MESSAGE, function(conn, messageId, size){
             size = size || 1;
-			log.d('Batch sent for message %j: %d notifications', messageId, size);
+			// log.d('Batch sent for message %j: %d notifications', messageId, size);
 			if (messageId in this.messages) {
 				var msg = this.messages[messageId];
 
@@ -330,7 +330,7 @@ PushlyWorker.prototype.updateMessage = function(message, immediate, error) {
 		immediate = error.code !== Err.TOKEN;
 	}
 
-	log.d('Updating message %j in process %d: %j, %j, %j', message.id, process.pid, message.result, immediate, error);
+	// log.d('Updating message %j in process %d: %j, %j, %j', message.id, process.pid, message.result, immediate, error);
 
 	if (error) {
 		if (error.code & Err.IS_NON_RECOVERABLE) {
@@ -381,7 +381,7 @@ PushlyWorker.prototype.updateMessage = function(message, immediate, error) {
 		}
 		log.d('Updated message %j in process %d with master notification: %j, %j, %j', message.id, process.pid, message.result, immediate, error);
 	} else {
-		log.d('Updated message %j in process %d: %j, %j, %j (immediate %d, statusTimes %d)', message.id, process.pid, message.result, immediate, error, immediate, this.messagesStatusTimes[message.id] - (Date.now() - this.options.statusUpdatePeriod));
+		// log.d('Updated message %j in process %d: %j, %j, %j (immediate %d, statusTimes %d)', message.id, process.pid, message.result, immediate, error, immediate, this.messagesStatusTimes[message.id] - (Date.now() - this.options.statusUpdatePeriod));
 	}
 
 };

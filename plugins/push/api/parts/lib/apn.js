@@ -172,6 +172,15 @@ var APN = function(options, profiler, idx){
 		rejectUnauthorized: true,
 		endpointKey: this.options.gateway + ':' + this.certificate.id + ':' + idx
 	});
+
+	this.agent.once(this.options.gateway + ':' + this.certificate.id + ':' + idx, function(endpoint) {
+		endpoint.on('peerError', function() {
+			log.w('GOAWAY received:', arguments);
+		});
+		endpoint.on('error', function() {
+			log.w('ERROR received:', arguments);
+		});
+	});
 };
 util.inherits(APN, HTTP);
 

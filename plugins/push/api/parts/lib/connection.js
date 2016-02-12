@@ -57,8 +57,13 @@ var Connection = function(cluster, idx, credentials, profiler) {
 		}
 
 		if (cluster.connections.length === 0) {
-			log.d('No connections anymore, cluster closed');
-			cluster.emit(SP.CLOSED, cluster);
+			log.d('No connections in cluster, will closing it in %dms if no connections added');
+			setTimeout(function(){
+				if (cluster.connections.length === 0) {
+					log.d('No connections anymore, cluster closed');
+					cluster.emit(SP.CLOSED, cluster);
+				}
+			}, 2 * DEFAULTS.connectionTTL);
 		}
 	}.bind(this));
 };
@@ -70,7 +75,7 @@ Connection.prototype.send = function(messageId, content, encoding, expiry, devic
 	return ret;
 };
 
-Connection.prototype.add = function(notification){
+Connection.prototype.add = function(/*notification*/){
 	this.connection.add.apply(this.connection, arguments);
 };
 
@@ -275,7 +280,7 @@ Cluster.prototype.service = function() {
 		}
 
 		if (c.counter.count === 0) {
-			log.d('Connection %d is empty, closing');
+			log.d('Connection [%j:%j] is empty, closing', c.idx, this.credentials.id);
 			this.closeConnection(i);
 		}
 	}
@@ -400,8 +405,8 @@ Cluster.prototype.startMonitor = function(seconds) {
 			}
 			log.d('[%j:%j] left %d \t inflow %j (%d) ||| drain %j (%d)', c.idx, this.credentials.id, c.counter.count, c.inflow.value.toFixed(2), c.inflow.sum, c.drain.value.toFixed(2), c.drain.sum);
 		}
-		if (this.queue.length === 0) {
-			log.d('No more messages in queue, closing cluster');
+		if (this.queue.length === 0 && this.countAllConnections() === 0) {
+			log.d('No more messages in queue & connections, closing cluster after timeout');
 			this.close();
 		}
 		this.lastMonitored = Date.now();
