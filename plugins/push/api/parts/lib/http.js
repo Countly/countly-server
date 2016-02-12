@@ -242,23 +242,4 @@ HTTP.prototype.add = function (device, content, messageId, expiry) {
 	this.notifications.push([device, content, messageId, expiry]);
 };
 
-
-var FixedSizeDequeue = function(size){
-	this.size = size;
-	Dequeue.call(this);
-};
-FixedSizeDequeue.prototype = new Dequeue();
-FixedSizeDequeue.prototype.push = function(d) {
-	if (this.length >= this.size) {
-		Dequeue.prototype.shift.apply(this);
-	}
-	Dequeue.prototype.push.apply(this, [d]);
-};
-FixedSizeDequeue.prototype.unshift = function(d) {
-	if (this.length >= this.size) {
-		Dequeue.prototype.pop.apply(this);
-	}
-	Dequeue.prototype.unshift.apply(this, [d]);
-};
-
 module.exports = HTTP;
