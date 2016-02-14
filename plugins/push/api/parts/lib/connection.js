@@ -421,7 +421,7 @@ Cluster.prototype.startMonitor = function(seconds) {
 			var delay = Date.now() - now, i, c;
 			log.d('[loop]: %j', delay);
 
-			if (delay > DEFAULTS.eventLoopDelayToThrottleDown) {
+			if (delay > DEFAULTS.eventLoopDelayToThrottleDown && this.lastEventLoopDelay < delay) {
 				var time = Date.now() + DEFAULTS.eventLoopWait;
 				for (i = this.connections.length - 1; i >= 0; i--) {
 					c = this.connections[i];
@@ -439,7 +439,9 @@ Cluster.prototype.startMonitor = function(seconds) {
 					}
 				}
 			}
-		}); 
+
+			this.lastEventLoopDelay = delay;
+		}.bind(this)); 
 
 		if (!this.closed) {
 			if (this.monitoring) { 

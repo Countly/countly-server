@@ -9,7 +9,7 @@ var util = require('util'),
 	EVENTS = constants.SP,
 	log = require('../../../../../api/utils/log.js')('push:apn'),
 	LRU = require('lru-cache'),
-	http2 = require('http2'),
+	spdy = require('spdy'),
 	HTTP = require('./http.js'),
 	forge = require('node-forge');
 
@@ -164,23 +164,14 @@ var APN = function(options, profiler, idx){
 		return;
 	}
 
-	this.agent = new http2.Agent({
+	this.agent = new spdy.createAgent({
 		host: this.options.gateway,
 		port: this.options.port,
 		pfx: this.certificate.pfx,
 		passphrase: this.certificate.passphrase,
-		rejectUnauthorized: true,
-		endpointKey: this.options.gateway + ':' + this.certificate.id + ':' + idx
-	});
-
-	this.agent.setMaxListeners(20);
-	this.agent.once(this.options.gateway + ':' + this.certificate.id + ':' + idx, function(endpoint) {
-		endpoint.on('peerError', function() {
-			log.w('GOAWAY received:', arguments);
-		});
-		endpoint.on('error', function() {
-			log.w('ERROR received:', arguments);
-		});
+		spdy: {
+			protocols: ['h2']
+		}
 	});
 };
 util.inherits(APN, HTTP);
@@ -264,16 +255,19 @@ APN.prototype.request = function(note) {
 	}
 
 	var options = {
-		host: this.options.gateway,
+		hostname: this.options.gateway,
 		port: this.options.port,
 		method: 'POST',
 		headers: headers,
+		agent: this.agent,
 	};
 
 	devices.forEach(device => {
 		options.path = '/3/device/' + device;
-
-		var request = this.agent.request(options, (res) => {
+		delete options.agent;
+		log.d('sending %j', options);
+		options.agent = this.agent;
+		var request = require('https').request(options, (res) => {
 			var data = '';
 			res.on('data', d => {
 	            data += d;
@@ -294,7 +288,8 @@ APN.prototype.request = function(note) {
 	        });
 		});
 		request.on('error', this.onRequestError.bind(this, note, device));
-		request.end(content);
+		request.write(content);
+		request.end();
 	});
 };
 

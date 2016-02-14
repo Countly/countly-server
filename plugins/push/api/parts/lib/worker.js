@@ -391,9 +391,9 @@ PushlyWorker.prototype.updateMessage = function(message, immediate, error) {
  * Remove message from private variables after 20 seconds delay (some device tokens might be not processed yet
  * @api private
  */
-PushlyWorker.prototype.cleanupFromMessageId = function(messageId) {
+PushlyWorker.prototype.cleanupFromMessageId = function(messageId, immediate) {
 	if (!(messageId in this.cleanUps)) {
-    	log.d('Going to clean up message %j from worker %d in 20 seconds', messageId, process.pid);
+    	log.d('Going to clean up message %j from worker %d in %d seconds', messageId, process.pid, immediate ? 0 : 20);
 		this.cleanUps[messageId] = setTimeout(function(){
 			if (messageId in this.messages && !(this.messages[messageId].result.status & M.Status.Done)) {
 				log.d('Won\'t clean up message because it\'s not done yet');
@@ -407,7 +407,7 @@ PushlyWorker.prototype.cleanupFromMessageId = function(messageId) {
 		    		this.profiler.close();
 		    	}
 			}
-    	}.bind(this), 20000);
+    	}.bind(this), immediate ? 1 : 20000);
 	}
 };
 
