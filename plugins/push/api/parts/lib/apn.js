@@ -264,9 +264,7 @@ APN.prototype.request = function(note) {
 
 	devices.forEach(device => {
 		options.path = '/3/device/' + device;
-		delete options.agent;
-		log.d('sending %j', options);
-		options.agent = this.agent;
+
 		var request = require('https').request(options, (res) => {
 			var data = '';
 			res.on('data', d => {
