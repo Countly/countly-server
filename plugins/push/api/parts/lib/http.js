@@ -9,7 +9,7 @@ var util = require('util'),
 	Dequeue = require('dequeue'),
 	_ = require('underscore');
 
-var HTTP = function(options, logger){
+var HTTP = function(options, logger, loopSmoother){
 	log = logger;
 
 	this.options = options;
@@ -22,6 +22,8 @@ var HTTP = function(options, logger){
 	this.initialized = true;
 
 	this.notesInFlight = 0;
+
+	this.loopSmoother = loopSmoother;
 
 	EventEmitter.call(this);
 };
@@ -55,16 +57,14 @@ HTTP.prototype.service = function() {
 		return log.d('Already closed, doing nothing');
 	} else if (!this.initialized) {
 		return log.d('Not initialized, won\'t service');
-	} else if (this.freeingEventLoop) {
-		if (this.freeingEventLoop > Date.now()) {
-			return log.d('Freeing event loop, %dms left', this.freeingEventLoop - Date.now());
-		} else {
-			this.freeingEventLoop = undefined;
-		}
+	} else if (this.loopSmoother.value > this.options.eventLoopDelayToThrottleDown) {
+		this.throttledDown = true;
+		return log.d('Freeing event loop, %dms is more than %d', this.loopSmoother.value, this.options.eventLoopDelayToThrottleDown);
 	}
-	if (this.notifications.length && this.notesInFlight < this.options.transmitAtOnce) {
+	this.throttledDown = false;
+	if (this.notifications.length && this.notesInFlight < this.options.maxRequestsInFlight) {
 		var notification = this.notifications.shift(), merged = 1;
-		while (this.notifications.length > 0 && merged < this.options.transmitAtOnce) {
+		while (this.notifications.length > 0 && merged < this.options.transmitAtOnce && (merged + this.notesInFlight) < this.options.maxRequestsInFlight) {
 			var next = this.notifications.shift();
 			// log.d('next is %j, %j, %j', next[0], next[1], next[2]);
 			if (noteMessageId(notification) === noteMessageId(next) && _.isEqual(noteData(notification), noteData(next))) {

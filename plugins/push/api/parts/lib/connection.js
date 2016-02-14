@@ -95,6 +95,7 @@ var Cluster = function(credentials, profiler) {
 	this.idx = 0;
 	this.clusterInflow = new prof.RateSmoother(DEFAULTS.ratesSmoothingPeriod);
 	this.clusterDrain = new prof.RateSmoother(DEFAULTS.ratesSmoothingPeriod);
+	this.loop = new prof.ValueSmoother(0.1);
 	this.profiler = profiler;
 	this.queue = [];
 	// this.clusterInflow = stats.meter('clusterInflow');
@@ -419,28 +420,16 @@ Cluster.prototype.startMonitor = function(seconds) {
 		var now = Date.now();
 		setImmediate(function(){
 			var delay = Date.now() - now, i, c;
-			log.d('[loop]: %j', delay);
+			this.loop.push(delay);
+			log.d('[loop]: %j, %j', delay, this.loop.value);
 
-			if (delay > DEFAULTS.eventLoopDelayToThrottleDown && this.lastEventLoopDelay < delay) {
-				var time = Date.now() + DEFAULTS.eventLoopWait;
-				for (i = this.connections.length - 1; i >= 0; i--) {
-					c = this.connections[i];
-					if (!c.connection.freeingEventLoop) {
-						log.d('Connection %d will wait for %dms because loop is %d (more than %d)', c.idx, DEFAULTS.eventLoopWait, delay, DEFAULTS.eventLoopDelayToThrottleDown);
-						c.connection.freeingEventLoop = time;
-					}
-				}
-			} else {
-				for (i = this.connections.length - 1; i >= 0; i--) {
-					c = this.connections[i];
-					if (c.connection.freeingEventLoop < Date.now()) {
-						log.d('Resurrecting connection %d', c.idx);
-						c.connection.serviceImmediate();
-					}
+			for (i = this.connections.length - 1; i >= 0; i--) {
+				c = this.connections[i];
+				if (c.connection.throttledDown && c.connection.options.eventLoopDelayToThrottleDown < this.loop.value) {
+					log.d('[loop]: Resurrecting connection %d', c.idx);
+					c.connection.serviceImmediate();
 				}
 			}
-
-			this.lastEventLoopDelay = delay;
 		}.bind(this)); 
 
 		if (!this.closed) {

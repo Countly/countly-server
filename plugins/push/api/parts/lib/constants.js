@@ -75,8 +75,10 @@ exports = module.exports = {
 		maxImmediatePoolChange: 2,
 
 		apn: {
-			/** Send 10 or less requests each event loop (HTTP/2 streams) */
-			transmitAtOnce: 200,
+			/** Send 100 or less requests each event loop (HTTP/2 streams) */
+			transmitAtOnce: 100,
+			/** How much simultaneous requests can be in processing */
+			maxRequestsInFlight: 2000,
 			/** How much certificates to hold in memory instead of reading from file */
 			certificatesCache: 50,
 			/** Keep no more than 50000 messages per connection in memory. Whenever sending is slower than messages stream,
@@ -84,16 +86,22 @@ exports = module.exports = {
 			 * Keep this option high.
 			 */
 			queue: 50000,
+			/** Min event loop wait in ms smoothed at 10% (10 measurements) to skip processing in current loop */
+			eventLoopDelayToThrottleDown: 300,
 		},
 
 		gcm: {
 			/** How much GCM notifications to transmit in a batch for the same content */
 			transmitAtOnce: 50,
+			/** How much simultaneous requests can be in processing */
+			maxRequestsInFlight: 50,
 			/** Keep no more than 50000 messages per connection in memory. Whenever sending is slower than messages stream,
 			 * input stream will be throttled down (if using devicesQuery), or send method will just return false.
 			 * Keep this option high.
 			 */
 			queue: 50000,
+			/** Min event loop wait in ms smoothed at 10% (10 measurements) to skip processing in current loop */
+			eventLoopDelayToThrottleDown: 300,
 		},
 
 		/**
@@ -135,9 +143,5 @@ exports = module.exports = {
 		 */
 		ratesToLeftSeconds: 60, 				// 60 seconds or more to send queue with current rate -> grow
 		ratesToLeftWeight: 0.25, 				// weight of ratesToLeftSeconds as opposed to growth / shrink ratio, 0.25 means that rates to left is 3 times less important than growth / shrink ratio
-
-		eventLoopDelayToThrottleDown: 300,
-
-		eventLoopWait: 5000
 	},
 };

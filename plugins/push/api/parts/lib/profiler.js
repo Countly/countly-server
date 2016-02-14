@@ -106,7 +106,7 @@ var ProcessProfiler = function(checkPeriod) {
 
 	this.check = function() {
 		try {
-			ps(this.mid || process.pid, function (err, result) {
+			ps(process.pid, function (err, result) {
 				var now = Date.now();
 				setImmediate(function(){
 					this.loop.push(Date.now() - now);

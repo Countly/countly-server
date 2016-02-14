@@ -10,12 +10,12 @@ var util = require('util'),
 	log = require('../../../../../api/utils/log.js')('push:gcm'),
 	https = require('https');
 
-var GCM = function(options){
+var GCM = function(options, loopSmoother){
 	if (false === (this instanceof GCM)) {
         return new GCM(options);
     }
 
-	HTTP.call(this, merge({}, DEFAULTS.gcm, options), log);
+	HTTP.call(this, merge({}, DEFAULTS.gcm, options), log, loopSmoother);
 };
 util.inherits(GCM, HTTP);
 
@@ -110,13 +110,13 @@ GCM.prototype.onRequestDone = function(response, note, devices, data) {
  */
 GCM.prototype.request = function(note) {
 	var devices = this.noteDevice(note), content = this.noteData(note);
-    log.d('Constructing request with content %j for devices %j', content, devices);
 
     this.notesInFlight += devices.length;
 
     content.registration_ids = devices;
 	content = JSON.stringify(content);
-    log.d('Final content %j', content);
+
+    log.d('Requesting %d, total notesInFlight is %d', devices.length, this.notesInFlight);
 
 	var options = {
 		hostname: 'android.googleapis.com',

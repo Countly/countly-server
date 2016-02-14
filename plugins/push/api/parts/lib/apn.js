@@ -117,12 +117,12 @@ var readP12 = function(path, password) {
 
 var certificates;
 
-var APN = function(options, profiler, idx){
+var APN = function(options, loopSmoother, idx){
 	if (false === (this instanceof APN)) {
 		return new APN(options);
 	}
 
-	HTTP.call(this, merge({}, DEFAULTS.apn, options), log);
+	HTTP.call(this, merge({}, DEFAULTS.apn, options), log, loopSmoother);
 
 	if (!certificates) {
 		certificates = LRU({
