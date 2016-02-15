@@ -81,7 +81,7 @@ exports = module.exports = {
 			/** If adjusts, for how much tops (HTTP/2 streams) */
 			transmitAtOnceMaxAdjusted: 400,
 			/** How much simultaneous requests can be in processing */
-			maxRequestsInFlight: 999,
+			maxRequestsInFlight: 899,
 			/** How much certificates to hold in memory instead of reading from file */
 			certificatesCache: 50,
 			/** Keep no more than 50000 messages per connection in memory. Whenever sending is slower than messages stream,
