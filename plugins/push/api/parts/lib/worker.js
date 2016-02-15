@@ -144,7 +144,7 @@ PushlyWorker.prototype.connect = function(message, closeBeforeOpening) {
 
 PushlyWorker.prototype.checkQueue = function(immediate) {
 	log.d('Checking queue');
-	if (this.messages.length) {
+	if (this.messages.length < this.options.concurrentMessages) {
 		var next = this.queue.next();
 		if (next) {
 			this.start(next);

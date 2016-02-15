@@ -214,7 +214,7 @@ Cluster.prototype.service = function() {
 		this.measuring = this.measuring || this.clusterDrain.measure(DEFAULTS.ratesConnectionPoolCooldown * 2, function(oldRate){
 			var rate = this.clusterInflow.value / this.clusterDrain.value,
 				tota = this.connections.length - this.connectionsClosing,
-				diff = Math.min(Math.round(rate * tota), DEFAULTS.connectionsPerCredentials) - tota,
+				diff = Math.min(Math.round(rate * tota), this.connectionOptions.connectionsPerCredentials) - tota,
 				left = this.countAllConnections() / oldRate,
 				difc = diff, diffMax;
 
@@ -224,7 +224,7 @@ Cluster.prototype.service = function() {
 				log.d('------------ Old measured diff is %j', diff);
 				diff = Math.min(
 					Math.round((rate * (1 - DEFAULTS.ratesToLeftWeight) + left / DEFAULTS.ratesToLeftSeconds * DEFAULTS.ratesToLeftWeight)) * tota - tota, 
-					DEFAULTS.connectionsPerCredentials
+					this.connectionOptions.connectionsPerCredentials
 				);
 				log.d('------------ New measured diff is %j', diff);
 			}
@@ -247,7 +247,7 @@ Cluster.prototype.service = function() {
 					log.d('------------ Measured rate %d after changing pool size to %d', newRate, tota);
 
 					var rateRate = newRate / oldRate,
-						rateDiff = Math.min(Math.round(rateRate * tota), DEFAULTS.connectionsPerCredentials) - tota;
+						rateDiff = Math.min(Math.round(rateRate * tota), this.connectionOptions.connectionsPerCredentials) - tota;
 
 					log.d('------------ Rate diff is %d', rateDiff);
 

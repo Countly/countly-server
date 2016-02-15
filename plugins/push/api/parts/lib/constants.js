@@ -54,6 +54,8 @@ exports = module.exports = {
 		statusUpdatePeriod: 2000,
 		/** Maintain (do not close immediately after sending) no more than 50 connections per worker */
 		connections: 50,
+		/** No more 50 messages can be sent simultaneously */
+		concurrentMessages: 50,
 		/** How much devices is required to open up additional connection within a worker (but no more than connectionsPerCredentials).
 		 * 100 000 devices / 1000 = 100, but no more than 20 = 20 connections will be open when sending a message to 100 000 devices.
 		 */
