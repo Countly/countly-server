@@ -104,6 +104,7 @@ var Cluster = function(credentials, profiler) {
 	// this.clusterDrain.tick = this.clusterDrain.mark;
 	// this.clusterJson = stats.toJSON();
 	this.credentials = credentials;
+	this.connectionOptions = DEFAULTS[credentials.platform === M.Platform.APNS ? 'apn' : credentials.platform === M.Platform.GCM ? 'gcm' : undefined];
 	this.connections = [];
 	this.connectionsClosing = 0;
 	log.d('[0|%j]: New cluster', credentials.id);

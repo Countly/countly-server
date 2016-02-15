@@ -54,11 +54,6 @@ exports = module.exports = {
 		statusUpdatePeriod: 2000,
 		/** Maintain (do not close immediately after sending) no more than 50 connections per worker */
 		connections: 50,
-		/** Maintain (do not close immediately after sending) no more than 20 connections per worker per app.
-		 * This effectively means that no more than 20 messages per app are being sent at any point in time.
-		 * APNS part maintains 20 connections while GCM part sends 20 parallel requests with core keep-alive functionality.
-		 */
-		connectionsPerCredentials: 20,
 		/** How much devices is required to open up additional connection within a worker (but no more than connectionsPerCredentials).
 		 * 100 000 devices / 1000 = 100, but no more than 20 = 20 connections will be open when sending a message to 100 000 devices.
 		 */
@@ -75,6 +70,8 @@ exports = module.exports = {
 		maxImmediatePoolChange: 2,
 
 		apn: {
+			/** Maintain a signle connection per worker. */
+			connectionsPerCredentials: 1,
 			/** Send 100 or less requests each event loop (HTTP/2 streams) */
 			transmitAtOnce: 100,
 			/** Allow transmitAtOnce to change until eventLoopDelayToThrottleDown is met */
@@ -93,6 +90,9 @@ exports = module.exports = {
 		},
 
 		gcm: {
+			/** Maintain (do not close immediately after sending) no more than 20 connections.
+			 */
+			connectionsPerCredentials: 20,
 			/** How much GCM notifications to transmit in a batch for the same content */
 			transmitAtOnce: 50,
 			/** Allow transmitAtOnce to change until eventLoopDelayToThrottleDown is met */
