@@ -239,8 +239,9 @@ var common          = require('../../../../api/utils/common.js'),
                         result: m.result
                     }
                 };
-                if ((m.result.status & MessageStatus.Done) > 0) {
+                if ((m.result.status & MessageStatus.Done) > 0 && (m.result.status & MessageStatus.InProcessing) === 0) {
                     update.$set.sent = new Date();
+                    update.$set.result.status &= ~MessageStatus.InQueue;
                 }
 
                 common.db.collection('messages').update({_id: id, 'pushly.id': message.id}, update,function(){});
