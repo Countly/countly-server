@@ -27,40 +27,67 @@ var stats = {},
     
     stats.getUser = function (db, user, callback) {
 		countlyDb = db;
+        var apps;
+        
+        if(!user.global_admin){
+            apps = user.user_of || [];
+        }
+
         getTotalEvents(function(totalEvents) {
             getTotalMsgSent(function(totalMsgSent) {
                 getCrashGroups(function(totalCrashgroups) {
                     getAllPlatforms(function(platforms) {
-                        callback({
-                            "total-events": totalEvents,
-                            "total-msg-sent": totalMsgSent,
-                            "total-crash-groups": totalCrashgroups,
-                            "total-platforms": platforms
-                        });
-                    }, user.user_of || []);
-                }, user.user_of || []);
-            }, user.user_of || []);
-        }, user.user_of || []);
+                        getTotalUsers(function(userCount) {
+                            callback({
+                                "total-events": totalEvents,
+                                "total-msg-sent": totalMsgSent,
+                                "total-crash-groups": totalCrashgroups,
+                                "total-platforms": platforms,
+                                "total-users": userCount
+                            });
+                        }, apps);
+                    }, apps);
+                }, apps);
+            }, apps);
+        }, apps);
     };
 
-    function getTotalUsers(callback) {
-        countlyDb.collection("apps").find({}, {_id:1}).toArray(function (err, allApps) {
-			if(err || !allApps)
-				callback(0, 0);
-			else
-				async.map(allApps, getUserCountForApp, function (err, results) {
-					if (err)
-						callback(0, 0);
-	
-					var userCount = 0;
-	
-					for (var i = 0; i < results.length; i++) {
-						userCount += results[i];
-					}
-	
-					callback(userCount, allApps.length);
-				});
-        });
+    function getTotalUsers(callback, apps) {
+        if(typeof apps != "undefined"){
+            async.map(apps, function(app, callback){
+                getUserCountForApp({_id:app}, callback);
+            }, function (err, results) {
+                if (err)
+                    callback(0, 0);
+        
+                var userCount = 0;
+        
+                for (var i = 0; i < results.length; i++) {
+                    userCount += results[i];
+                }
+        
+                callback(userCount, apps.length);
+            });
+        }
+        else{
+            countlyDb.collection("apps").find({}, {_id:1}).toArray(function (err, allApps) {
+                if(err || !allApps)
+                    callback(0, 0);
+                else
+                    async.map(allApps, getUserCountForApp, function (err, results) {
+                        if (err)
+                            callback(0, 0);
+        
+                        var userCount = 0;
+        
+                        for (var i = 0; i < results.length; i++) {
+                            userCount += results[i];
+                        }
+        
+                        callback(userCount, allApps.length);
+                    });
+            });
+        }
     }
 
     function getTotalEvents(callback, apps) {
@@ -68,7 +95,8 @@ var stats = {},
         if(typeof apps != "undefined"){
             var inarray = [];
             for(var i = 0; i <  apps.length; i++){
-                inarray.push(countlyDb.ObjectID(apps[i]));
+                if(apps[i] && apps[i].length)
+                    inarray.push(countlyDb.ObjectID(apps[i]));
             }
             query._id = {$in:inarray};
         }
@@ -121,7 +149,8 @@ var stats = {},
         if(typeof apps != "undefined"){
             var inarray = [];
             for(var i = 0; i <  apps.length; i++){
-                inarray.push(countlyDb.ObjectID(apps[i]));
+                if(apps[i] && apps[i].length)
+                    inarray.push(countlyDb.ObjectID(apps[i]));
             }
             query.apps = {$in:inarray};
         }
