@@ -164,6 +164,7 @@ var APN = function(options, loopSmoother, idx){
 		return;
 	}
 
+	this.idx = idx;
 	this.agent = new spdy.createAgent({
 		host: this.options.gateway,
 		port: this.options.port,
@@ -173,6 +174,7 @@ var APN = function(options, loopSmoother, idx){
 			protocols: ['h2']
 		}
 	});
+	this.agent.setMaxListeners(0);
 };
 util.inherits(APN, HTTP);
 
@@ -243,7 +245,7 @@ APN.prototype.request = function(note) {
 
     this.notesInFlight += devices.length;
 
-    log.d('Requesting %d, total notesInFlight is %d', devices.length, this.notesInFlight);
+    log.d('%j: Requesting %d, total notesInFlight is %d', this.idx, devices.length, this.notesInFlight);
 
 	var headers = {
 		'apns-expiration': Math.floor(expiry.getTime() / 1000),

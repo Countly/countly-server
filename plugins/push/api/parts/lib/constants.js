@@ -77,6 +77,8 @@ exports = module.exports = {
 		apn: {
 			/** Send 100 or less requests each event loop (HTTP/2 streams) */
 			transmitAtOnce: 100,
+			/** Allow transmitAtOnce to change until eventLoopDelayToThrottleDown is met */
+			transmitAtOnceAdjusts: true,
 			/** How much simultaneous requests can be in processing */
 			maxRequestsInFlight: 2000,
 			/** How much certificates to hold in memory instead of reading from file */
@@ -93,6 +95,8 @@ exports = module.exports = {
 		gcm: {
 			/** How much GCM notifications to transmit in a batch for the same content */
 			transmitAtOnce: 50,
+			/** Allow transmitAtOnce to change until eventLoopDelayToThrottleDown is met */
+			transmitAtOnceAdjusts: false,
 			/** How much simultaneous requests can be in processing */
 			maxRequestsInFlight: 50,
 			/** Keep no more than 50000 messages per connection in memory. Whenever sending is slower than messages stream,

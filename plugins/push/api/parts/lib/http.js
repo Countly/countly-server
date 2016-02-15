@@ -25,6 +25,8 @@ var HTTP = function(options, logger, loopSmoother){
 
 	this.loopSmoother = loopSmoother;
 
+	this.currentTransmitAtOnce = this.options.transmitAtOnce;
+
 	EventEmitter.call(this);
 };
 util.inherits(HTTP, EventEmitter);
@@ -64,7 +66,7 @@ HTTP.prototype.service = function() {
 	this.throttledDown = false;
 	if (this.notifications.length && this.notesInFlight < this.options.maxRequestsInFlight) {
 		var notification = this.notifications.shift(), merged = 1;
-		while (this.notifications.length > 0 && merged < this.options.transmitAtOnce && (merged + this.notesInFlight) < this.options.maxRequestsInFlight) {
+		while (this.notifications.length > 0 && merged < this.currentTransmitAtOnce && (merged + this.notesInFlight) < this.options.maxRequestsInFlight) {
 			var next = this.notifications.shift();
 			// log.d('next is %j, %j, %j', next[0], next[1], next[2]);
 			if (noteMessageId(notification) === noteMessageId(next) && _.isEqual(noteData(notification), noteData(next))) {

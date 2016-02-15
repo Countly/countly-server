@@ -421,13 +421,26 @@ Cluster.prototype.startMonitor = function(seconds) {
 		setImmediate(function(){
 			var delay = Date.now() - now, i, c;
 			this.loop.push(delay);
-			log.d('[loop]: %j, %j', delay, this.loop.value);
+			log.d('[loop]: %j, %j', delay, Math.round(this.loop.value));
 
 			for (i = this.connections.length - 1; i >= 0; i--) {
 				c = this.connections[i];
 				if (c.connection.throttledDown && c.connection.options.eventLoopDelayToThrottleDown < this.loop.value) {
 					log.d('[loop]: Resurrecting connection %d', c.idx);
 					c.connection.serviceImmediate();
+				} else if (c.connection.options.transmitAtOnceAdjusts && c.connection.nextTransmitAtOnceAdjust < Date.now()) {
+					
+					if (!c.connection.throttledDown && c.connection.options.eventLoopDelayToThrottleDown * 0.8 > this.loop.value) {
+						// send more messages at once, loop is underloaded
+						c.connection.nextTransmitAtOnceAdjust = Date.now() + 10 * 1000;	// full loop smothing period 
+						c.connection.currentTransmitAtOnce = c.connection.currentTransmitAtOnce * 1.1;
+						log.d('[loop]: +++ increasing batch size to %d', c.connection.currentTransmitAtOnce);
+					} else if (c.connection.options.eventLoopDelayToThrottleDown * 1.2 > this.loop.value) {
+						// send less messages at once, loop is over
+						c.connection.nextTransmitAtOnceAdjust = Date.now() + 10 * 1000;	// full loop smothing period 
+						c.connection.currentTransmitAtOnce = c.connection.currentTransmitAtOnce * 0.9;
+						log.d('[loop]: --- decreasing batch size to %d', c.connection.currentTransmitAtOnce);
+					}
 				}
 			}
 		}.bind(this)); 
