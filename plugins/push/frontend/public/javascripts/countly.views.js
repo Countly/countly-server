@@ -1307,7 +1307,7 @@ app.addPageScript("/drill", function(){
     }
 });
 
-app.addPageScript("/users/#", function(){
+app.addPageScript("/users#", function(){
     if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "mobile"){
         //check if it is profile view
         if(app.activeView.updateEngagement){
