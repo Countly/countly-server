@@ -79,7 +79,7 @@ exports = module.exports = {
 			/** Allow transmitAtOnce to change until eventLoopDelayToThrottleDown is met */
 			transmitAtOnceAdjusts: true,
 			/** How much simultaneous requests can be in processing */
-			maxRequestsInFlight: 2000,
+			maxRequestsInFlight: 999,
 			/** How much certificates to hold in memory instead of reading from file */
 			certificatesCache: 50,
 			/** Keep no more than 50000 messages per connection in memory. Whenever sending is slower than messages stream,
