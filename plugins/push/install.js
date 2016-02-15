@@ -15,7 +15,7 @@ fs.mkdir(dir+'/../../frontend/express/certificates', function(){});
 console.log('Adding messages indexes');
 db.collection('messages').ensureIndex({'apps': 1, deleted: 1}, function(){
 	
-	console.log('Adding token indexes');
+	console.log('Adding token indexes... It can take a few minutes.');
 	db.collection('apps').find({}).toArray(function(err, apps){
 		if (err || !apps) {
 			return db.close();
