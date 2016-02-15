@@ -428,7 +428,7 @@ Cluster.prototype.startMonitor = function(seconds) {
 				if (c.connection.throttledDown && c.connection.options.eventLoopDelayToThrottleDown < this.loop.value) {
 					log.d('[loop]: Resurrecting connection %d', c.idx);
 					c.connection.serviceImmediate();
-				} else if (c.connection.options.transmitAtOnceAdjusts && c.connection.nextTransmitAtOnceAdjust < Date.now()) {
+				} else if (c.connection.options.transmitAtOnceAdjusts && (!c.connection.nextTransmitAtOnceAdjust || c.connection.nextTransmitAtOnceAdjust < Date.now())) {
 					
 					if (!c.connection.throttledDown && c.connection.options.eventLoopDelayToThrottleDown * 0.8 > this.loop.value) {
 						// send more messages at once, loop is underloaded

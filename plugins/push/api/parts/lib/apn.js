@@ -245,7 +245,7 @@ APN.prototype.request = function(note) {
 
     this.notesInFlight += devices.length;
 
-    log.d('%j: Requesting %d, total notesInFlight is %d', this.idx, devices.length, this.notesInFlight);
+    log.d('%j: Requesting %d, total notesInFlight is %d out of %d', this.idx, devices.length, this.notesInFlight, this.currentTransmitAtOnce);
 
 	var headers = {
 		'apns-expiration': Math.floor(expiry.getTime() / 1000),

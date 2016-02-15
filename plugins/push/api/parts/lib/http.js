@@ -146,11 +146,9 @@ HTTP.prototype.onRequestError = function(note, err) {
  * Stop accepting new messages and close socket whenever all are sent
  */
 HTTP.prototype.close = function (clb) {
-	if (this.closed) {
-		return clb ? clb() : undefined;
-	}
 	this.closed = true;
-	if (!closeAttempts) {
+	
+	if (!this.closeAttempts) {
 		this.waitAndClose(clb);
 	}
 };
