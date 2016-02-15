@@ -434,7 +434,7 @@ Cluster.prototype.startMonitor = function(seconds) {
 					if (!c.connection.throttledDown && c.connection.options.eventLoopDelayToThrottleDown * 0.8 > this.loop.value && this.canGrow()) {
 						// send more messages at once, loop is underloaded
 						c.connection.nextTransmitAtOnceAdjust = Date.now() + 10 * 1000;	// full loop smothing period 
-						c.connection.currentTransmitAtOnce = Math.floor(Math.min(c.connection.currentTransmitAtOnce * 1.1, c.connection.options.maxRequestsInFlight / 2));
+						c.connection.currentTransmitAtOnce = Math.floor(Math.min(c.connection.currentTransmitAtOnce * 1.1, c.connection.options.transmitAtOnceMaxAdjusted));
 						log.d('[loop]: +++ increasing batch size to %d', c.connection.currentTransmitAtOnce);
 					} else if (c.connection.options.eventLoopDelayToThrottleDown * 1.2 > this.loop.value) {
 						// send less messages at once, loop is over
