@@ -1321,21 +1321,21 @@ app.addPageScript("/users#", function(){
                 test = !!userDetails.tk.id || !!userDetails.tk.ia || !!userDetails.tk.at;
                 prod = !!userDetails.tk.ip || !!userDetails.tk.ap;
             }
-            if (platforms.length) {
-                if (!$('.btn-create-message').length) {
-                    $('.widget-header .left').append($('<a class="icon-button green btn-header left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
-                }
-                $('.btn-create-message').show().off('click').on('click', function(){
+            if (!$('.btn-create-message').length) {
+                $('.widget-header .left').append($('<a class="icon-button green btn-header left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
+            }
+            $('.btn-create-message').show().off('click').on('click', function(){
+                if (platforms.length) {
                     PushPopup({
                         platforms: platforms,
                         apps: [countlyCommon.ACTIVE_APP_ID],
                         test: test && !prod,
                         conditions: {_id: app.userdetailsView.user_id}
                     }, true, true);
-                });
-            } else {
-                $('.btn-create-message').hide();
-            }
+                } else {
+                    CountlyHelpers.alert(jQuery.i18n.map["push.no-user-token"], "red");
+                }
+            });
         }
         else{
             //list view
