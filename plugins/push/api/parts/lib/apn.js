@@ -174,6 +174,10 @@ var APN = function(options, loopSmoother, idx){
 			protocols: ['h2']
 		}
 	});
+	this.agent.once('error', function(err){
+		log.w('!!!!!!!!!!!!!!!!!! APN connection error: %j', arguments);
+		this.emit(EVENTS.ERROR, new Err(Err.CONNECTION, err));
+	}.bind(this));
 	this.agent.setMaxListeners(0);
 };
 util.inherits(APN, HTTP);
