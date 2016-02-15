@@ -150,12 +150,14 @@ HTTP.prototype.close = function (clb) {
 		return clb ? clb() : undefined;
 	}
 	this.closed = true;
-	this.waitAndClose(clb);
+	if (!closeAttempts) {
+		this.waitAndClose(clb);
+	}
 };
 
 HTTP.prototype.waitAndClose = function(clb) {
 	if (this.notesInFlight <= 0 || this.closeAttempts > 30) {
-		log.d('Finally closing this connection (%d notes in flight)', this.notesInFlight);
+		log.d('Finally closing this connection (%d notes in flight, %d in queue)', this.notesInFlight, this.notifications.length);
 		if (this.socket) {
 			this.socket.emit('agentRemove');
 		}
@@ -180,9 +182,9 @@ HTTP.prototype.waitAndClose = function(clb) {
 		}
 		this.emit(EVENTS.CLOSED);
 	} else {
-		log.d('Not emiting closed event yet - %d notes are in flight', this.notesInFlight);
+		log.d('Not emiting closed event yet - %d notes are in flight, %d in queue', this.notesInFlight, this.notifications.length);
 		this.closeAttempts = this.closeAttempts ? ++this.closeAttempts : 1;
-		setTimeout(this.waitAndClose.bind(this), 1000);
+		setTimeout(this.waitAndClose.bind(this, clb), 1000);
 	}
 };
 
