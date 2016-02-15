@@ -1058,7 +1058,7 @@
 			<div id="geo-chart-outer" style="padding-bottom: 8px;"><div><div id="geo-chart"></div></div></div>
 		</div>
 	</script>
-    <% if (!use_google) { %>
+    <% if (use_google) { %>
 	<script language="javascript" type="text/javascript" src="https://www.google.com/jsapi"></script>
     <% } %>
     <% if (production) { %>
