@@ -27,7 +27,6 @@ GCM.prototype.onRequestDone = function(response, note, devices, data) {
 
     this.notesInFlight -= this.noteDevice(note).length;
 
-    this.emit(EVENTS.MESSAGE, this.noteMessageId(note), this.noteDevice(note).length);
 	if (code >= 500) {
         log.w('GCM Unavailable', code, data);
 		this.handlerr(note, Err.CONNECTION, 'GCM Unavailable');
@@ -41,6 +40,8 @@ GCM.prototype.onRequestDone = function(response, note, devices, data) {
 		this.handlerr(note, Err.CONNECTION, 'GCM Bad response code ' + code);
     } else {
     	try {
+            this.emit(EVENTS.MESSAGE, this.noteMessageId(note), this.noteDevice(note).length);
+            
             var obj = JSON.parse(data);
             if (obj.failure === 0 && obj.canonical_ids === 0) {
                 // this.emit(EVENTS.MESSAGE, noteMessageId(note), noteDevice(note).length);

@@ -105,7 +105,7 @@ HTTP.prototype.handlerr = function (note, code, name, messageId, deviceTokens, c
 		this.serviceImmediate();
 	} else if (code & Err.IS_NON_RECOVERABLE) {
 		log.d('Handling error code %d (non-recoverable), name %j for note %j, message ID %j, device token %j, credentialsId %j', code, name, note, messageId, deviceTokens, credentialsId);
-		this.emit(EVENTS.ERROR, err);
+		this.notifications.unshift(note);
 		while (this.notifications.length) {
 			notification = this.notifications.shift();
 			if (noteMessageId(notification) !== id) {

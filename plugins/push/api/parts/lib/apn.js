@@ -76,10 +76,10 @@ var readP12 = function(path, password) {
 
 				var topics = safeBag.cert.getExtension({id: '1.2.840.113635.100.6.3.6'});
 				if (topics) {
-					topics = topics.value.replace(/0[\x00-\x1f]/gi, '')
+					topics = topics.value.replace(/0[\x00-\x1f\(\)!]/gi, '')
 										.replace('\f\f', '\f')
 										.split('\f')
-										.map(s => s.replace(/[\x00-\x1f]/gi, '').trim());
+										.map(s => s.replace(/[\x00-\x1f\(\)!]/gi, '').trim());
 					topics.shift();
 
 					for (var i = 0; i < topics.length; i++) {
@@ -200,8 +200,6 @@ APN.prototype.onRequestDone = function(response, note, device, data) {
 		reason = (data && data.reason ? data.reason : undefined) || (response && response.headers && response.headers.reason ? response.headers.reason : undefined),
 		combined = ((code || '') + ' ' + (reason || '')).trim();
 
-	this.emit(EVENTS.MESSAGE, this.noteMessageId(note), 1);
-
 	if (code >= 500) {
 		log.w('APN unavailable', code, response.headers, data);
 		this.handlerr(note, Err.CONNECTION, code + ': Service unavailable');
@@ -222,6 +220,7 @@ APN.prototype.onRequestDone = function(response, note, device, data) {
 		log.w('Received unexpected response from APN: %j / %j, %j / %j', code, reason, response.headers, data);
 		this.handlerr(note, APN_ERRORS[reason] || Err.ILLEGAL_STATE, 'Bad response ' + combined);
 	} else {
+		this.emit(EVENTS.MESSAGE, this.noteMessageId(note), 1);
 		this.serviceImmediate();
 	}
 };

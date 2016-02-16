@@ -3,6 +3,7 @@
 var util = require('util'),
 	EventEmitter = require('events').EventEmitter,
 	M = require('./message.js'),
+	Err = require('./error.js'),
 	prof = require('./profiler.js'),
 	constants = require('./constants'),
 	SP = constants.SP,
