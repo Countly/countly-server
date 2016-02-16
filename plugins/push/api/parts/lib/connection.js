@@ -28,7 +28,7 @@ var Connection = function(cluster, idx, credentials, profiler) {
 	// this.inflow.tick = this.inflow.mark;
 	// this.drain.tick = this.drain.mark;
 
-	this.connection = new platforms[credentials.platform](credentials, profiler, idx);
+	this.connection = new platforms[credentials.platform](credentials, cluster.loop, idx);
 
 	// Notification is sent (one or more tokens)
 	this.connection.on(SP.MESSAGE, function(messageId, size){
