@@ -123,9 +123,10 @@
 
     countlyLocation.getCountryName = function (cc) {
         var countryName = _countryMap[cc.toUpperCase()];
-
         if (countryName) {
             return countryName;
+        } else if(cc.toUpperCase() == "EU") {
+            return jQuery.i18n.map["common.eu"] || "European Union";
         } else {
             return jQuery.i18n.map["common.unknown"] || "Unknown";
         }

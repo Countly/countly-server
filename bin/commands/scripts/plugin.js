@@ -30,7 +30,12 @@ if(myArgs[0] == "enable" && myArgs[1]){
     }
 }
 else if(myArgs[0] == "upgrade" && myArgs[1]){
-    manager.installPlugin(myArgs[1]);
+    if(plugins.indexOf(myArgs[1]) > -1){
+        manager.installPlugin(myArgs[1]);
+    }
+    else{
+        console.log("Plugin is not installed");
+    }
 }
 else if(myArgs[0] == "disable" && myArgs[1]){
     if(plugins.indexOf(myArgs[1]) > -1){
