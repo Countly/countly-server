@@ -48,6 +48,10 @@ apt-get install -y build-essential libkrb5-dev
 #install new node.js
 apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
 
+# rewrite nginx config
+cp $DIR/config/nginx.server.conf /etc/nginx/sites-enabled/default
+/etc/init.d/nginx reload
+
 #install new mongodb
 #apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
 
