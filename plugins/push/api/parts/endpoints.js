@@ -554,15 +554,12 @@ var common          = require('../../../../api/utils/common.js'),
                     if (err) {
                         callback(err);
                     } else {
-                                log.d('All', all);
                         var TOTALLY = {TOTALLY: 0};
                         for (var i in all) {
                             var res = all[i], field = common.dbUserMap.tokens + '.' + res.field;
-                                log.d('All', i, res);
                             TOTALLY[field] = res.results;
                             TOTALLY.TOTALLY += res.results;
                         }
-                                log.d('Done', TOTALLY);
                         callback(null, TOTALLY);
                     }
                 });

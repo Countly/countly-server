@@ -330,7 +330,7 @@ PushlyWorker.prototype.updateMessage = function(message, immediate, error) {
 		immediate = error.code !== Err.TOKEN;
 	}
 
-	log.d('Updating message %j in process %d: %j, %j, %j', message.id, process.pid, message.result, immediate, error);
+	// log.d('Updating message %j in process %d: %j, %j, %j', message.id, process.pid, message.result, immediate, error);
 
 	if (error) {
 		if (error.code & Err.IS_NON_RECOVERABLE) {
