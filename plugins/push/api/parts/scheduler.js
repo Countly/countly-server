@@ -32,6 +32,8 @@ var check = function() {
                         pushly.push(msg);
                     }
                 );
+            } else {
+                log.d('Won\'t add pushly message for %j with creds %j & query %j: %j / %j', message, creds, query, err, count);
             }
         });
     }
@@ -80,7 +82,7 @@ var check = function() {
 
                                     var field = creds.id.split('.')[0],
                                         match = _.extend({}, conditions);
-                                    match[common.dbUserMap.tokens + '.' + field] = {$exists: true};
+                                    match[common.dbUserMap.tokens] = true;
 
                                     // count first to prevent no users errors within some of app-platform combinations
                                     // of the message which will turn message status to error
