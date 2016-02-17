@@ -45,6 +45,11 @@ var Connection = function(cluster, idx, credentials, profiler) {
 		log.d('Connection error %j', arguments);
 		this.lastEvent = Date.now();
 		cluster.emit(SP.ERROR, this, error);
+
+		if (error.code & Err.IS_NON_RECOVERABLE) {
+			log.d('Non-recoverable error at connection level, closing %j', this.idx);
+			cluster.closeConnection(this.idx);
+		}
 	}.bind(this));
 
 	this.connection.on(SP.CLOSED, function(){
@@ -123,6 +128,7 @@ Cluster.prototype.close = function(){
 					this.emit(SP.CLOSED, this);
 				}
 			}.bind(this), 2 * DEFAULTS.eventTTL);
+			this.profiler.close();
 		}
 	} else if (this.closing) {
 		clearTimeout(this.closing);
@@ -157,6 +163,9 @@ Cluster.prototype.grow = function(){
 	log.d('[0|%j] Growing pool to %j connections', this.credentials.id, this.connections.length + 1);
 	this.connections.push(new Connection(this, this.idx++, this.credentials, this.profiler));
 	this.connectionsLastChanged = Date.now();
+	if (this.profiler.closed) {
+		this.profiler.open();
+	}
 	return this.connections[this.connections.length - 1];
 };
 

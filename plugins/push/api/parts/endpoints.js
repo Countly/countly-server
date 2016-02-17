@@ -144,7 +144,7 @@ var common          = require('../../../../api/utils/common.js'),
                         skip = user._id;
                         ids.push(user._id);
 
-                        if (callback(common.dot(user, field), user[common.dbUserMap.lang]) === 'such no power much sad') {
+                        if (callback(['' + user._id, common.dot(user, field)], user[common.dbUserMap.lang]) === 'such no power much sad') {
                             log.d('====== Much sad, trying again in a second starting from %j', skip);
                             skipping = true;
                             setTimeout(api.pushlyCallbacks.stream.bind(api.pushlyCallbacks, message, query, callback, ask, skip), 1000);
@@ -156,7 +156,7 @@ var common          = require('../../../../api/utils/common.js'),
                         } else if (count !== 0) {
                             log.d('====== Going to stream next batch starting from %j', skip);
                             api.pushlyCallbacks.stream(message, query, callback, ask, skip);
-                            // common.db.collection('app_users' + query.appId).update({_id: {$in: ids}}, {$push: {msgs: messageId(message)}}, {multi: true}, function(){});
+                            common.db.collection('app_users' + query.appId).update({_id: {$in: ids}}, {$push: {msgs: messageId(message)}}, {multi: true}, function(){});
                         }
                     }
                 });
@@ -172,18 +172,14 @@ var common          = require('../../../../api/utils/common.js'),
                             if (token.good) {
                                 update.push(token);
                             } else {
-                                unset.push(token.bad);
+                                unset.push(token.bad[0]);
                             }
                         }
 
                         if (unset.length) {
+                            unsetQuery = unset.length === 1 ? {_id: unset[0]} : {_id: {$in: unset}};
                             fields.forEach(function(field){
                                 $unset[field] = 1;
-                                if (unset.length > 1) {
-                                    unsetQuery[field] = {$in: unset};
-                                } else {
-                                    unsetQuery[field] = unset[0];
-                                }
                             });
                             log.d('Unsetting tokens in %j: %j / %j', 'app_users' + app, unsetQuery, {$unset: $unset, $pull: {msgs: messageId(message)}});
                             common.db.collection('app_users' + app).update(unsetQuery, {$unset: $unset, $pull: {msgs: messageId(message)}}, function(){});
@@ -192,7 +188,7 @@ var common          = require('../../../../api/utils/common.js'),
                         for (i = update.length - 1; i >= 0; i--) for (var f = fields.length - 1; f >= 0; f--) {
                             var field = fields[f], upd = update[i], query = {}, set = {};
 
-                            query[field] = upd.bad;
+                            query._id = upd.bad[0];
                             set[field] = upd.good;
                             common.db.collection('app_users' + app).update(query, {$set: set},function(){});
                         }
@@ -557,12 +553,15 @@ var common          = require('../../../../api/utils/common.js'),
                     if (err) {
                         callback(err);
                     } else {
+                                log.d('All', all);
                         var TOTALLY = {TOTALLY: 0};
                         for (var i in all) {
                             var res = all[i], field = common.dbUserMap.tokens + '.' + res.field;
+                                log.d('All', i, res);
                             TOTALLY[field] = res.results;
                             TOTALLY.TOTALLY += res.results;
                         }
+                                log.d('Done', TOTALLY);
                         callback(null, TOTALLY);
                     }
                 });

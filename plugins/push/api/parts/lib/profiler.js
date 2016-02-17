@@ -19,7 +19,7 @@ var ValueSmoother = function(initialFactor, factorEasing) {
 
 	this.push = function(val) {
 		if (!this.count) {
-			this.value = val;
+			this.value = 1.0 * val;
 		} else {
 			var f = this.easedFactor();
 			if (!isFinite((1.0 - f) * this.value + f * val)) {

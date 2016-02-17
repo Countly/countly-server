@@ -55,6 +55,7 @@ HTTP.prototype.serviceImmediate = function() {
  */
 HTTP.prototype.service = function() {
 	// Socket is ready to go, send notification
+	log.d('Smoother %d, max %d', this.loopSmoother.value, this.options.eventLoopDelayToThrottleDown);
 	if (this.closed ) {
 		return log.d('Already closed, doing nothing');
 	} else if (!this.initialized) {
@@ -66,11 +67,15 @@ HTTP.prototype.service = function() {
 	this.throttledDown = false;
 	if (this.notifications.length && this.notesInFlight < this.options.maxRequestsInFlight) {
 		var notification = this.notifications.shift(), merged = 1;
+		// log.d('Notification 1 %j', notification);
+		if (typeof noteDevice(notification)[0] === 'string') {
+			notification[0] = [notification[0]];
+		}
+		// log.d('Notification 2 %j', notification);
 		while (this.notifications.length > 0 && merged < this.currentTransmitAtOnce && (merged + this.notesInFlight) < this.options.maxRequestsInFlight) {
 			var next = this.notifications.shift();
-			// log.d('next is %j, %j, %j', next[0], next[1], next[2]);
 			if (noteMessageId(notification) === noteMessageId(next) && _.isEqual(noteData(notification), noteData(next))) {
-				// log.d('merging');
+				// log.d('merging', next);
 				for (var i = 0; i < noteDevice(next).length; i++) {
 					merged++;
 					noteDevice(notification).push(noteDevice(next)[i]);
@@ -83,6 +88,7 @@ HTTP.prototype.service = function() {
 		// if (merged > 1) {
 			// log.d('merged %d, %d left to send', merged, this.notifications.length);
 		// }
+		// log.d('Notification 3 %j', notification);
 		this.request(notification);
 	}
 };
@@ -155,30 +161,35 @@ HTTP.prototype.close = function (clb) {
 
 HTTP.prototype.waitAndClose = function(clb) {
 	if (this.notesInFlight <= 0 || this.closeAttempts > 30) {
-		log.d('Finally closing this connection (%d notes in flight, %d in queue)', this.notesInFlight, this.notifications.length);
-		if (this.socket) {
-			this.socket.emit('agentRemove');
-		}
-		if (this.agent && this.agent.destroy) {
-			this.agent.destroy();
-		} else if (this.agent && this.agent.endpoints) {
-			for (var k in this.agent.endpoints) {
-				if (this.agent.endpoints[k]) {
-					log.d('Closing endpoint %j', k);
-					this.agent.endpoints[k].close();
-					delete this.agent.endpoints[k];
+		this.closeAttempts = 100;
+		
+		log.d('Wating 10 seconds before closing connection (%d notes in flight, %d in queue)', this.notesInFlight, this.notifications.length);
+		setTimeout(() => {
+			log.d('Finally closing this connection (%d notes in flight, %d in queue)', this.notesInFlight, this.notifications.length);
+			if (this.socket) {
+				this.socket.emit('agentRemove');
+			}
+			if (this.agent && this.agent.destroy) {
+				this.agent.destroy();
+			} else if (this.agent && this.agent.endpoints) {
+				for (var k in this.agent.endpoints) {
+					if (this.agent.endpoints[k]) {
+						log.d('Closing endpoint %j', k);
+						this.agent.endpoints[k].close();
+						delete this.agent.endpoints[k];
+					}
 				}
 			}
-		}
 
-		if (clb) {
-			var arr = [];
-			while (this.notifications.length) {
-				arr.push(this.notifications.shift());
+			if (clb) {
+				var arr = [];
+				while (this.notifications.length) {
+					arr.push(this.notifications.shift());
+				}
+				setTimeout(clb.bind(null, arr.length ? arr : undefined), 10);
 			}
-			setTimeout(clb.bind(null, arr.length ? arr : undefined), 10);
-		}
-		this.emit(EVENTS.CLOSED);
+			this.emit(EVENTS.CLOSED);
+		}, 10000);
 	} else {
 		log.d('Not emiting closed event yet - %d notes are in flight, %d in queue', this.notesInFlight, this.notifications.length);
 		this.closeAttempts = this.closeAttempts ? ++this.closeAttempts : 1;
@@ -246,11 +257,7 @@ HTTP.prototype.send = function (messageId, content, encoding, expiry, device, lo
 		}
 	}
 
-  	if (!util.isArray(device)) {
-		device = [device];
-	}
-	
-	this.add(device, content, messageId, expiry);
+	this.add([device], content, messageId, expiry);
 
 	this.serviceImmediate();
 

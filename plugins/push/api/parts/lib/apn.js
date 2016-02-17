@@ -177,6 +177,7 @@ var APN = function(options, loopSmoother, idx){
 	this.agent.once('error', function(err){
 		log.w('!!!!!!!!!!!!!!!!!! APN connection error: %j', arguments);
 		this.emit(EVENTS.ERROR, new Err(Err.CONNECTION, err));
+		this.agent.destroy();
 	}.bind(this));
 	this.agent.setMaxListeners(0);
 };
@@ -195,6 +196,8 @@ APN.prototype.onRequestDone = function(response, note, device, data) {
 			log.d('error while parsing data %j: ', data); 
 		}
 	}
+
+	this.emit(EVENTS.MESSAGE, this.noteMessageId(note), 1);
 
 	var code = response.statusCode,
 		reason = (data && data.reason ? data.reason : undefined) || (response && response.headers && response.headers.reason ? response.headers.reason : undefined),
@@ -220,7 +223,6 @@ APN.prototype.onRequestDone = function(response, note, device, data) {
 		log.w('Received unexpected response from APN: %j / %j, %j / %j', code, reason, response.headers, data);
 		this.handlerr(note, APN_ERRORS[reason] || Err.ILLEGAL_STATE, 'Bad response ' + combined);
 	} else {
-		this.emit(EVENTS.MESSAGE, this.noteMessageId(note), 1);
 		this.serviceImmediate();
 	}
 };
@@ -268,7 +270,7 @@ APN.prototype.request = function(note) {
 	};
 
 	devices.forEach(device => {
-		options.path = '/3/device/' + device;
+		options.path = '/3/device/' + device[1];
 
 		var request = require('https').request(options, (res) => {
 			var data = '';
