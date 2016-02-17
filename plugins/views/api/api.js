@@ -315,8 +315,13 @@ var plugin = {},
         common.fillTimeObjectZero(params, tmpTimeObjZero, zeroObjUpdate);
         common.fillTimeObjectMonth(params, tmpTimeObjMonth, monthObjUpdate, 1, true);
         
-        if(currEvent.dur){
-            common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + '.' + common.dbMap['duration'], currEvent.dur, true);
+        if(currEvent.dur || currEvent.segmentation.dur){
+            var dur = 0;
+            if(currEvent.dur)
+                dur = currEvent.dur;
+            else if(currEvent.segmentation.dur)
+                dur = currEvent.segmentation.dur;
+            common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + '.' + common.dbMap['duration'], dur, true);
         }
         
         if(typeof currEvent.segmentation.segment != "undefined"){
