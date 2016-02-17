@@ -539,14 +539,13 @@ var common          = require('../../../../api/utils/common.js'),
                     credentials.forEach(function(creds){
                         counters.push(function(clb){
                             var field = creds.id.split('.')[0],
-                                match = {$match: {}},
-                                group = {$group: {_id: '$' + common.dbUserMap.lang, count: {$sum: 1}}};
-                            match.$match[common.dbUserMap.tokens + '.' + field] = {$exists: true};
+                                query = {};
+                            query[common.dbUserMap.tokens + field] = true;
                             for (var k in msg.conditions) {
-                                match.$match[k] = msg.conditions[k];
+                                query[k] = msg.conditions[k];
                             }
 
-                            common.db.collection('app_users' + app._id).aggregate([match, group], function(err, results){
+                            common.db.collection('app_users' + app._id).count(query, function(err, results){
                                 clb(err, {field: field, results: results});
                             });
                         });
@@ -561,18 +560,8 @@ var common          = require('../../../../api/utils/common.js'),
                         var TOTALLY = {TOTALLY: 0};
                         for (var i in all) {
                             var res = all[i], field = common.dbUserMap.tokens + '.' + res.field;
-                            if (!TOTALLY[field]) TOTALLY[field] = {TOTALLY: 0};
-                            for (var r in res.results) {
-                                var result = res.results[r];
-
-                                if (!TOTALLY[field][result._id]) TOTALLY[field][result._id] = result.count;
-                                else TOTALLY[field][result._id] += result.count;
-
-                                if (!TOTALLY[result._id]) TOTALLY[result._id] = result.count;
-                                else TOTALLY[result._id] += result.count;
-
-                                TOTALLY.TOTALLY += result.count;
-                            }
+                            TOTALLY[field] = res.results;
+                            TOTALLY.TOTALLY += res.results;
                         }
                         callback(null, TOTALLY);
                     }
@@ -850,18 +839,21 @@ var common          = require('../../../../api/utils/common.js'),
             $set[common.dbUserMap['locale']] = params.qstring['locale'];
         }
 
-        var token, field;
+        var token, field, bool;
         if (params.qstring.ios_token && typeof params.qstring.test_mode !== 'undefined') {
             token = params.qstring['ios_token'];
             field = common.dbUserMap.tokens + '.' + common.dbUserMap['apn_' + params.qstring.test_mode];
+            bool  = common.dbUserMap.tokens + common.dbUserMap['apn_' + params.qstring.test_mode];
         } else if (params.qstring.android_token && typeof params.qstring.test_mode !== 'undefined') {
             token = params.qstring['android_token'];
             field = common.dbUserMap.tokens + '.' + common.dbUserMap['gcm_' + params.qstring.test_mode];
+            bool  = common.dbUserMap.tokens + common.dbUserMap['gcm_' + params.qstring.test_mode];
         }
 
         if (field) {
             if (token) {
                 $set[field] = token;
+                $set[bool] = true;
                 if (!dbAppUser) {
                     common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$set: $set}, {upsert: true}, function(){});
                 } else if (common.dot(dbAppUser, field) != token) {
@@ -874,6 +866,7 @@ var common          = require('../../../../api/utils/common.js'),
                 }
             } else {
                 $unset[field] = 1;
+                $unset[bool] = 1;
                 if (common.dot(dbAppUser, field)) {
                     common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$unset: $unset}, {upsert: false}, function(){});
                 }

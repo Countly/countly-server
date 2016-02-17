@@ -949,10 +949,36 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
                 function(resp) {
                     message.count = resp;
 
-                    setUsedLocales();
+                    countlyPush.getLangs(message.apps, function(result, transform){
+                        var totals = transform ? {TOTALLY: 0} : result;
+                        
+                        if (transform) {
+                            for (var appId in result) {
+                                for (var year in result[appId]) if (parseInt(year) == year) {
+                                    for (var month in result[appId][year]) if (parseInt(month) == month) {
+                                        for (var lang in result[appId][year][month]) if (isNaN(lang)) {
+                                            var u = result[appId][year][month][lang].u;
+                                            totals[lang] = totals[lang] ? totals[lang] + u : u;
+                                            totals.TOTALLY += u;
+                                        }
+                                    }
+                                }
+                            }
+                        }
 
-                    var span = '<span class="green">&nbsp;' + jQuery.i18n.prop('push.count', resp.TOTALLY) + '&nbsp;</span';
-                    count.empty().append(jQuery.i18n.map['push.start']).append(span).append(jQuery.i18n.map['push.end']);
+                        for (var l in totals) {
+                            if (l !== 'TOTALLY') { 
+                                message.count[l] = Math.floor(message.count.TOTALLY * totals[l] / totals.TOTALLY);
+                            }
+                        }
+
+                        setUsedLocales();
+
+                        var span = '<span class="green">&nbsp;' + jQuery.i18n.prop('push.count', resp.TOTALLY) + '&nbsp;</span';
+                        count.empty().append(jQuery.i18n.map['push.start']).append(span).append(jQuery.i18n.map['push.end']);
+
+                        return totals;
+                    });
                 },
                 function(err){
 

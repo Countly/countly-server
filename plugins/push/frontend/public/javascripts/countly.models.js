@@ -18,6 +18,7 @@
 
     //Private Properties
     var _pushDb = {},
+        _langsDb = {},
         _activeAppKey = 0,
         _initialized = false;
 
@@ -59,6 +60,42 @@
             success: success,
             error: error
         })
+    };
+
+    countlyPush.getLangs = function(appIds, success, error) {
+        var key = appIds.join(',');
+
+        if (key in _langsDb) {
+            return $.when(_langsDb[key]).then(success, error);
+        } else {
+            var result = {};
+
+            function queryApp (appId) {
+                return $.ajax({
+                    type:"GET",
+                    url:countlyCommon.API_PARTS.data.r,
+                    data:{
+                        "api_key": countlyGlobal.member.api_key,
+                        "app_id": appId,
+                        "method": "langs",
+                        "period": "month"
+                    },
+                    dataType:"jsonp",
+                    success:function (json) {
+                        result[appId] = json;
+                    }
+                });
+            }
+
+            var queries = [];
+            for (var i = 0; i < appIds.length; i++) {
+                queries.push(queryApp(appIds[i]));
+            }
+
+            return $.when.apply($, queries).then(function(){
+                _langsDb[key] = success(result, true);
+            }, error);
+        }
     };
 
     countlyPush.createMessage = function(message, date, success, error) {
