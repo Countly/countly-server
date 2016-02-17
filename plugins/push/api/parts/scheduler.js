@@ -11,7 +11,7 @@ var _               = require('underscore'),
 
 var check = function() {
     function addPushly(appId, match, creds, query, message, pushly) {
-        log.d('Adding pushly message for %j with creds %j & query %j', message, creds, query);
+        log.d('Adding pushly message for %j with creds %j & query %j & match %j', message, creds, query, match);
         common.db.collection('app_users' + appId).count(match, function(err, count){
             if (count) {
                 var updateQuery = _.extend({}, query);
@@ -82,7 +82,7 @@ var check = function() {
 
                                     var field = creds.id.split('.')[0],
                                         match = _.extend({}, conditions);
-                                    match[common.dbUserMap.tokens] = true;
+                                    match[common.dbUserMap.tokens + field] = true;
 
                                     // count first to prevent no users errors within some of app-platform combinations
                                     // of the message which will turn message status to error
