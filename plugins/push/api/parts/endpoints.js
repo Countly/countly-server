@@ -47,7 +47,7 @@ var common          = require('../../../../api/utils/common.js'),
     if (cluster.isWorker) {
         api.pushlyCallbacks = {
             count: function(message, query, callback){
-                var fields = appUsersFields(message), filter = {}, i, finalQuery = {$or: []}, $or = finalQuery.$or;
+                var filter = {}, finalQuery = {$or: []}, $or = finalQuery.$or;
 
                 for (var any in query.conditions) {
                     finalQuery = {$and: [_.extend({}, query.conditions), {$or: []}]};
@@ -440,7 +440,7 @@ var common          = require('../../../../api/utils/common.js'),
          var argProps = {
                 'gcm.key':  { 'required': false, 'type': 'String' }
             },
-            updatedApp = {}, $set = {}, $unset = {};
+            updatedApp = {}, $unset = {};
 
         if (!(updatedApp = common.validateArgs(params.qstring.args, argProps))) {
             common.returnOutput(params, {error: 'Invalid arguments provided'});
@@ -588,11 +588,11 @@ var common          = require('../../../../api/utils/common.js'),
         };
 
         if (!params.member.global_admin) {
-            var ids = [];
+            var ids = [], i, id;
 
             if (params.member.admin_of) {
-                for (var i in params.member.admin_of) {
-                    var id = params.member.admin_of[i];
+                for (i in params.member.admin_of) {
+                    id = params.member.admin_of[i];
                     if (id) {
                         ids.push(common.db.ObjectID(id));
                     }
@@ -600,8 +600,8 @@ var common          = require('../../../../api/utils/common.js'),
             }
 
             if (params.member.user_of)  {
-                for (var i in params.member.user_of) {
-                    var id = params.member.user_of[i];
+                for (i in params.member.user_of) {
+                    id = params.member.user_of[i];
                     if (id) {
                         ids.push(common.db.ObjectID(id));
                     }
