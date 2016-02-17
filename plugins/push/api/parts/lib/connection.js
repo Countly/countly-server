@@ -405,7 +405,7 @@ Cluster.prototype.startMonitor = function(seconds) {
 			if (this.queue.length === 0 && c.counter.count === 0 && !c.closed) {
 				log.d('[%j:%j] Closing connection from monitor', c.idx, this.credentials.id);
 				this.closeConnection(c);
-			} else if (c.lastEvent < (Date.now() - 10000)) {
+			} else if (c.lastEvent < (Date.now() - 20000)) {
 				log.d('[%j:%j] Closing connection from monitor because it appeared to be stuck', c.idx, this.credentials.id);
 				this.closeConnection(c);
 			}
