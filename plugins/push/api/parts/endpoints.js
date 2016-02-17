@@ -58,7 +58,7 @@ var common          = require('../../../../api/utils/common.js'),
                 var field = common.dbUserMap.tokens + '.' + message.credentials.id.split('.')[0];
 
                 var obj = {};
-                obj[field] = {$exists: true};
+                obj[common.dbUserMap.tokens + message.credentials.id.split('.')[0]] = true;
                 $or.push(obj);
 
                 filter[field] = 1;
