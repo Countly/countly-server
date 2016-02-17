@@ -417,6 +417,9 @@ Cluster.prototype.startMonitor = function(seconds) {
 			} else if (c.lastEvent < (Date.now() - 20000)) {
 				log.d('[%j:%j] Closing connection from monitor because it appeared to be stuck', c.idx, this.credentials.id);
 				this.closeConnection(c);
+			} else if (c.connection.throttledDown && c.connection.options.eventLoopDelayToThrottleDown < this.loop.value) {
+				log.d('[loop]: Resurrecting connection from monitor %d', c.idx);
+				c.connection.serviceImmediate();
 			}
 			log.d('[%j:%j] left %d \t inflow %j (%d) ||| drain %j (%d)', c.idx, this.credentials.id, c.counter.count, c.inflow.value.toFixed(2), c.inflow.sum, c.drain.value.toFixed(2), c.drain.sum);
 		}
