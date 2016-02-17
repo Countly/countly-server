@@ -1149,9 +1149,9 @@ app.route('/messaging/messages', 'messagingListView', function () {
     this.renderWhenReady(this.messagingListView);
 });
 
-function pushAppMgmt(){
+function pushAppMgmt(appId){
     app.localize();
-    var appId = countlyCommon.ACTIVE_APP_ID;
+    appId = appId || countlyCommon.ACTIVE_APP_ID;
     
     if(!countlyGlobal["apps"][appId] || countlyGlobal["apps"][appId].type == "mobile"){
         $(".appmng-push").show();
@@ -1272,23 +1272,32 @@ function pushAppMgmt(){
     });
 };
 
+
 var managementAdd = "";
 app.addPageScript("/manage/apps", function(){
     if(managementAdd == "")
         $.get(countlyGlobal["path"]+'/push/templates/push-management.html', function(src){
             managementAdd = src;
-            $(".app-details table tr.table-edit").before(managementAdd);
-            $('.appmng-push').prev().removeClass('table-edit-prev');
+            addPushHTMLIfNeeded();
             pushAppMgmt();
         });
     else
         pushAppMgmt();
 });
 
+
+function addPushHTMLIfNeeded() {
+    if ($('.appmng-push').length === 0) {
+        $(".app-details table tr.table-edit").before(managementAdd);
+        $('.appmng-push').prev().removeClass('table-edit-prev');
+    }
+}
+
 app.addAppManagementSwitchCallback(function(appId, type){
     if(type == "mobile"){
+        addPushHTMLIfNeeded();
         $(".appmng-push").show();
-        pushAppMgmt();
+        pushAppMgmt(appId);
     } 
     else{
         $(".appmng-push").hide();
