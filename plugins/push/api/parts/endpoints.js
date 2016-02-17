@@ -79,7 +79,7 @@ var common          = require('../../../../api/utils/common.js'),
             },
             stream: function(message, query, callback, ask, skip){
                 log.d('====== Streaming');
-                var fields = appUsersFields(message), filter = {}, count = 0, i, finalQuery = {$or: []}, $or = finalQuery.$or;
+                var filter = {}, count = 0, finalQuery = {$or: []}, $or = finalQuery.$or;
 
                 for (var any in query.conditions) {
                     finalQuery = {$and: [_.extend({}, query.conditions), {$or: []}]};
@@ -90,7 +90,7 @@ var common          = require('../../../../api/utils/common.js'),
                var field = common.dbUserMap.tokens + '.' + message.credentials.id.split('.')[0];
 
                var obj = {};
-               obj[field] = {$exists: true};
+               obj[common.dbUserMap.tokens + message.credentials.id.split('.')[0]] = true;
                $or.push(obj);
 
                filter[field] = 1;
@@ -161,7 +161,7 @@ var common          = require('../../../../api/utils/common.js'),
                     }
                 });
             },
-            onInvalidToken: function(message, tokens, error) {
+            onInvalidToken: function(message, tokens) {
                 var id = messageId(message), app = appId(message);
                 common.db.collection('messages').findOne(id, function(err, m){
                     if (m) {
@@ -180,6 +180,7 @@ var common          = require('../../../../api/utils/common.js'),
                             unsetQuery = unset.length === 1 ? {_id: unset[0]} : {_id: {$in: unset}};
                             fields.forEach(function(field){
                                 $unset[field] = 1;
+                                $unset[field.replace('.', '')] = 1;
                             });
                             log.d('Unsetting tokens in %j: %j / %j', 'app_users' + app, unsetQuery, {$unset: $unset, $pull: {msgs: messageId(message)}});
                             common.db.collection('app_users' + app).update(unsetQuery, {$unset: $unset, $pull: {msgs: messageId(message)}}, function(){});
