@@ -1184,7 +1184,11 @@ function pushAppMgmt(appId){
     $('.app-apn-cert-old .prod')[apn.prod ? 'show' : 'hide']();
 
 
-    $("#save-app-edit").click(function () {
+    window.pushSubmitting = false;
+    $("#save-app-edit").on('click', function () {
+        if (window.pushSubmitting) { return; }
+        window.pushSubmitting = true;
+
         var certProd = $('#apns_cert_prod').val().split('.').pop().toLowerCase();
         if (certProd && $.inArray(certProd, ['p12']) == -1) {
             CountlyHelpers.alert(jQuery.i18n.map["management-applications.push-error"], "red");
@@ -1197,6 +1201,7 @@ function pushAppMgmt(appId){
         reactivateForm = function() {
             forms--;
             if (forms == 0) {
+                window.pushSubmitting = false;
                 CountlyHelpers.removeDialog(loading);
             }
             apn = countlyGlobal['apps'][appId].apn = countlyGlobal['apps'][appId].apn || {};

@@ -32,7 +32,7 @@ var plugin = {},
 			}
 
 			try {
-				var p12 = apn.readP12(tmp_path);
+				var p12 = apn.readP12(tmp_path, req.body.passphrase);
 				if (!p12.dev || !p12.prod) {
 					res.send({error: 'Countly now requires universal HTTP/2 certificates. Please see our guide at http://resources.count.ly/docs/countly-sdk-for-ios-and-os-x '});
 					return true;
