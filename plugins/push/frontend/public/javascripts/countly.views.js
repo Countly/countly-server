@@ -926,7 +926,7 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
             if (message.count.TOTALLY) {
                 txt.show();
                 for (var l in message.usedLocales) {
-                    message.usedLocales[l] = message.usedLocales[l] / message.count.TOTALLY;
+                    message.usedLocales[l] = (message.usedLocales[l] / message.count.TOTALLY).toFixed(2);
                 }
             } else {
                 txt.hide();
