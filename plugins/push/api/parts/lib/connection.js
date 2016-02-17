@@ -417,8 +417,9 @@ Cluster.prototype.startMonitor = function(seconds) {
 			} else if (c.lastEvent < (Date.now() - 20000)) {
 				log.d('[%j:%j] Closing connection from monitor because it appeared to be stuck', c.idx, this.credentials.id);
 				this.closeConnection(c);
-			} else if (c.connection.throttledDown && c.connection.options.eventLoopDelayToThrottleDown < this.loop.value) {
-				log.d('[loop]: Resurrecting connection from monitor %d', c.idx);
+			} else if (c.connection.throttledDown && this.loop.value < c.connection.options.eventLoopDelayToThrottleDown) {
+				log.d('[loop]: Resurrecting connection from monitor %d (%d < %d)', c.idx);
+				c.connection.throttledDown = false;
 				c.connection.serviceImmediate();
 			}
 			log.d('[%j:%j] left %d \t inflow %j (%d) ||| drain %j (%d)', c.idx, this.credentials.id, c.counter.count, c.inflow.value.toFixed(2), c.inflow.sum, c.drain.value.toFixed(2), c.drain.sum);
@@ -439,21 +440,22 @@ Cluster.prototype.startMonitor = function(seconds) {
 
 			for (i = this.connections.length - 1; i >= 0; i--) {
 				c = this.connections[i];
-				if (c.connection.throttledDown && c.connection.options.eventLoopDelayToThrottleDown < this.loop.value) {
+				if (c.connection.throttledDown && this.loop.value < c.connection.options.eventLoopDelayToThrottleDown) {
 					log.d('[loop]: Resurrecting connection %d', c.idx);
+					c.connection.throttledDown = false;
 					c.connection.serviceImmediate();
 				} else if (c.connection.options.transmitAtOnceAdjusts && (!c.connection.nextTransmitAtOnceAdjust || c.connection.nextTransmitAtOnceAdjust < Date.now())) {
 					
-					if (!c.connection.throttledDown && c.connection.options.eventLoopDelayToThrottleDown * 0.8 > this.loop.value && this.canGrow()) {
+					if (!c.connection.throttledDown && this.loop.value < 0.9 * c.connection.options.eventLoopDelayToThrottleDown && this.canGrow()) {
 						// send more messages at once, loop is underloaded
 						c.connection.nextTransmitAtOnceAdjust = Date.now() + 10 * 1000;	// full loop smothing period 
 						c.connection.currentTransmitAtOnce = Math.floor(Math.min(c.connection.currentTransmitAtOnce * 1.1, c.connection.options.transmitAtOnceMaxAdjusted));
-						log.d('[loop]: +++ increasing batch size to %d', c.connection.currentTransmitAtOnce);
-					} else if (c.connection.options.eventLoopDelayToThrottleDown * 1.2 > this.loop.value) {
-						// send less messages at once, loop is over
+						log.d('[loop]: +++ increasing batch size of %d to %d', c.idx, c.connection.currentTransmitAtOnce);
+					} else if (this.loop.value > 0.9 * c.connection.options.eventLoopDelayToThrottleDown) {
+						// send less messages at once, loop is overloaded
 						c.connection.nextTransmitAtOnceAdjust = Date.now() + 10 * 1000;	// full loop smothing period 
 						c.connection.currentTransmitAtOnce = Math.floor(c.connection.currentTransmitAtOnce * 0.9);
-						log.d('[loop]: --- decreasing batch size to %d', c.connection.currentTransmitAtOnce);
+						log.d('[loop]: --- decreasing batch size of %d to %d', c.idx, c.connection.currentTransmitAtOnce);
 					}
 				}
 			}
