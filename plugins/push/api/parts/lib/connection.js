@@ -90,7 +90,7 @@ Connection.prototype.add = function(notification){
 Connection.prototype.close = function(clb){
 	log.d('closing connection');
 	this.closed = true;
-	this.connection.close(clb);
+	return this.connection.close(clb);
 };
 
 Connection.prototype.abort = function(msg){
@@ -327,8 +327,7 @@ Cluster.prototype.closeConnection = function(idx){
 	if (index !== -1 && typeof index !== 'undefined') {
 		log.d('[0|%j] Shrinking pool to %j connections (closing %d)', this.credentials.id, this.connections.length - 1, index);
 		var connection = this.connections[index];
-		this.connectionsClosing++;
-		connection.close(function(notes){
+		var closing = connection.close(function(notes){
 			log.d('[0|%j] Shrinked pool to %j connections (%d notes left), removing connection', this.credentials.id, this.connections.length - 1, notes ? notes.length : 0);
 			var i = this.connections.indexOf(connection), j;
 			if (i !== -1) {
@@ -360,6 +359,10 @@ Cluster.prototype.closeConnection = function(idx){
 				}
 			}
 		}.bind(this));
+
+		if (closing) {
+			this.connectionsClosing++;
+		}
 
 		this.connectionsLastChanged = Date.now();
 	}
@@ -454,7 +457,7 @@ Cluster.prototype.startMonitor = function(seconds) {
 					} else if (this.loop.value > 0.9 * c.connection.options.eventLoopDelayToThrottleDown) {
 						// send less messages at once, loop is overloaded
 						c.connection.nextTransmitAtOnceAdjust = Date.now() + 10 * 1000;	// full loop smothing period 
-						c.connection.currentTransmitAtOnce = Math.floor(c.connection.currentTransmitAtOnce * 0.9);
+						c.connection.currentTransmitAtOnce = Math.max(Math.floor(c.connection.currentTransmitAtOnce * 0.9), 1);
 						log.d('[loop]: --- decreasing batch size of %d to %d', c.idx, c.connection.currentTransmitAtOnce);
 					}
 				}
