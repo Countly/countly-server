@@ -318,9 +318,9 @@ var plugin = {},
         if(currEvent.dur || currEvent.segmentation.dur){
             var dur = 0;
             if(currEvent.dur)
-                dur = currEvent.dur;
+                dur = parseInt(currEvent.dur);
             else if(currEvent.segmentation.dur)
-                dur = currEvent.segmentation.dur;
+                dur = parseInt(currEvent.segmentation.dur);
             common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + '.' + common.dbMap['duration'], dur, true);
         }
         
