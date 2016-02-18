@@ -18,6 +18,7 @@ var GCM = function(options, loopSmoother, idx){
 	HTTP.call(this, merge({}, DEFAULTS.gcm, options), log, loopSmoother);
 
     this.idx = idx;
+    this.requesting = false;
 };
 util.inherits(GCM, HTTP);
 
@@ -140,6 +141,7 @@ GCM.prototype.request = function(note) {
 
 	options.agent = this.agent;
 
+    this.requesting = true;
 	var req = https.request(options, (res) => {
         var data = '';
         res.on('data', d => {
@@ -149,6 +151,7 @@ GCM.prototype.request = function(note) {
             // log.d('response ended');
             if (!res.done) {
                 res.done = true;
+                this.requesting = false;
                 this.onRequestDone(res, note, devices, data);
             }
         });
@@ -156,6 +159,7 @@ GCM.prototype.request = function(note) {
             // log.d('response closed');
             if (!res.done) {
                 res.done = true;
+                this.requesting = false;
                 this.onRequestDone(res, note, devices, data);
             }
         });
@@ -165,6 +169,10 @@ GCM.prototype.request = function(note) {
     req.end(content);
 
 	return req;
+};
+
+GCM.prototype.canMakeRequest = function () {
+    return !this.requesting;
 };
 
 GCM.prototype.add = function (device, content, messageId) {
