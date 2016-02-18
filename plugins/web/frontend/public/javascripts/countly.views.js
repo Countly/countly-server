@@ -451,6 +451,8 @@ $( document ).ready(function() {
             jQuery.i18n.map["common.per-user"] = jQuery.i18n.map["web.common.per-user"];
             jQuery.i18n.map["common.per-paying-user"] = jQuery.i18n.map["web.common.per-paying-user"];
             jQuery.i18n.map["common.users"] = jQuery.i18n.map["web.common.users"];
+            jQuery.i18n.map["attribution.installs"] = jQuery.i18n.map["web.attribution.installs"];
+            jQuery.i18n.map["attribution.cost-install"] = jQuery.i18n.map["web.attribution.cost-install"];
             
         }
     });
