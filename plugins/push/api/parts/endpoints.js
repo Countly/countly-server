@@ -182,8 +182,8 @@ var common          = require('../../../../api/utils/common.js'),
                                 $unset[field] = 1;
                                 $unset[field.replace('.', '')] = 1;
                             });
-                            log.d('Unsetting tokens in %j: %j / %j', 'app_users' + app, unsetQuery, {$unset: $unset, $pull: {msgs: messageId(message)}});
-                            common.db.collection('app_users' + app).update(unsetQuery, {$unset: $unset, $pull: {msgs: messageId(message)}}, function(err){
+                            log.d('Unsetting %d tokens in %j: %j / %j', unset.length, 'app_users' + app, unsetQuery, {$unset: $unset, $pull: {msgs: messageId(message)}});
+                            common.db.collection('app_users' + app).update(unsetQuery, {$unset: $unset, $pull: {msgs: messageId(message)}}, {multi: true}, function(err){
                                 if (err) {
                                     log.e('Couldn\'t unset tokens (%j, %j): %j', 'app_users' + app, unsetQuery, err);
                                 }
@@ -193,7 +193,7 @@ var common          = require('../../../../api/utils/common.js'),
                         update.forEach(upd => {
                             fields.forEach(field => {
                                 var query = {}, set = {};
-                                
+
                                 query._id = upd.bad[0];
                                 set[field] = upd.good;
                                 log.d('Updating tokens in %j: %j / %j', 'app_users' + app, query, {$set: set});

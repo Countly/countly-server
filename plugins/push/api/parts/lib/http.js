@@ -71,6 +71,7 @@ HTTP.prototype.service = function() {
 		if (typeof noteDevice(notification)[0] === 'string') {
 			notification[0] = [notification[0]];
 		}
+		notification[0] = notification[0].slice(0);
 		// log.d('Notification 2 %j', notification);
 		while (this.notifications.length > 0 && merged < this.currentTransmitAtOnce && (merged + this.notesInFlight) < this.options.maxRequestsInFlight) {
 			var next = this.notifications.shift();

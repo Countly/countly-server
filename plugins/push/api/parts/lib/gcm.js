@@ -29,7 +29,7 @@ GCM.prototype.onRequestDone = function(response, note, devices, data) {
 
     this.notesInFlight -= this.noteDevice(note).length;
 
-    this.emit(EVENTS.MESSAGE, this.noteMessageId(note), this.noteDevice(note).length);
+    this.emit(EVENTS.MESSAGE, this.noteMessageId(note), devices.length);
 
 	if (code >= 500) {
         log.w('GCM Unavailable', code, data);
@@ -48,7 +48,7 @@ GCM.prototype.onRequestDone = function(response, note, devices, data) {
             if (obj.failure === 0 && obj.canonical_ids === 0) {
                 // this.emit(EVENTS.MESSAGE, noteMessageId(note), noteDevice(note).length);
             } else if (obj.results) {
-            	var resend = [], devicesWithInvalidTokens = [], devicesWithBadCredentials = [], validDevices = [], i, device, oldDevices = this.noteDevice(note);
+            	var resend = [], devicesWithInvalidTokens = [], devicesWithBadCredentials = [], validDevices = [], i, device, oldDevices = devices;
 
                 for (i in obj.results) {
                     var result = obj.results[i];
@@ -119,7 +119,7 @@ GCM.prototype.request = function(note) {
     content.registration_ids = devices.map(d => d[1]);
 	content = JSON.stringify(content);
 
-    log.d('%j: Requesting %d, total notesInFlight is %d out of %d', this.idx, devices.length, this.notesInFlight, this.currentTransmitAtOnce);
+    log.d('%j: Requesting %d (%j), total notesInFlight is %d out of %d', this.idx, devices.length, devices, this.notesInFlight, this.currentTransmitAtOnce);
 
 	var options = {
 		hostname: 'android.googleapis.com',
