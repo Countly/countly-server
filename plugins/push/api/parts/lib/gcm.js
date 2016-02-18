@@ -10,12 +10,14 @@ var util = require('util'),
 	log = require('../../../../../api/utils/log.js')('push:gcm'),
 	https = require('https');
 
-var GCM = function(options, loopSmoother){
+var GCM = function(options, loopSmoother, idx){
 	if (false === (this instanceof GCM)) {
-        return new GCM(options);
+        return new GCM(options, loopSmoother, idx);
     }
 
 	HTTP.call(this, merge({}, DEFAULTS.gcm, options), log, loopSmoother);
+
+    this.idx = idx;
 };
 util.inherits(GCM, HTTP);
 

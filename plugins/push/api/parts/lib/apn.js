@@ -119,7 +119,7 @@ var certificates;
 
 var APN = function(options, loopSmoother, idx){
 	if (false === (this instanceof APN)) {
-		return new APN(options);
+		return new APN(options, loopSmoother, idx);
 	}
 
 	HTTP.call(this, merge({}, DEFAULTS.apn, options), log, loopSmoother);

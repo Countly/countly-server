@@ -183,16 +183,27 @@ var common          = require('../../../../api/utils/common.js'),
                                 $unset[field.replace('.', '')] = 1;
                             });
                             log.d('Unsetting tokens in %j: %j / %j', 'app_users' + app, unsetQuery, {$unset: $unset, $pull: {msgs: messageId(message)}});
-                            common.db.collection('app_users' + app).update(unsetQuery, {$unset: $unset, $pull: {msgs: messageId(message)}}, function(){});
+                            common.db.collection('app_users' + app).update(unsetQuery, {$unset: $unset, $pull: {msgs: messageId(message)}}, function(err){
+                                if (err) {
+                                    log.e('Couldn\'t unset tokens (%j, %j): %j', 'app_users' + app, unsetQuery, err);
+                                }
+                            });
                         }
 
-                        for (i = update.length - 1; i >= 0; i--) for (var f = fields.length - 1; f >= 0; f--) {
-                            var field = fields[f], upd = update[i], query = {}, set = {};
-
-                            query._id = upd.bad[0];
-                            set[field] = upd.good;
-                            common.db.collection('app_users' + app).update(query, {$set: set},function(){});
-                        }
+                        update.forEach(upd => {
+                            fields.forEach(field => {
+                                var query = {}, set = {};
+                                
+                                query._id = upd.bad[0];
+                                set[field] = upd.good;
+                                log.d('Updating tokens in %j: %j / %j', 'app_users' + app, query, {$set: set});
+                                common.db.collection('app_users' + app).update(query, {$set: set}, function(err){
+                                    if (err) {
+                                        log.e('Couldn\'t update tokens (%j, %j, %j): %j', 'app_users' + app, query, {$set: set}, err);
+                                    }
+                                });
+                            });
+                        });
                     }
                 });
             }
