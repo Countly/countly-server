@@ -45,6 +45,10 @@ GCM.prototype.onRequestDone = function(response, note, devices, data) {
 		this.handlerr(note, Err.CONNECTION, 'GCM Bad response code ' + code);
     } else {
     	try {
+            if (data && data[0] === '"' && data[data.length - 1] === '"') {
+                data = data.substr(1, data.length - 2);
+                log.d('GCM replaced quotes: %j', data);
+            }
             var obj = JSON.parse(data);
             if (obj.failure === 0 && obj.canonical_ids === 0) {
                 // this.emit(EVENTS.MESSAGE, noteMessageId(note), noteDevice(note).length);
@@ -78,7 +82,8 @@ GCM.prototype.onRequestDone = function(response, note, devices, data) {
                     } else if (result.error === 'Unavailable' || result.error === 'InternalServerError') {
                     	resend.push(device);
                     } else if (result.error === 'MismatchSenderId') {
-                    	devicesWithBadCredentials.push(device);
+                        devicesWithInvalidTokens.push({bad: device});
+                    	// devicesWithBadCredentials.push(device);
                     } else if (result.error === 'NotRegistered' || result.error === 'InvalidRegistration') {
                     	devicesWithInvalidTokens.push({bad: device});
                     } else if (result.error) {
@@ -104,6 +109,7 @@ GCM.prototype.onRequestDone = function(response, note, devices, data) {
             }
 			this.serviceImmediate();
     	} catch (e) {
+            log.w('Bad response from GCM: %j / %j / %j', code, data, e);
 			this.handlerr(note, Err.CONNECTION, e, this.noteMessageId(note));
     	}
 	}
@@ -128,6 +134,7 @@ GCM.prototype.request = function(note) {
 		path: '/gcm/send',
 		method: 'POST',
         headers: {
+            'Accept': 'application/json',
             'Content-Type': 'application/json',
             'Content-length': Buffer.byteLength(content, 'utf8'),
             'Authorization': 'key=' + this.options.key,
@@ -151,16 +158,16 @@ GCM.prototype.request = function(note) {
             // log.d('response ended');
             if (!res.done) {
                 res.done = true;
-                this.requesting = false;
                 this.onRequestDone(res, note, devices, data);
+                this.requesting = false;
             }
         });
         res.on('close', () => {
             // log.d('response closed');
             if (!res.done) {
                 res.done = true;
-                this.requesting = false;
                 this.onRequestDone(res, note, devices, data);
+                this.requesting = false;
             }
         });
     });
