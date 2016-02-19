@@ -2,6 +2,8 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 
+apt-get install gawk -y;
+
 ## each separate version number must be less than 3 digit wide !
 function version { echo "$@" | gawk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'; }
 
@@ -19,13 +21,13 @@ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
 
 gcc_need=4.8.0
 gcc_have=$(gcc --version | grep ^gcc | sed 's/^.* //g')
-if [ "$(version "$gcc_need")" -lt "$(version "$gcc_have")" ]; then
+if [ "$(version "$gcc_have")" -lt "$(version "$gcc_need")" ]; then
     add-apt-repository ppa:ubuntu-toolchain-r/test -y ;
 fi
 
 apt-get update
 
-if [ "$(version "$gcc_need")" -lt "$(version "$gcc_have")" ]; then
+if [ "$(version "$gcc_have")" -lt "$(version "$gcc_need")" ]; then
     apt-get -y install gcc-4.8 g++-4.8 ;
     export CXX="g++-4.8" ;
     export CC="gcc-4.8" ;
@@ -47,6 +49,9 @@ apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exi
 #remove previous dependencies, as they need to be rebuild for new nodejs version
 rm -rf $DIR/../node_modules
 
+#install dependencies, process files and restart countly
+countly upgrade
+
 #force mobile plugin for default mobile dashboard
 countly plugin enable mobile ;
 
@@ -61,7 +66,5 @@ fi
 #upgrade push plugin if it is installed
 countly plugin upgrade push
 
-#install dependencies, process files and restart countly
-countly upgrade
 countly update sdk-web
 countly start
