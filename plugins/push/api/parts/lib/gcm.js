@@ -126,7 +126,7 @@ GCM.prototype.request = function(note) {
     content.registration_ids = devices.map(d => d[1]);
 	content = JSON.stringify(content);
 
-    log.d('%j: Requesting %d (%j), total notesInFlight is %d out of %d', this.idx, devices.length, devices, this.notesInFlight, this.currentTransmitAtOnce);
+    log.d('%j: Requesting %d, total notesInFlight is %d out of %d', this.idx, devices.length, this.notesInFlight, this.currentTransmitAtOnce);
 
 	var options = {
 		hostname: 'android.googleapis.com',
