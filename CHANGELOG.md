@@ -1,3 +1,43 @@
+## Version 16.02
+
+  * Different App Types (which can have different views and dashboards)
+  
+  * Web Analytics, one of the major app types countly now supports
+  
+  * Sources plugin showing sources of your Web visitors or Android app installations (replacing stores plugin)
+
+  * Support themeing, and switching between different themes
+  
+  * Views plugin to track time which user spent of specific application view/screen
+  
+  * Upgrading to MongoDB 3 and NodeJS 5
+  
+  * Internal job queue and scheduling
+  
+  * Support for duration property for events to measure timed events
+  
+  * Lots of new command line commands (managing plugins, changing configurations, more backup options, etc)
+  
+  * Allow disabling Google services (for users who live in regiones where Google is blocked)
+  
+  * Server side and email localization (https://github.com/Countly/countly-server/issues/214)
+  
+  * Supporting Apple TV and Watch OS
+  
+  * DB Viewer plugin provides decrypted collection names
+  
+  * More complete localization, making all strings translatable
+  
+  * User Profiles - allow segmenting users, and view user list from drill, crashes and attribution plugins
+  
+  * User Profiles -  store custom properties as arrays, for multiple values, as well as provide atomic on server operations, like increase, max, min, etc
+  
+  * More drillable properties and Drill property categorization
+  
+  * Allow tracking custom segments with Attribution Analytics
+  
+  * Added new supported features to Populator plugin for data generation
+
 ## Version 15.08
 
   * Introduction of crash analytics ([Issue #152](https://github.com/Countly/countly-server/issues/152))
