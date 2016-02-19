@@ -125,7 +125,7 @@ var common          = require('../../../../api/utils/common.js'),
                     });
                 }
 
-                var skipping = false, ids = [];
+                var skipping = false, aborted = false, ids = [];
 
                 common.db.collection('app_users' + query.appId).find(finalQuery, filter).sort({_id: 1}).limit(10000).each(function(err, user){
                     if (err) {
@@ -134,7 +134,7 @@ var common          = require('../../../../api/utils/common.js'),
                             log.w('====== Continuing streaming from %j', skip);
                             api.pushlyCallbacks.stream(message, query, callback, ask, skip);
                         }
-                    } else if (skipping) {
+                    } else if (skipping || aborted) {
                         return;
                     } else if (user) {
                         if (count % 100 === 0) {
@@ -144,10 +144,14 @@ var common          = require('../../../../api/utils/common.js'),
                         skip = user._id;
                         ids.push(user._id);
 
-                        if (callback(['' + user._id, common.dot(user, field)], user[common.dbUserMap.lang]) === 'such no power much sad') {
+                        var result = callback(['' + user._id, common.dot(user, field)], user[common.dbUserMap.lang]);
+                        if (result === 'such no power much sad') {
                             log.d('====== Much sad, trying again in a second starting from %j', skip);
                             skipping = true;
                             setTimeout(api.pushlyCallbacks.stream.bind(api.pushlyCallbacks, message, query, callback, ask, skip), 1000);
+                        } else if (result === 'so aborted no luck') {
+                            log.d('====== Much sad, won\'t continue streaming because message has been aborted');
+                            aborted = true;
                         }
                     } else {
                         if (count === 0 && !skip) {

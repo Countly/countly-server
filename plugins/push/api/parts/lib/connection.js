@@ -104,6 +104,7 @@ var Cluster = function(credentials, profiler) {
 	this.loop = new prof.ValueSmoother(0.1);
 	this.profiler = profiler;
 	this.queue = [];
+	this.aborts = [];
 	// this.clusterInflow = stats.meter('clusterInflow');
 	// this.clusterDrain = stats.meter('clusterDrain');
 	// this.clusterInflow.tick = this.clusterInflow.mark;
@@ -170,13 +171,17 @@ Cluster.prototype.grow = function(){
 };
 
 Cluster.prototype.send = function(messageId, content, encoding, expiry, device, locale){
-	this.clusterInflow.tick();
+	if (this.aborts.indexOf(messageId) !== -1) {
+		return 'so aborted no luck';
+	} else {
+		this.clusterInflow.tick();
 
-	this.queue.push([messageId, content, encoding, expiry, device, locale]);
+		this.queue.push([messageId, content, encoding, expiry, device, locale]);
 
-	this.serviceImmediate();
+		this.serviceImmediate();
 
-	return this.wow();
+		return this.wow();
+	}
 };
 
 Cluster.prototype.wow = function(){
@@ -369,7 +374,22 @@ Cluster.prototype.closeConnection = function(idx){
 };
 
 Cluster.prototype.abort = function(msg){
-	for (var i = this.connections.length - 1; i >= 0; i--) {
+	var i, left = [];
+
+	log.d('Removing queued notifications for message %j', msg);
+	
+	for (i = 0; i < this.queue.length; i++) {
+		if (this.queue[i][0] !== msg.id) {
+			left.push(this.queue[i]);
+		}
+	}
+
+	log.d('Removed %j notifications from queue', this.queue.length - left.length);
+
+	this.queue = left;
+	this.aborts.push(msg.id);
+
+	for (i = this.connections.length - 1; i >= 0; i--) {
 		this.connections[i].abort(msg);
 	}
 };
@@ -452,7 +472,7 @@ Cluster.prototype.startMonitor = function(seconds) {
 					if (!c.connection.throttledDown && this.loop.value < 0.9 * c.connection.options.eventLoopDelayToThrottleDown && this.canGrow()) {
 						// send more messages at once, loop is underloaded
 						c.connection.nextTransmitAtOnceAdjust = Date.now() + 10 * 1000;	// full loop smothing period 
-						c.connection.currentTransmitAtOnce = Math.floor(Math.min(Math.min(c.connection.currentTransmitAtOnce * 1.1, 10), c.connection.options.transmitAtOnceMaxAdjusted));
+						c.connection.currentTransmitAtOnce = Math.floor(Math.min(Math.max(c.connection.currentTransmitAtOnce * 1.1, 10), c.connection.options.transmitAtOnceMaxAdjusted));
 						log.d('[loop]: +++ increasing batch size of %d to %d', c.idx, c.connection.currentTransmitAtOnce);
 					} else if (this.loop.value > 0.9 * c.connection.options.eventLoopDelayToThrottleDown) {
 						// send less messages at once, loop is overloaded
