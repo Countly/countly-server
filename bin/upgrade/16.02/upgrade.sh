@@ -68,3 +68,4 @@ countly plugin upgrade push
 
 countly update sdk-web
 countly start
+countly upgrade
