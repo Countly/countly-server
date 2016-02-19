@@ -4,6 +4,8 @@
   
   * Web Analytics, one of the major app types countly now supports
   
+  * HTTP/2 transport for Apple Push Notifications service, single certificate for both: development & production evnvironments
+  
   * Sources plugin showing sources of your Web visitors or Android app installations (replacing stores plugin)
 
   * Support themeing, and switching between different themes
