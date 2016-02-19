@@ -5,21 +5,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 ## each separate version number must be less than 3 digit wide !
 function version { echo "$@" | gawk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'; }
 
+#enable command line
 bash $DIR/scripts/detect.init.sh
-
-#force mobile plugin for default mobile dashboard
-countly plugin enable mobile ;
-
-#replace stores with sources
-STORESTATE=$(countly plugin status stores);
-if [ "$STORESTATE" == "enabled" ] 
-then
-    countly plugin disable stores ;
-    countly plugin enable sources ;
-fi
-
-#upgrade push plugin if it is installed
-countly plugin upgrade push
 
 #uninstall mognodb
 #apt-get remove -y mongodb-org mongodb-org-mongos mongodb-org-server mongodb-org-shell mongodb-org-tools
@@ -48,6 +35,9 @@ fi
 #install new nodejs dependencies
 apt-get install -y build-essential libkrb5-dev
 
+#stop countly
+countly stop
+
 #install new node.js
 apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
 
@@ -57,6 +47,21 @@ apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exi
 #remove previous dependencies, as they need to be rebuild for new nodejs version
 rm -rf $DIR/../node_modules
 
+#force mobile plugin for default mobile dashboard
+countly plugin enable mobile ;
+
+#replace stores with sources
+STORESTATE=$(countly plugin status stores);
+if [ "$STORESTATE" == "enabled" ] 
+then
+    countly plugin disable stores ;
+    countly plugin enable sources ;
+fi
+
+#upgrade push plugin if it is installed
+countly plugin upgrade push
+
 #install dependencies, process files and restart countly
 countly upgrade
 countly update sdk-web
+countly start
