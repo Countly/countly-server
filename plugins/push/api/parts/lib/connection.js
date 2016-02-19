@@ -171,7 +171,7 @@ Cluster.prototype.grow = function(){
 };
 
 Cluster.prototype.send = function(messageId, content, encoding, expiry, device, locale){
-	if (this.aborts.indexOf(messageId)) {
+	if (this.aborts.indexOf(messageId) !== -1) {
 		return 'so aborted no luck';
 	} else {
 		this.clusterInflow.tick();
