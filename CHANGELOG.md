@@ -38,6 +38,8 @@
   
   * Allow tracking custom segments with Attribution Analytics
   
+  * Adwords support for Attribution Analytics
+  
   * Added new supported features to Populator plugin for data generation
 
 ## Version 15.08
