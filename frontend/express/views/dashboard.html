@@ -316,14 +316,18 @@
             <span><%= countlyTypeName %></span>
 		 <% if (!countlyType) { %>
 			<ul>
+            <% if(intercom && member['global_admin'] || config.autonomous) { %>
 				<li><a href="#" id="Intercom" data-localize="common.feedback-and-support">Feedback & Support</a></li>
 				<li>|</li>
+            <% } %>
 				<li><a href="http://resources.count.ly/" target="_blank" data-localize="common.documentation">Documentation</a></li>
 			</ul>
 		 <% }else { %>
 			<ul>
+            <% if(intercom && member['global_admin'] || config.autonomous) { %>
 				<li><a href="#" id="Intercom" data-localize="common.provide-feedback">Provide feedback</a></li>
 				<li>|</li>
+            <% } %>
 				<li><a href="http://support.count.ly/" target="_blank" data-localize="common.support">Support</a></li>
 				<li>|</li>
 				<li><a href="http://count.ly/enterprise-edition" target="_blank" data-localize="common.enterprise-edition">Enterprise Edition (supported)</a></li>
