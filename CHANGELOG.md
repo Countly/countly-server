@@ -24,19 +24,19 @@
   
   * Server side and email localization (https://github.com/Countly/countly-server/issues/214)
   
-  * Supporting Apple TV and Watch OS
+  * Support for Apple TV and Watch OS 2 
   
   * DB Viewer plugin provides decrypted collection names
   
   * More complete localization, making all strings translatable
   
-  * User Profiles - allow segmenting users, and view user list from drill, crashes and attribution plugins
+  * User Profiles - allow segmenting users, and view user list from drill, crashes and attribution plugins (Enterprise Edition)
   
-  * User Profiles -  store custom properties as arrays, for multiple values, as well as provide atomic on server operations, like increase, max, min, etc
+  * User Profiles -  store custom properties as arrays, for multiple values, as well as provide atomic on server operations, like increase, max, min, etc (Enterprise Edition)
   
-  * More drillable properties and Drill property categorization
+  * More drillable properties and Drill property categorization (Enterprise Edition)
   
-  * Allow tracking custom segments with Attribution Analytics
+  * Allow tracking custom segments with Attribution Analytics (Enterprise Edition)
   
   * Added new supported features to Populator plugin for data generation
 
