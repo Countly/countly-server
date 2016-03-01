@@ -518,7 +518,12 @@ var fetch = {},
     
                         if (mergedDataObj[year]) {
                             for (var prop in dataObjects[i]['d']) {
-                                mergedDataObj[year][prop] = dataObjects[i]['d'][prop];
+                                if(mergedDataObj[year][prop]){
+                                    _.extend(mergedDataObj[year][prop], dataObjects[i]['d'][prop]) 
+                                }
+                                else{
+                                    mergedDataObj[year][prop] = dataObjects[i]['d'][prop];
+                                }
                             }
                         } else {
                             mergedDataObj[year] = dataObjects[i]['d'] || {};
@@ -526,12 +531,7 @@ var fetch = {},
                     } else {
                         if (mergedDataObj[year][month]) {
                             for (var prop in dataObjects[i]['d']) {
-                                if(mergedDataObj[year][prop]){
-                                    _.extend(mergedDataObj[year][prop], dataObjects[i]['d'][prop]) 
-                                }
-                                else{
-                                    mergedDataObj[year][prop] = dataObjects[i]['d'][prop];
-                                }
+                                mergedDataObj[year][month][prop] = dataObjects[i]['d'][prop];
                             }
                         } else {
                             mergedDataObj[year][month] = dataObjects[i]['d'] || {};
