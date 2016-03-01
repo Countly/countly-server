@@ -145,7 +145,10 @@ if (cluster.isMaster) {
                 }
             }
             
-            plugins.dispatch("/sdk", {params:params, app:app}, function(){
+            common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, user){
+                params.app_user = user || {};
+            
+                plugins.dispatch("/sdk", {params:params, app:app});
                 if(!params.cancelRequest){
                     //check if device id was changed
                     if(params.qstring.old_device_id){
