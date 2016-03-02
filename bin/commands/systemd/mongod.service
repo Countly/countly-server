@@ -17,3 +17,4 @@ TimeoutStopSec=300
 Restart=on-failure
 ExecStartPre=-/usr/bin/mkdir -p /var/lib/mongodb/
 ExecStartPre=-/usr/bin/mkdir -p /var/log/mongodb/
+ExecStartPre=-/usr/bin/mkdir -p /data/db/
