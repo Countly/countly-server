@@ -341,14 +341,13 @@ PushlyWorker.prototype.updateMessage = function(message, immediate, error) {
 			message.result.status |= M.Status.Aborted | M.Status.Done;
             this.cleanupFromMessageId(message.id);
 		} else if (error.code === Err.TOKEN) {
-			message.result.sent -= error.deviceTokens.length;
+			var bc = 0, gc = 0;
+			error.deviceTokens.forEach(function(t){
+				if (t.bad) { bc++; }
+				if (t.good) { gc++; }
+			});
+			message.result.sent -= (bc - gc);
 			if (this.callbacks && this.callbacks.onInvalidToken) {
-				error.deviceTokens = error.deviceTokens.map(function(t){
-					var token = {};
-					if (t.bad) token.bad = t.bad instanceof Buffer ? t.bad.toString('hex') : t.bad;
-					if (t.good) token.good = t.good instanceof Buffer ? t.good.toString('hex') : t.good;
-					return token;
-				});
 				this.callbacks.onInvalidToken(message, error.deviceTokens, error);
 			}
 			immediate = true;
