@@ -15,7 +15,7 @@ bash $DIR/scripts/detect.init.sh
 #rm /etc/apt/sources.list.d/mongodb-10gen-countly.list
 
 #update repos
-wget -qO- https://deb.nodesource.com/setup_5.x | bash -
+#wget -qO- https://deb.nodesource.com/setup_5.x | bash -
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
 #echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
 
@@ -41,7 +41,7 @@ apt-get install -y build-essential libkrb5-dev
 countly stop
 
 #install new node.js
-apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
+bash $DIR/scripts/install.nodejs.deb.sh || (echo "Failed to install nodejs." ; exit)
 
 #install new mongodb
 #apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
