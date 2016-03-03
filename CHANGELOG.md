@@ -1,3 +1,27 @@
+## Version 16.02.01
+
+  * Fixed Checking GCM credentials
+  
+  * Fixed Showing feedback link, if intercom is not enabled
+  
+  * Fixed DB settings for replica sets
+  
+  * Fixed problem with data on Sharded servers (documents coming in different order)
+  
+  * Fixed MongoDB configuration on Ubuntu Willy
+  
+  * Fixed GCM replacing tokens
+  
+  * Use NodeJS 5.5 for compatibility with push functionality
+  
+  * Fixed inconsistencies with MongoDB 3 findAndModify
+  
+  * Fixed help localization for app version
+  
+  * Fixed sorting columns for attribution
+  
+  * Added remote installer script to install Countly (wget -qO- https://raw.githubusercontent.com/Countly/countly-server/master/bin/installer.sh | bash)
+  
 ## Version 16.02
 
   * Different App Types (which can have different views and dashboards)
