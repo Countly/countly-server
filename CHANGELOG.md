@@ -10,7 +10,7 @@
   
   * Fixed MongoDB configuration on Ubuntu Willy
   
-  * Fixed GCM replacing tokens
+  * Fixed GCM sent count for tokens replaced by GCM 
   
   * Use NodeJS 5.5 for compatibility with push functionality
   
