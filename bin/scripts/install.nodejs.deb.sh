@@ -39,7 +39,7 @@ exec_cmd() {
 print_status "Installing the NodeSource Node.js 5.x repo..."
 
 
-PRE_INSTALL_PKGS=""
+PRE_INSTALL_PKGS="rlwrap"
 
 # Check that HTTPS transport is available to APT
 # (Check snaked from: https://get.docker.io/ubuntu/)
