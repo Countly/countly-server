@@ -51,7 +51,7 @@ var plugin = {},
 			};
 
 			countlyDb.collection('apps').findAndModify({_id: countlyDb.ObjectID(req.body.app_id)}, [['_id', 1]], unset, function(err, resp){
-				var oldApp = resp ? resp.value : undefined;
+				var oldApp = resp && resp.ok ? resp.value : undefined;
 				fs.rename(tmp_path, target_path, function (err) {
 					if (err) {
 						log.e('Cannot rename certificate file', err);
@@ -65,7 +65,7 @@ var plugin = {},
 						};
 
 						countlyDb.collection('apps').findAndModify({_id: countlyDb.ObjectID(req.body.app_id)}, [['_id', 1]], update, {new:true}, function(err, resp){
-                            var app = resp ? resp.value : undefined;
+                            var app = resp && resp.ok ? resp.value : undefined;
 							if (err || !app) {
 								res.send({error: 'Server error: cannot find app'});
 								countlyDb.collection('apps').update({_id: countlyDb.ObjectID(req.body.app_id)}, {$set: {apn: oldApp.apn}}, function(){});

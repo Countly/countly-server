@@ -68,7 +68,6 @@ var Job = function(name, data) {
 
 			log.i('replacing job %j with', query, json);
 			collection.findAndModify(query, [['_id', 1]], {$set: json}, {new: true}, function(err, job){
-                job = job.value;
 				if (err) {
 					log.e('job replacement error, saving new job', err, job);
 					collection.save(json, clb || function(err){
@@ -86,7 +85,7 @@ var Job = function(name, data) {
 						}
 					});
 				} else {
-					log.i('job replacing done', job);
+					log.i('job replacing done', job.value);
 					if (clb) { clb(); }
 				}
 			});
@@ -291,7 +290,7 @@ var JobWorker = function(processors){
 						}
 
 						collection.findAndModify({_id: job._id, status: {$in: [STATUS.RUNNING, STATUS.SCHEDULED]}}, [['_id', 1]], update, function(err, job){
-		                    job = job.value;
+                			job = job && job.ok ? job.value : null;
 							if (err) {
 								log.e('Couldn\'t update a job: %j', err);
 							} else if (!job) {

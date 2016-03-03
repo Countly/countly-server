@@ -45,7 +45,7 @@ var check = function() {
 		{'new': true},
 
 		function(err, message){
-            message = message ? message.value : null;
+            message = message && message.ok ? message.value : null;
 			if (message) {
                 log.d('Processing message %j', message);
 

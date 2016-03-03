@@ -162,7 +162,7 @@ var plugin = {},
         var dbAppUser = ob.dbAppUser;
         if(dbAppUser && dbAppUser.vc){
             common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id },{}, {$set:{vc:0}},{upsert:true, new:false}, function (err, user){
-                user = user.value;
+                user = user && user.ok ? user.value : null;
                 if(user && user.vc){
                     var ranges = [
                         [0,2],
@@ -237,11 +237,11 @@ var plugin = {},
                 var lastView = {};
                 lastView[escapedMetricVal] = params.time.timestamp;           
                 common.db.collection('app_views' + params.app_id).findAndModify({'_id': params.app_user_id },{}, {$max:lastView},{upsert:true, new:false}, function (err, view){
-                    recordMetrics(params, currEvent, user, view);
+                    recordMetrics(params, currEvent, user && user.ok ? user.value : null, view && view.ok ? view.value : null);
                 });
             }
             else{
-                recordMetrics(params, currEvent, user);
+                recordMetrics(params, currEvent, user && user.ok ? user.value : null);
             }
         });
 	}
