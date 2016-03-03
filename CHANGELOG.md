@@ -1,4 +1,4 @@
-## Version 16.02.01
+## Version 16.02.1
 
   * Fixed Checking GCM credentials
   
@@ -20,7 +20,9 @@
   
   * Fixed sorting columns for attribution
   
-  * Added remote installer script to install Countly (wget -qO- https://raw.githubusercontent.com/Countly/countly-server/master/bin/installer.sh | bash)
+  * Added remote installer script to install Countly 
+
+        wget -qO- https://raw.githubusercontent.com/Countly/countly-server/master/bin/installer.sh | bash
   
 ## Version 16.02
 
