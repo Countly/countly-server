@@ -111,7 +111,7 @@ if [ -x /usr/bin/curl ]; then
     exec_cmd_nobail "curl -sLf -o /tmp/node.deb 'https://deb.nodesource.com/node_5.x/pool/main/n/nodejs/nodejs_5.5.0-1nodesource1~${DISTRO}1_amd64.deb'"
     RC=$?
 else
-    exec_cmd_nobail "wget -qO /dev/null -o /tmp/node.deb 'https://deb.nodesource.com/node_5.x/pool/main/n/nodejs/nodejs_5.5.0-1nodesource1~${DISTRO}1_amd64.deb'"
+    exec_cmd_nobail "wget -qO /tmp/node.deb -o /dev/null 'https://deb.nodesource.com/node_5.x/pool/main/n/nodejs/nodejs_5.5.0-1nodesource1~${DISTRO}1_amd64.deb'"
     RC=$?
 fi
 
