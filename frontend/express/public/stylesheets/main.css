@@ -381,8 +381,7 @@ table.d-table:not(.no-fix) { table-layout:fixed; }
 	.d-table  tr { border-bottom:1px solid #DDD; border-top:1px solid #fff; font:15px Ubuntu,Helvetica,sans-serif; line-height:130%; background-color:#fff}
 	.d-table  tr:first-child { border-top:none; }
 	.d-table  tr:last-child { border-bottom:none; }
-  .d-table  tbody > tr:nth-child(even){ background-color:#F9F9F9}
-	.d-table  tbody table tr { background-color:inherit;}
+	.d-table  tr:nth-child(even){ background-color:#F9F9F9}
 	.d-table  tr:hover { background-color:#f1f1f1; }
 	.d-table  tr:last-child td { border-bottom:none; }
 	.d-table  tr:last-child td:first-child { border-bottom-left-radius:7px; }
@@ -392,7 +391,7 @@ table.d-table:not(.no-fix) { table-layout:fixed; }
 .d-table.horizontal { border-radius:0; }
 	.d-table.horizontal  tr:hover { background-color:#FFF; }
 	.d-table.horizontal  tr:nth-child(even):hover { background-color:#F9F9F9; }
-	.d-table.horizontal tr > td:first-child { color:#669140; width:170px; }
+	.d-table.horizontal td:first-child { color:#669140; width:170px; }
 	.d-table.horizontal tr:last-child td { border-radius:0; }
 .table-edit { display:none; }
 	.table-edit td, .table-add td { padding:10px; }
@@ -486,6 +485,8 @@ div.datatablesubrow {display: none;}
 .two-column .big-numbers { width:50%; }
 .one-column .big-numbers { width:100%; position:relative; }
 
+.two-column { width:50%; }
+
 .three-column { width:33%; }
 .three-column:nth-child(2) { width:34%; }
 .three-column:last-child { width:34%; }
@@ -552,6 +553,7 @@ div.datatablesubrow {display: none;}
 	.dashboard-summary .item { float:left; font-family:Oswald; width:25%; }
 	.dashboard-summary.four .item { width:25%; }
 	.dashboard-summary.three .item { width:33%; }
+	.dashboard-summary.two .item { width:50%; }
 	.dashboard-summary.three .item:nth-child(2) { width:34%; }
 	.dashboard-summary .inner { background-color:#3C3C3C; padding:10px; border-radius:7px; background-image:linear-gradient(top, #3C3C3C 10%, #2A2A2A 100%); background-image:linear-gradient(to bottom, #3C3C3C 10%, #2A2A2A 100%); margin-left:5px; }
 	.dashboard-summary .item:first-child  .inner { margin-left:0; }
