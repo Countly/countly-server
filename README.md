@@ -1,4 +1,4 @@
-#Countly [![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Install Countly on DigitalOcean](http://do.count.ly/button.svg?v2)](http://do.count.ly)
+#Countly [![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Install Countly on DigitalOcean](http://do.count.ly/button.svg?v2)](http://do.count.ly) [![Docker Pulls](https://img.shields.io/docker/pulls/countly/countly-server.svg)]()
 
 **We're hiring:** Countly is looking for full stack node.js developers to work on its core platform. [Click this link for job description](https://count.ly/full-stack-node-js-developer/)
 
@@ -19,7 +19,13 @@ There are two parts of Countly: the server that collects and analyzes data, and 
 
 ##Installing & upgrading Countly server
 
-All public Community Edition versions are [available from Github](https://github.com/Countly/countly-server/releases). We provide a beautiful installation sript (`bin/countly.install.sh`) with countly-server package that installs and configures everything required to run Countly Server.
+All public Community Edition versions are [available from Github](https://github.com/Countly/countly-server/releases). 
+
+The following command will download and install Countly on your **Ubuntu** or **CentOS** server. 
+
+    wget -qO- https://raw.githubusercontent.com/Countly/countly-server/master/bin/installer.sh | bash
+
+We also provide a beautiful installation sript (`bin/countly.install.sh`) with countly-server package that installs and configures everything required to run Countly Server.
 
 If you want to upgrade Countly from a previous version, please take a look at [upgrading documentation](resources.count.ly/v1.0/docs/upgrading-countly-server).
 
