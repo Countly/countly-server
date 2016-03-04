@@ -12,7 +12,11 @@ pkill -SIGTERM supervisord
 
 if [ ! -f /etc/systemd/system/mongod.service ]; then
     #create mongodb service script
-    (cat $DIR/mongod.service ; echo "ExecStart=/bin/bash $BINDIR/commands/systemd/mongodb.sh") > /etc/systemd/system/mongod.service
+    (cat $DIR/mongod.service ; 
+        echo "ExecStartPre=-$( which mkdir ) -p /var/lib/mongodb/" ;
+        echo "ExecStartPre=-$( which mkdir ) -p /var/log/mongodb/" ;
+        echo "ExecStartPre=-$( which mkdir ) -p /data/db/" ;
+        echo "ExecStart=/bin/bash $BINDIR/commands/systemd/mongodb.sh") > /etc/systemd/system/mongod.service
 fi
 
 #reload services
