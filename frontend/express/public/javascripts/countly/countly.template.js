@@ -2351,9 +2351,9 @@ window.ManageAppsView = countlyView.extend({
                 $("#app-add-type").parents(".cly-select").after(reqSpan.clone());
             }
 
-            if (!category) {
+            /*if (!category) {
                 $("#app-add-category").parents(".cly-select").after(reqSpan.clone());
-            }
+            }*/
 
             if (!timezone) {
                 $("#app-add-timezone #app-timezone").after(reqSpan.clone());
