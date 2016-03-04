@@ -470,10 +470,11 @@
 				<div class="title" style="letter-spacing:-1px; font-size:19px; margin-top:10px; margin-left:5px;">{{toUpperCase page-title}}</div>
 				{{> date-selector }}
 			</div>
+            {{#if usage}}
 			<div class="widget-content" style="border:none;">
 				<div id="big-numbers-container" class="dashboard">
 					{{#each usage}}
-					<div class="big-numbers six-column help-zone-vs" data-help-localize="help.{{this.help}}">
+					<div class="big-numbers {{#if ../../usage-class}}{{../../usage-class}}{{else}}six-column{{/if}} help-zone-vs" data-help-localize="help.{{this.help}}">
 						<div class="inner">
 							<div class="select" id="{{this.id}}">
 								<div class="title">{{this.title}}</div>
@@ -484,6 +485,7 @@
 					{{/each}}
 				</div>
 			</div>
+            {{/if}}
 			<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none; position:relative;">
                 <div id="graph-note">
                     <div class="main">
