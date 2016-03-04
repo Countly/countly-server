@@ -59,7 +59,7 @@
         if (google.visualization) {
             draw(options.metric);
         } else {
-            google.load('visualization', '1', {'packages':['geochart'], callback:draw});
+            google.load('visualization', '1', {'packages':['geochart'], callback:function(){draw(options.metric);}});
         }
     };
 
@@ -67,7 +67,7 @@
         if (google.visualization) {
             reDraw(metric);
         } else {
-            google.load('visualization', '1', {'packages':['geochart'], callback:draw});
+            google.load('visualization', '1', {'packages':['geochart'], callback:function(){draw(metric);}});
         }
     };
 
