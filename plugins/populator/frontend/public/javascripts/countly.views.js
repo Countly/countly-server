@@ -100,7 +100,7 @@ app.route('/manage/populate*state', 'populate', function (state) {
 
 var start_populating = false;
 app.addPageScript("/manage/apps", function(){
-	var populateApp = '<tr>'+
+	var populateApp = '<tr class="populate-demo-data">'+
 		'<td>'+
 			'<span data-localize="populator.demo-data"></span>'+
 		'</td>'+
@@ -110,6 +110,14 @@ app.addPageScript("/manage/apps", function(){
 	'</tr>';
 	
 	$("#add-new-app table .table-add").before(populateApp);
+    
+    var appId = countlyCommon.ACTIVE_APP_ID;
+    if(countlyGlobal["apps"][appId].type == "mobile" || countlyGlobal["apps"][appId].type == "web"){
+        $(".populate-demo-data").show();
+    } 
+    else{
+        $(".populate-demo-data").hide();
+    }
 	
 	$("#save-app-add").click(function () {
 		if($("#add-new-app table #populate-app-after").is(':checked')){
@@ -119,6 +127,15 @@ app.addPageScript("/manage/apps", function(){
             }, 5000);
         }
 	});
+});
+
+app.addAppManagementSwitchCallback(function(appId, type){
+    if(type == "mobile" || type == "web"){
+        $(".populate-demo-data").show();
+    } 
+    else{
+        $(".populate-demo-data").hide();
+    }
 });
 
 app.addAppManagementSwitchCallback(function(appId, type){
@@ -147,8 +164,8 @@ $( document ).ready(function() {
         '<div class="logo-icon fa fa-random"></div>'+
         '<div class="text" data-localize="populator.title"></div>'+
     '</a>';
-    if($('#management-submenu .help-toggle').length)
-        $('#management-submenu .help-toggle').before(menu);
+    if($('.sidebar-menu:not(#iot-type) #management-submenu .help-toggle').length)
+        $('.sidebar-menu:not(#iot-type) #management-submenu .help-toggle').before(menu);
     
     //listen for UI app change
     app.addAppSwitchCallback(function(appId){
