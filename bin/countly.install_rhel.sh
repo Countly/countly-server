@@ -19,7 +19,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 #install nodejs
 sudo yum -y install openssl-devel gcc-c++ make
 curl -sL https://rpm.nodesource.com/setup_5.x | bash -
-yum install -y nodejs
+yum install -y nodejs-5.5.0
 sudo ln -s `which node` /usr/bin/nodejs
 
 #install mongodb
