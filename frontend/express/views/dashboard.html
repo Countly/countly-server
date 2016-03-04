@@ -997,9 +997,10 @@
 				{{> date-selector }}
 			</div>
 			<div class="widget-content" style="border:none;">
+                {{#if usage}}
 				<div id="big-numbers-container" class="dashboard">
 					{{#each usage}}
-					<div class="big-numbers six-column help-zone-vs" data-help-localize="help.{{this.help}}">
+					<div class="big-numbers {{#if ../../usage-class}}{{../../usage-class}}{{else}}six-column{{/if}} help-zone-vs" data-help-localize="help.{{this.help}}">
 						<div class="inner">
 							<div class="logo"></div>
 							<div class="number">
@@ -1026,6 +1027,7 @@
 					</div>
 					{{/each}}
 				</div>
+                {{/if}}
 			</div>
 			<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none; position:relative;">
                 <div id="graph-note">
