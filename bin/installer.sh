@@ -6,7 +6,7 @@
 #   use this to get latest development version from repo
 #       wget -qO- https://raw.githubusercontent.com/Countly/countly-server/master/bin/installer.sh | bash -s dev
 
-apt-get install -y zip </dev/null ;
+apt-get -v &> /dev/null && apt-get install -y zip </dev/null || yum install -y unzip;
 if [ "$1" = "dev" ]; then
     wget -nv https://github.com/Countly/countly-server/archive/master.zip -O ./countly.zip ;
     unzip countly.zip ;
@@ -16,4 +16,4 @@ else
     wget -nv $LATEST -O ./countly.zip ;
     unzip countly.zip ;
 fi
-bash countly/bin/countly.install.sh ;
+apt-get -v &> /dev/null && bash countly/bin/countly.install.sh || bash countly/bin/countly.install_rhel.sh;
