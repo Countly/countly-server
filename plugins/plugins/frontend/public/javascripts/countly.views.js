@@ -365,10 +365,13 @@ window.ConfigurationsView = countlyView.extend({
         return configsHTML;
     },
     getInputLabel: function(id, value){
+        var ret = "";
+        if(jQuery.i18n.map["configs.help."+id])
+            ret = "<span class='config-help'>"+jQuery.i18n.map["configs.help."+id]+"</span>";
         if(typeof this.predefinedLabels[id] != "undefined")
-            return this.predefinedLabels[id];
+            return "<div>"+this.predefinedLabels[id]+"</div>"+ret;
         else
-            return value;
+            return "<div>"+value+"</div>"+ret;
     },
     getInputByType: function(id, value){
         if(this.predefinedInputs[id]){

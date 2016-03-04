@@ -8,6 +8,7 @@
 .configs table tbody tr:first-child td:last-child {border-top-right-radius: 7px;}
 .configs table {margin-bottom: 0;}
 .configs > table {border-radius: 0;}
+.configs span.config-help{font-size: 13px; color: #929292;}
 
 #configs-apply-changes{margin-top: 3px; padding: 8px; display: none;}
 #configs-back{margin-top: 3px; padding: 8px;}
