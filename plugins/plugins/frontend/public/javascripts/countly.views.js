@@ -202,6 +202,32 @@ window.ConfigurationsView = countlyView.extend({
             return select;
         });
         
+        //register some common system config inputs
+        this.registerInput("logs-default", function(value){
+            var categories = ['debug', 'info', 'warn', 'error'];
+            var select = '<div class="cly-select" id="logs-default">'+
+                '<div class="select-inner">'+
+                    '<div class="text-container">';
+            if(value && value.length)
+                select += '<div class="text">'+jQuery.i18n.map["configs.logs."+value]+'</div>';
+            else
+                select += '<div class="text">'+Query.i18n.map["configs.logs.warn"]+'</div>';
+            select += '</div>'+
+                    '<div class="right combo"></div>'+
+                '</div>'+
+                '<div class="select-items square">'+
+                    '<div>';
+                    
+                for(var i = 0; i < categories.length; i++){
+                    select += '<div data-value="'+categories[i]+'" class="segmentation-option item">'+jQuery.i18n.map["configs.logs."+categories[i]]+'</div>';
+                }
+
+            select += '</div>'+
+                '</div>'+
+            '</div>';
+            return select;
+        });
+        
         this.registerInput("apps-timezone", function(value){
             return null;
         });
