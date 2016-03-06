@@ -1744,7 +1744,7 @@
                     previousDay = previousDate.date();
 
                 previousPeriod = previousYear + "." + previousMonth + "." + previousDay;
-                periodMax = hour;
+                periodMax = 23;
                 periodMin = 0;
                 dateString = "HH:mm";
                 numberOfDays = 1;
