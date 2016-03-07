@@ -19,21 +19,21 @@ There are two parts of Countly: the server that collects and analyzes data, and 
 
 ##Installing & upgrading Countly server
 
-All public Community Edition versions are [available from Github](https://github.com/Countly/countly-server/releases). 
-
-The following command will download and install Countly on your **Ubuntu** or **CentOS** server. 
+All public Community Edition versions are [available from Github](https://github.com/Countly/countly-server/releases). The following command will download and install Countly on your **Ubuntu** or **CentOS** server. 
 
     wget -qO- http://c.ly/install | bash
 
-We also provide a beautiful installation sript (`bin/countly.install.sh`) with countly-server package that installs and configures everything required to run Countly Server.
+Have a Digital Ocean account? [Click here and install on Digital Ocean](http://do.count.ly) in a single click.
 
-If you want to upgrade Countly from a previous version, please take a look at [upgrading documentation](resources.count.ly/v1.0/docs/upgrading-countly-server).
+For bash lovers, we also provide a beautiful installation sript (`bin/countly.install.sh`) in countly-server package which installs everything required to run Countly Server.
 
 Countly also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/u/countly/countly-server/) and [installation instructions for Docker](http://resources.count.ly/docs/installing-countly-server)
 
+If you want to upgrade Countly from a previous version, please take a look at [upgrading documentation](resources.count.ly/v1.0/docs/upgrading-countly-server).
+
 ##Dependencies
 
-We develop and test Countly on Ubuntu with MongoDB, Node.js and Nginx. Installation script only needs a clean, decent Ubuntu Linux without any services listening to port 80 and takes care of every library and software (e.g MongoDB, Nginx, Node.js, Expressjs etc) required to be installed on Ubuntu Linux. 
+We develop and test Countly on Ubuntu with MongoDB, Node.js and Nginx. Installation script only needs a clean, decent Ubuntu Linux without any services listening to port 80 and takes care of every library and software required to be installed on Ubuntu Linux. 
 
 ##API & Frontend
 
