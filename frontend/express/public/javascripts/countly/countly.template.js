@@ -331,9 +331,24 @@ $.extend(Template.prototype, {
         element.off("keyup", ".cly-select .search input").on("keyup", ".cly-select .search input", function(event) {
             if (!$(this).val()) {
                 $(this).parents(".cly-select").find(".item").removeClass("hidden");
+                $(this).parents(".cly-select").find(".group").show();
             } else {
                 $(this).parents(".cly-select").find(".item:not(:contains('" + $(this).val() + "'))").addClass("hidden");
                 $(this).parents(".cly-select").find(".item:contains('" + $(this).val() + "')").removeClass("hidden");
+                var prevHeader = $(this).parents(".cly-select").find(".group").first();
+                prevHeader.siblings().each(function(){
+                    if($(this).hasClass("group")){
+                        if(prevHeader)
+                            prevHeader.hide();
+                        prevHeader = $(this);
+                    }
+                    else if($(this).hasClass("item") && $(this).is(":visible")){
+                        prevHeader = null;
+                    }
+                    
+                    if(!$(this).next().length && prevHeader)
+                        prevHeader.hide();
+                })
             }
         });
 
