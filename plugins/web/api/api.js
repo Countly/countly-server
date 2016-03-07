@@ -8,7 +8,7 @@ var plugin = {},
 		var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
 		if (params.qstring.method == "latest_users") {
             validateUserForDataReadAPI(params, function(){
-                common.db.collection("app_users"+params.app_id).find({}).sort({ls:-1}).limit(50).toArray(function(err, users){
+                common.db.collection("app_users"+params.app_id).find({_id:{$ne:"uid-sequence"}}).sort({ls:-1}).limit(50).toArray(function(err, users){
                     if(!err)
                         common.returnOutput(params, users);
                     else
