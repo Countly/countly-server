@@ -23,7 +23,7 @@ All public Community Edition versions are [available from Github](https://github
 
 The following command will download and install Countly on your **Ubuntu** or **CentOS** server. 
 
-    wget -qO- https://raw.githubusercontent.com/Countly/countly-server/master/bin/installer.sh | bash
+    wget -qO- http://c.ly/install | bash
 
 We also provide a beautiful installation sript (`bin/countly.install.sh`) with countly-server package that installs and configures everything required to run Countly Server.
 
