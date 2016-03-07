@@ -19,15 +19,17 @@ There are two parts of Countly: the server that collects and analyzes data, and 
 
 ##Installing & upgrading Countly server
 
-All public Community Edition versions are [available from Github](https://github.com/Countly/countly-server/releases). The following command will download and install Countly on your **Ubuntu** or **CentOS** server. 
+There are several ways to install Countly: 
+
+1. The following command will download and install Countly on your **Ubuntu** or **CentOS** server. 
 
     wget -qO- http://c.ly/install | bash
 
-Have a Digital Ocean account? [Click here and install on Digital Ocean](http://do.count.ly) in a single click.
+2. If you have a Digital Ocean account, [click here and install on Digital Ocean](http://do.count.ly) with a single click.
 
-For bash lovers, we also provide a beautiful installation sript (`bin/countly.install.sh`) in countly-server package which installs everything required to run Countly Server.
+3. For bash lovers, we provide a beautiful installation sript (`bin/countly.install.sh`) in countly-server package which installs everything required to run Countly Server. For this, you need a stable release of this repository [available here](https://github.com/Countly/countly-server/releases). 
 
-Countly also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/u/countly/countly-server/) and [installation instructions for Docker](http://resources.count.ly/docs/installing-countly-server)
+4. Countly also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/u/countly/countly-server/) and [installation instructions for Docker](http://resources.count.ly/docs/installing-countly-server)
 
 If you want to upgrade Countly from a previous version, please take a look at [upgrading documentation](resources.count.ly/v1.0/docs/upgrading-countly-server).
 
