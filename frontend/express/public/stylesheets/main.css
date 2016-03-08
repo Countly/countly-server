@@ -485,7 +485,7 @@ div.datatablesubrow {display: none;}
 .two-column .big-numbers { width:50%; }
 .one-column .big-numbers { width:100%; position:relative; }
 
-.two-column { width:50%; }
+.two-columns { width:50%; }
 
 .three-column { width:33%; }
 .three-column:nth-child(2) { width:34%; }
