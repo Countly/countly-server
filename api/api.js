@@ -447,10 +447,16 @@ if (cluster.isMaster) {
                                 common.returnMessage(params, 400, 'Missing parameter "requests"');
                                 return false;
                             }
-                            for (var i = 0; i < requests.length; i++) {
-                
+                            function processBulkRequest(i) {
+                                if(i == requests.length)
+                                    return;
+                                
                                 if (!requests[i].app_key && !appKey) {
-                                    continue;
+                                    i++;
+                                    setTimeout(function(){
+                                        processBulkRequest(i);
+                                    }, 1000);
+                                    return;
                                 }
                 
                                 var tmpParams = {
@@ -467,7 +473,11 @@ if (cluster.isMaster) {
                                 tmpParams["qstring"]['app_key'] = requests[i].app_key || appKey;
                 
                                 if (!tmpParams.qstring.device_id) {
-                                    continue;
+                                    i++;
+                                    setTimeout(function(){
+                                        processBulkRequest(i);
+                                    }, 10000);
+                                    return;
                                 } else {
                                     tmpParams.app_user_id = common.crypto.createHash('sha1').update(tmpParams.qstring.app_key + tmpParams.qstring.device_id + "").digest('hex');
                                 }
@@ -487,7 +497,14 @@ if (cluster.isMaster) {
                                     }
                                 }
                                 validateAppForWriteAPI(tmpParams);
+                                i++;
+                                setTimeout(function(){
+                                    processBulkRequest(i);
+                                }, 1000);
+                                return;
                             }
+                            
+                            processBulkRequest(0);
                 
                             common.returnMessage(params, 200, 'Success');
                             
