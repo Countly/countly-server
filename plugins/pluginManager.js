@@ -172,8 +172,11 @@ var pluginManager = function pluginManager(){
                     timeout = setTimeout(pluginCallback, 1000);
                 }
                 async.map(events[event], runEvent, function(){
-                    callback(used);
+                    callback();
                 });
+            }
+            else{
+                callback();
             }
         }
         else{
