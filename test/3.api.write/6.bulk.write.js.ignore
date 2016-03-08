@@ -28,14 +28,12 @@ describe('Bulk writing', function(){
 	describe('using session tests', function(){
 		it('should success', function(done){
 			var params = [
-				{"device_id":DEVICE_ID, "app_key":APP_KEY, timestamp:parseInt(new Date().getTime()/1000 - 60 * 60 * 8)},
-				{"device_id":DEVICE_ID, "app_key":APP_KEY, "begin_session":1, timestamp:parseInt(new Date().getTime()/1000 - 60 * 60 * 7)},
-				{"device_id":DEVICE_ID, "app_key":APP_KEY, "begin_session":1, timestamp:parseInt(new Date().getTime()/1000 - 60 * 60 * 6)},
-				{"device_id":DEVICE_ID+"new", "app_key":APP_KEY, "begin_session":1, timestamp:parseInt(new Date().getTime()/1000 - 60 * 60 * 5)},
-				{"device_id":DEVICE_ID, "app_key":APP_KEY, "session_duration":30, timestamp:parseInt(new Date().getTime()/1000 - 60 * 60 * 4)},
-				{"device_id":DEVICE_ID, "app_key":APP_KEY, "end_session":1, timestamp:parseInt(new Date().getTime()/1000 - 60 * 60 * 3)},
-				{"device_id":DEVICE_ID, "app_key":APP_KEY, "session_duration":30, timestamp:parseInt(new Date().getTime()/1000 - 60 * 60 * 2)},
-				{"device_id":DEVICE_ID+"A", "app_key":APP_KEY, "end_session":1, timestamp:parseInt(new Date().getTime()/1000 - 60 * 60 * 1)}
+				{"device_id":DEVICE_ID, "app_key":APP_KEY, timestamp:parseInt(new Date().getTime()/1000 - 60 * 6)},
+				{"device_id":DEVICE_ID, "app_key":APP_KEY, "begin_session":1, timestamp:parseInt(new Date().getTime()/1000 - 60 * 5)},
+				{"device_id":DEVICE_ID, "app_key":APP_KEY, "begin_session":1, timestamp:parseInt(new Date().getTime()/1000 - 60 * 4)},
+				{"device_id":DEVICE_ID, "app_key":APP_KEY, "session_duration":60, timestamp:parseInt(new Date().getTime()/1000 - 60 * 60 * 3)},
+				{"device_id":DEVICE_ID, "app_key":APP_KEY, "end_session":1, timestamp:parseInt(new Date().getTime()/1000 - 60 * 60 * 2)},
+                {"device_id":DEVICE_ID+"new", "app_key":APP_KEY, "begin_session":1, timestamp:parseInt(new Date().getTime()/1000 - 60 * 60 * 1)},
 			];
 			this.timeout(params.length*10000+10000);
 			request
@@ -56,7 +54,7 @@ describe('Bulk writing', function(){
 				.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=sessions')
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateSessionData(err, res, done, {meta:{"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"]}, f:{"0":3},l:{"0":3},u:3,n:3,t:3,e:6,d:60,Unknown:true});
+					testUtils.validateSessionData(err, res, done, {meta:{"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"]}, f:{"0":2},l:{"0":2},u:2,n:2,t:3,e:5,d:60,Unknown:true});
 				});
 			});
 		});
@@ -66,7 +64,7 @@ describe('Bulk writing', function(){
 				.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=users')
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateSessionData(err, res, done, {meta:{"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"]}, f:{"0":3},l:{"0":3},u:3,n:3,t:3,e:6,d:60,Unknown:true});
+					testUtils.validateSessionData(err, res, done, {meta:{"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"]}, f:{"0":2},l:{"0":2},u:2,n:2,t:3,e:5,d:60,Unknown:true});
 				});
 			});
 		});
@@ -76,7 +74,7 @@ describe('Bulk writing', function(){
 				.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=locations')
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateSessionData(err, res, done, {meta:{"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"]}, f:{"0":3},l:{"0":3},u:3,n:3,t:3,e:6,d:60,Unknown:true});
+					testUtils.validateSessionData(err, res, done, {meta:{"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"]}, f:{"0":2},l:{"0":2},u:2,n:2,t:3,e:5,d:60,Unknown:true});
 				});
 			});
 		});
@@ -86,7 +84,7 @@ describe('Bulk writing', function(){
 				.get('/o/analytics/dashboard?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateDashboard(err, res, done, {total_sessions:3,total_users:3,new_users:3,total_time:"1.0 min",avg_time:"0.3 min",avg_requests:"2.0", platforms:[],carriers:[],resolutions:[]});
+					testUtils.validateDashboard(err, res, done, {total_sessions:3,total_users:2,new_users:2,total_time:"1.0 min",avg_time:"0.3 min",avg_requests:"2.5", platforms:[],carriers:[],resolutions:[]});
 				});
 			});
 		});
@@ -96,7 +94,7 @@ describe('Bulk writing', function(){
 				.get('/o/analytics/countries?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateCountries(err, res, done, {country:"Unknown",code:"unknown",t:3,u:3,u2:6,n:3});
+					testUtils.validateCountries(err, res, done, {country:"Unknown",code:"unknown",t:3,u:2,u2:6,n:2});
 				});
 			});
 		});
@@ -233,6 +231,7 @@ describe('Bulk writing', function(){
 			});
 		});
 	});
+    
 	describe('verify bulk events write', function(){
 		describe('verify events without param', function(){
 			it('should display first event data', function(done){
