@@ -26,10 +26,10 @@
     "lodash": "2.4.1",
     "lru-cache": "2.5.0",
     "merge": "1.2.0",
-    "node-forge": "^0.6.38",
+    "node-forge": "0.6.38",
     "q": "1.0.1",
     "retry": "0.6.1",
-    "spdy": "^3.2.0"
+    "spdy": "3.2.3"
   },
   "private": true
 }

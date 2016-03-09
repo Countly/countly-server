@@ -42,6 +42,8 @@ var APN_ERRORS = {
 var readP12 = function(path, password) {
 	if (log) { log.d('Reading certificate from %j', path); }
 
+	password = password || undefined;
+
 	var buffer = fs.readFileSync(path),
 		asn1 = forge.asn1.fromDer(buffer.toString("binary"), false),
 		p12 = forge.pkcs12.pkcs12FromAsn1(asn1, false, password);
