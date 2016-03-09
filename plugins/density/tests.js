@@ -63,6 +63,7 @@ describe('Testing Density metrics', function(){
 				{"device_id":DEVICE_ID+"8", "app_key":APP_KEY, "begin_session":1, "metrics":{"_density": "800dpi"}},
 				{"device_id":DEVICE_ID+"9", "app_key":APP_KEY, "begin_session":1, "metrics":{"_density": "900dpi"}}
 			];
+            this.timeout(params.length*10000+10000);
 			request
 			.get('/i/bulk?requests='+JSON.stringify(params))
 			.expect(200)
@@ -70,7 +71,7 @@ describe('Testing Density metrics', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result', 'Success');
-				setTimeout(done, 500)
+				setTimeout(done, params.length*10000)
 			});
 		});
 	});
