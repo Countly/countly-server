@@ -14,7 +14,7 @@ then
 fi
 
 bash $DIR/commands/$INITSYS/install.sh
-cp $DIR/commands/$INITSYS/countly.sh $DIR/commands/enabled/countly.sh
+ln -sf $DIR/commands/$INITSYS/countly.sh $DIR/commands/enabled/countly.sh
 
 chmod +x $DIR/commands/countly.sh
 ln -sf $DIR/commands/countly.sh /usr/bin/countly
