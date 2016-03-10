@@ -1901,6 +1901,7 @@ window.ManageAppsView = countlyView.extend({
                 $("#sidebar-app-select").find(".logo").css("background-image", "url('"+countlyGlobal["cdn"]+"appimages/" + appId + ".png')");
                 $("#sidebar-app-select").find(".text").text(countlyGlobal['apps'][appId].name);
                 app.onAppSwitch(appId, true);
+                app.sidebar.init();
             }
             
             app.onAppManagementSwitch(appId);
@@ -2980,6 +2981,7 @@ var AppRouter = Backbone.Router.extend({
     dateFromSelected:null, //date from selected from the date picker
     activeAppName:'',
     activeAppKey:'',
+    refreshActiveView:0, //refresh interval function reference
     main:function (forced) {
         var change = true,
             redirect = false;
@@ -3060,8 +3062,6 @@ var AppRouter = Backbone.Router.extend({
     durations:function () {
         this.renderWhenReady(this.durationsView);
     },
-    refreshActiveView:function () {
-    }, //refresh interval function
     renderWhenReady:function (viewName) { //all view renders end up here
 
         // If there is an active view call its destroy function to perform cleanups before a new view renders
@@ -3100,6 +3100,57 @@ var AppRouter = Backbone.Router.extend({
         
         if(countlyGlobal && countlyGlobal["message"]){
             CountlyHelpers.parseAndShowMsg(countlyGlobal["message"]);
+        }
+
+        // Init sidebar based on the current url
+        self.sidebar.init();
+    },
+    sidebar: {
+        init: function() {
+            setTimeout(function() {
+                $("#sidebar-menu").find(".item").removeClass("active menu-active");
+
+                var selectedMenu = $($("#sidebar-menu").find("a[href='#" + Backbone.history.fragment + "']")),
+                    selectedSubmenu = selectedMenu.parents(".sidebar-submenu");
+
+                if (selectedSubmenu.length) {
+                    selectedMenu.addClass("active");
+                    selectedSubmenu.prev().addClass("active menu-active");
+                    app.sidebar.submenu.toggle(selectedSubmenu);
+                } else {
+                    selectedMenu.addClass("active");
+                    app.sidebar.submenu.toggle();
+                }
+            }, 1000);
+        },
+        submenu: {
+            toggle: function(el) {
+                $(".sidebar-submenu").removeClass("half-visible");
+
+                if (!el) {
+                    $(".sidebar-submenu:visible").animate({"right":"-170px"}, {duration:300, easing:'easeOutExpo', complete: function() {
+                        $(this).hide();
+                    }});
+                    return true;
+                }
+
+                if (el.is(":visible")) {
+
+                } else if ($(".sidebar-submenu").is(":visible")) {
+                    $(".sidebar-submenu").hide();
+                    el.css({"right":"-110px"}).show().animate({"right":"0"}, {duration:300, easing:'easeOutExpo'});
+                    addText();
+                } else {
+                    el.css({"right":"-170px"}).show().animate({"right":"0"}, {duration:300, easing:'easeOutExpo'});
+                    addText();
+                }
+
+                function addText() {
+                    $(".menu-title").remove();
+                    var menuTitle = $("<div class='menu-title'></div>").text($(el.prev()[0]).text()).prepend("<i class='submenu-close ion-close'></i>");
+                    el.prepend(menuTitle);
+                }
+            }
         }
     },
     initialize:function () { //initialize the dashboard, register helpers etc.
@@ -3227,7 +3278,7 @@ var AppRouter = Backbone.Router.extend({
             }
         });
 
-        $(document).ready(function () {
+        $(document).ready(function ()  {
 
             CountlyHelpers.initializeSelect();
             CountlyHelpers.initializeTextSelect();
@@ -3402,17 +3453,38 @@ var AppRouter = Backbone.Router.extend({
                 });
             });
 
-            $("#sidebar-menu").on("click", ".item", function () {
-                var elNext = $(this).next(),
-                    isElActive = $(this).hasClass("active");
+            // SIDEBAR
 
-                if (elNext.hasClass("sidebar-submenu") && !(isElActive)) {
-                    elNext.slideToggle();
+            $("#sidebar-menu").on("click", ".submenu-close", function () {
+                $(this).parents(".sidebar-submenu").animate({"right":"-170px"}, {duration:200, easing:'easeInExpo', complete: function() {
+                    $(".sidebar-submenu").hide();
+                    $("#sidebar-menu>.sidebar-menu>.item").removeClass("menu-active");
+                }});
+            });
+
+            $("#sidebar-menu").on("click", ".item", function () {
+                if ($(this).hasClass("menu-active")) {
+                    return true;
+                }
+
+                $("#sidebar-menu>.sidebar-menu>.item").removeClass("menu-active");
+
+                var elNext = $(this).next();
+
+                if (elNext.hasClass("sidebar-submenu")) {
+                    $(this).addClass("menu-active");
+                    self.sidebar.submenu.toggle(elNext);
                 } else {
-                    $("#sidebar-menu>.item").removeClass("active");
+                    $("#sidebar-menu").find(".item").removeClass("active");
                     $(this).addClass("active");
-                    var subMenu = $(this).parent(".sidebar-submenu");
-                    subMenu.prev(".item").addClass("active");
+
+                    var mainMenuItem = $(this).parent(".sidebar-submenu").prev(".item");
+
+                    if (mainMenuItem.length) {
+                        mainMenuItem.addClass("active menu-active");
+                    } else {
+                        self.sidebar.submenu.toggle();
+                    }
 
                     if ($("#app-nav").offset().left == 201) {
                         self.closeAppTooltip();
@@ -3421,16 +3493,45 @@ var AppRouter = Backbone.Router.extend({
                     }
                 }
             });
+
+            $("#sidebar-menu").on("mouseenter", ".sidebar-menu>.item", function() {
+                var visibleSubmenu = $(".sidebar-submenu:visible");
+
+                if (!$(this).hasClass("menu-active") && $(".sidebar-submenu").is(":visible") && !visibleSubmenu.hasClass("half-visible")) {
+                    visibleSubmenu.addClass("half-visible");
+                    visibleSubmenu.animate({"right":"-110px"}, {duration:300, easing:'easeOutExpo'});
+                }
+            });
+
+            $("#sidebar-menu").on("mouseleave", "", function() {
+                var visibleSubmenu = $(".sidebar-submenu:visible");
+
+                if ($(".sidebar-submenu").is(":visible") && visibleSubmenu.hasClass("half-visible")) {
+                    visibleSubmenu.removeClass("half-visible");
+                    visibleSubmenu.animate({"right":"0"}, {duration:300, easing:'easeOutExpo'});
+                }
+            });
+
+            $("#sidebar-menu").on("mouseenter", ".sidebar-submenu:visible", function() {
+                var visibleSubmenu = $(".sidebar-submenu:visible");
+
+                if (visibleSubmenu.hasClass("half-visible")) {
+                    visibleSubmenu.removeClass("half-visible");
+                    visibleSubmenu.animate({"right":"0"}, {duration:300, easing:'easeOutExpo'});
+                }
+            });
+
 			$('#sidebar-menu').slimScroll({
-				height: ($(window).height()-123-96)+'px',
+				height: ($(window).height()-123-96+28)+'px',
 				railVisible: true,
 				railColor : '#4CC04F',
 				railOpacity : .2,
 				color: '#4CC04F'
 			});
+
 			$( window ).resize(function() {
 				$('#sidebar-menu').slimScroll({
-					height: ($(window).height()-123-96)+'px'
+					height: ($(window).height()-123-96+28)+'px'
 				});
 			});
 
@@ -3594,12 +3695,13 @@ var AppRouter = Backbone.Router.extend({
                 CountlyHelpers.alert(jQuery.i18n.map["help.help-mode-welcome"], "black");
             });
             $(".help-toggle, #help-toggle").click(function (e) {
+
                 e.stopPropagation();
-                $("#help-toggle").toggleClass("active");
+                $(".help-toggle #help-toggle").toggleClass("active");
 
-                app.tipsify($("#help-toggle").hasClass("active"));
+                app.tipsify($(".help-toggle #help-toggle").hasClass("active"));
 
-                if ($("#help-toggle").hasClass("active")) {
+                if ($(".help-toggle #help-toggle").hasClass("active")) {
                     help();
                     $.idleTimer('destroy');
                     clearInterval(self.refreshActiveView);
@@ -4351,34 +4453,6 @@ var AppRouter = Backbone.Router.extend({
 
         var self = this;
         $(document).ready(function () {
-  
-			$("#sidebar-menu").find("a").removeClass("active");
-
-            var currentMenu = $("#sidebar-menu").find("a[href='#" + Backbone.history.fragment + "']");
-            if(currentMenu.length == 0){
-                $("#"+countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type+"-type a").each(function(){
-                    if(this.hash != "#/" && this.hash != ""){
-                        if(location.hash == this.hash){
-                            currentMenu = $(this);
-                            return false;
-                        }
-                        else if(location.hash.indexOf(this.hash) == 0){
-                            currentMenu = $(this);
-                            return false;
-                        }
-                    }
-                });
-            }
-            currentMenu.addClass("active");
-
-            var subMenu = currentMenu.parent(".sidebar-submenu");
-            subMenu.prev(".item").addClass("active");
-
-            if (currentMenu.not(":visible")) {
-                subMenu.slideDown();
-            }
-
-            $(".sidebar-submenu").not(subMenu).slideUp();
 
             var selectedDateID = countlyCommon.getPeriod();
 
@@ -4547,6 +4621,12 @@ var AppRouter = Backbone.Router.extend({
             $(".resource-link").on('click', function() {
                 if ($(this).data("link")) {
                     CountlyHelpers.openResource($(this).data("link"));
+                }
+            });
+
+            $("#sidebar-menu").find(".item").each(function(i) {
+                if ($(this).next().hasClass("sidebar-submenu")) {
+                    $(this).append("<span class='ion-chevron-right'></span>");
                 }
             });
         });

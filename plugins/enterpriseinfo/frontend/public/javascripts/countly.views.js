@@ -52,7 +52,7 @@ app.route( "/enterprise", "enterprise", function () {
 
 $( document ).ready(function() {
 	var menu = '<a class="item" id="enterprise-menu" href="#/enterprise">'+
-		'<div class="logo logo-icon fa fa-rocket"></div>'+
+		'<div class="logo ion-ios-infinite"></div>'+
         '<div class="text" data-localize="enterpriseinfo.title">Enterprise</div>'+
     '</a>';
 	$('#sidebar-menu .sidebar-menu').append(menu);

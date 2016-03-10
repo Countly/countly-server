@@ -112,7 +112,7 @@ app.addPageScript("/manage/apps", function(){
 	$("#add-new-app table .table-add").before(populateApp);
     
     var appId = countlyCommon.ACTIVE_APP_ID;
-    if(countlyGlobal["apps"][appId].type == "mobile" || countlyGlobal["apps"][appId].type == "web"){
+    if(countlyGlobal["apps"][appId] && (countlyGlobal["apps"][appId].type == "mobile" || countlyGlobal["apps"][appId].type == "web")) {
         $(".populate-demo-data").show();
     } 
     else{

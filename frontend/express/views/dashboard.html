@@ -14,6 +14,7 @@
 	<link rel="icon" type="image/png" href="<%- cdn %>images/favicon.png">
     <link rel="stylesheet" href="<%- cdn %>stylesheets/font-awesome/css/font-awesome.min.css" />
 	<link rel="stylesheet" href="<%- cdn %>stylesheets/entypo/css/entypo.css" />
+    <link rel="stylesheet" href="<%- cdn %>stylesheets/ionicons/css/ionicons.min.css" />
 	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.base.css" />
 	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.theme.css" />
     <% if (production) { %>
@@ -81,29 +82,29 @@
 		</div>
 		<div id="sidebar-menu">
             <div id="default-type" class="sidebar-menu" style="display: none;">
-                <a href="#/" class="item analytics active">
-                    <div class="logo dashboard"></div>
+                <a href="#/" class="item analytics">
+                    <div class="logo dashboard ion-speedometer"></div>
                     <div class="text" data-localize="sidebar.dashboard"></div>
                 </a>
                 <a class="item analytics" id="analytics-menu">
-                    <div class="logo analytics"></div>
+                    <div class="logo analytics ion-ios-pulse-strong"></div>
                     <div class="text" data-localize="sidebar.analytics"></div>
                 </a>
                 <div class="sidebar-submenu" id="analytics-submenu">
                 </div>
                 <a class="item analytics" id="engagement-menu" style="display:none;">
-                    <div class="logo fa fa-magnet" style="background-image:none; font-size:28px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>
+                    <div class="logo ion-happy-outline"></div>
                     <div class="text" data-localize="sidebar.engagement"></div>
                 </a>
                 <div class="sidebar-submenu" id="engagement-submenu">
                 </div>
                 <a href="#/analytics/events" class="item analytics" id="sidebar-events">
-                    <div class="logo events"></div>
+                    <div class="logo events ion-network"></div>
                     <div class="text" data-localize="sidebar.events"></div>
                 </a>	
                 <% if(member['global_admin'] || adminOfApps.length  || config.autonomous) { %>
                 <a class="item" id="management-menu">
-                    <div class="logo management"></div>
+                    <div class="logo management ion-gear-a"></div>
                     <div class="text" data-localize="sidebar.management"></div>
                 </a>
                 <div class="sidebar-submenu" id="management-submenu">
@@ -117,7 +118,7 @@
                         <div class="text" data-localize="sidebar.management.users"></div>
                     </a>
                     <% } %>
-                    <a class="item help-toggle disabled">
+                    <a class="item help-toggle">
                         <div class="logo help"></div>
                         <div class="text" data-localize="sidebar.management.help"></div>
                         <div id="help-toggle"></div>
@@ -128,7 +129,6 @@
 		</div>
 		<div id="sidebar-bottom-container">
 			<div class="menu">
-				<a id="sidebar-countly-version"><%- countlyTitle %> <%= countlyVersion %></a>
 				<a class="item" id="account-settings" data-localize="sidebar.settings"></a>
 				<a class="item" id="user-logout" href="<%= path %>/logout" data-localize="sidebar.logout"></a>
 			</div>
@@ -155,7 +155,7 @@
 			<div class="username" id="menu-username"><%= member['username'] %></div>
 			<input id="user-api-key" type="hidden" value="<%= member['api_key'] %>" />
 			<div class="reveal-language-menu">EN</div>
-			<div class="reveal-menu"></div>
+			<div class="reveal-menu"><i class="ion-gear-a"></i></div>
 		</div>
 	</div>
     <div id="app-tooltip"></div>
