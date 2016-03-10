@@ -318,7 +318,7 @@ app.addAppType("web", WebDashboardView);
 
 $( document ).ready(function() {
     var menu = '<a href="#/all" id="allapps-menu" class="item analytics active">'+
-		'<div class="logo fa fa-list-alt" style="background-image:none; font-size:24px; text-align:center; width:35px; margin-left:14px; line-height:42px;"></div>'+
+		'<div class="logo ion-android-apps"></div>'+
 		'<div class="text" data-localize="web.all-websites"></div>'+
 	'</a>';
 	$('#web-type a').first().before(menu);
