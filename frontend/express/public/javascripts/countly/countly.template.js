@@ -2225,13 +2225,18 @@ window.ManageAppsView = countlyView.extend({
             }
 
             var appId = $("#app-edit-id").val(),
-                appName = $("#app-edit-name .edit input").val();
+                appName = $("#app-edit-name .edit input").val(),
+                app_key = $("#app-edit-key .edit input").val();
 
             $(".required").fadeOut().remove();
             var reqSpan = $("<span>").addClass("required").text("*");
 
             if (!appName) {
                 $("#app-edit-name .edit input").after(reqSpan.clone());
+            }
+            
+            if (!app_key) {
+                $("#app-edit-key .edit input").after(reqSpan.clone());
             }
 
             if ($(".required").length) {
@@ -2256,7 +2261,7 @@ window.ManageAppsView = countlyView.extend({
                         name:appName,
                         type:$("#app-edit-type .cly-select .text").data("value") + '',
                         category:$("#app-edit-category .cly-select .text").data("value") + '',
-                        key:$("#app-edit-key .edit input").val(),
+                        key:app_key,
                         timezone:$("#app-edit-timezone #app-timezone").val(),
                         country:$("#app-edit-timezone #app-country").val()
                     }),
