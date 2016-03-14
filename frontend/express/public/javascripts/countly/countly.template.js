@@ -1910,7 +1910,8 @@ window.ManageAppsView = countlyView.extend({
             $("#view-app").find(".widget-header .title").text(countlyGlobal['apps'][appId].name);
             $("#app-edit-name").find(".read").text(countlyGlobal['apps'][appId].name);
             $("#app-edit-name").find(".edit input").val(countlyGlobal['apps'][appId].name);
-            $("#view-app-key").text(countlyGlobal['apps'][appId].key);
+            $("#app-edit-key").find(".read").text(countlyGlobal['apps'][appId].key);
+            $("#app-edit-key").find(".edit input").val(countlyGlobal['apps'][appId].key);
             $("#view-app-id").text(appId);
             $("#app-edit-type").find(".cly-select .text").text(appTypes[countlyGlobal['apps'][appId].type]);
             $("#app-edit-type").find(".cly-select .text").data("value", countlyGlobal['apps'][appId].type);
@@ -2255,6 +2256,7 @@ window.ManageAppsView = countlyView.extend({
                         name:appName,
                         type:$("#app-edit-type .cly-select .text").data("value") + '',
                         category:$("#app-edit-category .cly-select .text").data("value") + '',
+                        key:$("#app-edit-key .edit input").val(),
                         timezone:$("#app-edit-timezone #app-timezone").val(),
                         country:$("#app-edit-timezone #app-country").val()
                     }),

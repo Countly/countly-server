@@ -104,6 +104,7 @@ var appsApi = {},
                 'name':     { 'required': false, 'type': 'String' },
                 'type':     { 'required': false, 'type': 'String' },
                 'category': { 'required': false, 'type': 'String' },
+                'key': { 'required': false, 'type': 'String' },
                 'timezone': { 'required': false, 'type': 'String' },
                 'country':  { 'required': false, 'type': 'String' }
             },

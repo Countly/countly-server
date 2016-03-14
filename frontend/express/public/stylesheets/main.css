@@ -355,6 +355,8 @@ a:active { color:inherit; }
 #app-management-bar .app-container.active { background-image:url('../images/dashboard/dropdown_item_active.png'), url('../images/dashboard/dropdown_item.png'); background-repeat:no-repeat; background-position:right; }
 #app-management-bar .app-container.active:hover { opacity:1; }
 
+#app-edit-key .edit input {width: 335px;}
+
 /* TABLES */
 table.d-table { width:100%; padding:0; margin:0; border-radius:7px; border:1px solid #C2C2C2; border-top-color:#959595; margin-bottom:20px; }
 table.d-table:not(.no-fix) { table-layout:fixed; }
