@@ -3652,7 +3652,8 @@ var AppRouter = Backbone.Router.extend({
                 var username = $(".dialog #username").val(),
                     old_pwd = $(".dialog #old_pwd").val(),
                     new_pwd = $(".dialog #new_pwd").val(),
-                    re_new_pwd = $(".dialog #re_new_pwd").val();
+                    re_new_pwd = $(".dialog #re_new_pwd").val(),
+                    api_key = $(".dialog #api-key").val();
 
                 if (new_pwd != re_new_pwd) {
                     $(".dialog #settings-save-result").addClass("red").text(jQuery.i18n.map["user-settings.password-match"]);
@@ -3668,6 +3669,7 @@ var AppRouter = Backbone.Router.extend({
                         "username":username,
                         "old_pwd":old_pwd,
                         "new_pwd":new_pwd,
+                        "api_key":api_key,
                         _csrf:countlyGlobal['csrf_token']
                     },
                     success:function (result) {
@@ -3683,6 +3685,9 @@ var AppRouter = Backbone.Router.extend({
                             $(".dialog #new_pwd").val("");
                             $(".dialog #re_new_pwd").val("");
                             $("#menu-username").text(username);
+                            $("#user-api-key").val(api_key);
+                            countlyGlobal["member"].username = username;
+                            countlyGlobal["member"].api_key = api_key;
                         }
 
                         $(".dialog #save-account-details").removeClass("disabled");

@@ -753,8 +753,9 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
 
     var updatedUser = {};
 
-    if (req.body.username) {
+    if (req.body.username && req.body.api_key) {
         updatedUser.username = req.body["username"];
+        updatedUser.api_key = req.body["api_key"];
         if (req.body.lang) {
             updatedUser.lang = req.body.lang;
         }
