@@ -164,8 +164,8 @@ $( document ).ready(function() {
         '<div class="logo-icon fa fa-random"></div>'+
         '<div class="text" data-localize="populator.title"></div>'+
     '</a>';
-    if($('.sidebar-menu:not(#iot-type) #management-submenu .help-toggle').length)
-        $('.sidebar-menu:not(#iot-type) #management-submenu .help-toggle').before(menu);
+    if($('.sidebar-menu #management-submenu .help-toggle').length)
+        $('.sidebar-menu #management-submenu .help-toggle').before(menu);
     
     //listen for UI app change
     app.addAppSwitchCallback(function(appId){
