@@ -1,4 +1,5 @@
 var common = require('./../../utils/common.js'),
+	manager = require('../../../plugins/pluginManager.js'),
 	log = common.log('jobs'),
 	later = require('later'),
 	_ = require('underscore'),
@@ -404,7 +405,7 @@ module.exports = {
 		jobs = jobs || {};
 		started = started || function(){};
 
-		var plugins = runPlugins ? require('../../../plugins/plugins.json') : [];
+		var plugins = runPlugins ? manager.getPlugins() : [];
 		if (!plugins) { 
 			log.e('Won\'t start jobs because no plugins.json exist');
 			return;
