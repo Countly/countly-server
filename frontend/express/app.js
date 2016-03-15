@@ -493,8 +493,9 @@ app.post(countlyConfig.path+'/reset', function (req, res, next) {
         var password = sha1Hash(req.body.password);
 
         countlyDb.collection('password_reset').findOne({prid:req.body.prid}, function (err, passwordReset) {
-            countlyDb.collection('members').update({_id:passwordReset.user_id}, {'$set':{ "password":password }}, function (err, member) {
-                plugins.callMethod("passwordReset", {req:req, res:res, next:next, data:member[0]});
+            countlyDb.collection('members').findAndModify({_id:passwordReset.user_id}, {}, {'$set':{ "password":password }}, function (err, member) {
+                member = member && member.ok ? member.value : null;
+                plugins.callMethod("passwordReset", {req:req, res:res, next:next, data:member});
                 req.flash('info', 'reset.result');
                 res.redirect(countlyConfig.path+'/login');
             });
