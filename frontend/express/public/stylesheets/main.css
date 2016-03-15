@@ -681,11 +681,10 @@ div.datatablesubrow {display: none;}
 #user-table tr.active:hover .help-edit { display:none; }
 #user-table tr.active:hover .help-close { display:block; }
 #user-table tr td { border-bottom:none; border-top:1px solid #CCC; border-radius:0; }
-.user-details { display:none; overflow:auto; }
-.user-details  { padding:0; }
+.user-details { display:none; overflow:auto; padding-bottom: 45px;}
 #user-table tr td>div { position:relative; }
 .user-details.create-user-row { border-top:1px solid #979797; border-left:10px solid whiteSmoke; border-right:10px solid whiteSmoke; margin-left:-2px; padding-bottom:45px; margin-right:-2px; box-shadow:inset 2px 0 0 -1px #DDD, inset -2px 0 0 -1px #DDD, inset 0 2px 0 -1px #DDD; position:relative; font-family: Oswald; font-size: 12px; font-weight: normal; color: #6B6B6B;}
-#user-table .datatablesubrow{padding:0; margin: -5px -10px;}
+#user-table .datatablesubrow{margin: -5px -10px;}
 #user-table tr:last-child td>div { margin-bottom:-2px; }
 .user-details { background-color:#f9f9f9; }
 .user-details:hover { background-color:#f9f9f9; }
