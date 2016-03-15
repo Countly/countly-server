@@ -1,5 +1,4 @@
-var manager = require('../../../plugins/pluginManager.js'),
-    request = require('request');
+var request = require('request');
     
 var myArgs = process.argv.slice(2);
 
