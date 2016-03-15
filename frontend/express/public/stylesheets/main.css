@@ -393,6 +393,7 @@ table.d-table:not(.no-fix) { table-layout:fixed; }
 .d-table .center{text-align: center;}
 
 div.datatablesubrow {display: none;}
+
 .d-table tr.selected {background-color: #D4ECD5;}
 
 .d-table input[type=text] { margin:0; font:15px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:3px; border:1px solid #DDD; width:274px; }
@@ -667,6 +668,8 @@ div.datatablesubrow {display: none;}
 
 /* USER MANAGEMENT */
 .manage-user { padding:10px; }
+.manage-users-table {margin-top: -16px;}
+.manage-users-table .dataTable-top {border-radius: 0;}
 #user-table { border-bottom-left-radius:0; border-bottom-right-radius:0; }
 #user-table tr { font-size:14px; }
 #user-table .help-edit { font-size:11px; display:none; position:absolute; right:3px; top:2px; background-color: #F1F1F1; padding: 1px 1px 1px 15px; line-height: 130%; }
@@ -678,13 +681,15 @@ div.datatablesubrow {display: none;}
 #user-table tr.active:hover .help-edit { display:none; }
 #user-table tr.active:hover .help-close { display:block; }
 #user-table tr td { border-bottom:none; border-top:1px solid #CCC; border-radius:0; }
-#user-table tr.user-details { display:none; overflow:auto; }
-#user-table tr.user-details td { padding:0; }
+.user-details { display:none; overflow:auto; }
+.user-details  { padding:0; }
 #user-table tr td>div { position:relative; }
-#user-table tr.user-details td>div { border-top:5px solid #E8E8E8; border-left:10px solid whiteSmoke; border-right:10px solid whiteSmoke; margin-left:-2px; padding-bottom:45px; margin-right:-2px; box-shadow:inset 2px 0 0 -1px #DDD, inset -2px 0 0 -1px #DDD, inset 0 2px 0 -1px #DDD; position:relative; }
+.user-details.create-user-row { border-top:1px solid #979797; border-left:10px solid whiteSmoke; border-right:10px solid whiteSmoke; margin-left:-2px; padding-bottom:45px; margin-right:-2px; box-shadow:inset 2px 0 0 -1px #DDD, inset -2px 0 0 -1px #DDD, inset 0 2px 0 -1px #DDD; position:relative; font-family: Oswald; font-size: 12px; font-weight: normal; color: #6B6B6B;}
+#user-table .datatablesubrow{padding:0; margin: -5px -10px;}
 #user-table tr:last-child td>div { margin-bottom:-2px; }
-#user-table tr.user-details { background-color:#f9f9f9; }
-#user-table tr.user-details:hover { background-color:#f9f9f9; }
+.user-details { background-color:#f9f9f9; }
+.user-details:hover { background-color:#f9f9f9; }
+#add-user-mgmt{margin-top: 5px; padding: 6px;}
 #listof-apps { width:200px; display:none; position:absolute; margin-top:12px; z-index:1000; padding:5px; padding-bottom:7px; background-color:rgba(85,85,85,1); border:1px solid #333; box-shadow:inset 0 0 0 1px #777; border-radius:5px; background-image:url('../images/dashboard/calendar_bg.png'); }
 	#listof-apps .button-container { overflow:auto; margin-top:5px; }
 	#listof-apps .button-container .icon-button { float:right; font-size:11px; }

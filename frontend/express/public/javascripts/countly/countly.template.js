@@ -419,6 +419,19 @@ $.extend(Template.prototype, {
 			});
 		}
 	};
+    
+    CountlyHelpers.closeRows = function(dTable){
+        if(dTable.aOpen){
+			$.each( dTable.aOpen, function ( i, id ) {
+				var nTr = $("#"+id)[0];
+				$(nTr).removeClass("selected");
+				$('div.datatablesubrow', $(nTr).next()[0]).slideUp( function () {
+					dTable.fnClose( nTr );
+					dTable.aOpen.splice( i, 1 );
+				} );
+			});
+		}
+    };
 	
 	CountlyHelpers.appIdsToNames = function(context){
         var ret = "";
@@ -2484,6 +2497,16 @@ window.ManageUsersView = countlyView.extend({
             self.template = t;
         });
     },
+    beforeRender: function() {
+		if(this.template)
+			return true;
+		else{
+			var self = this;
+			return $.when($.get(countlyGlobal["path"]+'/templates/users.html', function(src){
+				self.template = Handlebars.compile(src);
+			})).then(function () {});
+		}
+    },
     renderCommon:function (isRefresh) {
         var self = this;
         $.ajax({
@@ -2494,13 +2517,628 @@ window.ManageUsersView = countlyView.extend({
             dataType:"jsonp",
             success:function (users) {
                 $('#content').html(self.template({
+                    "page-title":jQuery.i18n.map["sidebar.management.users"],
                     users:users,
                     apps:countlyGlobal['apps'],
                     is_global_admin: (countlyGlobal["member"].global_admin) ? true : false
                 }));
+                var tableData = [];
+                for(var i in users){
+                    tableData.push(users[i])
+                }
+                self.dtable = $('#user-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                    "aaData": tableData,
+                    "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+                        $(nRow).attr("id", aData._id);
+                    },
+                    "aoColumns": [
+                        { "mData": function(row, type){return row.full_name;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.full-name"]},
+                        { "mData": function(row, type){return row.username;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.username"]},
+                        { "mData": function(row, type){if(row.global_admin) return jQuery.i18n.map["management-users.global-admin"]; else if(row.admin_of && row.admin_of.length) return jQuery.i18n.map["management-users.admin"]; else if(row.user_of && row.user_of.length)  return jQuery.i18n.map["management-users.user"]; else return jQuery.i18n.map["management-users.no-role"]}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.no-role"]},
+                        { "mData": function(row, type){return row.email;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.email"]},
+                    ]
+                }));
+                self.dtable.fnSort( [ [0,'desc'] ] );
+                self.dtable.stickyTableHeaders();
+                CountlyHelpers.expandRows(self.dtable, self.editUser, self);
+                function generatePassword() {
+                    var text = "";
+                    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                    for( var i=0; i < 6; i++ )
+                        text += possible.charAt(Math.floor(Math.random() * possible.length));
+                    return text;
+                }
+                function validateEmail(email) { 
+                    var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+                    return re.test(email);
+                }
+                self.initTable();
+                $("#add-user-mgmt").on("click", function(){
+                    CountlyHelpers.closeRows(self.dtable);
+                    $("#listof-apps").hide();
+                    if ($(".create-user-row").is(":visible")) { 
+                         $(".create-user-row").slideUp();
+                    }
+                    else{
+                        $(".create-user-row").slideDown();
+                        self.initTable();
+                    }
+                });
+                $("#listof-apps .app").on('click', function() {
+                    if ($(this).hasClass("disabled")) {
+                        return true;
+                    }
+                    
+                    $(this).toggleClass("selected");
+                    
+                    if ($("#listof-apps .app.selected").length == $("#listof-apps .app").length) {
+                        $("#select-all").hide();
+                        $("#deselect-all").show();
+                    } else {
+                        $("#select-all").show();
+                        $("#deselect-all").hide();
+                    }
+                    
+                    adminsOf = [];
+                    var adminOfIds = [];
+                    $("#listof-apps .app.selected").each(function() {
+                        adminsOf[adminsOf.length] = $(this).find(".name").text();
+                        adminOfIds[adminOfIds.length] = $(this).find(".app_id").val();
+                    });
+                    
+                    if ($("#listof-apps .app.selected").length == 0) {
+                        $(".no-apps").show();
+                    } else {
+                        $(".no-apps").hide();
+                    }
+                    
+                    $(".user-admin-list").text(adminsOf.join(", "));
+                    $(".app-list").val(adminOfIds.join(","));
+                    
+                    var userAppRow = $(".user-apps");
+                    
+                    if (userAppRow.length) {
+                        var userAppIds = userAppRow.find(".app-list").val(),
+                            usersOfIds = (userAppIds)? userAppIds.split(",") : [];
+                    
+                        for (var i = 0; i < adminOfIds.length; i++) {
+                            if (usersOfIds.indexOf(adminOfIds[i]) == -1) {
+                                if (usersOfIds.length == 0 && i == 0) {
+                                    userAppRow.find(".user-admin-list").text(adminsOf[i]);
+                                    userAppRow.find(".app-list").val(adminOfIds[i]);
+                                } else {
+                                    userAppRow.find(".user-admin-list").text(userAppRow.find(".user-admin-list").text().trim() + ", " + adminsOf[i]);
+                                    userAppRow.find(".app-list").val(userAppRow.find(".app-list").val() + "," + adminOfIds[i]);
+                                }
+                                
+                                userAppRow.find(".no-apps").hide();
+                            }
+                        }
+                    }
+                });
+                $(".cancel-user-row").on("click", function() {
+                    $("#listof-apps").hide();
+                    $(".create-user-row").slideUp();
+                });
+                $(".create-user").on("click", function() {		
+                    $("#listof-apps").hide();
+                    $(".email-check.green-text").remove();
+                    $(".username-check.green-text").remove();
+                    
+                    var data = {},
+                        currUserDetails = $(".user-details:visible");
+                    
+                    data.full_name = currUserDetails.find(".full-name-text").val();
+                    data.username = currUserDetails.find(".username-text").val();
+                    data.email = currUserDetails.find(".email-text").val();
+                    data.global_admin = currUserDetails.find(".global-admin").hasClass("checked");
+                    data.password = currUserDetails.find(".password-text").val();
+                    
+                    $(".required").fadeOut().remove();
+                    var reqSpan = $("<span>").addClass("required").text("*");
+                    
+                    if (!data.password.length) {
+                        currUserDetails.find(".password-text").after(reqSpan.clone());
+                    }
+                    
+                    if (!data.full_name.length) {
+                        currUserDetails.find(".full-name-text").after(reqSpan.clone());
+                    }
+                    
+                    if (!data.username.length) {
+                        currUserDetails.find(".username-text").after(reqSpan.clone());
+                    }
+                    
+                    if (!data.email.length) {
+                        currUserDetails.find(".email-text").after(reqSpan.clone());
+                    } else if (!validateEmail(data.email)) {
+                        $(".email-check").remove();
+                        var invalidSpan = $("<span class='email-check red-text'>").html(jQuery.i18n.map["management-users.email.invalid"]);
+                        currUserDetails.find(".email-text").after(invalidSpan.clone());
+                    }
+                    
+                    if ($(".required").length) {
+                        $(".required").fadeIn();
+                        return false;
+                    } else if ($(".red-text").length) {
+                        return false;
+                    }
+                    
+                    if (!data.global_admin) {
+                        data.admin_of = currUserDetails.find(".admin-apps .app-list").val().split(",");
+                        data.user_of = currUserDetails.find(".user-apps .app-list").val().split(",");
+                    }
+                    $.ajax({
+                        type: "GET",
+                        url: countlyCommon.API_PARTS.users.w + '/create',
+                        data: {
+                            args: JSON.stringify(data),
+                            api_key: countlyGlobal['member'].api_key
+                        },
+                        dataType: "jsonp",
+                        success: function() {
+                            app.activeView.render();
+                        }
+                    });
+                });
+                $('.scrollable').slimScroll({
+                    height: '100%',
+                    start: 'top',
+                    wheelStep: 10,
+                    position: 'right'
+                });
+                $("#select-all").on('click', function() {
+                    $("#listof-apps .app:not(.disabled)").addClass("selected");
+                    adminsOf = [];
+                    var adminOfIds = [];
+                    
+                    $("#listof-apps .app.selected").each(function() {
+                        adminsOf[adminsOf.length] = $(this).find(".name").text();
+                        adminOfIds[adminOfIds.length] = $(this).find(".app_id").val();
+                    });
+        
+                    $(".user-admin-list").text(adminsOf.join(", "));
+                    $(".app-list").val(adminOfIds.join(","));
+                    $(".no-apps").hide();
+                    
+                    var userAppRow = $(".user-apps");
+                    
+                    if (userAppRow.length) {
+                        userAppRow.find(".user-admin-list").text(adminsOf.join(", "));
+                        userAppRow.find(".app-list").val(adminOfIds.join(","));
+                        userAppRow.find(".no-apps").hide();
+                    }
+                    
+                    $(this).hide();
+                    $("#deselect-all").show();
+                });
+                
+                $("#deselect-all").on('click', function() {
+                    $("#listof-apps").find(".app:not(.disabled)").removeClass("selected");
+                    
+                    adminsOf = [];
+                    var adminOfIds = [];
+                    
+                    $("#listof-apps .app.selected").each(function() {
+                        adminsOf[adminsOf.length] = $(this).find(".name").text();
+                        adminOfIds[adminOfIds.length] = $(this).find(".app_id").val();
+                    });
+                    
+                    $(".user-admin-list").text(adminsOf.join(", "));
+                    $(".app-list").val(adminOfIds.join(","));
+                    
+                    if ($("#listof-apps .app.selected").length == 0) {
+                        $(".no-apps").show();
+                    } else {
+                        $(".no-apps").hide();
+                    }
+                    
+                    $(this).hide();
+                    $("#select-all").show();
+                });
+                
+                $("#done").on('click', function() {
+                    $("#listof-apps").hide();
+                });	
             }
         });
-    }
+    },
+    initTable: function(){
+        var self = this;
+        function generatePassword() {
+            var text = "";
+            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            for( var i=0; i < 6; i++ )
+                text += possible.charAt(Math.floor(Math.random() * possible.length));
+            return text;
+        }
+        function validateEmail(email) { 
+            var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+            return re.test(email);
+        }
+        var adminsOf = [],
+		activeRow,
+		userDetailsClone,
+		previousUserDetails,
+		lastUserSaved = false,
+		previousSelectAppPos = {},
+		currUsername = "",
+		currEmail = "";
+        // translate help module
+        $("[data-help-localize]").each(function() {
+            var elem = $(this);
+            if (elem.data("help-localize") != undefined) {
+                elem.data("help", jQuery.i18n.map[elem.data("help-localize")]);
+            }
+        });
+        
+        // translate dashboard
+        $("[data-localize]").each(function() {
+            var elem = $(this);
+            elem.text(jQuery.i18n.map[elem.data("localize")]);				
+        });
+        
+        if ($("#help-toggle").hasClass("active")) {
+            $('.help-zone-vb').tipsy({gravity: $.fn.tipsy.autoNS, trigger: 'manual', title: function(){ return ($(this).data("help"))? $(this).data("help") : ""; }, fade: true, offset: 5, cssClass: 'yellow', opacity: 1, html: true});
+            $('.help-zone-vs').tipsy({gravity: $.fn.tipsy.autoNS, trigger: 'manual', title: function(){ return ($(this).data("help"))? $(this).data("help") : ""; }, fade: true, offset: 5, cssClass: 'yellow narrow', opacity: 1, html: true});
+            
+            $.idleTimer('destroy');
+            clearInterval(self.refreshActiveView);
+            $(".help-zone-vs, .help-zone-vb").hover(
+                function () {
+                    $(this).tipsy("show");
+                }, 
+                function () {
+                    $(this).tipsy("hide");
+                }
+            );
+        }
+        
+        function closeActiveEdit() {
+            CountlyHelpers.closeRows(self.dtable);
+            $("#listof-apps").hide();
+        }
+        
+        $(".select-apps").off("click").on('click', function() {
+            $("#listof-apps .app").removeClass("selected");
+            activeRow = $(this).parent(".row");
+            var buttonPos = $(this).offset();
+            buttonPos.top += 26;
+            buttonPos.left -= 18;
+            
+            if ($("#listof-apps").is(":visible") && JSON.stringify(buttonPos) === JSON.stringify(previousSelectAppPos)) {
+                $("#listof-apps").hide();
+                return true;
+            }
+            
+            previousSelectAppPos = buttonPos;
+            
+            var appList = activeRow.find(".app-list").val().split(","),
+                adminAppList = $(".admin-apps:visible .app-list").val().split(","),
+                isAdminApps = activeRow.hasClass("admin-apps");
+            
+            $("#listof-apps").find(".app_id").each(function() {
+                if (appList.indexOf($(this).val()) != -1) {
+                    $(this).parent().addClass("selected");
+                }
+                
+                if (!isAdminApps && adminAppList.indexOf($(this).val()) != -1) {
+                    $(this).parent().addClass("disabled");
+                } else {
+                    $(this).parent().removeClass("disabled");
+                }
+            });
+            
+            if ($("#listof-apps .app:not(.disabled)").length == 0) {
+                $("#select-all").hide();
+                $("#deselect-all").hide();
+            } else if ($("#listof-apps .app.selected").length == $("#listof-apps .app").length) {
+                $("#select-all").hide();
+                $("#deselect-all").show();
+            } else {
+                $("#select-all").show();
+                $("#deselect-all").hide();
+            }
+            
+            $("#listof-apps").show().offset(buttonPos);
+        });
+        
+        $(".save-user").off("click").on("click", function() {
+            $("#listof-apps").hide();
+            $(".email-check.green-text").remove();
+            $(".username-check.green-text").remove();
+            
+            lastUserSaved = true;
+            
+            var data = {},
+                currUserDetails = $(".user-details:visible"),
+                changedPassword = false;
+            
+            data.user_id = $(this).parent(".button-container").find(".user_id").val();
+            data.full_name = currUserDetails.find(".full-name-text").val();
+            data.username = currUserDetails.find(".username-text").val();
+            data.email = currUserDetails.find(".email-text").val();
+            
+            $(".required").fadeOut().remove();
+            var reqSpan = $("<span>").addClass("required").text("*");
+            
+            if (!data.full_name.length) {
+                currUserDetails.find(".full-name-text").after(reqSpan.clone());
+            }
+            
+            if (!data.username.length) {
+                currUserDetails.find(".username-text").after(reqSpan.clone());
+            }
+            
+            if (!data.email.length) {
+                currUserDetails.find(".email-text").after(reqSpan.clone());
+            }
+            
+            if ($(".required").length) {
+                $(".required").fadeIn();
+                return false;
+            } else if ($(".red-text").length) {
+                return false;
+            }
+            
+            if (currUserDetails.find(".delete-user").length != 0) {
+                data.global_admin = currUserDetails.find(".global-admin").hasClass("checked");
+                
+                if (!data.global_admin) {
+                    data.admin_of = currUserDetails.find(".admin-apps .app-list").val().split(",");
+                    data.user_of = currUserDetails.find(".user-apps .app-list").val().split(",");
+                }
+            }
+            
+            if (currUserDetails.find(".password-row").is(":visible") && currUserDetails.find(".password-text").val().length) {
+                data.password = currUserDetails.find(".password-text").val();
+                changedPassword = true;
+            }
+            
+            if (changedPassword) {
+                CountlyHelpers.confirm(jQuery.i18n.prop('management-users.password-change-confirm', data.full_name), "black", function(result) {
+                    if (result) {
+                        data.send_notification = true;
+                    }
+                    
+                    saveUser();
+                }, [jQuery.i18n.map["common.no"], jQuery.i18n.map["common.yes"]]);
+            } else {
+                saveUser();
+            }
+            
+            function saveUser() {
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.users.w + '/update',
+                    data: {
+                        args: JSON.stringify(data),
+                        api_key: countlyGlobal['member'].api_key
+                    },
+                    dataType: "jsonp",
+                    success: function(result) {
+                        if (currUserDetails.find(".delete-user").length == 0) {
+                            $("#menu-username").text(data.username);
+                        }
+                        app.activeView.render();
+                    }
+                });
+            }
+        });
+        
+        $(".username-text").off("keyup").on("keyup",_.throttle(function() {
+            if (!($(this).val().length) || currUsername == $(this).val()) {
+                $(".username-check").remove();
+                return false;
+            }
+        
+            $(this).next(".required").remove();
+        
+            var existSpan = $("<span class='username-check red-text'>").html(jQuery.i18n.map["management-users.username.exists"]),
+                notExistSpan = $("<span class='username-check green-text'>").html("&#10004;"),
+                data = {};
+            
+            data.username = $(this).val();
+            data._csrf = countlyGlobal['csrf_token'];
+        
+            var self = $(this);
+            $.ajax({
+                type: "POST",
+                url: countlyGlobal["path"]+"/users/check/username",
+                data: data,
+                success: function(result) {
+                    $(".username-check").remove();
+                    if (result) {
+                        self.after(notExistSpan.clone());
+                    } else {
+                        self.after(existSpan.clone());
+                    }
+                }
+            });
+        }, 300));
+        
+        $(".email-text").off("keyup").on("keyup",_.throttle(function() {
+            if (!($(this).val().length) || currEmail == $(this).val()) {
+                $(".email-check").remove();
+                return false;
+            }
+            
+            $(this).next(".required").remove();
+            
+            if (!validateEmail($(this).val())) {
+                $(".email-check").remove();
+                var invalidSpan = $("<span class='email-check red-text'>").html(jQuery.i18n.map["management-users.email.invalid"]);
+                $(this).after(invalidSpan.clone());
+                return false;
+            }
+            
+            var existSpan = $("<span class='email-check red-text'>").html(jQuery.i18n.map["management-users.email.exists"]),
+                notExistSpan = $("<span class='email-check green-text'>").html("&#10004;"),
+                data = {};
+            
+            data.email = $(this).val();
+            data._csrf = countlyGlobal['csrf_token'];
+            
+            var self = $(this);
+            $.ajax({
+                type: "POST",
+                url: countlyGlobal["path"]+"/users/check/email",
+                data: data,
+                success: function(result) {
+                    $(".email-check").remove();
+                    if (result) {
+                        self.after(notExistSpan.clone());
+                    } else {
+                        self.after(existSpan.clone());
+                    }
+                }
+            });
+        }, 300));
+        
+        $(".cancel-user").off("click").on("click", function() {
+            closeActiveEdit();
+        });
+        $(".delete-user").off("click").on("click", function() {
+            var currUserDetails = $(".user-details:visible");
+            var fullName = currUserDetails.find(".full-name-text").val();
+        
+            var self = $(this);
+            CountlyHelpers.confirm(jQuery.i18n.prop('management-users.delete-confirm', fullName), "red", function(result) {
+                
+                if (!result) {
+                    return false;
+                }
+            
+                var data = {
+                    user_ids: [self.parent(".button-container").find(".user_id").val()]
+                };
+                $.ajax({
+                    type: "GET",
+                    url: countlyCommon.API_PARTS.users.w + '/delete',
+                    data: {
+                        args: JSON.stringify(data),
+                        api_key: countlyGlobal['member'].api_key
+                    },
+                    dataType: "jsonp",
+                    success: function(result) {
+                        currUserDetails.hide();
+                        currUserDetails.prev("tr").remove();
+                        currUserDetails.remove();
+                    }
+                });
+            });
+        });
+        $(".global-admin").off("click").on('click', function() {
+            var currUserDetails = $(".user-details:visible");
+            
+            currUserDetails.find(".user-apps").toggle();
+            currUserDetails.find(".admin-apps").toggle();	
+            $(this).toggleClass("checked");
+            $("#listof-apps").hide();
+        });
+        $(".generate-password").off("click").on('click', function() {
+            $(this).parent().find(".password-text").val(generatePassword());
+        });
+        
+        $(".change-password").off("click").on('click', function() {
+            $(this).parents(".row").next().toggle();
+        });
+    },
+    editUser: function( d, self ) {
+        $(".create-user-row").slideUp();
+        $("#listof-apps").hide();
+        CountlyHelpers.closeRows(self.dtable);
+		// `d` is the original data object for the row
+		var str = '';
+		if(d){
+			str += '<div class="user-details datatablesubrow">';
+            if(countlyGlobal["member"].global_admin){
+				str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.full-name">';
+                    str += '<div class="title" data-localize="management-users.full-name">'+jQuery.i18n.map["management-users.full-name"]+'</div>';
+                    str += '<div class="detail"><input class="full-name-text" type="text" value="'+d.full_name+'"/></div>';
+                str += '</div>';
+				str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.username">';
+					str += '<div class="title" data-localize="management-users.username">'+jQuery.i18n.map["management-users.username"]+'</div>';
+					str += '<div class="detail">';
+					str += '<input class="username-text" type="text" value="'+d.username+'"/><br/>';
+						str += '<div class="small-link change-password" data-localize="management-users.change-password">'+jQuery.i18n.map["management-users.change-password"]+'</div>';
+					str += '</div>';
+				str += '</div>';
+				str += '<div class="row password-row">';
+					str += '<div class="title" data-localize="management-users.password">'+jQuery.i18n.map["management-users.password"]+'</div>';
+					str += '<div class="detail">';
+						str += '<input class="password-text" type="text" value=""/><br/>';
+						str += '<div class="small-link generate-password" data-localize="management-users.generate-password">'+jQuery.i18n.map["management-users.generate-password"]+'</div>';
+					str += '</div>';
+				str += '</div>';
+				str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.email">';
+					str += '<div class="title" data-localize="management-users.email">'+jQuery.i18n.map["management-users.email"]+'</div>';
+					str += '<div class="detail"><input class="email-text" type="text" value="'+d.email+'"/></div>';
+				str += '</div>';
+            }
+			if(!d.is_current_user){
+                if(countlyGlobal["member"].global_admin){
+					str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.global-admin">';
+						str += '<div class="title" data-localize="management-users.global-admin">'+jQuery.i18n.map["management-users.global-admin"]+'</div>';
+						str += '<div class="detail">';
+							str += '<div class="option">';
+                            if(d.global_admin)
+								str += '<div class="global-admin checkbox checked"></div>';
+                            else
+								str += '<div class="global-admin checkbox"></div>';
+								str += '<div class="text"></div>';
+							str += '</div>';
+						str += '</div>';
+					str += '</div>';
+                }
+                if(d.global_admin)
+					str += '<div class="row admin-apps help-zone-vs" data-help-localize="help.manage-users.admin-of" style="display:none;">';
+                else
+					str += '<div class="row admin-apps help-zone-vs" data-help-localize="help.manage-users.admin-of">';
+						str += '<div class="title" data-localize="management-users.admin-of">'+jQuery.i18n.map["management-users.admin-of"]+'</div>';
+						str += '<div class="select-apps">';
+							str += '<input type="hidden" value="'+d.admin_of+'" class="app-list"/>';
+						str += '</div>';
+						str += '<div class="detail user-admin-list">';
+				if(d.admin_of && d.admin_of.length){
+						str += CountlyHelpers.appIdsToNames(d.admin_of);
+				}else{
+						str += '<span data-localize="management-users.admin-of.tip">'+jQuery.i18n.map["management-users.admin-of.tip"]+'</span>';
+				}
+						str += '</div>';
+						str += '<div class="no-apps" data-localize="management-users.admin-of.tip">'+jQuery.i18n.map["management-users.admin-of.tip"]+'</div>';
+					str += '</div>';
+                    if(d.global_admin)
+                        str += '<div class="row user-apps help-zone-vs" data-help-localize="help.manage-users.user-of" style="display:none;">';
+                    else
+                        str += '<div class="row user-apps help-zone-vs" data-help-localize="help.manage-users.user-of">';
+						str += '<div class="title" data-localize="management-users.user-of">'+jQuery.i18n.map["management-users.user-of"]+'</div>';
+						str += '<div class="select-apps">';
+							str += '<input type="hidden" value="'+d.user_of+'" class="app-list"/>';
+						str += '</div>';
+						str += '<div class="detail user-admin-list">';
+				if(d.user_of && d.user_of.length){
+						str += CountlyHelpers.appIdsToNames(d.user_of);
+				}else{
+						str += '<span data-localize="management-users.user-of.tip">'+jQuery.i18n.map["management-users.user-of.tip"]+'</span>';
+				}
+						str += '</div>';
+						str += '<div class="no-apps" data-localize="management-users.user-of.tip">'+jQuery.i18n.map["management-users.user-of.tip"]+'</div>';
+					str += '</div>';
+			}
+					str += '<div class="button-container">';
+						str += '<input class="user_id" type="hidden" value="'+d._id+'"/>';
+						str += '<a class="icon-button light save-user" data-localize="common.save">'+jQuery.i18n.map["common.save"]+'</a>';
+						str += '<a class="icon-button light cancel-user" data-localize="common.cancel">'+jQuery.i18n.map["common.cancel"]+'</a>';
+				if(!d.is_current_user){
+						str += '<a class="icon-button red delete-user" data-localize="management-users.delete-user">'+jQuery.i18n.map["management-users.delete-user"]+'</a>';
+				}
+					str += '</div>';
+				str += '</div>';
+		}
+        setTimeout(function(){self.initTable();}, 1);
+		return str;
+	}
 });
 
 window.EventsView = countlyView.extend({
