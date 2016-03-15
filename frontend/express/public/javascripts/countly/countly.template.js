@@ -2556,6 +2556,7 @@ window.ManageUsersView = countlyView.extend({
                 $("#add-user-mgmt").on("click", function(){
                     CountlyHelpers.closeRows(self.dtable);
                     $("#listof-apps").hide();
+                    $(".row").removeClass("selected");
                     if ($(".create-user-row").is(":visible")) { 
                          $(".create-user-row").slideUp();
                     }
@@ -2586,16 +2587,18 @@ window.ManageUsersView = countlyView.extend({
                         adminOfIds[adminOfIds.length] = $(this).find(".app_id").val();
                     });
                     
+                    activeRow = $(".row.selected");
+                    
                     if ($("#listof-apps .app.selected").length == 0) {
-                        $(".no-apps").show();
+                        activeRow.find(".no-apps").show();
                     } else {
-                        $(".no-apps").hide();
+                        activeRow.find(".no-apps").hide();
                     }
                     
-                    $(".user-admin-list").text(adminsOf.join(", "));
-                    $(".app-list").val(adminOfIds.join(","));
+                    activeRow.find(".user-admin-list").text(adminsOf.join(", "));
+                    activeRow.find(".app-list").val(adminOfIds.join(","));
                     
-                    var userAppRow = $(".user-apps");
+                    var userAppRow = activeRow.next(".user-apps");
                     
                     if (userAppRow.length) {
                         var userAppIds = userAppRow.find(".app-list").val(),
@@ -2618,10 +2621,12 @@ window.ManageUsersView = countlyView.extend({
                 });
                 $(".cancel-user-row").on("click", function() {
                     $("#listof-apps").hide();
+                    $(".row").removeClass("selected");
                     $(".create-user-row").slideUp();
                 });
                 $(".create-user").on("click", function() {		
                     $("#listof-apps").hide();
+                    $(".row").removeClass("selected");
                     $(".email-check.green-text").remove();
                     $(".username-check.green-text").remove();
                     
@@ -2697,11 +2702,13 @@ window.ManageUsersView = countlyView.extend({
                         adminOfIds[adminOfIds.length] = $(this).find(".app_id").val();
                     });
         
-                    $(".user-admin-list").text(adminsOf.join(", "));
-                    $(".app-list").val(adminOfIds.join(","));
-                    $(".no-apps").hide();
+                    activeRow = $(".row.selected");
                     
-                    var userAppRow = $(".user-apps");
+                    activeRow.find(".user-admin-list").text(adminsOf.join(", "));
+                    activeRow.find(".app-list").val(adminOfIds.join(","));
+                    activeRow.find(".no-apps").hide();
+		
+                    var userAppRow = activeRow.next(".user-apps");
                     
                     if (userAppRow.length) {
                         userAppRow.find(".user-admin-list").text(adminsOf.join(", "));
@@ -2724,13 +2731,15 @@ window.ManageUsersView = countlyView.extend({
                         adminOfIds[adminOfIds.length] = $(this).find(".app_id").val();
                     });
                     
-                    $(".user-admin-list").text(adminsOf.join(", "));
-                    $(".app-list").val(adminOfIds.join(","));
+                    activeRow = $(".row.selected");
+                    
+                    activeRow.find(".user-admin-list").text(adminsOf.join(", "));
+                    activeRow.find(".app-list").val(adminOfIds.join(","));
                     
                     if ($("#listof-apps .app.selected").length == 0) {
-                        $(".no-apps").show();
+                        activeRow.find(".no-apps").show();
                     } else {
-                        $(".no-apps").hide();
+                        activeRow.find(".no-apps").hide();
                     }
                     
                     $(this).hide();
@@ -2739,6 +2748,7 @@ window.ManageUsersView = countlyView.extend({
                 
                 $("#done").on('click', function() {
                     $("#listof-apps").hide();
+                    $(".row").removeClass("selected");
                 });	
             }
         });
@@ -2797,17 +2807,20 @@ window.ManageUsersView = countlyView.extend({
         function closeActiveEdit() {
             CountlyHelpers.closeRows(self.dtable);
             $("#listof-apps").hide();
+            $(".row").removeClass("selected");
         }
         
         $(".select-apps").off("click").on('click', function() {
             $("#listof-apps .app").removeClass("selected");
             activeRow = $(this).parent(".row");
+            activeRow.addClass("selected");
             var buttonPos = $(this).offset();
             buttonPos.top += 26;
             buttonPos.left -= 18;
             
             if ($("#listof-apps").is(":visible") && JSON.stringify(buttonPos) === JSON.stringify(previousSelectAppPos)) {
                 $("#listof-apps").hide();
+                $(".row").removeClass("selected");
                 return true;
             }
             
@@ -2845,6 +2858,7 @@ window.ManageUsersView = countlyView.extend({
         
         $(".save-user").off("click").on("click", function() {
             $("#listof-apps").hide();
+            $(".row").removeClass("selected");
             $(".email-check.green-text").remove();
             $(".username-check.green-text").remove();
             
@@ -3033,6 +3047,7 @@ window.ManageUsersView = countlyView.extend({
             currUserDetails.find(".admin-apps").toggle();	
             $(this).toggleClass("checked");
             $("#listof-apps").hide();
+            $(".row").removeClass("selected");
         });
         $(".generate-password").off("click").on('click', function() {
             $(this).parent().find(".password-text").val(generatePassword());
@@ -3045,6 +3060,7 @@ window.ManageUsersView = countlyView.extend({
     editUser: function( d, self ) {
         $(".create-user-row").slideUp();
         $("#listof-apps").hide();
+        $(".row").removeClass("selected");
         CountlyHelpers.closeRows(self.dtable);
 		// `d` is the original data object for the row
 		var str = '';
