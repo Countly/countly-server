@@ -3021,9 +3021,7 @@ window.ManageUsersView = countlyView.extend({
                     },
                     dataType: "jsonp",
                     success: function(result) {
-                        currUserDetails.hide();
-                        currUserDetails.prev("tr").remove();
-                        currUserDetails.remove();
+                        app.activeView.render();
                     }
                 });
             });
