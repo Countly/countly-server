@@ -285,7 +285,7 @@ window.ActionMapView = countlyView.extend({
         var url = "http://"+segments[self.curSegment]+self.view;
         countlyViews.testUrl(url, function(result){
             if(result)
-                $("#view-map iframe").attr("src", url);
+                $("#view-map iframe").attr("src", "/o/urlredir?url="+encodeURIComponent(url));
             else{
                 self.curSegment++;
                 if(segments[self.curSegment]){
