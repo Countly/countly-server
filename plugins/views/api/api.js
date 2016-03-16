@@ -31,13 +31,27 @@ var plugin = {},
         var params = ob.params;
         if(params.qstring.url){
             request(params.qstring.url, function (error, response, body) {
-                if (!error && response.statusCode == 200) {
+                if (!error && response.statusCode >= 200 && response.statusCode < 400) {
                     common.returnOutput(params,{result:true});
                 }
                 else{
                     common.returnOutput(params,{result:false});
                 }
             });
+        }
+        else{
+            common.returnOutput(params,{result:false});
+        }
+        return true;
+    });
+    
+    plugins.register("/o/urlredir", function(ob){
+        var params = ob.params;
+        if(params.qstring.url){
+            params.res.writeHead(302, {
+                'Location': params.qstring.url,
+            });
+            params.res.end();
         }
         else{
             common.returnOutput(params,{result:false});
