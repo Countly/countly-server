@@ -122,18 +122,18 @@ var pluginManager = function pluginManager(){
         });
     };
     
-    this.extendModule = function(name, object){
-        //global extend
-        try{
-            require("../extend/"+name)(object);
-        } catch (ex) {}
-        
+    this.extendModule = function(name, object){     
         //plugin specific extend
         for(var i = 0, l = plugins.length; i < l; i++){
             try{
                 require("./"+plugins[i]+"/extend/"+name)(object);
             } catch (ex) {}
         }
+        
+        //global extend
+        try{
+            require("../extend/"+name)(object);
+        } catch (ex) {}
     }
     
     this.register = function(event, callback){
