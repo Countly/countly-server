@@ -282,7 +282,7 @@ window.ActionMapView = countlyView.extend({
     loadIframe: function(){
         var self = this;
         var segments = countlyViews.getActionsData().domains;
-        var url = "http://"+segments[self.curSegment]+self.view;
+        var url = location.protocol+"//"+segments[self.curSegment]+self.view;
         countlyViews.testUrl(url, function(result){
             if(result)
                 $("#view-map iframe").attr("src", "/o/urlredir?url="+encodeURIComponent(url));
@@ -370,11 +370,13 @@ window.ActionMapView = countlyView.extend({
             }
             self.renderCommon(true);
             var data = countlyViews.getActionsData();
-            self.map.clear();
-            self.map.data(self.getData(data.data));
-            var r = Math.max((48500-35*data.data.length)/900, 5);
-            self.map.radius(r, r*1.6);
-            self.map.draw();
+            if(self.map){
+                self.map.clear();
+                self.map.data(self.getData(data.data));
+                var r = Math.max((48500-35*data.data.length)/900, 5);
+                self.map.radius(r, r*1.6);
+                self.map.draw();
+            }
         });
     }
 });
