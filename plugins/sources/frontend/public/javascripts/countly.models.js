@@ -10,9 +10,9 @@
     });
     function getSourceName(code, data, separate){
         code = code.replace(/&#46;/g, '.');
-        if(separate)
-            return code;
         if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "mobile"){
+            if(separate)
+                return code;
             if(stores && stores[code]){
                 return stores[code];
             }
@@ -27,8 +27,12 @@
         }
         else{
             if(code.indexOf("://") == -1){
-                return "Direct";
+                if(separate)
+                    return jQuery.i18n.map["sources.organic"]+" ("+code+")";
+                return jQuery.i18n.map["sources.direct"];
             }
+            else if(separate)
+                return code;
             code = code.replace("://www.", "://");
             var matches = code.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i);
             var domain = matches && matches[1] || code;
