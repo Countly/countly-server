@@ -207,7 +207,8 @@ a:active { color:inherit; }
 /* SIDEBAR END */
 
 /* DASHBOARD */
-	#dashboard-graph { font-family:Oswald; text-shadow:none; font-size:14px; }
+	#dashboard-graph,
+    #dashboard-graph-secondary { font-family:Oswald; text-shadow:none; font-size:14px; margin:0 -10px !important; }
     #dashboard-graph .legendLabel,.graph .legendLabel { font-family:Ubuntu !important; font-size:14px !important; }
 	.graph-key-event-label { z-index:2; font-family:Oswald; padding:2px 2px; cursor:pointer; text-shadow:none; width:15px; text-align:center; background-color:#6BB96E; color:#FFF; font-size:10px; border-radius:3px; font-weight:normal; opacity:0.8; }
 
@@ -321,7 +322,7 @@ a:active { color:inherit; }
 		#graph-tooltip { border:1px solid #1B1B1C; box-shadow:0 1px 1px 0 #B0B0B0, inset 0 1px 0 #727475; background-image:linear-gradient(top, #3947320 30%, #383B3C 100%); background-image:linear-gradient(to bottom, #3947320 30%, #383B3C 100%); padding:5px 7px; border-radius:2px; background-color:#3C3F40; opacity:0.80; color:#FFF; font:12px Oswald; display:none; position:absolute; z-index:100; }
 		.pie-chart-container { float:left; width:50%; position:relative; height:360px; }
 			.pie-chart-container .graph-segment-container { position:absolute; left:10px; top:10px; z-index:3; }
-		.pie-overlay { position:absolute; z-index:2; width:248px; height:248px; left:50%; margin-left:-119px; top:56px; background-image:url('../images/dashboard/total-user.png'); background-position:center; background-repeat:no-repeat; }
+		.pie-overlay { position:absolute; z-index:2; width:248px; height:248px; left:50%; margin-left:-124px; top:56px; background-image:url('../images/dashboard/total-user.png'); background-position:center; background-repeat:no-repeat; }
 		.pie-overlay  .title { font:14px Oswald; color:#7D7D7D; text-shadow:0 -1px #070707; margin:0 auto; text-align:center; margin-top:143px; max-width:100px; line-height:17px; }
 		.pie-overlay.one { background-image:url('../images/dashboard/total-user.png'); }
 		.pie-overlay.two { background-image:url('../images/dashboard/new-users.png'); }
@@ -490,8 +491,6 @@ div.datatablesubrow {display: none;}
 .sticky-header.hide { display:none; }
 .sticky-header { top:0; position:fixed; }
 .sticky-header table { border-bottom:none; box-shadow:0 1px 1px 0 #666; border-radius:0; }
-
-.tickLabel { text-shadow:0 1px #FFF; color:#999; }
 
 /* DATEPICKER */
 .ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
@@ -886,8 +885,9 @@ table.events-table { width:100%; padding:0; margin:0; }
 #edit-account-details { display:none; }
 	#edit-account-details .title { float:left; width:100px; }
 	#edit-account-details .input { margin-left:105px; }
+.tickLabel { color:#999; }
     .xAxis .tickLabel { overflow: hidden; text-overflow: ellipsis; max-width: 100px; max-height: 60px; white-space: pre-wrap; }
-    .yAxis .tickLabel { text-align: right !important; }
+    .yAxis .tickLabel { text-align: right !important; font-size:11px; color:#CCC; z-index:-1; }
 
 #no-app-warning { display:none; margin-left:187px; }
 #first-app-success { display:none; margin-left:187px; margin-top:-5px; }
@@ -947,7 +947,7 @@ table.events-table { width:100%; padding:0; margin:0; }
 .options li{font:14px Ubuntu,Helvetica,sans-serif; color: #666; padding: 2px; padding-right: 5px; cursor:pointer;}
 .options li:hover{background-color: #FFF; color: #666;}
 .options li span {line-height:23px;}
-	
+
 /* ALL APPS */
 .allapps {margin-top: -16px;}
 .allapps .dataTable-top {border-radius: 0;}

@@ -38,6 +38,7 @@
 .crashoveral .widget-content .big-numbers .inner{height: 80px;}
 .crashoveral .widget-content .big-numbers .fa{vertical-align: text-top; font-size: 13px; margin-left: -5px;}
 .crashoveral #big-numbers-container.dashboard{margin-bottom:-10px;border: none;}
+.widget.crashoveral .widget-footer { overflow: visible; }
 
 .widget-footer .crashnumbers .big-numbers .inner {height: 31px;}
 .widget-header .left>.title #resolved-text {color: #45b849;}
