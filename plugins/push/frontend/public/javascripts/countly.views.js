@@ -1309,7 +1309,7 @@ app.addAppManagementSwitchCallback(function(appId, type){
     }
 });
 
-app.addPageScript("/drill", function(){
+app.addPageScript("/drill#", function(){
     if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "mobile"){
         $("#bookmark-filter").after(
         '<div id="create-message-connector" style="display:none; float:left; height:1px; border-top:1px solid #999; width:50px; margin-top:14px; margin-left:5px;"></div>'+
