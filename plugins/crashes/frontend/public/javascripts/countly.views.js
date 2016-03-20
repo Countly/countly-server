@@ -445,10 +445,7 @@ window.CrashgroupView = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
              if(typeof addDrill != "undefined"){
-                var str = '<div title="Drill down this data with Countly Drill" id="drill-down-for-view" data-drill-id="sg.crash" data-drill-val="'+this.id+'" data-drill-section="crashes" class="icon-button light" style="font-size: 14px; padding: 5px 5px 4px 5px; margin: 6px 0 0 13px; border-radius: 15px;">'+
-                    '<span class="fa fa-sort-amount-desc" style="color:#86BB64;"></span>'+
-                '</div>';
-                $("#content .widget:first-child .widget-header>.right").append(str);
+                $("#content .widget:first-child .widget-header>.right").append(addDrill("sg.crash", this.id, "[CLY]_crash"));
             }
             if(crashData.comments){
                 var count = 0;

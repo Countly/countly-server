@@ -20,7 +20,7 @@ window.SourcesView = countlyView.extend({
             var data = countlySources.getData();
             $(this.el).html(this.template(this.templateData));
             if(typeof addDrill != "undefined"){
-                addDrill("up.src");
+                $(".widget-header .left .title").after(addDrill("up.src"));
             }
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": data.chartData,

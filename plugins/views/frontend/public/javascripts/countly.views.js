@@ -58,9 +58,11 @@ window.ViewsView = countlyView.extend({
                 { "mData": "b", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["views.bounces"] }
             ];
             
-            if(typeof addDrill != "undefined" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
-                addDrill("up.lv");
-                columns.push({ "mData": function(row, type){return '<a href="#/analytics/views/action-map/'+row.views+'" class="icon-button green btn-header btn-view-map" data-localize="views.table.view" style="margin:0px; padding:2px;">View</a>';}, sType:"string", "sTitle": jQuery.i18n.map["views.action-map"], "sClass":"shrink center"  });
+            if(typeof addDrill != "undefined"){
+                $(".widget-header .left .title").after(addDrill("up.lv"));
+                if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
+                    columns.push({ "mData": function(row, type){return '<a href="#/analytics/views/action-map/'+row.views+'" class="icon-button green btn-header btn-view-map" data-localize="views.table.view" style="margin:0px; padding:2px;">View</a>';}, sType:"string", "sTitle": jQuery.i18n.map["views.action-map"], "sClass":"shrink center"  });
+                }
             }
 
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {

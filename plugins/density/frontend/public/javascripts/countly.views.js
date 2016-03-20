@@ -19,7 +19,7 @@ window.DensityView = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             if(typeof addDrill != "undefined"){
-                addDrill("up.dnst");
+                $(".widget-header .left .title").after(addDrill("up.dnst"));
             }
 
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
