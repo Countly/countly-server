@@ -134,6 +134,23 @@
     <script>
         var countlyTitle = "<%- countlyTitle %>";
 		$(document).ready(function() {
+            var lang = store.get("countly_lang") || "en";
+            jQuery.i18n.properties({
+                name:'enterpriseinfo', 
+                path:[countlyGlobal["cdn"]+'enterpriseinfo/localization/'],
+                mode:'map',
+                language: lang,
+                callback: function() {
+                    $("[data-localize]").each(function() {
+                        var elem = $(this),
+                            localizedValue = jQuery.i18n.map[elem.data("localize")];
+                        
+                        if (localizedValue) {
+                            elem.html(localizedValue);
+                        }
+                    });
+                }
+            });
 			<% if (message){ %>
 				showMessage("<%= message %>");
 			<% } %>			
@@ -143,6 +160,25 @@
 		
 		$(document).bind('clyLangChange', function() {
 			document.title = countlyTitle + " | " + jQuery.i18n.map["login.title"];
+            var lang = store.get("countly_lang") || "en";
+            setTimeout(function(){
+                jQuery.i18n.properties({
+                    name:'enterpriseinfo', 
+                    path:[countlyGlobal["cdn"]+'enterpriseinfo/localization/'],
+                    mode:'map',
+                    language: lang,
+                    callback: function() {
+                        $("[data-localize]").each(function() {
+                            var elem = $(this),
+                                localizedValue = jQuery.i18n.map[elem.data("localize")];
+                            
+                            if (localizedValue) {
+                                elem.html(jQuery.i18n.map[elem.data("localize")]);
+                            }
+                        });
+                    }
+                });
+            }, 0);
 		});
 	</script>
 	<% if (typeof javascript != 'undefined') { %>
