@@ -17,7 +17,13 @@
         }
     }
 
-    if (store.get("countly_lang")) {
+    if(countlyGlobal["member"].lang){
+        var lang = countlyGlobal["member"].lang;
+        store.set("countly_lang", lang);
+        countlyCommon.BROWSER_LANG_SHORT = lang;
+        countlyCommon.BROWSER_LANG = lang;
+    }
+    else if (store.get("countly_lang")) {
         var lang = store.get("countly_lang");
         countlyCommon.BROWSER_LANG_SHORT = lang;
         countlyCommon.BROWSER_LANG = lang;

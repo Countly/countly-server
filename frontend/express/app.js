@@ -795,6 +795,36 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
     }
 });
 
+app.post(countlyConfig.path+'/user/settings/lang', function (req, res, next) {
+    if (!req.session.uid) {
+        res.end();
+        return false;
+    }
+
+    var updatedUser = {};
+
+    if (req.body.username && req.body.lang) {
+        updatedUser.lang = req.body.lang;
+
+        countlyDb.collection('members').findOne({username:req.body.username}, function (err, member) {
+            if ((member && member._id != req.session.uid) || err) {
+                res.send("username-exists");
+            } else {
+                countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid)}, {'$set':updatedUser}, {safe:true}, function (err, member) {
+                    if (member && !err) {
+                        res.send(true);
+                    } else {
+                        res.send(false);
+                    }
+                });
+            }
+        });
+    } else {
+        res.send(false);
+        return false;
+    }
+});
+
 app.post(countlyConfig.path+'/users/check/email', function (req, res, next) {
     if (!req.session.uid || !isGlobalAdmin(req) || !req.body.email) {
         res.send(false);

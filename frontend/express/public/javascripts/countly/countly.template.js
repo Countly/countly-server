@@ -4269,7 +4269,7 @@ var AppRouter = Backbone.Router.extend({
                 
                 $.ajax({
                     type:"POST",
-                    url:countlyGlobal["path"]+"/user/settings",
+                    url:countlyGlobal["path"]+"/user/settings/lang",
                     data:{
                         "username":countlyGlobal["member"].username,
                         "lang":countlyCommon.BROWSER_LANG_SHORT,
