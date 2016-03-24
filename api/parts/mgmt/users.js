@@ -84,6 +84,8 @@ var usersApi = {},
             var passwordNoHash = newMember.password;
             newMember.password = common.sha1Hash(newMember.password);
             newMember.created_at = Math.floor(((new Date()).getTime()) / 1000); //TODO: Check if UTC
+            newMember.admin_of = newMember.admin_of || [];
+            newMember.user_of = newMember.user_of || [];
 
             common.db.collection('members').insert(newMember, {safe: true}, function(err, member) {
                 member = member.ops;
