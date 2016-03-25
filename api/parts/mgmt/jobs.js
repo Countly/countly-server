@@ -401,6 +401,7 @@ var JobWorker = function(processors){
 module.exports = {
 	workers: [],
 	startWorker: function(types, jobs, runPlugins, started) {
+		manager.loadConfigs(common.db, function(){
 		types = types || process.env.COUNTLY_JOBS || null;
 		jobs = jobs || {};
 		started = started || function(){};
@@ -467,6 +468,7 @@ module.exports = {
 		} else {
 			started(null, null);
 		}
+		});
 	},
 	job: function(name, data) {
 		return new Job(name, data);
