@@ -116,14 +116,14 @@ if (cluster.isMaster) {
     plugins.dispatch("/worker", {common:common});
     // Checks app_key from the http request against "apps" collection.
     // This is the first step of every write request to API.
-    function validateAppForWriteAPI(params) {
+    function validateAppForWriteAPI(params, done) {
         common.db.collection('apps').findOne({'key':params.qstring.app_key}, function (err, app) {
             if (!app) {
                 if (plugins.getConfig("api").safe) {
                     common.returnMessage(params, 400, 'App does not exist');
                 }
     
-                return false;
+                return done ? done() : false;
             }
     
             params.app_id = app['_id'];
@@ -156,7 +156,7 @@ if (cluster.isMaster) {
                             //remove old device ID and retry request
                             params.qstring.old_device_id = null;
                             //retry request
-                            validateAppForWriteAPI(params);
+                            validateAppForWriteAPI(params, done);
                         };
                         
                         var old_id = common.crypto.createHash('sha1').update(params.qstring.app_key + params.qstring.old_device_id + "").digest('hex');
@@ -258,7 +258,7 @@ if (cluster.isMaster) {
                     }
             
                     if (params.qstring.begin_session) {
-                        countlyApi.data.usage.beginUserSession(params);
+                        countlyApi.data.usage.beginUserSession(params, done);
                     } else if (params.qstring.end_session) {
                         if (params.qstring.session_duration) {
                             countlyApi.data.usage.processSessionDuration(params, function () {
@@ -267,8 +267,10 @@ if (cluster.isMaster) {
                         } else {
                             countlyApi.data.usage.endUserSession(params);
                         }
+                        return done ? done() : false;
                     } else if (params.qstring.session_duration) {
                         countlyApi.data.usage.processSessionDuration(params);
+                        return done ? done() : false;
                     } else {
                         // begin_session, session_duration and end_session handle incrementing request count in usage.js
                         var dbDateIds = common.getDateIds(params),
@@ -277,8 +279,10 @@ if (cluster.isMaster) {
                         common.fillTimeObjectMonth(params, updateUsers, common.dbMap['events']);
                         common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, {'upsert':true}, function(err, res){});
             
-                        return false;
+                        return done ? done() : false;
                     }
+                } else {
+                    return done ? done() : false;
                 }
             });
         });
@@ -447,16 +451,16 @@ if (cluster.isMaster) {
                                 common.returnMessage(params, 400, 'Missing parameter "requests"');
                                 return false;
                             }
+                            common.blockResponses(params);
                             function processBulkRequest(i) {
-                                if(i == requests.length)
+                                if(i == requests.length) {
+                                    common.unblockResponses(params);
+                                    common.returnMessage(params, 200, 'Success');
                                     return;
+                                }
                                 
                                 if (!requests[i].app_key && !appKey) {
-                                    i++;
-                                    setTimeout(function(){
-                                        processBulkRequest(i);
-                                    }, 1000);
-                                    return;
+                                    return processBulkRequest(i + 1);
                                 }
                 
                                 var tmpParams = {
@@ -473,11 +477,7 @@ if (cluster.isMaster) {
                                 tmpParams["qstring"]['app_key'] = requests[i].app_key || appKey;
                 
                                 if (!tmpParams.qstring.device_id) {
-                                    i++;
-                                    setTimeout(function(){
-                                        processBulkRequest(i);
-                                    }, 10000);
-                                    return;
+                                    return processBulkRequest(i + 1);
                                 } else {
                                     tmpParams.app_user_id = common.crypto.createHash('sha1').update(tmpParams.qstring.app_key + tmpParams.qstring.device_id + "").digest('hex');
                                 }
@@ -496,17 +496,10 @@ if (cluster.isMaster) {
                                             tmpParams.qstring.metrics["_os_version"] = tmpParams.qstring.metrics["_os"][0].toLowerCase() + tmpParams.qstring.metrics["_os_version"];
                                     }
                                 }
-                                validateAppForWriteAPI(tmpParams);
-                                i++;
-                                setTimeout(function(){
-                                    processBulkRequest(i);
-                                }, 1000);
-                                return;
+                                return validateAppForWriteAPI(tmpParams, processBulkRequest.bind(null, i + 1));
                             }
                             
                             processBulkRequest(0);
-                
-                            common.returnMessage(params, 200, 'Success');
                             
                             break;
                         }
