@@ -372,8 +372,16 @@ var common = {},
         }
     };
 
+    common.blockResponses = function(params) {
+        params.blockResponses = true;
+    };
+
+    common.unblockResponses = function(params) {
+        params.blockResponses = false;
+    };
+
     common.returnMessage = function (params, returnCode, message) {
-        if (params && params.res) {
+        if (params && params.res && !params.blockResponses) {
             params.res.writeHead(returnCode, {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
             if (params.qstring.callback) {
                 params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}) + ')');
@@ -386,7 +394,7 @@ var common = {},
     };
 
     common.returnOutput = function (params, output) {
-        if (params && params.res) {
+        if (params && params.res && !params.blockResponses) {
             params.res.writeHead(200, {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
             if (params.qstring.callback) {
                 params.res.write(params.qstring.callback + '(' + JSON.stringify(output) + ')');

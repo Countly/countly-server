@@ -16,7 +16,16 @@
         _store: ["com.android.vending","com.google.android.feedback","com.google.vending","com.slideme.sam.manager","com.amazon.venezia","com.sec.android.app.samsungapps","com.nokia.payment.iapenabler","com.qihoo.appstore","cn.goapk.market","com.wandoujia.phoenix2","com.hiapk.marketpho","com.hiapk.marketpad","com.dragon.android.pandaspace","me.onemobile.android","com.aspire.mm","com.xiaomi.market","com.miui.supermarket","com.baidu.appsearch","com.tencent.android.qqdownloader","com.android.browser","com.bbk.appstore","cm.aptoide.pt","com.nduoa.nmarket","com.rim.marketintent","com.lenovo.leos.appstore","com.lenovo.leos.appstore.pad","com.keenhi.mid.kitservice","com.yingyonghui.market","com.moto.mobile.appstore","com.aliyun.wireless.vos.appstore","com.appslib.vending","com.mappn.gfan","com.diguayouxi","um.market.android","com.huawei.appmarket","com.oppo.market","com.taobao.appcenter"],
         _source: ["https://www.google.lv", "https://www.google.co.in/", "https://www.google.ru/", "http://stackoverflow.com/questions", "http://stackoverflow.com/unanswered", "http://stackoverflow.com/tags", "http://r.search.yahoo.com/"]
 	};
-	var events = ["Login", "Logout", "Lost", "Won", "Achievement","Sound","Shared", "[CLY]_view"];
+	var eventsMap = {
+		"Login": ["Lost", "Won"],
+		"Logout": [],
+		"Lost": ["Won", "Achievement", "Lost"],
+		"Won": ["Lost", "Achievement"],
+		"Achievement": ["Sound", "Shared"],
+		"Sound": ["Lost", "Won"],
+		"Shared": ["Lost", "Won"],
+	};
+	var events = Object.keys(eventsMap).join(["[CLY]_view"]);
 	var pushEvents = ["[CLY]_push_sent", "[CLY]_push_open", "[CLY]_push_action"];
 	var segments  = {
 		Login: {referer: ["twitter", "notification", "unknown"]},
@@ -102,6 +111,7 @@
 		this.metrics = {};
 		this.startTs = startTs;
 		this.endTs = endTs;
+		this.events = [];
 		this.ts = getRandomInt(this.startTs, this.endTs);
 		for(var i in props){
 			if(i == "_os" || i == "_os_web"){
@@ -205,9 +215,18 @@
         };
 		
 		this.getEvent = function(id){
-			if(!id){
-				id = events[Math.floor(Math.random()*events.length)];
+			if (!id) {
+				if (this.previousEventId) {
+					id = eventsMap[this.previousEventId][Math.floor(Math.random()*eventsMap[this.previousEventId].length)];
+				} else {
+					id = 'Login';
+				}
 			}
+
+			if (id in eventsMap) {
+            	this.previousEventId = id;
+			}
+
 			var event = {
 				"key": id,
 				"count": 1,
@@ -215,6 +234,7 @@
                 "hour": getRandomInt(0, 23),
                 "dow": getRandomInt(0, 6)
 			};
+			this.ts += 1000;
 			if(id == this.iap){
 				stats.b++;
 				event.sum = getRandomInt(100, 500)/100;
@@ -237,6 +257,7 @@
                 event.dur = getRandomInt(0, 100);
             else
                 event.dur = getRandomInt(0, 10);
+
 			return [event];
 		};
         
@@ -248,15 +269,16 @@
             return events;
         };
 		
+		this.getPushEvents = function(){
+			var events = this.getPushEvent('[CLY]_push_open');
+            if (Math.random() >= 0.8) {
+            	return events.concat(this.getPushEvent('[CLY]_push_action'));
+            } else {
+            	return events;
+            }
+
+		};
 		this.getPushEvent = function(id){
-			if(!id){
-                if(Math.random() >= 0.4)
-                    id = "[CLY]_push_sent";
-                else if(Math.random() >= 0.4)
-                    id = "[CLY]_push_open";
-                else
-                    id = "[CLY]_push_action";
-			}
 			var event = {
 				"key": id,
 				"count": 1,
@@ -265,6 +287,7 @@
                 "dow": getRandomInt(0, 6),
                 "test": 1 // Events starting with [CLY]_ are ignored by the API (internal events). This flag is to bypass that.
 			};
+			this.ts += 1000;
 			if(segments[id]){
 				var segment;
 				event.segmentation = {};
@@ -282,27 +305,23 @@
 			if(!this.isRegistered){
 				this.isRegistered = true;
 				stats.u++;
-                var events = this.getEvents(6);
-                events.push(this.getEvent("[CLY]_view")[0]);
-                events.push(this.getEvent("Login")[0]);
+                var events = this.getEvent("Login").concat(this.getEvent("[CLY]_view")).concat(this.getEvents(4));
 				this.request({timestamp:this.ts, begin_session:1, metrics:this.metrics, user_details:this.userdetails, events:events});
 				if(Math.random() > 0.5){
 					this.hasPush = true;
 					stats.p++;
-					var data = {timestamp:this.ts, token_session:1, test_mode:0};
+					var data = {timestamp:this.ts, token_session:1, test_mode:0, events: this.getPushEvents()};
 					data[this.platform.toLowerCase()+"_token"] = randomString(8);
 					this.request(data);
 				}
 			}
 			else{
 				stats.e++;
-                var events = this.getEvents(6);
-                events.push(this.getEvent("[CLY]_view")[0]);
-                events.push(this.getEvent("Login")[0]);
+                var events = this.getEvent("Login").concat(this.getEvent("[CLY]_view")).concat(this.getEvents(4));
 				this.request({timestamp:this.ts, begin_session:1, events:events});
 			}
 			this.hasSession = true;
-			this.timer = setTimeout(function(){that.extendSession()}, timeout);
+			this.timer = setTimeout(function(){that.extendSession()}, 6000 + timeout);
 		};
 		
 		this.extendSession = function(){
@@ -311,21 +330,17 @@
 				stats.x++;
 				stats.d += 30;
 				stats.e++;
-				var events = this.getEvents(6);
-                events.push(this.getEvent("[CLY]_view")[0]);
-                if(this.hasPush){
-                    events.push(this.getPushEvent()[0]);
-				}
+                var events = this.getEvent("[CLY]_view").concat(this.getEvents(4));
                 this.request({timestamp:this.ts, session_duration:30, events:events});
 				if(Math.random() > 0.8){
-					this.timer = setTimeout(function(){that.extendSession()}, timeout);
+					this.timer = setTimeout(function(){that.extendSession()}, 6000 + timeout);
 				}
 				else{
 					stats.c++;
 					if(Math.random() > 0.5){
 						this.request({timestamp:this.ts, crash:this.getCrash()});
 					}
-					this.endSession();
+					this.timer = setTimeout(function(){that.endSession()}, 6000 + timeout);
 				}
 			}
 		}
@@ -338,8 +353,7 @@
 			if(this.hasSession){
 				this.hasSession = false;
 				stats.e++;
-                var events = this.getEvents(6);
-                events.push(this.getEvent("Logout")[0]);
+                var events = this.getEvents(6).concat(this.getEvent("Logout"));
 				this.request({timestamp:this.ts, end_session:1, events:events});
 			}
 		};
@@ -361,6 +375,7 @@
 	var timeout = 1000;
 	var bucket = 50;
 	var generating = false;
+	var stopCallback = null;
 	var users = [];
 	var userAmount = 1000;
 	var queued = 0;
@@ -503,6 +518,7 @@
 		}
 	};
 	countlyPopulator.generateUsers = function (amount) {
+		stopCallback = null;
 		userAmount = amount;
 		bulk = [];
 		stats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
@@ -550,10 +566,14 @@
                 setTimeout(processUsers, timeout);
             }
         });
+                    // for(var i = 0; i < amount; i++){
+                    //     createUser();
+                    // }
 	};
 	
-	countlyPopulator.stopGenerating = function () {
+	countlyPopulator.stopGenerating = function (clb) {
 		generating = false;
+		stopCallback = clb;
 		var u;
 		for(var i = 0; i < users.length; i++){
 			u = users[i];
@@ -561,6 +581,10 @@
 				u.endSession();
 		}
 		users = [];
+
+		if (!countlyPopulator.bulking && stopCallback) {
+			countlyPopulator.ensureJobs();
+		}
 	};
 	
 	countlyPopulator.isGenerating = function(){
@@ -568,7 +592,7 @@
 	}
     
     countlyPopulator.sync = function (force) {
-		if(generating && (force || bulk.length > bucket)){
+		if(generating && (force || bulk.length > bucket) && !countlyPopulator.bulking){
 			var temp = {};
 			for(var i in stats){
 				temp[i] = stats[i];
@@ -578,6 +602,7 @@
 			var mult = Math.round(queued/10)+1;
 			timeout = bucket*100*mult*mult;
 			$("#populate-stats-br").text(queued);
+			countlyPopulator.bulking = true;
 			$.ajax({
 				type:"POST",
 				url:countlyCommon.API_URL + "/i/bulk",
@@ -589,13 +614,79 @@
 					queued--;
 					$("#populate-stats-br").text(queued);
 					updateUI(temp);
+					countlyPopulator.bulking = false;
+					countlyPopulator.sync();
+					if (!generating && stopCallback) {
+						countlyPopulator.ensureJobs();
+					}
 				},
 				error:function(){
 					queued--;
 					$("#populate-stats-br").text(queued);
+					countlyPopulator.bulking = false;
+					countlyPopulator.sync();
+					if (!generating && stopCallback) {
+						countlyPopulator.ensureJobs();
+					}
 				}
 			});
 			bulk = [];
 		}
+    };	
+
+    var ensuringJobs = false;
+    countlyPopulator.ensureJobs = function() {
+    	if (ensuringJobs) { return; }
+    	ensuringJobs = true;
+
+    	$.ajax({
+    		type: "GET",
+    		url: countlyCommon.API_URL + "/i/flows/lastJob",
+    		data: {
+    			app_key:countlyCommon.ACTIVE_APP_KEY
+    		},
+			success:function (json) {
+    			if (json && json.job) {
+    				function checkAgain() {
+    					$.ajax({
+    						type: "GET",
+    						url: countlyCommon.API_URL + "/i/flows/lastJob",
+    						data: { 
+    							job: json.job, 
+    							app_key:countlyCommon.ACTIVE_APP_KEY 
+    						},
+    						success: function (obj) {
+    							if (obj && obj.done) {
+    								ensuringJobs = false;
+    								if (stopCallback) { stopCallback(true); }
+    							} else {
+    								if (stopCallback) { stopCallback(false); }
+    								setTimeout(checkAgain, 3000);
+    							}
+    						},
+    						error: function(xhr, e, t){
+								ensuringJobs = false;
+								if (stopCallback) { stopCallback(t); }
+    						}
+    					});
+    				}
+    				checkAgain();
+    			} else if (json && json.done) {
+					if (stopCallback) { stopCallback(true); }
+    			} else {
+					ensuringJobs = false;
+					if (stopCallback) { stopCallback(json); }
+    			}
+    		},
+    		error:function(xhr, e, t){
+				ensuringJobs = false;
+				if (xhr.responseText && xhr.responseText.indexOf('Invalid path') !== -1) {
+	    			if (stopCallback) { stopCallback(true); }
+				} else {
+	    			if (stopCallback) { stopCallback(t); }
+				}
+    		}
+    	});
+
     };	
 }(window.countlyPopulator = window.countlyPopulator || {}, jQuery));

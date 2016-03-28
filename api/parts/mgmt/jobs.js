@@ -13,9 +13,9 @@ var STATUS = {
 	CANCELLED: 3,
 };
 
-var DELAY_BETWEEN_CHECKS = 5000,
+var DELAY_BETWEEN_CHECKS = 1000,
 	MAXIMUM_CONCURRENT_JOBS_PER_NAME = 10000,
-	MAXIMUM_IN_LINE_JOBS_PER_NAME = 20,
+	MAXIMUM_IN_LINE_JOBS_PER_NAME = 40,
 	MAXIMUM_JOB_TIMEOUT = 20000;
 
 /**
@@ -257,7 +257,7 @@ var JobWorker = function(processors){
 			}
 
 			log.d('Looking for jobs ...'); 
-			collection.find(find).sort({next: 1}).limit(10).toArray(function(err, jobs){
+			collection.find(find).sort({next: 1}).limit(MAXIMUM_IN_LINE_JOBS_PER_NAME).toArray(function(err, jobs){
 				if (err) { 
 					log.e('Error while looking for jobs: %j', err); 
 					this.nextAfterDelay();
@@ -401,6 +401,7 @@ var JobWorker = function(processors){
 module.exports = {
 	workers: [],
 	startWorker: function(types, jobs, runPlugins, started) {
+		manager.loadConfigs(common.db, function(){
 		types = types || process.env.COUNTLY_JOBS || null;
 		jobs = jobs || {};
 		started = started || function(){};
@@ -467,6 +468,7 @@ module.exports = {
 		} else {
 			started(null, null);
 		}
+		});
 	},
 	job: function(name, data) {
 		return new Job(name, data);

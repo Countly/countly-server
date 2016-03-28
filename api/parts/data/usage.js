@@ -1,12 +1,12 @@
 var usage = {},
     common = require('./../../utils/common.js'),
     geoip = require('geoip-lite'),
-	plugins = require('../../../plugins/pluginManager.js');
+    plugins = require('../../../plugins/pluginManager.js');
 
 (function (usage) {
 
     // Performs geoip lookup for the IP address of the app user
-    usage.beginUserSession = function (params) {
+    usage.beginUserSession = function (params, done) {
         // Location of the user is retrieved using geoip-lite module from her IP address.
         var locationData = geoip.lookup(params.ip_address);
 
@@ -36,7 +36,7 @@ var usage = {},
                     }
                 }
             }
-            processUserSession(dbAppUser, params);
+            processUserSession(dbAppUser, params, done);
         });
     };
 
@@ -125,8 +125,8 @@ var usage = {},
 
             // sd: session duration, tsd: total session duration. common.dbUserMap is not used here for readability purposes.
             common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, update, {'upsert': true}, function() {
-				
-				plugins.dispatch("/session/duration", {params:params, session_duration:session_duration});
+                
+                plugins.dispatch("/session/duration", {params:params, session_duration:session_duration});
 
                 if (callback) {
                     callback();
@@ -174,7 +174,7 @@ var usage = {},
         common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': {'sd': 0}}, {'upsert': true}, function(){});
     }
 
-    function processUserSession(dbAppUser, params) {
+    function processUserSession(dbAppUser, params, done) {
         var updateUsersZero = {},
             updateUsersMonth = {},
             updateCities = {},
@@ -240,6 +240,7 @@ var usage = {},
 
                 common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': userProps}, function() {});
 
+                if (done) { done(); }
                 return true;
             }
 
@@ -324,8 +325,8 @@ var usage = {},
                 usersMeta['meta.f-ranges'] = calculatedFrequency;
                 usersMeta['meta.l-ranges'] = calculatedLoyaltyRange;
             }
-			
-			plugins.dispatch("/session/begin", {params:params, isNewUser:isNewUser});
+            
+            plugins.dispatch("/session/begin", {params:params, isNewUser:isNewUser});
         } else {
             isNewUser = true;
 
@@ -350,7 +351,7 @@ var usage = {},
             usersMeta['meta.f-ranges'] = calculatedFrequency;
             usersMeta['meta.l-ranges'] = calculatedLoyaltyRange;
 
-			plugins.dispatch("/session/begin", {params:params, isNewUser:isNewUser});
+            plugins.dispatch("/session/begin", {params:params, isNewUser:isNewUser});
         }
 
         usersMeta['meta.countries'] = params.user.country;
@@ -364,12 +365,12 @@ var usage = {},
 
         common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true}, function(){});
 
-        processMetrics(dbAppUser, uniqueLevelsZero, uniqueLevelsMonth, params);
+        processMetrics(dbAppUser, uniqueLevelsZero, uniqueLevelsMonth, params, done);
 
         plugins.dispatch("/session/user", {params:params, dbAppUser:dbAppUser});
     }
 
-    function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params) {
+    function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done) {
         var userProps = {},
             isNewUser = (user && user[common.dbUserMap['first_seen']])? false : true;
 
@@ -429,8 +430,8 @@ var usage = {},
                 metrics: [{ is_user_prop:true, name: "city", set: "cities", short_code: common.dbUserMap['city'] }]
             }
         ];
-		
-		plugins.dispatch("/session/metrics", {params:params, predefinedMetrics:predefinedMetrics, userProps:userProps, user:user, isNewUser:isNewUser});
+        
+        plugins.dispatch("/session/metrics", {params:params, predefinedMetrics:predefinedMetrics, userProps:userProps, user:user, isNewUser:isNewUser});
 
         for (var i=0; i < predefinedMetrics.length; i++) {
             var tmpTimeObjZero = {},
@@ -463,7 +464,7 @@ var usage = {},
                 }
 
                 if (recvMetricValue) {
-					//making sure metrics are strings
+                    //making sure metrics are strings
                     escapedMetricVal = (recvMetricValue+"").replace(/^\$/, "").replace(/\./g, ":");
                     needsUpdate = true;
                     tmpSet["meta." + tmpMetric.set] = escapedMetricVal;
@@ -522,7 +523,8 @@ var usage = {},
                 }
                 common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$inc': {'sc': 1}, '$set': userProps}, {'upsert': true}, function() {
                     //Perform user retention analysis
-					plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
+                    plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
+                    if (done) { done(); }
                 });
             });
         } else {
@@ -531,6 +533,7 @@ var usage = {},
                 //Perform user retention analysis
                 plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
             });
+            if (done) { done(); }
         }
 
         return true;
