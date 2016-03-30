@@ -453,6 +453,8 @@ $( document ).ready(function() {
             jQuery.i18n.map["common.users"] = jQuery.i18n.map["web.common.users"];
             jQuery.i18n.map["attribution.installs"] = jQuery.i18n.map["web.attribution.installs"];
             jQuery.i18n.map["attribution.cost-install"] = jQuery.i18n.map["web.attribution.cost-install"];
+            jQuery.i18n.map["sources.title"] = jQuery.i18n.map["web.sources.title"];
+            jQuery.i18n.map["sources.source"] = jQuery.i18n.map["web.sources.source"];
             
         }
     });
