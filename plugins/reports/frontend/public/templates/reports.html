@@ -288,14 +288,17 @@ $(document).ready(function() {
 		overlay.show();
 		var loader = $('#content').find("#content-loader");
 		loader.show();
-        $.when(countlyReporting.send(id)).then(function (data) {
+        $.when(countlyReporting.send(id)).always(function (data) {
             overlay.hide();
             loader.hide();
-            if(data.result == "Success"){
+            if(data && data.result == "Success"){
                 CountlyHelpers.alert(jQuery.i18n.map["reports.sent"], "green");
             }
             else{
-                CountlyHelpers.alert(data.result, "red");
+                if(data && data.result)
+                    CountlyHelpers.alert(data.result, "red");
+                else
+                    CountlyHelpers.alert(jQuery.i18n.map["reports.too-long"], "red");
             }
         });
 	});
