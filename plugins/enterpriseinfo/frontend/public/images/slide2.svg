@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="331px" height="168px" viewBox="0 0 331 168" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 3.6.1 (26313) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 7</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="339" height="188"></rect>
+        <filter x="-50%" y="-50%" width="200%" height="200%" filterUnits="objectBoundingBox" id="filter-3">
+            <feOffset dx="0" dy="2" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="4" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.35 0" in="shadowBlurOuter1" type="matrix" result="shadowMatrixOuter1"></feColorMatrix>
+            <feMerge>
+                <feMergeNode in="shadowMatrixOuter1"></feMergeNode>
+                <feMergeNode in="SourceGraphic"></feMergeNode>
+            </feMerge>
+        </filter>
+        <filter x="-50%" y="-50%" width="200%" height="200%" filterUnits="objectBoundingBox" id="filter-4">
+            <feOffset dx="0" dy="2" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="4" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.35 0" in="shadowBlurOuter1" type="matrix" result="shadowMatrixOuter1"></feColorMatrix>
+            <feMerge>
+                <feMergeNode in="shadowMatrixOuter1"></feMergeNode>
+                <feMergeNode in="SourceGraphic"></feMergeNode>
+            </feMerge>
+        </filter>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard-7" transform="translate(-57.000000, -314.000000)">
+            <g id="Group-7" transform="translate(54.000000, 294.000000)">
+                <mask id="mask-2" fill="white">
+                    <use xlink:href="#path-1"></use>
+                </mask>
+                <use id="Mask" xlink:href="#path-1"></use>
+                <g mask="url(#mask-2)" id="Group-10">
+                    <g transform="translate(11.114754, 20.023669)">
+                        <g>
+                            <g id="Group-5" transform="translate(198.166484, 90.662722) rotate(-90.000000) translate(-198.166484, -90.662722) translate(107.594652, -33.623261)">
+                                <rect id="Rectangle-188" fill="#FFFFFF" x="0" y="0" width="181.143663" height="248.571966" rx="8.4039859"></rect>
+                                <ellipse id="Oval-68" stroke="#F7F7F7" stroke-width="1.20056941" fill="#E3E3E3" cx="91.171645" cy="235.362828" rx="5.99813454" ry="6.00415377"></ellipse>
+                                <rect id="Rectangle-189" fill="#000000" x="7.19776145" y="24.0166151" width="164.348886" height="200.538736"></rect>
+                                <ellipse id="Oval-66" fill="#000000" cx="89.9720181" cy="13.2091383" rx="2.39925382" ry="2.40166151"></ellipse>
+                            </g>
+                            <g id="Group-6" filter="url(#filter-3)" transform="translate(0.000000, 28.341079)">
+                                <g id="Group-4">
+                                    <rect id="Rectangle-204" fill="#FFFFFF" x="0" y="0" width="81.5746297" height="168.116305" rx="12.0056941"></rect>
+                                    <rect id="Rectangle-205" fill="#000000" x="2.39925382" y="19.2132921" width="76.7761221" height="128.488891"></rect>
+                                    <rect id="Rectangle-206" fill="#000000" x="33.5895534" y="9.60664603" width="14.3955229" height="2.40166151" rx="120.056941"></rect>
+                                    <ellipse id="Oval-70" fill="#000000" cx="40.7873149" cy="4.80332301" rx="1.19962691" ry="1.20083075"></ellipse>
+                                    <ellipse id="Oval-70" fill="#000000" cx="26.9916054" cy="10.6873864" rx="1.79944036" ry="1.80124613"></ellipse>
+                                </g>
+                            </g>
+                            <g id="Tablet_App" opacity="0.844041511" transform="translate(99.197264, 10.807477)">
+                                <rect id="Rectangle-245" fill="#4C7481" x="55.5152645" y="147.702183" width="8.44797503" height="2.40166151"></rect>
+                                <rect id="Rectangle-216" fill="#D8D8D8" x="55.5152645" y="62.4431992" width="3.62056073" height="1.20083075"></rect>
+                                <rect id="Rectangle-207" fill="#D4D4D4" x="47.0672895" y="13.2091383" width="150.856697" height="148.903013"></rect>
+                                <rect id="Rectangle-190" fill="#FFFFFF" x="0" y="0" width="197.923986" height="13.2091383"></rect>
+                                <rect id="Rectangle-194" fill="#FFFFFF" x="50.6878502" y="15.6107998" width="144.822429" height="21.6149536"></rect>
+                                <rect id="Rectangle-195" fill="#FFFFFF" x="50.6878502" y="40.8282456" width="24.7404983" height="25.2174458"></rect>
+                                <rect id="Rectangle-209" fill="#FFFFFF" opacity="0.695079291" x="50.6842369" y="66.0456914" width="144.822429" height="17.4120459"></rect>
+                                <rect id="Rectangle-209-Copy" fill="#FFFFFF" opacity="0.855643657" x="50.6842369" y="83.4577374" width="144.822429" height="17.4120459"></rect>
+                                <rect id="Rectangle-209-Copy-2" fill="#FFFFFF" opacity="0.695079291" x="50.6842369" y="100.869783" width="144.822429" height="17.4120459"></rect>
+                                <rect id="Rectangle-209-Copy-3" fill="#FFFFFF" opacity="0.855643657" x="50.6842369" y="118.281829" width="144.822429" height="17.4120459"></rect>
+                                <rect id="Rectangle-195-Copy" fill="#FFFFFF" x="74.8249217" y="40.8282456" width="24.7404983" height="25.2174458"></rect>
+                                <rect id="Rectangle-195-Copy-2" fill="#FFFFFF" x="98.9619932" y="40.8282456" width="24.7404983" height="25.2174458"></rect>
+                                <rect id="Rectangle-195-Copy-3" fill="#FFFFFF" x="123.099065" y="40.8282456" width="24.7404983" height="25.2174458"></rect>
+                                <rect id="Rectangle-195-Copy-4" fill="#FFFFFF" x="147.236136" y="40.8282456" width="24.7404983" height="25.2174458"></rect>
+                                <rect id="Rectangle-195-Copy-5" fill="#FFFFFF" x="171.373208" y="40.8282456" width="24.1370715" height="25.2174458"></rect>
+                                <g id="Group-8" transform="translate(0.000000, 13.209138)">
+                                    <rect id="Rectangle-191" fill="#373737" x="0" y="0" width="47.0672895" height="148.903013"></rect>
+                                    <rect id="Rectangle-193" fill="#424242" x="0" y="115.279752" width="47.0672895" height="33.6232611"></rect>
+                                    <rect id="Rectangle-191" fill="#36BF38" x="0" y="0" width="47.0672895" height="12.0083075"></rect>
+                                </g>
+                                <g id="Group-12" transform="translate(53.983211, 79.254830)">
+                                    <ellipse id="Oval-68" fill="#1B8AF3" cx="2.40680246" cy="26.8852663" rx="2.06121032" ry="2.06809741"></ellipse>
+                                    <ellipse id="Oval-68-Copy" fill="#1B8AF3" cx="32.6625722" cy="13.0979503" rx="2.06121032" ry="2.06809741"></ellipse>
+                                    <ellipse id="Oval-68-Copy-2" fill="#1B8AF3" cx="67.0160775" cy="35.157656" rx="2.06121032" ry="2.06809741"></ellipse>
+                                    <ellipse id="Oval-68-Copy-3" fill="#1B8AF3" cx="101.369583" cy="13.0979503" rx="2.06121032" ry="2.06809741"></ellipse>
+                                    <ellipse id="Oval-68-Copy-4" fill="#1B8AF3" cx="135.723088" cy="2.06809741" rx="2.06121032" ry="2.06809741"></ellipse>
+                                    <path d="M2.04886767,26.8852663 L32.6625722,13.0979503 L66.9296794,35.157656 L101.077475,13.0979503 L135.908227,2.06809741" id="Path-66" stroke="#1B8AF3" stroke-width="1.36864911"></path>
+                                </g>
+                                <rect id="Rectangle-201" fill="#929292" opacity="0.379139459" x="55.5152645" y="49.2340609" width="14.4822429" height="3.60249226"></rect>
+                                <rect id="Rectangle-201" fill="#929292" opacity="0.414179104" x="57.9289716" y="24.0166151" width="14.4822429" height="3.60249226"></rect>
+                                <rect id="Rectangle-201" fill="#929292" opacity="0.414179104" x="104.996261" y="24.0166151" width="14.4822429" height="3.60249226"></rect>
+                                <ellipse id="Oval-73" stroke="#1B8AF3" stroke-width="1.20056941" opacity="0.57083722" cx="80.8591896" cy="26.4182766" rx="6.03426788" ry="6.00415377"></ellipse>
+                                <ellipse id="Oval-73" stroke="#E88B44" stroke-width="1.20056941" opacity="0.57083722" cx="127.926479" cy="26.4182766" rx="6.03426788" ry="6.00415377"></ellipse>
+                                <rect id="Rectangle-201-Copy" fill="#929292" opacity="0.379139459" x="79.652336" y="49.2340609" width="14.4822429" height="3.60249226"></rect>
+                                <rect id="Rectangle-201-Copy-2" fill="#929292" opacity="0.379139459" x="103.789408" y="49.2340609" width="14.4822429" height="3.60249226"></rect>
+                                <rect id="Rectangle-201-Copy-3" fill="#929292" opacity="0.379139459" x="127.926479" y="49.2340609" width="14.4822429" height="3.60249226"></rect>
+                                <rect id="Rectangle-201-Copy-4" fill="#929292" opacity="0.379139459" x="152.063551" y="49.2340609" width="14.4822429" height="3.60249226"></rect>
+                                <rect id="Rectangle-201-Copy-5" fill="#929292" opacity="0.379139459" x="176.200622" y="49.2340609" width="14.4822429" height="3.60249226"></rect>
+                                <rect id="Rectangle-212" fill="#6CACE8" x="89.3071646" y="25.2174458" width="6.03426788" height="4.80332301"></rect>
+                                <rect id="Rectangle-212" fill="#BBBBBB" x="89.3071646" y="21.6149536" width="6.03426788" height="2.40166151"></rect>
+                                <rect id="Rectangle-212" fill="#BBBBBB" x="136.374454" y="21.6149536" width="6.03426788" height="2.40166151"></rect>
+                                <path d="M153.873831,21.0145382 L153.873831,31.822015" id="Line" stroke="#979797" stroke-width="1.20056941" stroke-linecap="square" opacity="0.324335354"></path>
+                                <path d="M165.942367,21.0145382 L165.942367,31.822015" id="Line" stroke="#979797" stroke-width="1.20056941" stroke-linecap="square" opacity="0.324335354"></path>
+                                <path d="M178.010902,21.0145382 L178.010902,31.822015" id="Line" stroke="#979797" stroke-width="1.20056941" stroke-linecap="square" opacity="0.324335354"></path>
+                                <path d="M190.079438,21.0145382 L190.079438,31.822015" id="Line" stroke="#979797" stroke-width="1.20056941" stroke-linecap="square" opacity="0.324335354"></path>
+                                <rect id="Rectangle-212-Copy" fill="#E1AC83" x="136.374454" y="25.2174458" width="6.03426788" height="4.80332301"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="54.3084109" y="62.4431992" width="3.62056073" height="1.20083075"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="59.1358252" y="61.2423684" width="3.62056073" height="2.40166151"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="63.9632395" y="57.6398762" width="3.62056073" height="6.00415377"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="68.7906538" y="58.8407069" width="3.62056073" height="4.80332301"></rect>
+                                <g id="Group-9" transform="translate(87.496884, 60.641953) scale(-1, 1) translate(-87.496884, -60.641953) translate(78.445482, 57.639876)" fill="#6ABA70">
+                                    <rect id="Rectangle-216" x="0" y="4.80332301" width="3.62056073" height="1.20083075"></rect>
+                                    <rect id="Rectangle-216" x="4.8274143" y="3.60249226" width="3.62056073" height="2.40166151"></rect>
+                                    <rect id="Rectangle-216" x="9.65482861" y="0" width="3.62056073" height="6.00415377"></rect>
+                                    <rect id="Rectangle-216" x="14.4822429" y="1.20083075" width="3.62056073" height="4.80332301"></rect>
+                                </g>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="102.582554" y="62.4431992" width="3.62056073" height="1.20083075"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="107.409968" y="58.8407069" width="3.62056073" height="4.80332301"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="112.237383" y="61.2423684" width="3.62056073" height="2.40166151"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="117.064797" y="58.8407069" width="3.62056073" height="4.80332301"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="126.719625" y="62.4431992" width="3.62056073" height="1.20083075"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="131.54704" y="60.0415377" width="3.62056073" height="3.60249226"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="136.374454" y="60.0415377" width="3.62056073" height="3.60249226"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="141.201868" y="58.8407069" width="3.62056073" height="4.80332301"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="150.856697" y="58.8407069" width="3.62056073" height="4.80332301"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="155.684111" y="60.0415377" width="3.62056073" height="3.60249226"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="160.511526" y="57.6398762" width="3.62056073" height="6.00415377"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="165.33894" y="58.8407069" width="3.62056073" height="4.80332301"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="174.993769" y="62.4431992" width="3.62056073" height="1.20083075"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="179.821183" y="61.2423684" width="3.62056073" height="2.40166151"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="184.648597" y="62.4431992" width="3.62056073" height="1.20083075"></rect>
+                                <rect id="Rectangle-216" fill="#6ABA70" x="189.476011" y="57.6398762" width="3.62056073" height="6.00415377"></rect>
+                                <g id="Group-11" transform="translate(50.384330, 135.693875)">
+                                    <rect id="Rectangle-241" fill="#424242" x="0.293807419" y="0" width="35.9232035" height="24.0166151"></rect>
+                                    <rect id="Rectangle-201" fill="#F6F6F6" opacity="0.555503731" x="10.8079158" y="6.00415377" width="14.0188111" height="2.40166151"></rect>
+                                    <rect id="Rectangle-241-Copy" fill="#424242" x="36.5090695" y="0" width="35.9232035" height="24.0166151"></rect>
+                                    <rect id="Rectangle-241-Copy-2" fill="#424242" x="72.7243316" y="0" width="35.9232035" height="24.0166151"></rect>
+                                    <rect id="Rectangle-241-Copy-3" fill="#424242" x="108.939594" y="0" width="35.9232035" height="24.0166151"></rect>
+                                    <rect id="Rectangle-246" fill="#59C2DF" x="2.63027594" y="13.2091383" width="10.5141084" height="2.40166151"></rect>
+                                    <rect id="Rectangle-246-Copy" fill="#6BC06B" x="13.1443843" y="13.2091383" width="10.5141084" height="2.40166151"></rect>
+                                    <rect id="Rectangle-246-Copy-2" fill="#FD8C35" x="18.9855556" y="13.2091383" width="15.1870454" height="2.40166151"></rect>
+                                    <rect id="Rectangle-246" fill="#59C2DF" x="38.8455381" y="13.2091383" width="10.5141084" height="2.40166151"></rect>
+                                    <rect id="Rectangle-246-Copy" fill="#6BC06B" x="49.3596464" y="13.2091383" width="10.5141084" height="2.40166151"></rect>
+                                    <rect id="Rectangle-246-Copy-2" fill="#FD8C35" x="59.8737548" y="13.2091383" width="10.5141084" height="2.40166151"></rect>
+                                    <rect id="Rectangle-246" fill="#59C2DF" x="75.0608002" y="13.2091383" width="10.5141084" height="2.40166151"></rect>
+                                    <rect id="Rectangle-246-Copy" fill="#6BC06B" x="85.5749085" y="13.2091383" width="10.5141084" height="2.40166151"></rect>
+                                    <path d="M89.0796113,13.2091383 L98.8148968,13.2091383 L106.603125,13.2091383 L106.603125,15.6107998 L89.0796113,15.6107998 L89.0796113,13.2091383 Z" id="Rectangle-246-Copy-2" fill="#FD8C35"></path>
+                                    <rect id="Rectangle-246" fill="#59C2DF" x="111.276062" y="13.2091383" width="10.5141084" height="2.40166151"></rect>
+                                    <rect id="Rectangle-246-Copy" fill="#6BC06B" x="121.790171" y="13.2091383" width="10.5141084" height="2.40166151"></rect>
+                                    <rect id="Rectangle-246-Copy-2" fill="#FD8C35" x="132.304279" y="13.2091383" width="10.5141084" height="2.40166151"></rect>
+                                    <rect id="Rectangle-201" fill="#F6F6F6" opacity="0.555503731" x="47.0231779" y="6.00415377" width="14.0188111" height="2.40166151"></rect>
+                                    <rect id="Rectangle-201" fill="#F6F6F6" opacity="0.555503731" x="83.23844" y="6.00415377" width="14.0188111" height="2.40166151"></rect>
+                                    <rect id="Rectangle-201" fill="#F6F6F6" opacity="0.555503731" x="119.453702" y="6.00415377" width="14.0188111" height="2.40166151"></rect>
+                                    <rect id="Rectangle-201" fill="#FD8C35" opacity="0.555503731" x="10.8079158" y="18.0124613" width="14.0188111" height="2.40166151"></rect>
+                                    <rect id="Rectangle-201" fill="#59C2DF" opacity="0.555503731" x="47.0231779" y="18.0124613" width="14.0188111" height="2.40166151"></rect>
+                                    <rect id="Rectangle-201" fill="#FD8C35" opacity="0.555503731" x="83.23844" y="18.0124613" width="14.0188111" height="2.40166151"></rect>
+                                    <rect id="Rectangle-201" fill="#6BC06B" opacity="0.555503731" x="119.453702" y="18.0124613" width="14.0188111" height="2.40166151"></rect>
+                                </g>
+                                <ellipse id="Oval-75" fill="#D8D8D8" opacity="0.296700093" cx="6.03426788" cy="31.2215996" rx="3.62056073" ry="3.60249226"></ellipse>
+                                <rect id="Rectangle-266" fill="#D8D8D8" opacity="0.296700093" x="12.0685358" y="30.0207688" width="18.1028036" height="2.40166151"></rect>
+                                <ellipse id="Oval-75" fill="#FFFFFF" opacity="0.296700093" cx="6.03426788" cy="19.2132921" rx="3.62056073" ry="3.60249226"></ellipse>
+                                <rect id="Rectangle-266" fill="#FFFFFF" opacity="0.296700093" x="12.0685358" y="18.0124613" width="18.1028036" height="2.40166151"></rect>
+                                <ellipse id="Oval-75" fill="#D8D8D8" opacity="0.296700093" cx="6.03426788" cy="43.2299071" rx="3.62056073" ry="3.60249226"></ellipse>
+                                <rect id="Rectangle-266" fill="#D8D8D8" opacity="0.296700093" x="12.0685358" y="42.0290764" width="28.9644858" height="2.40166151"></rect>
+                                <ellipse id="Oval-75" fill="#D8D8D8" opacity="0.296700093" cx="6.03426788" cy="55.2382147" rx="3.62056073" ry="3.60249226"></ellipse>
+                                <rect id="Rectangle-266" fill="#D8D8D8" opacity="0.296700093" x="12.0685358" y="54.0373839" width="22.9302179" height="2.40166151"></rect>
+                                <ellipse id="Oval-75" fill="#D8D8D8" opacity="0.296700093" cx="6.03426788" cy="67.2465222" rx="3.62056073" ry="3.60249226"></ellipse>
+                                <rect id="Rectangle-266" fill="#D8D8D8" opacity="0.296700093" x="12.0685358" y="66.0456914" width="22.9302179" height="2.40166151"></rect>
+                                <ellipse id="Oval-75" fill="#D8D8D8" opacity="0.296700093" cx="6.03426788" cy="79.2548297" rx="3.62056073" ry="3.60249226"></ellipse>
+                                <rect id="Rectangle-266" fill="#D8D8D8" opacity="0.296700093" x="12.0685358" y="78.053999" width="18.1028036" height="2.40166151"></rect>
+                                <ellipse id="Oval-75" fill="#D8D8D8" opacity="0.296700093" cx="6.03426788" cy="91.2631373" rx="3.62056073" ry="3.60249226"></ellipse>
+                                <rect id="Rectangle-266" fill="#D8D8D8" opacity="0.296700093" x="12.0685358" y="90.0623065" width="25.3439251" height="2.40166151"></rect>
+                                <ellipse id="Oval-75" fill="#D8D8D8" opacity="0.296700093" cx="6.03426788" cy="103.271445" rx="3.62056073" ry="3.60249226"></ellipse>
+                                <rect id="Rectangle-266" fill="#D8D8D8" opacity="0.296700093" x="12.0685358" y="102.070614" width="14.4822429" height="2.40166151"></rect>
+                                <ellipse id="Oval-75" fill="#D8D8D8" opacity="0.296700093" cx="6.03426788" cy="115.279752" rx="3.62056073" ry="3.60249226"></ellipse>
+                                <rect id="Rectangle-266" fill="#D8D8D8" opacity="0.296700093" x="12.0685358" y="114.078922" width="18.1028036" height="2.40166151"></rect>
+                                <rect id="Rectangle-275" fill="#D2D2D2" opacity="0.58879431" x="2.41370715" y="3.60249226" width="7.24112146" height="7.20498452" rx="2.40113883"></rect>
+                                <rect id="Rectangle-276" fill="#E5E5E5" x="13.2753893" y="6.00415377" width="25.3439251" height="2.40166151"></rect>
+                                <rect id="Rectangle-276-Copy" fill="#E5E5E5" x="50.6878502" y="6.00415377" width="14.4822429" height="2.40166151"></rect>
+                                <rect id="Rectangle-276-Copy-2" fill="#E5E5E5" x="68.7906538" y="6.00415377" width="25.3439251" height="2.40166151"></rect>
+                                <rect id="Rectangle-280" fill="#D8D8D8" opacity="0.322003265" x="131.54704" y="4.80332301" width="61.5495324" height="4.80332301"></rect>
+                                <rect id="Rectangle-281" fill="#676767" opacity="0.481984608" x="4.8274143" y="147.702183" width="36.2056073" height="10.8074768"></rect>
+                                <rect id="Rectangle-277" fill="#D4D4D4" opacity="0.181786381" x="45.8604359" y="0" width="1.08616819" height="13.2091383"></rect>
+                            </g>
+                            <g id="Mobile_App" filter="url(#filter-4)" transform="translate(3.598881, 48.755202)">
+                                <rect id="Rectangle-284" fill="#2EA230" x="0" y="0" width="74.3768683" height="13.2091383"></rect>
+                                <ellipse id="Oval-84" fill="#60B261" cx="68.3787337" cy="6.00415377" rx="2.39925382" ry="2.40166151"></ellipse>
+                                <rect id="Rectangle-285" fill="#01BE4E" x="22.7929112" y="3.60249226" width="29.9906727" height="6.00415377" rx="1.20056941"></rect>
+                                <rect id="Rectangle-286" fill="#005B2B" x="22.7929112" y="3.60249226" width="9.99289205" height="6.00415377"></rect>
+                                <rect id="Rectangle-286-Copy" fill="#60B261" transform="translate(48.183015, 6.604569) scale(-1, 1) translate(-48.183015, -6.604569) " x="43.1865687" y="3.60249226" width="9.99289205" height="6.00415377"></rect>
+                                <rect id="Rectangle-288" fill="#01BE4E" x="0" y="3.60249226" width="3.59888072" height="6.00415377"></rect>
+                                <rect id="Rectangle-289" fill="#D2D2D2" x="2.39925382" y="16.8116305" width="69.5783607" height="14.409969" rx="1.20056941"></rect>
+                                <rect id="Rectangle-295" fill="#575757" opacity="0.470557369" x="20.3936574" y="20.4141228" width="11.9962691" height="2.40166151"></rect>
+                                <rect id="Rectangle-295" fill="#989898" x="20.3936574" y="25.2174458" width="19.1940305" height="2.40166151"></rect>
+                                <rect id="Rectangle-289-Copy" fill="#D2D2D2" x="2.39925382" y="34.8240919" width="69.5783607" height="14.409969" rx="1.20056941"></rect>
+                                <rect id="Rectangle-289-Copy-2" fill="#D2D2D2" x="2.39925382" y="52.8365532" width="69.5783607" height="14.409969" rx="1.20056941"></rect>
+                                <rect id="Rectangle-289-Copy-3" fill="#D2D2D2" x="2.39925382" y="70.8490145" width="69.5783607" height="14.409969" rx="1.20056941"></rect>
+                                <rect id="Rectangle-289-Copy-4" fill="#D2D2D2" x="2.39925382" y="88.8614758" width="69.5783607" height="14.409969" rx="1.20056941"></rect>
+                                <rect id="Rectangle-289-Copy-5" fill="#D2D2D2" x="2.39925382" y="106.873937" width="69.5783607" height="14.409969" rx="1.20056941"></rect>
+                                <ellipse id="Oval-85" fill="#049532" opacity="0.360541045" cx="10.7966422" cy="24.0166151" rx="3.59888072" ry="3.60249226"></ellipse>
+                                <ellipse id="Oval-85-Copy" fill="#049532" opacity="0.360541045" cx="10.7966422" cy="42.0290764" rx="3.59888072" ry="3.60249226"></ellipse>
+                                <ellipse id="Oval-85-Copy-2" fill="#049532" opacity="0.360541045" cx="10.7966422" cy="60.0415377" rx="3.59888072" ry="3.60249226"></ellipse>
+                                <ellipse id="Oval-85-Copy-3" fill="#049532" opacity="0.360541045" cx="10.7966422" cy="78.053999" rx="3.59888072" ry="3.60249226"></ellipse>
+                                <ellipse id="Oval-85-Copy-4" fill="#049532" opacity="0.360541045" cx="10.7966422" cy="96.0664603" rx="3.59888072" ry="3.60249226"></ellipse>
+                                <ellipse id="Oval-85-Copy-5" fill="#049532" opacity="0.360541045" cx="10.7966422" cy="114.078922" rx="3.59888072" ry="3.60249226"></ellipse>
+                                <rect id="Rectangle-295" fill="#575757" opacity="0.470557369" x="20.3936574" y="38.4265841" width="11.9962691" height="2.40166151"></rect>
+                                <rect id="Rectangle-295" fill="#575757" opacity="0.470557369" x="20.3936574" y="43.2299071" width="7.19776145" height="2.40166151"></rect>
+                                <rect id="Rectangle-295" fill="#575757" opacity="0.470557369" x="20.3936574" y="56.4390454" width="15.5951498" height="2.40166151"></rect>
+                                <rect id="Rectangle-295" fill="#575757" opacity="0.470557369" x="20.3936574" y="61.2423684" width="15.5951498" height="2.40166151"></rect>
+                                <g id="Group-13" transform="translate(29.990673, 78.053999) scale(1, -1) translate(-29.990673, -78.053999) translate(20.393657, 74.451507)" fill="#575757" opacity="0.470557369">
+                                    <rect id="Rectangle-295" x="0" y="0" width="11.9962691" height="2.40166151"></rect>
+                                    <rect id="Rectangle-295" x="0" y="4.80332301" width="19.1940305" height="2.40166151"></rect>
+                                </g>
+                                <rect id="Rectangle-295" fill="#575757" opacity="0.470557369" x="20.3936574" y="92.463968" width="15.5951498" height="2.40166151"></rect>
+                                <rect id="Rectangle-295" fill="#575757" opacity="0.470557369" x="20.3936574" y="97.267291" width="19.1940305" height="2.40166151"></rect>
+                                <rect id="Rectangle-295" fill="#575757" opacity="0.470557369" x="20.3936574" y="110.476429" width="11.9962691" height="2.40166151"></rect>
+                                <rect id="Rectangle-295" fill="#575757" opacity="0.470557369" x="20.3936574" y="115.279752" width="11.9962691" height="2.40166151"></rect>
+                                <rect id="Rectangle-307" fill="#B7B7B7" x="51.583957" y="20.4141228" width="9.59701526" height="7.20498452"></rect>
+                                <rect id="Rectangle-307-Copy" fill="#B7B7B7" x="45.5858225" y="38.4265841" width="15.5951498" height="7.20498452"></rect>
+                                <rect id="Rectangle-307-Copy-2" fill="#B7B7B7" x="51.583957" y="56.4390454" width="9.59701526" height="7.20498452"></rect>
+                                <rect id="Rectangle-307-Copy-3" fill="#B7B7B7" x="51.583957" y="74.4515067" width="9.59701526" height="7.20498452"></rect>
+                                <rect id="Rectangle-307-Copy-4" fill="#B7B7B7" x="49.1847032" y="92.463968" width="11.9962691" height="7.20498452"></rect>
+                                <rect id="Rectangle-307-Copy-5" fill="#B7B7B7" x="51.583957" y="110.476429" width="9.59701526" height="7.20498452"></rect>
+                                <rect id="Rectangle-313" fill="#CA1D30" opacity="0.4375" x="65.9794799" y="20.4141228" width="2.39925382" height="7.20498452"></rect>
+                                <rect id="Rectangle-313" fill="#00A11A" opacity="0.4375" x="65.9794799" y="38.4265841" width="2.39925382" height="7.20498452"></rect>
+                                <rect id="Rectangle-313-Copy" fill="#CA1D30" opacity="0.4375" x="65.9794799" y="56.4390454" width="2.39925382" height="7.20498452"></rect>
+                                <rect id="Rectangle-313-Copy-2" fill="#00A11A" opacity="0.4375" x="65.9794799" y="74.4515067" width="2.39925382" height="7.20498452"></rect>
+                                <rect id="Rectangle-313-Copy-3" fill="#00A11A" opacity="0.4375" x="65.9794799" y="92.463968" width="2.39925382" height="7.20498452"></rect>
+                                <rect id="Rectangle-313-Copy-4" fill="#CA1D30" opacity="0.4375" x="65.9794799" y="110.476429" width="2.39925382" height="7.20498452"></rect>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

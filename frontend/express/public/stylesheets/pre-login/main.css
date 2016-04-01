@@ -53,48 +53,49 @@
        url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.ttf') format('truetype'),
        url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.svg#Ubuntu') format('svg');
 }
-body { padding:20px; background-color:#1A1A1A; font-family:Ubuntu,Helvetica,sans-serif; }
+body { padding:20px; background-color:#222; font-family:Ubuntu,Helvetica,sans-serif; }
 input { outline:none; }
-input[type=text], input[type=password] { font:20px Ubuntu,Helvetica,sans-serif; box-shadow:inset 0 0 4px 0 #333, 0 1px 0 0 #555; border-radius:5px; border:1px solid #000; padding:8px; background-color:#E0EDE0; color:#CCC; width:210px; margin:0 0 5px 0; }
-input[type=text]:active, input[type=text]:focus, input[type=password]:active, input[type=password]:focus { background-color:#FFF; box-shadow:inset 0 2px 2px 0 #BBB, 0 0 20px 0 #000; transition: background-color 1s; outline:none; color:#666; }
+input[type=text], input[type=password] { font:15px Ubuntu,Helvetica,sans-serif; border-radius:3px; border:none; padding:10px; background-color:#FFF; color:#CCC; width:206px; margin:0 0 8px 0; }
+input[type=text]:active, input[type=text]:focus, input[type=password]:active, input[type=password]:focus { outline:none; color:#666; }
 a { color:inherit; text-decoration:none; }
 a:visited { color:inherit; }
 a:hover { color:inherit; }
 a:active { color:inherit; }
-#login-form { width:480px; height:180px; margin-left:-240px; left:50%; top:50%; margin-top:-90px; position:absolute; background-image:url('../../images/pre-login/cly_login_bg.png'); background-position:220px 0px; background-repeat:no-repeat; }
+#login-form { text-align:center; width:480px; height:270px; margin-left:-240px; left:50%; top:50%; margin-top:-135px; position:absolute; }
 #login-left { margin-right:30px; padding-right:30px; height:100%; float:left; }
-#forgot-form { width:558px; height:218px; margin-left:-278px; left:50%; top:50%; margin-top:-109px; position:absolute; }
+#forgot-form { width:570px; height:218px; margin-left:-285px; left:50%; top:50%; margin-top:-109px; position:absolute; }
 #forgot-left { margin-bottom:28px; }
-#reset-form { width:704px; height:218px; margin-left:-352px; left:50%; top:50%; margin-top:-109px; position:absolute; } 
-#login-button { font:16px Ubuntu,Helvetica,sans-serif; box-shadow:inset 0 1px 0 0 #AFE7B3; border-radius:5px; border:1px solid #1A691C; padding:11px 26px; padding-left:0; background-color:#6BB96E; background-image: url('../../images/pre-login/cly_login.png'), linear-gradient(top, #6BB96E 10%, #58985A 100%); background-image: url('../../images/pre-login/cly_login.png'), linear-gradient(to bottom, #6BB96E 10%, #58985A 100%); background-position:right; background-repeat:no-repeat; color:#FFF; text-shadow:0 -1px #666; font-weight:400; cursor:pointer; width:227px; margin-top:0; }
-	#login-button:hover { background-image:url('../../images/pre-login/cly_login.png'), linear-gradient(top, #76CC79 10%, #58985A 100%); background-image:url('../../images/pre-login/cly_login.png'), linear-gradient(to bottom, #76CC79 10%, #58985A 100%); }
-	#login-button:active { box-shadow:inset 0 0 3px 0 #145016; }
-#top-container { position:absolute; top:20px; right:20px; min-width: 200px; }
-.top-button { float:right; margin-left:5px; color:#888; padding:9px 20px; display:block; text-shadow:0 -1px #000000; background:linear-gradient(top, #242424 0%, #111111 100%); background:linear-gradient(to bottom, #242424 0%, #111111 100%); border-radius:6px; cursor:pointer; font-size:15px; box-shadow:inset 0 1px 0 #2e2e2e; border:1px #080808 solid; }
-	.top-button:hover { background:linear-gradient(top, #1a1a1a 0%, #1b1b1b 100%); background:linear-gradient(to bottom, #1a1a1a 0%, #1b1b1b 100%); }
-	.top-button:active { background:#161616; box-shadow:inset 0 0 2px #010101; }
-	a.top-button:visited { color:#888; }
-	a.top-button:hover { color:#888; }
-	a.top-button:active { color:#888; }
+#reset-form { width:704px; height:174px; margin-left:-352px; left:50%; top:50%; margin-top:-87px; position:absolute; }
+#login-button { line-height:14px !important; font:14px Ubuntu,Helvetica,sans-serif; border:none; border-radius:3px; padding: 11px 26px 12px 26px; background-color:#2FA732; color:#FFF; font-weight:400; cursor:pointer; width:226px; margin-top:10px; }
+	#login-button:hover { background-color: #2f9732; }
+	#login-button:active { }
+    #forgot-form #login-button { margin-top:0; }
+#top-container { position:absolute; top:20px; right:20px; min-width: 200px; z-index: 1; }
+.top-button { border: 1px solid #272727; float:right; margin-left:5px; color:#6F6F6F; padding:9px 20px; display:block; background-color:#1A1A1A; border-radius:4px; cursor:pointer; font-size:14px; }
+	.top-button:hover { background-color: #000; }
+	.top-button:active { background:#000; }
+	a.top-button:visited { color:#6F6F6F; }
+	a.top-button:hover { color:#6F6F6F; }
+	a.top-button:active { color:#6F6F6F; }
 #select-lang { padding:9px 10px; }
 	#select-lang.active #langs { display:block; }
-	#select-lang.active { background:#161616; box-shadow:inset 2px 0 4px -3px #010101, inset -2px 0 4px -3px #010101, inset 0 2px 4px -3px #010101; }
-	#select-lang.active:hover { background:#161616; box-shadow:inset 2px 0 4px -3px #010101, inset -2px 0 4px -3px #010101, inset 0 2px 4px -3px #010101; }
-	#select-lang.active:active { background:#161616; box-shadow:inset 2px 0 4px -3px #010101, inset -2px 0 4px -3px #010101, inset 0 2px 4px -3px #010101; }
-	#select-lang .item  { padding-bottom:3px; padding-top:3px; cursor:pointer; display:block; font-size:13px; }
+	#select-lang.active { background:#1A1A1A; }
+	#select-lang.active:hover { background:#1A1A1A; }
+	#select-lang.active:active { background:#1A1A1A; }
+	#select-lang .item  { padding-bottom:3px; padding-top:3px; cursor:pointer; display:block; font-size:12px; }
 	#select-lang .item:hover { color:#A2A2A2; }
 #active-lang { text-align:right; }
 	#langs { display:none; margin-top:8px; }
 	#langs .group { float:left; margin-right:17px; }
 	#langs .group:last-child { margin-right:0; }
-#login-logo { margin-top:38px; width:189px; height:57px; font-size:30px; background-image:url('../../images/pre-login/logo.png'); }
-#forgot-logo { margin:0 auto; width:189px; height:57px; font-size:30px; background-image:url('../../images/pre-login/logo.png'); }
+#login-logo { margin:0 auto; width:165px; height:50px; background-image:url('../../images/pre-login/countly-logo.svg'); background-repeat: no-repeat; background-size: contain; }
+#forgot-logo { margin:0 auto; width:180px; height:55px; background-image:url('../../images/pre-login/countly-logo.svg'); background-repeat: no-repeat; background-size: contain; }
 #create-account { overflow:auto; }
 	#create-account div { float:left; margin-right:10px; }
 	#create-account div:last-child { margin-right:0; }
-#message { position:absolute; top:50px; text-align:center; left:50%; width:400px; margin-left:-200px; color:#CCC; font:20px Ubuntu,Helvetica,sans-serif; }
-#forgot-password { color:#666; font-size:13px; cursor:pointer; }
-	#forgot-password:hover { color:#58985A; transition:color 1s; }
+#message { position:absolute; top:50px; text-align:center; left:50%; width:400px; margin-left:-200px; color:#A7A7A7; font:18px Ubuntu,Helvetica,sans-serif; }
+#forgot-password { color:#666; font-size:13px; cursor:pointer; transition:color 1s; }
+	#forgot-password:hover { color:#2f9732; transition:color 1s; }
 
 body.mobile { padding-top:0; min-height:300px; }
 

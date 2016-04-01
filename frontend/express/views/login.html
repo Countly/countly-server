@@ -53,27 +53,23 @@
 	</div>
 	<div id="login-form">
 		<div style="overflow:auto;">
-			<div id="login-left">
-				<div id="login-logo"></div>
-			</div>
-			<div style="float:left; overflow:auto;">
-				<form method="POST">
-					<div>
-						<input type="text" autocapitalize="off" name="username" placeholder="Username or Email" data-localize="placeholder.username-email"/>
-					</div>
-					<div>
-						<input name="password" type="password" placeholder="Password" data-localize="placeholder.password"/>
-					</div>
-					<div>
-						<input type="hidden" value="<%= csrf %>" name="_csrf" />
-						<input type="hidden" value="en" name="lang" id="form-lang" />
-						<input id="login-button" value="Login" type="submit" data-localize="login.button"/>
-					</div>
-					<div style="text-align:right; margin-top:12px;">
-						<a id="forgot-password" href="./forgot"  data-localize="login.forgot"></a>
-					</div>
-				</form>
-			</div>
+            <div id="login-logo" style="margin-bottom:30px;"></div>
+            <form method="POST">
+                <div>
+                    <input type="text" autocapitalize="off" name="username" placeholder="Username or Email" data-localize="placeholder.username-email"/>
+                </div>
+                <div>
+                    <input name="password" type="password" placeholder="Password" data-localize="placeholder.password"/>
+                </div>
+                <div>
+                    <input type="hidden" value="<%= csrf %>" name="_csrf" />
+                    <input type="hidden" value="en" name="lang" id="form-lang" />
+                    <input id="login-button" value="Login" type="submit" data-localize="login.button"/>
+                </div>
+                <div style="margin-top:30px;">
+                    <a id="forgot-password" href="./forgot"  data-localize="login.forgot"></a>
+                </div>
+            </form>
 		</div>
 	</div>
 	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery/jquery-1.8.3.min.js"></script>

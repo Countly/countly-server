@@ -20,7 +20,7 @@
 	<title><%- countlyTitle %></title>
 	<script>window.countlyGlobal = window.countlyGlobal || {}; countlyGlobal["cdn"] = "<%- cdn %>"; countlyGlobal["path"] = "<%- path %>";</script>
 </head>
-<body style="background-color: #222;">
+<body>
 	 <% if (message){ %>
 		<div id="message"></div>
 	 <% } %>
@@ -53,8 +53,8 @@
 		</div>
 	</div>
 	<div id="login-form">
-        <div style="float:left; overflow:auto; background-color: #1A1A1A; height:100%; width:36%; box-shadow: inset -1px 0 0 0 #111;    ">
-            <div id="login-logo" style="margin: 35px auto 25px auto;"></div>
+        <div style="float:left; overflow:auto; height:100%; width:36%; text-align: center;">
+            <div id="login-logo" style="margin-top:45px; margin-bottom:25px;"></div>
             <form method="POST" style="padding: 20px;">
                 <div>
                     <input type="text" autocapitalize="off" name="username" placeholder="Username or Email" data-localize="placeholder.username-email"/>
@@ -67,34 +67,55 @@
                     <input type="hidden" value="en" name="lang" id="form-lang" />
                     <input id="login-button" value="Login" type="submit" data-localize="login.button"/>
                 </div>
-                <div style="text-align:center; margin-top:30px;">
+                <div style="margin-top:30px;">
                     <a id="forgot-password" href="./forgot"  data-localize="login.forgot"></a>
                 </div>
             </form>
         </div>
-        <div style="float:left; overflow: auto; width:64%; height: 100%; background-color: #333; overflow: hidden;">
+        <div style="float:left; overflow: visible; width:64%; height: 100%; background-color: #1A1A1A;">
             <div id="slider2_container">
                 <div id="slider_inner" u="slides" style="padding: 20px;">
                     <div>
-                        <div class="image">
-                            <img src="./enterpriseinfo/images/mobile_dashboard.png"/>
-                        </div>
-                        <div class="text" data-localize="enterpriseinfo.pitch1"></div>
-                    </div>
-                    <div>
-                        <div class="image">
-                            <img src="./enterpriseinfo/images/enterprise.png"/>
-                        </div>
+                        <div class="title" data-localize="enterpriseinfo.pitch2-title"></div>
                         <div class="text" data-localize="enterpriseinfo.pitch2"></div>
+                        <div class="link">
+                            <a href="https://count.ly/enterprise-edition/" target="_blank" data-localize="enterpriseinfo.learn-more"></a>
+                        </div>
+                        <div class="image" style="right:65px;">
+                            <img src="./enterpriseinfo/images/slide1.svg"/>
+                        </div>
                     </div>
                     <div>
-                        <div class="image">
-                            <img src="./enterpriseinfo/images/funnels.png"/>
+                        <div class="title" data-localize="enterpriseinfo.pitch4-title"></div>
+                        <div class="text" data-localize="enterpriseinfo.pitch4"></div>
+                        <div class="link">
+                            <a href="https://count.ly/plugins" target="_blank" data-localize="enterpriseinfo.learn-more"></a>
                         </div>
+                        <div class="image" style="bottom:67px; right:83px;">
+                            <img src="./enterpriseinfo/images/slide4.svg"/>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="title" data-localize="enterpriseinfo.pitch1-title"></div>
+                        <div class="text" data-localize="enterpriseinfo.pitch1"></div>
+                        <div class="link">
+                            <a href="https://count.ly/countly-mobile-application/" target="_blank" data-localize="enterpriseinfo.learn-more"></a>
+                        </div>
+                        <div class="image" style="right:95px;">
+                            <img src="./enterpriseinfo/images/slide2.svg"/>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="title" data-localize="enterpriseinfo.pitch3-title"></div>
                         <div class="text" data-localize="enterpriseinfo.pitch3"></div>
+                        <div class="link">
+                            <a href="https://count.ly/enterprise-edition/" target="_blank" data-localize="enterpriseinfo.learn-more"></a>
+                        </div>
+                        <div class="image" style="bottom:-5px; right:90px;">
+                            <img src="./enterpriseinfo/images/slide3.svg"/>
+                        </div>
                     </div>
                 </div>
-
                 <div u="thumbnavigator" class="jssort12" style="position: absolute; width: 0px; height: 0px; left:0px; top: 0px;">
                     <div u="slides" style="cursor: move; top:0px; left:0px; border-left: 1px solid gray;">
                         <div u="prototype" class="p" style="POSITION: absolute; WIDTH: 100px; HEIGHT: 0px; TOP: 0; LEFT: 0; padding:0px;">
@@ -102,7 +123,12 @@
                         </div>
                     </div>
                 </div>
+                <div u="navigator" class="jssorb01" style="position: relative; bottom: 15px; right: 15px;">
+                    <!-- bullet navigator item prototype -->
+                    <div u="prototype" class="jssor-bullet"></div>
+                </div>
             </div>
+
         </div>
     </div>
 
@@ -112,13 +138,18 @@
              var options = {
                  $AutoPlay: true,
                  $AutoPlaySteps: 1,
-                 $AutoPlayInterval: 4000,
-                 $DragOrientation : 0
+                 $DragOrientation : 0,
+                 $Idle: 10000,
+                 $BulletNavigatorOptions: {
+                     $Class: $JssorBulletNavigator$,
+                     $ChanceToShow: 2,
+                     $AutoCenter: 1,
+                     $ActionMode: 2
+                 },
+                 $StartIndex: Math.floor(Math.random() * 4)
              };
 
              var jssor_slider2 = new $JssorSlider$(containerId, options);
-             // ScaleSlider();
-             // $JssorUtils$.$AddEvent(window, "load", ScaleSlider);
          };
 
          jssor_slider2_starter('slider2_container');
@@ -134,6 +165,8 @@
     <script>
         var countlyTitle = "<%- countlyTitle %>";
 		$(document).ready(function() {
+            setTimeout(function() { $("#slider_inner").fadeIn({speed:1000}); }, 1000);
+
             var lang = store.get("countly_lang") || "en";
             jQuery.i18n.properties({
                 name:'enterpriseinfo', 
