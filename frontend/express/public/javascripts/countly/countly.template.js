@@ -3397,7 +3397,7 @@ window.EventsView = countlyView.extend({
 
                     $(".dialog .events-table tbody tr").each(function () {
                         var currEvent = $(this);
-                        eventKey = currEvent.find(".event-key").text();
+                        eventKey = currEvent.find(".event-key").text().replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
 
                         if (currEvent.find(".event-name").val()) {
                             if (!eventMap[eventKey]) {
