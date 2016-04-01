@@ -3399,7 +3399,7 @@ window.EventsView = countlyView.extend({
                         var currEvent = $(this);
                         eventKey = currEvent.find(".event-key").text().replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e");
 
-                        if (currEvent.find(".event-name").val()) {
+                        if (currEvent.find(".event-name").val() && eventKey != currEvent.find(".event-name").val()) {
                             if (!eventMap[eventKey]) {
                                 eventMap[eventKey] = {}
                             }
