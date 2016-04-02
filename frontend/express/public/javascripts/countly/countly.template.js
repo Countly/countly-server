@@ -4113,6 +4113,11 @@ var AppRouter = Backbone.Router.extend({
             });
 
             // SIDEBAR
+            $("#sidebar-menu").find(".item").each(function(i) {
+                if ($(this).next().hasClass("sidebar-submenu")) {
+                    $(this).append("<span class='ion-chevron-right'></span>");
+                }
+            });
 
             $("#sidebar-menu").on("click", ".submenu-close", function () {
                 $(this).parents(".sidebar-submenu").animate({"right":"-170px"}, {duration:200, easing:'easeInExpo', complete: function() {
@@ -5285,12 +5290,6 @@ var AppRouter = Backbone.Router.extend({
             $(".resource-link").on('click', function() {
                 if ($(this).data("link")) {
                     CountlyHelpers.openResource($(this).data("link"));
-                }
-            });
-
-            $("#sidebar-menu").find(".item").each(function(i) {
-                if ($(this).next().hasClass("sidebar-submenu")) {
-                    $(this).append("<span class='ion-chevron-right'></span>");
                 }
             });
         });
