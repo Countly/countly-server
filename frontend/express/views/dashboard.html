@@ -603,7 +603,8 @@
 											</div>
 										</div>
 									</div>
-								</td>
+                                    <div class="hint" data-localize="management-applications.type.hint"></div>
+                                </td>
 							</tr>
 							<!--<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-category">
 								<td data-localize="management-applications.category"></td>
@@ -626,34 +627,37 @@
 							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-timezone">
 								<td data-localize="management-applications.time-zone"></td>
 								<td id="app-add-timezone" >
-									<div style="float:left;">
-										<div id="country-select" class="cly-select" style="width:280px;">
-											<div class="select-inner">
-												<div class="text-container">
-													<div class="text"></div>
-												</div>
-												<div class="right combo"></div>
-											</div>
-											<div class="select-items square" style="width:280px;">
-												<div id="country-items"></div>
-											</div>
-										</div>
-										<div id="timezone-select" class="cly-select" style="width:200px; display:none;">
-											<div class="select-inner">
-												<div class="text-container">
-													<div class="text"></div>
-												</div>
-												<div class="right combo"></div>
-											</div>
-											<div class="select-items square" style="width:200px;">
-												<div id="timezone-items"></div>
-											</div>
-										</div>
-									</div>
-									<div id="selected" style="float:left; font-size:14px; padding:5px 10px; padding-top:6px; color:#666; font-family:'Ubuntu';"></div>
-									<input type="hidden" value="" id="app-timezone"/>
-									<input type="hidden" value="" id="app-country"/>
-								</td>
+                                    <div>
+                                        <div style="float:left;">
+                                            <div id="country-select" class="cly-select" style="width:280px;">
+                                                <div class="select-inner">
+                                                    <div class="text-container">
+                                                        <div class="text"></div>
+                                                    </div>
+                                                    <div class="right combo"></div>
+                                                </div>
+                                                <div class="select-items square" style="width:280px;">
+                                                    <div id="country-items"></div>
+                                                </div>
+                                            </div>
+                                            <div id="timezone-select" class="cly-select" style="width:200px; display:none;">
+                                                <div class="select-inner">
+                                                    <div class="text-container">
+                                                        <div class="text"></div>
+                                                    </div>
+                                                    <div class="right combo"></div>
+                                                </div>
+                                                <div class="select-items square" style="width:200px;">
+                                                    <div id="timezone-items"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="selected" style="float:left; font-size:14px; padding:5px 10px; padding-top:6px; color:#666; font-family:'Ubuntu';"></div>
+                                        <input type="hidden" value="" id="app-timezone"/>
+                                        <input type="hidden" value="" id="app-country"/>
+                                    </div>
+                                    <div class="hint" data-localize="management-applications.time-zone.hint"></div>
+                                </td>
 							</tr>
                             <tr class="help-zone-vs" data-help-localize="help.manage-apps.app-icon">
 								<td data-localize="management-applications.icon"></td>
@@ -706,10 +710,6 @@
 					<input type="hidden" id="app-edit-id"/>
 					<table class="d-table horizontal" cellpadding="0" cellspacing="0">
 						<tbody>
-                            <tr class="help-zone-vs" data-help-localize="help.manage-apps.app-id">
-                                <td data-localize="management-applications.app-id"></td>
-                                <td id="view-app-id"></td>
-                            </tr>
 							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-name">
 								<td data-localize="management-applications.application-name"></td>
 								<td id="app-edit-name">
@@ -740,6 +740,7 @@
 											</div>
 										</div>
 									</div>
+                                    <div class="hint" data-localize="management-applications.type.hint"></div>
 								</td>
 							</tr>
 							<!--<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-category">
@@ -770,7 +771,8 @@
 									<div class="edit">
 										<input type="text" value="">
 									</div>
-								</td>
+                                    <div class="hint" data-localize="management-applications.app-key.hint"></div>
+                                </td>
 							</tr>
 							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-timezone">
 								<td data-localize="management-applications.time-zone"></td>
@@ -811,9 +813,10 @@
 										<input type="hidden" value="" id="app-timezone"/>
 										<input type="hidden" value="" id="app-country"/>
 									</div>
-								</td>
+                                    <div class="hint" data-localize="management-applications.time-zone.hint"></div>
+                                </td>
 							</tr>
-							<tr class="table-edit-prev help-zone-vs" data-help-localize="help.manage-apps.app-icon">
+							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-icon">
 								<td data-localize="management-applications.icon"></td>
 								<td id="app-edit-image">
 									<div class="read">
@@ -827,6 +830,13 @@
 									</div>
 								</td>
 							</tr>
+                            <tr class="help-zone-vs" data-help-localize="help.manage-apps.app-id">
+                                <td data-localize="management-applications.app-id"></td>
+                                <td>
+                                    <div id="view-app-id"></div>
+                                    <div class="hint" data-localize="management-applications.app-id.hint"></div>
+                                </td>
+                            </tr>
 							<tr class="table-edit">
 								<td colspan="2">
 									<a id="save-app-edit" class="icon-button light" data-localize="common.save-changes"></a>

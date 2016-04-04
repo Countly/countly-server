@@ -360,6 +360,9 @@ a:active { color:inherit; }
 
 #app-edit-key .edit input {width: 335px;}
 
+#add-new-app .hint,
+.app-details .hint { margin-top: 5px; font-size:11px; color:#B7B6B6; clear: both; }
+
 /* TABLES */
 table.d-table { width:100%; padding:0; margin:0; border-radius:7px; border:1px solid #C2C2C2; border-top-color:#959595; margin-bottom:20px; }
 table.d-table:not(.no-fix) { table-layout:fixed; }
