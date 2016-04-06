@@ -343,7 +343,7 @@
 				this.ts = this.ts + 30;
 				this.stats.x++;
 				this.stats.d += 30;
-                var events = this.getEvent("[CLY]_view").concat(this.getEvents(4));
+                var events = this.getEvent("[CLY]_view").concat(this.getEvents(2));
                 req = {timestamp:this.ts, session_duration:30, events:events};
 				if(Math.random() > 0.8){
 					this.timer = setTimeout(function(){that.extendSession()}, timeout);
@@ -366,7 +366,7 @@
 			}
 			if(this.hasSession){
 				this.hasSession = false;
-                var events = this.getEvents(6).concat(this.getEvent("Logout"));
+                var events = this.getEvents(2).concat(this.getEvent("Logout"));
 				this.request({timestamp:this.ts, end_session:1, events:events});
 			}
 		};
