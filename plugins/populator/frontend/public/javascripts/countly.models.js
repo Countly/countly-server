@@ -636,6 +636,10 @@
 
     var ensuringJobs = false;
     countlyPopulator.ensureJobs = function() {
+        if(typeof countlyFlow === "undefined"){
+            if (stopCallback) { stopCallback(true); }
+            return;
+        }
     	if (ensuringJobs) { return; }
     	ensuringJobs = true;
 
