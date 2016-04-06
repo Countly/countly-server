@@ -54,7 +54,7 @@ window.PopulatorView = countlyView.extend({
                 toDate = $( "#populate-to" ).datepicker( "getDate" ) || toDate;
                 countlyPopulator.setStartTime(fromDate.getTime()/1000);
                 countlyPopulator.setEndTime(toDate.getTime()/1000);
-                countlyPopulator.generateUsers(parseInt($("#populate-users").val()));
+                countlyPopulator.generateUsers(1000);
                 $("#start-populate").hide();
                 $("#stop-populate").show();
                 $("#populator-status").fadeOut().text(jQuery.i18n.map["populator.generating"]).fadeIn();
@@ -82,7 +82,6 @@ window.PopulatorView = countlyView.extend({
             $("#start-populate").hide();
             $("#stop-populate").show();
             countlyPopulator.generateUI();
-            $( "#populate-users" ).val(countlyPopulator.getUserAmount());
             $( "#populate-from" ).val(moment(countlyPopulator.getStartTime()*1000).format("YYYY-MM-DD"));
             $( "#populate-to" ).val(moment(countlyPopulator.getEndTime()*1000).format("YYYY-MM-DD"));
             $( "#populate-from" ).datepicker({dateFormat: "yy-mm-dd", defaultDate:new Date(countlyPopulator.getStartTime()*1000), constrainInput:true, maxDate: now });
