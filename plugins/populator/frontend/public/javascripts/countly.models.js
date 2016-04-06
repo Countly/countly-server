@@ -603,12 +603,13 @@
 			timeout = bucket*10*mult*mult;
 			$("#populate-stats-br").text(queued);
 			countlyPopulator.bulking = true;
+            var req = bulk.splice(0, bucket);
 			$.ajax({
 				type:"POST",
 				url:countlyCommon.API_URL + "/i/bulk",
 				data:{
 					app_key:countlyCommon.ACTIVE_APP_KEY,
-					requests:JSON.stringify(bulk)
+					requests:JSON.stringify(req)
 				},
 				success:function (json) {
 					queued--;
@@ -630,7 +631,6 @@
 					}
 				}
 			});
-			bulk = [];
 		}
     };	
 
