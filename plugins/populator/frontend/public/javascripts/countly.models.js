@@ -444,7 +444,7 @@
         createCampaign("social", "Social Campaign", "0.5", "click", function(){
             createCampaign("ads", "Ads Campaign", "1", "install", function(){
                 createCampaign("landing", "Landing page", "30", "campaign", function(){
-                    for(var i = 0; i < 200; i++){
+                    for(var i = 0; i < 100; i++){
                         setTimeout(function(){
                             clickCampaign(campaigns[getRandomInt(0, campaigns.length-1)]);
                         },1);
