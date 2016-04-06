@@ -51,7 +51,14 @@ db.collection("plugins").findOne({_id:"plugins"},function(err, list){
             }
             else{
                 var update = {$set:{}};
-                update["$set"][myArgs[0]] = myArgs[1];
+                var val = myArgs[1]+"";
+                if(val == "true")
+                    val = true;
+                else if(val == "false")
+                    val = false;
+                else if(!isNaN(val))
+                    val = parseFloat(val);
+                update["$set"][myArgs[0]] = val;
                 db.collection("plugins").update({_id:"plugins"}, update, function(err, res){
                     if(err){
                         console.log(err);
