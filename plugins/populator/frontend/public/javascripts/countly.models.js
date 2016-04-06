@@ -270,13 +270,14 @@
         };
 		
 		this.getPushEvents = function(){
-			var events = this.getPushEvent('[CLY]_push_open');
-            if (Math.random() >= 0.8) {
-            	return events.concat(this.getPushEvent('[CLY]_push_action'));
-            } else {
-            	return events;
+			var events = this.getPushEvent('[CLY]_push_sent');
+            if(Math.random() >= 0.5){
+                events = events.concat(this.getPushEvent('[CLY]_push_open'));
+                if (Math.random() >= 0.8) {
+                    events = events.concat(this.getPushEvent('[CLY]_push_action'));
+                }
             }
-
+            return events;
 		};
 		this.getPushEvent = function(id){
 			var event = {
