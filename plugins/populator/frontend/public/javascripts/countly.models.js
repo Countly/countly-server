@@ -303,46 +303,54 @@
 		this.startSession = function(){
 			this.ts = this.ts+60*60*24+100;
 			stats.s++;
+            var req = {};
 			if(!this.isRegistered){
 				this.isRegistered = true;
 				stats.u++;
                 var events = this.getEvent("Login").concat(this.getEvent("[CLY]_view")).concat(this.getEvents(4));
-				this.request({timestamp:this.ts, begin_session:1, metrics:this.metrics, user_details:this.userdetails, events:events});
+				req = {timestamp:this.ts, begin_session:1, metrics:this.metrics, user_details:this.userdetails, events:events};
 				if(Math.random() > 0.5){
 					this.hasPush = true;
 					stats.p++;
-					var data = {timestamp:this.ts, token_session:1, test_mode:0, events: this.getPushEvents()};
-					data[this.platform.toLowerCase()+"_token"] = randomString(8);
-					this.request(data);
+                    req["token_session"] = 1;
+                    req["test_mode"] = 0;
+                    req.events = req.events.concat(this.getPushEvents());
+					req[this.platform.toLowerCase()+"_token"] = randomString(8);
 				}
 			}
 			else{
 				stats.e++;
                 var events = this.getEvent("Login").concat(this.getEvent("[CLY]_view")).concat(this.getEvents(4));
-				this.request({timestamp:this.ts, begin_session:1, events:events});
+				req = {timestamp:this.ts, begin_session:1, events:events};
+			}
+            if(Math.random() > 0.5){
+				req["crash"] = this.getCrash();
 			}
 			this.hasSession = true;
-			this.timer = setTimeout(function(){that.extendSession()}, 6000 + timeout);
+            this.request(req);
+			this.timer = setTimeout(function(){that.extendSession()}, timeout);
 		};
 		
 		this.extendSession = function(){
 			if(this.hasSession){
+                var req = {};
 				this.ts = this.ts + 30;
 				stats.x++;
 				stats.d += 30;
 				stats.e++;
                 var events = this.getEvent("[CLY]_view").concat(this.getEvents(4));
-                this.request({timestamp:this.ts, session_duration:30, events:events});
+                req = {timestamp:this.ts, session_duration:30, events:events};
 				if(Math.random() > 0.8){
-					this.timer = setTimeout(function(){that.extendSession()}, 6000 + timeout);
+					this.timer = setTimeout(function(){that.extendSession()}, timeout);
 				}
 				else{
 					stats.c++;
 					if(Math.random() > 0.5){
-						this.request({timestamp:this.ts, crash:this.getCrash()});
+						req["crash"] = this.getCrash();
 					}
-					this.timer = setTimeout(function(){that.endSession()}, 6000 + timeout);
+					this.timer = setTimeout(function(){that.endSession()}, timeout);
 				}
+                this.request(req);
 			}
 		}
 		
