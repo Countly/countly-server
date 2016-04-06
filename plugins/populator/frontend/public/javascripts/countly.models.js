@@ -80,6 +80,9 @@
 	
 		return generatedString;
 	}
+    function getProp(name){
+		return props[name][Math.floor(Math.random()*props[name].length)];
+	}
 	function user(id){
 		this.getId = function() {
 			function s4() {
@@ -88,9 +91,7 @@
 			return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 		};
 		
-		this.getProp = function(name){
-			return props[name][Math.floor(Math.random()*props[name].length)];
-		};
+		this.getProp = getProp;
 		
 		var that = this;
         this.stats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
@@ -463,7 +464,24 @@
         var bulk = [];
         for(var i = 0; i < users; i++){
             for(var j = 0; j < ids.length; j++){
-                bulk.push({ip_address:chance.ip(), device_id:i+""+ids[j], begin_session:1, timestamp:ts});
+                var metrics = {};
+                for(var i in props){
+                    if(i == "_os" || i == "_os_web"){
+                        if(i == "_os_web" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
+                            metrics["_os"] = getProp(i);
+                        }
+                        else{
+                            metrics[i] = getProp(i);
+                        }
+                    }
+                    else if(i != "_store" && i != "_source")
+                        metrics[i] = getProp(i);
+                }
+                if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web")
+                    metrics["_store"] = getProp("_source");
+                else if(this.platform == "Android")
+                    metrics["_store"] = getProp("_store");
+                bulk.push({ip_address:chance.ip(), device_id:i+""+ids[j], begin_session:1, metrics:metrics, timestamp:ts});
                 totalStats.s++;
                 totalStats.u++;
             }
