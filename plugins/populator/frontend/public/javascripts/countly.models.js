@@ -25,7 +25,6 @@
 		"Sound": ["Lost", "Won"],
 		"Shared": ["Lost", "Won"],
 	};
-	var events = Object.keys(eventsMap).join(["[CLY]_view"]);
 	var pushEvents = ["[CLY]_push_sent", "[CLY]_push_open", "[CLY]_push_action"];
 	var segments  = {
 		Login: {referer: ["twitter", "notification", "unknown"]},
@@ -98,7 +97,7 @@
 		this.isRegistered = false;
 		this.iap = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].iap_event || "";
 		if(this.iap != ""){
-			events.push(this.iap);
+            eventsMap[this.iap] = segments.Buy;
 		}
 
 		this.hasSession = false;
@@ -323,6 +322,9 @@
                 var events = this.getEvent("Login").concat(this.getEvent("[CLY]_view")).concat(this.getEvents(4));
 				req = {timestamp:this.ts, begin_session:1, events:events};
 			}
+            if(this.iap != "" && Math.random() > 0.5){
+                req.events = req.events.concat(this.getEvent(this.iap));
+            }
             if(Math.random() > 0.5){
 				req["crash"] = this.getCrash();
 			}
