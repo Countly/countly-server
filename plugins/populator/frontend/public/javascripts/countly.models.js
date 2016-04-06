@@ -427,6 +427,10 @@
     }
     
     function genereateCampaigns(callback){
+        if(typeof countlyAttribution === "undefined"){
+            callback();
+            return;
+        }
         var campaigns = ["social", "ads", "landing"];
         createCampaign("social", "Social Campaign", "0.5", "click", function(){
             createCampaign("ads", "Ads Campaign", "1", "install", function(){
@@ -462,6 +466,10 @@
     }
     
     function generateRetention(callback){
+        if(typeof countlyRetention === "undefined"){
+            callback();
+            return;
+        }
         var ts = endTs - 60*60*24*9;
         var ids = [ts];
         var users = 10;
@@ -551,20 +559,12 @@
 				countlyPopulator.sync(true);
 		}
         generateRetention(function(){
-            if(typeof countlyAttribution != "undefined"){
-                genereateCampaigns(function(){
-                    for(var i = 0; i < amount; i++){
-                        createUser();
-                    }
-                    setTimeout(processUsers, timeout);
-                });
-            }
-            else{
+            genereateCampaigns(function(){
                 for(var i = 0; i < amount; i++){
                     createUser();
                 }
                 setTimeout(processUsers, timeout);
-            }
+            });
         });
                     // for(var i = 0; i < amount; i++){
                     //     createUser();
