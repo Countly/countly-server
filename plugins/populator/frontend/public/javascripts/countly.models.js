@@ -531,9 +531,9 @@
 		bulk = [];
 		stats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
 		totalStats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
-		bucket = Math.max(amount/5, 10);
+		bucket = Math.max(amount/50, 10);
 		var mult = (Math.round(queued/10)+1);
-		timeout = bucket*100*mult*mult;
+		timeout = bucket*10*mult*mult;
 		generating = true;
 		function createUser(){
 			var u = new user();
@@ -600,7 +600,7 @@
 			stats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
 			queued++;
 			var mult = Math.round(queued/10)+1;
-			timeout = bucket*100*mult*mult;
+			timeout = bucket*10*mult*mult;
 			$("#populate-stats-br").text(queued);
 			countlyPopulator.bulking = true;
 			$.ajax({
