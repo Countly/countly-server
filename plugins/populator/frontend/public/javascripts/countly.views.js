@@ -54,7 +54,7 @@ window.PopulatorView = countlyView.extend({
                 toDate = $( "#populate-to" ).datepicker( "getDate" ) || toDate;
                 countlyPopulator.setStartTime(fromDate.getTime()/1000);
                 countlyPopulator.setEndTime(toDate.getTime()/1000);
-                countlyPopulator.generateUsers(1000);
+                countlyPopulator.generateUsers(250);
                 $("#start-populate").hide();
                 $("#stop-populate").show();
                 $("#populator-status").fadeOut().text(jQuery.i18n.map["populator.generating"]).fadeIn();
