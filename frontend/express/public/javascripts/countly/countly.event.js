@@ -540,7 +540,7 @@
         var eventMap = (_activeEvents)? ((_activeEvents.map)? _activeEvents.map : {}) : {},
             mapKey = _activeEvent.replace("\\", "\\\\").replace("\$", "\\u0024").replace(".", "\\u002e"),
             countString = (eventMap[mapKey] && eventMap[mapKey].count)? eventMap[mapKey].count.toUpperCase() : jQuery.i18n.map["events.count"],
-            sumString = (eventMap[mapKey] && eventMap[mapKeyt].sum)? eventMap[mapKey].sum.toUpperCase() : jQuery.i18n.map["events.sum"],
+            sumString = (eventMap[mapKey] && eventMap[mapKey].sum)? eventMap[mapKey].sum.toUpperCase() : jQuery.i18n.map["events.sum"],
             durString = (eventMap[mapKey] && eventMap[mapKey].dur)? eventMap[mapKey].dur.toUpperCase() : jQuery.i18n.map["events.dur"];
 
         var bigNumbers = {
