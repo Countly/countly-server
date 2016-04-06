@@ -93,6 +93,7 @@
 		};
 		
 		var that = this;
+        this.stats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
 		this.id = this.getId();
 		this.isRegistered = false;
 		this.iap = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].iap_event || "";
@@ -214,6 +215,7 @@
         };
 		
 		this.getEvent = function(id){
+            this.stats.e++;
 			if (!id) {
 				if (this.previousEventId) {
 					id = eventsMap[this.previousEventId][Math.floor(Math.random()*eventsMap[this.previousEventId].length)];
@@ -235,7 +237,7 @@
 			};
 			this.ts += 1000;
 			if(id == this.iap){
-				stats.b++;
+				this.stats.b++;
 				event.sum = getRandomInt(100, 500)/100;
 				var segment;
 				event.segmentation = {};
@@ -279,6 +281,7 @@
             return events;
 		};
 		this.getPushEvent = function(id){
+            this.stats.e++;
 			var event = {
 				"key": id,
 				"count": 1,
@@ -301,16 +304,16 @@
 		
 		this.startSession = function(){
 			this.ts = this.ts+60*60*24+100;
-			stats.s++;
+			this.stats.s++;
             var req = {};
 			if(!this.isRegistered){
 				this.isRegistered = true;
-				stats.u++;
+				this.stats.u++;
                 var events = this.getEvent("Login").concat(this.getEvent("[CLY]_view")).concat(this.getEvents(4));
 				req = {timestamp:this.ts, begin_session:1, metrics:this.metrics, user_details:this.userdetails, events:events};
 				if(Math.random() > 0.5){
 					this.hasPush = true;
-					stats.p++;
+					this.stats.p++;
                     req["token_session"] = 1;
                     req["test_mode"] = 0;
                     req.events = req.events.concat(this.getPushEvents());
@@ -318,7 +321,6 @@
 				}
 			}
 			else{
-				stats.e++;
                 var events = this.getEvent("Login").concat(this.getEvent("[CLY]_view")).concat(this.getEvents(4));
 				req = {timestamp:this.ts, begin_session:1, events:events};
 			}
@@ -326,6 +328,7 @@
                 req.events = req.events.concat(this.getEvent(this.iap));
             }
             if(Math.random() > 0.5){
+                this.stats.c++;
 				req["crash"] = this.getCrash();
 			}
 			this.hasSession = true;
@@ -337,17 +340,16 @@
 			if(this.hasSession){
                 var req = {};
 				this.ts = this.ts + 30;
-				stats.x++;
-				stats.d += 30;
-				stats.e++;
+				this.stats.x++;
+				this.stats.d += 30;
                 var events = this.getEvent("[CLY]_view").concat(this.getEvents(4));
                 req = {timestamp:this.ts, session_duration:30, events:events};
 				if(Math.random() > 0.8){
 					this.timer = setTimeout(function(){that.extendSession()}, timeout);
 				}
 				else{
-					stats.c++;
 					if(Math.random() > 0.5){
+                        this.stats.c++;
 						req["crash"] = this.getCrash();
 					}
 					this.timer = setTimeout(function(){that.endSession()}, timeout);
@@ -363,19 +365,20 @@
 			}
 			if(this.hasSession){
 				this.hasSession = false;
-				stats.e++;
                 var events = this.getEvents(6).concat(this.getEvent("Logout"));
 				this.request({timestamp:this.ts, end_session:1, events:events});
 			}
 		};
 		
 		this.request = function(params){
-			stats.r++;
+			this.stats.r++;
 			params.device_id = this.id;
 			params.ip_address = this.ip;
             params.hour = getRandomInt(0, 23);
             params.dow = getRandomInt(0, 6);
+            params.stats = JSON.parse(JSON.stringify(this.stats));
 			bulk.push(params);
+            this.stats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
 			countlyPopulator.sync();
 		};
 	}
@@ -390,7 +393,6 @@
 	var users = [];
 	var userAmount = 1000;
 	var queued = 0;
-	var stats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
 	var totalStats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
 	
 	function updateUI(stats){
@@ -462,8 +464,11 @@
         for(var i = 0; i < users; i++){
             for(var j = 0; j < ids.length; j++){
                 bulk.push({ip_address:chance.ip(), device_id:i+""+ids[j], begin_session:1, timestamp:ts});
+                totalStats.s++;
+                totalStats.u++;
             }
         }
+        totalStats.r++;
         $.ajax({
             type:"GET",
             url:countlyCommon.API_URL + "/i/bulk",
@@ -540,7 +545,6 @@
 		stopCallback = null;
 		userAmount = amount;
 		bulk = [];
-		stats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
 		totalStats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
 		bucket = Math.max(amount/50, 10);
 		var mult = (Math.round(queued/10)+1);
@@ -604,17 +608,21 @@
     
     countlyPopulator.sync = function (force) {
 		if(generating && (force || bulk.length > bucket) && !countlyPopulator.bulking){
-			var temp = {};
-			for(var i in stats){
-				temp[i] = stats[i];
-			}
-			stats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
 			queued++;
 			var mult = Math.round(queued/10)+1;
 			timeout = bucket*10*mult*mult;
 			$("#populate-stats-br").text(queued);
 			countlyPopulator.bulking = true;
             var req = bulk.splice(0, bucket);
+            var temp = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
+            for(var i in req){
+                if(req[i].stats){
+                    for(var stat in req[i].stats){
+                        temp[stat] += req[i].stats[stat];
+                    }
+                    delete req[i].stats;
+                }
+            }
 			$.ajax({
 				type:"POST",
 				url:countlyCommon.API_URL + "/i/bulk",
