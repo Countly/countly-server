@@ -30,7 +30,13 @@ var plugin = {},
     plugins.register("/o/urltest", function(ob){
         var params = ob.params;
         if(params.qstring.url){
-            request(params.qstring.url, function (error, response, body) {
+            var options = {
+                url: params.qstring.url,
+                headers: {
+                    'User-Agent': 'CountlySiteBot'
+                }
+            };
+            request(options, function (error, response, body) {
                 if (!error && response.statusCode >= 200 && response.statusCode < 400) {
                     common.returnOutput(params,{result:true});
                 }
