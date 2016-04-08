@@ -285,15 +285,20 @@ window.ActionMapView = countlyView.extend({
         var self = this;
         var segments = countlyViews.getActionsData().domains;
         var url = location.protocol+"//"+segments[self.curSegment]+self.view;
+        if($("#view_loaded_url").val().length == 0)
+            $("#view_loaded_url").val(url);
         countlyViews.testUrl(url, function(result){
-            if(result)
+            if(result){
                 $("#view-map iframe").attr("src", "/o/urlredir?url="+encodeURIComponent(url));
+                $("#view_loaded_url").val(url);
+            }
             else{
                 self.curSegment++;
                 if(segments[self.curSegment]){
                     self.loadIframe();
                 }
                 else{
+                    $("#view_loaded_url").show();
                     CountlyHelpers.alert(jQuery.i18n.map["views.cannot-load"], "red");
                 }
             }
@@ -328,6 +333,16 @@ window.ActionMapView = countlyView.extend({
             app.localize();
             $('.btn-back-view').off('click').on('click', function(){
                 window.location.hash = "/analytics/views";
+            });
+            
+            $("#view_reload_url").on("click", function () {
+				$("#view-map iframe").attr("src", "/o/urlredir?url="+encodeURIComponent($("#view_loaded_url").val()));
+			});
+            
+            $("#view_loaded_url").keyup(function(event){
+                if(event.keyCode == 13){
+                    $("#view_reload_url").click();
+                }
             });
             
             $("#action-map-type .segmentation-option").on("click", function () {
