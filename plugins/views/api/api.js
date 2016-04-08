@@ -233,12 +233,16 @@ var plugin = {},
     plugins.register("/i", function(ob){
         var params = ob.params;
         if (params.qstring.events) {
-            var currEvent;
-            for (var i=0; i < params.qstring.events.length; i++) {
-                currEvent = params.qstring.events[i];
-                if (currEvent.key == "[CLY]_view" && currEvent.segmentation && currEvent.segmentation.name)
+            params.qstring.events = params.qstring.events.filter(function(currEvent){
+                if (currEvent.key == "[CLY]_view" && currEvent.segmentation && currEvent.segmentation.name){
                     processView(params, currEvent);
-            }
+                    if(currEvent.segmentation.visit)
+                        return true;
+                    else
+                        return false;
+                }
+                return true;
+            });
         }
     });
     
