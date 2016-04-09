@@ -392,6 +392,10 @@ window.ConfigurationsView = countlyView.extend({
         return configsHTML;
     },
     getInputLabel: function(id, value){
+        var ns = id.split("-")[0];
+        if(ns != "frontend" && ns != "api" && ns != "apps" && ns != "logs" && countlyGlobal["plugins"].indexOf(ns) == -1){
+            return null;
+        }
         var ret = "";
         if(jQuery.i18n.map["configs.help."+id])
             ret = "<span class='config-help'>"+jQuery.i18n.map["configs.help."+id]+"</span>";
