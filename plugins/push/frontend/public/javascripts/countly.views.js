@@ -162,11 +162,12 @@ window.MessagingListView = countlyView.extend({
                 'logo-class': 'logo',
                 'page-title': jQuery.i18n.map["push.page-title"]
             }));
+            this.renderTable();
         }
 
-        this.renderTable();
-
         if (isRefresh) {
+            var pushes = countlyPush.getAllMessages();
+            CountlyHelpers.refreshTable(this.dtable, pushes);
             CountlyHelpers.setUpDateSelectors(this);
             app.localize();
         }
