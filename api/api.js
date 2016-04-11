@@ -4,7 +4,7 @@ var http = require('http'),
     os = require('os'),
     countlyConfig = require('./config'),
     plugins = require('../plugins/pluginManager.js'),
-    jobsWorker,
+    jobsWorkerName, jobsWorker,
     workers = [];
     
 plugins.setConfigs("api", {
@@ -61,7 +61,8 @@ if (cluster.isMaster) {
         });
     };
 
-    jobsWorker = require('child_process').fork(__dirname + '/parts/mgmt/jobsRunner.js');
+    jobsWorkerName = process.enclose ? 'jobsRunner.compiled.js' : 'jobsRunner.js';
+    jobsWorker = require('child_process').fork(__dirname + '/parts/mgmt/' + jobsWorkerName);
 
     workers.forEach(passToMaster);
     passToMaster(jobsWorker);
