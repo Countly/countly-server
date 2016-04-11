@@ -1,6 +1,5 @@
 var plugin = {},
-	crypto = require("crypto"),
-	countlyConfig = require('../../../frontend/express/config');
+	crypto = require("crypto");
 
 (function (plugin) {
     var countlyDb;
