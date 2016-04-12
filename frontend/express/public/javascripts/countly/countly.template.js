@@ -4113,12 +4113,6 @@ var AppRouter = Backbone.Router.extend({
             });
 
             // SIDEBAR
-            $("#sidebar-menu").find(".item").each(function(i) {
-                if ($(this).next().hasClass("sidebar-submenu")) {
-                    $(this).append("<span class='ion-chevron-right'></span>");
-                }
-            });
-
             $("#sidebar-menu").on("click", ".submenu-close", function () {
                 $(this).parents(".sidebar-submenu").animate({"right":"-170px"}, {duration:200, easing:'easeInExpo', complete: function() {
                     $(".sidebar-submenu").hide();
@@ -4158,31 +4152,43 @@ var AppRouter = Backbone.Router.extend({
                 }
             });
 
-            $("#sidebar-menu").on("mouseenter", ".sidebar-menu>.item", function() {
-                var visibleSubmenu = $(".sidebar-submenu:visible");
+            $("#sidebar-menu").hoverIntent({
+                over: function() {
+                    var visibleSubmenu = $(".sidebar-submenu:visible");
 
-                if (!$(this).hasClass("menu-active") && $(".sidebar-submenu").is(":visible") && !visibleSubmenu.hasClass("half-visible")) {
-                    visibleSubmenu.addClass("half-visible");
-                    visibleSubmenu.animate({"right":"-110px"}, {duration:300, easing:'easeOutExpo'});
-                }
+                    if (!$(this).hasClass("menu-active") && $(".sidebar-submenu").is(":visible") && !visibleSubmenu.hasClass("half-visible")) {
+                        visibleSubmenu.addClass("half-visible");
+                        visibleSubmenu.animate({"right":"-110px"}, {duration:300, easing:'easeOutExpo'});
+                    }
+                },
+                out: function() { },
+                selector: ".sidebar-menu>.item"
             });
 
-            $("#sidebar-menu").on("mouseleave", "", function() {
-                var visibleSubmenu = $(".sidebar-submenu:visible");
+            $("#sidebar-menu").hoverIntent({
+                over: function() {},
+                out: function() {
+                    var visibleSubmenu = $(".sidebar-submenu:visible");
 
-                if ($(".sidebar-submenu").is(":visible") && visibleSubmenu.hasClass("half-visible")) {
-                    visibleSubmenu.removeClass("half-visible");
-                    visibleSubmenu.animate({"right":"0"}, {duration:300, easing:'easeOutExpo'});
-                }
+                    if ($(".sidebar-submenu").is(":visible") && visibleSubmenu.hasClass("half-visible")) {
+                        visibleSubmenu.removeClass("half-visible");
+                        visibleSubmenu.animate({"right":"0"}, {duration:300, easing:'easeOutExpo'});
+                    }
+                },
+                selector: ""
             });
 
-            $("#sidebar-menu").on("mouseenter", ".sidebar-submenu:visible", function() {
-                var visibleSubmenu = $(".sidebar-submenu:visible");
+            $("#sidebar-menu").hoverIntent({
+                over: function() {
+                    var visibleSubmenu = $(".sidebar-submenu:visible");
 
-                if (visibleSubmenu.hasClass("half-visible")) {
-                    visibleSubmenu.removeClass("half-visible");
-                    visibleSubmenu.animate({"right":"0"}, {duration:300, easing:'easeOutExpo'});
-                }
+                    if (visibleSubmenu.hasClass("half-visible")) {
+                        visibleSubmenu.removeClass("half-visible");
+                        visibleSubmenu.animate({"right":"0"}, {duration:300, easing:'easeOutExpo'});
+                    }
+                },
+                out: function() {},
+                selector: ".sidebar-submenu:visible"
             });
 
 			$('#sidebar-menu').slimScroll({
@@ -5290,6 +5296,12 @@ var AppRouter = Backbone.Router.extend({
             $(".resource-link").on('click', function() {
                 if ($(this).data("link")) {
                     CountlyHelpers.openResource($(this).data("link"));
+                }
+            });
+
+            $("#sidebar-menu").find(".item").each(function(i) {
+                if ($(this).next().hasClass("sidebar-submenu") && $(this).find(".ion-chevron-right").length == 0) {
+                    $(this).append("<span class='ion-chevron-right'></span>");
                 }
             });
         });

@@ -155,6 +155,7 @@ a:active { color:inherit; }
 #sidebar-bottom-container .username { float:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:120px; }
 
 #sidebar-menu { position: relative; }
+    .scroll-active .sidebar-menu { height:auto; position:relative; }
 	#sidebar-menu .sidebar-menu>.item { width:225px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; height:36px; padding-top:3px; display:block; cursor:pointer; border-top: 1px solid #2D2D2D; border-bottom: 1px solid #232323; }
         #sidebar-menu .sidebar-menu>.item:last-child { box-shadow: 0 1px 0 0 #2D2D2D; }
         #sidebar-menu .sidebar-menu>.item.hide { display: none; }
