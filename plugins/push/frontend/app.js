@@ -68,7 +68,7 @@ var plugin = {},
                             var app = resp && resp.ok ? resp.value : undefined;
 							if (err || !app) {
 								res.send({error: 'Server error: cannot find app'});
-								countlyDb.collection('apps').update({_id: countlyDb.ObjectID(req.body.app_id)}, {$set: {apn: oldApp.apn}}, function(){});
+								countlyDb.collection('apps').update({_id: countlyDb.ObjectID(req.body.app_id)}, {$set: {apn: oldApp.apn || {}}}, function(){});
 							} else {
 								fs.unlink(tmp_path, function () {});
 

@@ -47,10 +47,33 @@ var common          = require('../../../../api/utils/common.js'),
     if (cluster.isWorker) {
         api.pushlyCallbacks = {
             count: function(message, query, callback){
-                var filter = {}, finalQuery = {$or: []}, $or = finalQuery.$or;
 
-                for (var any in query.conditions) {
-                    finalQuery = {$and: [_.extend({}, query.conditions), {$or: []}]};
+                common.db.collection('apps').findOne({_id: common.db.ObjectID(query.appId)}, function(err, app){
+                    if (err || !app) { return callback(err || 'No app ' + query.appId + ' found'); }
+
+                    api.audienceInternal(app, 
+                        message.credentials.id.split('.')[0], 
+                        message.hasUserConditions() ? message.getUserConditions() : null, 
+                        message.hasDrillConditions() ? message.getDrillConditions() : null,
+                        null, function(err, res) {
+                            callback(err, res.results);
+                        }
+                    );
+                });
+            },
+            stream: function(message, query, callback, ask, skip, app){
+                if (!app) {
+                    return common.db.collection('apps').findOne({_id: common.db.ObjectID(query.appId)}, function(err, app){
+                        api.pushlyCallbacks.stream(message, query, callback, ask, skip, app);
+                    });
+                }
+
+                log.d('====== Streaming %j', message);
+
+                var filter = {}, count = 0, finalQuery = {$or: []}, $or = finalQuery.$or;
+
+                for (var any in query.userConditions) {
+                    finalQuery = {$and: [_.extend({}, query.userConditions), {$or: []}]};
                     $or = finalQuery.$and[1].$or;
                     break;
                 }
@@ -63,51 +86,13 @@ var common          = require('../../../../api/utils/common.js'),
 
                 filter[field] = 1;
 
-                // for (i in fields) {
-                //     var obj = {};
-                //     obj[fields[i]] = {$exists: true};
-                //     $or.push(obj);
-                // }
-                // for (i in fields) filter[fields[i]] = 1;
-
-                if (message.content.messagePerLocale) {
-                    filter[common.dbUserMap.lang] = 1;
-                }
-
-                log.d('Counting: %j', finalQuery);
-                common.db.collection('app_users' + query.appId).find(finalQuery).count(callback);
-            },
-            stream: function(message, query, callback, ask, skip){
-                log.d('====== Streaming');
-                var filter = {}, count = 0, finalQuery = {$or: []}, $or = finalQuery.$or;
-
-                for (var any in query.conditions) {
-                    finalQuery = {$and: [_.extend({}, query.conditions), {$or: []}]};
-                    $or = finalQuery.$and[1].$or;
-                    break;
-                }
-
-               var field = common.dbUserMap.tokens + '.' + message.credentials.id.split('.')[0];
-
-               var obj = {};
-               obj[common.dbUserMap.tokens + message.credentials.id.split('.')[0]] = true;
-               $or.push(obj);
-
-               filter[field] = 1;
-       //          for (i in fields) {
-       //              var obj = {};
-       //              obj[fields[i]] = {$exists: true};
-       //              $or.push(obj);
-       //          }
-                // for (i in fields) filter[fields[i]] = 1;
-
                 if (message.content.messagePerLocale) {
                     filter[common.dbUserMap.lang] = 1;
                 }
 
                 if (ask() === 'such no power much sad') {
                     log.d('====== Much sad still no luck, trying again in a second starting from %j', skip);
-                    setTimeout(api.pushlyCallbacks.stream.bind(api.pushlyCallbacks, message, query, callback, ask, skip), 1000);
+                    setTimeout(api.pushlyCallbacks.stream.bind(api.pushlyCallbacks, message, query, callback, ask, skip, app), 1000);
                     return;
                 }
 
@@ -120,50 +105,62 @@ var common          = require('../../../../api/utils/common.js'),
                         finalQuery = {$and: [{_id: {$gt: skip}}, {$or: finalQuery.$or}]};
                     }
                 } else {
-                    common.db.collection('app_users' + query.appId).find(finalQuery).count(function(err, total){
-                        common.db.collection('messages').update({_id: messageId(message)}, {$inc: {'result.found': total}}, function(){});
-                    });
+                    api.audienceInternal(app, 
+                        message.credentials.id.split('.')[0], 
+                        finalQuery, 
+                        query.drillConditions,
+                        null, function(err, res) {
+                            common.db.collection('messages').update({_id: messageId(message)}, {$inc: {'result.found': res.results}}, function(){});
+                        }
+                    );
                 }
 
                 var skipping = false, aborted = false, ids = [];
 
-                common.db.collection('app_users' + query.appId).find(finalQuery, filter).sort({_id: 1}).limit(10000).each(function(err, user){
-                    if (err) {
-                        log.e('====== Error while streaming tokens: %j', err);
-                        if (skip) {
-                            log.w('====== Continuing streaming from %j', skip);
-                            api.pushlyCallbacks.stream(message, query, callback, ask, skip);
-                        }
-                    } else if (skipping || aborted) {
-                        return;
-                    } else if (user) {
-                        if (count % 100 === 0) {
-                            log.d('====== Streamed %d', count);
-                        } 
-                        count++;
-                        skip = user._id;
-                        ids.push(user._id);
+                api.audienceInternal(app, 
+                    message.credentials.id.split('.')[0], 
+                    finalQuery, 
+                    query.drillConditions,
+                    filter, function(err, cursor) {
+                        cursor.sort({_id: 1}).limit(10000).each(function(err, user){
+                            if (err) {
+                                log.e('====== Error while streaming tokens: %j', err);
+                                if (skip) {
+                                    log.w('====== Continuing streaming from %j', skip);
+                                    api.pushlyCallbacks.stream(message, query, callback, ask, skip, app);
+                                }
+                            } else if (skipping || aborted) {
+                                return;
+                            } else if (user) {
+                                if (count % 100 === 0) {
+                                    log.d('====== Streamed %d', count);
+                                } 
+                                count++;
+                                skip = user._id;
+                                ids.push(user._id);
 
-                        var result = callback(['' + user._id, common.dot(user, field)], user[common.dbUserMap.lang]);
-                        if (result === 'such no power much sad') {
-                            log.d('====== Much sad, trying again in a second starting from %j', skip);
-                            skipping = true;
-                            setTimeout(api.pushlyCallbacks.stream.bind(api.pushlyCallbacks, message, query, callback, ask, skip), 1000);
-                        } else if (result === 'so aborted no luck') {
-                            log.d('====== Much sad, won\'t continue streaming because message has been aborted');
-                            aborted = true;
-                        }
-                    } else {
-                        if (count === 0 && !skip) {
-                            log.d('====== Aborting message because no users found');
-                            pushly.abort(message);
-                        } else if (count !== 0) {
-                            log.d('====== Going to stream next batch starting from %j', skip);
-                            api.pushlyCallbacks.stream(message, query, callback, ask, skip);
-                            common.db.collection('app_users' + query.appId).update({_id: {$in: ids}}, {$push: {msgs: messageId(message)}}, {multi: true}, function(){});
-                        }
+                                var result = callback(['' + user._id, common.dot(user, field)], user[common.dbUserMap.lang]);
+                                if (result === 'such no power much sad') {
+                                    log.d('====== Much sad, trying again in a second starting from %j', skip);
+                                    skipping = true;
+                                    setTimeout(api.pushlyCallbacks.stream.bind(api.pushlyCallbacks, message, query, callback, ask, skip, app), 1000);
+                                } else if (result === 'so aborted no luck') {
+                                    log.d('====== Much sad, won\'t continue streaming because message has been aborted');
+                                    aborted = true;
+                                }
+                            } else {
+                                if (count === 0 && !skip) {
+                                    log.d('====== Aborting message because no users found');
+                                    pushly.abort(message);
+                                } else if (count !== 0) {
+                                    log.d('====== Going to stream next batch starting from %j', skip);
+                                    api.pushlyCallbacks.stream(message, query, callback, ask, skip, app);
+                                    common.db.collection('app_users' + query.appId).update({_id: {$in: ids}}, {$push: {msgs: messageId(message)}}, {multi: true}, function(){});
+                                }
+                            }
+                        });
                     }
-                });
+                );
             },
             onInvalidToken: function(message, tokens) {
                 var id = messageId(message), app = appId(message);
@@ -512,7 +509,7 @@ var common          = require('../../../../api/utils/common.js'),
         return true;
     };
 
-    var geoPlugin;
+    var geoPlugin, drillPlugin;
 
     function getGeoPluginApi() {
         if (geoPlugin === undefined) {
@@ -522,60 +519,47 @@ var common          = require('../../../../api/utils/common.js'),
         return geoPlugin;
     }
 
-    api.countAudience = function(params, callback) {
-        var argProps = {
-                'apps':             { 'required': true,  'type': 'Array'   },
-                'platforms':        { 'required': true,  'type': 'Array'   },
-                'geo':              { 'required': false, 'type': 'String', 'min-length': 24, 'max-length': 24 },
-                'conditions':       { 'required': false, 'type': 'Object'  },
-                'test':             { 'required': false, 'type': 'Boolean' }
-            },
-            msg = {};
-
-        if (!(msg = common.validateArgs(params.qstring.args, argProps))) {
-            callback({code: 400, message: 'Not enough args'});
-            return;
+    function getDrillPluginApi() {
+        if (drillPlugin === undefined) {
+            drillPlugin = plugins.getPluginsApis().drill || null;
         }
 
-        msg.apps = _.map(msg.apps, common.db.ObjectID);
+        return drillPlugin;
+    }
 
-        withAppsAndGeo(msg.apps, msg.geo, function(err, apps, geo){
+    api.audience = function(message, filter, callback) {
+        var counters = [];
+
+        withAppsAndGeo(message.apps, message.geo, function(err, apps, geo){
             if (err || !apps || !apps.length) {
+                log.i('No apps found');
                 callback(null, []);
             } else {
-                if (geo && getGeoPluginApi()) {
-                    msg.conditions = getGeoPluginApi().conditions(geo, msg.conditions);
-                }
+                message.appNames = _.pluck(apps, 'name');
 
-                var message = new Message(msg.apps, '')
-                        .setId(new common.db.ObjectID())
-                        .addPlatform(msg.platforms)
-                        .setConditions(msg.conditions)
-                        .setGeo(msg.geo)
-                        .setTest(msg.test),
-                    counters = [];
+                if (geo && getGeoPluginApi()) {
+                    message.setUserConditions(getGeoPluginApi().conditions(message.geo, message.getUserConditions()));
+                }
 
                 apps.forEach(function(app){
                     var credentials = api.credentials(message, app);
 
                     credentials.forEach(function(creds){
                         counters.push(function(clb){
-                            var field = creds.id.split('.')[0],
-                                query = {};
-                            query[common.dbUserMap.tokens + field] = true;
-                            for (var k in msg.conditions) {
-                                query[k] = msg.conditions[k];
-                            }
 
-                            common.db.collection('app_users' + app._id).count(query, function(err, results){
-                                clb(err, {field: field, results: results});
-                            });
+                            api.audienceInternal(app, 
+                                creds.id.split('.')[0], 
+                                message.hasUserConditions() ? message.getUserConditions() : null, 
+                                message.hasDrillConditions() ? message.getDrillConditions() : null,
+                                filter, clb
+                            );
                         });
                     });
                 });
 
 
                 async.parallel(counters, function(err, all){
+                    console.log(all);
                     if (err) {
                         callback(err);
                     } else {
@@ -584,6 +568,7 @@ var common          = require('../../../../api/utils/common.js'),
                             var res = all[i], field = common.dbUserMap.tokens + '.' + res.field;
                             TOTALLY[field] = res.results;
                             TOTALLY.TOTALLY += res.results;
+                            TOTALLY.query = res.query;
                         }
                         callback(null, TOTALLY);
                     }
@@ -592,8 +577,87 @@ var common          = require('../../../../api/utils/common.js'),
         });
     };
 
+    api.audienceInternal = function(app, field, userConditions, drillConditions, filter, clb) {
+        var query;
+
+        log.d('audienceInternal', arguments);
+
+        if (drillConditions) {
+            if (!getDrillPluginApi()) {
+                return clb('Drill is not enabled while message has drill conditions');
+            }
+
+            var drillParams = {
+                time: common.initTimeObj(app.timezone, Date.now()),
+                qstring: _.extend({
+                    app_id: app._id.toString(),
+                }, drillConditions)
+            };
+
+            log.i('Drilling: %j', drillParams);
+
+            getDrillPluginApi().drill.fetchUsers(drillParams, function(err, uids){
+                query = userConditions || {};
+                query[common.dbUserMap.tokens + field] = true;
+
+                log.i('Counting with drill of %d users: %j', uids.length, query);
+                query.uid = {$in : uids};
+
+                if (!filter) {
+                    common.db.collection('app_users' + app._id).count(query, function(err, results){
+                        clb(err, {field: field, results: results, query: query});
+                    });
+                } else {
+                    clb(null, common.db.collection('app_users' + app._id).find(query, filter));
+                }
+            });
+        } else {
+            query = userConditions || {};
+            query[common.dbUserMap.tokens + field] = true;
+
+            if (!filter) {
+                log.i('Counting: %j', query);
+                common.db.collection('app_users' + app._id).count(query, function(err, results){
+                    log.i('Counted: %j', err, results);
+                    clb(err, {field: field, results: results, query: query});
+                });
+            } else {
+                clb(null, common.db.collection('app_users' + app._id).find(query, filter));
+            }
+        }
+   };
+
     api.getAudience = function (params) {
-        api.countAudience(params, function(err, TOTALLY){
+        var argProps = {
+                'apps':             { 'required': true,  'type': 'Array'   },
+                'platforms':        { 'required': true,  'type': 'Array'   },
+                'geo':              { 'required': false, 'type': 'String', 'min-length': 24, 'max-length': 24 },
+                'userConditions':   { 'required': false, 'type': 'Object'  },
+                'drillConditions':  { 'required': false, 'type': 'Object'  },
+                'test':             { 'required': false, 'type': 'Boolean' }
+            },
+            msg = {};
+
+        if (!(msg = common.validateArgs(params.qstring.args, argProps))) {
+            common.returnMessage(params, 400, 'Not enough args');
+            return;
+        }
+
+        log.i('Counting audience: %j', msg);
+
+        msg.apps = _.map(msg.apps, common.db.ObjectID);
+
+        var message = new Message(msg.apps, '')
+                .setId(new common.db.ObjectID())
+                .addPlatform(msg.platforms)
+                .setUserConditions(msg.userConditions)
+                .setDrillConditions(msg.drillConditions)
+                .setGeo(msg.geo)
+                .setTest(msg.test);
+
+        log.i('Message constructed: %j', message);
+
+        api.audience(message, null, function(err, TOTALLY){
             if (err) {
                 common.returnMessage(params, err.code || 500, err.message || 'Unexpected push error');
             } else {
@@ -659,7 +723,8 @@ var common          = require('../../../../api/utils/common.js'),
                 'platforms':            { 'required': true,  'type': 'Array'   },
                 'messagePerLocale':     { 'required': false, 'type': 'Object'  },
                 'locales':              { 'required': false, 'type': 'Object'  },
-                'conditions':           { 'required': false, 'type': 'Object'  },
+                'userConditions':       { 'required': false, 'type': 'Object'  },
+                'drillConditions':      { 'required': false, 'type': 'Object'  },
                 'geo':                  { 'required': false, 'type': 'String', 'min-length': 24, 'max-length': 24 },
                 'sound':                { 'required': false, 'type': 'String'  },
                 'badge':                { 'required': false, 'type': 'Number'  },
@@ -722,7 +787,7 @@ var common          = require('../../../../api/utils/common.js'),
             message[k.replace(/[\[\]]/g, '')] = msg.messagePerLocale[k];
         }
 
-        msg.apps = _.map(msg.apps, function(app){ return common.db.ObjectID(app); });
+        msg.apps = _.map(msg.apps, common.db.ObjectID);
 
         if (params.qstring.args.date) {
             if ((params.qstring.args.date + '').length == 10) {
@@ -742,37 +807,34 @@ var common          = require('../../../../api/utils/common.js'),
             } else {
                 if (adminOfApps(params.member, apps)) {
 
-                    if (geo && getGeoPluginApi()) {
-                        msg.conditions = getGeoPluginApi().conditions(geo, msg.conditions);
-                    }
+                    var message = new Message(msg.apps, _.pluck(apps, 'name'))
+                        .setId(new common.db.ObjectID())
+                        .setType(msg.type)
+                        .setMessagePerLocale(msg.messagePerLocale)
+                        .setLocales(msg.locales)
+                        .setURL(msg.url)
+                        .setCategory(msg.category)
+                        .setUpdate(msg.update)
+                        .setReview(msg.review)
+                        .addPlatform(msg.platforms)
+                        .setUserConditions(msg.userConditions)
+                        .setDrillConditions(msg.drillConditions)
+                        .setGeo(geo ? msg.geo : undefined)
+                        .setSound(msg.sound)
+                        .setBadge(msg.badge)
+                        .setTest(msg.test)
+                        .setContentAvailable(msg.contentAvailable)
+                        .setNewsstandAvailable(msg.newsstandAvailable)
+                        .setCollapseKey(msg.collapseKey)
+                        .setDelayWhileIdle(msg.delayWhileIdle)
+                        .setData(msg.data)
+                        .schedule(msg.date);
 
-                    api.countAudience(params, function(err, TOTALLY){
+                    api.audience(message, null, function(err, TOTALLY){
                         log.d('counted: %j', TOTALLY);
                         if (!TOTALLY || !TOTALLY.TOTALLY || TOTALLY.TOTALLY.TOTALLY) { // :)
                             common.returnOutput(params, {error: 'No push enabled users found for the selected apps-platforms-test combinations'});
                         } else {
-                            var message = new Message(msg.apps, _.pluck(apps, 'name'))
-                                .setId(new common.db.ObjectID())
-                                .setType(msg.type)
-                                .setMessagePerLocale(msg.messagePerLocale)
-                                .setLocales(msg.locales)
-                                .setURL(msg.url)
-                                .setCategory(msg.category)
-                                .setUpdate(msg.update)
-                                .setReview(msg.review)
-                                .addPlatform(msg.platforms)
-                                .setConditions(msg.conditions)
-                                .setGeo(geo ? msg.geo : undefined)
-                                .setSound(msg.sound)
-                                .setBadge(msg.badge)
-                                .setTest(msg.test)
-                                .setContentAvailable(msg.contentAvailable)
-                                .setNewsstandAvailable(msg.newsstandAvailable)
-                                .setCollapseKey(msg.collapseKey)
-                                .setDelayWhileIdle(msg.delayWhileIdle)
-                                .setData(msg.data)
-                                .schedule(msg.date);
-
                             common.db.collection('messages').save(mess.cleanObj(message), function(err) {
                                 if (err) {
                                     common.returnOutput(params, {error: 'Server db Error'});

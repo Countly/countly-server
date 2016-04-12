@@ -37,7 +37,19 @@ var MessageExpiryTime = 1000 * 60 * 60 * 24 * 7,     // one week by default
         });
 
         if (msg.conditions && typeof msg.conditions !== 'string') {
-            msg.conditions = JSON.stringify(msg.conditions);
+            msg.userConditions = JSON.stringify(msg.conditions);
+            delete msg.conditions;
+        } else if (msg.conditions) {
+            msg.userConditions = msg.conditions;
+            delete msg.conditions;
+        }
+
+        if (msg.userConditions && typeof msg.userConditions !== 'string') {
+            msg.userConditions = JSON.stringify(msg.userConditions);
+        }
+
+        if (msg.drillConditions && typeof msg.drillConditions !== 'string') {
+            msg.drillConditions = JSON.stringify(msg.drillConditions);
         }
 
         return msg;
@@ -51,7 +63,17 @@ module.exports.Message = function (apps, names) {
     if (_.isObject(apps) && !_.isArray(apps)) {
         _.extend(this, apps);
         if (this.conditions && typeof this.conditions === 'string') {
-            this.conditions = JSON.parse(this.conditions);
+            this.userConditions = JSON.parse(this.conditions);
+            delete this.conditions;
+        } else if (this.conditions) {
+            this.userConditions = this.conditions;
+            delete this.conditions;
+        }
+        if (this.userConditions && typeof this.userConditions === 'string') {
+            this.userConditions = JSON.parse(this.userConditions);
+        }
+        if (this.drillConditions && typeof this.drillConditions === 'string') {
+            this.drillConditions = JSON.parse(this.drillConditions);
         }
     } else {
         this.type = undefined;
@@ -59,7 +81,8 @@ module.exports.Message = function (apps, names) {
         this.appNames = names;
         this.status = MessageStatus.Initial;
         this.platforms = [];
-        this.conditions = {};
+        this.userConditions = {};
+        this.drillConditions = {};
         this.geo = undefined;                   // ID of geo object
         this.message = undefined;               // Simple message for all clients
         this.messagePerLocale = undefined;      // Map of localized messages
@@ -154,9 +177,15 @@ module.exports.Message = function (apps, names) {
                 return this;
             }
         },
-        setConditions: {
+        setUserConditions: {
             value: function (conds) {
-                this.conditions = conds || {};
+                this.userConditions = conds || {};
+                return this;
+            }
+        },
+        setDrillConditions: {
+            value: function (conds) {
+                this.drillConditions = conds || {};
                 return this;
             }
         },
@@ -166,9 +195,30 @@ module.exports.Message = function (apps, names) {
                 return this;
             }
         },
-        getUserCollectionConditions: {
+        getUserConditions: {
             value: function () {
-                return _.extend({}, this.conditions || {});
+                return _.extend({}, this.userConditions || {});
+            }
+        },
+        getDrillConditions: {
+            value: function () {
+                return _.extend({}, this.drillConditions || {});
+            }
+        },
+        hasUserConditions: {
+            value: function () {
+                for (var k in (this.userConditions || {})) {
+                    return true;
+                }
+                return false;
+            }
+        },
+        hasDrillConditions: {
+            value: function () {
+                for (var k in (this.drillConditions || {})) {
+                    return true;
+                }
+                return false;
             }
         },
         addPlatform: {

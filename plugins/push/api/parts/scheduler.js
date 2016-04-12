@@ -3,38 +3,49 @@
 var _               = require('underscore'),
     common 			= require('../../../../api/utils/common.js'),
     log             = common.log('push:scheduler'),
-	pushly 			= require('./lib')(),
+    pushly          = require('./lib')(),
+	plugins			= require('../../../pluginManager.js'),
     mess            = require('./message.js'),
     cluster			= require('cluster'),
     Message         = mess.Message,
     MessageStatus   = mess.MessageStatus;
 
 var check = function() {
-    function addPushly(appId, match, creds, query, message, pushly) {
-        log.d('Adding pushly message for %j with creds %j & query %j & match %j', message, creds, query, match);
-        common.db.collection('app_users' + appId).count(match, function(err, count){
-            if (count) {
-                var updateQuery = _.extend({}, query);
-                if (typeof updateQuery.conditions === 'object') {
-                    updateQuery.conditions = JSON.stringify(updateQuery.conditions);
-                }
-                var msg = message.toPushly(creds, query, [''+ appId, creds.id]),
-                    upd = {
-                        $addToSet: {pushly: {id: msg.id, query: updateQuery, result: msg.result}},
-                        $set: {'result.status': MessageStatus.InQueue}
-                    };
+    function addPushly(appId, creds, query, message, pushly) {
+        log.d('Adding pushly message for %j with creds %j & query %', message, creds, query);
+        common.db.collection('apps').findOne({_id: common.db.ObjectID(appId)}, function(err, app){            
+            require('./endpoints.js').audienceInternal(app, 
+                creds.id.split('.')[0], 
+                message.hasUserConditions() ? message.getUserConditions() : null, 
+                message.hasDrillConditions() ? message.getDrillConditions() : null,
+                null, function(err, res) {
+                    if (res && res.results) {
+                        var updateQuery = _.extend({}, query);
+                        if (typeof updateQuery.userConditions === 'object') {
+                            updateQuery.userConditions = JSON.stringify(updateQuery.userConditions);
+                        }
+                        if (typeof updateQuery.drillConditions === 'object') {
+                            updateQuery.drillConditions = JSON.stringify(updateQuery.drillConditions);
+                        }
+                        var msg = message.toPushly(creds, query, [''+ appId, creds.id]),
+                            upd = {
+                                $addToSet: {pushly: {id: msg.id, query: updateQuery, result: msg.result}},
+                                $set: {'result.status': MessageStatus.InQueue}
+                            };
 
-                log.d('Adding pushly to %j (%d): %j', {_id: message._id}, count, upd);
-                common.db.collection('messages').update(
-                    {_id: message._id},
-                    upd, 
-                    function(){
-                        pushly.push(msg);
+                        log.d('Adding pushly to %j (%d): %j', {_id: message._id}, res.result, upd);
+                        common.db.collection('messages').update(
+                            {_id: message._id},
+                            upd, 
+                            function(){
+                                pushly.push(msg);
+                            }
+                        );
+                    } else {
+                        log.d('Won\'t add pushly message for %j with creds %j & query %j: %j / %j', message, creds, query, err, res);
                     }
-                );
-            } else {
-                log.d('Won\'t add pushly message for %j with creds %j & query %j: %j / %j', message, creds, query, err, count);
-            }
+                }
+            );
         });
     }
 
@@ -45,12 +56,23 @@ var check = function() {
 		{'new': true},
 
 		function(err, message){
+            if (!common.drillDb && plugins.getPluginsApis().drill) {
+                var countlyConfig = require('../../../../api/config');
+
+                if (typeof countlyConfig.mongodb === "string") {
+                    countlyConfig.mongodb = countlyConfig.mongodb.replace(new RegExp('countly$'), 'countly_drill');
+                } else{
+                    countlyConfig.mongodb.db = 'countly_drill';
+                }
+
+                common.drillDb = plugins.dbConnection(countlyConfig);
+            }
+
             message = message && message.ok ? message.value : null;
 			if (message) {
                 log.d('Processing message %j', message);
 
 				message = new Message(message);
-				var conditions = message.getUserCollectionConditions();
 
                 // pushly submessages
 				message.pushly = [];
@@ -64,8 +86,15 @@ var check = function() {
 
 						if (app) {
                             // query used to get device tokens when message gets to the top of queue
-							var query = {appId: appId, conditions: conditions},
+							var query = {appId: appId},
 								credentials = require('./endpoints.js').credentials(message, app);
+
+                            if (message.hasUserConditions()) {
+                                query.userConditions = message.getUserConditions();
+                            }
+                            if (message.hasDrillConditions()) {
+                                query.drillConditions = message.getDrillConditions();
+                            }
 
                             log.d('Credentials for message %j', credentials);
 
@@ -80,13 +109,9 @@ var check = function() {
                                 for (var c = credentials.length - 1; c >= 0; c--) {
                                     var creds = credentials[c];
 
-                                    var field = creds.id.split('.')[0],
-                                        match = _.extend({}, conditions);
-                                    match[common.dbUserMap.tokens + field] = true;
-
                                     // count first to prevent no users errors within some of app-platform combinations
                                     // of the message which will turn message status to error
-                                    addPushly(app._id, match, creds, query, message, pushly);
+                                    addPushly(app._id, creds, query, message, pushly);
                                 }
                             }
 						} else {

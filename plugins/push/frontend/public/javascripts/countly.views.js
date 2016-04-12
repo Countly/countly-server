@@ -235,14 +235,15 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
             date: message.date,
             sent: message.sent,
             result: message.result,
-            conditions: message.conditions === '{}' ? undefined : (typeof message.conditions === 'string' ? JSON.parse(message.conditions) : message.conditions),
+            userConditions: message.userConditions === '{}' ? undefined : (typeof message.userConditions === 'string' ? JSON.parse(message.userConditions) : message.userConditions),
+            drillConditions: message.drillConditions === '{}' ? undefined : (typeof message.drillConditions === 'string' ? JSON.parse(message.drillConditions) : message.drillConditions),
             geo: typeof message.geo === 'undefined' ? undefined : ((typeof message.geo === 'string' && message.geo) ? message.geo : undefined),
             noTests: false,
             noApps: false,
             noPlatforms: false
         }
         for (var i in message.apps) for (var a in allApps) if (allApps[a]._id === message.apps[i]) message.appNames.push(allApps[a].name);
-        if (message.conditions && message.conditions._id) {
+        if (message.userConditions && message.userConditions._id) {
             message.noTests = true;
             message.noApps = true;
             message.noPlatforms = true;
@@ -945,7 +946,7 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
             }
             count.text('');
             countlyPush.getAudience(
-                {apps: message.apps, platforms: message.platforms, test: message.test, conditions: message.conditions, geo: message.geo || undefined},
+                {apps: message.apps, platforms: message.platforms, test: message.test, userConditions: message.userConditions, drillConditions: message.drillConditions, geo: message.geo || undefined},
                 function(resp) {
                     message.count = resp;
 
@@ -1113,7 +1114,8 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
             category: message.type === 'category' ? content.find('.push-category').val() : '',
             locales: message.usedLocales,
             date: content.find('.send-later:checked').length ? content.find('.send-later-date').data('timestamp') : null,
-            conditions: message.conditions,
+            userConditions: message.userConditions,
+            drillConditions: message.drillConditions,
             geo: message.geo
         };
 
@@ -1124,7 +1126,8 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
         if (json.category  === '') delete json.category;
         if (!json.update) delete json.update;
         if (!json.review) delete json.review;
-        if (!json.conditions) delete json.conditions;
+        if (!json.userConditions) delete json.userConditions;
+        if (!json.drillConditions) delete json.drillConditions;
         if (!json.geo) delete json.geo;
         if (json.data) json.data = toJSON(json.data);
 
@@ -1320,12 +1323,12 @@ app.addPageScript("/drill#", function(){
             var message = {
                 apps: [countlyCommon.ACTIVE_APP_ID],
                 platforms: [],
-                conditions: {}
+                drillConditions: countlySegmentation.getRequestData()
             };
     
-            for (var k in filterData.dbFilter) {
-                if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filterData.dbFilter[k];
-            }
+            // for (var k in filterData.dbFilter) {
+            //     if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filterData.dbFilter[k];
+            // }
     
             PushPopup(message, false, true);
         });
@@ -1335,12 +1338,12 @@ app.addPageScript("/drill#", function(){
             var message = {
                 apps: [countlyCommon.ACTIVE_APP_ID],
                 platforms: [],
-                conditions: {}
+                drillConditions: filter
             };
     
-            for (var k in filter) {
-                if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filter[k];
-            }
+            // for (var k in filter) {
+            //     if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filter[k];
+            // }
     
             PushPopup(message, false, true);
         });
@@ -1370,7 +1373,7 @@ app.addPageScript("/users#", function(){
                         platforms: platforms,
                         apps: [countlyCommon.ACTIVE_APP_ID],
                         test: test && !prod,
-                        conditions: {_id: app.userdetailsView.user_id}
+                        userConditions: {_id: app.userdetailsView.user_id}
                     }, true, true);
                 } else {
                     CountlyHelpers.alert(jQuery.i18n.map["push.no-user-token"], "red");
@@ -1399,7 +1402,7 @@ app.addPageScript("/users#", function(){
                 var message = {
                     apps: [countlyCommon.ACTIVE_APP_ID],
                     platforms: [],
-                    conditions: filterData
+                    userConditions: filterData
                 };
                 
                 PushPopup(message, false, true);

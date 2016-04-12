@@ -313,14 +313,6 @@ PushlyWorker.prototype[EVENTS.CHILD_STATUS] = function(m) {
 };
 
 /**
- * Change logging level
- * @api private
- */
-PushlyWorker.prototype[EVENTS.CHILD_SET_LOGGING] = function(m) {
-	constants.setDebugEnabled(null, m.enable);
-};
-
-/**
  * Update message internally and emit 'status' event
  * @api private
  */
