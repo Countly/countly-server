@@ -9,6 +9,25 @@ setTimeout(function(){
 		test: function(job, done){
 			done();
 		},
+        clearJobs: function(job, done) {
+            var query = {
+                $and: [
+                    {status: {$in: [jobs.STATUS.DONE, jobs.STATUS.CANCELLED]}},
+                    {$or: [
+                        {done: {$exists: false}},
+                        {done: {$lt: Date.now() - 60 * 60 * 24 * 1000}}
+                    ]}
+                ]
+            }
+            require('../../utils/common.js').db.collection('jobs').deleteMany(query, (err, result) => {
+                if (err) {
+                    log.e('Error while clearing jobs: ', err);
+                } else {
+                    log.d('Done clearing old jobs done before %j:', query.$and[1].$or[1].done.$lt, result);
+                }
+                done(err);
+            });
+        },
         ping: function(job, done){
             var db = plugins.dbConnection();
             db.collection("members").findOne({global_admin:true}, function(err, member){
@@ -43,7 +62,8 @@ setTimeout(function(){
 		log.i('Jobs started', err ? err : worker.types);
 	});
     
-    jobs.job('ping', {}).replace().schedule(require('later').parse.recur().every(1).dayOfYear());
+    jobs.job('ping').replace().schedule('every 1 day');
+    jobs.job('clearJobs').replace().schedule('every 1 hour');
 }, 1000);
 
 process.on('message', logger.ipcHandler);
