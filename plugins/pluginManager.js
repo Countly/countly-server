@@ -403,7 +403,7 @@ var pluginManager = function pluginManager(){
     
     this.prepareProduction = function(callback) {
         console.log('Preparing production files');
-        exec('grunt plugins locales', {cwd: path.join(__dirname, '..')}, function(error, stdout) {
+        exec('grunt plugins locales', {cwd: path.dirname(process.argv[1])}, function(error, stdout) {
             console.log('Done preparing production files with %j / %j', error, stdout);
             var errors;
             if (error && error != 'Error: Command failed: ') {
