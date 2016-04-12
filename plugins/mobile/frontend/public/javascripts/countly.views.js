@@ -108,36 +108,42 @@ window.MobileDashboardView = countlyView.extend({
         sessionData["usage"] = [
             {
                 "title":jQuery.i18n.map["common.total-sessions"],
+                "material-icon": "timeline",
                 "data":sessionData.usage['total-sessions'],
                 "id":"draw-total-sessions",
                 "help":"dashboard.total-sessions"
             },
             {
                 "title":jQuery.i18n.map["common.total-users"],
+                "ion-icon": "ion-person-stalker",
                 "data":sessionData.usage['total-users'],
                 "id":"draw-total-users",
                 "help":"dashboard.total-users"
             },
             {
                 "title":jQuery.i18n.map["common.new-users"],
+                "ion-icon": "ion-person-add",
                 "data":sessionData.usage['new-users'],
                 "id":"draw-new-users",
                 "help":"dashboard.new-users"
             },
             {
                 "title":jQuery.i18n.map["dashboard.time-spent"],
+                "ion-icon": "ion-android-time",
                 "data":sessionData.usage['total-duration'],
                 "id":"draw-total-time-spent",
                 "help":"dashboard.total-time-spent"
             },
             {
                 "title":jQuery.i18n.map["dashboard.avg-time-spent"],
+                "material-icon": "timelapse",
                 "data":sessionData.usage['avg-duration-per-session'],
                 "id":"draw-time-spent",
                 "help":"dashboard.avg-time-spent2"
             },
             {
                 "title":jQuery.i18n.map["dashboard.avg-reqs-received"],
+                "material-icon": "compare_arrows",
                 "data":sessionData.usage['avg-events'],
                 "id":"draw-avg-events-served",
                 "help":"dashboard.avg-reqs-received"

@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="<%- cdn %>stylesheets/font-awesome/css/font-awesome.min.css" />
 	<link rel="stylesheet" href="<%- cdn %>stylesheets/entypo/css/entypo.css" />
     <link rel="stylesheet" href="<%- cdn %>stylesheets/ionicons/css/ionicons.min.css" />
+    <link rel="stylesheet" href="<%- cdn %>stylesheets/material/material-icons.css" />
 	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.base.css" />
 	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.theme.css" />
     <% if (production) { %>
@@ -1015,9 +1016,13 @@
                 {{#if usage}}
 				<div id="big-numbers-container" class="dashboard">
 					{{#each usage}}
-					<div class="big-numbers {{#if ../../usage-class}}{{../../usage-class}}{{else}}six-column{{/if}} help-zone-vs" data-help-localize="help.{{this.help}}">
+					<div class="big-numbers top {{#if ../../usage-class}}{{../../usage-class}}{{else}}six-column{{/if}} help-zone-vs" data-help-localize="help.{{this.help}}">
 						<div class="inner">
-							<div class="logo"></div>
+                            <div class="logo {{#if this.ion-icon}} ion {{this.ion-icon}} {{/if}} {{#if this.material-icon}} material {{/if}}">
+                                {{#if this.material-icon}}
+                                <i class="material-icons">{{this.material-icon}}</i>
+                                {{/if}}
+                            </div>
 							<div class="number">
                                 <span class="value">{{getShortNumber this.data.total}}</span>
                                 {{#if this.data.isEstimate}}
@@ -1030,14 +1035,25 @@
                                     </div>
                                 {{/if}}
                             </div>
-							<div class="trend" style="background-image:url('../images/dashboard/{{this.data.trend}}trend.png');">
-								<div class="change">{{this.data.change}}</div>
-							</div>
+                            <div class="title">{{this.title}}</div>
+                            <div class="trend {{this.data.trend}}">
+                                {{#ifCond this.data.change "==" "NA"}}
+                                <i class="material-icons">trending_flat</i>
+                                {{else}}
+                                {{#ifCond this.data.change "==" "0%"}}
+                                <i class="material-icons">trending_flat</i>
+                                {{else}}
+                                    {{#ifCond this.data.trend "==" "u"}}
+                                        <i class="material-icons">trending_up</i>
+                                    {{else}}
+                                        <i class="material-icons">trending_down</i>
+                                    {{/ifCond}}
+                                {{/ifCond}}
+                                {{/ifCond}}
+                                <div class="change">{{this.data.change}}</div>
+                            </div>
 							<div class="spark"><span class="{{this.data.trend}}sparkline">{{this.data.sparkline}}</span></div>
-							<div class="select" id="{{this.id}}">
-								<div class="title">{{this.title}}</div>
-							</div>
-							<div class="arrow"></div>
+                            <div class="select" id="{{this.id}}"></div>
 						</div>
 					</div>
 					{{/each}}

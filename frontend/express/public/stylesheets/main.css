@@ -96,7 +96,7 @@
 }
 
 
-body { margin:0; padding:0; overflow:auto; /*background-image:url('../images/dashboard/bg.png');*/ background-color:#F5F5F5; user-select:text; }
+body { margin:0; padding:0; overflow:auto; /*background-image:url('../images/dashboard/bg.png');*/ background-color:#F5F5F5; user-select:text; font-family: Ubuntu,Helvetica,sans-serif; }
 #content-container { margin-left:224px; min-width:768px; min-height: 400px; padding:16px; padding-bottom:35px; overflow:auto;}
 #content {padding-bottom: 50px; }
 a { color:inherit; text-decoration:none; }
@@ -331,6 +331,29 @@ a:active { color:inherit; }
 		.pie-overlay.one.platforms { background-image:url('../images/dashboard/platforms.png'); }
 		.pie-overlay.two.platforms { background-image:url('../images/dashboard/platform-versions.png'); }
 		.pieLabel div { font-size:11px !important; }
+
+.big-numbers.top .inner { height:170px; cursor:pointer; }
+.big-numbers.top .select { bottom:1px; cursor:pointer; padding-top:7px; font-size:12px; line-height:111%; color:#969696; position:absolute; height:23px; width:100%; background-color: transparent !important; background-image: none !important; box-shadow: none; border:none;  }
+    .big-numbers.top.active .select { border-bottom:1px solid #FFF; bottom:0;  }
+.big-numbers.top .inner .logo { background-image:url('../images/dashboard/dashboard_icons.png'); margin:0 auto; font-size: 30px; line-height: 30px; width: 30px; height: 30px; padding-top: 15px; margin-bottom: 10px; }
+    .big-numbers.top .inner .logo.ion { background-image:none; font-size: 30px; line-height: 30px; color: #969696; }
+    .big-numbers.top.active .inner .logo.ion { color: #535353; }
+    .big-numbers.top .inner .logo.material { background-image:none; }
+    .big-numbers.top .inner .logo.material .material-icons { font-size: 30px; line-height: 30px; color: #969696; }
+    .big-numbers.top.active .inner .logo.material .material-icons { color: #535353; }
+.big-numbers.top .number { font:30px Oswald; color:#666; margin: 0; }
+    .big-numbers.top.active .number { color:#333; }
+.big-numbers.top .title { padding-top:3px; padding-bottom:3px; font-size:10px; color:#666666; }
+.big-numbers.top .spark { margin-top:14px; }
+    .big-numbers.top.active .spark { display: none; }
+.big-numbers.top .trend { display: none; font-size:11px; margin-top:20px; position: relative; top:inherit; right: inherit; width: auto; height: auto; }
+    .big-numbers.top .trend .material-icons { font-size: 16px; vertical-align: middle; margin-right:5px; }
+    .big-numbers.top .trend.u,
+    .big-numbers.top .trend.u .change { color:#6BB96E !important; }
+    .big-numbers.top .trend.d,
+    .big-numbers.top .trend.d .change { color:#C94C4C !important; }
+    .big-numbers.top.active .trend { display: block; }
+.big-numbers.top .change { display:inline-block; vertical-align: middle; position: relative; top:inherit; right: inherit; }
 /* DASHBOARD END */
 
 /* APP NAVIGATION */
