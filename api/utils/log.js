@@ -65,6 +65,7 @@ var styles = {
  */
 var log = function(level, prefix, enabled, outer, out, styler) {
 	return function() {
+		// console.log(level, prefix, enabled(), arguments);
 		if (enabled()) {
 			var args = Array.prototype.slice.call(arguments, 0);
 			var color = styles.moduleColors[prefix];
@@ -136,7 +137,7 @@ var getLevel = function(module) {
 var getEnabledWithLevel = function(acceptable, module) {
 	return function(){
 		// if (acceptable.indexOf(levels[module]) === -1) {
-		// 	console.log('Won\'t log %j because %j doesn\'t have %j', module, acceptable, levels[module]);
+		// 	console.log('Won\'t log %j because %j doesn\'t have %j (%j)', module, acceptable, levels[module], levels);
 		// }
 		return acceptable.indexOf(levels[module] || deflt) !== -1;
 	};
@@ -149,7 +150,7 @@ var ipcHandler = function(msg){
 		return;
 	}
 
-	// console.log('%d: Setting logging config to %j', process.pid, msg.config);
+	// console.log('%d: Setting logging config to %j (was %j)', process.pid, msg.config, levels);
 
 	if (msg.config.default) {
 		deflt = msg.config.default;
@@ -187,11 +188,31 @@ var ipcHandler = function(msg){
 			levels[m] = deflt;
 		}
 	}
+
+	for (l in msg.config) {
+		if (msg.config[l] && l !== 'default') {
+			modules = msg.config[l].split(',').map(function(v){ return v.trim(); });
+			prefs[l] = modules;
+
+			for (i in modules) {
+				m = modules[i];
+				if (!(m in levels)) {
+					levels[m] = l;
+				}
+			}
+		} else {
+			prefs[l] = [];
+		}
+	}
+
+	prefs.default = msg.config.default;
+
+	// console.log('%d: Set logging config to %j (now %j)', process.pid, msg.config, levels);
 };
 
 module.exports = function(name) {
 	setLevel(name, logLevel(name));
-	// console.log('Got level for ' + name + ': ' + levels[name], typeof debug(name));
+	// console.log('Got level for ' + name + ': ' + levels[name] + ' ( prefs ', prefs);
 	return {
 		d: log('DEBUG', name, getEnabledWithLevel(['debug'], name), this, console.log),
 		i: log('INFO', name, getEnabledWithLevel(['debug', 'info'], name), this, console.info),
