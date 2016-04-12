@@ -340,7 +340,6 @@ var pluginManager = function pluginManager(){
     this.installPlugin = function(plugin, callback){
         console.log('Installing plugin %j...', plugin);
         callback = callback || function() {};
-        var ret = "";
         try{
             var dir = path.resolve(__dirname, '');
             var child = cp.fork(dir+"/"+plugin+"/install.js");
@@ -373,7 +372,6 @@ var pluginManager = function pluginManager(){
     this.uninstallPlugin = function(plugin, callback){
         console.log('Uninstalling plugin %j...', plugin);
         callback = callback || function() {};
-        var ret = "";
         try{
             var dir = path.resolve(__dirname, '');
             var child = cp.fork(dir+"/"+plugin+"/uninstall.js");
