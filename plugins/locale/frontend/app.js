@@ -1,5 +1,5 @@
 var plugin = {},
-	countlyConfig = require('../../../frontend/express/config'),
+	countlyConfig = require('../../../frontend/express/config', 'dont-enclose'),
 	langs = require('../api/utils/langs.js');
 
 (function (plugin) {

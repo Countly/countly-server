@@ -986,14 +986,20 @@ var countlyCommon = {},
                 break;
             }
         }
+        
+        if(isSpecialPeriod){
+            _currMoment.subtract('days', daysInPeriod-1);
+            startTimestamp = _currMoment.unix();
+            _currMoment.add('days', daysInPeriod-1);
+        }
 
         // Check whether period object is array
         if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length == 2) {
             var fromDate = new Date(_period[0]),
                 toDate = new Date(_period[1]);
 
-            startTimestamp = fromDate.getTime();
-            endTimestamp = toDate.getTime();
+            startTimestamp = fromDate.getTime()/1000;
+            endTimestamp = toDate.getTime()/1000;
             fromDate.setTimezone(_appTimezone);
             toDate.setTimezone(_appTimezone);
 
@@ -1024,10 +1030,6 @@ var countlyCommon = {},
         if (isSpecialPeriod) {
             var yearChanged = false,
                 currentYear = 0;
-                
-            _currMoment.subtract('days', daysInPeriod-1);
-            startTimestamp = _currMoment.unix();
-            _currMoment.add('days', daysInPeriod-1);
 
             for (var i = (daysInPeriod - 1); i > -1; i--) {
 

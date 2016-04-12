@@ -2,9 +2,9 @@ var http = require('http'),
     cluster = require('cluster'),
     formidable = require('formidable'),
     os = require('os'),
-    countlyConfig = require('./config'),
+    countlyConfig = require('./config', 'dont-enclose'),
     plugins = require('../plugins/pluginManager.js'),
-    jobsWorker,
+    jobsWorkerName, jobsWorker,
     workers = [];
     
 plugins.setConfigs("api", {
@@ -61,7 +61,8 @@ if (cluster.isMaster) {
         });
     };
 
-    jobsWorker = require('child_process').fork(__dirname + '/parts/mgmt/jobsRunner.js');
+    jobsWorkerName = process.enclose ? 'jobsRunner.compiled.js' : 'jobsRunner.js';
+    jobsWorker = require('child_process').fork(__dirname + '/parts/mgmt/' + jobsWorkerName);
 
     workers.forEach(passToMaster);
     passToMaster(jobsWorker);

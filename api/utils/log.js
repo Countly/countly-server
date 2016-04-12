@@ -27,7 +27,7 @@
  * - if error happened, arg1 is a first argument AFTER error, it's not an error
  */
 
-var prefs = require('../config.js').logging,
+var prefs = require('../config.js', 'dont-enclose').logging,
 	colors = require('colors'),
 	deflt = (prefs && prefs.default) ?  prefs.default : 'error';
 

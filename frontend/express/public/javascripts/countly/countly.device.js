@@ -90,6 +90,8 @@
             { "name":"u" },
             { "name":"n" }
         ]);
+        
+        chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, "device");
 
         var deviceNames = _.pluck(chartData.chartData, 'device'),
             deviceTotal = _.pluck(chartData.chartData, 'u'),
