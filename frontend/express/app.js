@@ -18,7 +18,7 @@ var versionInfo = require('./version.info'),
     countlyMail = require('../../api/parts/mgmt/mail.js'),
     countlyStats = require('../../api/parts/data/stats.js'),
 	plugins = require('../../plugins/pluginManager.js'),
-    countlyConfig = require('./config');
+    countlyConfig = require('./config', 'dont-enclose');
     
     var COUNTLY_NAMED_TYPE = "Countly Community Edition v"+COUNTLY_VERSION;
     var COUNTLY_TYPE_CE = true;

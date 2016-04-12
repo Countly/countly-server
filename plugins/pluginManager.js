@@ -1,7 +1,7 @@
-var plugins = require('./plugins.json'),
+var plugins = require('./plugins.json', 'dont-enclose'),
     pluginsApis = {}, 
     mongo = require('mongoskin'),
-    countlyConfig = require('../frontend/express/config'),
+    countlyConfig = require('../frontend/express/config', 'dont-enclose'),
     fs = require('fs'),
     path = require('path'),
     cp = require('child_process'),
@@ -273,8 +273,8 @@ var pluginManager = function pluginManager(){
     }
     
     this.reloadPlugins = function(){
-        delete require.cache[require.resolve('./plugins.json')];
-        plugins = require('./plugins.json');
+        delete require.cache[require.resolve('./plugins.json', 'dont-enclose')];
+        plugins = require('./plugins.json', 'dont-enclose');
     }
     
     this.checkPlugins = function(db){

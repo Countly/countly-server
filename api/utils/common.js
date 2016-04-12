@@ -5,7 +5,7 @@ var common = {},
     mongo = require('mongoskin'),
     logger = require('./log.js'),
     plugins = require('../../plugins/pluginManager.js'),
-    countlyConfig = require('./../config');
+    countlyConfig = require('./../config', 'dont-enclose');
 
 (function (common) {
 
