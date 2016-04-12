@@ -2,7 +2,7 @@ var http = require('http'),
     cluster = require('cluster'),
     formidable = require('formidable'),
     os = require('os'),
-    countlyConfig = require('./config'),
+    countlyConfig = require('./config', 'dont-enclose'),
     plugins = require('../plugins/pluginManager.js'),
     jobsWorkerName, jobsWorker,
     workers = [];

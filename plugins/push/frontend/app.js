@@ -1,8 +1,8 @@
 'use strict';
 
 var plugin = {},
-	countlyConfig = require('../../../frontend/express/config'),
-	apiConfig = require('../../../api/config'),
+	countlyConfig = require('../../../frontend/express/config', 'dont-enclose'),
+	apiConfig = require('../../../api/config', 'dont-enclose'),
 	apn = require('../api/parts/lib/apn'),
     common = require('../../../api/utils/common.js'),
     log = common.log('push:api'),
