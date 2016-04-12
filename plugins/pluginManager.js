@@ -339,6 +339,7 @@ var pluginManager = function pluginManager(){
     
     this.installPlugin = function(plugin, callback){
         console.log('Installing plugin %j...', plugin);
+        callback = callback || function() {};
         var ret = "";
         try{
             var dir = path.resolve(__dirname, '');
@@ -349,9 +350,7 @@ var pluginManager = function pluginManager(){
                     errors = true;                  
                     console.log('error: %j', error);
                 }
-                
-                if(callback)
-                    callback(errors);
+                callback(errors);
                 console.log('Done installing plugin %j', plugin);
             };
             child.on('error', function(err){
@@ -367,13 +366,13 @@ var pluginManager = function pluginManager(){
         catch(ex){
             console.log(ex.stack);
             errors = true;
-            if(callback)
-                callback(errors);
+            callback(errors);
         }
     }
     
     this.uninstallPlugin = function(plugin, callback){
         console.log('Uninstalling plugin %j...', plugin);
+        callback = callback || function() {};
         var ret = "";
         try{
             var dir = path.resolve(__dirname, '');
@@ -384,10 +383,7 @@ var pluginManager = function pluginManager(){
                     errors = true;                  
                     console.log('error: %j', error);
                 }
-                
-                if(callback)
-                    callback(errors);
-            
+                callback(errors);
                 console.log('Done uninstalling plugin %j', plugin);
             };
             child.on('error', handler); 
@@ -396,8 +392,7 @@ var pluginManager = function pluginManager(){
         catch(ex){
             console.log(ex.stack);
             errors = true;
-            if(callback)
-                callback(errors);
+            callback(errors);
         }
     }
     
