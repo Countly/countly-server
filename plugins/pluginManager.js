@@ -339,71 +339,56 @@ var pluginManager = function pluginManager(){
     
     this.installPlugin = function(plugin, callback){
         console.log('Installing plugin %j...', plugin);
-        var ret = "";
+        callback = callback || function() {};
         try{
-            var dir = path.resolve(__dirname, '');
-            var child = cp.fork(dir+"/"+plugin+"/install.js");
             var errors;
-            var handler = function (error, stdout) {
-                if (error){
-                    errors = true;                  
-                    console.log('error: %j', error);
-                }
-                
-                if(callback)
-                    callback(errors);
-                console.log('Done installing plugin %j', plugin);
-            };
-            child.on('error', function(err){
-                console.log(plugin + " install errored: " + err);
-                var cmd = "cd "+dir+"/"+plugin+"; npm install";
-                var child = exec(cmd, handler);
-            }); 
-            child.on('exit', function(code){
-                var cmd = "cd "+dir+"/"+plugin+"; npm install";
-                var child = exec(cmd, handler);
-            }); 
+            var scriptPath = path.join(__dirname, plugin, 'install.js');
+            delete require.cache[require.resolve(scriptPath)];
+            require(scriptPath);
         }
         catch(ex){
             console.log(ex.stack);
             errors = true;
-            if(callback)
-                callback(errors);
+            return callback(errors);
         }
+        setTimeout(function() {
+            var cwd = global.enclose ?
+                      global.enclose.plugins[plugin].rfs :
+                      path.join(__dirname, plugin);
+            var child = exec('npm install', {cwd: cwd}, function(error) {
+                if (error){
+                    errors = true;
+                    console.log('error: %j', error);
+                }
+                console.log('Done installing plugin %j', plugin);
+                callback(errors);
+            });
+        }, 5000);
     }
     
     this.uninstallPlugin = function(plugin, callback){
         console.log('Uninstalling plugin %j...', plugin);
-        var ret = "";
+        callback = callback || function() {};
         try{
-            var dir = path.resolve(__dirname, '');
-            var child = cp.fork(dir+"/"+plugin+"/uninstall.js");
             var errors;
-            var handler = function (error, stdout) {
-                if (error){
-                    errors = true;                  
-                    console.log('error: %j', error);
-                }
-                
-                if(callback)
-                    callback(errors);
-            
-                console.log('Done uninstalling plugin %j', plugin);
-            };
-            child.on('error', handler); 
-            child.on('exit', handler); 
+            var scriptPath = path.join(__dirname, plugin, 'uninstall.js');
+            delete require.cache[require.resolve(scriptPath)];
+            require(scriptPath);
         }
         catch(ex){
             console.log(ex.stack);
             errors = true;
-            if(callback)
-                callback(errors);
+            return callback(errors);
         }
+        setTimeout(function() {
+            console.log('Done uninstalling plugin %j', plugin);
+            callback(errors);
+        }, 5000);
     }
     
     this.prepareProduction = function(callback) {
         console.log('Preparing production files');
-        exec('grunt plugins locales', {cwd: path.join(__dirname, '..')}, function(error, stdout) {
+        exec('grunt plugins locales', {cwd: path.dirname(process.argv[1])}, function(error, stdout) {
             console.log('Done preparing production files with %j / %j', error, stdout);
             var errors;
             if (error && error != 'Error: Command failed: ') {

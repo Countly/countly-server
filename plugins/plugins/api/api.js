@@ -72,6 +72,10 @@ var plugin = {},
 								else
 									ob.enabled = false;
 								ob.code = file;
+								if (global.enclose) {
+									var eplugin = global.enclose.plugins[file];
+									ob.prepackaged = eplugin && eplugin.prepackaged;
+								}
 								results.push(ob);
 								if (!--pending) done(null, results);
 							}
