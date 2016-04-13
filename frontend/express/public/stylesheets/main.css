@@ -173,7 +173,7 @@ a:active { color:inherit; }
             }
         #sidebar-menu .sidebar-menu>.item>.logo-icon { background-image:none; font-size:24px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px; line-height: 34px; }
             #sidebar-menu .sidebar-menu .item.active .logo { color:#FFF; }
-		#sidebar-menu .sidebar-menu .item .text { margin-left:15px; float:left; padding-top:7px; font:14px Ubuntu,Helvetica,sans-serif; line-height:130%; color:#888; }
+		#sidebar-menu .sidebar-menu .item .text { margin-left:15px; float:left; padding-top:8px; font:14px Ubuntu,Helvetica,sans-serif; line-height:130%; color:#888; }
             #sidebar-menu .sidebar-menu .item.active:hover .logo { color: #f6f6f6; }
             #sidebar-menu .sidebar-menu .item.menu-active:hover .logo,
             #sidebar-menu .sidebar-menu .item.menu-active .logo { color: #f6f6f6; }
@@ -322,7 +322,6 @@ a:active { color:inherit; }
 
 		.graph { font:14px Oswald; z-index:1; }
 		.graph table tr:nth-child(n+10){ display:none; }
-		#graph-tooltip { border:1px solid #1B1B1C; box-shadow:0 1px 1px 0 #B0B0B0, inset 0 1px 0 #727475; background-image:linear-gradient(top, #3947320 30%, #383B3C 100%); background-image:linear-gradient(to bottom, #3947320 30%, #383B3C 100%); padding:5px 7px; border-radius:2px; background-color:#3C3F40; opacity:0.80; color:#FFF; font:12px Oswald; display:none; position:absolute; z-index:100; }
 		.pie-chart-container { float:left; width:50%; position:relative; height:360px; }
 			.pie-chart-container .graph-segment-container { position:absolute; left:10px; top:10px; z-index:3; }
 		.pie-overlay { position:absolute; z-index:2; width:248px; height:248px; left:50%; margin-left:-124px; top:56px; background-image:url('../images/dashboard/total-user.png'); background-position:center; background-repeat:no-repeat; }
@@ -880,9 +879,9 @@ table.events-table { width:100%; padding:0; margin:0; }
 #graph-note .main { position:relative; width:45px; line-height:14px; text-align: center; }
 #graph-note .tail { width: 0; height: 0; border-top: 13px solid #E66; border-bottom: 13px solid #E66; border-right: 12px solid rgba(0, 0, 0, 0); position: absolute; left: 51px; top: -6px; }
 
-.graph-note-label { height:21px; width:21px; margin-left:-13px; margin-top:-13px; border-radius: 25px; border:2px dashed #E66; background-color: transparent; }
+.graph-note-label { height:19px; width:19px; margin-left:-11px; margin-top:-11px; border-radius: 25px; border:2px dashed #E66; background-color: transparent; }
 .graph-note-label:hover { -moz-animation:spin 4s infinite linear; -o-animation:spin 4s infinite linear; -webkit-animation:spin 4s infinite linear; animation:spin 4 s infinite linear; }
-.graph-note-label .point { height:9px; width:9px; margin-left:4px; margin-top:4px; border-radius: 25px; border:2px solid #E66; border-color:inherit; background-color: #FFF; }
+.graph-note-label .point { height:7px; width:7px; margin-left:4px; margin-top:4px; border-radius: 25px; border:2px solid #E66; border-color:inherit; background-color: #FFF; }
 
 #graph-note-popup { display:none; }
 #graph-note-popup .title { float:left; width:100px; }
@@ -892,10 +891,16 @@ table.events-table { width:100%; padding:0; margin:0; }
 .time-picker span:hover { font-size: 16px; }
 .time-picker span.selected { font-weight: 500; font-size: 17px; }
 
+#graph-tooltip { padding:4px 7px; overflow:auto; border:1px solid #3C3C3C; border-radius:2px; background-color:rgba(60, 63, 64, 0.86); color:#FFF; font-size:11px; display:none; position:absolute; z-index:100; }
+    #graph-tooltip.v2 { padding:0; }
+#graph-tooltip>span { display: block; padding:4px 7px; text-align: center; }
+#graph-tooltip .content { padding:8px 10px; font-size:12px; }
 #graph-tooltip .label-value { text-align: center; }
 #graph-tooltip .separator { margin:5px 0; border-top:1px solid #222; border-bottom:1px solid #666; height:0; opacity:0.6; }
-#graph-tooltip .note-line { margin-bottom:5px; text-align:left; font-size:13px; white-space: nowrap; overflow: hidden; color:#BBB; font-family:Ubuntu; list-style: square; }
-#graph-tooltip .note-line:last-child { margin-bottom: 1px; }
+#graph-tooltip .note-line { padding:2px 10px; margin-bottom:5px; text-align:left; font-size:11px; color:#BBB; max-width: 200px; }
+#graph-tooltip .note-line:first-child { border-top:1px solid #3C3C3C; }
+#graph-tooltip .note-line:last-child {  }
+#graph-tooltip-title { color:#CCC; border-bottom:1px solid #3C3C3C; font-size:10px; }
 
 .note-list .note { border-bottom:1px solid #EEE; width:100%; padding:7px 0; position:relative; }
 .note-list .note .date { color:#999; font-size:11px; }
@@ -969,8 +974,6 @@ table.events-table { width:100%; padding:0; margin:0; }
 .popup-link:hover { text-decoration: underline; }
 
 .required-border { border-color:#B94A48 !important; }
-
-#graph-tooltip-title { color:#CCC; margin-right:7px; }
 
 .options {display: none; background-color: #E0E0E0; position: absolute; top:50px; right: 0px; list-style: none; margin:0; padding:0; padding:3px;border: 1px solid #979797; border-top: none; margin-right: -1px;}
 .options li{font:14px Ubuntu,Helvetica,sans-serif; color: #666; padding: 2px; padding-right: 5px; cursor:pointer;}

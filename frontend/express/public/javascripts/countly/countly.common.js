@@ -172,7 +172,11 @@
 
                         if (previousBar != y) {
                             $("#graph-tooltip").remove();
-                            showTooltip(item.pageX, item.pageY - 40, y);
+                            showTooltip({
+                                x: item.pageX,
+                                y: item.pageY,
+                                contents: y
+                            });
                             previousBar = y;
                         }
                     } else {
@@ -376,39 +380,13 @@
                 $(".graph-note-label").mouseenter(function() {
                     $("#graph-tooltip").remove();
 
-                    var noteLines = ($(this).data("notes") + "").split("==="),
-                        contents = "<div class='label-value'>" + '<span id="graph-tooltip-title">' + $(this).data("title") + '</span>' + $(this).data("value") + "</div><div class='separator'></div>";
-
-                    for (var i = 0; i < noteLines.length; i++) {
-                        contents += "<div class='note-line'>&#8226; " + noteLines[i] + "</div>";
-                    }
-
-                    var tooltip = '<div id="graph-tooltip">' + contents + '</div>',
-                        x = $(this).offset().left,
-                        y = $(this).offset().top,
-                        widthVal,
-                        heightVal;
-
-                    $("#content").append("<div id='tooltip-calc'>" + tooltip + "</div>");
-                    widthVal = $("#graph-tooltip").outerWidth();
-                    heightVal = $("#graph-tooltip").outerHeight();
-                    $("#tooltip-calc").remove();
-
-                    var newLeft = x - widthVal,
-                        xReach = x + widthVal;
-
-                    if (xReach > $(window).width()) {
-                        newLeft = x - widthVal - 10;
-                    } else if (xReach < 800) {
-                        newLeft = x + $(this).outerWidth() + 10;
-                    } else {
-                        newLeft -= 10;
-                    }
-
-                    $(tooltip).css({
-                        top: y - (heightVal / 2) + ($(this).height() / 2),
-                        left: newLeft
-                    }).appendTo("body").fadeIn(200);
+                    showTooltip({
+                        x: $(this).offset().left,
+                        y: $(this).offset().top + 10,
+                        contents: $(this).data("value"),
+                        title: $(this).data("title"),
+                        notes: $(this).data("notes")
+                    });
                 });
 
                 $(".graph-note-label").mouseleave(function() {
@@ -430,9 +408,18 @@
 
                         // If this is the "ghost" graph don't add the date
                         if (item.series.color === "#DDDDDD") {
-                            showTooltip(item.pageX, item.pageY - 40, y + " " + item.series.label);
+                            showTooltip({
+                                x: item.pageX,
+                                y: item.pageY,
+                                contents: y + " " + item.series.label
+                            });
                         } else {
-                            showTooltip(item.pageX, item.pageY - 40, y + " " + item.series.label, tickObj.tickTexts[item.dataIndex]);
+                            showTooltip({
+                                x: item.pageX,
+                                y: item.pageY,
+                                contents: y + " " + item.series.label,
+                                title: tickObj.tickTexts[item.dataIndex]
+                            });
                         }
                     }
                 } else {
@@ -1262,7 +1249,7 @@
                 for (var i = 0; i < days; i++) {
                     start.add('days', 1);
                     ticks.push([i, countlyCommon.formatDate(start,"D MMM")]);
-                    tickTexts[i] = countlyCommon.formatDate(start,"D MMM");
+                    tickTexts[i] = countlyCommon.formatDate(start,"D MMM, dddd");
                 }
             }
 
@@ -1668,6 +1655,10 @@
             format = format.replace("MMMM", "M").replace("MMM", "M").replace("MM", "M").replace("DD", "D").replace("D M, YYYY", "YYYY M D").replace("D M", "M D").replace("D", "D[日]").replace("M", "M[月]").replace("YYYY", "YYYY[年]");
         return date.format(format);
     }
+
+    countlyCommon.showTooltip = function(args) {
+        showTooltip(args);
+    };
 
     // Private Methods
 
@@ -2087,22 +2078,39 @@
     }
 
     // Function to show the tooltip when any data point in the graph is hovered on.
-    function showTooltip(x, y, contents, title) {
-        var tooltip = "";
+    function showTooltip(args) {
+        var x = args.x || 0,
+            y = args.y || 0,
+            contents = args.contents || "",
+            title = args.title,
+            notes = args.notes;
+
+        var tooltip = $('<div id="graph-tooltip" class="v2"></div>').append('<span class="content">' + contents + '</span>');
 
         if (title) {
-            var tooltipTitle = '<span id="graph-tooltip-title">' + title + '</span>';
-            tooltip = '<div id="graph-tooltip">' + tooltipTitle + contents + '</div>'
-        } else {
-            tooltip = '<div id="graph-tooltip">' + contents + '</div>'
+            tooltip.prepend('<span id="graph-tooltip-title">' + title + '</span>');
         }
 
-        $("#content").append("<div id='tooltip-calc'>" + tooltip + "</div>");
-        var widthVal = $("#graph-tooltip").outerWidth();
+        if (notes) {
+            var noteLines = (notes + "").split("===");
+
+            for (var i = 0; i < noteLines.length; i++) {
+                tooltip.append("<div class='note-line'>&#8211;  " + noteLines[i] + "</div>");
+            }
+        }
+
+        $("#content").append("<div id='tooltip-calc'>" + $('<div>').append(tooltip.clone()).html() + "</div>");
+        var widthVal = $("#graph-tooltip").outerWidth(),
+            heightVal = $("#graph-tooltip").outerHeight();
         $("#tooltip-calc").remove();
 
         var newLeft = (x - (widthVal / 2)),
             xReach = (x + (widthVal / 2));
+
+        if (notes) {
+            newLeft += 10.5;
+            xReach += 10.5;
+        }
 
         if (xReach > $(window).width()) {
             newLeft = (x - widthVal);
@@ -2110,9 +2118,9 @@
             newLeft = x;
         }
 
-        $(tooltip).css({
-            top:y,
-            left:newLeft
+        tooltip.css({
+            top: y - heightVal - 20,
+            left: newLeft
         }).appendTo("body").fadeIn(200);
     }
 
