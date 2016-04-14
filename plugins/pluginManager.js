@@ -352,9 +352,9 @@ var pluginManager = function pluginManager(){
             return callback(errors);
         }
         setTimeout(function() {
-            var cwd = global.enclose ?
-                      global.enclose.plugins[plugin].rfs :
-                      path.join(__dirname, plugin);
+            var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
+            if (eplugin && eplugin.prepackaged) return callback(errors);
+            var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
             var child = exec('npm install', {cwd: cwd}, function(error) {
                 if (error){
                     errors = true;
