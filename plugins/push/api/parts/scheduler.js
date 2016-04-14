@@ -57,7 +57,7 @@ var check = function() {
 
 		function(err, message){
             if (!common.drillDb && plugins.getPluginsApis().drill) {
-                var countlyConfig = require('../../../../api/config');
+                var countlyConfig = require('../../../../api/config', 'dont-enclose');
 
                 if (typeof countlyConfig.mongodb === "string") {
                     countlyConfig.mongodb = countlyConfig.mongodb.replace(new RegExp('countly$'), 'countly_drill');
