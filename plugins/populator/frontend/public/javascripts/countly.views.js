@@ -31,10 +31,15 @@ window.PopulatorView = countlyView.extend({
                     $("#populator-status").fadeOut().text(jQuery.i18n.map["populator.processing"]).fadeIn();
                     countlyPopulator.stopGenerating(function(done){
                         if (done === true) {
-                    $("#stop-populate").hide();
-                    $("#start-populate").show();
+                            $("#stop-populate").hide();
+                            $("#start-populate").show();
                             $("#populator-status").fadeOut().text(jQuery.i18n.map["populator.done"]).fadeIn().delay(2000).text('');
-                    CountlyHelpers.alert(jQuery.i18n.map["populator.success"], "green");
+                            CountlyHelpers.confirm(jQuery.i18n.map["populator.success"], "green", function (result) {
+                                if (!result) {
+                                    return true;
+                                }
+                                window.location = "/dashboard";
+                            });
                             $("#populate-bar div").css({width: 0});
                         } else if (done === false) {
                             $("#populator-status").html(jQuery.i18n.map["populator.jobs"]);
