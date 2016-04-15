@@ -58,7 +58,7 @@ window.PopulatorView = countlyView.extend({
                 $("#start-populate").hide();
                 $("#stop-populate").show();
                 $("#populator-status").fadeOut().text(jQuery.i18n.map["populator.generating"]).fadeIn();
-                $("#populate-bar div").animate({width:"100%"}, 60000);
+                $("#populate-bar div").animate({width:"100%"}, maxTime*1000);
             });
         });
         $("#stop-populate").on('click', function() {
