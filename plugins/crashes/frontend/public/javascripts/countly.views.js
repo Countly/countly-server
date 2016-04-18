@@ -358,48 +358,51 @@ window.CrashgroupView = countlyView.extend({
                         "help":"crashes.help-app-version"
                     }
                 ]
-            },
-			"ranges":[
-				{
+            }
+        };
+        if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type != "web"){
+            this.templateData["ranges"]=[
+                {
                     "title":jQuery.i18n.map["crashes.ram"],
-					"icon":"crash-icon ram-icon",
+                    "icon":"crash-icon ram-icon",
                     "help":"crashes.help-ram",
                     "min":crashData.ram.min+" %",
                     "max":crashData.ram.max+" %",
                     "avg":(crashData.ram.total/crashData.ram.count).toFixed(2)+" %"
                 },
-				{
+                {
                     "title":jQuery.i18n.map["crashes.disk"],
-					"icon":"crash-icon disk-icon",
+                    "icon":"crash-icon disk-icon",
                     "help":"crashes.help-disk",
                     "min":crashData.disk.min+" %",
                     "max":crashData.disk.max+" %",
                     "avg":(crashData.disk.total/crashData.disk.count).toFixed(2)+" %"
                 },
-				{
+                {
                     "title":jQuery.i18n.map["crashes.battery"],
-					"icon":"crash-icon battery-icon",
+                    "icon":"crash-icon battery-icon",
                     "help":"crashes.help-battery",
                     "min":crashData.bat.min+" %",
                     "max":crashData.bat.max+" %",
                     "avg":(crashData.bat.total/crashData.bat.count).toFixed(2)+" %"
                 },
-				{
+                {
                     "title":jQuery.i18n.map["crashes.run"],
-					"icon":"font-icon fa fa-youtube-play",
+                    "icon":"font-icon fa fa-youtube-play",
                     "help":"crashes.help-run",
                     "min":countlyCommon.timeString(crashData.run.min/60),
                     "max":countlyCommon.timeString(crashData.run.max/60),
                     "avg":countlyCommon.timeString((crashData.run.total/crashData.run.count)/60)
                 }
-            ],
-            "bars":[
+            ];
+            
+            this.templateData["bars"]=[
                 {
                     "title":jQuery.i18n.map["crashes.root"],
                     "data": countlyCrashes.getBoolBars("root"),
                     "help":"crashes.help-root"
                 },
-				{
+                {
                     "title":jQuery.i18n.map["crashes.online"],
                     "data":countlyCrashes.getBoolBars("online"),
                     "help":"crashes.help-online"
@@ -409,13 +412,13 @@ window.CrashgroupView = countlyView.extend({
                     "data": countlyCrashes.getBoolBars("muted"),
                     "help":"crashes.help-muted"
                 },
-				{
+                {
                     "title":jQuery.i18n.map["crashes.background"],
                     "data": countlyCrashes.getBoolBars("background"),
                     "help":"crashes.help-background"
                 }
-            ]
-        };
+            ];
+        }
         if(crashData.loss){
             this.templateData["loss"] = true;
             this.templateData["big-numbers"]["items"].push({
