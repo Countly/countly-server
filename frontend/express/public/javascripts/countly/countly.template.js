@@ -3769,8 +3769,12 @@ var AppRouter = Backbone.Router.extend({
             setTimeout(function() {
                 $("#sidebar-menu").find(".item").removeClass("active menu-active");
 
-                var selectedMenu = $($("#sidebar-menu").find("a[href='#" + Backbone.history.fragment + "']")),
-                    selectedSubmenu = selectedMenu.parents(".sidebar-submenu");
+                var selectedMenu = $($("#sidebar-menu").find("a[href='#" + Backbone.history.fragment + "']"));
+               
+                if(!selectedMenu.length)
+                    selectedMenu = $($("#sidebar-menu").find("a[href='#/" + (Backbone.history.fragment.split("/")[1] || "") + "']"));
+                
+                var selectedSubmenu = selectedMenu.parents(".sidebar-submenu");
 
                 if (selectedSubmenu.length) {
                     selectedMenu.addClass("active");
