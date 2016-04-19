@@ -580,6 +580,7 @@ $(document).ready(function() {
 						<div class="title reports-include" data-localize="reports.include-metrics"></div>
 						<div class="detail">
                             <input type="checkbox" class="reports-metrics" name="analytics" {{#if this.metrics.analytics}}checked{{/if}}/>&nbsp;<span data-localize="reports.analytics"></span><br/>
+                            <input type="checkbox" class="reports-metrics" name="events" {{#if this.metrics.events}}checked{{/if}}/>&nbsp;<span data-localize="reports.events"></span><br/>
                             {{#if ../hasRevenue}}
                             <input type="checkbox" class="reports-metrics" name="revenue" {{#if this.metrics.revenue}}checked{{/if}}/>&nbsp;<span data-localize="reports.revenue"></span><br/>
                             {{/if}}
@@ -588,6 +589,9 @@ $(document).ready(function() {
                             {{/if}}
                             {{#if ../hasCrash}}
                             <input type="checkbox" class="reports-metrics" name="crash" {{#if this.metrics.crash}}checked{{/if}}/>&nbsp;<span data-localize="reports.crash"></span><br/>
+                            {{/if}}
+                            {{#if ../hasViews}}
+                            <!--<input type="checkbox" class="reports-metrics" name="views" {{#if this.metrics.views}}checked{{/if}}/>&nbsp;<span data-localize="reports.views"></span><br/>-->
                             {{/if}}
                         </div>
 					</div>
@@ -725,6 +729,7 @@ $(document).ready(function() {
 						<div class="title reports-include" data-localize="reports.include-metrics"></div>
 						<div class="detail">
                             <input type="checkbox" class="reports-metrics" name="analytics"/>&nbsp;<span data-localize="reports.analytics"></span><br/>
+                            <input type="checkbox" class="reports-metrics" name="events"/>&nbsp;<span data-localize="reports.events"></span><br/>
                             {{#if hasRevenue}}
                             <input type="checkbox" class="reports-metrics" name="revenue"/>&nbsp;<span data-localize="reports.revenue"></span><br/>
                             {{/if}}
@@ -733,6 +738,9 @@ $(document).ready(function() {
                             {{/if}}
                             {{#if hasCrash}}
                             <input type="checkbox" class="reports-metrics" name="crash"/>&nbsp;<span data-localize="reports.crash"></span><br/>
+                            {{/if}}
+                            {{#if hasViews}}
+                            <!--<input type="checkbox" class="reports-metrics" name="views"/>&nbsp;<span data-localize="reports.views"></span><br/>-->
                             {{/if}}
                         </div>
 					</div>

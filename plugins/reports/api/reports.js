@@ -40,7 +40,9 @@ var metrics = {
         "fatal_crashes":true,
         "non_fatal_crashes":true,
         "resolved_upgrades":true,
-    }
+    },
+    "events":{},
+    "views":{}
 };
 (function (reports) {
     reports.sendReport = function(db, id, callback){
@@ -103,6 +105,9 @@ var metrics = {
                                     if((params.app.gcm && Object.keys(params.app.gcm).length) || (params.app.apn && Object.keys(params.app.apn).length))
                                         event = parts[1];
                                 }
+                                else{
+                                    event = parts[1];
+                                }
                                 if(event){
                                     var collectionName = "events" + crypto.createHash('sha1').update(event + app_id).digest('hex');
                                     fetchTimeObj(db, collectionName, params, true, function(output){
@@ -125,14 +130,18 @@ var metrics = {
                                 params.app_name = app['name'];
                                 params.appTimezone = app['timezone'];
                                 params.app = app;
-                                async.map(metricsToCollections(report.metrics), metricIterator, function(err, results) {
-                                    app.results = {};
-                                    for(var i = 0; i < results.length; i++){
-                                        if(results[i] && results[i].metric)
-                                            app.results[results[i].metric] = results[i].data;
-                                    }
-                                    cache[app_id] = JSON.parse(JSON.stringify(app));
-                                    done(null, app);
+                                db.collection('events').findOne({_id:params.app_id},function(err, events){
+                                    events = events || {};
+                                    events.list = events.list || [];
+                                    async.map(metricsToCollections(report.metrics, events.list), metricIterator, function(err, results) {
+                                        app.results = {};
+                                        for(var i = 0; i < results.length; i++){
+                                            if(results[i] && results[i].metric)
+                                                app.results[results[i].metric] = results[i].data;
+                                        }
+                                        cache[app_id] = JSON.parse(JSON.stringify(app));
+                                        done(null, app);
+                                    });
                                 });
                             }
                             else
@@ -192,6 +201,13 @@ var metrics = {
                                         results[i].results["revenue"] = {};
                                     }
                                     results[i].results["revenue"][j] = getEventData(results[i].results[j] || {});
+                                    delete results[i].results[j];
+                                }
+                                else{
+                                    if(!results[i].results["events"]){
+                                        results[i].results["events"] = {};
+                                    }
+                                    results[i].results["events"][j] = getEventData(results[i].results[j] || {});
                                     delete results[i].results[j];
                                 }
                             }
@@ -285,7 +301,7 @@ var metrics = {
         }
     };
     
-    function metricsToCollections(metrics){
+    function metricsToCollections(metrics, events){
         var collections = {users:true};
         for(var i in metrics){
             if(metrics[i]){
@@ -300,6 +316,12 @@ var metrics = {
                 }
                 else if(i == "revenue"){
                     collections["events.purchases"] = true;
+                }
+                else if(i == "events"){
+                    for(var i = 0; i < events.length; i++){
+                        if(events[i].indexOf("[CLY]_") === -1)
+                            collections["events."+events[i]] = true;
+                    }
                 }
             }
         }

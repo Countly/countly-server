@@ -92,7 +92,8 @@ window.ReportingView = countlyView.extend({
             "member":countlyGlobal["member"],
             "hasCrash":(typeof countlyCrashes != "undefined"),
             "hasPush":(typeof countlyPush != "undefined"),
-            "hasRevenue":(typeof countlyRevenue != "undefined")
+            "hasRevenue":(typeof countlyRevenue != "undefined"),
+            "hasViews":(typeof countlyViews != "undefined")
         };
 		var self = this;
         if (!isRefresh) {
