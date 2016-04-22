@@ -70,6 +70,7 @@ window.MessagingDashboardView = countlyView.extend({
         if (isRefresh) {
             newPage = $("<div>" + this.template(this.templateData) + "</div>");
             $(this.el).find("#big-numbers-container").replaceWith(newPage.find("#big-numbers-container"));
+            $(this.el).find("#intermediate-numbers-container").replaceWith(newPage.find("#intermediate-numbers-container"));
 
             // $('.widget-intermediate .big-numbers').eq(0).find('.percentage').text(enabling + '%');
             // $('.widget-intermediate .big-numbers').eq(1).find('.percentage').text(delivery + '%');
