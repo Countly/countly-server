@@ -60,6 +60,7 @@ apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 #install node.js
 #bash $DIR/scripts/install.nodejs.deb.sh || (echo "Failed to install nodejs." ; exit)
 apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
+sudo ln -s `which node` /usr/bin/nodejs
 
 #install mongodb
 #apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
