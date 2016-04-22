@@ -29,7 +29,7 @@ fi
 
 #add node.js repo
 #echo | apt-add-repository ppa:chris-lea/node.js
-# wget -qO- https://deb.nodesource.com/setup_5.x | bash -
+wget -qO- https://deb.nodesource.com/setup_5.x | bash -
 
 #add mongodb repo
 #echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" > /etc/apt/sources.list.d/mongodb-10gen-countly.list
@@ -46,8 +46,8 @@ apt-get update
 apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 
 #install node.js
-bash $DIR/scripts/install.nodejs.deb.sh || (echo "Failed to install nodejs." ; exit)
-# apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
+#bash $DIR/scripts/install.nodejs.deb.sh || (echo "Failed to install nodejs." ; exit)
+apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
 
 #install mongodb
 apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)

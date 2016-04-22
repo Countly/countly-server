@@ -32,7 +32,7 @@ fi
 
 #add node.js repo
 #echo | apt-add-repository ppa:chris-lea/node.js
-#wget -qO- https://deb.nodesource.com/setup_5.x | bash -
+wget -qO- https://deb.nodesource.com/setup_5.x | bash -
 
 #update g++ to 4.8
 add-apt-repository ppa:ubuntu-toolchain-r/test -y
@@ -58,7 +58,8 @@ g++ --version
 apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 
 #install node.js
-bash $DIR/scripts/install.nodejs.deb.sh || (echo "Failed to install nodejs." ; exit)
+#bash $DIR/scripts/install.nodejs.deb.sh || (echo "Failed to install nodejs." ; exit)
+apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
 
 #install mongodb
 #apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
