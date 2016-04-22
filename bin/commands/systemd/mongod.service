@@ -12,6 +12,6 @@ LimitCPU=infinity
 LimitAS=infinity
 LimitNOFILE=64000
 LimitRSS=infinity
-LimitNPROC=32000
+LimitNPROC=64000
 TimeoutStopSec=300
 Restart=on-failure
