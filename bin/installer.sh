@@ -16,4 +16,14 @@ else
     wget -nv $LATEST -O ./countly.zip ;
     unzip countly.zip ;
 fi
-apt-get -v &> /dev/null && bash countly/bin/countly.install.sh || bash countly/bin/countly.install_rhel.sh;
+
+YUM_CMD=$(which yum)
+APT_GET_CMD=$(which apt-get)
+if [[ ! -z $APT_GET_CMD ]]; then
+    bash countly/bin/countly.install.sh
+elif [[ ! -z $YUM_CMD ]]; then
+    bash countly/bin/countly.install_rhel.sh
+else
+    echo "error can't install Countly"
+    exit 1;
+fi
