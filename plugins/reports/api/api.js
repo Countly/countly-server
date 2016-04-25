@@ -25,7 +25,7 @@ cron.load(function(err, tab){
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
             } catch (SyntaxError) {
-                console.log('Parse ' + apiPath + ' JSON failed');
+                console.log('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
 
@@ -56,7 +56,7 @@ cron.load(function(err, tab){
             try {
                 params.qstring.args = JSON.parse(params.qstring.args);
             } catch (SyntaxError) {
-                console.log('Parse ' + apiPath + ' JSON failed');
+                console.log('Parse ' + params.qstring.args + ' JSON failed');
             }
         }
 
