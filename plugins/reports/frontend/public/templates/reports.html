@@ -1,758 +1,153 @@
-<script>
-
-$(document).ready(function() {
-	var activeRow,
-		userDetailsClone,
-		previousUserDetails,
-		lastUserSaved = false,
-		previousSelectAppPos = {};
-        
-    var data = countlyReporting.getData();
-    var cnts = app.manageAppsView.getTimeZones();
-    var zones = {};
-    for(var i in cnts){
-        for(var j = 0; j < cnts[i].z.length; j++){
-            for(var k in cnts[i].z[j]){
-                zones[k] = cnts[i].z[j][k];
-            }
-        }
-    }
-	
-	function closeActiveEdit() {
-		if (previousUserDetails) {
-			previousUserDetails.replaceWith(userDetailsClone);
-			previousUserDetails = null;
-		}
-		
-		$(".user-details").hide();
-		$("#user-table").find("tbody tr.active").removeClass("active");
-		$("#user-table").find("tbody tr:not(.user-details)").css({"opacity": "1"});
-		$("#listof-apps").hide();
-	}
-	
-	$("#user-table>tbody>tr").not(".user-details").on('click', function() {
-		if (!lastUserSaved && previousUserDetails) {
-			previousUserDetails.replaceWith(userDetailsClone);
-			previousUserDetails = null;
-		}
-				
-		lastUserSaved = false;
-		userDetailsClone = $(this).next(".user-details").clone(true);		
-		$("#listof-apps").hide();
-		if ($(this).hasClass("active")) {
-			closeActiveEdit();
-		} else {
-			$("#user-table tbody tr").removeClass("active");
-			$(this).addClass("active");
-			
-			$(".user-details").hide();
-			$(this).next(".user-details").toggle();
-			previousUserDetails = $(this).next(".user-details");
-			
-			var currUserDetails = $(".user-details:visible");
-            var id = currUserDetails.find("._id").val();
-            var cur = null;
-            for(var i = 0; i < data.length; i++){
-                if(data[i]._id == id){
-                    cur = data[i];
-                    break;
-                }
-            }
-            if(cur){
-                currUserDetails.find(".reports-frequency[value="+cur.frequency+"]").attr("checked", "checked").click();
-                currUserDetails.find('.reports-day option[value="'+cur.day+'"]').attr("selected", "selected")
-            }
-		}
-	});
-	
-	$(".select-apps").on('click', function() {
-		$("#listof-apps .app").removeClass("selected");
-		activeRow = $(this).parent(".row");
-		var buttonPos = $(this).offset();
-		buttonPos.top += 26;
-		buttonPos.left -= 18;
-		
-		if ($("#listof-apps").is(":visible") && JSON.stringify(buttonPos) === JSON.stringify(previousSelectAppPos)) {
-			$("#listof-apps").hide();
-			return true;
-		}
-		
-		previousSelectAppPos = buttonPos;
-		
-		var appList = activeRow.find(".app-list").val().split(",");
-		
-		$("#listof-apps").find(".app_id").each(function() {
-			if (appList.indexOf($(this).val()) != -1) {
-				$(this).parent().addClass("selected");
-			}
-		});
-		
-		if ($("#listof-apps .app:not(.disabled)").length == 0) {
-			$("#select-all").hide();
-			$("#deselect-all").hide();
-		} else if ($("#listof-apps .app.selected").length == $("#listof-apps .app").length) {
-			$("#select-all").hide();
-			$("#deselect-all").show();
-		} else {
-			$("#select-all").show();
-			$("#deselect-all").hide();
-		}
-		
-		$("#listof-apps").show().offset(buttonPos);
-	});
-	
-	$(".create-report").on("click", function() {		
-		$("#listof-apps").hide();
-		
-		var data = {},
-			currUserDetails = $(".user-details:visible");
-		
-        data.frequency = currUserDetails.find("input[name=frequency]:checked").val();
-        var time = currUserDetails.find(".reports-time .text").text().split(":");
-        data.hour = time[0];
-        data.minute = time[1];
-        data.day = app.reportingView.getDayNumber(currUserDetails.find(".reports-day .text").text());
-        data.timezone = zones[currUserDetails.find(".reports-timezone .text").text()] || "Etc/GMT";
-		data.emails = [];
-        var lines = currUserDetails.find(".reports-emails").val().split(/\n/);
-        for (var i=0; i < lines.length; i++) {
-            if (/\S/.test(lines[i])) {
-                data.emails.push($.trim(lines[i]));
-            }
-        }
-		data.apps = currUserDetails.find(".app-list").val().split(",");
-        data.metrics = {};
-        currUserDetails.find(".reports-metrics:checked").each(function(){
-            data.metrics[$(this).attr("name")] = true;
-        })
-		
-		$(".required").fadeOut().remove();
-		var reqSpan = $("<span>").addClass("required").text("*");
-		
-		if (!data.frequency || !data.frequency.length) {
-			currUserDetails.find(".reports-frequency-title").after(reqSpan.clone());
-		}
-		
-		if (!data.hour.length) {
-			currUserDetails.find(".reports-hour").after(reqSpan.clone());
-		}
-		
-		if (!data.minute.length) {
-			currUserDetails.find(".reports-minute").after(reqSpan.clone());
-		}
-        
-        if (!data.day.length) {
-			currUserDetails.find(".reports-day").after(reqSpan.clone());
-		}
-        
-        if (!data.emails.length) {
-			currUserDetails.find(".reports-emails").after(reqSpan.clone());
-		}
-        
-        if (!data.apps.length || data.apps[0] == "") {
-			currUserDetails.find(".user-admin-list").before(reqSpan.clone());
-		}
-        
-        if(JSON.stringify(data.metrics) == "{}"){
-            currUserDetails.find(".reports-include").append(reqSpan.clone());
-        }
-		
-		
-		if ($(".required").length) {
-			$(".required").fadeIn();
-			return false;
-		} else if ($(".red-text").length) {
-			return false;
-		}
-        
-        $.when(countlyReporting.create(data)).then(function (data) {
-			if(data.result == "Success"){
-				app.activeView.render();
-			}
-			else{
-				CountlyHelpers.alert(data.result, "red");
-			}
-		});
-	});
-	
-	$(".save-report").on("click", function() {
-		$("#listof-apps").hide();
-		
-		lastUserSaved = true;
-		
-		var data = {},
-			currUserDetails = $(".user-details:visible");
-		
-        data.frequency = currUserDetails.find("input[name=frequency]:checked").val();
-        var time = currUserDetails.find(".reports-time .text").text().split(":");
-        data.hour = time[0];
-        data.minute = time[1];
-        data.day = app.reportingView.getDayNumber(currUserDetails.find(".reports-day .text").text());
-        data.timezone = zones[currUserDetails.find(".reports-timezone .text").text()] || "Etc/GMT";
-		data.emails = [];
-        var lines = currUserDetails.find(".reports-emails").val().split(/\n/);
-        for (var i=0; i < lines.length; i++) {
-            if (/\S/.test(lines[i])) {
-                data.emails.push($.trim(lines[i]));
-            }
-        }
-		data.apps = currUserDetails.find(".app-list").val().split(",");
-        data.metrics = {};
-        currUserDetails.find(".reports-metrics:checked").each(function(){
-            data.metrics[$(this).attr("name")] = true;
-        });
-        data._id = currUserDetails.find("._id").val();
-		
-		$(".required").fadeOut().remove();
-		var reqSpan = $("<span>").addClass("required").text("*");
-		
-		if (!data.frequency || !data.frequency.length) {
-			currUserDetails.find(".reports-frequency-title").after(reqSpan.clone());
-		}
-		
-		if (!data.hour.length) {
-			currUserDetails.find(".reports-hour").after(reqSpan.clone());
-		}
-		
-		if (!data.minute.length) {
-			currUserDetails.find(".reports-minute").after(reqSpan.clone());
-		}
-        
-        if (!data.day.length) {
-			currUserDetails.find(".reports-day").after(reqSpan.clone());
-		}
-        
-        if (!data.emails.length) {
-			currUserDetails.find(".reports-emails").after(reqSpan.clone());
-		}
-        
-        if (!data.apps.length || data.apps[0] == "") {
-			currUserDetails.find(".user-admin-list").before(reqSpan.clone());
-		}
-        
-        if(JSON.stringify(data.metrics) == "{}"){
-            currUserDetails.find(".reports-include").append(reqSpan.clone());
-        }
-		
-		
-		if ($(".required").length) {
-			$(".required").fadeIn();
-			return false;
-		} else if ($(".red-text").length) {
-			return false;
-		}
-        
-        $.when(countlyReporting.update(data)).then(function (data) {
-			if(data.result == "Success"){
-				app.activeView.render();
-			}
-			else{
-				CountlyHelpers.alert(data.result, "red");
-			}
-		});
-	});
-	
-	$(".cancel-report").on("click", function() {
-		closeActiveEdit();
-	});
-
-	$(".delete-report").on("click", function() {
-		var currUserDetails = $(".user-details:visible");
-	
-		var self = $(this);
-		CountlyHelpers.confirm(jQuery.i18n.map["reports.confirm"], "red", function(result) {
-			
-			if (!result) {
-				return false;
-			}
-		
-			var id = self.parent(".button-container").find("._id").val();
-
-            $.when(countlyReporting.del(id)).then(function (data) {
-                if(data.result == "Success"){
-                    app.activeView.render();
-                }
-                else{
-                    CountlyHelpers.alert(data.result, "red");
-                }
-            });
-			
-		});
-	});
-    
-    $(".send-report").on("click", function() {
-		var currUserDetails = $(".user-details:visible");
-		var id = $(this).parent(".button-container").find("._id").val();
-        var overlay = $("#overlay").clone();
-		$("body").append(overlay);
-		overlay.show();
-		var loader = $('#content').find("#content-loader");
-		loader.show();
-        $.when(countlyReporting.send(id)).always(function (data) {
-            overlay.hide();
-            loader.hide();
-            if(data && data.result == "Success"){
-                CountlyHelpers.alert(jQuery.i18n.map["reports.sent"], "green");
-            }
-            else{
-                if(data && data.result)
-                    CountlyHelpers.alert(data.result, "red");
-                else
-                    CountlyHelpers.alert(jQuery.i18n.map["reports.too-long"], "red");
-            }
-        });
-	});
-	
-	$('.scrollable').slimScroll({
-		height: '100%',
-		start: 'top',
-		wheelStep: 10,
-		position: 'right'
-	});
-
-	$("#select-all").on('click', function() {
-		$("#listof-apps .app:not(.disabled)").addClass("selected");
-		var adminsOf = [];
-		var adminOfIds = [];
-		
-		$("#listof-apps .app.selected").each(function() {
-			adminsOf[adminsOf.length] = $(this).find(".name").text();
-			adminOfIds[adminOfIds.length] = $(this).find(".app_id").val();
-		});
-		
-		activeRow.find(".user-admin-list").text(adminsOf.join(", "));
-		activeRow.find(".app-list").val(adminOfIds.join(","));
-		activeRow.find(".no-apps").hide();
-		
-		$(this).hide();
-		$("#deselect-all").show();
-	});
-	
-	$("#deselect-all").on('click', function() {
-		$("#listof-apps").find(".app:not(.disabled)").removeClass("selected");
-		
-		adminsOf = [];
-		var adminOfIds = [];
-		
-		$("#listof-apps .app.selected").each(function() {
-			adminsOf[adminsOf.length] = $(this).find(".name").text();
-			adminOfIds[adminOfIds.length] = $(this).find(".app_id").val();
-		});
-		
-		activeRow.find(".user-admin-list").text(adminsOf.join(", "));
-		activeRow.find(".app-list").val(adminOfIds.join(","));
-		
-		if ($("#listof-apps .app.selected").length == 0) {
-			activeRow.find(".no-apps").show();
-		} else {
-			activeRow.find(".no-apps").hide();
-		}
-		
-		$(this).hide();
-		$("#select-all").show();
-	});
-			
-	$("#listof-apps .app").on('click', function() {
-		
-		if ($(this).hasClass("disabled")) {
-			return true;
-		}
-		
-		$(this).toggleClass("selected");
-		
-		if ($("#listof-apps .app.selected").length == $("#listof-apps .app").length) {
-			$("#select-all").hide();
-			$("#deselect-all").show();
-		} else {
-			$("#select-all").show();
-			$("#deselect-all").hide();
-		}
-		
-		adminsOf = [];
-		var adminOfIds = [];
-		$("#listof-apps .app.selected").each(function() {
-			adminsOf[adminsOf.length] = $(this).find(".name").text();
-			adminOfIds[adminOfIds.length] = $(this).find(".app_id").val();
-		});
-		
-		if ($("#listof-apps .app.selected").length == 0) {
-			activeRow.find(".no-apps").show();
-		} else {
-			activeRow.find(".no-apps").hide();
-		}
-		
-		activeRow.find(".user-admin-list").text(adminsOf.join(", "));
-		activeRow.find(".app-list").val(adminOfIds.join(","));
-		
-		var userAppRow = activeRow.next(".user-apps");
-		
-		if (userAppRow.length) {
-			var userAppIds = userAppRow.find(".app-list").val(),
-				usersOfIds = (userAppIds)? userAppIds.split(",") : [];
-		
-			for (var i = 0; i < adminOfIds.length; i++) {
-				if (usersOfIds.indexOf(adminOfIds[i]) == -1) {
-					if (usersOfIds.length == 0 && i == 0) {
-						userAppRow.find(".user-admin-list").text(adminsOf[i]);
-						userAppRow.find(".app-list").val(adminOfIds[i]);
-					} else {
-						userAppRow.find(".user-admin-list").text(userAppRow.find(".user-admin-list").text().trim() + ", " + adminsOf[i]);
-						userAppRow.find(".app-list").val(userAppRow.find(".app-list").val() + "," + adminOfIds[i]);
-					}
-					
-					userAppRow.find(".no-apps").hide();
-				}
-			}
-		}
-	});
-	
-	$("#done").on('click', function() {
-		$("#listof-apps").hide();
-	});	
-    
-    $('input[name=frequency]').click(function(){
-        currUserDetails = $(".user-details:visible");
-        switch($(this).val()){
-            case "daily":
-                currUserDetails.find(".reports-dow").hide();
-                break;
-            case "weekly":
-                currUserDetails.find(".reports-dow").show();
-                break;
-        }
-    });
-});
-</script>
-<div id="content-loader" style="display:none; opacity: 0.5;"></div>
-<table id="user-table" cellspacing="0" class="d-table reports-table">
-	<thead>
-		<tr>
-			<th data-localize="reports.apps"></th>
-            <th data-localize="reports.emails"></th>
-            <th data-localize="reports.metrics"></th>
-			<th data-localize="reports.frequency"></th>
-			<th data-localize="reports.time"></th>
-		</tr>
-	</thead>
-	<tbody>
-		{{#eachOfObjectValue data}}
-		<tr>
-            <td>{{#each this.appNames}}{{this}}<br/>{{/each}}</td>
-            <td><span class="user-email">{{#each this.emails}}{{this}}<br/>{{/each}}</span></td>
-            <td>{{#eachOfObject this.metrics}}<span data-localize="reports.{{this.property}}"></span><br/>{{/eachOfObject}}</td>
-			<td data-localize="reports.{{this.frequency}}"></td>
-			<td>
-                <div>
-                    <span data-localize="reports.at"></span> {{this.hour}}:{{this.minute}}
-                    <br/>{{this.zoneName}}
-                    {{#ifCond this.frequency "==" "weekly"}}
-                    <br/><span data-localize="reports.on"></span> {{this.dayname}}
-                    {{/ifCond}}
-                    <div class="help-edit" data-localize="management-users.edit"></div>
-                    <div class="help-close" data-localize="management-users.close"></div>
+<div class="widget">
+	<div class="widget-header">
+		<div class="left">
+            <div class="logo font-logo">
+                <i class="fa fa-users"></i>
+            </div>
+			<div class="title">{{page-title}}</div>
+		</div>
+        <div class="right">
+			<div class="icon-button green" id="add-report" data-localize="reports.create"></div>
+		</div>
+	</div>
+</div>
+<div class="reports-table" data-help-localize="help.{{{chart-helper}}}">
+<div class="create-report-row user-details datatablesubrow d-table">
+    <div class="row help-zone-vs">
+        <div class="title reports-frequency-title" data-localize="reports.frequency"></div>
+        <div class="detail">
+            <input class="reports-frequency" type="radio" name="frequency" value="daily" checked><span data-localize="reports.daily"></span>&nbsp;
+            <input class="reports-frequency" type="radio" name="frequency" value="weekly"><span data-localize="reports.weekly"></span>&nbsp;
+        </div>
+    </div>
+    <div class="row help-zone-vs">
+        <div class="title" data-localize="reports.time"></div>
+        <div class="detail">
+            <div class="cly-select reports-time">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">00:00</div>
+                    </div>
+                    <div class="right combo"></div>
                 </div>
-            </td>
-		</tr>
-		<tr class="user-details">
-			<td colspan="5">
-				<div>
-                    <div class="row help-zone-vs">
-						<div class="title reports-frequency-title" data-localize="reports.frequency"></div>
-						<div class="detail">
-                            {{#ifCond this.frequency "==" "daily"}}
-                                <input class="reports-frequency" type="radio" name="frequency" value="daily" checked="checked"><span data-localize="reports.daily"></span>&nbsp;
-                                <input class="reports-frequency" type="radio" name="frequency" value="weekly"><span data-localize="reports.weekly"></span>&nbsp;
-                            {{else}}
-                                <input class="reports-frequency" type="radio" name="frequency" value="daily"><span data-localize="reports.daily"></span>&nbsp;
-                                <input class="reports-frequency" type="radio" name="frequency" value="weekly" checked="checked"><span data-localize="reports.weekly"></span>&nbsp;
-                            {{/ifCond}}
-                        </div>
-					</div>
-                    <div class="row help-zone-vs">
-						<div class="title" data-localize="reports.time"></div>
-						<div class="detail">
-                            <div class="cly-select reports-time">
-                                <div class="select-inner">
-                                    <div class="text-container">
-                                        <div class="text">{{this.hour}}:{{this.minute}}</div>
-                                    </div>
-                                    <div class="right combo"></div>
-                                </div>
-                                <div class="select-items square">
-                                    <div>
-                                        <div data-value="00:00" class="segmentation-option item">00:00</div>
-                                        <div data-value="01:00" class="segmentation-option item">01:00</div>
-                                        <div data-value="02:00" class="segmentation-option item">02:00</div>
-                                        <div data-value="03:00" class="segmentation-option item">03:00</div>
-                                        <div data-value="04:00" class="segmentation-option item">04:00</div>
-                                        <div data-value="05:00" class="segmentation-option item">05:00</div>
-                                        <div data-value="06:00" class="segmentation-option item">06:00</div>
-                                        <div data-value="07:00" class="segmentation-option item">07:00</div>
-                                        <div data-value="08:00" class="segmentation-option item">08:00</div>
-                                        <div data-value="09:00" class="segmentation-option item">09:00</div>
-                                        <div data-value="10:00" class="segmentation-option item">10:00</div>
-                                        <div data-value="11:00" class="segmentation-option item">11:00</div>
-                                        <div data-value="12:00" class="segmentation-option item">12:00</div>
-                                        <div data-value="13:00" class="segmentation-option item">13:00</div>
-                                        <div data-value="14:00" class="segmentation-option item">14:00</div>
-                                        <div data-value="15:00" class="segmentation-option item">15:00</div>
-                                        <div data-value="16:00" class="segmentation-option item">16:00</div>
-                                        <div data-value="17:00" class="segmentation-option item">17:00</div>
-                                        <div data-value="18:00" class="segmentation-option item">18:00</div>
-                                        <div data-value="19:00" class="segmentation-option item">19:00</div>
-                                        <div data-value="20:00" class="segmentation-option item">20:00</div>
-                                        <div data-value="21:00" class="segmentation-option item">21:00</div>
-                                        <div data-value="22:00" class="segmentation-option item">22:00</div>
-                                        <div data-value="23:00" class="segmentation-option item">23:00</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-					</div>
-                    <div class="row help-zone-vs">
-						<div class="title" data-localize="reports.timezone"></div>
-						<div class="detail">
-                            <div class="cly-select reports-timezone">
-                                <div class="select-inner">
-                                    <div class="text-container">
-                                        <div class="text">{{this.zoneName}}</div>
-                                    </div>
-                                    <div class="right combo"></div>
-                                </div>
-                                <div class="select-items square">
-                                    <div>
-                                        {{#each ../zoneNames}}
-                                            <div data-value="{{this}}" class="segmentation-option item">{{this}}</div>
-                                        {{/each}}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-					</div>
-                    <div class="row reports-dow">
-						<div class="title"><span data-localize="reports.dow"></span></div>
-						<div class="detail">
-							<div class="cly-select reports-day">
-                                <div class="select-inner">
-                                    <div class="text-container">
-                                        <div class="text">{{this.dayname}}</div>
-                                    </div>
-                                    <div class="right combo"></div>
-                                </div>
-                                <div class="select-items square">
-                                    <div>
-                                        <div data-value="1" class="segmentation-option item" data-localize="reports.monday"></div>
-                                        <div data-value="2" class="segmentation-option item" data-localize="reports.tuesday"></div>
-                                        <div data-value="3" class="segmentation-option item" data-localize="reports.wednesday"></div>
-                                        <div data-value="4" class="segmentation-option item" data-localize="reports.thursday"></div>
-                                        <div data-value="5" class="segmentation-option item" data-localize="reports.friday"></div>
-                                        <div data-value="6" class="segmentation-option item" data-localize="reports.saturday"></div>
-                                        <div data-value="7" class="segmentation-option item" data-localize="reports.sunday"></div>
-                                    </div>
-                                </div>
-                            </div>
-						</div>
-					</div>
-					<div class="row">
-						<div class="title"><span data-localize="reports.emails"></span><br/>
-                        (<span data-localize="reports.help-emails"></span>)</div>
-						<div class="detail">
-							<textarea name="emails" class="reports-emails" cols="20" rows="5">
-{{#each this.emails}}{{this}}
-{{/each}}</textarea>
-						</div>
-					</div>
-                    <div class="row admin-apps help-zone-vs">
-						<div class="title" data-localize="reports.apps"></div>
-						<div class="select-apps">
-							<input type="hidden" value="{{this.apps}}" class="app-list"/>
-						</div>
-						<div class="detail user-admin-list">
-                            {{#if this.apps}}
-								{{#appIdsToNames this.apps}}{{/appIdsToNames}}
-							{{else}}
-							<span data-localize="reports.help-apps"></span>
-							{{/if}}
-						</div>
-						<div class="no-apps" data-localize="reports.help-apps"></div>
-					</div>
-                    <div class="row help-zone-vs">
-						<div class="title reports-include" data-localize="reports.include-metrics"></div>
-						<div class="detail">
-                            <input type="checkbox" class="reports-metrics" name="analytics" {{#if this.metrics.analytics}}checked{{/if}}/>&nbsp;<span data-localize="reports.analytics"></span><br/>
-                            <input type="checkbox" class="reports-metrics" name="events" {{#if this.metrics.events}}checked{{/if}}/>&nbsp;<span data-localize="reports.events"></span><br/>
-                            {{#if ../hasRevenue}}
-                            <input type="checkbox" class="reports-metrics" name="revenue" {{#if this.metrics.revenue}}checked{{/if}}/>&nbsp;<span data-localize="reports.revenue"></span><br/>
-                            {{/if}}
-                            {{#if ../hasPush}}
-                            <input type="checkbox" class="reports-metrics" name="push" {{#if this.metrics.push}}checked{{/if}}/>&nbsp;<span data-localize="reports.push"></span><br/>
-                            {{/if}}
-                            {{#if ../hasCrash}}
-                            <input type="checkbox" class="reports-metrics" name="crash" {{#if this.metrics.crash}}checked{{/if}}/>&nbsp;<span data-localize="reports.crash"></span><br/>
-                            {{/if}}
-                            {{#if ../hasViews}}
-                            <!--<input type="checkbox" class="reports-metrics" name="views" {{#if this.metrics.views}}checked{{/if}}/>&nbsp;<span data-localize="reports.views"></span><br/>-->
-                            {{/if}}
-                        </div>
-					</div>
-					<div class="button-container">
-						<input class="_id" type="hidden" value="{{this._id}}"/>
-                        <a href='/i/reports/preview?api_key={{../member.api_key}}&args=%7B"_id"%3A"{{this._id}}"%7D' target="_blank" class="icon-button green" data-localize="reports.preview"></a>
-                        <a class="icon-button green send-report" data-localize="reports.send"></a>
-						<a class="icon-button light save-report" data-localize="common.save"></a>
-						<a class="icon-button light cancel-report" data-localize="common.cancel"></a>
-						<a class="icon-button red delete-report" data-localize="reports.delete"></a>
-					</div>
-				</div>
-			</td>
-		</tr>
-		{{/eachOfObjectValue}}
-		<tr>
-			<td colspan="5">
-				<div data-localize="reports.create"></div>
-			</td>
-		</tr>
-		<tr class="user-details">
-			<td colspan="5">
-				<div>
-					<div class="row help-zone-vs">
-						<div class="title reports-frequency-title" data-localize="reports.frequency"></div>
-						<div class="detail">
-                            <input class="reports-frequency" type="radio" name="frequency" value="daily" checked><span data-localize="reports.daily"></span>&nbsp;
-                            <input class="reports-frequency" type="radio" name="frequency" value="weekly"><span data-localize="reports.weekly"></span>&nbsp;
-                        </div>
-					</div>
-					<div class="row help-zone-vs">
-						<div class="title" data-localize="reports.time"></div>
-						<div class="detail">
-                            <div class="cly-select reports-time">
-                                <div class="select-inner">
-                                    <div class="text-container">
-                                        <div class="text">00:00</div>
-                                    </div>
-                                    <div class="right combo"></div>
-                                </div>
-                                <div class="select-items square">
-                                    <div>
-                                        <div data-value="00:00" class="segmentation-option item">00:00</div>
-                                        <div data-value="01:00" class="segmentation-option item">01:00</div>
-                                        <div data-value="02:00" class="segmentation-option item">02:00</div>
-                                        <div data-value="03:00" class="segmentation-option item">03:00</div>
-                                        <div data-value="04:00" class="segmentation-option item">04:00</div>
-                                        <div data-value="05:00" class="segmentation-option item">05:00</div>
-                                        <div data-value="06:00" class="segmentation-option item">06:00</div>
-                                        <div data-value="07:00" class="segmentation-option item">07:00</div>
-                                        <div data-value="08:00" class="segmentation-option item">08:00</div>
-                                        <div data-value="09:00" class="segmentation-option item">09:00</div>
-                                        <div data-value="10:00" class="segmentation-option item">10:00</div>
-                                        <div data-value="11:00" class="segmentation-option item">11:00</div>
-                                        <div data-value="12:00" class="segmentation-option item">12:00</div>
-                                        <div data-value="13:00" class="segmentation-option item">13:00</div>
-                                        <div data-value="14:00" class="segmentation-option item">14:00</div>
-                                        <div data-value="15:00" class="segmentation-option item">15:00</div>
-                                        <div data-value="16:00" class="segmentation-option item">16:00</div>
-                                        <div data-value="17:00" class="segmentation-option item">17:00</div>
-                                        <div data-value="18:00" class="segmentation-option item">18:00</div>
-                                        <div data-value="19:00" class="segmentation-option item">19:00</div>
-                                        <div data-value="20:00" class="segmentation-option item">20:00</div>
-                                        <div data-value="21:00" class="segmentation-option item">21:00</div>
-                                        <div data-value="22:00" class="segmentation-option item">22:00</div>
-                                        <div data-value="23:00" class="segmentation-option item">23:00</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-					</div>
-                    <div class="row help-zone-vs">
-						<div class="title" data-localize="reports.timezone"></div>
-						<div class="detail">
-                            <div class="cly-select reports-timezone">
-                                <div class="select-inner">
-                                    <div class="text-container">
-                                        <div class="text">(GMT+00:00) GMT (no daylight saving)</div>
-                                    </div>
-                                    <div class="right combo"></div>
-                                </div>
-                                <div class="select-items square">
-                                    <div>
-                                        {{#each zoneNames}}
-                                            <div data-value="{{this}}" class="segmentation-option item">{{this}}</div>
-                                        {{/each}}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-					</div>
-                    <div class="row reports-dow">
-						<div class="title"><span data-localize="reports.dow"></span></div>
-						<div class="detail">
-							<div class="cly-select reports-day">
-                                <div class="select-inner">
-                                    <div class="text-container">
-                                        <div class="text">Monday</div>
-                                    </div>
-                                    <div class="right combo"></div>
-                                </div>
-                                <div class="select-items square">
-                                    <div>
-                                        <div data-value="1" class="segmentation-option item" data-localize="reports.monday"></div>
-                                        <div data-value="2" class="segmentation-option item" data-localize="reports.tuesday"></div>
-                                        <div data-value="3" class="segmentation-option item" data-localize="reports.wednesday"></div>
-                                        <div data-value="4" class="segmentation-option item" data-localize="reports.thursday"></div>
-                                        <div data-value="5" class="segmentation-option item" data-localize="reports.friday"></div>
-                                        <div data-value="6" class="segmentation-option item" data-localize="reports.saturday"></div>
-                                        <div data-value="7" class="segmentation-option item" data-localize="reports.sunday"></div>
-                                    </div>
-                                </div>
-                            </div>
-						</div>
-					</div>
-					<div class="row">
-						<div class="title"><span data-localize="reports.emails"></span><br/>
-                        (<span data-localize="reports.help-emails"></span>)</div>
-						<div class="detail">
-							<textarea name="emails" class="reports-emails" cols="20" rows="5">{{member.email}}
+                <div class="select-items square">
+                    <div>
+                        <div data-value="00:00" class="segmentation-option item">00:00</div>
+                        <div data-value="01:00" class="segmentation-option item">01:00</div>
+                        <div data-value="02:00" class="segmentation-option item">02:00</div>
+                        <div data-value="03:00" class="segmentation-option item">03:00</div>
+                        <div data-value="04:00" class="segmentation-option item">04:00</div>
+                        <div data-value="05:00" class="segmentation-option item">05:00</div>
+                        <div data-value="06:00" class="segmentation-option item">06:00</div>
+                        <div data-value="07:00" class="segmentation-option item">07:00</div>
+                        <div data-value="08:00" class="segmentation-option item">08:00</div>
+                        <div data-value="09:00" class="segmentation-option item">09:00</div>
+                        <div data-value="10:00" class="segmentation-option item">10:00</div>
+                        <div data-value="11:00" class="segmentation-option item">11:00</div>
+                        <div data-value="12:00" class="segmentation-option item">12:00</div>
+                        <div data-value="13:00" class="segmentation-option item">13:00</div>
+                        <div data-value="14:00" class="segmentation-option item">14:00</div>
+                        <div data-value="15:00" class="segmentation-option item">15:00</div>
+                        <div data-value="16:00" class="segmentation-option item">16:00</div>
+                        <div data-value="17:00" class="segmentation-option item">17:00</div>
+                        <div data-value="18:00" class="segmentation-option item">18:00</div>
+                        <div data-value="19:00" class="segmentation-option item">19:00</div>
+                        <div data-value="20:00" class="segmentation-option item">20:00</div>
+                        <div data-value="21:00" class="segmentation-option item">21:00</div>
+                        <div data-value="22:00" class="segmentation-option item">22:00</div>
+                        <div data-value="23:00" class="segmentation-option item">23:00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row help-zone-vs">
+        <div class="title" data-localize="reports.timezone"></div>
+        <div class="detail">
+            <div class="cly-select reports-timezone">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">(GMT+00:00) GMT (no daylight saving)</div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square">
+                    <div>
+                        {{#each zoneNames}}
+                            <div data-value="{{this}}" class="segmentation-option item">{{this}}</div>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row reports-dow">
+        <div class="title"><span data-localize="reports.dow"></span></div>
+        <div class="detail">
+            <div class="cly-select reports-day">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">Monday</div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square">
+                    <div>
+                        <div data-value="1" class="segmentation-option item" data-localize="reports.monday"></div>
+                        <div data-value="2" class="segmentation-option item" data-localize="reports.tuesday"></div>
+                        <div data-value="3" class="segmentation-option item" data-localize="reports.wednesday"></div>
+                        <div data-value="4" class="segmentation-option item" data-localize="reports.thursday"></div>
+                        <div data-value="5" class="segmentation-option item" data-localize="reports.friday"></div>
+                        <div data-value="6" class="segmentation-option item" data-localize="reports.saturday"></div>
+                        <div data-value="7" class="segmentation-option item" data-localize="reports.sunday"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="title"><span data-localize="reports.emails"></span><br/>
+        (<span data-localize="reports.help-emails"></span>)</div>
+        <div class="detail">
+            <textarea name="emails" class="reports-emails" cols="20" rows="5">{{member.email}}
 </textarea>
-						</div>
-					</div>
-					<div class="row admin-apps help-zone-vs">
-						<div class="title" data-localize="reports.apps"></div>
-						<div class="select-apps">
-							<input type="hidden" value="" class="app-list"/>
-						</div>
-						<div class="detail user-admin-list">
-							<span data-localize="reports.help-apps"></span>
-						</div>
-						<div class="no-apps" data-localize="reports.help-apps"></div>
-					</div>
-                    <div class="row help-zone-vs">
-						<div class="title reports-include" data-localize="reports.include-metrics"></div>
-						<div class="detail">
-                            <input type="checkbox" class="reports-metrics" name="analytics"/>&nbsp;<span data-localize="reports.analytics"></span><br/>
-                            <input type="checkbox" class="reports-metrics" name="events"/>&nbsp;<span data-localize="reports.events"></span><br/>
-                            {{#if hasRevenue}}
-                            <input type="checkbox" class="reports-metrics" name="revenue"/>&nbsp;<span data-localize="reports.revenue"></span><br/>
-                            {{/if}}
-                            {{#if hasPush}}
-                            <input type="checkbox" class="reports-metrics" name="push"/>&nbsp;<span data-localize="reports.push"></span><br/>
-                            {{/if}}
-                            {{#if hasCrash}}
-                            <input type="checkbox" class="reports-metrics" name="crash"/>&nbsp;<span data-localize="reports.crash"></span><br/>
-                            {{/if}}
-                            {{#if hasViews}}
-                            <!--<input type="checkbox" class="reports-metrics" name="views"/>&nbsp;<span data-localize="reports.views"></span><br/>-->
-                            {{/if}}
-                        </div>
-					</div>
-					<div class="button-container">
-						<a class="icon-button light create-report" data-localize="common.create"></a>
-						<a class="icon-button light cancel-report" data-localize="common.cancel"></a>
-					</div>
-				</div>
-			</td>
-		</tr>
-	</tbody>
-</table>
+        </div>
+    </div>
+    <div class="row admin-apps help-zone-vs">
+        <div class="title" data-localize="reports.apps"></div>
+        <div class="select-apps">
+            <input type="hidden" value="" class="app-list"/>
+        </div>
+        <div class="detail user-admin-list">
+            <span data-localize="reports.help-apps"></span>
+        </div>
+        <div class="no-apps" data-localize="reports.help-apps"></div>
+    </div>
+    <div class="row help-zone-vs">
+        <div class="title reports-include" data-localize="reports.include-metrics"></div>
+        <div class="detail">
+            <input type="checkbox" class="reports-metrics" name="analytics"/>&nbsp;<span data-localize="reports.analytics"></span><br/>
+            <input type="checkbox" class="reports-metrics" name="events"/>&nbsp;<span data-localize="reports.events"></span><br/>
+            {{#if hasRevenue}}
+            <input type="checkbox" class="reports-metrics" name="revenue"/>&nbsp;<span data-localize="reports.revenue"></span><br/>
+            {{/if}}
+            {{#if hasPush}}
+            <input type="checkbox" class="reports-metrics" name="push"/>&nbsp;<span data-localize="reports.push"></span><br/>
+            {{/if}}
+            {{#if hasCrash}}
+            <input type="checkbox" class="reports-metrics" name="crash"/>&nbsp;<span data-localize="reports.crash"></span><br/>
+            {{/if}}
+            {{#if hasViews}}
+            <!--<input type="checkbox" class="reports-metrics" name="views"/>&nbsp;<span data-localize="reports.views"></span><br/>-->
+            {{/if}}
+        </div>
+    </div>
+    <div class="button-container">
+        <a class="icon-button light create-report" data-localize="common.create"></a>
+        <a class="icon-button light cancel-report" data-localize="common.cancel"></a>
+    </div>
+</div>
+<table id="reports-table" cellspacing="0" class="d-table reports-table"></table>
 <div id="listof-apps">
 	<div class="tip"></div>
 	<div class="scrollable">
@@ -769,4 +164,5 @@ $(document).ready(function() {
 		<a class="icon-button dark" id="select-all" data-localize="common.select-all"></a>
 		<a class="icon-button dark" id="deselect-all" data-localize="common.deselect-all"></a>
 	</div>
+</div>
 </div>

@@ -2,3 +2,8 @@
 .reports-table .user-details .row {overflow: visible;}
 .reports-timezone{width: 300px;}
 .reports-timezone .select-items{width: 300px;}
+#reports-table tr td>div { position:relative; }
+.reports-table {margin-top: -16px;}
+.reports-table .dataTable-top {border-radius: 0;}
+#add-report{margin-top: 5px; padding: 6px;}
+.user-details.create-report-row { border-top:1px solid #979797; border-left:10px solid whiteSmoke; border-right:10px solid whiteSmoke; margin-left:-2px; padding-bottom:45px; margin-right:-2px; box-shadow:inset 2px 0 0 -1px #DDD, inset -2px 0 0 -1px #DDD, inset 0 2px 0 -1px #DDD; position:relative; font-family: Oswald; font-size: 12px; font-weight: normal; color: #6B6B6B;}
