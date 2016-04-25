@@ -19,12 +19,6 @@ window.MessagingDashboardView = countlyView.extend({
             pushSummary = countlyPushEvents.getDashSummary(),
             templateData = {};
 
-        templateData["page-title"] = countlyCommon.getDateRange();
-        templateData["logo-class"] = "sessions";
-        templateData["push_short"] = countlyPush.getMessagesForCurrApp();
-
-        templateData["big-numbers"] = pushSummary;
-
         var secondary = [sessionData.usage['total-users'], sessionData.usage['messaging-users']];
         secondary[0].title = jQuery.i18n.map["common.total-users"];
         secondary[0].id = "draw-total-users";
@@ -49,6 +43,13 @@ window.MessagingDashboardView = countlyView.extend({
         }
         delivery = delivery ? sent === 0 ? 100 : Math.round(100 * delivery / sent) : 0;
         action = action ? sent === 0 ? 100 :  Math.round(100 * action / sent) : 0;
+
+        templateData["page-title"] = countlyCommon.getDateRange();
+        templateData["logo-class"] = "sessions";
+        templateData["push_short"] = countlyPush.getMessagesForCurrApp();
+
+        templateData["big-numbers"] = pushSummary;
+
         templateData["big-numbers-intermediate"] = [
             {
                 percentage: enabling + '%',
@@ -66,7 +67,18 @@ window.MessagingDashboardView = countlyView.extend({
 
         this.templateData = templateData;
 
+        if (isRefresh) {
+            newPage = $("<div>" + this.template(this.templateData) + "</div>");
+            $(this.el).find("#big-numbers-container").replaceWith(newPage.find("#big-numbers-container"));
+            $(this.el).find("#intermediate-numbers-container").replaceWith(newPage.find("#intermediate-numbers-container"));
+
+            // $('.widget-intermediate .big-numbers').eq(0).find('.percentage').text(enabling + '%');
+            // $('.widget-intermediate .big-numbers').eq(1).find('.percentage').text(delivery + '%');
+            // $('.widget-intermediate .big-numbers').eq(2).find('.percentage').text(action + '%');
+        } else {
         $(this.el).html(this.template(this.templateData));
+        }
+
         countlyCommon.drawTimeGraph(pushDP.chartDP, "#dashboard-graph");
         countlyCommon.drawTimeGraph(messUserDP.chartDP, "#dashboard-graph-secondary");
 
@@ -169,6 +181,8 @@ window.MessagingListView = countlyView.extend({
             var pushes = countlyPush.getAllMessages();
             CountlyHelpers.refreshTable(this.dtable, pushes);
             CountlyHelpers.setUpDateSelectors(this);
+            $('#date-to').datepicker('option', 'maxDate', null);
+
             app.localize();
         }
     },

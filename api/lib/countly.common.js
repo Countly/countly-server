@@ -16,7 +16,7 @@ var countlyCommon = {},
 
     // Public Methods
 
-    countlyCommon.setTimezone = function(appTimezone) {
+    countlyCommon.setTimezone = function(appTimezone, enforceEndOfCalendarPeriod) {
         _appTimezone = appTimezone;
 
         var currTime = new Date();
@@ -24,12 +24,12 @@ var countlyCommon = {},
 
         _currMoment = moment(currTime);
 
-        countlyCommon.periodObj = getPeriodObj();
+        countlyCommon.periodObj = getPeriodObj(enforceEndOfCalendarPeriod);
     };
 
-    countlyCommon.setPeriod = function(period) {
+    countlyCommon.setPeriod = function(period, enforceEndOfCalendarPeriod) {
         _period = period;
-        countlyCommon.periodObj = getPeriodObj();
+        countlyCommon.periodObj = getPeriodObj(enforceEndOfCalendarPeriod);
     };
 
     // Calculates the percent change between previous and current values.
@@ -849,7 +849,7 @@ var countlyCommon = {},
     }
 
     // Returns a period object used by all time related data calculation functions.
-    function getPeriodObj() {
+    function getPeriodObj(enforceEndOfCalendarPeriod) {
         var year = _currMoment.year(),
             month = _currMoment.month() + 1,
             day = _currMoment.date(),
@@ -879,7 +879,7 @@ var countlyCommon = {},
             case "month": {
                 activePeriod = year;
                 previousPeriod = year - 1;
-                periodMax = month;
+                periodMax = enforceEndOfCalendarPeriod ? _currMoment.endOf('year').month() : month;
                 periodMin = 1;
                 dateString = "MMM";
                 daysInPeriod = parseInt(_currMoment.format("DDD"),10);
@@ -907,7 +907,7 @@ var countlyCommon = {},
                 previousPeriod = _currMoment.format("YYYY.M");
                 _currMoment.add('days', day);
 
-                periodMax = day;
+                periodMax = enforceEndOfCalendarPeriod ? _currMoment.endOf('month').date() : day;
                 periodMin = 1;
                 dateString = "D MMM";
                 daysInPeriod = day;

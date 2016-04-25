@@ -697,11 +697,15 @@ var common          = require('../../../../api/utils/common.js'),
             query.apps = {$in: ids};
         }
 
+        query.date = params.period.date;
+
         /*
          var pageNo = (params.qstring.args && params.qstring.args.page && common.isNumber(params.qstring.args.page))? params.qstring.args.page : 1;
 
          common.db.collection('messages').find(query).sort({created: -1}).skip((pageNo - 1) * 20).limit(20).toArray(function (err, msgs) {
          */
+
+        log.d('Querying messages: %j', query);
 
         common.db.collection('messages').find(query).sort({created: -1}).toArray(function (err, msgs) {
             if (!msgs || err) {
@@ -807,6 +811,8 @@ var common          = require('../../../../api/utils/common.js'),
             } else {
                 if (adminOfApps(params.member, apps)) {
 
+                    log.d('Creating message: %j', msg);
+
                     var message = new Message(msg.apps, _.pluck(apps, 'name'))
                         .setId(new common.db.ObjectID())
                         .setType(msg.type)
@@ -835,6 +841,7 @@ var common          = require('../../../../api/utils/common.js'),
                         if (!TOTALLY || !TOTALLY.TOTALLY || TOTALLY.TOTALLY.TOTALLY) { // :)
                             common.returnOutput(params, {error: 'No push enabled users found for the selected apps-platforms-test combinations'});
                         } else {
+                            log.d('Saving message: %j', mess.cleanObj(message));
                             common.db.collection('messages').save(mess.cleanObj(message), function(err) {
                                 if (err) {
                                     common.returnOutput(params, {error: 'Server db Error'});
