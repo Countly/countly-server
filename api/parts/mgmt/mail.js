@@ -2,7 +2,7 @@ var mail = {},
     nodemailer = require('nodemailer'),
     request = require('request'),
     net = require('net'),
-    getIP = require('external-ip')(),
+    extIP = require('external-ip'),
     sendmailTransport = require('nodemailer-sendmail-transport'),
     smtpTransport = require('nodemailer-smtp-transport'),
     localize = require('../../utils/localization.js'),
@@ -130,6 +130,11 @@ mail.lookup = function(callback) {
         });
     }
 }
+
+var getIP = extIP({
+    timeout: 600,
+    getIP: 'parallel'
+});
 
 function getNetworkIP(callback) {
   var socket = net.createConnection(80, 'www.google.com');
