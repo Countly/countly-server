@@ -4975,7 +4975,7 @@ var AppRouter = Backbone.Router.extend({
 
                 $(saveHTML).insertBefore(tableWrapper.find(".DTTT_container"));
                 $(searchHTML).insertBefore(tableWrapper.find(".dataTables_filter"));
-                tableWrapper.find(".dataTables_filter").html(tableWrapper.find(".dataTables_filter").find("input").attr("Placeholder","Search").clone(true));
+                tableWrapper.find(".dataTables_filter").html(tableWrapper.find(".dataTables_filter").find("input").attr("Placeholder",jQuery.i18n.map["common.search"]).clone(true));
 
                 tableWrapper.find(".save-table-data").on("click", function() {
                     if ($(this).next(".DTTT_container").css('visibility') == 'hidden') {
