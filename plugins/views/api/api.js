@@ -241,7 +241,7 @@ var plugin = {},
                     else
                         return false;
                 }
-                return true;
+                return false;
             });
         }
     });
