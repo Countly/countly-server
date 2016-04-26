@@ -234,19 +234,22 @@ var plugin = {},
         var params = ob.params;
         if (params.qstring.events) {
             params.qstring.events = params.qstring.events.filter(function(currEvent){
-                if (currEvent.key == "[CLY]_view" && currEvent.segmentation && currEvent.segmentation.name){
-                    processView(params, currEvent);
-                    if(currEvent.segmentation.visit){
-                        return true;
-                    }
-                    else{
-                        if(currEvent.dur || currEvent.segmentation.dur){
-                            plugins.dispatch("/view/duration", {params:params, duration:currEvent.dur || currEvent.segmentation.dur});
+                if (currEvent.key == "[CLY]_view"){
+                    if(currEvent.segmentation && currEvent.segmentation.name){
+                        processView(params, currEvent);
+                        if(currEvent.segmentation.visit){
+                            return true;
                         }
-                        return false;
+                        else{
+                            if(currEvent.dur || currEvent.segmentation.dur){
+                                plugins.dispatch("/view/duration", {params:params, duration:currEvent.dur || currEvent.segmentation.dur});
+                            }
+                            return false;
+                        }
                     }
+                    return false;
                 }
-                return false;
+                return true;
             });
         }
     });
