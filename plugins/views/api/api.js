@@ -236,10 +236,15 @@ var plugin = {},
             params.qstring.events = params.qstring.events.filter(function(currEvent){
                 if (currEvent.key == "[CLY]_view" && currEvent.segmentation && currEvent.segmentation.name){
                     processView(params, currEvent);
-                    if(currEvent.segmentation.visit)
+                    if(currEvent.segmentation.visit){
                         return true;
-                    else
+                    }
+                    else{
+                        if(currEvent.dur || currEvent.segmentation.dur){
+                            plugins.dispatch("/view/duration", {params:params, duration:currEvent.dur || currEvent.segmentation.dur});
+                        }
                         return false;
+                    }
                 }
                 return false;
             });
