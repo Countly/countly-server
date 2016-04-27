@@ -65,7 +65,7 @@ describe('Testing Crashes', function(){
 			APP_ID = testUtils.get("APP_ID");
 			APP_KEY = testUtils.get("APP_KEY");
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -73,7 +73,6 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":0,"affected":0,"fatal":0,"nonfatal":0});
                 ob.should.have.property("crashes", {"total":0,"unique":0,"resolved":0,"unresolved":0,"fatal":0,"nonfatal":0,"news":0,"renewed":0,"os":{},"highest_app":""});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups", []);
                 ob.should.have.property("data", {});
 				setTimeout(done, 1000);
 			});
@@ -140,10 +139,10 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash', function(){
+    describe('Check crash metrics', function(){
 		it('should have 1 crash', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -151,8 +150,25 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":1,"affected":1,"fatal":0,"nonfatal":1});
                 ob.should.have.property("crashes", {"total":1,"unique":1,"resolved":0,"unresolved":1,"fatal":0,"nonfatal":1,"news":1,"renewed":0,"os":{"Android":1},"highest_app":"1.1"});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(1);
-                var crash = ob.groups[0];
+                ob.should.have.property("data");
+                CRASHES[0] = crash._id;
+                verifyMetrics(ob.data, {meta:[], cr: 1, crnf: 1, cru: 1});
+				setTimeout(done, 1000);
+			});
+		});
+	});
+    
+    describe('Check crash data', function(){
+		it('should have 1 crash', function(done){
+			request
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.expect(200)
+			.end(function(err, res){
+				if (err) return done(err);
+				var ob = JSON.parse(res.text);
+                ob.should.have.property("iTotalRecords", 1);
+                ob.should.have.property("iTotalDisplayRecords", 1);
+                var crash = ob.aaData[0];
                 crash.should.have.property("_id");
                 crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
                 crash.should.have.property("is_new", true);
@@ -166,7 +182,6 @@ describe('Testing Crashes', function(){
                 crash.should.have.property("users", 1);
                 ob.should.have.property("data");
                 CRASHES[0] = crash._id;
-                verifyMetrics(ob.data, {meta:[], cr: 1, crnf: 1, cru: 1});
 				setTimeout(done, 1000);
 			});
 		});
@@ -245,37 +260,6 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash again', function(){
-		it('should not be new anymore', function(done){
-			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
-			.expect(200)
-			.end(function(err, res){
-				if (err) return done(err);
-				var ob = JSON.parse(res.text);
-                ob.should.have.property("users", {"total":1,"affected":1,"fatal":0,"nonfatal":1});
-                ob.should.have.property("crashes", {"total":1,"unique":1,"resolved":0,"unresolved":1,"fatal":0,"nonfatal":1,"news":0,"renewed":0,"os":{"Android":1},"highest_app":"1.1"});
-                ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(1);
-                var crash = ob.groups[0];
-                crash.should.have.property("_id", CRASHES[0]);
-                crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
-                crash.should.have.property("is_new", false);
-                crash.should.have.property("is_resolved", false);
-                crash.should.have.property("lastTs");
-                crash.should.have.property("latest_version", "1.1");
-                crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception<init>");
-                crash.should.have.property("nonfatal", true);
-                crash.should.have.property("os", 'Android');
-                crash.should.have.property("reports", 1);
-                crash.should.have.property("users", 1);
-                ob.should.have.property("data");
-                verifyMetrics(ob.data, {meta:[], cr: 1, crnf: 1, cru: 1});
-				setTimeout(done, 1000);
-			});
-		});
-	});
-    
     describe('Create user', function(){
 		it('should success', function(done){
 			request
@@ -336,10 +320,10 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash', function(){
+    describe('Check crash metrics', function(){
 		it('should have 1 crash', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -347,8 +331,25 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":2,"affected":2,"fatal":0,"nonfatal":2});
                 ob.should.have.property("crashes", {"total":2,"unique":1,"resolved":0,"unresolved":1,"fatal":0,"nonfatal":2,"news":0,"renewed":0,"os":{"Android":2},"highest_app":"1.1"});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(1);
-                var crash = ob.groups[0];
+                ob.should.have.property("data");
+                verifyMetrics(ob.data, {meta:[], cr: 2, crnf: 2, cru: 1});
+				setTimeout(done, 1000);
+			});
+		});
+	});
+    
+    describe('Check crash data', function(){
+		it('should have 1 crash', function(done){
+			request
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.expect(200)
+			.end(function(err, res){
+				if (err) return done(err);
+				var ob = JSON.parse(res.text);
+                ob.should.have.property("iTotalRecords", 1);
+                ob.should.have.property("iTotalDisplayRecords", 1);
+                ob.should.have.property("aaData").with.lengthOf(1);
+                var crash = ob.aaData[0];
                 crash.should.have.property("_id", CRASHES[0]);
                 crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
                 crash.should.have.property("is_new", false);
@@ -360,8 +361,6 @@ describe('Testing Crashes', function(){
                 crash.should.have.property("os", 'Android');
                 crash.should.have.property("reports", 2);
                 crash.should.have.property("users", 2);
-                ob.should.have.property("data");
-                verifyMetrics(ob.data, {meta:[], cr: 2, crnf: 2, cru: 1});
 				setTimeout(done, 1000);
 			});
 		});
@@ -528,10 +527,10 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash', function(){
+    describe('Check crash metrics', function(){
 		it('should have 1 crash', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -539,8 +538,25 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":2,"affected":2,"fatal":0,"nonfatal":2});
                 ob.should.have.property("crashes", {"total":3,"unique":1,"resolved":0,"unresolved":1,"fatal":0,"nonfatal":3,"news":0,"renewed":0,"os":{"Android":3},"highest_app":"1.2"});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(1);
-                var crash = ob.groups[0];
+                ob.should.have.property("data");
+                verifyMetrics(ob.data, {meta:[], cr: 3, crnf: 3, cru: 1});
+				setTimeout(done, 1000);
+			});
+		});
+	});
+    
+    describe('Check crash data', function(){
+		it('should have 1 crash', function(done){
+			request
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.expect(200)
+			.end(function(err, res){
+				if (err) return done(err);
+				var ob = JSON.parse(res.text);
+                ob.should.have.property("iTotalRecords", 1);
+                ob.should.have.property("iTotalDisplayRecords", 1);
+                ob.should.have.property("aaData").with.lengthOf(1);
+                var crash = ob.aaData[0];
                 crash.should.have.property("_id", CRASHES[0]);
                 crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
                 crash.should.have.property("is_new", false);
@@ -552,8 +568,6 @@ describe('Testing Crashes', function(){
                 crash.should.have.property("os", 'Android');
                 crash.should.have.property("reports", 3);
                 crash.should.have.property("users", 2);
-                ob.should.have.property("data");
-                verifyMetrics(ob.data, {meta:[], cr: 3, crnf: 3, cru: 1});
 				setTimeout(done, 1000);
 			});
 		});
@@ -681,10 +695,10 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash', function(){
-		it('should have 1 crash', function(done){
+    describe('Check crash metrics', function(){
+		it('should have 2 crashes', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -692,10 +706,27 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":2,"affected":2,"fatal":1,"nonfatal":1});
                 ob.should.have.property("crashes", {"total":4,"unique":2,"resolved":0,"unresolved":2,"fatal":1,"nonfatal":3,"news":1,"renewed":0,"os":{"Android":4},"highest_app":"1.2"});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(2);
+                ob.should.have.property("data");
+                verifyMetrics(ob.data, {meta:[], cr: 4, crnf: 3, crf: 1, cru: 2});
+				setTimeout(done, 1000);
+			});
+		});
+	});
+    
+    describe('Check crash data', function(){
+		it('should have 2 crashes', function(done){
+			request
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.expect(200)
+			.end(function(err, res){
+				if (err) return done(err);
+				var ob = JSON.parse(res.text);
+                ob.should.have.property("iTotalRecords", 2);
+                ob.should.have.property("iTotalDisplayRecords", 2);
+                ob.should.have.property("aaData").with.lengthOf(2);
                 
-                for(var i = 0; i < ob.groups.length; i++){
-                    var crash = ob.groups[i];
+                for(var i = 0; i < ob.aaData.length; i++){
+                    var crash = ob.aaData[i];
                     if(crash._id == CRASHES[0]){
                         crash.should.have.property("_id", CRASHES[0]);
                         crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
@@ -724,9 +755,6 @@ describe('Testing Crashes', function(){
                         CRASHES[1] = crash._id;
                     }
                 }
-                
-                ob.should.have.property("data");
-                verifyMetrics(ob.data, {meta:[], cr: 4, crnf: 3, crf: 1, cru: 2});
 				setTimeout(done, 1000);
 			});
 		});
@@ -851,10 +879,10 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash', function(){
-		it('should have 1 crash', function(done){
+    describe('Check crash metrics', function(){
+		it('should have 3 crash', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -862,10 +890,27 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":3,"affected":3,"fatal":2,"nonfatal":1});
                 ob.should.have.property("crashes", {"total":5,"unique":3,"resolved":0,"unresolved":3,"fatal":2,"nonfatal":3,"news":1,"renewed":0,"os":{"Android":4, "Windows Phone":1},"highest_app":"1.2"});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(3);
+                ob.should.have.property("data");
+                verifyMetrics(ob.data, {meta:[], cr: 5, crnf: 3, crf: 2, cru: 3});
+				setTimeout(done, 1000);
+			});
+		});
+	});
+    
+    describe('Check crash data', function(){
+		it('should have 3 crash', function(done){
+			request
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.expect(200)
+			.end(function(err, res){
+				if (err) return done(err);
+				var ob = JSON.parse(res.text);
+                ob.should.have.property("iTotalRecords", 3);
+                ob.should.have.property("iTotalDisplayRecords", 3);
+                ob.should.have.property("aaData").with.lengthOf(3);
                 
-                for(var i = 0; i < ob.groups.length; i++){
-                    var crash = ob.groups[i];
+                for(var i = 0; i < ob.aaData.length; i++){
+                    var crash = ob.aaData[i];
                     if(crash._id != CRASHES[0] && crash._id != CRASHES[1]){
                         crash.should.have.property("_id");
                         crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
@@ -881,11 +926,8 @@ describe('Testing Crashes', function(){
                         CRASHES[2] = crash._id;
                     }
                 }
-                
-                ob.should.have.property("data");
-                verifyMetrics(ob.data, {meta:[], cr: 5, crnf: 3, crf: 2, cru: 3});
-				setTimeout(done, 1000);
-			});
+            }
+			setTimeout(done, 1000);
 		});
 	});
     
@@ -1492,10 +1534,10 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash', function(){
+    describe('Check crash metrics', function(){
 		it('should be resolved', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -1503,33 +1545,13 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":3,"affected":3,"fatal":2,"nonfatal":1});
                 ob.should.have.property("crashes", {"total":5,"unique":3,"resolved":1,"unresolved":2,"fatal":2,"nonfatal":3,"news":0,"renewed":0,"os":{"Android":4, "Windows Phone":1},"highest_app":"1.2"});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(3);
-                
-                for(var i = 0; i < ob.groups.length; i++){
-                    var crash = ob.groups[i];
-                    if(crash._id == CRASHES[0]){
-                        crash.should.have.property("_id", CRASHES[0]);
-                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
-                        crash.should.have.property("is_new", false);
-                        crash.should.have.property("is_resolved", true);
-                        crash.should.have.property("resolved_version", "1.2");
-                        crash.should.have.property("lastTs");
-                        crash.should.have.property("latest_version", "1.2");
-                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception<init>");
-                        crash.should.have.property("nonfatal", true);
-                        crash.should.have.property("os", 'Android');
-                        crash.should.have.property("reports", 3);
-                        crash.should.have.property("users", 2);
-                    }
-                }
-                
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:[], cr: 5, crnf: 3, crf: 2, cru: 3});
 				setTimeout(done, 1000);
 			});
 		});
 	});
-    
+       
     describe('Check crash details', function(){
 		it('should be resolved', function(done){
 			request
@@ -1593,10 +1615,10 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash', function(){
+    describe('Check crash metrics', function(){
 		it('should no user change', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -1604,26 +1626,6 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":3,"affected":3,"fatal":2,"nonfatal":1});
                 ob.should.have.property("crashes", {"total":5,"unique":3,"resolved":1,"unresolved":2,"fatal":2,"nonfatal":3,"news":0,"renewed":0,"os":{"Android":4, "Windows Phone":1},"highest_app":"1.2"});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(3);
-                
-                for(var i = 0; i < ob.groups.length; i++){
-                    var crash = ob.groups[i];
-                    if(crash._id == CRASHES[0]){
-                        crash.should.have.property("_id", CRASHES[0]);
-                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
-                        crash.should.have.property("is_new", false);
-                        crash.should.have.property("is_resolved", true);
-                        crash.should.have.property("resolved_version", "1.2");
-                        crash.should.have.property("lastTs");
-                        crash.should.have.property("latest_version", "1.2");
-                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception<init>");
-                        crash.should.have.property("nonfatal", true);
-                        crash.should.have.property("os", 'Android');
-                        crash.should.have.property("reports", 3);
-                        crash.should.have.property("users", 1);
-                    }
-                }
-                
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:[], cr: 5, crnf: 3, crf: 2, cru: 3, crru:1});
 				setTimeout(done, 1000);
@@ -1694,10 +1696,10 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash', function(){
+    describe('Check crash metrics', function(){
 		it('should have 1 user less', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -1705,26 +1707,6 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":3,"affected":2,"fatal":2,"nonfatal":0});
                 ob.should.have.property("crashes", {"total":5,"unique":3,"resolved":1,"unresolved":2,"fatal":2,"nonfatal":3,"news":0,"renewed":0,"os":{"Android":4, "Windows Phone":1},"highest_app":"1.2"});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(3);
-                
-                for(var i = 0; i < ob.groups.length; i++){
-                    var crash = ob.groups[i];
-                    if(crash._id == CRASHES[0]){
-                        crash.should.have.property("_id", CRASHES[0]);
-                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
-                        crash.should.have.property("is_new", false);
-                        crash.should.have.property("is_resolved", true);
-                        crash.should.have.property("resolved_version", "1.2");
-                        crash.should.have.property("lastTs");
-                        crash.should.have.property("latest_version", "1.2");
-                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception<init>");
-                        crash.should.have.property("nonfatal", true);
-                        crash.should.have.property("os", 'Android');
-                        crash.should.have.property("reports", 3);
-                        crash.should.have.property("users", 0);
-                    }
-                }
-                
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:[], cr: 5, crnf: 3, crf: 2, cru: 3, crru:2});
 				setTimeout(done, 1000);
@@ -1841,10 +1823,10 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash', function(){
+    describe('Check crash metrics', function(){
 		it('should be reoccurred', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -1852,26 +1834,6 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":3,"affected":3,"fatal":2,"nonfatal":1});
                 ob.should.have.property("crashes", {"total":6,"unique":3,"resolved":0,"unresolved":3,"fatal":2,"nonfatal":4,"news":0,"renewed":1,"os":{"Android":5, "Windows Phone":1},"highest_app":"1.3"});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(3);
-                
-                for(var i = 0; i < ob.groups.length; i++){
-                    var crash = ob.groups[i];
-                    if(crash._id == CRASHES[0]){
-                        crash.should.have.property("_id", CRASHES[0]);
-                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
-                        crash.should.have.property("is_new", false);
-                        crash.should.have.property("is_resolved", false);
-                        crash.should.have.property("is_renewed", true);
-                        crash.should.have.property("lastTs");
-                        crash.should.have.property("latest_version", "1.3");
-                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception<init>");
-                        crash.should.have.property("nonfatal", true);
-                        crash.should.have.property("os", 'Android');
-                        crash.should.have.property("reports", 4);
-                        crash.should.have.property("users", 1);
-                    }
-                }
-                
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:[], cr: 6, crnf: 4, crf: 2, cru: 3, crru:2});
 				setTimeout(done, 1000);
@@ -1945,10 +1907,10 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash', function(){
+    describe('Check crash metrics', function(){
 		it('should be reoccurred', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -1956,26 +1918,6 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":3,"affected":3,"fatal":2,"nonfatal":1});
                 ob.should.have.property("crashes", {"total":6,"unique":3,"resolved":1,"unresolved":2,"fatal":2,"nonfatal":4,"news":0,"renewed":0,"os":{"Android":5, "Windows Phone":1},"highest_app":"1.3"});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(3);
-                
-                for(var i = 0; i < ob.groups.length; i++){
-                    var crash = ob.groups[i];
-                    if(crash._id == CRASHES[0]){
-                        crash.should.have.property("_id", CRASHES[0]);
-                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
-                        crash.should.have.property("is_new", false);
-                        crash.should.have.property("is_resolved", true);
-                        crash.should.have.property("is_renewed", false);
-                        crash.should.have.property("lastTs");
-                        crash.should.have.property("latest_version", "1.3");
-                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception<init>");
-                        crash.should.have.property("nonfatal", true);
-                        crash.should.have.property("os", 'Android');
-                        crash.should.have.property("reports", 4);
-                        crash.should.have.property("users", 1);
-                    }
-                }
-                
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:[], cr: 6, crnf: 4, crf: 2, cru: 3, crru:2});
 				setTimeout(done, 1000);
@@ -2049,10 +1991,10 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash', function(){
+    describe('Check crash metrics', function(){
 		it('should be reoccurred', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -2060,26 +2002,6 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":3,"affected":3,"fatal":2,"nonfatal":1});
                 ob.should.have.property("crashes", {"total":6,"unique":3,"resolved":0,"unresolved":3,"fatal":2,"nonfatal":4,"news":0,"renewed":0,"os":{"Android":5, "Windows Phone":1},"highest_app":"1.3"});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(3);
-                
-                for(var i = 0; i < ob.groups.length; i++){
-                    var crash = ob.groups[i];
-                    if(crash._id == CRASHES[0]){
-                        crash.should.have.property("_id", CRASHES[0]);
-                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
-                        crash.should.have.property("is_new", false);
-                        crash.should.have.property("is_resolved", false);
-                        crash.should.have.property("is_renewed", false);
-                        crash.should.have.property("lastTs");
-                        crash.should.have.property("latest_version", "1.3");
-                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception<init>");
-                        crash.should.have.property("nonfatal", true);
-                        crash.should.have.property("os", 'Android');
-                        crash.should.have.property("reports", 4);
-                        crash.should.have.property("users", 1);
-                    }
-                }
-                
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:[], cr: 6, crnf: 4, crf: 2, cru: 3, crru:2});
 				setTimeout(done, 1000);
@@ -2204,10 +2126,10 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash', function(){
+    describe('Check crash metrics', function(){
 		it('should have new crash', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -2215,10 +2137,27 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":3,"affected":3,"fatal":2,"nonfatal":1});
                 ob.should.have.property("crashes", {"total":7,"unique":4,"resolved":0,"unresolved":4,"fatal":3,"nonfatal":4,"news":1,"renewed":0,"os":{"Android":5, "Windows Phone":1, "iOS":1},"highest_app":"1.3"});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(4);
+                ob.should.have.property("data");
+                verifyMetrics(ob.data, {meta:[], cr: 7, crnf: 4, crf: 3, cru: 4, crru:2});
+				setTimeout(done, 1000);
+			});
+		});
+	});
+    
+    describe('Check crash data', function(){
+		it('should have new crash', function(done){
+			request
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.expect(200)
+			.end(function(err, res){
+				if (err) return done(err);
+				var ob = JSON.parse(res.text);
+                ob.should.have.property("iTotalRecords", 4);
+                ob.should.have.property("iTotalDisplayRecords", 4);
+                ob.should.have.property("aaData").with.lengthOf(4);
                 
-                for(var i = 0; i < ob.groups.length; i++){
-                    var crash = ob.groups[i];
+                for(var i = 0; i < ob.aaData.length; i++){
+                    var crash = ob.aaData[i];
                     if(crash._id != CRASHES[0] && crash._id != CRASHES[1] && crash._id != CRASHES[2]){
                         crash.should.have.property("_id");
                         crash.should.have.property("error", "CoreFoundation 0x30629f9b + 154\nlibobjc.A.dylib 0x3b110ccf objc_exception_throw + 38\nCoreFoundation 0x30629ec5 + 0\nUIKit 0x33090e75 + 88\nlibobjc.A.dylib 0x3b11fb6b + 174\nkounter 0x0010427d kounter + 94845\nUIKit 0x32e7c037 + 90\nUIKit 0x32e7bfd7 + 30\nUIKit 0x32e7bfb1 + 44\nUIKit 0x32e67717 + 374\nUIKit 0x32e7ba2f + 590\nUIKit 0x32e7b701 + 528\nUIKit 0x32e766cb + 758\nUIKit 0x32e4b8cd + 196\nUIKit 0x32e49f77 + 7102\nCoreFoundation 0x305f520b + 14\nCoreFoundation 0x305f46db + 206\nCoreFoundation 0x305f2ecf + 622\nCoreFoundation 0x3055debf CFRunLoopRunSpecific + 522\nCoreFoundation 0x3055dca3 CFRunLoopRunInMode + 106\nGraphicsServices 0x35458663 GSEventRunModal + 138\nUIKit 0x32eaa14d UIApplicationMain + 1136\nkounter 0x0010735f kounter + 107359\nlibdyld.dylib 0x3b61dab7 + 2");
@@ -2234,11 +2173,8 @@ describe('Testing Crashes', function(){
                         CRASHES[3] = crash._id;
                     }
                 }
-                
-                ob.should.have.property("data");
-                verifyMetrics(ob.data, {meta:[], cr: 7, crnf: 4, crf: 3, cru: 4, crru:2});
-				setTimeout(done, 1000);
-			});
+            }
+			setTimeout(done, 1000);
 		});
 	});
     
@@ -2357,10 +2293,10 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash', function(){
+    describe('Check crash metrics', function(){
 		it('should be the same crash as previous', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -2368,11 +2304,27 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":3,"affected":3,"fatal":2,"nonfatal":1});
                 ob.should.have.property("crashes", {"total":8,"unique":4,"resolved":0,"unresolved":4,"fatal":4,"nonfatal":4,"news":0,"renewed":0,"os":{"Android":5, "Windows Phone":1, "iOS":2},"highest_app":"1.3"});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(4);
+                ob.should.have.property("data");
+                verifyMetrics(ob.data, {meta:[], cr: 8, crnf: 4, crf: 4, cru: 4, crru:2});
+				setTimeout(done, 1000);
+			});
+		});
+	});
+    
+    describe('Check crash data', function(){
+		it('should be the same crash as previous', function(done){
+			request
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.expect(200)
+			.end(function(err, res){
+				if (err) return done(err);
+				var ob = JSON.parse(res.text);
+                ob.should.have.property("iTotalRecords", 4);
+                ob.should.have.property("iTotalDisplayRecords", 4);
+                ob.should.have.property("aaData").with.lengthOf(4);
                 
-                
-                for(var i = 0; i < ob.groups.length; i++){
-                    var crash = ob.groups[i];
+                for(var i = 0; i < ob.aaData.length; i++){
+                    var crash = ob.aaData[i];
                     if(crash._id == CRASHES[3]){
                         crash.should.have.property("_id", CRASHES[3]);
                         crash.should.have.property("error", "CoreFoundation 0x2d4b2ee3 + 154\nlibobjc.A.dylib 0x37f93ce7 objc_exception_throw + 38\nCoreFoundation 0x2d4b2e0d + 0\nUIKit 0x2ff2e571 + 88\nlibobjc.A.dylib 0x37fa2b6b + 174\nkounter 0x0009827d kounter + 94845\nUIKit 0x2fd196a7 + 90\nUIKit 0x2fd19643 + 38\nUIKit 0x2fd19613 + 46\nUIKit 0x2fd04d5b + 374\nUIKit 0x2fd1905b + 594\nUIKit 0x2fd18d2d + 528\nUIKit 0x2fd13c87 + 758\nUIKit 0x2fce8e55 + 196\nUIKit 0x2fce7521 + 7120\nCoreFoundation 0x2d47dfaf + 14\nCoreFoundation 0x2d47d477 + 206\nCoreFoundation 0x2d47bc67 + 630\nCoreFoundation 0x2d3e6729 CFRunLoopRunSpecific + 524\nCoreFoundation 0x2d3e650b CFRunLoopRunInMode + 106\nGraphicsServices 0x323226d3 GSEventRunModal + 138\nUIKit 0x2fd47871 UIApplicationMain + 1136\nkounter 0x0009b35f kounter + 107359\nlibdyld.dylib 0x38491ab7 + 2");
@@ -2387,11 +2339,8 @@ describe('Testing Crashes', function(){
                         crash.should.have.property("users", 2);
                     }
                 }
-                
-                ob.should.have.property("data");
-                verifyMetrics(ob.data, {meta:[], cr: 8, crnf: 4, crf: 4, cru: 4, crru:2});
-				setTimeout(done, 1000);
-			});
+            }
+			setTimeout(done, 1000);
 		});
 	});
     
@@ -2459,10 +2408,10 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash', function(){
+    describe('Check crash metrics', function(){
 		it('should not have first crash', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -2470,10 +2419,27 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":3,"affected":3,"fatal":2,"nonfatal":1});
                 ob.should.have.property("crashes", {"total":7,"unique":3,"resolved":0,"unresolved":3,"fatal":3,"nonfatal":4,"news":0,"renewed":0,"os":{"Android":4, "Windows Phone":1, "iOS":2},"highest_app":"1.3"});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(3);
+                ob.should.have.property("data");
+                verifyMetrics(ob.data, {meta:[], cr: 8, crnf: 4, crf: 4, cru: 4, crru:2});
+				setTimeout(done, 1000);
+			});
+		});
+	});
+    
+    describe('Check crash data', function(){
+		it('should not have first crash', function(done){
+			request
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.expect(200)
+			.end(function(err, res){
+				if (err) return done(err);
+				var ob = JSON.parse(res.text);
+                ob.should.have.property("iTotalRecords", 3);
+                ob.should.have.property("iTotalDisplayRecords", 3);
+                ob.should.have.property("aaData").with.lengthOf(3);
                 
-                for(var i = 0; i < ob.groups.length; i++){
-                    var crash = ob.groups[i];
+                for(var i = 0; i < ob.aaData.length; i++){
+                    var crash = ob.aaData[i];
                     if(crash._id == CRASHES[2]){
                         crash.should.have.property("_id", CRASHES[2]);
                         crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
@@ -2514,11 +2480,8 @@ describe('Testing Crashes', function(){
                         crash.should.have.property("users", 2);
                     }
                 }
-                
-                ob.should.have.property("data");
-                verifyMetrics(ob.data, {meta:[], cr: 8, crnf: 4, crf: 4, cru: 4, crru:2});
-				setTimeout(done, 1000);
-			});
+            }
+			setTimeout(done, 1000);
 		});
 	});
     
@@ -2539,10 +2502,10 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash', function(){
+    describe('Check crash metrics', function(){
 		it('should not have second crash', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -2550,10 +2513,27 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":3,"affected":3,"fatal":2,"nonfatal":1});
                 ob.should.have.property("crashes", {"total":6,"unique":2,"resolved":0,"unresolved":2,"fatal":2,"nonfatal":4,"news":0,"renewed":0,"os":{"Android":4, "Windows Phone":0, "iOS":2},"highest_app":"1.3"});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(2);
+                ob.should.have.property("data");
+                verifyMetrics(ob.data, {meta:[], cr: 8, crnf: 4, crf: 4, cru: 4, crru:2});
+				setTimeout(done, 1000);
+			});
+		});
+	});
+    
+    describe('Check crash data', function(){
+		it('should not have second crash', function(done){
+			request
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.expect(200)
+			.end(function(err, res){
+				if (err) return done(err);
+				var ob = JSON.parse(res.text);
+                ob.should.have.property("iTotalRecords", 2);
+                ob.should.have.property("iTotalDisplayRecords", 2);
+                ob.should.have.property("aaData").with.lengthOf(2);
                 
-                for(var i = 0; i < ob.groups.length; i++){
-                    var crash = ob.groups[i];
+                for(var i = 0; i < ob.aaData.length; i++){
+                    var crash = ob.aaData[i];
                     if(crash._id == CRASHES[0]){
                         crash.should.have.property("_id", CRASHES[0]);
                         crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
@@ -2581,11 +2561,8 @@ describe('Testing Crashes', function(){
                         crash.should.have.property("users", 2);
                     }
                 }
-                
-                ob.should.have.property("data");
-                verifyMetrics(ob.data, {meta:[], cr: 8, crnf: 4, crf: 4, cru: 4, crru:2});
-				setTimeout(done, 1000);
-			});
+            }
+			setTimeout(done, 1000);
 		});
 	});
     
@@ -2606,10 +2583,10 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash', function(){
+    describe('Check crash metrics', function(){
 		it('should not have third crash', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -2617,9 +2594,26 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":3,"affected":1,"fatal":1,"nonfatal":0});
                 ob.should.have.property("crashes", {"total":2,"unique":1,"resolved":0,"unresolved":1,"fatal":2,"nonfatal":0,"news":0,"renewed":0,"os":{"Android":0, "Windows Phone":0, "iOS":2},"highest_app":"1.3"});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(1);
+                ob.should.have.property("data");
+                verifyMetrics(ob.data, {meta:[], cr: 8, crnf: 4, crf: 4, cru: 4, crru:2});
+				setTimeout(done, 1000);
+			});
+		});
+	});
+    
+    describe('Check crash data', function(){
+		it('should not have third crash', function(done){
+			request
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.expect(200)
+			.end(function(err, res){
+				if (err) return done(err);
+				var ob = JSON.parse(res.text);
+                ob.should.have.property("iTotalRecords", 1);
+                ob.should.have.property("iTotalDisplayRecords", 1);
+                ob.should.have.property("aaData").with.lengthOf(1);
                 
-                var crash3 = ob.groups[0];
+                var crash3 = ob.aaData[0];
                 crash3.should.have.property("_id", CRASHES[3]);
                 crash3.should.have.property("error", "CoreFoundation 0x2d4b2ee3 + 154\nlibobjc.A.dylib 0x37f93ce7 objc_exception_throw + 38\nCoreFoundation 0x2d4b2e0d + 0\nUIKit 0x2ff2e571 + 88\nlibobjc.A.dylib 0x37fa2b6b + 174\nkounter 0x0009827d kounter + 94845\nUIKit 0x2fd196a7 + 90\nUIKit 0x2fd19643 + 38\nUIKit 0x2fd19613 + 46\nUIKit 0x2fd04d5b + 374\nUIKit 0x2fd1905b + 594\nUIKit 0x2fd18d2d + 528\nUIKit 0x2fd13c87 + 758\nUIKit 0x2fce8e55 + 196\nUIKit 0x2fce7521 + 7120\nCoreFoundation 0x2d47dfaf + 14\nCoreFoundation 0x2d47d477 + 206\nCoreFoundation 0x2d47bc67 + 630\nCoreFoundation 0x2d3e6729 CFRunLoopRunSpecific + 524\nCoreFoundation 0x2d3e650b CFRunLoopRunInMode + 106\nGraphicsServices 0x323226d3 GSEventRunModal + 138\nUIKit 0x2fd47871 UIApplicationMain + 1136\nkounter 0x0009b35f kounter + 107359\nlibdyld.dylib 0x38491ab7 + 2");
                 crash3.should.have.property("is_new", false);
@@ -2632,10 +2626,8 @@ describe('Testing Crashes', function(){
                 crash3.should.have.property("reports", 2);
                 crash3.should.have.property("users", 2);
                 
-                ob.should.have.property("data");
-                verifyMetrics(ob.data, {meta:[], cr: 8, crnf: 4, crf: 4, cru: 4, crru:2});
-				setTimeout(done, 1000);
-			});
+            }
+			setTimeout(done, 1000);
 		});
 	});
     
@@ -2656,10 +2648,10 @@ describe('Testing Crashes', function(){
 		});
 	});
     
-    describe('Check crash', function(){
+    describe('Check crash metrics', function(){
 		it('should not have fourth crash', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -2667,12 +2659,26 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":3,"affected":0,"fatal":0,"nonfatal":0});
                 ob.should.have.property("crashes", {"total":0,"unique":0,"resolved":0,"unresolved":0,"fatal":0,"nonfatal":0,"news":0,"renewed":0,"os":{"Android":0, "Windows Phone":0, "iOS":0},"highest_app":""});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups").with.lengthOf(0);
-                
                 ob.should.have.property("data");
                 verifyMetrics(ob.data, {meta:[], cr: 8, crnf: 4, crf: 4, cru: 4, crru:2});
 				setTimeout(done, 1000);
 			});
+		});
+	});
+    
+    describe('Check crash data', function(){
+		it('should not have fourth crash', function(done){
+			request
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.expect(200)
+			.end(function(err, res){
+				if (err) return done(err);
+				var ob = JSON.parse(res.text);
+                ob.should.have.property("iTotalRecords", 0);
+                ob.should.have.property("iTotalDisplayRecords", 0);
+                ob.should.have.property("aaData").with.lengthOf(0);
+            }
+			setTimeout(done, 1000);
 		});
 	});
     
@@ -2690,10 +2696,11 @@ describe('Testing Crashes', function(){
 			});
 		});
 	});
-    describe('Verify reset', function(){
-		it('should success', function(done){
+    
+    describe('Verify reset metrics', function(){
+		it('should be empty', function(done){
 			request
-			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID+"&graph=1")
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
@@ -2701,10 +2708,25 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("users", {"total":0,"affected":0,"fatal":0,"nonfatal":0});
                 ob.should.have.property("crashes", {"total":0,"unique":0,"resolved":0,"unresolved":0,"fatal":0,"nonfatal":0,"news":0,"renewed":0,"os":{},"highest_app":""});
                 ob.should.have.property("loss", 0);
-                ob.should.have.property("groups", []);
                 ob.should.have.property("data", {});
 				setTimeout(done, 100)
 			});
+		});
+	});
+    
+    describe('Verify reset data', function(){
+		it('should be empty', function(done){
+			request
+			.get('/o?method=crashes&api_key='+API_KEY_ADMIN+"&app_id="+APP_ID)
+			.expect(200)
+			.end(function(err, res){
+				if (err) return done(err);
+				var ob = JSON.parse(res.text);
+                ob.should.have.property("iTotalRecords", 0);
+                ob.should.have.property("iTotalDisplayRecords", 0);
+                ob.should.have.property("aaData").with.lengthOf(0);
+            }
+			setTimeout(done, 1000);
 		});
 	});
 });
