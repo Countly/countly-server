@@ -163,7 +163,23 @@ window.CrashesView = countlyView.extend({
                 ]
             }));
 			this.dtable.stickyTableHeaders();
-			this.dtable.fnSort( [ [9,'desc'] ] );
+			this.dtable.fnSort( [ [6,'desc'] ] );
+            //dataTables_filter
+            $('.dataTables_filter input').unbind();
+            var timeout = null,
+                that = this;
+            $('.dataTables_filter input').bind('keyup', function(e) {
+                self.showLoader = true;
+                $this = this;
+                if(timeout)
+                {
+                    clearTimeout(timeout);
+                    timeout = null;
+                }
+                timeout = setTimeout(function(){
+                    that.dtable.fnFilter($this.value);   
+                }, 1000);
+            });     
             
             $("#crash-"+this.curMetric).parents(".big-numbers").addClass("active");
             $(".widget-content .inner").click(function () {
