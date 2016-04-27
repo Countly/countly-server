@@ -1,5 +1,5 @@
 /* CRASHES */
-.crashes {margin-top: -16px; overflow: auto;}
+.crashes {margin-top: -16px; overflow: auto; position: relative;}
 .crash-data {margin-top: -20px; overflow: auto;}
 .crashes .dataTable-top {border-radius: 0;}
 .crashes tbody tr {cursor: pointer;}
@@ -70,6 +70,9 @@
 #crash-share-list #crash-share-url {width: 100%; height: 18px; font-size: 12px;}
 #crash-share-list input[type=checkbox] {float: left; height: 18px; vertical-align: middle;}
 #crash-share-list li span {line-height: 23px;}
+
+.crashes #loader { position:absolute; left:50%; top:50%; margin-top:-24px; margin-left:-24px; width:48px; height:48px; font-size:48px;}
+.crashes #loader i {font-size:48px; color: #888;}
 
 .crash-stack #comment{width:100%; min-height: 100px;}
 .crash-stack #comments .comment{margin-bottom: 20px; border-bottom: 1px dotted #999;}

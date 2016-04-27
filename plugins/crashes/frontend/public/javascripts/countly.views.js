@@ -181,6 +181,20 @@ window.CrashesView = countlyView.extend({
                 }, 1000);
             });     
             
+            var loader = $(this.el).find("#loader");
+            loader.show();
+            var loadTimeout = null;
+            this.dtable.on("processing", function(e, oSettings, bShow){
+                if(bShow && self.showLoader){
+                    self.showLoader = false;
+                    loader.show();
+                }
+                else
+                    loader.hide();
+            });
+            
+            setTimeout(function(){$(".dataTables_filter input").attr("placeholder",jQuery.i18n.map["crashes.search"]);},1000);
+            
             $("#crash-"+this.curMetric).parents(".big-numbers").addClass("active");
             $(".widget-content .inner").click(function () {
 				$(".big-numbers").removeClass("active");
