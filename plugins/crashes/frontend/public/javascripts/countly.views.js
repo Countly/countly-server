@@ -250,9 +250,7 @@ window.CrashesView = countlyView.extend({
                         number.css({"color":$(this).parent().find(".bar-inner:first-child").css("background-color")});
                     }
                 });
-            
-                var crashData = countlyCrashes.getData();
-                CountlyHelpers.refreshTable(self.dtable, crashData.groups);
+                self.dtable.fnDraw(false);
                 var chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric]);
                 countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
                 app.localize();
