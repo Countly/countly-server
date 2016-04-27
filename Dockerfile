@@ -11,7 +11,7 @@ RUN  useradd -r -M -U -d /opt/countly -s /bin/false countly && \
 	/opt/countly/bin/countly.install.sh
 
 ## Add MongoDB data volume  
-VOLUME ["/data"]
+VOLUME ["/var/lib/mongodb"]
 
 # Change MongoDB folder permissions and add services folders
 RUN chown -R mongodb:mongodb /data && \
