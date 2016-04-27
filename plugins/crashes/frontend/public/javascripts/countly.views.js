@@ -136,7 +136,27 @@ window.CrashesView = countlyView.extend({
 			});
 			countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
 			this.dtable = $('#crash-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": crashData.groups,
+                "bServerSide": true,
+                "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key="+countlyGlobal.member.api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID+"&method=crashes",
+                "fnServerData": function ( sSource, aoData, fnCallback ) {
+                    $.ajax({
+                        "dataType": 'jsonp',
+                        "type": "POST",
+                        "url": sSource,
+                        "data": aoData,
+                        "success": function(data){
+                                fnCallback(data);
+                        }
+                    });
+                },
+                "fnServerParams": function ( aoData ) {
+                    if(self.filter){
+                        aoData.push( { "name": "filter", "value": self.filter } );
+                    }
+                    if(self._query){
+                        aoData.push({ "name": "query", "value": JSON.stringify(self._query) });
+                    }
+                },
 				"fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
 					$(nRow).attr("id", aData._id);
 					if(aData.is_resolved)

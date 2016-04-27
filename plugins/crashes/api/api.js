@@ -601,6 +601,75 @@ plugins.setConfigs("crashes", {
                             });
                         });
 					});
+                }
+                else{
+                    var columns = ["nonfatal", "session", "reports", "users", "os", "name", "lastTs", "latest_version", "is_resolved"];
+                    var filter = {};
+                    if(params.qstring.query && params.qstring.query != ""){
+                        try{
+                            filter = JSON.parse(params.qstring.query);
+                        }
+                        catch(ex){    
+                            console.log("Cannot parse crashes query", params.qstring.query);
+                        }
+                    }
+                    if(params.qstring.sSearch && params.qstring.sSearch != ""){
+                        filter["name"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};
+                        //filter["$text"] = { "$search": "\""+params.qstring.sSearch+"\"" };
+                    }
+                    if(params.qstring.filter && params.qstring.filter != ""){
+                        switch (params.qstring.filter) {
+                            case "crash-resolved":
+                                filter["is_resolved"] = true;
+                                break;
+                            case "crash-hidden":
+                                filter["is_hidden"] = true;
+                                break;
+                            case "crash-unresolved":
+                                filter["is_resolved"] = false;
+                                break;
+                            case "crash-nonfatal":
+                                filter["nonfatal"] = true;
+                                break;
+                            case "crash-fatal":
+                                filter["nonfatal"] = false;
+                                break;
+                            case "crash-new":
+                                filter["is_new"] = true;
+                                break;
+                            case "crash-viewed":
+                                filter["is_new"] = false;
+                                break;
+                            case "crash-reoccurred":
+                                filter["is_renewed"] = true;
+                                break;
+                        }
+                        
+                        if(params.qstring.filter !== "crash-hidden"){
+                            filter["is_hidden"] = {$ne: true};
+                        }
+                    }
+                    filter["_id"] = {$ne:"meta"};
+                    common.db.collection('app_crashgroups' + params.app_id).count({},function(err, total) {
+                        total--;
+                        var cursor = common.db.collection('app_crashgroups' + params.app_id).find(filter,{uid:1, is_new:1, is_renewed:1, is_hidden:1, os:1, not_os_specific:1, name:1, error:1, users:1, lastTs:1, reports:1, latest_version:1, is_resolved:1, resolved_version:1, nonfatal:1, session:1});
+                        cursor.count(function (err, count) {
+                            if(params.qstring.iDisplayStart && params.qstring.iDisplayStart != 0)
+                                cursor.skip(parseInt(params.qstring.iDisplayStart));
+                            if(params.qstring.iDisplayLength && params.qstring.iDisplayLength != -1)
+                                cursor.limit(parseInt(params.qstring.iDisplayLength));
+                            if(params.qstring.iSortCol_0 && params.qstring.sSortDir_0){
+                                var ob = {};
+                                ob[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
+                                cursor.sort(ob);
+                            }
+        
+                            cursor.toArray(function(err, res){
+                                res = res || [];
+                                common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:count, aaData:res});
+                            });
+                        });
+                    });
 				}
 			});
 			return true;
