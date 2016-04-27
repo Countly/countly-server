@@ -551,8 +551,8 @@ plugins.setConfigs("crashes", {
                         common.returnOutput(params, res);
                     });
                 }
-				else{
-					var result = {};
+				else if (params.qstring.graph){
+                    var result = {};
 					common.db.collection('app_users' + params.app_id).count({},function(err, total) {
 						result.users = {};
 						result.users.total = total-1;
@@ -595,15 +595,11 @@ plugins.setConfigs("crashes", {
 									}
 								}
                             }
-                            
-                            common.db.collection('app_crashgroups' + params.app_id).find({_id:{$ne:"meta"}},{uid:1, is_new:1, is_renewed:1, is_hidden:1, os:1, not_os_specific:1, name:1, error:1, users:1, lastTs:1, reports:1, latest_version:1, is_resolved:1, resolved_version:1, nonfatal:1, session:1}).toArray(function(err, res){
-                                result.groups = res || [];
-                                fetch.getTimeObj("crashdata", params, function(data){
-                                    result.data = data;
-                                    common.returnOutput(params, result);
-                                })
+                            fetch.getTimeObj("crashdata", params, function(data){
+                                result.data = data;
+                                common.returnOutput(params, result);
                             });
-                        })
+                        });
 					});
 				}
 			});

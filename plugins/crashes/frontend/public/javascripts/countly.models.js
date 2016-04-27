@@ -101,14 +101,12 @@
 					"api_key":countlyGlobal.member.api_key,
 					"app_id":countlyCommon.ACTIVE_APP_ID,
                     "period":_period,
-					"method":"crashes"
+					"method":"crashes",
+                    "graph":1
 				},
 				dataType:"jsonp",
 				success:function (json) {
 					_crashData = json;
-                    for(var i = 0; i < _crashData.groups.length; i++){
-                        _list[_crashData.groups[i]._id] = _crashData.groups[i].name;
-                    }
                     _crashTimeline = json.data;
                     setMeta();
 					if(_crashData.crashes.latest_version == "")
@@ -333,14 +331,12 @@
 					"api_key":countlyGlobal.member.api_key,
 					"app_id":countlyCommon.ACTIVE_APP_ID,
                     "period":_period,
-					"method":"crashes"
+					"method":"crashes",
+                    "graph":1
 				},
 				dataType:"jsonp",
 				success:function (json) {
 					_crashData = json;
-                    for(var i = 0; i < _crashData.groups.length; i++){
-                        _list[_crashData.groups[i]._id] = _crashData.groups[i].name;
-                    }
 					if(_crashData.crashes.latest_version == "")
 						_crashData.crashes.latest_version = "None";
 					if(_crashData.crashes.error == "")
