@@ -118,22 +118,6 @@ window.CrashesView = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
 			$("#"+this.filter).addClass("selected").addClass("active");
-			$.fn.dataTableExt.afnFiltering.push(function( oSettings, aData, iDataIndex ) {
-				if(!$(oSettings.nTable).hasClass("crash-filter"))
-					return true;
-				if((self.filter != "crash-hidden" && aData[2]) ||
-                    (self.filter == "crash-resolved" && !aData[11]) || 
-                    (self.filter == "crash-unresolved" && aData[11]) || 
-                    (self.filter == "crash-nonfatal" && !aData[3]) || 
-                    (self.filter == "crash-fatal" && aData[3]) || 
-                    (self.filter == "crash-new" && !aData[0]) || 
-                    (self.filter == "crash-viewed" && aData[0]) || 
-                    (self.filter == "crash-reoccurred" && !aData[1]) || 
-                    (self.filter == "crash-hidden" && !aData[2])){
-					return false
-				}
-				return true;
-			});
 			countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
 			this.dtable = $('#crash-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "bServerSide": true,
@@ -167,9 +151,6 @@ window.CrashesView = countlyView.extend({
                         $(nRow).addClass("renewedcrash");
 				},
                 "aoColumns": [
-					{ "mData":function(row, type){return (row.is_new) ? true : false;}, "bVisible": false} ,
-					{ "mData": function(row, type){return (row.is_renewed) ? true : false;}, "bVisible": false} ,
-					{ "mData": function(row, type){return (row.is_hidden) ? true : false;}, "bVisible": false} ,
 					{ "mData": function(row, type){if(type == "display"){if(row.nonfatal) return jQuery.i18n.map["crashes.nonfatal"]; else return jQuery.i18n.map["crashes.fatal"];}else return (row.nonfatal) ? true : false;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.fatal"], "sWidth":"80px"} ,
 					{ "mData": function(row, type){if(type == "display"){if(row.session){return ((Math.round(row.session.total/row.session.count)*100)/100)+" "+jQuery.i18n.map["crashes.sessions"];} else {return jQuery.i18n.map["crashes.first-crash"];}}else{if(row.session)return row.session.total/row.session.count; else return 0;}}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.frequency"], "sWidth":"80px" },
 					{ "mData": "reports", "sType":"numeric", "sTitle": jQuery.i18n.map["crashes.reports"], "sWidth":"80px" },
