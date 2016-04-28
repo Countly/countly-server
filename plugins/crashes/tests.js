@@ -151,7 +151,6 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("crashes", {"total":1,"unique":1,"resolved":0,"unresolved":1,"fatal":0,"nonfatal":1,"news":1,"renewed":0,"os":{"Android":1},"highest_app":"1.1"});
                 ob.should.have.property("loss", 0);
                 ob.should.have.property("data");
-                CRASHES[0] = crash._id;
                 verifyMetrics(ob.data, {meta:[], cr: 1, crnf: 1, cru: 1});
 				setTimeout(done, 1000);
 			});
@@ -180,7 +179,6 @@ describe('Testing Crashes', function(){
                 crash.should.have.property("os", 'Android');
                 crash.should.have.property("reports", 1);
                 crash.should.have.property("users", 1);
-                ob.should.have.property("data");
                 CRASHES[0] = crash._id;
 				setTimeout(done, 1000);
 			});
@@ -926,8 +924,8 @@ describe('Testing Crashes', function(){
                         CRASHES[2] = crash._id;
                     }
                 }
-            }
-			setTimeout(done, 1000);
+                setTimeout(done, 1000);
+            });
 		});
 	});
     
@@ -2173,8 +2171,8 @@ describe('Testing Crashes', function(){
                         CRASHES[3] = crash._id;
                     }
                 }
-            }
-			setTimeout(done, 1000);
+                setTimeout(done, 1000);
+            });
 		});
 	});
     
@@ -2339,8 +2337,8 @@ describe('Testing Crashes', function(){
                         crash.should.have.property("users", 2);
                     }
                 }
-            }
-			setTimeout(done, 1000);
+                setTimeout(done, 1000);
+            });
 		});
 	});
     
@@ -2480,8 +2478,8 @@ describe('Testing Crashes', function(){
                         crash.should.have.property("users", 2);
                     }
                 }
-            }
-			setTimeout(done, 1000);
+                setTimeout(done, 1000);
+            });
 		});
 	});
     
@@ -2561,8 +2559,8 @@ describe('Testing Crashes', function(){
                         crash.should.have.property("users", 2);
                     }
                 }
-            }
-			setTimeout(done, 1000);
+                setTimeout(done, 1000);
+            });
 		});
 	});
     
@@ -2625,9 +2623,8 @@ describe('Testing Crashes', function(){
                 crash3.should.have.property("os", 'iOS');
                 crash3.should.have.property("reports", 2);
                 crash3.should.have.property("users", 2);
-                
-            }
-			setTimeout(done, 1000);
+                setTimeout(done, 1000); 
+            });
 		});
 	});
     
@@ -2677,8 +2674,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("iTotalRecords", 0);
                 ob.should.have.property("iTotalDisplayRecords", 0);
                 ob.should.have.property("aaData").with.lengthOf(0);
-            }
-			setTimeout(done, 1000);
+                setTimeout(done, 1000);
+            });
 		});
 	});
     
@@ -2725,8 +2722,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("iTotalRecords", 0);
                 ob.should.have.property("iTotalDisplayRecords", 0);
                 ob.should.have.property("aaData").with.lengthOf(0);
-            }
-			setTimeout(done, 1000);
+                setTimeout(done, 1000);
+            });
 		});
 	});
 });
