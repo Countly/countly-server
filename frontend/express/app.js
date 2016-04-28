@@ -42,7 +42,8 @@ plugins.setConfigs("frontend", {
     production: true,
     theme: "",
     session_timeout: 30*60*1000,
-    use_google: true
+    use_google: true,
+    code: "http://code.count.ly/"
 });
 
 var countlyDb = plugins.dbConnection(countlyConfig);

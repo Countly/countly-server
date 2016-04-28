@@ -2486,6 +2486,26 @@ window.ManageAppsView = countlyView.extend({
                 }
             });
         });
+        
+        if(countlyGlobal["config"] && countlyGlobal["config"].code && countlyGlobal["config"].code != "" && $("#code-countly").length){
+            $("#code-countly").show();
+            var url = countlyGlobal["config"].code;
+            if(url.indexOf("://") === -1)
+                url = "http://"+url;
+            if(url.indexOf("/", url.length-1) === -1)
+                url = url+"/";
+                
+            $.getScript( url+"js/sdks.js", function( data, textStatus, jqxhr ) {
+                var server = (location.protocol || "http:")+location.hostname;
+                var app_id = $("#app-edit-id").val();
+                if(sdks && app_id && app_id != "" && countlyGlobal["apps"][app_id] && server){
+                    for(var i in sdks){
+                        if(sdks[i].integration)
+                            $("#code-countly .sdks").append("<a href='"+url+"integration-"+i+".html?server="+server+"&app_key="+countlyGlobal["apps"][app_id].key+"' target='_blank'>"+sdks[i].name+"</a>");
+                    }
+                }
+            });
+        }
     }
 });
 

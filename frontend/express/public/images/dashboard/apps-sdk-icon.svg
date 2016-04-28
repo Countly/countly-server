@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="130px" height="138px" viewBox="0 0 130 138" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 3.7.2 (28276) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 5</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <filter x="-50%" y="-50%" width="200%" height="200%" filterUnits="objectBoundingBox" id="filter-1">
+            <feOffset dx="0" dy="20" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="11" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.0258435236 0" type="matrix" in="shadowBlurOuter1" result="shadowMatrixOuter1"></feColorMatrix>
+            <feMerge>
+                <feMergeNode in="shadowMatrixOuter1"></feMergeNode>
+                <feMergeNode in="SourceGraphic"></feMergeNode>
+            </feMerge>
+        </filter>
+        <path d="M49.5532622,38.6572109 L83.1776748,59.9698873 C86.8015507,62.2668641 86.8844892,66.1192913 83.364591,68.5733612 L49.5660363,92.1376847 C46.0453913,94.5922754 40.3412015,94.585176 36.8245444,92.1212483 L2.80044981,68.2824405 C-0.715836865,65.8187723 -0.627465519,61.9705905 3.00552761,59.6824397 L36.4197763,38.6373014 C40.0493243,36.3513203 45.9292053,36.3601194 49.5532622,38.6572109 Z" id="path-2"></path>
+        <mask id="mask-3" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="-2" y="-2" width="89.7301242" height="61.0453344">
+            <rect x="-1.77912036" y="34.9285871" width="89.7301242" height="61.0453344" fill="white"></rect>
+            <use xlink:href="#path-2" fill="black"></use>
+        </mask>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Version_1" transform="translate(-449.000000, -489.000000)">
+            <g id="Group-4" transform="translate(471.000000, 490.000000)">
+                <g id="Group-5">
+                    <g id="Group-+-Group-Copy-2-+-Group-Copy" filter="url(#filter-1)">
+                        <g id="Group-Copy">
+                            <g id="Rectangle-944">
+                                <use fill-opacity="0" fill="#9CE1A0" fill-rule="evenodd" xlink:href="#path-2"></use>
+                                <use stroke="#BEBEBE" mask="url(#mask-3)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5" xlink:href="#path-2"></use>
+                            </g>
+                            <path d="M49.5532622,20.7974879 L83.1776748,42.1101643 C86.8015507,44.4071411 86.8844892,48.2595683 83.364591,50.7136382 L49.5660363,74.2779617 C46.0453913,76.7325524 40.3412015,76.725453 36.8245444,74.2615253 L2.80044981,50.4227175 C-0.715836865,47.9590492 -0.627465519,44.1108675 3.00552761,41.8227167 L36.4197763,20.7775784 C40.0493243,18.4915973 45.9292053,18.5003964 49.5532622,20.7974879 Z" id="Rectangle-944" fill="#58AEFF"></path>
+                            <path d="M36.4197763,2.07991414 C40.0493243,-0.206066927 45.9292053,-0.197267817 49.5532622,2.09982367 L83.1776748,23.4125001 C86.8015507,25.7094769 86.8844892,29.561904 83.364591,32.015974 L49.5660363,55.5802975 C46.0453913,58.0348881 40.3412015,58.0277888 36.8245444,55.563861 L2.80044981,31.7250533 C-0.715836865,29.261385 -0.627465519,25.4132033 3.00552761,23.1250524 L36.4197763,2.07991414 L36.4197763,2.07991414 Z" id="Rectangle-944" fill="#4675C8"></path>
+                        </g>
+                    </g>
+                    <text id="SDK" opacity="0.382229478" font-family="ProximaNova-Semibold, Proxima Nova" font-size="15.0002944" font-weight="500" letter-spacing="1.10000002" fill="#FFFFFF">
+                        <tspan x="28" y="33">SDK</tspan>
+                    </text>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
