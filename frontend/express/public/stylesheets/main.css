@@ -386,12 +386,13 @@ a:active { color:inherit; }
 #add-new-app .hint,
 .app-details .hint { margin-top: 5px; font-size:11px; color:#B7B6B6; clear: both; }
 
-#code-countly {background-color: #fff; border-radius: 4px; border: 1px solid #C2C2C2; padding: 30px;}
+#code-countly {background-color: #fff; border-radius: 2px; padding: 20px; border: 1px solid #C2C2C2; margin-left: 187px;}
 #code-countly h3 {font-size: 16px; color: #636363; margin-top: 0px;}
-#code-countly p {font-size: 15px; color: #AFAFAF;}
+#code-countly p {font-size: 14px; line-height: 20px; color: #AFAFAF;}
 #code-countly p.select-platforms {font-size: 12px; text-transform:uppercase; color: #D4D4D4;}
 #code-countly .sdks {overflow: auto;}
-#code-countly .sdks a{color:#779740; float: left; text-decoration: none; font-size: 14px; margin-right: 20px;}
+#code-countly .sdks a{color: #669140; float: left; text-decoration: none; font-size: 14px; margin-right: 20px;}
+#code-countly .sdks a:hover { text-decoration: underline; }
 #code-countly-content {margin-left: 135px;}
 #code-countly-logo {background-image: url('../images/dashboard/apps-sdk-icon.svg'); float: left; width: 100px; height:100px; background-repeat: no-repeat; background-position: 50% 0%;}
 

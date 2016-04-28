@@ -2501,7 +2501,7 @@ window.ManageAppsView = countlyView.extend({
                 if(sdks && app_id && app_id != "" && countlyGlobal["apps"][app_id] && server){
                     for(var i in sdks){
                         if(sdks[i].integration)
-                            $("#code-countly .sdks").append("<a href='"+url+"integration-"+i+".html?server="+server+"&app_key="+countlyGlobal["apps"][app_id].key+"' target='_blank'>"+sdks[i].name+"</a>");
+                            $("#code-countly .sdks").append("<a href='"+url+"integration-"+i+".html?server="+server+"&app_key="+countlyGlobal["apps"][app_id].key+"' target='_blank'>"+sdks[i].name.replace("SDK", "")+"</a>");
                     }
                 }
             });
