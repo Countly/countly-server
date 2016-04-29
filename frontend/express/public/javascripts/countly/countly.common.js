@@ -878,7 +878,6 @@
 		var ret = {"data":[],"label":label};
         countlyCommon.periodObj = getPeriodObj();
         var periodMin, periodMax, dateob;
-			
 		if(countlyCommon.periodObj.isSpecialPeriod){
 			periodMin = 0;
             periodMax = (countlyCommon.periodObj.daysInPeriod);
@@ -887,8 +886,8 @@
 			dateob = {timestart:dateob1.timestart, timeend:dateob2.timeend, range:"d"};
 		}
 		else{
-			periodMin = countlyCommon.periodObj.periodMin-1;
-            periodMax = countlyCommon.periodObj.periodMax;
+			periodMin = countlyCommon.periodObj.periodMin;
+            periodMax = countlyCommon.periodObj.periodMax+1;
 			dateob = countlyCommon.processPeriod(countlyCommon.periodObj.activePeriod.toString());
 		}
 		var res = [], 

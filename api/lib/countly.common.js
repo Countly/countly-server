@@ -16,7 +16,7 @@ var countlyCommon = {},
 
     // Public Methods
 
-    countlyCommon.setTimezone = function(appTimezone, enforceEndOfCalendarPeriod) {
+    countlyCommon.setTimezone = function(appTimezone) {
         _appTimezone = appTimezone;
 
         var currTime = new Date();
@@ -24,12 +24,12 @@ var countlyCommon = {},
 
         _currMoment = moment(currTime);
 
-        countlyCommon.periodObj = getPeriodObj(enforceEndOfCalendarPeriod);
+        countlyCommon.periodObj = getPeriodObj();
     };
 
-    countlyCommon.setPeriod = function(period, enforceEndOfCalendarPeriod) {
+    countlyCommon.setPeriod = function(period) {
         _period = period;
-        countlyCommon.periodObj = getPeriodObj(enforceEndOfCalendarPeriod);
+        countlyCommon.periodObj = getPeriodObj();
     };
 
     // Calculates the percent change between previous and current values.
@@ -849,13 +849,13 @@ var countlyCommon = {},
     }
 
     // Returns a period object used by all time related data calculation functions.
-    function getPeriodObj(enforceEndOfCalendarPeriod) {
+    function getPeriodObj() {
         var year = _currMoment.year(),
             month = _currMoment.month() + 1,
             day = _currMoment.date(),
             hour = _currMoment.hours(),
-            endTimestamp = _currMoment.unix(),
-            startTimestamp = _currMoment.unix(),
+            endTimestamp = moment(_currMoment).hours(23).minutes(59).seconds(59).unix(),
+            startTimestamp = moment(_currMoment).hours(0).minutes(0).seconds(0).unix(),
             activePeriod = "NA",
             previousPeriod = "NA",
             periodMax = "NA",
@@ -879,13 +879,13 @@ var countlyCommon = {},
             case "month": {
                 activePeriod = year;
                 previousPeriod = year - 1;
-                periodMax = enforceEndOfCalendarPeriod ? _currMoment.endOf('year').month() : month;
+                periodMax = month;
                 periodMin = 1;
                 dateString = "MMM";
                 daysInPeriod = parseInt(_currMoment.format("DDD"),10);
+                startTimestamp = moment(_currMoment).month(1).date(1).hours(0).minutes(0).seconds(0).unix();
 
                 _currMoment.subtract('days', daysInPeriod);
-                startTimestamp = _currMoment.unix();
                 for (var i = 0; i < daysInPeriod; i++) {
                     _currMoment.add('days', 1);
                     currPeriodArr.push(_currMoment.format("YYYY.M.D"));
@@ -902,12 +902,12 @@ var countlyCommon = {},
             }
             case "day": {
                 activePeriod = _currMoment.format("YYYY.M");
+                startTimestamp = moment(_currMoment).date(1).hours(0).minutes(0).seconds(0).unix();
                 _currMoment.subtract('days', day);
-                startTimestamp = _currMoment.unix();
                 previousPeriod = _currMoment.format("YYYY.M");
                 _currMoment.add('days', day);
 
-                periodMax = enforceEndOfCalendarPeriod ? _currMoment.endOf('month').date() : day;
+                periodMax = day;
                 periodMin = 1;
                 dateString = "D MMM";
                 daysInPeriod = day;
@@ -930,7 +930,6 @@ var countlyCommon = {},
             case "hour": {
                 activePeriod = _currMoment.format("YYYY.M.D");
                 _currMoment.subtract('days', 1);
-                startTimestamp = _currMoment.unix();
                 previousPeriod = _currMoment.format("YYYY.M.D");
                 _currMoment.add('days', 1);
 
@@ -945,11 +944,11 @@ var countlyCommon = {},
             }
             case "yesterday": {
                 _currMoment.subtract('days', 1);
-                endTimestamp = _currMoment.unix();
+                endTimestamp = moment(_currMoment).hours(23).minutes(59).seconds(59).unix();
+                startTimestamp = moment(_currMoment).hours(0).minutes(0).seconds(0).unix();
                 activePeriod = _currMoment.format("YYYY.M.D");
                 _currMoment.add('days', 1);
                 _currMoment.subtract('days', 2);
-                startTimestamp = _currMoment.unix();
                 previousPeriod = _currMoment.format("YYYY.M.D");
                 _currMoment.add('days', 2);
 
@@ -989,7 +988,7 @@ var countlyCommon = {},
         
         if(isSpecialPeriod){
             _currMoment.subtract('days', daysInPeriod-1);
-            startTimestamp = _currMoment.unix();
+            startTimestamp = moment(_currMoment).hours(0).minutes(0).seconds(0).unix();
             _currMoment.add('days', daysInPeriod-1);
         }
 
@@ -998,8 +997,8 @@ var countlyCommon = {},
             var fromDate = new Date(_period[0]),
                 toDate = new Date(_period[1]);
 
-            startTimestamp = fromDate.getTime()/1000;
-            endTimestamp = toDate.getTime()/1000;
+            startTimestamp = moment(fromDate).hours(0).minutes(0).seconds(0).unix();
+            endTimestamp = moment(toDate).hours(23).minutes(59).seconds(59).unix();
             fromDate.setTimezone(_appTimezone);
             toDate.setTimezone(_appTimezone);
 
