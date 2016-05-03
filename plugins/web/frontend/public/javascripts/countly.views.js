@@ -212,16 +212,16 @@ window.WebDashboardView = countlyView.extend({
 				{ "mData": function(row, type){if(type == "display") return (row["ls"]) ? countlyCommon.formatTimeAgo(row["ls"]) : jQuery.i18n.map["web.never"]; else return (row["ls"]) ? row["ls"] : 0;}, "sType":"numeric", "sTitle": jQuery.i18n.map["web.last-seen"] , "bSortable":false },
 				{ "mData": function(row){return countlyCommon.formatTime((row["tsd"]) ? parseInt(row["tsd"]) : 0);}, "sType":"numeric", "sTitle": jQuery.i18n.map["web.time-spent"], "bSortable":false });
             
-            this.dtable = $('#last-visitors').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            this.latestdtable = $('#last-visitors').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": users,
                 "iDisplayLength": 10,
                 "aoColumns": columns
             }));
-			this.dtable.stickyTableHeaders();
-            this.dtable.fnSort( [ [sort,'desc'] ] );
-            $(".dataTable-top .search-table-data").hide();
-            $(".dataTable-top .save-table-data").hide();
-            $(".dataTable-top").append("<div style='font:15px Ubuntu,Helvetica,sans-serif; color:#636363; text-shadow:0 1px #F6F6F6; letter-spacing:-1px; margin-left:10px; margin-top: 8px; text-transform: uppercase;'>"+jQuery.i18n.map["web.latest-visitors"]+"</div>");
+			this.latestdtable.stickyTableHeaders();
+            this.latestdtable.fnSort( [ [sort,'desc'] ] );
+            $("#last-visitors_wrapper .dataTable-top .search-table-data").hide();
+            $("#last-visitors_wrapper .dataTable-top .save-table-data").hide();
+            $("#last-visitors_wrapper .dataTable-top").append("<div style='font:15px Ubuntu,Helvetica,sans-serif; color:#636363; text-shadow:0 1px #F6F6F6; letter-spacing:-1px; margin-left:10px; margin-top: 8px; text-transform: uppercase;'>"+jQuery.i18n.map["web.latest-visitors"]+"</div>");
             
             $(this.selectedView).parents(".big-numbers").addClass("active");
             this.pageScript();
@@ -229,6 +229,9 @@ window.WebDashboardView = countlyView.extend({
             if (!isDateChange) {
                 this.drawGraph();
             }
+        }
+        if(!countlyGlobal["config"].use_google){
+            this.countryTable(isRefresh);
         }
     },
     restart:function () {
@@ -243,7 +246,7 @@ window.WebDashboardView = countlyView.extend({
             }
             self.renderCommon(true);
             
-            CountlyHelpers.refreshTable(self.dtable, countlyWebDashboard.getLatestUsers());
+            CountlyHelpers.refreshTable(self.latestdtable, countlyWebDashboard.getLatestUsers());
 
             var newPage = $("<div>" + self.template(self.templateData) + "</div>");
             $(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
@@ -313,6 +316,34 @@ window.WebDashboardView = countlyView.extend({
                 '<div class="country-name">'+country.country+'</div>'+
                 '<div class="total">'+country[self.maps[self.curMap].metric]+'</div>'+
             '</div>');
+        }
+    },
+    countryTable:function(refresh){
+        var self = this;
+        if(!refresh){
+            $(".map-list").after('<table id="countries-alternative" class="d-table help-zone-vb" cellpadding="0" cellspacing="0"></table>');
+            this.country_dtable = $('#countries-alternative').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": self.locationData,
+                "iDisplayLength": 10,
+                "aoColumns": [
+                        { "mData": "country_flag", "sType":"string", "sTitle": jQuery.i18n.map["countries.table.country"]},
+                        { "mData": "t", "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-sessions"]},
+                        { "mData": "u", "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-users"]},
+                        { "mData": "n", "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.new-users"]},
+                        
+                    ]
+            }));
+            this.country_dtable.stickyTableHeaders();
+            this.country_dtable.fnSort( [ [1,'desc'] ] );
+            $("#countries-alternative_wrapper .dataTable-top .search-table-data").hide();
+            $("#countries-alternative_wrapper .dataTable-top .save-table-data").hide();
+            $("#countries-alternative_wrapper .dataTable-top .dataTables_paginate").hide();
+            $("#countries-alternative_wrapper .dataTable-top .DTTT_container").hide();
+            $("#countries-alternative_wrapper .dataTable-top").append("<div style='font:13px Ubuntu,Helvetica,sans-serif; color:#636363; text-shadow:0 1px #F6F6F6; margin-right:10px; padding: 10px; float: right;'><a href='#/analytics/countries'>"+jQuery.i18n.map["common.go-to-countries"]+"&nbsp;&nbsp;&nbsp;<i class='fa fa-chevron-right' aria-hidden='true'></i></a></div>");
+            $("#countries-alternative_wrapper .dataTable-top").append("<div style='font:15px Ubuntu,Helvetica,sans-serif; color:#636363; text-shadow:0 1px #F6F6F6; letter-spacing:-1px; margin-left:10px; margin-top: 8px; text-transform: uppercase;'>"+jQuery.i18n.map["sidebar.analytics.countries"]+"</div>");
+        }
+        else{
+            CountlyHelpers.refreshTable(self.country_dtable, countlyLocation.getLocationData({maxCountries:10}));
         }
     },
     destroy:function () {
