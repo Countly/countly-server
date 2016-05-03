@@ -2522,9 +2522,7 @@ window.ManageAppsView = countlyView.extend({
         
         if(countlyGlobal["config"] && countlyGlobal["config"].code && countlyGlobal["config"].code != "" && $("#code-countly").length){
             $("#code-countly").show();
-            var url = countlyGlobal["config"].code;
-            if(url.indexOf("://") === -1)
-                url = "http://"+url;
+            var url = (location.protocol || "http:")+"//"+countlyGlobal["config"].code.split("://").pop(); 
             if(url.indexOf("/", url.length-1) === -1)
                 url = url+"/";
                 

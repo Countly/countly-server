@@ -43,7 +43,7 @@ plugins.setConfigs("frontend", {
     theme: "",
     session_timeout: 30*60*1000,
     use_google: true,
-    code: "http://code.count.ly/"
+    code: "countly.github.io/countly-code-generator/"
 });
 
 var countlyDb = plugins.dbConnection(countlyConfig);
