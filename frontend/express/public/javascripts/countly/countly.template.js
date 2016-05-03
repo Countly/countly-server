@@ -1359,6 +1359,39 @@ window.CountriesView = countlyView.extend({
                 }
             });
             
+            $("#country-toggle").on('click', function () {
+                if ($(this).hasClass("country_selected")) {
+                    self.cityView = false;
+                    if(countlyGlobal["config"].use_google)
+                        countlyLocation.drawGeoChart({height:450, metric:self.maps[self.curMap]});
+                    $(this).removeClass("country_selected");
+                    self.refresh(true);
+                    store.set("countly_location_city", false);
+                    if(countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID] && countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].country)
+                        $(this).text(jQuery.i18n.map["common.show"]+" "+countlyLocation.getCountryName(countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].country));
+                    else
+                        $(this).text(jQuery.i18n.map["common.show"]+" "+jQuery.i18n.map["countries.table.country"]);
+                } else {
+                    app.countriesView.cityView = true;
+                    if(countlyGlobal["config"].use_google)
+                        countlyCity.drawGeoChart({height:450, metric:self.maps[self.curMap]});
+                    $(this).addClass("country_selected");
+                    self.refresh(true);
+                    store.set("countly_location_city", true);
+                    $(this).html('<i class="fa fa-chevron-left" aria-hidden="true"></i>'+jQuery.i18n.map["countries.back-to-list"]);
+                }
+            });
+            
+            if(self.cityView){
+                $("#country-toggle").html('<i class="fa fa-chevron-left" aria-hidden="true"></i>'+jQuery.i18n.map["countries.back-to-list"]).addClass("country_selected");
+            }
+            else{
+                if(countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID] && countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].country)
+                    $("#country-toggle").text(jQuery.i18n.map["common.show"]+" "+countlyLocation.getCountryName(countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].country));
+                else
+                    $("#country-toggle").text(jQuery.i18n.map["common.show"]+" "+jQuery.i18n.map["countries.table.country"]);
+            }
+            
             $(".geo-switch .cly-button-group .icon-button").click(function(){
                 $(".geo-switch .cly-button-group .icon-button").removeClass("active");
                 $(this).addClass("active");
@@ -5022,7 +5055,6 @@ var AppRouter = Backbone.Router.extend({
         });
     },
     localize:function (el) {
-
         var helpers = {
             onlyFirstUpper:function (str) {
                 return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();

@@ -319,7 +319,7 @@ a:active { color:inherit; }
 			.map-list-item .total { float:right; color:#646464; text-shadow:0 1px #FFF; font:18px Oswald; margin-right:10px; line-height:145%; }
 			.map-list .country-name { width:128px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; float:left; padding-top:4px; color:#646464; text-shadow:0 1px #FFF; font:16px Ubuntu,Helvetica,sans-serif; line-height:111%; }
 			.map-list .bar { float:left; margin-left:10px; height:15px; margin-top:2px; background-color:#333; }
-
+            #country-toggle {font-size:12px;}
 		.graph { font:14px Oswald; z-index:1; }
 		.graph table tr:nth-child(n+10){ display:none; }
 		.pie-chart-container { float:left; width:50%; position:relative; height:360px; }
