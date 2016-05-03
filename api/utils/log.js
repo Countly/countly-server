@@ -27,9 +27,10 @@
  * - if error happened, arg1 is a first argument AFTER error, it's not an error
  */
 
-var prefs = require('../config.js', 'dont-enclose').logging,
-	colors = require('colors'),
-	deflt = (prefs && prefs.default) ?  prefs.default : 'error';
+var prefs = require('../config.js', 'dont-enclose').logging || {};
+prefs.default = prefs.default || "warn";
+var colors = require('colors');
+var deflt = (prefs && prefs.default) ?  prefs.default : 'error';
 
 for (var level in prefs) {
 	if (prefs[level].sort) { prefs[level].sort(); }
