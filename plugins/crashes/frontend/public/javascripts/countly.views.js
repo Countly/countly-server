@@ -875,45 +875,47 @@ app.addPageScript("/crashes", function(){
 app.addPageScript("/drill#", function(){
     var drillClone;
     var self = app.drillView;
-	$("#drill-types").append('<div id="drill-type-crashes" style="padding: 6px 8px 7px 8px;" class="icon-button light">'+jQuery.i18n.map["crashes.title"]+'</div>');
-    $("#drill-type-crashes").on("click", function() {
-        if ($(this).hasClass("active")) {
-            return true;
-        }
-
-        $("#drill-types").find(".icon-button").removeClass("active");
-        $(this).addClass("active");
-        $("#event-selector").hide();
-
-        $("#drill-no-event").fadeOut();
-        $("#segmentation-start").fadeOut().remove();
-        $(this).parents(".cly-select").removeClass("dark");
-
-        $(".event-select.cly-select").find(".text").text("Select an Event");
-        $(".event-select.cly-select").find(".text").data("value","");
-
-        currEvent = "[CLY]_crash";
-
-        self.graphType = "line";
-        self.graphVal = "times";
-        self.filterObj = {};
-        self.byVal = "";
-        self.drillChartDP = {};
-        self.drillChartData = {};
-        self.activeSegmentForTable = "";
-        countlySegmentation.reset();
-
-        $("#drill-navigation").find(".menu[data-open=table-view]").hide();
-
-        $.when(countlySegmentation.initialize(currEvent)).then(function () {
-            $("#drill").replaceWith(drillClone.clone(true));
-            self.adjustFilters();
-            self.draw(true, false);
+    if(countlyGlobal["record_crashes"]){
+        $("#drill-types").append('<div id="drill-type-crashes" style="padding: 6px 8px 7px 8px;" class="icon-button light">'+jQuery.i18n.map["crashes.title"]+'</div>');
+        $("#drill-type-crashes").on("click", function() {
+            if ($(this).hasClass("active")) {
+                return true;
+            }
+    
+            $("#drill-types").find(".icon-button").removeClass("active");
+            $(this).addClass("active");
+            $("#event-selector").hide();
+    
+            $("#drill-no-event").fadeOut();
+            $("#segmentation-start").fadeOut().remove();
+            $(this).parents(".cly-select").removeClass("dark");
+    
+            $(".event-select.cly-select").find(".text").text("Select an Event");
+            $(".event-select.cly-select").find(".text").data("value","");
+    
+            currEvent = "[CLY]_crash";
+    
+            self.graphType = "line";
+            self.graphVal = "times";
+            self.filterObj = {};
+            self.byVal = "";
+            self.drillChartDP = {};
+            self.drillChartData = {};
+            self.activeSegmentForTable = "";
+            countlySegmentation.reset();
+    
+            $("#drill-navigation").find(".menu[data-open=table-view]").hide();
+    
+            $.when(countlySegmentation.initialize(currEvent)).then(function () {
+                $("#drill").replaceWith(drillClone.clone(true));
+                self.adjustFilters();
+                self.draw(true, false);
+            });
         });
-    });
-    setTimeout(function() {
-        drillClone = $("#drill").clone(true);
-    }, 0);
+        setTimeout(function() {
+            drillClone = $("#drill").clone(true);
+        }, 0);
+    }
 });
 
 $( document ).ready(function() {
