@@ -2520,11 +2520,9 @@ window.ManageAppsView = countlyView.extend({
             });
         });
         
-        if(countlyGlobal["config"] && countlyGlobal["config"].code && countlyGlobal["config"].code != "" && $("#code-countly").length){
+        if(countlyGlobal["config"] && countlyGlobal["config"].code && $("#code-countly").length){
             $("#code-countly").show();
-            var url = (location.protocol || "http:")+"//"+countlyGlobal["config"].code.split("://").pop(); 
-            if(url.indexOf("/", url.length-1) === -1)
-                url = url+"/";
+            var url = (location.protocol || "http:")+"//countly.github.io/countly-code-generator/"; 
                 
             $.getScript( url+"js/sdks.js", function( data, textStatus, jqxhr ) {
                 var server = (location.protocol || "http:")+location.hostname;
@@ -2532,7 +2530,7 @@ window.ManageAppsView = countlyView.extend({
                 if(sdks && app_id && app_id != "" && countlyGlobal["apps"][app_id] && server){
                     for(var i in sdks){
                         if(sdks[i].integration)
-                            $("#code-countly .sdks").append("<a href='"+url+"integration-"+i+".html?server="+server+"&app_key="+countlyGlobal["apps"][app_id].key+"' target='_blank'>"+sdks[i].name.replace("SDK", "")+"</a>");
+                            $("#code-countly .sdks").append("<a href='http://code.count.ly/integration-"+i+".html?server="+server+"&app_key="+countlyGlobal["apps"][app_id].key+"' target='_blank'>"+sdks[i].name.replace("SDK", "")+"</a>");
                     }
                 }
             });

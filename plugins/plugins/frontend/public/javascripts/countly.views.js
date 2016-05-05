@@ -108,6 +108,7 @@ window.ConfigurationsView = countlyView.extend({
             "frontend-session_timeout":jQuery.i18n.map["configs.frontend-session_timeout"],
             "frontend-theme":jQuery.i18n.map["configs.frontend-theme"],
             "frontend-use_google":jQuery.i18n.map["configs.frontend-use_google"],
+            "frontend-code":jQuery.i18n.map["configs.frontend-code"],
             "api-domain":jQuery.i18n.map["configs.api-domain"],
             "api-safe":jQuery.i18n.map["configs.api-safe"],
             "api-session_duration_limit":jQuery.i18n.map["configs.api-session_duration_limit"],
