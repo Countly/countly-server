@@ -88,8 +88,15 @@ var common = {},
     };
     
     common.convertToType = function(value){
+        //handle array values
+        if(Array.isArray(value)){
+            for(var i = 0; i <  value.length; i++){
+                value[i] = common.convertToType(value[i]);
+            }
+            return value;
+        }
         //if value can be a number
-        if (common.isNumber(value)) {
+        else if (common.isNumber(value)) {
             //check if it is string but is less than 16 length
             if(value.length && value.length <= 16)
                 //convert to number
