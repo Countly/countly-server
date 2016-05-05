@@ -2116,6 +2116,7 @@ window.ManageAppsView = countlyView.extend({
 
             if (jQuery.isEmptyObject(countlyGlobal['apps'])) {
                 $("#cancel-app-add").hide();
+                $("#manage-new-app").hide();
             } else {
                 $("#cancel-app-add").show();
             }
@@ -5171,6 +5172,11 @@ var AppRouter = Backbone.Router.extend({
     onAppManagementSwitch:function(appId, type){
         for(var i = 0; i < this.appManagementSwitchCallbacks.length; i++){
             this.appManagementSwitchCallbacks[i](appId, type || countlyGlobal["apps"][appId].type);
+        }
+        if($("#app-add-name").length){
+            var newAppName = $("#app-add-name").val();
+            $("#app-container-new .name").text(newAppName);
+            $(".new-app-name").text(newAppName);
         }
     },
     pageScript:function () { //scripts to be executed on each view change
