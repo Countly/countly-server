@@ -1262,9 +1262,6 @@ window.CountriesView = countlyView.extend({
         }
 
         var activeApp = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID];
-        if (activeApp && activeApp.country) {
-            $("#toggle-map").text(countlyLocation.getCountryName(activeApp.country));
-        }
 
         this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
             "aaData": locationData,
@@ -1315,7 +1312,6 @@ window.CountriesView = countlyView.extend({
         $(document).bind('selectMapCountry', function () {
             self.cityView = true;
             store.set("countly_location_city", true);
-            $("#toggle-map").addClass("active");
 
             countlyCity.drawGeoChart({height:450, metric:self.maps[self.curMap]});
             self.refresh(true);
@@ -1327,7 +1323,6 @@ window.CountriesView = countlyView.extend({
             if(countlyGlobal["config"].use_google){
                 if (this.cityView) {
                     countlyCity.drawGeoChart({height:450, metric:self.maps[self.curMap]});
-                    $("#toggle-map").addClass("active");
                 } else {
                     countlyLocation.drawGeoChart({height:450, metric:self.maps[self.curMap]});
                 }
@@ -1339,25 +1334,8 @@ window.CountriesView = countlyView.extend({
             this.drawTable();
 
             if (countlyCommon.CITY_DATA === false) {
-                $("#toggle-map").hide();
                 store.set("countly_location_city", false);
             }
-
-            $("#toggle-map").on('click', function () {
-                if ($(this).hasClass("active")) {
-                    self.cityView = false;
-                    countlyLocation.drawGeoChart({height:450, metric:self.maps[self.curMap]});
-                    $(this).removeClass("active");
-                    self.refresh(true);
-                    store.set("countly_location_city", false);
-                } else {
-                    self.cityView = true;
-                    countlyCity.drawGeoChart({height:450, metric:self.maps[self.curMap]});
-                    $(this).addClass("active");
-                    self.refresh(true);
-                    store.set("countly_location_city", true);
-                }
-            });
             
             $("#country-toggle").on('click', function () {
                 if ($(this).hasClass("country_selected")) {
