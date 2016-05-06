@@ -174,7 +174,7 @@ HTTP.prototype.waitAndClose = function(clb) {
 	if (this.notesInFlight <= 0 || this.closeAttempts > 30) {
 		this.closeAttempts = 100;
 
-		log.d('Wating 10 seconds before closing connection (%d notes in flight, %d in queue)', this.notesInFlight, this.notifications.length);
+		log.d('Wating 50 seconds before closing connection (%d notes in flight, %d in queue)', this.notesInFlight, this.notifications.length);
 		setTimeout(() => {
 			log.d('Finally closing this connection (%d notes in flight, %d in queue)', this.notesInFlight, this.notifications.length);
 			if (this.socket) {
@@ -200,7 +200,7 @@ HTTP.prototype.waitAndClose = function(clb) {
 				setTimeout(clb.bind(null, arr.length ? arr : undefined), 10);
 			}
 			this.emit(EVENTS.CLOSED);
-		}, 10000);
+		}, 50000);
 	} else {
 		log.d('Not emiting closed event yet - %d notes are in flight, %d in queue', this.notesInFlight, this.notifications.length);
 		this.closeAttempts = this.closeAttempts ? ++this.closeAttempts : 1;

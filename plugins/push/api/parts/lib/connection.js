@@ -185,7 +185,7 @@ Cluster.prototype.send = function(messageId, content, encoding, expiry, device, 
 };
 
 Cluster.prototype.wow = function(){
-	if (((this.queue.length + this.countAllConnections()) > DEFAULTS.queue) || this.profiler.cpu.value > DEFAULTS.profilerMaxCPU) {
+	if (((this.queue.length + this.countAllConnections()) > DEFAULTS.queue) || (!this.profiler.closed && this.profiler.cpu.value > DEFAULTS.profilerMaxCPU)) {
 		return 'such no power much sad';
 	} else {
 		return 'much happy so message';
