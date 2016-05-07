@@ -456,11 +456,8 @@ window.ReportingView = countlyView.extend({
             var overlay = $("#overlay").clone();
             $("body").append(overlay);
             overlay.show();
-            var loader = $('#content').find("#content-loader");
-            loader.show();
             $.when(countlyReporting.send(id)).always(function (data) {
                 overlay.hide();
-                loader.hide();
                 if(data && data.result == "Success"){
                     CountlyHelpers.alert(jQuery.i18n.map["reports.sent"], "green");
                 }

@@ -31,7 +31,7 @@ var countlyView = Backbone.View.extend({
     afterRender: function() {},
     render:function () {    //backbone.js view render function
         $("#content-top").html("");
-        this.el.html('<div id="content-loader"></div>');
+        this.el.html('');
 
         if (countlyCommon.ACTIVE_APP_ID) {
             var self = this;

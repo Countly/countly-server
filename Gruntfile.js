@@ -43,6 +43,7 @@ module.exports = function(grunt) {
 				'frontend/express/public/javascripts/dom/dataTables/js/jquery.dataTables.js',
 				'frontend/express/public/javascripts/dom/dataTables/js/ZeroClipboard.js',
 				'frontend/express/public/javascripts/dom/dataTables/js/TableTools.js',
+                'frontend/express/public/javascripts/dom/pace/pace.min.js'
 			],
 			dest: 'frontend/express/public/javascripts/min/countly.dom.concat.js'
 		},
@@ -64,7 +65,7 @@ module.exports = function(grunt) {
 				'frontend/express/public/javascripts/utils/jquery.amaran.min.js',
 				'frontend/express/public/javascripts/utils/jquery.titlealert.js',
                 'frontend/express/public/javascripts/utils/jquery.hoverIntent.minified.js',
-				'frontend/express/public/javascripts/countly/countly.common.js',
+				'frontend/express/public/javascripts/countly/countly.common.js'
 			],
 			dest: 'frontend/express/public/javascripts/min/countly.utils.concat.js'
 		},
@@ -78,7 +79,7 @@ module.exports = function(grunt) {
 				'frontend/express/public/javascripts/visualization/flot/jquery.flot.stack.js',
 				'frontend/express/public/javascripts/visualization/gauge.min.js',
 				'frontend/express/public/javascripts/visualization/d3/d3.min.js',
-				'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.js',
+				'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.js'
 			],
 			dest: 'frontend/express/public/javascripts/min/countly.visualization.concat.js'
 		},
@@ -96,7 +97,7 @@ module.exports = function(grunt) {
 				'frontend/express/public/javascripts/countly/countly.app.version.js',
 				'frontend/express/public/javascripts/countly/countly.carrier.js',
 				'frontend/express/public/javascripts/countly/countly.allapps.js',
-				'frontend/express/public/javascripts/countly/countly.template.js',
+				'frontend/express/public/javascripts/countly/countly.template.js'
 			],
 			dest: 'frontend/express/public/javascripts/min/countly.lib.concat.js'
 		}
@@ -113,7 +114,7 @@ module.exports = function(grunt) {
 				'frontend/express/public/javascripts/min/countly.dom.js': 'frontend/express/public/javascripts/min/countly.dom.concat.js',
 				'frontend/express/public/javascripts/min/countly.utils.js': 'frontend/express/public/javascripts/min/countly.utils.concat.js',
 				'frontend/express/public/javascripts/min/countly.visualization.js': 'frontend/express/public/javascripts/min/countly.visualization.concat.js',
-				'frontend/express/public/javascripts/min/countly.lib.js': 'frontend/express/public/javascripts/min/countly.lib.concat.js',
+				'frontend/express/public/javascripts/min/countly.lib.js': 'frontend/express/public/javascripts/min/countly.lib.concat.js'
 			}
 		}
     },
@@ -126,7 +127,8 @@ module.exports = function(grunt) {
 	    			'frontend/express/public/stylesheets/amaranjs/amaran.min.css',
 	    			'frontend/express/public/javascripts/dom/tipsy/tipsy.css',
 	    		    'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.css',
-	    		],
+                    'frontend/express/public/javascripts/dom/pace/pace-theme-flash.css'
+	    		]
     		}
     	}
     },
