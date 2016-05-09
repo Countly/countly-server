@@ -1927,6 +1927,9 @@ window.ManageAppsView = countlyView.extend({
                 app.onAppSwitch(appId, true);
                 app.sidebar.init();
             }
+            if(countlyGlobal["config"] && countlyGlobal["config"].code && $("#code-countly").length){
+                $("#code-countly").show();
+            }
             
             app.onAppManagementSwitch(appId);
 
@@ -2079,6 +2082,9 @@ window.ManageAppsView = countlyView.extend({
             $("#app-add-timezone #app-country").val("");
             $("#app-add-timezone #timezone-select").hide();
             $(".required").hide();
+            if(countlyGlobal["config"] && countlyGlobal["config"].code && $("#code-countly").length){
+                $("#code-countly").show();
+            }
         }
 
         function showAdd() {
@@ -2087,6 +2093,7 @@ window.ManageAppsView = countlyView.extend({
             }
             $(".app-container").removeClass("active");
             $("#first-app-success").hide();
+            $("#code-countly").hide();
             hideEdit();
             var manageBarApp = $("#manage-new-app>div").clone();
             manageBarApp.attr("id", "app-container-new");
@@ -2123,8 +2130,34 @@ window.ManageAppsView = countlyView.extend({
             $("#add-new-app").hide();
             resetAdd();
             $("#view-app").show();
+            if(countlyGlobal["config"] && countlyGlobal["config"].code && $("#code-countly").length){
+                $("#code-countly").show();
+            }
         }
-
+        
+        if(countlyGlobal["config"] && countlyGlobal["config"].code && $("#code-countly").length){
+            $("#code-countly").show();
+            var url = (location.protocol || "http:")+"//countly.github.io/countly-code-generator/"; 
+                
+            $.getScript( url+"js/sdks.js", function( data, textStatus, jqxhr ) {
+                var server = (location.protocol || "http:")+location.hostname;
+                if(sdks && server){
+                    function initCountlyCode(appId, type){
+                        var app_id = $("#app-edit-id").val();
+                        if(appId && appId != "" && countlyGlobal["apps"][appId]){
+                            $("#code-countly .sdks").empty();
+                            for(var i in sdks){
+                                if(sdks[i].integration)
+                                    $("#code-countly .sdks").append("<a href='http://code.count.ly/integration-"+i+".html?server="+server+"&app_key="+countlyGlobal["apps"][appId].key+"' target='_blank'>"+sdks[i].name.replace("SDK", "")+"</a>");
+                            }
+                        }
+                    }
+                    initCountlyCode($("#app-edit-id").val());
+                    app.addAppManagementSwitchCallback(initCountlyCode);
+                }
+            });
+        }
+        
         initAppManagement(appId);
         initCountrySelect("#app-add-timezone");
 
@@ -2499,21 +2532,6 @@ window.ManageAppsView = countlyView.extend({
             });
         });
         
-        if(countlyGlobal["config"] && countlyGlobal["config"].code && $("#code-countly").length){
-            $("#code-countly").show();
-            var url = (location.protocol || "http:")+"//countly.github.io/countly-code-generator/"; 
-                
-            $.getScript( url+"js/sdks.js", function( data, textStatus, jqxhr ) {
-                var server = (location.protocol || "http:")+location.hostname;
-                var app_id = $("#app-edit-id").val();
-                if(sdks && app_id && app_id != "" && countlyGlobal["apps"][app_id] && server){
-                    for(var i in sdks){
-                        if(sdks[i].integration)
-                            $("#code-countly .sdks").append("<a href='http://code.count.ly/integration-"+i+".html?server="+server+"&app_key="+countlyGlobal["apps"][app_id].key+"' target='_blank'>"+sdks[i].name.replace("SDK", "")+"</a>");
-                    }
-                }
-            });
-        }
     }
 });
 
