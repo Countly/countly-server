@@ -1919,7 +1919,7 @@ window.ManageAppsView = countlyView.extend({
 
             if ($("#new-install-overlay").is(":visible")) {
                 $("#no-app-warning").hide();
-                $("#first-app-success").show();
+                //$("#first-app-success").show();
                 $("#new-install-overlay").fadeOut();
                 countlyCommon.setActiveApp(appId);
                 $("#sidebar-app-select").find(".logo").css("background-image", "url('"+countlyGlobal["cdn"]+"appimages/" + appId + ".png')");
