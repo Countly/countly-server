@@ -53,7 +53,7 @@ window.PluginsView = countlyView.extend({
         var overlay = $("#overlay").clone();
         $("body").append(overlay);
         overlay.show();
-        var loader = $(this.el).find("#content-loader");
+        var loader = $(this.el).find("#loader");
         loader.show();
         countlyPlugins.toggle(plugins, function(res){
             var msg = {clearAll:true};
