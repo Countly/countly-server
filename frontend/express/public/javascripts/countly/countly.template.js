@@ -2487,6 +2487,8 @@ window.ManageAppsView = countlyView.extend({
                     var newApp = $("#app-container-new");
                     newApp.data("id", data._id);
                     newApp.data("key", data.key);
+                    newApp.find(".name").data("localize", "");
+                    newApp.find(".name").text(data.name);
                     newApp.removeAttr("id");
 
                     if (!ext) {
@@ -2494,6 +2496,9 @@ window.ManageAppsView = countlyView.extend({
                         sidebarApp.find(".name").text(data.name);
                         sidebarApp.data("id", data._id);
                         sidebarApp.data("key", data.key);
+                        newApp.find(".logo").css({
+                            "background-image":"url(appimages/" + data._id + ".png)"
+                        });
 
                         $("#app-nav .apps-scrollable").append(sidebarApp);
                         initAppManagement(data._id);
