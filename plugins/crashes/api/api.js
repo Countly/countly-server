@@ -644,10 +644,9 @@ plugins.setConfigs("crashes", {
                                 filter["is_renewed"] = true;
                                 break;
                         }
-                        
-                        if(params.qstring.filter !== "crash-hidden"){
-                            filter["is_hidden"] = {$ne: true};
-                        }
+                    }
+                    if(params.qstring.filter !== "crash-hidden"){
+                        filter["is_hidden"] = {$ne: true};
                     }
                     filter["_id"] = {$ne:"meta"};
                     common.db.collection('app_crashgroups' + params.app_id).count({},function(err, total) {
