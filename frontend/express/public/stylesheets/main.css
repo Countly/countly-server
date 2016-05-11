@@ -793,21 +793,24 @@ div.datatablesubrow {display: none;}
 .event-segmentation { float:left; margin-top:4px; }
 #event-update-area { float:left; }
 
-#event-update-area .title { font:19px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#636363; text-shadow:0 1px #F6F6F6; float:left; margin-top:8px; margin-right:11px; max-width: 700px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.left .title { font:19px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#636363; text-shadow:0 1px #F6F6F6; float:left; margin-right:11px; max-width: 700px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+
+.left #event-update-area .title { margin-top: 8px;}
+
 @media (min-width: 1601px) and (max-width: 1700px){
-	#event-update-area .title {max-width: 500px;}
+	.left .title {max-width: 500px;}
 }
 @media (min-width: 1401px) and (max-width: 1600px){
-	#event-update-area .title {max-width: 300px;}
+	.left .title {max-width: 300px;}
 }
 @media (min-width: 1301px) and (max-width: 1400px){
-	#event-update-area .title {max-width: 200px;}
+	.left .title {max-width: 200px;}
 }
 @media (min-width: 1226px) and (max-width: 1300px){
-	#event-update-area .title {max-width: 100px;}
+	.left .title {max-width: 100px;}
 }
 @media (max-width: 1225px){
-	#event-update-area .title {max-width: 400px;}
+	.left .title {max-width: 400px;}
 }
 #edit-event-table-container  { width:850px; max-height:400px; overflow:auto; }
 .events .buttons { border-top:1px solid #000; margin-top:0; padding:7px 10px; box-shadow:inset 0 1px 0 #999; border-bottom-left-radius:2px; border-bottom-right-radius:2px; background-color:#666; background-image:linear-gradient(top, #666 10%, #555 100%); background-image:linear-gradient(to bottom, #666 10%, #555 100%); }
