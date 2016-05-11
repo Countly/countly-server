@@ -2383,7 +2383,7 @@ window.ManageAppsView = countlyView.extend({
             initAppManagement(appId);
         });
 
-        $(".app-container:not(#app-container-new)").live("click", function () {
+        $("#management-app-container .app-container:not(#app-container-new)").live("click", function () {
             var appId = $(this).data("id");
             hideEdit();
             $(".app-container").removeClass("active");
