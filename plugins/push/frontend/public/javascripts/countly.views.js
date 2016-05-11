@@ -1184,8 +1184,7 @@ function pushAppMgmt(appId){
     var gcm = countlyGlobal['apps'][appId].gcm = countlyGlobal['apps'][appId].gcm || {};
 
     //app was changed
-    $(".app-container:not(#app-container-new)").live("click", function () {
-        appId = $(this).data("id");
+    app.addAppManagementSwitchCallback(function(appId, type){
         apn = countlyGlobal['apps'][appId].apn = countlyGlobal['apps'][appId].apn || {};
         gcm = countlyGlobal['apps'][appId].gcm = countlyGlobal['apps'][appId].gcm || {};
         $("#push-apn-cert-uni-view").removeClass('fa fa-remove').removeClass('fa fa-check').addClass(apn.universal ? 'fa fa-check' : 'fa fa-remove');
