@@ -117,6 +117,7 @@ window.ConfigurationsView = countlyView.extend({
             "api-event_segmentation_limit":jQuery.i18n.map["configs.api-event_segmentation_limit"],
             "api-event_segmentation_value_limit":jQuery.i18n.map["configs.api-event_segmentation_value_limit"],
             "api-sync_plugins":jQuery.i18n.map["configs.api-sync_plugins"],
+            "api-session_cooldown":jQuery.i18n.map["configs.api-session_cooldown"],
             "apps-country":jQuery.i18n.map["configs.apps-country"],
             "apps-category":jQuery.i18n.map["configs.apps-category"]
         };

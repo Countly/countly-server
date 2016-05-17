@@ -28,7 +28,7 @@ var usage = {},
         common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, dbAppUser){
             if(dbAppUser){
                 var lastTs = dbAppUser[common.dbUserMap['last_end_session_timestamp']] || dbAppUser[common.dbUserMap['last_begin_session_timestamp']];
-                if (!lastTs || (params.time.nowWithoutTimestamp.unix() - lastTs) > 15) {
+                if (!lastTs || (params.time.nowWithoutTimestamp.unix() - lastTs) > plugins.getConfig("api").session_cooldown) {
                     //process duration from unproperly ended previous session
                     plugins.dispatch("/session/post", {params:params, dbAppUser:dbAppUser, end_session:false});
                     if (dbAppUser && dbAppUser[common.dbUserMap['session_duration']]) {
@@ -231,7 +231,7 @@ var usage = {},
             // current begin_session request and mark this user as having an ongoing session
             var lastEndSession = dbAppUser[common.dbUserMap['last_end_session_timestamp']];
 
-            if ((!params.qstring.sdk_version || params.qstring.sdk_version < "15.04") && lastEndSession && (params.time.nowWithoutTimestamp.unix() - lastEndSession) < 15) {
+            if ((!params.qstring.sdk_version || params.qstring.sdk_version < "15.04") && !params.qstring.ignore_cooldown && lastEndSession && (params.time.nowWithoutTimestamp.unix() - lastEndSession) < plugins.getConfig("api").session_cooldown) {
                 plugins.dispatch("/session/extend", {params:params});
 
                 var userProps = {};
