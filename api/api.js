@@ -14,7 +14,8 @@ plugins.setConfigs("api", {
     city_data: true,
     event_limit: 500,
     event_segmentation_limit: 100,
-    event_segmentation_value_limit:1000
+    event_segmentation_value_limit:1000,
+    sync_plugins: false
 });
 
 plugins.setConfigs("apps", {

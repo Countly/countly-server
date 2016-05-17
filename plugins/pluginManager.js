@@ -43,7 +43,7 @@ var pluginManager = function pluginManager(){
                 configs = res;
                 delete configs._id;
                 self.checkConfigs(db, configs, defaultConfigs, callback);
-                if(api)
+                if(api && self.getConfig("api").sync_plugins)
                     self.checkPlugins(db);
             }
             else if(callback)
@@ -101,12 +101,17 @@ var pluginManager = function pluginManager(){
     
     this.updateConfigs = function(db, namespace, configs, callback){
         var update = {};
-        if(namespace != "_id")
-            update[namespace] = configs;
-        db.collection("plugins").update({_id:"plugins"}, {$set:flattenObject(update)}, {upsert:true}, function(err, res){
+        if(namespace == "_id" || namespace == "plugins" && !this.getConfig("api").sync_plugins){
             if(callback)
                 callback();
-        });
+        }
+        else{
+            update[namespace] = configs;
+            db.collection("plugins").update({_id:"plugins"}, {$set:flattenObject(update)}, {upsert:true}, function(err, res){
+                if(callback)
+                    callback();
+            });
+        }
     };
     
     this.updateAllConfigs = function(db, changes, callback){
@@ -321,10 +326,10 @@ var pluginManager = function pluginManager(){
                     callback(true);
             } else {
                 if(changes > 0){
-                    if(db)
+                    if(db && self.getConfig("api").sync_plugins)
                         self.updateConfigs(db, "plugins", pluginState);
                     async.series([fs.writeFile.bind(fs, dir, JSON.stringify(newPluginsList), 'utf8'), self.prepareProduction.bind(self)], function(error){
-                        self.reloadPlugins();
+                        //self.reloadPlugins();
                         if(callback)
                             callback(error ? true : false);
                         setTimeout(self.restartCountly.bind(self), 500);
