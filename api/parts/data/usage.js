@@ -231,12 +231,12 @@ var usage = {},
             // current begin_session request and mark this user as having an ongoing session
             var lastEndSession = dbAppUser[common.dbUserMap['last_end_session_timestamp']];
 
-            if ((!params.qstring.sdk_version || params.qstring.sdk_version < "15.04") && !params.qstring.ignore_cooldown && lastEndSession && (params.time.nowWithoutTimestamp.unix() - lastEndSession) < plugins.getConfig("api").session_cooldown) {
+            if (!params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < plugins.getConfig("api").session_cooldown) {
                 plugins.dispatch("/session/extend", {params:params});
 
                 var userProps = {};
                 userProps[common.dbUserMap['has_ongoing_session']] = true;
-                userProps[common.dbUserMap['last_begin_session_timestamp']] = params.time.nowWithoutTimestamp.unix();
+                userProps[common.dbUserMap['last_begin_session_timestamp']] = params.time.timestamp;
 
                 common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': userProps}, function() {});
 
