@@ -60,6 +60,9 @@ if (cluster.isMaster) {
                 if (worker !== jobsWorker) { jobsWorker.send({cmd: 'log', config: msg.config}); }
                 require('./utils/log.js').ipcHandler(msg);
             }
+            else if(msg.cmd === "checkPlugins"){
+                plugins.checkPluginsMaster();
+            }
         });
     };
 

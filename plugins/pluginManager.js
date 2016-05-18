@@ -7,6 +7,7 @@ var plugins = require('./plugins.json', 'dont-enclose'),
     cp = require('child_process'),
     async = require("async"),
     _ = require('underscore'),
+    cluster = require('cluster'),
     exec = cp.exec;
     
 var pluginManager = function pluginManager(){
@@ -18,6 +19,7 @@ var pluginManager = function pluginManager(){
     var defaultConfigs = {};
     var configsOnchanges = {};
     var excludeFromUI = {plugins:true};
+    var finishedSyncing = true;
 
     this.init = function(){
         for(var i = 0, l = plugins.length; i < l; i++){
@@ -282,18 +284,67 @@ var pluginManager = function pluginManager(){
         plugins = require('./plugins.json', 'dont-enclose');
     }
     
-    this.checkPlugins = function(db){
-        var plugs = this.getConfig("plugins");
-        if(Object.keys(plugs).length == 0){
-            //no plugins inserted yet, upgrading by inserting current plugins
-            var list = this.getPlugins();
-            for(var i = 0; i < list.length; i++){
-                plugs[list[i]] = true;
+    //checking plugins on master process
+    this.checkPluginsMaster = function(){
+        var self = this;
+        if(finishedSyncing){
+            finishedSyncing = false;
+            var db = self.dbConnection();
+            db.collection("plugins").findOne({_id:"plugins"}, function(err, res){
+                if(!err){
+                    configs = res;
+                    self.checkPlugins(db, function(){
+                        db.close();
+                        finishedSyncing = true;
+                    }); 
+                }
+            });
+        }
+    }
+    
+    
+    this.checkPlugins = function(db, callback){
+        if(cluster.isMaster){
+            var plugs = this.getConfig("plugins");
+            if(Object.keys(plugs).length == 0){
+                //no plugins inserted yet, upgrading by inserting current plugins
+                var list = this.getPlugins();
+                for(var i = 0; i < list.length; i++){
+                    plugs[list[i]] = true;
+                }
+                this.updateConfigs(db, "plugins", plugs, callback);
             }
-            this.updateConfigs(db, "plugins", plugs);
+            else{
+                this.syncPlugins(plugs, callback);
+            }
         }
         else{
-            this.syncPlugins(plugs);
+            //check if we need to sync plugins
+            var pluginList = this.getPlugins();
+            var plugs = this.getConfig("plugins") || {};
+            //let master know we need to include initial plugins
+            if(Object.keys(plugs).length == 0){
+                process.send({ cmd: "checkPlugins" });
+            }
+            else{
+                //check if we need to sync plugins
+                var changes = 0;
+                for(var plugin in plugs){
+                    var state = plugs[plugin],
+                    index = pluginList.indexOf(plugin);
+                    if (index !== -1 && !state){
+                        changes++;
+                        plugins.splice(plugins.indexOf(plugin), 1);
+                    } else if (index === -1 && state) {
+                        changes++;
+                        plugins.push(plugin);
+                    }
+                }
+                if(changes > 0){
+                    //let master process know we need to sync plugins
+                    process.send({ cmd: "checkPlugins" });
+                }
+            }
         }
     };
     
@@ -302,25 +353,31 @@ var pluginManager = function pluginManager(){
         var dir = path.resolve(__dirname, './plugins.json');
         var pluginList = this.getPlugins().slice(), newPluginsList = pluginList.slice();
         var changes = 0;
-        var transforms = Object.keys(pluginState).map(function(plugin){
+        async.each(Object.keys(pluginState), function(plugin, callback){
             var state = pluginState[plugin],
                 index = pluginList.indexOf(plugin);
             if (index !== -1 && !state) {
-                changes++;
-                newPluginsList.splice(newPluginsList.indexOf(plugin), 1);
-                plugins.splice(plugins.indexOf(plugin), 1);
-                return self.uninstallPlugin.bind(self, plugin);
+                self.uninstallPlugin(plugin, function(err){
+                    if(!err){
+                        changes++;
+                        newPluginsList.splice(newPluginsList.indexOf(plugin), 1);
+                        plugins.splice(plugins.indexOf(plugin), 1);
+                    }
+                    callback();
+                })
             } else if (index === -1 && state) {
-                changes++;
-                plugins.push(plugin);
-                newPluginsList.push(plugin);
-                return self.installPlugin.bind(self, plugin);
+                self.installPlugin(plugin, function(err){
+                    if(!err){
+                        changes++;
+                        plugins.push(plugin);
+                        newPluginsList.push(plugin);
+                    }
+                    callback();
+                })
             } else {
-                return function(clb){ clb(); };
+                callback();
             }
-        });
-
-        async.parallel(transforms, function(error){
+        }, function(error){
             if (error) {
                 if(callback)
                     callback(true);
@@ -329,7 +386,6 @@ var pluginManager = function pluginManager(){
                     if(db && self.getConfig("api").sync_plugins)
                         self.updateConfigs(db, "plugins", pluginState);
                     async.series([fs.writeFile.bind(fs, dir, JSON.stringify(newPluginsList), 'utf8'), self.prepareProduction.bind(self)], function(error){
-                        //self.reloadPlugins();
                         if(callback)
                             callback(error ? true : false);
                         setTimeout(self.restartCountly.bind(self), 500);
@@ -356,19 +412,17 @@ var pluginManager = function pluginManager(){
             errors = true;
             return callback(errors);
         }
-        setTimeout(function() {
-            var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
-            if (eplugin && eplugin.prepackaged) return callback(errors);
-            var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-            var child = exec('npm install', {cwd: cwd}, function(error) {
-                if (error){
-                    errors = true;
-                    console.log('error: %j', error);
-                }
-                console.log('Done installing plugin %j', plugin);
-                callback(errors);
-            });
-        }, 5000);
+        var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
+        if (eplugin && eplugin.prepackaged) return callback(errors);
+        var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
+        var child = exec('npm install', {cwd: cwd}, function(error) {
+            if (error){
+                errors = true;
+                console.log('error: %j', error);
+            }
+            console.log('Done installing plugin %j', plugin);
+            callback(errors);
+        });
     }
     
     this.uninstallPlugin = function(plugin, callback){
@@ -385,10 +439,8 @@ var pluginManager = function pluginManager(){
             errors = true;
             return callback(errors);
         }
-        setTimeout(function() {
-            console.log('Done uninstalling plugin %j', plugin);
-            callback(errors);
-        }, 5000);
+        console.log('Done uninstalling plugin %j', plugin);
+        callback(errors);
     }
     
     this.prepareProduction = function(callback) {
