@@ -413,6 +413,63 @@ var fetch = {},
         fetchTimeObj(collection, params, null, callback);
     };
 
+    fetch.fetchTotalUsersObj = function (metric, params) {
+        var periodObj = getPeriodObj(params),
+            fromTimestamp = periodObj.start / 1000,
+            toTimestamp = periodObj.end / 1000,
+            groupBy = "";
+
+        switch (metric) {
+            case "devices":
+                groupBy = "$d";
+                break;
+            case "app_versions":
+                groupBy = "$av";
+                break;
+            case "platforms":
+                groupBy = "$p";
+                break;
+            case "platform_versions":
+                groupBy = "$pv";
+                break;
+            case "resolutions":
+                groupBy = "$r";
+                break;
+            case "countries":
+                groupBy = "$cc";
+                break;
+            case "cities":
+                groupBy = "$cty";
+                break;
+            case "carriers":
+                groupBy = "$c";
+                break;
+            default:
+                groupBy = "users";
+                break;
+        }
+
+        if (params.qstring.action == "refresh") {
+
+        } else {
+            common.db.collection("app_users" + params.app_id).aggregate([
+                {
+                    $match: {
+                        ls: {$gte: fromTimestamp, $lte: toTimestamp}
+                    }
+                },
+                {
+                    $group: {
+                        _id: groupBy,
+                        u: { $sum: 1 }
+                    }
+                }
+            ], { allowDiskUse:true }, function(error, result) {
+                common.returnOutput(params, result);
+            });
+        }
+    };
+
     function fetchTimeObj(collection, params, isCustomEvent, callback) {
         if (params.qstring.action == "refresh") {
             var dbDateIds = common.getDateIds(params),

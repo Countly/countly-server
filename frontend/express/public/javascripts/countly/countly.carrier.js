@@ -90,7 +90,7 @@
             { "name":"t" },
             { "name":"u" },
             { "name":"n" }
-        ]);
+        ], "carriers");
 
         var carrierNames = _.pluck(chartData.chartData, 'carrier'),
             carrierTotal = _.pluck(chartData.chartData, 't'),

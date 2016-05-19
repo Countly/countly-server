@@ -116,7 +116,7 @@
             { "name":"t" },
             { "name":"u" },
             { "name":"n" }
-        ]);
+        ], "platforms");
 
         var platformNames = _.pluck(chartData.chartData, 'os_'),
             platformTotal = _.pluck(chartData.chartData, 'u'),
@@ -166,7 +166,7 @@
             { "name":"t" },
             { "name":"u" },
             { "name":"n" }
-        ]);
+        ], "resolutions");
 
         var resolutions = _.pluck(chartData.chartData, 'resolution'),
             resolutionTotal = _.pluck(chartData.chartData, 'u'),
@@ -227,7 +227,7 @@
             { "name":"t" },
             { "name":"u" },
             { "name":"n" }
-        ]);
+        ], "platform_versions");
 
         var osSegmentation = ((os) ? os : ((_os) ? _os[0] : null)),
             platformVersionTotal = _.pluck(oSVersionData.chartData, 'u'),

@@ -89,7 +89,7 @@
             { "name":"t" },
             { "name":"u" },
             { "name":"n" }
-        ]);
+        ], "devices");
         
         chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, "device");
 

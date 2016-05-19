@@ -1247,7 +1247,7 @@ window.CountriesView = countlyView.extend({
             "map-list-users": {id:'total', label:jQuery.i18n.map["sidebar.analytics.users"], type:'number', metric:"u"},
             "map-list-new": {id:'total', label:jQuery.i18n.map["common.table.new-users"], type:'number', metric:"n"}
         };
-        return $.when(countlyUser.initialize(), countlyCity.initialize()).then(function () {});
+        return $.when(countlyUser.initialize(), countlyCity.initialize(), countlyTotalUsers.initialize("countries"), countlyTotalUsers.initialize("cities")).then(function () {});
     },
     drawTable: function() {
         var tableFirstColTitle = (this.cityView) ? jQuery.i18n.map["countries.table.city"] : jQuery.i18n.map["countries.table.country"],
@@ -1461,7 +1461,7 @@ window.FrequencyView = countlyView.extend({
 
 window.DeviceView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyDevice.initialize(), countlyDeviceDetails.initialize()).then(function () {});
+        return $.when(countlyDevice.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("devices")).then(function () {});
     },
     pageScript:function () {
         $(".bar-inner").on({
@@ -1558,7 +1558,7 @@ window.DeviceView = countlyView.extend({
 window.PlatformView = countlyView.extend({
     activePlatform:null,
     beforeRender: function() {
-        return $.when(countlyDeviceDetails.initialize()).then(function () {});
+        return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("platforms"), countlyTotalUsers.initialize("platform_versions")).then(function () {});
     },
     pageScript:function () {
         var self = this;
@@ -1663,7 +1663,7 @@ window.PlatformView = countlyView.extend({
 
 window.AppVersionView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyDeviceDetails.initialize()).then(function () {});
+        return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("app_versions")).then(function () {});
     },
     renderCommon:function (isRefresh) {
         var appVersionData = countlyAppVersion.getAppVersionData();
@@ -1708,7 +1708,7 @@ window.AppVersionView = countlyView.extend({
 
 window.CarrierView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyCarrier.initialize()).then(function () {});
+        return $.when(countlyCarrier.initialize(), countlyTotalUsers.initialize("carriers")).then(function () {});
     },
     renderCommon:function (isRefresh) {
         var carrierData = countlyCarrier.getCarrierData();
@@ -1761,7 +1761,7 @@ window.CarrierView = countlyView.extend({
 
 window.ResolutionView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyDeviceDetails.initialize()).then(function () {});
+        return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("resolutions")).then(function () {});
     },
     renderCommon:function (isRefresh) {
         var resolutionData = countlyDeviceDetails.getResolutionData();

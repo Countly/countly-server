@@ -145,7 +145,7 @@
                 { "name":"t" },
                 { "name":"u" },
                 { "name":"n" }
-            ]);
+            ], "cities");
 
             if (options && options.maxCountries && locationData.chartData) {
                 if (locationData.chartData.length > options.maxCountries) {
@@ -189,7 +189,7 @@
             { "name":"t" },
             { "name":"u" },
             { "name":"n" }
-        ]);
+        ], "cities");
 
         chartData.cols = [
             {id:'city', label:"City", type:'string'}
@@ -236,7 +236,7 @@
             { "name":"t" },
             { "name":"u" },
             { "name":"n" }
-        ]);
+        ], "cities");
 
         chartData.cols = [
             {id:'city', label:"City", type:'string'}
