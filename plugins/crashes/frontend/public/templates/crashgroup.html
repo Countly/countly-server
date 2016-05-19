@@ -23,6 +23,7 @@
 			</div>
 			<div class="right crash-buttons help-zone-vs">
                 {{#unless external}}
+                {{#if hasPermission}}
                 <a class="icon-button red btn-header btn-delete-crash" data-id="{{id}}"><span data-localize="crashes.delete"></span></a>
                 <a class="icon-button light btn-header btn-share-crash" data-id="{{id}}"><span data-localize="crashes.share"></span></a>
                 {{#if data.is_hidden}}
@@ -31,6 +32,7 @@
                 {{else}}
                 <a class="icon-button light btn-header btn-show-crash" style="display:none;" data-id="{{id}}"><span data-localize="crashes.show"></span></a>
                 <a class="icon-button light btn-header btn-hide-crash" data-id="{{id}}"><span data-localize="crashes.hide"></span></a>
+                {{/if}}
                 {{/if}}
 				<a href="#/crashes" class="icon-button light btn-header"><i class="fa fa-chevron-left"></i><span data-localize="crashes.back-to-crashes"></span></a>
                 <ul id="crash-share-list">
@@ -106,7 +108,7 @@
 			{{/each}}
 		</div>
 		{{/if}}
-	<div class="widget">
+	<div class="widget main-error">
 		<div class="widget-header">
 			<div class="left">
 				<div class="logo font-logo2">
@@ -127,6 +129,7 @@
 			</div>
 			<div class="right help-zone-vs">
             {{#unless external}}
+            {{#if hasPermission}}
 				{{#if data.is_resolved}}
 					<div class="button"><a class="back" id="mark-unresolved"><i class="fa fa-remove"></i><span data-localize="crashes.mark-unresolved"></span></a></div>
 					<div class="button"><a class="back" id="mark-resolved" style="display: none;"><i class="fa fa-check"></i><span data-localize="crashes.mark-resolved"></span></a></div>
@@ -134,6 +137,7 @@
 					<div class="button"><a class="back" id="mark-unresolved" style="display: none;"><i class="fa fa-remove"></i><span data-localize="crashes.mark-unresolved"></span></a></div>
 					<div class="button"><a class="back" id="mark-resolved"><i class="fa fa-check"></i><span data-localize="crashes.mark-resolved"></span></a></div>
 				{{/if}}
+            {{/if}}
             {{/unless}}
 			</div>
 		</div>
