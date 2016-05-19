@@ -59,7 +59,7 @@ var countlyView = Backbone.View.extend({
 });
 
 var initializeOnce = _.once(function() {
-    return $.when(countlyEvent.initialize()).then(function() {});
+    return $.when(countlyEvent.initialize(), countlyTotalUsers.initialize("users")).then(function() {});
 });
 
 var Template = function () {

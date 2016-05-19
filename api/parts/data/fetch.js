@@ -455,6 +455,7 @@ var fetch = {},
             common.db.collection("app_users" + params.app_id).aggregate([
                 {
                     $match: {
+                        _id: { $ne: "uid-sequence" },
                         ls: {$gte: fromTimestamp, $lte: toTimestamp}
                     }
                 },
