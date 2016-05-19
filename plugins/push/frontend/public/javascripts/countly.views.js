@@ -183,6 +183,14 @@ window.MessagingListView = countlyView.extend({
             CountlyHelpers.setUpDateSelectors(this);
             $('#date-to').datepicker('option', 'maxDate', null);
 
+            $('.d-table tr:not(.push-no-messages)').off('click').on('click', function(){
+                var mid = $(this).attr('data-mid');
+                for (var i in pushes) if (pushes[i]._id === mid) {
+                    PushPopup(pushes[i]);
+                    return;
+                }
+            });
+
             app.localize();
         }
     },
