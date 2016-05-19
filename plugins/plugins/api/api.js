@@ -23,7 +23,9 @@ var plugin = {},
 				}
 				
 				if (params.qstring.plugin && typeof params.qstring.plugin === 'object') {
+                    process.send({ cmd: "startPlugins" });
                     plugins.syncPlugins(params.qstring.plugin, function(err){
+                        process.send({ cmd: "endPlugins" });
                         if(err)
                             common.returnOutput(params, 'Errors');
                         else{

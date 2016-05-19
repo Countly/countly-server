@@ -63,6 +63,12 @@ if (cluster.isMaster) {
             else if(msg.cmd === "checkPlugins"){
                 plugins.checkPluginsMaster();
             }
+            else if(msg.cmd === "startPlugins"){
+                plugins.startSyncing();
+            }
+            else if(msg.cmd === "endPlugins"){
+                plugins.stopSyncing();
+            }
         });
     };
 

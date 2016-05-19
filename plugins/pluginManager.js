@@ -302,6 +302,13 @@ var pluginManager = function pluginManager(){
         }
     }
     
+    this.startSyncing = function(){
+        finishedSyncing = false;
+    }
+    
+    this.stopSyncing = function(){
+        finishedSyncing = true;
+    }
     
     this.checkPlugins = function(db, callback){
         if(cluster.isMaster){
