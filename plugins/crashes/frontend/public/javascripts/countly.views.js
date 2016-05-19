@@ -357,6 +357,7 @@ window.CrashgroupView = countlyView.extend({
         this.templateData = {
             "page-title":jQuery.i18n.map["crashes.crashes-by"],
             "note-placeholder": jQuery.i18n.map["crashes.editnote"],
+            "hasPermission": (countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]) ? true : false,
             "url":url,
 			"data":crashData,
 			"error":crashData.name.substr(0, 80),

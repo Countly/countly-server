@@ -46,6 +46,8 @@
 .widget-header .right #mark-resolved {color: #45b849;}
 .widget-header .right #mark-unresolved {color: #e11a15;}
 
+.main-error .left .title { max-width: 700px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+
 .crash-stack{}
 .crash-stack .ui-tabs{border-radius: 0;}
 .crash-stack .ui-widget-content .ui-state-default{color: #646464; font-size: 16px; font-family:Ubuntu; border: 1px solid #646464;}
