@@ -414,74 +414,73 @@ var fetch = {},
     };
 
     fetch.fetchTotalUsersObj = function (metric, params) {
-        var periodObj = getPeriodObj(params),
-            groupBy = "",
-            match = {
+
+        var periodObj = getPeriodObj(params);
+
+        /*
+            List of shortcodes in app_users document for different metrics
+         */
+        var shortcodesForMetric = {
+                "devices": "$d",
+                "app_versions": "$av",
+                "platforms": "$p",
+                "platform_versions": "$pv",
+                "resolutions": "$r",
+                "countries": "$cc",
+                "cities": "$cty",
+                "carriers": "$c",
+                "densities": "$dnst",
+                "languages": "$la",
+                "sources": "$src",
+                "browsers": "$brw"
+            };
+
+        /*
+            Aggregation query uses this variable for $group operation
+            If there is no corresponding shortcode default is to count all
+            users in this period
+         */
+        var groupBy = (shortcodesForMetric[metric] || "users");
+
+        /*
+            Aggregation query uses this variable for $match operation
+            We skip uid-sequence document and filter results by last session timestamp
+         */
+        var match = {
                 _id: { $ne: "uid-sequence" },
                 ls: {$gte: (periodObj.start / 1000), $lte: (periodObj.end / 1000)}
             };
 
-        if (!periodObj.periodContainsToday) {
-            common.returnOutput(params, []);
-            return true;
+        /*
+            In app users we store city information even if user is not from
+            the selected timezone country of the app. We $match to get city
+            information only for users in app's configured country
+         */
+        if (metric == "cities") {
+            match["cc"] = params.app_cc;
         }
 
-        switch (metric) {
-            case "devices":
-                groupBy = "$d";
-                break;
-            case "app_versions":
-                groupBy = "$av";
-                break;
-            case "platforms":
-                groupBy = "$p";
-                break;
-            case "platform_versions":
-                groupBy = "$pv";
-                break;
-            case "resolutions":
-                groupBy = "$r";
-                break;
-            case "countries":
-                groupBy = "$cc";
-                break;
-            case "cities":
-                match["cc"] = params.app_cc;
-                groupBy = "$cty";
-                break;
-            case "carriers":
-                groupBy = "$c";
-                break;
-            case "densities":
-                groupBy = "$dnst";
-                break;
-            case "languages":
-                groupBy = "$la";
-                break;
-            case "sources":
-                groupBy = "$src";
-                break;
-            case "browsers":
-                groupBy = "$brw";
-                break;
-            default:
-                groupBy = "users";
-                break;
-        }
-
-        common.db.collection("app_users" + params.app_id).aggregate([
-            {
-                $match: match
-            },
-            {
-                $group: {
-                    _id: groupBy,
-                    u: { $sum: 1 }
+        /*
+            This API endpoint /o?method=total_users should only be used if
+            selected period contains today
+         */
+        if (periodObj.periodContainsToday) {
+            common.db.collection("app_users" + params.app_id).aggregate([
+                {
+                    $match: match
+                },
+                {
+                    $group: {
+                        _id: groupBy,
+                        u: { $sum: 1 }
+                    }
                 }
-            }
-        ], { allowDiskUse:true }, function(error, result) {
-            common.returnOutput(params, result);
-        });
+            ], { allowDiskUse:true }, function(error, result) {
+                common.returnOutput(params, result);
+            });
+        } else {
+            common.returnOutput(params, []);
+        }
     };
 
     function fetchTimeObj(collection, params, isCustomEvent, callback) {

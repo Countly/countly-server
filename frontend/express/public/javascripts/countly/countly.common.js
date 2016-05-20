@@ -730,12 +730,12 @@
                     }
                 }
 
-                if (propertyNames.indexOf("u") !== -1) {
+                if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
                     if (countlyTotalUsers.isUsable() && estOverrideMetric) {
 
                         tmpPropertyObj["u"] = calculatedObj[rangeArray[j]] || 0;
 
-                    } else if (Object.keys(tmpPropertyObj).length) {
+                    } else {
                         var tmpUniqVal = 0,
                             tmpUniqValCheck = 0,
                             tmpCheckVal = 0;
@@ -776,15 +776,21 @@
                             tmpPropertyObj["u"] = tmpUniqValCheck;
                         }
                     }
+
+                    // Total users can't be less than new users
+                    if (tmpPropertyObj.u < tmpPropertyObj.n) {
+                        tmpPropertyObj.u = tmpPropertyObj.n;
+                    }
+
+                    // Total users can't be more than total sessions
+                    if (tmpPropertyObj.u > tmpPropertyObj.t) {
+                        tmpPropertyObj.u = tmpPropertyObj.t;
+                    }
                 }
 
-
-                //if (propertySum > 0)
-                {
-                    tableData[tableCounter] = {};
-                    tableData[tableCounter] = tmpPropertyObj;
-                    tableCounter++;
-                }
+                tableData[tableCounter] = {};
+                tableData[tableCounter] = tmpPropertyObj;
+                tableCounter++;
             }
         }
 
