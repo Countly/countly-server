@@ -1,1 +1,1 @@
-CountlyHelpers.createMetricModel(window.countlyBrowser = window.countlyBrowser || {}, "browser", jQuery);
+CountlyHelpers.createMetricModel(window.countlyBrowser = window.countlyBrowser || {}, {name: "browser", estOverrideMetric: "browsers"}, jQuery);

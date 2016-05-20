@@ -461,6 +461,9 @@ var fetch = {},
             case "sources":
                 groupBy = "$src";
                 break;
+            case "browsers":
+                groupBy = "$brw";
+                break;
             default:
                 groupBy = "users";
                 break;

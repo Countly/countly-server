@@ -1,6 +1,6 @@
 window.BrowserView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyBrowser.initialize()).then(function () {});
+        return $.when(countlyBrowser.initialize(), countlyTotalUsers.initialize("browsers")).then(function () {});
     },
     renderCommon:function (isRefresh) {
         var data = countlyBrowser.getData();
@@ -39,7 +39,7 @@ window.BrowserView = countlyView.extend({
     },
     refresh:function () {
         var self = this;
-        $.when(countlyBrowser.refresh()).then(function () {
+        $.when(this.beforeRender()).then(function () {
             if (app.activeView != self) {
                 return false;
             }
