@@ -3,7 +3,7 @@
 var plugin = {},
 	countlyConfig = require('../../../frontend/express/config', 'dont-enclose'),
 	apiConfig = require('../../../api/config', 'dont-enclose'),
-	apn = require('../api/parts/lib/apn'),
+	apn = require('../api/parts/lib/apn.js'),
     common = require('../../../api/utils/common.js'),
     log = common.log('push:api'),
 	fs = require('fs'),
@@ -43,10 +43,8 @@ var plugin = {},
 			}
 
 			var unset = {
-				$unset: {
-					'apn.universal': 1,
-					'apn.test': 1,
-					'apn.prod': 1
+				$set: {
+					apn: {}
 				}
 			};
 
