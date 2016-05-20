@@ -1173,8 +1173,8 @@ window.AllAppsView = countlyView.extend({
             });
         }
     },
-    refresh:function () {
-        /*var self = this;
+    dateChanged:function () {
+        var self = this;
         $.when(countlyAllApps.initialize()).then(function () {
             if (app.activeView != self) {
                 return false;
@@ -1186,7 +1186,7 @@ window.AllAppsView = countlyView.extend({
             CountlyHelpers.refreshTable(self.dtable, appData);
             self.drawGraph();
             app.localize();
-        });*/
+        });
     }
 });
 
