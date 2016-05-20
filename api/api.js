@@ -330,6 +330,7 @@ if (cluster.isMaster) {
                 }
                 params.member = member;
                 params.app_id = app['_id'];
+                params.app_cc = app['country'];
                 params.appTimezone = app['timezone'];
                 params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
                 

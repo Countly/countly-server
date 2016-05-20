@@ -415,9 +415,16 @@ var fetch = {},
 
     fetch.fetchTotalUsersObj = function (metric, params) {
         var periodObj = getPeriodObj(params),
-            fromTimestamp = periodObj.start / 1000,
-            toTimestamp = periodObj.end / 1000,
-            groupBy = "";
+            groupBy = "",
+            match = {
+                _id: { $ne: "uid-sequence" },
+                ls: {$gte: (periodObj.start / 1000), $lte: (periodObj.end / 1000)}
+            };
+
+        if (!periodObj.periodContainsToday) {
+            common.returnOutput(params, []);
+            return true;
+        }
 
         switch (metric) {
             case "devices":
@@ -439,6 +446,7 @@ var fetch = {},
                 groupBy = "$cc";
                 break;
             case "cities":
+                match["cc"] = params.app_cc;
                 groupBy = "$cty";
                 break;
             case "carriers":
@@ -449,26 +457,19 @@ var fetch = {},
                 break;
         }
 
-        if (params.qstring.action == "refresh") {
-
-        } else {
-            common.db.collection("app_users" + params.app_id).aggregate([
-                {
-                    $match: {
-                        _id: { $ne: "uid-sequence" },
-                        ls: {$gte: fromTimestamp, $lte: toTimestamp}
-                    }
-                },
-                {
-                    $group: {
-                        _id: groupBy,
-                        u: { $sum: 1 }
-                    }
+        common.db.collection("app_users" + params.app_id).aggregate([
+            {
+                $match: match
+            },
+            {
+                $group: {
+                    _id: groupBy,
+                    u: { $sum: 1 }
                 }
-            ], { allowDiskUse:true }, function(error, result) {
-                common.returnOutput(params, result);
-            });
-        }
+            }
+        ], { allowDiskUse:true }, function(error, result) {
+            common.returnOutput(params, result);
+        });
     };
 
     function fetchTimeObj(collection, params, isCustomEvent, callback) {

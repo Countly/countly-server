@@ -9,6 +9,10 @@
 
     //Public Methods
     countlyTotalUsers.initialize = function (forMetric) {
+        if (!countlyTotalUsers.isUsable()) {
+            return true;
+        }
+
         if (isInitialized(forMetric)) {
             return countlyTotalUsers.refresh(forMetric);
         }
@@ -47,8 +51,7 @@
     };
 
     function isInitialized(forMetric) {
-        return  _initialized[forMetric] &&
-                _initialized[forMetric] == true &&
+        return  _initialized[forMetric] == true &&
                 _period == countlyCommon.getPeriodForAjax() &&
                 _activeAppKey == countlyCommon.ACTIVE_APP_KEY;
     }

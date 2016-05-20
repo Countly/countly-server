@@ -59,7 +59,7 @@ var countlyView = Backbone.View.extend({
 });
 
 var initializeOnce = _.once(function() {
-    return $.when(countlyEvent.initialize(), countlyTotalUsers.initialize("users")).then(function() {});
+    return $.when(countlyEvent.initialize()).then(function() {});
 });
 
 var Template = function () {
@@ -861,7 +861,7 @@ $.expr[":"].contains = $.expr.createPseudo(function(arg) {
 
 window.SessionView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyUser.initialize()).then(function () {});
+        return $.when(countlyUser.initialize(), countlyTotalUsers.initialize("users")).then(function () {});
     },
     renderCommon:function (isRefresh) {
 
@@ -915,7 +915,7 @@ window.SessionView = countlyView.extend({
     },
     refresh:function () {
         var self = this;
-        $.when(countlyUser.initialize()).then(function () {
+        $.when(this.beforeRender()).then(function () {
             if (app.activeView != self) {
                 return false;
             }
@@ -934,7 +934,7 @@ window.SessionView = countlyView.extend({
 
 window.UserView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyUser.initialize()).then(function () {});
+        return $.when(countlyUser.initialize(), countlyTotalUsers.initialize("users")).then(function () {});
     },
     renderCommon:function (isRefresh) {
         var sessionData = countlySession.getSessionData(),
@@ -986,7 +986,7 @@ window.UserView = countlyView.extend({
     },
     refresh:function () {
         var self = this;
-        $.when(countlyUser.initialize()).then(function () {
+        $.when(this.beforeRender()).then(function () {
             if (app.activeView != self) {
                 return false;
             }
@@ -1247,7 +1247,7 @@ window.CountriesView = countlyView.extend({
             "map-list-users": {id:'total', label:jQuery.i18n.map["sidebar.analytics.users"], type:'number', metric:"u"},
             "map-list-new": {id:'total', label:jQuery.i18n.map["common.table.new-users"], type:'number', metric:"n"}
         };
-        return $.when(countlyUser.initialize(), countlyCity.initialize(), countlyTotalUsers.initialize("countries"), countlyTotalUsers.initialize("cities")).then(function () {});
+        return $.when(countlyUser.initialize(), countlyCity.initialize(), countlyTotalUsers.initialize("countries"), countlyTotalUsers.initialize("cities"), countlyTotalUsers.initialize("users")).then(function () {});
     },
     drawTable: function() {
         var tableFirstColTitle = (this.cityView) ? jQuery.i18n.map["countries.table.city"] : jQuery.i18n.map["countries.table.country"],
@@ -1800,7 +1800,7 @@ window.ResolutionView = countlyView.extend({
     },
     refresh:function () {
         var self = this;
-        $.when(countlyDeviceDetails.initialize()).then(function () {
+        $.when(this.beforeRender()).then(function () {
             if (app.activeView != self) {
                 return false;
             }

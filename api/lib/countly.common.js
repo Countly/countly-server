@@ -873,7 +873,8 @@ var countlyCommon = {},
             prevWeekCounts = {},
             prevMonthsArr = [],
             prevMonthCounts = {},
-            prevPeriodArr = [];
+            prevPeriodArr = [],
+            periodContainsToday = true;
 
         switch (_period) {
             case "month": {
@@ -959,6 +960,7 @@ var countlyCommon = {},
 
                 currPeriodArr.push(activePeriod);
                 prevPeriodArr.push(previousPeriod);
+                periodContainsToday = false;
                 break;
             }
             case "7days": {
@@ -1016,6 +1018,7 @@ var countlyCommon = {},
                 dateString = "D MMM, HH:mm";
                 currPeriodArr.push(activePeriod);
                 prevPeriodArr.push(previousPeriod);
+                periodContainsToday = (moment(_period[0]).format("YYYYMMDD") == _currMoment.format("YYYYMMDD"));
             } else {
                 var a = moment(fromDate),
                     b = moment(toDate);
@@ -1023,6 +1026,7 @@ var countlyCommon = {},
                 daysInPeriod = b.diff(a, 'days') + 1;
                 isSpecialPeriod = true;
                 rangeEndDay = _period[1];
+                periodContainsToday = (b.format("YYYYMMDD") == _currMoment.format("YYYYMMDD"));
             }
         }
 
@@ -1118,7 +1122,8 @@ var countlyCommon = {},
             "daysInPeriod":daysInPeriod,
             "isSpecialPeriod":isSpecialPeriod,
             "reqMonthDbDateIds":requiredDbDateIds,
-            "reqZeroDbDateIds":requiredZeroDbDateIds
+            "reqZeroDbDateIds":requiredZeroDbDateIds,
+            "periodContainsToday": periodContainsToday
         };
     }
 
