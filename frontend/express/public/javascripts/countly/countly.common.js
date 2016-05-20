@@ -627,7 +627,7 @@
         return {"chartDP":chartData, "chartData":_.compact(tableData), "keyEvents":keyEvents};
     };
 
-    countlyCommon.extractTwoLevelData = function (db, rangeArray, clearFunction, dataProperties, unestimateMetric) {
+    countlyCommon.extractTwoLevelData = function (db, rangeArray, clearFunction, dataProperties, estOverrideMetric) {
 
         countlyCommon.periodObj = getPeriodObj();
 
@@ -690,7 +690,7 @@
             }
         } else {
 
-            var calculatedObj = (unestimateMetric)? countlyTotalUsers.get(unestimateMetric) : {};
+            var calculatedObj = (estOverrideMetric)? countlyTotalUsers.get(estOverrideMetric) : {};
 
             for (var j = 0; j < rangeArray.length; j++) {
 
@@ -731,7 +731,7 @@
                 }
 
                 if (propertyNames.indexOf("u") !== -1) {
-                    if (countlyTotalUsers.isUsable() && unestimateMetric) {
+                    if (countlyTotalUsers.isUsable() && estOverrideMetric) {
 
                         tmpPropertyObj["u"] = calculatedObj[rangeArray[j]] || 0;
 

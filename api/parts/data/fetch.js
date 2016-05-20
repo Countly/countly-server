@@ -452,6 +452,9 @@ var fetch = {},
             case "carriers":
                 groupBy = "$c";
                 break;
+            case "densities":
+                groupBy = "$dnst";
+                break;
             default:
                 groupBy = "users";
                 break;

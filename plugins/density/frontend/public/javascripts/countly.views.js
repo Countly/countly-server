@@ -1,6 +1,6 @@
 window.DensityView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyDensity.initialize()).then(function () {});
+        return $.when(countlyDensity.initialize(), countlyTotalUsers.initialize("densities")).then(function () {});
     },
     renderCommon:function (isRefresh) {
         var densityData = countlyDensity.getData();
@@ -39,7 +39,7 @@ window.DensityView = countlyView.extend({
     },
     refresh:function () {
         var self = this;
-        $.when(countlyDensity.refresh()).then(function () {
+        $.when(this.beforeRender()).then(function () {
             if (app.activeView != self) {
                 return false;
             }

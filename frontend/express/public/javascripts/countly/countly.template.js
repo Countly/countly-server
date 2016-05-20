@@ -506,15 +506,17 @@ $.extend(Template.prototype, {
         }
     };
 	
-	CountlyHelpers.createMetricModel = function (countlyMetric, _name, $, fetchValue) {
+	CountlyHelpers.createMetricModel = function (countlyMetric, metric, $, fetchValue) {
 		//Private Properties
 		var _periodObj = {},
 			_Db = {},
 			_metrics = [],
 			_activeAppKey = 0,
 			_initialized = false,
-			_period = null;
-	
+			_period = null,
+            _name = (metric.name)? metric.name : metric,
+            _estOverrideMetric = (metric.estOverrideMetric)? metric.estOverrideMetric : "";
+
 		//Public Methods
 		countlyMetric.initialize = function () {
 			if (_initialized &&  _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
@@ -600,7 +602,8 @@ $.extend(Template.prototype, {
 				{ "name":"t" },
 				{ "name":"u" },
 				{ "name":"n" }
-			]);
+			], _estOverrideMetric);
+
             chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, _name);
 			var namesData = _.pluck(chartData.chartData, _name),
 				totalData = _.pluck(chartData.chartData, 't'),
