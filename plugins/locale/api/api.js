@@ -9,6 +9,9 @@ var plugin = {},
 		common.dbUserMap['locale'] = 'lo';                     // full ISO locale from device
         common.dbUserMap['lang'] = 'la';                       // language extracted from locale
 	});
+    plugins.register("/o/method/total_users", function(ob){
+        ob.shortcodesForMetrics["languages"] = "la";
+    });
 	plugins.register("/session/metrics", function(ob){
 		var predefinedMetrics = ob.predefinedMetrics;
 		var userProps = ob.userProps;

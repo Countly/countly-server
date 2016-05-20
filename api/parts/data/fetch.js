@@ -420,51 +420,52 @@ var fetch = {},
         /*
             List of shortcodes in app_users document for different metrics
          */
-        var shortcodesForMetric = {
-                "devices": "$d",
-                "app_versions": "$av",
-                "platforms": "$p",
-                "platform_versions": "$pv",
-                "resolutions": "$r",
-                "countries": "$cc",
-                "cities": "$cty",
-                "carriers": "$c",
-                "densities": "$dnst",
-                "languages": "$la",
-                "sources": "$src",
-                "browsers": "$brw"
+        var shortcodesForMetrics = {
+                "devices": "d",
+                "app_versions": "av",
+                "platforms": "p",
+                "platform_versions": "pv",
+                "resolutions": "r",
+                "countries": "cc",
+                "cities": "cty",
+                "carriers": "c"
             };
-
-        /*
-            Aggregation query uses this variable for $group operation
-            If there is no corresponding shortcode default is to count all
-            users in this period
-         */
-        var groupBy = (shortcodesForMetric[metric] || "users");
-
-        /*
-            Aggregation query uses this variable for $match operation
-            We skip uid-sequence document and filter results by last session timestamp
-         */
-        var match = {
-                _id: { $ne: "uid-sequence" },
-                ls: {$gte: (periodObj.start / 1000), $lte: (periodObj.end / 1000)}
-            };
-
-        /*
-            In app users we store city information even if user is not from
-            the selected timezone country of the app. We $match to get city
-            information only for users in app's configured country
-         */
-        if (metric == "cities") {
-            match["cc"] = params.app_cc;
-        }
 
         /*
             This API endpoint /o?method=total_users should only be used if
             selected period contains today
          */
         if (periodObj.periodContainsToday) {
+            /*
+             Aggregation query uses this variable for $match operation
+             We skip uid-sequence document and filter results by last session timestamp
+             */
+            var match = {
+                _id: { $ne: "uid-sequence" },
+                ls: {$gte: (periodObj.start / 1000), $lte: (periodObj.end / 1000)}
+            };
+
+            /*
+             Let plugins register their short codes and match queries
+             */
+            plugins.dispatch("/o/method/total_users", {shortcodesForMetrics:shortcodesForMetrics, match:match});
+
+            /*
+             Aggregation query uses this variable for $group operation
+             If there is no corresponding shortcode default is to count all
+             users in this period
+             */
+            var groupBy = (shortcodesForMetrics[metric])? "$" + shortcodesForMetrics[metric] : "users";
+
+            /*
+             In app users we store city information even if user is not from
+             the selected timezone country of the app. We $match to get city
+             information only for users in app's configured country
+             */
+            if (metric == "cities") {
+                match["cc"] = params.app_cc;
+            }
+
             common.db.collection("app_users" + params.app_id).aggregate([
                 {
                     $match: match
