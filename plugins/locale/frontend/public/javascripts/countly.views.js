@@ -1,6 +1,6 @@
 window.LanguageView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyLanguage.initialize()).then(function () {});
+        return $.when(countlyLanguage.initialize(), countlyTotalUsers.initialize("languages")).then(function () {});
     },
     renderCommon:function (isRefresh) {
         var languageData = countlyLanguage.getData();

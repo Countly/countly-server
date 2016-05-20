@@ -455,6 +455,9 @@ var fetch = {},
             case "densities":
                 groupBy = "$dnst";
                 break;
+            case "languages":
+                groupBy = "$la";
+                break;
             default:
                 groupBy = "users";
                 break;

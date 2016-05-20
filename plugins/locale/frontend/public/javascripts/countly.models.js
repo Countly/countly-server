@@ -8,6 +8,7 @@
             langmap = json;
         }
     });
+
     function getLanguageName(code){
         if(langmap && langmap[code]){
             return langmap[code].englishName
@@ -15,5 +16,6 @@
         else
             return code;
     }
-    CountlyHelpers.createMetricModel(window.countlyLanguage = window.countlyLanguage || {getLanguageName:getLanguageName}, "langs", jQuery, getLanguageName);
+
+    CountlyHelpers.createMetricModel(window.countlyLanguage = window.countlyLanguage || {getLanguageName:getLanguageName}, {name: "langs", estOverrideMetric:"languages"}, jQuery, getLanguageName);
 }());
