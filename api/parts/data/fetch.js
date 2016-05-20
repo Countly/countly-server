@@ -458,6 +458,9 @@ var fetch = {},
             case "languages":
                 groupBy = "$la";
                 break;
+            case "sources":
+                groupBy = "$src";
+                break;
             default:
                 groupBy = "users";
                 break;
