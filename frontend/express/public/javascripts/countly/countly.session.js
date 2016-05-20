@@ -187,7 +187,7 @@
         // because we want % change calculation to be based on estimated values
         if (_periodObj.isSpecialPeriod && countlyTotalUsers.isUsable()) {
             isEstimate = false;
-            currentUnique = countlyTotalUsers.get("users").users;
+            currentUnique = countlyTotalUsers.get("users").users || 0;
         }
 
         dataArr =
