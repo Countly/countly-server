@@ -13,7 +13,7 @@ window.PluginsView = countlyView.extend({
         }
     },
     renderCommon:function (isRefresh) {
-        
+
         var pluginsData = countlyPlugins.getData();
         this.templateData = {
             "page-title":jQuery.i18n.map["plugins.title"]
@@ -25,8 +25,11 @@ window.PluginsView = countlyView.extend({
             $.fn.dataTableExt.afnFiltering.push(function( oSettings, aData, iDataIndex ) {
                 if(!$(oSettings.nTable).hasClass("plugins-filter"))
                     return true;
-                if((self.filter == "plugins-enabled" && !aData[3]) || (self.filter == "plugins-disabled" && aData[3])){
-                    return false
+                if(self.filter == "plugins-enabled") {
+                    return aData[4]
+                }
+                if(self.filter == "plugins-disabled") {
+                    return !aData[4]
                 }
                 return true;
             });
