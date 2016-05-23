@@ -25,6 +25,43 @@
             Format of the API request is
             /o?method=total_users & metric=countries & period=X & api_key=Y & app_id=Y
          */
+        return $.when(
+            $.ajax({
+                type:"GET",
+                url:countlyCommon.API_PARTS.data.r,
+                data:{
+                    "api_key": countlyGlobal.member.api_key,
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "method": "total_users",
+                    "metric": forMetric,
+                    "period": _period
+                },
+                dataType:"jsonp",
+                success:function (json) {
+                    setCalculatedObj(forMetric, json);
+                }
+            }),
+            $.ajax({
+                type:"GET",
+                url:countlyCommon.API_PARTS.data.r,
+                data:{
+                    "api_key": countlyGlobal.member.api_key,
+                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "method": "total_users",
+                    "metric": forMetric,
+                    "period": "hours"
+                },
+                dataType:"jsonp",
+                success:function (json) {
+                    setRefreshObj(forMetric, json);
+                }
+            })
+        ).then(function(){
+            return true;
+        });
+    };
+
+    countlyTotalUsers.refresh = function (forMetric) {
         return $.ajax({
             type:"GET",
             url:countlyCommon.API_PARTS.data.r,
@@ -33,17 +70,13 @@
                 "app_id": countlyCommon.ACTIVE_APP_ID,
                 "method": "total_users",
                 "metric": forMetric,
-                "period": _period
+                "period": "hour"
             },
             dataType:"jsonp",
-            success:function (json) {
-                setCalculatedObj(forMetric, json, forMetric);
+            success:function (todaysJson) {
+                refreshData(forMetric, todaysJson);
             }
         });
-    };
-
-    countlyTotalUsers.refresh = function (forMetric) {
-        return true;
     };
 
     countlyTotalUsers.get = function (forMetric) {
@@ -101,6 +134,18 @@
         _totalUserObjects[_activeAppKey][forMetric][_period] = formatCalculatedObj(data, forMetric);
     }
 
+    function setRefreshObj(forMetric, data) {
+        if (!_totalUserObjects[_activeAppKey]) {
+            _totalUserObjects[_activeAppKey] = {};
+        }
+
+        if (!_totalUserObjects[_activeAppKey][forMetric]) {
+            _totalUserObjects[_activeAppKey][forMetric] = {};
+        }
+
+        _totalUserObjects[_activeAppKey][forMetric][_period + "_refresh"] = formatCalculatedObj(data, forMetric);
+    }
+
     /*
         Response from the API is in [{"_id":"TR","u":1},{"_id":"UK","u":5}] format
         We convert it to {"TR": 1, "UK": 5} format in this function
@@ -123,6 +168,37 @@
         }
 
         return tmpObj;
+    }
+
+    /*
+        Refreshes data based the diff between current "refresh" and the new one retrieved from the API
+        { "APP_KEY": { "countries": { "30days_refresh": {"TR": 1, "UK": 5} } } }
+     */
+    function refreshData(forMetric, todaysJson) {
+        if (_totalUserObjects[_activeAppKey] &&
+            _totalUserObjects[_activeAppKey][forMetric] &&
+            _totalUserObjects[_activeAppKey][forMetric][_period] &&
+            _totalUserObjects[_activeAppKey][forMetric][_period + "_refresh"]) {
+
+            var currObj = _totalUserObjects[_activeAppKey][forMetric][_period],
+                currRefreshObj = _totalUserObjects[_activeAppKey][forMetric][_period + "_refresh"],
+                newRefreshObj = formatCalculatedObj(todaysJson, forMetric);
+
+            _.each(newRefreshObj, function(value, key, list) {
+                if (currRefreshObj[key]) {
+                    // If existing refresh object contains the key we refresh the value
+                    // in total user object to curr value + new refresh value - curr refresh value
+                    currObj[key] += value - currRefreshObj[key];
+                } else {
+                    // Total user object doesn't have this key so we just add it
+                    currObj[key] = value;
+                }
+            });
+
+            // Both total user obj and refresh object is changed, update our var
+            _totalUserObjects[_activeAppKey][forMetric][_period] = currObj;
+            _totalUserObjects[_activeAppKey][forMetric][_period + "_refresh"] = newRefreshObj;
+        }
     }
 
 }(window.countlyTotalUsers = window.countlyTotalUsers || {}, jQuery));
