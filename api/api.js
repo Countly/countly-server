@@ -730,6 +730,9 @@ if (cluster.isMaster) {
                                 case 'get_events':
                                     validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchCollection, 'events');
                                     break;
+                                case 'all_apps':
+                                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchAllApps);
+                                    break;
                                 default:
                                     if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
                                         common.returnMessage(params, 400, 'Invalid method');
