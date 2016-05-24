@@ -46,6 +46,14 @@ plugins.setConfigs("frontend", {
     code: true
 });
 
+plugins.setUserConfigs("frontend", {
+    production: false,
+    theme: false,
+    session_timeout: false,
+    use_google: false,
+    code: false
+});
+
 var countlyDb = plugins.dbConnection(countlyConfig);
 
 function sha1Hash(str, addSalt) {
