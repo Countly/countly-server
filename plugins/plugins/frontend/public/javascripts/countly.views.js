@@ -265,6 +265,8 @@ window.ConfigurationsView = countlyView.extend({
             this.configsData = countlyPlugins.getConfigsData();
         var configsHTML;
         var title = jQuery.i18n.map["plugins.configs"];
+        if(this.userConfig)
+            title = jQuery.i18n.map["plugins.user-configs"];
         if(this.namespace && this.configsData[this.namespace]){
             configsHTML = this.generateConfigsTable(this.configsData[this.namespace], "-"+this.namespace);
             title = this.getInputLabel(this.namespace, this.namespace) + " " + title;
