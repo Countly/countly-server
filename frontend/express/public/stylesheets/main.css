@@ -436,6 +436,7 @@ div.datatablesubrow {display: none;}
 .d-table tr.selected {background-color: #D4ECD5;}
 
 .d-table input[type=text] { margin:0; font:15px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:3px; border:1px solid #DDD; width:274px; }
+.d-table input[type=password] { margin:0; font:15px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:3px; border:1px solid #DDD; width:274px; }
 
 .dataTable { border-radius:0 !important; margin-bottom:0 !important; border-top-color:#C2C2C2 !important; }
 .dataTable th { border-radius:0 !important; outline:none; cursor:pointer; }
