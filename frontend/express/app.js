@@ -233,10 +233,10 @@ app.get(countlyConfig.path+'/appimages/*', function(req, res) {
 
 
 var extendSession = function(req, res, next){
-	req.session.expires = Date.now() + plugins.getConfig("frontend").session_timeout;
+	req.session.expires = Date.now() + plugins.getConfig("frontend", req.session.settings).session_timeout;
 };
 var checkRequestForSession = function(req, res, next){
-    if(parseInt(plugins.getConfig("frontend").session_timeout)){
+    if(parseInt(plugins.getConfig("frontend", req.session.settings).session_timeout)){
         if (req.session.uid) {
             if(Date.now() > req.session.expires){
                 //logout user
@@ -677,8 +677,8 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                 if(req.body.lang && req.body.lang != member["lang"]){
                     countlyDb.collection('members').update({_id:member["_id"]}, {$set:{lang:req.body.lang}}, function(){});
                 }
-				if(plugins.getConfig("frontend").session_timeout)
-					req.session.expires = Date.now()+plugins.getConfig("frontend").session_timeout;
+				if(plugins.getConfig("frontend", member.settings).session_timeout)
+					req.session.expires = Date.now()+plugins.getConfig("frontend", member.settings).session_timeout;
                 res.redirect(countlyConfig.path+'/dashboard');
             } else {
                 plugins.callMethod("loginFailed", {req:req, res:res, next:next, data:req.body});
