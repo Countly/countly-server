@@ -372,7 +372,8 @@ var usage = {},
 
     function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done) {
         var userProps = {},
-            isNewUser = (user && user[common.dbUserMap['first_seen']])? false : true;
+            isNewUser = (user && user[common.dbUserMap['first_seen']])? false : true,
+            metricChanges = {};
 
         if (isNewUser) {
             userProps[common.dbUserMap['first_seen']] = params.time.timestamp;
@@ -496,6 +497,25 @@ var usage = {},
                     if (isNewUser || (!isNewUser && user[tmpMetric.short_code] != escapedMetricVal)) {
                         userProps[tmpMetric.short_code] = escapedMetricVal;
                     }
+
+                    /*
+                     If track_changes is not specifically set to false for a metric, track metric value changes on a per user level
+                     with a document like below inside metric_changesAPPID collection
+
+                     { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
+                     */
+                    if (predefinedMetrics[i].metrics[j].track_changes !== false && !isNewUser && user[tmpMetric.short_code] != escapedMetricVal) {
+                        if (!metricChanges["uid"]) {
+                            metricChanges["uid"] = user.uid;
+                            metricChanges["ts"] = params.time.timestamp;
+                            metricChanges["cd"] = new Date();
+                        }
+
+                        metricChanges[tmpMetric.short_code] = {
+                            "o": user[tmpMetric.short_code],
+                            "n": escapedMetricVal
+                        };
+                    }
                 }
             }
 
@@ -533,6 +553,18 @@ var usage = {},
                 //Perform user retention analysis
                 plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
             });
+
+            /*
+             If metricChanges object contains a uid this means we have at least one metric that has changed
+             in this begin_session so we'll insert it into metric_changesAPPID collection.
+             Inserted document has below format;
+
+             { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
+              */
+            if (metricChanges.uid) {
+                common.db.collection('metric_changes' + params.app_id).insert(metricChanges);
+            }
+
             if (done) { done(); }
         }
 
