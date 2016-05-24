@@ -265,6 +265,7 @@ app.get(countlyConfig.path+'/logout', function (req, res, next) {
         req.session.uid = null;
         req.session.gadm = null;
         req.session.email = null;
+        req.session.settings = null;
         res.clearCookie('uid');
         res.clearCookie('gadm');
         req.session.destroy(function () {
@@ -364,72 +365,77 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                 }
 
                 function renderDashboard() {
-                    req.session.uid = member["_id"];
-                    req.session.gadm = (member["global_admin"] == true);
-                    req.session.email = member["email"];
-                    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
-
-                    delete member["password"];
-                    
-                    adminOfApps = sortBy(adminOfApps, member.appSortList || []);
-                    userOfApps = sortBy(userOfApps, member.appSortList || []);
-                    
-                    var defaultApp = userOfApps[0];
-
-                    var countlyGlobal = {
-                        countlyTitle:COUNTLY_NAME,
-                        apps:countlyGlobalApps,
-                        defaultApp:defaultApp,
-                        admin_apps:countlyGlobalAdminApps,
-                        csrf_token:req.session._csrf,
-                        member:member,
-                        config: req.config,
-						plugins:plugins.getPlugins(),
-						path:countlyConfig.path || "",
-						cdn:countlyConfig.cdn || "",
-                        message: req.flash("message")
-                    }; 
-                    
-                    var toDashboard = {
-                        countlyTitle:COUNTLY_NAME,
-                        adminOfApps:adminOfApps,
-                        userOfApps:userOfApps,
-                        defaultApp:defaultApp,
-                        member:member,
-                        intercom:countlyConfig.web.use_intercom,
-                        track:countlyConfig.web.track || false,
-                        installed: req.session.install || false,
-                        cpus: require('os').cpus().length,
-                        countlyVersion:COUNTLY_VERSION,
-						countlyType: COUNTLY_TYPE_CE,
-						countlyTrial: COUNTLY_TRIAL,
-						countlyTypeName: COUNTLY_NAMED_TYPE,
-						countlyTypeTrack: COUNTLY_TRACK_TYPE,
-			            production: plugins.getConfig("frontend").production || false,
-						plugins:plugins.getPlugins(),
-                        config: req.config,
-						path:countlyConfig.path || "",
-						cdn:countlyConfig.cdn || "",
-						use_google:plugins.getConfig("frontend").use_google || false,
-                        themeFiles:themeFiles
-                    };
-                    
-                    if(req.session.install){
-                        req.session.install = null;
-                        res.clearCookie('install');
-                    }
-                    
-                    plugins.callMethod("renderDashboard", {req:req, res:res, next:next, data:{member:member, adminApps:countlyGlobalAdminApps, userApps:countlyGlobalApps, countlyGlobal:countlyGlobal, toDashboard:toDashboard}});
-
-                    res.expose(countlyGlobal, 'countlyGlobal');
-                    
-                    res.render('dashboard', toDashboard);
+                    var configs = plugins.getConfig("frontend", member.settings);
+                    app.loadThemeFiles(configs.theme, function(theme){
+                        res.cookie("theme", configs.theme);
+                        req.session.uid = member["_id"];
+                        req.session.gadm = (member["global_admin"] == true);
+                        req.session.email = member["email"];
+                        req.session.settings = member.settings;
+                        res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    
+                        delete member["password"];
+                        
+                        adminOfApps = sortBy(adminOfApps, member.appSortList || []);
+                        userOfApps = sortBy(userOfApps, member.appSortList || []);
+                        
+                        var defaultApp = userOfApps[0];
+                        _.extend(req.config, configs);
+                        var countlyGlobal = {
+                            countlyTitle:COUNTLY_NAME,
+                            apps:countlyGlobalApps,
+                            defaultApp:defaultApp,
+                            admin_apps:countlyGlobalAdminApps,
+                            csrf_token:req.session._csrf,
+                            member:member,
+                            config: req.config,
+                            plugins:plugins.getPlugins(),
+                            path:countlyConfig.path || "",
+                            cdn:countlyConfig.cdn || "",
+                            message: req.flash("message")
+                        }; 
+                        
+                        var toDashboard = {
+                            countlyTitle:COUNTLY_NAME,
+                            adminOfApps:adminOfApps,
+                            userOfApps:userOfApps,
+                            defaultApp:defaultApp,
+                            member:member,
+                            intercom:countlyConfig.web.use_intercom,
+                            track:countlyConfig.web.track || false,
+                            installed: req.session.install || false,
+                            cpus: require('os').cpus().length,
+                            countlyVersion:COUNTLY_VERSION,
+                            countlyType: COUNTLY_TYPE_CE,
+                            countlyTrial: COUNTLY_TRIAL,
+                            countlyTypeName: COUNTLY_NAMED_TYPE,
+                            countlyTypeTrack: COUNTLY_TRACK_TYPE,
+                            production: configs.production || false,
+                            plugins:plugins.getPlugins(),
+                            config: req.config,
+                            path:countlyConfig.path || "",
+                            cdn:countlyConfig.cdn || "",
+                            use_google:configs.use_google || false,
+                            themeFiles:theme
+                        };
+                        
+                        if(req.session.install){
+                            req.session.install = null;
+                            res.clearCookie('install');
+                        }
+                        plugins.callMethod("renderDashboard", {req:req, res:res, next:next, data:{member:member, adminApps:countlyGlobalAdminApps, userApps:countlyGlobalApps, countlyGlobal:countlyGlobal, toDashboard:toDashboard}});
+    
+                        res.expose(countlyGlobal, 'countlyGlobal');
+                        
+                        res.render('dashboard', toDashboard);
+                    });
                 }
             } else {
                 if (req.session) {
                     req.session.uid = null;
                     req.session.gadm = null;
                     req.session.email = null;
+                    req.session.settings = null;
                     res.clearCookie('uid');
                     res.clearCookie('gadm');
                     req.session.destroy(function () {});
@@ -652,6 +658,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                 req.session.uid = member["_id"];
                 req.session.gadm = (member["global_admin"] == true);
 				req.session.email = member["email"];
+                req.session.settings = member.settings;
                 if(req.body.lang && req.body.lang != member["lang"]){
                     countlyDb.collection('members').update({_id:member["_id"]}, {$set:{lang:req.body.lang}}, function(){});
                 }
