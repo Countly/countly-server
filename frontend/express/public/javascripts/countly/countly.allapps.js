@@ -105,7 +105,7 @@
 	
 	var loadApp = function(appID){
 		countlyCommon.setActiveApp(appID);
-		return $.when(countlyUser.initialize(), countlyTotalUsers.initialize("users")).done(function () {
+		return $.when(countlyUser.initialize()).done(function () {
 			var sessionData = countlySession.getSessionData();
 			if(!_appIds[appID]){
 				_sessionData[appID] = sessionData;
