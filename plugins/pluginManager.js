@@ -548,7 +548,13 @@ var pluginManager = function pluginManager(){
         return toReturn;
     };
     
-    var flattenObject = function(ob) {
+    var flattenObject = function(ob, prefix) {
+        if(prefix){
+            prefix += ".";
+        }
+        else{
+            prefix = "";
+        }
         var toReturn = {};
         
         for (var i in ob) {
@@ -559,10 +565,10 @@ var pluginManager = function pluginManager(){
                 for (var x in flatObject) {
                     if (!flatObject.hasOwnProperty(x)) continue;
                     
-                    toReturn[i + '.' + x] = flatObject[x];
+                    toReturn[prefix + i + '.' + x] = flatObject[x];
                 }
             } else {
-                toReturn[i] = ob[i];
+                toReturn[prefix + i] = ob[i];
             }
         }
         return toReturn;
