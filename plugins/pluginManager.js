@@ -276,13 +276,6 @@ var pluginManager = function pluginManager(){
     };
     
     this.loadAppPlugins = function(app, countlyDb, express){
-        var self = this;
-        app.use(function(req, res, next) {
-            self.loadConfigs(countlyDb, function(){
-                app.loadThemeFiles(self.getConfig("frontend").theme);
-                next();
-            })
-        });
         for(var i = 0; i < plugs.length; i++){
             try{
                 plugs[i].init(app, countlyDb, express);
