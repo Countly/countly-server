@@ -3,6 +3,7 @@
     //Private Properties
     var _pluginsData = {};
     var _configsData = {};
+    var _userConfigsData = {};
     var _themeList = [];
 
     //Public Methods
@@ -19,7 +20,29 @@
 		});
     };
     
-    //Public Methods
+    countlyPlugins.toggle = function (plugins, callback) {
+		$.ajax({
+			type:"GET",
+			url:countlyCommon.API_URL + "/i/plugins",
+			data:{
+				plugin:JSON.stringify(plugins),
+				api_key:countlyGlobal['member'].api_key
+			},
+			success:function (json) {
+				if(callback)
+					callback(json);
+			},
+			error: function(xhr, textStatus, errorThrown){
+				var ret = textStatus+" ";
+				ret += xhr.status+": "+$(xhr.responseText).text();
+				if(errorThrown)
+					ret += errorThrown+"\n";
+				if(callback)
+					callback(ret);
+			}
+		});
+    };
+    
     countlyPlugins.initializeConfigs = function (id) {
 		return $.when(
             $.ajax({
@@ -66,26 +89,50 @@
 			}
 		});
     };
-	
-	countlyPlugins.toggle = function (plugins, callback) {
+    
+    countlyPlugins.initializeUserConfigs = function (id) {
+		return $.when(
+            $.ajax({
+                type:"GET",
+                url:countlyCommon.API_URL + "/o/themes",
+                data:{
+                    api_key:countlyGlobal['member'].api_key
+                },
+                success:function (json) {
+                    _themeList = json;
+                }
+            }),
+            $.ajax({
+                type:"GET",
+                url:countlyCommon.API_URL + "/o/userconfigs",
+                data:{
+                    api_key:countlyGlobal['member'].api_key
+                },
+                success:function (json) {
+                    _userConfigsData = json;
+                }
+            })
+        ).then(function(){
+            return true;
+        });
+    };
+    
+    countlyPlugins.updateUserConfigs = function (configs, callback) {
 		$.ajax({
 			type:"GET",
-			url:countlyCommon.API_URL + "/i/plugins",
+			url:countlyCommon.API_URL + "/i/userconfigs",
 			data:{
-				plugin:JSON.stringify(plugins),
-				api_key:countlyGlobal['member'].api_key
-			},
+                configs:JSON.stringify(configs),
+                api_key:countlyGlobal['member'].api_key
+            },
 			success:function (json) {
-				if(callback)
-					callback(json);
+				_userConfigsData = json;
+                if(callback)
+                    callback(null, json);
 			},
-			error: function(xhr, textStatus, errorThrown){
-				var ret = textStatus+" ";
-				ret += xhr.status+": "+$(xhr.responseText).text();
-				if(errorThrown)
-					ret += errorThrown+"\n";
-				if(callback)
-					callback(ret);
+			error:function (json) {
+                if(callback)
+                    callback(true, json);
 			}
 		});
     };
@@ -96,6 +143,10 @@
     
     countlyPlugins.getConfigsData = function () {
 		return _configsData;
+    };
+    
+    countlyPlugins.getUserConfigsData = function () {
+		return _userConfigsData;
     };
     
     countlyPlugins.getThemeList = function () {

@@ -147,6 +147,43 @@ var plugin = {},
 			}
             var confs = plugins.getAllConfigs();
             delete confs.services;
+            for(var i in confs)
+                delete confs[i]._user;
+            common.returnOutput(params, confs);
+        }, params);
+        return true;
+    });
+    
+    plugins.register("/i/userconfigs", function(ob){
+		var params = ob.params;
+        var validateUserForWriteAPI = ob.validateUserForWriteAPI;
+		validateUserForWriteAPI(function(){
+            var data = {}
+            if(params.qstring.configs){
+                try{
+                    data = JSON.parse(params.qstring.configs);
+                }
+                catch(err){
+                    console.log("Error parsing configs", params.qstring.configs);
+                }
+            }
+            if(Object.keys(data).length > 0){
+                plugins.updateUserConfigs(common.db, data, params.member._id, function(){
+                    common.returnOutput(params, plugins.getUserConfigs(params.member.settings));
+                });
+            }
+            else{
+                common.returnMessage(params, 400, 'Error updating configs');
+            }
+        }, params);
+        return true;
+    });
+    
+    plugins.register("/o/userconfigs", function(ob){
+		var params = ob.params;
+        var validateUserForMgmtReadAPI = ob.validateUserForMgmtReadAPI;
+		validateUserForMgmtReadAPI(function(){
+            var confs = plugins.getUserConfigs(params.member.settings);
             common.returnOutput(params, confs);
         }, params);
         return true;

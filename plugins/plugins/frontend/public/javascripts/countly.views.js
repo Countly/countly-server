@@ -13,7 +13,7 @@ window.PluginsView = countlyView.extend({
         }
     },
     renderCommon:function (isRefresh) {
-        
+
         var pluginsData = countlyPlugins.getData();
         this.templateData = {
             "page-title":jQuery.i18n.map["plugins.title"]
@@ -25,8 +25,11 @@ window.PluginsView = countlyView.extend({
             $.fn.dataTableExt.afnFiltering.push(function( oSettings, aData, iDataIndex ) {
                 if(!$(oSettings.nTable).hasClass("plugins-filter"))
                     return true;
-                if((self.filter == "plugins-enabled" && !aData[3]) || (self.filter == "plugins-disabled" && aData[3])){
-                    return false
+                if(self.filter == "plugins-enabled") {
+                    return aData[4]
+                }
+                if(self.filter == "plugins-disabled") {
+                    return !aData[4]
                 }
                 return true;
             });
@@ -97,6 +100,7 @@ window.PluginsView = countlyView.extend({
 });
 
 window.ConfigurationsView = countlyView.extend({
+    userConfig: false,
     initialize:function () {
         this.predefinedInputs = {};
         this.predefinedLabels = {
@@ -238,16 +242,27 @@ window.ConfigurationsView = countlyView.extend({
     },
     beforeRender: function() {
         if(this.template)
-            return $.when(countlyPlugins.initializeConfigs()).then(function () {});
+            if(this.userConfig)
+                return $.when(countlyPlugins.initializeUserConfigs()).then(function () {});
+            else
+                return $.when(countlyPlugins.initializeConfigs()).then(function () {});
         else{
             var self = this;
-            return $.when($.get(countlyGlobal["path"]+'/plugins/templates/configurations.html', function(src){
-                self.template = Handlebars.compile(src);
-            }), countlyPlugins.initializeConfigs()).then(function () {});
+            if(this.userConfig)
+                return $.when($.get(countlyGlobal["path"]+'/plugins/templates/configurations.html', function(src){
+                    self.template = Handlebars.compile(src);
+                }), countlyPlugins.initializeUserConfigs()).then(function () {});
+            else
+                return $.when($.get(countlyGlobal["path"]+'/plugins/templates/configurations.html', function(src){
+                    self.template = Handlebars.compile(src);
+                }), countlyPlugins.initializeConfigs()).then(function () {});
         }
     },
     renderCommon:function (isRefresh) {
-        this.configsData = countlyPlugins.getConfigsData();
+        if(this.userConfig)
+            this.configsData = countlyPlugins.getUserConfigsData();
+        else
+            this.configsData = countlyPlugins.getConfigsData();
         var configsHTML;
         var title = jQuery.i18n.map["plugins.configs"];
         if(this.namespace && this.configsData[this.namespace]){
@@ -302,24 +317,46 @@ window.ConfigurationsView = countlyView.extend({
             });
             
             $("#configs-apply-changes").click(function () {
-                countlyPlugins.updateConfigs(self.changes, function(err, services){
-                    if(err){
-                        CountlyHelpers.notify({
-                            title: jQuery.i18n.map["configs.not-changed"],
-                            message: jQuery.i18n.map["configs.not-saved"],
-                            type: "error"
-                        });
-                    }
-                    else{
-                        CountlyHelpers.notify({
-                            title: jQuery.i18n.map["configs.changed"],
-                            message: jQuery.i18n.map["configs.saved"]
-                        });
-                        self.configsData = JSON.parse(JSON.stringify(self.cache));
-                        $("#configs-apply-changes").hide();
-                        self.changes = {};
-                    }
-                });
+                if(self.userConfig){
+                    countlyPlugins.updateUserConfigs(self.changes, function(err, services){
+                        if(err){
+                            CountlyHelpers.notify({
+                                title: jQuery.i18n.map["configs.not-changed"],
+                                message: jQuery.i18n.map["configs.not-saved"],
+                                type: "error"
+                            });
+                        }
+                        else{
+                            CountlyHelpers.notify({
+                                title: jQuery.i18n.map["configs.changed"],
+                                message: jQuery.i18n.map["configs.saved"]
+                            });
+                            self.configsData = JSON.parse(JSON.stringify(self.cache));
+                            $("#configs-apply-changes").hide();
+                            self.changes = {};
+                        }
+                    });
+                }
+                else{
+                    countlyPlugins.updateConfigs(self.changes, function(err, services){
+                        if(err){
+                            CountlyHelpers.notify({
+                                title: jQuery.i18n.map["configs.not-changed"],
+                                message: jQuery.i18n.map["configs.not-saved"],
+                                type: "error"
+                            });
+                        }
+                        else{
+                            CountlyHelpers.notify({
+                                title: jQuery.i18n.map["configs.changed"],
+                                message: jQuery.i18n.map["configs.saved"]
+                            });
+                            self.configsData = JSON.parse(JSON.stringify(self.cache));
+                            $("#configs-apply-changes").hide();
+                            self.changes = {};
+                        }
+                    });
+                }
             });
         }
     },
@@ -450,11 +487,25 @@ if(countlyGlobal["member"].global_admin){
     
     app.route('/manage/configurations', 'configurations', function () {
         this.configurationsView.namespace = null;
+        this.configurationsView.userConfig = false;
         this.renderWhenReady(this.configurationsView);
     });
     
     app.route('/manage/configurations/:namespace', 'configurations_namespace', function (namespace) {
         this.configurationsView.namespace = namespace;
+        this.configurationsView.userConfig = false;
+        this.renderWhenReady(this.configurationsView);
+    });
+    
+    app.route('/manage/user-settings', 'user-settings', function () {
+        this.configurationsView.namespace = null;
+        this.configurationsView.userConfig = true;
+        this.renderWhenReady(this.configurationsView);
+    });
+    
+    app.route('/manage/user-settings/:namespace', 'user-settings_namespace', function (namespace) {
+        this.configurationsView.namespace = namespace;
+        this.configurationsView.userConfig = true;
         this.renderWhenReady(this.configurationsView);
     });
 }
