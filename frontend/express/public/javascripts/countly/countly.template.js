@@ -2203,6 +2203,8 @@ window.ManageAppsView = countlyView.extend({
                             CountlyHelpers.alert(jQuery.i18n.map["management-applications.clear-admin"], "red");
                             return false;
                         } else {
+                            $(document).trigger("/i/apps/reset", { app_id: appId, period: period });
+
                             if(period == "all"){
                                 countlySession.reset();
                                 countlyLocation.reset();
@@ -2241,6 +2243,8 @@ window.ManageAppsView = countlyView.extend({
                     },
                     dataType:"jsonp",
                     success:function () {
+                        $(document).trigger("/i/apps/delete", { app_id: appId });
+
                         delete countlyGlobal['apps'][appId];
                         delete countlyGlobal['admin_apps'][appId];
                         var activeApp = $(".app-container").filter(function () {

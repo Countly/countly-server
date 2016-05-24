@@ -1,7 +1,7 @@
 (function (countlyTotalUsers, $, undefined) {
 
     //Private Properties
-    var _activeAppKey = 0,
+    var _activeAppId = 0,
         _initialized = {},
         _period = null,
         _totalUserObjects = {};
@@ -9,7 +9,7 @@
     //Public Methods
     countlyTotalUsers.initialize = function (forMetric) {
         _period = countlyCommon.getPeriodForAjax();
-        _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
+        _activeAppId = countlyCommon.ACTIVE_APP_ID;
 
         if (!countlyTotalUsers.isUsable()) {
             return true;
@@ -31,7 +31,7 @@
                 url:countlyCommon.API_PARTS.data.r,
                 data:{
                     "api_key": countlyGlobal.member.api_key,
-                    "app_id": countlyCommon.ACTIVE_APP_ID,
+                    "app_id": _activeAppId,
                     "method": "total_users",
                     "metric": forMetric,
                     "period": _period
@@ -80,8 +80,8 @@
     };
 
     countlyTotalUsers.get = function (forMetric) {
-        if (_totalUserObjects[_activeAppKey] && _totalUserObjects[_activeAppKey][forMetric]) {
-            return _totalUserObjects[_activeAppKey][forMetric][_period] || {};
+        if (_totalUserObjects[_activeAppId] && _totalUserObjects[_activeAppId][forMetric]) {
+            return _totalUserObjects[_activeAppId][forMetric][_period] || {};
         } else {
             return {};
         }
@@ -101,21 +101,21 @@
         We don't directly use _totalUserObjects for init check because it is init after AJAX and might take time
      */
     function setInit(forMetric) {
-        if (!_initialized[_activeAppKey]) {
-            _initialized[_activeAppKey] = {};
+        if (!_initialized[_activeAppId]) {
+            _initialized[_activeAppId] = {};
         }
 
-        if (!_initialized[_activeAppKey][forMetric]) {
-            _initialized[_activeAppKey][forMetric] = {};
+        if (!_initialized[_activeAppId][forMetric]) {
+            _initialized[_activeAppId][forMetric] = {};
         }
 
-        _initialized[_activeAppKey][forMetric][_period] = true;
+        _initialized[_activeAppId][forMetric][_period] = true;
     }
 
     function isInitialized(forMetric) {
-        return  _initialized[_activeAppKey] &&
-                _initialized[_activeAppKey][forMetric] &&
-                _initialized[_activeAppKey][forMetric][_period];
+        return  _initialized[_activeAppId] &&
+                _initialized[_activeAppId][forMetric] &&
+                _initialized[_activeAppId][forMetric][_period];
     }
 
     /*
@@ -123,27 +123,27 @@
         { "APP_KEY": { "countries": { "60days": {"TR": 1, "UK": 5} } } }
      */
     function setCalculatedObj(forMetric, data) {
-        if (!_totalUserObjects[_activeAppKey]) {
-            _totalUserObjects[_activeAppKey] = {};
+        if (!_totalUserObjects[_activeAppId]) {
+            _totalUserObjects[_activeAppId] = {};
         }
 
-        if (!_totalUserObjects[_activeAppKey][forMetric]) {
-            _totalUserObjects[_activeAppKey][forMetric] = {};
+        if (!_totalUserObjects[_activeAppId][forMetric]) {
+            _totalUserObjects[_activeAppId][forMetric] = {};
         }
 
-        _totalUserObjects[_activeAppKey][forMetric][_period] = formatCalculatedObj(data, forMetric);
+        _totalUserObjects[_activeAppId][forMetric][_period] = formatCalculatedObj(data, forMetric);
     }
 
     function setRefreshObj(forMetric, data) {
-        if (!_totalUserObjects[_activeAppKey]) {
-            _totalUserObjects[_activeAppKey] = {};
+        if (!_totalUserObjects[_activeAppId]) {
+            _totalUserObjects[_activeAppId] = {};
         }
 
-        if (!_totalUserObjects[_activeAppKey][forMetric]) {
-            _totalUserObjects[_activeAppKey][forMetric] = {};
+        if (!_totalUserObjects[_activeAppId][forMetric]) {
+            _totalUserObjects[_activeAppId][forMetric] = {};
         }
 
-        _totalUserObjects[_activeAppKey][forMetric][_period + "_refresh"] = formatCalculatedObj(data, forMetric);
+        _totalUserObjects[_activeAppId][forMetric][_period + "_refresh"] = formatCalculatedObj(data, forMetric);
     }
 
     /*
@@ -175,13 +175,13 @@
         { "APP_KEY": { "countries": { "30days_refresh": {"TR": 1, "UK": 5} } } }
      */
     function refreshData(forMetric, todaysJson) {
-        if (_totalUserObjects[_activeAppKey] &&
-            _totalUserObjects[_activeAppKey][forMetric] &&
-            _totalUserObjects[_activeAppKey][forMetric][_period] &&
-            _totalUserObjects[_activeAppKey][forMetric][_period + "_refresh"]) {
+        if (_totalUserObjects[_activeAppId] &&
+            _totalUserObjects[_activeAppId][forMetric] &&
+            _totalUserObjects[_activeAppId][forMetric][_period] &&
+            _totalUserObjects[_activeAppId][forMetric][_period + "_refresh"]) {
 
-            var currObj = _totalUserObjects[_activeAppKey][forMetric][_period],
-                currRefreshObj = _totalUserObjects[_activeAppKey][forMetric][_period + "_refresh"],
+            var currObj = _totalUserObjects[_activeAppId][forMetric][_period],
+                currRefreshObj = _totalUserObjects[_activeAppId][forMetric][_period + "_refresh"],
                 newRefreshObj = formatCalculatedObj(todaysJson, forMetric);
 
             _.each(newRefreshObj, function(value, key, list) {
@@ -196,9 +196,21 @@
             });
 
             // Both total user obj and refresh object is changed, update our var
-            _totalUserObjects[_activeAppKey][forMetric][_period] = currObj;
-            _totalUserObjects[_activeAppKey][forMetric][_period + "_refresh"] = newRefreshObj;
+            _totalUserObjects[_activeAppId][forMetric][_period] = currObj;
+            _totalUserObjects[_activeAppId][forMetric][_period + "_refresh"] = newRefreshObj;
         }
     }
+
+    // Triggered when app data is cleared
+    $(document).on("/i/apps/reset", function(event, args) {
+        delete _totalUserObjects[args.app_id];
+        delete _initialized[args.app_id];
+    });
+
+    // Triggered when app is deleted
+    $(document).on("/i/apps/delete", function(event, args) {
+        delete _totalUserObjects[args.app_id];
+        delete _initialized[args.app_id];
+    });
 
 }(window.countlyTotalUsers = window.countlyTotalUsers || {}, jQuery));
