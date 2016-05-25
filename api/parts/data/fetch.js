@@ -227,22 +227,38 @@ var fetch = {},
                     countlyDeviceDetails.setDb(deviceDetailsDoc || {});
                     countlyCarrier.setDb(carriersDoc || {});
 
-                    for (var i = 0; i < periods.length; i++) {
-                        countlyCommon.setPeriod(periods[i].period);
+                    async.map(periods, function(period, callback){
+                            countlyCommon.setPeriod(period.period);
 
-                        output[periods[i].out] = {
-                            dashboard: countlySession.getSessionData(),
-                            top: {
-                                platforms: countlyDeviceDetails.getPlatformBars(),
-                                resolutions: countlyDeviceDetails.getResolutionBars(),
-                                carriers: countlyCarrier.getCarrierBars(),
-                                users: countlySession.getTopUserBars()
-                            },
-                            period: countlyCommon.getDateRange()
-                        };
-                    }
+                            getTotalUsersObj("users", params, function(dbTotalUsersObj) {
+                                countlySession.setTotalUsersObj(formatTotalUsersObj(dbTotalUsersObj));
 
-                    common.returnOutput(params, output);
+                                var data = {
+                                    out: period.out,
+                                    data: {
+                                        dashboard: countlySession.getSessionData(),
+                                        top: {
+                                            platforms: countlyDeviceDetails.getPlatformBars(),
+                                            resolutions: countlyDeviceDetails.getResolutionBars(),
+                                            carriers: countlyCarrier.getCarrierBars(),
+                                            users: countlySession.getTopUserBars()
+                                        },
+                                        period: countlyCommon.getDateRange()
+                                    }
+                                };
+
+                                callback(null, data);
+                            });
+                        },
+                        function(err, output){
+                            var processedOutput = {};
+
+                            for (var i = 0; i < output.length; i++) {
+                                processedOutput[output[i].out] = output[i].data;
+                            }
+
+                            common.returnOutput(params, processedOutput);
+                        });
                 });
             });
         });

@@ -6,12 +6,17 @@ var countlySession = {},
 
     //Private Properties
     var _periodObj = {},
-        _sessionDb = {};
+        _sessionDb = {},
+        _totalUsersObj = {};
 
     //Public Methods
 
     countlySession.setDb = function(db) {
        _sessionDb = db;
+    };
+
+    countlySession.setTotalUsersObj = function(totalUsersObj) {
+        _totalUsersObj = totalUsersObj;
     };
 
     countlySession.getSessionData = function () {
@@ -131,6 +136,13 @@ var countlySession = {},
             timeSpentString = (sessionDuration / 1440).toFixed(1) + " days";
         } else if (sessionDuration >= 60) {
             timeSpentString = (sessionDuration / 60).toFixed(1) + " hours";
+        }
+
+        // Override estimated total user count here instead of where it is normally calculated
+        // because we want % change calculation to be based on estimated values
+        if (_periodObj.periodContainsToday) {
+            isEstimate = false;
+            currentUnique = _totalUsersObj.users || 0;
         }
 
         return {
