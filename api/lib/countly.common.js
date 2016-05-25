@@ -239,7 +239,7 @@ var countlyCommon = {},
         return {"chartDP":chartData, "chartData":underscore.compact(tableData), "keyEvents":keyEvents};
     };
 
-    countlyCommon.extractTwoLevelData = function (db, rangeArray, clearFunction, dataProperties) {
+    countlyCommon.extractTwoLevelData = function (db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj) {
 
         countlyCommon.periodObj = getPeriodObj();
 
@@ -341,63 +341,80 @@ var countlyCommon = {},
                 }
 
                 if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
-                    var tmpUniqVal = 0,
-                        tmpUniqValCheck = 0,
-                        tmpCheckVal = 0;
+                    if (countlyCommon.periodObj.periodContainsToday && totalUserOverrideObj) {
 
-                    for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
-                        tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[l] + "." + rangeArray[j]);
-                        if (!tmp_x) {
-                            continue;
+                        tmpPropertyObj["u"] = totalUserOverrideObj[rangeArray[j]] || 0;
+
+                    } else {
+                        var tmpUniqVal = 0,
+                            tmpUniqValCheck = 0,
+                            tmpCheckVal = 0;
+
+                        for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
+                            tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[l] + "." + rangeArray[j]);
+                            if (!tmp_x) {
+                                continue;
+                            }
+                            tmp_x = clearFunction(tmp_x);
+                            propertyValue = tmp_x["u"];
+
+                            if (typeof propertyValue === 'string') {
+                                tmpPropertyObj["u"] = propertyValue;
+                            } else {
+                                propertySum += propertyValue;
+                                tmpUniqVal += propertyValue;
+                                tmpPropertyObj["u"] += propertyValue;
+                            }
                         }
-                        tmp_x = clearFunction(tmp_x);
-                        propertyValue = tmp_x["u"];
 
-                        if (typeof propertyValue === 'string') {
-                            tmpPropertyObj["u"] = propertyValue;
-                        } else {
-                            propertySum += propertyValue;
-                            tmpUniqVal += propertyValue;
-                            tmpPropertyObj["u"] += propertyValue;
+                        for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
+                            tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[l] + "." + rangeArray[j]);
+                            if (!tmp_x) {
+                                continue;
+                            }
+                            tmp_x = clearFunction(tmp_x);
+                            tmpCheckVal = tmp_x["u"];
+
+                            if (typeof tmpCheckVal !== 'string') {
+                                propertySum += tmpCheckVal;
+                                tmpUniqValCheck += tmpCheckVal;
+                                tmpPropertyObj["u"] += tmpCheckVal;
+                            }
+                        }
+
+                        if (tmpUniqVal > tmpUniqValCheck) {
+                            tmpPropertyObj["u"] = tmpUniqValCheck;
                         }
                     }
 
-                    for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
-                        tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[l] + "." + rangeArray[j]);
-                        if (!tmp_x) {
-                            continue;
-                        }
-                        tmp_x = clearFunction(tmp_x);
-                        tmpCheckVal = tmp_x["u"];
-
-                        if (typeof tmpCheckVal !== 'string') {
-                            propertySum += tmpCheckVal;
-                            tmpUniqValCheck += tmpCheckVal;
-                            tmpPropertyObj["u"] += tmpCheckVal;
-                        }
+                    // Total users can't be less than new users
+                    if (tmpPropertyObj.u < tmpPropertyObj.n) {
+                        tmpPropertyObj.u = tmpPropertyObj.n;
                     }
 
-                    if (tmpUniqVal > tmpUniqValCheck) {
-                        tmpPropertyObj["u"] = tmpUniqValCheck;
+                    // Total users can't be more than total sessions
+                    if (tmpPropertyObj.u > tmpPropertyObj.t) {
+                        tmpPropertyObj.u = tmpPropertyObj.t;
                     }
                 }
 
-                //if (propertySum > 0)
-                {
-                    tableData[tableCounter] = {};
-                    tableData[tableCounter] = tmpPropertyObj;
-                    tableCounter++;
-                }
+                tableData[tableCounter] = {};
+                tableData[tableCounter] = tmpPropertyObj;
+                tableCounter++;
             }
         }
 
-        if (propertyNames.indexOf("t") !== -1) {
+        if (propertyNames.indexOf("u") !== -1) {
             tableData = underscore.sortBy(tableData, function (obj) {
-                return -obj["t"]
+                return -obj["u"];
+            });
+        } else if (propertyNames.indexOf("t") !== -1) {
+            tableData = underscore.sortBy(tableData, function (obj) {
+                return -obj["t"];
             });
         } else if (propertyNames.indexOf("c") !== -1) {
             tableData = underscore.sortBy(tableData, function (obj) {
-                return -obj["c"]
+                return -obj["c"];
             });
         }
 
@@ -581,7 +598,7 @@ var countlyCommon = {},
         return underscore.compact(tableData);
     };
 	
-	countlyCommon.extractMetric = function (db, rangeArray, clearFunction, dataProperties) {
+	countlyCommon.extractMetric = function (db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj) {
 
         countlyCommon.periodObj = getPeriodObj();
 
@@ -690,57 +707,74 @@ var countlyCommon = {},
                 }
 
                 if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
-                    var tmpUniqVal = 0,
-                        tmpUniqValCheck = 0,
-                        tmpCheckVal = 0;
+                    if (countlyCommon.periodObj.periodContainsToday && totalUserOverrideObj) {
 
-                    for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
-                        tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[l] + "." + rangeArray[j]);
-                        if (!tmp_x) {
-                            continue;
+                        tmpPropertyObj["u"] = totalUserOverrideObj[rangeArray[j]] || 0;
+
+                    } else {
+                        var tmpUniqVal = 0,
+                            tmpUniqValCheck = 0,
+                            tmpCheckVal = 0;
+
+                        for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
+                            tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[l] + "." + rangeArray[j]);
+                            if (!tmp_x) {
+                                continue;
+                            }
+                            tmp_x = clearFunction(tmp_x);
+                            propertyValue = tmp_x["u"];
+
+                            if (typeof propertyValue === 'string') {
+                                tmpPropertyObj["u"] = propertyValue;
+                            } else {
+                                propertySum += propertyValue;
+                                tmpUniqVal += propertyValue;
+                                tmpPropertyObj["u"] += propertyValue;
+                            }
                         }
-                        tmp_x = clearFunction(tmp_x);
-                        propertyValue = tmp_x["u"];
 
-                        if (typeof propertyValue === 'string') {
-                            tmpPropertyObj["u"] = propertyValue;
-                        } else {
-                            propertySum += propertyValue;
-                            tmpUniqVal += propertyValue;
-                            tmpPropertyObj["u"] += propertyValue;
+                        for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
+                            tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[l] + "." + rangeArray[j]);
+                            if (!tmp_x) {
+                                continue;
+                            }
+                            tmp_x = clearFunction(tmp_x);
+                            tmpCheckVal = tmp_x["u"];
+
+                            if (typeof tmpCheckVal !== 'string') {
+                                propertySum += tmpCheckVal;
+                                tmpUniqValCheck += tmpCheckVal;
+                                tmpPropertyObj["u"] += tmpCheckVal;
+                            }
+                        }
+
+                        if (tmpUniqVal > tmpUniqValCheck) {
+                            tmpPropertyObj["u"] = tmpUniqValCheck;
                         }
                     }
 
-                    for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
-                        tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[l] + "." + rangeArray[j]);
-                        if (!tmp_x) {
-                            continue;
-                        }
-                        tmp_x = clearFunction(tmp_x);
-                        tmpCheckVal = tmp_x["u"];
-
-                        if (typeof tmpCheckVal !== 'string') {
-                            propertySum += tmpCheckVal;
-                            tmpUniqValCheck += tmpCheckVal;
-                            tmpPropertyObj["u"] += tmpCheckVal;
-                        }
+                    // Total users can't be less than new users
+                    if (tmpPropertyObj.u < tmpPropertyObj.n) {
+                        tmpPropertyObj.u = tmpPropertyObj.n;
                     }
 
-                    if (tmpUniqVal > tmpUniqValCheck) {
-                        tmpPropertyObj["u"] = tmpUniqValCheck;
+                    // Total users can't be more than total sessions
+                    if (tmpPropertyObj.u > tmpPropertyObj.t) {
+                        tmpPropertyObj.u = tmpPropertyObj.t;
                     }
                 }
 
-                //if (propertySum > 0)
-                {
-                    tableData[tableCounter] = {};
-                    tableData[tableCounter] = tmpPropertyObj;
-                    tableCounter++;
-                }
+                tableData[tableCounter] = {};
+                tableData[tableCounter] = tmpPropertyObj;
+                tableCounter++;
             }
         }
 
-        if (propertyNames.indexOf("t") !== -1) {
+        if (propertyNames.indexOf("u") !== -1) {
+            tableData = underscore.sortBy(tableData, function (obj) {
+                return -obj["u"];
+            });
+        } else if (propertyNames.indexOf("t") !== -1) {
             tableData = underscore.sortBy(tableData, function (obj) {
                 return -obj["t"]
             });

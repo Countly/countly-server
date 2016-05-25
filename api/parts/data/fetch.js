@@ -318,8 +318,7 @@ var fetch = {},
         params.qstring.period = "30days";
 
         fetchTimeObj('users', params, false, function(locationsDoc) {
-            var output = {},
-                periods = [
+            var periods = [
                     {period: "30days", out: "30days"},
                     {period: "7days", out: "7days"},
                     {period: "hour", out: "today"}
@@ -328,13 +327,26 @@ var fetch = {},
             countlyCommon.setTimezone(params.appTimezone);
             countlyLocation.setDb(locationsDoc || {});
 
-            for (var i = 0; i < periods.length; i++) {
-                countlyCommon.setPeriod(periods[i].period);
+            async.map(periods, function(period, callback){
+                    countlyCommon.setPeriod(period.period);
 
-                output[periods[i].out] = countlyLocation.getLocationData({maxCountries: 10, sort: "new"});
-            }
+                    getTotalUsersObj("countries", params, function(dbTotalUsersObj) {
+                        countlyLocation.setTotalUsersObj(formatTotalUsersObj(dbTotalUsersObj));
 
-            common.returnOutput(params, output);
+                        var data = {out: period.out, data: countlyLocation.getLocationData({maxCountries: 10, sort: "new"})};
+
+                        callback(null, data);
+                    });
+                },
+                function(err, output){
+                    var processedOutput = {};
+
+                    for (var i = 0; i < output.length; i++) {
+                        processedOutput[output[i].out] = output[i].data;
+                    }
+
+                    common.returnOutput(params, processedOutput);
+                });
         });
     };
 	
@@ -382,7 +394,7 @@ var fetch = {},
     };
 	
 	fetch.fetchMetric = function(params) {
-		function getMetric(metric){
+		function getMetric(metric, totalUsersMetric){
 			fetchTimeObj(metric, params, false, function(doc) {
 				var clearMetricObject = function (obj) {
 					if (obj) {
@@ -396,45 +408,60 @@ var fetch = {},
 			
 					return obj;
 				};
+
 				if (doc['meta'] && doc['meta'][params.qstring.metric]) {
-					var data = countlyCommon.extractMetric(doc, doc['meta'][params.qstring.metric], clearMetricObject, [
-						{
-							name:params.qstring.metric,
-							func:function (rangeArr, dataObj) {
-								return rangeArr;
-							}
-						},
-						{ "name":"t" },
-						{ "name":"n" },
-						{ "name":"u" }
-					]);
-					common.returnOutput(params, data);
+                    getTotalUsersObj(totalUsersMetric, params, function(dbTotalUsersObj) {
+                        var data = countlyCommon.extractMetric(doc, doc['meta'][params.qstring.metric], clearMetricObject, [
+                            {
+                                name:params.qstring.metric,
+                                func:function (rangeArr, dataObj) {
+                                    return rangeArr;
+                                }
+                            },
+                            { "name":"t" },
+                            { "name":"n" },
+                            { "name":"u" }
+                        ], formatTotalUsersObj(dbTotalUsersObj));
+
+                        common.returnOutput(params, data);
+                    });
 				}
 				else{
 					common.returnOutput(params, []);
 				}
 			});
 		}
-		if(!params.qstring.metric)
+
+		if(!params.qstring.metric) {
 			common.returnMessage(params, 400, 'Must provide metric');
-		else{
+        } else {
 			switch (params.qstring.metric) {
                 case 'locations':
                 case 'countries':
+                    getMetric('users', "countries");
+                    break;
                 case 'sessions':
                 case 'users':
 					getMetric('users');
                     break;
                 case 'app_versions':
+                    getMetric("device_details", "app_versions");
+                    break;
                 case 'os':
+                    getMetric("device_details", "platforms");
+                    break;
                 case 'os_versions':
+                    getMetric("device_details", "platform_versions");
+                    break;
                 case 'resolutions':
+                    getMetric("device_details", "resolutions");
+                    break;
                 case 'device_details':
 					getMetric('device_details');
                     break;
                 case 'cities':
                     if (plugins.getConfig("api").city_data !== false) {
-						getMetric(params.qstring.metric);
+						getMetric("cities", "cities");
                     } else {
                         common.returnOutput(params, []);
                     }
@@ -457,7 +484,12 @@ var fetch = {},
     };
 
     fetch.fetchTotalUsersObj = function (metric, params) {
+        getTotalUsersObj(metric, params, function(output) {
+            common.returnOutput(params, output);
+        });
+    };
 
+    function getTotalUsersObj(metric, params, callback) {
         var periodObj = getPeriodObj(params);
 
         /*
@@ -563,16 +595,37 @@ var fetch = {},
                             }
                         }
 
-                        common.returnOutput(params, appUsersDbResult);
+                        callback(appUsersDbResult);
                     });
                 } else {
-                    common.returnOutput(params, appUsersDbResult);
+                    callback(appUsersDbResult);
                 }
             });
         } else {
-            common.returnOutput(params, []);
+            callback([]);
         }
-    };
+    }
+
+    function formatTotalUsersObj(obj, forMetric) {
+        var tmpObj = {},
+            processingFunction;
+
+        /*
+        switch(forMetric) {
+            case "devices":
+                processingFunction = countlyDevice.getDeviceFullName;
+                break;
+        }
+        */
+
+        for (var i = 0; i < obj.length; i++) {
+            var tmpKey = (processingFunction)? processingFunction(obj[i]["_id"]) : obj[i]["_id"];
+
+            tmpObj[tmpKey] = obj[i]["u"];
+        }
+
+        return tmpObj;
+    }
 
     function fetchTimeObj(collection, params, isCustomEvent, callback) {
         if (params.qstring.action == "refresh") {

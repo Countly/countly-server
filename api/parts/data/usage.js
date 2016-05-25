@@ -360,7 +360,16 @@ var usage = {},
         common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate);
 
         if (Object.keys(updateUsersZero).length || Object.keys(usersMeta).length) {
-            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, {$set: {m: dbDateIds.zero, a: params.app_id + ""}, '$inc': updateUsersZero, '$addToSet': usersMeta}, {'upsert': true}, function(){});
+            var updateObj = {
+                $set: { m: dbDateIds.zero, a: params.app_id + "" },
+                $addToSet: usersMeta
+            };
+
+            if (Object.keys(updateUsersZero).length) {
+                updateObj["$inc"] = updateUsersZero;
+            }
+
+            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, updateObj, {'upsert': true}, function(){});
         }
 
         common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true}, function(){});
@@ -396,6 +405,18 @@ var usage = {},
 
             if (user[common.dbUserMap['country_code']] != params.user.country) {
                 userProps[common.dbUserMap['country_code']] = params.user.country;
+
+                /*
+                 Init metric changes object here because country code is not a part of
+                 "metrics" object received from begin_session thus won't be tracked otherwise
+                */
+                metricChanges["uid"] = user.uid;
+                metricChanges["ts"] = params.time.timestamp;
+                metricChanges["cd"] = new Date();
+                metricChanges[common.dbUserMap['country_code']] = {
+                    "o": user[common.dbUserMap['country_code']],
+                    "n": params.user.country
+                };
             }
 
             if (user[common.dbUserMap['device_id']] != params.qstring.device_id) {
