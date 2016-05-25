@@ -266,6 +266,7 @@ var fetch = {},
     
     fetch.fetchAllApps = function(params) {
         var filter = {};
+
         if(params.qstring.filter){
             try{
                 filter = JSON.parse(params.qstring.filter);
@@ -274,6 +275,7 @@ var fetch = {},
                 filter = {};
             }            
         }
+
         common.db.collection("apps").find(filter, {_id:1, name:1}).toArray(function(err, apps){
             function extractData(db, props){
                 var chartData = [
@@ -283,22 +285,40 @@ var fetch = {},
                 dataProps.push(props);
                 return countlyCommon.extractChartData(db, countlySession.clearSessionObject, chartData, dataProps).chartDP[0].data;
             }
+
+            function setAppId(inAppId) {
+                params.app_id = inAppId + "";
+            }
+
             countlyCommon.setTimezone(params.appTimezone);
-            async.map(apps, function(app, callback){
-                params.app_id = app._id+"";
+
+            async.map(apps, function(app, callback) {
+                setAppId(app._id);
+
                 fetchTimeObj('users', params, false, function(usersDoc) {
-                    countlySession.setDb(usersDoc || {});
-                    var sessionData = countlySession.getSessionData();
-                    var charts = {
-                        "total-users": extractData(usersDoc || {}, {name:"t",func:function (dataObj) {return dataObj["u"]}}),
-                        "new-users": extractData(usersDoc || {}, { name:"n" }),
-                        "total-sessions": extractData(usersDoc || {}, { name:"t" }),
-                        "time-spent": extractData(usersDoc || {}, {name:"average", func:function (dataObj) {return ((dataObj["t"] == 0) ? 0 : ((dataObj["d"] / dataObj["t"]) / 60).toFixed(1));}}),
-                        "total-time-spent": extractData(usersDoc || {}, {name:"t", func:function (dataObj) {return ((dataObj["d"] / 60).toFixed(1));}}),
-                        "avg-events-served": extractData(usersDoc || {}, {name:"average", func:function (dataObj) {return ((dataObj["u"] == 0) ? 0 : ((dataObj["e"] / dataObj["u"]).toFixed(1)));}})
-                    };
-                    var data = {_id:app._id, name:app.name, test:"1", sessions:sessionData['total_sessions'], users:sessionData['total_users'], newusers:sessionData['new_users'], duration:sessionData['total_time'], avgduration:sessionData['avg_time'], charts:charts};
-                    callback(null, data);
+
+                    // We need to set app_id once again here because after the callback
+                    // it is reset to it's original value
+                    setAppId(app._id);
+
+                    getTotalUsersObj("users", params, function(dbTotalUsersObj) {
+                        countlySession.setDb(usersDoc || {});
+                        countlySession.setTotalUsersObj(formatTotalUsersObj(dbTotalUsersObj));
+
+                        var sessionData = countlySession.getSessionData();
+                        var charts = {
+                            "total-users": extractData(usersDoc || {}, {name:"t",func:function (dataObj) {return dataObj["u"]}}),
+                            "new-users": extractData(usersDoc || {}, { name:"n" }),
+                            "total-sessions": extractData(usersDoc || {}, { name:"t" }),
+                            "time-spent": extractData(usersDoc || {}, {name:"average", func:function (dataObj) {return ((dataObj["t"] == 0) ? 0 : ((dataObj["d"] / dataObj["t"]) / 60).toFixed(1));}}),
+                            "total-time-spent": extractData(usersDoc || {}, {name:"t", func:function (dataObj) {return ((dataObj["d"] / 60).toFixed(1));}}),
+                            "avg-events-served": extractData(usersDoc || {}, {name:"average", func:function (dataObj) {return ((dataObj["u"] == 0) ? 0 : ((dataObj["e"] / dataObj["u"]).toFixed(1)));}})
+                        };
+
+                        var data = {_id:app._id, name:app.name, test:"1", sessions:sessionData['total_sessions'], users:sessionData['total_users'], newusers:sessionData['new_users'], duration:sessionData['total_time'], avgduration:sessionData['avg_time'], charts:charts};
+
+                        callback(null, data);
+                    });
                 });
             },
             function(err, res){

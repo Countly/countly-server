@@ -140,9 +140,9 @@ var countlySession = {},
 
         // Override estimated total user count here instead of where it is normally calculated
         // because we want % change calculation to be based on estimated values
-        if (_periodObj.periodContainsToday) {
+        if (_periodObj.periodContainsToday && _totalUsersObj.users) {
             isEstimate = false;
-            currentUnique = _totalUsersObj.users || 0;
+            currentUnique = _totalUsersObj.users;
         }
 
         return {
