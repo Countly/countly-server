@@ -15,6 +15,7 @@ var versionInfo = require('./version.info'),
     async = require('async'),
     stringJS = require('string'),
     flash = require('connect-flash'),
+    _ = require('underscore'),
     countlyMail = require('../../api/parts/mgmt/mail.js'),
     countlyStats = require('../../api/parts/data/stats.js'),
 	plugins = require('../../plugins/pluginManager.js'),
@@ -44,6 +45,14 @@ plugins.setConfigs("frontend", {
     session_timeout: 30*60*1000,
     use_google: true,
     code: true
+});
+
+plugins.setUserConfigs("frontend", {
+    production: false,
+    theme: false,
+    session_timeout: false,
+    use_google: false,
+    code: false
 });
 
 var countlyDb = plugins.dbConnection(countlyConfig);
@@ -93,12 +102,11 @@ function sortBy(arrayToSort, sortList) {
 
 var app = express();
 
-var themeFiles = {css:[], js:[]};
+var loadedThemes = {};
 var curTheme;
-app.loadThemeFiles = function(theme){
-    if(curTheme != theme){
-        curTheme = theme;
-        themeFiles = {css:[], js:[]};
+app.loadThemeFiles = function(theme, callback){
+    if(!loadedThemes[theme]){
+        var tempThemeFiles = {css:[], js:[]};
         if(theme && theme.length){
             var themeDir = path.resolve(__dirname, "public/themes/"+theme+"/");
             fs.readdir(themeDir, function(err, list) {
@@ -106,16 +114,24 @@ app.loadThemeFiles = function(theme){
                 var ext;
                 for(var i = 0; i < list.length; i++){
                     ext = list[i].split(".").pop();
-                    if(!themeFiles[ext])
-                        themeFiles[ext] = [];
-                    themeFiles[ext].push(countlyConfig.path+'/themes/'+theme+"/"+list[i]);
+                    if(!tempThemeFiles[ext])
+                        tempThemeFiles[ext] = [];
+                    tempThemeFiles[ext].push(countlyConfig.path+'/themes/'+theme+"/"+list[i]);
                 }
+                if(callback)
+                    callback(tempThemeFiles);
+                loadedThemes[theme] = tempThemeFiles;
             });
         }
+        else if(callback)
+            callback(tempThemeFiles);
     }
+    else if(callback)
+        callback(loadedThemes[theme]);
 };
 
 plugins.loadConfigs(countlyDb, function(){
+    curTheme = plugins.getConfig("frontend").theme;
     app.loadThemeFiles(plugins.getConfig("frontend").theme);
 });
 
@@ -125,14 +141,16 @@ app.configure(function () {
     app.set('view engine', 'html');
     app.set('view options', {layout:false});
     plugins.loadAppStatic(app, countlyDb, express);
+    app.use(express.cookieParser());
     //server theme images
     app.use(function(req, res, next) {
         if(req.url.indexOf(countlyConfig.path+'/images/') === 0){
             var url = req.url.replace(countlyConfig.path, "");
-            if(curTheme && curTheme.length){
-                fs.exists(__dirname + '/public/themes/'+curTheme + url, function(exists) {
+            var theme = req.cookies.theme || curTheme;
+            if(theme && theme.length){
+                fs.exists(__dirname + '/public/themes/'+theme + url, function(exists) {
                     if (exists) {
-                        res.sendfile(__dirname + '/public/themes/'+curTheme + url);
+                        res.sendfile(__dirname + '/public/themes/'+theme + url);
                     } else {
                         next();
                     }
@@ -148,7 +166,6 @@ app.configure(function () {
     });
     var oneYear = 31557600000;
     app.use(countlyConfig.path, express.static(__dirname + '/public'), { maxAge:oneYear });
-    app.use(express.cookieParser());
     app.use(express.session({
         secret:'countlyss',
         store:new SkinStore(countlyDb)
@@ -156,19 +173,25 @@ app.configure(function () {
     app.use(express.bodyParser({uploadDir:__dirname + '/uploads'}));
     app.use(flash());
     app.use(function(req, res, next) {
-        res.locals.flash = req.flash.bind(req);
-        req.config = plugins.getConfig("frontend");
-        var _render = res.render;
-        res.render = function(view, opts, fn, parent, sub){
-            if(!opts["path"])
-                opts["path"] = countlyConfig.path || "";
-            if(!opts["cdn"])
-                opts["cdn"] = countlyConfig.cdn || "";
-            if(!opts["themeFiles"])
-                opts["themeFiles"] = themeFiles;
-            _render.call(res, view, opts, fn, parent, sub);
-        };
-        next();
+        plugins.loadConfigs(countlyDb, function(){
+            curTheme = plugins.getConfig("frontend").theme;
+            app.loadThemeFiles(req.cookies.theme || plugins.getConfig("frontend").theme, function(themeFiles){
+                res.locals.flash = req.flash.bind(req);
+                req.config = plugins.getConfig("frontend");
+                req.themeFiles = themeFiles;
+                var _render = res.render;
+                res.render = function(view, opts, fn, parent, sub){
+                    if(!opts["path"])
+                        opts["path"] = countlyConfig.path || "";
+                    if(!opts["cdn"])
+                        opts["cdn"] = countlyConfig.cdn || "";
+                    if(!opts["themeFiles"])
+                        opts["themeFiles"] = themeFiles;
+                    _render.call(res, view, opts, fn, parent, sub);
+                };
+                next();
+            });
+        });
     });
     app.use(express.methodOverride());
     var csrf = express.csrf();
@@ -210,10 +233,10 @@ app.get(countlyConfig.path+'/appimages/*', function(req, res) {
 
 
 var extendSession = function(req, res, next){
-	req.session.expires = Date.now() + plugins.getConfig("frontend").session_timeout;
+	req.session.expires = Date.now() + plugins.getConfig("frontend", req.session.settings).session_timeout;
 };
 var checkRequestForSession = function(req, res, next){
-    if(parseInt(plugins.getConfig("frontend").session_timeout)){
+    if(parseInt(plugins.getConfig("frontend", req.session.settings).session_timeout)){
         if (req.session.uid) {
             if(Date.now() > req.session.expires){
                 //logout user
@@ -257,6 +280,7 @@ app.get(countlyConfig.path+'/logout', function (req, res, next) {
         req.session.uid = null;
         req.session.gadm = null;
         req.session.email = null;
+        req.session.settings = null;
         res.clearCookie('uid');
         res.clearCookie('gadm');
         req.session.destroy(function () {
@@ -356,72 +380,77 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                 }
 
                 function renderDashboard() {
-                    req.session.uid = member["_id"];
-                    req.session.gadm = (member["global_admin"] == true);
-                    req.session.email = member["email"];
-                    res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
-
-                    delete member["password"];
-                    
-                    adminOfApps = sortBy(adminOfApps, member.appSortList || []);
-                    userOfApps = sortBy(userOfApps, member.appSortList || []);
-                    
-                    var defaultApp = userOfApps[0];
-
-                    var countlyGlobal = {
-                        countlyTitle:COUNTLY_NAME,
-                        apps:countlyGlobalApps,
-                        defaultApp:defaultApp,
-                        admin_apps:countlyGlobalAdminApps,
-                        csrf_token:req.session._csrf,
-                        member:member,
-                        config: req.config,
-						plugins:plugins.getPlugins(),
-						path:countlyConfig.path || "",
-						cdn:countlyConfig.cdn || "",
-                        message: req.flash("message")
-                    }; 
-                    
-                    var toDashboard = {
-                        countlyTitle:COUNTLY_NAME,
-                        adminOfApps:adminOfApps,
-                        userOfApps:userOfApps,
-                        defaultApp:defaultApp,
-                        member:member,
-                        intercom:countlyConfig.web.use_intercom,
-                        track:countlyConfig.web.track || false,
-                        installed: req.session.install || false,
-                        cpus: require('os').cpus().length,
-                        countlyVersion:COUNTLY_VERSION,
-						countlyType: COUNTLY_TYPE_CE,
-						countlyTrial: COUNTLY_TRIAL,
-						countlyTypeName: COUNTLY_NAMED_TYPE,
-						countlyTypeTrack: COUNTLY_TRACK_TYPE,
-			            production: plugins.getConfig("frontend").production || false,
-						plugins:plugins.getPlugins(),
-                        config: req.config,
-						path:countlyConfig.path || "",
-						cdn:countlyConfig.cdn || "",
-						use_google:plugins.getConfig("frontend").use_google || false,
-                        themeFiles:themeFiles
-                    };
-                    
-                    if(req.session.install){
-                        req.session.install = null;
-                        res.clearCookie('install');
-                    }
-                    
-                    plugins.callMethod("renderDashboard", {req:req, res:res, next:next, data:{member:member, adminApps:countlyGlobalAdminApps, userApps:countlyGlobalApps, countlyGlobal:countlyGlobal, toDashboard:toDashboard}});
-
-                    res.expose(countlyGlobal, 'countlyGlobal');
-                    
-                    res.render('dashboard', toDashboard);
+                    var configs = plugins.getConfig("frontend", member.settings);
+                    app.loadThemeFiles(configs.theme, function(theme){
+                        res.cookie("theme", configs.theme);
+                        req.session.uid = member["_id"];
+                        req.session.gadm = (member["global_admin"] == true);
+                        req.session.email = member["email"];
+                        req.session.settings = member.settings;
+                        res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+    
+                        delete member["password"];
+                        
+                        adminOfApps = sortBy(adminOfApps, member.appSortList || []);
+                        userOfApps = sortBy(userOfApps, member.appSortList || []);
+                        
+                        var defaultApp = userOfApps[0];
+                        _.extend(req.config, configs);
+                        var countlyGlobal = {
+                            countlyTitle:COUNTLY_NAME,
+                            apps:countlyGlobalApps,
+                            defaultApp:defaultApp,
+                            admin_apps:countlyGlobalAdminApps,
+                            csrf_token:req.session._csrf,
+                            member:member,
+                            config: req.config,
+                            plugins:plugins.getPlugins(),
+                            path:countlyConfig.path || "",
+                            cdn:countlyConfig.cdn || "",
+                            message: req.flash("message")
+                        }; 
+                        
+                        var toDashboard = {
+                            countlyTitle:COUNTLY_NAME,
+                            adminOfApps:adminOfApps,
+                            userOfApps:userOfApps,
+                            defaultApp:defaultApp,
+                            member:member,
+                            intercom:countlyConfig.web.use_intercom,
+                            track:countlyConfig.web.track || false,
+                            installed: req.session.install || false,
+                            cpus: require('os').cpus().length,
+                            countlyVersion:COUNTLY_VERSION,
+                            countlyType: COUNTLY_TYPE_CE,
+                            countlyTrial: COUNTLY_TRIAL,
+                            countlyTypeName: COUNTLY_NAMED_TYPE,
+                            countlyTypeTrack: COUNTLY_TRACK_TYPE,
+                            production: configs.production || false,
+                            plugins:plugins.getPlugins(),
+                            config: req.config,
+                            path:countlyConfig.path || "",
+                            cdn:countlyConfig.cdn || "",
+                            use_google:configs.use_google || false,
+                            themeFiles:theme
+                        };
+                        
+                        if(req.session.install){
+                            req.session.install = null;
+                            res.clearCookie('install');
+                        }
+                        plugins.callMethod("renderDashboard", {req:req, res:res, next:next, data:{member:member, adminApps:countlyGlobalAdminApps, userApps:countlyGlobalApps, countlyGlobal:countlyGlobal, toDashboard:toDashboard}});
+    
+                        res.expose(countlyGlobal, 'countlyGlobal');
+                        
+                        res.render('dashboard', toDashboard);
+                    });
                 }
             } else {
                 if (req.session) {
                     req.session.uid = null;
                     req.session.gadm = null;
                     req.session.email = null;
+                    req.session.settings = null;
                     res.clearCookie('uid');
                     res.clearCookie('gadm');
                     req.session.destroy(function () {});
@@ -437,7 +466,7 @@ app.get(countlyConfig.path+'/setup', function (req, res, next) {
         if (memberCount) {
             res.redirect(countlyConfig.path+'/login');
         } else {
-            res.render('setup', {countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles});
+            res.render('setup', {countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles});
         }
     });
 });
@@ -450,7 +479,7 @@ app.get(countlyConfig.path+'/login', function (req, res, next) {
             if (memberCount) {
 				if(req.query.message)
 					req.flash('info', req.query.message);
-                res.render('login', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "message":req.flash('info'), "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
+                res.render('login', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "message":req.flash('info'), "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles });
             } else {
                 res.redirect(countlyConfig.path+'/setup');
             }
@@ -462,7 +491,7 @@ app.get(countlyConfig.path+'/forgot', function (req, res, next) {
     if (req.session.uid) {
         res.redirect(countlyConfig.path+'/dashboard');
     } else {
-        res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "message":req.flash('info'), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
+        res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "message":req.flash('info'), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles });
     }
 });
 
@@ -476,7 +505,7 @@ app.get(countlyConfig.path+'/reset/:prid', function (req, res, next) {
                     req.flash('info', 'reset.invalid');
                     res.redirect(countlyConfig.path+'/forgot');
                 } else {
-                    res.render('reset', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "prid":req.params.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
+                    res.render('reset', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "prid":req.params.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles });
                 }
             } else {
                 req.flash('info', 'reset.invalid');
@@ -504,7 +533,7 @@ app.post(countlyConfig.path+'/reset', function (req, res, next) {
             countlyDb.collection('password_reset').remove({prid:req.body.prid}, function () {});
         });
     } else {
-        res.render('reset', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "prid":req.body.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
+        res.render('reset', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.session._csrf, "prid":req.body.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles });
     }
 });
 
@@ -518,10 +547,10 @@ app.post(countlyConfig.path+'/forgot', function (req, res, next) {
                 countlyDb.collection('password_reset').insert({"prid":prid, "user_id":member._id, "timestamp":timestamp}, {safe:true}, function (err, password_reset) {
                     countlyMail.sendPasswordResetInfo(member, prid);
                     plugins.callMethod("passwordRequest", {req:req, res:res, next:next, data:req.body});
-                    res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "message":"forgot.result", "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
+                    res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "message":"forgot.result", "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles });
                 });
             } else {
-                res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE,"message":"forgot.result", "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:themeFiles });
+                res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE,"message":"forgot.result", "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles });
             }
         });
     } else {
@@ -644,11 +673,12 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                 req.session.uid = member["_id"];
                 req.session.gadm = (member["global_admin"] == true);
 				req.session.email = member["email"];
+                req.session.settings = member.settings;
                 if(req.body.lang && req.body.lang != member["lang"]){
                     countlyDb.collection('members').update({_id:member["_id"]}, {$set:{lang:req.body.lang}}, function(){});
                 }
-				if(plugins.getConfig("frontend").session_timeout)
-					req.session.expires = Date.now()+plugins.getConfig("frontend").session_timeout;
+				if(plugins.getConfig("frontend", member.settings).session_timeout)
+					req.session.expires = Date.now()+plugins.getConfig("frontend", member.settings).session_timeout;
                 res.redirect(countlyConfig.path+'/dashboard');
             } else {
                 plugins.callMethod("loginFailed", {req:req, res:res, next:next, data:req.body});

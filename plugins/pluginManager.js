@@ -67,12 +67,36 @@ var pluginManager = function pluginManager(){
             configsOnchanges[namespace] = onchange;
     };
     
-    this.getConfig = function(namespace){
+    this.setUserConfigs = function(namespace, conf){
+        if(!defaultConfigs[namespace])
+            defaultConfigs[namespace] = {};
+        
+        if(!defaultConfigs[namespace]._user){
+            defaultConfigs[namespace]._user = {};
+        }
+        
+        for(var i in conf){
+            defaultConfigs[namespace]._user[i] = conf[i];
+        }
+    };
+    
+    this.getConfig = function(namespace, userSettings){
         var ob = {};
         if(configs[namespace])
             ob = configs[namespace];
         else if(defaultConfigs[namespace])
             ob = defaultConfigs[namespace];
+        
+        //overwrite server settings by userSettings
+        if(userSettings && userSettings[namespace] && ob._user){
+            for(var i in ob._user){
+                //check if this config is allowed to be overwritten
+                if(ob._user[i]){
+                    //over write it
+                    ob[i] = userSettings[namespace][i];
+                }
+            }
+        }
         return JSON.parse(JSON.stringify(ob));
     };
     
@@ -85,6 +109,28 @@ var pluginManager = function pluginManager(){
         for(var i = 0; i < c.length; i++){
             if(!excludeFromUI[c[i]])
                 ret[c[i]] = this.getConfig(c[i]);
+        }
+        return ret;
+    }
+    
+    this.getUserConfigs = function(userSettings){
+        userSettings = userSettings || {};
+        //get unique namespaces
+        var a = Object.keys(configs);
+        var b = Object.keys(defaultConfigs);
+        var c = a.concat(b.filter(function (item) { return a.indexOf(item) < 0; }));
+        var ret = {};
+        for(var i = 0; i < c.length; i++){
+            if(!excludeFromUI[c[i]]){
+                var conf = this.getConfig(c[i], userSettings);
+                for(var name in conf){
+                    if(conf._user && conf._user[name]){
+                        if(!ret[c[i]])
+                            ret[c[i]] = {};
+                        ret[c[i]][name] = conf[name];
+                    }
+                }
+            }
         }
         return ret;
     }
@@ -124,6 +170,18 @@ var pluginManager = function pluginManager(){
             }
         }
         db.collection("plugins").update({_id:"plugins"}, {$set:flattenObject(configs)}, {upsert:true}, function(err, res){
+            if(callback)
+                callback();
+        });
+    };
+    
+    this.updateUserConfigs = function(db, changes, user_id, callback){
+        var update = {}
+        for (var k in changes) {
+            update[k] = {};
+            _.extend(update[k], configs[k], changes[k]);
+        }
+        db.collection("members").update({_id:db.ObjectID(user_id)}, {$set:flattenObject(update, "settings")}, {upsert:true}, function(err, res){
             if(callback)
                 callback();
         });
@@ -218,13 +276,6 @@ var pluginManager = function pluginManager(){
     };
     
     this.loadAppPlugins = function(app, countlyDb, express){
-        var self = this;
-        app.use(function(req, res, next) {
-            self.loadConfigs(countlyDb, function(){
-                app.loadThemeFiles(self.getConfig("frontend").theme);
-                next();
-            })
-        });
         for(var i = 0; i < plugs.length; i++){
             try{
                 plugs[i].init(app, countlyDb, express);
@@ -548,7 +599,13 @@ var pluginManager = function pluginManager(){
         return toReturn;
     };
     
-    var flattenObject = function(ob) {
+    var flattenObject = function(ob, prefix) {
+        if(prefix){
+            prefix += ".";
+        }
+        else{
+            prefix = "";
+        }
         var toReturn = {};
         
         for (var i in ob) {
@@ -559,10 +616,10 @@ var pluginManager = function pluginManager(){
                 for (var x in flatObject) {
                     if (!flatObject.hasOwnProperty(x)) continue;
                     
-                    toReturn[i + '.' + x] = flatObject[x];
+                    toReturn[prefix + i + '.' + x] = flatObject[x];
                 }
             } else {
-                toReturn[i] = ob[i];
+                toReturn[prefix + i] = ob[i];
             }
         }
         return toReturn;
