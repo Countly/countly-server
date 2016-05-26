@@ -227,13 +227,10 @@ var fetch = {},
                     countlyCarrier.setDb(carriersDoc || {});
 
                     async.map(periods, function(period, callback){
-                            countlyCommon.setPeriod(period.period);
-
-                            if (params.qstring) {
-                                params.qstring.period = period.period;
-                            }
-
                             getTotalUsersObj("users", params, function(dbTotalUsersObj) {
+                                countlyCommon.setPeriod(period.period);
+                                params.qstring.period = period.period;
+
                                 countlySession.setTotalUsersObj(formatTotalUsersObj(dbTotalUsersObj));
 
                                 var data = {
