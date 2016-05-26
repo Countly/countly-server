@@ -1892,6 +1892,12 @@ window.ManageAppsView = countlyView.extend({
         var timezones = this.getTimeZones();
 
         var appId = countlyCommon.ACTIVE_APP_ID;
+        if(!countlyGlobal['admin_apps'][appId]){
+            for(var i in countlyGlobal['admin_apps']){
+                appId = i;
+                break;
+            }
+        }
         $("#app-management-bar .app-container").removeClass("active");
         $("#app-management-bar .app-container[data-id='" + appId + "']").addClass("active");
         
