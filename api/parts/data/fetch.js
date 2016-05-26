@@ -215,8 +215,7 @@ var fetch = {},
         fetchTimeObj('users', params, false, function(usersDoc) {
             fetchTimeObj('device_details', params, false, function(deviceDetailsDoc) {
                 fetchTimeObj('carriers', params, false, function(carriersDoc) {
-                    var output = {},
-                        periods = [
+                    var periods = [
                             {period: "30days", out: "30days"},
                             {period: "7days", out: "7days"},
                             {period: "hour", out: "today"}
@@ -229,6 +228,7 @@ var fetch = {},
 
                     async.map(periods, function(period, callback){
                             countlyCommon.setPeriod(period.period);
+                            params.period = period.period;
 
                             getTotalUsersObj("users", params, function(dbTotalUsersObj) {
                                 countlySession.setTotalUsersObj(formatTotalUsersObj(dbTotalUsersObj));
