@@ -360,16 +360,16 @@ var usage = {},
         common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate);
 
         if (Object.keys(updateUsersZero).length || Object.keys(usersMeta).length) {
-            var updateObj = {
+            var updateObjZero = {
                 $set: { m: dbDateIds.zero, a: params.app_id + "" },
                 $addToSet: usersMeta
             };
 
             if (Object.keys(updateUsersZero).length) {
-                updateObj["$inc"] = updateUsersZero;
+                updateObjZero["$inc"] = updateUsersZero;
             }
 
-            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, updateObj, {'upsert': true}, function(){});
+            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, updateObjZero, {'upsert': true}, function(){});
         }
 
         common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true}, function(){});
@@ -546,10 +546,18 @@ var usage = {},
             if (needsUpdate) {
                 var dateIds = common.getDateIds(params),
                     tmpZeroId = params.app_id + "_" + dateIds.zero,
-                    tmpMonthId = params.app_id + "_" + dateIds.month;
+                    tmpMonthId = params.app_id + "_" + dateIds.month,
+                    updateObjZero = {
+                        $set: { m: dateIds.zero, a: params.app_id + "" },
+                        $addToSet: tmpSet
+                    };
+
+                if (Object.keys(tmpTimeObjZero).length) {
+                    updateObjZero["$inc"] = tmpTimeObjZero;
+                }
 
                 if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
-                    common.db.collection(predefinedMetrics[i].db).update({'_id': tmpZeroId}, {$set: {m: dateIds.zero, a: params.app_id + ""}, '$inc': tmpTimeObjZero, '$addToSet': tmpSet}, {'upsert': true}, function(){});
+                    common.db.collection(predefinedMetrics[i].db).update({'_id': tmpZeroId}, updateObjZero, {'upsert': true}, function(){});
                 }
 
                 common.db.collection(predefinedMetrics[i].db).update({'_id': tmpMonthId}, {$set: {m: dateIds.month, a: params.app_id + ""}, '$inc': tmpTimeObjMonth}, {'upsert': true}, function(){});
