@@ -12,13 +12,19 @@ var plugin = {},
 		var predefinedMetrics = ob.predefinedMetrics;
         var params = ob.params;
         var user = ob.user;
-        if (params.qstring.metrics && (!user || typeof user[common.dbUserMap['source']] == "undefined")) {
-            if(typeof params.qstring.metrics._store == "undefined" && params.qstring.metrics._os){
-                params.qstring.metrics._store = params.qstring.metrics._os;
+        if (params.qstring.metrics){
+            //ignore incorrect Android values, which are numbers
+            if(typeof params.qstring.metrics._store != "undefined" && common.isNumber(params.qstring.metrics._store)){
+                params.qstring.metrics._store = undefined;
             }
-        }
-        if(params.qstring.metrics && typeof params.qstring.metrics._store != "undefined"){
-            params.qstring.metrics._store = params.qstring.metrics._store.replace(/\./g, '&#46;');
+            if (!user || typeof user[common.dbUserMap['source']] == "undefined") {
+                if(typeof params.qstring.metrics._store == "undefined" && params.qstring.metrics._os){
+                    params.qstring.metrics._store = params.qstring.metrics._os;
+                }
+            }
+            if(typeof params.qstring.metrics._store != "undefined"){
+                params.qstring.metrics._store = params.qstring.metrics._store.replace(/\./g, '&#46;');
+            }
         }
 		predefinedMetrics.push({
             db: "sources",

@@ -11,6 +11,9 @@
     function getSourceName(code, data, separate){
         code = code.replace(/&#46;/g, '.');
         if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "mobile"){
+            //ignore incorrect Android values, which are numbers
+            if(!isNaN(parseFloat(code)) && isFinite(code))
+                return "Android";
             if(separate)
                 return code;
             if(stores && stores[code]){
