@@ -195,7 +195,7 @@ window.ViewFrequencyView = countlyView.extend({
                 "aaData": durationData.chartData,
                 "aoColumns": [
                     { "mData": "vc", sType:"view-frequency", "sTitle": jQuery.i18n.map["views.view-frequency"] },
-                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.number-of-users"] },
+                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.number-of-sessions"] },
                     { "mData": "percent", "sType":"percent", "sTitle": jQuery.i18n.map["common.percent"] }
                 ]
             }));
