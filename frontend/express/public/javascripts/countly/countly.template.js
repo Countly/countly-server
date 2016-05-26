@@ -2804,7 +2804,8 @@ window.ManageUsersView = countlyView.extend({
             }
         });
     },
-    initTable: function(){
+    initTable: function(userData){
+        userData = userData || {};
         var self = this;
         function generatePassword() {
             var text = "";
@@ -2823,8 +2824,8 @@ window.ManageUsersView = countlyView.extend({
 		previousUserDetails,
 		lastUserSaved = false,
 		previousSelectAppPos = {},
-		currUsername = "",
-		currEmail = "";
+		currUsername = userData.username || "",
+		currEmail = userData.email || "";
         // translate help module
         $("[data-help-localize]").each(function() {
             var elem = $(this);
@@ -3201,7 +3202,7 @@ window.ManageUsersView = countlyView.extend({
 					str += '</div>';
 				str += '</div>';
 		}
-        setTimeout(function(){self.initTable();}, 1);
+        setTimeout(function(){self.initTable(d);}, 1);
 		return str;
 	}
 });
