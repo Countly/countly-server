@@ -1193,11 +1193,13 @@ function pushAppMgmt(appId){
 
     //app was changed
     app.addAppManagementSwitchCallback(function(appId, type){
-        apn = countlyGlobal['apps'][appId].apn = countlyGlobal['apps'][appId].apn || {};
-        gcm = countlyGlobal['apps'][appId].gcm = countlyGlobal['apps'][appId].gcm || {};
-        $("#push-apn-cert-uni-view").removeClass('fa fa-remove').removeClass('fa fa-check').addClass(apn.universal ? 'fa fa-check' : 'fa fa-remove');
-        $("#view-gcm-key").html(countlyGlobal['apps'][appId].gcm.key || '<i class="fa fa-remove"></i>');
-        $("#gcm-key").val(countlyGlobal['apps'][appId].gcm.key || '');
+        if(countlyGlobal['apps'][appId]){
+            apn = countlyGlobal['apps'][appId].apn = countlyGlobal['apps'][appId].apn || {};
+            gcm = countlyGlobal['apps'][appId].gcm = countlyGlobal['apps'][appId].gcm || {};
+            $("#push-apn-cert-uni-view").removeClass('fa fa-remove').removeClass('fa fa-check').addClass(apn.universal ? 'fa fa-check' : 'fa fa-remove');
+            $("#view-gcm-key").html(countlyGlobal['apps'][appId].gcm.key || '<i class="fa fa-remove"></i>');
+            $("#gcm-key").val(countlyGlobal['apps'][appId].gcm.key || '');
+        }
     });
 
     $("#push-apn-cert-uni-view").removeClass('fa fa-remove').removeClass('fa fa-check').addClass(apn.universal ? 'fa fa-check' : 'fa fa-remove');
