@@ -226,10 +226,11 @@ var fetch = {},
                     countlyDeviceDetails.setDb(deviceDetailsDoc || {});
                     countlyCarrier.setDb(carriersDoc || {});
 
-                    async.map(periods, function(period, callback){
+                    async.map(periods, function(period, callback) {
+                            params.qstring.period = period.period;
+
                             getTotalUsersObj("users", params, function(dbTotalUsersObj) {
                                 countlyCommon.setPeriod(period.period);
-                                params.qstring.period = period.period;
 
                                 countlySession.setTotalUsersObj(formatTotalUsersObj(dbTotalUsersObj));
 
@@ -363,10 +364,12 @@ var fetch = {},
             countlyCommon.setTimezone(params.appTimezone);
             countlyLocation.setDb(locationsDoc || {});
 
-            async.map(periods, function(period, callback){
-                    countlyCommon.setPeriod(period.period);
+            async.map(periods, function(period, callback) {
+                    params.qstring.period = period.period;
 
                     getTotalUsersObj("countries", params, function(dbTotalUsersObj) {
+                        countlyCommon.setPeriod(period.period);
+
                         countlyLocation.setTotalUsersObj(formatTotalUsersObj(dbTotalUsersObj));
 
                         var data = {out: period.out, data: countlyLocation.getLocationData({maxCountries: 10, sort: "new"})};

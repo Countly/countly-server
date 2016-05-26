@@ -731,9 +731,9 @@
                 }
 
                 if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
-                    if (countlyTotalUsers.isUsable() && estOverrideMetric) {
+                    if (countlyTotalUsers.isUsable() && estOverrideMetric && calculatedObj[rangeArray[j]]) {
 
-                        tmpPropertyObj["u"] = calculatedObj[rangeArray[j]] || 0;
+                        tmpPropertyObj["u"] = calculatedObj[rangeArray[j]];
 
                     } else {
                         var tmpUniqVal = 0,

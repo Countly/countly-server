@@ -341,9 +341,9 @@ var countlyCommon = {},
                 }
 
                 if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
-                    if (countlyCommon.periodObj.periodContainsToday && totalUserOverrideObj) {
+                    if (countlyCommon.periodObj.periodContainsToday && totalUserOverrideObj && totalUserOverrideObj[rangeArray[j]]) {
 
-                        tmpPropertyObj["u"] = totalUserOverrideObj[rangeArray[j]] || 0;
+                        tmpPropertyObj["u"] = totalUserOverrideObj[rangeArray[j]];
 
                     } else {
                         var tmpUniqVal = 0,
@@ -707,9 +707,9 @@ var countlyCommon = {},
                 }
 
                 if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
-                    if (countlyCommon.periodObj.periodContainsToday && totalUserOverrideObj) {
+                    if (countlyCommon.periodObj.periodContainsToday && totalUserOverrideObj && totalUserOverrideObj[rangeArray[j]]) {
 
-                        tmpPropertyObj["u"] = totalUserOverrideObj[rangeArray[j]] || 0;
+                        tmpPropertyObj["u"] = totalUserOverrideObj[rangeArray[j]];
 
                     } else {
                         var tmpUniqVal = 0,

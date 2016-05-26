@@ -185,9 +185,9 @@
 
         // Override estimated total user count here instead of where it is normally calculated
         // because we want % change calculation to be based on estimated values
-        if (_periodObj.isSpecialPeriod && countlyTotalUsers.isUsable()) {
+        if (_periodObj.periodContainsToday && countlyTotalUsers.isUsable() && countlyTotalUsers.get("users").users) {
             isEstimate = false;
-            currentUnique = countlyTotalUsers.get("users").users || 0;
+            currentUnique = countlyTotalUsers.get("users").users;
         }
 
         dataArr =
