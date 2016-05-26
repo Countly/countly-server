@@ -228,7 +228,10 @@ var fetch = {},
 
                     async.map(periods, function(period, callback){
                             countlyCommon.setPeriod(period.period);
-                            params.period = period.period;
+
+                            if (params.qstring) {
+                                params.qstring.period = period.period;
+                            }
 
                             getTotalUsersObj("users", params, function(dbTotalUsersObj) {
                                 countlySession.setTotalUsersObj(formatTotalUsersObj(dbTotalUsersObj));
