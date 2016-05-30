@@ -13,7 +13,7 @@
         if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "mobile"){
             //ignore incorrect Android values, which are numbers
             if(!isNaN(parseFloat(code)) && isFinite(code))
-                return "Android";
+                return jQuery.i18n.map["common.unknown"];
             if(separate)
                 return code;
             if(stores && stores[code]){
