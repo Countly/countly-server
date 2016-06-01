@@ -4308,7 +4308,7 @@ var AppRouter = Backbone.Router.extend({
 
             $("#sidebar-bottom-container .reveal-menu").click(function () {
                 $("#language-menu").hide();
-                //$("#sidebar-bottom-container .menu").toggle();
+                $("#sidebar-bottom-container .menu").toggle();
             });
 
             $("#sidebar-bottom-container .reveal-language-menu").click(function () {
@@ -4367,11 +4367,11 @@ var AppRouter = Backbone.Router.extend({
                 });
             });
 
-            $("#account-settings").click(function () {
+            /*$("#account-settings").click(function () {
                 CountlyHelpers.popup("#edit-account-details");
                 $(".dialog #username").val($("#menu-username").text());
                 $(".dialog #api-key").val($("#user-api-key").val());
-            });
+            });*/
 
             $("#save-account-details:not(.disabled)").live('click', function () {
                 var username = $(".dialog #username").val(),
