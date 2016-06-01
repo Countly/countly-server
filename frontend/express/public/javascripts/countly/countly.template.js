@@ -4308,7 +4308,7 @@ var AppRouter = Backbone.Router.extend({
 
             $("#sidebar-bottom-container .reveal-menu").click(function () {
                 $("#language-menu").hide();
-                $("#sidebar-bottom-container .menu").toggle();
+                //$("#sidebar-bottom-container .menu").toggle();
             });
 
             $("#sidebar-bottom-container .reveal-language-menu").click(function () {
