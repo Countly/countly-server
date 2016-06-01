@@ -1,8 +1,7 @@
 'use strict';
 
 var crypto = require('crypto'),
-    merge = require('merge'),
-    Err = require('./error.js');
+    merge = require('merge');
 
 /**
  * ENUM for message statuses.
@@ -62,8 +61,6 @@ var flattenObject = function(ob) {
     return toReturn;
 };
 
-var bufferRegexp = /[^0-9a-f]/gi;
-
 /**
  *
  */
@@ -82,7 +79,6 @@ var Message = function (opts) {
         sent: 0,
         error: undefined,
     };
-    if (this.result.error) this.result.error = new Err(this.result.error);
     this.expiryDate = opts.expiryDate ?
                             new Date(opts.expiryDate) :
                             new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 7);     // one week by default

@@ -13,9 +13,9 @@ plugins.setConfigs("reports", {
 var dir = path.resolve(__dirname, '');
 var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
 var crontab;
-cron.load(function(err, tab){
-    crontab = tab;
-});
+// cron.load(function(err, tab){
+//     crontab = tab;
+// });
 (function (plugin) {
 	plugins.register("/o/reports", function(ob){
 		var params = ob.params;
