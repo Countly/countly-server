@@ -1,6 +1,6 @@
 'use strict';
 
-var pushly = require('./lib')();
+var pushly = require('./pushly.js');
 
 var _ = require('underscore'),
     flatten = require('flat');
@@ -219,6 +219,11 @@ module.exports.Message = function (apps, names) {
                     return true;
                 }
                 return false;
+            }
+        },
+        dividerQuery: {
+            value: function () {
+                return this.devices || {user: this.getUserConditions(), drill: this.hasDrillConditions() ? this.getDrillConditions() : undefined};
             }
         },
         addPlatform: {

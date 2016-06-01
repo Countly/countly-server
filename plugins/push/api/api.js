@@ -1,38 +1,29 @@
+'use strict';
+
 var plugin = {},
-    pushly = require('./parts/lib'),
     push = require('./parts/endpoints.js'),
-    scheduler = require('./parts/scheduler.js'),
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     log = common.log('push:api'),
-    fetch = require('../../../api/parts/data/fetch.js'),
     plugins = require('../../pluginManager.js');
 
 (function (plugin) {
     function setUpCommons() {
-        common.dbMap['messaging-enabled'] = 'm';
-        common.dbUserMap['tokens'] = 'tk';
-        common.dbUserMap['apn_prod'] = 'ip';                   // production
-        common.dbUserMap['apn_0'] = 'ip';                      // production
-        common.dbUserMap['apn_dev'] = 'id';                    // development
-        common.dbUserMap['apn_1'] = 'id';                      // development
-        common.dbUserMap['apn_adhoc'] = 'ia';                  // ad hoc
-        common.dbUserMap['apn_2'] = 'ia';                      // ad hoc
-        common.dbUserMap['gcm_prod'] = 'ap';                   // production
-        common.dbUserMap['gcm_0'] = 'ap';                      // production
-        common.dbUserMap['gcm_test'] = 'at';                   // testing
-        common.dbUserMap['gcm_2'] = 'at';                      // testing
-        common.dbUserMap['messages'] = 'msgs';                 // messages sent
+        let creds = require('./parts/credentials.js');
+        for (let k in creds.DB_MAP) {
+            common.dbUserMap[k] = creds.DB_MAP[k];
+        }
+        for (let k in creds.DB_USER_MAP) {
+            common.dbUserMap[k] = creds.DB_USER_MAP[k];
+        }
     }
 
     plugins.register('/worker', function(ob){
         setUpCommons();
-        pushly();
     });
 
     plugins.register('/master', function(ob){
         setUpCommons();
-        scheduler();
     });
 
     //write api call

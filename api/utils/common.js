@@ -70,6 +70,19 @@ var common = {},
 
     common.crypto = crypto;
 
+    common.dbPromise = function() {
+        var args = Array.prototype.slice.call(arguments);
+        return new Promise(function(resolve, reject) {
+            var collection = common.db.collection(args[0]),
+                method = args[1];
+
+            collection[method].apply(collection, args.slice(2).concat([function(err, result){
+                if (err) { reject(err); }
+                else { resolve(result); }
+            }]));
+        });
+    };
+
     common.getDescendantProp = function (obj, desc) {
         desc = String(desc);
 
@@ -664,6 +677,21 @@ var common = {},
         return null;
     };
 
+    common.checkPromise = function(func, count, interval) {
+        return new Promise((resolve, reject) => {
+            function check() {
+                if (func()) {
+                    resolve();
+                } else if (count <= 0) {
+                    reject('Timed out');
+                } else {
+                    count--;
+                    setTimeout(check, interval);
+                }
+            }
+            check();
+        });
+    };
 }(common));
 
 module.exports = common;

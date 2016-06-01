@@ -1,12 +1,13 @@
 {
   "name": "countly-push",
-  "title": "Push Notifications",
+  "title": "APN Push Notifications",
   "version": "1.0.0",
-  "description": "Increase loyalty, user retention & satisfaction with push notifications",
+  "description": "Native HTTP/2 implementation for APN",
   "author": "Count.ly",
-  "homepage": "https://count.ly/plugins/",
+  "homepage": "https://count.ly",
+  "main": "index.js",
   "scripts": {
-    "postinstall": "cd ./api/parts/apn && npm install"
+    "install": "node-gyp rebuild"
   },
   "repository": {
     "type": "git",
@@ -22,13 +23,8 @@
     "push",
     "notifications"
   ],
+  "gypfile": true,
   "dependencies": {
-    "flat": "1.3.0",
-    "lodash": "2.4.1",
-    "merge": "1.2.0",
-    "node-forge": "0.6.38",
-    "q": "1.0.1",
-    "retry": "0.6.1"
-  },
-  "private": true
+    "nan": "^2.3.3"
+  }
 }
