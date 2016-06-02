@@ -91,15 +91,15 @@ makeRequest("https://www.transifex.com/api/2/project/countly/resources/", functi
         }
         console.log("Got list of translations");
         languages = languages || default_langs;
+        function delayLoad(i, j){
+            setTimeout(function(){
+                getFile(resources[i], languages[j]);
+            }, (i+j)*1000);
+        }
         //get translation files
         for(var i = 0; i < resources.length; i++){
             for(var j = 0; j <  languages.length; j++){
-                function load(i, j){
-                    setTimeout(function(){
-                        getFile(resources[i], languages[j]);
-                    }, (i+j)*1000);
-                }
-                load(i,j);
+                delayLoad(i,j);
             }
         }
     });
