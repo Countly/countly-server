@@ -166,9 +166,17 @@ namespace apns {
 		info.GetReturnValue().Set(info.This());
 	}
 
+	void H2::send_error(std::string error) {
+		stats.error_connection = error;
+		LOG_ERROR(stats.error_connection);
+	}
+
 	void H2::init(const Nan::FunctionCallbackInfo<Value>& info) {
 		H2* obj = ObjectWrap::Unwrap<H2>(info.Holder());
 		LOG_DEBUG("initializing with " << obj->certificate);
+
+		v8::Local<v8::Function> tpl = v8::Local<v8::Function>::Cast(info[0]);
+		obj->errorer.Reset(tpl);
 
 		auto resolver = v8::Promise::Resolver::New(info.GetIsolate());
 		auto promise = resolver->GetPromise();
@@ -641,7 +649,7 @@ namespace apns {
 		if (obj->queue.size() < H2_QUEUE_SIZE / 2 && obj->stats.feed_last != 0) {
 			Isolate * isolate = Isolate::GetCurrent();
 			if (uv_mutex_trylock(obj->feed_mutex) == 0) {
-					LOG_DEBUG("locked feed mutex");
+					// LOG_DEBUG("locked feed mutex");
 					obj->stats.feeding = true;
 
 					v8::HandleScope handleScope(isolate);
@@ -649,18 +657,18 @@ namespace apns {
 					Local<Value> argv[1] = { v8::Integer::New(isolate, ask) };
 					auto local = Local<Function>::New(isolate, obj->feeder);
 					local->Call(isolate->GetCurrentContext()->Global(), 1, argv);
-					LOG_DEBUG("feeding call done with queue " << obj->queue.size() << " asking for " << ask);
+					// LOG_DEBUG("feeding call done with queue " << obj->queue.size() << " asking for " << ask);
 			} else {
-				LOG_DEBUG("won't feed for now - mutex locked");
+				// LOG_DEBUG("won't feed for now - mutex locked");
 			}
 		}
 
 		if (obj->statuses.size() > H2_STATUSES_BATCH_SIZE || (obj->statuses.size() && ( !obj->stats.state || (obj->stats.state & ST_DONE)))) {
 			Isolate * isolate = Isolate::GetCurrent();
-			LOG_DEBUG("call main block 2");
+			// LOG_DEBUG("call main block 2");
 			uv_mutex_lock(obj->main_mutex);
 			{
-				LOG_DEBUG("call main in 2");
+				// LOG_DEBUG("call main in 2");
 				v8::HandleScope handleScope(isolate);
 
 				v8::Local<v8::Array> array = v8::Array::New(isolate);
@@ -679,17 +687,18 @@ namespace apns {
 				Local<Value> argv[1] = { array };
 				auto local = Local<Function>::New(isolate, obj->statuser);
 				local->Call(isolate->GetCurrentContext()->Global(), 1, argv);
-				LOG_DEBUG("status call done, sent " << array->Length());
+				// LOG_DEBUG("status call done, sent " << array->Length());
 
 			}
 			uv_mutex_unlock(obj->main_mutex);
-			LOG_DEBUG("call main block 2 mutex unlocked");
+			// LOG_DEBUG("call main block 2 mutex unlocked");
 		}
 
 		if (obj->stats.state & ST_DONE) {
 			obj->stats.state &= ~ST_DONE;
-			LOG_DEBUG("main: done sending, releasing " << obj->stats.state);
+			// LOG_DEBUG("main: done sending, releasing " << obj->stats.state);
 			if (uv_is_active((uv_handle_t *)obj->service_ping_timer)) {
+				LOG_DEBUG("stopping ping timer " << obj->stats.state);
 				uv_timer_stop(obj->service_ping_timer);
 			}
 			uv_sem_post(obj->send_sem);

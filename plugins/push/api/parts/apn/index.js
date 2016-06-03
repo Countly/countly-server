@@ -7,11 +7,11 @@ class ConnectionResource {
 		this.connection = new addon.Connection(cert, pass, topic, expiration, host);
 	}
 
-	init() {
+	init(logger) {
 		if (this._connected) {
 			return Promise.resolve();
 		} else {
-			return this.connection.init();
+			return this.connection.init(logger);
 		}
 	}
 
@@ -42,6 +42,9 @@ class ConnectionResource {
 	}
 
 	close_connection() {
+		let e = new Error();
+		console.log(e.stack);
+		console.log('%j', e.stack);
 		return this.connection.close_connection().then(() => {
 			this._connected = false;
 		});

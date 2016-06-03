@@ -357,6 +357,7 @@ class Job extends EventEmitter {
 	_run (db) {
 		return new Promise((resolve, reject) => {
 			var timeout = setTimeout(() => {
+					log.d('First timeout called in %s', this.this._id);
 					if (!this.completed) {
 						this._abort().then(reject, reject);
 					}
@@ -387,7 +388,8 @@ class Job extends EventEmitter {
 				(size, done, bookmark) => {
 					log.d('Progress of running %j: %j / %j / %j', this._id, size, done, bookmark);
 					clearTimeout(timeout);
-					setTimeout(() => {
+					timeout = setTimeout(() => {
+						log.d('Progress timeout called in %s', this._id);
 						if (!this.completed) {
 							this._abort();
 						}
@@ -482,8 +484,8 @@ class IPCJob extends ResourcefulJob {
 		log.d('Entering IPCJob promise');
 
 		return new Promise((resolve, reject) => {
-		log.d('Entered IPCJob promise');
 			var timeout = setTimeout(() => {
+					log.d('First timeout called in IPCJob %s', this._id);
 					if (!this.completed) {
 						this._sendSave();
 						reject(ERROR.TIMEOUT);
@@ -524,9 +526,9 @@ class IPCJob extends ResourcefulJob {
 					}
 				},
 				(size, done, bookmark) => {
-					log.d('Progress of running IPCJob %j: %j / %j / %j', this._id, size, done, bookmark);
 					clearTimeout(timeout);
-					setTimeout(() => {
+					timeout = setTimeout(() => {
+						log.d('Progress timeout called in IPCJob %s', this._id);
 						if (!this.completed) {
 							this._sendSave();
 							reject(ERROR.TIMEOUT);

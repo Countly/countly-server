@@ -22,7 +22,11 @@ class Connection extends res.Resource {
 		log.d('[%d]: opening resource %j', process.pid, this._id);
 		return new Promise((resolve, reject) => {
 			this.startInterval();
-			this.connection.init().then((res) => {
+			this.connection.init((error) => {
+				log.e('in');
+				log.e('^^^^^^____!____^^^^^^ Error in connection: %j', error);
+				reject(error);
+			}).then((res) => {
 				log.d('init promise done with %j', res);
 				this.connection.resolve().then((res) => {
 					log.d('resolve promise done with %j', res);

@@ -7,6 +7,7 @@ var common = require('../../../../api/utils/common.js'),
 	Streamer = require('./streamer.js');
 
 const MIN_WORKER_CHUNK_SIZE = 1000;
+const WORKER_CHUNK_SIZE = 10000;
 
 class Divider {
 	constructor (message) {
@@ -42,7 +43,7 @@ class Divider {
 							log.d('Streamer is going to count %j', pushly);
 
 							streamer.count(db).then((count) => {
-								// if (clear) { streamer.clear(db); }
+								if (clear) { streamer.clear(db); }
 								resolve({
 									mid: this.message._id,
 									app: app,
@@ -79,10 +80,13 @@ class Divider {
 	divide (db, skipClear, transient) {
 		log.d('Dividing message %j', this.message._id);
 
+
 		return new Promise((resolve, reject) => {
+			// var workerCount = 1;
+			let workerCount = (common.config.api.workers || os.cpus().length) * 2;
 			// Then, for each app-platform combination whenver audience is too big for one core, split it between multiple cores
 			this.subs(db, !skipClear).then((subs) => {
-				log.d('Counted all audience for message %j: %d results', this.message._id, subs.length);
+				log.d('Counted all audience for message %j: %d results', this.message._id, subs);
 				subs.filter(s => s.count === 0).forEach(s => s.streamer.clear(db));
 				
 				subs = subs.filter(s => s.count > 0);
@@ -94,12 +98,17 @@ class Divider {
 				var total = subs.reduce((p, c) => {
 						return {count: p.count + c.count};
 					}).count,
-					minChunk = MIN_WORKER_CHUNK_SIZE,
-					workerCount = (common.config.api.workers || os.cpus().length) * 2,
-					chunk = Math.max(total / workerCount, minChunk),
-					chunks = Math.round(total / chunk);
+					chunk = WORKER_CHUNK_SIZE,
+					chunks = Math.max(1, Math.ceil(total / chunk));
+				// var total = subs.reduce((p, c) => {
+				// 		return {count: p.count + c.count};
+				// 	}).count,
+				// 	minChunk = MIN_WORKER_CHUNK_SIZE,
+					// workerCount = 1 /* (common.config.api.workers || os.cpus().length) * 2 */,
+					// chunk = Math.max(total / workerCount, minChunk),
+					// chunks = Math.max(1, Math.round(total / chunk));
 
-				log.d('Message %j will have %d subs (%d recipients, ~%d per worker) after filtering empty audiences', this.message._id, chunks, total, chunk);
+				log.d('Message %j will have %d subs (%d recipients, ~%d per worker, max %d workers at a time) after filtering empty audiences', this.message._id, chunks, total, chunk, workerCount);
 
 				var divisors = subs.map(s => new Promise((resolve, reject) => {
 					var data = {
@@ -145,7 +154,6 @@ class Divider {
 									}
 								}
 							});
-
 						};
 
 						next(0, chunk);
@@ -157,8 +165,8 @@ class Divider {
 				Promise.all(divisors).then((subs) => {
 					let ret = [];
 					subs.forEach(subs => ret = ret.concat(subs));
-					log.d('Done dividing message %j totalling %d subs: %j', this.message._id, ret.length, ret);
-					resolve(ret);
+					log.d('Done dividing message %j totalling %d workers with %d subs: %j', this.message._id, workerCount, ret.length, ret);
+					resolve({subs: ret, workers: workerCount});
 				}, reject);
 			}, reject);
 

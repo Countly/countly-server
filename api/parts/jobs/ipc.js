@@ -2,7 +2,7 @@
 
 var EventEmitter = require('events'),
 	cluster = require('cluster'),
-	jobs = require('./'),
+	job = require('./job.js'),
 	log = require('../../utils/log.js')('jobs:ipc');
 
 var CMD = {
@@ -11,7 +11,7 @@ var CMD = {
 	PAUSE: 'job:pause',
 	STATUS: 'job:status',
 	CRASH: 'job:crash'
-}, STATUS = jobs.STATUS;
+}, STATUS = job.STATUS;
 
 /**
 Common message structures: 
@@ -74,8 +74,8 @@ class Delegate {
 				} else if (m.status === STATUS.DONE) {
 					log.d('Delegate got done update: %j', m);
 					this.job._finish(m.error).then(
-						m.error ? reject.bind(null, error) : resolve,
-						m.error ? reject.bind(null, error) : reject
+						m.error ? reject.bind(null, m.error) : resolve,
+						m.error ? reject.bind(null, m.error) : reject
 					);
 					channel.remove();
 					if (crashChannel) { crashChannel.remove(); }
@@ -136,9 +136,9 @@ class Channel extends EventEmitter {
 	attach (worker) {
 		this.worker = worker || process;
 		this.listener = (m) => {
-			log.d('[%d]: Got message in Channel in %d: %j', process.pid, this.worker.pid, m, this._id);
+			// log.d('[%d]: Got message in Channel in %d: %j', process.pid, this.worker.pid, m, this._id);
 			if (this.check(m)) {
-				log.d('[%d]: Channeling %j', process.pid, m);
+				// log.d('[%d]: Channeling %j', process.pid, m);
 				this.emit(m.cmd, m.data);
 			}
 		};
@@ -159,7 +159,7 @@ class Channel extends EventEmitter {
 	}
 
 	send (_id, cmd, data) {
-		log.d('Sending message from Channel in %d: %j', process.pid, {_id: _id, cmd: cmd, from: process.pid, to: this.worker.pid, data: data});
+		// log.d('Sending message from Channel in %d: %j', process.pid, {_id: _id, cmd: cmd, from: process.pid, to: this.worker.pid, data: data});
 		this.worker.send({_id: _id, cmd: cmd, from: process.pid, to: this.worker.pid, data: data});
 	}
 }
@@ -260,14 +260,14 @@ class Master {
 	// Run job on worker with pid (optional, random worker is picked if no pid specified)
 	// Returns promise
 	run (job, progress, pid) {
-		job = jobs._instantiate(job);
+		job = job._instantiate(job);
 		log.d('Going to run job through IPC: %j', job);
 		// Wrapping in one another promise to catch worker crashes on this level rather than passing them up
 		return new Promise((resolve, reject) => {
 			var delegate = new Delegate(job, progress);
 			delegate.run(pid).then(resolve, err => {
 				if (err === 'crash') {
-					jobs.master.run(job).then(resolve, reject);
+					job.master.run(job).then(resolve, reject);
 				} else {
 					reject(err);
 				}
@@ -281,7 +281,7 @@ class Worker {
 
 	constructor() {
 		log.i('Started Worker in %d', process.pid);
-		jobs.scanPlugins({}, null, (err, jobs) => {
+		job.scanPlugins({}, null, (err, jobs) => {
 			log.d('Got plugins jobs in IPC jobs worker %d: %j', process.pid, Object.keys(jobs));
 			this.jobs = jobs;
 		});
@@ -360,5 +360,6 @@ class Worker {
 
 module.exports.PassThrough = PassThrough;
 module.exports.IdChannel = IdChannel;
+module.exports.IdStartsWithChannel = IdStartsWithChannel;
 module.exports.Master = Master;
 module.exports.Worker = Worker;

@@ -20,8 +20,8 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
-#define H2_QUEUE_SIZE 1000
-#define H2_SENDING_BATCH_SIZE 100
+#define H2_QUEUE_SIZE 10000
+#define H2_SENDING_BATCH_SIZE 200
 #define H2_STATUSES_BATCH_SIZE 200
 #define H2_TIMEOUT 30000
 #define H2_PING_TIMEOUT 3000
@@ -44,8 +44,8 @@ static std::string NGHTTP2_H2_ALPN = std::string("\x2h2");
 static std::string NGHTTP2_H2 = std::string("h2");
 
 #define BUFPOOL_CAPACITY 1000
-#define DUMMY_BUF_SIZE 1000
-#define BUF_SIZE 1000
+#define DUMMY_BUF_SIZE 100000
+#define BUF_SIZE 100000
 
 typedef struct bufpool_s bufpool_t;
 
@@ -125,6 +125,7 @@ namespace apns {
 		static void feed(const Nan::FunctionCallbackInfo<v8::Value>& info);
 		static Nan::Persistent<v8::Function> constructor;
 		
+		Nan::Persistent<v8::Function> errorer;
 		Nan::Persistent<v8::Function> feeder;
 		Nan::Persistent<v8::Function> statuser;
 		bool feeding;
@@ -182,6 +183,7 @@ namespace apns {
 		nghttp2_hd_inflater *inflater;
 		nghttp2_nv headers[6];
 		bool first;
+		void send_error(std::string error);
 		static void resolve_cb(uv_getaddrinfo_t* handle, int status, struct addrinfo* response);
 		static void conn_thread_run(void *arg);
 		static void conn_thread_stop_loop(uv_async_t *async);

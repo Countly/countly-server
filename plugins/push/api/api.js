@@ -11,7 +11,7 @@ var plugin = {},
     function setUpCommons() {
         let creds = require('./parts/credentials.js');
         for (let k in creds.DB_MAP) {
-            common.dbUserMap[k] = creds.DB_MAP[k];
+            common.dbMap[k] = creds.DB_MAP[k];
         }
         for (let k in creds.DB_USER_MAP) {
             common.dbUserMap[k] = creds.DB_USER_MAP[k];

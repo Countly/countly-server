@@ -156,11 +156,13 @@ class Manager {
 
 		if (job instanceof JOB.IPCJob) {
 			return new Promise((resolve, reject) => {
-				job.divide(this.db).then((subs) => {					// runs user code to divide job
+				job.divide(this.db).then((obj) => {						// runs user code to divide job
+					var subs = obj.subs,
+						workersCount = obj.workers;
 					if (subs.length === 0) {							// no subs, run in local process
 						job._run(this.db).then(resolve, reject);
 					} else {											// one and more subs, run through IPC
-						job._divide(subs).then(() => {					// set sub idx & _id, save in DB
+							job._divide(subs).then(() => {					// set sub idx & _id, save in DB
 							try {
 								subs = job._json.subs.map(sub => this.create(sub));
 								job._json.size = job._json.subs.reduce((p, c) => {
@@ -170,81 +172,97 @@ class Manager {
 								job._save({size: job._json.size, done: 0});
 								
 								if (this.canRun(subs[0], subs.length)) {
-									var promises = subs.map(sub => {
-										log.d('[jobs]: Starting a sub %j', sub);
-
-										let resourceFaçade = this.getResource(sub),
+										var promiseMakers = subs.map(sub => {
+										return () => {
+											log.d('[jobs]: Starting a sub %j', sub);
+	
+											let resourceFaçade = this.getResource(sub),
 											jobFaçade = job._transient ? new JOB.TransientFaçadeJob(sub, resourceFaçade) : new JOB.IPCFaçadeJob(sub, resourceFaçade);
+	
+											resourceFaçade.assign(jobFaçade);
+	
+											let restart = (action) => {
+												log.w('[jobs]: Resource %s %j, going to retry job %s', resourceFaçade._id, action, jobFaçade._id);
 
-										resourceFaçade.assign(jobFaçade);
-
-										let restart = (action) => {
-											log.w('[jobs]: Resource %s %s, going to retry job %s', resourceFaçade._id, action, jobFaçade._id);
-
-											resourceFaçade.detachJob();
-											
-											jobFaçade._pause().catch(log.d).then(() => {
-												jobFaçade._retry().then(() => {
-													try {
-														let name = resourceFaçade._name,
-															idx = this.resources[name].indexOf(resourceFaçade);
-														log.w('[jobs]: Migrating, removing resource %s(%d)', resourceFaçade._id, idx);
-														if (idx !== -1) {
-																resourceFaçade.removeAllListeners('crash');
-																resourceFaçade.removeAllListeners('timeout');
-																this.resources[name][idx] = resourceFaçade = resourceFaçade.migrate(jobFaçade, this.files[job.name]);
-																this.bindToResource(resourceFaçade);
-																resourceFaçade.on('crash', restart.bind(this, 'crashed'));
-																resourceFaçade.on('timeout', restart.bind(this, 'timed out'));
-																jobFaçade._migrate(resourceFaçade);
-														} else {
-															jobFaçade._abort('Couldn\'t do migration');
+													resourceFaçade.invalidate();
+												
+													jobFaçade._pause().catch(log.d).then(() => {
+														jobFaçade._retry().then(() => {
+														try {
+																let name = resourceFaçade._name,
+																idx = this.resources[name].indexOf(resourceFaçade);
+															log.w('[jobs]: Migrating, removing resource %s(%d)', resourceFaçade._id, idx);
+															if (idx !== -1) {
+																	resourceFaçade.removeAllListeners('crash');
+																	resourceFaçade.removeAllListeners('timeout');
+																	this.resources[name][idx] = resourceFaçade = resourceFaçade.migrate(jobFaçade, this.files[job.name]);
+																	this.bindToResource(resourceFaçade);
+																	resourceFaçade.on('crash', restart.bind(this, 'crashed'));
+																	resourceFaçade.on('timeout', restart.bind(this, 'timed out'));
+																	jobFaçade._migrate(resourceFaçade);
+															} else {
+																jobFaçade._abort('Couldn\'t do migration');
+																resourceFaçade.finalize();
+															}
+														} catch (e) {
+															log.e(e, e.stack);
+														}
+													}, (already) => {
+														if (!already) {
+															jobFaçade._abort('Too much retries');
 															resourceFaçade.finalize();
 														}
-													} catch (e) {
-														log.e(e, e.stack);
-													}
-												}, (already) => {
-													if (!already) {
-														jobFaçade._abort('Too much retries');
-														resourceFaçade.finalize();
-													}
+													});
 												});
+											};
+
+											resourceFaçade.on('crash', restart.bind(this, 'crashed'));
+											resourceFaçade.on('timeout', restart.bind(this, 'timedout'));
+
+											return new Promise((resolve, reject) => {
+												resourceFaçade.onceOnline().then(() => {
+													log.d('[jobs] Resource %d is online', resourceFaçade._worker.pid);
+													jobFaçade._run(job).then(() => {
+														try {
+															log.d('--------------------- jobFaçade success for %j', sub);
+															resourceFaçade.detachJob(jobFaçade);
+															resolve();
+															// this.queue(this.running, promiseMakers, workersCount, resolve, reject);
+															log.d('--------------------- jobFaçade called queue');
+														}catch (e) {
+															log.e(e, e.stack);
+														}
+														// resourceFaçade.close();
+													}, (e, tryagain) => {
+														log.e('--------------------- jobFaçade error %j / %j for %j', e, tryagain, sub);
+														resourceFaçade.detachJob(jobFaçade);
+														if (tryagain) {
+															restart.bind(this)(e);
+														} else {
+															reject(e);
+															// this.queue(this.running, promiseMakers, workersCount, resolve, reject, e);
+														}
+														// resourceFaçade.close();
+													});
+												}, reject);
 											});
 										};
-
-										resourceFaçade.on('crash', restart.bind(this, 'crashed'));
-										resourceFaçade.on('timeout', restart.bind(this, 'timedout'));
-
-										return new Promise((resolve, reject) => {
-											resourceFaçade.onceOnline(() => {
-												log.d('[jobs] Resource %d is online', resourceFaçade._worker.pid);
-												jobFaçade._run(job).then(() => {
-													console.log('+++++++++++++++++');
-													resolve();
-												}, (e) => {
-													console.log('-----------------');
-													reject(e);
-												}).then(() => {
-													resourceFaçade.removeAllListeners('crash');
-													resourceFaçade.removeAllListeners('timeout');
-												});
-											});
-										});
 										// TODO: handle case when resource is closed / exited resources in the middle of job starting
 									});
 
-									log.d('Running promises for %j', job._id);
-									Promise.all(promises).then(() => {
-										log.d('All promises for job %j completed', job._id);
-										resolve();
-									}).catch((err) => {
-										log.d('All promises for job %j completed with error', job._id, err);
-										reject(err);
-									}).then(() => {
-										let idx = this.running[job.name].indexOf(job);
-										if (idx !== -1) { this.running[job.name].splice(); }
-									});
+									log.d('Running promises for %j with max %d online', job._id, workersCount);
+									this.running = [];
+									this.queue([], promiseMakers, workersCount, resolve, reject);
+									// Promise.all(promises).then(() => {
+									// 	log.d('All promises for job %j completed', job._id);
+									// 	resolve();
+									// }).catch((err) => {
+									// 	log.d('All promises for job %j completed with error', job._id, err);
+									// 	reject(err);
+									// }).then(() => {
+									// 	let idx = this.running[job.name].indexOf(job);
+									// 	if (idx !== -1) { this.running[job.name].splice(); }
+									// });
 								}
 							} catch (e) {
 								log.e('Error while preparing a job', e);
@@ -256,6 +274,41 @@ class Manager {
 			});
 		} else {
 			return job._run(this.db);
+		}
+	}
+
+	queue (running, sleeping, maxRunning, resolve, reject, error) {
+		try {
+			this._queueError = this._queueError || error;
+			if (error) {
+				log.e('QUEUE: Error when running queue promise: %j', error);
+			}
+			
+			if (running.length === 0 && sleeping.length === 0) {
+				log.d('QUEUE: Done running queue: error %j', this._queueError);
+				return this._queueError ? reject(this._queueError) : resolve();
+			} else if (running.length < maxRunning && sleeping.length > 0){
+				
+				log.d('QUEUE: Going to run %d promises, now %d are running & %d are sleeping', maxRunning - running.length, running.length, sleeping.length);
+				sleeping.splice(0, maxRunning - running.length).forEach(maker => {
+					let promise = maker().then(() => {
+						log.d('QUEUE: promise succeeded');
+						this.queue(running, sleeping, maxRunning, resolve, reject);
+					}, (error) => {
+						log.d('QUEUE: promise error %j', error);
+						this.queue(running, sleeping, maxRunning, resolve, reject, error);
+					})
+					.then(() => {
+						let idx = running.indexOf(promise);
+						if (idx !== -1) { running.splice(idx, 1); }
+						log.d('QUEUE: Removed promise at index %d, now %d are running & %d are sleeping', idx, running.length, sleeping.length);
+						this.queue(running, sleeping, maxRunning, resolve, reject);
+					});
+					running.push(promise);
+				});
+			}
+		} catch (e) {
+			log.e(e, e.stack);
 		}
 	}
 
