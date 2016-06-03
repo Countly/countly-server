@@ -77,6 +77,7 @@ class Streamer {
 								db.collection('app_users' + this.app._id).aggregate([
 									{$match: query}, 
 									{$project: this.projection},
+									{$sort: {_id: 1}},
 									{$out: this.collection()}
 								], {allowDiskUse:true}, (err) => {
 									log.d('Aggregation done: %j', arguments);
@@ -96,6 +97,7 @@ class Streamer {
 							db.collection('app_users' + this.app._id).aggregate([
 								{$match: query},
 								{$project: this.projection},
+								{$sort: {_id: 1}},
 								{$out: this.collection()}
 							], {allowDiskUse:true}, (err, res) => {
 								if (err) {

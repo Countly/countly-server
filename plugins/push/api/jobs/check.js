@@ -39,9 +39,9 @@ class CheckJob extends job.TransientJob {
 		return new Promise((resolve, reject) => {
 			let message = new Message(this._json.data);
 				message.devices = this.user;
-			new Divider(message).divide(db, true).then(function(subs){
-				log.d('[%d]: Finished didivding message %j for job %j: %j', process.pid, message._id, job._id, subs);
-				resolve(subs);
+			new Divider(message).divide(db, true).then(function(obj){
+				log.d('[%d]: Finished didivding message %j for job %j: %d in %d', process.pid, message._id, job._id, obj.subs.length, obj.workers);
+				resolve(obj);
 			}, reject);
 		});
 	}

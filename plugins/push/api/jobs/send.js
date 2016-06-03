@@ -68,9 +68,9 @@ class PushJob extends job.IPCJob {
 				} else {
 					message = new Message(message);
 					message.devicesQuery = message.dividerQuery();
-					new Divider(message).divide(db, true).then(function(subs){
-						log.d('[%d]: Finished didivding message %j for job %j: %j', process.pid, message._id, job._id, subs);
-						resolve(subs);
+					new Divider(message).divide(db, true).then(function(obj){
+						log.d('[%d]: Finished didivding message %j for job %j: %d in %d', process.pid, message._id, job._id, obj.subs.length, obj.workers);
+						resolve(obj);
 					}, reject);
 				}
 			});
@@ -106,7 +106,7 @@ class PushJob extends job.IPCJob {
 					} else if (res.result.nModified === 0) {
 						log.e('[%d]: Couldn\'t find message %j: %j', process.pid, this.data.mid, quer);
 					} else {
-						log.w('updated message', err, res);
+						log.w('updated message');
 					}
 				});
 				} catch (e) {
@@ -172,6 +172,11 @@ class PushJob extends job.IPCJob {
 						this.app = app;
 						this.streamer = new Streamer(this.message, app);
 
+						log.d('[%d]: Bookmark %s, first %s', process.pid, this.data.bookmark, this.data.first);
+						if (this.data.bookmark) {
+							this._json.data.first = this.data.bookmark;
+						}
+
 						log.d('[%d]: Ready to stream', process.pid);
 						this.resource.send(this.datas, (count) => {
 							this.streamer.load(db, this.data.first, this.data.last, Math.max(count, 10)).then((users) => {
@@ -215,6 +220,7 @@ class PushJob extends job.IPCJob {
 
 							log.d('Got %d statuses: %d sent, %d unset, %d error', statuses.length, sent, unset.length, error);
 
+							try {
 							if (unset.length) {
 								let q = unset.length === 1 ? {_id: unset[0]} : {_id: {$in: unset}},
 									$unset = {
@@ -226,8 +232,8 @@ class PushJob extends job.IPCJob {
 								db.collection('app_users' + this.app._id).update(q, {$unset: $unset}, {multi: true}, (err, res) => {
 									if (err) {
 										log.e('[%d]: Couldn\'t unset %d tokens in %j: %j / %j, pulling %j', process.pid, unset.length, 'app_users' + this.app._id, q, $unset, message._id);
-									} else {
-										log.d('Unset query result: %j', res);
+									// } else {
+										// log.d('Unset query result: %j', res);
 									}
 								});
 							}
@@ -235,8 +241,8 @@ class PushJob extends job.IPCJob {
 							db.collection('app_users' + this.app._id).update({_id: {$in: ids}}, {$push: {msgs: message._id}}, {multi: true}, (err, res) => {
 								if (err) {
 									log.e('[%d]: Couldn\'t push message id to %d users in %j for %j', process.pid, ids.length, 'app_users' + this.app._id, message._id);
-								} else {
-									log.d('[%d]: Push message _id query result: %j', process.pid, res);
+								// } else {
+									// log.d('[%d]: Push message _id query result: %j', process.pid, res);
 								}
 							});
 
@@ -251,8 +257,8 @@ class PushJob extends job.IPCJob {
 								db.collection('app_users' + this.app._id).updateOne({_id: status[0]}, {$set: {[this.fieldToken]: status[2]}}, (err, res) => {
 									if (err) {
 										log.e('[%d]: Couldn\'t replace token in message id in %j for %j: %j', process.pid, ids.length, 'app_users' + this.app._id, {_id: status[0]}, message._id, err);
-									} else if (res.result.nModified !== 1) {
-										log.d('[%d]: Push token replace query didn\'t find a user: %j', 'app_users' + this.app._id, {_id: status[0]}, message._id, res);
+									// } else if (res.result.nModified !== 1) {
+										// log.d('[%d]: Push token replace query didn\'t find a user: %j', 'app_users' + this.app._id, {_id: status[0]}, message._id, res);
 									}
 								});
 							});
@@ -261,6 +267,7 @@ class PushJob extends job.IPCJob {
 							status.sent += sent;
 
 							progress(status.done, status.sent, statuses.pop()[0]);
+						} catch(e) { log.e(e, e.stacl); }
 
 						}).then(() => {
 							log.d('[%d]: Send promise returned success in %s', process.pid, this._idIpc);
@@ -271,6 +278,7 @@ class PushJob extends job.IPCJob {
 						}, (err) => {
 							log.d('[%d]: Send promise returned error %j in %s', process.pid, err, this._idIpc);
 							if (!this.completed) {
+								this._json.data.bookmark = this.json.data.first;
 								done(err || 'Unknown APN error');
 								this.stream.clean(db);
 							}

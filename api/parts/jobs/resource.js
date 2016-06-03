@@ -16,7 +16,7 @@ const CMD = {
 	ONLINE: 'resource:online'
 },
 RESOURCE_PING_INTERVAL = 10000,
-RESOURCE_CLOSE_TIMEOUT = 10000;
+RESOURCE_CLOSE_TIMEOUT = 360000;
 
 function random() { 
 	var s = Math.random().toString(36).slice(2); 
@@ -60,10 +60,11 @@ class ResourceFaçade extends EventEmitter {
 		});
 		
 		this.channel.on(CMD.CLOSED, () => {
-			log.i('[jobs]: Resource %j closed in %d: %j' + (this._job), this._name, this._worker.pid, this._id);
+			log.i('[jobs]: Resource %j closed in %d: %j', this._name, this._worker.pid, this._id);
 			this._open = false;
 			if (!this._crashed) {
 				if (this._job) {
+					log.i('[jobs]: Resource %j closed in %d (%j) while running %s, will reject' + this._job._idIpc, this._name, this._worker.pid, this._id, this._job._idIpc);
 					this._job = null;
 					log.i('rejecting');
 					this.reject('closed');
@@ -77,6 +78,7 @@ class ResourceFaçade extends EventEmitter {
 			log.i('[jobs]: Resource %j exited in %d: %j', this._name, this._worker.pid, this._id);
 			if (!this._crashed) {
 				if (this._job) {
+					log.i('[jobs]: Resource %j exited in %d (%j) while running %s, will reject' + this._job._idIpc, this._name, this._worker.pid, this._id, this._job._idIpc);
 					this._job = null;
 					log.i('rejecting');
 					this.reject('Process exited');
@@ -116,11 +118,11 @@ class ResourceFaçade extends EventEmitter {
 		try {
 			if (this._job && this._job !== job) { 
 				log.w('[jobs]: Resource façade %j is busy in %d: %j', this._name, this._worker.pid, this._id);
-				return 'busy'; 
+				return Promise.reject('busy'); 
 			}
 			if (this._open === false) { 
 				log.w('[jobs]: Resource façade %j is not open in %d: %j', this._name, this._worker.pid, this._id);
-				return 'closed'; 
+				return Promise.reject('closed'); 
 			}
 
 			log.i('[jobs]: Resource façade %j in %d (%j) is going to run %j', this._name, this._worker.pid, this._id, job._json);
@@ -137,10 +139,18 @@ class ResourceFaçade extends EventEmitter {
 		});
 	}
 
-	detachJob () {
+	invalidate () {
+		if (this._job) { this._job.resource = null; }
 		this._job = null;
 		this._open = false;
 		this._crashed = true;
+	}
+
+	detachJob (job) {
+		if (this._job && this._job._id === job._id) {
+			this._job.resource = null;
+			this._job = null;
+		}
 	}
 
 	assign (job) {
@@ -180,17 +190,20 @@ class ResourceFaçade extends EventEmitter {
 			this._open = false;
 			this.emit('closed');
 		}
-		this.close();
+		return this.close();
 	}
 
 	onceOnline (clb) {
 		if (this._online) {
-			clb();
+			return Promise.resolve();
 		} else {
-			this.once('online', () => {
-				this._online = true;
-				clb();
+			return new Promise((resolve) => {
+				this.once('online', () => {
+					this._online = true;
+					resolve(true);
+				});
 			});
+			
 		}
 	}
 }
@@ -263,10 +276,12 @@ class Resource extends EventEmitter {
 		this.job = job;
 	}
 	
-	unassign () {
+	unassign (job) {
 		log.d('[%d]: Resource %j (%j) is unassigned from %j', process.pid, this._name, this._id, this.job ? this.job._idIpc : 'nothing');
-		this.job.resource = null;
-		this.job = null;
+		if (this.job._id === job._id) {
+			this.job.resource = null;
+			this.job = null;
+		}
 	}
 
 	open () {
@@ -333,7 +348,7 @@ class Resource extends EventEmitter {
 			log.i('[%d]: Done running job %j (%j) in resource %j', process.pid, job.name, job._idIpc, this._id);
 			job._json.error = job._json.error || error;
 			this.channel.send(CMD.DONE, job._json);
-			this.unassign();
+			this.unassign(job);
 			if (this._closeTimeout) {
 				clearTimeout(this._closeTimeout);
 			}
