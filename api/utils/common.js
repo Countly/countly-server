@@ -575,7 +575,7 @@ var common = {},
                 divider = 60*60*24*7;
                 break;
         }
-        return Math.ceil((moment1.unix() - moment2.unix())/divider);
+        return Math.floor((moment1.unix() - moment2.unix())/divider);
     };
 	
 	common.versionCompare = function(v1, v2, options) {
