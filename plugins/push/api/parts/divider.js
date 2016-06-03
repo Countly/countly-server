@@ -43,7 +43,7 @@ class Divider {
 							log.d('Streamer is going to count %j', pushly);
 
 							streamer.count(db).then((count) => {
-								// if (clear) { streamer.clear(db); }
+								if (clear) { streamer.clear(db); }
 								resolve({
 									mid: this.message._id,
 									app: app,
