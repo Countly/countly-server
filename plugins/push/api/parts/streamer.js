@@ -56,7 +56,7 @@ class Streamer {
 						var query;
 						log.d('building audience for %s (%s)', this.pushly.id, this.pushly.credentials.id);
 						if (this.pushly.devicesQuery.drill) {
-							if (!drill()) {
+							if (!this.drill()) {
 								return reject('Drill is not enabled while pushly has drill conditions');
 							}
 
@@ -67,7 +67,7 @@ class Streamer {
 
 							log.i('Drilling: %j', params);
 
-							drill().fetchUsers(params, (err, uids) => {
+							this.drill().drill.fetchUsers(params, (err, uids) => {
 								query = this.pushly.devicesQuery.user;
 								query[common.dbUserMap.tokens + this.field] = true;
 

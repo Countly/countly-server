@@ -592,7 +592,7 @@ class IPCFaçadeJob extends Job {
 		try {
 
 			this._parent = parent;
-			log.d('[jobs]: Running IPCFaçadeJob for %s', this.job._idIpc);
+			log.d('[jobs]: Running IPCFaçadeJob for %s in %s', this.job._idIpc, this.resourceFaçade._id);
 			this.channel = new ipc.IdChannel(this.job._idIpc).attach(this.resourceFaçade._worker);
 			this.channel.on(EVT.SAVE, (json) => {
 				this.job._json.duration = json.duration = Date.now() - this.job._json.started;
@@ -603,14 +603,18 @@ class IPCFaçadeJob extends Job {
 			if (!this.promise) {
 				this.promise = new Promise((resolve, reject) => {
 					this.resolve = (json) => {
-						log.d('[jobs]: Done running %s in IPCFaçadeJob with success', this.job._idIpc);
-						this.channel.remove();
-						this.job._save(json);
-						parent._subSaved(this.job);
-						resolve(json);
+						log.i('[jobs]: Done running %s in IPCFaçadeJob with success', this.job._idIpc);
+						try {
+							this.channel.remove();
+							this.job._save(json);
+							parent._subSaved(this.job);
+							resolve(json);
+						} catch (e) {
+							log.e(e, e.stack);
+						}
 					};
 					this.reject = (error) => {
-						log.d('[jobs]: Done running %s in IPCFaçadeJob with error', this.job._idIpc);
+						log.i('[jobs]: Done running %s in IPCFaçadeJob with error', this.job._idIpc);
 						this.job._finish(error);
 						parent._subSaved(this.job);
 						this.channel.remove();
