@@ -23,6 +23,9 @@ function random() {
 	return s.length === 16 ? s : random(); 
 }
 
+/**
+ * ResourceFaçade is a thin IPC façade for actual resource running in a separate process.
+ */
 class ResourceFaçade extends EventEmitter {
 	constructor(job, file) {
 		super();
@@ -208,6 +211,9 @@ class ResourceFaçade extends EventEmitter {
 	}
 }
 
+/**
+ * Main class for custom resources to override.
+ */
 class Resource extends EventEmitter {
 	constructor(_id, name, checkInterval, autoCloseTimeout) {
 		super();

@@ -12,6 +12,10 @@ const JOB = require('./job.js'),
 const DELAY_BETWEEN_CHECKS = 1000,
 	  MAXIMUM_IN_LINE_JOBS_PER_NAME = 40;
 
+/**
+ * Manager obviously manages jobs running: monitors jobs collection & IPC messages, runs jobs dividing then if necessary, starts and manages 
+ * corresponding resources and reports jobs statuses back to the one who started them: IPC or jobs collection.
+ */
 class Manager {
 	constructor() {
 		log.i('Starting job manager');

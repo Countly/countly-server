@@ -72,6 +72,11 @@ class Handle {
 			throw new Error('Couldn\'t find job file named ' + name);
 		}
 	}
+
+	get ipc () {
+		return ipc;
+	}
+
 }
 
 if (!Handle.instance) {
