@@ -60,6 +60,8 @@ class Streamer {
 								return reject('Drill is not enabled while pushly has drill conditions');
 							}
 
+							this.drill().openDrillDb();
+
 							var params = {
 								time: common.initTimeObj(this.app.timezone, Date.now()),
 								qstring: Object.assign({app_id: this.app._id.toString()}, this.pushly.devicesQuery.drill)
