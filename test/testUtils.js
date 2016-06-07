@@ -213,7 +213,10 @@ var testUtils = function testUtils(){
 			period.should.have.property("dashboard");
 			var dashboard = period["dashboard"];
 			dashboard.should.have.property("total_sessions", {"total":correct.total_sessions,"change":"NA", "trend":"u"});
-			dashboard.should.have.property("total_users", {"total":correct.total_users,"change":"NA","trend":"u","is_estimate":false});
+            if(correct.total_users == 0)
+                dashboard.should.have.property("total_users", {"total":correct.total_users,"change":"NA","trend":"u","is_estimate":true});
+            else
+                dashboard.should.have.property("total_users", {"total":correct.total_users,"change":"NA","trend":"u","is_estimate":false});
 			dashboard.should.have.property("new_users", {"total":correct.new_users,"change":"NA","trend":"u"});
 			dashboard.should.have.property("total_time",{"total":correct.total_time,"change":"NA","trend":"u"});
 			dashboard.should.have.property("avg_time", {"total":correct.avg_time,"change":"NA","trend":"u"});
