@@ -1,5 +1,8 @@
 'use strict';
 
+/**
+ * Entry point for child_process.fork to run a corresponding resource / job.
+ */
 const IPC = require('./ipc.js'),
 	  LOGGER = require('../../utils/log.js'),
 	  log = LOGGER('jobs:executor'),

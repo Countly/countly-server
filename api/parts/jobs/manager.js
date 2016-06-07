@@ -12,6 +12,10 @@ const JOB = require('./job.js'),
 const DELAY_BETWEEN_CHECKS = 1000,
 	  MAXIMUM_IN_LINE_JOBS_PER_NAME = 40;
 
+/**
+ * Manager obviously manages jobs running: monitors jobs collection & IPC messages, runs jobs dividing then if necessary, starts and manages 
+ * corresponding resources and reports jobs statuses back to the one who started them: IPC or jobs collection.
+ */
 class Manager {
 	constructor() {
 		log.i('Starting job manager');
@@ -221,18 +225,19 @@ class Manager {
 
 											return new Promise((resolve, reject) => {
 												resourceFaçade.onceOnline().then(() => {
-													log.d('[jobs] Resource %d is online', resourceFaçade._worker.pid);
+													log.d('[jobs] Resource %s (in %d) is online', resourceFaçade._id, resourceFaçade._worker.pid);
 													jobFaçade._run(job).then(() => {
 														try {
-															log.d('--------------------- jobFaçade success for %j', sub);
+															log.i('--------------------- jobFaçade success for %j', sub);
 															resourceFaçade.detachJob(jobFaçade);
 															resolve();
 															// this.queue(this.running, promiseMakers, workersCount, resolve, reject);
 															log.d('--------------------- jobFaçade called queue');
+															setTimeout(resourceFaçade.close.bind(resourceFaçade), 10000);
+															// resourceFaçade.close();
 														}catch (e) {
 															log.e(e, e.stack);
 														}
-														// resourceFaçade.close();
 													}, (e, tryagain) => {
 														log.e('--------------------- jobFaçade error %j / %j for %j', e, tryagain, sub);
 														resourceFaçade.detachJob(jobFaçade);
@@ -242,9 +247,12 @@ class Manager {
 															reject(e);
 															// this.queue(this.running, promiseMakers, workersCount, resolve, reject, e);
 														}
-														// resourceFaçade.close();
+														setTimeout(resourceFaçade.close.bind(resourceFaçade), 10000);
 													});
-												}, reject);
+												}, (error) => {
+													log.w('Error while waiting for resource %s to become online: %j', resourceFaçade._id, error);
+													reject(error);
+												});
 											});
 										};
 										// TODO: handle case when resource is closed / exited resources in the middle of job starting
@@ -331,13 +339,13 @@ class Manager {
 
 		let res = this.resources[job.resourceName()];
 
-		for (let i = 0; i < res.length; i++) {
-			let r = res[i];
-			if (!r.isBusy) {
-				log.d('Reusing %j', r._id);
-				return r;
-			}
-		}
+		// for (let i = 0; i < res.length; i++) {
+		// 	let r = res[i];
+		// 	if (!r.isBusy) {
+		// 		log.d('Reusing %j', r._id);
+		// 		return r;
+		// 	}
+		// }
 
 		var r = new RES.ResourceFaçade(job, this.files[job.name]);
 		log.d('Created new resource of type %j: %j', job.resourceName(), r._id);

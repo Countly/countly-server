@@ -31,6 +31,9 @@ MAXIMUM_SAVE_ERRORS = 5,
 MAXIMUM_ERRORS = 1,
 MAXIMUM_JOB_TIMEOUT = 30000;
 
+/**
+ * Debounce function which decreases number of calls to func to be once in minWait ... maxWait.
+ */
 const debounce = function (func, minWait, maxWait) {
     var timeout, first, args, context, 
         later = function() {
@@ -54,6 +57,23 @@ const debounce = function (func, minWait, maxWait) {
     };
 };
 
+/**
+ * Job superclass for all jobs. To add new job type you need to:
+ * 1. Define job class which has to be single export from a node.js module. This module can be either in api/jobs folder (API job), 
+ *    or in a plugins/plugin/api/jobs folder (plugin job). Job name is assigned automatically to have the form of "[API or plugin name]:[job file name]".
+ * 2. Schedule a job by running any of the following (replace 'api:clear' with your Job name from point 1 above):
+ *    - require('api/parts/jobs').job('api:clear', {some: 'data'}).now() - to run the job ASAP.
+ *    - require('api/parts/jobs').job('api:clear', {some: 'data'}).in(5) - to run the job in 5 seconds from now.
+ *    - require('api/parts/jobs').job('api:clear', {some: 'data'}).once(new Date() or Date.now()) - to run the job on specified date.
+ *    - require('api/parts/jobs').job('api:clear', {some: 'data'}).schedule("once in 2 hours") - to run the job on specified schedule, see https://bunkat.github.io/later/parsers.html#text for examples.
+ * 3. Optionally set allowed concurrency (maximum running jobs of this type at any point in time) of the job by overriding getConcurrency method in your job class.
+ * 4. Optionally allow the job to be divided by overriding divide in your job class. Resulted subjobs (or subs) will be run as separte jobs in parallel to improve performance.
+ *
+ * There are 3 useful Job subclasses already implemented:
+ * ResourcefulJob is used when job requires some persistent resource to run on. Read - network connection, memory cache, etc.
+ * IPCJob which extends ResourcefulJob is used when resource needs to live in a separate from Countly master process. Example - push which runs a 
+ * TransientJob which extends IPCJob is used when job shouldn't be saved in jobs collection with all status updates being run through IPC.
+ */
 class Job extends EventEmitter {
 	constructor(name, data) {
 		super();
@@ -61,8 +81,6 @@ class Job extends EventEmitter {
 			this._json = name;
 			if (this._json._id && typeof this._json._id === 'string') {
 				this._json._id = new ObjectID(this._json._id);
-				log.d('!!!!!!!!!!!!!!!! %j / %j / %j', this._id, this._json._id, this._idIpc);
-				log.d('!!!!!!!!!!!!!!!! %j / %j / %j', typeof this._id, typeof this._json._id, typeof this._idIpc);
 			}
 		} else {
 			this._json = {
@@ -442,7 +460,7 @@ class Job extends EventEmitter {
 
 /**
  * Job which needs some resource to run: socket, memory cache, etc.
- * Resource can be passed to another job instance. Resource can be used by only one job simultaneously.
+ * Resource lives longer than a single job and reassigned from one job to another when first one is done. 
  */
 class ResourcefulJob extends Job {
 	createResource (/*_id, name, options */) {
@@ -455,13 +473,20 @@ class ResourcefulJob extends Job {
 }
 
 /**
- * Job which can be run on current or another process.
- * If running on current process, class can be used as ordinary job with a call to _run() method.
- * If running on another process there are 2 instances of this class:
- * - initiator job in "master" process with _runIPC() method instantiating process which actually runs job
- * - runner job which actually runs the job inside _runIPC() method and reports back to initiator job status through IPC
- * Master process is always responsible for DB operations. Runner process doesn't update status in DB.
- * Extends ResourcefulJob, meaning resource can live longer than job and reassigned to other job after current job is done.
+ * Job which runs in 2 processes:
+ * - Initiator process (Countly master) creates subprocess (fork of executor.js) and processes IPC messages from subprocess persisting them in DB.
+ * - Subprocess actually runs the job, but sends state updates through IPC instead of saving it into DB.
+ *
+ * This complex structure gives following advantages:
+ * - Subprocess can safely crash, initiator process will be able to just restart the job in a new subprocess from the point it stopped.
+ * - The job can be divided across multiple subprocesses while progress updates will be run in a single master process, 
+ *   removing race conditions and excess DB load.
+ * - Subprocess can run without any DB at all (see TransientJob below) removing unnecessary persistence in DB between job 
+ *   creator and actual job running. Unnecessary persistence substantially increases latency and substantially increases complexity of interactions.
+ * 
+ * Extends ResourcefulJob, meaning job resource can live longer than job and reassigned to other job after current job is done.
+ *
+ * Works in combination with IPCFaçadeJob which listens for IPC status messages from subprocess and persists them in DB.
  */
 class IPCJob extends ResourcefulJob {
 
@@ -567,7 +592,7 @@ class IPCFaçadeJob extends Job {
 		try {
 
 			this._parent = parent;
-			log.d('[jobs]: Running IPCFaçadeJob for %s', this.job._idIpc);
+			log.d('[jobs]: Running IPCFaçadeJob for %s in %s', this.job._idIpc, this.resourceFaçade._id);
 			this.channel = new ipc.IdChannel(this.job._idIpc).attach(this.resourceFaçade._worker);
 			this.channel.on(EVT.SAVE, (json) => {
 				this.job._json.duration = json.duration = Date.now() - this.job._json.started;
@@ -578,14 +603,18 @@ class IPCFaçadeJob extends Job {
 			if (!this.promise) {
 				this.promise = new Promise((resolve, reject) => {
 					this.resolve = (json) => {
-						log.d('[jobs]: Done running %s in IPCFaçadeJob with success', this.job._idIpc);
-						this.channel.remove();
-						this.job._save(json);
-						parent._subSaved(this.job);
-						resolve(json);
+						log.i('[jobs]: Done running %s in IPCFaçadeJob with success', this.job._idIpc);
+						try {
+							this.channel.remove();
+							this.job._save(json);
+							parent._subSaved(this.job);
+							resolve(json);
+						} catch (e) {
+							log.e(e, e.stack);
+						}
 					};
 					this.reject = (error) => {
-						log.d('[jobs]: Done running %s in IPCFaçadeJob with error', this.job._idIpc);
+						log.i('[jobs]: Done running %s in IPCFaçadeJob with error', this.job._idIpc);
 						this.job._finish(error);
 						parent._subSaved(this.job);
 						this.channel.remove();

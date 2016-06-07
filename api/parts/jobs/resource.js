@@ -23,6 +23,9 @@ function random() {
 	return s.length === 16 ? s : random(); 
 }
 
+/**
+ * ResourceFaçade is a thin IPC façade for actual resource running in a separate process.
+ */
 class ResourceFaçade extends EventEmitter {
 	constructor(job, file) {
 		super();
@@ -64,7 +67,7 @@ class ResourceFaçade extends EventEmitter {
 			this._open = false;
 			if (!this._crashed) {
 				if (this._job) {
-					log.i('[jobs]: Resource %j closed in %d (%j) while running %s, will reject' + this._job._idIpc, this._name, this._worker.pid, this._id, this._job._idIpc);
+					log.i('[jobs]: Resource %j closed in %d (%j) while running %s, will reject', this._name, this._worker.pid, this._id, this._job._idIpc);
 					this._job = null;
 					log.i('rejecting');
 					this.reject('closed');
@@ -78,7 +81,7 @@ class ResourceFaçade extends EventEmitter {
 			log.i('[jobs]: Resource %j exited in %d: %j', this._name, this._worker.pid, this._id);
 			if (!this._crashed) {
 				if (this._job) {
-					log.i('[jobs]: Resource %j exited in %d (%j) while running %s, will reject' + this._job._idIpc, this._name, this._worker.pid, this._id, this._job._idIpc);
+					log.i('[jobs]: Resource %j exited in %d (%j) while running %s, will reject', this._name, this._worker.pid, this._id, this._job._idIpc);
 					this._job = null;
 					log.i('rejecting');
 					this.reject('Process exited');
@@ -106,7 +109,7 @@ class ResourceFaçade extends EventEmitter {
 		});
 
 		this.channel.on(CMD.ONLINE, () => {
-			log.d('ResourceFaçade is online');
+			log.d('ResourceFaçade %s is online', this._id);
 			this.emit('online');
 		});
 	}
@@ -154,9 +157,9 @@ class ResourceFaçade extends EventEmitter {
 	}
 
 	assign (job) {
-		log.d('[%d]: Resource %j (%j) is assigned to %j', process.pid, this._name, this._id, job._idIpc);
 		job.resource = this;
 		this._job = job;
+		log.d('[%d]: Resource %j (%j) is assigned to %j', process.pid, this._name, this._id, job._idIpc);
 	}
 
 	migrate (job, file) {
@@ -193,8 +196,9 @@ class ResourceFaçade extends EventEmitter {
 		return this.close();
 	}
 
-	onceOnline (clb) {
+	onceOnline () {
 		if (this._online) {
+			log.w('Resource %s is already online', this._id);
 			return Promise.resolve();
 		} else {
 			return new Promise((resolve) => {
@@ -208,6 +212,9 @@ class ResourceFaçade extends EventEmitter {
 	}
 }
 
+/**
+ * Main class for custom resources to override.
+ */
 class Resource extends EventEmitter {
 	constructor(_id, name, checkInterval, autoCloseTimeout) {
 		super();
@@ -347,8 +354,8 @@ class Resource extends EventEmitter {
 		} else {
 			log.i('[%d]: Done running job %j (%j) in resource %j', process.pid, job.name, job._idIpc, this._id);
 			job._json.error = job._json.error || error;
-			this.channel.send(CMD.DONE, job._json);
 			this.unassign(job);
+			this.channel.send(CMD.DONE, job._json);
 			if (this._closeTimeout) {
 				clearTimeout(this._closeTimeout);
 			}

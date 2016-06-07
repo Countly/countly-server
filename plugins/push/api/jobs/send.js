@@ -266,6 +266,21 @@ class PushJob extends job.IPCJob {
 							status.done += statuses.length;
 							status.sent += sent;
 
+							if (sent) {
+								var params = {
+									qstring: {
+										events: [
+											{ key: '[CLY]_push_sent', count: sent, segmentation: {i: message._id } }
+										]
+									},
+									app_id: app._id,
+									appTimezone: app.timezone,
+									time: require('../../../../api/utils/common.js').initTimeObj(app.timezone)
+								};
+
+								require('../../../../api/parts/data/events.js').processEvents(params);
+							}
+
 							progress(status.done, status.sent, statuses.pop()[0]);
 						} catch(e) { log.e(e, e.stacl); }
 
