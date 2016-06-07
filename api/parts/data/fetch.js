@@ -258,6 +258,28 @@ var fetch = {},
                 filter = {};
             }            
         }
+        if(!params.member.global_admin){
+            var apps = {};
+            for(var i = 0; i < params.member.admin_of.length; i++){
+                if (params.member.admin_of[i] == "") {
+                    continue;
+                }
+                apps[params.member.admin_of[i]] = true;
+            }
+            
+            for(var i = 0; i < params.member.user_of.length; i++){
+                if (params.member.user_of[i] == "") {
+                    continue;
+                }
+                apps[params.member.user_of[i]] = true;
+            }
+            
+            var fromApps = [];
+            for(var i in apps){
+                fromApps.push(common.db.ObjectID(i))
+            }
+            filter["_id"] = { '$in':fromApps }
+        }
         common.db.collection("apps").find(filter, {_id:1, name:1}).toArray(function(err, apps){
             function extractData(db, props){
                 var chartData = [
