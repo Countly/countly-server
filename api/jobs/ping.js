@@ -26,7 +26,7 @@ class PingJob extends job.Job {
                             }
                         ])
                     }
-                }, function(a, c, b) {
+                }, function(a/*, c, b*/) {
                     log.d('Done running ping job: %j', a);
                     done();
                 });

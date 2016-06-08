@@ -150,7 +150,7 @@ var common          = require('../../../../api/utils/common.js'),
                 }
 
                 let divider = new Divider(message);
-                divider.count(common.db).then((TOTALLY) => {
+                divider.audience(common.db).then((TOTALLY) => {
                     callback(null, TOTALLY);
                 }, (err) => {
                     callback(500, err);
@@ -373,10 +373,18 @@ var common          = require('../../../../api/utils/common.js'),
                         } else {
                             message.result.total = TOTALLY.TOTALLY;
                             log.d('Saving message: %j', mess.cleanObj(message));
-                            common.db.collection('messages').save(mess.cleanObj(message), function(err) {
+                            let json = mess.cleanObj(message);
+                            if (msg.date) {
+                                json.result.status = 2;
+                            }
+                            common.db.collection('messages').save(json, function(err) {
                                 if (msg.date) {
                                     log.d('Scheduling push job on date %j', msg.date);
-                                    jobs.job('push:send', {mid: message._id}).schedule(msg.date);
+                                    if (msg.date) {
+                                        jobs.job('push:send', {mid: message._id}).once(msg.date);
+                                    } else {
+                                        jobs.job('push:send', {mid: message._id}).now();
+                                    }
                                 } else {
                                     log.d('Scheduling push job now %j', msg.date);
                                     jobs.job('push:send', {mid: message._id}).now();

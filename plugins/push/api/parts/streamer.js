@@ -3,7 +3,6 @@
 const common = require('../../../../api/utils/common.js'),
       plugins = require('../../../pluginManager.js'),
       credentials = require('./credentials.js'),
-	  drill = common.log('push:streamer'),
 	  log = common.log('push:streamer');
 
 class Streamer {
@@ -123,6 +122,24 @@ class Streamer {
 				if (typeof devices === 'string') {
 					log.d('Counting collection %j for %j', this.collection(), this.pushly.id);
 					db.collection(this.built).count((err, count) => {
+						log.d('Counted collection %j for %j: %j', this.collection(), this.pushly.id, count);
+						if (err) { reject(err); }
+						else { resolve(count); }
+					});
+				} else {
+					resolve(devices.length);
+				}
+			});
+		});
+	}
+
+	audience (db) {
+		log.d('Audiencing streamer for %j', this.pushly.id);
+		return new Promise((resolve, reject) => {
+			this.build(db).then((devices) => {
+				if (typeof devices === 'string') {
+					log.d('Counting collection %j for %j', this.collection(), this.pushly.id);
+					db.collection(this.built).aggregate([{$match: {}}, {$group: {_id: '$la', count: {$sum: 1}}}], (err, count) => {
 						log.d('Counted collection %j for %j: %j', this.collection(), this.pushly.id, count);
 						if (err) { reject(err); }
 						else { resolve(count); }

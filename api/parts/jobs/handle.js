@@ -48,11 +48,12 @@ class Handle {
 				channel = new ipc.IdChannel(job.EVT.TRANSIENT_CHANNEL).attach(process).on(job.EVT.TRANSIENT_DONE, (json) => {
 					log.d('[%d]: Got transient job response %j', process.pid, j._json);
 					if (json._id === data._id) {
-						if (channel == null) { 
+						if (channel === null) { 
 							return;
 						} else {
 							channel.remove();
 							channel = null;
+							clearTimeout(timeout);
 							if (json.error) { 
 								reject(json);
 							} else {

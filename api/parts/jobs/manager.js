@@ -60,6 +60,15 @@ class Manager {
 		});
 	}
 
+	job (name, data) {
+		let Constructor = this.classes[name];
+		if (Constructor) {
+			return new Constructor(name, data);
+		} else { 
+			throw new Error('Couldn\'t find job file named ' + name);
+		}
+	}
+
 	checkAfterDelay () {
 		if (this.checkingAfterDelay) { return; }
 		this.checkingAfterDelay = true;

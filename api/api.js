@@ -84,6 +84,11 @@ if (cluster.isMaster) {
 
     plugins.dispatch("/master", {});
 
+    // Allow configs to load & scanner to find all jobs classes
+    setTimeout(() => {
+        jobs.job('api:ping').replace().schedule('every 1 day');
+        jobs.job('api:clear').replace().schedule('every 1 minute');
+    }, 3000);
 } else {
 
     var url = require('url'),

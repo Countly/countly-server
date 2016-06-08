@@ -5,6 +5,7 @@ const job = require('../parts/jobs/job.js'),
 
 class ClearJob extends job.Job {
     run (db, done) {
+        log.d('Clearing jobs ...');
         var query = {
             $and: [
                 {status: {$in: [job.STATUS.DONE, job.STATUS.CANCELLED]}},
@@ -19,7 +20,7 @@ class ClearJob extends job.Job {
             if (err) {
                 log.e('Error while clearing jobs: ', err);
             } else {
-                log.d('Done clearing old jobs done before %j:', query.$and[1].$or[1].done.$lt, result);
+                log.d('Done clearing old jobs done before %j:', query.$and[1].$or[1].finished.$lt, result.deletedCount);
             }
             done(err);
         });

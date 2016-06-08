@@ -128,6 +128,7 @@ class Job extends EventEmitter {
 
 	schedule (schedule, strict, nextTime) {
 		this._json.schedule = schedule;
+		this._json.status = STATUS.SCHEDULED;
 
 		if (strict) {
 			this._json.strict = strict;
@@ -196,15 +197,15 @@ class Job extends EventEmitter {
 			};
 
 			if (this._replace) {
-				query = {status: STATUS.SCHEDULED, name: name};
+				query = {status: STATUS.SCHEDULED, name: this.name};
 				if (this.data) { query.data = this.data; }
 
 				log.i('replacing job %j with', query, this._json);
-				this.db().collection('jobs').findAndModify(query, [['_id', 1]], {$set: this._json}, {new: true}, function(err, job){
+				this.db().collection('jobs').findAndModify(query, [['_id', 1]], {$set: this._json}, {new: true}, (err, job) => {
 					if (err) {
 						log.e('job replacement error, saving new job', err, job);
 						this.db().collection('jobs').save(this._json, clb);
-					} else if (!job){
+					} else if (job && !job.value){
 						log.i('no job found to replace, saving new job', err, job);
 						this.db().collection('jobs').save(this._json, clb);
 					} else {
@@ -373,47 +374,49 @@ class Job extends EventEmitter {
 	}
 
 	_run (db) {
+		var job = this;
+	
 		return new Promise((resolve, reject) => {
 			var timeout = setTimeout(() => {
-					log.d('First timeout called in %s', this.this._id);
-					if (!this.completed) {
-						this._abort().then(reject, reject);
+					log.d('First timeout called in %s', job._id);
+					if (!job.completed) {
+						job._abort().then(reject, reject);
 					}
 				}, MAXIMUM_JOB_TIMEOUT),
 				// debounce save to once in 500 - 10000 ms
-				debouncedProgress = debounce(this._progress.bind(this), 500, 10000),
+				debouncedProgress = debounce(job._progress.bind(job), 500, 10000),
 				progressSave = (size, done, bookmark) => {
-					if (size) { this._json.size = size; }
-					if (done) { this._json.done = done; }
-					if (bookmark) { this._json.bookmark = bookmark; }
+					if (size) { job._json.size = size; }
+					if (done) { job._json.done = done; }
+					if (bookmark) { job._json.bookmark = bookmark; }
 					debouncedProgress(size, done, bookmark);
 				};
 
-			this._json.status = STATUS.RUNNING;
+			job._json.status = STATUS.RUNNING;
 
-			this.run(
+			job.run(
 				db,
 				(err) => {
-					log.d('Job %j is done running: error %j', this._id, err);
+					log.d('Job %j is done running: error %j', job._id, err);
 					clearTimeout(timeout);
-					if (!this.completed) {
-						this._finish(err).then(
+					if (!job.completed) {
+						job._finish(err).then(
 							err ? reject.bind(null, err) : resolve,
 							err ? reject.bind(null, err) : reject
 						);
 					}
 				},
 				(size, done, bookmark) => {
-					log.d('Progress of running %j: %j / %j / %j', this._id, size, done, bookmark);
+					log.d('Progress of running %j: %j / %j / %j', job._id, size, done, bookmark);
 					clearTimeout(timeout);
 					timeout = setTimeout(() => {
-						log.d('Progress timeout called in %s', this._id);
-						if (!this.completed) {
-							this._abort();
+						log.d('Progress timeout called in %s', job._id);
+						if (!job.completed) {
+							job._abort();
 						}
 					}, MAXIMUM_JOB_TIMEOUT);
 
-					if (!this.completed) {
+					if (!job.completed) {
 						progressSave(size, done, bookmark);
 					}
 				});
