@@ -982,8 +982,10 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
                                     for (var month in result[appId][year]) if (parseInt(month) == month) {
                                         for (var lang in result[appId][year][month]) if (isNaN(lang)) {
                                             var u = result[appId][year][month][lang].u;
-                                            totals[lang] = totals[lang] ? totals[lang] + u : u;
-                                            totals.TOTALLY += u;
+                                            if (typeof u === 'number') {
+                                                totals[lang] = totals[lang] ? totals[lang] + u : u;
+                                                totals.TOTALLY += u;
+                                            }
                                         }
                                     }
                                 }
