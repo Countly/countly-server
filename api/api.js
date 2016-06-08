@@ -159,7 +159,7 @@ if (cluster.isMaster) {
                 plugins.dispatch("/sdk", {params:params, app:app});
                 if(!params.cancelRequest){
                     //check if device id was changed
-                    if(params.qstring.old_device_id){
+                    if(params.qstring.old_device_id && params.qstring.old_device_id != params.qstring.device_id){
                         function restartRequest(){
                             //remove old device ID and retry request
                             params.qstring.old_device_id = null;
@@ -225,7 +225,7 @@ if (cluster.isMaster) {
                                             }
                                         }
                                         //update new user
-                                        common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': newAppUser}, function() {
+                                        common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': newAppUser}, {'upsert':true}, function() {
                                             //delete old user
                                             common.db.collection('app_users' + params.app_id).remove({_id:old_id}, function(){
                                                 //let plugins know they need to merge user data
