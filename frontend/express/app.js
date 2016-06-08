@@ -110,7 +110,11 @@ app.loadThemeFiles = function(theme, callback){
         if(theme && theme.length){
             var themeDir = path.resolve(__dirname, "public/themes/"+theme+"/");
             fs.readdir(themeDir, function(err, list) {
-                if (err) return ;
+                if (err){
+                    if(callback)
+                        callback(tempThemeFiles);
+                    return ;
+                }
                 var ext;
                 for(var i = 0; i < list.length; i++){
                     ext = list[i].split(".").pop();
