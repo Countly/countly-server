@@ -53,12 +53,14 @@ window.ReportingView = countlyView.extend({
     renderCommon:function (isRefresh) {
         var cnts = app.manageAppsView.getTimeZones();
         var zones = {};
+        var zNames = {};
         var zoneNames = [];
         for(var i in cnts){
             for(var j = 0; j < cnts[i].z.length; j++){
                 for(var k in cnts[i].z[j]){
                     zoneNames.push(k);
-                    zones[cnts[i].z[j][k]] = k;
+                    zones[k] = cnts[i].z[j][k];
+                    zNames[cnts[i].z[j][k]] = k;
                 }
             }
         }
@@ -73,7 +75,7 @@ window.ReportingView = countlyView.extend({
                     data[i].minute = "0"+data[i].minute;
                 
                 data[i].dayname = this.getDayName(data[i].day);
-                data[i].zoneName = zones[data[i].timezone] || "(GMT+00:00) GMT (no daylight saving)";
+                data[i].zoneName = zNames[data[i].timezone] || "(GMT+00:00) GMT (no daylight saving)";
             }
         }
         
