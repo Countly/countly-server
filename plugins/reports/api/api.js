@@ -1,22 +1,20 @@
 var plugin = {},
 	common = require('../../../api/utils/common.js'),
     path = require("path"),
-    cron = require("crontab"),
     reports = require("./reports"),
     time = require('time'),
     plugins = require('../../pluginManager.js');
-
-plugins.setConfigs("reports", {
-    use_cron:true
-});
     
 var dir = path.resolve(__dirname, '');
 var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
-var crontab;
-// cron.load(function(err, tab){
-//     crontab = tab;
-// });
 (function (plugin) {
+    plugins.register("/master", function(ob){
+        // Allow configs to load & scanner to find all jobs classes
+        setTimeout(() => {
+            require('../../../api/parts/jobs').job('reports:send',{}).replace().schedule("once in 1 hour");
+        }, 3000);
+    });
+    
 	plugins.register("/o/reports", function(ob){
 		var params = ob.params;
 		var validate = validateAnyAdmin;
@@ -67,171 +65,131 @@ var crontab;
 		switch (paths[3]) {
             case 'create':
                 validate(params, function (params) {
-                    if(crontab){
-                        var argProps = {
-                                'frequency':{ 'required': false, 'type': 'String'},
-                                'apps':     { 'required': true, 'type': 'Array'},
-                                'hour':     { 'required': false, 'type': 'String' },
-                                'minute':   { 'required': false, 'type': 'String' },
-                                'timezone': { 'required': false, 'type': 'String' },
-                                'day':      { 'required': false, 'type': 'String' },
-                                'emails':   { 'required': true, 'type': 'Array' },
-                                'metrics':	{ 'required': true, 'type': 'Object' }
-                            },
-                            props = {};
-
-                        if (!(props = common.validateArgs(params.qstring.args, argProps))) {
-                            common.returnMessage(params, 200, 'Not enough args');
-                            return false;
-                        }
-                        props.frequency = (props.frequency != "weekly") ? "daily" : "weekly";
-                        props.minute = (props.minute) ? parseInt(props.minute) : 0;
-                        props.hour = (props.hour) ? parseInt(props.hour) : 0;
-                        props.day = (props.day) ? parseInt(props.day) : 0;
-                        props.timezone = props.timezone || "Etc/GMT";
-                        props.user = params.member._id;
-                        
-                        //add only allowed apps
-                        if(!params.member.global_admin){
-                            var apps = [];
-                            for(var i = 0; i < props.apps.length; i++){
-                                for(var j = 0; j < params.member.admin_of.length; j++){
-                                    if(props.apps[i] == params.member.admin_of[j]){
-                                        apps.push(props.apps[i]);
-                                        break;
-                                    }
+                    var argProps = {
+                            'frequency':{ 'required': false, 'type': 'String'},
+                            'apps':     { 'required': true, 'type': 'Array'},
+                            'hour':     { 'required': false, 'type': 'String' },
+                            'minute':   { 'required': false, 'type': 'String' },
+                            'timezone': { 'required': false, 'type': 'String' },
+                            'day':      { 'required': false, 'type': 'String' },
+                            'emails':   { 'required': true, 'type': 'Array' },
+                            'metrics':	{ 'required': true, 'type': 'Object' }
+                        },
+                        props = {};
+    
+                    if (!(props = common.validateArgs(params.qstring.args, argProps))) {
+                        common.returnMessage(params, 200, 'Not enough args');
+                        return false;
+                    }
+                    props.frequency = (props.frequency != "weekly") ? "daily" : "weekly";
+                    props.minute = (props.minute) ? parseInt(props.minute) : 0;
+                    props.hour = (props.hour) ? parseInt(props.hour) : 0;
+                    props.day = (props.day) ? parseInt(props.day) : 0;
+                    props.timezone = props.timezone || "Etc/GMT";
+                    props.user = params.member._id;
+                    
+                    //add only allowed apps
+                    if(!params.member.global_admin){
+                        var apps = [];
+                        for(var i = 0; i < props.apps.length; i++){
+                            for(var j = 0; j < params.member.admin_of.length; j++){
+                                if(props.apps[i] == params.member.admin_of[j]){
+                                    apps.push(props.apps[i]);
+                                    break;
                                 }
                             }
-                            props.apps = apps;
                         }
-                        convertToTimezone(props);
-                        
-                        common.db.collection('reports').insert(props, function(err, result) {
-                            result = result.ops;
-                            if(err){
-                                err = err.err;
-                                common.returnMessage(params, 200, err);
-                            }
-                            else{
-                                var id = result[0]._id;
-                                createCronjob(id, props);
-                                saveCronjob(function(err, crontab) {
-                                    if(err){
-                                        common.returnMessage(params, 200, err.message);
-                                    }
-                                    else{
-                                        common.returnMessage(params, 200, "Success");
-                                    }
-                                });
-                            }
-                        });
+                        props.apps = apps;
                     }
-                    else{
-                        common.returnMessage(params, 200, "Try again later");
-                    }
+                    convertToTimezone(props);
+                    
+                    common.db.collection('reports').insert(props, function(err, result) {
+                        result = result.ops;
+                        if(err){
+                            err = err.err;
+                            common.returnMessage(params, 200, err);
+                        }
+                        else{
+                            common.returnMessage(params, 200, "Success");
+                        }
+                    });
 				});
                 break;
             case 'update':
                 validate(params, function (params) {
-                    if(crontab){
-                        var argProps = {
-                                '_id':      { 'required': true, 'type': 'String'},
-                                'frequency':{ 'required': false, 'type': 'String'},
-                                'apps':     { 'required': false, 'type': 'Array'},
-                                'hour':     { 'required': false, 'type': 'String' },
-                                'minute':   { 'required': false, 'type': 'String' },
-                                'timezone': { 'required': false, 'type': 'String' },
-                                'day':      { 'required': false, 'type': 'String' },
-                                'emails':   { 'required': false, 'type': 'Array' },
-                                'metrics':	{ 'required': false, 'type': 'Object' }
-                            },
-                            props = {};
-    
-                        if (!(props = common.validateArgs(params.qstring.args, argProps))) {
-                            common.returnMessage(params, 200, 'Not enough args');
-                            return false;
-                        }
-                        var id = props._id;
-                        delete props._id;
-                        if(props.frequency != "daily" && props.frequency != "weekly")
-                            delete props.frequency;
-                        if(props.minute)
-                            props.minute = parseInt(props.minute);
-                        if(props.hour)
-                            props.hour = parseInt(props.hour);
-                        if(props.day)
-                            props.day = parseInt(props.day);
-                        props.timezone = props.timezone || "Etc/GMT";
-                        
-                        //add only allowed apps
-                        if(!params.member.global_admin){
-                            var apps = [];
-                            for(var i = 0; i < props.apps.length; i++){
-                                for(var j = 0; j < params.member.admin_of.length; j++){
-                                    if(props.apps[i] == params.member.admin_of[j]){
-                                        apps.push(props.apps[i]);
-                                        break;
-                                    }
+                    var argProps = {
+                            '_id':      { 'required': true, 'type': 'String'},
+                            'frequency':{ 'required': false, 'type': 'String'},
+                            'apps':     { 'required': false, 'type': 'Array'},
+                            'hour':     { 'required': false, 'type': 'String' },
+                            'minute':   { 'required': false, 'type': 'String' },
+                            'timezone': { 'required': false, 'type': 'String' },
+                            'day':      { 'required': false, 'type': 'String' },
+                            'emails':   { 'required': false, 'type': 'Array' },
+                            'metrics':	{ 'required': false, 'type': 'Object' }
+                        },
+                        props = {};
+        
+                    if (!(props = common.validateArgs(params.qstring.args, argProps))) {
+                        common.returnMessage(params, 200, 'Not enough args');
+                        return false;
+                    }
+                    var id = props._id;
+                    delete props._id;
+                    if(props.frequency != "daily" && props.frequency != "weekly")
+                        delete props.frequency;
+                    if(props.minute)
+                        props.minute = parseInt(props.minute);
+                    if(props.hour)
+                        props.hour = parseInt(props.hour);
+                    if(props.day)
+                        props.day = parseInt(props.day);
+                    props.timezone = props.timezone || "Etc/GMT";
+                    
+                    //add only allowed apps
+                    if(!params.member.global_admin){
+                        var apps = [];
+                        for(var i = 0; i < props.apps.length; i++){
+                            for(var j = 0; j < params.member.admin_of.length; j++){
+                                if(props.apps[i] == params.member.admin_of[j]){
+                                    apps.push(props.apps[i]);
+                                    break;
                                 }
                             }
-                            props.apps = apps;
                         }
-                        convertToTimezone(props);
-                        common.db.collection('reports').update({_id:common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, {$set:props}, function(err, app) {
-                            if(err){
-                                err = err.err;
-                                common.returnMessage(params, 200, err);
-                            }
-                            else{
-                                deleteCronjob(id);
-                                createCronjob(id, props);
-                                saveCronjob(function(err, crontab) {
-                                    if(err){
-                                        common.returnMessage(params, 200, err);
-                                    }
-                                    else{
-                                        common.returnMessage(params, 200, "Success");
-                                    }
-                                });
-                            }
-                        });
+                        props.apps = apps;
                     }
-                    else{
-                        common.returnMessage(params, 200, "Try again later");
-                    }
+                    convertToTimezone(props);
+                    common.db.collection('reports').update({_id:common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, {$set:props}, function(err, app) {
+                        if(err){
+                            err = err.err;
+                            common.returnMessage(params, 200, err);
+                        }
+                        else{
+                            common.returnMessage(params, 200, "Success");
+                        }
+                    });
 				});
                 break;
 			case 'delete':
                 validate(params, function (params) {
-                    if(crontab){
-                        var argProps = {
-                                '_id': { 'required': true, 'type': 'String'}
-                            },
-                            id = '';
-                
-                        if (!(id = common.validateArgs(params.qstring.args, argProps)._id)) {
-                            common.returnMessage(params, 200, 'Not enough args');
-                            return false;
+                    var argProps = {
+                            '_id': { 'required': true, 'type': 'String'}
+                        },
+                        id = '';
+                    
+                    if (!(id = common.validateArgs(params.qstring.args, argProps)._id)) {
+                        common.returnMessage(params, 200, 'Not enough args');
+                        return false;
+                    }
+                    common.db.collection('reports').remove({'_id': common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, {safe: true}, function(err, result) {
+                        if (err) {
+                            common.returnMessage(params, 200, 'Error deleting report');
                         }
-                        common.db.collection('reports').remove({'_id': common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, {safe: true}, function(err, result) {
-                            if (err) {
-                                common.returnMessage(params, 200, 'Error deleting report');
-                                return false;
-                            }
-                            deleteCronjob(id);
-                            saveCronjob(function(err, crontab) {
-                                if(err){
-                                    common.returnMessage(params, 200, err);
-                                }
-                                else{
-                                    common.returnMessage(params, 200, "Success");
-                                }
-                            });
-                        });
-                    }
-                    else{
-                        common.returnMessage(params, 200, "Try again later");
-                    }
+                        else{
+                            common.returnMessage(params, 200, "Success");
+                        }
+                    });
 				});
                 break;
             case 'send':
@@ -338,32 +296,6 @@ var crontab;
         props.r_day = day;
         props.r_hour = hour;
         props.r_minute = minute;
-    }
-    
-    function createCronjob(id, props){
-        if(plugins.getConfig("reports").use_cron){              
-            var job = crontab.create('nodejs '+dir+'/process_reports.js '+id+' > '+logpath+' 2>&1');
-            job.comment(id);
-            job.minute().at(props.r_minute);
-            job.hour().at(props.r_hour);
-            if(props.frequency == "weekly"){
-                job.dow().at(props.r_day);
-            }
-        }
-    }
-    
-    function saveCronjob(callback){
-        if(plugins.getConfig("reports").use_cron){
-            crontab.save(callback);
-        }
-        else if(callback)
-            callback(null, crontab);
-    }
-    
-    function deleteCronjob(id){
-        if(plugins.getConfig("reports").use_cron){
-            crontab.remove({command:'nodejs '+dir+'/process_reports.js '+id+' > '+logpath+' 2>&1', comment:id});
-        }
     }
     
     function validateAnyAdmin(params, callback, callbackParam) {
