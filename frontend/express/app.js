@@ -10,7 +10,7 @@ var versionInfo = require('./version.info'),
     crypto = require('crypto'),
     fs = require('fs'),
     path = require('path'),
-    im = require('imagemagick'),
+    sharp = require('sharp'),
     request = require('request'),
     async = require('async'),
     stringJS = require('string'),
@@ -769,13 +769,10 @@ app.post(countlyConfig.path+'/apps/icon', function (req, res, next) {
     plugins.callMethod("iconUpload", {req:req, res:res, next:next, data:req.body});
     fs.rename(tmp_path, target_path, function (err) {
         fs.unlink(tmp_path, function () {});
-        im.crop({
-            srcPath:target_path,
-            dstPath:target_path,
-            format:'png',
-            width:72,
-            height:72
-        }, function (err, stdout, stderr) {});
+        sharp(target_path)
+        .resize(72, 72)
+        .embed()
+        .toFile(target_path, function(err) {});
 
         res.send(countlyConfig.path+"/appimages/" + req.body.app_image_id + ".png");
     });
