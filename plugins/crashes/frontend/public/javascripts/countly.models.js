@@ -568,11 +568,48 @@
             previousResolved = 0;
 
         if (_periodObj.isSpecialPeriod) {
+            
+             for (var i = 0; i < (_periodObj.uniquePeriodArr.length); i++) {
+                tmp_x = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.uniquePeriodArr[i]);
+                tmp_x = countlyCrashes.clearObject(tmp_x);
+                currentUnique += tmp_x["cru"];
+            }
+
+            var tmpUniqObj,
+                tmpCurrentUniq = 0;
+
+            for (var i = 0; i < (_periodObj.uniquePeriodCheckArr.length); i++) {
+                tmpUniqObj = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.uniquePeriodCheckArr[i]);
+                tmpUniqObj = countlyCrashes.clearObject(tmpUniqObj);
+                tmpCurrentUniq += tmpUniqObj["cru"];
+            }
+
+            if (currentUnique > tmpCurrentUniq) {
+                currentUnique = tmpCurrentUniq;
+            }
+
+            for (var i = 0; i < (_periodObj.previousUniquePeriodArr.length); i++) {
+                tmp_y = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.previousUniquePeriodArr[i]);
+                tmp_y = countlyCrashes.clearObject(tmp_y);
+                previousUnique += tmp_y["cru"];
+            }
+
+            var tmpUniqObj2,
+                tmpPreviousUniq = 0;
+
+            for (var i = 0; i < (_periodObj.previousUniquePeriodCheckArr.length); i++) {
+                tmpUniqObj2 = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.previousUniquePeriodCheckArr[i]);
+                tmpUniqObj2 = countlyCrashes.clearObject(tmpUniqObj2);
+                tmpPreviousUniq += tmpUniqObj2["cru"];
+            }
+
+            if (previousUnique > tmpPreviousUniq) {
+                previousUnique = tmpPreviousUniq;
+            }
 
             for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
                 tmp_x = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.currentPeriodArr[i]);
                 tmp_x = countlyCrashes.clearObject(tmp_x);
-                currentUnique += tmp_x["cru"];
                 currentTotal += tmp_x["cr"];
                 currentNonfatal += tmp_x["crnf"];
                 currentFatal += tmp_x["crf"];
@@ -582,7 +619,6 @@
             for (var i = 0; i < (_periodObj.previousPeriodArr.length); i++) {
                 tmp_y = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.previousPeriodArr[i]);
                 tmp_y = countlyCrashes.clearObject(tmp_y);
-                previousUnique += tmp_y["cru"];
                 previousTotal += tmp_y["cr"];
                 previousNonfatal += tmp_y["crnf"];
                 previousFatal += tmp_y["crf"];
