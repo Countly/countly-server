@@ -5048,7 +5048,7 @@ var AppRouter = Backbone.Router.extend({
                     $(this).next(".dataTables_filter").find("input").focus();
                 });
 
-                tableWrapper.css({"min-height": tableWrapper.height()});
+                //tableWrapper.css({"min-height": tableWrapper.height()});
             }
         });
 
