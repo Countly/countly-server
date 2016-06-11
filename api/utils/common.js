@@ -553,6 +553,7 @@ var common = {},
                 }
             }
             else{
+                zeroObjUpdate.push(metric);
                 monthObjUpdate.push(metric);
             }
             if(segments){
@@ -597,6 +598,7 @@ var common = {},
                             }
                         }
                         else{
+                            zeroObjUpdate.push(escapedMetricVal+"."+metric);
                             monthObjUpdate.push(escapedMetricVal+"."+metric);
                         }
                     }
