@@ -101,13 +101,14 @@ class ConnectionResource extends EventEmitter {
 	service() {
 		log.d('[%d]: Servicing', process.pid);
 
+		this._servicing = false;
+	
 		if (this.agent === null || this._closed) {
 			return;
 		}
 
 		if (this.lastFeed !== 0 && this.queue < MAX_QUEUE / 2) {
 			this.feeder(MAX_QUEUE - this.queue);
-			this._servicing = false;
 			return;
 		} else if (this.lastFeed === 0 && this.queue === 0) {
 			return this.promiseResolve();
@@ -144,9 +145,7 @@ class ConnectionResource extends EventEmitter {
 			req.end(content);
 
 			this.queue -= devices.length;
-			this._servicing = false;
 		} else {
-			this._servicing = false;
 			this.serviceWithTimeout();
 		}
 
@@ -168,13 +167,13 @@ class ConnectionResource extends EventEmitter {
 		log.d('[%d]: GCM data %j', process.pid, data);
 
 		if (code >= 500) {
-			this.rejectAndClose(`{$code}: GCM Unavailable`);
+			this.rejectAndClose(code + ': GCM Unavailable');
 		} else if (code === 401) {
-			this.rejectAndClose(`{$code}: GCM Unauthorized`);
+			this.rejectAndClose(code + ': GCM Unauthorized');
 		} else if (code === 400) {
-			this.rejectAndClose(`{$code}: GCM Bad message`);
+			this.rejectAndClose(code + ': GCM Bad message');
 		} else if (code !== 200) {
-			this.rejectAndClose(`{$code}: Bad response code`);
+			this.rejectAndClose(code + ': Bad response code');
 		} else {
 			try {
 				if (data && data[0] === '"' && data[data.length - 1] === '"') {
@@ -191,26 +190,26 @@ class ConnectionResource extends EventEmitter {
                     		ids[i][1] = 2;
                     		ids[i][2] = result.registration_id;
 						} else if (result.error === 'MessageTooBig') {
-							this.rejectAndClose(`{$code}: GCM Message Too Big`);
+							this.rejectAndClose(code + ': GCM Message Too Big');
 						} else if (result.error === 'InvalidDataKey') {
-							this.rejectAndClose(`{$code}: Invalid Data Key`);
+							this.rejectAndClose(code + ': Invalid Data Key');
 						} else if (result.error === 'InvalidTtl') {
-							this.rejectAndClose(`{$code}: Invalid Time To Live`);
+							this.rejectAndClose(code + ': Invalid Time To Live');
 						} else if (result.error === 'InvalidTtl') {
-							this.rejectAndClose(`{$code}: Invalid Time To Live`);
+							this.rejectAndClose(code + ': Invalid Time To Live');
 						} else if (result.error === 'InvalidPackageName') {
-							this.rejectAndClose(`{$code}: Invalid Package Name`);
+							this.rejectAndClose(code + ': Invalid Package Name');
 						} else if (result.error === 'Unavailable' || result.error === 'InternalServerError') {
-							ids[i] = -1; 
+							ids[i] = -499; 
 							ids.splice(i, 1);
 							devices.splice(i, 1);
 						} else if (result.error === 'MismatchSenderId') {
-							ids[i][1] = 0;
+							ids[i][1] = -498;
 						} else if (result.error === 'NotRegistered' || result.error === 'InvalidRegistration') {
 							ids[i][1] = 0;
 						} else if (result.error) {
 							log.w('Unknown GCM error: %j', process.pid, result.error);
-							ids[i][1] = -1;
+							ids[i][1] = -497;
 						}
 
 					});

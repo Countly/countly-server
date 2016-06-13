@@ -2,7 +2,7 @@
 
 var EventEmitter = require('events'),
 	cluster = require('cluster'),
-	job = require('./job.js'),
+	JOB = require('./job.js'),
 	log = require('../../utils/log.js')('jobs:ipc');
 
 var CMD = {
@@ -11,7 +11,7 @@ var CMD = {
 	PAUSE: 'job:pause',
 	STATUS: 'job:status',
 	CRASH: 'job:crash'
-}, STATUS = job.STATUS;
+}, STATUS = JOB.STATUS;
 
 /**
 Common message structures: 
@@ -195,6 +195,67 @@ class PidToChannel extends Channel {
 	}
 }
 
+class WorkerChannel extends Channel {
+	constructor (pid) {
+		super (m => m.to === pid.toString());
+	}
+	send (cmd, data) {
+		this.worker.send({_id: this._id, cmd: cmd, from: process.pid, data: data});
+	}
+}
+
+class MasterChannel extends Channel {
+	constructor (pid) {
+		super (m => !m.to);
+		
+		this.workers = {};
+
+		cluster.on('online', (worker) => {
+			log.i('Worker started: %d', worker.process.pid);
+			this.workers[worker.process.pid] = worker;
+			worker.on('message', (m) => {
+				this.workers[worker.process.pid] = worker;
+
+				worker._channelListener = (m) => {
+					// log.d('[%d]: Got message in Channel in %d: %j', process.pid, this.worker.pid, m, this._id);
+					if (this.check(m)) {
+						// log.d('[%d]: Channeling %j', process.pid, m);
+						this.emit(m.cmd, m.data);
+					}
+				};
+
+				worker.setMaxListeners(worker.getMaxListeners() + 1);
+				worker.on('message', worker._channelListener.bind(worker));
+				worker.on('exit', this.emit.bind(this, 'exit'));
+				worker.on('error', this.emit.bind(this, 'crash'));
+			});
+		});
+
+		cluster.on('exit', (worker) => {
+			if (worker.process.pid in this.workers) {
+				log.e('Worker exited: %d', worker.process.pid);
+				delete this.workers[worker.process.pid];
+			}
+		});
+
+	}
+
+	remove () {
+		log.d('[%d]: Removing MasterChannel');
+		for (var pid in this.workers) {
+			this.workers[pid].removeListener('message', this.workers[pid]._channelListener);
+			this.workers[pid].setMaxListeners(this.workers[pid].getMaxListeners() - 1);
+			this.workers[pid]._channelListener = undefined;
+		}
+	}
+
+	send (_id, cmd, data) {
+		// log.d('Sending message from Channel in %d: %j', process.pid, {_id: _id, cmd: cmd, from: process.pid, to: this.worker.pid, data: data});
+		this.worker.send({_id: _id, cmd: cmd, from: process.pid, to: this.worker.pid, data: data});
+	}
+}
+
+
 // Countly master process, just pass through messages to specific pid in `to` field of message.
 class PassThrough {
 	constructor() {
@@ -267,7 +328,7 @@ class Master {
 			var delegate = new Delegate(job, progress);
 			delegate.run(pid).then(resolve, err => {
 				if (err === 'crash') {
-					job.master.run(job).then(resolve, reject);
+					JOB.master.run(job).then(resolve, reject);
 				} else {
 					reject(err);
 				}
@@ -281,7 +342,7 @@ class Worker {
 
 	constructor() {
 		log.i('Started Worker in %d', process.pid);
-		job.scanPlugins({}, null, (err, jobs) => {
+		JOB.scanPlugins({}, null, (err, jobs) => {
 			log.d('Got plugins jobs in IPC jobs worker %d: %j', process.pid, Object.keys(jobs));
 			this.jobs = jobs;
 		});

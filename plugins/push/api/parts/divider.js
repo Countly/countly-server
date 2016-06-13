@@ -7,7 +7,7 @@ var common = require('../../../../api/utils/common.js'),
 	Streamer = require('./streamer.js');
 
 const MIN_WORKER_CHUNK_SIZE = 1000;
-const WORKER_CHUNK_SIZE = 10000;
+const WORKER_CHUNK_SIZE = 100;
 
 class Divider {
 	constructor (message) {
@@ -112,7 +112,7 @@ class Divider {
 			let workerCount = (common.config.api.workers || os.cpus().length) * 2;
 			// Then, for each app-platform combination whenver audience is too big for one core, split it between multiple cores
 			this.subs(db, !skipClear).then((subs) => {
-				log.d('Counted all audience for message %j: %d results', this.message._id, subs);
+				log.d('Counted all audience for message %j: %d results', this.message._id, subs.length);
 				subs.filter(s => s.count === 0).forEach(s => s.streamer.clear(db));
 				
 				subs = subs.filter(s => s.count > 0);
@@ -191,6 +191,11 @@ class Divider {
 				Promise.all(divisors).then((subs) => {
 					let ret = [];
 					subs.forEach(subs => ret = ret.concat(subs));
+					ret.forEach(sub => {
+						if (typeof sub.data.pushly.devicesQuery === 'object') {
+							sub.data.pushly.devicesQuery = JSON.stringify(sub.data.pushly.devicesQuery);
+						}
+					});
 					log.d('Done dividing message %j totalling %d workers with %d subs: %j', this.message._id, workerCount, ret.length, ret);
 					resolve({subs: ret, workers: workerCount});
 				}, reject);

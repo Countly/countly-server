@@ -4,6 +4,7 @@ const EventEmitter = require('events'),
 	  later = require('later'),
 	  ipc = require('./ipc.js'),
 	  log = require('../../utils/log.js')('jobs:job'),
+	  retry = require('./retry.js'),
 	  ObjectID = require('mongoskin').ObjectID;
 
 const STATUS = {
@@ -11,12 +12,13 @@ const STATUS = {
 	RUNNING: 1,
 	DONE: 2,
 	CANCELLED: 3,
-	PAUSED: 4,
-	WAITING: 5
+	ABORTED: 4,
+	PAUSED: 5,
+	WAITING: 6
 }, 
 ERROR = {
 	CRASH: 'crash',
-	TIMEOUT: 'job:timeout'
+	TIMEOUT: 'timeout'
 },
 EVT = {
 	PROGRESS: 'job:progress',
@@ -66,6 +68,7 @@ const debounce = function (func, minWait, maxWait) {
  *    - require('api/parts/jobs').job('api:clear', {some: 'data'}).in(5) - to run the job in 5 seconds from now.
  *    - require('api/parts/jobs').job('api:clear', {some: 'data'}).once(new Date() or Date.now()) - to run the job on specified date.
  *    - require('api/parts/jobs').job('api:clear', {some: 'data'}).schedule("once in 2 hours") - to run the job on specified schedule, see https://bunkat.github.io/later/parsers.html#text for examples.
+ *    NOTE! For most jobs, scheduling must be done either from master process, or from plugins.register("/master", ...) to eliminate multiple replacing on app start.
  * 3. Optionally set allowed concurrency (maximum running jobs of this type at any point in time) of the job by overriding getConcurrency method in your job class.
  * 4. Optionally allow the job to be divided by overriding divide in your job class. Resulted subjobs (or subs) will be run as separte jobs in parallel to improve performance.
  *
@@ -119,8 +122,9 @@ class Job extends EventEmitter {
 	get done () { return this._json.done; }
 	get bookmark () { return this._json.bookmark; }
 	get status () { return this._json.status; }
-	get completed () { return this._json.status === STATUS.DONE; }
-	get running () { return this._json.status === STATUS.RUNNING; }
+	get isCompleted () { return this._json.status === STATUS.DONE; }
+	get isAborted () { return this._json.status === STATUS.ABORTED; }
+	get canRun () { return this._json.status === STATUS.RUNNING; }
 	get scheduleObj () { return this._json.schedule; }
 	get strict () { return this._json.strict; }
 	get next () { return this._json.next; }
@@ -177,6 +181,7 @@ class Job extends EventEmitter {
 	_save (set) {
 		return new Promise((resolve, reject) => {
 			try {
+			this._json.modified = Date.now();
 			var query, update, clb = (err, res) => {
 				if (err) { 
 					if (this._errorCount++ < MAXIMUM_SAVE_ERRORS) {
@@ -189,10 +194,14 @@ class Job extends EventEmitter {
 						reject(err);
 					}
 				} else if (res.result.nModified === 0) {
-					log.e('Job %s has been changed while doing _save: %j / setting %j', this._id, this._json, set);
+					log.e('Job %s has been changed while doing _save: %j / setting %j for query %j', this._id, this._json, update, query);
 					reject('Job cannot be found while doing _save');
 				} else {
 					resolve(set);
+				}
+
+				if (this.isSub && this.parent) {
+					this.parent._subSaved(this);
 				}
 			};
 
@@ -224,7 +233,7 @@ class Job extends EventEmitter {
 				if (this._isSub()) {
 					query = {_id: this._json._id, 'subs.idx': this._json.idx};
 					if (set) {
-						update = {$set: {}};
+						update = {$set: {'subs.$.modified': this._json.modified}};
 						for (let k in set) {
 							update.$set['subs.$.' + k] = set[k];
 						}
@@ -234,6 +243,7 @@ class Job extends EventEmitter {
 				} else {
 					query = {_id: this._json._id};
 					update = {$set: set || this._json};
+					update.$set.modified = this._json.modified;
 				}
 				delete update.$set._id;
 				log.d('saving %j: %j', query, update);
@@ -298,12 +308,12 @@ class Job extends EventEmitter {
 			delete sub.data.done;
 			return sub;
 		});
-		log.d('divided %j', this._json);
+		log.d('%s: divided', this._idIpc);
 		return this._save({subs: this._json.subs});
 	}
 
 	_abort (err) {
-		log.d('aborting %j', this._id);
+		log.d('%s: aborting', this._idIpc);
 		return this._finish(err || 'Aborted');
 	}
 
@@ -311,10 +321,10 @@ class Job extends EventEmitter {
 		if (this.status === STATUS.RUNNING || this.status === STATUS.SCHEDULED) {
 			this._json.status = STATUS.PAUSED;
 			this._json.duration = Date.now() - this._json.started;
-			log.w('pausing %j', this._id);
+			log.w('%s: pausing', this._idIpc);
 			return this._save();
 		} else {
-			log.e('cannot pause %j', this._id);
+			log.e('%s: cannot pause', this._idIpc);
 			return Promise.reject('Job is not running to pause');
 		}
 	}
@@ -322,7 +332,7 @@ class Job extends EventEmitter {
 	_resume () {
 		if (this.status !== STATUS.DONE) {
 			this._json.status = STATUS.RUNNING;
-			log.e('resuming %j', this._id);
+			log.e('%s: resuming', this._idIpc);
 			return this._save();
 			// return new Promise((resolve, reject) => {
 			// 	this._save().then(() => {
@@ -330,14 +340,14 @@ class Job extends EventEmitter {
 			// 	}, reject);
 			// });
 		} else {
-			log.e('cannot resume %j', this._id);
+			log.e('%s: cannot resume', this._idIpc);
 			return Promise.reject('Job is done, cannot resume');
 		}
 	}
 
 	_finish (err, save) {
 		save = typeof save === 'undefined' ? true : save;
-		if (!this.completed) {
+		if (!this.isCompleted) {
 			this._json.status = STATUS.DONE;
 			this._json.finished = Date.now();
 			this._json.duration = this._json.finished - this._json.started;
@@ -357,7 +367,7 @@ class Job extends EventEmitter {
 
 	_progress (size, done, bookmark, save) {
 		save = typeof save === 'undefined' ? true : save;
-		if (!this.completed) {
+		if (!this.isCompleted) {
 			this._json.duration = Date.now() - this._json.started;
 			if (size) { this._json.size = size; }
 			if (done) { this._json.done = done; }
@@ -373,12 +383,12 @@ class Job extends EventEmitter {
 		}
 	}
 
-	_run (db) {
+	_run () {
 		var job = this;
 	
 		return new Promise((resolve, reject) => {
 			var timeout = setTimeout(() => {
-					log.d('First timeout called in %s', job._id);
+					log.d('%s: timeout called', this._idIpc);
 					if (!job.completed) {
 						job._abort().then(reject, reject);
 					}
@@ -395,9 +405,9 @@ class Job extends EventEmitter {
 			job._json.status = STATUS.RUNNING;
 
 			job.run(
-				db,
+				this.db(),
 				(err) => {
-					log.d('Job %j is done running: error %j', job._id, err);
+					log.d('%s: done running: error %j', this._idIpc, err);
 					clearTimeout(timeout);
 					if (!job.completed) {
 						job._finish(err).then(
@@ -407,10 +417,10 @@ class Job extends EventEmitter {
 					}
 				},
 				(size, done, bookmark) => {
-					log.d('Progress of running %j: %j / %j / %j', job._id, size, done, bookmark);
+					log.d('%s: progress %j / %j / %j', this._idIpc, size, done, bookmark);
 					clearTimeout(timeout);
 					timeout = setTimeout(() => {
-						log.d('Progress timeout called in %s', job._id);
+						log.d('%s: progress timeout called', this._idIpc);
 						if (!job.completed) {
 							job._abort();
 						}
@@ -423,36 +433,50 @@ class Job extends EventEmitter {
 		});
 	}
 
-	_retry () {
-		return new Promise((resolve, reject) => {
-			if (!this._retrying && this._errorCount < MAXIMUM_ERRORS) {
-				log.w('Retrying %s %d time(s), waiting %dms', this._idIpc, this._errorCount + 1, (this._errorCount + 1) * 1000);
-				this._retrying = true;
-				setTimeout(() => {
-					this._retrying = false;
-					this._errorCount++;
-					log.w('Retry %s %d time(s) waiting done, reconnecting', this._idIpc, this._errorCount + 1);
-					resolve();
-				}, (this._errorCount + 1) * 1000);
-			} else {
-				log.e('Already retrying %s or too much retries: %j, %d >? %d', this._idIpc, this._retrying, this._errorCount, MAXIMUM_ERRORS);
-				reject(this._retrying);
-			}
-		});
+	_runWithRetries() {
+		return this.retryPolicy().run(this._run.bind(this));
 	}
 
-	// Override in actual job class
-	// Takes 2 parameters omitted for the sake of JSHint:
-	// 		- db - db connection which must be used for this job
-	// 		- done - function which must be called when job processing is done with either no arguments or error string
-	//		- progress - optional progress callback which takes 2 params: part (0..1) & bookmark (any object). Bookmark allows job to be resumed after server restart (this.bookmark)
-	// 					IMPORTANT! When progress returns true, job can continue to run. In case it's false, job has to finish itself immediately. 
-	run () {
+	/**
+	 * Override if job is big and can be split into several parts.
+	 * Must return a promisified object like {workers: 5, subs: []}. Workers is max number of subjobs running at a time,
+	 * Subs is either zero-length array if no division should be done in this case, or an array of objects which will become subjobs. 
+	 * In case of subjobs, run() method will be called for each subjob, but not for parent job. Once all subjobs are done, parent job is considered done as well.
+	 */
+	divide (/*db*/) {
+		return Promise.resolve({workers: 0, subs: []});
+	}
+
+	/**
+	 * Override in actual job class
+	 * Takes 2 parameters omitted for the sake of JSHint:
+	 * 		- db - db connection which must be used for this job in most cases, otherwise you're responsible for opening / closing an appropriate connection
+	 * 		- done - function which must be called when job processing is done with either no arguments or error string
+	 *  	- progress - optional progress callback which takes 3 params: size (0..N) part (0..N) & bookmark (any object). Bookmark allows job to be resumed after server restart (this.bookmark)
+	 *					IMPORTANT! When progress returns true, job can continue to run. In case it's false, job has to finish itself ASAP since it's aborted or paused (this.canRun). 
+	 */
+	run (/*db, done, progress*/) {
 		throw new Error("Job must be overridden");
 	}
 
 	/**
-	 * Required concurrency for this job:
+	 * Override if job needs a graceful cancellation. Job is cancelled in two cases:
+	 * 		1. When server is restarted and last modification of the job was too long ago to consider it not running (becauseOfRestart = true).
+	 * 		2. When server was not running at the time strict job should have been run (becauseOfRestart = false).
+	 */
+	cancel (/*db, becauseOfRestart*/) {
+		return this._save({status: STATUS.CANCELLED, error: 'Cancelled on restart', done: Date.now()});
+	}
+
+	/**
+	 * Override if default policy isn't good enough
+	 */
+	retryPolicy () {
+		return new retry.DefaultRetryPolicy(3);
+	}
+
+	/**
+	 * Override if 0 doesn't work for this job:
 	 *  0 = default = run jobs of this type on any number of servers, with any number of jobs running at the same time
 	 *  1 ... N = run not more than N jobs of this time at the same time
 	 */
@@ -493,6 +517,10 @@ class ResourcefulJob extends Job {
  */
 class IPCJob extends ResourcefulJob {
 
+	retryPolicy () {
+		return new retry.IPCRetryPolicy(1);
+	}
+
 	_sendSave(data) {
 		log.d('[%d]: Sending progress update %j', process.pid, {
 			_id: this._idIpc,
@@ -508,14 +536,18 @@ class IPCJob extends ResourcefulJob {
 		});
 	}
 
-	_run(db/* , resource */) {
-		log.d('Entering IPCJob promise');
+	_run(/* , resource */) {
+		log.d('%s: entering IPCJob promise', this._idIpc);
 
 		return new Promise((resolve, reject) => {
 			var timeout = setTimeout(() => {
-					log.d('First timeout called in IPCJob %s', this._id);
-					if (!this.completed) {
-						this._sendSave();
+					log.d('%s: first timeout called in IPCJob', this._id);
+					if (!this.isCompleted) {
+						this._json.status = STATUS.DONE;
+						this._json.finished = Date.now();
+						this._json.duration = this._json.finished - this._json.started;
+						this._json.error = ERROR.TIMEOUT;
+						this._sendSave({status: this._json.status, finished: this._json.finished, duration: this._json.duration, error: this._json.error});
 						reject(ERROR.TIMEOUT);
 					}
 				}, MAXIMUM_JOB_TIMEOUT),
@@ -532,12 +564,12 @@ class IPCJob extends ResourcefulJob {
 			this._sendSave({status: this._json.status, started: this._json.started});
 
 			this.run(
-				db,
+				this.db(),
 				(err) => {
-					log.d('IPCJob %j is done running, status %d' + (err ? ' with error ' + err : ''), this._id, this._json.status);
+					log.d('%s: done running, status %d' + (err ? ' with error ' + err : ''), this._id, this._json.status);
 					clearTimeout(timeout);
-					if (!this.completed) {
-						log.d('finishing'); 
+					if (!this.isCompleted) {
+						log.d('%s: finishing', this._idIpc); 
 			
 						this._json.status = STATUS.DONE;
 						this._json.finished = Date.now();
@@ -556,14 +588,19 @@ class IPCJob extends ResourcefulJob {
 				(size, done, bookmark) => {
 					clearTimeout(timeout);
 					timeout = setTimeout(() => {
-						log.d('Progress timeout called in IPCJob %s', this._id);
-						if (!this.completed) {
-							this._sendSave();
+						log.w('%s: progress timeout called', this._id);
+						if (!this.isCompleted) {
+							this._json.status = STATUS.PAUSED;
+							// this._json.finished = Date.now();
+							this._json.duration = this._json.finished - this._json.started;
+							this._json.size = this._json.done;
+							// this._json.error = ERROR.TIMEOUT;
+							// this._sendSave({status: this._json.status, finished: this._json.finished, duration: this._json.duration, error: this._json.error});
 							reject(ERROR.TIMEOUT);
 						}
 					}, MAXIMUM_JOB_TIMEOUT);
 
-					if (!this.completed) {
+					if (!this.isCompleted) {
 						progressSave(size, done, bookmark);
 					}
 				}
@@ -576,75 +613,86 @@ class IPCJob extends ResourcefulJob {
 	// }
 }
 
-class IPCFaçadeJob extends Job {
-	constructor(job, resourceFaçade) {
+class IPCFaçadeJob extends ResourcefulJob {
+	constructor(job, getResourceFaçade) {
 		super(job._json, null, null);
 		this.job = job;
-		this.resourceFaçade = resourceFaçade;
+		this.getResourceFaçade = getResourceFaçade;
 	}
 
-	createResource (_id, name, options) {
-		return this.job.createResource(_id, name, options);
+	createResource () {
+		return this.getResourceFaçade();
 	}
 
 	resourceName () {
 		return this.job.resourceName();
 	}
 
-	_run(parent) {
-		try {
-
-			this._parent = parent;
-			log.d('[jobs]: Running IPCFaçadeJob for %s in %s', this.job._idIpc, this.resourceFaçade._id);
-			this.channel = new ipc.IdChannel(this.job._idIpc).attach(this.resourceFaçade._worker);
-			this.channel.on(EVT.SAVE, (json) => {
-				this.job._json.duration = json.duration = Date.now() - this.job._json.started;
-				this.job._save(json);
-				parent._subSaved(this.job);
-			});
-
-			if (!this.promise) {
-				this.promise = new Promise((resolve, reject) => {
-					this.resolve = (json) => {
-						log.i('[jobs]: Done running %s in IPCFaçadeJob with success', this.job._idIpc);
-						try {
-							this.channel.remove();
-							this.job._save(json);
-							parent._subSaved(this.job);
-							resolve(json);
-						} catch (e) {
-							log.e(e, e.stack);
-						}
-					};
-					this.reject = (error) => {
-						log.i('[jobs]: Done running %s in IPCFaçadeJob with error', this.job._idIpc);
-						this.job._finish(error);
-						parent._subSaved(this.job);
-						this.channel.remove();
-						reject(error);
-					};
-				});
-			}
-
-			this.resourceFaçade.run(this).then(this.resolve.bind(this), this.reject.bind(this));
-
-		} catch (e) {
-			log.e(e, e.stack);
-		}
-
-		return this.promise;
+	retryPolicy () {
+		return this.job.retryPolicy();
 	}
 
-	_migrate(resourceFaçade) {
-		log.w('[jobs]: MIGRATION of IPCFaçadeJob %s to new resourceFaçade %s', this.job._idIpc, resourceFaçade._id);
-		this.channel.remove();
-		this.resourceFaçade = resourceFaçade;
-		return this._run(this._parent);
+	// _run(parent) {
+	// 	try {
+
+	// 		this._parent = parent;
+	// 		log.d('[jobs]: Running IPCFaçadeJob for %s in %s', this.job._idIpc, this.resourceFaçade._id);
+	// 		this.channel = new ipc.IdChannel(this.job._idIpc).attach(this.resourceFaçade._worker);
+	// 		this.channel.on(EVT.SAVE, (json) => {
+	// 			this.job._json.duration = json.duration = Date.now() - this.job._json.started;
+	// 			this.job._save(json);
+	// 			parent._subSaved(this.job);
+	// 		});
+
+	// 		if (!this.promise) {
+	// 			this.promise = new Promise((resolve, reject) => {
+	// 				this.resolve = (json) => {
+	// 					log.i('[jobs]: Done running %s in IPCFaçadeJob with success', this.job._idIpc);
+	// 					try {
+	// 						this.channel.remove();
+	// 						this.job._save(json);
+	// 						parent._subSaved(this.job);
+	// 						resolve(json);
+	// 					} catch (e) {
+	// 						log.e(e, e.stack);
+	// 					}
+	// 				};
+	// 				this.reject = (error) => {
+	// 					log.i('[jobs]: Done running %s in IPCFaçadeJob with error', this.job._idIpc);
+	// 					this.job._finish(error);
+	// 					parent._subSaved(this.job);
+	// 					this.channel.remove();
+	// 					reject(error);
+	// 				};
+	// 			});
+	// 		}
+	// 	} catch (e) {
+
+	// 	}
+	// }
+
+	_run() {
+		this.resourceFaçade = this.getResourceFaçade();
+
+		this.channel = new ipc.IdChannel(this.job._idIpc).attach(this.resourceFaçade._worker);
+		this.channel.on(EVT.SAVE, (json) => {
+			this.job._save(json);
+		});
+
+		return this.resourceFaçade.run(this).then((json) => {
+			this.job._save(json);
+			this.channel.remove();
+		}, (error) => {
+			this.channel.remove();
+			log.e('Error in resource façade %s: ', this.resourceFaçade._id, error, error.stack);
+			this.job._abort(error);
+			throw error;
+		});
 	}
 
 	_abort(error) {
-		log.w('[jobs]: ABORTING %s in IPCFaçadeJob', this.job._idIpc);
-		this.reject(error);
+		log.w('%s: ABORTING in IPCFaçadeJob', this.job._idIpc);
+		this.resourceFaçade.abort(error);
 	}
 }
 
@@ -677,7 +725,8 @@ class TransientJob extends IPCJob {
 class TransientFaçadeJob extends IPCFaçadeJob {
 	_run(parent) {
 		this._parent = parent;
-		log.d('[jobs]: Running TransientJob for %s', this.job._idIpc);
+		log.d('%s: running TransientJob', this.job._idIpc);
+		this.resourceFaçade = this.getResourceFaçade();
 		this.channel = new ipc.IdChannel(this.job._idIpc).attach(this.resourceFaçade._worker);
 		this.channel.on(EVT.SAVE, (json) => {
 			this.job._json.duration = json.duration = Date.now() - this.job._json.started;
@@ -686,12 +735,12 @@ class TransientFaçadeJob extends IPCFaçadeJob {
 		if (!this.promise) {
 			this.promise = new Promise((resolve, reject) => {
 				this.resolve = (json) => {
-					log.d('[jobs]: Done running %s in IPCFaçadeJob with success', this.job._idIpc);
+					log.d('%s: done running in IPCFaçadeJob with success', this.job._idIpc);
 					this.channel.remove();
 					resolve(json);
 				};
 				this.reject = (error) => {
-					log.d('[jobs]: Done running %s in IPCFaçadeJob with error', this.job._idIpc);
+					log.d('%s: done running in IPCFaçadeJob with error', this.job._idIpc);
 					this.channel.remove();
 					reject(error);
 				};
@@ -703,6 +752,8 @@ class TransientFaçadeJob extends IPCFaçadeJob {
 		return this.promise;
 	}
 }
+
+
 
 module.exports = {
 	EVT: EVT,

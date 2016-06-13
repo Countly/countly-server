@@ -7,6 +7,7 @@ const job = require('../../../../api/parts/jobs/job.js'),
 	  Divider = require('../parts/divider.js'),
 	  mess = require('../parts/message.js'),
 	  pushly = require('../parts/pushly.js'),
+	  retry = require('../../../../api/parts/jobs/retry.js'),
 	  Message = mess.Message,
 	  Pushly = pushly.Message;
 
@@ -33,8 +34,11 @@ class CheckJob extends job.TransientJob {
 		return new ConnectionResource(_id, name, this.data.pushly.credentials);
 	}
 
-	divide (db) {
+	retryPolicy () {
+		return new retry.NoRetryPolicy();
+	}
 
+	divide (db) {
 		log.d('[%d]: Dividing %s: %j', process.pid, this._id, this._json.data);
 		return new Promise((resolve, reject) => {
 			let message = new Message(this._json.data);

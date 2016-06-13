@@ -771,7 +771,7 @@ $.extend(Template.prototype, {
     function revealDialog(dialog) {
         $("body").append(dialog);
 
-        var dialogHeight = dialog.outerHeight()+5,
+        var dialogHeight = dialog.find('.content').length ? dialog.find('.content').outerHeight() + 14 : dialog.outerHeight()+5,
             dialogWidth = dialog.outerWidth()+5;
 
         dialog.css({
@@ -785,12 +785,10 @@ $.extend(Template.prototype, {
         dialog.fadeIn(app.tipsify.bind(app, $("#help-toggle").hasClass("active"), dialog));
     }
 	
-	function changeDialogHeight(dialog, height, animate) {
-        var dialogHeight = height || dialog.attr('data-height') || dialog.height() + 15,
+	function changeDialogHeight(dialog, animate) {
+        var dialogHeight = dialog.find('.content').length ? dialog.find('.content').outerHeight() + 14 : dialog.height() + 14,
             dialogWidth = dialog.width(),
             maxHeight = $("#sidebar").height() - 40;
-
-        dialog.attr('data-height', height);
 
         if (dialogHeight > maxHeight) {
             dialog[animate ? 'animate' : 'css']({

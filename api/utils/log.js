@@ -229,11 +229,14 @@ module.exports = function(name) {
 				}
 			};
 		},
-		logdb: function(name, next) {
+		logdb: function(name, next, nextError) {
 			var self = this;
 			return function(err) {
 				if (err) {
 					self.e('Error while %j: %j', name, err);
+					if (nextError) {
+						nextError(err);
+					}
 				} else {
 					self.d('Done %j', name);
 					if (next) {

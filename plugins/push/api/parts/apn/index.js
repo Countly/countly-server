@@ -47,7 +47,14 @@ class ConnectionResource {
 		console.log('%j', e.stack);
 		return this.connection.close_connection().then(() => {
 			this._connected = false;
+		}, (error) => {
+			this._connected = false;
+			throw error;
 		});
+	}
+
+	terminate() {
+		this.connection.terminate();
 	}
 };
 

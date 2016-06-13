@@ -27,7 +27,8 @@ namespace apns {
 	void H2::conn_thread_stop_loop(uv_async_t *async) {
 		LOG_DEBUG("stopping conn_loop");
 		H2 *obj = static_cast<H2*>(async->data);
-		uv_stop(obj->conn_loop);
+		obj->conn_thread_stop();
+		// uv_stop(obj->conn_loop);
 	}
 
 	void H2::conn_thread_stop() {
@@ -75,11 +76,12 @@ namespace apns {
 					}
 				}
 				obj->stats.state = ST_INITIAL;
-				exit(0);
 
-				// uv_stop(obj->conn_loop);
-				// LOG_INFO("uv_loop_close: " << uv_loop_close(obj->conn_loop));
-				// delete obj->conn_loop;
+				uv_stop(obj->conn_loop);
+				LOG_INFO("uv_loop_close: " << uv_loop_close(obj->conn_loop));
+				delete obj->conn_loop;
+
+				exit(0);
 			});
 		}
 	}
@@ -734,7 +736,9 @@ namespace apns {
 								stream->obj->statuses.push_back(make_pair(stream->id, 0));
 							} else {
 								// LOG_DEBUG(":status " << std::string((const char *)value, valuelen) << " for " << stream->id);
-								stream->obj->statuses.push_back(make_pair(stream->id, -1));
+								std::string code_str((const char *)value, valuelen);
+								int code_int = std::stoi(code_str);
+								stream->obj->statuses.push_back(make_pair(stream->id, -1 * code_int));
 							}
 							// LOG_DEBUG("nghttp2_session_callbacks_set_on_header_callback out ");
 						}
@@ -920,6 +924,16 @@ namespace apns {
 			if (queue.size() < count) { count = queue.size(); }
 			// LOG_INFO("transmiting " << ¨count << " notification(s)");
 			while (stats.sending < stats.sending_max && queue.size() > 0 && batch < H2_SENDING_BATCH_SIZE) {
+				// if (stats.sending  + stats.sent > 200) {
+				// 	if (stats.sending == 0) {
+				// 		int a = 5;
+				// 		int b = 0;
+				// 		int c = a/b;
+				// 		LOG_DEBUG("H2: division by 0 " << c);
+				// 	} else {
+				// 		break;
+				// 	}
+				// }
 			// while ((stats.sending - batch) < stats.sending_max * 2 / 2 && stats.sending < stats.sending_max / 2 && queue.size() > 0 && batch < H2_SENDING_BATCH_SIZE) {
 				stats.sending++;
 				batch++;

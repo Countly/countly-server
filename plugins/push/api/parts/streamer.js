@@ -50,10 +50,20 @@ class Streamer {
 					log.d('First count returned %j / %j for %j', err, count, this.pushly.id);
 					if (!err && count) {
 						this.built = this.collection();
+						log.d('Already built collection %j', this.built);
 						resolve(this.built);
 					} else {
 						var query;
 						log.d('building audience for %s (%s)', this.pushly.id, this.pushly.credentials.id);
+						
+						if (typeof this.pushly.devicesQuery === 'string') {
+							try {
+								this.pushly.devicesQuery = JSON.parse(this.pushly.devicesQuery);
+							} catch (e) {
+								log.e('Error while parsing devicesQuery', e, e.stack);
+							}
+						}
+
 						if (this.pushly.devicesQuery.drill) {
 							if (!this.drill()) {
 								return reject('Drill is not enabled while pushly has drill conditions');
@@ -86,6 +96,7 @@ class Streamer {
 										reject(err);
 									} else {
 										this.built = this.collection();
+										log.d('Just built collection %j after drilling', this.built);
 										resolve(this.built);
 									}
 								});
@@ -105,6 +116,7 @@ class Streamer {
 									reject(err);
 								} else {
 									this.built = this.collection();
+									log.d('Just built collection %j', this.built);
 									resolve(this.built);
 								}
 							});

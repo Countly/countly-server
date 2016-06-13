@@ -64,6 +64,10 @@ class Connection extends res.Resource {
 		});
 	}
 
+	terminate () {
+		this.connection.terminate();
+	}
+
 	send (datas, feeder, stats) {
 		this.startInterval();
 		return this.connection.send(datas, feeder, stats).then((res) => {

@@ -146,7 +146,7 @@ var common          = require('../../../../api/utils/common.js'),
                 message.appNames = _.pluck(apps, 'name');
 
                 if (geo && getGeoPluginApi()) {
-                    message.setUserConditions(getGeoPluginApi().conditions(message.geo, message.getUserConditions()));
+                    message.setUserConditions(getGeoPluginApi().conditions(geo, message.getUserConditions()));
                 }
 
                 let divider = new Divider(message);
