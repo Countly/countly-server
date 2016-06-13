@@ -30,7 +30,6 @@ EVT = {
 	TRANSIENT_DONE: 'jobs:transient:done'
 },
 MAXIMUM_SAVE_ERRORS = 5,
-MAXIMUM_ERRORS = 1,
 MAXIMUM_JOB_TIMEOUT = 30000;
 
 /**

@@ -243,7 +243,7 @@ module.exports = function(name) {
 						next.apply(this, Array.prototype.slice.call(arguments, 1));
 					}
 				}
- 			}
+ 			};
 		}
 	};
 	// return {

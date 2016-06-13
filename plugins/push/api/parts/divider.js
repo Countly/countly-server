@@ -6,8 +6,7 @@ var common = require('../../../../api/utils/common.js'),
 	credentials = require('./credentials.js'),
 	Streamer = require('./streamer.js');
 
-const MIN_WORKER_CHUNK_SIZE = 1000;
-const WORKER_CHUNK_SIZE = 100;
+const WORKER_CHUNK_SIZE = 10000;
 
 class Divider {
 	constructor (message) {
@@ -103,7 +102,7 @@ class Divider {
 		});
 	}
 
-	divide (db, skipClear, transient) {
+	divide (db, skipClear/*, transient*/) {
 		log.d('Dividing message %j', this.message._id);
 
 

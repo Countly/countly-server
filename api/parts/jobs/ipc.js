@@ -413,7 +413,7 @@ class Worker {
 		});
 
 		this.channel.on(CMD.ABORT, (m) => {
-			log.d('Worker got abort request: %j', job._id);
+			log.d('Worker got abort request: %j', m._id);
 			this.aborts.push(m._id);
 		});
 	}

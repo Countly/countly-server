@@ -393,7 +393,7 @@ class Resource extends ResourceInterface {
 		this.channel = channel;
 		this.channel.on(CMD.RUN, (json) => {
 			if (this.job) {
-				log.e('[%d]: Resource is already running a job %j', process.pid, job._idIpc);
+				log.e('[%d]: Resource is already running a job %j', process.pid, this.job._idIpc);
 				throw new Error('Resource is already running a job');
 			}
 

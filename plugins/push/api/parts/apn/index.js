@@ -56,7 +56,7 @@ class ConnectionResource {
 	terminate() {
 		this.connection.terminate();
 	}
-};
+}
 
 module.exports = {
 	ConnectionResource: ConnectionResource

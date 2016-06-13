@@ -258,12 +258,12 @@ class PushJob extends job.IPCJob {
 								db.collection('messages').update({_id: message._id}, {$inc: errorsInc}, log.logdb('updating message with error codes'));
 							}
 
-							var max = statuses
-							statuses.sort((a, b) => {
-								return a[0] > b[0] ? 1 : -1;
+							var max = statuses.shift()[0];
+							statuses.forEach(s => {
+								if (s[0] > max) { max = s[0]; }
 							});
 
-							progress(status.size, status.done, statuses.pop()[0]);
+							progress(status.size, status.done, max);
 
 						}).then(() => {
 							log.d('[%d]: Send promise returned success in %s', process.pid, this._idIpc);

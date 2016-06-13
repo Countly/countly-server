@@ -111,7 +111,7 @@ class Streamer {
 								{$project: this.projection},
 								{$sort: {_id: 1}},
 								{$out: this.collection()}
-							], {allowDiskUse:true}, (err, res) => {
+							], {allowDiskUse:true}, (err) => {
 								if (err) {
 									reject(err);
 								} else {
