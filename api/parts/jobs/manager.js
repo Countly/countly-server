@@ -260,7 +260,7 @@ class Manager {
 										}
 									},
 									next = () => {
-										if (!rejected && running.length < workersCount && subs.length > 0) {
+										if (!rejected && running.length < workersCount && subs.length > 0 && this.getPool(subs[0]).canRun()) {
 											let sub = subs.shift();
 											sub.parent = job;
 											log.d('%s: running next sub %s', job._idIpc, sub._idIpc);
