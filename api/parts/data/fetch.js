@@ -551,6 +551,9 @@ var fetch = {},
     };
 
     function getTotalUsersObj(metric, params, callback) {
+        if(!plugins.getConfig("api").total_users){
+            return callback([]);
+        }
         var periodObj = getPeriodObj(params);
 
         /*
