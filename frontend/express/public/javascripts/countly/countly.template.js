@@ -774,7 +774,7 @@ $.extend(Template.prototype, {
     function revealDialog(dialog) {
         $("body").append(dialog);
 
-        var dialogHeight = dialog.outerHeight()+5,
+        var dialogHeight = dialog.find('.content').length ? dialog.find('.content').outerHeight() + 14 : dialog.outerHeight()+5,
             dialogWidth = dialog.outerWidth()+5;
 
         dialog.css({
@@ -788,12 +788,10 @@ $.extend(Template.prototype, {
         dialog.fadeIn(app.tipsify.bind(app, $("#help-toggle").hasClass("active"), dialog));
     }
 	
-	function changeDialogHeight(dialog, height, animate) {
-        var dialogHeight = height || dialog.attr('data-height') || dialog.height() + 15,
+	function changeDialogHeight(dialog, animate) {
+        var dialogHeight = dialog.find('.content').length ? dialog.find('.content').outerHeight() + 14 : dialog.height() + 14,
             dialogWidth = dialog.width(),
             maxHeight = $("#sidebar").height() - 40;
-
-        dialog.attr('data-height', height);
 
         if (dialogHeight > maxHeight) {
             dialog[animate ? 'animate' : 'css']({
@@ -1440,7 +1438,7 @@ window.FrequencyView = countlyView.extend({
                 "aaData": frequencyData.chartData,
                 "aoColumns": [
                     { "mData": "f", sType:"frequency", "sTitle": jQuery.i18n.map["session-frequency.table.time-after"] },
-                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.number-of-users"] },
+                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.number-of-sessions"] },
                     { "mData": "percent", "sType":"percent", "sTitle": jQuery.i18n.map["common.percent"] }
                 ]
             }));
@@ -1895,6 +1893,12 @@ window.ManageAppsView = countlyView.extend({
         var timezones = this.getTimeZones();
 
         var appId = countlyCommon.ACTIVE_APP_ID;
+        if(!countlyGlobal['admin_apps'][appId]){
+            for(var i in countlyGlobal['admin_apps']){
+                appId = i;
+                break;
+            }
+        }
         $("#app-management-bar .app-container").removeClass("active");
         $("#app-management-bar .app-container[data-id='" + appId + "']").addClass("active");
         
@@ -2811,7 +2815,8 @@ window.ManageUsersView = countlyView.extend({
             }
         });
     },
-    initTable: function(){
+    initTable: function(userData){
+        userData = userData || {};
         var self = this;
         function generatePassword() {
             var text = "";
@@ -2830,8 +2835,8 @@ window.ManageUsersView = countlyView.extend({
 		previousUserDetails,
 		lastUserSaved = false,
 		previousSelectAppPos = {},
-		currUsername = "",
-		currEmail = "";
+		currUsername = userData.username || "",
+		currEmail = userData.email || "";
         // translate help module
         $("[data-help-localize]").each(function() {
             var elem = $(this);
@@ -3208,7 +3213,7 @@ window.ManageUsersView = countlyView.extend({
 					str += '</div>';
 				str += '</div>';
 		}
-        setTimeout(function(){self.initTable();}, 1);
+        setTimeout(function(){self.initTable(d);}, 1);
 		return str;
 	}
 });
@@ -4367,11 +4372,11 @@ var AppRouter = Backbone.Router.extend({
                 });
             });
 
-            $("#account-settings").click(function () {
+            /*$("#account-settings").click(function () {
                 CountlyHelpers.popup("#edit-account-details");
                 $(".dialog #username").val($("#menu-username").text());
                 $(".dialog #api-key").val($("#user-api-key").val());
-            });
+            });*/
 
             $("#save-account-details:not(.disabled)").live('click', function () {
                 var username = $(".dialog #username").val(),
@@ -5048,7 +5053,7 @@ var AppRouter = Backbone.Router.extend({
                     $(this).next(".dataTables_filter").find("input").focus();
                 });
 
-                tableWrapper.css({"min-height": tableWrapper.height()});
+                //tableWrapper.css({"min-height": tableWrapper.height()});
             }
         });
 

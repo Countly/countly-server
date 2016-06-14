@@ -480,7 +480,8 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
         content.find('.view-type .view-value').text(jQuery.i18n.map['push.type.' + message.type]);
         // CountlyHelpers.changeDialogHeight(dialog, 470);
         // setTimeout(CountlyHelpers.changeDialogHeight.bind(CountlyHelpers, dialog, dialog.height(), undefined), 20);
-        setTimeout(CountlyHelpers.changeDialogHeight.bind(CountlyHelpers, dialog, message.type == 'data' ? 310 : 470), 20);
+        // setTimeout(CountlyHelpers.changeDialogHeight.bind(CountlyHelpers, dialog, message.type == 'data' ? 310 : 470), 20);
+        setTimeout(CountlyHelpers.changeDialogHeight.bind(CountlyHelpers, dialog), 20);
     } else {
         CountlyHelpers.initializeSelect(content);
 
@@ -508,38 +509,41 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
             content.find('.type .cly-select .text').text(jQuery.i18n.map['push.type.' + type]);
 
             if (type === 'message' || type === 'update' || type === 'review') {
-                link.slideUp();
-                category.slideUp();
-                msg.slideDown();
-                sound.slideDown();
-                badge.slideDown();
-                data.slideDown();
+                link.slideUp(100);
+                category.slideUp(100);
+                msg.slideDown(100);
+                sound.slideDown(100);
+                badge.slideDown(100);
+                data.slideDown(100);
             } else if (type === 'data') {
-                link.slideUp();
-                category.slideUp();
-                msg.slideUp();
-                sound.slideDown();
-                badge.slideDown();
-                data.slideDown();
+                link.slideUp(100);
+                category.slideUp(100);
+                msg.slideUp(100);
+                sound.slideDown(100);
+                badge.slideDown(100);
+                data.slideDown(100);
             } else if (type === 'link') {
-                link.slideDown();
-                category.slideUp();
-                msg.slideDown();
-                sound.slideDown();
-                badge.slideDown();
-                data.slideDown();
+                link.slideDown(100);
+                category.slideUp(100);
+                msg.slideDown(100);
+                sound.slideDown(100);
+                badge.slideDown(100);
+                data.slideDown(100);
             } else if (type === 'category') {
-                link.slideUp();
-                category.slideDown();
-                msg.slideDown();
-                sound.slideDown();
-                badge.slideDown();
-                data.slideDown();
+                link.slideUp(100);
+                category.slideDown(100);
+                msg.slideDown(100);
+                sound.slideDown(100);
+                badge.slideDown(100);
+                data.slideDown(100);
             }
 
             checkMessageForSendButton();
 
-            CountlyHelpers.changeDialogHeight(dialog, heights[type], true);
+            setTimeout(CountlyHelpers.changeDialogHeight.bind(null, dialog, true), 120);
+            // setTimeout(CountlyHelpers.changeDialogHeight.bind(null, dialog, true), 40);
+            // CountlyHelpers.changeDialogHeight(dialog, true);
+            // CountlyHelpers.changeDialogHeight(dialog, heights[type], true);
         }
 
         setTimeout(setMessageType.bind(this, message.type), 20);
@@ -568,8 +572,24 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
         } else if (message.result && ((message.result.status & 16) || (message.result.status & 32))) {
             content.find('.view-sent .title').text(jQuery.i18n.map['push.error']);
             content.find('.view-sent .view-value').addClass('error').text(jQuery.i18n.map['push.message.status.' + message.result.status]);
-        } else {
-           content.find('.view-sent .view-value').text(message.sent ? moment(message.sent).format(fmt) : '');
+        } else if (message.result && message.result.processed) {
+            var msg = (message.sent ? moment(message.sent).format(fmt) : '') + '<div class="codes">';
+            msg += '<table>';
+            msg += '<tr><td>' + jQuery.i18n.map['push.totals.processed'] + '</td><td>' + message.result.processed + '</td></tr>';
+            msg += '<tr><td>' + jQuery.i18n.map['push.totals.sent'] + '</td><td>' + message.result.sent + '</td></tr>';
+            msg += '<tr><td>' + jQuery.i18n.map['push.totals.errors'] + '</td><td>' + message.result.errors + '</td></tr>';
+            msg += '</table>';
+            if ( message.result.errorCodes) {
+                msg += '<h5>' + jQuery.i18n.map['push.errorCodes'] + '</h5><table>';
+                for (var code in message.result.errorCodes) {
+                    msg += '<tr><td>' + jQuery.i18n.map['push.errorCode.' + code] + '</td><td>' + message.result.errorCodes[code] + '</td></tr>';
+                }
+                msg += '</table>';
+            }
+            msg += '</div>';
+            content.find('.view-sent .view-value').html(msg);
+        // } else {
+           // content.find('.view-sent .view-value').text(message.sent ? moment(message.sent).format(fmt) : '');
         }
     } else {
         //ignore clicks inside calendar
@@ -982,8 +1002,10 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
                                     for (var month in result[appId][year]) if (parseInt(month) == month) {
                                         for (var lang in result[appId][year][month]) if (isNaN(lang)) {
                                             var u = result[appId][year][month][lang].u;
-                                            totals[lang] = totals[lang] ? totals[lang] + u : u;
-                                            totals.TOTALLY += u;
+                                            if (typeof u === 'number') {
+                                                totals[lang] = totals[lang] ? totals[lang] + u : u;
+                                                totals.TOTALLY += u;
+                                            }
                                         }
                                     }
                                 }
@@ -1160,7 +1182,8 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
         return json;
     }
 
-    CountlyHelpers.revealDialog(dialog, heights[message.type]);
+    CountlyHelpers.revealDialog(dialog);
+    // CountlyHelpers.revealDialog(dialog, heights[message.type]);
 };
 
 
@@ -1175,10 +1198,11 @@ app.route('/messaging/messages', 'messagingListView', function () {
     this.renderWhenReady(this.messagingListView);
 });
 
-function pushAppMgmt(appId){
-    app.localize();
-    appId = appId || countlyCommon.ACTIVE_APP_ID;
-    
+var settingsAppId,
+    apn, gcm;
+
+function changeApp(appId){
+    settingsAppId = appId;
     if(!countlyGlobal["apps"][appId] || countlyGlobal["apps"][appId].type == "mobile"){
         $(".appmng-push").show();
     } 
@@ -1188,26 +1212,24 @@ function pushAppMgmt(appId){
 
     if (!appId) { return; }
 
-    var apn = countlyGlobal['apps'][appId].apn = countlyGlobal['apps'][appId].apn || {};
-    var gcm = countlyGlobal['apps'][appId].gcm = countlyGlobal['apps'][appId].gcm || {};
-
-    //app was changed
-    app.addAppManagementSwitchCallback(function(appId, type){
-        apn = countlyGlobal['apps'][appId].apn = countlyGlobal['apps'][appId].apn || {};
-        gcm = countlyGlobal['apps'][appId].gcm = countlyGlobal['apps'][appId].gcm || {};
-        $("#push-apn-cert-uni-view").removeClass('fa fa-remove').removeClass('fa fa-check').addClass(apn.universal ? 'fa fa-check' : 'fa fa-remove');
-        $("#view-gcm-key").html(countlyGlobal['apps'][appId].gcm.key || '<i class="fa fa-remove"></i>');
-        $("#gcm-key").val(countlyGlobal['apps'][appId].gcm.key || '');
-    });
+    apn = countlyGlobal['apps'][appId].apn = countlyGlobal['apps'][appId].apn || {};
+    gcm = countlyGlobal['apps'][appId].gcm = countlyGlobal['apps'][appId].gcm || {};
 
     $("#push-apn-cert-uni-view").removeClass('fa fa-remove').removeClass('fa fa-check').addClass(apn.universal ? 'fa fa-check' : 'fa fa-remove');
-    $("#view-gcm-key").html(countlyGlobal['apps'][appId].gcm.key || '<i class="fa fa-remove"></i>');
-    $("#gcm-key").val(countlyGlobal['apps'][appId].gcm.key || '');
+    $("#view-gcm-key").html(gcm.key || '<i class="fa fa-remove"></i>');
+    $("#gcm-key").val(gcm.key || '');
 
     $('.app-apn-cert-old')[apn.prod || apn.test ? 'show' : 'hide']();
     $('.app-apn-cert-old .dev')[apn.test ? 'show' : 'hide']();
     $('.app-apn-cert-old .prod')[apn.prod ? 'show' : 'hide']();
 
+}
+
+function pushAppMgmt(){
+    app.localize();
+
+    if (!settingsAppId) { return; }
+    else { changeApp(settingsAppId); }
 
     window.pushSubmitting = false;
     $("#save-app-edit").on('click', function () {
@@ -1229,10 +1251,7 @@ function pushAppMgmt(appId){
                 window.pushSubmitting = false;
                 CountlyHelpers.removeDialog(loading);
             }
-            apn = countlyGlobal['apps'][appId].apn = countlyGlobal['apps'][appId].apn || {};
-            gcm = countlyGlobal['apps'][appId].gcm = countlyGlobal['apps'][appId].gcm || {};
-            $("#push-apn-cert-uni-view").removeClass('fa fa-remove').removeClass('fa fa-check').addClass(apn.universal ? 'fa fa-check' : 'fa fa-remove');
-            $('.app-apn-cert-old')[apn.universal ? 'hide' : 'show']();
+            changeApp(settingsAppId);
         },
         showError = function(msg){
             CountlyHelpers.removeDialog(loading);
@@ -1244,7 +1263,7 @@ function pushAppMgmt(appId){
             url:countlyCommon.API_URL + "/i/pushes/update",
             data:{
                 args:JSON.stringify({
-                    app_id:appId,
+                    app_id:settingsAppId,
                     "gcm.key": $("#gcm-key").val() || undefined
                 }),
                 api_key:countlyGlobal['member'].api_key
@@ -1257,20 +1276,21 @@ function pushAppMgmt(appId){
                     reactivateForm();
                     return;
                 }
-                if (!countlyGlobal['apps'][appId].apn) countlyGlobal['apps'][appId].apn = {};
-                if (!countlyGlobal['admin_apps'][appId].apn) countlyGlobal['admin_apps'][appId].apn = {};
+                if (!countlyGlobal['apps'][settingsAppId].apn) countlyGlobal['apps'][settingsAppId].apn = {};
+                if (!countlyGlobal['admin_apps'][settingsAppId].apn) countlyGlobal['admin_apps'][settingsAppId].apn = {};
 
-                if (!countlyGlobal['apps'][appId].gcm) countlyGlobal['apps'][appId].gcm = {};
-                if (!countlyGlobal['admin_apps'][appId].gcm) countlyGlobal['admin_apps'][appId].gcm = {};
+                if (!countlyGlobal['apps'][settingsAppId].gcm) countlyGlobal['apps'][settingsAppId].gcm = {};
+                if (!countlyGlobal['admin_apps'][settingsAppId].gcm) countlyGlobal['admin_apps'][settingsAppId].gcm = {};
+                
                 if(data.gcm){
-                    countlyGlobal['apps'][appId].gcm.key = data.gcm.key;
-                    countlyGlobal['admin_apps'][appId].gcm.key = data.gcm.key;
+                    countlyGlobal['apps'][settingsAppId].gcm.key = data.gcm.key;
+                    countlyGlobal['admin_apps'][settingsAppId].gcm.key = data.gcm.key;
                 }
 
-                $("#view-gcm-key").html(countlyGlobal['apps'][appId].gcm.key || '<i class="fa fa-remove"></i>');
+                changeApp(settingsAppId);
 
                 if (certProd) {
-                    $('#add-edit-apn-creds-uni-form').find("input[name=app_id]").val(appId);
+                    $('#add-edit-apn-creds-uni-form').find("input[name=app_id]").val(settingsAppId);
                     $('#add-edit-apn-creds-uni-form').ajaxSubmit({
                         resetForm:true,
                         beforeSubmit:function (formData, jqForm, options) {
@@ -1279,15 +1299,16 @@ function pushAppMgmt(appId){
                         },
                         success:function (resp) {
                             if (!resp || resp.error) {
-                                if (countlyGlobal['apps'][appId].apn) {
-                                    delete countlyGlobal['apps'][appId].apn.universal;
+                                if (countlyGlobal['apps'][settingsAppId].apn) {
+                                    delete countlyGlobal['apps'][settingsAppId].apn.universal;
+                                    delete apn.universal;
                                 }
                                 showError(jQuery.i18n.map["management-applications.push-apn-creds-prod-error"] + (resp.error ? ' (' + resp.error + ')' : ''));
                             } else {
-                                if (!countlyGlobal['apps'][appId].apn) {
-                                    countlyGlobal['apps'][appId].apn = {universal: resp};
+                                if (!countlyGlobal['apps'][settingsAppId].apn) {
+                                    apn = countlyGlobal['apps'][settingsAppId].apn = {universal: resp};
                                 } else {
-                                    countlyGlobal['apps'][appId].apn.universal = resp;
+                                    apn.universal = countlyGlobal['apps'][settingsAppId].apn.universal = resp;
                                 }
                             }
 
@@ -1327,7 +1348,7 @@ app.addAppManagementSwitchCallback(function(appId, type){
     if(type == "mobile"){
         addPushHTMLIfNeeded();
         $(".appmng-push").show();
-        pushAppMgmt(appId);
+        changeApp(appId);
     } 
     else{
         $(".appmng-push").hide();

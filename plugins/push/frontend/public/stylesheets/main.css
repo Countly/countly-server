@@ -77,7 +77,7 @@
 	.push-create .field.msg .locales.view-locales li.selected.set .fa-remove,
 	.push-create .field.msg .locales.view-locales li.selected.set:hover .fa-remove { display: none; }
 
-	.push-create .field.extras { width: 584px; }
+	.push-create .field.extras { width: 584px; padding: 0 8px; margin-left: 0; }
 	/*.push-create .field.extras .details { border: 1px solid rgba(0,0,0,0.5); border-radius: 6px; }*/
 	.push-create .field.extras table, .push-create .field.extras table td { border: 1px solid rgba(0,0,0,0.5); }
 	.push-create .field.extras table { border-collapse: collapse; width: 100%; border-radius: 6px; border-style: hidden; box-shadow: 0 0 0 1px #666; }
@@ -107,8 +107,9 @@
 .push-create .view-header .view-apps { height: 40px; overflow: hidden; }
 .push-create .view-header.divide .field:last-child { margin-left: 10px; }
 
-.push-create .divide-three.view-header { border-bottom: 1px solid rgba(0,0,0,0.5); margin: 0 -10px 0; padding: 0; position: relative; height: 40px; }
-.push-create .divide-three .field { float: left; display: inline-block; width: 33%; padding: 0; margin: 0;}
+.push-create .divide-three .divisor { display: table; width: 100%; }
+.push-create .divide-three.view-header { border-bottom: 1px solid rgba(0,0,0,0.5); margin: 0 -10px 0; padding: 0; position: relative; }
+.push-create .divide-three .field { display: table-cell; width: 33%; padding: 0 8px 8px; margin: 0;}
 .push-create .divide-three .field:last-child { width: 34% }
 .push-create .divide-three .field .title { padding: 16px 0 0 16px; line-height: 40px;}
 .push-create .divide-three .field .view-value { padding: 0; line-height: 20px; padding-left: 8px;}
@@ -116,8 +117,9 @@
 .push-create .view-platforms-holder { width: 150px; margin: 0 auto; }
 .push-create .view-platforms-holder span { line-height: 40px; }
 
-.push-create .divide-three.divide-large.view-header { height: 90px; margin: 0 -10px 16px; }
-.push-create .divide-three.divide-large .field { line-height: 20px; border-right: 1px solid rgba(0,0,0,0.5); margin-right: -1px; height: 100%;}
+.push-create .divide-three.divide-large.view-header { margin: 0 -10px 16px; }
+.push-create .divide-three.divide-large .field { line-height: 20px; border-right: 1px solid rgba(0,0,0,0.5); margin-right: -1px; }
+.push-create .divide-three.divide-large .field:last-child { border-right: none; }
 .push-create .divide-three.divide-large .field .title { text-align: center; padding: 0; margin: 0; }
 .push-create .divide-three.divide-large .field .view-value { text-align: center; padding: 0;}
 .push-create .divide-three .field .cly-select, .push-create .divide-three .field .cly-select .select-items { width: 188px; }
@@ -130,9 +132,17 @@
 .push-create .view-value.error { color: red; }
 .push-create .view-value .delete-app { float: inherit; }
 
+.push-create .view-value .codes { color: #636363; font-size: 12px; padding: 0 5px; text-align: left; }
+.push-create .view-value .codes h5 { color: #333; font-size: 12px; padding: 0; margin: 3px 0; text-align: left; padding: 0; }
+.push-create .view-value .codes table { width: 100%; }
+.push-create .view-value .codes table tr td { padding: 0; line-height: 14px;}
+.push-create .view-value .codes table tr td:first-child { text-align: left; }
+.push-create .view-value .codes table tr td:last-child { text-align: right; }
+
 /*.push-create .message .title { margin-bottom: 0; }*/
 .push-create .view-header .field { margin-bottom: 0; }
 
+.push-create.dialog .buttons .icon-button { margin-right: 8px }
 tr.push-no-messages td { color: #ccc; height: 80px; text-align: center; }
 tr.push-no-messages:hover { background-color: white; }
 

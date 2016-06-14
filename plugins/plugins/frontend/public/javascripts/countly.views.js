@@ -584,19 +584,19 @@ if(countlyGlobal["member"].global_admin){
         this.configurationsView.userConfig = false;
         this.renderWhenReady(this.configurationsView);
     });
-    
-    app.route('/manage/user-settings', 'user-settings', function () {
-        this.configurationsView.namespace = null;
-        this.configurationsView.userConfig = true;
-        this.renderWhenReady(this.configurationsView);
-    });
-    
-    app.route('/manage/user-settings/:namespace', 'user-settings_namespace', function (namespace) {
-        this.configurationsView.namespace = namespace;
-        this.configurationsView.userConfig = true;
-        this.renderWhenReady(this.configurationsView);
-    });
-}
+} 
+app.route('/manage/user-settings', 'user-settings', function () {
+    this.configurationsView.namespace = null;
+    this.configurationsView.userConfig = true;
+    this.renderWhenReady(this.configurationsView);
+});
+
+app.route('/manage/user-settings/:namespace', 'user-settings_namespace', function (namespace) {
+    this.configurationsView.namespace = namespace;
+    this.configurationsView.userConfig = true;
+    this.renderWhenReady(this.configurationsView);
+});
+
 
 app.addPageScript("/manage/plugins", function(){
    $("#plugins-selector").find(">.button").click(function () {

@@ -4,7 +4,7 @@ var http = require('http'),
     os = require('os'),
     countlyConfig = require('./config', 'dont-enclose'),
     plugins = require('../plugins/pluginManager.js'),
-    jobsWorkerName, jobsWorker,
+    jobs = require('./parts/jobs'),
     workers = [];
     
 plugins.setConfigs("api", {
@@ -33,7 +33,7 @@ plugins.setConfigs('logs', {
     default:    (countlyConfig.logging && countlyConfig.logging.default)   ?  countlyConfig.logging.default : 'warning'
 }, undefined, function(config){ 
     var cfg = plugins.getConfig('logs'), msg = {cmd: 'log', config: cfg};
-    process.send(msg);
+    if (process.send) { process.send(msg); }
     require('./utils/log.js').ipcHandler(msg);
 });
 
@@ -57,7 +57,6 @@ if (cluster.isMaster) {
                 workers.forEach(function(w){
                     if (w !== worker) { w.send({cmd: 'log', config: msg.config}); }
                 });
-                if (worker !== jobsWorker) { jobsWorker.send({cmd: 'log', config: msg.config}); }
                 require('./utils/log.js').ipcHandler(msg);
             }
             else if(msg.cmd === "checkPlugins"){
@@ -72,11 +71,7 @@ if (cluster.isMaster) {
         });
     };
 
-    jobsWorkerName = process.enclose ? 'jobsRunner.compiled.js' : 'jobsRunner.js';
-    jobsWorker = require('child_process').fork(__dirname + '/parts/mgmt/' + jobsWorkerName);
-
     workers.forEach(passToMaster);
-    passToMaster(jobsWorker);
 
     cluster.on('exit', function(worker) {
         workers = workers.filter(function(w){
@@ -89,11 +84,17 @@ if (cluster.isMaster) {
 
     plugins.dispatch("/master", {});
 
+    // Allow configs to load & scanner to find all jobs classes
+    setTimeout(() => {
+        jobs.job('api:ping').replace().schedule('every 1 day');
+        jobs.job('api:clear').replace().schedule('every 1 minute');
+    }, 3000);
 } else {
 
     var url = require('url'),
     querystring = require('querystring'),
     common = require('./utils/common.js'),
+    log = common.log('api'),
     crypto = require('crypto'),
     countlyApi = {
         data:{
@@ -163,7 +164,7 @@ if (cluster.isMaster) {
                 plugins.dispatch("/sdk", {params:params, app:app});
                 if(!params.cancelRequest){
                     //check if device id was changed
-                    if(params.qstring.old_device_id){
+                    if(params.qstring.old_device_id && params.qstring.old_device_id != params.qstring.device_id){
                         function restartRequest(){
                             //remove old device ID and retry request
                             params.qstring.old_device_id = null;
@@ -229,7 +230,7 @@ if (cluster.isMaster) {
                                             }
                                         }
                                         //update new user
-                                        common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': newAppUser}, function() {
+                                        common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': newAppUser}, {'upsert':true}, function() {
                                             //delete old user
                                             common.db.collection('app_users' + params.app_id).remove({_id:old_id}, function(){
                                                 //let plugins know they need to merge user data
@@ -629,6 +630,8 @@ if (cluster.isMaster) {
                                 }
                             }
             
+                            log.i('New /i request: %j', params.qstring);
+
                             validateAppForWriteAPI(params);
             
                             if (!plugins.getConfig("api").safe) {

@@ -5,6 +5,9 @@
   "description": "Increase loyalty, user retention & satisfaction with push notifications",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/",
+  "scripts": {
+    "postinstall": "cd ./api/parts/apn && npm install"
+  },
   "repository": {
     "type": "git",
     "url": "http://github.com/Countly/countly-server.git"
@@ -20,16 +23,12 @@
     "notifications"
   ],
   "dependencies": {
-    "crazy-ps": "0.1.5",
-    "dequeue": "1.0.5",
     "flat": "1.3.0",
     "lodash": "2.4.1",
-    "lru-cache": "2.5.0",
     "merge": "1.2.0",
     "node-forge": "0.6.38",
     "q": "1.0.1",
-    "retry": "0.6.1",
-    "spdy": "3.2.3"
+    "retry": "0.6.1"
   },
   "private": true
 }

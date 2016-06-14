@@ -527,6 +527,17 @@ var pluginManager = function pluginManager(){
         });
     };
     
+    this.singleDefaultConnection = function() {
+        var conf = Object.assign({}, countlyConfig.mongodb);
+        for (var k in conf) {
+            if (typeof k === 'object') {
+                conf[k] = Object.assign({}, conf[k]);
+            }
+        }
+        conf.max_pool_size = 1;
+        return this.dbConnection({mongodb: conf});
+    };
+    
     this.dbConnection = function(config) {
         var db;
         if(typeof config == "string"){
@@ -577,8 +588,8 @@ var pluginManager = function pluginManager(){
 
         var countlyDb = mongo.db(dbName, dbOptions);
         countlyDb._emitter.setMaxListeners(0);
-		if(!countlyDb.ObjectID)
-			countlyDb.ObjectID = mongo.ObjectID;
+        if(!countlyDb.ObjectID)
+            countlyDb.ObjectID = mongo.ObjectID;
         
         return countlyDb;
     };

@@ -3,7 +3,7 @@
 var plugin = {},
 	countlyConfig = require('../../../frontend/express/config', 'dont-enclose'),
 	apiConfig = require('../../../api/config', 'dont-enclose'),
-	apn = require('../api/parts/lib/apn.js'),
+	credentials = require('../api/parts/credentials.js'),
     common = require('../../../api/utils/common.js'),
     log = common.log('push:api'),
 	fs = require('fs'),
@@ -32,7 +32,7 @@ var plugin = {},
 			}
 
 			try {
-				var p12 = apn.readP12(tmp_path, req.body.passphrase);
+				var p12 = credentials.p12(tmp_path, req.body.passphrase);
 				if (!p12.dev || !p12.prod) {
 					res.send({error: 'Countly now requires universal HTTP/2 certificates. Please see our guide at http://resources.count.ly/docs/countly-sdk-for-ios-and-os-x '});
 					return true;

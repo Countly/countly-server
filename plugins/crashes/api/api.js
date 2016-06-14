@@ -314,7 +314,7 @@ plugins.setConfigs("crashes", {
                                 plugins.dispatch("/plugins/drill", {params:params, dbAppUser:dbAppUser, events:events});
                             }
                         
-                            function processCrash(userAll){
+                            function processCrash(userAll, lastTs){
                                 var groupSet = {};
                                 var groupInsert = {};
                                 var groupInc = {};
@@ -417,17 +417,14 @@ plugins.setConfigs("crashes", {
                                     crashGroup = crashGroup && crashGroup.ok ? crashGroup.value : null;
                                     var isNew = (crashGroup && crashGroup.reports == 1) ? true : false;
                                     
-                                    var metrics = ["cr"];
-                                    
-                                    if(isNew)
-                                        metrics.push("cru");
+                                    var metrics = ["cr", "cru"];
                                     
                                     if(report.nonfatal)
                                         metrics.push("crnf");
                                     else
                                         metrics.push("crf");
                                     
-                                    common.recordCustomMetric(params, "crashdata", params.app_id, metrics);
+                                    common.recordCustomMetric(params, "crashdata", params.app_id, metrics, 1, null, ["cru"], lastTs);
                                     
                                     var group = {};
                                     if(!isNew){
@@ -474,20 +471,25 @@ plugins.setConfigs("crashes", {
                                 });
                             };
                             
-                            if(!user || !user.reports){
-                                var inc = {crashes:1};
-                                if(!report.nonfatal)
-                                    inc.fatal = 1;
-                        
-                                common.db.collection('app_crashusers' + params.app_id).findAndModify({group:0, 'uid':report.uid},{}, {$set:{group:0, 'uid':report.uid}, $inc:inc},{upsert:true, new:true}, function (err, userAll){
-                                    userAll = userAll && userAll.ok ? userAll.value : null;
-                                    processCrash(userAll);
-                                });
-                            }
-                            else{
-                                processCrash();
-                            }
-                                
+                            common.db.collection('app_crashgroups' + params.app_id).findOne({_id:hash},{fields:{_id:0, lastTs:1}}, function (err, group){
+                                var lastTs;
+                                if(group){
+                                    lastTs = group.lastTs
+                                }
+                                if(!user || !user.reports){
+                                    var inc = {crashes:1};
+                                    if(!report.nonfatal)
+                                        inc.fatal = 1;
+                            
+                                    common.db.collection('app_crashusers' + params.app_id).findAndModify({group:0, 'uid':report.uid},{}, {$set:{group:0, 'uid':report.uid}, $inc:inc},{upsert:true, new:true}, function (err, userAll){
+                                        userAll = userAll && userAll.ok ? userAll.value : null;
+                                        processCrash(userAll, lastTs);
+                                    });
+                                }
+                                else{
+                                    processCrash(null, lastTs);
+                                }
+                            });  
                         });
                     }
 				}

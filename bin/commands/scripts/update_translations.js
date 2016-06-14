@@ -31,6 +31,7 @@ function makeRequest(url, callback){
 function getFile(resource, language){
     makeRequest("https://www.transifex.com/api/2/project/countly/resource/"+resource.slug+"/stats/"+language.language_code+"/", function(err, stats){
         if(err){
+            console.log("error "+resource.name+" for "+language.language_code, err);
             return false;
         }
         if(stats && stats.completed != "0%"){
@@ -90,10 +91,15 @@ makeRequest("https://www.transifex.com/api/2/project/countly/resources/", functi
         }
         console.log("Got list of translations");
         languages = languages || default_langs;
+        function delayLoad(i, j){
+            setTimeout(function(){
+                getFile(resources[i], languages[j]);
+            }, (i+j)*1000);
+        }
         //get translation files
         for(var i = 0; i < resources.length; i++){
             for(var j = 0; j <  languages.length; j++){
-                getFile(resources[i], languages[j]);
+                delayLoad(i,j);
             }
         }
     });

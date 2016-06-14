@@ -816,7 +816,7 @@
 
         return {"chartData":_.compact(tableData)};
     };
-    
+      
     countlyCommon.mergeMetricsByName = function(chartData, metric){
         var uniqueNames = {},
             data;
@@ -1888,6 +1888,8 @@
 
         return periodObj;
     }
+    
+    countlyCommon.getPeriodObj = getPeriodObj;
 
     function getUniqArray(weeksArray, weekCounts, monthsArray, monthCounts, periodArr) {
 
