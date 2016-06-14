@@ -73,6 +73,7 @@ class ConnectionResource extends EventEmitter {
 		this.devices = msgs.map(_ => []);
 		this.ids = msgs.map(_ => []);
 		this.queue = 0;
+		this.lastFeed = -1;
 		this.feeder = feeder;
 		this.statuser = status;
 		
