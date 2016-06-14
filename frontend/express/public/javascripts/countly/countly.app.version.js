@@ -51,7 +51,7 @@
             { "name":"t" },
             { "name":"u" },
             { "name":"n" }
-        ]);
+        ], "app_versions");
 
         appVersionData.chartData = tmpAppVersionData.chartData;
 

@@ -8,6 +8,7 @@
             stores = json;
         }
     });
+
     function getSourceName(code, data, separate){
         code = code.replace(/&#46;/g, '.');
         if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "mobile"){
@@ -49,7 +50,8 @@
             return domain;
         }
     }
+
     window.countlySources = window.countlySources || {};
     window.countlySources.getSourceName=getSourceName;
-    CountlyHelpers.createMetricModel(window.countlySources, "sources", jQuery, getSourceName);
+    CountlyHelpers.createMetricModel(window.countlySources, {name: "sources", estOverrideMetric:"sources"}, jQuery, getSourceName);
 }());

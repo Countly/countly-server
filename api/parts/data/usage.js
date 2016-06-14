@@ -360,7 +360,16 @@ var usage = {},
         common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate);
 
         if (Object.keys(updateUsersZero).length || Object.keys(usersMeta).length) {
-            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, {$set: {m: dbDateIds.zero, a: params.app_id + ""}, '$inc': updateUsersZero, '$addToSet': usersMeta}, {'upsert': true}, function(){});
+            var updateObjZero = {
+                $set: { m: dbDateIds.zero, a: params.app_id + "" },
+                $addToSet: usersMeta
+            };
+
+            if (Object.keys(updateUsersZero).length) {
+                updateObjZero["$inc"] = updateUsersZero;
+            }
+
+            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, updateObjZero, {'upsert': true}, function(){});
         }
 
         common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true}, function(){});
@@ -372,7 +381,8 @@ var usage = {},
 
     function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done) {
         var userProps = {},
-            isNewUser = (user && user[common.dbUserMap['first_seen']])? false : true;
+            isNewUser = (user && user[common.dbUserMap['first_seen']])? false : true,
+            metricChanges = {};
 
         if (isNewUser) {
             userProps[common.dbUserMap['first_seen']] = params.time.timestamp;
@@ -395,6 +405,18 @@ var usage = {},
 
             if (user[common.dbUserMap['country_code']] != params.user.country) {
                 userProps[common.dbUserMap['country_code']] = params.user.country;
+
+                /*
+                 Init metric changes object here because country code is not a part of
+                 "metrics" object received from begin_session thus won't be tracked otherwise
+                */
+                metricChanges["uid"] = user.uid;
+                metricChanges["ts"] = params.time.timestamp;
+                metricChanges["cd"] = new Date();
+                metricChanges[common.dbUserMap['country_code']] = {
+                    "o": user[common.dbUserMap['country_code']],
+                    "n": params.user.country
+                };
             }
 
             if (user[common.dbUserMap['device_id']] != params.qstring.device_id) {
@@ -496,6 +518,25 @@ var usage = {},
                     if (isNewUser || (!isNewUser && user[tmpMetric.short_code] != escapedMetricVal)) {
                         userProps[tmpMetric.short_code] = escapedMetricVal;
                     }
+
+                    /*
+                     If track_changes is not specifically set to false for a metric, track metric value changes on a per user level
+                     with a document like below inside metric_changesAPPID collection
+
+                     { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
+                     */
+                    if (predefinedMetrics[i].metrics[j].track_changes !== false && !isNewUser && user[tmpMetric.short_code] != escapedMetricVal) {
+                        if (!metricChanges["uid"]) {
+                            metricChanges["uid"] = user.uid;
+                            metricChanges["ts"] = params.time.timestamp;
+                            metricChanges["cd"] = new Date();
+                        }
+
+                        metricChanges[tmpMetric.short_code] = {
+                            "o": user[tmpMetric.short_code],
+                            "n": escapedMetricVal
+                        };
+                    }
                 }
             }
 
@@ -505,10 +546,18 @@ var usage = {},
             if (needsUpdate) {
                 var dateIds = common.getDateIds(params),
                     tmpZeroId = params.app_id + "_" + dateIds.zero,
-                    tmpMonthId = params.app_id + "_" + dateIds.month;
+                    tmpMonthId = params.app_id + "_" + dateIds.month,
+                    updateObjZero = {
+                        $set: { m: dateIds.zero, a: params.app_id + "" },
+                        $addToSet: tmpSet
+                    };
+
+                if (Object.keys(tmpTimeObjZero).length) {
+                    updateObjZero["$inc"] = tmpTimeObjZero;
+                }
 
                 if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
-                    common.db.collection(predefinedMetrics[i].db).update({'_id': tmpZeroId}, {$set: {m: dateIds.zero, a: params.app_id + ""}, '$inc': tmpTimeObjZero, '$addToSet': tmpSet}, {'upsert': true}, function(){});
+                    common.db.collection(predefinedMetrics[i].db).update({'_id': tmpZeroId}, updateObjZero, {'upsert': true}, function(){});
                 }
 
                 common.db.collection(predefinedMetrics[i].db).update({'_id': tmpMonthId}, {$set: {m: dateIds.month, a: params.app_id + ""}, '$inc': tmpTimeObjMonth}, {'upsert': true}, function(){});
@@ -533,6 +582,18 @@ var usage = {},
                 //Perform user retention analysis
                 plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
             });
+
+            /*
+             If metricChanges object contains a uid this means we have at least one metric that has changed
+             in this begin_session so we'll insert it into metric_changesAPPID collection.
+             Inserted document has below format;
+
+             { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
+              */
+            if (metricChanges.uid) {
+                common.db.collection('metric_changes' + params.app_id).insert(metricChanges);
+            }
+
             if (done) { done(); }
         }
 

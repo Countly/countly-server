@@ -8,6 +8,9 @@ var plugin = {},
 	plugins.register("/worker", function(ob){
 		common.dbUserMap['source'] = 'src';
 	});
+    plugins.register("/o/method/total_users", function(ob){
+        ob.shortcodesForMetrics["sources"] = "src";
+    });
 	plugins.register("/session/metrics", function(ob){
 		var predefinedMetrics = ob.predefinedMetrics;
         var params = ob.params;

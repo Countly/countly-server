@@ -257,10 +257,12 @@ var appsApi = {},
                 plugins.dispatch("/i/apps/delete", {params:params, appId:appId, data:app}, deleteEvents);
         });
 
+        common.db.collection('metric_changes' + appId).drop(function() {});
+
         if (fromAppDelete) {
             common.db.collection('graph_notes').remove({'_id': common.db.ObjectID(appId)},function(){});
         }
-    };
+    }
     
     function deletePeriodAppData(appId, fromAppDelete, params, app) {
         var periods = {
@@ -282,8 +284,15 @@ var appsApi = {},
             dates[now.format('YYYY:M')] = true;
             dates[now.format('YYYY')+":0"] = true;
         }
+
+        /*
+         This variable set after the above loop because it already does the necessary subtraction
+         */
+        var oldestTimestampWanted = Math.round(now.valueOf() / 1000);
+
         skip = Object.keys(skip);
         dates = Object.keys(dates);
+
         common.db.collection('users').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:skip}}]},function(){});
         common.db.collection('carriers').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:skip}}]},function(){});
         common.db.collection('devices').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:skip}}]},function(){});
@@ -310,7 +319,19 @@ var appsApi = {},
                 }
             }
         });
-        
+
+        /*
+         Set ls (last session) timestamp of users who had their last session before oldestTimestampWanted to 1
+         This prevents these users to be included as "total users" in the reports
+         */
+        common.db.collection('app_users' + appId).update({ls: {$lte: oldestTimestampWanted}}, {$set: {ls: 1}});
+
+        /*
+         Remove all metric changes that happened before oldestTimestampWanted since we no longer need
+         old metric changes
+         */
+        common.db.collection('metric_changes' + appId).remove({ts: {$lte: oldestTimestampWanted}});
+
         plugins.dispatch("/i/apps/clear", {params:params, appId:appId, data:app, moment:now, dates:dates, ids:skip});
     }
 

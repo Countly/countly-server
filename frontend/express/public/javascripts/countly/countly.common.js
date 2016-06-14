@@ -627,7 +627,7 @@
         return {"chartDP":chartData, "chartData":_.compact(tableData), "keyEvents":keyEvents};
     };
 
-    countlyCommon.extractTwoLevelData = function (db, rangeArray, clearFunction, dataProperties) {
+    countlyCommon.extractTwoLevelData = function (db, rangeArray, clearFunction, dataProperties, estOverrideMetric) {
 
         countlyCommon.periodObj = getPeriodObj();
 
@@ -690,6 +690,8 @@
             }
         } else {
 
+            var calculatedObj = (estOverrideMetric)? countlyTotalUsers.get(estOverrideMetric) : {};
+
             for (var j = 0; j < rangeArray.length; j++) {
 
                 var propertySum = 0,
@@ -729,53 +731,66 @@
                 }
 
                 if (propertyNames.indexOf("u") !== -1 && Object.keys(tmpPropertyObj).length) {
-                    var tmpUniqVal = 0,
-                        tmpUniqValCheck = 0,
-                        tmpCheckVal = 0;
+                    if (countlyTotalUsers.isUsable() && estOverrideMetric && calculatedObj[rangeArray[j]]) {
 
-                    for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
-                        tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[l] + "." + rangeArray[j]);
-                        if (!tmp_x) {
-                            continue;
+                        tmpPropertyObj["u"] = calculatedObj[rangeArray[j]];
+
+                    } else {
+                        var tmpUniqVal = 0,
+                            tmpUniqValCheck = 0,
+                            tmpCheckVal = 0;
+
+                        for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodArr.length); l++) {
+                            tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodArr[l] + "." + rangeArray[j]);
+                            if (!tmp_x) {
+                                continue;
+                            }
+                            tmp_x = clearFunction(tmp_x);
+                            propertyValue = tmp_x["u"];
+
+                            if (typeof propertyValue === 'string') {
+                                tmpPropertyObj["u"] = propertyValue;
+                            } else {
+                                propertySum += propertyValue;
+                                tmpUniqVal += propertyValue;
+                                tmpPropertyObj["u"] += propertyValue;
+                            }
                         }
-                        tmp_x = clearFunction(tmp_x);
-                        propertyValue = tmp_x["u"];
 
-                        if (typeof propertyValue === 'string') {
-                            tmpPropertyObj["u"] = propertyValue;
-                        } else {
-                            propertySum += propertyValue;
-                            tmpUniqVal += propertyValue;
-                            tmpPropertyObj["u"] += propertyValue;
+                        for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
+                            tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[l] + "." + rangeArray[j]);
+                            if (!tmp_x) {
+                                continue;
+                            }
+                            tmp_x = clearFunction(tmp_x);
+                            tmpCheckVal = tmp_x["u"];
+
+                            if (typeof tmpCheckVal !== 'string') {
+                                propertySum += tmpCheckVal;
+                                tmpUniqValCheck += tmpCheckVal;
+                                tmpPropertyObj["u"] += tmpCheckVal;
+                            }
+                        }
+
+                        if (tmpUniqVal > tmpUniqValCheck) {
+                            tmpPropertyObj["u"] = tmpUniqValCheck;
                         }
                     }
 
-                    for (var l = 0; l < (countlyCommon.periodObj.uniquePeriodCheckArr.length); l++) {
-                        tmp_x = countlyCommon.getDescendantProp(db, countlyCommon.periodObj.uniquePeriodCheckArr[l] + "." + rangeArray[j]);
-                        if (!tmp_x) {
-                            continue;
-                        }
-                        tmp_x = clearFunction(tmp_x);
-                        tmpCheckVal = tmp_x["u"];
-
-                        if (typeof tmpCheckVal !== 'string') {
-                            propertySum += tmpCheckVal;
-                            tmpUniqValCheck += tmpCheckVal;
-                            tmpPropertyObj["u"] += tmpCheckVal;
-                        }
+                    // Total users can't be less than new users
+                    if (tmpPropertyObj.u < tmpPropertyObj.n) {
+                        tmpPropertyObj.u = tmpPropertyObj.n;
                     }
 
-                    if (tmpUniqVal > tmpUniqValCheck) {
-                        tmpPropertyObj["u"] = tmpUniqValCheck;
+                    // Total users can't be more than total sessions
+                    if (tmpPropertyObj.u > tmpPropertyObj.t) {
+                        tmpPropertyObj.u = tmpPropertyObj.t;
                     }
                 }
 
-                //if (propertySum > 0)
-                {
-                    tableData[tableCounter] = {};
-                    tableData[tableCounter] = tmpPropertyObj;
-                    tableCounter++;
-                }
+                tableData[tableCounter] = {};
+                tableData[tableCounter] = tmpPropertyObj;
+                tableCounter++;
             }
         }
 
@@ -1689,7 +1704,8 @@
             rangeEndDay = null,
             dateString,
             uniquePeriodsCheck = [],
-            previousUniquePeriodsCheck = [];
+            previousUniquePeriodsCheck = [],
+            periodContainsToday = true;
 
         switch (_period) {
             case "month":
@@ -1731,6 +1747,7 @@
                 periodMin = 0;
                 dateString = "D MMM, HH:mm";
                 numberOfDays = 1;
+                periodContainsToday = false;
                 break;
             case "hour":
                 activePeriod = year + "." + month + "." + day;
@@ -1786,12 +1803,14 @@
                 periodMin = 0;
                 dateString = "D MMM, HH:mm";
                 numberOfDays = 1;
+                periodContainsToday = (moment(_period[0]).format("YYYYMMDD") == now.format("YYYYMMDD"));
             } else {
                 var a = moment(_period[0]),
                     b = moment(_period[1]);
 
                 numberOfDays = daysInPeriod = b.diff(a, 'days') + 1;
                 rangeEndDay = _period[1];
+                periodContainsToday = (b.format("YYYYMMDD") == now.format("YYYYMMDD"));
             }
         }
 
@@ -1863,7 +1882,8 @@
             "uniquePeriodArr":getUniqArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts, currPeriodArr),
             "uniquePeriodCheckArr":getUniqCheckArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts),
             "previousUniquePeriodArr":getUniqArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts, prevPeriodArr),
-            "previousUniquePeriodCheckArr":getUniqCheckArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts)
+            "previousUniquePeriodCheckArr":getUniqCheckArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts),
+            "periodContainsToday": periodContainsToday
         };
 
         return periodObj;

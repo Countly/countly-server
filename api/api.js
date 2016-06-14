@@ -331,6 +331,7 @@ if (cluster.isMaster) {
                 }
                 params.member = member;
                 params.app_id = app['_id'];
+                params.app_cc = app['country'];
                 params.appTimezone = app['timezone'];
                 params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
                 
@@ -694,6 +695,9 @@ if (cluster.isMaster) {
                             }
             
                             switch (params.qstring.method) {
+                                case 'total_users':
+                                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric);
+                                    break;
                                 case 'get_period_obj':
                                     validateUserForDataReadAPI(params, countlyApi.data.fetch.getPeriodObj, 'users');
                                     break;

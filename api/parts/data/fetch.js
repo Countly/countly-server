@@ -215,8 +215,7 @@ var fetch = {},
         fetchTimeObj('users', params, false, function(usersDoc) {
             fetchTimeObj('device_details', params, false, function(deviceDetailsDoc) {
                 fetchTimeObj('carriers', params, false, function(carriersDoc) {
-                    var output = {},
-                        periods = [
+                    var periods = [
                             {period: "30days", out: "30days"},
                             {period: "7days", out: "7days"},
                             {period: "hour", out: "today"}
@@ -227,22 +226,40 @@ var fetch = {},
                     countlyDeviceDetails.setDb(deviceDetailsDoc || {});
                     countlyCarrier.setDb(carriersDoc || {});
 
-                    for (var i = 0; i < periods.length; i++) {
-                        countlyCommon.setPeriod(periods[i].period);
+                    async.map(periods, function(period, callback) {
+                            params.qstring.period = period.period;
 
-                        output[periods[i].out] = {
-                            dashboard: countlySession.getSessionData(),
-                            top: {
-                                platforms: countlyDeviceDetails.getPlatformBars(),
-                                resolutions: countlyDeviceDetails.getResolutionBars(),
-                                carriers: countlyCarrier.getCarrierBars(),
-                                users: countlySession.getTopUserBars()
-                            },
-                            period: countlyCommon.getDateRange()
-                        };
-                    }
+                            getTotalUsersObj("users", params, function(dbTotalUsersObj) {
+                                countlyCommon.setPeriod(period.period);
 
-                    common.returnOutput(params, output);
+                                countlySession.setTotalUsersObj(formatTotalUsersObj(dbTotalUsersObj));
+
+                                var data = {
+                                    out: period.out,
+                                    data: {
+                                        dashboard: countlySession.getSessionData(),
+                                        top: {
+                                            platforms: countlyDeviceDetails.getPlatformBars(),
+                                            resolutions: countlyDeviceDetails.getResolutionBars(),
+                                            carriers: countlyCarrier.getCarrierBars(),
+                                            users: countlySession.getTopUserBars()
+                                        },
+                                        period: countlyCommon.getDateRange()
+                                    }
+                                };
+
+                                callback(null, data);
+                            });
+                        },
+                        function(err, output){
+                            var processedOutput = {};
+
+                            for (var i = 0; i < output.length; i++) {
+                                processedOutput[output[i].out] = output[i].data;
+                            }
+
+                            common.returnOutput(params, processedOutput);
+                        });
                 });
             });
         });
@@ -250,6 +267,7 @@ var fetch = {},
     
     fetch.fetchAllApps = function(params) {
         var filter = {};
+
         if(params.qstring.filter){
             try{
                 filter = JSON.parse(params.qstring.filter);
@@ -258,6 +276,7 @@ var fetch = {},
                 filter = {};
             }            
         }
+        
         if(!params.member.global_admin){
             var apps = {};
             for(var i = 0; i < params.member.admin_of.length; i++){
@@ -289,22 +308,40 @@ var fetch = {},
                 dataProps.push(props);
                 return countlyCommon.extractChartData(db, countlySession.clearSessionObject, chartData, dataProps).chartDP[0].data;
             }
+
+            function setAppId(inAppId) {
+                params.app_id = inAppId + "";
+            }
+
             countlyCommon.setTimezone(params.appTimezone);
-            async.map(apps, function(app, callback){
-                params.app_id = app._id+"";
+
+            async.map(apps, function(app, callback) {
+                setAppId(app._id);
+
                 fetchTimeObj('users', params, false, function(usersDoc) {
-                    countlySession.setDb(usersDoc || {});
-                    var sessionData = countlySession.getSessionData();
-                    var charts = {
-                        "total-users": extractData(usersDoc || {}, {name:"t",func:function (dataObj) {return dataObj["u"]}}),
-                        "new-users": extractData(usersDoc || {}, { name:"n" }),
-                        "total-sessions": extractData(usersDoc || {}, { name:"t" }),
-                        "time-spent": extractData(usersDoc || {}, {name:"average", func:function (dataObj) {return ((dataObj["t"] == 0) ? 0 : ((dataObj["d"] / dataObj["t"]) / 60).toFixed(1));}}),
-                        "total-time-spent": extractData(usersDoc || {}, {name:"t", func:function (dataObj) {return ((dataObj["d"] / 60).toFixed(1));}}),
-                        "avg-events-served": extractData(usersDoc || {}, {name:"average", func:function (dataObj) {return ((dataObj["u"] == 0) ? 0 : ((dataObj["e"] / dataObj["u"]).toFixed(1)));}})
-                    };
-                    var data = {_id:app._id, name:app.name, test:"1", sessions:sessionData['total_sessions'], users:sessionData['total_users'], newusers:sessionData['new_users'], duration:sessionData['total_time'], avgduration:sessionData['avg_time'], charts:charts};
-                    callback(null, data);
+
+                    // We need to set app_id once again here because after the callback
+                    // it is reset to it's original value
+                    setAppId(app._id);
+
+                    getTotalUsersObj("users", params, function(dbTotalUsersObj) {
+                        countlySession.setDb(usersDoc || {});
+                        countlySession.setTotalUsersObj(formatTotalUsersObj(dbTotalUsersObj));
+
+                        var sessionData = countlySession.getSessionData();
+                        var charts = {
+                            "total-users": extractData(usersDoc || {}, {name:"t",func:function (dataObj) {return dataObj["u"]}}),
+                            "new-users": extractData(usersDoc || {}, { name:"n" }),
+                            "total-sessions": extractData(usersDoc || {}, { name:"t" }),
+                            "time-spent": extractData(usersDoc || {}, {name:"average", func:function (dataObj) {return ((dataObj["t"] == 0) ? 0 : ((dataObj["d"] / dataObj["t"]) / 60).toFixed(1));}}),
+                            "total-time-spent": extractData(usersDoc || {}, {name:"t", func:function (dataObj) {return ((dataObj["d"] / 60).toFixed(1));}}),
+                            "avg-events-served": extractData(usersDoc || {}, {name:"average", func:function (dataObj) {return ((dataObj["u"] == 0) ? 0 : ((dataObj["e"] / dataObj["u"]).toFixed(1)));}})
+                        };
+
+                        var data = {_id:app._id, name:app.name, test:"1", sessions:sessionData['total_sessions'], users:sessionData['total_users'], newusers:sessionData['new_users'], duration:sessionData['total_time'], avgduration:sessionData['avg_time'], charts:charts};
+
+                        callback(null, data);
+                    });
                 });
             },
             function(err, res){
@@ -340,8 +377,7 @@ var fetch = {},
         params.qstring.period = "30days";
 
         fetchTimeObj('users', params, false, function(locationsDoc) {
-            var output = {},
-                periods = [
+            var periods = [
                     {period: "30days", out: "30days"},
                     {period: "7days", out: "7days"},
                     {period: "hour", out: "today"}
@@ -350,13 +386,28 @@ var fetch = {},
             countlyCommon.setTimezone(params.appTimezone);
             countlyLocation.setDb(locationsDoc || {});
 
-            for (var i = 0; i < periods.length; i++) {
-                countlyCommon.setPeriod(periods[i].period);
+            async.map(periods, function(period, callback) {
+                    params.qstring.period = period.period;
 
-                output[periods[i].out] = countlyLocation.getLocationData({maxCountries: 10, sort: "new"});
-            }
+                    getTotalUsersObj("countries", params, function(dbTotalUsersObj) {
+                        countlyCommon.setPeriod(period.period);
 
-            common.returnOutput(params, output);
+                        countlyLocation.setTotalUsersObj(formatTotalUsersObj(dbTotalUsersObj));
+
+                        var data = {out: period.out, data: countlyLocation.getLocationData({maxCountries: 10, sort: "new"})};
+
+                        callback(null, data);
+                    });
+                },
+                function(err, output){
+                    var processedOutput = {};
+
+                    for (var i = 0; i < output.length; i++) {
+                        processedOutput[output[i].out] = output[i].data;
+                    }
+
+                    common.returnOutput(params, processedOutput);
+                });
         });
     };
 	
@@ -404,7 +455,7 @@ var fetch = {},
     };
 	
 	fetch.fetchMetric = function(params) {
-		function getMetric(metric){
+		function getMetric(metric, totalUsersMetric){
 			fetchTimeObj(metric, params, false, function(doc) {
 				var clearMetricObject = function (obj) {
 					if (obj) {
@@ -418,45 +469,60 @@ var fetch = {},
 			
 					return obj;
 				};
+
 				if (doc['meta'] && doc['meta'][params.qstring.metric]) {
-					var data = countlyCommon.extractMetric(doc, doc['meta'][params.qstring.metric], clearMetricObject, [
-						{
-							name:params.qstring.metric,
-							func:function (rangeArr, dataObj) {
-								return rangeArr;
-							}
-						},
-						{ "name":"t" },
-						{ "name":"n" },
-						{ "name":"u" }
-					]);
-					common.returnOutput(params, data);
+                    getTotalUsersObj(totalUsersMetric, params, function(dbTotalUsersObj) {
+                        var data = countlyCommon.extractMetric(doc, doc['meta'][params.qstring.metric], clearMetricObject, [
+                            {
+                                name:params.qstring.metric,
+                                func:function (rangeArr, dataObj) {
+                                    return rangeArr;
+                                }
+                            },
+                            { "name":"t" },
+                            { "name":"n" },
+                            { "name":"u" }
+                        ], formatTotalUsersObj(dbTotalUsersObj));
+
+                        common.returnOutput(params, data);
+                    });
 				}
 				else{
 					common.returnOutput(params, []);
 				}
 			});
 		}
-		if(!params.qstring.metric)
+
+		if(!params.qstring.metric) {
 			common.returnMessage(params, 400, 'Must provide metric');
-		else{
+        } else {
 			switch (params.qstring.metric) {
                 case 'locations':
                 case 'countries':
+                    getMetric('users', "countries");
+                    break;
                 case 'sessions':
                 case 'users':
 					getMetric('users');
                     break;
                 case 'app_versions':
+                    getMetric("device_details", "app_versions");
+                    break;
                 case 'os':
+                    getMetric("device_details", "platforms");
+                    break;
                 case 'os_versions':
+                    getMetric("device_details", "platform_versions");
+                    break;
                 case 'resolutions':
+                    getMetric("device_details", "resolutions");
+                    break;
                 case 'device_details':
 					getMetric('device_details');
                     break;
                 case 'cities':
                     if (plugins.getConfig("api").city_data !== false) {
-						getMetric(params.qstring.metric);
+						getMetric("cities", "cities");
                     } else {
                         common.returnOutput(params, []);
                     }
@@ -477,6 +543,150 @@ var fetch = {},
     fetch.getTimeObj = function (collection, params, callback) {
         fetchTimeObj(collection, params, null, callback);
     };
+
+    fetch.fetchTotalUsersObj = function (metric, params) {
+        getTotalUsersObj(metric, params, function(output) {
+            common.returnOutput(params, output);
+        });
+    };
+
+    function getTotalUsersObj(metric, params, callback) {
+        var periodObj = getPeriodObj(params);
+
+        /*
+            List of shortcodes in app_users document for different metrics
+         */
+        var shortcodesForMetrics = {
+                "devices": "d",
+                "app_versions": "av",
+                "platforms": "p",
+                "platform_versions": "pv",
+                "resolutions": "r",
+                "countries": "cc",
+                "cities": "cty",
+                "carriers": "c"
+            };
+
+        /*
+            This API endpoint /o?method=total_users should only be used if
+            selected period contains today
+         */
+        if (periodObj.periodContainsToday) {
+            /*
+             Aggregation query uses this variable for $match operation
+             We skip uid-sequence document and filter results by last session timestamp
+             */
+            var match = {
+                _id: { $ne: "uid-sequence" },
+                ls: {$gte: (periodObj.start / 1000), $lte: (periodObj.end / 1000)}
+            };
+
+            /*
+             Let plugins register their short codes and match queries
+             */
+            plugins.dispatch("/o/method/total_users", {shortcodesForMetrics:shortcodesForMetrics, match:match});
+
+            /*
+             Aggregation query uses this variable for $group operation
+             If there is no corresponding shortcode default is to count all
+             users in this period
+             */
+            var groupBy = (shortcodesForMetrics[metric])? "$" + shortcodesForMetrics[metric] : "users";
+
+            /*
+             In app users we store city information even if user is not from
+             the selected timezone country of the app. We $match to get city
+             information only for users in app's configured country
+             */
+            if (metric == "cities") {
+                match["cc"] = params.app_cc;
+            }
+
+            common.db.collection("app_users" + params.app_id).aggregate([
+                {
+                    $match: match
+                },
+                {
+                    $group: {
+                        _id: groupBy,
+                        u: { $sum: 1 }
+                    }
+                }
+            ], { allowDiskUse:true }, function(error, appUsersDbResult) {
+
+                if (shortcodesForMetrics[metric]) {
+
+                    var metricChangesMatch =  {
+                        ts: {$gte: (periodObj.start / 1000), $lte: (periodObj.end / 1000)}
+                    };
+
+                    metricChangesMatch[shortcodesForMetrics[metric] + ".o"] = { "$exists": true };
+
+                    /*
+                     We track changes to metrics such as app version in metric_changesAPPID collection;
+                     { "uid" : "2", "ts" : 1462028715, "av" : { "o" : "1:0:1", "n" : "1:1" } }
+
+                     While returning a total user result for any metric, we check metric_changes to see
+                     if any metric change happened in the selected period and include this in the result
+                     */
+                    common.db.collection("metric_changes" + params.app_id).aggregate([
+                        {
+                            $match: metricChangesMatch
+                        },
+                        {
+                            $group: { _id: '$' + shortcodesForMetrics[metric] + ".o", uniqDeviceIds: { $addToSet: '$uid'}}
+                        },
+                        {
+                            $unwind:"$uniqDeviceIds"
+                        },
+                        {
+                            $group: { _id: "$_id",  u: { $sum: 1 }}
+                        }
+                    ], { allowDiskUse:true }, function(error, metricChangesDbResult) {
+
+                        var appUsersDbResultIndex = _.pluck(appUsersDbResult, '_id');
+
+                        for (var i = 0; i < metricChangesDbResult.length; i++) {
+                            var itemIndex = appUsersDbResultIndex.indexOf(metricChangesDbResult[i]._id);
+
+                            if (itemIndex == -1) {
+                                appUsersDbResult.push(metricChangesDbResult[i])
+                            } else {
+                                appUsersDbResult[itemIndex].u += metricChangesDbResult[i].u;
+                            }
+                        }
+
+                        callback(appUsersDbResult);
+                    });
+                } else {
+                    callback(appUsersDbResult);
+                }
+            });
+        } else {
+            callback([]);
+        }
+    }
+
+    function formatTotalUsersObj(obj, forMetric) {
+        var tmpObj = {},
+            processingFunction;
+
+        /*
+        switch(forMetric) {
+            case "devices":
+                processingFunction = countlyDevice.getDeviceFullName;
+                break;
+        }
+        */
+
+        for (var i = 0; i < obj.length; i++) {
+            var tmpKey = (processingFunction)? processingFunction(obj[i]["_id"]) : obj[i]["_id"];
+
+            tmpObj[tmpKey] = obj[i]["u"];
+        }
+
+        return tmpObj;
+    }
 
     function fetchTimeObj(collection, params, isCustomEvent, callback) {
         if (params.qstring.action == "refresh") {

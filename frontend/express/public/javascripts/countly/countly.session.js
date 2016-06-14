@@ -70,8 +70,6 @@
                 tmpCurrentMsgEnabled += tmpUniqObj["m"];
             }
 
-            //console.log(currentPayingTotal + " " + tmpCurrentPaying)
-
             if (currentUnique > tmpCurrentUniq) {
                 currentUnique = tmpCurrentUniq;
             }
@@ -132,6 +130,7 @@
                 currentEvents += tmp_x["e"];
                 previousEvents += tmp_y["e"];
             }
+
         } else {
             tmp_x = countlyCommon.getDescendantProp(_sessionDb, _periodObj.activePeriod);
             tmp_y = countlyCommon.getDescendantProp(_sessionDb, _periodObj.previousPeriod);
@@ -183,6 +182,13 @@
         }*/
         
         var timeSpentString = countlyCommon.timeString(sessionDuration);
+
+        // Override estimated total user count here instead of where it is normally calculated
+        // because we want % change calculation to be based on estimated values
+        if (_periodObj.periodContainsToday && countlyTotalUsers.isUsable() && countlyTotalUsers.get("users").users) {
+            isEstimate = false;
+            currentUnique = countlyTotalUsers.get("users").users;
+        }
 
         dataArr =
         {

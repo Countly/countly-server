@@ -506,15 +506,17 @@ $.extend(Template.prototype, {
         }
     };
 	
-	CountlyHelpers.createMetricModel = function (countlyMetric, _name, $, fetchValue) {
+	CountlyHelpers.createMetricModel = function (countlyMetric, metric, $, fetchValue) {
 		//Private Properties
 		var _periodObj = {},
 			_Db = {},
 			_metrics = [],
 			_activeAppKey = 0,
 			_initialized = false,
-			_period = null;
-	
+			_period = null,
+            _name = (metric.name)? metric.name : metric,
+            _estOverrideMetric = (metric.estOverrideMetric)? metric.estOverrideMetric : "";
+
 		//Public Methods
 		countlyMetric.initialize = function () {
 			if (_initialized &&  _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
@@ -600,7 +602,8 @@ $.extend(Template.prototype, {
 				{ "name":"t" },
 				{ "name":"u" },
 				{ "name":"n" }
-			]);
+			], _estOverrideMetric);
+
             chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, _name);
 			var namesData = _.pluck(chartData.chartData, _name),
 				totalData = _.pluck(chartData.chartData, 't'),
@@ -859,7 +862,7 @@ $.expr[":"].contains = $.expr.createPseudo(function(arg) {
 
 window.SessionView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyUser.initialize()).then(function () {});
+        return $.when(countlyUser.initialize(), countlyTotalUsers.initialize("users")).then(function () {});
     },
     renderCommon:function (isRefresh) {
 
@@ -913,7 +916,7 @@ window.SessionView = countlyView.extend({
     },
     refresh:function () {
         var self = this;
-        $.when(countlyUser.initialize()).then(function () {
+        $.when(this.beforeRender()).then(function () {
             if (app.activeView != self) {
                 return false;
             }
@@ -932,7 +935,7 @@ window.SessionView = countlyView.extend({
 
 window.UserView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyUser.initialize()).then(function () {});
+        return $.when(countlyUser.initialize(), countlyTotalUsers.initialize("users")).then(function () {});
     },
     renderCommon:function (isRefresh) {
         var sessionData = countlySession.getSessionData(),
@@ -984,7 +987,7 @@ window.UserView = countlyView.extend({
     },
     refresh:function () {
         var self = this;
-        $.when(countlyUser.initialize()).then(function () {
+        $.when(this.beforeRender()).then(function () {
             if (app.activeView != self) {
                 return false;
             }
@@ -1245,7 +1248,7 @@ window.CountriesView = countlyView.extend({
             "map-list-users": {id:'total', label:jQuery.i18n.map["sidebar.analytics.users"], type:'number', metric:"u"},
             "map-list-new": {id:'total', label:jQuery.i18n.map["common.table.new-users"], type:'number', metric:"n"}
         };
-        return $.when(countlyUser.initialize(), countlyCity.initialize()).then(function () {});
+        return $.when(countlyUser.initialize(), countlyCity.initialize(), countlyTotalUsers.initialize("countries"), countlyTotalUsers.initialize("cities"), countlyTotalUsers.initialize("users")).then(function () {});
     },
     drawTable: function() {
         var tableFirstColTitle = (this.cityView) ? jQuery.i18n.map["countries.table.city"] : jQuery.i18n.map["countries.table.country"],
@@ -1459,7 +1462,7 @@ window.FrequencyView = countlyView.extend({
 
 window.DeviceView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyDevice.initialize(), countlyDeviceDetails.initialize()).then(function () {});
+        return $.when(countlyDevice.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("devices")).then(function () {});
     },
     pageScript:function () {
         $(".bar-inner").on({
@@ -1556,7 +1559,7 @@ window.DeviceView = countlyView.extend({
 window.PlatformView = countlyView.extend({
     activePlatform:null,
     beforeRender: function() {
-        return $.when(countlyDeviceDetails.initialize()).then(function () {});
+        return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("platforms"), countlyTotalUsers.initialize("platform_versions")).then(function () {});
     },
     pageScript:function () {
         var self = this;
@@ -1661,7 +1664,7 @@ window.PlatformView = countlyView.extend({
 
 window.AppVersionView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyDeviceDetails.initialize()).then(function () {});
+        return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("app_versions")).then(function () {});
     },
     renderCommon:function (isRefresh) {
         var appVersionData = countlyAppVersion.getAppVersionData();
@@ -1706,7 +1709,7 @@ window.AppVersionView = countlyView.extend({
 
 window.CarrierView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyCarrier.initialize()).then(function () {});
+        return $.when(countlyCarrier.initialize(), countlyTotalUsers.initialize("carriers")).then(function () {});
     },
     renderCommon:function (isRefresh) {
         var carrierData = countlyCarrier.getCarrierData();
@@ -1759,7 +1762,7 @@ window.CarrierView = countlyView.extend({
 
 window.ResolutionView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyDeviceDetails.initialize()).then(function () {});
+        return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("resolutions")).then(function () {});
     },
     renderCommon:function (isRefresh) {
         var resolutionData = countlyDeviceDetails.getResolutionData();
@@ -1798,7 +1801,7 @@ window.ResolutionView = countlyView.extend({
     },
     refresh:function () {
         var self = this;
-        $.when(countlyDeviceDetails.initialize()).then(function () {
+        $.when(this.beforeRender()).then(function () {
             if (app.activeView != self) {
                 return false;
             }
@@ -2204,6 +2207,8 @@ window.ManageAppsView = countlyView.extend({
                             CountlyHelpers.alert(jQuery.i18n.map["management-applications.clear-admin"], "red");
                             return false;
                         } else {
+                            $(document).trigger("/i/apps/reset", { app_id: appId, period: period });
+
                             if(period == "all"){
                                 countlySession.reset();
                                 countlyLocation.reset();
@@ -2242,6 +2247,8 @@ window.ManageAppsView = countlyView.extend({
                     },
                     dataType:"jsonp",
                     success:function () {
+                        $(document).trigger("/i/apps/delete", { app_id: appId });
+
                         delete countlyGlobal['apps'][appId];
                         delete countlyGlobal['admin_apps'][appId];
                         var activeApp = $(".app-container").filter(function () {

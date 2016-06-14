@@ -89,7 +89,7 @@
             { "name":"t" },
             { "name":"u" },
             { "name":"n" }
-        ]);
+        ], "countries");
         locationData.chartData = countlyCommon.mergeMetricsByName(locationData.chartData, "country");
         locationData.chartData = _.sortBy(locationData.chartData, function(obj) { return -obj.t; });
 
@@ -156,7 +156,7 @@
             { "name":"t" },
             { "name":"u" },
             { "name":"n" }
-        ]);
+        ], "countries");
 
         chartData.cols = [
             {id:'country', label:jQuery.i18n.map["countries.table.country"], type:'string'}
@@ -213,7 +213,7 @@
             { "name":"t" },
             { "name":"u" },
             { "name":"n" }
-        ]);
+        ], "countries");
 
         chartData.cols = [
             {id:'country', label:jQuery.i18n.map["countries.table.country"], type:'string'}
