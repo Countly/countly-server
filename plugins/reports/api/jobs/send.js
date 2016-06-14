@@ -15,33 +15,39 @@ class ReportsJob extends job.Job {
             var date = new Date();
             var hour = date.getHours();
             var dow = date.getDay();
+            var minutes = date.getMinutes();
             if(dow == 0)
                 dow = 7;
             
-            log.d(hour, dow);
-            countlyDb.collection("reports").find({r_hour:hour}).toArray(function(err, res){
-                async.eachSeries(res, function(report, done){
-                    if(report.frequency == "daily" || (report.frequency == "weekly" && report.r_day == dow)){
-                        reports.getReport(countlyDb, report, function(err, ob){
-                            if(!err){
-                                reports.send(ob.report, ob.message, function(){
-                                    log.d("sent to", ob.report.emails[0]);
+            if(minutes < 5){
+                log.d(hour, dow);
+                countlyDb.collection("reports").find({r_hour:hour}).toArray(function(err, res){
+                    async.eachSeries(res, function(report, done){
+                        if(report.frequency == "daily" || (report.frequency == "weekly" && report.r_day == dow)){
+                            reports.getReport(countlyDb, report, function(err, ob){
+                                if(!err){
+                                    reports.send(ob.report, ob.message, function(){
+                                        log.d("sent to", ob.report.emails[0]);
+                                        done(null, null);
+                                    });
+                                }
+                                else{
+                                    log.d(err, ob.report.emails[0]);
                                     done(null, null);
-                                });
-                            }
-                            else{
-                                log.d(err, ob.report.emails[0]);
-                                done(null, null);
-                            }
-                        }, cache);
-                    }
-                    else{
-                    done(null, null); 
-                    }
-                }, function(err, results) {
-                    log.d("all reports sent");
+                                }
+                            }, cache);
+                        }
+                        else{
+                        done(null, null); 
+                        }
+                    }, function(err, results) {
+                        log.d("all reports sent");
+                    });
                 });
-            })
+            }
+            else{
+                done(null, null); 
+            }
         });
     }
 }
