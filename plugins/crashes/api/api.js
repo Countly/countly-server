@@ -199,6 +199,10 @@ plugins.setConfigs("crashes", {
                 "logs",//some additional logs provided, if any 
                 "run", //running time since app start in seconds
                 
+                //build specific fields
+                "build_uuid",
+                "app_build",
+                
                 //custom key/values provided by developers
                 "custom"
 			];
