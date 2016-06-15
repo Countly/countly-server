@@ -40,7 +40,7 @@ class PushJob extends job.IPCJob {
 	}
 
 	resourceName () {
-		return this.data.pushly.credentials.platform + '::' + this.data.pushly.credentials.key;
+		return this.data.pushly.credentials.platform + '::' + this.data.pushly.credentials.key + (this.data.pushly.credentials.gateway ? '::' + this.data.pushly.credentials.gateway : '');
 	}
 
 	createResource (_id, name) {
