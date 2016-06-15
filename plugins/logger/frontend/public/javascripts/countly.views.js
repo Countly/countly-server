@@ -56,6 +56,7 @@ window.LoggerView = countlyView.extend({
 							}
 						}
 						return ret;}, "sType":"string", "sTitle": jQuery.i18n.map["logger.device"]},
+                    { "mData": function(row, type){if(row.s)return (row.s.name || "")+" "+(row.s.version || ""); else return "";}, "sType":"string", "sTitle": jQuery.i18n.map["logger.sdk"]},
                     { "mData": function(row, type){
 						var ret = "";
 						if(row.l.cc){

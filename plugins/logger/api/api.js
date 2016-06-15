@@ -12,7 +12,10 @@ var plugin = {},
 		device.id = params.qstring.device_id || "";
 		var location = {};
 		location.ip = params.ip_address;
-		var version = "";
+        var sdk = {};
+        sdk.version = params.qstring.sdk_version;
+        sdk.name = params.qstring.sdk_name;
+		var version = (params.qstring.metrics) ? (params.qstring.metrics._app_version || "") : "";
 		common.db.collection('app_users' + params.app_id).findOne({'_id':params.app_user_id}, function (err, result) {
 			if(err)
 				console.log(err);
@@ -35,25 +38,25 @@ var plugin = {},
 				known = true;
 				var type = "session";
 				var info = {"begin_session":params.qstring.begin_session};
-				common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info}, function () {});
+				common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
 			}
 			if (params.qstring.session_duration) {
 				known = true;
 				var type = "session";
 				var info = {"session_duration":params.qstring.session_duration};
-				common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info}, function () {});
+				common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
 			}
 			if (params.qstring.end_session) {
 				known = true;
 				var type = "session";
 				var info = {"end_session":params.qstring.end_session};
-				common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info}, function () {});
+				common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
 			}
 			if (params.qstring.metrics) {
 				known = true;
 				var type = "metrics";
 				var info = params.qstring.metrics;
-				common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info}, function () {});
+				common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
 			}
 			if (params.qstring.events) {
 				known = true;
@@ -62,12 +65,12 @@ var plugin = {},
 					for (var i=0; i < events.length; i++) {
 						var type = "event";
 						var info = events[i];
-						common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info}, function () {});
+						common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
 					}
 				else{
 					var type = "event";
 					var info = events;
-					common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info}, function () {});
+					common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
 				}
 					
 			}
@@ -75,13 +78,13 @@ var plugin = {},
 				known = true;
 				var type = "user_details";
 				var info = params.qstring.user_details;
-				common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info}, function () {});
+				common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
 			}
             if (params.qstring.crash) {
 				known = true;
 				var type = "crash";
 				var info = params.qstring.crash;
-				common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info}, function () {});
+				common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
 			}
 			if(!known){
 				var type = "unknown";
@@ -90,7 +93,7 @@ var plugin = {},
 					if(i != "app_key" && i != "device_id" && i != "ip_address" && i != "timestamp")
 						info[i] = params.qstring[i];
 				}
-				common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info}, function () {});
+				common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
 			}
 		});
 	});
