@@ -2147,7 +2147,7 @@ window.ManageAppsView = countlyView.extend({
             var url = (location.protocol || "http:")+"//countly.github.io/countly-code-generator/"; 
                 
             $.getScript( url+"js/sdks.js", function( data, textStatus, jqxhr ) {
-                var server = (location.protocol || "http:")+location.hostname;
+                var server = (location.protocol || "http:")+"//"+location.hostname;
                 if(sdks && server){
                     function initCountlyCode(appId, type){
                         var app_id = $("#app-edit-id").val();
