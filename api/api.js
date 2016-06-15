@@ -451,6 +451,11 @@ if (cluster.isMaster) {
         
                 if(!params.cancelRequest){
                     switch (apiPath) {
+                        case '/ping':
+                        {
+                            common.returnMessage(params, 200, 'pong');
+                            return false;
+                        }
                         case '/i/bulk':
                         {               
                             var requests = params.qstring.requests,
