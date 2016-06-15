@@ -259,6 +259,10 @@ var checkRequestForSession = function(req, res, next){
         next();
 };
 
+app.get(countlyConfig.path+'/ping', function(req, res, next) {
+    res.send("pong");
+});
+
 app.get(countlyConfig.path+'/session', function(req, res, next) {
 	if (req.session.uid) {
 		if(Date.now() > req.session.expires){
