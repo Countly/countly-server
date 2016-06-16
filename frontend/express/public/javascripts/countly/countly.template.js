@@ -1568,8 +1568,7 @@ window.PlatformView = countlyView.extend({
     },
     renderCommon:function (isRefresh) {
         var self = this;
-        var oSVersionData = countlyDeviceDetails.getOSVersionData(this.activePlatform),
-            platformData = countlyDeviceDetails.getPlatformData();
+        var platformData = countlyDeviceDetails.getPlatformData();
 
         this.templateData = {
             "page-title":jQuery.i18n.map["platforms.title"],
@@ -1589,22 +1588,17 @@ window.PlatformView = countlyView.extend({
             this.pageScript();
 
             countlyCommon.drawGraph(platformData.chartDP, "#dashboard-graph", "pie");
-            countlyCommon.drawGraph(oSVersionData.chartDP, "#dashboard-graph2", "pie");
 
-            var first = true;
             this.dtable = $('#dataTableOne').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": platformData.chartData,
                 "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
-					$(nRow).data("name", aData.os_);
+					$(nRow).data("name", aData.origos_);
 					$(nRow).addClass("os-rows");
-                    if (self.activePlatform) {
-                        first = false;
-                        if(self.activePlatform == aData.os_){
-                            $(nRow).addClass("active");
-                        }
+                    if (self.activePlatform && self.activePlatform == aData.origos_) {
+                        $(nRow).addClass("active");
                     }
-                    else if(first){
-                        first = false;
+                    else if(!self.activePlatform){
+                        self.activePlatform = aData.origos_;
                         $(nRow).addClass("active");
                     }
 				},
@@ -1623,6 +1617,9 @@ window.PlatformView = countlyView.extend({
 
                 self.refresh();
 			});
+            
+            var oSVersionData = countlyDeviceDetails.getOSVersionData(this.activePlatform);
+            countlyCommon.drawGraph(oSVersionData.chartDP, "#dashboard-graph2", "pie");
 
             this.dtableTwo = $('#dataTableTwo').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": oSVersionData.chartData,

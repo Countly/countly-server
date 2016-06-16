@@ -124,7 +124,8 @@ if (cluster.isMaster) {
         "searchbot":"sb",
         "sun os":"so",
         "beos":"bo",
-        "mac osx":"o"
+        "mac osx":"o",
+        "macos":"o"
     };
 
     plugins.dispatch("/worker", {common:common});

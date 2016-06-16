@@ -9,6 +9,33 @@
         _activeAppKey = 0,
         _initialized = false,
         _period = null;
+        
+    var os_mapping = {
+        "unknown":{short: "unk", name: "Unknown"},
+        "undefined":{short: "unk", name: "Unknown"},
+        "tvos":{short: "atv", name: "Apple TV"},
+        "watchos":{short: "wos", name: "Apple Watch"},
+        "unity editor":{short: "uty", name: "Unknown"},
+        "qnx":{short: "qnx", name: "QNX"},
+        "os/2":{short: "os2", name: "OS/2"},
+        "windows":{short: "mw", name: "Windows"},
+        "open bsd":{short: "ob", name: "Open BSD"},
+        "searchbot":{short: "sb", name: "SearchBot"},
+        "sun os":{short: "so", name: "Sun OS"},
+        "beos":{short: "bo", name: "BeOS"},
+        "mac osx":{short: "o", name: "Mac"},
+        "macos":{short: "o", name: "Mac"},
+        "linux":{short: "l", name: "Linux"},
+        "unix":{short: "u", name: "UNIX"},
+        "ios":{short: "i", name: "iOS"},
+        "android":{short: "a", name: "Android"},
+        "blackberry":{short: "b", name: "BlackBerry"},
+        "windows phone":{short: "w", name: "Windows Phone"},
+        "wp":{short: "w", name: "Windows Phone"},
+        "roku":{short: "r", name: "Roku"},
+        "symbian":{short: "s", name: "Symbian"},
+        "tizen":{short: "t", name: "Tizen"}
+    };
 
     //Public Methods
     countlyDeviceDetails.initialize = function () {
@@ -110,6 +137,14 @@
             {
                 name:"os_",
                 func:function (rangeArr, dataObj) {
+                    if(os_mapping[rangeArr.toLowerCase()])
+                        return os_mapping[rangeArr.toLowerCase()].name;
+                    return rangeArr;
+                }
+            },
+            {
+                name:"origos_",
+                func:function (rangeArr, dataObj) {
                     return rangeArr;
                 }
             },
@@ -117,7 +152,7 @@
             { "name":"u" },
             { "name":"n" }
         ], "platforms");
-
+        chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, "os_");
         var platformNames = _.pluck(chartData.chartData, 'os_'),
             platformTotal = _.pluck(chartData.chartData, 'u'),
             chartData2 = [];
@@ -216,7 +251,6 @@
     };
 
     countlyDeviceDetails.getOSVersionData = function (os) {
-
         var oSVersionData = countlyCommon.extractTwoLevelData(_deviceDetailsDb, _os_versions, countlyDeviceDetails.clearDeviceDetailsObject, [
             {
                 name:"os_version",
@@ -232,13 +266,20 @@
         var osSegmentation = ((os) ? os : ((_os) ? _os[0] : null)),
             platformVersionTotal = _.pluck(oSVersionData.chartData, 'u'),
             chartData2 = [];
+        var osName = osSegmentation;
+        if(os_mapping[osSegmentation.toLowerCase()])
+            osName = os_mapping[osSegmentation.toLowerCase()].short;
+        else
+            osName = osSegmentation.toLowerCase()[0];
 
         if (oSVersionData.chartData) {
             for (var i = 0; i < oSVersionData.chartData.length; i++) {
-                oSVersionData.chartData[i].os_version = countlyDeviceDetails.fixOSVersion(oSVersionData.chartData[i].os_version);
-
-                if (oSVersionData.chartData[i].os_version.indexOf(osSegmentation) == -1) {
+                console.log(osName, oSVersionData.chartData[i].os_version);
+                if (!new RegExp("^"+osName+"([0-9]+|unknown)").test(oSVersionData.chartData[i].os_version)) {
                     delete oSVersionData.chartData[i];
+                }
+                else{
+                    oSVersionData.chartData[i].os_version = countlyDeviceDetails.fixOSVersion(oSVersionData.chartData[i].os_version);
                 }
             }
         }
@@ -257,7 +298,7 @@
 
             chartData2[chartData2.length] = {data:[
                 [0, platformVersionTotal[i]]
-            ], label:platformVersionNames[i].replace(osSegmentation + " ", "")};
+            ], label:platformVersionNames[i].replace(((os_mapping[osSegmentation.toLowerCase()]) ? os_mapping[osSegmentation.toLowerCase()].name : osSegmentation) + " ", "")};
         }
 
         oSVersionData.chartDP = {};
@@ -281,30 +322,12 @@
     };
 
     countlyDeviceDetails.fixOSVersion = function(osName) {
-        return osName
-            .replace(/:/g, ".")
-            .replace(/^unk/g, "Unknown ")
-            .replace(/^uty/g, "Unity ")
-            .replace(/^qnx/g, "QNX ")
-            .replace(/^os2/g, "OS/2 ")
-            .replace(/^atv/g, "Apple TV ")
-            .replace(/^wos/g, "Apple Watch ")
-            .replace(/^mw/g, "Windows ")
-            .replace(/^ob/g, "Open BSD ")
-            .replace(/^sb/g, "SearchBot ")
-            .replace(/^so/g, "Sun OS ")
-            .replace(/^bo/g, "BeOS ")
-            .replace(/^l/g, "Linux ")
-            .replace(/^u/g, "UNIX ")
-            .replace(/^i/g, "iOS ")
-            .replace(/^a/g, "Android ")
-            .replace(/^b/g, "BlackBerry ")
-            .replace(/^w/g, "Windows Phone ")
-            .replace(/^o/g, "OS X ")
-            .replace(/^m/g, "Mac ")
-            .replace(/^r/g, "Roku ")
-            .replace(/^s/g, "Symbian ")
-            .replace(/^t/g, "Tizen ");
+        osName = osName.replace(/:/g, ".");
+        
+        for(var i in os_mapping){
+            osName = osName.replace(new RegExp("^"+os_mapping[i].short,"g"), os_mapping[i].name+" ");
+        }
+        return osName;
     };
 
     countlyDeviceDetails.getDbObj = function() {
