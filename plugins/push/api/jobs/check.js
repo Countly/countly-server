@@ -55,6 +55,25 @@ class CheckJob extends job.TransientJob {
 		return Promise.resolve();
 	}
 
+	/**
+	 * Check job needs to close all previous resources with the same name to run.
+	 */
+	prepare (manager) {
+		return new Promise((resolve) => {
+			super.prepare(manager).then(() => {
+				let pool = manager.resources[job.resourceName()];
+				if (pool) {
+					pool.close().then(() => {
+						delete manager.resources[job.resourceName()];
+						resolve();
+					});
+				} else {
+					resolve();
+				}
+			});
+		});
+	}
+
 	run (db, done, progress) {
 		try{
 		log.d('[%d] going to run job %j: %j', process.pid, this._idIpc, this.data, typeof this.data.mid, this.data.mid);
@@ -109,11 +128,13 @@ class CheckJob extends job.TransientJob {
 					log.d('[%d]: Send promise returned success in %s', process.pid, this._idIpc);
 					if (!this.completed) {
 						done();
+						this.resource.close();
 					}
 				}, (err) => {
 					log.d('[%d]: Send promise returned error %j in %s', process.pid, err, this._idIpc);
 					if (!this.completed) {
 						done(err || 'Unknown APN error');
+						this.resource.close();
 					}
 				});
 			}

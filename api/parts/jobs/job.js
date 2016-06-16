@@ -475,6 +475,12 @@ class Job extends EventEmitter {
 	}
 
 	/**
+	 * Override if job needs a manager instance to run
+	 */
+	prepare (/*manager*/) {
+	}
+
+	/**
 	 * Override if 0 doesn't work for this job:
 	 *  0 = default = run jobs of this type on any number of servers, with any number of jobs running at the same time
 	 *  1 ... N = run not more than N jobs of this time at the same time

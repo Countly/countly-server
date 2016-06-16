@@ -329,6 +329,10 @@ class ResourcePool {
 
 		throw new Error('ResourcePool should be checked with canRun() before calling getResource()');
 	}
+
+	close () {
+		return Promise.all(this.pool.map(r => r.close()));
+	}
 }
 
 /**
