@@ -331,7 +331,9 @@ class ResourcePool {
 	}
 
 	close () {
-		return Promise.all(this.pool.map(r => r.close()));
+		return Promise.all(this.pool.map(r => r.close())).catch((error) => {
+			log.w('Error while closing pooled resources', error);
+		});
 	}
 }
 
