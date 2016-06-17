@@ -91,7 +91,7 @@ if [ ! -f $DIR/../plugins/plugins.json ]; then
 fi
 
 #install nghttp2
-# bash $DIR/scripts/install.nghttp2.sh
+bash $DIR/scripts/install.nghttp2.sh
 
 #install plugins
 bash $DIR/scripts/countly.install.plugins.sh
