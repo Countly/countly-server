@@ -130,7 +130,7 @@ var Message = function (opts) {
         delayWhileIdle: opts.content.delayWhileIdle || undefined,           // delay_while_idle for Android
         data: opts.content.data || undefined ,                              // Custom data
 
-        sound: typeof opts.content.badge === 'undefined' ? undefined : opts.content.sound,
+        sound: typeof opts.content.sound === 'undefined' ? undefined : opts.content.sound,
         badge: typeof opts.content.badge === 'undefined' ? undefined : opts.content.badge,
     };
 
