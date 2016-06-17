@@ -124,7 +124,8 @@ if (cluster.isMaster) {
         "searchbot":"sb",
         "sun os":"so",
         "beos":"bo",
-        "mac osx":"o"
+        "mac osx":"o",
+        "macos":"o"
     };
 
     plugins.dispatch("/worker", {common:common});
@@ -682,6 +683,16 @@ if (cluster.isMaster) {
                             }
             
                             break;
+                        }
+                        case '/o/ping':
+                        {
+                            common.db.collection("plugins").findOne({_id:"plugins"}, function(err, result){
+                                if(err)
+                                    common.returnMessage(params, 404, 'DB Error');
+                                else
+                                    common.returnMessage(params, 200, 'Success');
+                            });
+                            return false;
                         }
                         case '/o':
                         {

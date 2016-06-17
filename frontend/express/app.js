@@ -259,6 +259,15 @@ var checkRequestForSession = function(req, res, next){
         next();
 };
 
+app.get(countlyConfig.path+'/ping', function(req, res, next) {
+    countlyDb.collection("plugins").findOne({_id:"plugins"}, function(err, result){
+        if(err)
+            res.status(404).send("DB Error");
+        else
+            res.send("Success");
+    });
+});
+
 app.get(countlyConfig.path+'/session', function(req, res, next) {
 	if (req.session.uid) {
 		if(Date.now() > req.session.expires){

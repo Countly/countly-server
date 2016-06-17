@@ -16,7 +16,7 @@ window.EnterpriseView = countlyView.extend({
             "revenue":jQuery.i18n.map["enterpriseinfo.revenue-pitch"],
             "user-profiles":jQuery.i18n.map["enterpriseinfo.user-profiles-pitch"],
             "attribution":jQuery.i18n.map["enterpriseinfo.attribution-pitch"],
-            "flows":jQuery.i18n.map["enterpriseinfo.flows-pitch"],
+            //"flows":jQuery.i18n.map["enterpriseinfo.flows-pitch"],
             "scalability": jQuery.i18n.map["enterpriseinfo.scalability-pitch"],
             "support":jQuery.i18n.map["enterpriseinfo.support-pitch"],
             "raw-data":jQuery.i18n.map["enterpriseinfo.raw-data-pitch"]
