@@ -260,7 +260,12 @@ var checkRequestForSession = function(req, res, next){
 };
 
 app.get(countlyConfig.path+'/ping', function(req, res, next) {
-    res.send("pong");
+    countlyDb.collection("plugins").findOne({_id:"plugins"}, function(err, result){
+        if(err)
+            res.status(404).send("DB Error");
+        else
+            res.send("Success");
+    });
 });
 
 app.get(countlyConfig.path+'/session', function(req, res, next) {

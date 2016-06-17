@@ -452,11 +452,6 @@ if (cluster.isMaster) {
         
                 if(!params.cancelRequest){
                     switch (apiPath) {
-                        case '/ping':
-                        {
-                            common.returnMessage(params, 200, 'pong');
-                            return false;
-                        }
                         case '/i/bulk':
                         {               
                             var requests = params.qstring.requests,
@@ -688,6 +683,16 @@ if (cluster.isMaster) {
                             }
             
                             break;
+                        }
+                        case '/o/ping':
+                        {
+                            common.db.collection("plugins").findOne({_id:"plugins"}, function(err, result){
+                                if(err)
+                                    common.returnMessage(params, 404, 'DB Error');
+                                else
+                                    common.returnMessage(params, 200, 'Success');
+                            });
+                            return false;
                         }
                         case '/o':
                         {
