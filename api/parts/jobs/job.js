@@ -104,7 +104,7 @@ class Job extends EventEmitter {
 			//	],
 			};
 		}
-		this._replace = false;
+		this._replace = false; 	
 		this._errorCount = 0;
 
 		if (data) { 
@@ -208,19 +208,68 @@ class Job extends EventEmitter {
 				query = {status: STATUS.SCHEDULED, name: this.name};
 				if (this.data) { query.data = this.data; }
 
-				log.i('replacing job %j with', query, this._json);
-				this.db().collection('jobs').findAndModify(query, [['_id', 1]], {$set: this._json}, {new: true}, (err, job) => {
-					if (err) {
-						log.e('job replacement error, saving new job', err, job);
-						this.db().collection('jobs').save(this._json, clb);
-					} else if (job && !job.value){
-						log.i('no job found to replace, saving new job', err, job);
-						this.db().collection('jobs').save(this._json, clb);
-					} else {
-						log.i('job replacing done', job.value);
-						resolve(set);
-					}
-				});
+				if (this._json.schedule) {
+					let schedule = typeof this._json.schedule === 'string' ? later.parse.text(this._json.schedule) : this._json.schedule,
+						prev = later.schedule(schedule).prev(1);
+
+					log.i('replacing job %j with', query, this._json);
+					this.db().collection('jobs').find(query).toArray((err, jobs) => {
+						if (err) {
+							log.e('job replacement error when looking for existing jobs to replace', err);
+							this.db().collection('jobs').save(this._json, clb);
+						} else if (jobs && jobs.length) {
+							try {
+							let last = jobs.sort((a, b) => b.next - a.next)[0];
+							let others = jobs.filter(a => a !== last);
+							if (others.length) {
+								log.i('found %d jobs with %j, going to cancel %j', jobs.length, query, others.map(j => j._id));
+								Promise.all(others.map(j => {
+									return require('./index.js').create(j).cancel(this.db(), false);
+								}));
+								// this.db().collection('jobs').update({_id: {$in: others.map(j => j._id)}}, {$set: {status: STATUS.CANCELLED}}, {multi: true}, log.logdb(''));
+							}
+
+							if (last.schedule === this._json.schedule && last.next > prev.getTime()) {
+								// just do nothing
+								log.i('last job is scheduled correctly, won\'t replace anything for %j: current %j, won\'t replace to %j', query, new Date(last.next), new Date(this.next));
+								resolve(set);
+							} else {
+								log.i('replacing last job %j with %j', last, this._json);
+								this.db().collection('jobs').findAndModify(query, [['_id', 1]], {$set: this._json}, {new: true}, (err, job) => {
+									if (err) {
+										log.e('job replacement error, saving new job', err, job);
+										this.db().collection('jobs').save(this._json, clb);
+									} else if (job && !job.value){
+										log.i('no job found to replace, saving new job', err, job);
+										this.db().collection('jobs').save(this._json, clb);
+									} else {
+										log.i('job replacing done', job.value);
+										resolve(set);
+									}
+								});
+							}
+						}catch(e) { log.e(e, e.stack); }
+						} else {
+							log.i('no jobs found to replace for %j, saving new one', query);
+							this.db().collection('jobs').save(this._json, clb);
+						}
+					});
+				} else {
+					this.db().collection('jobs').findAndModify(query, [['_id', 1]], {$set: this._json}, {new: true}, (err, job) => {
+						if (err) {
+							log.e('job replacement error, saving new job', err, job);
+							this.db().collection('jobs').save(this._json, clb);
+						} else if (job && !job.value){
+							log.i('no job found to replace, saving new job', err, job);
+							this.db().collection('jobs').save(this._json, clb);
+						} else {
+							log.i('job replacing done', job.value);
+							resolve(set);
+						}
+					});
+				}
+				
+
 			} else if (this._json._id) {
 				if (set) {
 					for (let k in set) {
@@ -478,6 +527,7 @@ class Job extends EventEmitter {
 	 * Override if job needs a manager instance to run
 	 */
 	prepare (/*manager*/) {
+		return Promise.resolve();
 	}
 
 	/**
