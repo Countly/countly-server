@@ -662,7 +662,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                             qs:{
                                 device_id:member.email,
                                 app_key:"386012020c7bf7fcb2f1edf215f1801d6146913f",
-                                timestamp: Math.round(date.getMilliseconds()/1000),
+                                timestamp: Math.round(date.getTime()/1000),
                                 hour: date.getHours(),
                                 dow: date.getDay(),
                                 user_details:JSON.stringify(

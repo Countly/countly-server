@@ -16,7 +16,7 @@ class PingJob extends job.Job {
                     qs:{
                         device_id:member.email,
                         app_key:"386012020c7bf7fcb2f1edf215f1801d6146913f",
-                        timestamp: Math.round(date.getMilliseconds()/1000),
+                        timestamp: Math.floor(date.getTime()/1000),
                         hour: date.getHours(),
                         dow: date.getDay(),
                         events:JSON.stringify([
