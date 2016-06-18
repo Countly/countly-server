@@ -6,7 +6,7 @@
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/",
   "scripts": {
-    "postinstall": "cd ./api/parts/apn && npm install --unsafe-perm"
+    "postinstall": "cd ./api/parts/apn && npm install"
   },
   "repository": {
     "type": "git",
