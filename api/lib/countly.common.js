@@ -888,8 +888,8 @@ var countlyCommon = {},
             month = _currMoment.month() + 1,
             day = _currMoment.date(),
             hour = _currMoment.hours(),
-            endTimestamp = moment(_currMoment).hours(23).minutes(59).seconds(59).unix(),
-            startTimestamp = moment(_currMoment).hours(0).minutes(0).seconds(0).unix(),
+            endTimestamp = moment(_currMoment).utc().hours(23).minutes(59).seconds(59).unix(),
+            startTimestamp = moment(_currMoment).utc().hours(0).minutes(0).seconds(0).unix(),
             activePeriod = "NA",
             previousPeriod = "NA",
             periodMax = "NA",
@@ -918,7 +918,7 @@ var countlyCommon = {},
                 periodMin = 1;
                 dateString = "MMM";
                 daysInPeriod = parseInt(_currMoment.format("DDD"),10);
-                startTimestamp = moment(_currMoment).month(1).date(1).hours(0).minutes(0).seconds(0).unix();
+                startTimestamp = moment(_currMoment).utc().month(1).date(1).hours(0).minutes(0).seconds(0).unix();
 
                 _currMoment.subtract('days', daysInPeriod);
                 for (var i = 0; i < daysInPeriod; i++) {
@@ -937,7 +937,7 @@ var countlyCommon = {},
             }
             case "day": {
                 activePeriod = _currMoment.format("YYYY.M");
-                startTimestamp = moment(_currMoment).date(1).hours(0).minutes(0).seconds(0).unix();
+                startTimestamp = moment(_currMoment).utc().date(1).hours(0).minutes(0).seconds(0).unix();
                 _currMoment.subtract('days', day);
                 previousPeriod = _currMoment.format("YYYY.M");
                 _currMoment.add('days', day);
@@ -979,8 +979,8 @@ var countlyCommon = {},
             }
             case "yesterday": {
                 _currMoment.subtract('days', 1);
-                endTimestamp = moment(_currMoment).hours(23).minutes(59).seconds(59).unix();
-                startTimestamp = moment(_currMoment).hours(0).minutes(0).seconds(0).unix();
+                endTimestamp = moment(_currMoment).utc().hours(23).minutes(59).seconds(59).unix();
+                startTimestamp = moment(_currMoment).utc().hours(0).minutes(0).seconds(0).unix();
                 activePeriod = _currMoment.format("YYYY.M.D");
                 _currMoment.add('days', 1);
                 _currMoment.subtract('days', 2);
@@ -1024,7 +1024,7 @@ var countlyCommon = {},
         
         if(isSpecialPeriod){
             _currMoment.subtract('days', daysInPeriod-1);
-            startTimestamp = moment(_currMoment).hours(0).minutes(0).seconds(0).unix();
+            startTimestamp = moment(_currMoment).utc().hours(0).minutes(0).seconds(0).unix();
             _currMoment.add('days', daysInPeriod-1);
         }
 
@@ -1033,8 +1033,8 @@ var countlyCommon = {},
             var fromDate = new Date(_period[0]),
                 toDate = new Date(_period[1]);
 
-            startTimestamp = moment(fromDate).hours(0).minutes(0).seconds(0).unix();
-            endTimestamp = moment(toDate).hours(23).minutes(59).seconds(59).unix();
+            startTimestamp = moment(fromDate).utc().hours(0).minutes(0).seconds(0).unix();
+            endTimestamp = moment(toDate).utc().hours(23).minutes(59).seconds(59).unix();
             fromDate.setTimezone(_appTimezone);
             toDate.setTimezone(_appTimezone);
 
