@@ -473,7 +473,7 @@ var pluginManager = function pluginManager(){
         var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
         if (eplugin && eplugin.prepackaged) return callback(errors);
         var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-        var child = exec('npm install', {cwd: cwd}, function(error) {
+        var child = exec('npm install --unsafe-perm', {cwd: cwd}, function(error) {
             if (error){
                 errors = true;
                 console.log('error: %j', error);
