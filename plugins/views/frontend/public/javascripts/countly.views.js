@@ -86,7 +86,7 @@ window.ViewsView = countlyView.extend({
             }));
 
             $(".d-table").stickyTableHeaders();
-            $(".dataTable-bottom").append("<div clas='dataTables_info' style='float: right; margin-top:2px; margin-right: 10px;'>"+jQuery.i18n.map["views.maximum-items"]+" ("+countlyCommon.GRAPH_COLORS.length+")</div>")
+            $(".dataTable-bottom").append("<div class='dataTables_info' style='float: right;'>"+jQuery.i18n.map["views.maximum-items"]+" ("+countlyCommon.GRAPH_COLORS.length+")</div>")
             
             $('.views-table tbody').on("click", "tr", function (event){
                 var row = $(this);

@@ -351,7 +351,6 @@
 
     <script id="template-date-selector" type="text/x-handlebars-template">
 		<div id="date-selector" class="help-zone-vs">
-			<div class="calendar" id="date-picker-button"></div>
 			<div id="date-picker">
 				<div class="tip"></div>
 				<div class="calendar-container">
@@ -362,14 +361,19 @@
 					<div id="date-submit" style="float:right;" class="cly-button-dark" data-localize="common.apply"></div>
 				</div>
 			</div>
-			<div class="button date-selector" id="month"></div>
-			<div class="button date-selector" id="day"></div>
-            <div class="button date-selector" id="yesterday"></div>
-			<div class="button date-selector" id="hour" data-localize="common.today"></div>
-			<div class="button date-selector" id="7days" data-localize="common.7days"></div>
-			<div class="button date-selector" id="30days" data-localize="common.30days"></div>
-			<div class="button date-selector" id="60days" data-localize="common.60days"></div>
-			<!--<div class="button date-selector" id="90days" data-localize="common.90days"></div>-->
+            <div class="date-buttons-container">
+                <div class="button date-selector" id="month"></div>
+                <div class="button date-selector" id="day"></div>
+                <div class="button date-selector" id="yesterday"></div>
+                <div class="button date-selector" id="hour" data-localize="common.today"></div>
+                <div class="button date-selector" id="7days" data-localize="common.7days"></div>
+                <div class="button date-selector" id="30days" data-localize="common.30days"></div>
+                <div class="button date-selector" id="60days" data-localize="common.60days"></div>
+                <!--<div class="button date-selector" id="90days" data-localize="common.90days"></div>-->
+            </div>
+            <div class="calendar" id="date-picker-button">
+                <i class="material-icons">date_range</i>
+            </div>
 		</div>
 	</script>
 
@@ -400,18 +404,11 @@
 		<div class="widget">
 			<div class="widget-header">
 				<div class="left">
-                    {{#if logo-class}}
-					<div class="logo {{logo-class}}"></div>
-                    {{else}}
-                        <div class="logo font-logo2">
-                            <i class="fa {{font-logo-class}}"></i>
-                        </div>
-                    {{/if}}
 					<div class="title">{{page-title}}</div>     
 				</div>
 				{{> date-selector }}
 			</div>
-			<div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
+			<div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} {{#if chartHTML}}  {{else}} height:300px; padding-top:35px; padding-bottom:10px; {{/if}}{{/if}}">
 				{{#if graph-type-double-pie}}
 				<div class="pie-chart-container">
 					<div style="border-right:1px solid #CCC; width: 100%; height: 100%">
@@ -428,20 +425,30 @@
 					<div id="dashboard-graph2" class="graph" style="margin:0 auto; height:360px; font-family:'Ubuntu';"></div>
 				</div>
 				{{else}}
-                <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
+                    {{#if chartHTML}}
+                    {{{chartHTML}}}
+                    {{else}}
+                    <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
+                    {{/if}}
 				{{/if}}
 			</div>
 			{{#if big-numbers}}
-			<div class="widget-footer" style="background-color:#EEEEEE;">
+			<div class="widget-footer big-numbers-v2">
 				<div id="big-numbers-container">
 					{{#each big-numbers.items}}
 					<div class="big-numbers {{#if ../../big-numbers.class}}{{../../big-numbers.class}}{{else}}three-column{{/if}} help-zone-vs" data-help-localize="help.{{this.help}}">
 						<div class="inner">
+                            <div class="color"></div>
 							<div class="select">{{this.title}}</div>
-							<div class="color"></div>
 							<div class="number">{{getFormattedNumber this.total}}</div>
-							<div class="trend" style="background-image:url('<%- cdn %>images/dashboard/{{this.trend}}trend.png');"></div>
-						</div>
+                            <div class="trend {{this.trend}}">
+                                {{#ifCond this.trend "==" "u"}}
+                                <i class="material-icons">trending_up</i>
+                                {{else}}
+                                <i class="material-icons">trending_down</i>
+                                {{/ifCond}}
+                            </div>
+                        </div>
 					</div>
 					{{/each}}
 				</div>
@@ -517,31 +524,32 @@
 		<div class="widget">
 			<div class="widget-header">
 				<div class="left">
-					<div class="logo {{logo-class}}"></div>
 					<div class="title">{{page-title}}</div>
 				</div>
 				{{> date-selector }}
                 <div class="right">
-                    <a id='country-toggle' class='icon-button light' style='margin-top:5px;'></a>
+                    <a id='country-toggle' class='icon-button light btn-header'></a>
                 </div>
 			</div>
-			<div class="widget-content geo-switch help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="height:495px; background-color:#FFF;">
-                <div class="cly-button-group over">
-                    <div id="map-list-sessions" style="padding: 6px 8px 7px 8px;" class="icon-button light active" data-localize="sidebar.analytics.sessions"></div>
-                    <div id="map-list-users" style="padding: 6px 8px 7px 8px;" class="icon-button light" data-localize="sidebar.analytics.users"></div>
-                    <div id="map-list-new" style="padding: 6px 8px 7px 8px;" class="icon-button light" data-localize="common.table.new-users"></div>
-                </div>
-				<div id="geo-chart-outer"><div><div id="geo-chart"></div></div></div>
+			<div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="height:480px;">
+				<div id="geo-chart-outer" class="big"><div><div id="geo-chart"></div></div></div>
 			</div>
-			<div class="widget-footer" style="background-color:#EEEEEE;">
+			<div class="widget-footer big-numbers-v2 geo-switch">
                 {{#if big-numbers}}
 				<div id="big-numbers-container">
 					{{#each big-numbers.items}}
 					<div class="big-numbers {{#if ../../big-numbers.class}}{{../../big-numbers.class}}{{else}}three-column{{/if}} help-zone-vs" data-help-localize="help.{{this.help}}">
 						<div class="inner">
+                            <div class="color radio {{this.radio-button-class}}" data-id="{{this.radio-button-id}}"></div>
 							<div class="select">{{this.title}}</div>
-							<div class="number" style="margin-top: 10px;">{{getFormattedNumber this.total}}</div>
-							<div class="trend" style="background-image:url('<%- cdn %>images/dashboard/{{this.trend}}trend.png');"></div>
+							<div class="number">{{getFormattedNumber this.total}}</div>
+                            <div class="trend {{this.trend}}">
+                                {{#ifCond this.trend "==" "u"}}
+                                <i class="material-icons">trending_up</i>
+                                {{else}}
+                                <i class="material-icons">trending_down</i>
+                                {{/ifCond}}
+                            </div>
 						</div>
 					</div>
 					{{/each}}
@@ -981,16 +989,21 @@
 				{{/if}}
 			</div>
 			{{#if big-numbers}}
-			<div class="widget-footer event-numbers" style="background-color:#EEEEEE;">
+			<div class="widget-footer event-numbers big-numbers-v2">
 				<div id="big-numbers-container" class="{{big-numbers.class}} event-numbers">
 					{{#each big-numbers.items}}
 					<div class="big-numbers selected {{this.class}}" data-type="{{this.class}}">
 						<div class="inner">
+                            <div class="color"></div>
 							<div class="select">{{this.title}}</div>
-							<div class="color"></div>
 							<div class="number">{{getFormattedNumber this.total}}</div>
-							<div class="trend" style="background-image:url('<%- cdn %>images/dashboard/{{this.trend}}trend.png');"></div>
-							<div class="check fa fa-square-o"></div>
+                            <div class="trend {{this.trend}}">
+                                {{#ifCond this.trend "==" "u"}}
+                                <i class="material-icons">trending_up</i>
+                                {{else}}
+                                <i class="material-icons">trending_down</i>
+                                {{/ifCond}}
+                            </div>
 						</div>
 					</div>
 					{{/each}}
@@ -1105,14 +1118,20 @@
 			</div>
 			{{/each}}
 		</div>
-		<div class="widget map-list geo-switch help-zone-vb" data-help-localize="help.dashboard.map" style="float:right; width:100%;">
-            <div class="cly-button-group over">
-                <div id="map-list-sessions" style="padding: 6px 8px 7px 8px;" class="icon-button light active" data-localize="sidebar.analytics.sessions"></div>
-                <div id="map-list-users" style="padding: 6px 8px 7px 8px;" class="icon-button light" data-localize="sidebar.analytics.users"></div>
-                <div id="map-list-new" style="padding: 6px 8px 7px 8px;" class="icon-button light" data-localize="common.table.new-users"></div>
+		<div class="widget map-list geo-switch help-zone-vb" data-help-localize="help.dashboard.map">
+            <div class="data-type-selector-group">
+                <div id="map-list-sessions" class="selector active">
+                    <div class="text" data-localize="sidebar.analytics.sessions"></div>
+                </div>
+                <div id="map-list-users" class="selector">
+                    <div class="text" data-localize="sidebar.analytics.users"></div>
+                </div>
+                <div id="map-list-new" class="selector">
+                    <div class="text" data-localize="common.table.new-users"></div>
+                </div>
             </div>
-			<div id="map-list-right" style="max-height:236px; overflow:hidden;"></div>
-			<div id="geo-chart-outer" style="padding-bottom: 8px;"><div><div id="geo-chart"></div></div></div>
+			<div id="geo-chart-outer"><div id="geo-chart"></div></div>
+            <div id="map-list-right"></div>
 		</div>
 	</script>
     <% if (use_google) { %>

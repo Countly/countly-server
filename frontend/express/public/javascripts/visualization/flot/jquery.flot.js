@@ -31,6 +31,48 @@ Licensed under the MIT license.
  */
 (function($){$.color={};$.color.make=function(r,g,b,a){var o={};o.r=r||0;o.g=g||0;o.b=b||0;o.a=a!=null?a:1;o.add=function(c,d){for(var i=0;i<c.length;++i)o[c.charAt(i)]+=d;return o.normalize()};o.scale=function(c,f){for(var i=0;i<c.length;++i)o[c.charAt(i)]*=f;return o.normalize()};o.toString=function(){if(o.a>=1){return"rgb("+[o.r,o.g,o.b].join(",")+")"}else{return"rgba("+[o.r,o.g,o.b,o.a].join(",")+")"}};o.normalize=function(){function clamp(min,value,max){return value<min?min:value>max?max:value}o.r=clamp(0,parseInt(o.r),255);o.g=clamp(0,parseInt(o.g),255);o.b=clamp(0,parseInt(o.b),255);o.a=clamp(0,o.a,1);return o};o.clone=function(){return $.color.make(o.r,o.b,o.g,o.a)};return o.normalize()};$.color.extract=function(elem,css){var c;do{c=elem.css(css).toLowerCase();if(c!=""&&c!="transparent")break;elem=elem.parent()}while(elem.length&&!$.nodeName(elem.get(0),"body"));if(c=="rgba(0, 0, 0, 0)")c="transparent";return $.color.parse(c)};$.color.parse=function(str){var res,m=$.color.make;if(res=/rgb\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*\)/.exec(str))return m(parseInt(res[1],10),parseInt(res[2],10),parseInt(res[3],10));if(res=/rgba\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]+(?:\.[0-9]+)?)\s*\)/.exec(str))return m(parseInt(res[1],10),parseInt(res[2],10),parseInt(res[3],10),parseFloat(res[4]));if(res=/rgb\(\s*([0-9]+(?:\.[0-9]+)?)\%\s*,\s*([0-9]+(?:\.[0-9]+)?)\%\s*,\s*([0-9]+(?:\.[0-9]+)?)\%\s*\)/.exec(str))return m(parseFloat(res[1])*2.55,parseFloat(res[2])*2.55,parseFloat(res[3])*2.55);if(res=/rgba\(\s*([0-9]+(?:\.[0-9]+)?)\%\s*,\s*([0-9]+(?:\.[0-9]+)?)\%\s*,\s*([0-9]+(?:\.[0-9]+)?)\%\s*,\s*([0-9]+(?:\.[0-9]+)?)\s*\)/.exec(str))return m(parseFloat(res[1])*2.55,parseFloat(res[2])*2.55,parseFloat(res[3])*2.55,parseFloat(res[4]));if(res=/#([a-fA-F0-9]{2})([a-fA-F0-9]{2})([a-fA-F0-9]{2})/.exec(str))return m(parseInt(res[1],16),parseInt(res[2],16),parseInt(res[3],16));if(res=/#([a-fA-F0-9])([a-fA-F0-9])([a-fA-F0-9])/.exec(str))return m(parseInt(res[1]+res[1],16),parseInt(res[2]+res[2],16),parseInt(res[3]+res[3],16));var name=$.trim(str).toLowerCase();if(name=="transparent")return m(255,255,255,0);else{res=lookupColors[name]||[0,0,0];return m(res[0],res[1],res[2])}};var lookupColors={aqua:[0,255,255],azure:[240,255,255],beige:[245,245,220],black:[0,0,0],blue:[0,0,255],brown:[165,42,42],cyan:[0,255,255],darkblue:[0,0,139],darkcyan:[0,139,139],darkgrey:[169,169,169],darkgreen:[0,100,0],darkkhaki:[189,183,107],darkmagenta:[139,0,139],darkolivegreen:[85,107,47],darkorange:[255,140,0],darkorchid:[153,50,204],darkred:[139,0,0],darksalmon:[233,150,122],darkviolet:[148,0,211],fuchsia:[255,0,255],gold:[255,215,0],green:[0,128,0],indigo:[75,0,130],khaki:[240,230,140],lightblue:[173,216,230],lightcyan:[224,255,255],lightgreen:[144,238,144],lightgrey:[211,211,211],lightpink:[255,182,193],lightyellow:[255,255,224],lime:[0,255,0],magenta:[255,0,255],maroon:[128,0,0],navy:[0,0,128],olive:[128,128,0],orange:[255,165,0],pink:[255,192,203],purple:[128,0,128],violet:[128,0,128],red:[255,0,0],silver:[192,192,192],white:[255,255,255],yellow:[255,255,0]}})(jQuery);
 
+CanvasRenderingContext2D.prototype.dashedLineTo = function(fromX, fromY, toX, toY, pattern) {
+    // Our growth rate for our line can be one of the following:
+    //   (+,+), (+,-), (-,+), (-,-)
+    // Because of this, our algorithm needs to understand if the x-coord and
+    // y-coord should be getting smaller or larger and properly cap the values
+    // based on (x,y).
+    var lt = function (a, b) { return a <= b; };
+    var gt = function (a, b) { return a >= b; };
+    var capmin = function (a, b) { return Math.min(a, b); };
+    var capmax = function (a, b) { return Math.max(a, b); };
+
+    var checkX = { thereYet: gt, cap: capmin };
+    var checkY = { thereYet: gt, cap: capmin };
+
+    if (fromY - toY > 0) {
+        checkY.thereYet = lt;
+        checkY.cap = capmax;
+    }
+    if (fromX - toX > 0) {
+        checkX.thereYet = lt;
+        checkX.cap = capmax;
+    }
+
+    this.moveTo(fromX, fromY);
+    var offsetX = fromX;
+    var offsetY = fromY;
+    var idx = 0, dash = true;
+    while (!(checkX.thereYet(offsetX, toX) && checkY.thereYet(offsetY, toY))) {
+        var ang = Math.atan2(toY - fromY, toX - fromX);
+        var len = pattern[idx];
+
+        offsetX = checkX.cap(toX, offsetX + (Math.cos(ang) * len));
+        offsetY = checkY.cap(toY, offsetY + (Math.sin(ang) * len));
+
+        if (dash) this.lineTo(offsetX, offsetY);
+        else this.moveTo(offsetX, offsetY);
+
+        idx = (idx + 1) % pattern.length;
+        dash = !dash;
+    }
+};
+
 // the actual Flot code
 (function($) {
 
@@ -2115,8 +2157,17 @@ Licensed under the MIT license.
                             y = Math.floor(y) + 0.5;
                     }
 
-                    ctx.moveTo(x, y);
-                    ctx.lineTo(x + xoff, y + yoff);
+                    // onur, add dashedLine to all grid lines except first one
+                    if (i == 0) {
+                        ctx.moveTo(x, y);
+                        ctx.lineTo(x + xoff, y + yoff);
+                    } else {
+                        ctx.dashedLineTo(x, y, x + xoff, y + yoff, [5,5]);
+                    }
+
+                    // onur, comment out since above logic is used
+                    //ctx.moveTo(x, y);
+                    //ctx.lineTo(x + xoff, y + yoff);
                 }
 
                 ctx.stroke();
@@ -2216,12 +2267,17 @@ Licensed under the MIT license.
                             valign = "bottom";
                         }
                     } else {
+                        // onur, add skip 0
+                        if (tick.v == 0) {
+                            continue;
+                        }
+
                         //onur, change overall y axis calculations
 
                         valign = "top";
-                        y = plotOffset.top + axis.p2c(tick.v);
+                        y = plotOffset.top + axis.p2c(tick.v) + 10;
 
-                        halign = "left";
+                        halign = "right";
 
                         if (box.width > 20) {
                             x = Math.ceil(box.width / 2) + 4;
@@ -2231,10 +2287,12 @@ Licensed under the MIT license.
                             x = box.width;
                         }
 
+                        x -= 15;
+
                         // onur, draw the same y axis ticks to left first
                         surface.addText(layer, x, y, tick.label, font, null, null, halign, valign);
 
-                        halign = "right";
+                        halign = "left";
 
                         if (box.width > 20) {
                             x = box.left + Math.ceil(box.width / 3);
@@ -2243,6 +2301,8 @@ Licensed under the MIT license.
                         } else {
                             x = box.left;
                         }
+
+                        x += 15;
                     }
 
                     surface.addText(layer, x, y, tick.label, font, null, null, halign, valign);

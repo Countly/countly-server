@@ -59,8 +59,8 @@ window.MobileDashboardView = countlyView.extend({
         
         if(countlyGlobal["config"].use_google){
             this.countryList();
-            $(".map-list .cly-button-group .icon-button").click(function(){
-                $(".map-list .cly-button-group .icon-button").removeClass("active");
+            $(".map-list").find(".data-type-selector-group .selector").click(function(){
+                $(".map-list").find(".data-type-selector-group .selector").removeClass("active");
                 $(this).addClass("active");
                 self.curMap = $(this).attr("id");
                 countlyLocation.refreshGeoChart(self.maps[self.curMap]);

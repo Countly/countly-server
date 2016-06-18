@@ -5,7 +5,7 @@
 
 .views-widget .widget-content .big-numbers .inner{height: 30px;}
 .views-widget .widget-footer{border-radius: 0;}
-.views-widget #empty-graph {position: absolute; text-align: center; font-size: 35px; width:100%; top:50%; margin-top: -20px; display: none;}
+.views-widget #empty-graph { position: absolute; text-align: center; font-size: 15px; width:100%; top:50%; margin-top: -20px; display: none; height: 20px; line-height: 20px; text-shadow: none; color: #B3B3B3; }
 .views-widget div.color{ width: 10px; height: 20px; float: right;}
 
 .seven-column { width:14%; }
@@ -21,5 +21,5 @@
 #action-map-tools .cly-button-dark{float:none;}
 #action-map-type {margin-right: 30px;}
 #view_loaded_url {width:80%; height: 20px;}
-.views-table div.color{ width: 10px; height: 20px; float: left; margin-right: 5px; margin-left:-5px;}
+.views-table div.color{ width: 10px; height: 10px; float: left; margin: 1px 10px 0 0; }
 .btn-view-map {display: block;}

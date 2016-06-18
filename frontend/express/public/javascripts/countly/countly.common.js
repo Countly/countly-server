@@ -214,14 +214,14 @@
 
             var graphProperties = {
                     series:{
-                        lines:{ stack:false, show:true, fill:true, lineWidth:2, fillColor:{ colors:[
+                        lines:{ stack:false, show:true, fill:true, lineWidth:2.5, fillColor:{ colors:[
                             { opacity:0 },
-                            { opacity:0.15 }
+                            { opacity:0 }
                         ] }, shadowSize:0 },
-                        points:{ show:true, radius:4, shadowSize:0 },
+                        points:{ show:true, radius:3.5, shadowSize:0, lineWidth:2 },
                         shadowSize:0
                     },
-                    grid:{ hoverable:true, borderColor:"null", color:"#BDBDBD", borderWidth:0, minBorderMargin:10, labelMargin:10},
+                    grid:{ hoverable:true, borderColor:"null", color:"#666", borderWidth:0, minBorderMargin:10, labelMargin:10},
                     xaxis:{ tickDecimals:"number", tickSize:0, tickLength:0 },
                     yaxis:{ min:0, minTickSize:1, tickDecimals:"number", ticks:3, position:"right" },
                     legend:{ show:false, margin:[-25, -44], noColumns:3, backgroundOpacity:0 },
@@ -455,6 +455,108 @@
         gauge.maxValue = maxValue;
         gauge.set(1);
         gauge.set(value);
+    };
+
+    countlyCommon.drawHorizontalStackedBars = function(data, intoElement, colorIndex) {
+        var processedData = [],
+            tmpProcessedData = [],
+            totalCount = 0,
+            maxToDisplay = 10;
+
+        for (var i = 0; i < data.length; i++) {
+            tmpProcessedData.push({
+                label: data[i].label,
+                count: data[i].data[0][1],
+                index: i
+            });
+
+            totalCount += data[i].data[0][1];
+        }
+
+        var totalPerc = 0,
+            proCount = 0;
+
+        for (var i = 0; i < tmpProcessedData.length; i++) {
+            if (i >= maxToDisplay) {
+                processedData.push({
+                    label: "Other",
+                    count: totalCount - proCount,
+                    perc:  countlyCommon.round((100 - totalPerc), 2) + "%",
+                    index: i
+                });
+
+                break;
+            }
+
+            var perc = countlyCommon.round((tmpProcessedData[i].count / totalCount) * 100, 2);
+            tmpProcessedData[i].perc = perc + "%";
+            totalPerc += perc;
+            proCount += tmpProcessedData[i].count;
+
+            processedData.push(tmpProcessedData[i]);
+        }
+
+        var barHeight = 30,
+            percentSoFar = 0;
+
+        var chart = d3.select(intoElement)
+            .attr("width", "100%")
+            .attr("height", barHeight);
+
+        var bar = chart.selectAll("g")
+            .data(processedData)
+            .enter().append("g");
+
+        bar.append("rect")
+            .attr("width", function(d) { return ((d.count / totalCount) * 100) + "%"; } )
+            .attr("x", function(d) {
+                var myPercent = percentSoFar;
+                percentSoFar = percentSoFar + (100 * (d.count / totalCount));
+
+                return myPercent + "%";
+            })
+            .attr("height", barHeight)
+            .attr("fill",  function(d) {
+                if (colorIndex || colorIndex === 0) {
+                    return countlyCommon.GRAPH_COLORS[colorIndex];
+                } else {
+                    return countlyCommon.GRAPH_COLORS[d.index];
+                }
+            })
+            .attr("stroke", "#FFF")
+            .attr("stroke-width", 1);
+
+        if (colorIndex || colorIndex === 0) {
+            bar.attr("opacity", function(d) {
+                return 1 - (0.05 * d.index);
+            });
+        }
+
+        percentSoFar = 0;
+
+        bar.append("text")
+            .attr("x", function(d) {
+                var myPercent = percentSoFar;
+                percentSoFar = percentSoFar + (100 * (d.count / totalCount));
+
+                return myPercent + 0.5 + "%";
+            })
+            .attr("dy", "1.35em")
+            .text(function(d) { return d.label; });
+
+        percentSoFar = 0;
+
+        bar.append("foreignObject")
+            .attr("width", function(d) { return ((d.count / totalCount) * 100) + "%"; } )
+            .attr("x", function(d) {
+                var myPercent = percentSoFar;
+                percentSoFar = percentSoFar + (100 * (d.count / totalCount));
+
+                return myPercent + "%";
+            })
+            .append("xhtml:body")
+            .attr("class", "hsb-tip")
+            .html(function(d) { return "<div>" + d.perc + "</div>"; });
     };
 
     countlyCommon.extractRangeData = function (db, propertyName, rangeArray, explainRange) {
