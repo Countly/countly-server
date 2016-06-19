@@ -1,7 +1,7 @@
 'use strict';
 
 const res = require('../../../../api/parts/jobs/resource.js'),
-	  log = require('../../../../api/utils/log.js')('job:push:send'),
+	  log = require('../../../../api/utils/log.js')('job:push:resource'),
 	  APN = require('../parts/apn'),
 	  GCM = require('../parts/gcm');
 
