@@ -335,6 +335,10 @@ var pluginManager = function pluginManager(){
         plugins = require('./plugins.json', 'dont-enclose');
     }
     
+    this.isPluginEnabled = function(plugin){
+        return !!plugins[plugin];
+    };
+    
     //checking plugins on master process
     this.checkPluginsMaster = function(){
         var self = this;
