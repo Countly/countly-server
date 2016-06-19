@@ -58,9 +58,6 @@ then
 	apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
 fi
 
-#install imagemagick
-apt-get -y install imagemagick
-
 #install sendmail
 apt-get -y install sendmail
 

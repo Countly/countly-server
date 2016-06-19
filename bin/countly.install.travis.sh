@@ -67,9 +67,6 @@ apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exi
 #install supervisor
 apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
 
-#install imagemagick
-apt-get -y install imagemagick
-
 #install sendmail
 #apt-get -y install sendmail
 

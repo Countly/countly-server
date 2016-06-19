@@ -62,9 +62,6 @@ sudo yum -y install python-setuptools
 #install supervisor
 sudo easy_install supervisor
 
-#install imagemagick
-sudo yum -y install ImageMagick
-
 #install sendmail
 sudo yum -y install sendmail
 sudo service sendmail start

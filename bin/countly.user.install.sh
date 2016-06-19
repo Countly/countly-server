@@ -54,9 +54,6 @@ apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb."
 #install supervisor
 apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
 
-#install imagemagick
-apt-get -y install imagemagick
-
 #install sendmail
 apt-get -y install sendmail
 
