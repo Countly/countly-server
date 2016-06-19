@@ -41,8 +41,9 @@ window.MessagingDashboardView = countlyView.extend({
         for (var i in pushDP.chartDP[2].data) {
             action += pushDP.chartDP[2].data[i][1];
         }
-        delivery = delivery ? sent === 0 ? 100 : Math.round(100 * delivery / sent) : 0;
-        action = action ? sent === 0 ? 100 :  Math.round(100 * action / sent) : 0;
+        enabling = Math.min(100, enabling);
+        delivery = Math.min(100, delivery ? sent === 0 ? 100 : Math.round(100 * delivery / sent) : 0);
+        action = Math.min(100, action ? sent === 0 ? 100 :  Math.round(100 * action / sent) : 0);
 
         templateData["page-title"] = countlyCommon.getDateRange();
         templateData["logo-class"] = "sessions";

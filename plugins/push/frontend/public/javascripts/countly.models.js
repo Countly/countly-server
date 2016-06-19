@@ -221,6 +221,11 @@
             created: moment(msg.created).format("D MMM, YYYY HH:mm")
         };
 
+        msg.percentDelivered = Math.min(100, msg.percentDelivered);
+        msg.percentNotDelivered = Math.min(100, msg.percentNotDelivered);
+        msg.percentSent = Math.min(100, msg.percentSent);
+        msg.percentNotSent = Math.min(100, msg.percentNotSent);
+
         if (msg.date) msg.local.date = moment(msg.date).format("D MMM, YYYY HH:mm");
         if (msg.sent) msg.local.sent = moment(msg.sent).format("D MMM, YYYY HH:mm");
 
