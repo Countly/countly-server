@@ -47,20 +47,28 @@ class Manager {
 					log.e(err);
 				}
 
-				let promise = toCancel && toCancel.length ? Promise.all(toCancel.map(j => this.create(j).cancel())) : Promise.resolve(),
-					resume = () => {
-						this.collection.find({status: STATUS.PAUSED}).toArray((err, array) => {
-							if (!err && array && array.length) {
-								log.i('Going to resume following jobs: %j', array.map(j => {
-									return {_id: j._id, name: j.name};
-								}));
-								this.process(array.filter(j => this.types.indexOf(j.name) !== -1));
-							} else {
-								this.checkAfterDelay();
-							}
-						});
-					};
-				promise.then(resume, resume);
+				log.d('Cancelling %d jobs', toCancel ? toCancel.length : null);
+				try {
+					let promise = toCancel && toCancel.length ? Promise.all(toCancel.map(j => this.create(j).cancel())) : Promise.resolve(),
+						resume = () => {
+							log.d('Resuming after cancellation')
+							this.collection.find({status: STATUS.PAUSED}).toArray((err, array) => {
+								if (!err && array && array.length) {
+									log.i('Going to resume following jobs: %j', array.map(j => {
+										return {_id: j._id, name: j.name};
+									}));
+									this.process(array.filter(j => this.types.indexOf(j.name) !== -1));
+								} else {
+									this.checkAfterDelay();
+								}
+							});
+						};
+					promise.then(resume, resume);
+				} catch(e) {
+					log.e(e, e.stack);
+					this.checkAfterDelay();
+				}
+
 			});
 		}, (e) => {
 			log.e('Error when loading jobs', e, e.stack);
