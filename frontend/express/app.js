@@ -55,6 +55,14 @@ plugins.setUserConfigs("frontend", {
     code: false
 });
 
+process.on('uncaughtException', (err) => {
+  console.log('Caught exception: %j', err, err.stack);
+});
+
+process.on('unhandledRejection', (reason, p) => {
+  console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+});
+
 var countlyDb = plugins.dbConnection(countlyConfig);
 
 function sha1Hash(str, addSalt) {
