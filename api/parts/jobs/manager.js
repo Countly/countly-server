@@ -58,20 +58,20 @@ class Manager {
 										return {_id: j._id, name: j.name};
 									}));
 									this.process(array.filter(j => this.types.indexOf(j.name) !== -1));
-								} else {
-									this.checkAfterDelay();
 								}
 							});
 						};
 					promise.then(resume, resume);
+					this.checkAfterDelay(DELAY_BETWEEN_CHECKS * 5);
 				} catch(e) {
 					log.e(e, e.stack);
-					this.checkAfterDelay();
+					this.checkAfterDelay(DELAY_BETWEEN_CHECKS * 5);
 				}
 
 			});
 		}, (e) => {
 			log.e('Error when loading jobs', e, e.stack);
+			this.checkAfterDelay();
 		});
 
 		// Listen for transient jobs
@@ -99,13 +99,13 @@ class Manager {
 		}
 	}
 
-	checkAfterDelay () {
+	checkAfterDelay (delay) {
 		if (this.checkingAfterDelay) { return; }
 		this.checkingAfterDelay = true;
 		setTimeout(() => {
 			this.checkingAfterDelay = false;
 			this.check();
-		}, DELAY_BETWEEN_CHECKS);
+		}, delay || DELAY_BETWEEN_CHECKS);
 	}
 
 	check () {

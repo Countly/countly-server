@@ -57,15 +57,18 @@ class Connection extends res.Resource {
 			if (this.connection) {
 				this.connection.close_connection().then(() => {
 					this.closed();
+					this.stopInterval();
 				}).then(resolve, reject);
 			} else {
 				resolve();
+				this.stopInterval();
 			}
 		});
 	}
 
 	terminate () {
 		this.connection.terminate();
+		this.stopInterval();
 	}
 
 	send (datas, feeder, stats) {
