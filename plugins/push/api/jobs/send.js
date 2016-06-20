@@ -18,24 +18,28 @@ const job = require('../../../../api/parts/jobs/job.js'),
 class PushJob extends job.IPCJob {
 	constructor(name, data) {
 		super(name, data);
+		try {
+			// sub
+			if (this.data.pushly) {
+				this.message = new Pushly(this.data.pushly);
 
-		// sub
-		if (this.data.pushly) {
-			this.message = new Pushly(this.data.pushly);
+				if (this.message.credentials.platform === 'i') {
+					log.d('[%d]: Sending %s through new HTTP/2 interface in %s', process.pid, this.data.mid, this._id);
 
-			if (this.message.credentials.platform === 'i') {
-				log.d('[%d]: Sending %s through new HTTP/2 interface in %s', process.pid, this.data.mid, this._id);
+					var cert = credentials.p12(this.message.credentials.key, this.message.credentials.passphrase || '');
 
-				var cert = credentials.p12(this.message.credentials.key, this.message.credentials.passphrase || '');
-
-				this.data.pushly.credentials.topic = cert.topics[0];
-				if (cert.topics.length > 1 && cert.bundle) {
-					this.data.pushly.credentials.topic = cert.bundle;
+					this.data.pushly.credentials.topic = cert.topics[0];
+					if (cert.topics.length > 1 && cert.bundle) {
+						this.data.pushly.credentials.topic = cert.bundle;
+					}
 				}
-			}
 
-			this.fieldToken = credentials.DB_USER_MAP.tokens + '.' + this.message.credentials.id.split('.')[0];
-			this.fieldIndex = credentials.DB_USER_MAP.tokens + this.message.credentials.id.split('.')[0];
+				this.fieldToken = credentials.DB_USER_MAP.tokens + '.' + this.message.credentials.id.split('.')[0];
+				this.fieldIndex = credentials.DB_USER_MAP.tokens + this.message.credentials.id.split('.')[0];
+			}
+		} catch (e) {
+			log.e(e, e.stack);
+			this.failed = e;
 		}
 	}
 
@@ -64,6 +68,10 @@ class PushJob extends job.IPCJob {
 	// 	});
 	// }
 	divide (db) {
+		if (this.failed) {
+			return Promise.reject(this.failed);
+		}
+		
 		log.d('[%d]: Dividing %s in %s', process.pid, this.data.mid, this._id);
 		return new Promise((resolve, reject) => {
 			db.collection('messages').findOne(this.data.mid, (err, message) => {
@@ -86,7 +94,7 @@ class PushJob extends job.IPCJob {
 		log.d('In _subSaved');
 		return super._subSaved().then((set) => {
 			log.d('super._subSaved', set);
-			this.db().collection('messages').findOne(this.data.mid, (err, message) => {
+			this.db().collection('messages').findOne(this.data.mid, (/*err, message*/) => {
 				let quer = {_id: this.data.mid},
 					upda = {$set: {'result.status': this._json.status === STATUS.DONE ? PushlyStatus.Done : PushlyStatus.InProcessing, sent: new Date()}};
 
@@ -111,9 +119,15 @@ class PushJob extends job.IPCJob {
 		let query = {_id: db.ObjectID.createFromHexString(this.data.mid), 'deleted': {$exists: false}},
 			update = {$set: {'result.status': PushlyStatus.InProcessing, 'result.delivered': 0}};
 
+		if (this.failed) {
+			update.$set['result.status'] = PushlyStatus.Error;
+			update.$set['result.error'] = this.failed;
+			log.d('Won\'t run %s because it has been failed in constructor: %j', this._idIpc, this.failed);
+		}
+		
 		db.collection('messages').findAndModify(query, [['date', 1]], update, {'new': true}, (err, message) => {
-			if (err) {
-				done(err);
+			if (err || this.failed) {
+				done(err || this.failed);
 			} else if (!message || !message.ok) {
 				done('already running');
 			} else {
