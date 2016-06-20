@@ -1,9 +1,6 @@
 	<div class="widget crashoveral">
 		<div class="widget-header">
 			<div class="left">
-				<div class="logo font-logo2">
-                    <i class="fa fa-exclamation-triangle"></i>
-                </div>
 				<div class="title">{{page-title}}</div>
 			</div>
 			{{> date-selector }}
@@ -11,7 +8,7 @@
         <div class="widget-content">
             <div id="big-numbers-container" class="dashboard">
                 {{#each usage}}
-                <div class="big-numbers four-column help-zone-vs" data-help-localize="{{this.help}}">
+                <div class="big-numbers top four-column help-zone-vs" data-help-localize="{{this.help}}">
                     <div class="inner">
                         <div class="number">
                             <span class="value">{{getShortNumber this.data.total}}</span>
@@ -19,13 +16,24 @@
                                 <span><i class="fa fa-asterisk"></i></span>
                             {{/if}}
                         </div>
-                        <div class="trend" style="background-image:url('images/dashboard/{{this.data.trend}}trend.png');">
+                        <div class="title">{{this.title}}</div>
+                        <div class="trend {{this.data.trend}}">
+                            {{#ifCond this.data.change "==" "NA"}}
+                            <i class="material-icons">trending_flat</i>
+                            {{else}}
+                                {{#ifCond this.data.change "==" "0%"}}
+                                <i class="material-icons">trending_flat</i>
+                                {{else}}
+                                    {{#ifCond this.data.trend "==" "u"}}
+                                    <i class="material-icons">trending_up</i>
+                                    {{else}}
+                                    <i class="material-icons">trending_down</i>
+                                    {{/ifCond}}
+                                {{/ifCond}}
+                            {{/ifCond}}
                             <div class="change">{{this.data.change}}</div>
                         </div>
-                        <div class="select" id="{{this.id}}">
-                            <div class="title">{{this.title}}</div>
-                        </div>
-                        <div class="arrow"></div>
+                        <div class="select" id="{{this.id}}"></div>
                     </div>
                 </div>
                 {{/each}}
@@ -41,51 +49,52 @@
             <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
 		</div>
 	</div>
-    <h2 id="crashstats" data-localize="crashes.total-stats">Overall statistics</h2>
+
     {{#if big-numbers}}
-		<div id="big-numbers-container" class='crash-style'>
+		<div id="big-numbers-container" class='crash-style crash-widgets'>
 			{{#each big-numbers.items}}
                 {{#if ../loss}}
-			<div class="big-numbers five-column help-zone-vs" data-help-localize="{{this.help}}">
+			<div class="big-numbers top widgets dark five-column help-zone-vs" data-help-localize="{{this.help}}">
                 {{else}}
-            <div class="big-numbers four-column help-zone-vs" data-help-localize="{{this.help}}">
+            <div class="big-numbers top widgets dark four-column help-zone-vs" data-help-localize="{{this.help}}">
                 {{/if}}
 				<div class="inner">
-					<div class="select">{{this.title}}</div>
-					<div class="number">{{getFormattedNumber this.total}}</div>
+                    <div class="number">
+                        <span class="value">{{getShortNumber this.total}}</span>
+
+                    </div>
+                    <div class="title">{{this.title}}</div>
 				</div>
 			</div>
 			{{/each}}
 		</div>
 	{{/if}}
 
-		{{#if bars}}
-		<div class="dashboard-summary four">
-			{{#each bars}}
-			<div class="item help-zone-vs" data-help-localize="{{this.help}}">
-				<div class="inner">
-					<div class="title">{{this.title}}</div>
-					{{#if this.data}}
-					<div class="bar">
-						{{#each this.data}}
-							<div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
-						{{/each}}
-					</div>
-					<div class="number" data-item="{{this.data.0.name}}">{{this.data.0.name}}</div>
-					{{else}}
-					<div class="no-data" data-localize="common.bar.no-data"></div>
-					{{/if}}
-				</div>
-			</div>
-			{{/each}}
-		</div>
-		{{/if}}
-	<div class="widget">
+    {{#if bars}}
+    <div class="dashboard-summary four crash-widgets" style="margin-bottom: 16px;">
+        {{#each bars}}
+        <div class="item help-zone-vs" data-help-localize="{{this.help}}">
+            <div class="inner">
+                <div class="title">{{this.title}}</div>
+                {{#if this.data}}
+                <div class="bar">
+                    {{#each this.data}}
+                        <div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+                    {{/each}}
+                </div>
+                <div class="number" data-item="{{this.data.0.name}}">{{this.data.0.name}}</div>
+                {{else}}
+                <div class="no-data" data-localize="common.bar.no-data"></div>
+                {{/if}}
+            </div>
+        </div>
+        {{/each}}
+    </div>
+    {{/if}}
+
+	<div class="widget" style="margin-bottom: 0">
 		<div class="widget-header">
 			<div class="left">
-				<div class="logo font-logo2">
-                    <i class="fa fa-exclamation-triangle"></i>
-                </div>
 				<div class="title">{{page-title}}</div>
 			</div>
 			<div id="crash-selector" class="help-zone-vs">

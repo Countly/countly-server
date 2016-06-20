@@ -1,5 +1,5 @@
 /* CRASHES */
-.crashes {margin-top: -16px; overflow: auto; position: relative;}
+.crashes {overflow: auto; position: relative;}
 .crash-data {margin-top: -20px; overflow: auto;}
 .crashes .dataTable-top {border-radius: 0;}
 .crashes tbody tr {cursor: pointer;}
@@ -11,11 +11,7 @@
 #crash-numbers-container .widget-footer {border-top-left-radius:7px; border-top-right-radius:7px; border-top: 1px solid #c2c2c2; border-bottom-left-radius:0px; border-bottom-right-radius:0px;}
 #crash-big-numbers th{text-align: center; text-transform: uppercase; font-family:Ubuntu,Helvetica,sans-serif;}
 #crash-big-numbers td{background-color: #fff; text-align: center; font-family:Oswald; font-size: 27px; padding: 20px 5px; word-wrap: break-word;}
-#big-numbers-container.crash-style{margin-bottom: 20px; border-radius:7px;border:1px solid #C2C2C2;}
-#big-numbers-container.crash-style .big-numbers:first-child .inner { border-bottom-left-radius:7px; }
-#big-numbers-container.crash-style .big-numbers:last-child .inner { border-bottom-right-radius:7px; }
-#big-numbers-container.crash-style .big-numbers .inner { height:90px; border-bottom:none; background-color:#f4f4f4; }
-#big-numbers-container.crash-style .big-numbers .number {background-color: #fff; padding: 35px 0 10px;}
+#big-numbers-container.crash-style { margin-bottom: 10px; }
 .crash-ranges {background-color: #fff; border: 1px solid #c2c2c2; border-bottom-left-radius:7px; border-bottom-right-radius:7px; border-top: none; box-shadow: 0 1px 1px 0 #D1D1D1; color:#808080; padding: 0px;}
 .crash-ranges div {float: left; border-left: 1px solid #c2c2c2; padding: 10px 0px; box-sizing: border-box;}
 .crash-ranges div.four-column {width: 25%;}
@@ -35,7 +31,8 @@
 
 #crashstats {text-align: center; font-family:Ubuntu,Helvetica,sans-serif; font-weight: normal;}
 
-.crashoveral .widget-content .big-numbers .inner{height: 80px;}
+.crashoveral .widget-content .big-numbers .inner{height: 105px; padding-top: 7px;}
+.crashoveral .widget-content .big-numbers.top .trend { display: block; }
 .crashoveral .widget-content .big-numbers .fa{vertical-align: text-top; font-size: 13px; margin-left: -5px;}
 .crashoveral #big-numbers-container.dashboard{margin-bottom:-10px;border: none;}
 .widget.crashoveral .widget-footer { overflow: visible; }
@@ -117,3 +114,10 @@
   display:block;
   clear:both;
 }
+
+#crash-table_wrapper { margin-top:0; }
+
+.crash-widgets .big-numbers.top.widgets .inner,
+.crash-widgets.dashboard-summary .item .inner { margin-left:10px; }
+.crash-widgets .big-numbers.top.widgets:first-child .inner,
+.crash-widgets.dashboard-summary .item:first-child .inner{ margin-left:0; }

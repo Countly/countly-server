@@ -1633,11 +1633,13 @@ window.PlatformView = countlyView.extend({
 
             if (platformData && platformData.chartDP) {
                 for (var i = 0; i < platformData.chartDP.dp.length; i++) {
-                    var tmpOsVersion = countlyDeviceDetails.getOSVersionData(this.activePlatform);
+                    var tmpOsVersion = countlyDeviceDetails.getOSVersionData(platformData.chartDP.dp[i].label);
 
                     countlyCommon.drawHorizontalStackedBars(tmpOsVersion.chartDP.dp, "#hsb-platform"+i, i);
                 }
             }
+
+            var oSVersionData = countlyDeviceDetails.getOSVersionData(this.activePlatform);
 
             this.dtableTwo = $('#dataTableTwo').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": oSVersionData.chartData,
@@ -1671,7 +1673,7 @@ window.PlatformView = countlyView.extend({
 
             if (platformData && platformData.chartDP) {
                 for (var i = 0; i < platformData.chartDP.dp.length; i++) {
-                    var tmpOsVersion = countlyDeviceDetails.getOSVersionData(this.activePlatform);
+                    var tmpOsVersion = countlyDeviceDetails.getOSVersionData(platformData.chartDP.dp[i].label);
 
                     countlyCommon.drawHorizontalStackedBars(tmpOsVersion.chartDP.dp, "#hsb-platform"+i, i);
                 }

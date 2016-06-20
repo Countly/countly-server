@@ -223,7 +223,7 @@ a:active { color:inherit; }
 			.widget-header .right input { height: 26px; }
 			.widget-header>.title { font:19px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#636363; float:left; }
 			.widget-header .back { font:16px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#636363; margin-right: 10px;}
-			.widget-header .left>.title { font:19px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#636363; float:left; padding-top:8px; float:left; margin-left:3px; }
+			.widget-header .left>.title { font:19px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#636363; float:left; padding-top:8px; float:left; margin-left:3px; text-transform: uppercase; }
 			.widget-header .logo { float:left; width:38px; height:38px; background-image:url('../images/dashboard/anayltcs_header_icons.png'); }
             .widget-header .logo.font-logo { color:#6E6E6E; background-image: none; height:31px; font-size: 25px; padding-top: 7px; text-align: center; }
             .widget-header .logo.font-logo2 { color:#6E6E6E; background-image: none; height:31px; font-size: 25px; text-align: center; padding-top: 4px; }
@@ -347,7 +347,7 @@ a:active { color:inherit; }
     .big-numbers.top.active .inner .logo.material .material-icons { color: #535353; }
 .big-numbers.top .number { font:30px Oswald; color:#666; margin: 0; }
     .big-numbers.top.active .number { color:#333; }
-.big-numbers.top .title { padding-top:3px; padding-bottom:3px; font-size:10px; color:#666666; }
+.big-numbers.top .title { padding-top:3px; padding-bottom:3px; font-size:10px; color:#666666; text-transform: uppercase; }
 .big-numbers.top .spark { margin-top:14px; }
     .big-numbers.top.active .spark { display: none; }
 .big-numbers.top .trend { display: none; font-size:11px; margin-top:20px; position: relative; top:inherit; right: inherit; width: auto; height: auto; }
@@ -358,6 +358,13 @@ a:active { color:inherit; }
     .big-numbers.top .trend.d .change { color:#C94C4C !important; }
     .big-numbers.top.active .trend { display: block; }
 .big-numbers.top .change { display:inline-block; vertical-align: middle; position: relative; top:inherit; right: inherit; }
+
+.big-numbers.top.widgets { border:none; }
+.big-numbers.top.widgets .inner { cursor:default; border:none; margin-left:5px; box-shadow: inset 0 0 0 1px #D0D0D0; border-radius: 2px; padding:10px; height:66px; }
+.big-numbers.top.widgets:first-child .inner { margin-left:0; }
+.big-numbers.top.widgets.dark .inner { border:none; background-color: #3c3c3c; box-shadow: none; }
+.big-numbers.top.widgets.dark .inner .number,
+.big-numbers.top.widgets.dark .inner .title { color:#FFF; }
 /* DASHBOARD END */
 
 /* NEW BIG NUMBERS */
