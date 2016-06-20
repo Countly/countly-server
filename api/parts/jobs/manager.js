@@ -187,7 +187,7 @@ class Manager {
 				});
 			}));
 		});
-		Promise.all(promises).then(this.checkAfterDelay.bind(this), this.checkAfterDelay.bind(this));
+		Promise.all(promises).then(this.checkAfterDelay.bind(this, null), this.checkAfterDelay.bind(this, null));
 	}
 
 	schedule (job) {
