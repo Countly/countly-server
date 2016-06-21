@@ -98,6 +98,9 @@ if [ ! -f $DIR/../plugins/plugins.json ]; then
 	cp $DIR/../plugins/plugins.default.json $DIR/../plugins/plugins.json
 fi
 
+#install nghttp2
+bash $DIR/scripts/install.nghttp2.sh
+
 #install plugins
 node $DIR/scripts/install_plugins
 
