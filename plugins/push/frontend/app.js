@@ -34,7 +34,7 @@ var plugin = {},
 			try {
 				var p12 = credentials.p12(tmp_path, req.body.passphrase);
 				if (!p12.dev || !p12.prod) {
-					res.send({error: 'Countly now requires universal HTTP/2 certificates. Please see our guide at http://resources.count.ly/docs/countly-sdk-for-ios-and-os-x '});
+                    res.send({error: 'Countly now requires universal HTTP/2 certificates. Please see our guide <a href="http://resources.count.ly/docs/countly-sdk-for-ios-and-os-x" target="_blank">here</a>.'});
 					return true;
 				}
 			} catch (e) {
