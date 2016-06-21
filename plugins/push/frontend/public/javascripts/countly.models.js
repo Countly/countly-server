@@ -218,7 +218,8 @@
         msg.sending = (msg.result.status & 4) > 0 && (msg.result.status & (16 | 32)) === 0;
 
         msg.local = {
-            created: moment(msg.created).format("D MMM, YYYY HH:mm")
+            created: moment(msg.created).format("D MMM, YYYY HH:mm"),
+            createdSeconds: moment(msg.created).unix()
         };
 
         msg.percentDelivered = Math.min(100, msg.percentDelivered);
@@ -226,8 +227,14 @@
         msg.percentSent = Math.min(100, msg.percentSent);
         msg.percentNotSent = Math.min(100, msg.percentNotSent);
 
-        if (msg.date) msg.local.date = moment(msg.date).format("D MMM, YYYY HH:mm");
-        if (msg.sent) msg.local.sent = moment(msg.sent).format("D MMM, YYYY HH:mm");
+        if (msg.date) {
+            msg.local.date = moment(msg.date).format("D MMM, YYYY HH:mm");
+            msg.local.dateSeconds = moment(msg.date).unix();
+        }
+        if (msg.sent) {
+            msg.local.sent = moment(msg.sent).format("D MMM, YYYY HH:mm");
+            msg.local.dateSeconds = moment(msg.sent).unix();
+        }
 
         return msg;
     }
