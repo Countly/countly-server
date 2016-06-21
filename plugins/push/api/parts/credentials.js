@@ -48,7 +48,7 @@ let credentials = function(message, app) {
 						platformId: app.apn.id,
 						key: APNCertificatePath(app._id.toString()),
 						passphrase: app.apn.universal.passphrase,
-						gateway: 'api.development.push.apple.com',
+						gateway: 'api.push.apple.com',
 						port: 443
 					});
 				} else {
