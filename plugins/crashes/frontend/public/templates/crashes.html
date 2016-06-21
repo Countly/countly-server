@@ -50,47 +50,48 @@
 		</div>
 	</div>
 
-    {{#if big-numbers}}
-		<div id="big-numbers-container" class='crash-style crash-widgets'>
-			{{#each big-numbers.items}}
+    <div class="widget-group">
+        {{#if big-numbers}}
+        <div id="big-numbers-container" class='crash-style crash-widgets'>
+            {{#each big-numbers.items}}
                 {{#if ../loss}}
-			<div class="big-numbers top widgets dark five-column help-zone-vs" data-help-localize="{{this.help}}">
+            <div class="big-numbers top widgets five-column help-zone-vs" data-help-localize="{{this.help}}">
                 {{else}}
-            <div class="big-numbers top widgets dark four-column help-zone-vs" data-help-localize="{{this.help}}">
+            <div class="big-numbers top widgets four-column help-zone-vs" data-help-localize="{{this.help}}">
                 {{/if}}
-				<div class="inner">
+                <div class="inner">
+                    <div class="title">{{this.title}}</div>
                     <div class="number">
                         <span class="value">{{getShortNumber this.total}}</span>
-
                     </div>
-                    <div class="title">{{this.title}}</div>
-				</div>
-			</div>
-			{{/each}}
-		</div>
-	{{/if}}
-
-    {{#if bars}}
-    <div class="dashboard-summary four crash-widgets" style="margin-bottom: 16px;">
-        {{#each bars}}
-        <div class="item help-zone-vs" data-help-localize="{{this.help}}">
-            <div class="inner">
-                <div class="title">{{this.title}}</div>
-                {{#if this.data}}
-                <div class="bar">
-                    {{#each this.data}}
-                        <div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
-                    {{/each}}
                 </div>
-                <div class="number" data-item="{{this.data.0.name}}">{{this.data.0.name}}</div>
-                {{else}}
-                <div class="no-data" data-localize="common.bar.no-data"></div>
-                {{/if}}
             </div>
+            {{/each}}
         </div>
-        {{/each}}
+        {{/if}}
+
+        {{#if bars}}
+        <div class="dashboard-summary four crash-widgets">
+            {{#each bars}}
+            <div class="item light help-zone-vs" data-help-localize="{{this.help}}">
+                <div class="inner">
+                    <div class="title">{{this.title}}</div>
+                    {{#if this.data}}
+                    <div class="bar">
+                        {{#each this.data}}
+                            <div class="bar-inner" style="width:{{this.percent}}%;" data-item="{{this.name}}"></div>
+                        {{/each}}
+                    </div>
+                    <div class="number" data-item="{{this.data.0.name}}">{{this.data.0.name}}</div>
+                    {{else}}
+                    <div class="no-data" data-localize="common.bar.no-data"></div>
+                    {{/if}}
+                </div>
+            </div>
+            {{/each}}
+        </div>
+        {{/if}}
     </div>
-    {{/if}}
 
 	<div class="widget" style="margin-bottom: 0">
 		<div class="widget-header">

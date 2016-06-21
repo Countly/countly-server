@@ -1,9 +1,8 @@
-	<div class="widget">
+    <a href="#/crashes" class="back-link"><span data-localize="crashes.back-to-crashes"></span></a>
+
+    <div class="widget">
 		<div class="widget-header">
 			<div class="left">
-                <div class="logo font-logo2">
-                    <i class="fa fa-exclamation-triangle"></i>
-                </div>
 				<div class="title">{{fatal}} {{page-title}}</div>
 				<div class="cly-select" style="width:220px; position:absolute; top: 10px; margin-left: 10px;">
 					<div class="select-inner">
@@ -34,7 +33,6 @@
                 <a class="icon-button light btn-header btn-hide-crash" data-id="{{id}}"><span data-localize="crashes.hide"></span></a>
                 {{/if}}
                 {{/if}}
-				<a href="#/crashes" class="icon-button light btn-header"><i class="fa fa-chevron-left"></i><span data-localize="crashes.back-to-crashes"></span></a>
                 <ul id="crash-share-list">
                     <li class="crash-share"><input id="crash-share-url" readonly onclick='this.select()' value="{{url}}"/></li>
                     <li class="crash-share"><input type="checkbox" id="crash-share-reports"/>&nbsp;<span data-localize="crashes.public-reports"></span></li>
@@ -50,43 +48,48 @@
 		</div>
 	</div>
 	<div id="crash-numbers-container">
-	{{#if big-numbers}}
-	<div class="widget-footer" style="background-color:#EEEEEE;">
-		<div id="big-numbers-container">
-			{{#each big-numbers.items}}
-            <div class="big-numbers {{../big-numbers.class}} help-zone-vs" data-help-localize="{{this.help}}">
-				<div class="inner">
-					<div class="select">{{this.title}}</div>
-					<div class="number">{{getFormattedNumber this.total}}</div>
-				</div>
-			</div>
-			{{/each}}
-		</div>
-	</div>
-	{{/if}}
-	<div class="dashboard-summary crash-ranges">
+	<div class="dashboard-summary crash-ranges" style="margin-top: 16px;">
 		{{#each ranges}}
             {{#if ../frequency}}
-		<div class="five-column help-zone-vs" data-help-localize="{{this.help}}">
+		<div class="item light five-column help-zone-vs" data-help-localize="{{this.help}}">
             {{else}}
-        <div class="four-column help-zone-vs" data-help-localize="{{this.help}}">
+        <div class="item light four-column help-zone-vs" data-help-localize="{{this.help}}">
             {{/if}}
-		<table cellpadding="0" cellspacing="0">
-		<tr>
-			<td class="range-main">{{this.title}}<i class="{{this.icon}}"></i></td>
-			<td><span data-localize="crashes.min"></span><br/>{{this.min}}</td>
-			<td><span data-localize="crashes.max"></span><br/>{{this.max}}</td>
-			<td><span data-localize="crashes.avg"></span><br/>{{this.avg}}</td>
-		</tr>
-		</table>
+            <div class="inner">
+                <table cellpadding="0" cellspacing="0">
+                    <tr colspan="2">
+                        <td colspan="2" class="range-main">{{this.title}}</td>
+                    </tr>
+                    <tr colspan="2">
+                        <td colspan="2">{{this.avg}}<span data-localize="crashes.avg"></span></td>
+                    </tr>
+                    <tr>
+                        <td>{{this.min}}<span data-localize="crashes.min"></span></td>
+                        <td>{{this.max}}<span data-localize="crashes.max"></span></td>
+                    </tr>
+                </table>
+            </div>
 		</div>
 		{{/each}}
 	</div>
 	</div>
-    {{#if bars}}
+    <div class="widget-group">
+        {{#if big-numbers}}
+        <div id="big-numbers-container">
+            {{#each big-numbers.items}}
+            <div class="big-numbers top widgets {{../big-numbers.class}} help-zone-vs" data-help-localize="{{this.help}}">
+                <div class="inner">
+                    <div class="title">{{this.title}}</div>
+                    <div class="number">{{getFormattedNumber this.total}}</div>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+        {{/if}}
+        {{#if bars}}
 		<div class="dashboard-summary four crash-bars">
 			{{#each bars}}
-			<div class="item help-zone-vs" data-help-localize="{{this.help}}">
+			<div class="item light help-zone-vs" data-help-localize="{{this.help}}">
 				<div class="inner">
 					<div class="title">{{this.title}}</div>
 					{{#if this.data}}
@@ -108,21 +111,19 @@
 			{{/each}}
 		</div>
 		{{/if}}
+    </div>
 	<div class="widget main-error">
 		<div class="widget-header">
 			<div class="left">
-				<div class="logo font-logo2">
-                    <i class="fa fa-exclamation-triangle"></i>
-                </div>
 				<div class="title">
-					<span>{{error}}</span>
+					<span id="error-title">{{error}}</span>
                     {{#unless external}}
 					{{#if data.is_resolved}}
-						<span id="resolved-text"><span data-localize="crashes.resolved-for"></span> <span id="resolved-version">{{data.resolved_version}}</span></span>
-						<span id="unresolved-text" style="display: none;"><span data-localize="crashes.unresolved"></span></span>
+						<div id="resolved-text"><span data-localize="crashes.resolved-for"></span> <span id="resolved-version">{{data.resolved_version}}</span></div>
+						<div id="unresolved-text" style="display: none;"><span data-localize="crashes.unresolved"></span></div>
 					{{else}}
-						<span id="resolved-text" style="display: none;"><span data-localize="crashes.resolved-for"></span> <span id="resolved-version">{{data.latest_version}}</span></span>
-						<span id="unresolved-text"><span data-localize="crashes.unresolved"></span></span>
+						<div id="resolved-text" style="display: none;"><span data-localize="crashes.resolved-for"></span> <span id="resolved-version">{{data.latest_version}}</span></div>
+						<div id="unresolved-text"><span data-localize="crashes.unresolved"></span></div>
 					{{/if}}
                     {{/unless}}
 				</div>
@@ -143,12 +144,12 @@
 		</div>
 		<div class="widget-content help-zone-vb crash-stack" data-help-localize="{{{chart-helper}}}">
              {{#if external}}
-                <div style="overflow: auto; padding: 20px; padding-top:0;">
+                <div style="overflow: auto; padding: 20px; padding-top:0; margin-top: -1px;">
                     <pre><code>{{data.error}}</code></pre>
                 </div>
              {{else}}
-			<div style="overflow: auto; padding: 20px; padding-top:0;" id="tabs">
-                 <ul>
+			<div style="overflow: auto;" id="tabs">
+                <ul>
                     <li><a href="#error" data-localize="crashes.error"></a></li>
                     <li><a href="#notes" id="crash-notes"><span data-localize="crashes.comments"></span>&nbsp;<span class='crash-comment-count'>(<span></span>)</span></a></li>
                 </ul>
@@ -166,14 +167,14 @@
                             <a class="icon-button red btn-header crash-comment-delete" data-id="{{value._id}}"><span data-localize="crashes.delete"></span></a>
                             <a class="icon-button light btn-header crash-comment-edit" data-id="{{value._id}}"><span data-localize="crashes.edit"></span></a> 
                         {{/if}}
-                            <div class="author"><span data-localize="crashes.author"></span>: {{value.author}}</div>
-                            <div class="time"><span data-localize="crashes.posted_comment"></span>: {{{formatTimeAgo value.time}} 
+                            <div class="author">{{value.author}}</div>
+                            <div class="time">{{{formatTimeAgo value.time}}
                                 {{#if value.edit_time}}
                                     | <span data-localize="crashes.edited_comment"></span>: {{{formatTimeAgo value.edit_time}}} 
                                 {{/if}}
                             </div>
                         </div>
-                        <div class="text">{{{value.html}}}</div>
+                        <div class="text"><p>{{{value.html}}}</p></div>
                     </div>
                     {{/eachOfArray}}
                     {{/if}}
