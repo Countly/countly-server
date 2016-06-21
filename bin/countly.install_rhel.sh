@@ -23,11 +23,11 @@ yum install -y nodejs
 sudo ln -s `which node` /usr/bin/nodejs
 
 #install mongodb
-echo "[mongodb-org-3.0]
+echo "[mongodb-org-3.2]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/3.0/x86_64/
+baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/3.2/x86_64/
 gpgcheck=0
-enabled=1" > /etc/yum.repos.d/mongodb-org-3.0.repo
+enabled=1" > /etc/yum.repos.d/mongodb-org-3.2.repo
 
 sudo yum -y install mongodb-org
 sudo service mongod start
