@@ -18,11 +18,11 @@ elif [ -n "$(command -v yum)" ]; then
     # wget http://dl.fedoraproject.org/pub/fedora/linux/development/rawhide/Everything/x86_64/os/Packages/o/openssl-1.0.2h-1.fc25.x86_64.rpm
     # wget http://dl.fedoraproject.org/pub/fedora/linux/development/rawhide/Everything/x86_64/os/Packages/o/openssl-libs-1.0.2h-1.fc25.x86_64.rpm
     # wget http://dl.fedoraproject.org/pub/fedora/linux/development/rawhide/Everything/i386/os/Packages/c/crypto-policies-20160516-1.git8f69c35.fc25.noarch.rpm
-    
+
     yum install -y git gcc-c++ make binutils autoconf automake libtool pkgconfig zlib-devel libxml2-devel python-setuptools
     wget https://openssl.org/source/openssl-1.0.2h.tar.gz
-    tar -zxvf openssl-1.0.2d.tar.gz -C /usr/local/src
-    cd /usr/local/src/openssl-1.0.2d
+    tar -zxvf openssl-1.0.2h.tar.gz -C /usr/local/src
+    cd /usr/local/src/openssl-1.0.2h
     ./config --prefix=/usr
     make depend
     make
