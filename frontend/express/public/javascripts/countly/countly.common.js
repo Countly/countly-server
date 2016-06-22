@@ -534,20 +534,9 @@
 
         percentSoFar = 0;
 
-        bar.append("text")
-            .attr("x", function(d) {
-                var myPercent = percentSoFar;
-                percentSoFar = percentSoFar + (100 * (d.count / totalCount));
-
-                return myPercent + 0.5 + "%";
-            })
-            .attr("dy", "1.35em")
-            .text(function(d) { return d.label; });
-
-        percentSoFar = 0;
-
         bar.append("foreignObject")
             .attr("width", function(d) { return ((d.count / totalCount) * 100) + "%"; } )
+            .attr("height", barHeight)
             .attr("x", function(d) {
                 var myPercent = percentSoFar;
                 percentSoFar = percentSoFar + (100 * (d.count / totalCount));
@@ -557,6 +546,18 @@
             .append("xhtml:body")
             .attr("class", "hsb-tip")
             .html(function(d) { return "<div>" + d.perc + "</div>"; });
+
+        percentSoFar = 0;
+
+        bar.append("text")
+            .attr("x", function(d) {
+                var myPercent = percentSoFar;
+                percentSoFar = percentSoFar + (100 * (d.count / totalCount));
+
+                return myPercent + 0.5 + "%";
+            })
+            .attr("dy", "1.35em")
+            .text(function(d) { return d.label; });
     };
 
     countlyCommon.extractRangeData = function (db, propertyName, rangeArray, explainRange) {

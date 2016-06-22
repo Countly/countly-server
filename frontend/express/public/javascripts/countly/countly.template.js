@@ -1009,6 +1009,13 @@ window.AllAppsView = countlyView.extend({
 	selectedView:"#draw-total-sessions",
 	selectedApps: {"all":true},
 	selectedCount: 0,
+    getTrendIcon: function(trend) {
+        if (trend == 'u') {
+            return '<i class="material-icons up">trending_up</i>';
+        } else if (trend == 'd') {
+            return '<i class="material-icons down">trending_down</i>';
+        }
+    },
 	initialize:function () {
         this.template = Handlebars.compile($("#template-allapps").html());
     },
@@ -1117,17 +1124,16 @@ window.AllAppsView = countlyView.extend({
                     $(nRow).attr("id", aData._id);
                 },
                 "aoColumns": [
-                    { "mData": function(row, type){if(self.selectedApps[row._id]) return "<i class='check fa fa-check'></i>"; else return "<i class='check fa fa-unchecked'></i>";}, "sWidth":"10px", "bSortable":false},
-                    { "mData": function(row, type){if(type == "display"){ var ret; if(row["_id"] == "all") ret = "<div class='logo' style='background-image: url("+countlyGlobal["path"]+"/images/favicon.png);'></div> "; else ret = "<div class='logo' style='background-image: url("+countlyGlobal["cdn"]+"appimages/" + row["_id"] + ".png);'></div> "; return ret+row.name+"<div class='color'></div>";} else return row.name;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.app-name"], "sClass": "break" },
-                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url("+countlyGlobal["cdn"]+"images/dashboard/"+row.sessions.trend+"trend.png);'></div> "+row.sessions.total; else return row.sessions.total;}, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-sessions"] },
-                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url("+countlyGlobal["cdn"]+"images/dashboard/"+row.users.trend+"trend.png);'></div> "+row.users.total; else return row.users.total;}, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-users"] },
-                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url("+countlyGlobal["cdn"]+"images/dashboard/"+row.newusers.trend+"trend.png);'></div> "+row.newusers.total; else return row.newusers.total;}, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.new-users"] },
-                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url("+countlyGlobal["cdn"]+"images/dashboard/"+row.duration.trend+"trend.png);'></div> "+countlyCommon.timeString(row.duration.total); else return row.duration.total;}, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-duration"] },
-                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url("+countlyGlobal["cdn"]+"images/dashboard/"+row.avgduration.trend+"trend.png);'></div> "+countlyCommon.timeString(row.avgduration.total); else return row.avgduration.total;}, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.average-duration"] }
+                    { "mData": function(row, type){if(type == "display") { return row.name + "<div class='color'></div>"; } else { return row.name; } }, "sType":"string", "sTitle": jQuery.i18n.map["allapps.app-name"], "sClass": "break" },
+                    { "mData": function(row, type) { if (type == "display") { return self.getTrendIcon(row.sessions.trend) +  row.sessions.total; } else { return row.sessions.total; } }, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-sessions"] },
+                    { "mData": function(row, type) { if (type == "display") { return self.getTrendIcon(row.users.trend) +  row.users.total; } else { return row.users.total; } }, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-users"] },
+                    { "mData": function(row, type) { if (type == "display") { return self.getTrendIcon(row.newusers.trend) +  row.newusers.total; } else { return row.newusers.total; } }, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.new-users"] },
+                    { "mData": function(row, type) { if (type == "display") { return self.getTrendIcon(row.duration.trend) +  countlyCommon.timeString(row.duration.total); } else { return row.duration.total; } }, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-duration"] },
+                    { "mData": function(row, type) { if (type == "display") { return self.getTrendIcon(row.avgduration.trend) +  countlyCommon.timeString(row.avgduration.total); } else { return row.avgduration.total; } }, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.average-duration"] }
                 ]
             }));
             this.drawGraph();
-            $(".dataTable-bottom").append("<div clas='dataTables_info' style='float: right; margin-top:2px; margin-right: 10px;'>"+jQuery.i18n.map["allapps.maximum-items"]+" (10)</div>")
+            $(".dataTable-bottom").append("<div class='dataTables_info' style='float: right;'>"+jQuery.i18n.map["allapps.maximum-items"]+" (10)</div>")
 
             $(".d-table").stickyTableHeaders();
 

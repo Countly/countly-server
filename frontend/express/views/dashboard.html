@@ -492,12 +492,11 @@
 			<div class="widget-content" style="border:none;">
 				<div id="big-numbers-container" class="dashboard">
 					{{#each usage}}
-					<div class="big-numbers {{#if ../../usage-class}}{{../../usage-class}}{{else}}six-column{{/if}} help-zone-vs" data-help-localize="help.{{this.help}}">
+					<div class="big-numbers top {{#if ../../usage-class}}{{../../usage-class}}{{else}}six-column{{/if}} help-zone-vs" data-help-localize="help.{{this.help}}">
 						<div class="inner">
 							<div class="select" id="{{this.id}}">
 								<div class="title">{{this.title}}</div>
 							</div>
-							<div class="arrow"></div>
 						</div>
 					</div>
 					{{/each}}

@@ -1033,23 +1033,26 @@ table.events-table { width:100%; padding:0; margin:0; }
 .options li span {line-height:23px;}
 
 /* ALL APPS */
-.allapps {margin-top: -16px;}
 .allapps .dataTable-top {border-radius: 0;}
 .allapps .logo{width: 20px; height: 20px; background-size: 20px 20px; float: left; margin-right: 10px; margin-top: -2px; background-position: center; border-radius: 4px; border: 1px solid #555;}
 .allapps .trend { width:12px; height:9px; display: inline-block; margin-top: 5px; margin-right: 5px;}
 .allapps tbody tr {cursor: pointer;}
 .allappview .widget-content .big-numbers .inner{height: 30px;}
 .allappview .widget-footer{border-radius: 0;}
-.allappview #empty-graph {position: absolute; text-align: center; font-size: 35px; width:100%; top:50%; margin-top: -20px; display: none;}
-.allapps div.color{ width: 10px; height: 20px; float: right;}
+.allappview #empty-graph { position: absolute; text-align: center; font-size: 15px; width:100%; top:50%; margin-top: -20px; display: none; height: 20px; line-height: 20px; text-shadow: none; color: #B3B3B3; }
+.allapps div.color{ width: 10px; height: 10px; float: left; margin: 1px 10px 0 0; }
+.allapps .material-icons { font-size: 16px; vertical-align: middle; margin-right: 10px; line-height: 6px; height: 8px; }
+.allapps .material-icons.up { color:#6BB96E; }
+.allapps .material-icons.down { color:#C94C4C; }
 
 /* Styles for horizontal d3 bar charts */
 .hsb-container { margin:15px 30px; position:relative; }
 .hsb-container.top { margin-bottom:30px; margin-top:25px; }
 .hsb-container .label { text-align:left; font-size: 12px; margin-bottom: 3px; color:#777; }
 .hsb-container text { fill: #FFF; font: 10px sans-serif; text-anchor: initial; }
-.hsb-tip { background-color: transparent; text-align: center; padding:6px; opacity:0; color:#FFF; }
+.hsb-tip { background-color: transparent; text-align: center; padding:8px; opacity:0; color:#FFF; font-size:13px; }
 .hsb-tip:hover { opacity:1; }
+.hsb-container foreignobject:hover + text { display: none; }
 
 /* Styles tabs */
 .ui-tabs .ui-tabs-nav li { width:50%; margin:0; padding:0; background-color: #f8f8f8; }
@@ -1070,9 +1073,10 @@ td.details,
 td.details:hover { border:1px solid #d0d0d0; border-left:none; border-right:none; padding:20px; background-color:#FFF; cursor:default; }
 td.details:hover,
 td.details tr:hover { }
-td.details table { border-spacing: 0; border: 1px solid #e8e8e8; }
+td.details table { border-spacing: 0; border: 1px solid #e8e8e8; width:100%; }
 td.details table tr,
 td.details table tr:hover { background-color:#FFF !important; cursor:default; line-height:20px; }
 td.details table tr:first-child,
 td.details table tr:first-child:hover { background-color:#F3F3F3 !important; line-height:12px; }
-td.details table tr:first-child td { font-family:Ubuntu; font-size:11px; text-transform:uppercase; }
+td.details table tr:first-child td,
+td.details table tr:first-child th { border:none; font-family:Ubuntu; font-size:11px; text-transform:uppercase; }
