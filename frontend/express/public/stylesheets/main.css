@@ -533,7 +533,7 @@ div.datatablesubrow {display: none;}
 #date-selector { float:right; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#6B6B6B; padding:6px; padding-right:0; overflow:auto; user-select:none; }
 	#date-selector .button { visibility: visible; cursor:pointer; user-select:none; background-color:#EEEEEE; float:left; padding:7px 5px; padding-top:6px; border:1px solid #A5A5A5; margin-right:-1px; }
     .widget-header:hover #date-selector .button { visibility: visible; }
-    #date-selector .date-buttons-container { overflow: auto; float: left; }
+    #date-selector .date-buttons-container { float: left; }
     #date-selector .date-buttons-container .button:first-child { border-top-left-radius:2px; border-bottom-left-radius:2px; }
 	#date-selector .date-buttons-container .button:last-child { border-top-right-radius:2px; border-bottom-right-radius:2px; border-right:1px solid #A5A5A5; }
     #date-selector .date-buttons-container .button:last-child.active { border-right-color: #505050; }
@@ -1038,32 +1038,20 @@ table.events-table { width:100%; padding:0; margin:0; }
 .allapps .logo{width: 20px; height: 20px; background-size: 20px 20px; float: left; margin-right: 10px; margin-top: -2px; background-position: center; border-radius: 4px; border: 1px solid #555;}
 .allapps .trend { width:12px; height:9px; display: inline-block; margin-top: 5px; margin-right: 5px;}
 .allapps tbody tr {cursor: pointer;}
-
 .allappview .widget-content .big-numbers .inner{height: 30px;}
 .allappview .widget-footer{border-radius: 0;}
 .allappview #empty-graph {position: absolute; text-align: center; font-size: 35px; width:100%; top:50%; margin-top: -20px; display: none;}
 .allapps div.color{ width: 10px; height: 20px; float: right;}
 
+/* Styles for horizontal d3 bar charts */
 .hsb-container { margin:15px 30px; position:relative; }
 .hsb-container.top { margin-bottom:30px; margin-top:25px; }
-.hsb-container .label {
-    text-align:left;
-    font-size: 12px;
-    margin-bottom: 3px;
-    color:#777;
-}
-.hsb-container .chart {
-
-}
-.hsb-container text {
-    fill: #FFF;
-    font: 10px sans-serif;
-    text-anchor: initial;
-}
-
+.hsb-container .label { text-align:left; font-size: 12px; margin-bottom: 3px; color:#777; }
+.hsb-container text { fill: #FFF; font: 10px sans-serif; text-anchor: initial; }
 .hsb-tip { background-color: transparent; text-align: center; padding:6px; opacity:0; color:#FFF; }
 .hsb-tip:hover { opacity:1; }
 
+/* Styles tabs */
 .ui-tabs .ui-tabs-nav li { width:50%; margin:0; padding:0; background-color: #f8f8f8; }
 .ui-tabs .ui-tabs-nav li a { display: block; float:none; padding:12px 0 15px 0; font-size:13px; font-family: Ubuntu; text-transform: uppercase; color:#636363; }
 .ui-widget-content .ui-state-default { border:none; background-image: none; padding:0; border-top: 3px solid #f8f8f8; }
@@ -1076,3 +1064,15 @@ table.events-table { width:100%; padding:0; margin:0; }
 .back-link:visited { margin-bottom: 16px; color:#616161; font-size:14px; display: inline-block; }
 .back-link:before { content: "←"; margin-right: 5px; color:#2FA732; }
 .back-link:hover span { text-decoration: underline; }
+
+/* Styles for nested tables */
+td.details,
+td.details:hover { border:1px solid #d0d0d0; border-left:none; border-right:none; padding:20px; background-color:#FFF; cursor:default; }
+td.details:hover,
+td.details tr:hover { }
+td.details table { border-spacing: 0; border: 1px solid #e8e8e8; }
+td.details table tr,
+td.details table tr:hover { background-color:#FFF !important; cursor:default; line-height:20px; }
+td.details table tr:first-child,
+td.details table tr:first-child:hover { background-color:#F3F3F3 !important; line-height:12px; }
+td.details table tr:first-child td { font-family:Ubuntu; font-size:11px; text-transform:uppercase; }

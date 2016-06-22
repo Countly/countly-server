@@ -296,7 +296,7 @@ window.CrashesView = countlyView.extend({
     switchMetric:function(){
 		var chartData = countlyCrashes.getChartData(this.curMetric, this.metrics[this.curMetric]);
 		countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
-	},
+	}
 });
 
 window.CrashgroupView = countlyView.extend({
@@ -726,6 +726,20 @@ window.CrashgroupView = countlyView.extend({
                     });
                 });
             });
+            $(".bar-inner").on({
+                mouseenter:function () {
+                    var number = $(this).parent().next();
+
+                    number.text($(this).data("item"));
+                    number.css({"color":$(this).css("background-color")});
+                },
+                mouseleave:function () {
+                    var number = $(this).parent().next();
+
+                    number.text(number.data("item"));
+                    number.css({"color":$(this).parent().find(".bar-inner:first-child").css("background-color")});
+                }
+            });
         }
     },
     refresh:function () {
@@ -783,13 +797,13 @@ window.CrashgroupView = countlyView.extend({
 			str += '<div class="datatablesubrow">'+
 				'<table style="width: 100%;">'+
 						'<tr>'+
-							'<td class="text-left">'+jQuery.i18n.map["crashes.app_version"]+':</td>'+
-							'<td class="text-left">'+jQuery.i18n.map["crashes.device"]+':</td>'+
-							'<td class="text-left">'+jQuery.i18n.map["crashes.state"]+':</td>';
+							'<td class="text-left">'+jQuery.i18n.map["crashes.app_version"]+'</td>'+
+							'<td class="text-left">'+jQuery.i18n.map["crashes.device"]+'</td>'+
+							'<td class="text-left">'+jQuery.i18n.map["crashes.state"]+'</td>';
                             if(data.custom)
-                                str += '<td class="text-left">'+jQuery.i18n.map["crashes.custom"]+':</td>';
+                                str += '<td class="text-left">'+jQuery.i18n.map["crashes.custom"]+'</td>';
                             if(data.logs)
-                                str += '<td class="text-left">'+jQuery.i18n.map["crashes.logs"]+':</td>';
+                                str += '<td class="text-left">'+jQuery.i18n.map["crashes.logs"]+'</td>';
 						str += '</tr>'+
 						'<tr>'+
 							'<td class="text-right">'+data.app_version.replace(/:/g, '.')+'</td>'+
@@ -821,9 +835,9 @@ window.CrashgroupView = countlyView.extend({
                                     str += jQuery.i18n.map["crashes.after"]+' '+data.session+' '+jQuery.i18n.map["crashes.sessions"]+'<br/>';
                                 else
                                     str += jQuery.i18n.map["crashes.frequency"]+': '+jQuery.i18n.map["crashes.first-crash"]+'<br/>';
-                                str += jQuery.i18n.map["crashes.online"]+":"+((data.online)? "yes" : "no")+"<br/>";
-                                str += jQuery.i18n.map["crashes.background"]+":"+((data.background)? "yes" : "no")+"<br/>";
-                                str += jQuery.i18n.map["crashes.muted"]+":"+((data.muted)? "yes" : "no")+"<br/>";
+                                str += jQuery.i18n.map["crashes.online"]+": "+((data.online)? "yes" : "no")+"<br/>";
+                                str += jQuery.i18n.map["crashes.background"]+": "+((data.background)? "yes" : "no")+"<br/>";
+                                str += jQuery.i18n.map["crashes.muted"]+": "+((data.muted)? "yes" : "no")+"<br/>";
                             str += '</td>';
                             if(data.custom){
                                 str += '<td class="text-left">';
