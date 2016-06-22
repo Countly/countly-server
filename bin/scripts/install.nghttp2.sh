@@ -7,6 +7,8 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+export LANGUAGE=C ; export LC_ALL=C ;
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ -n "$(command -v apt-get)" ]; then

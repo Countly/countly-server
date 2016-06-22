@@ -12,6 +12,8 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 #get current countly version
 VERSION="$(grep -oP 'version:\s*"\K[0-9\.]*' $DIR/../../frontend/express/version.info.js)"
 
+export LANGUAGE=C ; export LC_ALL=C ;
+
 #stub commands to be overwritten
 countly_start (){
     echo "start stub";
