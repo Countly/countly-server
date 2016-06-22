@@ -10,6 +10,7 @@ bash $DIR/scripts/install.nghttp2.sh
 
 #upgrade live plugin if it is installed
 countly plugin upgrade live
+countly plugin upgrade reports
 
 countly update sdk-web
 countly upgrade

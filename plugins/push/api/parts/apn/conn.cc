@@ -155,7 +155,9 @@ namespace apns {
 		h2_sem = NULL;
 		tcp_init_sem = NULL;
 
-		while (address && !(stats.state & ST_CONNECTED)) {
+		stats.init_eofs = 0;
+
+		while (address && !(stats.state & ST_CONNECTED) && stats.init_eofs < H2_MAX_EOFS) {
 			tcp_init_sem = new uv_sem_t;
 			uv_sem_init(tcp_init_sem, 0);
 
@@ -493,7 +495,16 @@ namespace apns {
 			std::ostringstream out;
 			out << "error in uv_on_read: " << uv_err_name(nread);
 			c->send_error(out.str());
-			c->conn_thread_stop();
+			if (c->tcp_init_sem) {
+				c->stats.init_eofs++;
+				std::ostringstream out;
+				out << c->stats.init_eofs << "-EOF";
+				c->stats.error_connection = out.str();
+				uv_sem_post(c->tcp_init_sem);
+			} else {
+				c->stats.error_connection = "EOF";
+				c->conn_thread_stop();
+			}
 		} else if (nread > 0) {
 			int r = BIO_write(c->read_bio, buf->base, nread);     
 			if (r <= 0) {

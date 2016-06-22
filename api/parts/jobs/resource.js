@@ -144,16 +144,15 @@ class ResourceFaçade extends ResourceInterface {
 			this.emit(EVT.OPENED);
 		});
 		
-		this.channel.on(CMD.CLOSED, () => {
-			log.i('[jobs]: Resource %j closed in %d: %j', this.name, this._worker.pid, this.id);
+		this.channel.on(CMD.CLOSED, (err) => {
+			log.i('[jobs]: Resource %j closed in %d: %j', this.name, this._worker.pid, this.id, err);
 			this._open = false;
 			if (!this._crashed) {
 				if (this._job) {
-					log.i('[jobs]: Resource %j closed in %d (%j) while running %s, will reject', this.name, this._worker.pid, this.id, this._job._idIpc);
-					this.reject(EVT.CLOSED);
-				} else {
-					this.emit(EVT.CLOSED);
+					log.i('[jobs]: Resource %j closed in %d (%j) while running %s, will reject', this.name, this._worker.pid, this.id, this._job._idIpc, err);
+					this.reject(err || EVT.CLOSED);
 				}
+				this.emit(EVT.CLOSED, err);
 			}
 		});
 
@@ -251,6 +250,7 @@ class ResourceFaçade extends ResourceInterface {
 					this.close();
 				}, RESOURCE_CMD_TIMEOUT);
 				this.channel.once(CMD.OPENED, resolve);
+				this.channel.once(CMD.CLOSED, reject);
 				this.channel.send(CMD.OPENED);
 			});
 		}
@@ -291,8 +291,9 @@ class ResourceFaçade extends ResourceInterface {
 	}
 }
 
-class ResourcePool {
+class ResourcePool extends EventEmitter {
 	constructor(construct, maxResources) {
+		super();
 		this.construct = construct;
 		this.maxResources = maxResources;
 		this.pool = [];
@@ -321,6 +322,9 @@ class ResourcePool {
 				if (idx !== -1) { 
 					log.d('[jobs]: Resource %j is closed, removing from pool', resource._id);
 					this.pool.splice(idx, 1); 
+					if (this.pool.length === 0) {
+						this.emit(EVT.CLOSED);
+					}
 				}
 			});
 			this.pool.push(resource);
@@ -425,7 +429,11 @@ class Resource extends ResourceInterface {
 		});
 
 		this.channel.on(CMD.OPENED, () => {
-			this.open();
+			log.d('[%d]: Opening %s by command of façade', process.pid, this.id);
+			this.open().then(() => {}, (err) => {
+				this.channel.send(CMD.CLOSED, err);
+				this.close();
+			});
 		});
 
 		process.on('uncaughtException', (err) => {
@@ -463,6 +471,7 @@ class Resource extends ResourceInterface {
 
 module.exports = {
 	CMD: CMD,
+	EVT: EVT,
 	Resource: Resource,
 	ResourceFaçade: ResourceFaçade,
 	ResourcePool: ResourcePool

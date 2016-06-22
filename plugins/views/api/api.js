@@ -232,7 +232,7 @@ var plugin = {},
     });
     plugins.register("/i", function(ob){
         var params = ob.params;
-        if (params.qstring.events) {
+        if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
             params.qstring.events = params.qstring.events.filter(function(currEvent){
                 if (currEvent.key == "[CLY]_view"){
                     if(currEvent.segmentation && currEvent.segmentation.name){

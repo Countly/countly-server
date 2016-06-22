@@ -1,4 +1,5 @@
 //start db connection
+/*
 var plugins = require('../../pluginManager.js'),
     async = require("async"),
     reports = require("./reports");
@@ -38,4 +39,4 @@ plugins.loadConfigs(countlyDb, function(){
             process.exit();
         });
     })
-});
+});*/

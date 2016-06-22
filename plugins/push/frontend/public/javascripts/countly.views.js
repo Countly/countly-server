@@ -41,8 +41,9 @@ window.MessagingDashboardView = countlyView.extend({
         for (var i in pushDP.chartDP[2].data) {
             action += pushDP.chartDP[2].data[i][1];
         }
-        delivery = delivery ? sent === 0 ? 100 : Math.round(100 * delivery / sent) : 0;
-        action = action ? sent === 0 ? 100 :  Math.round(100 * action / sent) : 0;
+        enabling = Math.min(100, enabling);
+        delivery = Math.min(100, delivery ? sent === 0 ? 100 : Math.round(100 * delivery / sent) : 0);
+        action = Math.min(100, action ? sent === 0 ? 100 :  Math.round(100 * action / sent) : 0);
 
         templateData["page-title"] = countlyCommon.getDateRange();
         templateData["logo-class"] = "sessions";
@@ -136,8 +137,10 @@ window.MessagingListView = countlyView.extend({
                         return '<span data-localize="push.message.status.' + d.status + '"></span>';
                     }
                 }, "sTitle": jQuery.i18n.map["push.table.status"] },
-                { "mData": "local.created", sType:"date", "sTitle": jQuery.i18n.map["push.table.created"] },
-                { "mData": "local", sType:"string", "sTitle": jQuery.i18n.map["push.table.sent-scheduled"], mRender: function(local){
+                { "mData": "local.createdSeconds", bVisible: false, sType:"numeric" },
+                { "mData": "local.created", sType:"date", iDataSort: 4, "sTitle": jQuery.i18n.map["push.table.created"] },
+                { "mData": "local.dateSeconds", bVisible: false, sType:"numeric" },
+                { "mData": "local", sType:"string", iDataSort: 6, "sTitle": jQuery.i18n.map["push.table.sent-scheduled"], mRender: function(local){
                     return local.sent ? local.sent : local.date;
                 } }
             ],

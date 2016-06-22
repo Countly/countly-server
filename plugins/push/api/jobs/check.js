@@ -16,13 +16,18 @@ class CheckJob extends job.TransientJob {
 	constructor(name, data) {
 		super(name, data);
 
-		// sub
-		log.d('Constructing check job: %s, %j', name, data);
-		log.d('JSON: %j', this);
+		try {
+			// sub
+			log.d('Constructing check job: %s, %j', name, data);
+			log.d('JSON: %j', this);
 
-		this.user = [{}];
-		if (this.data.pushly) {
-			this.message = new Pushly(this.data.pushly);
+			this.user = [{}];
+			if (this.data.pushly) {
+				this.message = new Pushly(this.data.pushly);
+			}
+		} catch (e) {
+			log.e(e, e.stack);
+			this.failed = e;
 		}
 	}
 
@@ -40,6 +45,9 @@ class CheckJob extends job.TransientJob {
 
 	divide (db) {
 		log.d('[%d]: Dividing %s: %j', process.pid, this._id, this._json.data);
+		if (this.failed) {
+			return Promise.reject(this.failed);
+		}
 		return new Promise((resolve, reject) => {
 			let message = new Message(this._json.data);
 				message.devices = this.user;
@@ -55,27 +63,11 @@ class CheckJob extends job.TransientJob {
 		return Promise.resolve();
 	}
 
-	/**
-	 * Check job needs to close all previous resources with the same name to run.
-	 */
-	prepare (manager) {
-		return new Promise((resolve) => {
-			super.prepare(manager).then(() => {
-				let pool = manager.resources[job.resourceName()];
-				if (pool) {
-					pool.close().then(() => {
-						delete manager.resources[job.resourceName()];
-						resolve();
-					});
-				} else {
-					resolve();
-				}
-			});
-		});
-	}
-
 	run (db, done, progress) {
 		try{
+		if (this.failed) {
+			return done(this.failed);
+		}
 		log.d('[%d] going to run job %j: %j', process.pid, this._idIpc, this.data, typeof this.data.mid, this.data.mid);
 
 		this.datas = [];

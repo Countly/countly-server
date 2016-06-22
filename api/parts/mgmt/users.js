@@ -28,14 +28,20 @@ var usersApi = {},
             var membersObj = {};
     
             for (var i = 0; i < members.length ;i++) {
+                if(members[i].admin_of && members[i].admin_of.length > 0 && members[i].admin_of[0] == ""){
+                    members[i].admin_of.splice(0, 1);
+                }
+                if(members[i].user_of && members[i].user_of.length > 0 && members[i].user_of[0] == ""){
+                    members[i].user_of.splice(0, 1);
+                }
                 membersObj[members[i]._id] = {
                     '_id':members[i]._id,
                     'api_key':members[i].api_key,
                     'full_name':members[i].full_name,
                     'username':members[i].username,
                     'email':members[i].email,
-                    'admin_of':((members[i].admin_of && members[i].admin_of.length > 0 && members[i].admin_of[0] != "") ? members[i].admin_of : []),
-                    'user_of':((members[i].user_of && members[i].user_of.length > 0 && members[i].user_of[0] != "") ? members[i].user_of : []),
+                    'admin_of':((members[i].admin_of && members[i].admin_of.length > 0) ? members[i].admin_of : []),
+                    'user_of':((members[i].user_of && members[i].user_of.length > 0) ? members[i].user_of : []),
                     'global_admin':(members[i].global_admin === true),
                     'is_current_user':(members[i].api_key == params.member.api_key)
                 };

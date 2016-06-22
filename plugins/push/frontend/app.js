@@ -34,7 +34,7 @@ var plugin = {},
 			try {
 				var p12 = credentials.p12(tmp_path, req.body.passphrase);
 				if (!p12.dev || !p12.prod) {
-					res.send({error: 'Countly now requires universal HTTP/2 certificates. Please see our guide at http://resources.count.ly/docs/countly-sdk-for-ios-and-os-x '});
+                    res.send({error: 'Countly now requires universal HTTP/2 certificates. Please see our guide <a href="http://resources.count.ly/docs/countly-sdk-for-ios-and-os-x" target="_blank">here</a>.'});
 					return true;
 				}
 			} catch (e) {
@@ -90,6 +90,7 @@ var plugin = {},
 									} else {
 										try {
 											body = JSON.parse(body);
+											log.w('check response: ', body);
 											if (body.ok) {
 												try {
 													fs.unlink(endpoints.APNCertificatePath(req.body.app_id, true), function () {});
@@ -100,7 +101,11 @@ var plugin = {},
 											} else {
 												try { fs.unlinkSync(target_path); } catch (e){}
 												countlyDb.collection('apps').update({_id: countlyDb.ObjectID(req.body.app_id)}, unset, function(){});
-												res.send({error: 'Invalid certificate and/or passphrase'});
+												if (body.error && body.error === 'badcert') {
+													res.send({error: 'Certificate rejected by APN. Possibly wrong private key if you have more than one.'});
+												} else {
+													res.send({error: 'Invalid certificate and/or passphrase'});
+												}
 											}
 										} catch(e) {
 											try { fs.unlinkSync(target_path); } catch (e){}

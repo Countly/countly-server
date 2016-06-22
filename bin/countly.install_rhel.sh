@@ -17,24 +17,38 @@ echo "
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 #install nodejs
-sudo yum -y install openssl-devel gcc-c++ make
+if [ "$(rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3)" -eq "6" ]; then
+    echo "updating gcc to devtoolset-2..."
+    rpm --import http://ftp.scientificlinux.org/linux/scientific/5x/x86_64/RPM-GPG-KEYs/RPM-GPG-KEY-cern
+    yum install -y wget 
+    wget -O /etc/yum.repos.d/slc6-devtoolset.repo http://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo
+    yum install -y devtoolset-2-gcc devtoolset-2-gcc-c++ openssl-devel make
+    source /opt/rh/devtoolset-2/enable
+
+    # and then install dependencies for sharp
+    curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | bash -
+    source /opt/rh/devtoolset-2/enable
+    export CC=`which gcc` CXX=`which g++`
+else
+	yum -y install wget openssl-devel gcc-c++ make
+fi
+
 curl -sL https://rpm.nodesource.com/setup_5.x | bash -
 yum install -y nodejs
 sudo ln -s `which node` /usr/bin/nodejs
 
 #install mongodb
-echo "[mongodb-org-3.0]
+echo "[mongodb-org-3.2]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/3.0/x86_64/
+baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/3.2/x86_64/
 gpgcheck=0
-enabled=1" > /etc/yum.repos.d/mongodb-org-3.0.repo
+enabled=1" > /etc/yum.repos.d/mongodb-org-3.2.repo
 
 sudo yum -y install mongodb-org
 sudo service mongod start
 
 #install nginx
 sudo yum -y install policycoreutils-python
-sudo yum -y install wget
 echo "[nginx]
 name=nginx repo
 baseurl=http://nginx.org/packages/rhel/7/x86_64/
@@ -62,21 +76,16 @@ sudo yum -y install python-setuptools
 #install supervisor
 sudo easy_install supervisor
 
-#install imagemagick
-sudo yum -y install ImageMagick
-
 #install sendmail
 sudo yum -y install sendmail
 sudo service sendmail start
 
 #install grunt
-( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install )
+( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm )
 
-#install api modules
-( cd $DIR/../api ; npm install --unsafe-perm )
-
-#install frontend modules
-( cd $DIR/../frontend/express ; npm install --unsafe-perm )
+source /opt/rh/devtoolset-2/enable
+export CC=`which gcc` CXX=`which g++`
+npm install
 
 #configure and start nginx
 cp $DIR/config/nginx.server.conf /etc/nginx/conf.d/default.conf
@@ -100,6 +109,9 @@ cp -n $DIR/../frontend/express/config.sample.js $DIR/../frontend/express/config.
 if [ ! -f $DIR/../plugins/plugins.json ]; then
 	cp $DIR/../plugins/plugins.default.json $DIR/../plugins/plugins.json
 fi
+
+#install nghttp2
+bash $DIR/scripts/install.nghttp2.sh
 
 #install plugins
 node $DIR/scripts/install_plugins

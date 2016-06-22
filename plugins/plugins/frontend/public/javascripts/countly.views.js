@@ -355,6 +355,21 @@ window.ConfigurationsView = countlyView.extend({
                         new_pwd = $(".configs #new_pwd").val(),
                         re_new_pwd = $(".configs #re_new_pwd").val(),
                         api_key = $(".configs #api-key").val();
+                    
+                    var ignoreError = false;
+                    
+                    if((new_pwd.length && re_new_pwd.length) || api_key.length || username.length){
+                        ignoreError = true;
+                    }
+                    
+                    if ((new_pwd.length || re_new_pwd.length) && !old_pwd.length) {
+                        CountlyHelpers.notify({
+                            title: jQuery.i18n.map["user-settings.old-password-match"],
+                            message: jQuery.i18n.map["configs.not-saved"],
+                            type: "error"
+                        });
+                        return true;
+                    }
     
                     if (new_pwd != re_new_pwd) {
                         CountlyHelpers.notify({
@@ -402,7 +417,7 @@ window.ConfigurationsView = countlyView.extend({
                                 countlyGlobal["member"].api_key = api_key;
                             }
                             countlyPlugins.updateUserConfigs(self.changes, function(err, services){
-                                if(err){
+                                if(err && !ignoreError){
                                     CountlyHelpers.notify({
                                         title: jQuery.i18n.map["configs.not-changed"],
                                         message: jQuery.i18n.map["configs.not-saved"],

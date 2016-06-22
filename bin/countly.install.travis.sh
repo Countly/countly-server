@@ -42,7 +42,7 @@ add-apt-repository ppa:ubuntu-toolchain-r/test -y
 #apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
 
 #sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
-#echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
+#echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
 
 #update once more after adding new repos
 apt-get update
@@ -66,9 +66,6 @@ apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exi
 
 #install supervisor
 apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
-
-#install imagemagick
-apt-get -y install imagemagick
 
 #install sendmail
 #apt-get -y install sendmail

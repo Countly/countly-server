@@ -26,6 +26,7 @@
 #define H2_TIMEOUT 30000
 #define H2_PING_TIMEOUT 3000
 #define H2_SOCKET_FLUSH_BYTES 1024
+#define H2_MAX_EOFS 3
 static std::string H2_APN_PATH("/3/device/");
 
 #define ST_INITIAL 				0					// 0
@@ -97,6 +98,7 @@ namespace apns {
 		unsigned int rate_10s_in_counter = 0;
 		unsigned int rate_10s_out_counter = 0;
 		unsigned int service_timeouts = 0;
+		unsigned int init_eofs = 0;
 		bool feeding = false;
 		bool transmitting = false;
 		bool reading = false;

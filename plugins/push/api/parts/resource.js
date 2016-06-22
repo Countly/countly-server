@@ -1,7 +1,7 @@
 'use strict';
 
 const res = require('../../../../api/parts/jobs/resource.js'),
-	  log = require('../../../../api/utils/log.js')('job:push:send'),
+	  log = require('../../../../api/utils/log.js')('job:push:resource'),
 	  APN = require('../parts/apn'),
 	  GCM = require('../parts/gcm');
 
@@ -57,15 +57,18 @@ class Connection extends res.Resource {
 			if (this.connection) {
 				this.connection.close_connection().then(() => {
 					this.closed();
+					this.stopInterval();
 				}).then(resolve, reject);
 			} else {
 				resolve();
+				this.stopInterval();
 			}
 		});
 	}
 
 	terminate () {
 		this.connection.terminate();
+		this.stopInterval();
 	}
 
 	send (datas, feeder, stats) {

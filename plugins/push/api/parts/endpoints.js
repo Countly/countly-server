@@ -31,8 +31,8 @@ var common          = require('../../../../api/utils/common.js'),
             return false;
         }
 
-        api.check(options.appId, options.platform, options.test, function(ok){
-            common.returnOutput(params, {ok: ok});
+        api.check(options.appId, options.platform, options.test, function(ok, error){
+            common.returnOutput(params, {ok: ok, error: error});
         });
     };
 
@@ -50,7 +50,8 @@ var common          = require('../../../../api/utils/common.js'),
             callback(true);
         }, (json) => {
             log.d('Check app returned error', json);
-            callback(false);
+            let err = json && json.error === '3-EOF' ? 'badcert' : undefined;
+            callback(false, err);
         });
     };
 

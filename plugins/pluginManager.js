@@ -335,6 +335,10 @@ var pluginManager = function pluginManager(){
         plugins = require('./plugins.json', 'dont-enclose');
     }
     
+    this.isPluginEnabled = function(plugin){
+        return !!plugins[plugin];
+    };
+    
     //checking plugins on master process
     this.checkPluginsMaster = function(){
         var self = this;
@@ -473,7 +477,7 @@ var pluginManager = function pluginManager(){
         var eplugin = global.enclose ? global.enclose.plugins[plugin] : null;
         if (eplugin && eplugin.prepackaged) return callback(errors);
         var cwd = eplugin ? eplugin.rfs : path.join(__dirname, plugin);
-        var child = exec('npm install', {cwd: cwd}, function(error) {
+        var child = exec('npm install --unsafe-perm', {cwd: cwd}, function(error) {
             if (error){
                 errors = true;
                 console.log('error: %j', error);

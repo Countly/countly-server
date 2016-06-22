@@ -42,6 +42,14 @@ plugins.init();
 
 http.globalAgent.maxSockets = countlyConfig.api.max_sockets || 1024;
 
+process.on('uncaughtException', (err) => {
+  console.log('Caught exception: %j', err, err.stack);
+});
+
+process.on('unhandledRejection', (reason, p) => {
+  console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+});
+
 if (cluster.isMaster) {
 
     var workerCount = (countlyConfig.api.workers)? countlyConfig.api.workers : os.cpus().length;
@@ -88,7 +96,7 @@ if (cluster.isMaster) {
     // Allow configs to load & scanner to find all jobs classes
     setTimeout(() => {
         jobs.job('api:ping').replace().schedule('every 1 day');
-        jobs.job('api:clear').replace().schedule('every 1 minute');
+        jobs.job('api:clear').replace().schedule('every 1 day');
     }, 3000);
 } else {
 

@@ -1,4 +1,5 @@
 //get command line arguments (skip node and file arguments)
+/*
 var myArgs = process.argv.slice(2);
 
 //check if we have an id
@@ -16,4 +17,4 @@ if(myArgs[0]){
             process.exit();
         });
     });
-}
+}*/

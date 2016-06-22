@@ -47,23 +47,31 @@ class Manager {
 					log.e(err);
 				}
 
-				let promise = toCancel && toCancel.length ? Promise.all(toCancel.map(j => this.create(j).cancel())) : Promise.resolve(),
-					resume = () => {
-						this.collection.find({status: STATUS.PAUSED}).toArray((err, array) => {
-							if (!err && array && array.length) {
-								log.i('Going to resume following jobs: %j', array.map(j => {
-									return {_id: j._id, name: j.name};
-								}));
-								this.process(array.filter(j => this.types.indexOf(j.name) !== -1));
-							} else {
-								this.checkAfterDelay();
-							}
-						});
-					};
-				promise.then(resume, resume);
+				log.d('Cancelling %d jobs', toCancel ? toCancel.length : null);
+				try {
+					let promise = toCancel && toCancel.length ? Promise.all(toCancel.map(j => this.create(j).cancel())) : Promise.resolve(),
+						resume = () => {
+							log.d('Resuming after cancellation')
+							this.collection.find({status: STATUS.PAUSED}).toArray((err, array) => {
+								if (!err && array && array.length) {
+									log.i('Going to resume following jobs: %j', array.map(j => {
+										return {_id: j._id, name: j.name};
+									}));
+									this.process(array.filter(j => this.types.indexOf(j.name) !== -1));
+								}
+							});
+						};
+					promise.then(resume, resume);
+					this.checkAfterDelay(DELAY_BETWEEN_CHECKS * 5);
+				} catch(e) {
+					log.e(e, e.stack);
+					this.checkAfterDelay(DELAY_BETWEEN_CHECKS * 5);
+				}
+
 			});
 		}, (e) => {
 			log.e('Error when loading jobs', e, e.stack);
+			this.checkAfterDelay();
 		});
 
 		// Listen for transient jobs
@@ -91,13 +99,13 @@ class Manager {
 		}
 	}
 
-	checkAfterDelay () {
+	checkAfterDelay (delay) {
 		if (this.checkingAfterDelay) { return; }
 		this.checkingAfterDelay = true;
 		setTimeout(() => {
 			this.checkingAfterDelay = false;
 			this.check();
-		}, DELAY_BETWEEN_CHECKS);
+		}, delay || DELAY_BETWEEN_CHECKS);
 	}
 
 	check () {
@@ -179,7 +187,7 @@ class Manager {
 				});
 			}));
 		});
-		Promise.all(promises).then(this.checkAfterDelay.bind(this), this.checkAfterDelay.bind(this));
+		Promise.all(promises).then(this.checkAfterDelay.bind(this, null), this.checkAfterDelay.bind(this, null));
 	}
 
 	schedule (job) {
@@ -347,6 +355,10 @@ class Manager {
 			this.resources[job.resourceName()] = new RES.ResourcePool(() => {
 				return new RES.ResourceFaçade(job, this.files[job.name]);
 			}, 5);
+			this.resources[job.resourceName()].on(RES.EVT.CLOSED, () => {
+				log.e('all pool resources done');
+				delete this.resources[job.resourceName()];
+			});
 		}
 
 		return this.resources[job.resourceName()];

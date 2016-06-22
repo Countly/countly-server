@@ -76,7 +76,12 @@ window.PopulatorView = countlyView.extend({
             $("#start-populate").show();
             $("#populate-bar div").stop(true);
             $("#populate-bar div").width(0);
-            CountlyHelpers.alert(jQuery.i18n.map["populator.success"], "green");
+            CountlyHelpers.confirm(jQuery.i18n.map["populator.success"], "green", function (result) {
+                if (!result) {
+                    return true;
+                }
+                window.location = "/dashboard";
+            });
         });
         
         $("#populate-explain").on('click', function() {

@@ -703,6 +703,13 @@ var common = {},
 	
 		return 0;
 	};
+    
+    //adjust timestamp with app's timezone for timestamp queries that should equal bucket results
+    common.adjustTimestampByTimezone = function(ts, tz){
+        var d = new Date();
+        d.setTimezone(tz);
+        return ts + (d.getTimezoneOffset()*60);
+    };
 	
 
     // getter/setter for dot notatons:

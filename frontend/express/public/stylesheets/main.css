@@ -742,6 +742,7 @@ div.datatablesubrow {display: none;}
 	.dialog .result-message.green { color:#6BB96E; }
 	.dialog .message .title { margin-bottom:8px; }
 	.dialog .message .input input { width:280px; }
+    .dialog .message a { text-decoration: underline; }
 
 #new-install-overlay { display:none; z-index:2; position:absolute; width:100%; height:100%; background-color:#000; opacity:0.6; }
 .alert { font-family:Ubuntu,Helvetica,sans-serif; line-height:111%; border-radius:4px; padding:8px 14px; }
