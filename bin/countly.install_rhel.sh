@@ -20,11 +20,12 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [ "$(rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3)" -eq "6" ]; then
     echo "updating gcc to devtoolset-2..."
     rpm --import http://ftp.scientificlinux.org/linux/scientific/5x/x86_64/RPM-GPG-KEYs/RPM-GPG-KEY-cern
+    yum install -y wget 
     wget -O /etc/yum.repos.d/slc6-devtoolset.repo http://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo
     yum install -y devtoolset-2-gcc devtoolset-2-gcc-c++ openssl-devel make
     source /opt/rh/devtoolset-2/enable
 else
-	yum -y install openssl-devel gcc-c++ make
+	yum -y install wget openssl-devel gcc-c++ make
 fi
 
 curl -sL https://rpm.nodesource.com/setup_5.x | bash -
