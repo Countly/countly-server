@@ -24,6 +24,11 @@ if [ "$(rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3)" -
     wget -O /etc/yum.repos.d/slc6-devtoolset.repo http://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo
     yum install -y devtoolset-2-gcc devtoolset-2-gcc-c++ openssl-devel make
     source /opt/rh/devtoolset-2/enable
+
+    # and then install dependencies for sharp
+    curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | bash -
+    source /opt/rh/devtoolset-2/enable
+    export CC=`which gcc` CXX=`which g++`
 else
 	yum -y install wget openssl-devel gcc-c++ make
 fi
@@ -44,7 +49,6 @@ sudo service mongod start
 
 #install nginx
 sudo yum -y install policycoreutils-python
-sudo yum -y install wget
 echo "[nginx]
 name=nginx repo
 baseurl=http://nginx.org/packages/rhel/7/x86_64/
@@ -77,13 +81,11 @@ sudo yum -y install sendmail
 sudo service sendmail start
 
 #install grunt
-( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install )
+( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm )
 
-#install api modules
-( cd $DIR/../api ; npm install --unsafe-perm )
-
-#install frontend modules
-( cd $DIR/../frontend/express ; npm install --unsafe-perm )
+source /opt/rh/devtoolset-2/enable
+export CC=`which gcc` CXX=`which g++`
+npm install
 
 #configure and start nginx
 cp $DIR/config/nginx.server.conf /etc/nginx/conf.d/default.conf
