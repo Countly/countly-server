@@ -11,7 +11,7 @@ then
 elif [[ `/sbin/init --version` =~ upstart ]];
 then
     INITSYS="upstart"
-fi
+fi 2> /dev/null
 
 bash $DIR/commands/$INITSYS/install.sh
 ln -sf $DIR/commands/$INITSYS/countly.sh $DIR/commands/enabled/countly.sh
