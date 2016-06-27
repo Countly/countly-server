@@ -42,5 +42,6 @@ elif [ -n "$(command -v yum)" ]; then
 fi
 git clone https://github.com/nghttp2/nghttp2.git
 cd nghttp2
+git checkout tags/v1.12.0
 export CFLAGS="-g -O2 -fPIC" && export CPPFLAGS="-fPIC" && autoreconf -i && automake && autoconf && ./configure --disable-examples --disable-app && make && make install
 npm install -g --unsafe-perm node-gyp
