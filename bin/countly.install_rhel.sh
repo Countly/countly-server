@@ -126,7 +126,7 @@ if [ "$(rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3)" -
     source /opt/rh/devtoolset-2/enable
     export CC=`which gcc` CXX=`which g++`
 fi
-npm install
+cd $DIR/.. && npm install
 
 #install nghttp2
 bash $DIR/scripts/install.nghttp2.sh
@@ -138,7 +138,7 @@ node $DIR/scripts/install_plugins
 countly update sdk-web
 
 #compile scripts for production
-cd $DIR && grunt dist-all
+cd $DIR/.. && grunt dist-all
 
 #finally start countly api and dashboard
 countly start
