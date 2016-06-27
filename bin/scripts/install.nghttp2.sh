@@ -7,7 +7,7 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-export LANGUAGE=C ; export LC_ALL=C ;
+export LANGUAGE=en_US.UTF-8 ; export LC_ALL=en_US.UTF-8;
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
