@@ -37,7 +37,7 @@ var locale = {},
             callback(null, orig[name] || "["+name+"]");
         }
         else if(!localized[lang]){
-            localized[lang] = orig;
+            localized[lang] = JSON.parse(JSON.stringify(orig));
             fs.readFile(dir+'/'+file+'_'+lang+'.properties', 'utf8', function (err,local_properties) {
                 if(!err && local_properties){
                     local_properties = parser.parse(local_properties);
@@ -53,21 +53,22 @@ var locale = {},
     
     locale.getProperties = function(lang, callback){
         if(lang == default_lang){
-            callback(null, orig || []);
+            callback(null, orig || {});
         }
         else if(!localized[lang]){
-            localized[lang] = orig;
+            localized[lang] = JSON.parse(JSON.stringify(orig));
             fs.readFile(dir+'/'+file+'_'+lang+'.properties', 'utf8', function (err,local_properties) {
                 if(!err && local_properties){
                     local_properties = parser.parse(local_properties);
                     for(var i in local_properties)
                         localized[lang][i] = local_properties[i];
                 }
-                callback(null, localized[lang] || []);
+                callback(null, localized[lang] || {});
             });
         }
-        else
-            callback(null, localized[lang] || []);
+        else{
+            callback(null, localized[lang] || {});
+        }
     };
     
 }(locale));
