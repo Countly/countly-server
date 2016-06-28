@@ -290,7 +290,7 @@ var metrics = {
                 var msg = {
                     to:report.emails[i],
                     from:versionInfo.title,
-                    subject:versionInfo.title+': You had '+report.total_new+' new users '+report.properties["reports.time-"+report.frequency]+'!',
+                    subject:versionInfo.title+': ' + report.properties["reports.you-had"] + ' '+report.total_new+' ' + report.properties["common.new-users"].toLowerCase() + ' '+report.properties["reports.time-"+report.frequency]+'!',
                     html: message
                 };
                 if(mail.sendPoolMail)
