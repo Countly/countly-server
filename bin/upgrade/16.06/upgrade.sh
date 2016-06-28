@@ -12,6 +12,12 @@ if [ -f /etc/lsb-release ]; then
 	apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
 fi
 
+#remove previous dependencies, as they need to be rebuild for new nodejs version
+rm -rf $DIR/../node_modules
+
+#install dependencies, process files and restart countly
+countly upgrade
+
 #enable command line
 bash $DIR/scripts/detect.init.sh
 
