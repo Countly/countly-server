@@ -67,11 +67,6 @@ cp /etc/nginx/conf.d/default.conf $DIR/config/nginx.default.backup
 cp $DIR/config/nginx.server.conf /etc/nginx/conf.d/default.conf
 cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
 service nginx restart
-
-wget http://127.0.0.1:3001/i
-
-cat /var/log/audit/audit.log | grep nginx | grep denied | audit2allow -M mynginx
-semodule -i mynginx.pp
 set -e
 
 #for easy_install
