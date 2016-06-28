@@ -2,10 +2,10 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 
-apt-get install gawk -y;
+#apt-get install gawk -y;
 
 ## each separate version number must be less than 3 digit wide !
-function version { echo "$@" | gawk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'; }
+#function version { echo "$@" | gawk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'; }
 
 #enable command line
 bash $DIR/scripts/detect.init.sh
