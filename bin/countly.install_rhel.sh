@@ -140,5 +140,5 @@ countly start
 
 ENABLED=`getenforce`
 if [ "$ENABLED" == "Enforcing" ]; then
-  echo "SELinux is enabled, please disable it or add nginx to exception for Countly to work properly"
+  echo -e "\e[31mSELinux is enabled, please disable it or add nginx to exception for Countly to work properly\e[0m"
 fi
