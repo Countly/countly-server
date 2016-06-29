@@ -53,7 +53,7 @@ if [[ -z $NODE_JS_CMD ]]; then
 	ln -s `which node` /usr/bin/nodejs
 fi
 
-service mongod start
+systemctl restart mongod
 
 #install nginx
 yum -y install policycoreutils-python
