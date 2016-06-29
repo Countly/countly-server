@@ -52,8 +52,11 @@ set -e
 if [[ -z $NODE_JS_CMD ]]; then
 	ln -s `which node` /usr/bin/nodejs
 fi
-
-systemctl restart mongod
+if [ "$(rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3)" -eq "6" ]; then
+    service mongod start
+else
+    systemctl restart mongod
+fi
 
 #install nginx
 yum -y install policycoreutils-python
