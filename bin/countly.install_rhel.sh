@@ -137,3 +137,8 @@ cd $DIR/.. && grunt dist-all
 
 #finally start countly api and dashboard
 countly start
+
+ENABLED=`getenforce`
+if [ "$ENABLED" == "Enforcing" ]; then
+  echo "SELinux is enabled, please disable it or add nginx to exception for Countly to work properly"
+fi
