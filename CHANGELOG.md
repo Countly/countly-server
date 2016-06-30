@@ -7,7 +7,7 @@ This version provides several features and bugfixes to both server and SDKs. The
 * Feature: We developed Countly Code Generator (http://code.count.ly) to help developers integrate their SDKs easily. 
 * Feature: We provided several one liner explanations in Countly configuration options (under dashboard > Management > Configuration)
 * Feature: Charts now full day for today's chart, instead of capping to current time. 
-* Switched from MongoDB 3.0 to 3.2. This version brings encrypted storage for data-at-rest and (beta) in-memory storage engine, available with MongoDB Enterprise Edition.
+* Switched from MongoDB 3.0 to 3.2. 
 * Feature: Command line now checks whether user is root and displays meaningful message for root needed commands
 * Feature: App key of application and API key of user can be changed from dashboard. This is nice in circumstances where keys should be modified in SDK but this is not a viable method.
 * Feature: Previously it wasn't possible to rename events with key names containing dots. As you may have guessed, this is not the case any more. 
