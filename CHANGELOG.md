@@ -1,5 +1,7 @@
 ## Version 16.06
 
+This version provides several features and bugfixes to both server and SDKs. There are a lot of improvements in Countly core, and you are advised to upgrade. Below you can find notable changes for both Community Edition and Enterprise Edition. 
+
 ### Changelog for both Community Edition and Enterprise Edition
 
 * Feature: We developed Countly Code Generator (http://code.count.ly) to help developers integrate their SDKs easily. 
