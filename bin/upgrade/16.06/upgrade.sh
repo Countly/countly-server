@@ -31,5 +31,8 @@ countly plugin upgrade push
 countly plugin upgrade live
 countly plugin upgrade reports
 
+#for those who had drill bookmark api plugin, it is now in core
+countly plugin disable drillbookmarks
+
 countly update sdk-web
 countly upgrade
