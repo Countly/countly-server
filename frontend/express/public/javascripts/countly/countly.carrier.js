@@ -85,7 +85,6 @@
             {
                 name:"carrier",
                 func:function (rangeArr, dataObj) {
-                    console.log("rangeArr:",rangeArr);
                     return countlyCarrier.getCarrierCodeName(rangeArr);
                 }
             },
