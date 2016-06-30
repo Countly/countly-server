@@ -2,7 +2,6 @@
 
 ### Changelog for both Community Edition and Enterprise Edition
 
-* Feature: Developed one line installer, which helps download and install Countly with a single line. This is a very handy and quick method for those who want to get their hands dirty with Countly as soon as possible. Try yourself: wget -qO- http://c.ly/install | bash
 * Feature: We developed Countly Code Generator (http://code.count.ly) to help developers integrate their SDKs easily. 
 * Feature: We provided several one liner explanations in Countly configuration options (under dashboard > Management > Configuration)
 * Feature: Charts now full day for today's chart, instead of capping to current time. 
