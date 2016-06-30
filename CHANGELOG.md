@@ -12,6 +12,7 @@ This version provides several features and bugfixes to both server and SDKs. The
 * Feature: App key of application and API key of user can be changed from dashboard. This is nice in circumstances where keys should be modified in SDK but this is not a viable method.
 * Feature: Previously it wasn't possible to rename events with key names containing dots. As you may have guessed, this is not the case any more. 
 * Feature: Countly now uses bulk report sending through jobs, rather than cronjob for each separate report.
+* Feature: Reports now also display overall events data and also benefit from datatables library when managing reports. 
 * Feature: We dropped using Imagemagick, and started using Sharp node module instead. 
 * Feature: Add IPv6 listen directive to Nginx config to make sure we are ready to use IPv6 in the future.
 * Bugfix: There is a fix in bulk API that now helps API run smoothly in certain conditions.  
@@ -37,7 +38,6 @@ This version provides several features and bugfixes to both server and SDKs. The
 ### Changelog specific to Enterprise Edition (available for Enterprise Edition customers)
 
 * Bugfix: We have made a few fixes for data types interpreted incorrectly for custom properties and provided historical values of user properties for selected period.
-* Feature: Reports now also display overall events data and also benefit from datatables library when managing reports. 
 * Drill: Bookmark management is now available through API.
 * Drill: Plugin can use disk space for large aggregated queries.
 * Drill: Plugin now can perform BY queries without AND.
