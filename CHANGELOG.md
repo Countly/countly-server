@@ -1,3 +1,64 @@
+## Version 16.06
+
+### Changelog for both Community Edition and Enterprise Edition
+
+* Feature: Developed one line installer, which helps download and install Countly with a single line. This is a very handy and quick method for those who want to get their hands dirty with Countly as soon as possible. Try yourself: wget -qO- http://c.ly/install | bash
+* Feature: We developed Countly Code Generator (http://code.count.ly) to help developers integrate their SDKs easily. 
+* Feature: We provided several one liner explanations in Countly configuration options (under dashboard > Management > Configuration)
+* Feature: Charts now full day for today's chart, instead of capping to current time. 
+* Switched from MongoDB 3.0 to 3.2. This version brings encrypted storage for data-at-rest and (beta) in-memory storage engine, available with MongoDB Enterprise Edition.
+* Feature: Command line now checks whether user is root and displays meaningful message for root needed commands
+* Feature: App key of application and API key of user can be changed from dashboard. This is nice in circumstances where keys should be modified in SDK but this is not a viable method.
+* Feature: Previously it wasn't possible to rename events with key names containing dots. As you may have guessed, this is not the case any more. 
+* Feature: Countly now uses bulk report sending through jobs, rather than cronjob for each separate report.
+* Feature: We dropped using Imagemagick, and started using Sharp node module instead. 
+* Feature: Add IPv6 listen directive to Nginx config to make sure we are ready to use IPv6 in the future.
+* Bugfix: There is a fix in bulk API that now helps API run smoothly in certain conditions.  
+* Bugfix: All known issues with push notifications have been fixed.
+* Bugfix: Date selector issue inside push notifications have been fixed.
+* Bugfix: Corrected user estimation with active users data.
+* Bugfix: Fixed unique click reporting in attribution.
+* User experience: App management is visually improved with hints and value order.
+* User experience: All apps data fetching is greatly optimized.
+* User experience: User management table is redesigned with datatables. 
+* User experience: Data populator has been revamped so it generates less random and more meaningful data with less overhead for browser. 
+* User experience: We removed unused fields for web analytics.
+* User experience: When Google services are disabled (mainly for servers in China), switching between cities and countries and displaying simple table of countries on dashboard is now possible. 
+* User experience: Improved plugin state syncing between two Countly servers, with option to disable it.
+* User interface: There is now a new and improved side bar UI which looks and behaves a lot better than the old, one-level navigation bar. 
+* User interface: There is a new, shiny pre-login page design that you'll probably love.
+* User interface: Main dashboard has been redesigned and better graph tooltips have been added to graphs. 
+* User interface: Removed app category from app creation since we think your time is valuable.
+* User interface: Whole UI is now more modern - lots of small & lovely retouches everywhere 
+* User interface: Loading bar has been renewed with a modern one.
+* User interface: When clicked on cog, user settings are now displayed in full screen instead of popup.
+
+### Changelog specific to Enterprise Edition
+
+* Bugfix: We have made a few fixes for data types interpreted incorrectly for custom properties and provided historical values of user properties for selected period.
+* Feature: Reports now also display overall events data and also benefit from datatables library when managing reports. 
+* Drill: Bookmark management is now available through API.
+* Drill: Plugin can use disk space for large aggregated queries.
+* Drill: Plugin now can perform BY queries without AND.
+* Drill: It's possible to query session by length/duration
+* Attribution Analytics: It's possible to report organic conversions with Web Analytics.
+* Attribution Analytics: It's possible to select which campaigns to compare.
+* Attribution Analytics: a new configuration to pass campaign data to end URLs or not.
+* Attribution Analytics: It can pass all the properties to postback url, including custom ones
+* Attribution Analytics: User can hide a campaign when completed, to declutter user interface.
+* Attribution Analytics: Optimization of loading data by separating campaign properties and analytical data.
+* New plugin: Retention with segments, where retention table can be drilled down into segmentation values.
+* New plugin: Restrict access, where admin can define who can see what part of the dashboard. 
+* New plugin: Block requests, where admin can block certain type of requests coming from devices or web apps.
+
+### SDK 
+
+* Windows Phone SDK updated, with 60 seconds intervals instead of 20.
+* iPhone SDK updated, with many features and bugfixes.
+* Android SDK updated, with many features.
+* Web SDK updated to reflect changes on 16.06 release
+* Nodejs SDK updated to reflect changes on 16.06 release
+
 ## Version 16.02.1
 
   * Fixed Checking GCM credentials
