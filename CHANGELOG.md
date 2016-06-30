@@ -33,7 +33,7 @@
 * User interface: Loading bar has been renewed with a modern one.
 * User interface: When clicked on cog, user settings are now displayed in full screen instead of popup.
 
-### Changelog specific to Enterprise Edition
+### Changelog specific to Enterprise Edition (available for Enterprise Edition customers)
 
 * Bugfix: We have made a few fixes for data types interpreted incorrectly for custom properties and provided historical values of user properties for selected period.
 * Feature: Reports now also display overall events data and also benefit from datatables library when managing reports. 
@@ -51,7 +51,7 @@
 * New plugin: Restrict access, where admin can define who can see what part of the dashboard. 
 * New plugin: Block requests, where admin can block certain type of requests coming from devices or web apps.
 
-### SDK 
+### Updated SDKs 
 
 * Windows Phone SDK updated, with 60 seconds intervals instead of 20.
 * iPhone SDK updated, with many features and bugfixes.
