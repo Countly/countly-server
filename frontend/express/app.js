@@ -721,7 +721,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
 app.get(countlyConfig.path+'/api-key', function (req, res, next) {
     function unauthorized(res) {
         res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
-        return res.sendStatus(401);
+        return res.send(401, "-1");
     };
     var user = basicAuth(req);
     
@@ -735,7 +735,7 @@ app.get(countlyConfig.path+'/api-key', function (req, res, next) {
     countlyDb.collection('members').findOne({$or: [ {"username":user.name}, {"email":user.name} ], "password":password}, function (err, member) {
         if(member){
             plugins.callMethod("apikeySuccessful", {req:req, res:res, next:next, data:{username:member.username}});
-            res.send(req.user.api_key);
+            res.send(200, member.api_key);
         }
 		else{
             plugins.callMethod("apikeyFailed", {req:req, res:res, next:next, data:{username:user.name}});
