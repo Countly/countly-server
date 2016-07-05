@@ -222,7 +222,6 @@ app.use(function(req, res, next) {
 app.use(methodOverride());
 var csrf = csrf();
 app.use(function (req, res, next) {
-    console.log(req.body, req.session);
     if (!plugins.callMethod("skipCSRF", {req:req, res:res, next:next})) {
         //none of the plugins requested to skip csrf for this request
         csrf(req, res, next);

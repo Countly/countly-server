@@ -110,7 +110,6 @@ describe('Setting Up', function(){
 			testUtils.waitCSRF( done );
 		});
 		it('should redirect to setup', function(done){
-            console.log({username:testUtils.username, email:testUtils.email, password:testUtils.password, _csrf:testUtils.getCSRF()});
 			agent
 			.post('/setup')
 			.send({username:testUtils.username, email:testUtils.email, password:testUtils.password, _csrf:testUtils.getCSRF()})
