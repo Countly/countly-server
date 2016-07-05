@@ -65,6 +65,7 @@ plugins.setUserConfigs("frontend", {
 
 process.on('uncaughtException', (err) => {
   console.log('Caught exception: %j', err, err.stack);
+  process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, p) => {
