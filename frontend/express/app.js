@@ -16,7 +16,7 @@ var versionInfo = require('./version.info'),
     stringJS = require('string'),
     flash = require('connect-flash'),
     cookieParser = require('cookie-parser'),
-    formidable = require('express-formidable'),
+    formidable = require('formidable'),
     session = require('express-session'),
     methodOverride = require('method-override'),
     csrf = require('csurf'),
@@ -192,11 +192,27 @@ app.use(session({
     saveUninitialized: false,
     resave: false
 }));
+app.use(function(req, res, next){
+    if(req.method.toLowerCase() == 'post'){
+        var form = new formidable.IncomingForm();
+        form.uploadDir = __dirname + '/uploads';
+        form.parse(req, function(err, fields, files) {
+            req.files = files;
+            if(!req.body)
+                req.body = {};
+            for(var i in fields){
+                req.body[i] = fields[i];
+            }
+            next();
+        });
+    }
+    else
+        next();
+});
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 }));
-app.use(formidable.parse({uploadDir:__dirname + '/uploads'}));
 app.use(flash());
 app.use(function(req, res, next) {
     plugins.loadConfigs(countlyDb, function(){

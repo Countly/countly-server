@@ -38,7 +38,6 @@
     "express": "4.14.0",
     "express-expose": "0.3.4",
     "cookie-parser": "1.4.3",
-    "express-formidable": "0.1.3",
     "express-session": "1.14.0",
     "method-override": "2.3.6",
     "csurf": "1.9.0",
