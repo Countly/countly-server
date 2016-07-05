@@ -192,7 +192,10 @@ app.use(session({
     saveUninitialized: false,
     resave: false
 }));
-app.use(bodyParser.urlencoded({extended:true}));
+app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+}));
 app.use(formidable.parse({uploadDir:__dirname + '/uploads'}));
 app.use(flash());
 app.use(function(req, res, next) {
