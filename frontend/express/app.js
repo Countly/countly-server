@@ -716,11 +716,15 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
 });
 
 app.get(countlyConfig.path+'/api-key', function (req, res, next) {
+    function unauthorized(res) {
+        res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
+        return res.send(401);
+    };
     var user = basicAuth(req);
     
     if (!user || !user.name || !user.pass) {
         plugins.callMethod("apikeyFailed", {req:req, res:res, next:next, data:{username:""}});
-        res.send("-1");
+        unauthorized(res);
         return;
     };
     
@@ -732,7 +736,7 @@ app.get(countlyConfig.path+'/api-key', function (req, res, next) {
         }
 		else{
             plugins.callMethod("apikeyFailed", {req:req, res:res, next:next, data:{username:user.name}});
-            res.send("-1");
+            unauthorized(res);
         }
     });
 });
