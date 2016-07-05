@@ -2382,6 +2382,11 @@ window.ManageAppsView = countlyView.extend({
                             $("#app-edit-image").find(".logo").css({
                                 "background-image":"url(" + file + "?v" + (new Date().getTime()) + ")"
                             });
+                        },
+                        error: function(xhr, status, error){
+                            CountlyHelpers.alert(error, "red");
+                            initAppManagement(appId);
+                            hideEdit();
                         }
                     });
                 }
