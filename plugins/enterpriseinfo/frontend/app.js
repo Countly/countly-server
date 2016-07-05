@@ -41,7 +41,7 @@ var plugin = {},
 					if (memberCount) {
                         if(req.query.message)
                             req.flash('info', req.query.message);
-						res.render('../../../plugins/enterpriseinfo/frontend/public/templates/login', {"countlyTitle":versionInfo.title, "countlyPage":versionInfo.page, "message":req.flash('info'), "csrf":req.session._csrf, path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
+						res.render('../../../plugins/enterpriseinfo/frontend/public/templates/login', {"countlyTitle":versionInfo.title, "countlyPage":versionInfo.page, "message":req.flash('info'), "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
 					} else {
 						res.redirect(countlyConfig.path+'/setup');
 					}

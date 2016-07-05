@@ -266,7 +266,7 @@ var pluginManager = function pluginManager(){
             try{
                 var plugin = require("./"+plugins[i]+"/frontend/app");
                 plugs.push(plugin);
-                app.use(countlyConfig.path+'/'+plugins[i], express.static(__dirname + '/'+plugins[i]+"/frontend/public"), { maxAge:31557600000 });
+                app.use(countlyConfig.path+'/'+plugins[i], express.static(__dirname + '/'+plugins[i]+"/frontend/public", { maxAge:31557600000 }));
                 if(plugin.staticPaths)
                     plugin.staticPaths(app, countlyDb, express);
             } catch (ex) {
