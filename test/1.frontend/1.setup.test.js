@@ -92,7 +92,7 @@ describe('Setting Up', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var csrf = testUtils.CSRFfromBody(res.text);
-				csrf.should.be.an.instanceOf(String).and.have.lengthOf(24);
+				csrf.should.be.an.instanceOf(String).and.have.lengthOf(36);
 				done()
 			});
 		})
@@ -110,6 +110,7 @@ describe('Setting Up', function(){
 			testUtils.waitCSRF( done );
 		});
 		it('should redirect to setup', function(done){
+            console.log({username:testUtils.username, email:testUtils.email, password:testUtils.password, _csrf:testUtils.getCSRF()});
 			agent
 			.post('/setup')
 			.send({username:testUtils.username, email:testUtils.email, password:testUtils.password, _csrf:testUtils.getCSRF()})
