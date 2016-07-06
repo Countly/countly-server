@@ -101,22 +101,22 @@ plugins.setConfigs("crashes", {
                             });
                             
                             //remove crash from user's set
+                            common.updateMongoObject(params.app_user, {$pull:{crashes:hash}});
                             common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id }, {$pull:{crashes:hash}}, function (err, res){});
                         }
                     }
                 });
             };
-            common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, dbAppUser){
-                if(dbAppUser && dbAppUser.uid && dbAppUser.crashes && dbAppUser.crashes.length){
-                    var latest_version = params.qstring.metrics._app_version.replace(/\./g, ":");
-                    if(dbAppUser.av && common.versionCompare(dbAppUser.av, latest_version) > 0)
-                        latest_version = dbAppUser.av;
-                    
-                    for(var i = 0; i < dbAppUser.crashes.length; i++){
-                        checkCrash(latest_version, dbAppUser.crashes[i], dbAppUser.uid);
-                    }
+            var dbAppUser = params.app_user;
+            if(dbAppUser && dbAppUser.uid && dbAppUser.crashes && dbAppUser.crashes.length){
+                var latest_version = params.qstring.metrics._app_version.replace(/\./g, ":");
+                if(dbAppUser.av && common.versionCompare(dbAppUser.av, latest_version) > 0)
+                    latest_version = dbAppUser.av;
+                
+                for(var i = 0; i < dbAppUser.crashes.length; i++){
+                    checkCrash(latest_version, dbAppUser.crashes[i], dbAppUser.uid);
                 }
-            });
+            }
         }
     });
 	//write api call
@@ -243,11 +243,9 @@ plugins.setConfigs("crashes", {
 				function checkUser(err, dbAppUser, tries){
                     if(!dbAppUser || !dbAppUser.uid){
                         setTimeout(function(){
-                            common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function(err, dbAppUser){
-                                tries++;
-                                if(tries < 5)
-                                    checkUser(err, dbAppUser, tries);
-                            });
+                            tries++;
+                            if(tries < 5)
+                                checkUser(err, params.app_user, tries);
                         }, 5000);
                     }
                     else{
@@ -497,6 +495,7 @@ plugins.setConfigs("crashes", {
                         });
                     }
 				}
+                common.updateMongoObject(params.app_user, { $addToSet: { crashes: hash } });
                 common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id },{},{ $addToSet: { crashes: hash } },{upsert:true, new:false}, function(err, dbAppUser){
                     dbAppUser = dbAppUser && dbAppUser.ok ? dbAppUser.value : null;
                     checkUser(err, dbAppUser, 0);

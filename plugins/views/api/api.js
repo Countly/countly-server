@@ -181,8 +181,9 @@ var plugin = {},
         var params = ob.params;
         var dbAppUser = ob.dbAppUser;
         if(dbAppUser && dbAppUser.vc){
-            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id },{}, {$set:{vc:0}},{upsert:true, new:false}, function (err, user){
-                user = user && user.ok ? user.value : null;
+            common.updateMongoObject(params.app_user, {$set:{vc:0}});
+            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id },{$set:{vc:0}},{upsert:true}, function (err, res){
+                var user = params.app_user;
                 if(user && user.vc){
                     var ranges = [
                         [0,2],
@@ -263,17 +264,17 @@ var plugin = {},
             update["$inc"] = {vc:1};
             update["$max"] = {lvt:params.time.timestamp};
         }
-            
-        common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id },{}, update,{upsert:true, new:false}, function (err, user){
+        common.updateMongoObject(params.app_user, update);
+        common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id },update,{upsert:true}, function (err, user){
             if(currEvent.segmentation.visit){
                 var lastView = {};
                 lastView[escapedMetricVal] = params.time.timestamp;           
                 common.db.collection('app_views' + params.app_id).findAndModify({'_id': params.app_user_id },{}, {$max:lastView},{upsert:true, new:false}, function (err, view){
-                    recordMetrics(params, currEvent, user && user.ok ? user.value : null, view && view.ok ? view.value : null);
+                    recordMetrics(params, currEvent, params.app_user, view && view.ok ? view.value : null);
                 });
             }
             else{
-                recordMetrics(params, currEvent, user && user.ok ? user.value : null);
+                recordMetrics(params, currEvent, params.app_user);
             }
         });
 	}

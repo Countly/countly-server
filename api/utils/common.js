@@ -778,6 +778,87 @@ var common = {},
             check();
         });
     };
+    
+    //update object MongoDB Style
+    common.updateMongoObject = function(ob, update){
+        ob = ob || {};
+        update = update || {};
+        for(var i in update){
+            switch(i){
+                case "$set":
+                    for(var key in update[i]){
+                        ob[key] = update[i][key];
+                    }
+                    break;
+                case "$unset":
+                    for(var key in update[i]){
+                        if(update[i][key])
+                         delete ob[key];
+                    }
+                    break;
+                case "$inc":
+                    for(var key in update[i]){
+                        if(!ob[key])
+                            ob[key] = 0;
+                        ob[key] += update[i][key];
+                    }
+                    break;
+                case "$mul":
+                    for(var key in update[i]){
+                        if(!ob[key])
+                            ob[key] = 0;
+                        ob[key] *= update[i][key];
+                    }
+                    break;
+                case "$max":
+                    for(var key in update[i]){
+                        if(typeof ob[key] === "undefined")
+                            ob[key] = update[i][key];
+                        else if(update[i][key] > ob[key])
+                            ob[key] = update[i][key];
+                    }
+                    break;
+                case "$min":
+                    for(var key in update[i]){
+                        if(typeof ob[key] === "undefined")
+                            ob[key] = update[i][key];
+                        else if(update[i][key] < ob[key])
+                            ob[key] = update[i][key];
+                    }
+                    break;
+                case "$push":
+                    for(var key in update[i]){
+                        if(typeof ob[key] === "undefined")
+                            ob[key] = [];
+                        ob[key].push(update[i][key]);
+                    }
+                    break;
+                case "$addToSet":
+                    for(var key in update[i]){
+                        if(typeof ob[key] === "undefined")
+                            ob[key] = [];
+                        if(ob[key].indexOf(update[i][key]) === -1)
+                            ob[key].push(update[i][key]);
+                    }
+                    break;
+                case "$pull":
+                    for(var key in update[i]){
+                        if(typeof ob[key] === "undefined")
+                            ob[key] = [];
+                        var index = ob[key].indexOf(update[i][key]);
+                        if(index > -1)
+                            ob[key].splice(update[i][key], 1);
+                    }
+                    break;
+                case "$rename":
+                    //todo
+                    break;
+                case "$setOnInsert":
+                    //todo
+                    break;
+            }
+        }
+    };
 }(common));
 
 module.exports = common;
