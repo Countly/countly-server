@@ -782,7 +782,7 @@ div.datatablesubrow {display: none;}
 .active .os-segment.os.x { background-image:url('../images/dashboard/platform_buttons/mac_active.png'); }
 
 /* EVENTS */
-#event-nav  { z-index:3; width:190px; position:fixed; left:220px; top:0; text-align:right; background-color:#CCC; height:100%; background-image:url('../images/dashboard/dropdown_bg.png'); }
+#event-nav  { z-index:3; width:190px; position:fixed; left:220px; top:0px; text-align:right; background-color:#CCC; height:100%; background-image:url('../images/dashboard/dropdown_bg.png'); box-sizing:border-box; padding-bottom: 40px;}
 #event-nav-head { position:relative; height:27px; padding:20px; padding-left:15px; color:#BFBFBF; text-shadow:0 -1px #232323; font:18px Ubuntu,Helvetica,sans-serif; line-height:111%; background-image:url('../images/dashboard/dropdown_head.png'); text-align:left; }
 #event-nav-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px; float:left; padding-top:3px; }
 .event-container { cursor:pointer; height:30px; background-image:url('../images/dashboard/dropdown_item.png'); padding:8px 12px; overflow:auto; }
