@@ -25,19 +25,18 @@ var usage = {},
                 params.user.lng = locationData.ll[1];
             }
         }
-        common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, dbAppUser){
-            if(dbAppUser){
-                var lastTs = dbAppUser[common.dbUserMap['last_end_session_timestamp']] || dbAppUser[common.dbUserMap['last_begin_session_timestamp']];
-                if (!lastTs || (params.time.timestamp - lastTs) > plugins.getConfig("api").session_cooldown) {
-                    //process duration from unproperly ended previous session
-                    plugins.dispatch("/session/post", {params:params, dbAppUser:dbAppUser, end_session:false});
-                    if (dbAppUser && dbAppUser[common.dbUserMap['session_duration']]) {
-                        processSessionDurationRange(dbAppUser[common.dbUserMap['session_duration']], params);
-                    }
+        dbAppUser = params.app_user
+        if(dbAppUser){
+            var lastTs = dbAppUser[common.dbUserMap['last_end_session_timestamp']] || dbAppUser[common.dbUserMap['last_begin_session_timestamp']];
+            if (!lastTs || (params.time.timestamp - lastTs) > plugins.getConfig("api").session_cooldown) {
+                //process duration from unproperly ended previous session
+                plugins.dispatch("/session/post", {params:params, dbAppUser:dbAppUser, end_session:false});
+                if (dbAppUser && dbAppUser[common.dbUserMap['session_duration']]) {
+                    processSessionDurationRange(dbAppUser[common.dbUserMap['session_duration']], params);
                 }
             }
-            processUserSession(dbAppUser, params, done);
-        });
+        }
+        processUserSession(dbAppUser, params, done);
     };
 
     usage.endUserSession = function (params) {
@@ -47,10 +46,13 @@ var usage = {},
             // This timestamp is used inside processUserSession
             var userProps = {};
             userProps[common.dbUserMap['last_end_session_timestamp']] = params.time.timestamp;
+            params.app_user[common.dbUserMap['last_end_session_timestamp']] = params.time.timestamp;
     
+            common.updateMongoObject(params.app_user, {'$set': userProps});
             common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': userProps}, function() {});
     
             setTimeout(function() {
+                //need to query app user again to get data modified by another request
                 common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, dbAppUser){
                     if (!dbAppUser || err) {
                         return true;
@@ -71,7 +73,7 @@ var usage = {},
                     if (dbAppUser[common.dbUserMap['has_ongoing_session']] && (currTimestamp - lastBeginSession) > 11) {
                         var userProps = {};
                         userProps[common.dbUserMap['has_ongoing_session']] = 1;
-    
+                        common.updateMongoObject(params.app_user, {'$unset': userProps});
                         common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$unset': userProps}, function() {
                             endSession(true);
                         });
@@ -118,11 +120,11 @@ var usage = {},
             var dbDateIds = common.getDateIds(params);
             common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, function(){});
             
-            var update = {'$inc': {'sd': session_duration, 'tsd': session_duration}};
+            var update = {'$inc': {'sd': session_duration, 'tsd': session_duration}};         
             if(params.user.lat && params.user.lng){
                 update["$set"] = {lat:params.user.lat, lng:params.user.lng};
             }
-
+            common.updateMongoObject(params.app_user, update);
             // sd: session duration, tsd: total session duration. common.dbUserMap is not used here for readability purposes.
             common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, update, {'upsert': true}, function() {
                 
@@ -171,6 +173,7 @@ var usage = {},
         common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, {'$inc': updateUsersZero, '$addToSet': {'meta.d-ranges': calculatedDurationRange}}, function(){});
 
         // sd: session duration. common.dbUserMap is not used here for readability purposes.
+        common.updateMongoObject(params.app_user, {'$set': {'sd': 0}});
         common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': {'sd': 0}}, {'upsert': true}, function(){});
     }
 
@@ -237,7 +240,7 @@ var usage = {},
                 var userProps = {};
                 userProps[common.dbUserMap['has_ongoing_session']] = true;
                 userProps[common.dbUserMap['last_begin_session_timestamp']] = params.time.timestamp;
-
+                common.updateMongoObject(params.app_user, userProps);
                 common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': userProps}, function() {});
 
                 if (done) { done(); }
@@ -570,6 +573,7 @@ var usage = {},
                 if (result && result.length != 0) {
                     userProps[common.dbUserMap['user_id']] = parseSequence(result.seq);
                 }
+                common.updateMongoObject(params.app_user, {'$inc': {'sc': 1}, '$set': userProps});
                 common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$inc': {'sc': 1}, '$set': userProps}, {'upsert': true}, function() {
                     //Perform user retention analysis
                     plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
@@ -578,6 +582,7 @@ var usage = {},
             });
         } else {
             // sc: session count. common.dbUserMap is not used here for readability purposes.
+            common.updateMongoObject(params.app_user, {'$inc': {'sc': 1}, '$set': userProps});
             common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$inc': {'sc': 1}, '$set': userProps}, {'upsert': true}, function() {
                 //Perform user retention analysis
                 plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});

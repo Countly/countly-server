@@ -47,9 +47,7 @@ var plugin = {},
             }
         }
         if (params.qstring.token_session) {
-            common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, dbAppUser){
-                push.processTokenSession(dbAppUser, params);
-            });
+            push.processTokenSession(params.app_user, params);
         }
     });
 
