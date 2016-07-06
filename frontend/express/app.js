@@ -193,8 +193,13 @@ app.use(session({
     saveUninitialized: false,
     resave: false
 }));
+app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+}));
 app.use(function(req, res, next){
-    if(req.method.toLowerCase() == 'post'){
+    var contentType = req.headers['content-type'];
+    if(req.method.toLowerCase() == 'post' && contentType && contentType.indexOf('multipart/form-data') >= 0){
         var form = new formidable.IncomingForm();
         form.uploadDir = __dirname + '/uploads';
         form.parse(req, function(err, fields, files) {
@@ -202,7 +207,8 @@ app.use(function(req, res, next){
             if(!req.body)
                 req.body = {};
             for(var i in fields){
-                req.body[i] = fields[i];
+                if(typeof req.body[i] === "undefined")
+                    req.body[i] = fields[i];
             }
             next();
         });
@@ -210,10 +216,6 @@ app.use(function(req, res, next){
     else
         next();
 });
-app.use( bodyParser.json() );       // to support JSON-encoded bodies
-app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-  extended: true
-}));
 app.use(flash());
 app.use(function(req, res, next) {
     plugins.loadConfigs(countlyDb, function(){
@@ -737,7 +739,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
 app.get(countlyConfig.path+'/api-key', function (req, res, next) {
     function unauthorized(res) {
         res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
-        return res.send(401, "-1");
+        return res.status(401).send("-1");
     };
     var user = basicAuth(req);
     
@@ -751,7 +753,7 @@ app.get(countlyConfig.path+'/api-key', function (req, res, next) {
     countlyDb.collection('members').findOne({$or: [ {"username":user.name}, {"email":user.name} ], "password":password}, function (err, member) {
         if(member){
             plugins.callMethod("apikeySuccessful", {req:req, res:res, next:next, data:{username:member.username}});
-            res.send(200, member.api_key);
+            res.status(200).send(member.api_key);
         }
 		else{
             plugins.callMethod("apikeyFailed", {req:req, res:res, next:next, data:{username:user.name}});
