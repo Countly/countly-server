@@ -14,7 +14,14 @@ countlyDb.collection('apps').find({}).toArray(function (err, apps) {
 		function cb(){
 				done();
 		}
-		countlyDb.createCollection('logs' + app._id, {capped: true, size: 10000000, max: 1000}, cb);
+        countlyDb.command({"convertToCapped": 'logs' + app._id, size: 10000000, max: 1000}, function(err,data){
+            if(err){
+                countlyDb.createCollection('logs' + app._id, {capped: true, size: 10000000, max: 1000}, cb);
+            }
+            else{
+                cb();
+            }
+        });
 	}
 	async.forEach(apps, upgrade, function(){
 		console.log("Logger plugin installation finished");
