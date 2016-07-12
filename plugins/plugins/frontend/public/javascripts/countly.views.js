@@ -123,6 +123,7 @@ window.ConfigurationsView = countlyView.extend({
             "api-sync_plugins":jQuery.i18n.map["configs.api-sync_plugins"],
             "api-session_cooldown":jQuery.i18n.map["configs.api-session_cooldown"],
             "api-total_users":jQuery.i18n.map["configs.api-total_users"],
+            "api-metric_limit":jQuery.i18n.map["configs.api-metric_limit"],
             "apps-country":jQuery.i18n.map["configs.apps-country"],
             "apps-category":jQuery.i18n.map["configs.apps-category"]
         };
