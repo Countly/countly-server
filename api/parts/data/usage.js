@@ -497,11 +497,12 @@ var usage = {},
                                         
                 for (var j=0; j < predefinedMetrics[i].metrics.length; j++) {
                     var ignore = false;
-                    if(metas[predefinedMetrics[i].db] 
-                        && metas[predefinedMetrics[i].db].meta 
-                        && metas[predefinedMetrics[i].db].meta[predefinedMetrics[i].metrics[j].set]
-                        && metas[predefinedMetrics[i].db].meta[predefinedMetrics[i].metrics[j].set].length
-                        && metas[predefinedMetrics[i].db].meta[predefinedMetrics[i].metrics[j].set].length >= plugins.getConfig("api").metric_limit){
+                    //checking if metric should be ignored because of limit
+                    if(metas[predefinedMetrics[i].db] && 
+                        metas[predefinedMetrics[i].db].meta && 
+                        metas[predefinedMetrics[i].db].meta[predefinedMetrics[i].metrics[j].set] && 
+                        metas[predefinedMetrics[i].db].meta[predefinedMetrics[i].metrics[j].set].length && 
+                        metas[predefinedMetrics[i].db].meta[predefinedMetrics[i].metrics[j].set].length >= plugins.getConfig("api").metric_limit){
                             ignore = true;
                         }
                     var tmpMetric = predefinedMetrics[i].metrics[j],
