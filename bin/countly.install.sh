@@ -99,6 +99,9 @@ countly update sdk-web
 #compile scripts for production
 cd $DIR && grunt dist-all
 
+# disable transparent huge pages
+countly thp
+
 #finally start countly api and dashboard
 if [ "$INSIDE_DOCKER" != "1" ]
 then
