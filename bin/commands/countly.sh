@@ -234,7 +234,7 @@ countly_restore (){
 }
 
 countly_thp (){
-    cp -f $DIR/scripts/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages
+    cp -f $DIR/../scripts/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages
     chmod 755 /etc/init.d/disable-transparent-hugepages
     update-rc.d disable-transparent-hugepages defaults
 }
