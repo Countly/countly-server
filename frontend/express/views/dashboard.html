@@ -537,9 +537,9 @@
                 {{#if big-numbers}}
 				<div id="big-numbers-container">
 					{{#each big-numbers.items}}
-					<div class="big-numbers {{#if ../../big-numbers.class}}{{../../big-numbers.class}}{{else}}three-column{{/if}} help-zone-vs" data-help-localize="help.{{this.help}}">
+					<div data-id="{{this.radio-button-id}}" class="big-numbers radio {{#if ../../big-numbers.class}}{{../../big-numbers.class}}{{else}}three-column{{/if}} help-zone-vs {{this.radio-button-class}}" data-help-localize="help.{{this.help}}">
 						<div class="inner">
-                            <div class="color radio {{this.radio-button-class}}" data-id="{{this.radio-button-id}}"></div>
+                            <div class="color"></div>
 							<div class="select">{{this.title}}</div>
 							<div class="number">{{getFormattedNumber this.total}}</div>
                             <div class="trend {{this.trend}}">
@@ -991,7 +991,7 @@
 			<div class="widget-footer event-numbers big-numbers-v2">
 				<div id="big-numbers-container" class="{{big-numbers.class}} event-numbers">
 					{{#each big-numbers.items}}
-					<div class="big-numbers selected {{this.class}}" data-type="{{this.class}}">
+					<div class="big-numbers selected check {{this.class}}" data-type="{{this.class}}">
 						<div class="inner">
                             <div class="color"></div>
 							<div class="select">{{this.title}}</div>

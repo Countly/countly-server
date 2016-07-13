@@ -122,15 +122,5 @@
 
 #crash-table_wrapper { margin-top:0; }
 
-.widget-group { border:1px solid #D0D0D0; margin-bottom: 40px; }
-
-.widget-group .dashboard-summary { margin:0; border-top:1px solid #d0d0d0; }
-
-.widget-group .big-numbers.top.widgets .inner,
-.widget-group .dashboard-summary .item .inner { margin-left:0; box-shadow: none; border-left: 1px solid #D0D0D0; padding:15px 15px; }
-
-.widget-group .big-numbers.top.widgets:first-child .inner,
-.widget-group .dashboard-summary .item:first-child .inner { margin-left:0; border:none; }
-
 #notes { overflow: auto; }
 #notes .btn-header { margin-top:0; }
