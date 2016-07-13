@@ -274,7 +274,6 @@
 
         if (oSVersionData.chartData) {
             for (var i = 0; i < oSVersionData.chartData.length; i++) {
-                console.log(osName, oSVersionData.chartData[i].os_version);
                 if (!new RegExp("^"+osName+"([0-9]+|unknown)").test(oSVersionData.chartData[i].os_version)) {
                     delete oSVersionData.chartData[i];
                 }

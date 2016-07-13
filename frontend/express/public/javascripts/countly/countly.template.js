@@ -2413,6 +2413,14 @@ window.ManageAppsView = countlyView.extend({
                             initAppManagement(appId);
                             hideEdit();
                             updatedApp.find(".name").text(appName);
+                            $("#app-edit-image").find(".logo").css({
+                                "background-image":"url(" + file + "?v" + (new Date().getTime()) + ")"
+                            });
+                        },
+                        error: function(xhr, status, error){
+                            CountlyHelpers.alert(error, "red");
+                            initAppManagement(appId);
+                            hideEdit();
                         }
                     });
                 }

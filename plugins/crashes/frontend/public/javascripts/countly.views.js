@@ -463,7 +463,7 @@ window.CrashgroupView = countlyView.extend({
         else if(this.templateData["big-numbers"]["items"].length == 5)
             this.templateData["big-numbers"]["class"] = "five-column";
         
-        if(crashData.session){
+        if(crashData.session && this.templateData["ranges"]){
             this.templateData["frequency"] = true;
             this.templateData["ranges"].push({
                 "title":jQuery.i18n.map["crashes.sessions"],

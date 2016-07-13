@@ -233,6 +233,12 @@ countly_restore (){
     countly_restoredb "$@";
 }
 
+countly_thp (){
+    cp -f $DIR/../scripts/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages
+    chmod 755 /etc/init.d/disable-transparent-hugepages
+    update-rc.d disable-transparent-hugepages defaults
+}
+
 #load real platform/init sys file to overwrite stubs
 source $DIR/enabled/countly.sh
 

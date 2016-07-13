@@ -7,6 +7,7 @@
         _activeAppKey = 0,
         _initialized = false,
         _period = null;
+        _carrierCodeMap = {"46000": "中国移动(GSM)", "46001": "中国联通(GSM)", "46002": "中国移动(TD-S)", "46003": "中国电信(CDMA)", "46005":"中国电信(CDMA)", "46006":"中国联通(WCDMA)", "46007":"中国移动(TD-S)", "46011":"中国电信(FDD-LTE)","460 11":"中国电信(FDD-LTE)"}
 
     //Public Methods
     countlyCarrier.initialize = function () {
@@ -84,7 +85,7 @@
             {
                 name:"carrier",
                 func:function (rangeArr, dataObj) {
-                    return rangeArr;
+                    return countlyCarrier.getCarrierCodeName(rangeArr);
                 }
             },
             { "name":"t" },
@@ -146,6 +147,9 @@
         return countlyCommon.extractBarData(_carrierDb, _carriers, countlyCarrier.clearCarrierObject);
     };
 
+    countlyCarrier.getCarrierCodeName = function (code) {
+        return _carrierCodeMap[code] ? _carrierCodeMap[code] : code;
+    }
     function setMeta() {
         if (_carrierDb['meta']) {
             _carriers = (_carrierDb['meta']['carriers']) ? _carrierDb['meta']['carriers'] : [];

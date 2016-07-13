@@ -43,13 +43,14 @@ plugins.init();
 http.globalAgent.maxSockets = countlyConfig.api.max_sockets || 1024;
 
 process.on('uncaughtException', (err) => {
-  console.log('Caught exception: %j', err, err.stack);
+    console.log('Caught exception: %j', err, err.stack);
+    process.exit(1);
 });
-
+ 
 process.on('unhandledRejection', (reason, p) => {
-  console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+    console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
 });
-
+ 
 if (cluster.isMaster) {
 
     var workerCount = (countlyConfig.api.workers)? countlyConfig.api.workers : os.cpus().length;
@@ -469,7 +470,7 @@ if (cluster.isMaster) {
                                 try {
                                     requests = JSON.parse(requests);
                                 } catch (SyntaxError) {
-                                    console.log('Parse bulk JSON failed', requests);
+                                    console.log('Parse bulk JSON failed', requests, req.url, req.body);
                                 }
                             } else {
                                 common.returnMessage(params, 400, 'Missing parameter "requests"');
@@ -533,7 +534,7 @@ if (cluster.isMaster) {
                                 try {
                                     params.qstring.args = JSON.parse(params.qstring.args);
                                 } catch (SyntaxError) {
-                                    console.log('Parse ' + apiPath + ' JSON failed');
+                                    console.log('Parse ' + apiPath + ' JSON failed', req.url, req.body);
                                 }
                             }
             
@@ -565,7 +566,7 @@ if (cluster.isMaster) {
                                 try {
                                     params.qstring.args = JSON.parse(params.qstring.args);
                                 } catch (SyntaxError) {
-                                    console.log('Parse ' + apiPath + ' JSON failed');
+                                    console.log('Parse ' + apiPath + ' JSON failed', req.url, req.body);
                                 }
                             }
             
@@ -628,7 +629,7 @@ if (cluster.isMaster) {
                                     }
             
                                 } catch (SyntaxError) {
-                                    console.log('Parse metrics JSON failed', params.qstring.metrics);
+                                    console.log('Parse metrics JSON failed', params.qstring.metrics, req.url, req.body);
                                 }
                             }
             
@@ -636,7 +637,7 @@ if (cluster.isMaster) {
                                 try {
                                     params.qstring.events = JSON.parse(params.qstring.events);
                                 } catch (SyntaxError) {
-                                    console.log('Parse events JSON failed', params.qstring.events);
+                                    console.log('Parse events JSON failed', params.qstring.events, req.url, req.body);
                                 }
                             }
             
@@ -746,7 +747,7 @@ if (cluster.isMaster) {
                                         try {
                                             params.qstring.events = JSON.parse(params.qstring.events);
                                         } catch (SyntaxError) {
-                                            console.log('Parse events array failed', params.qstring.events);
+                                            console.log('Parse events array failed', params.qstring.events, req.url, req.body);
                                         }
             
                                         validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventData);
@@ -822,6 +823,11 @@ if (cluster.isMaster) {
             
             if(req.method.toLowerCase() == 'post'){
                 var form = new formidable.IncomingForm();
+                req.body = '';
+
+                req.on('data', function (data) {
+                    req.body += data;
+                });
     
                 form.parse(req, function(err, fields, files) {
                     params.files = files;

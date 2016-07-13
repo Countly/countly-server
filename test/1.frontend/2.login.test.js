@@ -78,7 +78,7 @@ describe('Login in', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var csrf = testUtils.CSRFfromBody(res.text);
-				csrf.should.be.an.instanceOf(String).and.have.lengthOf(24);
+				csrf.should.be.an.instanceOf(String).and.have.lengthOf(36);
 				done()
 			});
 		})
@@ -147,7 +147,7 @@ describe('Login in', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var csrf = testUtils.CSRFfromBody(res.text);
-				csrf.should.be.an.instanceOf(String).and.have.lengthOf(24);
+				csrf.should.be.an.instanceOf(String).and.have.lengthOf(36);
 				done()
 			});
 		})

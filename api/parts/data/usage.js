@@ -354,7 +354,7 @@ var usage = {},
             plugins.dispatch("/session/begin", {params:params, isNewUser:isNewUser});
         }
 
-        usersMeta['meta.countries'] = params.user.country;
+        usersMeta['meta.countries'] = params.user.country || "Unknown";
 
         common.fillTimeObjectZero(params, updateUsersZero, zeroObjUpdate);
         common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate);
