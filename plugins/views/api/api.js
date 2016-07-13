@@ -392,7 +392,7 @@ var plugin = {},
             }
             
             if (Object.keys(tmpTimeObjMonth).length || Object.keys(tmpSet).length){
-                var update = {$set: {m: dateIds.zero, a: params.app_id + ""}};
+                var update = {$set: {m: dateIds.month, a: params.app_id + ""}};
                 if(Object.keys(tmpTimeObjMonth).length)
                     update["$inc"] = tmpTimeObjMonth;
                 if(Object.keys(tmpSet).length)
