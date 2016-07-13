@@ -301,7 +301,7 @@ var plugin = {},
                 
         common.db.collection("app_viewdata"+params.app_id).findOne({'_id': tmpMonthId}, {meta:1}, function(err, res){
             //checking if view should be ignored because of limit
-            if(!err && res && res.meta && res.meta.length >= plugins.getConfig("views").view_limit){
+            if(!err && res && res.meta && res.meta.views && res.meta.views.length >= plugins.getConfig("views").view_limit){
                 return;
             }
             if(currEvent.segmentation.visit){
