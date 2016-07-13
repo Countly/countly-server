@@ -243,15 +243,20 @@ var plugin = {},
                     if(currEvent.segmentation && currEvent.segmentation.name){
                         processView(params, currEvent);
                         if(currEvent.segmentation.visit){
-                            return true;
+                            var events = [currEvent];
+                            plugins.dispatch("/plugins/drill", {params:params, dbAppUser:params.app_user, events:events});
                         }
                         else{
                             if(currEvent.dur || currEvent.segmentation.dur){
                                 plugins.dispatch("/view/duration", {params:params, duration:currEvent.dur || currEvent.segmentation.dur});
                             }
-                            return false;
                         }
                     }
+                    return false;
+                }
+                else if(currEvent.key == "[CLY]_action"){
+                    var events = [currEvent];
+                    plugins.dispatch("/plugins/drill", {params:params, dbAppUser:params.app_user, events:events});
                     return false;
                 }
                 return true;
