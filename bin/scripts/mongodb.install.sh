@@ -1,3 +1,5 @@
+#!/bin/bash
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ -f /etc/redhat-release ]; then
