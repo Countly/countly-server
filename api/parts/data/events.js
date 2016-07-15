@@ -26,7 +26,7 @@ var countlyEvents = {},
                 var currEvent = params.qstring.events[i],
                     shortEventName = "",
                     eventCollectionName = "";
-                if (!currEvent.key || !currEvent.count || !common.isNumber(currEvent.count) || (currEvent.key.indexOf('[CLY]_') == 0 && !currEvent.test)) {
+                if (!currEvent.key || !currEvent.count || !common.isNumber(currEvent.count) || (currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalEvents.indexOf(currEvent.key) === -1)) {
                     continue;
                 }
 
@@ -100,7 +100,7 @@ var countlyEvents = {},
             tmpEventColl = {};
 
             // Key and count fields are required
-            if (!currEvent.key || !currEvent.count || !common.isNumber(currEvent.count)) {
+            if (!currEvent.key || !currEvent.count || !common.isNumber(currEvent.count) || (currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalEvents.indexOf(currEvent.key) === -1)) {
                 continue;
             }
 
