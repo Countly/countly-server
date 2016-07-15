@@ -11,6 +11,9 @@ var plugin = {},
         view_limit: 1000
     });
     
+    plugins.internalDrillEvents.push("[CLY]_view");
+    plugins.internalDrillEvents.push("[CLY]_action");
+    
     plugins.register("/o", function(ob){
 		var params = ob.params;
 		var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
@@ -234,6 +237,7 @@ var plugin = {},
             });
         }
     });
+    
     plugins.register("/i", function(ob){
         var params = ob.params;
         if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
@@ -251,11 +255,6 @@ var plugin = {},
                             }
                         }
                     }
-                    return false;
-                }
-                else if(currEvent.key == "[CLY]_action"){
-                    var events = [currEvent];
-                    plugins.dispatch("/plugins/drill", {params:params, dbAppUser:params.app_user, events:events});
                     return false;
                 }
                 return true;
