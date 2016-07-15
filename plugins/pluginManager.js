@@ -20,6 +20,9 @@ var pluginManager = function pluginManager(){
     var configsOnchanges = {};
     var excludeFromUI = {plugins:true};
     var finishedSyncing = true;
+    
+    this.internalEvents = [];
+    this.internalDrillEvents = ["[CLY]_session"];
 
     this.init = function(){
         for(var i = 0, l = plugins.length; i < l; i++){
