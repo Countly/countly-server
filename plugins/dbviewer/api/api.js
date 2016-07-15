@@ -68,6 +68,11 @@ var plugin = {},
                                 }
                                 result[crypto.createHash('sha1').update("[CLY]_session" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_session)";
                                 result[crypto.createHash('sha1').update("[CLY]_crash" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_crash)";
+                                result[crypto.createHash('sha1').update("[CLY]_view" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_view)";
+                                result[crypto.createHash('sha1').update("[CLY]_action" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_action)";
+                                result[crypto.createHash('sha1').update("[CLY]_push_action" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_push_action)";
+                                result[crypto.createHash('sha1').update("[CLY]_push_open" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_push_open)";
+                                result[crypto.createHash('sha1').update("[CLY]_push_sent" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_push_sent)";
                             }
                             callback(null, result);
                         });
