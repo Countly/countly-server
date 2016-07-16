@@ -22,7 +22,7 @@ enabled=1" > /etc/yum.repos.d/mongodb-org-3.2.repo
     yum install -y nodejs mongodb-org
     
     #disable transparent-hugepages (requires reboot)
-    cp -f $DIR/scripts/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages
+    cp -f $DIR/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages
     chmod 755 /etc/init.d/disable-transparent-hugepages
     chkconfig --add disable-transparent-hugepages
 fi
@@ -36,10 +36,16 @@ if [ -f /etc/lsb-release ]; then
     apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
     
     #disable transparent-hugepages (requires reboot)
-    cp -f $DIR/scripts/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages
+    cp -f $DIR/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages
     chmod 755 /etc/init.d/disable-transparent-hugepages
     update-rc.d disable-transparent-hugepages defaults
 fi
+
+#backup config and remove configuration to prevent duplicates
+cp /etc/mongod.conf /etc/mongod.conf.bak
+sed -i '/operationProfiling:/d' /etc/mongod.conf
+sed -i '/slowOpThresholdMs:/d' /etc/mongod.conf
+sed -i '/mode:/d' /etc/mongod.conf
 
 #new slow query log limit
 echo "operationProfiling:
