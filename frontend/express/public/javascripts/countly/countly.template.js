@@ -4795,6 +4795,11 @@ var AppRouter = Backbone.Router.extend({
                 }
             } else if (s.length == 3) {
                 return moment.monthsShort.indexOf(s);
+            } else if (s.indexOf("W") == 0) {
+                s = s.replace(",","");
+                s = s.replace("W","");
+                var dateParts = s.split(" ");
+                return (parseInt(dateParts[0]))+parseInt(dateParts.pop()*10000);
             } else {
                 s = s.replace(",","");
                 var dateParts = s.split(" ");
@@ -4802,7 +4807,10 @@ var AppRouter = Backbone.Router.extend({
                 if (dateParts.length == 3) {
                     return (parseInt(dateParts[2]) * 10000) + parseInt(moment.monthsShort.indexOf(dateParts[1]) * 100) + parseInt(dateParts[0]);
                 } else {
-                    return parseInt(moment.monthsShort.indexOf(dateParts[1]) * 100) + parseInt(dateParts[0]);
+                    if(dateParts[0].length == 3)
+                        return parseInt(moment.monthsShort.indexOf(dateParts[0]) * 100) + parseInt(dateParts[1]*10000);
+                    else    
+                        return parseInt(moment.monthsShort.indexOf(dateParts[1]) * 100) + parseInt(dateParts[0]);
                 }
             }
         }
