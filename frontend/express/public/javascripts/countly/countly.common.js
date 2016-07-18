@@ -1243,10 +1243,12 @@
 
                 for (var i = 0; i < allWeeks.length; i++) {
                     var parts = allWeeks[i].split(" ");
-                    ticks.push([i, "W" + allWeeks[i]]);
-
-                    var weekText = countlyCommon.formatDate(moment().year(parts[1]).isoweek(parts[0]).isoday(1), ", MMM D YYYY");
-                    tickTexts[i] = "W" + parts[0] + weekText;
+                    if(parseInt(parts[1]) == moment().year(parseInt(parts[1])).isoweek(parseInt(parts[0])).isoday(1).year()){
+                        ticks.push([i, "W" + allWeeks[i]]);
+    
+                        var weekText = countlyCommon.formatDate(moment().year(parseInt(parts[1])).isoweek(parseInt(parts[0])).isoday(1), ", D MMM YYYY");
+                        tickTexts[i] = "W" + parts[0] + weekText;
+                    }
                 }
             } else if (bucket == "hourly") {
                 for (var i = 0; i < days; i++) {
