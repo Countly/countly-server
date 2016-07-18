@@ -64,6 +64,7 @@
     "properties-parser":"0.3.1",
     "external-ip":"0.2.4",
     "escape-html":"1.0.3"
+    "bluebird":"3.4.1"
   },
   "jshintConfig": {
     "esversion": 6,
