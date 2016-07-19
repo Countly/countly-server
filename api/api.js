@@ -269,13 +269,12 @@ if (cluster.isMaster) {
                                         }
                                     }
                                     //update new user
-                                    common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': newAppUser}, {'upsert':true}, function() {
-                                        //delete old user
-                                        common.db.collection('app_users' + params.app_id).remove({_id:old_id}, function(){
-                                            //let plugins know they need to merge user data
-                                            plugins.dispatch("/i/device_id", {params:params, app:app, oldUser:oldAppUser, newUser:newAppUser});
-                                            restartRequest();
-                                        });
+                                    common.updateAppUser(params, {'$set': newAppUser});
+                                    //delete old user
+                                    common.db.collection('app_users' + params.app_id).remove({_id:old_id}, function(){
+                                        //let plugins know they need to merge user data
+                                        plugins.dispatch("/i/device_id", {params:params, app:app, oldUser:oldAppUser, newUser:newAppUser});
+                                        restartRequest();
                                     });
                                 }
                                 else{
