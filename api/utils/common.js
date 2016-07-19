@@ -4,41 +4,12 @@ var common = {},
     crypto = require('crypto'),
     mongo = require('mongoskin'),
     logger = require('./log.js'),
-    escape_html = require('escape-html'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./../config', 'dont-enclose');
 
 (function (common) {
 
     var log = logger('common');
-    
-    function escape_html_entities(key, value) {
-        if(typeof value === 'object' && value){
-            if(Array.isArray(value)){
-                var replacement = [];
-                for (var k = 0; k < value.length; k++) {
-                    if(typeof value[k] === "string")
-                    replacement[k] = escape_html(value[k]);
-                    else
-                    replacement[k] = value[k];
-                }
-                return replacement;
-            }
-            else{
-                var replacement = {};
-                for (var k in value) {
-                    if (Object.hasOwnProperty.call(value, k)) {
-                        if(typeof value[k] === "string")
-                            replacement[escape_html(k)] = escape_html(value[k]);
-                        else
-                            replacement[escape_html(k)] = value[k];
-                    }
-                }
-                return replacement;
-            }
-        }
-        return value;
-    }
 
     common.log = logger;
 
@@ -236,25 +207,24 @@ var common = {},
     // Adjusts the time to current app's configured timezone appTimezone and returns a time object.
     common.initTimeObj = function (appTimezone, reqTimestamp) {
         var currTimestamp,
-            curMsTimestamp,
             currDate,
             currDateWithoutTimestamp = new Date();
-        
-        // Check if the timestamp parameter exists in the request and is a 10 or 13 digit integer, handling also float timestamps with ms after dot
-        if (reqTimestamp && (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 10 && common.isNumber(reqTimestamp)) {
+            
+        if(common.isNumber(reqTimestamp))
+            reqTimestamp = Math.round(reqTimestamp);
+
+        // Check if the timestamp parameter exists in the request and is a 10 or 13 digit integer
+        if (reqTimestamp && (reqTimestamp + "").length === 10 && common.isNumber(reqTimestamp)) {
             // If the received timestamp is greater than current time use the current time as timestamp
-            currTimestamp = ( parseInt(reqTimestamp, 10) > time.time()) ? time.time() : parseInt(reqTimestamp, 10);
-            curMsTimestamp = ( parseInt(reqTimestamp, 10) > time.time()) ? time.time() : parseFloat(reqTimestamp, 10)*1000;
+            currTimestamp = (reqTimestamp > time.time()) ? time.time() : parseInt(reqTimestamp, 10);
             currDate = new Date(currTimestamp * 1000);
         } else if (reqTimestamp && (reqTimestamp + "").length === 13 && common.isNumber(reqTimestamp)) {
             var tmpTimestamp = Math.round(parseInt(reqTimestamp, 10) / 1000);
-            curMsTimestamp = ( tmpTimestamp > time.time()) ? time.time() * 1000 :  parseInt(reqTimestamp, 10);
             currTimestamp = (tmpTimestamp > time.time()) ? time.time() : tmpTimestamp;
             currDate = new Date(currTimestamp * 1000);
         } else {
             currTimestamp = time.time(); // UTC
             currDate = new Date();
-            curMsTimestamp = currDate.getTime();
         }
 		
 		currDate.setTimezone(appTimezone);
@@ -267,7 +237,6 @@ var common = {},
             nowUTC: moment.utc(currDate),
             nowWithoutTimestamp: moment(currDateWithoutTimestamp),
             timestamp: currTimestamp,
-            mstimestamp: curMsTimestamp,
             yearly: tmpMoment.format("YYYY"),
             monthly: tmpMoment.format("YYYY.M"),
             daily: tmpMoment.format("YYYY.M.D"),
@@ -432,24 +401,12 @@ var common = {},
     };
 
     common.returnMessage = function (params, returnCode, message) {
-        //set provided in configuration headers
-        var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
-        var add_headers = plugins.getConfig("api").additional_headers.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
-        var parts;
-        for(var i = 0; i < add_headers.length; i++){
-            if(add_headers[i] && add_headers[i].length){
-                parts = add_headers[i].split(/:(.+)?/);
-                if(parts.length == 3){
-                    headers[parts[0]] = parts[1];
-                }
-            }
-        }
         if (params && params.res && !params.blockResponses) {
-            params.res.writeHead(returnCode, headers);
+            params.res.writeHead(returnCode, {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
             if (params.qstring.callback) {
-                params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
+                params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}) + ')');
             } else {
-                params.res.write(JSON.stringify({result: message}, escape_html_entities));
+                params.res.write(JSON.stringify({result: message}));
             }
 
             params.res.end();
@@ -457,24 +414,12 @@ var common = {},
     };
 
     common.returnOutput = function (params, output) {
-        //set provided in configuration headers
-        var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
-        var add_headers = plugins.getConfig("api").additional_headers.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
-        var parts;
-        for(var i = 0; i < add_headers.length; i++){
-            if(add_headers[i] && add_headers[i].length){
-                parts = add_headers[i].split(/:(.+)?/);
-                if(parts.length == 3){
-                    headers[parts[0]] = parts[1];
-                }
-            }
-        }
         if (params && params.res && !params.blockResponses) {
-            params.res.writeHead(200, headers);
+            params.res.writeHead(200, {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
             if (params.qstring.callback) {
-                params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape_html_entities) + ')');
+                params.res.write(params.qstring.callback + '(' + JSON.stringify(output) + ')');
             } else {
-                params.res.write(JSON.stringify(output, escape_html_entities));
+                params.res.write(JSON.stringify(output));
             }
 
             params.res.end();
@@ -763,7 +708,7 @@ var common = {},
     common.adjustTimestampByTimezone = function(ts, tz){
         var d = new Date();
         d.setTimezone(tz);
-        return ts - (d.getTimezoneOffset()*60);
+        return ts + (d.getTimezoneOffset()*60);
     };
 	
 
@@ -849,87 +794,91 @@ var common = {},
         return target;
     };
     
-    //access flatten property
-    function updateFlattenValue(key, ob, command, val){
-        var parts = key.split(".");
-        for(var i = 0; i < parts.length-1; i++){
-            ob = ob[parts[i]] || {};
-        }
-        key = parts.pop();
-        switch(command){
-            case "$set":
-                ob[key] = val;
-                break;
-            case "$unset":
-                if(val)
-                    delete ob[key];
-                break;
-            case "$inc":
-                if(!ob[key])
-                    ob[key] = 0;
-                ob[key] += val;
-                break;
-            case "$mul":
-                if(!ob[key])
-                    ob[key] = 0;
-                ob[key] *= val;
-                break;
-            case "$max":
-                if(typeof ob[key] === "undefined")
-                    ob[key] = val;
-                else if(val > ob[key])
-                    ob[key] = val;
-                break;
-            case "$min":
-                if(typeof ob[key] === "undefined")
-                    ob[key] = val;
-                else if(update[i][key] < ob[key])
-                    ob[key] = val;
-                break;
-            case "$push":
-                if(typeof ob[key] === "undefined")
-                    ob[key] = [];
-                ob[key].push(val);
-                break;
-            case "$addToSet":
-                if(typeof ob[key] === "undefined")
-                    ob[key] = [];
-                if(ob[key].indexOf(val) === -1)
-                    ob[key].push(val);
-                break;
-            case "$pull":
-                if(typeof ob[key] === "undefined")
-                    ob[key] = [];
-                var index = ob[key].indexOf(val);
-                if(index > -1)
-                    ob[key].splice(val, 1);
-                break;
-            case "$rename":
-                //todo
-                break;
-            case "$setOnInsert":
-                //todo
-                break;
-        }
-    }
-    
     //update object MongoDB Style
     common.updateMongoObject = function(ob, update){
         ob = ob || {};
         update = update || {};
         for(var i in update){
-            for(var key in update[i]){
-                updateFlattenValue(key, ob, i, update[i][key]);
+            switch(i){
+                case "$set":
+                    for(var key in update[i]){
+                        ob[key] = update[i][key];
+                    }
+                    break;
+                case "$unset":
+                    for(var key in update[i]){
+                        if(update[i][key])
+                         delete ob[key];
+                    }
+                    break;
+                case "$inc":
+                    for(var key in update[i]){
+                        if(!ob[key])
+                            ob[key] = 0;
+                        ob[key] += update[i][key];
+                    }
+                    break;
+                case "$mul":
+                    for(var key in update[i]){
+                        if(!ob[key])
+                            ob[key] = 0;
+                        ob[key] *= update[i][key];
+                    }
+                    break;
+                case "$max":
+                    for(var key in update[i]){
+                        if(typeof ob[key] === "undefined")
+                            ob[key] = update[i][key];
+                        else if(update[i][key] > ob[key])
+                            ob[key] = update[i][key];
+                    }
+                    break;
+                case "$min":
+                    for(var key in update[i]){
+                        if(typeof ob[key] === "undefined")
+                            ob[key] = update[i][key];
+                        else if(update[i][key] < ob[key])
+                            ob[key] = update[i][key];
+                    }
+                    break;
+                case "$push":
+                    for(var key in update[i]){
+                        if(typeof ob[key] === "undefined")
+                            ob[key] = [];
+                        ob[key].push(update[i][key]);
+                    }
+                    break;
+                case "$addToSet":
+                    for(var key in update[i]){
+                        if(typeof ob[key] === "undefined")
+                            ob[key] = [];
+                        if(ob[key].indexOf(update[i][key]) === -1)
+                            ob[key].push(update[i][key]);
+                    }
+                    break;
+                case "$pull":
+                    for(var key in update[i]){
+                        if(typeof ob[key] === "undefined")
+                            ob[key] = [];
+                        var index = ob[key].indexOf(update[i][key]);
+                        if(index > -1)
+                            ob[key].splice(update[i][key], 1);
+                    }
+                    break;
+                case "$rename":
+                    //todo
+                    break;
+                case "$setOnInsert":
+                    //todo
+                    break;
             }
         }
     };
     
     common.updateAppUser = function(params, update, commit, callback){
+        commit = true;
         if(Object.keys(update).length){
-            if(!params._app_user_fallback)
-                params._app_user_fallback = {};
             common.updateMongoObject(params.app_user, update);
-            common.updateMongoObject(params._app_user_fallback, update);
             if(!params._app_user_changes)
                 params._app_user_changes = {};
             params._app_user_changes = common.extendDeep(params._app_user_changes, update)
@@ -938,49 +887,10 @@ var common = {},
             var update = JSON.parse(JSON.stringify(params._app_user_changes));
             params._app_user_changes = {};
             common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, update, {'upsert':true}, function(err, res) {
-                if(err){
-                    console.log("Error commiting app_user changes", params.app_user, update, err);
-                    console.log("Falling back to", params._app_user_fallback);
-                    if(Object.keys(params._app_user_fallback).length){
-                        common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {$set:common.flattenObject(params._app_user_fallback)}, {'upsert':true}, function(err, res) {
-                            if(err){
-                                console.log("Error commiting fallback", {$set:common.flattenObject(params._app_user_fallback)}, err);
-                            }
-                            if(callback)
-                                callback(err, res)
-                        });
-                    }
-                }
-                else if(callback)
-                    callback(err, res);
+                if(callback)
+                    callback(err, res)
             });
         }
-    };
-    
-    common.flattenObject = function(ob, prefix) {
-        if(prefix){
-            prefix += ".";
-        }
-        else{
-            prefix = "";
-        }
-        var toReturn = {};
-        
-        for (var i in ob) {
-            if (!ob.hasOwnProperty(i)) continue;
-            
-            if ((typeof ob[i]) == 'object' && ob[i] != null) {
-                var flatObject = common.flattenObject(ob[i]);
-                for (var x in flatObject) {
-                    if (!flatObject.hasOwnProperty(x)) continue;
-                    
-                    toReturn[prefix + i + '.' + x] = flatObject[x];
-                }
-            } else {
-                toReturn[prefix + i] = ob[i];
-            }
-        }
-        return toReturn;
     };
 }(common));
 
