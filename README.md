@@ -4,7 +4,7 @@
 
 **Are you a plugin developer?** [Contact us](http://count.ly/contact-us) if you like to work / working on a specific [plugin](http://count.ly/plugins) and we can discuss details on how we can work together in a lively environment!
 
-**Slack user?** [Join our Slack community](http://192.241.144.64:3000/)
+**Slack user?** [Join our Slack community](http://slack.count.ly:3000/)
 
 ##What's Countly?
 [Countly](http://count.ly) is an innovative, real-time, open source mobile & [web analytics](http://count.ly/web-analytics), [push notifications](http://count.ly/push-notifications) and [crash reporting](http://count.ly/crash-reports) platform powering nearly 3000 mobile applications. It collects data from mobile phones, tablets, Apple Watch and other internet-connected devices, and visualizes this information to analyze mobile application usage and end-user behavior. 
