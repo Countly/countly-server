@@ -779,6 +779,21 @@ var common = {},
         });
     };
     
+    //extend object including checking sub objects
+    common.extendDeep = function(target, source) {
+        for (var prop in source) {
+            if (source.hasOwnProperty(prop)) {
+                if (target[prop] && typeof source[prop] === 'object') {
+                    common.extendDeep(target[prop], source[prop]);
+                }
+                else {
+                    target[prop] = source[prop];
+                }
+            }
+        }
+        return target;
+    };
+    
     //update object MongoDB Style
     common.updateMongoObject = function(ob, update){
         ob = ob || {};
@@ -857,6 +872,24 @@ var common = {},
                     //todo
                     break;
             }
+        }
+    };
+    
+    common.updateAppUser = function(params, update, commit, callback){
+        commit = true;
+        if(Object.keys(update).length){
+            common.updateMongoObject(params.app_user, update);
+            if(!params._app_user_changes)
+                params._app_user_changes = {};
+            params._app_user_changes = common.extendDeep(params._app_user_changes, update)
+        }
+        if(commit && params._app_user_changes && Object.keys(params._app_user_changes).length){
+            var update = JSON.parse(JSON.stringify(params._app_user_changes));
+            params._app_user_changes = {};
+            common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, update, {'upsert':true}, function(err, res) {
+                if(callback)
+                    callback(err, res)
+            });
         }
     };
 }(common));
