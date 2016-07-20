@@ -189,7 +189,7 @@ var plugin = {},
         var dbAppUser = ob.dbAppUser;
         if(dbAppUser && dbAppUser.vc){
             common.updateMongoObject(params.app_user, {$set:{vc:0}});
-            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id },{$set:{vc:0}},{upsert:true}, function (err, res){
+            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id },{},{$set:{vc:0}},{upsert:true}, function (err, res){
                 var user = params.app_user;
                 if(user && user.vc){
                     var ranges = [
