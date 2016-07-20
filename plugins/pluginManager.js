@@ -226,8 +226,20 @@ var pluginManager = function pluginManager(){
             } catch (ex) {
                 console.error(ex.stack);
             }
-            if(callback){
-                Promise.all(promises).then(callback);
+            //should we create a promise for this dispatch
+            if(params && params.params && params.params.promises){
+                params.params.promises.push(new Promise(function(resolve, reject){
+                    function resolver(){
+                        resolve();
+                        if(callback){
+                            callback();
+                        }
+                    }
+                    Promise.all(promises).then(resolver, resolver);
+                }));
+            }
+            else if(callback){
+                Promise.all(promises).then(callback, callback);
             }
         }
         return used;

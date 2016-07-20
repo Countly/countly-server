@@ -25,6 +25,11 @@ var usage = {},
                 params.user.lat = locationData.ll[0];
                 params.user.lng = locationData.ll[1];
             }
+        }       
+        if(params.user.lat && params.user.lng){
+            var update = {};  
+            update["$set"] = {lat:params.user.lat, lng:params.user.lng};
+            common.updateAppUser(params, update);
         }
         dbAppUser = params.app_user
         if(dbAppUser){
@@ -33,14 +38,24 @@ var usage = {},
                 //process duration from unproperly ended previous session
                 plugins.dispatch("/session/post", {params:params, dbAppUser:dbAppUser, end_session:false});
                 if (dbAppUser && dbAppUser[common.dbUserMap['session_duration']]) {
-                    processSessionDurationRange(dbAppUser[common.dbUserMap['session_duration']], params);
+                    processSessionDurationRange(dbAppUser[common.dbUserMap['session_duration']], params, function(){
+                        processUserSession(dbAppUser, params, done);
+                    });
+                }
+                else{
+                    processUserSession(dbAppUser, params, done);
                 }
             }
+            else{
+                 processUserSession(dbAppUser, params, done);
+            }
         }
-        processUserSession(dbAppUser, params, done);
+        else{
+            processUserSession(dbAppUser, params, done);
+        }
     };
 
-    usage.endUserSession = function (params) {
+    usage.endUserSession = function (params, done) {
         //check if end_session is not too old and ignore if it is
         if(params.time.timestamp >= params.time.nowWithoutTimestamp.unix() - plugins.getConfig("api").session_duration_limit){
             // As soon as we receive the end_session we set the timestamp
@@ -55,7 +70,7 @@ var usage = {},
                 //need to query app user again to get data modified by another request
                 common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, dbAppUser){
                     if (!dbAppUser || err) {
-                        return true;
+                        return done ? done() : false;
                     }
     
                     var lastBeginSession = dbAppUser[common.dbUserMap['last_begin_session_timestamp']],
@@ -91,12 +106,21 @@ var usage = {},
                             // previous session duration stored than we dont need to calculate the session
                             // duration range for this user.
                             if (dbAppUser[common.dbUserMap['session_duration']]) {
-                                processSessionDurationRange(dbAppUser[common.dbUserMap['session_duration']], params);
+                                processSessionDurationRange(dbAppUser[common.dbUserMap['session_duration']], params, done);
                             }
+                            else{
+                                return done ? done() : false;
+                            }
+                        }
+                        else{
+                            return done ? done() : false;
                         }
                     }
                 });
             }, 10000);
+        }
+        else{
+            return done ? done() : false;
         }
     };
 
@@ -120,9 +144,6 @@ var usage = {},
             common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, function(){});
             
             var update = {'$inc': {'sd': session_duration, 'tsd': session_duration}};         
-            if(params.user.lat && params.user.lng){
-                update["$set"] = {lat:params.user.lat, lng:params.user.lng};
-            }
             common.updateAppUser(params, update);   
             plugins.dispatch("/session/duration", {params:params, session_duration:session_duration});
 
@@ -132,7 +153,7 @@ var usage = {},
         }
     };
 
-    function processSessionDurationRange(totalSessionDuration, params) {
+    function processSessionDurationRange(totalSessionDuration, params, done) {
         var durationRanges = [
                 [0,10],
                 [11,30],
@@ -169,6 +190,7 @@ var usage = {},
 
         // sd: session duration. common.dbUserMap is not used here for readability purposes.
         common.updateAppUser(params, {'$set': {'sd': 0}});
+        return done ? done() : false;
     }
 
     function processUserSession(dbAppUser, params, done) {
@@ -371,9 +393,8 @@ var usage = {},
 
         common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true}, function(){});
 
-        processMetrics(dbAppUser, uniqueLevelsZero, uniqueLevelsMonth, params, done);
-
         plugins.dispatch("/session/user", {params:params, dbAppUser:dbAppUser});
+        processMetrics(dbAppUser, uniqueLevelsZero, uniqueLevelsMonth, params, done);
     }
 
     function processMetrics(user, uniqueLevelsZero, uniqueLevelsMonth, params, done) {
@@ -387,10 +408,6 @@ var usage = {},
             userProps[common.dbUserMap['device_id']] = params.qstring.device_id;
             userProps[common.dbUserMap['country_code']] = params.user.country;
             userProps[common.dbUserMap['city']] = params.user.city;
-            if(params.user.lat && params.user.lng){
-                userProps["lat"] = params.user.lat;
-                userProps["lng"] = params.user.lng;
-            }
         } else {
             if (parseInt(user[common.dbUserMap['last_seen']], 10) < params.time.timestamp) {
                 userProps[common.dbUserMap['last_seen']] = params.time.timestamp;
@@ -418,11 +435,6 @@ var usage = {},
 
             if (user[common.dbUserMap['device_id']] != params.qstring.device_id) {
                 userProps[common.dbUserMap['device_id']] = params.qstring.device_id;
-            }
-            
-            if(params.user.lat && params.user.lng && (user["lat"] != params.user.lat || user["lng"] != params.user.lng)){
-                userProps["lat"] = params.user.lat;
-                userProps["lng"] = params.user.lng;
             }
         }
 

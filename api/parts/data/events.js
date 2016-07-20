@@ -2,82 +2,85 @@ var countlyEvents = {},
     common = require('./../../utils/common.js'),
     async = require('async'),
     crypto = require('crypto'),
+    Promise = require("bluebird"),
 	plugins = require('../../../plugins/pluginManager.js');
 
 (function (countlyEvents) {
 
     countlyEvents.processEvents = function(params) {
-        common.db.collection("events").findOne({'_id':params.app_id}, {list:1, segments:1}, function (err, eventColl) {
-            var appEvents = [],
-                appSegments = {},
-                metaToFetch = [];
-
-            if (!err && eventColl) {
-                if (eventColl.list) {
-                    appEvents = eventColl.list;
-                }
-
-                if (eventColl.segments) {
-                    appSegments = eventColl.segments;
-                }
-            }
-
-            for (var i=0; i < params.qstring.events.length; i++) {
-                var currEvent = params.qstring.events[i],
-                    shortEventName = "",
-                    eventCollectionName = "";
-                if (!currEvent.key || !currEvent.count || !common.isNumber(currEvent.count) || (currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalEvents.indexOf(currEvent.key) === -1)) {
-                    continue;
-                }
-
-                if (plugins.getConfig("api").event_limit &&
-                    appEvents.length >= plugins.getConfig("api").event_limit &&
-                    appEvents.indexOf(currEvent.key) === -1) {
-                    continue;
-                }
-
-                shortEventName = common.fixEventKey(currEvent.key);
-
-                if (!shortEventName) {
-                    continue;
-                }
-
-                eventCollectionName = "events" + crypto.createHash('sha1').update(shortEventName + params.app_id).digest('hex');
-
-                if (params.qstring.events[i].timestamp) {
-                    params.time = common.initTimeObj(params.appTimezone, params.qstring.events[i].timestamp);
-                }
-
-                metaToFetch.push({
-                   coll: eventCollectionName,
-                   id: "no-segment_" + common.getDateIds(params).zero
-                });
-            }
-
-            async.map(metaToFetch, fetchEventMeta, function (err, eventMetaDocs) {
-                var appSgValues = {};
-
-                for (var i = 0; i < eventMetaDocs.length; i++) {
-                    if (eventMetaDocs[i].coll && eventMetaDocs[i].meta) {
-                        appSgValues[eventMetaDocs[i].coll] = eventMetaDocs[i].meta;
+        return new Promise(function(resolve, reject){
+            common.db.collection("events").findOne({'_id':params.app_id}, {list:1, segments:1}, function (err, eventColl) {
+                var appEvents = [],
+                    appSegments = {},
+                    metaToFetch = [];
+    
+                if (!err && eventColl) {
+                    if (eventColl.list) {
+                        appEvents = eventColl.list;
+                    }
+    
+                    if (eventColl.segments) {
+                        appSegments = eventColl.segments;
                     }
                 }
-
-                processEvents(appEvents, appSegments, appSgValues, params);
-            });
-
-            function fetchEventMeta(metaToFetch, callback) {
-                common.db.collection(metaToFetch.coll).findOne({'_id':metaToFetch.id}, {meta:1}, function (err, eventMetaDoc) {
-                    var retObj = eventMetaDoc || {};
-                    retObj.coll = metaToFetch.coll;
-
-                    callback(false, retObj);
+    
+                for (var i=0; i < params.qstring.events.length; i++) {
+                    var currEvent = params.qstring.events[i],
+                        shortEventName = "",
+                        eventCollectionName = "";
+                    if (!currEvent.key || !currEvent.count || !common.isNumber(currEvent.count) || (currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalEvents.indexOf(currEvent.key) === -1)) {
+                        continue;
+                    }
+    
+                    if (plugins.getConfig("api").event_limit &&
+                        appEvents.length >= plugins.getConfig("api").event_limit &&
+                        appEvents.indexOf(currEvent.key) === -1) {
+                        continue;
+                    }
+    
+                    shortEventName = common.fixEventKey(currEvent.key);
+    
+                    if (!shortEventName) {
+                        continue;
+                    }
+    
+                    eventCollectionName = "events" + crypto.createHash('sha1').update(shortEventName + params.app_id).digest('hex');
+    
+                    if (params.qstring.events[i].timestamp) {
+                        params.time = common.initTimeObj(params.appTimezone, params.qstring.events[i].timestamp);
+                    }
+    
+                    metaToFetch.push({
+                    coll: eventCollectionName,
+                    id: "no-segment_" + common.getDateIds(params).zero
+                    });
+                }
+    
+                async.map(metaToFetch, fetchEventMeta, function (err, eventMetaDocs) {
+                    var appSgValues = {};
+    
+                    for (var i = 0; i < eventMetaDocs.length; i++) {
+                        if (eventMetaDocs[i].coll && eventMetaDocs[i].meta) {
+                            appSgValues[eventMetaDocs[i].coll] = eventMetaDocs[i].meta;
+                        }
+                    }
+    
+                    processEvents(appEvents, appSegments, appSgValues, params, resolve);
                 });
-            }
+    
+                function fetchEventMeta(metaToFetch, callback) {
+                    common.db.collection(metaToFetch.coll).findOne({'_id':metaToFetch.id}, {meta:1}, function (err, eventMetaDoc) {
+                        var retObj = eventMetaDoc || {};
+                        retObj.coll = metaToFetch.coll;
+    
+                        callback(false, retObj);
+                    });
+                }
+            });
         });
     };
 
-    function processEvents(appEvents, appSegments, appSgValues, params) {
+    function processEvents(appEvents, appSegments, appSgValues, params, done) {
         var events = [],
             eventCollections = {},
             eventSegments = {},
@@ -372,6 +375,7 @@ var countlyEvents = {},
 
             common.db.collection('events').update({'_id': params.app_id}, eventSegmentList, {'upsert': true}, function(err, res){});
         }
+        done();
     }
 
     function mergeEvents(firstObj, secondObj) {
