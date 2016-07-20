@@ -876,7 +876,6 @@ var common = {},
     };
     
     common.updateAppUser = function(params, update, commit, callback){
-        commit = true;
         if(Object.keys(update).length){
             common.updateMongoObject(params.app_user, update);
             if(!params._app_user_changes)
