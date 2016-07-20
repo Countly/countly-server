@@ -1160,6 +1160,54 @@ var countlyCommon = {},
             "periodContainsToday": periodContainsToday
         };
     }
+    
+    countlyCommon.getTimestampRangeQuery = function(params){
+        var periodObj = countlyCommon.periodObj;
+        //create current period array if it does not exist
+        if (!periodObj.currentPeriodArr || periodObj.currentPeriodArr.length == 0) {
+            periodObj.currentPeriodArr = [];
+
+            //create a period array that starts from the beginning of the current year until today
+            if (params.qstring.period == "month") {
+                for (var i = 0; i < (now.getMonth() + 1); i++) {
+                    var daysInMonth = moment().month(i).daysInMonth();
+
+                    for (var j = 0; j < daysInMonth; j++) {
+                        periodObj.currentPeriodArr.push(periodObj.activePeriod + "." + (i + 1) + "." + (j + 1));
+
+                        // If current day of current month, just break
+                        if ((i == now.getMonth()) && (j == (now.getDate() - 1))) {
+                            break;
+                        }
+                    }
+                }
+            }
+            //create a period array that starts from the beginning of the current month until today
+            else if(params.qstring.period == "day") {
+                for(var i = 0; i < now.getDate(); i++) {
+                    periodObj.currentPeriodArr.push(periodObj.activePeriod + "." + (i + 1));
+                }
+            }
+            //create one day period array
+            else{
+                periodObj.currentPeriodArr.push(periodObj.activePeriod);
+            }
+        }
+        var tmpArr;
+        var ts = {};
+
+        tmpArr = periodObj.currentPeriodArr[0].split(".");
+        ts.$gte = new Date(Date.UTC(parseInt( tmpArr[0]),parseInt(tmpArr[1])-1,parseInt(tmpArr[2]) ));
+        ts.$gte.setTimezone(params.appTimezone);
+        ts.$gte = ts.$gte.getTime() + ts.$gte.getTimezoneOffset()*60000;
+
+        tmpArr = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
+        ts.$lt = new Date(Date.UTC(parseInt( tmpArr[0]),parseInt(tmpArr[1])-1,parseInt(tmpArr[2]) ));
+        ts.$lt.setDate(ts.$lt.getDate() + 1);
+        ts.$lt.setTimezone(params.appTimezone);
+        ts.$lt = ts.$lt.getTime() + ts.$lt.getTimezoneOffset()*60000;
+        return ts;
+    };
 
     function getUniqArray(weeksArray, weekCounts, monthsArray, monthCounts, periodArr) {
         if (_period == "month" || _period == "day" || _period == "hour" || _period == "yesterday") {
