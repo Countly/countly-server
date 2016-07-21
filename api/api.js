@@ -50,9 +50,9 @@ process.on('uncaughtException', (err) => {
 });
  
 process.on('unhandledRejection', (reason, p) => {
-    console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+    console.log('Unhandled rejection for %j with reason %j stack ', p, reason, reason ? reason.stack : undefined);
 });
- 
+
 if (cluster.isMaster) {
 
     var workerCount = (countlyConfig.api.workers)? countlyConfig.api.workers : os.cpus().length;
