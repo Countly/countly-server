@@ -16,11 +16,42 @@
             backgroundColor:"transparent",
             datalessRegionColor:"#FFF"
         },
-        _countryMap = {};
+        _countryMap = {},
+		_countryEnMap = {},
+		_echart,
+		_echartOption = {
+			title : {
+				text: '',
+				x:'center'
+			},tooltip : {
+				trigger: 'item'
+			},dataRange: {
+				min: 0,
+				max: 0,
+				calculable : true,
+				splitNumber:0,
+				color: ['orangered','yellow','lightskyblue']
+			}, series : [
+				{
+					name: '',
+					type: 'map',
+					mapType: 'world',
+					selectedMode : 'single',
+					itemStyle:{
+						normal:{label:{show:false}},
+						emphasis:{label:{show:true}}
+					}
+				}
+			]
+		};
 
     // Load local country names
     $.get('localization/countries/' + countlyCommon.BROWSER_LANG_SHORT + '/country.json', function (data) {
         _countryMap = data;
+    });
+	
+	$.get('localization/countries/en/country.json', function (data) {
+        _countryEnMap = data;
     });
 
     // Public Methods
@@ -57,7 +88,15 @@
         }
 
         if (google.visualization) {
-            draw(options.metric);
+			if(google.visualization.GeoChart){
+				draw(options.metric);
+			}else{
+				if (window.echarts) {
+					drawByECharts(options.metric);
+				}else{
+					CountlyHelpers.loadJS("province/javascripts/baidu/echarts-all.js", drawByECharts);
+				}
+			}
         } else {
             google.load('visualization', '1', {'packages':['geochart'], callback:draw});
         }
@@ -127,7 +166,7 @@
         if (countryName) {
             return countryName;
         } else {
-            return jQuery.i18n.map["common.unknown"] || "Unknown";
+            return "Unknown";
         }
     };
 
@@ -142,7 +181,7 @@
     function draw(ob) {
         ob = ob || {id:'total', label:jQuery.i18n.map["sidebar.analytics.sessions"], type:'number', metric:"t"};
         var chartData = {cols:[], rows:[]};
-		
+
 		if(!google.visualization.GeoChart){
 			return;
 		}
@@ -166,7 +205,7 @@
         ];
         chartData.cols.push(ob);
         chartData.rows = _.map(tt.chartData, function (value, key, list) {
-            if (value.country == "European Union" || value.country == jQuery.i18n.map["common.unknown"]) {
+            if (value.country == "European Union" || value.country == "Unknown") {
                 return {c:[
                     {v:""},
                     {v:value[ob.metric]}
@@ -210,7 +249,7 @@
             {
                 "name":"country",
                 "func":function (rangeArr, dataObj) {
-                    return countlyLocation.getCountryName(rangeArr);
+                    return _echart?countlyLocation.getCountryEnName(rangeArr):countlyLocation.getCountryName(rangeArr);
                 }
             },
             { "name":"t" },
@@ -223,7 +262,7 @@
         ];
         chartData.cols.push(ob);
         chartData.rows = _.map(tt.chartData, function (value, key, list) {
-            if (value.country == "European Union" || value.country == jQuery.i18n.map["common.unknown"]) {
+            if (value.country == "European Union" || value.country == "Unknown") {
                 return {c:[
                     {v:""},
                     {v:value[ob.metric]}
@@ -235,8 +274,47 @@
             ]};
         });
 
-        _dataTable = new google.visualization.DataTable(chartData);
-        _chart.draw(_dataTable, _chartOptions);
+		if(google.visualization.GeoChart){
+			_dataTable = new google.visualization.DataTable(chartData);
+			_chart.draw(_dataTable, _chartOptions);
+		}else{
+			if (window.echarts) {
+				var max_value = 0;
+				var geoData = [];
+				for(var j=0;j<tt.chartData.length;j++){
+					var item = {};
+					item.name = tt.chartData[j].country;
+					switch(ob.metric){
+						case "t":
+							item.value = tt.chartData[j].t;
+							break;
+						case "u":
+							item.value = tt.chartData[j].u;
+							break;
+						case "n":
+							item.value = tt.chartData[j].n;
+							break;
+					}
+					if(item.value > max_value){
+						max_value = item.value;
+					}
+					geoData.push(item);
+				}
+				_echart.setOption( {
+					title : {
+						text: ob.label,
+					},dataRange: {
+						max: max_value,
+					}, series : [
+						{
+							name: ob.label
+							, data: geoData
+						}
+					]
+				} );
+				_echart.refresh();
+			}
+		}
     }
 
     function setMeta() {
@@ -252,5 +330,92 @@
             _countries = countlyCommon.union(_countries, _locationsDb['meta']['countries']);
         }
     }
+
+	countlyLocation.getCountryEnName = function (cc) {
+        var countryName = _countryEnMap[cc.toUpperCase()];
+
+        if (countryName) {
+            return countryName;
+        } else {
+            return "Unknown";
+        }
+    };
+	
+	function drawByECharts(ob){
+		ob = ob || {id:'total', label:jQuery.i18n.map["sidebar.analytics.sessions"], type:'number', metric:"t"};
+		
+		var tt = countlyCommon.extractTwoLevelData(_locationsDb, _countries, countlyLocation.clearLocationObject, [
+            {
+                "name":"country",
+                "func":function (rangeArr, dataObj) {
+                    return countlyLocation.getCountryEnName(rangeArr);
+                }
+            },
+            { "name":"t" },
+            { "name":"u" },
+            { "name":"n" }
+        ]);
+		
+		var max_value = 0;
+		var geoData = [];
+		for(var j=0;j<tt.chartData.length;j++){
+			var item = {};
+			item.name = tt.chartData[j].country;
+			switch(ob.metric){
+				case "t":
+					item.value = tt.chartData[j].t;
+					break;
+				case "u":
+					item.value = tt.chartData[j].u;
+					break;
+				case "n":
+					item.value = tt.chartData[j].n;
+					break;
+			}
+			if(item.value > max_value){
+				max_value = item.value;
+			}
+			geoData.push(item);
+		}
+		
+		$("#geo-chart").height( _chartOptions.height );
+		$("#geo-chart").width( _chartOptions.width );
+		_echartOption.title.text = ob.label;
+		_echartOption.dataRange.max = max_value;
+		_echartOption.series[0].name = ob.label;
+		_echartOption.series[0].data = geoData;
+		
+		_echart = echarts.init(document.getElementById(_chartElementId));
+		
+		if (countlyCommon.CITY_DATA !== false && _chartOptions.height > 300) {
+			_echart.on(echarts.config.EVENT.MAP_SELECTED, function(param){
+				var selected = param.selected;
+				var selectedCountry;
+				var name;
+				for (var i = 0, l = _echartOption.series[0].data.length; i < l; i++) {
+					name = _echartOption.series[0].data[i].name;
+					_echartOption.series[0].data[i].selected = selected[name];
+					if (selected[name]) {
+						selectedCountry = name;
+					}
+				}
+				// for some region has no ddata
+				if(!selectedCountry){
+					return;
+				}
+				
+				var activeAppCountry = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].country;
+				if (activeAppCountry && selectedCountry == countlyLocation.getCountryEnName(activeAppCountry)) {
+					_chartOptions['region'] = selectedCountry;
+					_chartOptions['resolution'] = 'countries';
+
+					$(document).trigger('selectMapCountry');
+				}
+			});
+		}else{
+			_echartOption.dataRange.show = false;
+		}
+		_echart.setOption(_echartOption);
+	}
 
 }(window.countlyLocation = window.countlyLocation || {}, jQuery));
