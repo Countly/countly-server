@@ -739,7 +739,7 @@ if (cluster.isMaster) {
             
                             switch (params.qstring.method) {
                                 case 'total_users':
-                                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric);
+                                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric || 'users');
                                     break;
                                 case 'get_period_obj':
                                     validateUserForDataReadAPI(params, countlyApi.data.fetch.getPeriodObj, 'users');
