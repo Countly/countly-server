@@ -1,6 +1,7 @@
 var plugin = {},
     crypto = require('crypto'),
     request = require('request'),
+    Promise = require("bluebird"),
 	common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
@@ -185,11 +186,10 @@ var plugin = {},
 	});
     
     plugins.register("/session/post", function(ob){
-        var params = ob.params;
-        var dbAppUser = ob.dbAppUser;
-        if(dbAppUser && dbAppUser.vc){
-            common.updateMongoObject(params.app_user, {$set:{vc:0}});
-            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id },{},{$set:{vc:0}},{upsert:true}, function (err, res){
+        return new Promise(function(resolve, reject){
+            var params = ob.params;
+            var dbAppUser = ob.dbAppUser;
+            if(dbAppUser && dbAppUser.vc){
                 var user = params.app_user;
                 if(user && user.vc){
                     var ranges = [
@@ -207,7 +207,7 @@ var plugin = {},
                     updateUsersZero = {},
                     dbDateIds = common.getDateIds(params),
                     monthObjUpdate = [];
-    
+        
                     if (user.vc >= rangesMax) {
                         calculatedRange = (ranges.length) + '';
                     } else {
@@ -218,7 +218,7 @@ var plugin = {},
                             }
                         }
                     }
-            
+                
                     monthObjUpdate.push('vc.' + calculatedRange);
                     common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
                     common.fillTimeObjectZero(params, updateUsersZero, 'vc.' + calculatedRange);
@@ -234,33 +234,44 @@ var plugin = {},
                             recordMetrics(params, {key:"[CLY]_view", segmentation:segmentation}, user);
                         }
                     }
+                    common.updateAppUser(params, {$set:{vc:0}});
+                    resolve();
                 }
-            });
-        }
+                else{
+                    resolve();
+                }
+            }
+            else{
+                resolve();
+            }
+        });
     });
     
     plugins.register("/i", function(ob){
-        var params = ob.params;
-        if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
-            params.qstring.events = params.qstring.events.filter(function(currEvent){
-                if (currEvent.key == "[CLY]_view"){
-                    if(currEvent.segmentation && currEvent.segmentation.name){
-                        processView(params, currEvent);
-                        if(currEvent.segmentation.visit){
-                            var events = [currEvent];
-                            plugins.dispatch("/plugins/drill", {params:params, dbAppUser:params.app_user, events:events});
-                        }
-                        else{
-                            if(currEvent.dur || currEvent.segmentation.dur){
-                                plugins.dispatch("/view/duration", {params:params, duration:currEvent.dur || currEvent.segmentation.dur});
+        return new Promise(function(resolve, reject){
+            var params = ob.params;
+            if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
+                params.qstring.events = params.qstring.events.filter(function(currEvent){
+                    if (currEvent.key == "[CLY]_view"){
+                        if(currEvent.segmentation && currEvent.segmentation.name){
+                            processView(params, currEvent);
+                            if(currEvent.segmentation.visit){
+                                var events = [currEvent];
+                                plugins.dispatch("/plugins/drill", {params:params, dbAppUser:params.app_user, events:events});
+                            }
+                            else{
+                                if(currEvent.dur || currEvent.segmentation.dur){
+                                    plugins.dispatch("/view/duration", {params:params, duration:currEvent.dur || currEvent.segmentation.dur});
+                                }
                             }
                         }
+                        return false;
                     }
-                    return false;
-                }
-                return true;
-            });
-        }
+                    return true;
+                });
+            }
+            resolve();
+        });
     });
     
     function processView(params, currEvent){
@@ -272,19 +283,17 @@ var plugin = {},
             update["$inc"] = {vc:1};
             update["$max"] = {lvt:params.time.timestamp};
         }
-        common.updateMongoObject(params.app_user, update);
-        common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id },update,{upsert:true}, function (err, user){
-            if(currEvent.segmentation.visit){
-                var lastView = {};
-                lastView[escapedMetricVal] = params.time.timestamp;           
-                common.db.collection('app_views' + params.app_id).findAndModify({'_id': params.app_user_id },{}, {$max:lastView},{upsert:true, new:false}, function (err, view){
-                    recordMetrics(params, currEvent, params.app_user, view && view.ok ? view.value : null);
-                });
-            }
-            else{
-                recordMetrics(params, currEvent, params.app_user);
-            }
-        });
+        common.updateAppUser(params, update);
+        if(currEvent.segmentation.visit){
+            var lastView = {};
+            lastView[escapedMetricVal] = params.time.timestamp;           
+            common.db.collection('app_views' + params.app_id).findAndModify({'_id': params.app_user_id },{}, {$max:lastView},{upsert:true, new:false}, function (err, view){
+                recordMetrics(params, currEvent, params.app_user, view && view.ok ? view.value : null);
+            });
+        }
+        else{
+            recordMetrics(params, currEvent, params.app_user);
+        }
 	}
     
     function recordMetrics(params, currEvent, user, view){
