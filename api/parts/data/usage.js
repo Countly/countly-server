@@ -496,15 +496,6 @@ var usage = {},
                 }
                                         
                 for (var j=0; j < predefinedMetrics[i].metrics.length; j++) {
-                    var ignore = false;
-                    //checking if metric should be ignored because of limit
-                    if(metas[predefinedMetrics[i].db] && 
-                        metas[predefinedMetrics[i].db].meta && 
-                        metas[predefinedMetrics[i].db].meta[predefinedMetrics[i].metrics[j].set] && 
-                        metas[predefinedMetrics[i].db].meta[predefinedMetrics[i].metrics[j].set].length && 
-                        metas[predefinedMetrics[i].db].meta[predefinedMetrics[i].metrics[j].set].length >= plugins.getConfig("api").metric_limit){
-                            ignore = true;
-                        }
                     var tmpMetric = predefinedMetrics[i].metrics[j],
                         recvMetricValue = "",
                         escapedMetricVal = "";
@@ -526,6 +517,14 @@ var usage = {},
                         // Assign properties to app_users document of the current user
                         if (isNewUser || (!isNewUser && user[tmpMetric.short_code] != escapedMetricVal)) {
                             userProps[tmpMetric.short_code] = escapedMetricVal;
+                        }
+                        
+                        var ignore = false;
+                        if(metas[predefinedMetrics[i].db] && 
+                            metas[predefinedMetrics[i].db][predefinedMetrics[i].metrics[j].set] && 
+                            metas[predefinedMetrics[i].db][predefinedMetrics[i].metrics[j].set].length && 
+                            metas[predefinedMetrics[i].db][predefinedMetrics[i].metrics[j].set].length >= plugins.getConfig("api").metric_limit && metas[predefinedMetrics[i].db][predefinedMetrics[i].metrics[j].set].indexOf(escapedMetricVal) === -1){
+                                ignore = true;
                         }
                         
                         //should metric be ignored for reaching the limit
@@ -556,25 +555,25 @@ var usage = {},
                                     tmpTimeObjMonth['d.' + uniqueLevelsMonth[l] + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
                                 }
                             }
+                        }
     
-                            /*
-                            If track_changes is not specifically set to false for a metric, track metric value changes on a per user level
-                            with a document like below inside metric_changesAPPID collection
+                        /*
+                        If track_changes is not specifically set to false for a metric, track metric value changes on a per user level
+                        with a document like below inside metric_changesAPPID collection
         
-                            { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
-                            */
-                            if (predefinedMetrics[i].metrics[j].track_changes !== false && !isNewUser && user[tmpMetric.short_code] != escapedMetricVal) {
-                                if (!metricChanges["uid"]) {
-                                    metricChanges["uid"] = user.uid;
-                                    metricChanges["ts"] = params.time.timestamp;
-                                    metricChanges["cd"] = new Date();
-                                }
-        
-                                metricChanges[tmpMetric.short_code] = {
-                                    "o": user[tmpMetric.short_code],
-                                    "n": escapedMetricVal
-                                };
+                        { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
+                        */
+                        if (predefinedMetrics[i].metrics[j].track_changes !== false && !isNewUser && user[tmpMetric.short_code] != escapedMetricVal) {
+                            if (!metricChanges["uid"]) {
+                                metricChanges["uid"] = user.uid;
+                                metricChanges["ts"] = params.time.timestamp;
+                                metricChanges["cd"] = new Date();
                             }
+        
+                            metricChanges[tmpMetric.short_code] = {
+                                "o": user[tmpMetric.short_code],
+                                "n": escapedMetricVal
+                            };
                         }
                     }
                 }
