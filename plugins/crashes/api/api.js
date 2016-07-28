@@ -4,6 +4,7 @@ var plugin = {},
     countlyCommon = require('../../../api/lib/countly.common.js'),
     crypto = require("crypto"),
     async = require("async"),
+    Promise = require("bluebird"),
     plugins = require('../../pluginManager.js');
     
 plugins.setConfigs("crashes", {
