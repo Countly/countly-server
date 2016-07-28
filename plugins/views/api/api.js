@@ -309,7 +309,7 @@ var plugin = {},
             }
             if(currEvent.segmentation.visit){
                 monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['total']);
-                if (!user || !user.lv) {
+                if (view && !view[escapedMetricVal]) {
                     monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['new']);
                 }
                 if (view && view[escapedMetricVal]) {
