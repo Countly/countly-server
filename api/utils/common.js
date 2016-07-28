@@ -708,7 +708,7 @@ var common = {},
     common.adjustTimestampByTimezone = function(ts, tz){
         var d = new Date();
         d.setTimezone(tz);
-        return ts + (d.getTimezoneOffset()*60);
+        return ts - (d.getTimezoneOffset()*60);
     };
 	
 
@@ -794,90 +794,87 @@ var common = {},
         return target;
     };
     
+    //access flatten property
+    function updateFlattenValue(key, ob, command, val){
+        var parts = key.split(".");
+        for(var i = 0; i < parts.length-1; i++){
+            ob = ob[parts[i]] || {};
+        }
+        key = parts.pop();
+        switch(command){
+            case "$set":
+                ob[key] = val;
+                break;
+            case "$unset":
+                if(val)
+                    delete ob[key];
+                break;
+            case "$inc":
+                if(!ob[key])
+                    ob[key] = 0;
+                ob[key] += val;
+                break;
+            case "$mul":
+                if(!ob[key])
+                    ob[key] = 0;
+                ob[key] *= val;
+                break;
+            case "$max":
+                if(typeof ob[key] === "undefined")
+                    ob[key] = val;
+                else if(val > ob[key])
+                    ob[key] = val;
+                break;
+            case "$min":
+                if(typeof ob[key] === "undefined")
+                    ob[key] = val;
+                else if(update[i][key] < ob[key])
+                    ob[key] = val;
+                break;
+            case "$push":
+                if(typeof ob[key] === "undefined")
+                    ob[key] = [];
+                ob[key].push(val);
+                break;
+            case "$addToSet":
+                if(typeof ob[key] === "undefined")
+                    ob[key] = [];
+                if(ob[key].indexOf(val) === -1)
+                    ob[key].push(val);
+                break;
+            case "$pull":
+                if(typeof ob[key] === "undefined")
+                    ob[key] = [];
+                var index = ob[key].indexOf(val);
+                if(index > -1)
+                    ob[key].splice(val, 1);
+                break;
+            case "$rename":
+                //todo
+                break;
+            case "$setOnInsert":
+                //todo
+                break;
+        }
+    }
+    
     //update object MongoDB Style
     common.updateMongoObject = function(ob, update){
         ob = ob || {};
         update = update || {};
         for(var i in update){
-            switch(i){
-                case "$set":
-                    for(var key in update[i]){
-                        ob[key] = update[i][key];
-                    }
-                    break;
-                case "$unset":
-                    for(var key in update[i]){
-                        if(update[i][key])
-                         delete ob[key];
-                    }
-                    break;
-                case "$inc":
-                    for(var key in update[i]){
-                        if(!ob[key])
-                            ob[key] = 0;
-                        ob[key] += update[i][key];
-                    }
-                    break;
-                case "$mul":
-                    for(var key in update[i]){
-                        if(!ob[key])
-                            ob[key] = 0;
-                        ob[key] *= update[i][key];
-                    }
-                    break;
-                case "$max":
-                    for(var key in update[i]){
-                        if(typeof ob[key] === "undefined")
-                            ob[key] = update[i][key];
-                        else if(update[i][key] > ob[key])
-                            ob[key] = update[i][key];
-                    }
-                    break;
-                case "$min":
-                    for(var key in update[i]){
-                        if(typeof ob[key] === "undefined")
-                            ob[key] = update[i][key];
-                        else if(update[i][key] < ob[key])
-                            ob[key] = update[i][key];
-                    }
-                    break;
-                case "$push":
-                    for(var key in update[i]){
-                        if(typeof ob[key] === "undefined")
-                            ob[key] = [];
-                        ob[key].push(update[i][key]);
-                    }
-                    break;
-                case "$addToSet":
-                    for(var key in update[i]){
-                        if(typeof ob[key] === "undefined")
-                            ob[key] = [];
-                        if(ob[key].indexOf(update[i][key]) === -1)
-                            ob[key].push(update[i][key]);
-                    }
-                    break;
-                case "$pull":
-                    for(var key in update[i]){
-                        if(typeof ob[key] === "undefined")
-                            ob[key] = [];
-                        var index = ob[key].indexOf(update[i][key]);
-                        if(index > -1)
-                            ob[key].splice(update[i][key], 1);
-                    }
-                    break;
-                case "$rename":
-                    //todo
-                    break;
-                case "$setOnInsert":
-                    //todo
-                    break;
+            for(var key in update[i]){
+                updateFlattenValue(key, ob, i, update[i][key]);
             }
         }
     };
     
     common.updateAppUser = function(params, update, commit, callback){
         if(Object.keys(update).length){
+            if(!params._app_user_fallback)
+                params._app_user_fallback = {};
             common.updateMongoObject(params.app_user, update);
+            common.updateMongoObject(params._app_user_fallback, update);
             if(!params._app_user_changes)
                 params._app_user_changes = {};
             params._app_user_changes = common.extendDeep(params._app_user_changes, update)
@@ -886,10 +883,49 @@ var common = {},
             var update = JSON.parse(JSON.stringify(params._app_user_changes));
             params._app_user_changes = {};
             common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, update, {'upsert':true}, function(err, res) {
-                if(callback)
-                    callback(err, res)
+                if(err){
+                    console.log("Error commiting app_user changes", params.app_user, update, err);
+                    console.log("Falling back to", params._app_user_fallback);
+                    if(Object.keys(params._app_user_fallback).length){
+                        common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {$set:common.flattenObject(params._app_user_fallback)}, {'upsert':true}, function(err, res) {
+                            if(err){
+                                console.log("Error commiting fallback", {$set:common.flattenObject(params._app_user_fallback)}, err);
+                            }
+                            if(callback)
+                                callback(err, res)
+                        });
+                    }
+                }
+                else if(callback)
+                    callback(err, res);
             });
         }
+    };
+    
+    common.flattenObject = function(ob, prefix) {
+        if(prefix){
+            prefix += ".";
+        }
+        else{
+            prefix = "";
+        }
+        var toReturn = {};
+        
+        for (var i in ob) {
+            if (!ob.hasOwnProperty(i)) continue;
+            
+            if ((typeof ob[i]) == 'object' && ob[i] != null) {
+                var flatObject = common.flattenObject(ob[i]);
+                for (var x in flatObject) {
+                    if (!flatObject.hasOwnProperty(x)) continue;
+                    
+                    toReturn[prefix + i + '.' + x] = flatObject[x];
+                }
+            } else {
+                toReturn[prefix + i] = ob[i];
+            }
+        }
+        return toReturn;
     };
 }(common));
 
