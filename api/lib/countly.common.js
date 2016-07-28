@@ -1161,7 +1161,7 @@ var countlyCommon = {},
         };
     }
     
-    countlyCommon.getTimestampRangeQuery = function(params){
+    countlyCommon.getTimestampRangeQuery = function(params, inSeconds){
         var periodObj = countlyCommon.periodObj;
         //create current period array if it does not exist
         if (!periodObj.currentPeriodArr || periodObj.currentPeriodArr.length == 0) {
@@ -1199,13 +1199,19 @@ var countlyCommon = {},
         tmpArr = periodObj.currentPeriodArr[0].split(".");
         ts.$gte = new Date(Date.UTC(parseInt( tmpArr[0]),parseInt(tmpArr[1])-1,parseInt(tmpArr[2]) ));
         ts.$gte.setTimezone(params.appTimezone);
-        ts.$gte = ts.$gte.getTime() + ts.$gte.getTimezoneOffset()*60000;
+        if(inSeconds)
+            ts.$gte = ts.$gte.getTime() / 1000 + ts.$gte.getTimezoneOffset()*60;
+        else
+            ts.$gte = ts.$gte.getTime() + ts.$gte.getTimezoneOffset()*60000;
 
         tmpArr = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
         ts.$lt = new Date(Date.UTC(parseInt( tmpArr[0]),parseInt(tmpArr[1])-1,parseInt(tmpArr[2]) ));
         ts.$lt.setDate(ts.$lt.getDate() + 1);
         ts.$lt.setTimezone(params.appTimezone);
-        ts.$lt = ts.$lt.getTime() + ts.$lt.getTimezoneOffset()*60000;
+        if(inSeconds)
+            ts.$lt = ts.$lt.getTime() / 1000 + ts.$lt.getTimezoneOffset()*60;
+        else
+            ts.$lt = ts.$lt.getTime() + ts.$lt.getTimezoneOffset()*60000;
         return ts;
     };
 

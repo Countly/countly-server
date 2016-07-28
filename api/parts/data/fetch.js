@@ -581,7 +581,7 @@ var fetch = {},
              */
             var match = {
                 _id: { $ne: "uid-sequence" },
-                ls: countlyCommon.getTimestampRangeQuery(params)
+                ls: countlyCommon.getTimestampRangeQuery(params, true)
             };
 
             /*
@@ -620,7 +620,7 @@ var fetch = {},
                 if (shortcodesForMetrics[metric]) {
 
                     var metricChangesMatch =  {
-                        ts: countlyCommon.getTimestampRangeQuery(params)
+                        ts: countlyCommon.getTimestampRangeQuery(params, true)
                     };
 
                     metricChangesMatch[shortcodesForMetrics[metric] + ".o"] = { "$exists": true };
