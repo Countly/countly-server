@@ -5,6 +5,8 @@ var http = require('http'),
     countlyConfig = require('./config', 'dont-enclose'),
     plugins = require('../plugins/pluginManager.js'),
     jobs = require('./parts/jobs'),
+    Entities = require('html-entities').AllHtmlEntities,
+    entities = new Entities(),
     workers = [];
     
 plugins.setConfigs("api", {
@@ -433,6 +435,10 @@ if (cluster.isMaster) {
                     'res':res,
                     'req':req
                 };
+                
+                for(var key in params.qstring){
+                    params.qstring[key] = entities.encode(params.qstring[key]);
+                }
                 
                 //remove countly path
                 if(common.config.path == "/"+paths[1]){
