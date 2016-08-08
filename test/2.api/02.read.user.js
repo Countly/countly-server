@@ -31,7 +31,7 @@ describe('Initial reading', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'Missing parameter \"api_key\"');
+				ob.should.have.property('result', 'Missing parameter &quot;api_key&quot;');
 				done()
 			});
 		});
