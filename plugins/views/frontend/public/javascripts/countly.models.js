@@ -37,7 +37,7 @@
                     success:function (json) {
                         if(json && json.segments){
                             for(var i = 0; i < json.segments.length; i++){
-                                json.segments[i] = json.segments[i].replace(/&#46;/g, ".");
+                                json.segments[i] = json.segments[i].replace(/&#46;/g, ".").replace(/&amp;#46;/g, '.');
                             }
                             _segments = json.segments;
                         }
@@ -95,7 +95,7 @@
                     success:function (json) {
                         if(json && json.segments){
                             for(var i = 0; i < json.segments.length; i++){
-                                json.segments[i] = json.segments[i].replace(/&#46;/g, ".");
+                                json.segments[i] = json.segments[i].replace(/&#46;/g, ".").replace(/&amp;#46;/g, '.');
                             }
                             _segments = json.segments;
                         }
@@ -137,7 +137,7 @@
 	};
     
     countlyMetric.setSegment = function(segment){
-        _segment = segment.replace(/\./g, "&#46;");
+        _segment = segment.replace(/\./g, "&#46;").replace(/&amp;#46;/g, '.');
     };
     
     countlyMetric.getSegments = function(){
@@ -161,7 +161,7 @@
                 success:function (json) {
                     if(json && json.segments){
                         for(var i = 0; i < json.segments.length; i++){
-                            json.segments[i] = json.segments[i].replace(/&#46;/g, ".");
+                            json.segments[i] = json.segments[i].replace(/&#46;/g, ".").replace(/&amp;#46;/g, '.');
                         }
                         _segments = json.segments;
                     }
@@ -231,7 +231,7 @@
 			{
 				name:_name,
 				func:function (rangeArr, dataObj) {
-                    return rangeArr;
+                    return rangeArr.replace(/&#46;/g, ".").replace(/&amp;#46;/g, '.');
 				}
 			},
 			{ "name":"u" },
