@@ -534,7 +534,6 @@ if (cluster.isMaster) {
                                 }
                                 return validateAppForWriteAPI(tmpParams, function(){
                                     function resolver(){
-                                        common.updateAppUser(tmpParams, {}, true);
                                         processBulkRequest(i + 1);
                                     }
                                     Promise.all(params.promises).then(resolver, resolver);
@@ -658,14 +657,7 @@ if (cluster.isMaster) {
                                 }
                             }
             
-                            log.i('New /i request: %j', params.qstring);
-                            params.promises = [];
-                            validateAppForWriteAPI(params, function(){
-                                function resolver(){
-                                    common.updateAppUser(params, {}, true);
-                                }
-                                Promise.all(params.promises).then(resolver, resolver);
-                            });
+                            validateAppForWriteAPI(params);
             
                             if (!plugins.getConfig("api").safe) {
                                 common.returnMessage(params, 200, 'Success');
