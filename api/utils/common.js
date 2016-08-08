@@ -4,6 +4,7 @@ var common = {},
     crypto = require('crypto'),
     mongo = require('mongoskin'),
     logger = require('./log.js'),
+    escape_html_entities = require('escape-html-in-json'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./../config', 'dont-enclose');
 
@@ -404,9 +405,9 @@ var common = {},
         if (params && params.res && !params.blockResponses) {
             params.res.writeHead(returnCode, {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
             if (params.qstring.callback) {
-                params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}) + ')');
+                params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message},escape_html_entities) + ')');
             } else {
-                params.res.write(JSON.stringify({result: message}));
+                params.res.write(JSON.stringify({result: message},escape_html_entities));
             }
 
             params.res.end();
@@ -417,9 +418,9 @@ var common = {},
         if (params && params.res && !params.blockResponses) {
             params.res.writeHead(200, {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
             if (params.qstring.callback) {
-                params.res.write(params.qstring.callback + '(' + JSON.stringify(output) + ')');
+                params.res.write(params.qstring.callback + '(' + JSON.stringify(output,escape_html_entities) + ')');
             } else {
-                params.res.write(JSON.stringify(output));
+                params.res.write(JSON.stringify(output,escape_html_entities));
             }
 
             params.res.end();
