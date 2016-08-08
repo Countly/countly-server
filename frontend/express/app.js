@@ -255,9 +255,6 @@ var env = process.env.NODE_ENV || 'development';
 if ('development' == env) {
     app.use(errorhandler(true));
 }
-else{
-    app.use(errorhandler(false));
-}
 
 app.get(countlyConfig.path+'/', function (req, res, next) {
     res.redirect(countlyConfig.path+'/login');
