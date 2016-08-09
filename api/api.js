@@ -48,9 +48,9 @@ process.on('uncaughtException', (err) => {
 });
  
 process.on('unhandledRejection', (reason, p) => {
-    console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+    console.log('Unhandled rejection for %j with reason %j stack ', p, reason, reason ? reason.stack : undefined);
 });
- 
+
 if (cluster.isMaster) {
 
     var workerCount = (countlyConfig.api.workers)? countlyConfig.api.workers : os.cpus().length;
@@ -717,7 +717,7 @@ if (cluster.isMaster) {
             
                             switch (params.qstring.method) {
                                 case 'total_users':
-                                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric);
+                                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchTotalUsersObj, params.qstring.metric || 'users');
                                     break;
                                 case 'get_period_obj':
                                     validateUserForDataReadAPI(params, countlyApi.data.fetch.getPeriodObj, 'users');

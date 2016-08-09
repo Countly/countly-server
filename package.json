@@ -62,7 +62,8 @@
     "formidable": "1.0.17",
     "kerberos": "~0.0",
     "properties-parser":"0.3.1",
-    "external-ip":"0.2.4"
+    "external-ip":"0.2.4",
+    "escape-html":"1.0.3"
   },
   "jshintConfig": {
     "esversion": 6,

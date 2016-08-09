@@ -438,7 +438,7 @@ class Job extends EventEmitter {
 			var timeout = setTimeout(() => {
 					log.d('%s: timeout called', this._idIpc);
 					if (!job.completed) {
-						job._abort().then(reject, reject);
+						job._abort('Timeout').then(reject, reject);
 					}
 				}, MAXIMUM_JOB_TIMEOUT),
 				// debounce save to once in 500 - 10000 ms

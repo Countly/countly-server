@@ -117,9 +117,9 @@ var plugin = {},
     plugins.register("/i/apps/create", function(ob){
 		var params = ob.params;
 		var appId = ob.appId;
-        common.db.command({"convertToCapped": 'logs' + app._id, size: 10000000, max: 1000}, function(err,data){
+        common.db.command({"convertToCapped": 'logs' + appId, size: 10000000, max: 1000}, function(err,data){
             if(err){
-                common.db.createCollection('logs' + app._id, {capped: true, size: 10000000, max: 1000}, function(err,data){});
+                common.db.createCollection('logs' + appId, {capped: true, size: 10000000, max: 1000}, function(err,data){});
             }
         });
 	});

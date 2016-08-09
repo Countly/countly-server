@@ -16,7 +16,7 @@ describe('Failing writing app data', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'Missing parameter "app_key" or "device_id"');
+				ob.should.have.property('result', 'Missing parameter &quot;app_key&quot; or &quot;device_id&quot;');
 				done()
 			});
 		});
@@ -29,7 +29,7 @@ describe('Failing writing app data', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('result','Missing parameter "app_key" or "device_id"');
+				ob.should.have.property('result','Missing parameter &quot;app_key&quot; or &quot;device_id&quot;');
 				done()
 			});
 		});
@@ -42,7 +42,7 @@ describe('Failing writing app data', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('result','Missing parameter "app_key" or "device_id"');
+				ob.should.have.property('result','Missing parameter &quot;app_key&quot; or &quot;device_id&quot;');
 				done()
 			});
 		});

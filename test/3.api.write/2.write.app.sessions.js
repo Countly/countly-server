@@ -65,6 +65,19 @@ describe('Writing app sessions', function(){
 				});
 			});
 		});
+        //[]
+		describe('verify total_users', function(){
+			it('should be empty', function(done){
+				request
+				.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=total_users&metric=users')
+				.expect(200)
+				.end(function(err, res){
+					if (err) return done(err);
+					res.text.should.eql("[]");
+					setTimeout(done, 1000);
+				});
+			});
+		});
 		/*
 		{"30days":
 			{"dashboard":
@@ -189,6 +202,19 @@ describe('Writing app sessions', function(){
 				});
 			});
 		});
+        //[]
+		describe('verify total_users', function(){
+			it('should have 1 user', function(done){
+				request
+				.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=total_users&metric=users')
+				.expect(200)
+				.end(function(err, res){
+					if (err) return done(err);
+					res.text.should.eql('[{"_id":"users","u":1}]');
+					setTimeout(done, 1000);
+				});
+			});
+		});
 		describe('verify dashboard', function(){
 			it('should have 1 session and 1 user ', function(done){
 				request
@@ -255,6 +281,19 @@ describe('Writing app sessions', function(){
 				.expect(200)
 				.end(function(err, res){
 					testUtils.validateSessionData(err, res, done, {meta:{"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"]}, f:{"0":1},l:{"0":1},u:1,n:1,t:2,e:3,Unknown:true});
+				});
+			});
+		});
+        //[]
+		describe('verify total_users', function(){
+			it('should have 2 users', function(done){
+				request
+				.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=total_users&metric=users')
+				.expect(200)
+				.end(function(err, res){
+					if (err) return done(err);
+					res.text.should.eql('[{"_id":"users","u":1}]');
+					setTimeout(done, 1000);
 				});
 			});
 		});
@@ -327,6 +366,19 @@ describe('Writing app sessions', function(){
 				});
 			});
 		});
+        //[]
+		describe('verify total_users', function(){
+			it('should have 2 users', function(done){
+				request
+				.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=total_users&metric=users')
+				.expect(200)
+				.end(function(err, res){
+					if (err) return done(err);
+					res.text.should.eql('[{"_id":"users","u":2}]');
+					setTimeout(done, 1000);
+				});
+			});
+		});
 		describe('verify dashboard', function(){
 			it('should have 2 sessions and 1 user ', function(done){
 				request
@@ -393,6 +445,19 @@ describe('Writing app sessions', function(){
 				.expect(200)
 				.end(function(err, res){
 					testUtils.validateSessionData(err, res, done, {meta:{"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"]}, f:{"0":2},l:{"0":2},u:2,n:2,t:3,e:5,d:30,Unknown:true});
+				});
+			});
+		});
+        //[]
+		describe('verify total_users', function(){
+			it('should have 2 users', function(done){
+				request
+				.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=total_users&metric=users')
+				.expect(200)
+				.end(function(err, res){
+					if (err) return done(err);
+					res.text.should.eql('[{"_id":"users","u":2}]');
+					setTimeout(done, 1000);
 				});
 			});
 		});
@@ -466,6 +531,19 @@ describe('Writing app sessions', function(){
 				});
 			});
 		});
+        //[]
+		describe('verify total_users', function(){
+			it('should have 2 users', function(done){
+				request
+				.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=total_users&metric=users')
+				.expect(200)
+				.end(function(err, res){
+					if (err) return done(err);
+					res.text.should.eql('[{"_id":"users","u":2}]');
+					setTimeout(done, 1000);
+				});
+			});
+		});
 		describe('verify dashboard', function(){
 			it('should have 3 sessions and 2 user and 30 seconds duration ', function(done){
 				request
@@ -532,6 +610,19 @@ describe('Writing app sessions', function(){
 				.expect(200)
 				.end(function(err, res){
 					testUtils.validateSessionData(err, res, done, {meta:{"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"],'d-ranges': [ '1' ]}, f:{"0":2},l:{"0":2},ds:{"1":1},u:2,n:2,t:3,e:7,d:60,Unknown:true});
+				});
+			});
+		});
+        //[]
+		describe('verify total_users', function(){
+			it('should have 2 users', function(done){
+				request
+				.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=total_users&metric=users')
+				.expect(200)
+				.end(function(err, res){
+					if (err) return done(err);
+					res.text.should.eql('[{"_id":"users","u":2}]');
+					setTimeout(done, 1000);
 				});
 			});
 		});
@@ -602,6 +693,19 @@ describe('Writing app sessions', function(){
 				.expect(200)
 				.end(function(err, res){
 					testUtils.validateSessionData(err, res, done, {meta:{"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"],'d-ranges': [ '1' ]}, f:{"0":2},l:{"0":2},ds:{"1":1},u:2,n:2,t:3,e:7,d:60,Unknown:true});
+				});
+			});
+		});
+        //[]
+		describe('verify total_users', function(){
+			it('should have 2 users', function(done){
+				request
+				.get('/o?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&method=total_users&metric=users')
+				.expect(200)
+				.end(function(err, res){
+					if (err) return done(err);
+					res.text.should.eql('[{"_id":"users","u":2}]');
+					setTimeout(done, 1000);
 				});
 			});
 		});

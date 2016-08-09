@@ -169,12 +169,12 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("iTotalDisplayRecords", 1);
                 var crash = ob.aaData[0];
                 crash.should.have.property("_id");
-                crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 crash.should.have.property("is_new", true);
                 crash.should.have.property("is_resolved", false);
                 crash.should.have.property("lastTs");
                 crash.should.have.property("latest_version", "1.1");
-                crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception<init>");
+                crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
                 crash.should.have.property("nonfatal", true);
                 crash.should.have.property("os", 'Android');
                 crash.should.have.property("reports", 1);
@@ -196,8 +196,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("_id",CRASHES[0]);
                 ob.should.have.property("os","Android");
                 ob.should.have.property("lastTs");
-                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception<init>");
-                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
+                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 ob.should.have.property("nonfatal",true);
                 ob.should.have.property("is_new",true);
                 ob.should.have.property("is_resolved",false);
@@ -246,7 +246,7 @@ describe('Testing Crashes', function(){
                 report.should.have.property("root",1);
                 report.should.have.property("signal",1);
                 report.should.have.property("background",1);
-                report.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                report.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 report.should.have.property("nonfatal",true);
                 report.should.have.property("run",60);
                 report.should.have.property("custom",{"facebook":"3.0","googleplay":"1.0"});
@@ -349,12 +349,12 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("aaData").with.lengthOf(1);
                 var crash = ob.aaData[0];
                 crash.should.have.property("_id", CRASHES[0]);
-                crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 crash.should.have.property("is_new", false);
                 crash.should.have.property("is_resolved", false);
                 crash.should.have.property("lastTs");
                 crash.should.have.property("latest_version", "1.1");
-                crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception<init>");
+                crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
                 crash.should.have.property("nonfatal", true);
                 crash.should.have.property("os", 'Android');
                 crash.should.have.property("reports", 2);
@@ -375,8 +375,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("_id",CRASHES[0]);
                 ob.should.have.property("os","Android");
                 ob.should.have.property("lastTs");
-                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception<init>");
-                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
+                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 ob.should.have.property("nonfatal",true);
                 ob.should.have.property("is_new",false);
                 ob.should.have.property("is_resolved",false);
@@ -425,7 +425,7 @@ describe('Testing Crashes', function(){
                 report.should.have.property("root",1);
                 report.should.have.property("signal",1);
                 report.should.have.property("background",1);
-                report.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                report.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 report.should.have.property("nonfatal",true);
                 report.should.have.property("run",60);
                 report.should.have.property("custom",{"facebook":"3.0","googleplay":"1.0"});
@@ -453,7 +453,7 @@ describe('Testing Crashes', function(){
                 report2.should.have.property("root",1);
                 report2.should.have.property("signal",1);
                 report2.should.have.property("background",1);
-                report2.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                report2.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 report2.should.have.property("nonfatal",true);
                 report2.should.have.property("run",60);
                 report2.should.have.property("custom",{"facebook":"3.0","googleplay":"1.0"});
@@ -556,12 +556,12 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("aaData").with.lengthOf(1);
                 var crash = ob.aaData[0];
                 crash.should.have.property("_id", CRASHES[0]);
-                crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 crash.should.have.property("is_new", false);
                 crash.should.have.property("is_resolved", false);
                 crash.should.have.property("lastTs");
                 crash.should.have.property("latest_version", "1.2");
-                crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception<init>");
+                crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
                 crash.should.have.property("nonfatal", true);
                 crash.should.have.property("os", 'Android');
                 crash.should.have.property("reports", 3);
@@ -582,8 +582,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("_id",CRASHES[0]);
                 ob.should.have.property("os","Android");
                 ob.should.have.property("lastTs");
-                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception<init>");
-                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
+                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 ob.should.have.property("nonfatal",true);
                 ob.should.have.property("is_new",false);
                 ob.should.have.property("is_resolved",false);
@@ -634,7 +634,7 @@ describe('Testing Crashes', function(){
                 report.should.have.property("orientation","portrait");
                 report.should.have.property("online",1);
                 report.should.have.property("muted",1);
-                report.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                report.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 report.should.have.property("nonfatal",true);
                 report.should.have.property("run",120);
                 report.should.have.property("custom",{"facebook":"3.5","googleplay":"2.0"});
@@ -727,12 +727,12 @@ describe('Testing Crashes', function(){
                     var crash = ob.aaData[i];
                     if(crash._id == CRASHES[0]){
                         crash.should.have.property("_id", CRASHES[0]);
-                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                         crash.should.have.property("is_new", false);
                         crash.should.have.property("is_resolved", false);
                         crash.should.have.property("lastTs");
                         crash.should.have.property("latest_version", "1.2");
-                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception<init>");
+                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
                         crash.should.have.property("nonfatal", true);
                         crash.should.have.property("os", 'Android');
                         crash.should.have.property("reports", 3);
@@ -740,12 +740,12 @@ describe('Testing Crashes', function(){
                     }
                     else{
                         crash.should.have.property("_id");
-                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                         crash.should.have.property("is_new", true);
                         crash.should.have.property("is_resolved", false);
                         crash.should.have.property("lastTs");
                         crash.should.have.property("latest_version", "1.2");
-                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception<init>");
+                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
                         crash.should.have.property("nonfatal", false);
                         crash.should.have.property("os", 'Android');
                         crash.should.have.property("reports", 1);
@@ -769,8 +769,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("_id",CRASHES[1]);
                 ob.should.have.property("os","Android");
                 ob.should.have.property("lastTs");
-                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception<init>");
-                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
+                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 ob.should.have.property("nonfatal",false);
                 ob.should.have.property("is_new",true);
                 ob.should.have.property("is_resolved",false);
@@ -819,7 +819,7 @@ describe('Testing Crashes', function(){
                 report.should.have.property("orientation","portrait");
                 report.should.have.property("online",1);
                 report.should.have.property("muted",1);
-                report.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                report.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 report.should.have.property("nonfatal",false);
                 report.should.have.property("run",120);
                 report.should.have.property("custom",{"facebook":"3.5","googleplay":"2.0"});
@@ -911,12 +911,12 @@ describe('Testing Crashes', function(){
                     var crash = ob.aaData[i];
                     if(crash._id != CRASHES[0] && crash._id != CRASHES[1]){
                         crash.should.have.property("_id");
-                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                         crash.should.have.property("is_new", true);
                         crash.should.have.property("is_resolved", false);
                         crash.should.have.property("lastTs");
                         crash.should.have.property("latest_version", "1.2");
-                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception<init>");
+                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
                         crash.should.have.property("nonfatal", false);
                         crash.should.have.property("os", 'Windows Phone');
                         crash.should.have.property("reports", 1);
@@ -940,8 +940,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("_id",CRASHES[2]);
                 ob.should.have.property("os","Windows Phone");
                 ob.should.have.property("lastTs");
-                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception<init>");
-                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
+                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 ob.should.have.property("nonfatal",false);
                 ob.should.have.property("is_new",true);
                 ob.should.have.property("is_resolved",false);
@@ -990,7 +990,7 @@ describe('Testing Crashes', function(){
                 report.should.have.property("orientation","portrait");
                 report.should.have.property("online",1);
                 report.should.have.property("muted",1);
-                report.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                report.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 report.should.have.property("nonfatal",false);
                 report.should.have.property("run",120);
                 report.should.have.property("custom",{"facebook":"3.5"});
@@ -1031,8 +1031,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("_id",CRASHES[2]);
                 ob.should.have.property("os","Windows Phone");
                 ob.should.have.property("lastTs");
-                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception<init>");
-                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
+                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 ob.should.have.property("nonfatal",false);
                 ob.should.have.property("is_new",false);
                 ob.should.have.property("is_resolved",false);
@@ -1082,7 +1082,7 @@ describe('Testing Crashes', function(){
                 report.should.have.property("orientation","portrait");
                 report.should.have.property("online",1);
                 report.should.have.property("muted",1);
-                report.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                report.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 report.should.have.property("nonfatal",false);
                 report.should.have.property("run",120);
                 report.should.have.property("custom",{"facebook":"3.5"});
@@ -1123,8 +1123,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("_id",CRASHES[2]);
                 ob.should.have.property("os","Windows Phone");
                 ob.should.have.property("lastTs");
-                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception<init>");
-                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
+                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 ob.should.have.property("nonfatal",false);
                 ob.should.have.property("is_new",false);
                 ob.should.have.property("is_resolved",false);
@@ -1175,7 +1175,7 @@ describe('Testing Crashes', function(){
                 report.should.have.property("orientation","portrait");
                 report.should.have.property("online",1);
                 report.should.have.property("muted",1);
-                report.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                report.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 report.should.have.property("nonfatal",false);
                 report.should.have.property("run",120);
                 report.should.have.property("custom",{"facebook":"3.5"});
@@ -1328,8 +1328,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("_id",CRASHES[2]);
                 ob.should.have.property("os","Windows Phone");
                 ob.should.have.property("lastTs");
-                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception<init>");
-                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
+                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 ob.should.have.property("nonfatal",false);
                 ob.should.have.property("is_new",false);
                 ob.should.have.property("is_resolved",false);
@@ -1404,8 +1404,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("_id",CRASHES[2]);
                 ob.should.have.property("os","Windows Phone");
                 ob.should.have.property("lastTs");
-                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception<init>");
-                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
+                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 ob.should.have.property("nonfatal",false);
                 ob.should.have.property("is_new",false);
                 ob.should.have.property("is_resolved",false);
@@ -1478,8 +1478,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("_id",CRASHES[2]);
                 ob.should.have.property("os","Windows Phone");
                 ob.should.have.property("lastTs");
-                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception<init>");
-                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
+                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 ob.should.have.property("nonfatal",false);
                 ob.should.have.property("is_new",false);
                 ob.should.have.property("is_resolved",false);
@@ -1561,8 +1561,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("_id",CRASHES[0]);
                 ob.should.have.property("os","Android");
                 ob.should.have.property("lastTs");
-                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception<init>");
-                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
+                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 ob.should.have.property("nonfatal",true);
                 ob.should.have.property("is_new",false);
                 ob.should.have.property("is_resolved",true);
@@ -1642,8 +1642,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("_id",CRASHES[0]);
                 ob.should.have.property("os","Android");
                 ob.should.have.property("lastTs");
-                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception<init>");
-                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
+                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 ob.should.have.property("nonfatal",true);
                 ob.should.have.property("is_new",false);
                 ob.should.have.property("is_resolved",true);
@@ -1723,8 +1723,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("_id",CRASHES[0]);
                 ob.should.have.property("os","Android");
                 ob.should.have.property("lastTs");
-                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception<init>");
-                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
+                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 ob.should.have.property("nonfatal",true);
                 ob.should.have.property("is_new",false);
                 ob.should.have.property("is_resolved",true);
@@ -1850,8 +1850,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("_id",CRASHES[0]);
                 ob.should.have.property("os","Android");
                 ob.should.have.property("lastTs");
-                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception<init>");
-                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
+                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 ob.should.have.property("nonfatal",true);
                 ob.should.have.property("is_new",false);
                 ob.should.have.property("is_resolved",false);
@@ -1934,8 +1934,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("_id",CRASHES[0]);
                 ob.should.have.property("os","Android");
                 ob.should.have.property("lastTs");
-                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception<init>");
-                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
+                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 ob.should.have.property("nonfatal",true);
                 ob.should.have.property("is_new",false);
                 ob.should.have.property("is_resolved",true);
@@ -2018,8 +2018,8 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("_id",CRASHES[0]);
                 ob.should.have.property("os","Android");
                 ob.should.have.property("lastTs");
-                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception<init>");
-                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                ob.should.have.property("name","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
+                ob.should.have.property("error","java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                 ob.should.have.property("nonfatal",true);
                 ob.should.have.property("is_new",false);
                 ob.should.have.property("is_resolved",false);
@@ -2440,12 +2440,12 @@ describe('Testing Crashes', function(){
                     var crash = ob.aaData[i];
                     if(crash._id == CRASHES[2]){
                         crash.should.have.property("_id", CRASHES[2]);
-                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                         crash.should.have.property("is_new", false);
                         crash.should.have.property("is_resolved", false);
                         crash.should.have.property("lastTs");
                         crash.should.have.property("latest_version", "1.2");
-                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception<init>");
+                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
                         crash.should.have.property("nonfatal", false);
                         crash.should.have.property("os", 'Windows Phone');
                         crash.should.have.property("reports", 1);
@@ -2453,12 +2453,12 @@ describe('Testing Crashes', function(){
                     }
                     else if(crash._id == CRASHES[0]){
                         crash.should.have.property("_id", CRASHES[0]);
-                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                         crash.should.have.property("is_new", false);
                         crash.should.have.property("is_resolved", false);
                         crash.should.have.property("lastTs");
                         crash.should.have.property("latest_version", "1.3");
-                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception<init>");
+                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
                         crash.should.have.property("nonfatal", true);
                         crash.should.have.property("os", 'Android');
                         crash.should.have.property("reports", 4);
@@ -2534,12 +2534,12 @@ describe('Testing Crashes', function(){
                     var crash = ob.aaData[i];
                     if(crash._id == CRASHES[0]){
                         crash.should.have.property("_id", CRASHES[0]);
-                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception<init>\nat com.domain.app.<init>(Activity.java:32)\nat com.domain.app.<init>(Activity.java:24)\nat com.domain.app.<init>(Activity.java:12)");
+                        crash.should.have.property("error", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;\nat com.domain.app.&lt;init&gt;(Activity.java:32)\nat com.domain.app.&lt;init&gt;(Activity.java:24)\nat com.domain.app.&lt;init&gt;(Activity.java:12)");
                         crash.should.have.property("is_new", false);
                         crash.should.have.property("is_resolved", false);
                         crash.should.have.property("lastTs");
                         crash.should.have.property("latest_version", "1.3");
-                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception<init>");
+                        crash.should.have.property("name", "java.lang.NullPointerException: com.domain.app.Exception&lt;init&gt;");
                         crash.should.have.property("nonfatal", true);
                         crash.should.have.property("os", 'Android');
                         crash.should.have.property("reports", 4);
