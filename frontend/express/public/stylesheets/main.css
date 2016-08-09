@@ -1005,3 +1005,6 @@ table.events-table { width:100%; padding:0; margin:0; }
 .allappview .widget-footer{border-radius: 0;}
 .allappview #empty-graph {position: absolute; text-align: center; font-size: 35px; width:100%; top:50%; margin-top: -20px; display: none;}
 .allapps div.color{ width: 10px; height: 20px; float: right;}
+
+.graph-description { background-color: #f9f9f9; padding: 10px 18px; color: #868686; font-size: 13px; border: 1px solid #a1a1a1; border-bottom-color: #CCC; border-top-color: #B8B9B9; }
+.graph-description + .widget-content { border-top:none; }

@@ -411,6 +411,9 @@
 				</div>
 				{{> date-selector }}
 			</div>
+            {{#if graph-description}}
+            <div class="graph-description">{{graph-description}}</div>
+            {{/if}}
 			<div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
 				{{#if graph-type-double-pie}}
 				<div class="pie-chart-container">
