@@ -247,7 +247,7 @@ a:active { color:inherit; }
     .widget-group { border:1px solid #D0D0D0; margin-bottom: 40px; border-radius:2px; }
     .widget-group .dashboard-summary { margin:0; border-top:1px solid #d0d0d0; }
     .widget-group .big-numbers.top.widgets .inner,
-    .widget-group .dashboard-summary .item .inner { margin-left:0; box-shadow: none !important; border-left: 1px solid #D0D0D0; padding:15px 15px; }
+    .widget-group .dashboard-summary .item .inner { border-radius:0; margin-left:0; box-shadow: none !important; border-left: 1px solid #D0D0D0; padding:15px 15px; }
     .widget-group .big-numbers.top.widgets:first-child .inner,
     .widget-group .dashboard-summary .item:first-child .inner { margin-left:0; border:none; }
 
@@ -436,11 +436,9 @@ a:active { color:inherit; }
 #app-management-bar .app-container.active:hover { opacity:1; }
 
 #app-edit-key .edit input {width: 335px;}
+#add-new-app .hint, .app-details .hint { padding-top: 8px; font-size:11px; color:#B7B6B6; clear: both; }
 
-#add-new-app .hint,
-.app-details .hint { margin-top: 5px; font-size:11px; color:#B7B6B6; clear: both; }
-
-#code-countly {background-color: #fff; border-radius: 2px; padding: 20px; border: 1px solid #C2C2C2; margin-left: 187px;}
+#code-countly {background-color: #fff; border-radius: 2px; padding: 20px; border: 1px solid #D0D0D0; margin-left: 187px;}
 #code-countly h3 {font-size: 16px; color: #636363; margin-top: 0px;}
 #code-countly p {font-size: 14px; line-height: 20px; color: #AFAFAF;}
 #code-countly p.select-platforms {font-size: 12px; text-transform:uppercase; color: #D4D4D4;}
@@ -477,8 +475,7 @@ table.d-table:not(.no-fix) { table-layout:fixed; }
 	.d-table.horizontal tr:last-child td { border-radius:0; }
 .table-edit { display:none; }
 	.table-edit td, .table-add td { padding:10px; }
-	.table-edit td { border-top:1px solid #DDD; }
-	.table-edit .icon-button, .table-add .icon-button { float:right; padding:5px; margin-left:5px; }
+	.table-edit .icon-button, .table-add .icon-button { float:right; }
 	.table-edit-prev>td { border-bottom:none; }
 
 .dataTable td { font-family:Oswald; font-size:12px; }
@@ -526,6 +523,17 @@ div.datatablesubrow {display: none;}
 .dataTable thead th.sorting_asc:before { color:#2FA732; position: absolute; font-family: 'FontAwesome'; top: 10px; right: 7px; content: "\f0dd"; }
 .dataTable thead th.sorting_desc:before { color:#2FA732; position: absolute; font-family: 'FontAwesome'; top: 15px; right: 7px; content: "\f0de"; }
 .dataTable thead th.sorting:before { color:#BBBBBB; position: absolute; font-family: 'FontAwesome'; top: 12px; right: 7px; content: "\f0dc"; }
+
+.d-table.horizontal { border:1px solid #D0D0D0; }
+.d-table.horizontal td { border-bottom:1px solid #ececec; padding: 12px; }
+.d-table.horizontal tr,
+.d-table.horizontal tr:hover,
+.d-table.horizontal tr:nth-child(even),
+.d-table.horizontal tr:nth-child(even):hover { background-color: #FFF; }
+.d-table.horizontal .table-edit-prev>td,
+.d-table.horizontal .populate-demo-data td,
+.d-table.horizontal td td { border-bottom:none; }
+
 /* TABLES END */
 
 .icon-button { min-height:14px; cursor:pointer; float:left; padding:7px 12px; border-radius:2px; font:12px Ubuntu,Helvetica,sans-serif; line-height:15px; overflow:auto; margin-left:8px; }
@@ -661,7 +669,8 @@ div.datatablesubrow {display: none;}
 		.dashboard-summary .item .bar .bar-inner:nth-child(3) { background-color:#EC8C45; width:16%; }
 
 	.dashboard-summary .item .number { font-size:26px; text-align:center; color:#6BB96E; line-height:33px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-	.dashboard-summary .item .no-data { font:18px Ubuntu,Helvetica,sans-serif; line-height:111%; text-align:center; color:#222; padding-bottom:12px; padding-top:20px; font-weight:500; }
+	.dashboard-summary .item .no-data { font:18px Ubuntu,Helvetica,sans-serif; line-height:111%; text-align:center; color:#222; padding-bottom:14px; padding-top:20px; }
+        .dashboard-summary .item.light .no-data { color:#d8d8d8; }
 
 .dashboard-summary .item.light .inner { background-color: #FFF; box-shadow: inset 0 0 0 1px #D0D0D0; }
 .dashboard-summary .item.light .inner .title { color:#484848; }
