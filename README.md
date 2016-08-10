@@ -1,6 +1,6 @@
 #Countly [![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Install Countly on DigitalOcean](http://do.count.ly/button.svg?v2)](http://do.count.ly)
 
-**We're hiring:** Countly is looking for full stack node.js developers (from China and world, for remote work) to develop on  Countly platform. [Click this link for job description](https://count.ly/full-stack-node-js-developer/)
+**We're hiring:** Countly is looking for Android SDK developers, full stack devs, devops and growth hackers (remote work). [Click this link for job description](https://angel.co/countly/jobs/)
 
 **Are you a plugin developer?** [Contact us](http://count.ly/contact-us) if you like to work / working on a specific [plugin](http://count.ly/plugins) and we can discuss details on how we can work together in a lively environment!
 
@@ -13,7 +13,7 @@ With the help of [Javascript SDK](http://github.com/countly/countly-sdk-web), Co
 
 There are two parts of Countly: the server that collects and analyzes data, and an SDK (mobile, web or desktop) that sends this data. This repository includes Countly Community Edition (server side). For more information other versions (e.g Enterprise Edition), see [comparison of different Countly editions](https://count.ly/compare)
 
-![Countly dashboard screenshot](https://count.ly/wp-content/uploads/2016/02/countly_dashboard_community_16.02.png)
+![Countly dashboard screenshot](https://count.ly/wp-content/uploads/2016/08/countly_dashboard_community_16.06.png)
 
 ##Supported devices
 

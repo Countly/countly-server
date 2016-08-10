@@ -225,7 +225,7 @@ a:active { color:inherit; }
 			.widget-header .back { font:16px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#636363; text-shadow:0 1px #F6F6F6; margin-right: 10px;}
 			.widget-header .left>.title { font:19px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#636363; text-shadow:0 1px #F6F6F6; float:left; padding-top:8px; float:left; margin-left:3px; }
 			.widget-header .logo { float:left; width:38px; height:38px; background-image:url('../images/dashboard/anayltcs_header_icons.png'); }
-            .widget-header .logo.font-logo { text-shadow: 0 1px #fdfdfd; color:#6E6E6E; background-image: none; height:31px; font-size: 25px; padding-top: 7px; text-align: center; }
+            .widget-header .logo.font-logo { text-shadow: 0 1px #fdfdfd; color:#6E6E6E; background-image: none; height:31px; font-size: 25px; padding-top: 5px; text-align: center; }
             .widget-header .logo.font-logo2 { text-shadow: 0 1px #fdfdfd; color:#6E6E6E; background-image: none; height:31px; font-size: 25px; text-align: center; padding-top: 4px; }
                 .widget-header .logo.font-logo>a { line-height: 10px; }
                 .widget-header .logo.sessions { background-position:-38px; }
@@ -795,7 +795,7 @@ div.datatablesubrow {display: none;}
 .event-segmentation { float:left; margin-top:4px; }
 #event-update-area { float:left; }
 
-.left .title { font:19px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#636363; text-shadow:0 1px #F6F6F6; float:left; margin-right:11px; overflow: hidden;}
+.left .title { font:19px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#636363; text-shadow:0 1px #F6F6F6; float:left; margin-right:11px; overflow: hidden; text-transform: uppercase; }
 .left .title.dynamic-title { max-width: 700px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
 
 .left #event-update-area .title { margin-top: 8px;}
@@ -1005,3 +1005,6 @@ table.events-table { width:100%; padding:0; margin:0; }
 .allappview .widget-footer{border-radius: 0;}
 .allappview #empty-graph {position: absolute; text-align: center; font-size: 35px; width:100%; top:50%; margin-top: -20px; display: none;}
 .allapps div.color{ width: 10px; height: 20px; float: right;}
+
+.graph-description { background-color: #f9f9f9; padding: 10px 18px; color: #868686; font-size: 13px; border: 1px solid #a1a1a1; border-bottom-color: #CCC; border-top-color: #B8B9B9; }
+.graph-description + .widget-content { border-top:none; }
