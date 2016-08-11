@@ -89,6 +89,8 @@
 			<div id="sidebar-app-select">
 				<div class="logo" <% if (defaultApp){ %>style="background-image:url('<%- cdn %>appimages/<%= defaultApp._id %>.png')"<% } %>></div>
 				<div class="text"><% if (defaultApp){ %><%= defaultApp.name %><% } %></div>
+                <i class="ion-chevron-right"></i>
+                <i class="ion-chevron-left"></i>
 			</div>
 		</div>
 		<div id="sidebar-menu">
@@ -169,24 +171,29 @@
 			<div class="reveal-menu"><i class="ion-gear-a"></i></div>
 		</div>
 	</div>
-    <div id="app-tooltip"></div>
 	<div id="app-nav">
 		<div id="app-nav-head">
 			<div id="app-nav-title" style="max-width: 105px;" data-localize="management-applications.title"></div>
 			<div class="button-container">
 				<% if((member['global_admin'] && adminOfApps.length > 1) || config.autonomous) { %>
 				<div class="icon-button dark help-zone-vs" id="sort-app-button">
-					<div class="icon"></div>
+                    <i class="fa fa-bars"></i>
 				</div>
 				<% } %>
 			</div>
 		</div>
+        <div id="nav-search">
+            <i class="fa fa-search"></i>
+            <input type="text" />
+        </div>
 		<div class="apps-scrollable">
 			<% for (var i = 0; i < userOfApps.length; i++) { %>
 				<div class="app-container app-navigate" data-key="<%= userOfApps[i].key %>" data-id="<%= userOfApps[i]['_id'] %>">
 					<div class="logo" style="background-image: url('<%- cdn %>appimages/<%= userOfApps[i]['_id'] %>.png');"></div>
-					<div class="name"><%= userOfApps[i].name %></div>
-					<div class="drag"></div>
+					<div class="name" title="<%= userOfApps[i].name %>"><%= userOfApps[i].name %></div>
+					<div class="drag">
+                        <i class="fa fa-bars"></i>
+					</div>
 				</div>
 			<% } %>
 		</div>
@@ -580,6 +587,8 @@
 				<div class="app-container" data-key="{{this.key}}" data-id="{{this._id}}">
 					<div class="logo" style="background-image: url('<%- cdn %>appimages/{{this._id}}.png');"></div>
 					<div class="name">{{this.name}}</div>
+                    <i class="ion-arrow-left-b"></i>
+                    <i class="small ion-arrow-left-b"></i>
 				</div>
 				{{/eachOfObjectValue}}
 			</div>
@@ -587,6 +596,8 @@
 				<div class="app-container">
 					<div class="logo"></div>
 					<div class="name" data-localize="management-applications.my-new-app"></div>
+                    <i class="ion-arrow-left-b"></i>
+                    <i class="small ion-arrow-left-b"></i>
 				</div>
 			</div>
 		</div>

@@ -130,14 +130,18 @@ a:active { color:inherit; }
     border-bottom: 1px solid #888;
 }
 #sidebar-logo { background-image:url('../images/dashboard/countly_logo.svg'); width:144px; height:44px; margin:0 auto; margin-top:3px; background-size: contain; background-repeat: no-repeat; }
-#sidebar-app-select { width:170px; height:16px; padding:10px; background-image:url('../images/dashboard/combobox.png'); margin:0 auto; margin-top:15px; cursor:pointer; }
-	#sidebar-app-select:hover { background-position:-190px; }
-	#sidebar-app-select.active { background-position:-380px; }
-	#sidebar-app-select.active:hover { background-position:-570px; }
+#sidebar-app-select { box-shadow: inset 0 1px 0 0px #ccc; position:relative; border-radius:3px; border:1px solid #7d7d7d; background-color:#b7b7b7; width:170px; height:16px; padding:10px; margin:0 auto; margin-top:15px; cursor:pointer; }
+#sidebar-app-select .ion-chevron-left { display: none; }
+#sidebar-app-select.active .ion-chevron-left { display: block; }
+#sidebar-app-select.active .ion-chevron-right { display: none; }
+    #sidebar-app-select:hover { background-color:#c1c1c1; box-shadow: inset 0 1px 0 0 #d4d4d4; }
+    #sidebar-app-select:hover i { color:#2FA732; }
 	#sidebar-app-select.disabled { opacity:0.3; }
-	#sidebar-app-select.disabled:hover { background-position:0; }
+	#sidebar-app-select.disabled:hover { background-color:#b7b7b7; }
+    #sidebar-app-select.disabled:hover i { color: #7d7d7d; }
 	#sidebar-app-select .text { width:120px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#505050; float:left; }
 	#sidebar-app-select .logo { width:20px; height:20px; background-size:20px 20px; float:left; margin-right:10px; margin-top:-3px; background-position:center; border-radius:4px; border:1px solid #555; }
+    #sidebar-app-select i { position: absolute; right: 10px; font-size: 13px; top: 11px; color: #7d7d7d; }
 
 #sidebar-bottom-container { z-index: 2; position: fixed; background-color: #212121; bottom: 35px; padding: 5px 10px; width: 204px; font: 13px Ubuntu,Helvetica,sans-serif; line-height: 165%; color: #505050; border: 1px solid #1D1D1D; border-right: none; border-left: none; }
 #sidebar-bottom-container .reveal-menu { float:right; cursor:pointer; font-size: 20px; margin-right: 5px; transition:color 1s; }
@@ -413,27 +417,32 @@ a:active { color:inherit; }
 /* APP NAVIGATION */
 #app-management-bar { z-index:3; }
 #app-management-bar #app-nav-head { padding-left:15px; }
-#app-nav-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px; float:left; padding-top:3px; }
-#app-nav { width:190px; display:none; text-align:right; background-color:#CCC; height:100%; position:fixed; left:31px; z-index:997; background-image:url('../images/dashboard/dropdown_bg.png'); padding-bottom: 46px; box-sizing: border-box;}
-#app-nav-head { height:27px; padding:20px; padding-left:32px; color:#BFBFBF; font:18px Ubuntu,Helvetica,sans-serif; line-height:111%; background-image:url('../images/dashboard/dropdown_head.png'); text-align:left; }
+#app-nav-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px; float:left; padding-top:4px; }
+#app-nav { width:190px;  display:none; text-align:right; height:100%; position:fixed; left:31px; z-index:997; padding-bottom: 46px; box-sizing: border-box; box-shadow: inset -1px 0 0 0 #d4d4d4; background-color: rgba(239, 239, 239, 0.7); }
+#app-nav-head { height:27px; padding:20px; padding-left:32px; color:#BFBFBF; font:18px Ubuntu,Helvetica,sans-serif; line-height:111%; text-align:left; background-color: #292929; }
 	#app-nav-head .button-container { overflow:hidden; position:absolute; top:19px; right:10px; }
-.app-container { cursor:pointer; height:30px; background-image:url('../images/dashboard/dropdown_item.png'); padding:8px 12px; padding-left:32px; overflow:auto; }
-.app-container:hover { opacity:0.7; }
+.app-container { cursor:pointer; height:30px; padding:8px 12px; padding-left:32px; overflow:auto; border-bottom: 1px solid #d4d4d4; background-color: #efefef; box-shadow: inset -1px 0 0 0 #d4d4d4; }
+.app-container.active:hover { background-color: #efefef; }
+.app-container:hover { background-color: #dedede; }
 .app-container:last-child { margin-bottom:60px; }
-	.app-container .logo { float:left; width:25px; height:25px; background-size:25px 25px; margin-top:1px; border-radius:5px; border:1px solid #555; box-shadow:0 0 1px 0 #333; background-position:center; }
-	.app-container .name { width:126px; text-align:left; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; float:left; margin-left:10px; padding-top:6px; color:#464646; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; }
+	.app-container .logo { float:left; width:25px; height:25px; background-size:25px 25px; margin-top:2px; border-radius:5px; border:1px solid #a2a2a2; background-position:center; }
+	.app-container .name { width:126px; text-align:left; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; float:left; margin-left:10px; padding-top:8px; color:#6b6b6b; font:13px Ubuntu,Helvetica,sans-serif; }
 	.new-app-name { width:300px; text-align:left; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; }
 	.app-container.app-navigate { position:relative; }
+        .app-container.app-navigate.ui-sortable-helper { border-top:1px solid #d4d4d4; }
 	.app-container.app-navigate .name { width:109px; }
-	.app-container.app-navigate .drag { display:none; width:15px; height:13px; background-image:url('../images/dashboard/app-order.png'); cursor:move; position:absolute; top:17px; right:12px; }
-
-#sort-app-button .icon { margin:0; width:21px; height:18px; background-image:url('../images/dashboard/app-order-activate.png'); }
+	.app-container.app-navigate .drag { display:none; width:15px; height:13px; cursor:move; position:absolute; top:17px; right:12px; font-size: 13px; color: #808080; }
+#sort-app-button { padding: 7px 1px; }
+#sort-app-button i { font-size: 20px; margin: 0; line-height: 16px; }
 /* APP NAVIGATION END */
 
-#app-management-bar { width:190px; position:fixed; left:220px; top:0; text-align:right; background-color:#CCC; height:100%; background-image:url('../images/dashboard/dropdown_bg.png'); padding-bottom: 46px; box-sizing: border-box;}
-#app-management-bar .app-container { padding-left:15px; }
-#app-management-bar .app-container.active { background-image:url('../images/dashboard/dropdown_item_active.png'), url('../images/dashboard/dropdown_item.png'); background-repeat:no-repeat; background-position:right; }
+#app-management-bar { width:190px; position:fixed; left:220px; top:0; text-align:right; background-color:#efefef; height:100%; padding-bottom: 46px; box-sizing: border-box; box-shadow: inset -1px 0px 0 0 #d4d4d4; }
+#app-management-bar .app-container { padding-left:15px; position: relative; }
+#app-management-bar .app-container.active { }
 #app-management-bar .app-container.active:hover { opacity:1; }
+#app-management-bar .app-container i { display:none; position: absolute; right:-3px; font-size:24px; top: 11px; color: #d4d4d4; }
+#app-management-bar .app-container i.small { right:-5px; color: #f9f9f9; }
+#app-management-bar .app-container.active i { display: block; }
 
 #app-edit-key .edit input {width: 335px;}
 #add-new-app .hint, .app-details .hint { padding-top: 8px; font-size:11px; color:#B7B6B6; clear: both; }
@@ -1106,3 +1115,7 @@ td.details table tr:first-child th { border:none; font-family:Ubuntu; font-size:
 
 .graph-description { background-color: #f9f9f9; padding: 10px 18px; color: #868686; font-size: 13px; border: 1px solid #a1a1a1; border-bottom-color: #CCC; border-top-color: #B8B9B9; }
 .graph-description + .widget-content { border-top:none; }
+
+#nav-search { background-color: #fbfbfb; position:relative; box-shadow: inset -1px 0 0 0 #d4d4d4; border-bottom: 1px solid #d4d4d4; }
+#nav-search i { position: absolute; top: 11px; right: 13px; color: #6b6b6b; font-size: 10px; }
+#nav-search input { outline: none; font-size: 13px; border: none; padding: 8px 10px; margin-right: 1px; width: 146px; background-color: #fbfbfb; color: #6b6b6b; }
