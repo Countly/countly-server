@@ -182,13 +182,13 @@
 				<% } %>
 			</div>
 		</div>
-        <div id="nav-search">
+        <div class="nav-search">
             <i class="fa fa-search"></i>
             <input type="text" />
         </div>
 		<div class="apps-scrollable">
 			<% for (var i = 0; i < userOfApps.length; i++) { %>
-				<div class="app-container app-navigate" data-key="<%= userOfApps[i].key %>" data-id="<%= userOfApps[i]['_id'] %>">
+				<div class="searchable app-container app-navigate" data-key="<%= userOfApps[i].key %>" data-id="<%= userOfApps[i]['_id'] %>">
 					<div class="logo" style="background-image: url('<%- cdn %>appimages/<%= userOfApps[i]['_id'] %>.png');"></div>
 					<div class="name" title="<%= userOfApps[i].name %>"><%= userOfApps[i].name %></div>
 					<div class="drag">
@@ -895,20 +895,25 @@
 	</script>
 
 	<script id="template-events"  type="text/x-handlebars-template">
-		<div id="event-tooltip"></div>
 		<div id="event-nav">
 			<div id="event-nav-head">
 				<div id="event-nav-title" style="max-width: 120px;" data-localize="events.title"></div>
 				<div style="overflow:hidden; position:absolute; top:18px; right:10px;">
-					<div class="icon-button dark help-zone-vs" id="edit-events-button" style="<% if(!member['global_admin']) { %> display:none; <% } %> padding: 4px 5px;">
-						<div class="icon"></div>
+					<div class="icon-button dark help-zone-vs" id="edit-events-button" style="<% if(!member['global_admin']) { %> display:none; <% } %>">
+                        <i class="ion-gear-a"></i>
 					</div>
 				</div>
 			</div>
+            <div class="nav-search">
+                <i class="fa fa-search"></i>
+                <input type="text" />
+            </div>
 			<div class="scrollable">
 				{{#eachOfArray events}}
-				<div class="event-container {{#if value.is_active}}active{{/if}}" data-key="{{value.key}}">
+				<div class="searchable event-container {{#if value.is_active}}active{{/if}}" data-key="{{value.key}}">
 					<div class="name">{{value.name}}</div>
+                    <i class="ion-arrow-left-b"></i>
+                    <i class="small ion-arrow-left-b"></i>
 				</div>
 				{{/eachOfArray}}
 			</div>

@@ -3280,22 +3280,8 @@ window.EventsView = countlyView.extend({
 		$("#event-nav .event-container").mouseenter(function(){
 			var elem = $(this);
 			var name = elem.find(".name");
-			if(name[0].scrollWidth >  name.innerWidth()){
-				$("#event-tooltip").html(elem.clone());
-				$("#event-tooltip .event-container").removeClass("active");
-				$("#event-tooltip").css(elem.offset());
-				$("#event-tooltip .name").css({"width":"auto"});
-				$("#event-tooltip").show();
-				$("#event-tooltip").bind("click", function(){
-					elem.trigger("click");
-				});
-			}
-		});
-
-		$("#event-tooltip").mouseleave(function(){
-			if($("#event-tooltip").is(':visible')){
-				$("#event-tooltip").hide();
-				$("#event-tooltip").unbind("click");
+			if(name[0].scrollWidth > name.innerWidth()){
+                elem.attr("title", name.text());
 			}
 		});
 
@@ -3696,6 +3682,7 @@ window.EventsView = countlyView.extend({
             }
 
             app.localize();
+            $('.nav-search').find("input").trigger("input");
         });
     }
 });
@@ -4668,18 +4655,6 @@ var AppRouter = Backbone.Router.extend({
                     }
                 }
             });
-
-            $('#nav-search').on('input', "input",function(e){
-                var searchText = new RegExp($(this).val().toLowerCase());
-
-                $('.app-container').filter(function () {
-                    return !(searchText.test($(this).text().toLowerCase()));
-                }).css('display','none');
-
-                $('.app-container').filter(function () {
-                    return searchText.test($(this).text().toLowerCase());
-                }).css('display','block');
-            });
         });
 
         if (!_.isEmpty(countlyGlobal['apps'])) {
@@ -5388,6 +5363,19 @@ var AppRouter = Backbone.Router.extend({
                 if ($(this).next().hasClass("sidebar-submenu") && $(this).find(".ion-chevron-right").length == 0) {
                     $(this).append("<span class='ion-chevron-right'></span>");
                 }
+            });
+
+            $('.nav-search').on('input', "input", function(e){
+                var searchText = new RegExp($(this).val().toLowerCase()),
+                    searchInside = $(this).parent().next().find(".searchable");
+
+                searchInside.filter(function () {
+                    return !(searchText.test($(this).text().toLowerCase()));
+                }).css('display','none');
+
+                searchInside.filter(function () {
+                    return searchText.test($(this).text().toLowerCase());
+                }).css('display','block');
             });
         });
     }
