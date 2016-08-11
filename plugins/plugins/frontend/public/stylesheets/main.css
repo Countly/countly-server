@@ -3,6 +3,8 @@
 .plugins {margin-top: -16px;}
 .configs {margin-top: -16px;}
 .plugins .dataTable-top {border-radius: 0;}
+.plugins table td { font-family: Ubuntu; }
+.plugins table td.light { color:#969696; }
 .configs table {border-radius: 7px;}
 .configs table tbody tr:first-child td:first-child {border-top-left-radius: 7px;}
 .configs table tbody tr:first-child td:last-child {border-top-right-radius: 7px;}
@@ -14,7 +16,7 @@
 #configs-back{margin-top: 3px; padding: 8px;}
 
 .btn-plugin-enabler{padding: 7px; margin-right: 20px; display: none; float: left;}
-#plugins-selector { float:right; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#6B6B6B; text-shadow:0 1px #F6F6F6; padding:6px; padding-right:0; overflow:auto; user-select:none; }
+#plugins-selector { float:right; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#6B6B6B; padding:6px; padding-right:0; overflow:auto; user-select:none; }
 	#plugins-selector .button { cursor:pointer; user-select:none; background-color:#E0E0E0; background-image:linear-gradient(top, #EEEEEE 40%, #E0E0E0 100%); background-image:linear-gradient(to bottom, #EEEEEE 40%, #E0E0E0 100%); float:left; padding:7px 5px; padding-top:6px; border:1px solid #A5A5A5; border-left:1px solid #747575; box-shadow:inset 0 1px 0 #FDFDFD; border-right:1px solid #EDEDED; }
 	#plugins-selector .button:nth-child(2) { border-top-left-radius:4px; border-bottom-left-radius:4px; }
 	#plugins-selector .button:last-child { border-top-right-radius:4px; border-bottom-right-radius:4px; border-right:1px solid #747575; }
