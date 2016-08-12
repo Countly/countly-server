@@ -110,32 +110,49 @@ var getEnabledWithLevel = function(acceptable, module) {
 };
 
 var ipcHandler = function(msg){
-    if (msg.cmd === 'log') {
-    	var all = [];
-    	for (var l in msg.config) { 
-    		all.concat(msg.config[l].split(',').map(function(v){ return v.trim(); }));
-    	}
 
-    	// modules missing in new config must be removed
-    	Object.keys(levels).forEach(function(k){
-    		if (all.indexOf(k) === -1) {
-    			delete levels[k];
-    		}
-    	});
+	var m, l, modules, i;
 
-    	// set levels from message
-        for (var level in msg.config) {
-            var val = msg.config[level];
-            if (level === 'default') {
-                setDefault(val);
-            } else {
-                var comps = val.split(',').map(function(v){ return v.trim(); });
-                for (var i = 0; i < comps.length; i++) { if (comps[i]) {
-                    setLevel(comps[i], level);
-                }}
-            }
-        }
-    }
+	if (!msg || !msg.config) {
+		return;
+	}
+
+	console.log('Setting logging config to %j', msg.config);
+
+	if (msg.config.default) {
+		deflt = msg.config.default;
+	}
+
+	for (m in levels) {
+		var found = null;
+		for (l in msg.config) { 
+			modules = msg.config[l].split(',').map(function(v){ return v.trim(); });
+
+			for (i = 0; i < modules.length; i++) {
+				if (modules[i] === m) {
+					found = l;
+				}
+			}
+		}
+
+		if (found === null) {
+			for (l in msg.config) { 
+				modules = msg.config[l].split(',').map(function(v){ return v.trim(); });
+
+				for (i = 0; i < modules.length; i++) {
+					if (modules[i].indexOf(m + ':') === 0) {
+						found = l;
+					}
+				}
+			}
+		}
+
+		if (found !== null) {
+			levels[m] = found;
+		} else {
+			levels[m] = deflt;
+		}
+	}
 };
 
 module.exports = function(name) {

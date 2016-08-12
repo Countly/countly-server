@@ -311,19 +311,19 @@
             <span><%= countlyTypeName %></span>
 		 <% if (!countlyType) { %>
 			<ul>
-				<li><a href="#" id="Intercom">Feedback & Support</a></li>
+				<li><a href="#" id="Intercom" data-localize="common.feedback-and-support">Feedback & Support</a></li>
 				<li>|</li>
-				<li><a href="http://resources.count.ly/" target="_blank">Documentation</a></li>
+				<li><a href="http://resources.count.ly/" target="_blank" data-localize="common.documentation">Documentation</a></li>
 			</ul>
 		 <% }else { %>
 			<ul>
-				<li><a href="#" id="Intercom" >Provide feedback</a></li>
+				<li><a href="#" id="Intercom" data-localize="common.provide-feedback">Provide feedback</a></li>
 				<li>|</li>
-				<li><a href="http://support.count.ly/" target="_blank">Support</a></li>
+				<li><a href="http://support.count.ly/" target="_blank" data-localize="common.support">Support</a></li>
 				<li>|</li>
-				<li><a href="http://count.ly/enterprise-edition" target="_blank">Enterprise Edition (supported)</a></li>
+				<li><a href="http://count.ly/enterprise-edition" target="_blank" data-localize="common.enterprise-edition">Enterprise Edition (supported)</a></li>
 				<li>|</li>
-				<li><a href="http://resources.count.ly/" target="_blank">Documentation</a></li>
+				<li><a href="http://resources.count.ly/" target="_blank" data-localize="common.documentation">Documentation</a></li>
 			</ul>
 		 <% } %>
 		</div>
@@ -586,7 +586,7 @@
                             <tr class="help-zone-vs" data-help-localize="help.manage-apps.app-type">
 								<td data-localize="management-applications.type"></td>
 								<td>
-									<div class="cly-select" style="width:280px;">
+									<div class="cly-select select-app-types" style="width:280px;">
 										<div class="select-inner">
 											<div class="text-container">
 												<div class="text" id="app-add-type" data-localize="management-applications.type.tip"></div>
@@ -722,7 +722,7 @@
 								<td id="app-edit-type">
 									<div class="read"></div>
 									<div class="edit">
-										<div class="cly-select">
+										<div class="cly-select select-app-types">
 											<div class="select-inner">
 												<div class="text-container">
 													<div class="text"></div>

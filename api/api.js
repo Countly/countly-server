@@ -30,7 +30,8 @@ plugins.setConfigs('logs', {
     error:      countlyConfig.logging.error     ?  countlyConfig.logging.error.join(', ')    : '',
     default:    countlyConfig.logging.default   || 'warning'
 }, undefined, function(config){ 
-    process.send({cmd: 'log', config: config}); 
+    var cfg = plugins.getConfig('logs');
+    process.send({cmd: 'log', config: cfg}); 
 });
 
 plugins.init();

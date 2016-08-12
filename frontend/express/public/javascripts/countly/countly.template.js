@@ -1098,7 +1098,7 @@ window.AllAppsView = countlyView.extend({
                 ]
             }));
             this.drawGraph();
-            $(".dataTable-bottom").append("<div clas='dataTables_info' style='float: right; margin-top:2px; margin-right: 10px;'>Maximum number of applications to be compared (10)</div>")
+            $(".dataTable-bottom").append("<div clas='dataTables_info' style='float: right; margin-top:2px; margin-right: 10px;'>"+jQuery.i18n.map["allapps.maximum-items"]+" (10)</div>")
 
             $(".d-table").stickyTableHeaders();
 
@@ -3245,12 +3245,7 @@ var AppRouter = Backbone.Router.extend({
                 containment:"parent",
                 tolerance:"pointer",
                 stop:function () {
-                    var orderArr = [];
-                    $(".app-container.app-navigate").each(function () {
-                        if ($(this).data("id")) {
-                            orderArr.push($(this).data("id"))
-                        }
-                    });
+                    var orderArr = $(".apps-scrollable").sortable( "toArray", {attribute:"data-id"} );
 
                     $.ajax({
                         type:"POST",
@@ -3266,14 +3261,6 @@ var AppRouter = Backbone.Router.extend({
             });
             $("#sort-app-button").click(function () {
                 $(".app-container.app-navigate .drag").fadeToggle();
-                setTimeout(function(){
-                    if($(".app-container.app-navigate .drag").is(":visible")){
-                        self.disableAppTooltip();
-                    }
-                    else{
-                        self.enableAppTooltip();
-                    }
-                },500);
             });
 
             $(".app-navigate").live("click", function () {
@@ -3305,7 +3292,7 @@ var AppRouter = Backbone.Router.extend({
             });
             
             $(document).on("mouseenter", ".app-container", function(){
-                if(self.appTooltip){
+                if(!$(this).find(".drag").is(":visible") && self.appTooltip){
                     var elem = $(this);
                     var name = elem.find(".name");
                     if(name[0].scrollWidth >  name.innerWidth()){
@@ -4029,19 +4016,27 @@ var AppRouter = Backbone.Router.extend({
             return ((x < y) ?  1 : ((x > y) ? -1 : 0));
         };
 
-        $.extend($.fn.dataTable.defaults, {
+        $.extend(true, $.fn.dataTable.defaults, {
             "sDom": '<"dataTable-top"fpT>t<"dataTable-bottom"i>',
             "bAutoWidth": false,
             "sPaginationType": "four_button",
             "iDisplayLength": 50,
             "bDestroy": true,
             "bDeferRender": true,
+            "oLanguage": {
+				"sZeroRecords": jQuery.i18n.map["common.table.no-data"],
+				"sInfoEmpty": jQuery.i18n.map["common.table.no-data"],
+				"sEmptyTable": jQuery.i18n.map["common.table.no-data"],
+				"sInfo": jQuery.i18n.map["common.showing"],
+				"sInfoFiltered": jQuery.i18n.map["common.filtered"],
+				"sSearch": jQuery.i18n.map["common.search"]
+			},
             "oTableTools": {
                 "sSwfPath": countlyGlobal["cdn"]+"javascripts/dom/dataTables/swf/copy_csv_xls.swf",
                 "aButtons": [
                     {
                         "sExtends": "csv",
-                        "sButtonText": "Save to CSV",
+                        "sButtonText": jQuery.i18n.map["common.save-to-csv"],
                         "fnClick": function (nButton, oConfig, flash) {
                             var tableCols = $(nButton).parents(".dataTables_wrapper").find(".dataTable").dataTable().fnSettings().aoColumns,
                                 tableData = this.fnGetTableData(oConfig).split(/\r\n|\r|\n/g).join('","').split('","'),
@@ -4072,7 +4067,7 @@ var AppRouter = Backbone.Router.extend({
                     },
                     {
                         "sExtends": "xls",
-                        "sButtonText": "Save for Excel",
+                        "sButtonText": jQuery.i18n.map["common.save-to-excel"],
                         "fnClick": function (nButton, oConfig, flash) {
                             var tableCols = $(nButton).parents(".dataTables_wrapper").find(".dataTable").dataTable().fnSettings().aoColumns,
                                 tableData = this.fnGetTableData(oConfig).split(/\r\n|\r|\n/g).join('\t').split('\t'),
