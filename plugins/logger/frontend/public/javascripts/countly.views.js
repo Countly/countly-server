@@ -36,17 +36,12 @@ window.LoggerView = countlyView.extend({
                     { "mData": function(row, type){return row.t.charAt(0).toUpperCase() + row.t.slice(1).replace(/_/g, " ");}, "sType":"string", "sTitle": jQuery.i18n.map["logger.type"]},
                     { "mData": function(row, type){
 						if(type == "display"){
-							return moment(row.ts*1000).format("MMMM Do YYYY, hh:mm:ss");
+							return moment(row.ts*1000).format("MMMM Do YYYY<br/>hh:mm:ss");
 						}else return row.ts;}, "sType":"string", "sTitle": jQuery.i18n.map["logger.timestamp"] },
                     { "mData": function(row, type){
-						if(type == "display"){
-							return moment(row.reqts*1000).format("MMMM Do YYYY, hh:mm:ss");
-						}else return row.reqts;}, "sType":"string", "sTitle": jQuery.i18n.map["logger.requestts"]},
-                    { "mData": function(row, type){if(row.v)return row.v.replace(new RegExp(":", 'g'),"."); else return "";}, "sType":"string", "sTitle": jQuery.i18n.map["logger.version"]},
-                    { "mData": function(row, type){
-						var ret = "Device ID: " + row.d.id;
+						var ret = "<b>Device ID:</b> <br/>" + row.d.id;
 						if(row.d.d){
-							ret += "<br/>"+row.d.d;
+							ret += "<br/><br/>"+row.d.d;
 							if(row.d.p){
 								ret += " ("+row.d.p;
 								if(row.d.pv){
@@ -56,24 +51,55 @@ window.LoggerView = countlyView.extend({
 							}
 						}
 						return ret;}, "sType":"string", "sTitle": jQuery.i18n.map["logger.device"]},
-                    { "mData": function(row, type){if(row.s)return (row.s.name || "")+" "+(row.s.version || ""); else return "";}, "sType":"string", "sTitle": jQuery.i18n.map["logger.sdk"]},
-                    { "mData": function(row, type){
-						var ret = "";
-						if(row.l.cc){
-							ret += '<div class="flag" style="background-image: url(images/flags/'+ row.l.cc.toLowerCase() + '.png);"></div>'+row.l.cc;
-							if(row.l.cty){
-								ret += " ("+row.l.cty+")";
-							}
-						}
-						if(row.l.ip){
-							ret += "<br/>"+row.l.ip;
-						}
-						return ret;}, "sType":"string", "sTitle": jQuery.i18n.map["logger.location"]},
                     { "mData": function(row, type){
 						if(typeof row.i == "object")
-							return "<pre style='white-space:pre-wrap;'>"+JSON.stringify(row.i, null, 2)+"</pre>";
+							return "<pre style='white-space:pre-wrap; max-width:400px;'>"+JSON.stringify(row.i, null, 2)+"</pre>";
 						else
-							return row.i;}, "sType":"string", "sTitle": jQuery.i18n.map["logger.info"]}
+							return row.i;}, "sType":"string", "sTitle": jQuery.i18n.map["logger.info"], "bSortable": false },
+                    { "mData": function(row, type){
+
+                        var ret = "";
+
+                        ret += "<b>" + jQuery.i18n.map["logger.requestts"] + ":</b> ";
+                        ret += "<br/>";
+
+                        if (type == "display"){
+                            ret += moment(row.reqts*1000).format("MMMM Do YYYY, hh:mm:ss");
+                        } else {
+                            ret += row.reqts;
+                        }
+
+                        if (row.v) {
+                            ret += "<br/><br/>";
+                            ret += "<b>" + jQuery.i18n.map["logger.version"] + ":</b> ";
+                            ret += "<br/>";
+                            ret += row.v.replace(new RegExp(":", 'g'),".");
+                        }
+
+                        if (row.s && (row.s.name || row.s.version )) {
+                            ret += "<br/><br/>";
+                            ret += "<b>" + jQuery.i18n.map["logger.sdk"] + ":</b> ";
+                            ret += "<br/>";
+                            ret += (row.s.name || "")+" "+(row.s.version || "");
+                        }
+
+                        ret += "<br/><br/>";
+                        ret += "<b>" + jQuery.i18n.map["logger.location"] + ":</b> ";
+                        ret += "<br/>";
+
+                        if (row.l.cc) {
+                            ret += '<div class="flag" style="background-image: url(images/flags/'+ row.l.cc.toLowerCase() + '.png);"></div>'+row.l.cc;
+                            if(row.l.cty){
+                                ret += " ("+row.l.cty+")";
+                            }
+                        }
+
+                        if (row.l.ip) {
+                            ret += "<br/>"+row.l.ip;
+                        }
+
+                        return ret;
+                    }, "sType":"string", "bSortable": false }
                 ]
             }));
 			this.dtable.stickyTableHeaders();

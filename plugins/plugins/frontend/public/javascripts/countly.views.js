@@ -42,7 +42,7 @@ window.PluginsView = countlyView.extend({
                     { "mData": function(row, type){return row.version;}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.version"], "sClass":"center" },
                     { "mData": function(row, type){if(!row.enabled) return jQuery.i18n.map["plugins.disabled"]; else return jQuery.i18n.map["plugins.enabled"];}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.status"], "sClass":"center" },
                     { "mData": function(row, type){if(type == "display"){ var prepackagedClass = row.prepackaged ? 'disabled' : 'btn-plugins'; if(!row.enabled) return '<a class="icon-button green '+prepackagedClass+'" id="plugin-'+row.code+'">'+jQuery.i18n.map["plugins.enable"]+'</a>'; else return '<a class="icon-button red '+prepackagedClass+'" id="plugin-'+row.code+'">'+jQuery.i18n.map["plugins.disable"]+'</a>';}else return row.enabled;}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.state"], "sClass":"shrink center"},
-                    { "mData": function(row, type){if(row.homepage != "") return '<a href="'+ row.homepage + '" target="_blank"><i class="ion-android-open"></i></a>'; else return "";}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.homepage"], "sClass":"shrink center", "bSortable": false}
+                    { "mData": function(row, type){if(row.homepage != "") return '<a href="'+ row.homepage + '" target="_blank"><i class="ion-android-open"></i></a>'; else return "";}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.homepage"], "sClass":"shrink center", "bSortable": false }
                 ]
             }));
             this.dtable.stickyTableHeaders();

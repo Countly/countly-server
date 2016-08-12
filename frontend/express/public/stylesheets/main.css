@@ -431,7 +431,7 @@ a:active { color:inherit; }
 	.app-container.app-navigate { position:relative; }
         .app-container.app-navigate.ui-sortable-helper { border-top:1px solid #d4d4d4; }
 	.app-container.app-navigate .name { width:109px; }
-	.app-container.app-navigate .drag { display:none; width:15px; height:13px; cursor:move; position:absolute; top:17px; right:12px; font-size: 13px; color: #808080; }
+	.app-container.app-navigate .drag { display:none; width:15px; height:13px; cursor:move; position:absolute; top:17px; right:12px; font-size: 13px; color: #808080; background-color: #efefef; }
 #sort-app-button { padding: 7px 1px; }
 #sort-app-button i { font-size: 20px; margin: 0; line-height: 16px; }
 /* APP NAVIGATION END */
@@ -507,7 +507,7 @@ div.datatablesubrow {display: none;}
 .dataTable-bottom { border-top:1px solid #E2E2E2; border-bottom-left-radius:2px; border-bottom-right-radius:2px; background-color: #ECECEC; }
 .dataTable-top:hover { color:#888; transition:color 0.5s; }
 .dataTable-top .dataTables_filter { float:left; padding-top:6px; display:none; }
-.dataTable-top .dataTables_filter input { font-size:13px; margin:0; border-radius:15px; background-color:#FFF; border:1px solid #CCC; width:200px; transition:width 0.5s; outline:none; padding:2px 6px; }
+.dataTable-top .dataTables_filter input { font-size:13px; margin:0; border-radius:2px; background-color:#FFF; border:1px solid #CCC; width:200px; transition:width 0.5s; outline:none; padding:2px 6px; }
 .dataTable-top .DTTT_container { float:right; padding: 10px 0; }
 .dataTable-top .DTTT_container a { margin-right:10px; }
 .dataTable-top .DTTT_container a:hover { text-decoration:underline; }
@@ -902,7 +902,7 @@ div.datatablesubrow {display: none;}
 	.left .title.dynamic-title {max-width: 400px;}
 }
 #edit-event-table-container  { width:950px; max-height:400px; overflow:auto; }
-.events .buttons { border-top:1px solid #000; margin-top:0; padding:7px 10px; box-shadow:inset 0 1px 0 #999; border-bottom-left-radius:2px; border-bottom-right-radius:2px; background-color:#666; background-image:linear-gradient(top, #666 10%, #555 100%); background-image:linear-gradient(to bottom, #666 10%, #555 100%); }
+.events .buttons { margin-top:0; padding:13px 13px 5px 0; box-shadow:inset 0 1px 0 #ccc; border-bottom-left-radius:2px; border-bottom-right-radius:2px; }
 
 table.events-table { width:100%; padding:0; margin:0; }
 	.events-table  th { padding:5px 10px; height:17px; color:#666; font-weight:normal; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; background-color:#E2E2E2; box-shadow:inset 0 1px 0 #F6F6F6; text-align:left; border-bottom:1px solid #CCC; border-right:none; border-left:1px solid #ccc; background-color:#E2E2E2; background-image:linear-gradient(top, #EAEAEA 30%, #E2E2E2 100%); background-image:linear-gradient(to bottom, #EAEAEA 30%, #E2E2E2 100%); }

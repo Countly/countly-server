@@ -35,7 +35,7 @@ window.SystemLogsView = countlyView.extend({
 						if(typeof row.i == "object")
 							return "<pre style='white-space:pre-wrap;'>"+JSON.stringify(row.i, null, 2)+"</pre>";
 						else
-							return row.i;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.info"]}
+							return row.i;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.info"], "bSortable": false }
                 ]
             }));
 			this.dtable.stickyTableHeaders();
