@@ -42,7 +42,6 @@ mail.sendMail = function(message, callback) {
         if (error) {
             console.log('Error sending email');
             console.log(error.message);
-            return;
         }
         if(callback)
             callback(error);
