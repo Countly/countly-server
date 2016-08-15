@@ -452,7 +452,7 @@ a:active { color:inherit; }
 #code-countly p {font-size: 14px; line-height: 20px; color: #AFAFAF;}
 #code-countly p.select-platforms {font-size: 12px; text-transform:uppercase; color: #D4D4D4;}
 #code-countly .sdks {overflow: auto;}
-#code-countly .sdks a{color: #669140; float: left; text-decoration: none; font-size: 14px; margin-right: 20px;}
+#code-countly .sdks a{color: #2FA732; float: left; text-decoration: none; font-size: 14px; margin-right: 20px;}
 #code-countly .sdks a:hover { text-decoration: underline; }
 #code-countly-content {margin-left: 135px;}
 #code-countly-logo {background-image: url('../images/dashboard/apps-sdk-icon.svg'); float: left; width: 100px; height:100px; background-repeat: no-repeat; background-position: 50% 0%;}
@@ -480,7 +480,7 @@ table.d-table:not(.no-fix) { table-layout:fixed; }
 .d-table.horizontal { border-radius:0; }
 	.d-table.horizontal  tr:hover { background-color:#FFF; }
 	.d-table.horizontal  tr:nth-child(even):hover { background-color:#FBFBFB; }
-	.d-table.horizontal td:first-child { color:#669140; width:170px; }
+	.d-table.horizontal td:first-child { color:#2FA732; width:170px; }
 	.d-table.horizontal tr:last-child td { border-radius:0; }
 .table-edit { display:none; }
 	.table-edit td, .table-add td { padding:10px; }
