@@ -49,7 +49,7 @@
                     "app_id": countlyCommon.ACTIVE_APP_ID,
                     "method": "total_users",
                     "metric": forMetric,
-                    "period": "hours"
+                    "period": "hour"
                 },
                 dataType:"jsonp",
                 success:function (json) {
