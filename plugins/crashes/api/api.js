@@ -517,8 +517,9 @@ plugins.setConfigs("crashes", {
                             });
                         }
                     }
-                    common.updateAppUser(params, { $addToSet: { crashes: hash } });
-                    checkUser(params.app_user, 0);
+                    common.updateAppUser(params, { $addToSet: { crashes: hash } }, function(){
+                        checkUser(params.app_user, 0);
+                    });
                     resolve();
                 }
                 else{

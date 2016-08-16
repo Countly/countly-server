@@ -5,6 +5,7 @@ var http = require('http'),
     countlyConfig = require('./config', 'dont-enclose'),
     plugins = require('../plugins/pluginManager.js'),
     jobs = require('./parts/jobs'),
+    Promise = require("bluebird"),
     workers = [];
     
 plugins.setConfigs("api", {
@@ -18,8 +19,7 @@ plugins.setConfigs("api", {
     metric_limit: 5000,
     sync_plugins: false,
     session_cooldown: 15,
-    total_users: true,
-    additional_headers: ""
+    total_users: true
 });
 
 plugins.setConfigs("apps", {
@@ -134,12 +134,9 @@ if (cluster.isMaster) {
         "open bsd":"ob",
         "searchbot":"sb",
         "sun os":"so",
-        "solaris":"so",
         "beos":"bo",
         "mac osx":"o",
-        "macos":"o",
-        "webos":"web",
-        "brew":"brew"
+        "macos":"o"
     };
 
     plugins.dispatch("/worker", {common:common});
@@ -170,6 +167,11 @@ if (cluster.isMaster) {
                     if (!isNaN(lat) && !isNaN(lon)) {
                         params.user.lat = lat;
                         params.user.lng = lon;
+                        if(params.user.lat && params.user.lng){
+                            var update = {};  
+                            update["$set"] = {lat:params.user.lat, lng:params.user.lng};
+                            common.updateAppUser(params, update);
+                        }
                     }
                 }
             }
@@ -177,30 +179,7 @@ if (cluster.isMaster) {
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, user){
                 params.app_user = user || {};
                 
-                if (params.qstring.metrics && typeof params.qstring.metrics === "string") {
-                    try {
-                        params.qstring.metrics = JSON.parse(params.qstring.metrics);
-                    } catch (SyntaxError) {
-                        console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
-                    }
-                }
-                
                 plugins.dispatch("/sdk", {params:params, app:app});
-                
-                if (params.qstring.metrics) {
-                    if (params.qstring.metrics["_carrier"]) {
-                        params.qstring.metrics["_carrier"] = params.qstring.metrics["_carrier"].replace(/\w\S*/g, function (txt) {
-                            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-                        });
-                    }
-                
-                    if (params.qstring.metrics["_os"] && params.qstring.metrics["_os_version"]) {
-                        if(os_mapping[params.qstring.metrics["_os"].toLowerCase()])
-                            params.qstring.metrics["_os_version"] = os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_os_version"];
-                        else
-                            params.qstring.metrics["_os_version"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_os_version"];
-                    }
-                }
                 if(!params.cancelRequest){
                     //check if device id was changed
                     if(params.qstring.old_device_id && params.qstring.old_device_id != params.qstring.device_id){
@@ -269,12 +248,14 @@ if (cluster.isMaster) {
                                         }
                                     }
                                     //update new user
-                                    common.updateAppUser(params, {'$set': newAppUser});
-                                    //delete old user
-                                    common.db.collection('app_users' + params.app_id).remove({_id:old_id}, function(){
-                                        //let plugins know they need to merge user data
-                                        plugins.dispatch("/i/device_id", {params:params, app:app, oldUser:oldAppUser, newUser:newAppUser});
-                                        restartRequest();
+                                    common.updateAppUser(params, {'$set': newAppUser}, function(){
+                                        //delete old user
+                                        common.db.collection('app_users' + params.app_id).remove({_id:old_id}, function(){
+                                            //let plugins know they need to merge user data
+                                            plugins.dispatch("/i/device_id", {params:params, app:app, oldUser:oldAppUser, newUser:newAppUser}, function(){
+                                                restartRequest();
+                                            });
+                                        });
                                     });
                                 }
                                 else{
@@ -303,7 +284,10 @@ if (cluster.isMaster) {
                     plugins.dispatch("/i", {params:params, app:app});
             
                     if (params.qstring.events) {
-                        countlyApi.data.events.processEvents(params);
+                        if(params.promises)
+                            params.promises.push(countlyApi.data.events.processEvents(params));
+                        else
+                            countlyApi.data.events.processEvents(params);
                     } else if (plugins.getConfig("api").safe) {
                         common.returnMessage(params, 200, 'Success');
                     }
@@ -313,15 +297,15 @@ if (cluster.isMaster) {
                     } else if (params.qstring.end_session) {
                         if (params.qstring.session_duration) {
                             countlyApi.data.usage.processSessionDuration(params, function () {
-                                countlyApi.data.usage.endUserSession(params);
+                                countlyApi.data.usage.endUserSession(params, done);
                             });
                         } else {
-                            countlyApi.data.usage.endUserSession(params);
+                            countlyApi.data.usage.endUserSession(params, done);
                         }
-                        return done ? done() : false;
                     } else if (params.qstring.session_duration) {
-                        countlyApi.data.usage.processSessionDuration(params);
-                        return done ? done() : false;
+                        countlyApi.data.usage.processSessionDuration(params, function () {
+                            return done ? done() : false;
+                        });
                     } else {
                         // begin_session, session_duration and end_session handle incrementing request count in usage.js
                         var dbDateIds = common.getDateIds(params),
@@ -329,7 +313,7 @@ if (cluster.isMaster) {
             
                         common.fillTimeObjectMonth(params, updateUsers, common.dbMap['events']);
                         common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, {'upsert':true}, function(err, res){});
-            
+                        
                         return done ? done() : false;
                     }
                 } else {
@@ -524,9 +508,6 @@ if (cluster.isMaster) {
                                         'city':requests[i].city || 'Unknown'
                                     },
                                     'qstring':requests[i],
-                                    'href':params.href,
-                                    'res':params.res,
-                                    'req':params.req,
                                     'promises':[]
                                 };
                                 
@@ -537,7 +518,27 @@ if (cluster.isMaster) {
                                 } else {
                                     tmpParams.app_user_id = common.crypto.createHash('sha1').update(tmpParams.qstring.app_key + tmpParams.qstring.device_id + "").digest('hex');
                                 }
-                                return validateAppForWriteAPI(tmpParams, processBulkRequest.bind(null, i + 1));
+                
+                                if (tmpParams.qstring.metrics) {
+                                    if (tmpParams.qstring.metrics["_carrier"]) {
+                                        tmpParams.qstring.metrics["_carrier"] = tmpParams.qstring.metrics["_carrier"].replace(/\w\S*/g, function (txt) {
+                                            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+                                        });
+                                    }
+                
+                                    if (tmpParams.qstring.metrics["_os"] && tmpParams.qstring.metrics["_os_version"]) {
+                                        if(os_mapping[tmpParams.qstring.metrics["_os"].toLowerCase()])
+                                            tmpParams.qstring.metrics["_os_version"] = os_mapping[tmpParams.qstring.metrics["_os"].toLowerCase()] + tmpParams.qstring.metrics["_os_version"];
+                                        else
+                                            tmpParams.qstring.metrics["_os_version"] = tmpParams.qstring.metrics["_os"][0].toLowerCase() + tmpParams.qstring.metrics["_os_version"];
+                                    }
+                                }
+                                return validateAppForWriteAPI(tmpParams, function(){
+                                    function resolver(){
+                                        processBulkRequest(i + 1);
+                                    }
+                                    Promise.all(params.promises).then(resolver, resolver);
+                                });
                             }
                             
                             processBulkRequest(0);
@@ -627,6 +628,28 @@ if (cluster.isMaster) {
                                 params.app_user_id = common.crypto.createHash('sha1').update(params.qstring.app_key + params.qstring.device_id + "").digest('hex');
                             }
             
+                            if (params.qstring.metrics) {
+                                try {
+                                    params.qstring.metrics = JSON.parse(params.qstring.metrics);
+            
+                                    if (params.qstring.metrics["_carrier"]) {
+                                        params.qstring.metrics["_carrier"] = params.qstring.metrics["_carrier"].replace(/\w\S*/g, function (txt) {
+                                            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+                                        });
+                                    }
+            
+                                    if (params.qstring.metrics["_os"] && params.qstring.metrics["_os_version"]) {
+                                        if(os_mapping[params.qstring.metrics["_os"].toLowerCase()])
+                                            params.qstring.metrics["_os_version"] = os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_os_version"];
+                                        else
+                                            params.qstring.metrics["_os_version"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_os_version"];
+                                    }
+            
+                                } catch (SyntaxError) {
+                                    console.log('Parse metrics JSON failed', params.qstring.metrics, req.url, req.body);
+                                }
+                            }
+            
                             if (params.qstring.events) {
                                 try {
                                     params.qstring.events = JSON.parse(params.qstring.events);
@@ -635,8 +658,6 @@ if (cluster.isMaster) {
                                 }
                             }
             
-                            log.i('New /i request: %j', params.qstring);
-
                             validateAppForWriteAPI(params);
             
                             if (!plugins.getConfig("api").safe) {
