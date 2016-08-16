@@ -779,13 +779,16 @@ var common = {},
         });
     };
     
-    common.updateAppUser = function(params, update, commit, callback){
-        common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id},{}, update, {new:true, upsert:true}, function(err, res) {
-            if(!err && res && res.value)
-                params.app_user = res.value;
-            if(callback)
-                callback(err, res);
-        });
+    common.updateAppUser = function(params, update, callback){
+        if(Object.keys(update).length)
+            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id},{}, update, {new:true, upsert:true}, function(err, res) {
+                if(!err && res && res.value)
+                    params.app_user = res.value;
+                if(callback)
+                    callback(err, res);
+            });
+        else if(callback)
+            callback(err, res);
     };
 }(common));
 
