@@ -88,7 +88,7 @@ var usage = {},
                     if (dbAppUser[common.dbUserMap['has_ongoing_session']] && (currTimestamp - lastBeginSession) > 11) {
                         var userProps = {};
                         userProps[common.dbUserMap['has_ongoing_session']] = 1;
-                        common.updateAppUser(params, {'$set': userProps}, true, function() {
+                        common.updateAppUser(params, {'$set': userProps}, function() {
                             endSession(true);
                         });
                     } else {
@@ -144,12 +144,12 @@ var usage = {},
             common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, function(){});
             
             var update = {'$inc': {'sd': session_duration, 'tsd': session_duration}};         
-            common.updateAppUser(params, update);   
-            plugins.dispatch("/session/duration", {params:params, session_duration:session_duration});
-
-            if (callback) {
-                callback();
-            }
+            common.updateAppUser(params, update, function(){
+                plugins.dispatch("/session/duration", {params:params, session_duration:session_duration});
+                if (callback) {
+                    callback();
+                }
+            });   
         }
     };
 
@@ -189,8 +189,9 @@ var usage = {},
         common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, {'$inc': updateUsersZero, '$addToSet': {'meta.d-ranges': calculatedDurationRange}}, function(){});
 
         // sd: session duration. common.dbUserMap is not used here for readability purposes.
-        common.updateAppUser(params, {'$set': {'sd': 0}});
-        return done ? done() : false;
+        common.updateAppUser(params, {'$set': {'sd': 0}}, function(){
+            return done ? done() : false;
+        });
     }
 
     function processUserSession(dbAppUser, params, done) {
@@ -615,17 +616,18 @@ var usage = {},
                     if (result && result.length != 0) {
                         userProps[common.dbUserMap['user_id']] = parseSequence(result.seq);
                     }
-                    common.updateAppUser(params, {'$inc': {'sc': 1}, '$set': userProps});
-                    //Perform user retention analysis
-                    plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
-                    if (done) { done(); }
+                    common.updateAppUser(params, {'$inc': {'sc': 1}, '$set': userProps}, function(){
+                        //Perform user retention analysis
+                        plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
+                        if (done) { done(); }
+                    });
                 });
             } else {
                 // sc: session count. common.dbUserMap is not used here for readability purposes.
-                common.updateAppUser(params, {'$inc': {'sc': 1}, '$set': userProps});
-                //Perform user retention analysis
-                plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
-    
+                common.updateAppUser(params, {'$inc': {'sc': 1}, '$set': userProps}, function(){
+                    //Perform user retention analysis
+                    plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
+                });
                 /*
                 If metricChanges object contains a uid this means we have at least one metric that has changed
                 in this begin_session so we'll insert it into metric_changesAPPID collection.
