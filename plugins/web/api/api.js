@@ -4,7 +4,7 @@ var plugin = {},
     plugins = require('../../pluginManager.js');
 
 (function (plugin) {
-    plugins.register("/session/metrics", function(ob){
+    plugins.register("/", function(ob){
         var params = ob.params;
         if(params.app.type == "web"){
             if(!params.qstring.metrics)
@@ -22,8 +22,27 @@ var plugin = {},
             if(!params.qstring.metrics._os_version && (agent.os.major != 0 || agent.os.minor != 0 || agent.os.patch != 0))
                 params.qstring.metrics._os_version = agent.os.toVersion();
             
-            if(!params.qstring.metrics._device && agent.device.family != "Other")
-                params.qstring.metrics._device = agent.device.family;
+            if (/Windows/.test(params.qstring.metrics._os) && params.qstring.metrics._os != "Windows Phone") {
+                params.qstring.metrics._os_version = /Windows (.*)/.exec(params.qstring.metrics._os)[1];
+                params.qstring.metrics._os = 'Windows';
+            }
+            else{
+                var osFix = {
+                    "Mac OS X": "Mac OSX",
+                    "Mac OS": "MacOS",
+                    "ATV OS X": "tvOS"
+                };
+                
+                for(var i in osFix){
+                    if(params.qstring.metrics._os == i){
+                        params.qstring.metrics._os = osFix[i];
+                        break;
+                    }
+                }
+            }
+            
+            if(!params.qstring.metrics._device)
+                params.qstring.metrics._device = (agent.device.family == "Other") ? "Unknown" : agent.device.family;
         }
 	});
     
