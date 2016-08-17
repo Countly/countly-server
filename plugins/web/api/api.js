@@ -4,7 +4,7 @@ var plugin = {},
     plugins = require('../../pluginManager.js');
 
 (function (plugin) {
-    plugins.register("/", function(ob){
+    plugins.register("/sdk", function(ob){
         var params = ob.params;
         if(params.app.type == "web"){
             if(!params.qstring.metrics)
