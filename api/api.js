@@ -536,7 +536,6 @@ if (cluster.isMaster) {
                                 } else {
                                     tmpParams.app_user_id = common.crypto.createHash('sha1').update(tmpParams.qstring.app_key + tmpParams.qstring.device_id + "").digest('hex');
                                 }
-                                    }
                                 return validateAppForWriteAPI(tmpParams, processBulkRequest.bind(null, i + 1));
                             }
                             
