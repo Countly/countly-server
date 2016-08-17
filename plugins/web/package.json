@@ -15,6 +15,7 @@
 	"website"
   ],
   "dependencies": {
+	"useragent": "^2.1.9"
   },
   "private": true
 }
