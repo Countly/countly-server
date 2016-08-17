@@ -26,6 +26,7 @@ var versionInfo = require('./version.info'),
     _ = require('underscore'),
     countlyMail = require('../../api/parts/mgmt/mail.js'),
     countlyStats = require('../../api/parts/data/stats.js'),
+    bruteforce = require('./libs/preventBruteforce.js'),
 	plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config', 'dont-enclose');
     
@@ -249,6 +250,13 @@ app.use(function (req, res, next) {
         next();
     }
 });
+
+//prevent bruteforce attacks
+bruteforce.collection = countlyDb.collection("failed_logins");
+bruteforce.paths.push(countlyConfig.path+"/login")
+bruteforce.paths.push(countlyConfig.path+"/mobile/login");
+app.use(bruteforce.prevent);
+
 plugins.loadAppPlugins(app, countlyDb, express);
 
 var env = process.env.NODE_ENV || 'development';
@@ -723,8 +731,10 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
 				if(plugins.getConfig("frontend", member.settings).session_timeout)
 					req.session.expires = Date.now()+plugins.getConfig("frontend", member.settings).session_timeout;
                 res.redirect(countlyConfig.path+'/dashboard');
+                bruteforce.reset(req.body.username);
             } else {
                 plugins.callMethod("loginFailed", {req:req, res:res, next:next, data:req.body});
+                bruteforce.fail(req.body.username);
 				res.redirect(countlyConfig.path+'/login?message=login.result');
             }
         });
@@ -766,9 +776,11 @@ app.post(countlyConfig.path+'/mobile/login', function (req, res, next) {
         countlyDb.collection('members').findOne({$or: [ {"username":req.body.username}, {"email":req.body.username} ], "password":password}, function (err, member) {
             if (member) {
                 plugins.callMethod("mobileloginSuccessful", {req:req, res:res, next:next, data:member});
+                bruteforce.reset(req.body.username);
                 res.render('mobile/key', { "key": member.api_key || -1 });
             } else {
                 plugins.callMethod("mobileloginFailed", {req:req, res:res, next:next, data:req.body});
+                bruteforce.fail(req.body.username);
                 res.render('mobile/login', { "message":"login.result", "csrf":req.csrfToken() });
             }
         });
