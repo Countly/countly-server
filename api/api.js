@@ -175,7 +175,7 @@ if (cluster.isMaster) {
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, user){
                 params.app_user = user || {};
                 
-                if (params.qstring.metrics) {
+                if (params.qstring.metrics && typeof params.qstring.metrics === "string") {
                     try {
                         params.qstring.metrics = JSON.parse(params.qstring.metrics);
                     } catch (SyntaxError) {
@@ -522,7 +522,11 @@ if (cluster.isMaster) {
                                         'country':requests[i].country_code || 'Unknown',
                                         'city':requests[i].city || 'Unknown'
                                     },
-                                    'qstring':requests[i]
+                                    'qstring':requests[i],
+                                    'href':params.href,
+                                    'res':params.res,
+                                    'req':params.req,
+                                    'promises':[]
                                 };
                                 
                                 tmpParams["qstring"]['app_key'] = requests[i].app_key || appKey;
@@ -532,21 +536,7 @@ if (cluster.isMaster) {
                                 } else {
                                     tmpParams.app_user_id = common.crypto.createHash('sha1').update(tmpParams.qstring.app_key + tmpParams.qstring.device_id + "").digest('hex');
                                 }
-                
-                                if (tmpParams.qstring.metrics) {
-                                    if (tmpParams.qstring.metrics["_carrier"]) {
-                                        tmpParams.qstring.metrics["_carrier"] = tmpParams.qstring.metrics["_carrier"].replace(/\w\S*/g, function (txt) {
-                                            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-                                        });
                                     }
-                
-                                    if (tmpParams.qstring.metrics["_os"] && tmpParams.qstring.metrics["_os_version"]) {
-                                        if(os_mapping[tmpParams.qstring.metrics["_os"].toLowerCase()])
-                                            tmpParams.qstring.metrics["_os_version"] = os_mapping[tmpParams.qstring.metrics["_os"].toLowerCase()] + tmpParams.qstring.metrics["_os_version"];
-                                        else
-                                            tmpParams.qstring.metrics["_os_version"] = tmpParams.qstring.metrics["_os"][0].toLowerCase() + tmpParams.qstring.metrics["_os_version"];
-                                    }
-                                }
                                 return validateAppForWriteAPI(tmpParams, processBulkRequest.bind(null, i + 1));
                             }
                             
