@@ -174,8 +174,30 @@ if (cluster.isMaster) {
             
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, user){
                 params.app_user = user || {};
-            
+                
                 plugins.dispatch("/sdk", {params:params, app:app});
+                
+                if (params.qstring.metrics) {
+                    try {
+                        params.qstring.metrics = JSON.parse(params.qstring.metrics);
+            
+                        if (params.qstring.metrics["_carrier"]) {
+                            params.qstring.metrics["_carrier"] = params.qstring.metrics["_carrier"].replace(/\w\S*/g, function (txt) {
+                                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+                            });
+                        }
+            
+                        if (params.qstring.metrics["_os"] && params.qstring.metrics["_os_version"]) {
+                            if(os_mapping[params.qstring.metrics["_os"].toLowerCase()])
+                                params.qstring.metrics["_os_version"] = os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_os_version"];
+                            else
+                                params.qstring.metrics["_os_version"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_os_version"];
+                        }
+            
+                    } catch (SyntaxError) {
+                        console.log('Parse metrics JSON failed', params.qstring.metrics, req.url, req.body);
+                    }
+                }
                 if(!params.cancelRequest){
                     //check if device id was changed
                     if(params.qstring.old_device_id && params.qstring.old_device_id != params.qstring.device_id){
@@ -612,28 +634,6 @@ if (cluster.isMaster) {
                             } else {
                                 // Set app_user_id that is unique for each user of an application.
                                 params.app_user_id = common.crypto.createHash('sha1').update(params.qstring.app_key + params.qstring.device_id + "").digest('hex');
-                            }
-            
-                            if (params.qstring.metrics) {
-                                try {
-                                    params.qstring.metrics = JSON.parse(params.qstring.metrics);
-            
-                                    if (params.qstring.metrics["_carrier"]) {
-                                        params.qstring.metrics["_carrier"] = params.qstring.metrics["_carrier"].replace(/\w\S*/g, function (txt) {
-                                            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-                                        });
-                                    }
-            
-                                    if (params.qstring.metrics["_os"] && params.qstring.metrics["_os_version"]) {
-                                        if(os_mapping[params.qstring.metrics["_os"].toLowerCase()])
-                                            params.qstring.metrics["_os_version"] = os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_os_version"];
-                                        else
-                                            params.qstring.metrics["_os_version"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_os_version"];
-                                    }
-            
-                                } catch (SyntaxError) {
-                                    console.log('Parse metrics JSON failed', params.qstring.metrics, req.url, req.body);
-                                }
                             }
             
                             if (params.qstring.events) {
