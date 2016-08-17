@@ -22,8 +22,10 @@ var plugin = {},
             if(!params.qstring.metrics._os_version && (agent.os.major != 0 || agent.os.minor != 0 || agent.os.patch != 0))
                 params.qstring.metrics._os_version = agent.os.toVersion();
             
-            if (/Windows/.test(params.qstring.metrics._os) && params.qstring.metrics._os != "Windows Phone") {
-                params.qstring.metrics._os_version = /Windows (.*)/.exec(params.qstring.metrics._os)[1];
+            if (/Windows /.test(params.qstring.metrics._os) && params.qstring.metrics._os != "Windows Phone") {
+                var match = /Windows (.*)/.exec(params.qstring.metrics._os);
+                if(match && match[1])
+                    params.qstring.metrics._os_version = match[1];
                 params.qstring.metrics._os = 'Windows';
             }
             else{
