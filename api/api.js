@@ -175,27 +175,28 @@ if (cluster.isMaster) {
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, user){
                 params.app_user = user || {};
                 
-                plugins.dispatch("/sdk", {params:params, app:app});
-                
                 if (params.qstring.metrics) {
                     try {
                         params.qstring.metrics = JSON.parse(params.qstring.metrics);
-            
-                        if (params.qstring.metrics["_carrier"]) {
-                            params.qstring.metrics["_carrier"] = params.qstring.metrics["_carrier"].replace(/\w\S*/g, function (txt) {
-                                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-                            });
-                        }
-            
-                        if (params.qstring.metrics["_os"] && params.qstring.metrics["_os_version"]) {
-                            if(os_mapping[params.qstring.metrics["_os"].toLowerCase()])
-                                params.qstring.metrics["_os_version"] = os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_os_version"];
-                            else
-                                params.qstring.metrics["_os_version"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_os_version"];
-                        }
-            
                     } catch (SyntaxError) {
-                        console.log('Parse metrics JSON failed', params.qstring.metrics, req.url, req.body);
+                        console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
+                    }
+                }
+                
+                plugins.dispatch("/sdk", {params:params, app:app});
+                
+                if (params.qstring.metrics) {
+                    if (params.qstring.metrics["_carrier"]) {
+                        params.qstring.metrics["_carrier"] = params.qstring.metrics["_carrier"].replace(/\w\S*/g, function (txt) {
+                            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+                        });
+                    }
+                
+                    if (params.qstring.metrics["_os"] && params.qstring.metrics["_os_version"]) {
+                        if(os_mapping[params.qstring.metrics["_os"].toLowerCase()])
+                            params.qstring.metrics["_os_version"] = os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_os_version"];
+                        else
+                            params.qstring.metrics["_os_version"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_os_version"];
                     }
                 }
                 if(!params.cancelRequest){
