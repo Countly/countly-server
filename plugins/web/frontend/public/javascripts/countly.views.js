@@ -378,6 +378,12 @@ $( document ).ready(function() {
 	'</a>';
 	$('#web-type #analytics-submenu').prepend(menu);
     
+    menu = '<a href="#/analytics/devices" class="item">'+
+		'<div class="logo devices"></div>'+
+		'<div class="text" data-localize="sidebar.analytics.devices"></div>'+
+	'</a>';
+	$('#web-type #analytics-submenu').prepend(menu);
+    
     menu = '<a href="#/analytics/countries" class="item">'+
 		'<div class="logo country"></div>'+
 		'<div class="text" data-localize="sidebar.analytics.countries"></div>'+
