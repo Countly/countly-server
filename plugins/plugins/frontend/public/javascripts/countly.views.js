@@ -126,6 +126,7 @@ window.ConfigurationsView = countlyView.extend({
             "api-sync_plugins":jQuery.i18n.map["configs.api-sync_plugins"],
             "api-session_cooldown":jQuery.i18n.map["configs.api-session_cooldown"],
             "api-total_users":jQuery.i18n.map["configs.api-total_users"],
+            "api-additional_headers":jQuery.i18n.map["configs.api-additional_headers"],
             "apps-country":jQuery.i18n.map["configs.apps-country"],
             "apps-category":jQuery.i18n.map["configs.apps-category"]
         };
@@ -242,6 +243,10 @@ window.ConfigurationsView = countlyView.extend({
         
         this.registerInput("frontend-additional_headers", function(value){
             return '<textarea rows="5" style="width:100%" id="frontend-additional_headers">'+(value || "")+'</textarea>';
+        });
+        
+        this.registerInput("api-additional_headers", function(value){
+            return '<textarea rows="5" style="width:100%" id="api-additional_headers">'+(value || "")+'</textarea>';
         });
         
         this.registerInput("apps-timezone", function(value){

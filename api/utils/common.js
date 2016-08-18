@@ -432,8 +432,20 @@ var common = {},
     };
 
     common.returnMessage = function (params, returnCode, message) {
+        //set provided in configuration headers
+        var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
+        var add_headers = plugins.getConfig("api").additional_headers.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
+        var parts;
+        for(var i = 0; i < add_headers.length; i++){
+            if(add_headers[i] && add_headers[i].length){
+                parts = add_headers[i].split(/:(.+)?/);
+                if(parts.length == 3){
+                    headers[parts[0]] = parts[1];
+                }
+            }
+        }
         if (params && params.res && !params.blockResponses) {
-            params.res.writeHead(returnCode, {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+            params.res.writeHead(returnCode, headers);
             if (params.qstring.callback) {
                 params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
             } else {
@@ -445,8 +457,20 @@ var common = {},
     };
 
     common.returnOutput = function (params, output) {
+        //set provided in configuration headers
+        var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
+        var add_headers = plugins.getConfig("api").additional_headers.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
+        var parts;
+        for(var i = 0; i < add_headers.length; i++){
+            if(add_headers[i] && add_headers[i].length){
+                parts = add_headers[i].split(/:(.+)?/);
+                if(parts.length == 3){
+                    headers[parts[0]] = parts[1];
+                }
+            }
+        }
         if (params && params.res && !params.blockResponses) {
-            params.res.writeHead(200, {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+            params.res.writeHead(200, headers);
             if (params.qstring.callback) {
                 params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape_html_entities) + ')');
             } else {

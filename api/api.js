@@ -17,7 +17,8 @@ plugins.setConfigs("api", {
     event_segmentation_value_limit:1000,
     sync_plugins: false,
     session_cooldown: 15,
-    total_users: true
+    total_users: true,
+    additional_headers: ""
 });
 
 plugins.setConfigs("apps", {
