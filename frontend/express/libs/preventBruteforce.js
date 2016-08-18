@@ -10,24 +10,40 @@ var prevent = {};
     //paths to prevent
     prevent.paths = [];
     
-    prevent.prevent = function(req, res, next){
-        console.log("checking")
+    prevent.defaultPrevent = function(req, res, next){
         if(req.method.toLowerCase() == 'post' && prevent.paths.indexOf(req.path) !== -1){
             var username = req.body.username;
-            prevent.collection.findOne({_id:req.body.username}, function(err, result){
-                result = result || {fails:0};
-                if(result.fails > 0 && result.fails % prevent.fails == 0 && getTimestamp() < (((result.fails/prevent.fails)*prevent.wait)+result.lastFail)){
-                    //blocking user
-                    res.redirect(req.path+'?message=login.blocked');
-                }
-                else{
-                    next();
-                }
-            });
+            if(username){
+                prevent.isBlocked(username, function(isBlocked){
+                    if(isBlocked){
+                        //blocking user
+                        res.redirect(req.path+'?message=login.blocked');
+                    }
+                    else{
+                        next();
+                    }
+                });
+            }
+            else{
+                next();
+            }
         }
         else{
             next();
         }
+    };
+    
+    prevent.isBlocked = function(id, callback){
+        prevent.collection.findOne({_id:id}, function(err, result){
+            result = result || {fails:0};
+            if(result.fails > 0 && result.fails % prevent.fails == 0 && getTimestamp() < (((result.fails/prevent.fails)*prevent.wait)+result.lastFail)){
+                //blocking user
+                callback(true);
+            }
+            else{
+                callback(false);
+            }
+        });
     };
     
     prevent.reset = function(id, callback){
