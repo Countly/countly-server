@@ -55,7 +55,8 @@ plugins.setConfigs("frontend", {
     use_google: true,
     code: true,
     login_tries: 3,
-    login_wait: 5*60
+    login_wait: 5*60,
+    additional_headers: ""
 });
 
 plugins.setUserConfigs("frontend", {
@@ -224,6 +225,22 @@ app.use(function(req, res, next) {
     plugins.loadConfigs(countlyDb, function(){
         bruteforce.fails = plugins.getConfig("frontend").login_tries;
         bruteforce.wait = plugins.getConfig("frontend").login_wait;
+        
+        //set provided in configuration headers
+        var headers = {};
+        var add_headers = plugins.getConfig("frontend").additional_headers.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
+        var parts;
+        for(var i = 0; i < add_headers.length; i++){
+            if(add_headers[i] && add_headers[i].length){
+                parts = add_headers[i].split(/:(.+)?/);
+                if(parts.length == 3){
+                    headers[parts[0]] = parts[1];
+                }
+            }
+        }
+        if(Object.keys(headers).length > 0)
+            res.set(headers);
+        
         curTheme = plugins.getConfig("frontend").theme;
         app.loadThemeFiles(req.cookies.theme || plugins.getConfig("frontend").theme, function(themeFiles){
             res.locals.flash = req.flash.bind(req);

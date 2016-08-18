@@ -115,6 +115,7 @@ window.ConfigurationsView = countlyView.extend({
             "frontend-code":jQuery.i18n.map["configs.frontend-code"],
             "frontend-login_tries":jQuery.i18n.map["configs.frontend-login_tries"],
             "frontend-login_wait":jQuery.i18n.map["configs.frontend-login_wait"],
+            "frontend-additional_headers":jQuery.i18n.map["configs.frontend-additional_headers"],
             "api-domain":jQuery.i18n.map["configs.api-domain"],
             "api-safe":jQuery.i18n.map["configs.api-safe"],
             "api-session_duration_limit":jQuery.i18n.map["configs.api-session_duration_limit"],
@@ -239,6 +240,10 @@ window.ConfigurationsView = countlyView.extend({
             return select;
         });
         
+        this.registerInput("frontend-additional_headers", function(value){
+            return '<textarea rows="5" style="width:100%" id="frontend-additional_headers">'+(value || "")+'</textarea>';
+        });
+        
         this.registerInput("apps-timezone", function(value){
             return null;
         });
@@ -316,6 +321,12 @@ window.ConfigurationsView = countlyView.extend({
                 var value = $(this).val();
                 if($(this).attr("type") == "number")
                     value = parseFloat(value);
+                self.updateConfig(id, value);
+            });
+            
+            $(".configs textarea").keyup(function () {
+                var id = $(this).attr("id");
+                var value = $(this).val();
                 self.updateConfig(id, value);
             });
             
