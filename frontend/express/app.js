@@ -53,7 +53,9 @@ plugins.setConfigs("frontend", {
     theme: "",
     session_timeout: 30*60*1000,
     use_google: true,
-    code: true
+    code: true,
+    login_tries: 3,
+    login_wait: 5*60
 });
 
 plugins.setUserConfigs("frontend", {
@@ -220,6 +222,8 @@ app.use(function(req, res, next){
 app.use(flash());
 app.use(function(req, res, next) {
     plugins.loadConfigs(countlyDb, function(){
+        bruteforce.fails = plugins.getConfig("frontend").login_tries;
+        bruteforce.wait = plugins.getConfig("frontend").login_wait;
         curTheme = plugins.getConfig("frontend").theme;
         app.loadThemeFiles(req.cookies.theme || plugins.getConfig("frontend").theme, function(themeFiles){
             res.locals.flash = req.flash.bind(req);
@@ -255,7 +259,7 @@ app.use(function (req, res, next) {
 bruteforce.collection = countlyDb.collection("failed_logins");
 bruteforce.paths.push(countlyConfig.path+"/login")
 bruteforce.paths.push(countlyConfig.path+"/mobile/login");
-app.use(bruteforce.prevent);
+app.use(bruteforce.defaultPrevent);
 
 plugins.loadAppPlugins(app, countlyDb, express);
 
@@ -750,23 +754,32 @@ app.get(countlyConfig.path+'/api-key', function (req, res, next) {
     };
     var user = basicAuth(req);
     
-    if (!user || !user.name || !user.pass) {
+    if(user && user.name && user.pass){
+        bruteforce.isBlocked(user.name, function(isBlocked){
+            if(isBlocked){
+                unauthorized(res);
+            }
+            else{
+                var password = sha1Hash(user.pass);
+                countlyDb.collection('members').findOne({$or: [ {"username":user.name}, {"email":user.name} ], "password":password}, function (err, member) {
+                    if(member){
+                        plugins.callMethod("apikeySuccessful", {req:req, res:res, next:next, data:{username:member.username}});
+                        bruteforce.reset(user.name);
+                        res.status(200).send(member.api_key);
+                    }
+                    else{
+                        plugins.callMethod("apikeyFailed", {req:req, res:res, next:next, data:{username:user.name}});
+                        bruteforce.fail(user.name);
+                        unauthorized(res);
+                    }
+                });
+            }
+        });
+    }
+    else{
         plugins.callMethod("apikeyFailed", {req:req, res:res, next:next, data:{username:""}});
         unauthorized(res);
-        return;
     };
-    
-    var password = sha1Hash(user.pass);
-    countlyDb.collection('members').findOne({$or: [ {"username":user.name}, {"email":user.name} ], "password":password}, function (err, member) {
-        if(member){
-            plugins.callMethod("apikeySuccessful", {req:req, res:res, next:next, data:{username:member.username}});
-            res.status(200).send(member.api_key);
-        }
-		else{
-            plugins.callMethod("apikeyFailed", {req:req, res:res, next:next, data:{username:user.name}});
-            unauthorized(res);
-        }
-    });
 });
 
 app.post(countlyConfig.path+'/mobile/login', function (req, res, next) {
