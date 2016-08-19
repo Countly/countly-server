@@ -4,12 +4,41 @@ var common = {},
     crypto = require('crypto'),
     mongo = require('mongoskin'),
     logger = require('./log.js'),
+    escape_html = require('escape-html'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./../config', 'dont-enclose');
 
 (function (common) {
 
     var log = logger('common');
+    
+    function escape_html_entities(key, value) {		
+        if(typeof value === 'object' && value){		
+            if(Array.isArray(value)){		
+                var replacement = [];		
+                for (var k = 0; k < value.length; k++) {		
+                    if(typeof value[k] === "string")		
+                    replacement[k] = escape_html(value[k]);		
+                    else		
+                    replacement[k] = value[k];		
+                }		
+                return replacement;		
+            }		
+            else{		
+                var replacement = {};		
+                for (var k in value) {		
+                    if (Object.hasOwnProperty.call(value, k)) {		
+                        if(typeof value[k] === "string")		
+                            replacement[escape_html(k)] = escape_html(value[k]);		
+                        else		
+                            replacement[escape_html(k)] = value[k];		
+                    }		
+                }		
+                return replacement;		
+            }		
+        }		
+        return value;		
+    }
 
     common.log = logger;
 
@@ -207,24 +236,25 @@ var common = {},
     // Adjusts the time to current app's configured timezone appTimezone and returns a time object.
     common.initTimeObj = function (appTimezone, reqTimestamp) {
         var currTimestamp,
+            curMsTimestamp,
             currDate,
             currDateWithoutTimestamp = new Date();
-            
-        if(common.isNumber(reqTimestamp))
-            reqTimestamp = Math.round(reqTimestamp);
-
-        // Check if the timestamp parameter exists in the request and is a 10 or 13 digit integer
-        if (reqTimestamp && (reqTimestamp + "").length === 10 && common.isNumber(reqTimestamp)) {
+        
+        // Check if the timestamp parameter exists in the request and is a 10 or 13 digit integer, handling also float timestamps with ms after dot
+        if (reqTimestamp && (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 10 && common.isNumber(reqTimestamp)) {
             // If the received timestamp is greater than current time use the current time as timestamp
-            currTimestamp = (reqTimestamp > time.time()) ? time.time() : parseInt(reqTimestamp, 10);
+            currTimestamp = ( parseInt(reqTimestamp, 10) > time.time()) ? time.time() : parseInt(reqTimestamp, 10);
+            curMsTimestamp = ( parseInt(reqTimestamp, 10) > time.time()) ? time.time() : parseFloat(reqTimestamp, 10)*1000;
             currDate = new Date(currTimestamp * 1000);
         } else if (reqTimestamp && (reqTimestamp + "").length === 13 && common.isNumber(reqTimestamp)) {
             var tmpTimestamp = Math.round(parseInt(reqTimestamp, 10) / 1000);
+            curMsTimestamp = ( tmpTimestamp > time.time()) ? time.time() * 1000 :  parseInt(reqTimestamp, 10);
             currTimestamp = (tmpTimestamp > time.time()) ? time.time() : tmpTimestamp;
             currDate = new Date(currTimestamp * 1000);
         } else {
             currTimestamp = time.time(); // UTC
             currDate = new Date();
+            curMsTimestamp = currDate.getTime();
         }
 		
 		currDate.setTimezone(appTimezone);
@@ -237,6 +267,7 @@ var common = {},
             nowUTC: moment.utc(currDate),
             nowWithoutTimestamp: moment(currDateWithoutTimestamp),
             timestamp: currTimestamp,
+            mstimestamp: curMsTimestamp,
             yearly: tmpMoment.format("YYYY"),
             monthly: tmpMoment.format("YYYY.M"),
             daily: tmpMoment.format("YYYY.M.D"),
@@ -401,12 +432,24 @@ var common = {},
     };
 
     common.returnMessage = function (params, returnCode, message) {
+        //set provided in configuration headers
+        var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
+        var add_headers = plugins.getConfig("api").additional_headers.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
+        var parts;
+        for(var i = 0; i < add_headers.length; i++){
+            if(add_headers[i] && add_headers[i].length){
+                parts = add_headers[i].split(/:(.+)?/);
+                if(parts.length == 3){
+                    headers[parts[0]] = parts[1];
+                }
+            }
+        }
         if (params && params.res && !params.blockResponses) {
-            params.res.writeHead(returnCode, {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+            params.res.writeHead(returnCode, headers);
             if (params.qstring.callback) {
-                params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}) + ')');
+                params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
             } else {
-                params.res.write(JSON.stringify({result: message}));
+                params.res.write(JSON.stringify({result: message}, escape_html_entities));
             }
 
             params.res.end();
@@ -414,12 +457,24 @@ var common = {},
     };
 
     common.returnOutput = function (params, output) {
+        //set provided in configuration headers
+        var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
+        var add_headers = plugins.getConfig("api").additional_headers.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
+        var parts;
+        for(var i = 0; i < add_headers.length; i++){
+            if(add_headers[i] && add_headers[i].length){
+                parts = add_headers[i].split(/:(.+)?/);
+                if(parts.length == 3){
+                    headers[parts[0]] = parts[1];
+                }
+            }
+        }
         if (params && params.res && !params.blockResponses) {
-            params.res.writeHead(200, {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+            params.res.writeHead(200, headers);
             if (params.qstring.callback) {
-                params.res.write(params.qstring.callback + '(' + JSON.stringify(output) + ')');
+                params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape_html_entities) + ')');
             } else {
-                params.res.write(JSON.stringify(output));
+                params.res.write(JSON.stringify(output, escape_html_entities));
             }
 
             params.res.end();
