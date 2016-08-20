@@ -9,7 +9,7 @@ addons:
       - mongodb-3.2-precise
     packages:
       - mongodb-org-server
-before_install: sudo bash ./bin/countly.install.travis.sh
+before_install: sudo bash ./bin/countly.install_travis.sh
 install: sudo npm install
 before_script:
   - nodejs --version

@@ -445,4 +445,10 @@ $( document ).ready(function() {
 	'</a>';
 	$('#web-type #engagement-submenu').append(menu);
 	$('#mobile-type #engagement-submenu').append(menu);
+    
+    //check if configuration view exists
+    if(app.configurationsView){
+        app.configurationsView.registerLabel("views", jQuery.i18n.map["views.title"]);
+        app.configurationsView.registerLabel("views-view_limit", jQuery.i18n.map["views.view-limit"]);
+    }
 });

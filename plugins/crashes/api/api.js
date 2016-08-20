@@ -70,6 +70,8 @@ plugins.setConfigs("crashes", {
         "i386":"Simulator",
         "x86_64":"Simulator"
     };
+    
+    plugins.internalDrillEvents.push("[CLY]_crash");
     //check app metric
     plugins.register("/session/metrics", function(ob){
         var params = ob.params;

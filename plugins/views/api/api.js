@@ -7,6 +7,13 @@ var plugin = {},
     fetch = require('../../../api/parts/data/fetch.js');
 
 (function (plugin) {
+    plugins.setConfigs("views", {
+        view_limit: 1000
+    });
+    
+    plugins.internalDrillEvents.push("[CLY]_view");
+    plugins.internalDrillEvents.push("[CLY]_action");
+    
     plugins.register("/o", function(ob){
 		var params = ob.params;
 		var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
@@ -230,6 +237,7 @@ var plugin = {},
             });
         }
     });
+    
     plugins.register("/i", function(ob){
         var params = ob.params;
         if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
@@ -238,13 +246,13 @@ var plugin = {},
                     if(currEvent.segmentation && currEvent.segmentation.name){
                         processView(params, currEvent);
                         if(currEvent.segmentation.visit){
-                            return true;
+                            var events = [currEvent];
+                            plugins.dispatch("/plugins/drill", {params:params, dbAppUser:params.app_user, events:events});
                         }
                         else{
                             if(currEvent.dur || currEvent.segmentation.dur){
                                 plugins.dispatch("/view/duration", {params:params, duration:currEvent.dur || currEvent.segmentation.dur});
                             }
-                            return false;
                         }
                     }
                     return false;
@@ -290,100 +298,110 @@ var plugin = {},
         //making sure metrics are strings
         tmpSet["meta." + tmpMetric.set] = escapedMetricVal;
         
-        if(currEvent.segmentation.visit){
-            monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['total']);
-            if (!user || !user.lv) {
-                monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['new']);
-            }
-            if (view && view[escapedMetricVal]) {
-                var lastViewTimestamp = view[escapedMetricVal],
-                    currDate = common.getDate(params.time.timestamp, params.appTimezone),
-                    lastViewDate = common.getDate(lastViewTimestamp, params.appTimezone),
-                    secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
-                    secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
-                    secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
-                    secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
-                    
-                if (lastViewTimestamp < (params.time.timestamp - secInMin)) {
-                    tmpTimeObjMonth['d.' + params.time.day + '.' + params.time.hour + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
-                }
-        
-                if (lastViewTimestamp < (params.time.timestamp - secInHour)) {
-                    tmpTimeObjMonth['d.' + params.time.day + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
-                }
-        
-                if (lastViewDate.getFullYear() == params.time.yearly &&
-                    Math.ceil(common.moment(lastViewDate).format("DDD") / 7) < params.time.weekly) {
-                    tmpTimeObjZero["d.w" + params.time.weekly + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
-                }
-        
-                if (lastViewTimestamp < (params.time.timestamp - secInMonth)) {
-                    tmpTimeObjZero['d.' + params.time.month + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
-                }
-        
-                if (lastViewTimestamp < (params.time.timestamp - secInYear)) {
-                    tmpTimeObjZero['d.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
-                }
-            }
-            else{
-                common.fillTimeObjectZero(params, tmpTimeObjZero, escapedMetricVal + '.' + common.dbMap['unique']);
-                common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + '.' + common.dbMap['unique'], 1, true);
-            }
-        }
-        
-        if(currEvent.segmentation.start){
-            monthObjUpdate.push(escapedMetricVal + '.s');
-        }
-        
-        if(currEvent.segmentation.exit){
-            monthObjUpdate.push(escapedMetricVal + '.e');
-        }
-        
-        
-        if(currEvent.segmentation.bounce){
-            monthObjUpdate.push(escapedMetricVal + '.b');
-        }
-        
-        common.fillTimeObjectZero(params, tmpTimeObjZero, zeroObjUpdate);
-        common.fillTimeObjectMonth(params, tmpTimeObjMonth, monthObjUpdate, 1, true);
-        
-        if(currEvent.dur || currEvent.segmentation.dur){
-            var dur = 0;
-            if(currEvent.dur)
-                dur = parseInt(currEvent.dur);
-            else if(currEvent.segmentation.dur)
-                dur = parseInt(currEvent.segmentation.dur);
-            common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + '.' + common.dbMap['duration'], dur, true);
-        }
-        
-        if(typeof currEvent.segmentation.segment != "undefined"){
-            currEvent.segmentation.segment = (currEvent.segmentation.segment+"").replace(/^\$/, "").replace(/\./g, "&#46;");
-            common.db.collection("app_viewdata"+params.app_id).update({'_id': "meta"}, {$addToSet: {"segments":currEvent.segmentation.segment}}, {'upsert': true}, function(){});
-        }
-        
         var dateIds = common.getDateIds(params),
             tmpZeroId = "no-segment_" + dateIds.zero,
             tmpMonthId = "no-segment_" + dateIds.month;
-        
-        if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
-            var update = {$set: {m: dateIds.zero, a: params.app_id + ""}};
-            if(Object.keys(tmpTimeObjZero).length)
-                update["$inc"] = tmpTimeObjZero;
-            if(Object.keys(tmpSet).length)
-                update["$addToSet"] = tmpSet;
-            common.db.collection("app_viewdata"+params.app_id).update({'_id': tmpZeroId}, update, {'upsert': true}, function(){});
-            if(typeof currEvent.segmentation.segment != "undefined"){
-                common.db.collection("app_viewdata"+params.app_id).update({'_id': currEvent.segmentation.segment+"_"+dateIds.zero}, update, {'upsert': true}, function(){});
+                
+        common.db.collection("app_viewdata"+params.app_id).findOne({'_id': tmpMonthId}, {meta:1}, function(err, res){
+            //checking if view should be ignored because of limit
+            if(!err && res && res.meta && res.meta.views && res.meta.views.length >= plugins.getConfig("views").view_limit){
+                return;
             }
-        }
-        
-        if (Object.keys(tmpTimeObjMonth).length){
-            common.db.collection("app_viewdata"+params.app_id).update({'_id': tmpMonthId}, {$set: {m: dateIds.month, a: params.app_id + ""}, '$inc': tmpTimeObjMonth}, {'upsert': true}, function(){});
-            if(typeof currEvent.segmentation.segment != "undefined"){
-                common.db.collection("app_viewdata"+params.app_id).update({'_id': currEvent.segmentation.segment+"_"+dateIds.month}, {$set: {m: dateIds.month, a: params.app_id + ""}, '$inc': tmpTimeObjMonth}, {'upsert': true}, function(){});
+            if(currEvent.segmentation.visit){
+                monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['total']);
+                if (view && !view[escapedMetricVal]) {
+                    monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['new']);
+                }
+                if (view && view[escapedMetricVal]) {
+                    var lastViewTimestamp = view[escapedMetricVal],
+                        currDate = common.getDate(params.time.timestamp, params.appTimezone),
+                        lastViewDate = common.getDate(lastViewTimestamp, params.appTimezone),
+                        secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
+                        secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
+                        secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
+                        secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
+                        
+                    if (lastViewTimestamp < (params.time.timestamp - secInMin)) {
+                        tmpTimeObjMonth['d.' + params.time.day + '.' + params.time.hour + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
+                    }
+            
+                    if (lastViewTimestamp < (params.time.timestamp - secInHour)) {
+                        tmpTimeObjMonth['d.' + params.time.day + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
+                    }
+            
+                    if (lastViewDate.getFullYear() == params.time.yearly &&
+                        Math.ceil(common.moment(lastViewDate).format("DDD") / 7) < params.time.weekly) {
+                        tmpTimeObjZero["d.w" + params.time.weekly + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
+                    }
+            
+                    if (lastViewTimestamp < (params.time.timestamp - secInMonth)) {
+                        tmpTimeObjZero['d.' + params.time.month + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
+                    }
+            
+                    if (lastViewTimestamp < (params.time.timestamp - secInYear)) {
+                        tmpTimeObjZero['d.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
+                    }
+                }
+                else{
+                    common.fillTimeObjectZero(params, tmpTimeObjZero, escapedMetricVal + '.' + common.dbMap['unique']);
+                    common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + '.' + common.dbMap['unique'], 1, true);
+                }
             }
-        }
-        
+            
+            if(currEvent.segmentation.start){
+                monthObjUpdate.push(escapedMetricVal + '.s');
+            }
+            
+            if(currEvent.segmentation.exit){
+                monthObjUpdate.push(escapedMetricVal + '.e');
+            }
+            
+            
+            if(currEvent.segmentation.bounce){
+                monthObjUpdate.push(escapedMetricVal + '.b');
+            }
+            
+            common.fillTimeObjectZero(params, tmpTimeObjZero, zeroObjUpdate);
+            common.fillTimeObjectMonth(params, tmpTimeObjMonth, monthObjUpdate, 1, true);
+            
+            if(currEvent.dur || currEvent.segmentation.dur){
+                var dur = 0;
+                if(currEvent.dur)
+                    dur = parseInt(currEvent.dur);
+                else if(currEvent.segmentation.dur)
+                    dur = parseInt(currEvent.segmentation.dur);
+                common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + '.' + common.dbMap['duration'], dur, true);
+            }
+            
+            if(typeof currEvent.segmentation.segment != "undefined"){
+                currEvent.segmentation.segment = (currEvent.segmentation.segment+"").replace(/^\$/, "").replace(/\./g, "&#46;");
+                common.db.collection("app_viewdata"+params.app_id).update({'_id': "meta"}, {$addToSet: {"segments":currEvent.segmentation.segment}}, {'upsert': true}, function(){});
+            }
+            
+            if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
+                var update = {$set: {m: dateIds.zero, a: params.app_id + ""}};
+                if(Object.keys(tmpTimeObjZero).length)
+                    update["$inc"] = tmpTimeObjZero;
+                if(Object.keys(tmpSet).length)
+                    update["$addToSet"] = tmpSet;
+                common.db.collection("app_viewdata"+params.app_id).update({'_id': tmpZeroId}, update, {'upsert': true}, function(){});
+                if(typeof currEvent.segmentation.segment != "undefined"){
+                    common.db.collection("app_viewdata"+params.app_id).update({'_id': currEvent.segmentation.segment+"_"+dateIds.zero}, update, {'upsert': true}, function(){});
+                }
+            }
+            
+            if (Object.keys(tmpTimeObjMonth).length || Object.keys(tmpSet).length){
+                var update = {$set: {m: dateIds.month, a: params.app_id + ""}};
+                if(Object.keys(tmpTimeObjMonth).length)
+                    update["$inc"] = tmpTimeObjMonth;
+                if(Object.keys(tmpSet).length)
+                    update["$addToSet"] = tmpSet;
+                common.db.collection("app_viewdata"+params.app_id).update({'_id': tmpMonthId}, update, {'upsert': true}, function(){});
+                if(typeof currEvent.segmentation.segment != "undefined"){
+                    common.db.collection("app_viewdata"+params.app_id).update({'_id': currEvent.segmentation.segment+"_"+dateIds.month}, update, {'upsert': true}, function(){});
+                }
+            }
+        });
     }
     
     plugins.register("/i/apps/create", function(ob){

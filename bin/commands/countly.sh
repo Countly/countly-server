@@ -211,13 +211,13 @@ countly_restoredb (){
     fi
     if [ -d $1/dump/countly ]; then
         echo "Restoring countly database...";
-        mongorestore --db countly $1/dump/countly > /dev/null;
+        mongorestore --db countly --batchSize=10 $1/dump/countly > /dev/null;
     else
         echo "No countly database dump to restore from";
     fi
     if [ -d $1/dump/countly_drill ]; then
         echo "Restoring countly_drill database...";
-        mongorestore --db countly_drill $1/dump/countly_drill > /dev/null;
+        mongorestore --db countly_drill --batchSize=10 $1/dump/countly_drill > /dev/null;
     else
         echo "No countly_drill database dump to restore from";
     fi

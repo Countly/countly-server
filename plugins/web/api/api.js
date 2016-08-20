@@ -1,8 +1,53 @@
 var plugin = {},
+    useragent = require('useragent'),
 	common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js');
 
 (function (plugin) {
+    plugins.register("/sdk", function(ob){
+        var params = ob.params;
+        if(params.app.type == "web"){
+            if(!params.qstring.metrics)
+                params.qstring.metrics = {};
+
+            //if some metrics are not provided, parse them from user agent
+            var agent = useragent.parse(params.req.headers['user-agent'], params.qstring.metrics._ua);
+            
+            if(!params.qstring.metrics._browser)
+                params.qstring.metrics._browser = agent.family;
+            
+            if(!params.qstring.metrics._os)
+                params.qstring.metrics._os = agent.os.family;
+            
+            if(!params.qstring.metrics._os_version && (agent.os.major != 0 || agent.os.minor != 0 || agent.os.patch != 0))
+                params.qstring.metrics._os_version = agent.os.toVersion();
+            
+            if (/Windows /.test(params.qstring.metrics._os) && params.qstring.metrics._os != "Windows Phone") {
+                var match = /Windows (.*)/.exec(params.qstring.metrics._os);
+                if(match && match[1])
+                    params.qstring.metrics._os_version = match[1];
+                params.qstring.metrics._os = 'Windows';
+            }
+            else{
+                var osFix = {
+                    "Mac OS X": "Mac OSX",
+                    "Mac OS": "MacOS",
+                    "ATV OS X": "tvOS"
+                };
+                
+                for(var i in osFix){
+                    if(params.qstring.metrics._os == i){
+                        params.qstring.metrics._os = osFix[i];
+                        break;
+                    }
+                }
+            }
+            
+            if(!params.qstring.metrics._device)
+                params.qstring.metrics._device = (agent.device.family == "Other") ? "Unknown" : agent.device.family;
+        }
+	});
+    
 	plugins.register("/o", function(ob){
 		var params = ob.params;
 		var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;

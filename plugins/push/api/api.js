@@ -17,6 +17,12 @@ var plugin = {},
             common.dbUserMap[k] = creds.DB_USER_MAP[k];
         }
     }
+    
+    plugins.internalEvents.push("[CLY]_push_action");
+    plugins.internalEvents.push("[CLY]_push_open");
+    plugins.internalEvents.push("[CLY]_push_sent");
+    plugins.internalDrillEvents.push("[CLY]_push_action");
+    plugins.internalDrillEvents.push("[CLY]_push_open");
 
     plugins.register('/worker', function(ob){
         setUpCommons();

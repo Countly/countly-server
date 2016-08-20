@@ -581,7 +581,7 @@ var fetch = {},
              */
             var match = {
                 _id: { $ne: "uid-sequence" },
-                ls: {$gte: common.adjustTimestampByTimezone(periodObj.start / 1000, params.appTimezone), $lte: common.adjustTimestampByTimezone(periodObj.end / 1000, params.appTimezone)}
+                ls: countlyCommon.getTimestampRangeQuery(params, true)
             };
 
             /*
@@ -620,7 +620,7 @@ var fetch = {},
                 if (shortcodesForMetrics[metric]) {
 
                     var metricChangesMatch =  {
-                        ts: {$gte: common.adjustTimestampByTimezone(periodObj.start / 1000, params.appTimezone), $lte: common.adjustTimestampByTimezone(periodObj.end / 1000, params.appTimezone)}
+                        ts: countlyCommon.getTimestampRangeQuery(params, true)
                     };
 
                     metricChangesMatch[shortcodesForMetrics[metric] + ".o"] = { "$exists": true };

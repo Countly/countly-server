@@ -194,6 +194,8 @@
     };
 
     countlyDevice.getDeviceFullName = function(shortName) {
+        if(shortName == "Unknown")
+            return jQuery.i18n.map["common.unknown"];
 		if(countlyDeviceList && countlyDeviceList[shortName])
 			return countlyDeviceList[shortName];
         return shortName;

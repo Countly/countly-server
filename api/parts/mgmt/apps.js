@@ -364,6 +364,10 @@ var appsApi = {},
         if (!app.category || !isValidCategory(app.category)) {
             app.category = plugins.getConfig("apps").category;
         }
+        
+        if (!app.type || !isValidType(app.type)) {
+            app.type = "mobile";
+        }
     }
 
     function isValidTimezone(timezone) {
@@ -376,6 +380,12 @@ var appsApi = {},
         var categories = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20"];
 
         return categories.indexOf(category) !== -1;
+    }
+    
+    function isValidType(type) {
+        var types = ["mobile","web","iot"];
+        //check if valid app type and it's plugin is enabled
+        return types.indexOf(type) !== -1 && plugins.isPluginEnabled(type);
     }
 
     function isValidCountry(country) {

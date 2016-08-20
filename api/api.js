@@ -15,9 +15,11 @@ plugins.setConfigs("api", {
     event_limit: 500,
     event_segmentation_limit: 100,
     event_segmentation_value_limit:1000,
+    metric_limit: 5000,
     sync_plugins: false,
     session_cooldown: 15,
-    total_users: true
+    total_users: true,
+    additional_headers: ""
 });
 
 plugins.setConfigs("apps", {
@@ -132,9 +134,12 @@ if (cluster.isMaster) {
         "open bsd":"ob",
         "searchbot":"sb",
         "sun os":"so",
+        "solaris":"so",
         "beos":"bo",
         "mac osx":"o",
-        "macos":"o"
+        "macos":"o",
+        "webos":"web",
+        "brew":"brew"
     };
 
     plugins.dispatch("/worker", {common:common});
@@ -171,8 +176,31 @@ if (cluster.isMaster) {
             
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, user){
                 params.app_user = user || {};
-            
+                
+                if (params.qstring.metrics && typeof params.qstring.metrics === "string") {
+                    try {
+                        params.qstring.metrics = JSON.parse(params.qstring.metrics);
+                    } catch (SyntaxError) {
+                        console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
+                    }
+                }
+                
                 plugins.dispatch("/sdk", {params:params, app:app});
+                
+                if (params.qstring.metrics) {
+                    if (params.qstring.metrics["_carrier"]) {
+                        params.qstring.metrics["_carrier"] = params.qstring.metrics["_carrier"].replace(/\w\S*/g, function (txt) {
+                            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+                        });
+                    }
+                
+                    if (params.qstring.metrics["_os"] && params.qstring.metrics["_os_version"]) {
+                        if(os_mapping[params.qstring.metrics["_os"].toLowerCase()])
+                            params.qstring.metrics["_os_version"] = os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_os_version"];
+                        else
+                            params.qstring.metrics["_os_version"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_os_version"];
+                    }
+                }
                 if(!params.cancelRequest){
                     //check if device id was changed
                     if(params.qstring.old_device_id && params.qstring.old_device_id != params.qstring.device_id){
@@ -496,7 +524,11 @@ if (cluster.isMaster) {
                                         'country':requests[i].country_code || 'Unknown',
                                         'city':requests[i].city || 'Unknown'
                                     },
-                                    'qstring':requests[i]
+                                    'qstring':requests[i],
+                                    'href':params.href,
+                                    'res':params.res,
+                                    'req':params.req,
+                                    'promises':[]
                                 };
                                 
                                 tmpParams["qstring"]['app_key'] = requests[i].app_key || appKey;
@@ -505,21 +537,6 @@ if (cluster.isMaster) {
                                     return processBulkRequest(i + 1);
                                 } else {
                                     tmpParams.app_user_id = common.crypto.createHash('sha1').update(tmpParams.qstring.app_key + tmpParams.qstring.device_id + "").digest('hex');
-                                }
-                
-                                if (tmpParams.qstring.metrics) {
-                                    if (tmpParams.qstring.metrics["_carrier"]) {
-                                        tmpParams.qstring.metrics["_carrier"] = tmpParams.qstring.metrics["_carrier"].replace(/\w\S*/g, function (txt) {
-                                            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-                                        });
-                                    }
-                
-                                    if (tmpParams.qstring.metrics["_os"] && tmpParams.qstring.metrics["_os_version"]) {
-                                        if(os_mapping[tmpParams.qstring.metrics["_os"].toLowerCase()])
-                                            tmpParams.qstring.metrics["_os_version"] = os_mapping[tmpParams.qstring.metrics["_os"].toLowerCase()] + tmpParams.qstring.metrics["_os_version"];
-                                        else
-                                            tmpParams.qstring.metrics["_os_version"] = tmpParams.qstring.metrics["_os"][0].toLowerCase() + tmpParams.qstring.metrics["_os_version"];
-                                    }
                                 }
                                 return validateAppForWriteAPI(tmpParams, processBulkRequest.bind(null, i + 1));
                             }
@@ -609,28 +626,6 @@ if (cluster.isMaster) {
                             } else {
                                 // Set app_user_id that is unique for each user of an application.
                                 params.app_user_id = common.crypto.createHash('sha1').update(params.qstring.app_key + params.qstring.device_id + "").digest('hex');
-                            }
-            
-                            if (params.qstring.metrics) {
-                                try {
-                                    params.qstring.metrics = JSON.parse(params.qstring.metrics);
-            
-                                    if (params.qstring.metrics["_carrier"]) {
-                                        params.qstring.metrics["_carrier"] = params.qstring.metrics["_carrier"].replace(/\w\S*/g, function (txt) {
-                                            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-                                        });
-                                    }
-            
-                                    if (params.qstring.metrics["_os"] && params.qstring.metrics["_os_version"]) {
-                                        if(os_mapping[params.qstring.metrics["_os"].toLowerCase()])
-                                            params.qstring.metrics["_os_version"] = os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_os_version"];
-                                        else
-                                            params.qstring.metrics["_os_version"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_os_version"];
-                                    }
-            
-                                } catch (SyntaxError) {
-                                    console.log('Parse metrics JSON failed', params.qstring.metrics, req.url, req.body);
-                                }
                             }
             
                             if (params.qstring.events) {
