@@ -496,8 +496,10 @@ div.datatablesubrow {display: none;}
 
 .d-table tr.selected {background-color: #D4ECD5;}
 
-.d-table input[type=text] { margin:0; font:15px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:3px; border:1px solid #DDD; width:274px; }
-.d-table input[type=password] { margin:0; font:15px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:3px; border:1px solid #DDD; width:274px; }
+.d-table input[type=text],
+.d-table textarea { border-radius:2px; margin:0; font:14px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:5px; border:1px solid #DDD; width:274px; }
+.d-table textarea { max-width: 274px; }
+.d-table input[type=password] { border-radius:2px; margin:0; font:14px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:5px; border:1px solid #DDD; width:274px; }
 
 .dataTable { border-radius:0 !important; margin-bottom:0 !important; }
 .dataTable th { border-radius:0 !important; outline:none; cursor:pointer; }
@@ -794,6 +796,8 @@ div.datatablesubrow {display: none;}
 .manage-users-table {margin-top: -16px;}
 .manage-users-table .dataTable-top {border-radius: 0;}
 #user-table { border-bottom-left-radius:0; border-bottom-right-radius:0; }
+#user-table td,
+.user-details.create-user-row td { font-family: Ubuntu; }
 
 #user-table .help-edit { font-size:11px; display:none; position:absolute; right:3px; top:2px; background-color: #F1F1F1; padding: 1px 1px 1px 15px; line-height: 130%; }
 #user-table .help-close { font-size:11px; display:none; position:absolute; right:3px; top:2px; background-color: #FFF; padding: 1px 1px 1px 15px; line-height: 130%; }
@@ -804,12 +808,10 @@ div.datatablesubrow {display: none;}
 #user-table tr.active:hover .help-close { display:block; }
 .user-details { display:none; overflow:auto; padding-bottom: 45px;}
 #user-table tr td>div { position:relative; }
-.user-details.create-user-row { border-top:1px solid #979797; border-left:10px solid whiteSmoke; border-right:10px solid whiteSmoke; margin-left:-2px; padding-bottom:45px; margin-right:-2px; box-shadow:inset 2px 0 0 -1px #DDD, inset -2px 0 0 -1px #DDD, inset 0 2px 0 -1px #DDD; position:relative; font-family: Oswald; font-size: 12px; font-weight: normal; color: #6B6B6B;}
-#user-table .datatablesubrow { margin: 0 -1px; box-shadow:inset 0 0 0 1px #D0D0D0; border-top:3px solid #D0D0D0; border-bottom:1px solid #D0D0D0; border-left:3px solid #F9F9F9; border-right:3px solid #F9F9F9; }
+.user-details.create-user-row { padding-bottom: 45px; box-shadow: inset 2px 0 0 -1px #DDD, inset -2px 0 0 -1px #DDD, inset 0 2px 0 -1px #DDD; position: relative; font-size: 12px; font-weight: normal; color: #6B6B6B; margin-bottom: -15px; }
 
 .user-details { background-color:#f9f9f9; }
 .user-details:hover { background-color:#f9f9f9; }
-#add-user-mgmt{margin-top: 5px; padding: 6px;}
 #listof-apps { width:200px; display:none; position:absolute; margin-top:12px; z-index:1000; padding:5px; padding-bottom:7px; background-color:rgba(85,85,85,1); border:1px solid #333; box-shadow:inset 0 0 0 1px #777; border-radius:5px; background-image:url('../images/dashboard/calendar_bg.png'); }
 	#listof-apps .button-container { overflow:auto; margin-top:5px; }
 	#listof-apps .button-container .icon-button { float:right; font-size:11px; }
