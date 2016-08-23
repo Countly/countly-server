@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# This helper script creates a 4 GB swap file on /swapfile, activates it, 
+# and writes to /etc/fstab so that swap is enabled each time your instance is rebooted.
+# Run it if your instance has a small memory (e.g less than 2GB) so it doesn't 
+# go out of RAM.
+
 #create file
 if hash fallocate 2>/dev/null; then
     fallocate -l 4G /swapfile
