@@ -245,7 +245,7 @@ if (cluster.isMaster) {
                                                 }
                                             }
                                             //merge custom user data
-                                            else if(i == "custom"){
+                                            else if(i == "custom" || i === "tk"){
                                                 if(!newAppUser[i])
                                                     newAppUser[i] = {};
                                                 if(!newAppUser.old[i])
