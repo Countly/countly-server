@@ -2633,6 +2633,7 @@ window.ManageUsersView = countlyView.extend({
                         { "mData": function(row, type){return row.username;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.username"]},
                         { "mData": function(row, type){if(row.global_admin) return jQuery.i18n.map["management-users.global-admin"]; else if(row.admin_of && row.admin_of.length) return jQuery.i18n.map["management-users.admin"]; else if(row.user_of && row.user_of.length)  return jQuery.i18n.map["management-users.user"]; else return jQuery.i18n.map["management-users.no-role"]}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.no-role"]},
                         { "mData": function(row, type){return row.email;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.email"]},
+                        { "mData": function(row, type){if(type == "display") return (row["last_login"]) ? countlyCommon.formatTimeAgo(row["last_login"]) : jQuery.i18n.map["common.never"]; else return (row["last_login"]) ? row["last_login"] : 0;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.last_login"]}
                     ]
                 }));
                 self.dtable.fnSort( [ [0,'desc'] ] );
@@ -2995,6 +2996,7 @@ window.ManageUsersView = countlyView.extend({
             
             if (currUserDetails.find(".delete-user").length != 0) {
                 data.global_admin = currUserDetails.find(".global-admin").hasClass("checked");
+                data.locked = currUserDetails.find(".lock-account").hasClass("checked");
                 
                 if (!data.global_admin) {
                     data.admin_of = currUserDetails.find(".admin-apps .app-list").val().split(",");
@@ -3147,6 +3149,12 @@ window.ManageUsersView = countlyView.extend({
             $("#listof-apps").hide();
             $(".row").removeClass("selected");
         });
+        $(".lock-account").off("click").on('click', function() {
+            var currUserDetails = $(".user-details:visible");	
+            $(this).toggleClass("checked");
+            $("#listof-apps").hide();
+            $(".row").removeClass("selected");
+        });
         $(".generate-password").off("click").on('click', function() {
             $(this).parent().find(".password-text").val(generatePassword());
         });
@@ -3202,6 +3210,20 @@ window.ManageUsersView = countlyView.extend({
 							str += '</div>';
 						str += '</div>';
 					str += '</div>';
+                    if(!d.global_admin){
+                        str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.lock-account">';
+                            str += '<div class="title" data-localize="management-users.lock-account">'+jQuery.i18n.map["management-users.lock-account"]+'</div>';
+                            str += '<div class="detail">';
+                                str += '<div class="option">';
+                                if(d.locked)
+                                    str += '<div class="lock-account checkbox checked"></div>';
+                                else
+                                    str += '<div class="lock-account checkbox"></div>';
+                                    str += '<div class="text"></div>';
+                                str += '</div>';
+                            str += '</div>';
+                        str += '</div>';
+                    }
                 }
                 if(d.global_admin)
 					str += '<div class="row admin-apps help-zone-vs" data-help-localize="help.manage-users.admin-of" style="display:none;">';

@@ -43,6 +43,8 @@ var usersApi = {},
                     'admin_of':((members[i].admin_of && members[i].admin_of.length > 0) ? members[i].admin_of : []),
                     'user_of':((members[i].user_of && members[i].user_of.length > 0) ? members[i].user_of : []),
                     'global_admin':(members[i].global_admin === true),
+                    'locked':(members[i].locked === true),
+                    'last_login':members[i].last_login || 0,
                     'is_current_user':(members[i].api_key == params.member.api_key)
                 };
             }
@@ -125,6 +127,7 @@ var usersApi = {},
                 'admin_of':     { 'required': false, 'type': 'Array' },
                 'user_of':      { 'required': false, 'type': 'Array' },
                 'global_admin': { 'required': false, 'type': 'Boolean' },
+                'locked':       { 'required': false, 'type': 'Boolean' },
                 'send_notification': { 'required': false, 'type': 'Boolean', 'exclude-from-ret-obj': true }
             },
             updatedMember = {},

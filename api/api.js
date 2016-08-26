@@ -245,7 +245,7 @@ if (cluster.isMaster) {
                                                 }
                                             }
                                             //merge custom user data
-                                            else if(i == "custom"){
+                                            else if(i == "custom" || i === "tk"){
                                                 if(!newAppUser[i])
                                                     newAppUser[i] = {};
                                                 if(!newAppUser.old[i])
@@ -346,6 +346,11 @@ if (cluster.isMaster) {
                 common.returnMessage(params, 401, 'User does not exist');
                 return false;
             }
+            
+            if (member && member.locked) {
+                common.returnMessage(params, 401, 'User is locked');
+                return false;
+            }
             params.member = member;
             callback(params);
         });
@@ -360,6 +365,11 @@ if (cluster.isMaster) {
     
             if (!((member.user_of && member.user_of.indexOf(params.qstring.app_id) != -1) || member.global_admin)) {
                 common.returnMessage(params, 401, 'User does not have view right for this application');
+                return false;
+            }
+            
+            if (member && member.locked) {
+                common.returnMessage(params, 401, 'User is locked');
                 return false;
             }
     
@@ -396,6 +406,11 @@ if (cluster.isMaster) {
                 common.returnMessage(params, 401, 'User does not have write right for this application');
                 return false;
             }
+            
+            if (member && member.locked) {
+                common.returnMessage(params, 401, 'User is locked');
+                return false;
+            }
     
             common.db.collection('apps').findOne({'_id':common.db.ObjectID(params.qstring.app_id + "")}, function (err, app) {
                 if (!app) {
@@ -428,6 +443,12 @@ if (cluster.isMaster) {
                 common.returnMessage(params, 401, 'User does not have global admin right');
                 return false;
             }
+            
+            if (member && member.locked) {
+                common.returnMessage(params, 401, 'User is locked');
+                return false;
+            }
+            
             params.member = member;
     
             if (callbackParam) {
@@ -442,6 +463,11 @@ if (cluster.isMaster) {
         common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
             if (!member || err) {
                 common.returnMessage(params, 401, 'User does not exist');
+                return false;
+            }
+            
+            if (member && member.locked) {
+                common.returnMessage(params, 401, 'User is locked');
                 return false;
             }
     
