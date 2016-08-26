@@ -685,74 +685,81 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
 
         countlyDb.collection('members').findOne({$or: [ {"username":req.body.username}, {"email":req.body.username} ], "password":password}, function (err, member) {
             if (member) {
-                plugins.callMethod("loginSuccessful", {req:req, res:res, next:next, data:member});
-                if (countlyConfig.web.use_intercom && member['global_admin']) {
-                    countlyStats.getOverall(countlyDb, function(statsObj){
-                        request({
-                            uri:"https://cloud.count.ly/s",
-                            method:"POST",
-                            timeout:4E3,
-                            json:{
-                                email:member.email,
-                                full_name:member.full_name,
-                                v:COUNTLY_VERSION,
-                                t:COUNTLY_TYPE,
-                                u:statsObj["total-users"],
-                                e:statsObj["total-events"],
-                                a:statsObj["total-apps"],
-                                m:statsObj["total-msg-users"],
-                                mc:statsObj["total-msg-created"],
-                                ms:statsObj["total-msg-sent"]
-                            }
-                        }, function(a, c, b) {
-                            a = {};
-                            b && (b.in_user_id && !member.in_user_id && (a.in_user_id = b.in_user_id), b.in_user_hash && !member.in_user_hash && (a.in_user_hash = b.in_user_hash));
-                            Object.keys(a).length && countlyDb.collection("members").update({_id:member._id}, {$set:a}, function() {})
+                if(member.locked)
+                {
+                    plugins.callMethod("loginFailed", {req:req, res:res, next:next, data:req.body});
+                    res.redirect(countlyConfig.path+'/login?message=login.locked');
+                }
+                else{
+                    plugins.callMethod("loginSuccessful", {req:req, res:res, next:next, data:member});
+                    if (countlyConfig.web.use_intercom && member['global_admin']) {
+                        countlyStats.getOverall(countlyDb, function(statsObj){
+                            request({
+                                uri:"https://cloud.count.ly/s",
+                                method:"POST",
+                                timeout:4E3,
+                                json:{
+                                    email:member.email,
+                                    full_name:member.full_name,
+                                    v:COUNTLY_VERSION,
+                                    t:COUNTLY_TYPE,
+                                    u:statsObj["total-users"],
+                                    e:statsObj["total-events"],
+                                    a:statsObj["total-apps"],
+                                    m:statsObj["total-msg-users"],
+                                    mc:statsObj["total-msg-created"],
+                                    ms:statsObj["total-msg-sent"]
+                                }
+                            }, function(a, c, b) {
+                                a = {};
+                                b && (b.in_user_id && !member.in_user_id && (a.in_user_id = b.in_user_id), b.in_user_hash && !member.in_user_hash && (a.in_user_hash = b.in_user_hash));
+                                Object.keys(a).length && countlyDb.collection("members").update({_id:member._id}, {$set:a}, function() {})
+                            });
                         });
-                    });
-                }
-                if (!countlyConfig.web.track || countlyConfig.web.track == "GA" && member['global_admin'] || countlyConfig.web.track == "noneGA" && !member['global_admin']) {
-                    countlyStats.getUser(countlyDb, member, function(statsObj){
-                        var date = new Date();
-                        request({
-                            uri:"https://stats.count.ly/i",
-                            method:"GET",
-                            timeout:4E3,
-                            qs:{
-                                device_id:member.email,
-                                app_key:"386012020c7bf7fcb2f1edf215f1801d6146913f",
-                                timestamp: Math.round(date.getTime()/1000),
-                                hour: date.getHours(),
-                                dow: date.getDay(),
-                                user_details:JSON.stringify(
-                                    {
-                                        custom:{
-                                            apps: (member.user_of) ? member.user_of.length : 0,
-                                            platforms:{"$addToSet":statsObj["total-platforms"]},
-                                            events:statsObj["total-events"],
-                                            pushes:statsObj["total-msg-sent"],
-                                            crashes:statsObj["total-crash-groups"],
-                                            users:statsObj["total-users"]
+                    }
+                    if (!countlyConfig.web.track || countlyConfig.web.track == "GA" && member['global_admin'] || countlyConfig.web.track == "noneGA" && !member['global_admin']) {
+                        countlyStats.getUser(countlyDb, member, function(statsObj){
+                            var date = new Date();
+                            request({
+                                uri:"https://stats.count.ly/i",
+                                method:"GET",
+                                timeout:4E3,
+                                qs:{
+                                    device_id:member.email,
+                                    app_key:"386012020c7bf7fcb2f1edf215f1801d6146913f",
+                                    timestamp: Math.round(date.getTime()/1000),
+                                    hour: date.getHours(),
+                                    dow: date.getDay(),
+                                    user_details:JSON.stringify(
+                                        {
+                                            custom:{
+                                                apps: (member.user_of) ? member.user_of.length : 0,
+                                                platforms:{"$addToSet":statsObj["total-platforms"]},
+                                                events:statsObj["total-events"],
+                                                pushes:statsObj["total-msg-sent"],
+                                                crashes:statsObj["total-crash-groups"],
+                                                users:statsObj["total-users"]
+                                            }
                                         }
-                                    }
-                                )
-                                
-                            }
-                        }, function(a, c, b) {});
-                    });
+                                    )
+                                    
+                                }
+                            }, function(a, c, b) {});
+                        });
+                    }
+        
+                    req.session.uid = member["_id"];
+                    req.session.gadm = (member["global_admin"] == true);
+                        req.session.email = member["email"];
+                    req.session.settings = member.settings;
+                    if(req.body.lang && req.body.lang != member["lang"]){
+                        countlyDb.collection('members').update({_id:member["_id"]}, {$set:{lang:req.body.lang}}, function(){});
+                    }
+                        if(plugins.getConfig("frontend", member.settings).session_timeout)
+                            req.session.expires = Date.now()+plugins.getConfig("frontend", member.settings).session_timeout;
+                    res.redirect(countlyConfig.path+'/dashboard');
+                    bruteforce.reset(req.body.username);
                 }
-
-                req.session.uid = member["_id"];
-                req.session.gadm = (member["global_admin"] == true);
-				req.session.email = member["email"];
-                req.session.settings = member.settings;
-                if(req.body.lang && req.body.lang != member["lang"]){
-                    countlyDb.collection('members').update({_id:member["_id"]}, {$set:{lang:req.body.lang}}, function(){});
-                }
-				if(plugins.getConfig("frontend", member.settings).session_timeout)
-					req.session.expires = Date.now()+plugins.getConfig("frontend", member.settings).session_timeout;
-                res.redirect(countlyConfig.path+'/dashboard');
-                bruteforce.reset(req.body.username);
             } else {
                 plugins.callMethod("loginFailed", {req:req, res:res, next:next, data:req.body});
                 bruteforce.fail(req.body.username);
@@ -780,9 +787,16 @@ app.get(countlyConfig.path+'/api-key', function (req, res, next) {
                 var password = sha1Hash(user.pass);
                 countlyDb.collection('members').findOne({$or: [ {"username":user.name}, {"email":user.name} ], "password":password}, function (err, member) {
                     if(member){
-                        plugins.callMethod("apikeySuccessful", {req:req, res:res, next:next, data:{username:member.username}});
-                        bruteforce.reset(user.name);
-                        res.status(200).send(member.api_key);
+                        if(member.locked)
+                        {
+                            plugins.callMethod("apikeyFailed", {req:req, res:res, next:next, data:{username:user.name}});
+                            unauthorized(res);
+                        }
+                        else{
+                            plugins.callMethod("apikeySuccessful", {req:req, res:res, next:next, data:{username:member.username}});
+                            bruteforce.reset(user.name);
+                            res.status(200).send(member.api_key);
+                        }
                     }
                     else{
                         plugins.callMethod("apikeyFailed", {req:req, res:res, next:next, data:{username:user.name}});
@@ -805,9 +819,16 @@ app.post(countlyConfig.path+'/mobile/login', function (req, res, next) {
 
         countlyDb.collection('members').findOne({$or: [ {"username":req.body.username}, {"email":req.body.username} ], "password":password}, function (err, member) {
             if (member) {
-                plugins.callMethod("mobileloginSuccessful", {req:req, res:res, next:next, data:member});
-                bruteforce.reset(req.body.username);
-                res.render('mobile/key', { "key": member.api_key || -1 });
+                if(member.locked)
+                {
+                    plugins.callMethod("mobileloginFailed", {req:req, res:res, next:next, data:req.body});
+                    res.render('mobile/login', { "message":"login.locked", "csrf":req.csrfToken() });
+                }
+                else{
+                    plugins.callMethod("mobileloginSuccessful", {req:req, res:res, next:next, data:member});
+                    bruteforce.reset(req.body.username);
+                    res.render('mobile/key', { "key": member.api_key || -1 });
+                }
             } else {
                 plugins.callMethod("mobileloginFailed", {req:req, res:res, next:next, data:req.body});
                 bruteforce.fail(req.body.username);

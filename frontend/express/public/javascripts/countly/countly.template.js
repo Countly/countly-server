@@ -2966,6 +2966,7 @@ window.ManageUsersView = countlyView.extend({
             
             if (currUserDetails.find(".delete-user").length != 0) {
                 data.global_admin = currUserDetails.find(".global-admin").hasClass("checked");
+                data.locked = currUserDetails.find(".lock-account").hasClass("checked");
                 
                 if (!data.global_admin) {
                     data.admin_of = currUserDetails.find(".admin-apps .app-list").val().split(",");
@@ -3118,6 +3119,12 @@ window.ManageUsersView = countlyView.extend({
             $("#listof-apps").hide();
             $(".row").removeClass("selected");
         });
+        $(".lock-account").off("click").on('click', function() {
+            var currUserDetails = $(".user-details:visible");	
+            $(this).toggleClass("checked");
+            $("#listof-apps").hide();
+            $(".row").removeClass("selected");
+        });
         $(".generate-password").off("click").on('click', function() {
             $(this).parent().find(".password-text").val(generatePassword());
         });
@@ -3173,6 +3180,20 @@ window.ManageUsersView = countlyView.extend({
 							str += '</div>';
 						str += '</div>';
 					str += '</div>';
+                    if(!d.global_admin){
+                        str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.lock-account">';
+                            str += '<div class="title" data-localize="management-users.lock-account">'+jQuery.i18n.map["management-users.lock-account"]+'</div>';
+                            str += '<div class="detail">';
+                                str += '<div class="option">';
+                                if(d.locked)
+                                    str += '<div class="lock-account checkbox checked"></div>';
+                                else
+                                    str += '<div class="lock-account checkbox"></div>';
+                                    str += '<div class="text"></div>';
+                                str += '</div>';
+                            str += '</div>';
+                        str += '</div>';
+                    }
                 }
                 if(d.global_admin)
 					str += '<div class="row admin-apps help-zone-vs" data-help-localize="help.manage-users.admin-of" style="display:none;">';
