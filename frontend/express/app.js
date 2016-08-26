@@ -752,8 +752,12 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                     req.session.gadm = (member["global_admin"] == true);
                         req.session.email = member["email"];
                     req.session.settings = member.settings;
+                    var update = {last_login:Math.round(new Date().getTime()/1000)};
                     if(req.body.lang && req.body.lang != member["lang"]){
-                        countlyDb.collection('members').update({_id:member["_id"]}, {$set:{lang:req.body.lang}}, function(){});
+                        update.lang = req.body.lang;
+                    }
+                    if(Object.keys(update).length){
+                        countlyDb.collection('members').update({_id:member["_id"]}, {$set:update}, function(){});
                     }
                         if(plugins.getConfig("frontend", member.settings).session_timeout)
                             req.session.expires = Date.now()+plugins.getConfig("frontend", member.settings).session_timeout;
@@ -795,6 +799,7 @@ app.get(countlyConfig.path+'/api-key', function (req, res, next) {
                         else{
                             plugins.callMethod("apikeySuccessful", {req:req, res:res, next:next, data:{username:member.username}});
                             bruteforce.reset(user.name);
+                            countlyDb.collection('members').update({_id:member["_id"]}, {$set:{last_login:Math.round(new Date().getTime()/1000)}}, function(){});
                             res.status(200).send(member.api_key);
                         }
                     }
@@ -827,6 +832,7 @@ app.post(countlyConfig.path+'/mobile/login', function (req, res, next) {
                 else{
                     plugins.callMethod("mobileloginSuccessful", {req:req, res:res, next:next, data:member});
                     bruteforce.reset(req.body.username);
+                    countlyDb.collection('members').update({_id:member["_id"]}, {$set:{last_login:Math.round(new Date().getTime()/1000)}}, function(){});
                     res.render('mobile/key', { "key": member.api_key || -1 });
                 }
             } else {
