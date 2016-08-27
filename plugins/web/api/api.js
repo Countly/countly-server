@@ -54,7 +54,7 @@ var plugin = {},
     
     function getOSFromAgent(agent){
         var os = agent.os.family;
-        var os_version = undefined;
+        var os_version;
         
         if(agent.os.major != 0 || agent.os.minor != 0 || agent.os.patch != 0)
             os_version = agent.os.toVersion();
