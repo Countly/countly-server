@@ -2,9 +2,9 @@
   "name": "countly-views",
   "title": "View analytics",
   "version": "0.0.1",
-  "description": "Provide information about views users visited",
+  "description": "Provide view information about pages users visited",
   "author": "Count.ly",
-  "homepage": "https://count.ly/plugins/",
+  "homepage": "https://count.ly/plugins/page-views",
   "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
   "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
   "keywords": [
