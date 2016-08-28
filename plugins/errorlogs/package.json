@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "description": "Display Countly related error logs",
   "author": "Count.ly",
-  "homepage": "https://count.ly/plugins/",
+  "homepage": "https://count.ly/plugins/error-logs/",
   "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
   "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
   "keywords": [
