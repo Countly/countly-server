@@ -155,7 +155,7 @@
         _activeSegmentations = [];
         _activeSegmentationValues = [];
         _activeSegmentationObj = {};
-        _activeEvent = activeEvent;
+        _activeEvent = activeEvent && activeEvent.toString();
 
         $.when(countlyEvent.initialize(true)).then(callback);
     };
