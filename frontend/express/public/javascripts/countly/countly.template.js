@@ -4986,8 +4986,10 @@ var AppRouter = Backbone.Router.extend({
         };
 
         $.extend(true, $.fn.dataTable.defaults, {
-            "sDom": '<"dataTable-top"fpT>t<"dataTable-bottom"i>',
+            "sDom": '<"dataTable-top"lfpT>t<"dataTable-bottom"i>',
             "bAutoWidth": false,
+            "bLengthChange":true,
+            "bPaginate":true,
             "sPaginationType": "four_button",
             "iDisplayLength": 50,
             "bDestroy": true,
@@ -4998,7 +5000,8 @@ var AppRouter = Backbone.Router.extend({
 				"sEmptyTable": jQuery.i18n.map["common.table.no-data"],
 				"sInfo": jQuery.i18n.map["common.showing"],
 				"sInfoFiltered": jQuery.i18n.map["common.filtered"],
-				"sSearch": jQuery.i18n.map["common.search"]
+				"sSearch": jQuery.i18n.map["common.search"],
+                "sLengthMenu": jQuery.i18n.map["common.show-items"]+":&nbsp;<input type='number' id='dataTables_length_input'/>"
 			},
             "oTableTools": {
                 "sSwfPath": countlyGlobal["cdn"]+"javascripts/dom/dataTables/swf/copy_csv_xls.swf",
@@ -5068,7 +5071,7 @@ var AppRouter = Backbone.Router.extend({
                 ]
             },
             "fnInitComplete": function(oSettings, json) {
-                var saveHTML = "<div class='save-table-data'><i class='fa fa-download'></i></div>",
+                var saveHTML = "<div class='save-table-data' data-help='help.datatables-export'><i class='fa fa-download'></i></div>",
                     searchHTML = "<div class='search-table-data'><i class='fa fa-search'></i></div>",
                     tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
 
@@ -5088,6 +5091,12 @@ var AppRouter = Backbone.Router.extend({
                     $(this).next(".dataTables_filter").toggle();
                     $(this).next(".dataTables_filter").find("input").focus();
                 });
+                
+                if(oSettings.oFeatures.bServerSide){
+                    tableWrapper.find(".save-table-data").tipsy({gravity:$.fn.tipsy.autoNS, title:function () {
+                        return ($(this).data("help")) ? jQuery.i18n.map[$(this).data("help")] : "";
+                    }, fade:true, offset:5, cssClass:'yellow', opacity:1, html:true});
+                }
 
                 //tableWrapper.css({"min-height": tableWrapper.height()});
             }
