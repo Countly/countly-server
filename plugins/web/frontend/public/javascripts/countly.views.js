@@ -204,7 +204,7 @@ window.WebDashboardView = countlyView.extend({
             }
             
             if(users[0] && users[0].src){
-                columns.push({ "mData": function(row){if(!row["src"]) return jQuery.i18n.map["common.unknown"]; else if(row["src"].indexOf("http") == 0) return "<a href='"+row["src"]+"' target='_blank'>"+((typeof countlySources != "undefined") ? countlySources.getSourceName(row["src"]) : row["src"])+"</a>"; else return (typeof countlySources != "undefined") ? countlySources.getSourceName(row["src"]) : row["src"];}, "sType":"string", "sTitle": jQuery.i18n.map["web.from-source"] , "bSortable":false, "sClass": "break web-20" });
+                columns.push({ "mData": function(row){if(!row["src"]) return jQuery.i18n.map["common.unknown"]; else{ row["src"] = row["src"].replace(/&#46;/g, ".").replace(/&amp;#46;/g, '.'); if(row["src"].indexOf("http") == 0) return "<a href='"+row["src"]+"' target='_blank'>"+((typeof countlySources != "undefined") ? countlySources.getSourceName(row["src"]) : row["src"])+"</a>"; else return (typeof countlySources != "undefined") ? countlySources.getSourceName(row["src"]) : row["src"];}}, "sType":"string", "sTitle": jQuery.i18n.map["web.from-source"] , "bSortable":false, "sClass": "break web-20" });
                 sort++;
             }
             
