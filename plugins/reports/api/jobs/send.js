@@ -31,6 +31,9 @@ class ReportsJob extends job.Job {
             log.d(hour, dow);
             countlyDb.collection("reports").find({r_hour:hour}).toArray(function(err, res){
                 if (!res || !res.length) {
+                    log.d("nothing to send");
+                    clearTimeout(timeout);
+                    timeout = 0;
                     return doneJob();
                 }
                 async.eachSeries(res, function(report, done){
