@@ -164,7 +164,7 @@
             changeDurationPerUser = countlyCommon.getPercentChange(previousDurationPerUser, durationPerUser),
             changeNew = countlyCommon.getPercentChange(previousNew, currentNew),
             changeUnique = countlyCommon.getPercentChange(previousUnique, currentUnique),
-            changeReturning = countlyCommon.getPercentChange((previousUnique - previousNew), (currentNew - currentNew)),
+            changeReturning = countlyCommon.getPercentChange(Math.max(previousUnique - previousNew, 0), Math.max(currentNew - currentNew, 0)),
             changeEvents = countlyCommon.getPercentChange(previousEvents, currentEvents),
             changeEventsPerUser = countlyCommon.getPercentChange(previousEventsPerUser, eventsPerUser),
             changePaying = countlyCommon.getPercentChange(previousPayingTotal, currentPayingTotal),
@@ -229,7 +229,7 @@
                     "sparkline":sparkLines.nev
                 },
                 "returning-users":{
-                    "total":(currentUnique - currentNew),
+                    "total":Math.max(currentUnique - currentNew, 0),
                     "change":changeReturning.percent,
                     "trend":changeReturning.trend,
                     "sparkline":sparkLines.returning
@@ -632,7 +632,7 @@
                 sparkLines["total"][sparkLines["total"].length] = tmp_x["t"];
                 sparkLines["nev"][sparkLines["nev"].length] = tmp_x["n"];
                 sparkLines["unique"][sparkLines["unique"].length] = tmp_x["u"];
-                sparkLines["returning"][sparkLines["returning"].length] = (tmp_x["t"] - tmp_x["n"]);
+                sparkLines["returning"][sparkLines["returning"].length] = Math.max(tmp_x["t"] - tmp_x["n"], 0);
                 sparkLines["total-time"][sparkLines["total-time"].length] = tmp_x["d"];
                 sparkLines["avg-time"][sparkLines["avg-time"].length] = (tmp_x["t"] == 0) ? 0 : (tmp_x["d"] / tmp_x["t"]);
                 sparkLines["events"][sparkLines["events"].length] = tmp_x["e"];
