@@ -170,10 +170,8 @@ if (cluster.isMaster) {
                 else{
                     payload = params.href.substr(3);
                 }
-                var parts = querystring.parse(payload);
-                delete parts.checksum;
-                payload = querystring.stringify(parts);
-                if(params.qstring.checksum != common.crypto.createHash('sha1').update(payload + params.app.checksum_salt).digest('hex')){
+                payload = payload.replace("&checksum="+params.qstring.checksum, "").replace("checksum="+params.qstring.checksum, "");
+                if((params.qstring.checksum + "").toUpperCase() != common.crypto.createHash('sha1').update(payload + params.app.checksum_salt).digest('hex').toUpperCase()){
                     console.log("Checksum did not match", params.href, params.req.body);
                     if (plugins.getConfig("api").safe) {
                         common.returnMessage(params, 400, 'Request does not match checksum');
