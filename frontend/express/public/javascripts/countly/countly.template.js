@@ -1944,6 +1944,8 @@ window.ManageAppsView = countlyView.extend({
             $("#app-edit-name").find(".edit input").val(countlyGlobal['apps'][appId].name);
             $("#app-edit-key").find(".read").text(countlyGlobal['apps'][appId].key);
             $("#app-edit-key").find(".edit input").val(countlyGlobal['apps'][appId].key);
+            $("#app-edit-salt").find(".read").text(countlyGlobal['apps'][appId].checksum_salt);
+            $("#app-edit-salt").find(".edit input").val(countlyGlobal['apps'][appId].checksum_salt);
             $("#view-app-id").text(appId);
             $("#app-edit-type").find(".cly-select .text").text(appTypes[countlyGlobal['apps'][appId].type]);
             $("#app-edit-type").find(".cly-select .text").data("value", countlyGlobal['apps'][appId].type);
@@ -2330,7 +2332,8 @@ window.ManageAppsView = countlyView.extend({
                         category:$("#app-edit-category .cly-select .text").data("value") + '',
                         key:app_key,
                         timezone:$("#app-edit-timezone #app-timezone").val(),
-                        country:$("#app-edit-timezone #app-country").val()
+                        country:$("#app-edit-timezone #app-country").val(),
+                        checksum_salt:$("#app-edit-salt .edit input").val()
                     }),
                     api_key:countlyGlobal['member'].api_key
                 },

@@ -162,6 +162,26 @@ if (cluster.isMaster) {
             params.app = app;
             params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
             
+            if(params.app.checksum_salt && params.app.checksum_salt.length){
+                var payload;
+                if(params.req.method.toLowerCase() == 'post'){
+                    payload = params.req.body;
+                }
+                else{
+                    payload = params.href.substr(3);
+                }
+                var parts = querystring.parse(payload);
+                delete parts.checksum;
+                payload = querystring.stringify(parts);
+                if(params.qstring.checksum != common.crypto.createHash('sha1').update(payload + params.app.checksum_salt).digest('hex')){
+                    console.log("Checksum did not match", params.href, params.req.body);
+                    if (plugins.getConfig("api").safe) {
+                        common.returnMessage(params, 400, 'Request does not match checksum');
+                    }
+                    return done ? done() : false;
+                }
+            }
+            
             if (params.qstring.location && params.qstring.location.length > 0) {
                 var coords = params.qstring.location.split(',');
                 if (coords.length === 2) {
