@@ -162,7 +162,7 @@ if (cluster.isMaster) {
             params.app = app;
             params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
             
-            if(params.app.checksum_salt && params.app.checksum_salt.length){
+            if(params.app.checksum_salt && params.app.checksum_salt.length && !params.files){ //ignore multipart data requests
                 var payload;
                 if(params.req.method.toLowerCase() == 'post'){
                     payload = params.req.body;
