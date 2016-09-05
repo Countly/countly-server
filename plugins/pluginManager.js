@@ -2,6 +2,7 @@ var plugins = require('./plugins.json', 'dont-enclose'),
     pluginsApis = {}, 
     mongo = require('mongoskin'),
     countlyConfig = require('../frontend/express/config', 'dont-enclose'),
+    utils = require('../api/utils/utils.js'),
     fs = require('fs'),
     path = require('path'),
     cp = require('child_process'),
@@ -586,7 +587,7 @@ var pluginManager = function pluginManager(){
         }
         
         if(config.mongodb.username && config.mongodb.password){
-            dbName = config.mongodb.username + ":" + config.mongodb.password +"@" + dbName;
+            dbName = config.mongodb.username + ":" + utils.decrypt(config.mongodb.password) +"@" + dbName;
         }
         
         if(dbName.indexOf('mongodb://') !== 0){
