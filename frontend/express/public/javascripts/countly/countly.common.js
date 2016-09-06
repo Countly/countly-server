@@ -140,8 +140,9 @@
                         show:true,
                         lineWidth:0,
                         radius:115,
+                        innerRadius: 0.45,
                         combine:{
-                            color:'#999',
+                            color:'#CCC',
                             threshold:0.05
                         },
                         label:{
@@ -218,7 +219,7 @@
                             { opacity:0 },
                             { opacity:0 }
                         ] }, shadowSize:0 },
-                        points:{ show:true, radius:3.5, shadowSize:0, lineWidth:2 },
+                        points:{ show:true, radius:4, shadowSize:0, lineWidth:2 },
                         shadowSize:0
                     },
                     grid:{ hoverable:true, borderColor:"null", color:"#666", borderWidth:0, minBorderMargin:10, labelMargin:10},

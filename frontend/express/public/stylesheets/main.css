@@ -339,13 +339,10 @@ a:active { color:inherit; }
 		.graph table tr:nth-child(n+10){ display:none; }
 		.pie-chart-container { float:left; width:50%; position:relative; height:360px; }
 			.pie-chart-container .graph-segment-container { position:absolute; left:10px; top:10px; z-index:3; }
-		.pie-overlay { position:absolute; z-index:2; width:248px; height:248px; left:50%; margin-left:-124px; top:56px; background-image:url('../images/dashboard/total-user.png'); background-position:center; background-repeat:no-repeat; }
-		.pie-overlay  .title { font:14px Oswald; color:#7D7D7D; margin:0 auto; text-align:center; margin-top:143px; max-width:100px; line-height:17px; }
-		.pie-overlay.one { background-image:url('../images/dashboard/total-user.png'); }
-		.pie-overlay.two { background-image:url('../images/dashboard/new-users.png'); }
-		.pie-overlay.one.platforms { background-image:url('../images/dashboard/platforms.png'); }
-		.pie-overlay.two.platforms { background-image:url('../images/dashboard/platform-versions.png'); }
-		.pieLabel div { font-size:11px !important; }
+        .pie-overlay { position: absolute; z-index: 1; width: 225px; height: 225px; left: 50%; margin-left: -115px; top: 66px; border: 2px solid #e6e6e6; border-radius: 200px; }
+		.pie-overlay .title { font-size:11px; color:#969696; margin:0 auto; text-align:center; margin-top:8px; max-width:100px; line-height:17px; }
+        .pie-overlay .logo { color:#969696; margin:0 auto; text-align:center; margin-top:79px; font-size: 40px; width: 100%; }
+		.pieLabel div { font-size:10px !important; }
 
 .big-numbers.top .inner { height:170px; cursor:pointer; }
 .big-numbers.top .select { bottom:1px; cursor:pointer; padding-top:7px; font-size:12px; line-height:111%; color:#969696; position:absolute; height:23px; width:100%; background-color: transparent !important; background-image: none !important; box-shadow: none; border:none;  }
