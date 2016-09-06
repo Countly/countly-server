@@ -1,6 +1,6 @@
 #dbviewer { overflow: hidden; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; }
 #dbviewer .clear { clear: both;}
-#dbviewer .left-side { width: 300px; float: left; background-color: #fff; border-right: 1px solid #ccc; padding-bottom: 1000px; margin-bottom: -1000px; overflow: hidden;}
+#dbviewer .left-side { width: 300px; float: left; background-color: #fff; border-right: 1px solid #ddd; padding-bottom: 1000px; margin-bottom: -1000px; overflow: hidden;}
 #dbviewer .left-side .ui-widget-content { border:none; }
 #dbviewer .left-side ul {list-style: none; padding:0; margin:0; font-size: 13px;}
 #dbviewer .left-side ul li {padding-top: 3px; padding-bottom: 3px;}
@@ -11,7 +11,7 @@
 #dbviewer .left-side .ui-state-active,
 #dbviewer .left-side .ui-accordion .ui-accordion-header { border: none; border-bottom: 1px solid #d0d0d0; color: #424242; font-size: 11px; padding: 10px 4px; background-color: #f7f7f7; text-align: center; background-image: none; border-radius: 0; }
 
-#dbviewer .right-side { margin-left: 300px; padding: 10px 25px; }
+#dbviewer .right-side { margin-left: 300px; padding: 10px 25px; border-left: 1px solid #ddd; }
 #dbviewer .right-side > p { font-size:13px; color:#464646; }
 #dbviewer .right-side p.breadcrumbs { display: inline-block; margin-bottom: 20px; font-size: 15px; }
 #dbviewer .right-side p.pagination { margin: 25px 0; text-align: center; }

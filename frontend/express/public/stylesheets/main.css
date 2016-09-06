@@ -437,10 +437,33 @@ a:active { color:inherit; }
 #app-management-bar .app-container { padding-left:15px; position: relative; }
 #app-management-bar .app-container.active { }
 #app-management-bar .app-container.active:hover { opacity:1; }
-#app-management-bar .app-container i { display:none; position: absolute; right:-3px; font-size:24px; top: 11px; color: #d4d4d4; }
-#app-management-bar .app-container i.small { right:-5px; color: #f9f9f9; }
-#app-management-bar .app-container.active i { display: block; }
-
+#app-management-bar .app-container.active:after,
+#app-management-bar .app-container.active:before,
+.event-container.active:after,
+.event-container.active:before {
+    right: 0;
+    top: 50%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+#app-management-bar .app-container.active:after,
+.event-container.active:after {
+    border-color: rgba(136, 183, 213, 0);
+    border-right-color: #f9f9f9;
+    border-width: 5px;
+    margin-top: -5px;
+}
+#app-management-bar .app-container.active:before,
+.event-container.active:before {
+    border-color: rgba(194, 225, 245, 0);
+    border-right-color: #d4d4d4;
+    border-width: 6px;
+    margin-top: -6px;
+}
 #app-edit-key .edit input {width: 335px;}
 #add-new-app .hint, .app-details .hint { padding-top: 8px; font-size:11px; color:#B7B6B6; clear: both; }
 
@@ -878,9 +901,6 @@ div.datatablesubrow {display: none;}
 	.event-container .name { width:151px; text-align:left; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; float:left; margin-left:10px; padding-top:7px; color:#6b6b6b; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; }
 .event-segmentation { float:left; margin-top:4px; }
 #event-update-area { float:left; }
-.event-container i { display:none; position: absolute; right:-3px; font-size:24px; top: 9px; color: #d4d4d4; }
-.event-container.active i { display: block; }
-.event-container i.small { right:-5px; color: #f9f9f9; }
 
 .left .title { font:19px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#636363; float:left; margin-right:11px; overflow: hidden; text-transform: uppercase; }
 .left .title.dynamic-title { max-width: 700px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
