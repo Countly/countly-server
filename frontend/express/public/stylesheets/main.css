@@ -510,6 +510,8 @@ div.datatablesubrow {display: none;}
 .dataTable-top:hover { color:#888; transition:color 0.5s; }
 .dataTable-top .dataTables_filter { float:left; padding-top:6px; display:none; }
 .dataTable-top .dataTables_filter input { font-size:13px; margin:0; border-radius:2px; background-color:#FFF; border:1px solid #CCC; width:200px; transition:width 0.5s; outline:none; padding:2px 6px; }
+.dataTable-top .dataTables_length { float:right ; padding-top:6px; padding-right:6px; padding-left:6px;}
+#dataTables_length_input {font-size:13px; margin:0; border-radius:15px; background-color:#FFF; border:1px solid #CCC; width:200px; transition:width 0.5s; outline:none; padding:2px 6px; width: 50px;}
 .dataTable-top .DTTT_container { float:right; padding: 10px 0; }
 .dataTable-top .DTTT_container a { margin-right:10px; }
 .dataTable-top .DTTT_container a:hover { text-decoration:underline; }

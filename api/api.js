@@ -162,6 +162,24 @@ if (cluster.isMaster) {
             params.app = app;
             params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
             
+            if(params.app.checksum_salt && params.app.checksum_salt.length && !params.files){ //ignore multipart data requests
+                var payload;
+                if(params.req.method.toLowerCase() == 'post'){
+                    payload = params.req.body;
+                }
+                else{
+                    payload = params.href.substr(3);
+                }
+                payload = payload.replace("&checksum="+params.qstring.checksum, "").replace("checksum="+params.qstring.checksum, "");
+                if((params.qstring.checksum + "").toUpperCase() != common.crypto.createHash('sha1').update(payload + params.app.checksum_salt).digest('hex').toUpperCase()){
+                    console.log("Checksum did not match", params.href, params.req.body);
+                    if (plugins.getConfig("api").safe) {
+                        common.returnMessage(params, 400, 'Request does not match checksum');
+                    }
+                    return done ? done() : false;
+                }
+            }
+            
             if (params.qstring.location && params.qstring.location.length > 0) {
                 var coords = params.qstring.location.split(',');
                 if (coords.length === 2) {
@@ -211,6 +229,68 @@ if (cluster.isMaster) {
                             validateAppForWriteAPI(params, done);
                         };
                         
+                        function mergeUserData(newAppUser, oldAppUser){
+                            //merge user data
+                            if(!newAppUser.old)
+                                newAppUser.old = {};
+                            for(var i in oldAppUser){
+                                // sum up session count and total session duration
+                                if(i == "sc" || i == "tsd"){
+                                    if(!newAppUser[i])
+                                        newAppUser[i] = 0;
+                                    newAppUser[i] += oldAppUser[i];
+                                }
+                                //check if old user has been seen before new one
+                                else if(i == "fs"){
+                                    if(!newAppUser.fs || oldAppUser.fs < newAppUser.fs)
+                                        newAppUser.fs = oldAppUser.fs;
+                                }
+                                //check if old user has been the last to be seen
+                                else if(i == "ls"){
+                                    if(!newAppUser.ls || oldAppUser.ls > newAppUser.ls){
+                                        newAppUser.ls = oldAppUser.ls;
+                                        //then also overwrite last session data
+                                        if(oldAppUser.lsid)
+                                            newAppUser.lsid = oldAppUser.lsid;
+                                        if(oldAppUser.sd)
+                                            newAppUser.sd = oldAppUser.sd;
+                                    }
+                                }
+                                //merge custom user data
+                                else if(i == "custom" || i === "tk"){
+                                    if(!newAppUser[i])
+                                        newAppUser[i] = {};
+                                    if(!newAppUser.old[i])
+                                        newAppUser.old[i] = {};
+                                    for(var j in oldAppUser[i]){
+                                        //set properties that new user does not have
+                                        if(!newAppUser[i][j])
+                                            newAppUser[i][j] = oldAppUser[i][j];
+                                        //preserve old property values
+                                        else
+                                            newAppUser.old[i][j] = oldAppUser[i][j];
+                                    }
+                                }
+                                //set other properties that new user does not have
+                                else if(i != "_id" && i != "did" && !newAppUser[i]){
+                                    newAppUser[i] = oldAppUser[i];
+                                }
+                                //else preserve the old properties
+                                else{
+                                    newAppUser.old[i] = oldAppUser[i];
+                                }
+                            }
+                            //update new user
+                            common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': newAppUser}, {'upsert':true}, function(err, res) {
+                                //delete old user
+                                common.db.collection('app_users' + params.app_id).remove({_id:old_id}, function(){
+                                    //let plugins know they need to merge user data
+                                    plugins.dispatch("/i/device_id", {params:params, app:app, oldUser:oldAppUser, newUser:newAppUser});
+                                    restartRequest();
+                                });
+                            });
+                        }
+                        
                         var old_id = common.crypto.createHash('sha1').update(params.qstring.app_key + params.qstring.old_device_id + "").digest('hex');
                         //checking if there is an old user
                         common.db.collection('app_users' + params.app_id).findOne({'_id': old_id }, function (err, oldAppUser){
@@ -218,65 +298,25 @@ if (cluster.isMaster) {
                                 //checking if there is a new user
                                 common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, newAppUser){
                                     if(!err && newAppUser){
-                                        //merge user data
-                                        if(!newAppUser.old)
-                                            newAppUser.old = {};
-                                        for(var i in oldAppUser){
-                                            // sum up session count and total session duration
-                                            if(i == "sc" || i == "tsd"){
-                                                if(!newAppUser[i])
-                                                    newAppUser[i] = 0;
-                                                newAppUser[i] += oldAppUser[i];
-                                            }
-                                            //check if old user has been seen before new one
-                                            else if(i == "fs"){
-                                                if(!newAppUser.fs || oldAppUser.fs < newAppUser.fs)
-                                                    newAppUser.fs = oldAppUser.fs;
-                                            }
-                                            //check if old user has been the last to be seen
-                                            else if(i == "ls"){
-                                                if(!newAppUser.ls || oldAppUser.ls > newAppUser.ls){
-                                                    newAppUser.ls = oldAppUser.ls;
-                                                    //then also overwrite last session data
-                                                    if(oldAppUser.lsid)
-                                                        newAppUser.lsid = oldAppUser.lsid;
-                                                    if(oldAppUser.sd)
-                                                        newAppUser.sd = oldAppUser.sd;
-                                                }
-                                            }
-                                            //merge custom user data
-                                            else if(i == "custom" || i === "tk"){
-                                                if(!newAppUser[i])
-                                                    newAppUser[i] = {};
-                                                if(!newAppUser.old[i])
-                                                    newAppUser.old[i] = {};
-                                                for(var j in oldAppUser[i]){
-                                                    //set properties that new user does not have
-                                                    if(!newAppUser[i][j])
-                                                        newAppUser[i][j] = oldAppUser[i][j];
-                                                    //preserve old property values
-                                                    else
-                                                        newAppUser.old[i][j] = oldAppUser[i][j];
-                                                }
-                                            }
-                                            //set other properties that new user does not have
-                                            else if(i != "_id" && i != "did" && !newAppUser[i]){
-                                                newAppUser[i] = oldAppUser[i];
-                                            }
-                                            //else preserve the old properties
-                                            else{
-                                                newAppUser.old[i] = oldAppUser[i];
-                                            }
+                                        if(newAppUser.ls && newAppUser.ls > oldAppUser.ls){
+                                            mergeUserData(newAppUser, oldAppUser);
                                         }
-                                        //update new user
-                                        common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': newAppUser}, {'upsert':true}, function() {
-                                            //delete old user
-                                            common.db.collection('app_users' + params.app_id).remove({_id:old_id}, function(){
-                                                //let plugins know they need to merge user data
-                                                plugins.dispatch("/i/device_id", {params:params, app:app, oldUser:oldAppUser, newUser:newAppUser});
-                                                restartRequest();
-                                            });
-                                        });
+                                        else{
+                                            //switching user identidy
+                                            var temp = oldAppUser._id;
+                                            oldAppUser._id = newAppUser._id;
+                                            newAppUser._id = temp;
+                                            
+                                            temp = oldAppUser.did;
+                                            oldAppUser.did = newAppUser.did;
+                                            newAppUser.did = temp;
+                                            
+                                            temp = oldAppUser.uid;
+                                            oldAppUser.uid = newAppUser.uid;
+                                            newAppUser.uid = temp;
+                                            
+                                            mergeUserData(oldAppUser, newAppUser);
+                                        }
                                     }
                                     else{
                                         //simply copy user document with old uid

@@ -1973,6 +1973,8 @@ window.ManageAppsView = countlyView.extend({
             $("#app-edit-name").find(".edit input").val(countlyGlobal['apps'][appId].name);
             $("#app-edit-key").find(".read").text(countlyGlobal['apps'][appId].key);
             $("#app-edit-key").find(".edit input").val(countlyGlobal['apps'][appId].key);
+            $("#app-edit-salt").find(".read").text(countlyGlobal['apps'][appId].checksum_salt || "");
+            $("#app-edit-salt").find(".edit input").val(countlyGlobal['apps'][appId].checksum_salt || "");
             $("#view-app-id").text(appId);
             $("#app-edit-type").find(".cly-select .text").text(appTypes[countlyGlobal['apps'][appId].type]);
             $("#app-edit-type").find(".cly-select .text").data("value", countlyGlobal['apps'][appId].type);
@@ -2359,7 +2361,8 @@ window.ManageAppsView = countlyView.extend({
                         category:$("#app-edit-category .cly-select .text").data("value") + '',
                         key:app_key,
                         timezone:$("#app-edit-timezone #app-timezone").val(),
-                        country:$("#app-edit-timezone #app-country").val()
+                        country:$("#app-edit-timezone #app-country").val(),
+                        checksum_salt:$("#app-edit-salt .edit input").val()
                     }),
                     api_key:countlyGlobal['member'].api_key
                 },
@@ -4988,8 +4991,10 @@ var AppRouter = Backbone.Router.extend({
         };
 
         $.extend(true, $.fn.dataTable.defaults, {
-            "sDom": '<"dataTable-top"fpT>t<"dataTable-bottom"i>',
+            "sDom": '<"dataTable-top"lfpT>t<"dataTable-bottom"i>',
             "bAutoWidth": false,
+            "bLengthChange":true,
+            "bPaginate":true,
             "sPaginationType": "four_button",
             "iDisplayLength": 50,
             "bDestroy": true,
@@ -5000,7 +5005,8 @@ var AppRouter = Backbone.Router.extend({
 				"sEmptyTable": jQuery.i18n.map["common.table.no-data"],
 				"sInfo": jQuery.i18n.map["common.showing"],
 				"sInfoFiltered": jQuery.i18n.map["common.filtered"],
-				"sSearch": jQuery.i18n.map["common.search"]
+				"sSearch": jQuery.i18n.map["common.search"],
+                "sLengthMenu": jQuery.i18n.map["common.show-items"]+":&nbsp;<input type='number' id='dataTables_length_input'/>"
 			},
             "oTableTools": {
                 "sSwfPath": countlyGlobal["cdn"]+"javascripts/dom/dataTables/swf/copy_csv_xls.swf",
@@ -5070,7 +5076,7 @@ var AppRouter = Backbone.Router.extend({
                 ]
             },
             "fnInitComplete": function(oSettings, json) {
-                var saveHTML = "<div class='save-table-data'><i class='fa fa-download'></i></div>",
+                var saveHTML = "<div class='save-table-data' data-help='help.datatables-export'><i class='fa fa-download'></i></div>",
                     searchHTML = "<div class='search-table-data'><i class='fa fa-search'></i></div>",
                     tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
 
@@ -5090,6 +5096,12 @@ var AppRouter = Backbone.Router.extend({
                     $(this).next(".dataTables_filter").toggle();
                     $(this).next(".dataTables_filter").find("input").focus();
                 });
+                
+                if(oSettings.oFeatures.bServerSide){
+                    tableWrapper.find(".save-table-data").tipsy({gravity:$.fn.tipsy.autoNS, title:function () {
+                        return ($(this).data("help")) ? jQuery.i18n.map[$(this).data("help")] : "";
+                    }, fade:true, offset:5, cssClass:'yellow', opacity:1, html:true});
+                }
 
                 //tableWrapper.css({"min-height": tableWrapper.height()});
             }
