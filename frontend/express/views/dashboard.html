@@ -267,17 +267,17 @@
                 <div class="note-create">
                     <div>
                         <div class="title" data-localize="">Note</div>
-                        <div class="input" style="height:42px;"><input class="note-content" style="width:250px;" type="text" value=""/></div>
+                        <div class="input" style="height:42px; text-align: center"><input class="note-content" style="width:260px;" type="text" value=""/></div>
                     </div>
                     <div style="margin-top:20px; overflow: auto; height:225px;">
                         <div style="float:left; position: relative;">
                             <div style="position: relative;">
                                 <div class="calendar-container">
-                                    <div class="note-date" class="calendar" style="border: 1px solid #999; border-radius: 5px;"></div>
+                                    <div class="note-date calendar-light" class="calendar" style="border: 1px solid #FFF; border-radius: 5px;"></div>
                                 </div>
                             </div>
                         </div>
-                        <div style="height: 193px; overflow:hidden; width:70px; border: 1px solid #999; border-radius: 5px; float:right;">
+                        <div style="height: 155px; overflow:hidden; width:65px; border: 1px solid #CCC; border-radius: 2px; float:right; margin-top: 54px;">
                             <div class="time-picker" class="calendar-container" style="overflow:hidden;">
                                 <span class="selected">00:00</span>
                                 <span>01:00</span>
@@ -358,16 +358,6 @@
 
     <script id="template-date-selector" type="text/x-handlebars-template">
 		<div id="date-selector" class="help-zone-vs">
-			<div id="date-picker">
-				<div class="tip"></div>
-				<div class="calendar-container">
-					<div id="date-from" class="calendar"></div>
-					<div id="date-to" class="calendar"></div>
-				</div>
-				<div class="button-container">
-					<div id="date-submit" style="float:right;" class="cly-button-dark" data-localize="common.apply"></div>
-				</div>
-			</div>
             <div class="date-buttons-container">
                 <div class="button date-selector" id="month"></div>
                 <div class="button date-selector" id="day"></div>
@@ -382,6 +372,15 @@
                 <i class="material-icons">date_range</i>
             </div>
 		</div>
+        <div id="date-picker">
+            <div class="calendar-container">
+                <div id="date-from" class="calendar"></div>
+                <div id="date-to" class="calendar"></div>
+            </div>
+            <div class="button-container">
+                <div id="date-submit" class="icon-button green" data-localize="common.apply"></div>
+            </div>
+        </div>
 	</script>
 
 	<script id="template-app-categories" type="text/x-handlebars-template">

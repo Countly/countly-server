@@ -7,7 +7,6 @@
 #populator .right-side .widget-content { border:none; padding:0 25px; }
 #populator .right-side .widget-header { border-top:none; }
 #populator #date-selector {float: none; clear: both; display: inline; }
-#ui-datepicker-div.ui-widget-content{background-color: #fff;}
 #populator .icon-button{padding:10px; margin: 0 auto; float: none;}
 #populate-explain{cursor: pointer; text-align: center; color:#9e9e9e; font-size: 18px; position: absolute; top:20px; right:34px;}
 #populate-bar {margin: 5px; border: 1px solid #2FA732; border-radius: 2px; position:relative; height: 30px;}
