@@ -403,6 +403,24 @@ var common = {},
                         return false;
                     }
                 }
+                
+                if (argProperties[arg]['has-number']) {
+                    if (!/\d/.test(args[arg])) {
+                        return false;
+                    }
+                }
+                
+                if (argProperties[arg]['has-char']) {
+                    if (!/[A-Za-z]/.test(args[arg])) {
+                        return false;
+                    }
+                }
+                
+                if (argProperties[arg]['has-special']) {
+                    if (!/[^A-Za-z\d]/.test(args[arg])) {
+                        return false;
+                    }
+                }
 
                 if (!argProperties[arg]['exclude-from-ret-obj']) {
                     returnObj[arg] = args[arg];

@@ -2653,6 +2653,19 @@ window.ManageUsersView = countlyView.extend({
                     var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
                     return re.test(email);
                 }
+                
+                function validatePassword(password){
+                    if(password.length < 8)
+                        return jQuery.i18n.prop("management-users.password.length", 8);
+                    if(!/[A-Za-z]/.test(password))
+                        return jQuery.i18n.map["management-users.password.has-char"];
+                    if(!/\d/.test(password))
+                        return jQuery.i18n.map["management-users.password.has-number"];
+                    if(!/[^A-Za-z\d]/.test(password))
+                        return jQuery.i18n.map["management-users.password.has-special"];
+                    return false;
+                }
+                
                 self.initTable();
                 $("#add-user-mgmt").on("click", function(){
                     CountlyHelpers.closeRows(self.dtable);
@@ -2745,6 +2758,13 @@ window.ManageUsersView = countlyView.extend({
                     
                     if (!data.password.length) {
                         currUserDetails.find(".password-text").after(reqSpan.clone());
+                    } else {
+                        $(".password-check").remove();
+                        var error = validatePassword(data.password);
+                        if(error){
+                            var invalidSpan = $("<span class='password-check red-text'>").html(error);
+                            currUserDetails.find(".password-text").after(invalidSpan.clone());
+                        }
                     }
                     
                     if (!data.full_name.length) {
@@ -2867,6 +2887,17 @@ window.ManageUsersView = countlyView.extend({
         function validateEmail(email) { 
             var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
             return re.test(email);
+        }
+        function validatePassword(password){
+            if(password.length < 8)
+                return jQuery.i18n.prop("management-users.password.length", 8);
+            if(!/[A-Za-z]/.test(password))
+                return jQuery.i18n.map["management-users.password.has-char"];
+            if(!/\d/.test(password))
+                return jQuery.i18n.map["management-users.password.has-number"];
+            if(!/[^A-Za-z\d]/.test(password))
+                return jQuery.i18n.map["management-users.password.has-special"];
+            return false;
         }
         var adminsOf = [],
 		activeRow,
@@ -3110,6 +3141,16 @@ window.ManageUsersView = countlyView.extend({
                     }
                 }
             });
+        }, 300));
+        
+        $(".password-text").off("keyup").on("keyup",_.throttle(function() {
+            $(".password-check").remove();
+            var error = validatePassword($(this).val());
+            if (error) {
+                var invalidSpan = $("<span class='password-check red-text'>").html(error);
+                $(this).after(invalidSpan.clone());
+                return false;
+            }
         }, 300));
         
         $(".cancel-user").off("click").on("click", function() {

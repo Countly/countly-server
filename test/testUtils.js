@@ -20,7 +20,7 @@ var testUtils = function testUtils(){
 	this.url = "http://localhost";
 	this.name = "Test Test";
 	this.username = "test";
-	this.password = "test";
+	this.password = "test1test$";
 	this.email = "test@domain.com";
  
     this.setCSRF = function(token){
