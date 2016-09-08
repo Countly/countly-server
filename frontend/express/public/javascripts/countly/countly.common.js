@@ -95,7 +95,7 @@
     // Draws a graph with the given dataPoints to container. Used for drawing bar and pie charts.
     countlyCommon.drawGraph = function (dataPoints, container, graphType, inGraphProperties) {
         _.defer(function(){
-            if ((!dataPoints.dp || !dataPoints.dp.length) || (graphType == "bar" && !dataPoints.dp[0].data[0][1] && !dataPoints.dp[0].data[1][1])) {
+            if ((!dataPoints.dp || !dataPoints.dp.length) || (graphType == "bar" && dataPoints.dp[0].data[0][1]== null && dataPoints.dp[0].data[1][1] == null)) {
                 $(container).hide();
                 $(container).siblings(".no-data").show();
                 return true;
@@ -359,7 +359,7 @@
                 for (var k = 0, l = startIndex; k < frontData.data.length; k++, l++) {
 					if(frontData.data[l]){
 						var graphPoint = graphObj.pointOffset({x:frontData.data[l][0], y:frontData.data[l][1]});
-	
+
 						if (countlyCommon.getNotesForDateId(noteDateIds[k]).length) {
 							$('<div class="graph-note-label"><div class="point"></div></div>').attr({
 								"data-title":tickObj.tickTexts[k],
@@ -816,7 +816,7 @@
 
         return {"chartData":_.compact(tableData)};
     };
-      
+
     countlyCommon.mergeMetricsByName = function(chartData, metric){
         var uniqueNames = {},
             data;
@@ -843,7 +843,7 @@
     // Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
     countlyCommon.extractBarData = function (db, rangeArray, clearFunction, fetchFunction) {
         fetchFunction = fetchFunction || function (rangeArr, dataObj) {return rangeArr;};
-        
+
         var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, [
             {
                 name:"range",
@@ -888,7 +888,7 @@
 
         return barData;
     };
-	
+
 	countlyCommon.extractUserChartData = function (db, label, sec) {
 		var ret = {"data":[],"label":label};
         countlyCommon.periodObj = getPeriodObj();
@@ -905,7 +905,7 @@
             periodMax = countlyCommon.periodObj.periodMax+1;
 			dateob = countlyCommon.processPeriod(countlyCommon.periodObj.activePeriod.toString());
 		}
-		var res = [], 
+		var res = [],
 			ts;
 		//get all timestamps in that period
 		for(var i = 0, l = db.length; i < l; i++){
@@ -937,7 +937,7 @@
 		}
         return ret;
     };
-	
+
 	countlyCommon.processPeriod = function(period){
 		var date = period.split(".");
 		var range,
@@ -1190,11 +1190,11 @@
 
     countlyCommon.divide = function (val1, val2) {
         var temp = val1 / val2;
-	
+
         if (!temp || temp == Number.POSITIVE_INFINITY) {
             temp = 0;
         }
-	
+
         return temp;
     };
 
@@ -1245,7 +1245,7 @@
                     var parts = allWeeks[i].split(" ");
                     if(parseInt(parts[1]) == moment().year(parseInt(parts[1])).isoweek(parseInt(parts[0])).isoday(1).year()){
                         ticks.push([i, "W" + allWeeks[i]]);
-    
+
                         var weekText = countlyCommon.formatDate(moment().year(parseInt(parts[1])).isoweek(parseInt(parts[0])).isoday(1), ", D MMM YYYY");
                         tickTexts[i] = "W" + parts[0] + weekText;
                     }
@@ -1363,7 +1363,7 @@
         parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         return parts.join(".");
     };
-	
+
 	countlyCommon.pad = function(n, width, z){
 		z = z || '0';
 		n = n + '';
@@ -1489,7 +1489,7 @@
             }
         }
     };
-	
+
 	countlyCommon.formatTimeAgo = function(timestamp) {
 		var target = new Date(timestamp*1000);
 		var now = new Date();
@@ -1507,7 +1507,7 @@
 		if (diff <= 777600) {return "1 week ago";}
 		return "on " + target.toString().split(" GMT")[0];
 	};
-	
+
 	countlyCommon.formatTime = function(timestamp) {
 		var str = "";
 		var seconds = timestamp % 60;
@@ -1529,7 +1529,7 @@
 		}
 		return str;
 	};
-    
+
     countlyCommon.timeString = function(timespent){
         var timeSpentString = (timespent.toFixed(1)) + " " + jQuery.i18n.map["common.minute.abrv"];
 
@@ -1541,8 +1541,8 @@
             timeSpentString = (timespent / 60).toFixed(1) + " " + jQuery.i18n.map["common.hour.abrv"];
         }
         return timeSpentString;
-        
-        
+
+
         /*var timeSpentString = "";
         if(timespent > 1){
             timeSpentString = Math.floor(timespent) + " " + jQuery.i18n.map["common.minute.abrv"]+" ";
@@ -1571,28 +1571,28 @@
         }
         return timeSpentString;*/
     };
-	
+
 	countlyCommon.getDate = function(timestamp) {
 		var d = new Date(timestamp*1000);
 		return leadingZero(d.getDate())+"."+leadingZero(d.getMonth()+1)+"."+d.getFullYear();
 	}
-	
+
 	countlyCommon.getTime = function(timestamp) {
 		var d = new Date(timestamp*1000);
 		return leadingZero(d.getHours())+":"+leadingZero(d.getMinutes());
 	}
-	
+
 	function leadingZero(value){
 		if(value > 9)
 			return value
 		return "0"+value;
 	}
-    
+
     countlyCommon.round = function(num, digits) {
         digits = Math.pow(10, digits || 0);
         return Math.round(num * digits) / digits;
     };
-    
+
     countlyCommon.getDashboardData = function(data, properties, _periodObj){
         function clearObject(obj){
             if (obj) {
@@ -1606,7 +1606,7 @@
                     obj[properties[i]] = 0;
                 }
             }
-    
+
             return obj;
         };
 
@@ -1616,7 +1616,7 @@
             current = {},
             previous = {},
             change = {};
-            
+
             for(var i = 0; i < properties.length; i++){
                 current[properties[i]] = 0;
                 previous[properties[i]] = 0;
@@ -1644,7 +1644,7 @@
             tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriod);
             tmp_x = clearObject(tmp_x);
             tmp_y = clearObject(tmp_y);
-            
+
             for(var i = 0; i < properties.length; i++){
                 current[properties[i]] = tmp_x[properties[i]];
                 previous[properties[i]] = tmp_y[properties[i]];
@@ -1891,7 +1891,7 @@
 
         return periodObj;
     }
-    
+
     countlyCommon.getPeriodObj = getPeriodObj;
 
     function getUniqArray(weeksArray, weekCounts, monthsArray, monthCounts, periodArr) {
