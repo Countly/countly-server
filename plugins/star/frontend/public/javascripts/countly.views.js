@@ -198,8 +198,8 @@ window.starView = countlyView.extend({
     }
 
     var sum = 0;
-    this.cumulativeData.forEach((star)=> sum += star.count);
-    this.cumulativeData.forEach((star)=> star.percent =(sum === 0) ? "0%" : ((star.count/sum)*100).toFixed(2) + '%');
+    this.cumulativeData.forEach(function(star){sum += star.count});
+    this.cumulativeData.forEach(function(star){star.percent =(sum === 0) ? "0%" : ((star.count/sum)*100).toFixed(2) + '%'});
     $("#total-rating").html(sum);
     ratingArray.sort();
     console.log("calc cuml:",ratingArray, sum);

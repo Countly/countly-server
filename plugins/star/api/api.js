@@ -10,7 +10,7 @@ var plugin = {},
 	plugins.register("/i", function(ob){
 		var params = ob.params;
 		if(params.qstring.events){
-			params.qstring.events.forEach( (event) => {
+			params.qstring.events.forEach( function(event) {
 				if(event.key === '[CLY]_star_rating'){
 					event.segmentation['platform_version_rate'] =
 						`${event.segmentation['platform']}**${event.segmentation['app_version']}**${event.segmentation['rating']}`;
@@ -72,7 +72,7 @@ var plugin = {},
 					if(!err){
 						var result = {};
 						docs.forEach(function (doc){
-							doc.meta.platform_version_rate.forEach((item)=>{
+							doc.meta.platform_version_rate.forEach(function(item){
 								var data = item.split('**');
 								if(result[data[0]] === undefined)
 									result[data[0]] = [];
