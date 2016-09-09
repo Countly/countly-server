@@ -1,198 +1,103 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<!--
-   ______                  __  __     
-  / ____/___  __  ______  / /_/ /_  __
- / /   / __ \/ / / / __ \/ __/ / / / /
-/ /___/ /_/ / /_/ / / / / /_/ / /_/ / 
-\____/\____/\__,_/_/ /_/\__/_/\__, /  
-              http://count.ly/____/   
--->
-<html>
-<head>
-	<link href='./stylesheets/pre-login/main.css' rel='stylesheet' type='text/css'>
-	<link href='./enterpriseinfo/stylesheets/pre-login.css' rel='stylesheet' type='text/css'>
-	<link rel="icon" type="image/png" href="./images/favicon.png">
-    <% if (themeFiles && themeFiles.css) { %>
-        <% for(var i=0, l=themeFiles.css.length; i<l; i++) {%>
-    <link href='<%= themeFiles.css[i]%>' rel='stylesheet' type='text/css'>
-        <% } %>
-    <% } %>
-	<title><%- countlyTitle %></title>
-	<script>window.countlyGlobal = window.countlyGlobal || {}; countlyGlobal["cdn"] = "<%- cdn %>"; countlyGlobal["path"] = "<%- path %>";</script>
-</head>
-<body>
-	 <% if (message){ %>
-		<div id="message"></div>
-	 <% } %>
-	<div id="top-container">
-		<% if (countlyPage){ %>
-		<a class="top-button" href="<%- countlyPage %>"><%- countlyTitle %></a>
-        <% } %>
-		<div class="top-button" id="select-lang">
-			<div id="active-lang">EN</div>
-			<div id="langs">
-				<div class="group">
-					<a data-language-code="de" class="item">Deutsch</a>
-					<a data-language-code="en" class="item">English</a>
-					<a data-language-code="es" class="item">Español</a>
-					<a data-language-code="fr" class="item">Français</a>
-					<a data-language-code="it" class="item">Italiano</a>
-                    <a data-language-code="nl" class="item">Nederlands</a>
-					<a data-language-code="lv" class="item">Latviski</a>
-				</div>
-				<div class="group">
-					<a data-language-code="et" class="item">Eesti</a>
-                    <a data-language-code="pt" class="item">Português</a>
-                    <a data-language-code="ru" class="item">Русский язык</a>
-					<a data-language-code="tr" class="item">Türkçe</a>
-					<a data-language-code="zh" class="item">中文</a>
-					<a data-language-code="ja" class="item">日本語</a>
-                    <a data-language-code="ko" class="item">한국어</a>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div id="login-form">
-        <div style="float:left; overflow:auto; height:100%; width:36%; text-align: center;">
-            <div id="login-logo" style="margin-top:45px; margin-bottom:25px;"></div>
-            <form method="POST" style="padding: 20px;">
-                <div>
-                    <input type="text" autocapitalize="off" name="username" placeholder="Username or Email" data-localize="placeholder.username-email"/>
+<link href='./enterpriseinfo/stylesheets/pre-login.css' rel='stylesheet' type='text/css'>
+<div style="float:left; overflow: visible; width:64%; height: 100%; background-color: #1A1A1A;">
+    <div id="slider2_container">
+        <div id="slider_inner" u="slides" style="padding: 20px;">
+            <div>
+                <div class="title" data-localize="enterpriseinfo.pitch2-title"></div>
+                <div class="text" data-localize="enterpriseinfo.pitch2"></div>
+                <div class="link">
+                    <a href="https://count.ly/enterprise-edition/" target="_blank" data-localize="enterpriseinfo.learn-more"></a>
                 </div>
-                <div>
-                    <input name="password" type="password" placeholder="Password" data-localize="placeholder.password"/>
-                </div>
-                <div>
-                    <input type="hidden" value="<%= csrf %>" name="_csrf" />
-                    <input type="hidden" value="en" name="lang" id="form-lang" />
-                    <input id="login-button" value="Login" type="submit" data-localize="login.button"/>
-                </div>
-                <div style="margin-top:30px;">
-                    <a id="forgot-password" href="./forgot"  data-localize="login.forgot"></a>
-                </div>
-            </form>
-        </div>
-        <div style="float:left; overflow: visible; width:64%; height: 100%; background-color: #1A1A1A;">
-            <div id="slider2_container">
-                <div id="slider_inner" u="slides" style="padding: 20px;">
-                    <div>
-                        <div class="title" data-localize="enterpriseinfo.pitch2-title"></div>
-                        <div class="text" data-localize="enterpriseinfo.pitch2"></div>
-                        <div class="link">
-                            <a href="https://count.ly/enterprise-edition/" target="_blank" data-localize="enterpriseinfo.learn-more"></a>
-                        </div>
-                        <div class="image" style="right:65px;">
-                            <img src="./enterpriseinfo/images/slide1.svg"/>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="title" data-localize="enterpriseinfo.pitch4-title"></div>
-                        <div class="text" data-localize="enterpriseinfo.pitch4"></div>
-                        <div class="link">
-                            <a href="https://count.ly/plugins" target="_blank" data-localize="enterpriseinfo.learn-more"></a>
-                        </div>
-                        <div class="image" style="bottom:67px; right:83px;">
-                            <img src="./enterpriseinfo/images/slide4.svg"/>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="title" data-localize="enterpriseinfo.pitch1-title"></div>
-                        <div class="text" data-localize="enterpriseinfo.pitch1"></div>
-                        <div class="link">
-                            <a href="https://count.ly/countly-mobile-application/" target="_blank" data-localize="enterpriseinfo.learn-more"></a>
-                        </div>
-                        <div class="image" style="right:95px;">
-                            <img src="./enterpriseinfo/images/slide2.svg"/>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="title" data-localize="enterpriseinfo.pitch3-title"></div>
-                        <div class="text" data-localize="enterpriseinfo.pitch3"></div>
-                        <div class="link">
-                            <a href="https://count.ly/enterprise-edition/" target="_blank" data-localize="enterpriseinfo.learn-more"></a>
-                        </div>
-                        <div class="image" style="bottom:-5px; right:90px;">
-                            <img src="./enterpriseinfo/images/slide3.svg"/>
-                        </div>
-                    </div>
-                </div>
-                <div u="thumbnavigator" class="jssort12" style="position: absolute; width: 0px; height: 0px; left:0px; top: 0px;">
-                    <div u="slides" style="cursor: move; top:0px; left:0px; border-left: 1px solid gray;">
-                        <div u="prototype" class="p" style="POSITION: absolute; WIDTH: 100px; HEIGHT: 0px; TOP: 0; LEFT: 0; padding:0px;">
-                            <div class=w><ThumbnailTemplate class="c" style=" WIDTH: 100%; HEIGHT: 100%; position:absolute; TOP: 0; LEFT: 0; line-height:28px; text-align:center;"></ThumbnailTemplate></div>
-                        </div>
-                    </div>
-                </div>
-                <div u="navigator" class="jssorb01" style="position: relative; bottom: 15px; right: 15px;">
-                    <!-- bullet navigator item prototype -->
-                    <div u="prototype" class="jssor-bullet"></div>
+                <div class="image" style="right:65px;">
+                    <img src="./enterpriseinfo/images/slide1.svg"/>
                 </div>
             </div>
-
+            <div>
+                <div class="title" data-localize="enterpriseinfo.pitch4-title"></div>
+                <div class="text" data-localize="enterpriseinfo.pitch4"></div>
+                <div class="link">
+                    <a href="https://count.ly/plugins" target="_blank" data-localize="enterpriseinfo.learn-more"></a>
+                </div>
+                <div class="image" style="bottom:67px; right:83px;">
+                    <img src="./enterpriseinfo/images/slide4.svg"/>
+                </div>
+            </div>
+            <div>
+                <div class="title" data-localize="enterpriseinfo.pitch1-title"></div>
+                <div class="text" data-localize="enterpriseinfo.pitch1"></div>
+                <div class="link">
+                    <a href="https://count.ly/countly-mobile-application/" target="_blank" data-localize="enterpriseinfo.learn-more"></a>
+                </div>
+                <div class="image" style="right:95px;">
+                    <img src="./enterpriseinfo/images/slide2.svg"/>
+                </div>
+            </div>
+            <div>
+                <div class="title" data-localize="enterpriseinfo.pitch3-title"></div>
+                <div class="text" data-localize="enterpriseinfo.pitch3"></div>
+                <div class="link">
+                    <a href="https://count.ly/enterprise-edition/" target="_blank" data-localize="enterpriseinfo.learn-more"></a>
+                </div>
+                <div class="image" style="bottom:-5px; right:90px;">
+                    <img src="./enterpriseinfo/images/slide3.svg"/>
+                </div>
+            </div>
+        </div>
+        <div u="thumbnavigator" class="jssort12" style="position: absolute; width: 0px; height: 0px; left:0px; top: 0px;">
+            <div u="slides" style="cursor: move; top:0px; left:0px; border-left: 1px solid gray;">
+                <div u="prototype" class="p" style="POSITION: absolute; WIDTH: 100px; HEIGHT: 0px; TOP: 0; LEFT: 0; padding:0px;">
+                    <div class=w><ThumbnailTemplate class="c" style=" WIDTH: 100%; HEIGHT: 100%; position:absolute; TOP: 0; LEFT: 0; line-height:28px; text-align:center;"></ThumbnailTemplate></div>
+                </div>
+            </div>
+        </div>
+        <div u="navigator" class="jssorb01" style="position: relative; bottom: 15px; right: 15px;">
+            <!-- bullet navigator item prototype -->
+            <div u="prototype" class="jssor-bullet"></div>
         </div>
     </div>
+</div>
+<script type="text/javascript" src="./enterpriseinfo/javascripts/jssor.slider.min.js"></script>
+<!-- JS PART -->
+    jssor_slider2_starter = function (containerId) {
+        var options = {
+            $AutoPlay: true,
+            $AutoPlaySteps: 1,
+            $DragOrientation : 0,
+            $Idle: 10000,
+            $BulletNavigatorOptions: {
+                $Class: $JssorBulletNavigator$,
+                $ChanceToShow: 2,
+                $AutoCenter: 1,
+                $ActionMode: 2
+            },
+            $StartIndex: Math.floor(Math.random() * 4)
+        };
 
-     <script type="text/javascript" src="./enterpriseinfo/javascripts/jssor.slider.min.js"></script>
-     <script>
-         jssor_slider2_starter = function (containerId) {
-             var options = {
-                 $AutoPlay: true,
-                 $AutoPlaySteps: 1,
-                 $DragOrientation : 0,
-                 $Idle: 10000,
-                 $BulletNavigatorOptions: {
-                     $Class: $JssorBulletNavigator$,
-                     $ChanceToShow: 2,
-                     $AutoCenter: 1,
-                     $ActionMode: 2
-                 },
-                 $StartIndex: Math.floor(Math.random() * 4)
-             };
+        var jssor_slider2 = new $JssorSlider$(containerId, options);
+    };
 
-             var jssor_slider2 = new $JssorSlider$(containerId, options);
-         };
-
-         jssor_slider2_starter('slider2_container');
-     </script>
-
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/utils/prefixfree.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/dom/jquery.noisy.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/utils/store+json2.min.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/utils/jquery.i18n.properties-min-1.0.9.js"></script>
-	<script language="javascript" type="text/javascript" src="/javascripts/pre-login.js"></script>
-
-    <script>
-        var countlyTitle = "<%- countlyTitle %>";
-		$(document).ready(function() {
-            setTimeout(function() { $("#slider_inner").fadeIn({speed:1000}); }, 1000);
-
-            var lang = store.get("countly_lang") || "en";
-            jQuery.i18n.properties({
-                name:'enterpriseinfo', 
-                path:[countlyGlobal["cdn"]+'enterpriseinfo/localization/'],
-                mode:'map',
-                language: lang,
-                callback: function() {
-                    $("[data-localize]").each(function() {
-                        var elem = $(this),
-                            localizedValue = jQuery.i18n.map[elem.data("localize")];
-                        
-                        if (localizedValue) {
-                            elem.html(localizedValue);
-                        }
-                    });
-                }
-            });
-			<% if (message){ %>
-				showMessage("<%= message %>");
-			<% } %>			
-			
-			document.title = countlyTitle + " | " + jQuery.i18n.map["login.title"];
-		});
-		
-		$(document).bind('clyLangChange', function() {
-			document.title = countlyTitle + " | " + jQuery.i18n.map["login.title"];
+    jssor_slider2_starter('slider2_container');
+    $(document).ready(function() {
+        setTimeout(function() { $("#slider_inner").fadeIn({speed:1000}); }, 1000);
+        
+        var lang = store.get("countly_lang") || "en";
+        jQuery.i18n.properties({
+            name:'enterpriseinfo', 
+            path:[countlyGlobal["cdn"]+'enterpriseinfo/localization/'],
+            mode:'map',
+            language: lang,
+            callback: function() {
+                $("[data-localize]").each(function() {
+                    var elem = $(this),
+                        localizedValue = jQuery.i18n.map[elem.data("localize")];
+                    
+                    if (localizedValue) {
+                        elem.html(localizedValue);
+                    }
+                });
+            }
+        });
+        $(document).bind('clyLangChange', function() {
             var lang = store.get("countly_lang") || "en";
             setTimeout(function(){
                 jQuery.i18n.properties({
@@ -213,14 +118,4 @@
                 });
             }, 0);
 		});
-	</script>
-	<% if (typeof javascript != 'undefined') { %>
-	<script><%- javascript %></script>
-	<% } %>
-    <% if (themeFiles && themeFiles.js) { %>
-        <% for(var i=0, l=themeFiles.js.length; i<l; i++) {%>
-    <script language="javascript" type="text/javascript" src="<%=themeFiles.js[i]%>"></script>
-        <% } %>
-    <% } %>
-</body>
-</html>
+    });
