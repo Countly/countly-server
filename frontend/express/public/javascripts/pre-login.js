@@ -30,6 +30,9 @@ function addLocalization(name, path){
 			});
 		}
 	});
+    $(document).bind('clyLangChange', function() {
+        addLocalization(name, path);
+    });
 }
 
 $(document).ready(function() {
