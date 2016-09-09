@@ -222,6 +222,10 @@ app.use(function(req, res, next){
 });
 app.use(flash());
 app.use(function(req, res, next) {
+    req.template = {};
+    req.template.html = "";
+    req.template.js = "";
+    req.template.form = "";
     plugins.loadConfigs(countlyDb, function(){
         bruteforce.fails = plugins.getConfig("frontend").login_tries;
         bruteforce.wait = plugins.getConfig("frontend").login_wait;
@@ -538,7 +542,7 @@ app.get(countlyConfig.path+'/setup', function (req, res, next) {
         if (memberCount) {
             res.redirect(countlyConfig.path+'/login');
         } else {
-            res.render('setup', {countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles});
+            res.render('setup', {countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, javascript:req.template.js || "", form:req.template.form || "", html:req.template.html || ""});
         }
     });
 });
@@ -551,7 +555,7 @@ app.get(countlyConfig.path+'/login', function (req, res, next) {
             if (memberCount) {
 				if(req.query.message)
 					req.flash('info', req.query.message);
-                res.render('login', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "message":req.flash('info'), "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles });
+                res.render('login', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "message":req.flash('info'), "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, javascript:req.template.js || "", form:req.template.form || "", html:req.template.html || "" });
             } else {
                 res.redirect(countlyConfig.path+'/setup');
             }
@@ -563,7 +567,7 @@ app.get(countlyConfig.path+'/forgot', function (req, res, next) {
     if (req.session.uid) {
         res.redirect(countlyConfig.path+'/dashboard');
     } else {
-        res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.csrfToken(), "message":req.flash('info'), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles });
+        res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.csrfToken(), "message":req.flash('info'), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, javascript:req.template.js || "", form:req.template.form || "", html:req.template.html || ""});
     }
 });
 
@@ -577,7 +581,7 @@ app.get(countlyConfig.path+'/reset/:prid', function (req, res, next) {
                     req.flash('info', 'reset.invalid');
                     res.redirect(countlyConfig.path+'/forgot');
                 } else {
-                    res.render('reset', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.csrfToken(), "prid":req.params.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles });
+                    res.render('reset', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.csrfToken(), "prid":req.params.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, javascript:req.template.js || "", form:req.template.form || "", html:req.template.html || "" });
                 }
             } else {
                 req.flash('info', 'reset.invalid');
@@ -605,7 +609,7 @@ app.post(countlyConfig.path+'/reset', function (req, res, next) {
             countlyDb.collection('password_reset').remove({prid:req.body.prid}, function () {});
         });
     } else {
-        res.render('reset', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.csrfToken(), "prid":req.body.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles });
+        res.render('reset', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "csrf":req.csrfToken(), "prid":req.body.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, javascript:req.template.js || "", form:req.template.form || "", html:req.template.html || "" });
     }
 });
 
@@ -619,10 +623,10 @@ app.post(countlyConfig.path+'/forgot', function (req, res, next) {
                 countlyDb.collection('password_reset').insert({"prid":prid, "user_id":member._id, "timestamp":timestamp}, {safe:true}, function (err, password_reset) {
                     countlyMail.sendPasswordResetInfo(member, prid);
                     plugins.callMethod("passwordRequest", {req:req, res:res, next:next, data:req.body});
-                    res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "message":"forgot.result", "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles });
+                    res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE, "message":"forgot.result", "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, javascript:req.template.js || "", form:req.template.form || "", html:req.template.html || "" });
                 });
             } else {
-                res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE,"message":"forgot.result", "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles });
+                res.render('forgot', { countlyTitle:COUNTLY_NAME, countlyPage:COUNTLY_PAGE,"message":"forgot.result", "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, javascript:req.template.js || "", form:req.template.form || "", html:req.template.html || "" });
             }
         });
     } else {
