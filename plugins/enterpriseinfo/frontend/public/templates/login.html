@@ -79,43 +79,8 @@
     jssor_slider2_starter('slider2_container');
     $(document).ready(function() {
         setTimeout(function() { $("#slider_inner").fadeIn({speed:1000}); }, 1000);
-        
-        var lang = store.get("countly_lang") || "en";
-        jQuery.i18n.properties({
-            name:'enterpriseinfo', 
-            path:[countlyGlobal["cdn"]+'enterpriseinfo/localization/'],
-            mode:'map',
-            language: lang,
-            callback: function() {
-                $("[data-localize]").each(function() {
-                    var elem = $(this),
-                        localizedValue = jQuery.i18n.map[elem.data("localize")];
-                    
-                    if (localizedValue) {
-                        elem.html(localizedValue);
-                    }
-                });
-            }
-        });
+        addLocalization('enterpriseinfo', countlyGlobal["cdn"]+'enterpriseinfo/localization/');
         $(document).bind('clyLangChange', function() {
-            var lang = store.get("countly_lang") || "en";
-            setTimeout(function(){
-                jQuery.i18n.properties({
-                    name:'enterpriseinfo', 
-                    path:[countlyGlobal["cdn"]+'enterpriseinfo/localization/'],
-                    mode:'map',
-                    language: lang,
-                    callback: function() {
-                        $("[data-localize]").each(function() {
-                            var elem = $(this),
-                                localizedValue = jQuery.i18n.map[elem.data("localize")];
-                            
-                            if (localizedValue) {
-                                elem.html(jQuery.i18n.map[elem.data("localize")]);
-                            }
-                        });
-                    }
-                });
-            }, 0);
+            addLocalization('enterpriseinfo', countlyGlobal["cdn"]+'enterpriseinfo/localization/');
 		});
     });
