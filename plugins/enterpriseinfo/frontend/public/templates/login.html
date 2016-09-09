@@ -80,7 +80,4 @@
     $(document).ready(function() {
         setTimeout(function() { $("#slider_inner").fadeIn({speed:1000}); }, 1000);
         addLocalization('enterpriseinfo', countlyGlobal["cdn"]+'enterpriseinfo/localization/');
-        $(document).bind('clyLangChange', function() {
-            addLocalization('enterpriseinfo', countlyGlobal["cdn"]+'enterpriseinfo/localization/');
-		});
     });
