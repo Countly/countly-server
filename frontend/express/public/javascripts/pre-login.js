@@ -1,4 +1,5 @@
 function showMessage(key) {
+	$("#message").data("localize", key);
 	$("#message").text(jQuery.i18n.map[key]);
 }
 
