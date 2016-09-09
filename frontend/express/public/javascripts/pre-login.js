@@ -2,7 +2,7 @@ function showMessage(key) {
 	$("#message").text(jQuery.i18n.map[key]);
 }
 
-function addLocalization(name, path){
+function addLocalization(name, path, callback){
     var langs = jQuery.i18n.map;
     var lang = store.get("countly_lang") || "en";
     jQuery.i18n.properties({
@@ -28,10 +28,12 @@ function addLocalization(name, path){
 					elem.text(jQuery.i18n.map[elem.data("localize")]);
 				}
 			});
+            if(callback)
+                callback();
 		}
 	});
     $(document).bind('clyLangChange', function() {
-        addLocalization(name, path);
+        addLocalization(name, path, callback);
     });
 }
 
