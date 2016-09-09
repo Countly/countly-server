@@ -146,6 +146,11 @@ if (cluster.isMaster) {
     // Checks app_key from the http request against "apps" collection.
     // This is the first step of every write request to API.
     function validateAppForWriteAPI(params, done) {
+        //ignore possible opted out users for ios 10
+        if(params.qstring.device_id == "00000000-0000-0000-0000-000000000000"){
+            common.returnMessage(params, 400, 'Ignoring device_id');
+            return done ? done() : false;
+        }
         common.db.collection('apps').findOne({'key':params.qstring.app_key}, function (err, app) {
             if (!app) {
                 if (plugins.getConfig("api").safe) {
