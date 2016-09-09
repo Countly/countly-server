@@ -5184,6 +5184,10 @@ var AppRouter = Backbone.Router.extend({
                     tableWrapper.find(".save-table-data").tipsy({gravity:$.fn.tipsy.autoNS, title:function () {
                         return ($(this).data("help")) ? jQuery.i18n.map[$(this).data("help")] : "";
                     }, fade:true, offset:5, cssClass:'yellow', opacity:1, html:true});
+                    tableWrapper.find(".dataTables_length").show();
+                }
+                else{
+                    tableWrapper.find(".dataTables_length").hide();
                 }
 
                 //tableWrapper.css({"min-height": tableWrapper.height()});
