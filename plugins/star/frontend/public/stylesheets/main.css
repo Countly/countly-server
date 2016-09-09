@@ -1,0 +1,40 @@
+#graph-select-container {
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #D0D0D0;
+    border-bottom: none;
+    /*padding-bottom: 8px;*/
+}
+
+.two-column {
+    width: 50%;
+}
+
+.star-icon {
+    color: #fed52d;
+    /*text-shadow: 1px 1px 1px #ccc;*/
+    font-size: 1.5em;
+}
+
+.widget-group{
+    margin-top: 25px;
+}
+
+.inner2{
+    border-left: none;
+    border-top: none;
+    text-align: center;
+    padding-top: 30px;
+    background-color: #FFF;
+    height: 30px;
+}
+
+
+.big-numbers-v2 .big-numbers.radio:nth-child(4).selected .color,
+.big-numbers-v2 .big-numbers.check:nth-child(4).selected .color,
+.big-numbers-v2 .big-numbers.check.event-dur.selected .color { background-color:#ad41d5; border-color:#ad41d5;  }
+
+
+.big-numbers-v2 .big-numbers.radio:nth-child(5).selected .color,
+.big-numbers-v2 .big-numbers.check:nth-child(5).selected .color,
+.big-numbers-v2 .big-numbers.check.event-dur.selected .color { background-color:#d63b3b; border-color:#d63b3b;  }
