@@ -18,8 +18,7 @@ plugins.setConfigs("api", {
     metric_limit: 5000,
     sync_plugins: false,
     session_cooldown: 15,
-    total_users: true,
-    additional_headers: ""
+    total_users: true
 });
 
 plugins.setConfigs("apps", {

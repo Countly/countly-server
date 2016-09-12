@@ -53,8 +53,7 @@ plugins.setConfigs("frontend", {
     theme: "",
     session_timeout: 30*60*1000,
     use_google: true,
-    code: true,
-    additional_headers: ""
+    code: true
 });
 
 plugins.setUserConfigs("frontend", {
@@ -67,7 +66,9 @@ plugins.setUserConfigs("frontend", {
 
 plugins.setConfigs("security", {
     login_tries: 3,
-    login_wait: 5*60
+    login_wait: 5*60,
+    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nX-Content-Type-Options:nosniff\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
+    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nX-Content-Type-Options:nosniff"
 });
 
 process.on('uncaughtException', (err) => {
@@ -235,7 +236,7 @@ app.use(function(req, res, next) {
         
         //set provided in configuration headers
         var headers = {};
-        var add_headers = plugins.getConfig("frontend").additional_headers.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
+        var add_headers = plugins.getConfig("security").dashboard_additional_headers.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
         var parts;
         for(var i = 0; i < add_headers.length; i++){
             if(add_headers[i] && add_headers[i].length){
