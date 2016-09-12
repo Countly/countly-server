@@ -57,10 +57,11 @@ window.starView = countlyView.extend({
     }
     $("#version-list").html('<div data-value="All Versions" class="version-option item" data-localize="">All Versions</div>');
     for(var i = 0; i < versioinList.length; i++){
+      var versionShow = versioinList[i].replace(/:/g, ".");
       $("#version-list").append(
         '<div data-value="' + versioinList[i] +
         '" class="version-option item" data-localize="">'
-        + versioinList[i] +'</div>'
+        + versionShow +'</div>'
       );
     };
 
@@ -78,51 +79,26 @@ window.starView = countlyView.extend({
 
   updateViews: function(){
     var self = this;
-    $.when(
-      starRatingPlugin.requestPlatformVersion(),
-      starRatingPlugin.requestRatingInPeriod(),
-      starRatingPlugin.requesPeriod()
-    ).done(function(result){
-      self.templateData['platform_version'] = starRatingPlugin.getPlatformVersion();
-      self.templateData['rating'] = starRatingPlugin.getRatingInPeriod();
-      self.calCumulativeData();
-      self.calTimeSeriesData();
+    self.templateData['platform_version'] = starRatingPlugin.getPlatformVersion();
+    self.templateData['rating'] = starRatingPlugin.getRatingInPeriod();
+    self.calCumulativeData();
+    self.calTimeSeriesData();
 
-      if(self.currentTab === 'cumulative'){
-        self.renderCumulativeChart();
-        self.renderCumulativeTable();
-        $('#tableTwo_wrapper').css("display","none");
-        $('#tableOne_wrapper').css("display","block");
-        $('#big-numbers-container').css("display","none");
+    if(self.currentTab === 'cumulative'){
+      self.renderCumulativeChart();
+      self.renderCumulativeTable();
+      $('#tableTwo_wrapper').css("display","none");
+      $('#tableOne_wrapper').css("display","block");
+      $('#big-numbers-container').css("display","none");
+    }
 
-      }
-      if(self.currentTab === 'time-series'){
-        self.renderTimeSeriesTable();
-        self.renderTimeSeriesChart();
-        $('#tableOne_wrapper').css("display","none");
-        $('#tableTwo_wrapper').css("display","block");
-        $('#big-numbers-container').css("display","block");
-      }
-    });
-
-    //this.calCumulativeData();
-    //this.calTimeSeriesData();
-    //
-    //if(this.currentTab === 'cumulative'){
-    //  this.renderCumulativeChart();
-    //  this.renderCumulativeTable();
-    //  $('#tableTwo_wrapper').css("display","none");
-    //  $('#tableOne_wrapper').css("display","block");
-    //  $('#big-numbers-container').css("display","none");
-    //
-    //}
-    //if(this.currentTab === 'time-series'){
-    //  this.renderTimeSeriesTable();
-    //  this.renderTimeSeriesChart();
-    //  $('#tableOne_wrapper').css("display","none");
-    //  $('#tableTwo_wrapper').css("display","block");
-    //  $('#big-numbers-container').css("display","block");
-    //}
+    if(self.currentTab === 'time-series'){
+      self.renderTimeSeriesTable();
+      self.renderTimeSeriesChart();
+      $('#tableOne_wrapper').css("display","none");
+      $('#tableTwo_wrapper').css("display","block");
+      $('#big-numbers-container').css("display","block");
+    }
   },
 
   matchPlatformVersion: function(documentName){
@@ -266,13 +242,19 @@ window.starView = countlyView.extend({
     var periodArray = this.getPeriodArray();
 
     this.templateData['timeSriesData'] = [];
+    var currentYear = (new Date()).getFullYear();
+    var dateFormat = 'D MMM, YYYY';
+    if(periodArray.length > 0 && (moment(periodArray[0]).isoyear() === currentYear) ){
+      dateFormat = 'D MMM';
+    }
     for(var i = 0; i < periodArray.length; i++){
       var dateArray = periodArray[i].split('.');
       var year = dateArray[0];
       var month = dateArray[1];
       var day = dateArray[2];
 
-      var row = {date: year+"-"+month+"-"+day, 'star1':0,'star2':0,'star3':0,'star4':0,'star5':0};
+      var row = {date: moment(year+"."+month+"."+day).format(dateFormat), 'star1':0,'star2':0,'star3':0,'star4':0,'star5':0};
+
       if(result[year] && result[year][month] && result[year][month][day]) {
         for (var rating in result[year][month][day]) {
           if (this.matchPlatformVersion(rating)) {
@@ -296,7 +278,6 @@ window.starView = countlyView.extend({
       { "mData": "star4", sType:"string", "sTitle": this.iconGenerator(4) },
       { "mData": "star5", sType:"string", "sTitle": this.iconGenerator(5) },
     ];
-
 
     $('#tableTwo').dataTable($.extend({}, $.fn.dataTable.defaults, {
       "aaData":this.templateData['timeSriesData'],
@@ -355,19 +336,44 @@ window.starView = countlyView.extend({
         self.updateViews();
       });
       $("#date-selector").click(function(){
-        self.updateViews();
+        $.when(
+          starRatingPlugin.requestPlatformVersion(),
+          starRatingPlugin.requestRatingInPeriod(),
+          starRatingPlugin.requesPeriod()
+        ).done(function(result){
+          self.updateViews();
+        });
       })
 
       $(".check").click(function(){
         var classes = $(this).attr('class');
         var id = $(this).attr('id');
+        var count = 0;
+        for(var keyName in self.lineChartSelect){
+          if(self.lineChartSelect[keyName]){
+            count ++;
+          }
+        };
         if(classes.indexOf('selected') >= 0){
+          if(count == 1){
+            return;
+          }
           $(this).removeClass("selected");
         }else{
           $(this).addClass("selected");
         }
         self.lineChartSelect[id] = !self.lineChartSelect[id];
         self.updateViews();
+      });
+
+      $("#date-submit").click(function () {
+        $.when(
+          starRatingPlugin.requestPlatformVersion(),
+          starRatingPlugin.requestRatingInPeriod(),
+          starRatingPlugin.requesPeriod()
+        ).done(function(result){
+          self.updateViews();
+        });
       })
     };
 
@@ -390,7 +396,7 @@ app.route("/analytics/star", 'star', function () {
 $( document ).ready(function() {
   var menu = '<a href="#/analytics/star" class="item">'+
     '<div class="logo-icon fa fa-globe"></div>'+
-    '<div class="text" data-localize="">Star Rating</div>'+
+    '<div class="text" data-localize="">Star rating</div>'+
     '</a>';
   $('#web-type #engagement-submenu').append(menu);
   $('#mobile-type #engagement-submenu').append(menu);
