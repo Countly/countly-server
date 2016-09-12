@@ -108,13 +108,14 @@ window.ConfigurationsView = countlyView.extend({
             "api":jQuery.i18n.map["configs.api"],
             "apps":jQuery.i18n.map["configs.apps"],
             "logs": jQuery.i18n.map["configs.logs"],
+            "security": jQuery.i18n.map["configs.security"],
             "frontend-production":jQuery.i18n.map["configs.frontend-production"],
             "frontend-session_timeout":jQuery.i18n.map["configs.frontend-session_timeout"],
             "frontend-theme":jQuery.i18n.map["configs.frontend-theme"],
             "frontend-use_google":jQuery.i18n.map["configs.frontend-use_google"],
             "frontend-code":jQuery.i18n.map["configs.frontend-code"],
-            "frontend-login_tries":jQuery.i18n.map["configs.frontend-login_tries"],
-            "frontend-login_wait":jQuery.i18n.map["configs.frontend-login_wait"],
+            "security-login_tries":jQuery.i18n.map["configs.security-login_tries"],
+            "security-login_wait":jQuery.i18n.map["configs.security-login_wait"],
             "frontend-additional_headers":jQuery.i18n.map["configs.frontend-additional_headers"],
             "api-domain":jQuery.i18n.map["configs.api-domain"],
             "api-safe":jQuery.i18n.map["configs.api-safe"],
@@ -126,8 +127,8 @@ window.ConfigurationsView = countlyView.extend({
             "api-sync_plugins":jQuery.i18n.map["configs.api-sync_plugins"],
             "api-session_cooldown":jQuery.i18n.map["configs.api-session_cooldown"],
             "api-total_users":jQuery.i18n.map["configs.api-total_users"],
-            "api-additional_headers":jQuery.i18n.map["configs.api-additional_headers"],
             "api-metric_limit":jQuery.i18n.map["configs.api-metric_limit"],
+            "api-additional_headers":jQuery.i18n.map["configs.api-additional_headers"],
             "apps-country":jQuery.i18n.map["configs.apps-country"],
             "apps-category":jQuery.i18n.map["configs.apps-category"]
         };
@@ -556,7 +557,7 @@ window.ConfigurationsView = countlyView.extend({
     },
     getInputLabel: function(id, value){
         var ns = id.split("-")[0];
-        if(ns != "frontend" && ns != "api" && ns != "apps" && ns != "logs" && countlyGlobal["plugins"].indexOf(ns) == -1){
+        if(ns != "frontend" && ns != "api" && ns != "apps" && ns != "logs" && ns != "security" && countlyGlobal["plugins"].indexOf(ns) == -1){
             return null;
         }
         var ret = "";

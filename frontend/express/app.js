@@ -54,8 +54,6 @@ plugins.setConfigs("frontend", {
     session_timeout: 30*60*1000,
     use_google: true,
     code: true,
-    login_tries: 3,
-    login_wait: 5*60,
     additional_headers: ""
 });
 
@@ -65,6 +63,11 @@ plugins.setUserConfigs("frontend", {
     session_timeout: false,
     use_google: false,
     code: false
+});
+
+plugins.setConfigs("security", {
+    login_tries: 3,
+    login_wait: 5*60
 });
 
 process.on('uncaughtException', (err) => {
