@@ -99,6 +99,7 @@ window.starView = countlyView.extend({
       $('#tableTwo_wrapper').css("display","block");
       $('#big-numbers-container').css("display","block");
     }
+    $(".dataTables_length").remove();
   },
 
   matchPlatformVersion: function(documentName){
@@ -180,7 +181,8 @@ window.starView = countlyView.extend({
     ratingArray.sort();
     console.log("calc cuml:",ratingArray, sum);
     var middle = (sum === 0)?  0 :
-                (sum%2 === 1) ? ratingArray[Math.round(sum/2)-1] : (ratingArray[sum/2-1] + ratingArray[sum/2])/2
+                (sum%2 === 1) ? ratingArray[Math.round(sum/2)-1]: (ratingArray[sum/2-1] + ratingArray[sum/2])/2
+    middle = (middle*1.0).toFixed(2);
     $("#midian-rating").html(middle);
   },
 
@@ -287,11 +289,11 @@ window.starView = countlyView.extend({
   renderTimeSeriesChart: function(){
     var timeSeriesData = this.templateData['timeSriesData'];
     var graphData =[
-      {"data":[],"label":"Star1","color":"#52A3EF"},
-      {"data":[],"label":"Star2","color":"#FF8700"},
-      {"data":[],"label":"Star3","color":"#0EC1B9"},
-      {"data":[],"label":"Star4","color":"#ad41d5"},
-      {"data":[],"label":"Star5","color":"#d63b3b"},
+      {"data":[],"label":"1STAR","color":"#52A3EF"},
+      {"data":[],"label":"2STAR","color":"#FF8700"},
+      {"data":[],"label":"3STAR","color":"#0EC1B9"},
+      {"data":[],"label":"4STAR","color":"#ad41d5"},
+      {"data":[],"label":"5STAR","color":"#d63b3b"},
 
     ];
     for(var i = 0; i < timeSeriesData.length; i++){
