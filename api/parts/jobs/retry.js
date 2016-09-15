@@ -69,8 +69,9 @@ class DefaultRetryPolicy {
  */
 class IPCRetryPolicy extends DefaultRetryPolicy {
 	errorIsRetriable(error) {
-		return typeof error === 'object' && error.length === 2 && 
-				(error[0] === require('./job.js').ERROR.CRASH || error[0] === require('./job.js').ERROR.TIMEOUT);
+		return  (error === 'Process exited') ||
+				(typeof error === 'object' && error.length === 2 && 
+					(error[0] === require('./job.js').ERROR.CRASH || error[0] === require('./job.js').ERROR.TIMEOUT));
 	}
 }
 

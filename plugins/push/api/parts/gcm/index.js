@@ -5,8 +5,8 @@ const log = require('../../../../../api/utils/log.js')('push:gcm'),
 	  EventEmitter = require('events');
 
 
-const MAX_QUEUE = 300,
-	  MAX_BATCH = 100;
+const MAX_QUEUE = 10000,
+	  MAX_BATCH = 200;
 
 class ConnectionResource extends EventEmitter {
 	constructor(key) {
@@ -16,6 +16,7 @@ class ConnectionResource extends EventEmitter {
 		this.devices = [];
 		this.ids = [];
 		this.inFlight = 0;
+		this.requestCount = 0;
 
 		this.onSocket = (s) => {
 			this.socket = s;
@@ -123,13 +124,12 @@ class ConnectionResource extends EventEmitter {
 			ids = this.ids[dataIndex].splice(0, MAX_BATCH),
 			message = this.messages[dataIndex];
 			
-		log.d('dataIndex %j', dataIndex);
-
 		if (devices.length) {
 			message.registration_ids = devices;
 
-			log.d('sending %j', message);
-			log.d('with %j', ids);
+			log.d('[%d]: sending %d', process.pid, this.requestCount);
+			this.requestCount++;
+			// log.d('with %j', ids);
 			
 			let content = JSON.stringify(message);
 
@@ -164,8 +164,7 @@ class ConnectionResource extends EventEmitter {
 		let code = res.statusCode,
 			data = res.reply;
 
-		log.d('[%d]: GCM handling %d', process.pid, code);
-		log.d('[%d]: GCM data %j', process.pid, data);
+		log.d('[%d]: GCM handling %d: %d', process.pid, this.requestCount, code);
 
 		if (code >= 500) {
 			this.rejectAndClose(code + ': GCM Unavailable');
@@ -200,10 +199,12 @@ class ConnectionResource extends EventEmitter {
 							this.rejectAndClose(code + ': Invalid Time To Live');
 						} else if (result.error === 'InvalidPackageName') {
 							this.rejectAndClose(code + ': Invalid Package Name');
-						} else if (result.error === 'Unavailable' || result.error === 'InternalServerError') {
+						} else if (result.error === 'Unavailable') {
+							ids[i] = -496; 
+						} else if (result.error === 'InternalServerError') {
 							ids[i] = -499; 
-							ids.splice(i, 1);
-							devices.splice(i, 1);
+							// ids.splice(i, 1);
+							// devices.splice(i, 1);
 						} else if (result.error === 'MismatchSenderId') {
 							ids[i][1] = -498;
 						} else if (result.error === 'NotRegistered' || result.error === 'InvalidRegistration') {
@@ -212,7 +213,6 @@ class ConnectionResource extends EventEmitter {
 							log.w('Unknown GCM error: %j', process.pid, result.error);
 							ids[i][1] = -497;
 						}
-
 					});
 
 					this.statuser(ids);
@@ -222,7 +222,7 @@ class ConnectionResource extends EventEmitter {
 			} catch (e) {
 				ids.forEach(i => i[1] = -1);
 				this.statuser(ids);
-				log.w('[%d]: Bad response from GCM: %j / %j / %j', process.pid, code, data, e);
+				log.w('[%d]: Bad response from GCM: %j / %j / %j', process.pid, code, data, e, (e || {}).stack);
 			}
 		}
 
