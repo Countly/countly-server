@@ -1168,4 +1168,6 @@ app.post(countlyConfig.path+'/graphnotes/delete', function (req, res, next) {
     }
 });
 
+countlyDb.collection('apps').ensureIndex({"key": 1}, function() {});
+
 app.listen(countlyConfig.web.port, countlyConfig.web.host  || '');
