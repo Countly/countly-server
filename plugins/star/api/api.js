@@ -5,8 +5,18 @@ var plugin = {},
 	plugins = require('../../pluginManager.js');
 
 (function (plugin) {
+	/**
+	 * 	register internalEvent
+	 */
 	plugins.internalEvents.push('[CLY]_star_rating');
 
+	/**
+	 * register for process new  rating event data.
+	 * the original event format like:
+	 *  { key: '[CLY]_star_rating', count:1, sum:1, segmentation:{ platform:"iOS", version:"3.2", rating:2}
+	 *  this function will add a field call "platform_version_rate" in segmentation.
+	 *
+	 */
 	plugins.register("/i", function(ob){
 		var params = ob.params;
 		if(params.qstring.events){
@@ -15,11 +25,14 @@ var plugin = {},
 					event.segmentation['platform_version_rate'] =
 						`${event.segmentation['platform']}**${event.segmentation['app_version']}**${event.segmentation['rating']}`;
 				}
-				console.log(params.qstring.events,"###");
 			});
 		}
 	});
 
+
+	/**
+	 * register for fetching platform and version metadata.
+	 */
 	plugins.register('/o', function(ob) {
 		var params = ob.params;
  		if(params.qstring.method == 'star'){

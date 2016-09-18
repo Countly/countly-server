@@ -1,10 +1,15 @@
 (function (starRatingPlugin, $) {
 
-  //we will store our data here
   var _pv = {};
   var _rating = {};
   var _period = {};
-  //Initializing model
+  /**
+   * This is for  platform  and version info request
+   * @namespace starRatingPlugin
+   * @method requestPlatformVersion
+   * @param {}
+   * @return {func} ajax func to request data and store in _pv
+   */
   starRatingPlugin.requestPlatformVersion = function () {
     var period = countlyCommon.getPeriod();
     var periodString = typeof period  === "object" ?  "[" + period.toString() + "]" : period;
@@ -24,6 +29,13 @@
     });
   };
 
+  /**
+   * This is for fetching star rating data in a period
+   * @namespace starRatingPlugin
+   * @method requestRatingInPeriod
+   * @param {}
+   * @return {func} ajax func to request data and store in _rating
+   */
   starRatingPlugin.requestRatingInPeriod = function () {
     var period = countlyCommon.getPeriod();
     var periodString = typeof period  === "object" ?  "[" + period.toString() + "]" : period;
@@ -46,6 +58,13 @@
     });
   };
 
+  /**
+   * This is for fetching period object from server side when selected period is 'month' in frontend
+   * @namespace starRatingPlugin
+   * @method requesPeriod
+   * @param {}
+   * @return {func} ajax func to request data and store in _period
+   */
   starRatingPlugin.requesPeriod = function(){
     var period = countlyCommon.getPeriod();
     var periodString = typeof period  === "object" ?  "[" + period.toString() + "]" : period;
@@ -65,8 +84,6 @@
       }
     });
   }
-
-
 
   starRatingPlugin.getPlatformVersion = function () {
     return _pv;

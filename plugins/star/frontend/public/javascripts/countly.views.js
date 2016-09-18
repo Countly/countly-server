@@ -1,5 +1,13 @@
 window.starView = countlyView.extend({
-  templateData: {},
+  /**
+   * this variable contains the infos that render view required.
+   * @type {object}
+   */
+  templateData: {
+    platform_version: null,
+    rating: null,
+    timeSriesData: null
+  },
   platform:'',
   version:'',
   cumulativeData: {},
@@ -7,6 +15,7 @@ window.starView = countlyView.extend({
   lineChartSelect:{ star1: true, star2: true, star3: true, star4: true, star5: true},
   beforeRender: function() {
     var self = this;
+    // will load template, platform and version, period's rating data
     return $.when(
       $.get(countlyGlobal["path"]+'/star/templates/star.html'),
       starRatingPlugin.requestPlatformVersion(),
@@ -18,6 +27,13 @@ window.starView = countlyView.extend({
     });
   },
 
+  /**
+   * This is for render platform dropdown select view.
+   * @namespace starView
+   * @method loadPlatformData
+   * @param {}
+   * @return {null}
+   */
   loadPlatformData: function(){
     $("#platform-list").html('<div data-value="All Platforms" class="platform-option item" data-localize="">All Platforms</div>');
     for(var platform in this.templateData['platform_version']){
@@ -41,6 +57,14 @@ window.starView = countlyView.extend({
     });
   },
 
+
+  /**
+   * This is for render version dropdown select view.
+   * @namespace starView
+   * @method loadVersionData
+   * @param {}
+   * @return {null}
+   */
   loadVersionData: function () {
     var versioinList=[];
     if(this.platform === ''){
@@ -77,6 +101,13 @@ window.starView = countlyView.extend({
     });
   },
 
+  /**
+   * This is update chart and table base on starView.currentTab's value.
+   * @namespace starView
+   * @method updateViews
+   * @param {}
+   * @return {null}
+   */
   updateViews: function(){
     var self = this;
     self.templateData['platform_version'] = starRatingPlugin.getPlatformVersion();
@@ -102,6 +133,14 @@ window.starView = countlyView.extend({
     $(".dataTables_length").remove();
   },
 
+  /**
+   * This is for regex detection of the document is match currently paltform and version selected or not
+   *
+   * @namespace starView
+   * @method matchPlatformVersion
+   * @param {string} documentName, fromat is '{platform}**{version}**{rating}'(like "IOS**2.3**4")
+   * @return {boolean} matchResult
+   */
   matchPlatformVersion: function(documentName){
     var regexString = '';
     if(this.platform === ''){
@@ -123,6 +162,15 @@ window.starView = countlyView.extend({
     }
     return matchResult;
   },
+
+  /**
+   * This is for return date info like "2016.09.01" in period as array.
+   * For char and table rendering.
+   * @namespace starView
+   * @method getPeriodArray
+   * @param {}
+   * @return {Array} periodArray.
+   */
   getPeriodArray: function(){
     var periodArray;
     var periodObject = countlyCommon.getPeriodObj();
@@ -140,6 +188,15 @@ window.starView = countlyView.extend({
     };
     return periodArray;
   },
+
+  /**
+   * This is for cumulative view data calc
+   * call before "renderCumulativeTable" and  "renderCumulativeChart"
+   * @namespace starView
+   * @method calCumulativeData
+   * @param {}
+   * @return {}
+   */
   calCumulativeData: function(){
     this.cumulativeData = [
       {count:0, percent:0},
@@ -239,6 +296,14 @@ window.starView = countlyView.extend({
     return result;
   },
 
+  /**
+   * This is for TimeSeries view data calc
+   * call before "renderTimeSeriesTable" and  "renderTimeSeriesChart"
+   * @namespace starView
+   * @method calCumulativeData
+   * @param {}
+   * @return {}
+   */
   calTimeSeriesData: function(){
     var result = this.templateData['rating'];
     var periodArray = this.getPeriodArray();

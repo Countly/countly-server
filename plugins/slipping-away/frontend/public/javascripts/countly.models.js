@@ -1,9 +1,12 @@
 (function (countlySlippingPlugin, $) {
-
-  //we will store our data here
   var _data = {};
-
-  //Initializing model
+  /**
+   * This is for initializing model
+   * @namespace countlySlippingPlugin
+   * @method initialize
+   * @param {}
+   * @return {func} ajax func to request data and store in _data
+   */
   countlySlippingPlugin.initialize = function () {
 
     //returning promise
