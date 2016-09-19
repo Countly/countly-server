@@ -2,6 +2,15 @@ window.slippingView = countlyView.extend({
   beforeRender: function() {
     return $.when( countlySlippingPlugin.initialize()).then(function () {});
   },
+  /**
+   * This is for rendering chart and table.
+   * especially, in the table, if server contains "users" plugin,
+   * will show a column enable to show users list by clicking the button.
+   * @namespace countlySlippingPlugin
+   * @method initialize
+   * @param {}
+   * @return {func} ajax func to request data and store in _data
+   */
 
   renderCommon:function (isRefresh) {
     var durationData = countlySession.getDurationData();
