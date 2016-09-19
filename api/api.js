@@ -710,7 +710,7 @@ if (cluster.isMaster) {
 
                             validateAppForWriteAPI(params);
             
-                            if (!plugins.getConfig("api").safe) {
+                            if (!plugins.getConfig("api").safe && !params.res.finished) {
                                 common.returnMessage(params, 200, 'Success');
                             }
             
