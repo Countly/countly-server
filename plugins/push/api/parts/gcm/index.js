@@ -1,6 +1,8 @@
 'use strict';
 
 const log = require('../../../../../api/utils/log.js')('push:gcm'),
+	  config = require('../../../../../api/config.js'),
+	  http = require('http'),
 	  https = require('https'),
 	  EventEmitter = require('events');
 
@@ -53,7 +55,21 @@ class ConnectionResource extends EventEmitter {
 	}
 
 	init_connection() {
-		return Promise.resolve();
+		if (config.api.push_proxy) {
+			return new Promise((resolve, reject) => {
+				this.connectionRequest = http.request({ // establishing a tunnel
+					host: config.api.push_proxy.host,
+					port: config.api.push_proxy.port,
+					method: 'CONNECT',
+					path: this.options.hostname + ':' + this.options.port,
+				}).on('connect', function(res, socket) {
+					this.socket = socket;
+					resolve();
+				}).on('error', reject).end();
+			});
+		} else {
+			return Promise.resolve();
+		}	
 	}
 
 	feed (array) {
@@ -105,7 +121,7 @@ class ConnectionResource extends EventEmitter {
 
 		this._servicing = false;
 	
-		if (this.agent === null || this._closed) {
+		if ((this.agent === null && !config.api.push_proxy) || (this.socket === null && config.api.push_proxy) || this._closed) {
 			return;
 		}
 
@@ -135,7 +151,23 @@ class ConnectionResource extends EventEmitter {
 
 			this.options.headers['Content-length'] = Buffer.byteLength(content, 'utf8');
 
-			let req = https.request(this.options, (res) => {
+			var opts = this.options;
+			if (config.api.push_proxy) {
+				opts = {
+					hostname: 'android.googleapis.com',
+					port: 443,
+					path: '/gcm/send',
+					method: 'POST',
+					headers: {
+						'Accept': 'application/json',
+						'Content-Type': 'application/json',
+						'Authorization': 'key=' + this._key,
+					},
+					agent: false
+				};
+			}
+
+			let req = https.request(opts, (res) => {
 				res.reply = '';
 				res.on('data', d => { res.reply += d; });
 				res.on('end', this.handle.bind(this, req, res, ids, devices));
@@ -164,7 +196,7 @@ class ConnectionResource extends EventEmitter {
 		let code = res.statusCode,
 			data = res.reply;
 
-		log.d('[%d]: GCM handling %d: %d', process.pid, this.requestCount, code);
+		log.d('[%d]: GCM handling %d: %d', process.pid, this.requestCount, code, data);
 
 		if (code >= 500) {
 			this.rejectAndClose(code + ': GCM Unavailable');
@@ -232,7 +264,7 @@ class ConnectionResource extends EventEmitter {
 	close_connection() {
 		log.i('[%d]: Closing GCM connection', process.pid);
 		this._closed = true;
-		if (this.socket) {
+		if (this.socket && !config.api.push_proxy) {
 			this.socket.emit('agentRemove');
 			this.socket = null;
 		}
