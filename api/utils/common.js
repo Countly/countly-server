@@ -403,6 +403,24 @@ var common = {},
                         return false;
                     }
                 }
+                
+                if (argProperties[arg]['has-number']) {
+                    if (!/\d/.test(args[arg])) {
+                        return false;
+                    }
+                }
+                
+                if (argProperties[arg]['has-char']) {
+                    if (!/[A-Za-z]/.test(args[arg])) {
+                        return false;
+                    }
+                }
+                
+                if (argProperties[arg]['has-special']) {
+                    if (!/[^A-Za-z\d]/.test(args[arg])) {
+                        return false;
+                    }
+                }
 
                 if (!argProperties[arg]['exclude-from-ret-obj']) {
                     returnObj[arg] = args[arg];
@@ -434,7 +452,7 @@ var common = {},
     common.returnMessage = function (params, returnCode, message) {
         //set provided in configuration headers
         var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
-        var add_headers = plugins.getConfig("api").additional_headers.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
+        var add_headers = plugins.getConfig("security").api_additional_headers.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
         var parts;
         for(var i = 0; i < add_headers.length; i++){
             if(add_headers[i] && add_headers[i].length){
@@ -459,7 +477,7 @@ var common = {},
     common.returnOutput = function (params, output) {
         //set provided in configuration headers
         var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
-        var add_headers = plugins.getConfig("api").additional_headers.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
+        var add_headers = plugins.getConfig("security").api_additional_headers.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
         var parts;
         for(var i = 0; i < add_headers.length; i++){
             if(add_headers[i] && add_headers[i].length){

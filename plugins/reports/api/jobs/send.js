@@ -7,8 +7,18 @@ var plugins = require('../../../pluginManager.js'),
     reports = require("../reports");
 
 class ReportsJob extends job.Job {
-    run (countlyDb, doneJob) {
+    run (countlyDb, doneJob, progressJob) {
         log.d("starting send job");
+
+        function ping() {
+            log.d('Pinging job');
+            if (timeout) {
+                progressJob();
+                setTimeout(ping, 10000);
+            }
+        }
+        var timeout = setTimeout(ping, 10000);
+
         //load configs
         plugins.loadConfigs(countlyDb, function(){
             var cache = {};
@@ -21,6 +31,9 @@ class ReportsJob extends job.Job {
             log.d(hour, dow);
             countlyDb.collection("reports").find({r_hour:hour}).toArray(function(err, res){
                 if (!res || !res.length) {
+                    log.d("nothing to send");
+                    clearTimeout(timeout);
+                    timeout = 0;
                     return doneJob();
                 }
                 async.eachSeries(res, function(report, done){
@@ -43,6 +56,8 @@ class ReportsJob extends job.Job {
                     }
                 }, function(/*err, results*/) {
                     log.d("all reports sent");
+                    clearTimeout(timeout);
+                    timeout = 0;
                     doneJob();
                 });
             });

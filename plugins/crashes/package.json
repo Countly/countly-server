@@ -4,7 +4,7 @@
   "version": "0.5.0",
   "description": "See which users are affected by crashes and exceptions, and take necessary precautions",
   "author": "Count.ly",
-  "homepage": "https://count.ly/plugins/",
+  "homepage": "https://count.ly/plugins/crashes-errors/",
   "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
   "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
   "keywords": [

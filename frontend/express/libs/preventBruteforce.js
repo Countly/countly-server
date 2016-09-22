@@ -14,7 +14,8 @@ var prevent = {};
         if(req.method.toLowerCase() == 'post' && prevent.paths.indexOf(req.path) !== -1){
             var username = req.body.username;
             if(username){
-                prevent.isBlocked(username, function(isBlocked){
+                prevent.isBlocked(username, function(isBlocked, fails){
+                    req.session.fails = fails;
                     if(isBlocked){
                         //blocking user
                         res.redirect(req.path+'?message=login.blocked');
@@ -38,10 +39,10 @@ var prevent = {};
             result = result || {fails:0};
             if(result.fails > 0 && result.fails % prevent.fails == 0 && getTimestamp() < (((result.fails/prevent.fails)*prevent.wait)+result.lastFail)){
                 //blocking user
-                callback(true);
+                callback(true, result.fails);
             }
             else{
-                callback(false);
+                callback(false, result.fails);
             }
         });
     };

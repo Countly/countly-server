@@ -47,6 +47,11 @@ var countlyConfig = {
         port: 3001,
         host: "localhost",
         max_sockets: 1024
+        /* GCM proxy server for push plugin
+        push_proxy: {
+            host: 'localhost',
+            port: 8888
+        } */
     },
 	path: "",
     logging: {

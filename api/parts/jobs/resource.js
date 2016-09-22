@@ -31,7 +31,8 @@ RESOURCE_CMD_TIMEOUT = 15 * 60000;
 
 function random() { 
 	var s = Math.random().toString(36).slice(2); 
-	return s.length === 16 ? s : random(); 
+	return s; 
+	// return s.length === 16 ? s : random(); 
 }
 
 /**

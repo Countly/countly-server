@@ -290,7 +290,7 @@ var metrics = {
                 var msg = {
                     to:report.emails[i],
                     from:versionInfo.title,
-                    subject:versionInfo.title+': ' + report.properties["reports.you-had"] + ' '+report.total_new+' ' + report.properties["common.new-users"].toLowerCase() + ' '+report.properties["reports.time-"+report.frequency]+'!',
+                    subject:versionInfo.title+': ' + localize.format(((report.frequency == "weekly") ? report.properties["reports.subject-week"] : report.properties["reports.subject-day"] ), report.total_new),
                     html: message
                 };
                 if(mail.sendPoolMail)

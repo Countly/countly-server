@@ -19,14 +19,20 @@ plugins.setConfigs("api", {
     metric_limit: 5000,
     sync_plugins: false,
     session_cooldown: 15,
-    total_users: true,
-    additional_headers: ""
+    total_users: true
 });
 
 plugins.setConfigs("apps", {
     country: "TR",
     timezone: "Europe/Istanbul",
     category: "6"
+});
+
+plugins.setConfigs("security", {
+    login_tries: 3,
+    login_wait: 5*60,
+    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nX-Content-Type-Options:nosniff\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
+    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nX-Content-Type-Options:nosniff"
 });
     
 plugins.setConfigs('logs', {
@@ -147,6 +153,11 @@ if (cluster.isMaster) {
     // Checks app_key from the http request against "apps" collection.
     // This is the first step of every write request to API.
     function validateAppForWriteAPI(params, done) {
+        //ignore possible opted out users for ios 10
+        if(params.qstring.device_id == "00000000-0000-0000-0000-000000000000"){
+            common.returnMessage(params, 400, 'Ignoring device_id');
+            return done ? done() : false;
+        }
         common.db.collection('apps').findOne({'key':params.qstring.app_key}, function (err, app) {
             if (!app) {
                 if (plugins.getConfig("api").safe) {
@@ -162,6 +173,24 @@ if (cluster.isMaster) {
             params.appTimezone = app['timezone'];
             params.app = app;
             params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+            
+            if(params.app.checksum_salt && params.app.checksum_salt.length && !params.files){ //ignore multipart data requests
+                var payload;
+                if(params.req.method.toLowerCase() == 'post'){
+                    payload = params.req.body;
+                }
+                else{
+                    payload = params.href.substr(3);
+                }
+                payload = payload.replace("&checksum="+params.qstring.checksum, "").replace("checksum="+params.qstring.checksum, "");
+                if((params.qstring.checksum + "").toUpperCase() != common.crypto.createHash('sha1').update(payload + params.app.checksum_salt).digest('hex').toUpperCase()){
+                    console.log("Checksum did not match", params.href, params.req.body);
+                    if (plugins.getConfig("api").safe) {
+                        common.returnMessage(params, 400, 'Request does not match checksum');
+                    }
+                    return done ? done() : false;
+                }
+            }
             
             if (params.qstring.location && params.qstring.location.length > 0) {
                 var coords = params.qstring.location.split(',');
@@ -218,11 +247,7 @@ if (cluster.isMaster) {
                             validateAppForWriteAPI(params, done);
                         };
                         
-                        var old_id = common.crypto.createHash('sha1').update(params.qstring.app_key + params.qstring.old_device_id + "").digest('hex');
-                        //checking if there is an old user
-                        common.db.collection('app_users' + params.app_id).findOne({'_id': old_id }, function (err, oldAppUser){
-                            if(!err && oldAppUser){
-                                //checking if there is a new user
+                        function mergeUserData(newAppUser, oldAppUser){
                                 newAppUser = params.app_user;
                                 if(newAppUser){
                                     //merge user data
@@ -281,11 +306,39 @@ if (cluster.isMaster) {
                                         common.db.collection('app_users' + params.app_id).remove({_id:old_id}, function(){
                                             //let plugins know they need to merge user data
                                             plugins.dispatch("/i/device_id", {params:params, app:app, oldUser:oldAppUser, newUser:newAppUser}, function(){
-                                                restartRequest();
-                                            });
-                                        });
+                                    restartRequest();
+                                });
+                            });
                                     });
                                 }
+                        
+                        var old_id = common.crypto.createHash('sha1').update(params.qstring.app_key + params.qstring.old_device_id + "").digest('hex');
+                        //checking if there is an old user
+                        common.db.collection('app_users' + params.app_id).findOne({'_id': old_id }, function (err, oldAppUser){
+                            if(!err && oldAppUser){
+                                //checking if there is a new user
+                                common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, newAppUser){
+                                    if(!err && newAppUser){
+                                        if(newAppUser.ls && newAppUser.ls > oldAppUser.ls){
+                                            mergeUserData(newAppUser, oldAppUser);
+                                        }
+                                        else{
+                                            //switching user identidy
+                                            var temp = oldAppUser._id;
+                                            oldAppUser._id = newAppUser._id;
+                                            newAppUser._id = temp;
+                                            
+                                            temp = oldAppUser.did;
+                                            oldAppUser.did = newAppUser.did;
+                                            newAppUser.did = temp;
+                                            
+                                            temp = oldAppUser.uid;
+                                            oldAppUser.uid = newAppUser.uid;
+                                            newAppUser.uid = temp;
+                                            
+                                            mergeUserData(oldAppUser, newAppUser);
+                                        }
+                                    }
                                 else{
                                     //simply copy user document with old uid
                                     //no harm is done
@@ -357,6 +410,11 @@ if (cluster.isMaster) {
                 common.returnMessage(params, 401, 'User does not exist');
                 return false;
             }
+            
+            if (member && member.locked) {
+                common.returnMessage(params, 401, 'User is locked');
+                return false;
+            }
             params.member = member;
             callback(params);
         });
@@ -371,6 +429,11 @@ if (cluster.isMaster) {
     
             if (!((member.user_of && member.user_of.indexOf(params.qstring.app_id) != -1) || member.global_admin)) {
                 common.returnMessage(params, 401, 'User does not have view right for this application');
+                return false;
+            }
+            
+            if (member && member.locked) {
+                common.returnMessage(params, 401, 'User is locked');
                 return false;
             }
     
@@ -407,6 +470,11 @@ if (cluster.isMaster) {
                 common.returnMessage(params, 401, 'User does not have write right for this application');
                 return false;
             }
+            
+            if (member && member.locked) {
+                common.returnMessage(params, 401, 'User is locked');
+                return false;
+            }
     
             common.db.collection('apps').findOne({'_id':common.db.ObjectID(params.qstring.app_id + "")}, function (err, app) {
                 if (!app) {
@@ -439,6 +507,12 @@ if (cluster.isMaster) {
                 common.returnMessage(params, 401, 'User does not have global admin right');
                 return false;
             }
+            
+            if (member && member.locked) {
+                common.returnMessage(params, 401, 'User is locked');
+                return false;
+            }
+            
             params.member = member;
     
             if (callbackParam) {
@@ -453,6 +527,11 @@ if (cluster.isMaster) {
         common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
             if (!member || err) {
                 common.returnMessage(params, 401, 'User does not exist');
+                return false;
+            }
+            
+            if (member && member.locked) {
+                common.returnMessage(params, 401, 'User is locked');
                 return false;
             }
     
@@ -655,7 +734,7 @@ if (cluster.isMaster) {
             
                             validateAppForWriteAPI(params);
             
-                            if (!plugins.getConfig("api").safe) {
+                            if (!plugins.getConfig("api").safe && !params.res.finished) {
                                 common.returnMessage(params, 200, 'Success');
                             }
             

@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "description": "Send email reports",
   "author": "Count.ly",
-  "homepage": "https://count.ly/plugins/",
+  "homepage": "https://count.ly/plugins/email-reports",
   "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
   "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
   "keywords": [

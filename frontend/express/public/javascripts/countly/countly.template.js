@@ -1944,6 +1944,8 @@ window.ManageAppsView = countlyView.extend({
             $("#app-edit-name").find(".edit input").val(countlyGlobal['apps'][appId].name);
             $("#app-edit-key").find(".read").text(countlyGlobal['apps'][appId].key);
             $("#app-edit-key").find(".edit input").val(countlyGlobal['apps'][appId].key);
+            $("#app-edit-salt").find(".read").text(countlyGlobal['apps'][appId].checksum_salt || "");
+            $("#app-edit-salt").find(".edit input").val(countlyGlobal['apps'][appId].checksum_salt || "");
             $("#view-app-id").text(appId);
             $("#app-edit-type").find(".cly-select .text").text(appTypes[countlyGlobal['apps'][appId].type]);
             $("#app-edit-type").find(".cly-select .text").data("value", countlyGlobal['apps'][appId].type);
@@ -2330,7 +2332,8 @@ window.ManageAppsView = countlyView.extend({
                         category:$("#app-edit-category .cly-select .text").data("value") + '',
                         key:app_key,
                         timezone:$("#app-edit-timezone #app-timezone").val(),
-                        country:$("#app-edit-timezone #app-country").val()
+                        country:$("#app-edit-timezone #app-country").val(),
+                        checksum_salt:$("#app-edit-salt .edit input").val()
                     }),
                     api_key:countlyGlobal['member'].api_key
                 },
@@ -2604,22 +2607,58 @@ window.ManageUsersView = countlyView.extend({
                         { "mData": function(row, type){return row.username;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.username"]},
                         { "mData": function(row, type){if(row.global_admin) return jQuery.i18n.map["management-users.global-admin"]; else if(row.admin_of && row.admin_of.length) return jQuery.i18n.map["management-users.admin"]; else if(row.user_of && row.user_of.length)  return jQuery.i18n.map["management-users.user"]; else return jQuery.i18n.map["management-users.no-role"]}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.no-role"]},
                         { "mData": function(row, type){return row.email;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.email"]},
+                        { "mData": function(row, type){if(type == "display") return (row["last_login"]) ? countlyCommon.formatTimeAgo(row["last_login"]) : jQuery.i18n.map["common.never"]; else return (row["last_login"]) ? row["last_login"] : 0;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.last_login"]}
                     ]
                 }));
                 self.dtable.fnSort( [ [0,'desc'] ] );
                 self.dtable.stickyTableHeaders();
                 CountlyHelpers.expandRows(self.dtable, self.editUser, self);
                 function generatePassword() {
-                    var text = "";
-                    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-                    for( var i=0; i < 6; i++ )
-                        text += possible.charAt(Math.floor(Math.random() * possible.length));
-                    return text;
+                    var text = [];
+                    var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+                    var numbers = "0123456789";
+                    var specials = '!@#$%^&*()_+{}:"<>?\|[];\',./`~';
+                    var all = chars+numbers+specials;
+                     
+                    //1 char
+                    text.push(chars.charAt(Math.floor(Math.random() * chars.length)));
+                    //1 number
+                    text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
+                    //1 special char
+                    text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
+                    
+                    //5 any chars
+                    for( var i=0; i < 5; i++ )
+                        text.push(all.charAt(Math.floor(Math.random() * all.length)));
+                    
+                    //randomize order
+                    var j, x, i;
+                    for (i = text.length; i; i--) {
+                        j = Math.floor(Math.random() * i);
+                        x = text[i - 1];
+                        text[i - 1] = text[j];
+                        text[j] = x;
+                    }
+                    
+                    return text.join("");
                 }
                 function validateEmail(email) { 
                     var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
                     return re.test(email);
                 }
+                
+                function validatePassword(password){
+                    if(password.length < 8)
+                        return jQuery.i18n.prop("management-users.password.length", 8);
+                    if(!/[A-Za-z]/.test(password))
+                        return jQuery.i18n.map["management-users.password.has-char"];
+                    if(!/\d/.test(password))
+                        return jQuery.i18n.map["management-users.password.has-number"];
+                    if(!/[^A-Za-z\d]/.test(password))
+                        return jQuery.i18n.map["management-users.password.has-special"];
+                    return false;
+                }
+                
                 self.initTable();
                 $("#add-user-mgmt").on("click", function(){
                     CountlyHelpers.closeRows(self.dtable);
@@ -2712,6 +2751,13 @@ window.ManageUsersView = countlyView.extend({
                     
                     if (!data.password.length) {
                         currUserDetails.find(".password-text").after(reqSpan.clone());
+                    } else {
+                        $(".password-check").remove();
+                        var error = validatePassword(data.password);
+                        if(error){
+                            var invalidSpan = $("<span class='password-check red-text'>").html(error);
+                            currUserDetails.find(".password-text").after(invalidSpan.clone());
+                        }
                     }
                     
                     if (!data.full_name.length) {
@@ -2825,15 +2871,48 @@ window.ManageUsersView = countlyView.extend({
         userData = userData || {};
         var self = this;
         function generatePassword() {
-            var text = "";
-            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            for( var i=0; i < 6; i++ )
-                text += possible.charAt(Math.floor(Math.random() * possible.length));
-            return text;
+            var text = [];
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            var numbers = "0123456789";
+            var specials = '!@#$%^&*()_+{}:"<>?\|[];\',./`~';
+            var all = chars+numbers+specials;
+             
+            //1 char
+            text.push(chars.charAt(Math.floor(Math.random() * chars.length)));
+            //1 number
+            text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
+            //1 special char
+            text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
+            
+            //5 any chars
+            for( var i=0; i < 5; i++ )
+                text.push(all.charAt(Math.floor(Math.random() * all.length)));
+            
+            //randomize order
+            var j, x, i;
+            for (i = text.length; i; i--) {
+                j = Math.floor(Math.random() * i);
+                x = text[i - 1];
+                text[i - 1] = text[j];
+                text[j] = x;
+            }
+            
+            return text.join("");
         }
         function validateEmail(email) { 
             var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
             return re.test(email);
+        }
+        function validatePassword(password){
+            if(password.length < 8)
+                return jQuery.i18n.prop("management-users.password.length", 8);
+            if(!/[A-Za-z]/.test(password))
+                return jQuery.i18n.map["management-users.password.has-char"];
+            if(!/\d/.test(password))
+                return jQuery.i18n.map["management-users.password.has-number"];
+            if(!/[^A-Za-z\d]/.test(password))
+                return jQuery.i18n.map["management-users.password.has-special"];
+            return false;
         }
         var adminsOf = [],
 		activeRow,
@@ -2966,6 +3045,7 @@ window.ManageUsersView = countlyView.extend({
             
             if (currUserDetails.find(".delete-user").length != 0) {
                 data.global_admin = currUserDetails.find(".global-admin").hasClass("checked");
+                data.locked = currUserDetails.find(".lock-account").hasClass("checked");
                 
                 if (!data.global_admin) {
                     data.admin_of = currUserDetails.find(".admin-apps .app-list").val().split(",");
@@ -3078,6 +3158,16 @@ window.ManageUsersView = countlyView.extend({
             });
         }, 300));
         
+        $(".password-text").off("keyup").on("keyup",_.throttle(function() {
+            $(".password-check").remove();
+            var error = validatePassword($(this).val());
+            if (error) {
+                var invalidSpan = $("<span class='password-check red-text'>").html(error);
+                $(this).after(invalidSpan.clone());
+                return false;
+            }
+        }, 300));
+        
         $(".cancel-user").off("click").on("click", function() {
             closeActiveEdit();
         });
@@ -3114,6 +3204,12 @@ window.ManageUsersView = countlyView.extend({
             
             currUserDetails.find(".user-apps").toggle();
             currUserDetails.find(".admin-apps").toggle();	
+            $(this).toggleClass("checked");
+            $("#listof-apps").hide();
+            $(".row").removeClass("selected");
+        });
+        $(".lock-account").off("click").on('click', function() {
+            var currUserDetails = $(".user-details:visible");	
             $(this).toggleClass("checked");
             $("#listof-apps").hide();
             $(".row").removeClass("selected");
@@ -3173,6 +3269,20 @@ window.ManageUsersView = countlyView.extend({
 							str += '</div>';
 						str += '</div>';
 					str += '</div>';
+                    if(!d.global_admin){
+                        str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.lock-account">';
+                            str += '<div class="title" data-localize="management-users.lock-account">'+jQuery.i18n.map["management-users.lock-account"]+'</div>';
+                            str += '<div class="detail">';
+                                str += '<div class="option">';
+                                if(d.locked)
+                                    str += '<div class="lock-account checkbox checked"></div>';
+                                else
+                                    str += '<div class="lock-account checkbox"></div>';
+                                    str += '<div class="text"></div>';
+                                str += '</div>';
+                            str += '</div>';
+                        str += '</div>';
+                    }
                 }
                 if(d.global_admin)
 					str += '<div class="row admin-apps help-zone-vs" data-help-localize="help.manage-users.admin-of" style="display:none;">';
@@ -4964,8 +5074,10 @@ var AppRouter = Backbone.Router.extend({
         };
 
         $.extend(true, $.fn.dataTable.defaults, {
-            "sDom": '<"dataTable-top"fpT>t<"dataTable-bottom"i>',
+            "sDom": '<"dataTable-top"lfpT>t<"dataTable-bottom"i>',
             "bAutoWidth": false,
+            "bLengthChange":true,
+            "bPaginate":true,
             "sPaginationType": "four_button",
             "iDisplayLength": 50,
             "bDestroy": true,
@@ -4976,7 +5088,8 @@ var AppRouter = Backbone.Router.extend({
 				"sEmptyTable": jQuery.i18n.map["common.table.no-data"],
 				"sInfo": jQuery.i18n.map["common.showing"],
 				"sInfoFiltered": jQuery.i18n.map["common.filtered"],
-				"sSearch": jQuery.i18n.map["common.search"]
+				"sSearch": jQuery.i18n.map["common.search"],
+                "sLengthMenu": jQuery.i18n.map["common.show-items"]+":&nbsp;<input type='number' id='dataTables_length_input'/>"
 			},
             "oTableTools": {
                 "sSwfPath": countlyGlobal["cdn"]+"javascripts/dom/dataTables/swf/copy_csv_xls.swf",
@@ -5046,7 +5159,7 @@ var AppRouter = Backbone.Router.extend({
                 ]
             },
             "fnInitComplete": function(oSettings, json) {
-                var saveHTML = "<div class='save-table-data'><i class='fa fa-download'></i></div>",
+                var saveHTML = "<div class='save-table-data' data-help='help.datatables-export'><i class='fa fa-download'></i></div>",
                     searchHTML = "<div class='search-table-data'><i class='fa fa-search'></i></div>",
                     tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
 
@@ -5066,6 +5179,16 @@ var AppRouter = Backbone.Router.extend({
                     $(this).next(".dataTables_filter").toggle();
                     $(this).next(".dataTables_filter").find("input").focus();
                 });
+                
+                if(oSettings.oFeatures.bServerSide){
+                    tableWrapper.find(".save-table-data").tipsy({gravity:$.fn.tipsy.autoNS, title:function () {
+                        return ($(this).data("help")) ? jQuery.i18n.map[$(this).data("help")] : "";
+                    }, fade:true, offset:5, cssClass:'yellow', opacity:1, html:true});
+                    tableWrapper.find(".dataTables_length").show();
+                }
+                else{
+                    tableWrapper.find(".dataTables_length").hide();
+                }
 
                 //tableWrapper.css({"min-height": tableWrapper.height()});
             }

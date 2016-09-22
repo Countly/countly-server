@@ -152,7 +152,7 @@ class Divider {
 								if (err) {
 									reject(err);
 								} else if (!first || !first.length) {
-									log.d('No document after skipping ' + skip + ' in ' + 'app_users' + s.appId + ' for ' + s.query);
+									log.d('No documents after skipping %d in %j ', skip, s.streamer.collection());
 									resolve(parts);
 									// reject('No document after skipping ' + start + ' in ' + 'app_users' + sub.appId + ' for ' + sub.query);
 								} else {

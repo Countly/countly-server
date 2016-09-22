@@ -2774,20 +2774,10 @@
 			 * Set the length to the current display length - thanks to Andrea Pavlovic for this fix,
 			 * and Stefan Skopnik for fixing the fix!
 			 */
-			$('select option[value="'+oSettings._iDisplayLength+'"]', nLength).attr("selected", true);
+			$('input', nLength).val(oSettings._iDisplayLength);
 			
-			$('select', nLength).bind( 'change.DT', function(e) {
+			$('input', nLength).bind( 'change.DT', function(e) {
 				var iVal = $(this).val();
-				
-				/* Update all other length options for the new display */
-				var n = oSettings.aanFeatures.l;
-				for ( i=0, iLen=n.length ; i<iLen ; i++ )
-				{
-					if ( n[i] != this.parentNode )
-					{
-						$('select', n[i]).val( iVal );
-					}
-				}
 				
 				/* Redraw the table */
 				oSettings._iDisplayLength = parseInt(iVal, 10);

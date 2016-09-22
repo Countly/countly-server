@@ -61,6 +61,9 @@
                 <div>
                     <input name="password" type="password" placeholder="Password" data-localize="placeholder.password"/>
                 </div>
+                <% if (typeof form != "undefined") { %>
+                    <%- form %>
+                <% } %>
                 <div>
                     <input type="hidden" value="<%= csrf %>" name="_csrf" />
                     <input type="hidden" value="en" name="lang" id="form-lang" />
@@ -71,6 +74,9 @@
                 </div>
             </form>
 		</div>
+        <% if (typeof html != "undefined") { %>
+            <%- html %>
+        <% } %>
 	</div>
 	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
 	<script language="javascript" type="text/javascript" src="javascripts/utils/prefixfree.min.js"></script>

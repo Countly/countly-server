@@ -73,7 +73,8 @@ var appsApi = {},
                 'country':  { 'required': false, 'type': 'String' },
                 'type':     { 'required': false, 'type': 'String' },
                 'category': { 'required': false, 'type': 'String' },
-                'timezone': { 'required': false, 'type': 'String' }
+                'timezone': { 'required': false, 'type': 'String' },
+                'checksum_salt': { 'required': false, 'type': 'String' }
             },
             newApp = {};
 
@@ -106,7 +107,8 @@ var appsApi = {},
                 'category': { 'required': false, 'type': 'String' },
                 'key': { 'required': false, 'type': 'String' },
                 'timezone': { 'required': false, 'type': 'String' },
-                'country':  { 'required': false, 'type': 'String' }
+                'country':  { 'required': false, 'type': 'String' },
+                'checksum_salt': { 'required': false, 'type': 'String' }
             },
             updatedApp = {};
 

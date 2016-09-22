@@ -317,10 +317,10 @@ var countlyEvents = {},
 
             function updateEventDb(eventDoc, callback) {
                 common.db.collection(eventDoc.collection).update({'_id': eventDoc._id}, eventDoc.updateObj, {'upsert': true, 'safe': true}, function(err, result) {
-                    if (err || result != 1) {
-                        callback(false, {status: "failed", obj: eventDoc});
-                    } else {
+                    if (!err && result && result.result && result.result.ok == 1) {
                         callback(false, {status: "ok", obj: eventDoc});
+                    } else {
+                        callback(false, {status: "failed", obj: eventDoc});
                     }
                 });
             }

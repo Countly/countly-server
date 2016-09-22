@@ -177,6 +177,10 @@ class Job extends EventEmitter {
 		return this;
 	}
 
+	_timeoutCancelled () {
+		return false;
+	}
+
 	_save (set) {
 		return new Promise((resolve, reject) => {
 			try {
@@ -312,7 +316,10 @@ class Job extends EventEmitter {
 			return {size: p.size + c.size || 0, done: p.done + c.done || 0}; 
 		});
 
-		set.error = this._json.error || (this._json.subs.find(s => !!s.error) || {}).error || null;
+		let errors = this._json.subs.filter(s => !!s.error).map(s => s.error).map(e => typeof e === 'object' ? e[0] : e),
+			unique = [...new Set(errors)];
+
+		set.error = unique.length ? unique.join(', ') : null;
 		set.status = !set.error && this._json.subs.filter(s => s.status !== STATUS.DONE).length ? STATUS.RUNNING : STATUS.DONE;
 		set.duration = Date.now() - this._json.started;
 
@@ -438,7 +445,11 @@ class Job extends EventEmitter {
 			var timeout = setTimeout(() => {
 					log.d('%s: timeout called', this._idIpc);
 					if (!job.completed) {
-						job._abort('Timeout').then(reject, reject);
+						if (job._timeoutCancelled()) {
+							log.d('%s: timeout called, but cancelled', this._idIpc);
+						} else {
+							job._abort('Timeout').then(reject, reject);
+						}
 					}
 				}, MAXIMUM_JOB_TIMEOUT),
 				// debounce save to once in 500 - 10000 ms
@@ -470,7 +481,11 @@ class Job extends EventEmitter {
 					timeout = setTimeout(() => {
 						log.d('%s: progress timeout called', this._idIpc);
 						if (!job.completed) {
-							job._abort();
+							if (job._timeoutCancelled()) {
+								log.d('%s: progress timeout called, but cancelled', this._idIpc);
+							} else {
+								job._abort('Timeout').then(reject, reject);
+							}
 						}
 					}, MAXIMUM_JOB_TIMEOUT);
 
@@ -596,14 +611,18 @@ class IPCJob extends ResourcefulJob {
 
 		return new Promise((resolve, reject) => {
 			var timeout = setTimeout(() => {
-					log.d('%s: first timeout called in IPCJob', this._id);
+					log.d('%s: first timeout called in IPCJob', this._idIpc);
 					if (!this.isCompleted) {
-						this._json.status = STATUS.DONE;
-						this._json.finished = Date.now();
-						this._json.duration = this._json.finished - this._json.started;
-						this._json.error = ERROR.TIMEOUT;
-						this._sendSave({status: this._json.status, finished: this._json.finished, duration: this._json.duration, error: this._json.error});
-						reject(ERROR.TIMEOUT);
+						if (this._timeoutCancelled()) {
+							log.d('%s: timeout called in IPCJob, but cancelled', this._idIpc);
+						} else {
+							this._json.status = STATUS.DONE;
+							this._json.finished = Date.now();
+							this._json.duration = this._json.finished - this._json.started;
+							this._json.error = ERROR.TIMEOUT;
+							this._sendSave({status: this._json.status, finished: this._json.finished, duration: this._json.duration, error: this._json.error});
+							reject(ERROR.TIMEOUT);
+						}
 					}
 				}, MAXIMUM_JOB_TIMEOUT),
 				// debounce save to once in 500 - 10000 ms
@@ -643,15 +662,19 @@ class IPCJob extends ResourcefulJob {
 				(size, done, bookmark) => {
 					clearTimeout(timeout);
 					timeout = setTimeout(() => {
-						log.w('%s: progress timeout called', this._id);
+						log.w('%s: progress timeout called in IPCJob', this._idIpc);
 						if (!this.isCompleted) {
-							this._json.status = STATUS.PAUSED;
-							// this._json.finished = Date.now();
-							this._json.duration = this._json.finished - this._json.started;
-							this._json.size = this._json.done;
-							// this._json.error = ERROR.TIMEOUT;
-							// this._sendSave({status: this._json.status, finished: this._json.finished, duration: this._json.duration, error: this._json.error});
-							reject(ERROR.TIMEOUT);
+							if (this._timeoutCancelled()) {
+								log.d('%s: progress timeout called in IPCJob, but cancelled', this._idIpc);
+							} else {
+								this._json.status = STATUS.PAUSED;
+								// this._json.finished = Date.now();
+								// this._json.duration = this._json.finished - this._json.started;
+								this._json.size = this._json.done;
+								// this._json.error = ERROR.TIMEOUT;
+								// this._sendSave({status: this._json.status, finished: this._json.finished, duration: this._json.duration, error: this._json.error});
+								reject(ERROR.TIMEOUT);
+							}
 						}
 					}, MAXIMUM_JOB_TIMEOUT);
 
