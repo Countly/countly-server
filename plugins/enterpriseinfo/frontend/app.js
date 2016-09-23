@@ -1,6 +1,7 @@
 var plugin = {},
 	countlyConfig = require('../../../frontend/express/config', 'dont-enclose'),
 	versionInfo = require('../../../frontend/express/version.info'),
+    path = require('path'),
 	async = require('async');
 
 (function (plugin) {
@@ -34,19 +35,15 @@ var plugin = {},
 			});
 		};
 		app.get(countlyConfig.path+'/login', function (req, res, next) {
-			if (req.session.uid) {
-				res.redirect(countlyConfig.path+'/dashboard');
-			} else {
-				countlyDb.collection('members').count({}, function (err, memberCount) {
-					if (memberCount) {
-                        if(req.query.message)
-                            req.flash('info', req.query.message);
-						res.render('../../../plugins/enterpriseinfo/frontend/public/templates/login', {"countlyTitle":versionInfo.title, "countlyPage":versionInfo.page, "message":req.flash('info'), "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "" });
-					} else {
-						res.redirect(countlyConfig.path+'/setup');
-					}
-				});
-			}
+            var filename = path.resolve(__dirname, "public/templates/login.html");
+             fs.readFile(filename, "utf8", function (err, data) {
+                if(!err && data){
+                    var parts = data.split("<!-- JS PART -->");
+                    req.template.html += parts[0];
+                    req.template.js += parts[1];
+                }
+                next();
+             });
 		});
 		app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 			if (req.session.uid && versionInfo.type == "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6" && !versionInfo.footer) {

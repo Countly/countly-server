@@ -15,7 +15,7 @@ There are two parts of Countly: the server that collects and analyzes data, and 
 
 ![Countly dashboard screenshot](https://count.ly/wp-content/uploads/2016/08/countly_dashboard_community_16.06.png)
 
-##Supported devices
+##What can Countly track? 
 
 [Countly](http://count.ly) supports top-notch devices, including iOS, Android, Windows Phone and web apps. You can find a list of [official and community supported Countly SDK libraries here](https://count.ly/resources/source/download-sdk). Each SDK has its own installation instructions.
 

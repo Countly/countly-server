@@ -2643,11 +2643,33 @@ window.ManageUsersView = countlyView.extend({
                 self.dtable.stickyTableHeaders();
                 CountlyHelpers.expandRows(self.dtable, self.editUser, self);
                 function generatePassword() {
-                    var text = "";
-                    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-                    for( var i=0; i < 6; i++ )
-                        text += possible.charAt(Math.floor(Math.random() * possible.length));
-                    return text;
+                    var text = [];
+                    var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+                    var numbers = "0123456789";
+                    var specials = '!@#$%^&*()_+{}:"<>?\|[];\',./`~';
+                    var all = chars+numbers+specials;
+                     
+                    //1 char
+                    text.push(chars.charAt(Math.floor(Math.random() * chars.length)));
+                    //1 number
+                    text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
+                    //1 special char
+                    text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
+                    
+                    //5 any chars
+                    for( var i=0; i < 5; i++ )
+                        text.push(all.charAt(Math.floor(Math.random() * all.length)));
+                    
+                    //randomize order
+                    var j, x, i;
+                    for (i = text.length; i; i--) {
+                        j = Math.floor(Math.random() * i);
+                        x = text[i - 1];
+                        text[i - 1] = text[j];
+                        text[j] = x;
+                    }
+                    
+                    return text.join("");
                 }
                 function validateEmail(email) { 
                     var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
@@ -2878,11 +2900,33 @@ window.ManageUsersView = countlyView.extend({
         userData = userData || {};
         var self = this;
         function generatePassword() {
-            var text = "";
-            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            for( var i=0; i < 6; i++ )
-                text += possible.charAt(Math.floor(Math.random() * possible.length));
-            return text;
+            var text = [];
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            var numbers = "0123456789";
+            var specials = '!@#$%^&*()_+{}:"<>?\|[];\',./`~';
+            var all = chars+numbers+specials;
+             
+            //1 char
+            text.push(chars.charAt(Math.floor(Math.random() * chars.length)));
+            //1 number
+            text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
+            //1 special char
+            text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
+            
+            //5 any chars
+            for( var i=0; i < 5; i++ )
+                text.push(all.charAt(Math.floor(Math.random() * all.length)));
+            
+            //randomize order
+            var j, x, i;
+            for (i = text.length; i; i--) {
+                j = Math.floor(Math.random() * i);
+                x = text[i - 1];
+                text[i - 1] = text[j];
+                text[j] = x;
+            }
+            
+            return text.join("");
         }
         function validateEmail(email) { 
             var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
@@ -5142,6 +5186,10 @@ var AppRouter = Backbone.Router.extend({
                     tableWrapper.find(".save-table-data").tipsy({gravity:$.fn.tipsy.autoNS, title:function () {
                         return ($(this).data("help")) ? jQuery.i18n.map[$(this).data("help")] : "";
                     }, fade:true, offset:5, cssClass:'yellow', opacity:1, html:true});
+                    tableWrapper.find(".dataTables_length").show();
+                }
+                else{
+                    tableWrapper.find(".dataTables_length").hide();
                 }
 
                 //tableWrapper.css({"min-height": tableWrapper.height()});

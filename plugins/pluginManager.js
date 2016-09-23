@@ -340,7 +340,9 @@ var pluginManager = function pluginManager(){
     }
     
     this.isPluginEnabled = function(plugin){
-        return !!plugins[plugin];
+        if(plugins.indexOf(plugin) === -1)
+            return false;
+        return true;
     };
     
     //checking plugins on master process

@@ -18,6 +18,10 @@ countlyDeviceList = {
 	"iPhone8,1":"iPhone 6s",
 	"iPhone8,2":"iPhone 6s Plus",
 	"iPhone8,4":"iPhone SE",
+    "iPhone9,1":"iPhone 7",
+    "iPhone9,3":"iPhone 7",
+    "iPhone9,2":"iPhone 7 Plus",
+    "iPhone9,4":"iPhone 7 Plus",
     //ipod touch
 	"iPod1,1":"iPod touch 1G",
 	"iPod2,1":"iPod touch 2G",
@@ -58,13 +62,13 @@ countlyDeviceList = {
 	"iPad5,1":"iPad mini 4",
 	"iPad5,2":"iPad mini 4",
     //apple watch
-    	"Watch1,1":"Apple Watch 38mm",
+    "Watch1,1":"Apple Watch 38mm",
 	"Watch1,2":"Apple Watch 42mm",
     //apple tv
-    	"AppleTV2,1":"Apple TV 2G",
-    	"AppleTV3,1":"Apple TV 3G",
-    	"AppleTV3,2":"Apple TV 3G",
-    	"AppleTV5,3":"Apple TV 4G",
+    "AppleTV2,1":"Apple TV 2G",
+    "AppleTV3,1":"Apple TV 3G",
+    "AppleTV3,2":"Apple TV 3G",
+    "AppleTV5,3":"Apple TV 4G",
     //simulator
 	"i386":"Simulator",
 	"x86_64":"Simulator"

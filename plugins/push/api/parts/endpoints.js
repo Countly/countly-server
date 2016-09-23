@@ -228,7 +228,10 @@ var common          = require('../../../../api/utils/common.js'),
             query.apps = {$in: ids};
         }
 
-        query.date = params.period.date;
+        query.$or = [
+            {date: params.period.date},
+            {date: {$gte: new Date()}}
+        ];
 
         /*
          var pageNo = (params.qstring.args && params.qstring.args.page && common.isNumber(params.qstring.args.page))? params.qstring.args.page : 1;
