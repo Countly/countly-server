@@ -1,10 +1,10 @@
   {
-  "name": "countly-slipping-away-user",
-  "title": "slipping-away",
-  "version": "0.0.1",
-  "description": "slipping-away user plugin",
+  "name": "countly-slipping-away-users",
+  "title": "Slipping Away Users",
+  "version": "1.0.0",
+  "description": "See how many of your application users didn't have any sessions for 7, 14, 30, 60 and 90 days",
   "author": "Count.ly",
-  "homepage": "https://count.ly/plugins/",
+  "homepage": "https://count.ly/plugins/slipping-away-users/",
   "repository": {
     "type": "git",
     "url": "http://github.com/Countly/countly-server.git"
@@ -15,9 +15,6 @@
   "keywords": [
     "countly",
     "analytics",
-    "mobile",
-    "plugins",
-    "template",
     "churn",
     "slipping-away"
   ],

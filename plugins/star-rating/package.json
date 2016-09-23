@@ -1,18 +1,16 @@
 {
-  "name": "countly-star",
-  "title": "star rating",
-  "version": "0.0.0",
-  "description": "star rating for your app",
+  "name": "countly-star-rating",
+  "title": "Star Rating",
+  "version": "1.0.0",
+  "description": "Collect timely 1 to 5 star ratings from your application users.",
   "author": "Count.ly",
-  "homepage": "https://count.ly/plugins/",
+  "homepage": "https://count.ly/plugins/star-rating/",
   "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
   "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
   "keywords": [
     "countly",
     "analytics",
     "mobile",
-    "plugins",
-	"template",
     "rating",
     "star"
   ],
