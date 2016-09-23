@@ -1,3 +1,5 @@
 .enterprise-content { padding:20px; display: none; }
 .enterprise-content .image { float:left; }
 .enterprise-content .text { font-family: Ubuntu; font-size:15px; color:#555; line-height: 22px; }
+#enterprise-badge { transition:background-color 1s; padding: 1px 13px; color: #a676fd; border: 1px solid #a676fd; border-radius: 2px; margin-left: 20px; display: inline-block; line-height: 15px; }
+#enterprise-badge:hover { transition:background-color 1s; background-color: rgba(166, 118, 253, 0.2); }

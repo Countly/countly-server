@@ -5363,6 +5363,7 @@ var AppRouter = Backbone.Router.extend({
                     dateTo.datepicker("option", "minDate", moment(self.dateFromSelected).toDate());
                 }
 
+                setSelectedDate();
                 e.stopPropagation();
             });
 
@@ -5384,6 +5385,8 @@ var AppRouter = Backbone.Router.extend({
 
                     dateFrom.datepicker("option", "maxDate", fromLimit);
                     self.dateToSelected = date.getTime();
+
+                    setSelectedDate();
                 }
             });
 
@@ -5405,8 +5408,17 @@ var AppRouter = Backbone.Router.extend({
 
                     dateTo.datepicker("option", "minDate", toLimit);
                     self.dateFromSelected = date.getTime();
+
+                    setSelectedDate();
                 }
             });
+
+            function setSelectedDate() {
+                var from = moment(dateFrom.datepicker("getDate")).format("D MMM, YYYY"),
+                    to = moment(dateTo.datepicker("getDate")).format("D MMM, YYYY");
+
+                $("#selected-date").text(from + " - " + to);
+            }
 
             $.datepicker.setDefaults($.datepicker.regional[""]);
             $("#date-to").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
