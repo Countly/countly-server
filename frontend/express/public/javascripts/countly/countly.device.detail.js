@@ -271,10 +271,12 @@
             platformVersionTotal = _.pluck(oSVersionData.chartData, 'u'),
             chartData2 = [];
         var osName = osSegmentation;
-        if(os_mapping[osSegmentation.toLowerCase()])
-            osName = os_mapping[osSegmentation.toLowerCase()].short;
-        else
-            osName = osSegmentation.toLowerCase()[0];
+        if(osSegmentation){
+            if(os_mapping[osSegmentation.toLowerCase()])
+                osName = os_mapping[osSegmentation.toLowerCase()].short;
+            else
+                osName = osSegmentation.toLowerCase()[0];
+        }
 
         if (oSVersionData.chartData) {
             for (var i = 0; i < oSVersionData.chartData.length; i++) {
