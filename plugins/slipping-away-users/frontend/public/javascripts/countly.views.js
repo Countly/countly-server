@@ -38,7 +38,7 @@ window.slippingView = countlyView.extend({
         "bucket": "daily",
         "projectionKey":""
       };
-      window.location.hash = '/users/request/${JSON.stringify(data)}';
+      window.location.hash = '/users/request/' + JSON.stringify(data);
     };
 
     for (var i = 0; i < slippingData.length; i++) {
@@ -50,7 +50,7 @@ window.slippingView = countlyView.extend({
         item.percentage = "<div class='percent-bar' style='width:" + (2 * item.percentage) + "px;'></div>" + item.percentage + "%";
         if(countlyGlobal.plugins.indexOf("users") >= 0) {
             if(item.count > 0){
-                item.userList = '<a class="icon-button green btn-header btn-user-list" data-localize="userdata.list" onclick="slippingDataOnClick(${item.timeStamp})" style="float:left;">User List</a> ';
+                item.userList = '<a class="icon-button green btn-header btn-user-list" data-localize="userdata.list" onclick="slippingDataOnClick(' + item.timeStamp + ')" style="float:left;">User List</a> ';
             }else{
                 item.userList = 'No users';
             }
