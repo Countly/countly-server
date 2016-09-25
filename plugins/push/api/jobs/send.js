@@ -114,6 +114,10 @@ class PushJob extends job.IPCJob {
 		});
 	}
 
+	_timeoutCancelled () {
+		return this.streaming;
+	}
+
 	run (db, done, progress) {
 		log.d('[%d] going to run job %j: %j', process.pid, this._idIpc, this._json, typeof this.data.mid, this.data.mid);
 		let query = {_id: db.ObjectID.createFromHexString(this.data.mid), 'deleted': {$exists: false}},
@@ -125,6 +129,7 @@ class PushJob extends job.IPCJob {
 			log.d('Won\'t run %s because it has been failed in constructor: %j', this._idIpc, this.failed);
 		}
 		
+		var statusCounter = 0;
 		db.collection('messages').findAndModify(query, [['date', 1]], update, {'new': true}, (err, message) => {
 			if (err || this.failed) {
 				done(err || this.failed);
@@ -160,54 +165,59 @@ class PushJob extends job.IPCJob {
 				db.collection('apps').findOne({_id: db.ObjectID.createFromHexString(this.data.appId)}, (err, app) => {
 					if (err) { done(err); }
 					else { 
-						log.d('Found app %j', app);
 						this.app = app;
 						this.streamer = new Streamer(this.message, app);
 
-						log.d('[%d]: Bookmark %s, first %s', process.pid, status.bookmark, this.data.first);
+						log.d('[%d]: %j Bookmark %s, first %s', process.pid, this._idIpc, status.bookmark, this.data.first);
 						if (status.bookmark) {
 							this._json.data.first = status.bookmark;
 						}
 
-						log.d('[%d]: Ready to stream', process.pid);
+						log.d('[%d]: %j Ready to stream', process.pid, this._idIpc);
 						this.resource.send(this.datas, (count) => {
+							this.streaming = true;
 							this.streamer.load(db, this.data.first, this.data.last, Math.max(count, 10)).then((users) => {
+								this.streaming = false;
 								// bookmark is not first of next batch, but rather last status from previous
 								// so it must be removed from array
 								if (users.length && users[0]._id === status.bookmark) {
 									users.shift();
 								}
 								let fed, lst;
-								if (users.length === 1) {
-									log.d('Feeding last user');
+								if (users.length === 0) {
+									log.d('[%d]: %j No more users found', process.pid, this._idIpc);
+									this.resource.feed([]);
+								} if (users.length === 1) {
+									log.d('[%d]: %j Feeding last user', process.pid, this._idIpc);
 									fed = this.resource.feed(users.map(this.mapUser.bind(this)));
 
 									status.size += fed;
 
 									if (fed === 1) {
-										log.d('Fed last user');
-										this._json.data.first += ' final ';
+										log.d('[%d]: %j Fed last user', process.pid, this._idIpc);
+										this._json.data.first = 'zzz-' + this._json.data.first;
 									} else {
-										log.w('Cannot feed last user');
+										log.w('[%d]: %j Cannot feed last user', process.pid, this._idIpc);
 									}
 								} else {
 									lst = users.pop();
-									log.d('Going to feed %d users while %d is requested', users.length, count);
+									log.d('[%d]: %j Going to feed %d users while %d is requested', process.pid, this._idIpc, users.length, count);
 									fed = this.resource.feed(users.map(this.mapUser.bind(this)));
 								
 									status.size += fed;
 
-									log.d('Fed %j users out of %d', fed, users.length);
+									log.d('[%d]: %j Fed %j users out of %d', process.pid, this._idIpc, fed, users.length);
 									if (fed === users.length) {
-										log.d('Fed all %d users, next batch will start with %s', fed, lst._id);
+										log.d('[%d]: %j Fed all %d users, next batch will start with %s', process.pid, this._idIpc, fed, lst._id);
 										this._json.data.first = lst._id;
 									} else if (fed < users.length && fed > 0) {
-										log.d('Fed only %d users, next batch will start with %s', fed, users[fed]._id);
+										log.d('[%d]: %j Fed only %d users, next batch will start with %s', process.pid, this._idIpc, fed, users[fed]._id);
 										this._json.data.first = users[fed]._id;
 									}
 								}
 							}, (err) => {
 								done(err || 'Error while loading users');
+								this.streaming = false;
 							});
 						}, (statuses) => {
 							var codes = statuses.map(s => s[1]);
@@ -216,7 +226,8 @@ class PushJob extends job.IPCJob {
 							var unset = statuses.filter(s => s[1] === 0).map(s => s[0]);
 							var sent = statuses.length - errors - unset.length;
 
-							log.d('Got %d statuses: %d sent, %d unset, %d errors', statuses.length, sent, unset.length, errors);
+							statusCounter++;
+							log.d('[%d]: %d %j Got %d statuses: %d sent, %d unset, %d errors', process.pid, statusCounter, this._idIpc, statuses.length, sent, unset.length, errors);
 
 							if (unset.length) {
 								let q = unset.length === 1 ? {_id: unset[0]} : {_id: {$in: unset}},
@@ -225,20 +236,20 @@ class PushJob extends job.IPCJob {
 										[this.fieldIndex]: 1,
 									};
 
-								log.d('[%d]: Unsetting %d tokens in %j: %j / %j, pulling %j', process.pid, unset.length, 'app_users' + this.app._id, q, $unset, message._id);
+								log.d('[%d]: %j Unsetting %d tokens in %j: %j / %j, pulling %j', process.pid, this._idIpc, unset.length, 'app_users' + this.app._id, q, $unset, message._id);
 								db.collection('app_users' + this.app._id).update(q, {$unset: $unset}, {multi: true}, log.logdb('unsetting tokens'));
 							}
 
 							if (ids.length) {
-								db.collection('app_users' + this.app._id).update({_id: {$in: ids}}, {$push: {msgs: message._id}}, {multi: true}, log.logdb('adding message to app_users'));
+								db.collection('app_users' + this.app._id).update({_id: {$in: ids}}, {$push: {msgs: message._id}}, {multi: true}, log.logdb('adding message to app_users ' + statusCounter + ' ' + this._idIpc));
 							}
 
 							if (statuses.length) {
-								db.collection('messages').update({_id: message._id}, {$inc: {'result.sent': sent, 'result.processed': statuses.length, 'result.errors': errors}}, log.logdb('updating message with sent'));
+								db.collection('messages').update({_id: message._id}, {$inc: {'result.sent': sent, 'result.processed': statuses.length, 'result.errors': errors}}, log.logdb('updating message with sent ' + statusCounter + ' ' + this._idIpc));
 							}
 
 							statuses.filter(s => s[1] === 2).forEach(status => {
-								db.collection('app_users' + this.app._id).updateOne({_id: status[0]}, {$set: {[this.fieldToken]: status[2]}}, log.logdb('updating GCM token'));
+								db.collection('app_users' + this.app._id).updateOne({_id: status[0]}, {$set: {[this.fieldToken]: status[2]}}, log.logdb('updating GCM token ' + statusCounter + ' ' + this._idIpc));
 							});
 
 							status.done += statuses.length;
@@ -268,8 +279,8 @@ class PushJob extends job.IPCJob {
 										errorsInc[key] = 1;
 									}
 								});
-								log.d('setting error codes for %s: %j', message._id, {$inc: errorsInc});
-								db.collection('messages').update({_id: message._id}, {$inc: errorsInc}, log.logdb('updating message with error codes'));
+								log.d('[%d]: setting error codes for %s: %j', process.pid, message._id, {$inc: errorsInc});
+								db.collection('messages').update({_id: message._id}, {$inc: errorsInc}, log.logdb('updating message with error codes ' + statusCounter + ' ' + this._idIpc));
 							}
 
 							var max = statuses.shift()[0];

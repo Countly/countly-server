@@ -18,8 +18,10 @@ elif [ "$1" = "devices" ]; then
     wget -nv --no-check-certificate https://raw.githubusercontent.com/Countly/countly-localization/master/data/countly.device.list.js -O $DIR/../../../frontend/express/public/javascripts/countly/countly.device.list.js
 elif [ "$1" = "sdk-web" ]; then
     mkdir -p $DIR/../../../frontend/express/public/sdk/web;
-    wget -nv --no-check-certificate https://raw.githubusercontent.com/Countly/countly-sdk-web/master/lib/countly.min.js -O $DIR/../../../frontend/express/public/sdk/web/countly.min.js
-    wget -nv --no-check-certificate https://raw.githubusercontent.com/Countly/countly-sdk-web/master/lib/countly.js -O $DIR/../../../frontend/express/public/sdk/web/countly.js
+    SERVER_VERSION="$(countly version)";
+    LATEST_SDK="$(wget -qO- https://api.github.com/repos/countly/countly-sdk-web/releases | grep tag_name | grep $SERVER_VERSION | head -n 1 | cut -d '"' -f 4)";
+    wget -nv --no-check-certificate https://raw.githubusercontent.com/Countly/countly-sdk-web/$LATEST_SDK/lib/countly.min.js -O $DIR/../../../frontend/express/public/sdk/web/countly.min.js
+    wget -nv --no-check-certificate https://raw.githubusercontent.com/Countly/countly-sdk-web/$LATEST_SDK/lib/countly.js -O $DIR/../../../frontend/express/public/sdk/web/countly.js
 else
     usage ;
 fi

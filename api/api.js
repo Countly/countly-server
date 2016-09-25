@@ -18,14 +18,20 @@ plugins.setConfigs("api", {
     metric_limit: 5000,
     sync_plugins: false,
     session_cooldown: 15,
-    total_users: true,
-    additional_headers: ""
+    total_users: true
 });
 
 plugins.setConfigs("apps", {
     country: "TR",
     timezone: "Europe/Istanbul",
     category: "6"
+});
+
+plugins.setConfigs("security", {
+    login_tries: 3,
+    login_wait: 5*60,
+    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nX-Content-Type-Options:nosniff\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
+    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nX-Content-Type-Options:nosniff"
 });
     
 plugins.setConfigs('logs', {
@@ -146,6 +152,11 @@ if (cluster.isMaster) {
     // Checks app_key from the http request against "apps" collection.
     // This is the first step of every write request to API.
     function validateAppForWriteAPI(params, done) {
+        //ignore possible opted out users for ios 10
+        if(params.qstring.device_id == "00000000-0000-0000-0000-000000000000"){
+            common.returnMessage(params, 400, 'Ignoring device_id');
+            return done ? done() : false;
+        }
         common.db.collection('apps').findOne({'key':params.qstring.app_key}, function (err, app) {
             if (!app) {
                 if (plugins.getConfig("api").safe) {
@@ -706,7 +717,7 @@ if (cluster.isMaster) {
 
                             validateAppForWriteAPI(params);
             
-                            if (!plugins.getConfig("api").safe) {
+                            if (!plugins.getConfig("api").safe && !params.res.finished) {
                                 common.returnMessage(params, 200, 'Success');
                             }
             
