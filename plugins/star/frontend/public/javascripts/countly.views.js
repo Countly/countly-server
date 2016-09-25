@@ -79,7 +79,7 @@ window.starView = countlyView.extend({
     } else {
       versioinList = this.templateData['platform_version'][this.platform];
     }
-    $("#version-list").html('<div data-value="All Versions" class="version-option item" data-localize="">All Versions</div>');
+    $("#version-list").html('<div data-value="All Versions" class="version-option item" data-localize="star.all-app-versions"></div>');
     for(var i = 0; i < versioinList.length; i++){
       var versionShow = versioinList[i].replace(/:/g, ".");
       $("#version-list").append(
@@ -240,14 +240,14 @@ window.starView = countlyView.extend({
     var middle = (sum === 0)?  0 :
                 (sum%2 === 1) ? ratingArray[Math.round(sum/2)-1]: (ratingArray[sum/2-1] + ratingArray[sum/2])/2
     middle = (middle*1.0).toFixed(2);
-    $("#midian-rating").html(middle);
+    $("#median-rating").html(middle);
   },
 
   renderCumulativeTable: function(){
     var columnsDefine = [
-      { "mData": "rating", sType:"string", "sTitle": "RATING" },
-      { "mData": "count", sType:"numeric", "sTitle": "NUMBER OF RATINGS" },
-      { "mData": "percentage", sType:"string",  "sTitle": "PERCENTAGE" },
+      { "mData": "rating", sType:"string", "sTitle": jQuery.i18n.map["star.rating"] },
+      { "mData": "count", sType:"numeric", "sTitle": jQuery.i18n.map["star.number-of-ratings"]},
+      { "mData": "percentage", sType:"string",  "sTitle": jQuery.i18n.map["star.percentage"]},
     ];
 
     var tableData = {
@@ -338,7 +338,7 @@ window.starView = countlyView.extend({
 
 
     var columnsDefine = [
-      { "mData": "date", sType:"string", "sTitle": "date" },
+      { "mData": "date", sType:"string", "sTitle": jQuery.i18n.map["star.date"] },
       { "mData": "star1", sType:"string", "sTitle": this.iconGenerator(1) },
       { "mData": "star2", sType:"string", "sTitle": this.iconGenerator(2) },
       { "mData": "star3", sType:"string", "sTitle": this.iconGenerator(3) },
@@ -463,7 +463,7 @@ app.route("/analytics/star", 'star', function () {
 $( document ).ready(function() {
   var menu = '<a href="#/analytics/star" class="item">'+
     '<div class="logo-icon fa fa-globe"></div>'+
-    '<div class="text" data-localize="">Star rating</div>'+
+    '<div class="text" data-localize="star.menu-title"></div>'+
     '</a>';
   $('#web-type #engagement-submenu').append(menu);
   $('#mobile-type #engagement-submenu').append(menu);
