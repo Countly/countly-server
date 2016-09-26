@@ -232,7 +232,7 @@ window.ConfigurationsView = countlyView.extend({
                 '</div>'+
                 '<div class="select-items square">'+
                     '<div>';
-                    
+
                 for(var i = 0; i < categories.length; i++){
                     select += '<div data-value="'+categories[i]+'" class="segmentation-option item">'+jQuery.i18n.map["configs.logs."+categories[i]]+'</div>';
                 }
@@ -242,15 +242,15 @@ window.ConfigurationsView = countlyView.extend({
             '</div>';
             return select;
         });
-        
+
         this.registerInput("security-dashboard_additional_headers", function(value){
-            return '<textarea rows="5" style="width:100%" id="frontend-additional_headers">'+(value || "")+'</textarea>';
+            return '<textarea rows="5" style="width:100%" id="security-dashboard_additional_headers">'+(value || "")+'</textarea>';
         });
-        
+
         this.registerInput("security-api_additional_headers", function(value){
-            return '<textarea rows="5" style="width:100%" id="api-additional_headers">'+(value || "")+'</textarea>';
+            return '<textarea rows="5" style="width:100%" id="security-api_additional_headers">'+(value || "")+'</textarea>';
         });
-        
+
         this.registerInput("apps-timezone", function(value){
             return null;
         });
