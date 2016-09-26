@@ -863,12 +863,30 @@ var common = {},
                     return;
                 }
             }
-            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id},{}, update, {new:true, upsert:true}, function(err, res) {
-                if(!err && res && res.value)
-                    params.app_user = res.value;
-                if(callback)
-                    callback(err, res);
-            });
+            if(!params.app_user.uid){
+                common.db.collection('app_users' + params.app_id).findAndModify({_id:"uid-sequence"},{},{$inc:{seq:1}},{new:true}, function(err,result){
+                    result = result && result.ok ? result.value : null;
+                    if (result && result.length != 0) {
+                        if(!update["$set"])
+                            update["$set"] = {}
+                        update["$set"][common.dbUserMap['user_id']] = parseSequence(result.seq);
+                    }
+                    common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id},{}, update, {new:true, upsert:true}, function(err, res) {
+                        if(!err && res && res.value)
+                            params.app_user = res.value;
+                        if(callback)
+                            callback(err, res);
+                    });
+                });
+            }
+            else{
+                common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id},{}, update, {new:true, upsert:true}, function(err, res) {
+                    if(!err && res && res.value)
+                        params.app_user = res.value;
+                    if(callback)
+                        callback(err, res);
+                });
+            }
         }
         else if(callback)
             callback();

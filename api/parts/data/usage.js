@@ -611,17 +611,10 @@ var usage = {},
             }
 
             if (isNewUser) {
-                common.db.collection('app_users' + params.app_id).findAndModify({_id:"uid-sequence"},{},{$inc:{seq:1}},{new:true}, function(err,result){
-                    result = result && result.ok ? result.value : null;
-                    if (result && result.length != 0) {
-                        userProps[common.dbUserMap['user_id']] = parseSequence(result.seq);
-                    }
-                    common.updateAppUser(params, {'$inc': {'sc': 1}, '$set': userProps}, function(){
-                        //Perform user retention analysis
-                        plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
-                        if (done) { done(); }
-                    });
-                });
+                common.updateAppUser(params, {'$inc': {'sc': 1}, '$set': userProps});
+                //Perform user retention analysis
+                plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
+                if (done) { done(); }
             } else {
                 // sc: session count. common.dbUserMap is not used here for readability purposes.
                 common.updateAppUser(params, {'$inc': {'sc': 1}, '$set': userProps}, function(){
