@@ -67,8 +67,8 @@ plugins.setUserConfigs("frontend", {
 plugins.setConfigs("security", {
     login_tries: 3,
     login_wait: 5*60,
-    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nX-Content-Type-Options:nosniff\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
-    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nX-Content-Type-Options:nosniff"
+    dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
+    api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block"
 });
 
 process.on('uncaughtException', (err) => {
