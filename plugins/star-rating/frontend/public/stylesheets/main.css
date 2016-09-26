@@ -1,9 +1,7 @@
 #graph-select-container {
     overflow: hidden;
     position: relative;
-    border: 1px solid #D0D0D0;
-    border-bottom: none;
-    /*padding-bottom: 8px;*/
+    padding-bottom: 20px;
 }
 
 .two-column {
