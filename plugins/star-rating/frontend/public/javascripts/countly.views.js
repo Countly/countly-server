@@ -17,7 +17,7 @@ window.starView = countlyView.extend({
     var self = this;
     // will load template, platform and version, period's rating data
     return $.when(
-      $.get(countlyGlobal["path"]+'/star/templates/star.html'),
+      $.get(countlyGlobal["path"]+'/star-rating/templates/star.html'),
       starRatingPlugin.requestPlatformVersion(),
       starRatingPlugin.requestRatingInPeriod()
     ).done(function(result){

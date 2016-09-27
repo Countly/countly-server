@@ -17,18 +17,19 @@ var plugin = {},
 	 *  this function will add a field call "platform_version_rate" in segmentation.
 	 *
 	 */
-	plugins.register("/i", function(ob){
+	var ratingEventProcess = function(ob){
 		var params = ob.params;
-		if(params.qstring.events){
-			params.qstring.events.forEach( function(event) {
+		var events = (params.qstring && params.qstring.events);
+		if(events){
+			events.forEach( function(event) {
 				if(event.key === '[CLY]_star_rating'){
 					event.segmentation['platform_version_rate'] =
 						`${event.segmentation['platform']}**${event.segmentation['app_version']}**${event.segmentation['rating']}`;
 				}
 			});
 		}
-	});
-
+	}
+	plugins.register("/i", ratingEventProcess);
 
 	/**
 	 * register for fetching platform and version metadata.
@@ -85,6 +86,7 @@ var plugin = {},
 					if(!err){
 						var result = {};
 						docs.forEach(function (doc){
+							console.log(doc.meta,"@@");
 							doc.meta.platform_version_rate.forEach(function(item){
 								var data = item.split('**');
 								if(result[data[0]] === undefined)
