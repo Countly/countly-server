@@ -86,7 +86,6 @@ var plugin = {},
 					if(!err){
 						var result = {};
 						docs.forEach(function (doc){
-							console.log(doc.meta,"@@");
 							doc.meta.platform_version_rate.forEach(function(item){
 								var data = item.split('**');
 								if(result[data[0]] === undefined)
