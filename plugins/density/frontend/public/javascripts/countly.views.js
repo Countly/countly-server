@@ -71,4 +71,5 @@ $( document ).ready(function() {
 		'<div class="text" data-localize="sidebar.analytics.densities"></div>'+
 	'</a>';
 	$('#mobile-type #analytics-submenu').append(menu);
+	$('#web-type #analytics-submenu').append(menu);
 });
