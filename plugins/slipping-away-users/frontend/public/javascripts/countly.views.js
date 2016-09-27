@@ -50,7 +50,7 @@ window.slippingView = countlyView.extend({
         item.percentage = "<div class='percent-bar' style='width:" + (2 * item.percentage) + "px;'></div>" + item.percentage + "%";
         if(countlyGlobal.plugins.indexOf("users") >= 0) {
             if(item.count > 0){
-                item.userList = '<a class="icon-button green btn-header btn-user-list" data-localize="userdata.list" onclick="slippingDataOnClick(' + item.timeStamp + ')" style="float:left;">User List</a> ';
+                item.userList = '<a class="table-link green" data-localize="userdata.list" onclick="slippingDataOnClick(' + item.timeStamp + ')">View User List</a> ';
             }else{
                 item.userList = 'No users';
             }
@@ -79,7 +79,7 @@ window.slippingView = countlyView.extend({
 
       if(countlyGlobal.plugins.indexOf("users") >= 0) {
         columnsDefine.push(
-          { "mData": "userList", sType:"string",  "sTitle": jQuery.i18n.map["slipping.userList"] }
+          { "mData": "userList", sType:"string", "bSortable": false, "sTitle": jQuery.i18n.map["slipping.userList"] }
         );
       }
 
@@ -97,12 +97,12 @@ window.slippingView = countlyView.extend({
 //register views
 app.slippingView = new slippingView();
 
-app.route("/analytics/slipping", 'browser', function () {
+app.route("/analytics/slipping-away", 'browser', function () {
   this.renderWhenReady(this.slippingView);
 });
 
 $( document ).ready(function() {
-  var menu = '<a href="#/analytics/slipping" class="item">'+
+  var menu = '<a href="#/analytics/slipping-away" class="item">'+
     '<div class="logo-icon fa fa-globe"></div>'+
     '<div class="text" data-localize="slipping.title"></div>'+
     '</a>';

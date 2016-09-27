@@ -109,6 +109,7 @@ a:active { color:inherit; }
 .over {z-index:100;}
 #no-app-type{width: 100%; padding: 20px 0; text-align: center; border: 1px dashed #CCC; font: 13px Ubuntu,Helvetica,sans-serif;}
 #no-app-type a{color:#72AE4B; text-decoration: underline;}
+table { border-collapse: collapse; }
 
 /* FOOTER */
 #content-footer{position: fixed; bottom:0; left:0px; width: 100%; background-color: #292929; font: 11px Ubuntu,Helvetica,sans-serif; color: #585858; height: 35px; z-index:999;}
@@ -346,6 +347,8 @@ a:active { color:inherit; }
 
 .big-numbers.top .inner { height:170px; cursor:pointer; }
 .big-numbers.top .select { bottom:1px; cursor:pointer; padding-top:7px; font-size:12px; line-height:111%; color:#969696; position:absolute; height:23px; width:100%; background-color: transparent !important; background-image: none !important; box-shadow: none; border:none;  }
+    .big-numbers.top .select.large { height: 29px; }
+        .big-numbers.top .select.large .title { font-size:12px; }
     .big-numbers.top.active .select { border-bottom:1px solid #FFF; bottom:0;  }
 .big-numbers.top .inner .logo { background-image:url('../images/dashboard/dashboard_icons.png'); margin:0 auto; font-size: 30px; line-height: 30px; width: 30px; height: 30px; padding-top: 15px; margin-bottom: 10px; }
     .big-numbers.top .inner .logo.ion { background-image:none; font-size: 30px; line-height: 30px; color: #969696; }
@@ -487,7 +490,7 @@ table.d-table:not(.no-fix) { table-layout:fixed; }
 	.d-table  thead tr { background-color:transparent; }
 	.d-table  td { padding:10px 10px; margin:0; color:#6B6B6B; }
 	.d-table  td:first-child { border-left:none; font-weight:normal; }
-	.d-table  tr { border-bottom:1px solid #DDD; border-top:1px solid #fff; font-size:15px; line-height:12px; background-color:#fff}
+	.d-table  tr { font-size:15px; line-height:12px; background-color:#fff}
 	.d-table  tr:first-child { border-top:none; }
 	.d-table  tr:last-child { border-bottom:none; }
 	.d-table  tr:nth-child(even){ background-color:#F9F9F9}
@@ -1155,9 +1158,12 @@ td.details table tr:first-child:hover { background-color:#F3F3F3 !important; lin
 td.details table tr:first-child td,
 td.details table tr:first-child th { border:none; font-family:Ubuntu; font-size:11px; text-transform:uppercase; }
 
-.graph-description { background-color: #f9f9f9; padding: 10px 18px; color: #868686; font-size: 13px; border: 1px solid #a1a1a1; border-bottom-color: #CCC; border-top-color: #B8B9B9; }
+.graph-description { background-color: #f9f9f9; padding: 10px 18px; color: #868686; font-size: 13px; border: 1px solid #d0d0d0; border-bottom-color: #e9e9e9; }
 .graph-description + .widget-content { border-top:none; }
 
 .nav-search { background-color: #fbfbfb; position:relative; box-shadow: inset -1px 0 0 0 #d4d4d4; border-bottom: 1px solid #d4d4d4; }
 .nav-search i { position: absolute; top: 11px; right: 13px; color: #6b6b6b; font-size: 10px; }
 .nav-search input { outline: none; font-size: 13px; border: none; padding: 8px 10px; margin-right: 1px; width: 146px; background-color: #fbfbfb; color: #6b6b6b; }
+
+.table-link { color:#2FA732; text-decoration: underline; cursor: pointer; text-transform: lowercase; }
+.table-link.green { color:#2FA732; }
