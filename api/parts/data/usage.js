@@ -88,7 +88,7 @@ var usage = {},
                     if (dbAppUser[common.dbUserMap['has_ongoing_session']] && (currTimestamp - lastBeginSession) > 11) {
                         var userProps = {};
                         userProps[common.dbUserMap['has_ongoing_session']] = 1;
-                        common.updateAppUser(params, {'$unset': userProps}, true, function() {
+                        common.updateAppUser(params, {'$unset': userProps}, function() {
                             endSession(true);
                         });
                     } else {
