@@ -852,22 +852,6 @@ var common = {},
         });
     };
     
-    function parseSequence(num){
-        var valSeq = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
-        var digits = [];
-        var base = valSeq.length;
-        while (num > base-1){
-            digits.push(num % base);
-            num = Math.floor(num / base);
-        }
-        digits.push(num);
-        var result = "";
-        for(var i = digits.length-1; i>=0; --i){
-            result = result + valSeq[digits[i]];
-        }
-        return result;
-    }
-    
     common.updateAppUser = function(params, update, callback){
         if(Object.keys(update).length){
             for(var i in update){
@@ -879,30 +863,12 @@ var common = {},
                     return;
                 }
             }
-            if(!params.app_user.uid){
-                common.db.collection('app_users' + params.app_id).findAndModify({_id:"uid-sequence"},{},{$inc:{seq:1}},{new:true}, function(err,result){
-                    result = result && result.ok ? result.value : null;
-                    if (result && result.length != 0) {
-                        if(!update["$set"])
-                            update["$set"] = {}
-                        update["$set"][common.dbUserMap['user_id']] = parseSequence(result.seq);
-                    }
-                    common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id},{}, update, {new:true, upsert:true}, function(err, res) {
-                        if(!err && res && res.value)
-                            params.app_user = res.value;
-                        if(callback)
-                            callback(err, res);
-                    });
-                });
-            }
-            else{
-                common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id},{}, update, {new:true, upsert:true}, function(err, res) {
-                    if(!err && res && res.value)
-                        params.app_user = res.value;
-                    if(callback)
-                        callback(err, res);
-                });
-            }
+            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id},{}, update, {new:true, upsert:true}, function(err, res) {
+                if(!err && res && res.value)
+                    params.app_user = res.value;
+                if(callback)
+                    callback(err, res);
+            });
         }
         else if(callback)
             callback();

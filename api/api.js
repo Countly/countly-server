@@ -212,6 +212,31 @@ if (cluster.isMaster) {
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, user){
                 params.app_user = user || {};
                 
+                if(!params.app_user.uid){
+                    function parseSequence(num){
+                        var valSeq = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+                        var digits = [];
+                        var base = valSeq.length;
+                        while (num > base-1){
+                            digits.push(num % base);
+                            num = Math.floor(num / base);
+                        }
+                        digits.push(num);
+                        var result = "";
+                        for(var i = digits.length-1; i>=0; --i){
+                            result = result + valSeq[digits[i]];
+                        }
+                        return result;
+                    }
+                    common.db.collection('app_users' + params.app_id).findAndModify({_id:"uid-sequence"},{},{$inc:{seq:1}},{new:true}, function(err,result){
+                        result = result && result.ok ? result.value : null;
+                        if (result && result.seq && result.length != 0) {
+                            params.app_user.uid = parseSequence(result.seq);
+                            common.updateAppUser(params, {$set:{uid:params.app_user.uid}});
+                        }
+                    });
+                }
+                
                 if (params.qstring.metrics && typeof params.qstring.metrics === "string") {		
                     try {		
                         params.qstring.metrics = JSON.parse(params.qstring.metrics);		
