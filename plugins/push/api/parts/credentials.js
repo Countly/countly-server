@@ -162,7 +162,7 @@ let p12 = function(path, password) {
 					topics = topics.value.replace(/0[\x00-\x1f\(\)!]/gi, '')
 										.replace('\f\f', '\f')
 										.split('\f')
-										.map(s => s.replace(/[\x00-\x1f\(\)!,$]/gi, '').trim());
+										.map(s => s.replace(/[\x00-\x1f\(\)!,$#\+]/gi, '').trim());
 					topics.shift();
 
 					for (var i = 0; i < topics.length; i++) {
