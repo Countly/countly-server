@@ -31,6 +31,7 @@ var plugin = {},
             var limit = parseInt(params.qstring.limit || 20);
 			var skip = parseInt(params.qstring.skip || 0);
 			var filter = params.qstring.filter || "{}";
+            var project = params.qstring.project || "{}";
 			try {
                 filter = JSON.parse(filter);
             } catch (SyntaxError) {
@@ -39,8 +40,13 @@ var plugin = {},
 			if(filter._id && isObjectId(filter._id)){
 				filter._id = common.db.ObjectID(filter._id);
 			}
+            try {
+                project = JSON.parse(project);
+            } catch (SyntaxError) {
+				project = {};
+			}
 			if(dbs[params.qstring.dbs]){
-				var cursor = dbs[params.qstring.dbs].collection(params.qstring.collection).find(filter);
+				var cursor = dbs[params.qstring.dbs].collection(params.qstring.collection).find(filter, project);
 				cursor.count(function (err, total) {
 					cursor.skip(skip).limit(limit).toArray(function(err, results){
 						if(err) {
