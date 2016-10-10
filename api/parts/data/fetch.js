@@ -695,6 +695,7 @@ var fetch = {},
     }
 
     function fetchTimeObj(collection, params, isCustomEvent, callback) {
+        var base64 = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
         if (params.qstring.action == "refresh") {
             var dbDateIds = common.getDateIds(params),
                 fetchFromZero = {},
@@ -738,14 +739,17 @@ var fetch = {},
                 zeroIdToFetch = params.app_id + "_" + dbDateIds.zero;
                 monthIdToFetch = params.app_id + "_" + dbDateIds.month;
             }
+            
+            var zeroDocs = [zeroIdToFetch];
+            var monthDocs = [monthIdToFetch];
+            for(var i = 0; i < base64.length; i++){
+                zeroDocs.push(zeroIdToFetch+"_"+base64[i]);
+                monthDocs.push(monthIdToFetch+"_"+base64[i]);
+            }
 
-            common.db.collection(collection).findOne({'_id': zeroIdToFetch}, fetchFromZero, function(err, zeroObject) {
-                common.db.collection(collection).findOne({'_id': monthIdToFetch}, fetchFromMonth, function(err, monthObject) {
-                    var tmpDataArr = [];
-                    tmpDataArr.push(zeroObject);
-                    tmpDataArr.push(monthObject);
-
-                    callback(getMergedObj(tmpDataArr, true));
+            common.db.collection(collection).find({'_id': {$in: zeroDocs}}, fetchFromZero).toArray(function(err, zeroObject) {
+                common.db.collection(collection).find({'_id': {$in: monthDocs}}, fetchFromMonth).toArray(function(err, monthObject) {
+                    callback(getMergedObj(zeroObject.concat(monthObject), true));
                 });
             });
         } else {
@@ -757,18 +761,30 @@ var fetch = {},
 
                 for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
                     documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]);
+                    for(var m = 0; m < base64.length; m++){
+                        documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]+"_"+base64[m]);
+                    }
                 }
 
                 for (var i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
                     documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i]);
+                    for(var m = 0; m < base64.length; m++){
+                        documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i]+"_"+base64[m]);
+                    }
                 }
             } else {
                 for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
                     documents.push(params.app_id + "_" + periodObj.reqZeroDbDateIds[i]);
+                    for(var m = 0; m < base64.length; m++){
+                        documents.push(params.app_id + "_" + periodObj.reqZeroDbDateIds[i]+"_"+base64[m]);
+                    }
                 }
 
                 for (var i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
                     documents.push(params.app_id + "_" + periodObj.reqMonthDbDateIds[i]);
+                    for(var m = 0; m < base64.length; m++){
+                        documents.push(params.app_id + "_" + periodObj.reqMonthDbDateIds[i]+"_"+base64[m]);
+                    }
                 }
             }
 
