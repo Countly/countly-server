@@ -466,176 +466,141 @@ var usage = {},
         plugins.dispatch("/session/metrics", {params:params, predefinedMetrics:predefinedMetrics, userProps:userProps, user:user, isNewUser:isNewUser});
         
         var dateIds = common.getDateIds(params);
-        var metaToFetch = [];
-        for (var i=0; i < predefinedMetrics.length; i++) {
-            metaToFetch.push({
-               coll: predefinedMetrics[i].db,
-               id: params.app_id + "_" + dateIds.zero
-            });
-        }
-        
-        function fetchMeta(metaToFetch, callback) {
-            common.db.collection(metaToFetch.coll).findOne({'_id':metaToFetch.id}, {meta:1}, function (err, metaDoc) {
-                var retObj = metaDoc || {};
-                retObj.coll = metaToFetch.coll;
-                callback(false, retObj);
-            });
-        }
-            
-        var metas = {};
-        async.map(metaToFetch, fetchMeta, function (err, metaDocs) {
-            for (var i = 0; i < metaDocs.length; i++) {
-                if (metaDocs[i].coll && metaDocs[i].meta) {
-                    metas[metaDocs[i].coll] = metaDocs[i].meta;
-                }
+        for (var i=0; i < predefinedMetrics.length; i++) {            
+            if (params.qstring.metrics && params.qstring.metrics["_app_version"]) {
+                params.qstring.metrics["_app_version"] += "";
+                if(params.qstring.metrics["_app_version"].indexOf('.') === -1)
+                    params.qstring.metrics["_app_version"] += ".0";
             }
-
-            for (var i=0; i < predefinedMetrics.length; i++) {
+                                    
+            for (var j=0; j < predefinedMetrics[i].metrics.length; j++) {
                 var tmpTimeObjZero = {},
                     tmpTimeObjMonth = {},
                     tmpSet = {},
                     needsUpdate = false,
                     zeroObjUpdate = [],
-                    monthObjUpdate = [];
-                
-                if (params.qstring.metrics && params.qstring.metrics["_app_version"]) {
-                    params.qstring.metrics["_app_version"] += "";
-                    if(params.qstring.metrics["_app_version"].indexOf('.') === -1)
-                        params.qstring.metrics["_app_version"] += ".0";
+                    monthObjUpdate = [],
+                    tmpMetric = predefinedMetrics[i].metrics[j],
+                    recvMetricValue = "",
+                    escapedMetricVal = "",
+                    postfix = "";
+    
+                if (tmpMetric.is_user_prop) {
+                    recvMetricValue = params.user[tmpMetric.name];
+                } else if (params.qstring.metrics && params.qstring.metrics[tmpMetric.name]) {
+                    recvMetricValue = params.qstring.metrics[tmpMetric.name];
                 }
-                                        
-                for (var j=0; j < predefinedMetrics[i].metrics.length; j++) {
-                    var tmpMetric = predefinedMetrics[i].metrics[j],
-                        recvMetricValue = "",
-                        escapedMetricVal = "";
     
-                    if (tmpMetric.is_user_prop) {
-                        recvMetricValue = params.user[tmpMetric.name];
-                    } else if (params.qstring.metrics && params.qstring.metrics[tmpMetric.name]) {
-                        recvMetricValue = params.qstring.metrics[tmpMetric.name];
+                // We check if city data logging is on and user's country is the configured country of the app
+                if (tmpMetric.name == "city" && (plugins.getConfig("api").city_data === false || params.app_cc != params.user.country)) {
+                    continue;
+                }
+    
+                if (recvMetricValue) {
+                    escapedMetricVal = (recvMetricValue+"").replace(/^\$/, "").replace(/\./g, ":");
+                    postfix = common.crypto.createHash("md5").update(escapedMetricVal).digest('base64')[0];
+                    
+                    // Assign properties to app_users document of the current user
+                    if (isNewUser || (!isNewUser && user[tmpMetric.short_code] != escapedMetricVal)) {
+                        userProps[tmpMetric.short_code] = escapedMetricVal;
                     }
-    
-                    // We check if city data logging is on and user's country is the configured country of the app
-                    if (tmpMetric.name == "city" && (plugins.getConfig("api").city_data === false || params.app_cc != params.user.country)) {
-                        continue;
-                    }
-    
-                    if (recvMetricValue) {
-                        escapedMetricVal = (recvMetricValue+"").replace(/^\$/, "").replace(/\./g, ":");
-                        
-                        // Assign properties to app_users document of the current user
-                        if (isNewUser || (!isNewUser && user[tmpMetric.short_code] != escapedMetricVal)) {
-                            userProps[tmpMetric.short_code] = escapedMetricVal;
-                        }
-                        
-                        var ignore = false;
-                        if(metas[predefinedMetrics[i].db] && 
-                            metas[predefinedMetrics[i].db][predefinedMetrics[i].metrics[j].set] && 
-                            metas[predefinedMetrics[i].db][predefinedMetrics[i].metrics[j].set].length && 
-                            metas[predefinedMetrics[i].db][predefinedMetrics[i].metrics[j].set].length >= plugins.getConfig("api").metric_limit && metas[predefinedMetrics[i].db][predefinedMetrics[i].metrics[j].set].indexOf(escapedMetricVal) === -1){
-                                ignore = true;
-                        }
-                        
-                        //should metric be ignored for reaching the limit
-                        if(!ignore){
-                            //making sure metrics are strings
-                            needsUpdate = true;
-                            tmpSet["meta." + tmpMetric.set] = escapedMetricVal;
+                    
+                    //making sure metrics are strings
+                    needsUpdate = true;
+                    tmpSet["meta." + tmpMetric.set] = escapedMetricVal;
         
-                            monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['total']);
+                    monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['total']);
         
-                            if (isNewUser) {
-                                zeroObjUpdate.push(escapedMetricVal + '.' + common.dbMap['unique']);
-                                monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['new']);
-                                monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['unique']);
-                            } else if (!tmpMetric.is_user_prop && tmpMetric.short_code && user[tmpMetric.short_code] != escapedMetricVal) {
-                                zeroObjUpdate.push(escapedMetricVal + '.' + common.dbMap['unique']);
-                                monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['unique'])
+                    if (isNewUser) {
+                        zeroObjUpdate.push(escapedMetricVal + '.' + common.dbMap['unique']);
+                        monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['new']);
+                        monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['unique']);
+                    } else if (!tmpMetric.is_user_prop && tmpMetric.short_code && user[tmpMetric.short_code] != escapedMetricVal) {
+                        zeroObjUpdate.push(escapedMetricVal + '.' + common.dbMap['unique']);
+                        monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['unique'])
+                    } else {
+                        for (var k=0; k < uniqueLevelsZero.length; k++) {
+                            if (uniqueLevelsZero[k] == "Y") {
+                                tmpTimeObjZero['d.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
                             } else {
-                                for (var k=0; k < uniqueLevelsZero.length; k++) {
-                                    if (uniqueLevelsZero[k] == "Y") {
-                                        tmpTimeObjZero['d.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
-                                    } else {
-                                        tmpTimeObjZero['d.' + uniqueLevelsZero[k] + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
-                                    }
-                                }
-        
-                                for (var l=0; l < uniqueLevelsMonth.length; l++) {
-                                    tmpTimeObjMonth['d.' + uniqueLevelsMonth[l] + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
-                                }
+                                tmpTimeObjZero['d.' + uniqueLevelsZero[k] + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
                             }
                         }
-    
-                        /*
-                        If track_changes is not specifically set to false for a metric, track metric value changes on a per user level
-                        with a document like below inside metric_changesAPPID collection
         
-                        { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
-                        */
-                        if (predefinedMetrics[i].metrics[j].track_changes !== false && !isNewUser && user[tmpMetric.short_code] != escapedMetricVal) {
-                            if (!metricChanges["uid"]) {
-                                metricChanges["uid"] = user.uid;
-                                metricChanges["ts"] = params.time.timestamp;
-                                metricChanges["cd"] = new Date();
-                            }
-        
-                            metricChanges[tmpMetric.short_code] = {
-                                "o": user[tmpMetric.short_code],
-                                "n": escapedMetricVal
-                            };
+                        for (var l=0; l < uniqueLevelsMonth.length; l++) {
+                            tmpTimeObjMonth['d.' + uniqueLevelsMonth[l] + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
                         }
                     }
-                }
+                    
     
-                common.fillTimeObjectZero(params, tmpTimeObjZero, zeroObjUpdate);
-                common.fillTimeObjectMonth(params, tmpTimeObjMonth, monthObjUpdate);
-    
-                if (needsUpdate) {
-                    var tmpZeroId = params.app_id + "_" + dateIds.zero,
-                        tmpMonthId = params.app_id + "_" + dateIds.month,
-                        updateObjZero = {
-                            $set: { m: dateIds.zero, a: params.app_id + "" },
-                            $addToSet: tmpSet
+                    /*
+                    If track_changes is not specifically set to false for a metric, track metric value changes on a per user level
+                    with a document like below inside metric_changesAPPID collection
+        
+                    { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
+                    */
+                    if (predefinedMetrics[i].metrics[j].track_changes !== false && !isNewUser && user[tmpMetric.short_code] != escapedMetricVal) {
+                        if (!metricChanges["uid"]) {
+                            metricChanges["uid"] = user.uid;
+                            metricChanges["ts"] = params.time.timestamp;
+                            metricChanges["cd"] = new Date();
+                        }
+        
+                        metricChanges[tmpMetric.short_code] = {
+                            "o": user[tmpMetric.short_code],
+                            "n": escapedMetricVal
                         };
-    
-                    if (Object.keys(tmpTimeObjZero).length) {
-                        updateObjZero["$inc"] = tmpTimeObjZero;
                     }
-    
-                    if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
-                        common.db.collection(predefinedMetrics[i].db).update({'_id': tmpZeroId}, updateObjZero, {'upsert': true}, function(){});
+                    common.fillTimeObjectZero(params, tmpTimeObjZero, zeroObjUpdate);
+                    common.fillTimeObjectMonth(params, tmpTimeObjMonth, monthObjUpdate);
+            
+                    if (needsUpdate) {
+                        var tmpZeroId = params.app_id + "_" + dateIds.zero + "_" + postfix,
+                            tmpMonthId = params.app_id + "_" + dateIds.month + "_" + postfix,
+                            updateObjZero = {
+                                $set: { m: dateIds.zero, a: params.app_id + "" },
+                                $addToSet: tmpSet
+                            };
+            
+                        if (Object.keys(tmpTimeObjZero).length) {
+                            updateObjZero["$inc"] = tmpTimeObjZero;
+                        }
+            
+                        if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
+                            common.db.collection(predefinedMetrics[i].db).update({'_id': tmpZeroId}, updateObjZero, {'upsert': true}, function(){});
+                        }
+            
+                        common.db.collection(predefinedMetrics[i].db).update({'_id': tmpMonthId}, {$set: {m: dateIds.month, a: params.app_id + ""}, '$inc': tmpTimeObjMonth}, {'upsert': true}, function(){});
                     }
-    
-                    common.db.collection(predefinedMetrics[i].db).update({'_id': tmpMonthId}, {$set: {m: dateIds.month, a: params.app_id + ""}, '$inc': tmpTimeObjMonth}, {'upsert': true}, function(){});
                 }
             }
+        }
 
-            if (isNewUser) {
-                common.updateAppUser(params, {'$inc': {'sc': 1}, '$set': userProps});
+        if (isNewUser) {
+            common.updateAppUser(params, {'$inc': {'sc': 1}, '$set': userProps});
+            //Perform user retention analysis
+            plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
+            if (done) { done(); }
+        } else {
+            // sc: session count. common.dbUserMap is not used here for readability purposes.
+            common.updateAppUser(params, {'$inc': {'sc': 1}, '$set': userProps}, function(){
                 //Perform user retention analysis
                 plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
-                if (done) { done(); }
-            } else {
-                // sc: session count. common.dbUserMap is not used here for readability purposes.
-                common.updateAppUser(params, {'$inc': {'sc': 1}, '$set': userProps}, function(){
-                    //Perform user retention analysis
-                    plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
-                });
-                /*
-                If metricChanges object contains a uid this means we have at least one metric that has changed
-                in this begin_session so we'll insert it into metric_changesAPPID collection.
-                Inserted document has below format;
+            });
+            /*
+            If metricChanges object contains a uid this means we have at least one metric that has changed
+            in this begin_session so we'll insert it into metric_changesAPPID collection.
+            Inserted document has below format;
     
-                { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
-                */
-                if (metricChanges.uid) {
-                    common.db.collection('metric_changes' + params.app_id).insert(metricChanges);
-                }
-    
-                if (done) { done(); }
+            { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
+            */
+            if (metricChanges.uid) {
+                common.db.collection('metric_changes' + params.app_id).insert(metricChanges);
             }
-        });
-
+    
+            if (done) { done(); }
+        }
+        
         return true;
     }
 
