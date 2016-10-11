@@ -507,7 +507,7 @@ var usage = {},
                     
                     //making sure metrics are strings
                     needsUpdate = true;
-                    tmpSet["meta." + tmpMetric.set] = escapedMetricVal;
+                    tmpSet["meta_hash." + tmpMetric.set + "." + escapedMetricVal] = true;
         
                     monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['total']);
         
@@ -555,11 +555,12 @@ var usage = {},
                     common.fillTimeObjectMonth(params, tmpTimeObjMonth, monthObjUpdate);
             
                     if (needsUpdate) {
+                        tmpSet.m = dateIds.zero;
+                        tmpSet.a = params.app_id + "";
                         var tmpZeroId = params.app_id + "_" + dateIds.zero + "_" + postfix,
                             tmpMonthId = params.app_id + "_" + dateIds.month + "_" + postfix,
                             updateObjZero = {
-                                $set: { m: dateIds.zero, a: params.app_id + "" },
-                                $addToSet: tmpSet
+                                $set: tmpSet
                             };
             
                         if (Object.keys(tmpTimeObjZero).length) {

@@ -811,6 +811,7 @@ var fetch = {},
                     }
         
                     if (month == 0) {
+                        //old meta merge
                         if (mergedDataObj['meta']) {
                             for (var metaEl in dataObjects[i]['meta']) {
                                 if (mergedDataObj['meta'][metaEl]) {
@@ -820,7 +821,18 @@ var fetch = {},
                                 }
                             }
                         } else {
-                            mergedDataObj['meta'] = dataObjects[i]['meta'] || [];
+                            mergedDataObj['meta'] = dataObjects[i]['meta'] || {};
+                        }
+                        
+                        //new meta merge as hash tables
+                        if(dataObjects[i]['meta_hash']){
+                            for (var metaEl in dataObjects[i]['meta_hash']) {
+                                if (mergedDataObj['meta'][metaEl]) {
+                                    mergedDataObj['meta'][metaEl] = union(mergedDataObj['meta'][metaEl], Object.keys(dataObjects[i]['meta_hash'][metaEl]));
+                                } else {
+                                    mergedDataObj['meta'][metaEl] = Object.keys(dataObjects[i]['meta_hash'][metaEl]);
+                                }
+                            }
                         }
         
                         if (mergedDataObj[year]) {
