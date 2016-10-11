@@ -307,7 +307,7 @@ var plugin = {},
         postfix = common.crypto.createHash("md5").update(escapedMetricVal).digest('base64')[0];
     
         //making sure metrics are strings
-        tmpSet["meta." + tmpMetric.set] = escapedMetricVal;
+        tmpSet["meta_hash." + tmpMetric.set + "." + escapedMetricVal] = true;
         
         var dateIds = common.getDateIds(params),
             tmpZeroId = "no-segment_" + dateIds.zero + "_" + postfix,
@@ -390,11 +390,11 @@ var plugin = {},
             }
             
             if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
-                var update = {$set: {m: dateIds.zero, a: params.app_id + ""}};
+                tmpSet.m = dateIds.zero;
+                tmpSet.a = params.app_id + "";
+                var update = {$set: tmpSet};
                 if(Object.keys(tmpTimeObjZero).length)
                     update["$inc"] = tmpTimeObjZero;
-                if(Object.keys(tmpSet).length)
-                    update["$addToSet"] = tmpSet;
                 common.db.collection("app_viewdata"+params.app_id).update({'_id': tmpZeroId}, update, {'upsert': true}, function(){});
                 if(typeof currEvent.segmentation.segment != "undefined"){
                     common.db.collection("app_viewdata"+params.app_id).update({'_id': currEvent.segmentation.segment+"_"+dateIds.zero + "_" + postfix}, update, {'upsert': true}, function(){});
