@@ -303,14 +303,15 @@ var plugin = {},
         tmpSet = {},
         zeroObjUpdate = [],
         monthObjUpdate = [],
-        escapedMetricVal = (currEvent.segmentation.name+"").replace(/^\$/, "").replace(/\./g, "&#46;");
+        escapedMetricVal = (currEvent.segmentation.name+"").replace(/^\$/, "").replace(/\./g, "&#46;"),
+        postfix = common.crypto.createHash("md5").update(escapedMetricVal).digest('base64')[0];
     
         //making sure metrics are strings
         tmpSet["meta." + tmpMetric.set] = escapedMetricVal;
         
         var dateIds = common.getDateIds(params),
-            tmpZeroId = "no-segment_" + dateIds.zero,
-            tmpMonthId = "no-segment_" + dateIds.month;
+            tmpZeroId = "no-segment_" + dateIds.zero + "_" + postfix,
+            tmpMonthId = "no-segment_" + dateIds.month + "_" + postfix;
                 
         common.db.collection("app_viewdata"+params.app_id).findOne({'_id': tmpMonthId}, {meta:1}, function(err, res){
             //checking if view should be ignored because of limit
@@ -396,7 +397,7 @@ var plugin = {},
                     update["$addToSet"] = tmpSet;
                 common.db.collection("app_viewdata"+params.app_id).update({'_id': tmpZeroId}, update, {'upsert': true}, function(){});
                 if(typeof currEvent.segmentation.segment != "undefined"){
-                    common.db.collection("app_viewdata"+params.app_id).update({'_id': currEvent.segmentation.segment+"_"+dateIds.zero}, update, {'upsert': true}, function(){});
+                    common.db.collection("app_viewdata"+params.app_id).update({'_id': currEvent.segmentation.segment+"_"+dateIds.zero + "_" + postfix}, update, {'upsert': true}, function(){});
                 }
             }
             
@@ -408,7 +409,7 @@ var plugin = {},
                     update["$addToSet"] = tmpSet;
                 common.db.collection("app_viewdata"+params.app_id).update({'_id': tmpMonthId}, update, {'upsert': true}, function(){});
                 if(typeof currEvent.segmentation.segment != "undefined"){
-                    common.db.collection("app_viewdata"+params.app_id).update({'_id': currEvent.segmentation.segment+"_"+dateIds.month}, update, {'upsert': true}, function(){});
+                    common.db.collection("app_viewdata"+params.app_id).update({'_id': currEvent.segmentation.segment+"_"+dateIds.month + "_" + postfix}, update, {'upsert': true}, function(){});
                 }
             }
         });
