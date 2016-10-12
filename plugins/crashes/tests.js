@@ -25,34 +25,36 @@ function verifyMetrics(ob, correct){
 	ob.should.have.property("meta").eql(correct.meta);
 	for(i in ob)
 	{
-		ob.should.have.property(i).and.not.eql({});
-		if(RE.test(i))
-		{
-			for(var c in correct){
-				if(c != "meta")
-					ob[i].should.have.property(c, correct[c]);
-			}
-			for(j in ob[i])
-			{
-				if(RE.test(j))
-				{
-					for(var c in correct){
-						if(c != "meta")
-							ob[i][j].should.have.property(c, correct[c]);
-					}
-					for(k in ob[i][j])
-					{
-						if(RE.test(k))
-						{
-							for(var c in correct){
-								if(c != "meta")
-									ob[i][j][k].should.have.property(c, correct[c]);
-							}
-						}
-					}
-				}
-			}
-		}
+        if(i != "meta"){
+            ob.should.have.property(i).and.not.eql({});
+            if(RE.test(i))
+            {
+                for(var c in correct){
+                    if(c != "meta")
+                        ob[i].should.have.property(c, correct[c]);
+                }
+                for(j in ob[i])
+                {
+                    if(RE.test(j))
+                    {
+                        for(var c in correct){
+                            if(c != "meta")
+                                ob[i][j].should.have.property(c, correct[c]);
+                        }
+                        for(k in ob[i][j])
+                        {
+                            if(RE.test(k))
+                            {
+                                for(var c in correct){
+                                    if(c != "meta")
+                                        ob[i][j][k].should.have.property(c, correct[c]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
 	}
 };
 
