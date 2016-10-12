@@ -375,47 +375,53 @@ if (cluster.isMaster) {
                         }
                         common.db.collection('app_users' + params.app_id).findAndModify({_id:"uid-sequence"},{},{$inc:{seq:1}},{new:true}, function(err,result){
                             result = result && result.ok ? result.value : null;
-                            if (result && result.seq && result.length != 0) {
+                            if (result && result.seq) {
                                 params.app_user.uid = parseSequence(result.seq);
                                 common.updateAppUser(params, {$set:{uid:params.app_user.uid}});
+                                processRequestData();
                             }
                         });
                     }
-                    
-                    plugins.dispatch("/i", {params:params, app:app});
-            
-                    if (params.qstring.events) {
-                        if(params.promises)
-                            params.promises.push(countlyApi.data.events.processEvents(params));
-                        else
-                            countlyApi.data.events.processEvents(params);
-                    } else if (plugins.getConfig("api").safe) {
-                        common.returnMessage(params, 200, 'Success');
+                    else{
+                        processRequestData();
                     }
-            
-                    if (params.qstring.begin_session) {
-                        countlyApi.data.usage.beginUserSession(params, done);
-                    } else if (params.qstring.end_session) {
-                        if (params.qstring.session_duration) {
-                            countlyApi.data.usage.processSessionDuration(params, function () {
+                    
+                    function processRequestData(){
+                        plugins.dispatch("/i", {params:params, app:app});
+                
+                        if (params.qstring.events) {
+                            if(params.promises)
+                                params.promises.push(countlyApi.data.events.processEvents(params));
+                            else
+                                countlyApi.data.events.processEvents(params);
+                        } else if (plugins.getConfig("api").safe) {
+                            common.returnMessage(params, 200, 'Success');
+                        }
+                
+                        if (params.qstring.begin_session) {
+                            countlyApi.data.usage.beginUserSession(params, done);
+                        } else if (params.qstring.end_session) {
+                            if (params.qstring.session_duration) {
+                                countlyApi.data.usage.processSessionDuration(params, function () {
+                                    countlyApi.data.usage.endUserSession(params, done);
+                                });
+                            } else {
                                 countlyApi.data.usage.endUserSession(params, done);
+                            }
+                        } else if (params.qstring.session_duration) {
+                            countlyApi.data.usage.processSessionDuration(params, function () {
+                                return done ? done() : false;
                             });
                         } else {
-                            countlyApi.data.usage.endUserSession(params, done);
-                        }
-                    } else if (params.qstring.session_duration) {
-                        countlyApi.data.usage.processSessionDuration(params, function () {
+                            // begin_session, session_duration and end_session handle incrementing request count in usage.js
+                            var dbDateIds = common.getDateIds(params),
+                                updateUsers = {};
+                
+                            common.fillTimeObjectMonth(params, updateUsers, common.dbMap['events']);
+                            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, {'upsert':true}, function(err, res){});
+                            
                             return done ? done() : false;
-                        });
-                    } else {
-                        // begin_session, session_duration and end_session handle incrementing request count in usage.js
-                        var dbDateIds = common.getDateIds(params),
-                            updateUsers = {};
-            
-                        common.fillTimeObjectMonth(params, updateUsers, common.dbMap['events']);
-                        common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, {'upsert':true}, function(err, res){});
-                        
-                        return done ? done() : false;
+                        }
                     }
                 } else {
                     return done ? done() : false;
