@@ -401,12 +401,10 @@ var plugin = {},
                 }
             }
             
-            if (Object.keys(tmpTimeObjMonth).length || Object.keys(tmpSet).length){
+            if (Object.keys(tmpTimeObjMonth).length){
                 var update = {$set: {m: dateIds.month, a: params.app_id + ""}};
                 if(Object.keys(tmpTimeObjMonth).length)
                     update["$inc"] = tmpTimeObjMonth;
-                if(Object.keys(tmpSet).length)
-                    update["$addToSet"] = tmpSet;
                 common.db.collection("app_viewdata"+params.app_id).update({'_id': tmpMonthId}, update, {'upsert': true}, function(){});
                 if(typeof currEvent.segmentation.segment != "undefined"){
                     common.db.collection("app_viewdata"+params.app_id).update({'_id': currEvent.segmentation.segment+"_"+dateIds.month + "_" + postfix}, update, {'upsert': true}, function(){});
