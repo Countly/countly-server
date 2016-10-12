@@ -342,8 +342,8 @@ var usage = {},
             }
 
             if (uniqueLevelsZero.length != 0 || uniqueLevelsMonth.length != 0) {
-                usersMeta['meta.f-ranges'] = calculatedFrequency;
-                usersMeta['meta.l-ranges'] = calculatedLoyaltyRange;
+                usersMeta['meta_hash.f-ranges.'+calculatedFrequency] = true;
+                usersMeta['meta_hash.l-ranges.'+calculatedLoyaltyRange] = true;
             }
             
             plugins.dispatch("/session/begin", {params:params, isNewUser:isNewUser});
@@ -368,21 +368,22 @@ var usage = {},
             zeroObjUpdate.push(common.dbMap['loyalty'] + '.' + calculatedLoyaltyRange);
             monthObjUpdate.push(common.dbMap['loyalty'] + '.' + calculatedLoyaltyRange);
 
-            usersMeta['meta.f-ranges'] = calculatedFrequency;
-            usersMeta['meta.l-ranges'] = calculatedLoyaltyRange;
+            usersMeta['meta_hash.f-ranges.'+calculatedFrequency] = true;
+            usersMeta['meta_hash.l-ranges.'+calculatedLoyaltyRange] = true;
 
             plugins.dispatch("/session/begin", {params:params, isNewUser:isNewUser});
         }
 
-        usersMeta['meta.countries'] = params.user.country || "Unknown";
+        usersMeta['meta_hash.countries.'+(params.user.country || "Unknown")] = true;
 
         common.fillTimeObjectZero(params, updateUsersZero, zeroObjUpdate);
         common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate);
 
         if (Object.keys(updateUsersZero).length || Object.keys(usersMeta).length) {
+            usersMeta.m = dbDateIds.zero;
+            usersMeta.a = params.app_id + "";
             var updateObjZero = {
-                $set: { m: dbDateIds.zero, a: params.app_id + "" },
-                $addToSet: usersMeta
+                $set: usersMeta
             };
 
             if (Object.keys(updateUsersZero).length) {
