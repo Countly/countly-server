@@ -140,56 +140,58 @@ var testUtils = function testUtils(){
 		//ob.should.have.property("meta", {"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"]});
 		for(i in ob)
 		{
-			ob.should.have.property(i).and.not.eql({});
-			if(RE.test(i))
-			{
-				for(var c in correct){
-					if(c == "Unknown")
-						ob[i].should.have.property(c, {"u":correct.u,"t":correct.t,"n":correct.n});
-					else if(c != "meta")
-						ob[i].should.have.property(c, correct[c]);
-				}
-				for(j in ob[i])
-				{
-					if(RE.test(j))
-					{
-						for(var c in correct){
-							if(c == "Unknown")
-								ob[i][j].should.have.property(c, {"u":correct.u,"t":correct.t,"n":correct.n});
-							else if(c != "meta")
-								ob[i][j].should.have.property(c, correct[c]);
-						}
-						for(k in ob[i][j])
-						{
-							if(RE.test(k))
-							{
-								for(var c in correct){
-									if(c == "Unknown")
-										ob[i][j][k].should.have.property(c, {"u":correct.u,"t":correct.t,"n":correct.n});
-									else if(c != "meta")
-										ob[i][j][k].should.have.property(c, correct[c]);
-								}
-							}
-						}
-					}
-					else if(j.indexOf("w") == 0){
-						var w = {};
-						if(correct.u)
-							w["u"] = correct.u;
-						if(correct.f)
-							w["f"] = correct.f;
-						if(correct.l)
-							w["l"] = correct.l;
-						if(correct.ds)
-							w["ds"] = correct.ds;
-						if(correct.p)
-							w["p"] = correct.p;
-						if(correct.Unknown)
-							w["Unknown"] = {"u":correct.u};
-						ob[i].should.have.property(j, w);
-					}
-				}
-			}
+            if(i != "meta"){
+                ob.should.have.property(i).and.not.eql({});
+                if(RE.test(i))
+                {
+                    for(var c in correct){
+                        if(c == "Unknown")
+                            ob[i].should.have.property(c, {"u":correct.u,"t":correct.t,"n":correct.n});
+                        else if(c != "meta")
+                            ob[i].should.have.property(c, correct[c]);
+                    }
+                    for(j in ob[i])
+                    {
+                        if(RE.test(j))
+                        {
+                            for(var c in correct){
+                                if(c == "Unknown")
+                                    ob[i][j].should.have.property(c, {"u":correct.u,"t":correct.t,"n":correct.n});
+                                else if(c != "meta")
+                                    ob[i][j].should.have.property(c, correct[c]);
+                            }
+                            for(k in ob[i][j])
+                            {
+                                if(RE.test(k))
+                                {
+                                    for(var c in correct){
+                                        if(c == "Unknown")
+                                            ob[i][j][k].should.have.property(c, {"u":correct.u,"t":correct.t,"n":correct.n});
+                                        else if(c != "meta")
+                                            ob[i][j][k].should.have.property(c, correct[c]);
+                                    }
+                                }
+                            }
+                        }
+                        else if(j.indexOf("w") == 0){
+                            var w = {};
+                            if(correct.u)
+                                w["u"] = correct.u;
+                            if(correct.f)
+                                w["f"] = correct.f;
+                            if(correct.l)
+                                w["l"] = correct.l;
+                            if(correct.ds)
+                                w["ds"] = correct.ds;
+                            if(correct.p)
+                                w["p"] = correct.p;
+                            if(correct.Unknown)
+                                w["Unknown"] = {"u":correct.u};
+                            ob[i].should.have.property(j, w);
+                        }
+                    }
+                }
+            }
 		}
 		setTimeout(done, 10000)
 	};
