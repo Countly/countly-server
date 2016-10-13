@@ -67,7 +67,8 @@ And, if you liked Countly, [why not use one of our badges](https://count.ly/bran
 ##Links
 
 * [Countly web page](http://count.ly)
-* [Countly support](http://support.count.ly)
+* [Questions? Ask our forum](http://community.count.ly)
+* [Slack user? Come chat with us](http://slack.count.ly:3000)
 * [Documentation & API reference guide](http://resources.count.ly)
 * [Comparison of Countly editions](https://count.ly/compare)
 * [White labeling & rebranding options](https://count.ly/whitelabel-analytics/)
