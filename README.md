@@ -2,9 +2,9 @@
 
 **We're hiring:** Countly is looking for Android SDK developers, full stack devs, devops and growth hackers (remote work). [Click this link for job description](https://angel.co/countly/jobs/)
 
-**Are you a plugin developer?** [Contact us](http://count.ly/contact-us) if you like to work / working on a specific [plugin](http://count.ly/plugins) and we can discuss details on how we can work together in a lively environment!
-
 **Slack user?** [Join our Slack community](http://slack.count.ly:3000/)
+
+**Questions?** [Ask in our Community forum](http://community.count.ly)
 
 ##What's Countly?
 [Countly](http://count.ly) is an innovative, real-time, open source mobile & [web analytics](http://count.ly/web-analytics), [push notifications](http://count.ly/push-notifications) and [crash reporting](http://count.ly/crash-reports) platform powering nearly 3000 mobile applications. It collects data from mobile phones, tablets, Apple Watch and other internet-connected devices, and visualizes this information to analyze mobile application usage and end-user behavior. 
@@ -66,10 +66,10 @@ And, if you liked Countly, [why not use one of our badges](https://count.ly/bran
 
 ##Links
 
-* [Countly web page](http://count.ly)
+* [General product information](http://count.ly/product)
 * [Questions? Ask our forum](http://community.count.ly)
 * [Slack user? Come chat with us](http://slack.count.ly:3000)
 * [Documentation & API reference guide](http://resources.count.ly)
 * [Comparison of Countly editions](https://count.ly/compare)
 * [White labeling & rebranding options](https://count.ly/whitelabel-analytics/)
-* [Extended features of Countly Enterprise Edition](https://count.ly/enterprise-edition-features), including crash reports, referral analytics, user profiles, geolocations with push, detailed segmentation, funnels, real-time dashboard and more.
+* [Extended list of Enterprise Edition features](https://count.ly/enterprise-edition-features), including crash reports, referral analytics, user profiles, geolocations with push, detailed segmentation, funnels, real-time dashboard and more.
