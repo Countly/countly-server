@@ -1,10 +1,8 @@
 #Countly [![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Install Countly on DigitalOcean](http://do.count.ly/button.svg?v2)](http://do.count.ly)
 
-**We're hiring:** Countly is looking for Android SDK developers, full stack devs, devops and growth hackers (remote work). [Click this link for job description](https://angel.co/countly/jobs/)
-
-**Slack user?** [Join our Slack community](http://slack.count.ly:3000/)
-
-**Questions?** [Ask in our Community forum](http://community.count.ly)
+* **We're hiring:** Countly is looking for Android SDK developers, full stack devs, devops and growth hackers (remote work). [Click this link for job description](https://angel.co/countly/jobs/)
+* **Slack user?** [Join our Slack community](http://slack.count.ly:3000/)
+* **Questions?** [Ask in our Community forum](http://community.count.ly)
 
 ##What's Countly?
 [Countly](http://count.ly) is an innovative, real-time, open source mobile & [web analytics](http://count.ly/web-analytics), [push notifications](http://count.ly/push-notifications) and [crash reporting](http://count.ly/crash-reports) platform powering nearly 3000 mobile applications. It collects data from mobile phones, tablets, Apple Watch and other internet-connected devices, and visualizes this information to analyze mobile application usage and end-user behavior. 
