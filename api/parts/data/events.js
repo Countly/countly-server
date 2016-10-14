@@ -60,8 +60,26 @@ var countlyEvents = {},
                     var appSgValues = {};
     
                     for (var i = 0; i < eventMetaDocs.length; i++) {
-                        if (eventMetaDocs[i].coll && eventMetaDocs[i].meta) {
-                            appSgValues[eventMetaDocs[i].coll] = eventMetaDocs[i].meta;
+                        if (eventMetaDocs[i].coll) {
+                            if(eventMetaDocs[i].meta){
+                                if(eventMetaDocs[i].meta_hash){
+                                    for(var segment in eventMetaDocs[i].meta){
+                                        for(var j = 0; j < eventMetaDocs[i].meta[segment].length; j++){
+                                            if(!eventMetaDocs[i].meta_hash[segment])
+                                                eventMetaDocs[i].meta_hash[segment] = {};
+                                            eventMetaDocs[i].meta_hash[segment][eventMetaDocs[i].meta[segment][j]] = true;
+                                        }
+                                        eventMetaDocs[i].meta[segment] = Object.keys(eventMetaDocs[i].meta_hash[segment]);
+                                    }
+                                }
+                                appSgValues[eventMetaDocs[i].coll] = eventMetaDocs[i].meta;
+                            }
+                            else if(eventMetaDocs[i].meta_hash){
+                                appSgValues[eventMetaDocs[i].coll] = {};
+                                for(var segment in eventMetaDocs[i].meta_hash){
+                                    appSgValues[eventMetaDocs[i].coll][segment] = Object.keys(eventMetaDocs[i].meta_hash[segment]);
+                                }
+                            }
                         }
                     }
     
@@ -69,7 +87,7 @@ var countlyEvents = {},
                 });
     
                 function fetchEventMeta(metaToFetch, callback) {
-                    common.db.collection(metaToFetch.coll).findOne({'_id':metaToFetch.id}, {meta:1}, function (err, eventMetaDoc) {
+                    common.db.collection(metaToFetch.coll).findOne({'_id':metaToFetch.id}, {meta:1, meta_hash:1}, function (err, eventMetaDoc) {
                         var retObj = eventMetaDoc || {};
                         retObj.coll = metaToFetch.coll;
     
@@ -129,6 +147,10 @@ var countlyEvents = {},
             // If present use timestamp inside each event while recording
             if (params.qstring.events[i].timestamp) {
                 params.time = common.initTimeObj(params.appTimezone, params.qstring.events[i].timestamp);
+            }
+            else{
+                //switch back to request time
+                params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
             }
 
             common.arrayAddUniq(events, shortEventName);
@@ -363,12 +385,17 @@ var countlyEvents = {},
                 if (!eventSegmentList['$addToSet']["segments." + realEventKey]) {
                     eventSegmentList['$addToSet']["segments." + realEventKey] = {};
                 }
-
-                if (eventSegments[event]['meta.segments']) {
-                    if (eventSegmentList['$addToSet']["segments." + realEventKey] && eventSegmentList['$addToSet']["segments." + realEventKey]["$each"]) {
-                        common.arrayAddUniq(eventSegmentList['$addToSet']["segments." + realEventKey]["$each"], eventSegments[event]['meta.segments']["$each"]);
-                    } else {
-                        eventSegmentList['$addToSet']["segments." + realEventKey] = eventSegments[event]['meta.segments'];
+                
+                if (eventSegments[event]) {
+                    for(var segment in eventSegments[event]){
+                        if(segment.indexOf("meta_hash.segments.") === 0){
+                            var name = segment.replace("meta_hash.segments.", "");
+                            if (eventSegmentList['$addToSet']["segments." + realEventKey] && eventSegmentList['$addToSet']["segments." + realEventKey]["$each"]) {
+                                common.arrayAddUniq(eventSegmentList['$addToSet']["segments." + realEventKey]["$each"], name);
+                            } else {
+                                eventSegmentList['$addToSet']["segments." + realEventKey] = {$each:[name]};
+                            }
+                        }
                     }
                 }
             }

@@ -703,6 +703,7 @@ var fetch = {},
 
             if (isCustomEvent) {
                 fetchFromZero['meta'] = 1;
+                fetchFromZero['meta_hash'] = 1;
                 fetchFromZero['m'] = 1;
                 fetchFromMonth["d." + params.time.day] = 1;
                 fetchFromMonth["m"] = 1;
@@ -710,6 +711,7 @@ var fetch = {},
                 fetchFromZero["d." + common.dbMap.unique] = 1;
                 fetchFromZero["d." + params.time.month + "." + common.dbMap.unique] = 1;
                 fetchFromZero['meta'] = 1;
+                fetchFromZero['meta_hash'] = 1;
                 fetchFromZero['m'] = 1;
 
                 fetchFromMonth["d.w" + params.time.weekly + "." + common.dbMap.unique] = 1;
