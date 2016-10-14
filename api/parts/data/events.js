@@ -232,24 +232,11 @@ var countlyEvents = {},
                     if (!eventSegments[eventCollectionName + "." + dateIds.zero]) {
                         eventSegments[eventCollectionName + "." + dateIds.zero] = {};
                     }
-
-                    if (!eventSegments[eventCollectionName + "." + dateIds.zero]['meta.' + segKey]) {
-                        eventSegments[eventCollectionName + "." + dateIds.zero]['meta.' + segKey] = {};
-                    }
-
-                    if (eventSegments[eventCollectionName + "." + dateIds.zero]['meta.' + segKey]["$each"] && eventSegments[eventCollectionName + "." + dateIds.zero]['meta.' + segKey]["$each"].length) {
-                        common.arrayAddUniq(eventSegments[eventCollectionName + "." + dateIds.zero]['meta.' + segKey]["$each"], tmpSegVal);
-                    } else {
-                        eventSegments[eventCollectionName + "." + dateIds.zero]['meta.' + segKey]["$each"] = [tmpSegVal];
-                    }
-
-                    if (!eventSegments[eventCollectionName + "." + dateIds.zero]["meta.segments"]) {
-                        eventSegments[eventCollectionName + "." + dateIds.zero]["meta.segments"] = {};
-                        eventSegments[eventCollectionName + "." + dateIds.zero]["meta.segments"]["$each"] = [];
-                    }
-
-                    common.arrayAddUniq(eventSegments[eventCollectionName + "." + dateIds.zero]["meta.segments"]["$each"], segKey);
-                    tmpEventColl[segKey + "." + dateIds.month] = tmpEventObj;
+                    
+                    eventSegments[eventCollectionName + "." + dateIds.zero]['meta_hash.' + segKey + '.' + tmpSegVal]= true;
+                    eventSegments[eventCollectionName + "." + dateIds.zero]["meta_hash.segments."+segKey] = true;
+                    var postfix = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
+                    tmpEventColl[segKey + "." + dateIds.month + "." + postfix] = tmpEventObj;
                 }
             }
 
@@ -271,15 +258,15 @@ var countlyEvents = {},
                         } else {
                             zeroId = eventSegmentsZeroes[collection][i];
                         }
-
-                        common.db.collection(collection).update({'_id': "no-segment_" + zeroId}, {$set: {"m":zeroId, "s":"no-segment"}, '$addToSet': eventSegments[collection + "." +  zeroId]}, {'upsert': true}, function(err, res) {});
+                        eventSegments[collection + "." +  zeroId].m = zeroId;
+                        eventSegments[collection + "." +  zeroId].s = "no-segment";
+                        common.db.collection(collection).update({'_id': "no-segment_" + zeroId}, {$set: eventSegments[collection + "." +  zeroId]}, {'upsert': true}, function(err, res) {});
                     }
                 }
 
                 for (var segment in eventCollections[collection]) {
                     var collIdSplits = segment.split("."),
-                        collId = segment.replace(".","_");
-
+                        collId = segment.replace(/\./g,"_");
                     common.db.collection(collection).update({'_id': collId}, {$set: {"m":collIdSplits[1], "s":collIdSplits[0]}, "$inc":eventCollections[collection][segment]}, {'upsert': true}, function(err, res) {});
                 }
             }
@@ -296,18 +283,21 @@ var countlyEvents = {},
                         } else {
                             zeroId = eventSegmentsZeroes[collection][i];
                         }
+                        
+                        eventSegments[collection + "." +  zeroId].m = zeroId;
+                        eventSegments[collection + "." +  zeroId].s = "no-segment";
 
                         eventDocs.push({
                             "collection": collection,
                             "_id": "no-segment_" + zeroId,
-                            "updateObj": {$set: {"m":zeroId, "s":"no-segment"}, '$addToSet': eventSegments[collection + "." +  zeroId]}
+                            "updateObj": {$set: eventSegments[collection + "." +  zeroId]}
                         });
                     }
                 }
 
                 for (var segment in eventCollections[collection]) {
                     var collIdSplits = segment.split("."),
-                        collId = segment.replace(".","_");
+                        collId = segment.replace(/\./g,"_");
 
                     eventDocs.push({
                         "collection": collection,
