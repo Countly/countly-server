@@ -30,11 +30,11 @@ exports.encrypt = function(text, key, iv, algorithm, input_encoding, output_enco
         cipher = crypto.createCipher(algorithm, key);
     crypted = cipher.update(text, input_encoding, output_encoding);
     crypted += cipher.final(output_encoding);
-    return crypted+"|true";
+    return crypted+"[CLY]_true";
 };
 
 exports.decrypt = function(crypted, key, iv, algorithm, input_encoding, output_encoding) {
-    if(crypted.lastIndexOf("[CLY]_true") !== crypted.length - 10){
+    if(crypted.lastIndexOf("[CLY]_true") !== -1 && crypted.lastIndexOf("[CLY]_true") !== crypted.length - 10){
         return crypted;
     }
     else{
