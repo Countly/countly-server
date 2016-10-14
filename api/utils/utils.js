@@ -30,7 +30,7 @@ exports.encrypt = function(text, key, iv, algorithm, input_encoding, output_enco
         cipher = crypto.createCipher(algorithm, key);
     crypted = cipher.update(text, input_encoding, output_encoding);
     crypted += cipher.final(output_encoding);
-    return crypted+"|true";
+    return crypted+"[CLY]_true";
 };
 
 exports.decrypt = function(crypted, key, iv, algorithm, input_encoding, output_encoding) {
