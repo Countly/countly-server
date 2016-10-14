@@ -24,11 +24,22 @@ There are two parts of Countly: the server that collects and analyzes data, and 
 * **Express.js** Popular Node.js web application framework 
 * **Linux** What we love using ;-)
 
-Plus lots of open source libraries!
+Plus lots of [open source libraries](http://resources.count.ly/docs/list-of-open-source-components-in-countly)!
 
 ##Security
 
 We take security very seriously at Countly. Community Edition code is 100% open source and peer reviewed, to ensure nobody's Countly instance is ever compromised or hacked. If you wish to report a security issue, please email security@count.ly
+
+##What makes Countly unique? 
+
+Countly is a unique, security-focused and 360-degree analytics approach with several, unique values:
+
+* Real-time mobile analytics, web analytics and push notifications.
+* Your data, your rules - since you can install Countly on your own server, or let us do the private cloud installations for you.
+* Configurable and extensible via open source [plugins](http://count.ly/plugins).
+* Modern and easy to use web dashboard with a focus on user experience, helping to get complex insights easily.
+* Tracking more than 2500 web sites and 4500 mobile applications.
+* Collecting more than 60 billion datapoints worlwide.
 
 ##Installing & upgrading Countly server
 
