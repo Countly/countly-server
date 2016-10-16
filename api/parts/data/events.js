@@ -51,8 +51,8 @@ var countlyEvents = {},
                     }
     
                     metaToFetch.push({
-                    coll: eventCollectionName,
-                    id: "no-segment_" + common.getDateIds(params).zero
+                        coll: eventCollectionName,
+                        id: "no-segment_" + common.getDateIds(params).zero
                     });
                 }
     
@@ -221,21 +221,23 @@ var countlyEvents = {},
                     }
 
                     common.fillTimeObjectMonth(params, tmpEventObj, tmpSegVal + '.' + common.dbMap['count'], currEvent.count);
+                    
+                    var postfix = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
 
                     if (!eventSegmentsZeroes[eventCollectionName]) {
                         eventSegmentsZeroes[eventCollectionName] = [];
-                        common.arrayAddUniq(eventSegmentsZeroes[eventCollectionName], dateIds.zero);
+                        common.arrayAddUniq(eventSegmentsZeroes[eventCollectionName], dateIds.zero + "." + postfix);
                     } else {
-                        common.arrayAddUniq(eventSegmentsZeroes[eventCollectionName], dateIds.zero);
-                    }
-
-                    if (!eventSegments[eventCollectionName + "." + dateIds.zero]) {
-                        eventSegments[eventCollectionName + "." + dateIds.zero] = {};
+                        common.arrayAddUniq(eventSegmentsZeroes[eventCollectionName], dateIds.zero + "." + postfix);
                     }
                     
-                    eventSegments[eventCollectionName + "." + dateIds.zero]['meta_hash.' + segKey + '.' + tmpSegVal]= true;
-                    eventSegments[eventCollectionName + "." + dateIds.zero]["meta_hash.segments."+segKey] = true;
-                    var postfix = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
+                    if (!eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]) {
+                        eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix] = {};
+                    }
+                    
+                    eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]['meta_hash.' + segKey + '.' + tmpSegVal]= true;
+                    eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]["meta_hash.segments."+segKey] = true;
+ 
                     tmpEventColl[segKey + "." + dateIds.month + "." + postfix] = tmpEventObj;
                 }
             }
@@ -258,9 +260,9 @@ var countlyEvents = {},
                         } else {
                             zeroId = eventSegmentsZeroes[collection][i];
                         }
-                        eventSegments[collection + "." +  zeroId].m = zeroId;
+                        eventSegments[collection + "." +  zeroId].m = zeroId.split(".")[0];
                         eventSegments[collection + "." +  zeroId].s = "no-segment";
-                        common.db.collection(collection).update({'_id': "no-segment_" + zeroId}, {$set: eventSegments[collection + "." +  zeroId]}, {'upsert': true}, function(err, res) {});
+                        common.db.collection(collection).update({'_id': "no-segment_" + zeroId.replace(".", "_")}, {$set: eventSegments[collection + "." +  zeroId]}, {'upsert': true}, function(err, res) {});
                     }
                 }
 
@@ -284,12 +286,12 @@ var countlyEvents = {},
                             zeroId = eventSegmentsZeroes[collection][i];
                         }
                         
-                        eventSegments[collection + "." +  zeroId].m = zeroId;
+                        eventSegments[collection + "." +  zeroId].m = zeroId.split(".")[0];
                         eventSegments[collection + "." +  zeroId].s = "no-segment";
 
                         eventDocs.push({
                             "collection": collection,
-                            "_id": "no-segment_" + zeroId,
+                            "_id": "no-segment_" + zeroId.replace(".", "_"),
                             "updateObj": {$set: eventSegments[collection + "." +  zeroId]}
                         });
                     }
