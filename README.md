@@ -17,7 +17,33 @@ There are two parts of Countly: the server that collects and analyzes data, and 
 
 [Countly](http://count.ly) supports top-notch devices, including iOS, Android, Windows Phone and web apps. You can find a list of [official and community supported Countly SDK libraries here](https://count.ly/resources/source/download-sdk). Each SDK has its own installation instructions.
 
+##Built with 
+
+* **MongoDB** One of the most popular NoSQL databases
+* **Node.js** An open-source, cross-platform JavaScript runtime environment for developing a diverse variety of tools and applications.
+* **Express.js** Popular Node.js web application framework 
+* **Linux** What we love using ;-)
+
+Plus lots of [open source libraries](http://resources.count.ly/docs/list-of-open-source-components-in-countly)!
+
+##Security
+
+We take security very seriously at Countly. Community Edition code is 100% open source and peer reviewed, to ensure nobody's Countly instance is ever compromised or hacked. If you wish to report a security issue, please email security@count.ly
+
+##What makes Countly unique? 
+
+Countly is a unique, security-focused and 360-degree analytics approach with several, unique values:
+
+* Real-time mobile analytics, web analytics and push notifications.
+* Your data, your rules - since you can install Countly on your own server, or let us do the private cloud installations for you.
+* Configurable and extensible via open source [plugins](http://count.ly/plugins).
+* Modern and easy to use web dashboard with a focus on user experience, helping to get complex insights easily.
+* Tracking more than 2500 web sites and 4500 mobile applications.
+* Collecting more than 60 billion datapoints worlwide.
+
 ##Installing & upgrading Countly server
+
+We develop and test Countly on MongoDB, Node.js and Nginx. Installation script only needs a clean, decent Ubuntu/CentOS/RHEL Linux without any services listening to port 80 or 443 (which should also be not blocked), and takes care of every library and software required to be installed on Linux. 
 
 There are several ways to install Countly: 
 
@@ -33,10 +59,6 @@ There are several ways to install Countly:
 
 If you want to upgrade Countly from a previous version, please take a look at [upgrading documentation](resources.count.ly/v1.0/docs/upgrading-countly-server).
 
-##Dependencies
-
-We develop and test Countly on Ubuntu with MongoDB, Node.js and Nginx. Installation script only needs a clean, decent Ubuntu Linux without any services listening to port 80 and takes care of every library and software required to be installed on Ubuntu Linux. 
-
 ##API & Frontend
 
 Countly has a [well defined API](http://resources.count.ly), that reads from or writes to Node.js. Dashboard is built using this API, so it's possible to fetch any kind of information from Node process directly using Countly API. For those who are interested with building their own dashboard; important files are:
@@ -45,6 +67,8 @@ Countly has a [well defined API](http://resources.count.ly), that reads from or 
 - `frontend/express/public/javascripts/countly`, that contains seperate helper js files for each data visualization
 - `countly.session.js`, responsible for calculating session related metrics and 
 - `api/api.js`, which is Countly write and read API. 
+
+##Extensibility & plugins 
 
 Countly is extensible with [plugins](http://count.ly/plugins). We suggest [you read this document](http://resources.count.ly/docs/plugins-development-introduction) and start writing your plugin. We support companies with know-how in need to write their own plugins.
 
