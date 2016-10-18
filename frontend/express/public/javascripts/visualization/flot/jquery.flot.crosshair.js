@@ -96,8 +96,9 @@ The plugin also adds four public methods:
         };
 
         function onMouseOut(e) {
-            if (crosshair.locked)
-                return;
+            // onur, in order to remove crosshair if mouse is not on the graph
+            //if (crosshair.locked)
+            //    return;
 
             if (crosshair.x != -1) {
                 crosshair.x = -1;

@@ -71,6 +71,8 @@
 
         chartDP[0]["data"][0] = [-1, null];
         chartDP[0]["data"][appVersions.length + 1] = [appVersions.length, null];
+        chartDP[1]["data"][0] = [-1, null];
+        chartDP[1]["data"][appVersions.length + 1] = [appVersions.length, null];
 
         appVersionData.chartDP.ticks.push([-1, ""]);
         appVersionData.chartDP.ticks.push([appVersions.length, ""]);

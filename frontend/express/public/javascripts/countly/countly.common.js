@@ -125,7 +125,25 @@
                         graphProperties.xaxis.rotateTicks = 45;
                     }
 
-                    graphProperties.series = {stack:true, bars:{ show:true, align:"center", barWidth:0.6, tickLength:0 }};
+                    var barWidth = 0.6;
+
+                    switch(dataPoints.dp.length) {
+                        case 2:
+                            barWidth = 0.3;
+                            break;
+                        case 3:
+                            barWidth = 0.2;
+                            break;
+                    }
+
+                    for (var i = 0; i < dataPoints.dp.length; i++) {
+                        dataPoints.dp[i].bars = {
+                            order: i,
+                            barWidth: barWidth
+                        }
+                    }
+
+                    graphProperties.series = {stack:true, bars:{ show:true, barWidth:0.6, tickLength:0, fill:1 }};
                     graphProperties.xaxis.ticks = dataPoints.ticks;
                     break;
                 case "separate-bar":
@@ -163,26 +181,19 @@
             $.plot($(container), dataPoints.dp, graphProperties);
 
             if (graphType == "bar" || graphType == "separate-bar") {
-                var previousBar;
-
                 $(container).unbind("plothover");
                 $(container).bind("plothover", function (event, pos, item) {
-                    if (item) {
-                        var x = item.datapoint[0].toFixed(1).replace(".0", ""),
-                            y = item.datapoint[1].toFixed(1).replace(".0", "") - item.datapoint[2].toFixed(1).replace(".0", "");
+                    $("#graph-tooltip").remove();
 
-                        if (previousBar != y) {
-                            $("#graph-tooltip").remove();
-                            showTooltip({
-                                x: item.pageX,
-                                y: item.pageY,
-                                contents: y
-                            });
-                            previousBar = y;
-                        }
-                    } else {
-                        $("#graph-tooltip").remove();
-                        previousBar = null;
+                    if (item && item.datapoint && item.datapoint[1]) {
+                        // For stacked bar chart calculate the diff
+                        var yAxisValue = item.datapoint[1].toFixed(1).replace(".0", "") - item.datapoint[2].toFixed(1).replace(".0", "");
+
+                        showTooltip({
+                            x: pos.pageX,
+                            y: item.pageY,
+                            contents: yAxisValue || 0
+                        });
                     }
                 });
             } else {
@@ -215,13 +226,18 @@
 
             var graphProperties = {
                     series:{
-                        lines:{ stack:false, show:true, fill:true, lineWidth:2.5, fillColor:{ colors:[
+                        lines:{ stack:false, show:false, fill:true, lineWidth:2.5, fillColor:{ colors:[
                             { opacity:0 },
                             { opacity:0 }
                         ] }, shadowSize:0 },
-                        points:{ show:true, radius:4, shadowSize:0, lineWidth:2 },
+                        splines: {
+                            show: true,
+                            lineWidth: 2.5
+                        },
+                        points:{ show:true, radius:0, shadowSize:0, lineWidth:2 },
                         shadowSize:0
                     },
+                    crosshair: { mode: "x", color: "rgba(78,78,78,0.4)" },
                     grid:{ hoverable:true, borderColor:"null", color:"#666", borderWidth:0, minBorderMargin:10, labelMargin:10},
                     xaxis:{ tickDecimals:"number", tickSize:0, tickLength:0 },
                     yaxis:{ min:0, minTickSize:1, tickDecimals:"number", ticks:3, position:"right" },
@@ -246,10 +262,25 @@
 
             graphTicks = tickObj.tickTexts;
 
-            var graphObj = $.plot($(container), dataPoints, graphProperties),
+            var graphObj = $(container).data("plot"),
                 keyEventCounter = "A",
                 keyEvents = [],
                 keyEventsIndex = 0;
+
+            if (graphObj && graphObj.getOptions().series && graphObj.getOptions().series.splines && graphObj.getOptions().series.splines.show) {
+                graphObj = $(container).data("plot");
+
+                graphObj.getOptions().xaxes[0].max = tickObj.max;
+                graphObj.getOptions().xaxes[0].min = tickObj.min;
+                graphObj.getOptions().xaxes[0].ticks = tickObj.ticks;
+
+                graphObj.setData(dataPoints);
+                graphObj.setupGrid();
+                graphObj.draw();
+
+            } else {
+                graphObj = $.plot($(container), dataPoints, graphProperties);
+            }
 
             for (var k = 0; k < graphObj.getData().length; k++) {
 
@@ -314,6 +345,9 @@
 
             var graphWidth = graphObj.width();
 
+            $(".graph-key-event-label").remove();
+            $(".graph-note-label").remove();
+
             for (var k = 0; k < keyEvents.length; k++) {
                 var bgColor = graphObj.getData()[k].color;
 
@@ -362,71 +396,105 @@
 						var graphPoint = graphObj.pointOffset({x:frontData.data[l][0], y:frontData.data[l][1]});
 
 						if (countlyCommon.getNotesForDateId(noteDateIds[k]).length) {
-							$('<div class="graph-note-label"><div class="point"></div></div>').attr({
-								"data-title":tickObj.tickTexts[k],
-								"data-notes":countlyCommon.getNotesForDateId(noteDateIds[k]),
-								"data-value":frontData.data[l][1].toFixed(1).replace(".0", "") + " " + frontData.label,
-								"data-points":"[" + frontData.data[l] + "]"
+							var graphNoteLabel = $('<div class="graph-note-label"><div class="fa fa-pencil"></div></div>');
+                            graphNoteLabel.attr({
+								"title":countlyCommon.getNotesForDateId(noteDateIds[k])
 							}).css({
 								"position":'absolute',
 								"left":graphPoint.left,
-								"top":graphPoint.top,
+								"top":graphPoint.top - 33,
 								"display":'none',
 								"border-color":frontData.color
 							}).appendTo(graphObj.getPlaceholder()).show();
+
+                            $(".tipsy").remove();
+                            graphNoteLabel.tipsy({gravity:$.fn.tipsy.autoWE, offset:3, html:true});
 						}
 					}
                 }
-
-                $(".graph-note-label").mouseenter(function() {
-                    $("#graph-tooltip").remove();
-
-                    showTooltip({
-                        x: $(this).offset().left,
-                        y: $(this).offset().top + 10,
-                        contents: $(this).data("value"),
-                        title: $(this).data("title"),
-                        notes: $(this).data("notes")
-                    });
-                });
-
-                $(".graph-note-label").mouseleave(function() {
-                    $("#graph-tooltip").remove();
-                });
             }
 
-            var previousPoint;
+            $(container).on("mouseout", function() {
+                graphObj.unlockCrosshair();
+                graphObj.unhighlight();
+                $("#graph-tooltip").fadeOut(200, function() {
+                    $(this).remove();
+                });
+            });
+
+            function showCrosshairTooltip(dataIndex, position, onPoint) {
+
+                var tooltip = $("#graph-tooltip");
+                var crossHairPos = graphObj.p2c(position);
+                var tooltipLeft = (crossHairPos.left < 200)? crossHairPos.left + 20 : crossHairPos.left - tooltip.width() - 20;
+
+                tooltip.css({left: tooltipLeft});
+
+                if (onPoint) {
+                    var dataSet = graphObj.getData(),
+                        tooltipHTML = "<div class='title'>" + tickObj.tickTexts[dataIndex] + "</div>";
+
+                    for (i = dataSet.length - 1; i >= 0; --i) {
+                        var series = dataSet[i];
+                        tooltipHTML += "<div class='inner'>";
+                        tooltipHTML += "<div class='color' style='background-color: "+ series.color + "'></div>";
+                        tooltipHTML += "<div class='series'>" + series.label + "</div>";
+                        tooltipHTML += "<div class='value'>" + series.data[dataIndex][1] + "</div>";
+                        tooltipHTML += "</div>";
+                    }
+
+                    if (tooltip.length) {
+                        tooltip.html(tooltipHTML);
+                    } else {
+                        tooltip = $("<div id='graph-tooltip' class='white' style='top:-15px;'>" + tooltipHTML + "</div>");
+
+                        $(container).prepend(tooltip);
+                    }
+
+                    if (tooltip.is(":visible")) {
+                        tooltip.css({
+                            "transition": "left .15s"
+                        });
+                    } else {
+                        tooltip.fadeIn();
+                    }
+                }
+            }
 
             $(container).unbind("plothover");
+
             $(container).bind("plothover", function (event, pos, item) {
-                if (item) {
-                    if (previousPoint != item.dataIndex) {
-                        previousPoint = item.dataIndex;
+                graphObj.unlockCrosshair();
+                graphObj.unhighlight();
 
-                        $("#graph-tooltip").remove();
-                        var x = item.datapoint[0].toFixed(1).replace(".0", ""),
-                            y = item.datapoint[1].toFixed(1).replace(".0", "");
+                var i,
+                    j,
+                    dataset = graphObj.getData(),
+                    pointFound = false;
 
-                        // If this is the "ghost" graph don't add the date
-                        if (item.series.color === "#DDDDDD") {
-                            showTooltip({
-                                x: item.pageX,
-                                y: item.pageY,
-                                contents: y + " " + item.series.label
+                for (i = 0; i < dataset.length; ++i) {
+                    var series = dataset[i];
+
+                    // Find the nearest points, x-wise
+                    for (j = 0; j < series.data.length; ++j) {
+                        var currX = series.data[j][0],
+                            currCrossX = pos.x.toFixed(2);
+
+                        if ((currX - 0.10) < currCrossX && (currX + 0.10) > currCrossX) {
+
+                            graphObj.lockCrosshair({
+                                x: series.data[j][0],
+                                y: series.data[j][1]
                             });
-                        } else {
-                            showTooltip({
-                                x: item.pageX,
-                                y: item.pageY,
-                                contents: y + " " + item.series.label,
-                                title: tickObj.tickTexts[item.dataIndex]
-                            });
+
+                            graphObj.highlight(series, j);
+                            pointFound = true;
+                            break;
                         }
                     }
-                } else {
-                    $("#graph-tooltip").remove();
-                    previousPoint = null;
                 }
+
+                showCrosshairTooltip(j, pos, pointFound);
             });
         }, dataPoints, container, bucket);
     };
@@ -1573,7 +1641,7 @@
             }
         }
 
-        return ret.join("===");
+        return ret.join("<br/>");
     };
 
     countlyCommon.arrayAddUniq = function (arr, item) {
@@ -2209,7 +2277,7 @@
     function showTooltip(args) {
         var x = args.x || 0,
             y = args.y || 0,
-            contents = args.contents || "",
+            contents = args.contents,
             title = args.title,
             notes = args.notes;
 
@@ -2249,7 +2317,7 @@
         tooltip.css({
             top: y - heightVal - 20,
             left: newLeft
-        }).appendTo("body").fadeIn(200);
+        }).appendTo("body").show();
     }
 
     function flattenObjUntilLastProp(ob) {

@@ -3044,6 +3044,9 @@ CanvasRenderingContext2D.prototype.dashedLineTo = function(fromX, fromY, toX, to
                 item.pageY = parseInt(item.series.yaxis.p2c(item.datapoint[1]) + offset.top + plotOffset.top, 10);
             }
 
+            if (!highlights)
+                highlights = [];
+
             if (options.grid.autoHighlight) {
                 // clear auto-highlights
                 for (var i = 0; i < highlights.length; ++i) {
@@ -3080,6 +3083,9 @@ CanvasRenderingContext2D.prototype.dashedLineTo = function(fromX, fromY, toX, to
             octx.save();
             overlay.clear();
             octx.translate(plotOffset.left, plotOffset.top);
+
+            if (!highlights)
+                highlights = [];
 
             var i, hi;
             for (i = 0; i < highlights.length; ++i) {
@@ -3150,13 +3156,14 @@ CanvasRenderingContext2D.prototype.dashedLineTo = function(fromX, fromY, toX, to
         function drawPointHighlight(series, point) {
             var x = point[0], y = point[1],
                 axisx = series.xaxis, axisy = series.yaxis,
-                highlightColor = (typeof series.highlightColor === "string") ? series.highlightColor : $.color.parse(series.color).scale('a', 0.5).toString();
+                highlightColor = (typeof series.highlightColor === "string") ? series.highlightColor : $.color.parse(series.color).scale('a', 0.8).toString();
 
             if (x < axisx.min || x > axisx.max || y < axisy.min || y > axisy.max)
                 return;
 
-            var pointRadius = series.points.radius + series.points.lineWidth / 2;
-            octx.lineWidth = pointRadius;
+            // onur, change hover point radius
+            var pointRadius = 4;//series.points.radius + series.points.lineWidth / 2;
+            octx.lineWidth = 2;//pointRadius;
             octx.strokeStyle = highlightColor;
             var radius = 1.5 * pointRadius;
             x = axisx.p2c(x);

@@ -15,7 +15,7 @@
     <script type="text/javascript">
         window.paceOptions = {
             ajax: {
-                ignoreURLs: ["action=refresh", "method=live", "stats.count.ly", ".intercom"]
+                ignoreURLs: ["action=refresh", "method=live", "stats.count.ly", ".intercom", "method=get_events"]
             }
         };
     </script>
@@ -576,7 +576,7 @@
 			<div id="app-nav-head">
 				<div id="app-nav-title" data-localize="management-applications.title"></div>
 				<% if(member['global_admin'] || config.autonomous) { %>
-				<div style="overflow:hidden; position:absolute; top:19px; right:10px;">
+				<div style="overflow:hidden; position:absolute; top:22px; right:10px;">
 					<div class="icon-button dark help-zone-vs" data-help-localize="help.manage-apps.app-add-button" id="add-app-button">
 						<div class="icon" style="background-image:url('<%- cdn %>images/management/add.png'); width:17px; height:18px;"></div>
 						<div class="text" data-localize="common.add"></div>
@@ -906,7 +906,7 @@
 		<div id="event-nav">
 			<div id="event-nav-head">
 				<div id="event-nav-title" style="max-width: 120px;" data-localize="events.title"></div>
-				<div style="overflow:hidden; position:absolute; top:18px; right:10px;">
+				<div style="overflow:hidden; position:absolute; top:22px; right:10px;">
 					<div class="icon-button dark help-zone-vs" id="edit-events-button" style="<% if(!member['global_admin']) { %> display:none; <% } %>">
                         <i class="ion-gear-a"></i>
 					</div>
@@ -1176,6 +1176,9 @@
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.pie.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.resize.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.stack.js"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.spline.js"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.crosshair.js"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/flot/jquery.flot.orderBars.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/gauge.min.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/d3/d3.min.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.js"></script>
