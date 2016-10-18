@@ -767,13 +767,13 @@ if (cluster.isMaster) {
                         }
                         case '/o/ping':
                         {
-                            common.db.collection("plugins").findOne({_id:"plugins"}, function(err, result){
+                            common.db.collection("plugins").findOne({_id:"plugins"}, {_id:1}, function(err, result){
                                 if(err)
                                     common.returnMessage(params, 404, 'DB Error');
                                 else
                                     common.returnMessage(params, 200, 'Success');
                             });
-                            return false;
+                            break;
                         }
                         case '/o':
                         {

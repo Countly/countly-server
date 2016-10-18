@@ -17,7 +17,7 @@ describe('Testing Plugins', function(){
 		.get('/o/plugins?api_key='+API_KEY_ADMIN)
 		.expect(200)
 		.end(function(err, res){
-			//{"name":"countly-plugins","title":"Plugins manager","version":"1.0.0","description":"Plugin manager to view and enable/disable plugins","author":"Count.ly","homepage":"https://count.ly","support":"http://support.count.ly/","keywords":["countly","analytics","mobile","plugins"],"dependencies":{},"private":true,"enabled":true,"code":"plugins"}
+			//{"name":"countly-plugins","title":"Plugins manager","version":"1.0.0","description":"Plugin manager to view and enable/disable plugins","author":"Count.ly","homepage":"https://count.ly","support":"http://community.count.ly/","keywords":["countly","analytics","mobile","plugins"],"dependencies":{},"private":true,"enabled":true,"code":"plugins"}
 			if (err) return done(err);
 			var ob = JSON.parse(res.text);
 			ob.should.not.be.empty;
