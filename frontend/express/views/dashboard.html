@@ -577,10 +577,9 @@
 				<div id="app-nav-title" data-localize="management-applications.title"></div>
 				<% if(member['global_admin'] || config.autonomous) { %>
 				<div style="overflow:hidden; position:absolute; top:22px; right:10px;">
-					<div class="icon-button dark help-zone-vs" data-help-localize="help.manage-apps.app-add-button" id="add-app-button">
-						<div class="icon" style="background-image:url('<%- cdn %>images/management/add.png'); width:17px; height:18px;"></div>
-						<div class="text" data-localize="common.add"></div>
-					</div>
+                    <div class="icon-button dark help-zone-vs" data-help-localize="help.manage-apps.app-add-button" id="add-app-button">
+                        <i class="fa fa-plus-circle"></i>
+                    </div>
 				</div>
 				<% } %>
 			</div>
@@ -618,14 +617,14 @@
                             <tr class="help-zone-vs" data-help-localize="help.manage-apps.app-type">
 								<td data-localize="management-applications.type"></td>
 								<td>
-									<div class="cly-select select-app-types" style="width:280px;">
+									<div class="cly-select select-app-types" style="width:283px;">
 										<div class="select-inner">
 											<div class="text-container">
 												<div class="text" id="app-add-type" data-localize="management-applications.type.tip"></div>
 											</div>
 											<div class="right combo"></div>
 										</div>
-										<div class="select-items square" style="width:280px;">
+										<div class="select-items square" style="width:283px;">
 											<div>
 												{{#eachOfObject app_types}}
                                                     <div data-value="{{property}}" class="item">{{value}}</div>
@@ -659,14 +658,14 @@
 								<td id="app-add-timezone" >
                                     <div>
                                         <div style="float:left;">
-                                            <div id="country-select" class="cly-select" style="width:280px;">
+                                            <div id="country-select" class="cly-select" style="width:283px;">
                                                 <div class="select-inner">
                                                     <div class="text-container">
                                                         <div class="text"></div>
                                                     </div>
                                                     <div class="right combo"></div>
                                                 </div>
-                                                <div class="select-items square" style="width:280px;">
+                                                <div class="select-items square" style="width:283px;">
                                                     <div id="country-items"></div>
                                                 </div>
                                             </div>
@@ -682,7 +681,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div id="selected" style="float:left; font-size:14px; padding:5px 10px; padding-top:6px; color:#666; font-family:'Ubuntu';"></div>
+                                        <div id="selected" style="float:left; font-size:14px; padding:8px 10px 5px; color:#666;"></div>
                                         <input type="hidden" value="" id="app-timezone"/>
                                         <input type="hidden" value="" id="app-country"/>
                                     </div>
@@ -714,18 +713,9 @@
 						<div class="title"></div>
 					</div>
 					<div style="float:right; min-width:260px; overflow:hidden; margin-top:6px;">
-                        <div style="float:right;" class="icon-button light help-zone-vs" data-help-localize="help.manage-apps.app-edit-button" id="edit-app">
-                            <div class="icon" style="background-image:url('<%- cdn %>images/management/edit.png'); width:22px; height:19px;"></div>
-                            <div class="text" data-localize="common.edit"></div>
-                        </div>
-						<div style="float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="help.manage-apps.app-clear-button" id="clear-app-data">
-							<div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
-							<div class="text" data-localize="management-applications.clear-data"></div>
-						</div>
-						<div style="display:none; float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="help.manage-apps.app-delete-button" id="delete-app">
-                            <div class="icon" style="width:0px; height:19px; margin-right:0px;"></div>
-                            <div class="text" data-localize="common.delete"></div>
-                        </div>
+                        <div style="float:right;" class="icon-button light help-zone-vs" data-help-localize="help.manage-apps.app-edit-button" id="edit-app" data-localize="common.edit"></div>
+						<div style="float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="help.manage-apps.app-clear-button" id="clear-app-data" data-localize="management-applications.clear-data"></div>
+						<div style="display:none; float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="help.manage-apps.app-delete-button" id="delete-app" data-localize="common.delete"></div>
                         <ul id="clear-data" class="options">
                             <li id="clear-all"><span data-localize="management-applications.clear-all-data"></span></li>
                             <li id="clear-1month"><span data-localize="management-applications.clear-1month-data"></span></li>
@@ -814,14 +804,14 @@
 									</div>
 									<div class="edit">
 										<div style="float:left;">
-											<div id="country-select" class="cly-select" style="width:280px;">
+											<div id="country-select" class="cly-select" style="width:283px;">
 												<div class="select-inner">
 													<div class="text-container">
 														<div class="text"></div>
 													</div>
 													<div class="right combo"></div>
 												</div>
-												<div class="select-items square" style="width:280px;">
+												<div class="select-items square" style="width:283px;">
 													<div id="country-items"></div>
 												</div>
 											</div>
@@ -839,7 +829,7 @@
 												</div>
 											</div>
 										</div>
-										<div id="selected" style="float:left; font-size:14px; padding:5px 10px; padding-top:6px; color:#666; font-family:'Ubuntu';"></div>
+										<div id="selected" style="float:left; font-size:14px; padding:8px 10px 5px; color:#666;"></div>
 										<input type="hidden" value="" id="app-timezone"/>
 										<input type="hidden" value="" id="app-country"/>
 									</div>

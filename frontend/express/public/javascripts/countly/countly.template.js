@@ -289,7 +289,7 @@ $.extend(Template.prototype, {
                 $(this).addClass("active");
 
                 if (itemCount > 10 && !$(this).hasClass("centered")) {
-                    $("<div class='search'><div class='inner'><input type='text' /><i class= fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
+                    $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
                 }
             }
 

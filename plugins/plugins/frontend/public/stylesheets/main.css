@@ -23,13 +23,6 @@
 #configs-apply-changes{ display: none; }
 
 .btn-plugin-enabler{padding: 7px; margin-right: 20px; display: none; float: left;}
-#plugins-selector { float:right; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#6B6B6B; overflow:auto; user-select:none; }
-	#plugins-selector .button { cursor:pointer; user-select:none; background-color:#E0E0E0; background-image:linear-gradient(top, #EEEEEE 40%, #E0E0E0 100%); background-image:linear-gradient(to bottom, #EEEEEE 40%, #E0E0E0 100%); float:left; padding:7px 5px; padding-top:6px; border:1px solid #A5A5A5; border-left:1px solid #747575; box-shadow:inset 0 1px 0 #FDFDFD; border-right:1px solid #EDEDED; }
-	#plugins-selector .button:nth-child(2) { border-top-left-radius:4px; border-bottom-left-radius:4px; }
-	#plugins-selector .button:last-child { border-top-right-radius:4px; border-bottom-right-radius:4px; border-right:1px solid #747575; }
-	#plugins-selector .button:hover { background-color:#F9F9F9; background-image:linear-gradient(top, #F9F9F9 40%, #E0E0E0 100%); background-image:linear-gradient(to bottom, #F9F9F9 40%, #E0E0E0 100%); }
-	#plugins-selector .button:active  { background-color:#E0E0E0; background-image:linear-gradient(top, #E0E0E0 40%, #F9F9F9 100%); background-image:linear-gradient(to bottom, #E0E0E0 40%, #F9F9F9 100%); }
-    #plugins-selector .button.active { background-color:#3C3C3C; background-image:linear-gradient(top, #3C3C3C 10%, #717171 100%); background-image:linear-gradient(to bottom, #3C3C3C 10%, #717171 100%); box-shadow:inset 0 0 1px 0 #2D2D2D; color:#FFF; border-color:#202020; text-shadow:0 -1px #333; }
 
 .plugins #loader { position:absolute; left:50%; top:50%; margin-top:-24px; margin-left:-24px; width:48px; height:48px; font-size:48px;}
 .plugins #loader i {font-size:48px; color: #888;}

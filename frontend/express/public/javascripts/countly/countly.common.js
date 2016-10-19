@@ -416,6 +416,7 @@
 
             $(container).on("mouseout", function() {
                 graphObj.unlockCrosshair();
+                graphObj.clearCrosshair();
                 graphObj.unhighlight();
                 $("#graph-tooltip").fadeOut(200, function() {
                     $(this).remove();
