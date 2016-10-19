@@ -62,22 +62,22 @@ var countlyEvents = {},
                     for (var i = 0; i < eventMetaDocs.length; i++) {
                         if (eventMetaDocs[i].coll) {
                             if(eventMetaDocs[i].meta){
-                                if(eventMetaDocs[i].meta_hash){
+                                if(eventMetaDocs[i].meta_v2){
                                     for(var segment in eventMetaDocs[i].meta){
                                         for(var j = 0; j < eventMetaDocs[i].meta[segment].length; j++){
-                                            if(!eventMetaDocs[i].meta_hash[segment])
-                                                eventMetaDocs[i].meta_hash[segment] = {};
-                                            eventMetaDocs[i].meta_hash[segment][eventMetaDocs[i].meta[segment][j]] = true;
+                                            if(!eventMetaDocs[i].meta_v2[segment])
+                                                eventMetaDocs[i].meta_v2[segment] = {};
+                                            eventMetaDocs[i].meta_v2[segment][eventMetaDocs[i].meta[segment][j]] = true;
                                         }
-                                        eventMetaDocs[i].meta[segment] = Object.keys(eventMetaDocs[i].meta_hash[segment]);
+                                        eventMetaDocs[i].meta[segment] = Object.keys(eventMetaDocs[i].meta_v2[segment]);
                                     }
                                 }
                                 appSgValues[eventMetaDocs[i].coll] = eventMetaDocs[i].meta;
                             }
-                            else if(eventMetaDocs[i].meta_hash){
+                            else if(eventMetaDocs[i].meta_v2){
                                 appSgValues[eventMetaDocs[i].coll] = {};
-                                for(var segment in eventMetaDocs[i].meta_hash){
-                                    appSgValues[eventMetaDocs[i].coll][segment] = Object.keys(eventMetaDocs[i].meta_hash[segment]);
+                                for(var segment in eventMetaDocs[i].meta_v2){
+                                    appSgValues[eventMetaDocs[i].coll][segment] = Object.keys(eventMetaDocs[i].meta_v2[segment]);
                                 }
                             }
                         }
@@ -87,7 +87,7 @@ var countlyEvents = {},
                 });
     
                 function fetchEventMeta(metaToFetch, callback) {
-                    common.db.collection(metaToFetch.coll).findOne({'_id':metaToFetch.id}, {meta:1, meta_hash:1}, function (err, eventMetaDoc) {
+                    common.db.collection(metaToFetch.coll).findOne({'_id':metaToFetch.id}, {meta:1, meta_v2:1}, function (err, eventMetaDoc) {
                         var retObj = eventMetaDoc || {};
                         retObj.coll = metaToFetch.coll;
     
@@ -235,8 +235,8 @@ var countlyEvents = {},
                         eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix] = {};
                     }
                     
-                    eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]['meta_hash.' + segKey + '.' + tmpSegVal]= true;
-                    eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]["meta_hash.segments."+segKey] = true;
+                    eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]['meta_v2.' + segKey + '.' + tmpSegVal]= true;
+                    eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]["meta_v2.segments."+segKey] = true;
  
                     tmpEventColl[segKey + "." + dateIds.month + "." + postfix] = tmpEventObj;
                 }
@@ -380,8 +380,8 @@ var countlyEvents = {},
                 
                 if (eventSegments[event]) {
                     for(var segment in eventSegments[event]){
-                        if(segment.indexOf("meta_hash.segments.") === 0){
-                            var name = segment.replace("meta_hash.segments.", "");
+                        if(segment.indexOf("meta_v2.segments.") === 0){
+                            var name = segment.replace("meta_v2.segments.", "");
                             if (eventSegmentList['$addToSet']["segments." + realEventKey] && eventSegmentList['$addToSet']["segments." + realEventKey]["$each"]) {
                                 common.arrayAddUniq(eventSegmentList['$addToSet']["segments." + realEventKey]["$each"], name);
                             } else {

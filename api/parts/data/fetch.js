@@ -703,7 +703,7 @@ var fetch = {},
 
             if (isCustomEvent) {
                 fetchFromZero['meta'] = 1;
-                fetchFromZero['meta_hash'] = 1;
+                fetchFromZero['meta_v2'] = 1;
                 fetchFromZero['m'] = 1;
                 fetchFromMonth["d." + params.time.day] = 1;
                 fetchFromMonth["m"] = 1;
@@ -711,7 +711,7 @@ var fetch = {},
                 fetchFromZero["d." + common.dbMap.unique] = 1;
                 fetchFromZero["d." + params.time.month + "." + common.dbMap.unique] = 1;
                 fetchFromZero['meta'] = 1;
-                fetchFromZero['meta_hash'] = 1;
+                fetchFromZero['meta_v2'] = 1;
                 fetchFromZero['m'] = 1;
 
                 fetchFromMonth["d.w" + params.time.weekly + "." + common.dbMap.unique] = 1;
@@ -827,12 +827,12 @@ var fetch = {},
                         }
                         
                         //new meta merge as hash tables
-                        if(dataObjects[i]['meta_hash']){
-                            for (var metaEl in dataObjects[i]['meta_hash']) {
+                        if(dataObjects[i]['meta_v2']){
+                            for (var metaEl in dataObjects[i]['meta_v2']) {
                                 if (mergedDataObj['meta'][metaEl]) {
-                                    mergedDataObj['meta'][metaEl] = union(mergedDataObj['meta'][metaEl], Object.keys(dataObjects[i]['meta_hash'][metaEl]));
+                                    mergedDataObj['meta'][metaEl] = union(mergedDataObj['meta'][metaEl], Object.keys(dataObjects[i]['meta_v2'][metaEl]));
                                 } else {
-                                    mergedDataObj['meta'][metaEl] = Object.keys(dataObjects[i]['meta_hash'][metaEl]);
+                                    mergedDataObj['meta'][metaEl] = Object.keys(dataObjects[i]['meta_v2'][metaEl]);
                                 }
                             }
                         }

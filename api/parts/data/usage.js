@@ -342,8 +342,8 @@ var usage = {},
             }
 
             if (uniqueLevelsZero.length != 0 || uniqueLevelsMonth.length != 0) {
-                usersMeta['meta_hash.f-ranges.'+calculatedFrequency] = true;
-                usersMeta['meta_hash.l-ranges.'+calculatedLoyaltyRange] = true;
+                usersMeta['meta_v2.f-ranges.'+calculatedFrequency] = true;
+                usersMeta['meta_v2.l-ranges.'+calculatedLoyaltyRange] = true;
             }
             
             plugins.dispatch("/session/begin", {params:params, isNewUser:isNewUser});
@@ -368,13 +368,13 @@ var usage = {},
             zeroObjUpdate.push(common.dbMap['loyalty'] + '.' + calculatedLoyaltyRange);
             monthObjUpdate.push(common.dbMap['loyalty'] + '.' + calculatedLoyaltyRange);
 
-            usersMeta['meta_hash.f-ranges.'+calculatedFrequency] = true;
-            usersMeta['meta_hash.l-ranges.'+calculatedLoyaltyRange] = true;
+            usersMeta['meta_v2.f-ranges.'+calculatedFrequency] = true;
+            usersMeta['meta_v2.l-ranges.'+calculatedLoyaltyRange] = true;
 
             plugins.dispatch("/session/begin", {params:params, isNewUser:isNewUser});
         }
 
-        usersMeta['meta_hash.countries.'+(params.user.country || "Unknown")] = true;
+        usersMeta['meta_v2.countries.'+(params.user.country || "Unknown")] = true;
 
         common.fillTimeObjectZero(params, updateUsersZero, zeroObjUpdate);
         common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate);
@@ -497,7 +497,7 @@ var usage = {},
         }
         
         function fetchMeta(metaToFetch, callback) {
-            common.db.collection(metaToFetch.coll).findOne({'_id':metaToFetch.id}, {meta_hash:1}, function (err, metaDoc) {
+            common.db.collection(metaToFetch.coll).findOne({'_id':metaToFetch.id}, {meta_v2:1}, function (err, metaDoc) {
                 var retObj = metaDoc || {};
                 retObj.coll = metaToFetch.coll;
                 callback(false, retObj);
@@ -507,8 +507,8 @@ var usage = {},
         var metas = {};
         async.map(metaToFetch, fetchMeta, function (err, metaDocs) {
             for (var i = 0; i < metaDocs.length; i++) {
-                if (metaDocs[i].coll && metaDocs[i].meta_hash) {
-                    metas[metaDocs[i]._id] = metaDocs[i].meta_hash;
+                if (metaDocs[i].coll && metaDocs[i].meta_v2) {
+                    metas[metaDocs[i]._id] = metaDocs[i].meta_v2;
                 }
             }
             
@@ -565,7 +565,7 @@ var usage = {},
                         
                             //making sure metrics are strings
                             needsUpdate = true;
-                            tmpSet["meta_hash." + tmpMetric.set + "." + escapedMetricVal] = true;
+                            tmpSet["meta_v2." + tmpMetric.set + "." + escapedMetricVal] = true;
                 
                             monthObjUpdate.push(escapedMetricVal + '.' + common.dbMap['total']);
                 
