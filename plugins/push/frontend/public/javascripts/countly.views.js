@@ -358,7 +358,7 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
         function showAppsSelector(pos) {
             $('#listof-apps').remove();
 
-            var listofApps = $('<div id="listof-apps"><div class="tip"></div><div class="scrollable"></div><div class="button-container"><a class="icon-button dark btn-done">' + jQuery.i18n.map["common.done"] + '</a><a class="icon-button dark btn-select-all">' + jQuery.i18n.map["common.select-all"] + '</a><a class="icon-button dark btn-deselect-all">' + jQuery.i18n.map["common.deselect-all"] + '</a></div></div>').hide(),
+            var listofApps = $('<div id="listof-apps"><div class="scrollable"></div><div class="button-container"><a class="icon-button green btn-done">' + jQuery.i18n.map["common.done"] + '</a><a class="icon-button dark btn-select-all">' + jQuery.i18n.map["common.select-all"] + '</a><a class="icon-button dark btn-deselect-all">' + jQuery.i18n.map["common.deselect-all"] + '</a></div></div>').hide(),
                 listofAppsScrollable = listofApps.find('.scrollable');
                 ap = function(app){
                     return $('<div class="app" data-app-id="' + app._id + '"><div class="image" style="background-image: url(\'/files/' + app._id + '.png\');"></div><div class="name">' + app.name + '</div><input class="app_id" type="hidden" value="{{this._id}}"/></div>');

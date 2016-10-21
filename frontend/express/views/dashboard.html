@@ -583,9 +583,13 @@
 				</div>
 				<% } %>
 			</div>
+            <div class="nav-search">
+                <i class="fa fa-search"></i>
+                <input type="text">
+            </div>
 			<div id="management-app-container" class="scrollable">
 				{{#eachOfObjectValue admin_apps}}
-				<div class="app-container" data-key="{{this.key}}" data-id="{{this._id}}">
+				<div class="app-container searchable" data-key="{{this.key}}" data-id="{{this._id}}">
 					<div class="logo" style="background-image: url('<%- cdn %>appimages/{{this._id}}.png');"></div>
 					<div class="name">{{this.name}}</div>
 				</div>

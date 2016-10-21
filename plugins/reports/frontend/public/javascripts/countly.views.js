@@ -315,8 +315,8 @@ window.ReportingView = countlyView.extend({
             $("#listof-apps .app").removeClass("selected");
             activeRow = $(this).parent(".row");
             var buttonPos = $(this).offset();
-            buttonPos.top += 26;
-            buttonPos.left -= 18;
+            buttonPos.top = Math.floor(buttonPos.top) + 25;
+            buttonPos.left = Math.floor(buttonPos.left) - 18;
             
             if ($("#listof-apps").is(":visible") && JSON.stringify(buttonPos) === JSON.stringify(previousSelectAppPos)) {
                 $("#listof-apps").hide();
@@ -345,6 +345,7 @@ window.ReportingView = countlyView.extend({
             }
             
             $("#listof-apps").show().offset(buttonPos);
+            $("#listof-apps").find(".search input").focus();
         });
         
         $(".save-report").off("click").on("click", function() {

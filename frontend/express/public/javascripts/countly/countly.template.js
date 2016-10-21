@@ -2992,8 +2992,8 @@ window.ManageUsersView = countlyView.extend({
             activeRow = $(this).parent(".row");
             activeRow.addClass("selected");
             var buttonPos = $(this).offset();
-            buttonPos.top += 26;
-            buttonPos.left -= 18;
+            buttonPos.top = Math.floor(buttonPos.top) + 25;
+            buttonPos.left = Math.floor(buttonPos.left) - 18;
             
             if ($("#listof-apps").is(":visible") && JSON.stringify(buttonPos) === JSON.stringify(previousSelectAppPos)) {
                 $("#listof-apps").hide();
@@ -3031,6 +3031,7 @@ window.ManageUsersView = countlyView.extend({
             }
             
             $("#listof-apps").show().offset(buttonPos);
+            $("#listof-apps").find(".search input").focus();
         });
         
         $(".save-user").off("click").on("click", function() {
@@ -5509,6 +5510,19 @@ var AppRouter = Backbone.Router.extend({
             });
 
             $('.nav-search').on('input', "input", function(e){
+                var searchText = new RegExp($(this).val().toLowerCase()),
+                    searchInside = $(this).parent().next().find(".searchable");
+
+                searchInside.filter(function () {
+                    return !(searchText.test($(this).text().toLowerCase()));
+                }).css('display','none');
+
+                searchInside.filter(function () {
+                    return searchText.test($(this).text().toLowerCase());
+                }).css('display','block');
+            });
+
+            $(document).on('input', "#listof-apps .search input", function(e) {
                 var searchText = new RegExp($(this).val().toLowerCase()),
                     searchInside = $(this).parent().next().find(".searchable");
 

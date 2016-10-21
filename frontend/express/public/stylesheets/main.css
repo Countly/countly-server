@@ -196,7 +196,7 @@ table { border-collapse: collapse; }
 		#sidebar-menu .sidebar-menu .sidebar-submenu .disabled-item { background-color: #212121; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; height:30px; display:block; padding-left:8px; cursor:pointer; }
 		#sidebar-menu .sidebar-menu .sidebar-submenu .disabled-item { cursor:default; }
 			#sidebar-menu .sidebar-menu .sidebar-submenu .item .logo-icon { display:none; color:#888; width:30px; height:30px; float:left; margin-left:8px; margin-top:8px; text-align:center;}
-			#sidebar-menu .sidebar-menu .sidebar-submenu .item .logo { display:none; background-image:url('../images/dashboard/analytics_icons.png'); color:#888; width:30px; height:30px; float:left; margin-left:8px; margin-top:1px; }
+			#sidebar-menu .sidebar-menu .sidebar-submenu .item .logo { display:none; color:#888; width:30px; height:30px; float:left; margin-left:8px; margin-top:1px; }
 	                #sidebar-menu .sidebar-menu .sidebar-submenu .item.active .logo,
                     #sidebar-menu .sidebar-menu .sidebar-submenu .item.active .logo-icon { color:#2FA732; }
 				#sidebar-menu .sidebar-menu .sidebar-submenu .item .text { margin-left:17px; float:left; padding-top:8px; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#666; }
@@ -416,6 +416,7 @@ table { border-collapse: collapse; }
 /* APP NAVIGATION */
 #app-management-bar { z-index:3; }
 #app-management-bar #app-nav-head { padding-left:15px; }
+#app-management-bar .nav-search input { width: 164px; }
 #app-nav-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px; float:left; padding-top:4px; }
 #app-nav { width:190px;  display:none; text-align:right; height:100%; position:fixed; left:31px; z-index:997; padding-bottom: 46px; box-sizing: border-box; box-shadow: inset -1px 0 0 0 #d4d4d4; background-color: rgba(239, 239, 239, 0.7); }
 #app-nav-head { height:27px; padding:24px 20px; padding-left:32px; color:#BFBFBF; font:18px Ubuntu,Helvetica,sans-serif; line-height:111%; text-align:left; background-color: #292929; }
@@ -856,22 +857,25 @@ div.datatablesubrow {display: none;}
 
 .user-details { background-color:#f9f9f9; }
 .user-details:hover { background-color:#f9f9f9; }
-#listof-apps { width:200px; display:none; position:absolute; margin-top:12px; z-index:1000; padding:5px; padding-bottom:7px; background-color:rgba(85,85,85,1); border:1px solid #333; box-shadow:inset 0 0 0 1px #777; border-radius:5px; background-image:url('../images/dashboard/calendar_bg.png'); }
-	#listof-apps .button-container { overflow:auto; margin-top:5px; }
+#listof-apps { width:200px; display:none; position:absolute; margin-top:12px; z-index:1000; padding:7px; background-color:#292929; border-radius:2px; }
+    #listof-apps:before { border: 6px solid rgba(194, 225, 245, 0); border-bottom-color: #292929; left: 20px; top: -12px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; }
+	#listof-apps .button-container { overflow:auto; margin-top:10px; margin-bottom: 5px; }
 	#listof-apps .button-container .icon-button { float:right; font-size:11px; }
-	#listof-apps .scrollable { min-height:36px; max-height:221px; overflow:auto; box-shadow:inset 0 0 1px 1px #999, 0 1px 0 0 #777; background-color:#CCC; border:1px solid #333; }
-	#listof-apps .tip { position:absolute; width:14px; left:18px; margin-top:-13px; height:9px; background-image:url('../images/dashboard/calendar_tip.png'); z-index:20; }
-	#listof-apps .app { float:left; width:182px; border-bottom:1px solid #999; padding:8px; overflow:auto; background-color:#EEE; box-shadow:inset 0 0 1px 1px #F9F9F9; cursor:pointer; color:#333; }
-	#listof-apps .app:first-child.selected { box-shadow:none; }
+	#listof-apps .scrollable { min-height:36px; max-height:221px; overflow:auto; background-color:transparent; }
+	#listof-apps .app { width:184px; border-bottom:1px solid #d4d4d4; padding:8px; overflow:auto; background-color:#efefef; cursor:pointer; color:#6b6b6b; margin:0 auto; }
 	#listof-apps .app:last-child { border-bottom:none; }
-	#listof-apps .app.disabled { opacity:0.5; cursor:default; }
-	#listof-apps .app.disabled:hover { opacity:0.5; }
-	#listof-apps .app.selected { background-color:#80C582; background-image:linear-gradient(top, #80C582 10%, #80C582 100%); background-image:linear-gradient(to bottom, #80C582 10%, #80C582 100%); border-color:#2C6B2E; box-shadow:inset 0 1px 0 #C7DAC7; }
-	#listof-apps .app:hover { opacity:0.8; }
-	#listof-apps .app .image { background-size:20px 20px; float:left; margin-right:8px; border-radius:2px; box-shadow:0 0 1px 0 #333; width:20px; height:20px; background-position:center; }
-	#listof-apps .app .name { float:left; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; padding-top:2px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; width:90px; }
+	#listof-apps .app.disabled { display: none !important; }
+	#listof-apps .app.selected { background-color:#dedede; }
+	#listof-apps .app:hover { background-color: #e6e6e6; }
+	#listof-apps .app .image { background-size:20px 20px; float:left; margin-right:8px; border-radius:2px; box-shadow:0 0 0 1px #333; width:20px; height:20px; background-position:center; }
+        #listof-apps .app.selected .image { box-shadow:0 0 0 1px #2EB52B; }
+    #listof-apps .app .name { float:left; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; padding-top:2px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; width:90px; }
 	#listof-apps #deselect-all.icon-button, #listof-apps .btn-deselect-all.icon-button { display:none; max-width: none; }
 	#listof-apps #done { margin-left:5px; }
+#listof-apps .search { background-color: #fbfbfb; position:relative; border-bottom: 1px solid #d4d4d4; }
+#listof-apps .search i { position: absolute; top: 11px; right: 11px; color: #6b6b6b; font-size: 10px; }
+#listof-apps .search input { outline: none; font-size: 13px; border: none; padding: 8px 10px; margin-right: 1px; width: 146px; background-color: #fbfbfb; color: #6b6b6b; }
+
 .user-details .button-container { overflow:auto; bottom:8px; right:16px; position:absolute; }
 	.user-details .row { overflow:auto; border-top:1px solid #EEE; padding:10px; margin:0 1px; }
 	.user-details .row:first-child { border-top:none; padding-top:15px; }
@@ -880,7 +884,7 @@ div.datatablesubrow {display: none;}
 	.user-details .button-container { padding-bottom:5px; }
 	.user-details .button-container .icon-button { float:right; }
 	.user-details .app-selection { margin-left:10px; border-radius:10px; background-color:#CCC; cursor:pointer; float:left; width:15px; height:15px; }
-	.user-details .select-apps { margin-left:10px; cursor:pointer; float:left; width:17px; height:18px; background-image:url('../images/management/add.png'); }
+	.user-details .select-apps { margin-left:10px; cursor:pointer; float:left; font-size:17px; margin-top: -3px; color:#2EB52B; }
 	.user-details .user-admin-list span, .user-details .no-apps { color:#CCC; font-size:12px; font-style:italic; }
 .user-details .no-apps { margin-left:165px; display:none; }
 .small-link { margin-top:10px; font-size:11px; cursor:pointer; color:#999; vertical-align:text-top; display:inline-block; }
