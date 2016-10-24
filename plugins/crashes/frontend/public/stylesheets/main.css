@@ -4,10 +4,8 @@
 .crashes .dataTable-top {border-radius: 0;}
 .crashes tbody tr {cursor: pointer;}
 .crash-reports tbody tr {cursor: pointer;}
-.crashes .newcrash td{background-color: rgba(255, 0, 0, 0.1);}
-.crashes .renewedcrash td{background-color: rgba(255, 255, 0, 0.1);}
-.crashes .resolvedcrash td{background-color: rgba(0, 255, 0, 0.1);}
-.truncated {overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+.truncated {overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height: 15px;}
 #crash-numbers-container .widget-footer {border-top-left-radius:7px; border-top-right-radius:7px; border-top: 1px solid #c2c2c2; border-bottom-left-radius:0px; border-bottom-right-radius:0px;}
 #crash-big-numbers th{text-align: center; text-transform: uppercase; font-family:Ubuntu,Helvetica,sans-serif;}
 #crash-big-numbers td{background-color: #fff; text-align: center; font-family:Oswald; font-size: 27px; padding: 20px 5px; word-wrap: break-word;}
@@ -47,13 +45,6 @@
 
 .main-error .left .title { max-width: 700px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size:15px; padding-top: 3px; }
 
-/*
-.crash-stack{}
-.crash-stack .ui-tabs{border-radius: 0;}
-.crash-stack .ui-widget-content .ui-state-default{color: #646464; font-size: 16px; font-family:Ubuntu; border: 1px solid #646464;}
-.crash-stack .ui-widget-content .ui-state-active{background-image: none; background-color: #fff;}
-*/
-
 #notes [contenteditable=true]:empty:not(:focus):before{content:attr(data-placeholder); color: #909090; font-size: 14px;}
 #notes [contenteditable=true] p, #userdata-note [contenteditable=true] div, #userdata-note [contenteditable=true] br {padding:0; margin:0; line-height: 20px;}
 
@@ -80,39 +71,24 @@
 .crash-stack #comments .comment .text {font: 15px Ubuntu,Helvetica,sans-serif; padding: 5px 0; color: #757575;}
 
 .crash-stack #comment_edit { overflow: hidden; padding:20px 0; }
-
 .crash-buttons .icon-button {float: right; margin-top:6px; padding-top:6px; padding-bottom:7px;}
-
-.crash-stack pre {
-  overflow:auto;
-}
-
+.crash-stack pre { overflow:auto; }
 .crash-comment-count{display:none; color:red;}
 
 .crash-stack pre code,
-.crash-stack pre .line-number {
-  color:black;
-  display:block;
-}
-
-.crash-stack pre .line-number {
-  float:left;
-  margin:0 1em 0 -1em;
-  border-right:1px solid;
-  text-align:right;
-}
-
-.crash-stack pre .line-number span {
-  display:block;
-  padding:0 .5em 0 1em;
-}
-
-.crash-stack pre .cl {
-  display:block;
-  clear:both;
-}
-
+.crash-stack pre .line-number { color:black; display:block; }
+.crash-stack pre .line-number { float:left; margin:0 1em 0 -1em; border-right:1px solid; text-align:right; }
+.crash-stack pre .line-number span { display:block; padding:0 .5em 0 1em; }
+.crash-stack pre .cl { display:block; clear:both; }
 #crash-table_wrapper { margin-top:0; }
-
 #notes { overflow: auto; }
 #notes .btn-header { margin-top:0; }
+
+#crash-table .separator { display: none; }
+
+#crash-table .tag { margin-top:10px; float:left; margin-right:10px; border-radius: 2px; padding:2px 5px; font-size: 10px; color: #8e8e8e; border: 1px solid #d4d4d4; }
+#crash-table .tag.not-viewed,
+#crash-table .tag.re-occurred { display:none; }
+
+#crash-table tr.newcrash .tag.not-viewed { display: block; }
+#crash-table tr.renewedcrash .tag.re-occurred { display: block; }

@@ -301,7 +301,8 @@
 					"app_id":countlyCommon.ACTIVE_APP_ID,
 					"method":"crashes",
                     "period":_period,
-					"group":id
+					"group":id,
+                    "display_loader": false
 				},
 				dataType:"jsonp",
 				success:function (json) {
@@ -332,7 +333,8 @@
 					"app_id":countlyCommon.ACTIVE_APP_ID,
                     "period":_period,
 					"method":"crashes",
-                    "graph":1
+                    "graph":1,
+                    "display_loader": false
 				},
 				dataType:"jsonp",
 				success:function (json) {

@@ -537,9 +537,10 @@ div.datatablesubrow {display: none;}
 .dataTable-top:hover { color:#888; transition:color 0.5s; }
 .dataTable-top .dataTables_filter { float:left; padding-top:6px; display:none; }
 .dataTable-top .dataTables_filter input { font-size:13px; margin:0; border-radius:2px; background-color:#FFF; border:1px solid #CCC; width:200px; transition:width 0.5s; outline:none; padding:2px 6px; }
-.dataTable-top .dataTables_length { float:right ; padding-top:6px; padding-right:6px; padding-left:6px;}
-#dataTables_length_input {font-size:13px; margin:0; border-radius:15px; background-color:#FFF; border:1px solid #CCC; width:200px; transition:width 0.5s; outline:none; padding:2px 6px; width: 50px;}
-.dataTable-top .DTTT_container { float:right; padding: 10px 0; }
+.dataTable-top .dataTables_length { float:right ; padding:6px 11px; border-left: 1px solid #cccccc;}
+    .dataTable-top .dataTables_length label { text-transform: uppercase; }
+#dataTables_length_input {font-size:13px; margin:0; border-radius:2px; background-color:#FFF; border:1px solid #CCC; width:200px; transition:width 0.5s; outline:none; padding:2px 6px; width: 50px; margin-left: 9px;}
+.dataTable-top .DTTT_container { float:right; padding: 11px 0; padding-top: 12px; }
 .dataTable-top .DTTT_container a { margin-right:10px; }
 .dataTable-top .DTTT_container a:hover { text-decoration:underline; }
 .DTTT_container { visibility:hidden; }
@@ -550,13 +551,10 @@ div.datatablesubrow {display: none;}
 .FixedHeader_Cloned .dataTable { border-bottom:none; }
 .dataTable-bottom .dataTables_info { float:left; padding:5px 10px; }
 .dataTables_paginate { float:right; }
-.dataTables_paginate span { display:inline-block; padding:4px 7px; font-size:25px; cursor:pointer; border-left:1px solid #CCC; }
+.dataTables_paginate span { display:inline-block; padding:4px 7px; padding-bottom: 5px; font-size:25px; cursor:pointer; border-left:1px solid #CCC; }
 .dataTable-bottom .dataTables_paginate span { font-size:18px; padding-right:5px; }
-.dataTables_paginate span:hover { text-shadow:0 0 8px #BBB; }
 .dataTables_paginate .paginate_disabled_previous { opacity:0.2; }
-.dataTables_paginate .paginate_disabled_previous:hover { text-shadow:none !important; }
 .dataTables_paginate .paginate_disabled_next { opacity:0.2; }
-.dataTables_paginate .paginate_disabled_next:hover { text-shadow:none !important; }
 .dataTable thead th.sorting_asc,
 .dataTable thead th.sorting_desc,
 .dataTable thead th.sorting { position: relative; }

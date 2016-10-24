@@ -5092,7 +5092,7 @@ var AppRouter = Backbone.Router.extend({
 				"sInfo": jQuery.i18n.map["common.showing"],
 				"sInfoFiltered": jQuery.i18n.map["common.filtered"],
 				"sSearch": jQuery.i18n.map["common.search"],
-                "sLengthMenu": jQuery.i18n.map["common.show-items"]+":&nbsp;<input type='number' id='dataTables_length_input'/>"
+                "sLengthMenu": jQuery.i18n.map["common.show-items"]+"<input type='number' id='dataTables_length_input'/>"
 			},
             "oTableTools": {
                 "sSwfPath": countlyGlobal["cdn"]+"javascripts/dom/dataTables/swf/copy_csv_xls.swf",
