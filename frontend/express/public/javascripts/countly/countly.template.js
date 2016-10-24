@@ -1479,21 +1479,6 @@ window.DeviceView = countlyView.extend({
         return $.when(countlyDevice.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("devices")).then(function () {});
     },
     pageScript:function () {
-        $(".bar-inner").on({
-            mouseenter:function () {
-                var number = $(this).parent().next();
-
-                number.text($(this).data("item"));
-                number.css({"color":$(this).css("background-color")});
-            },
-            mouseleave:function () {
-                var number = $(this).parent().next();
-
-                number.text(number.data("item"));
-                number.css({"color":$(this).parent().find(".bar-inner:first-child").css("background-color")});
-            }
-        });
-
         app.localize();
     },
     renderCommon:function (isRefresh) {
@@ -5533,6 +5518,20 @@ var AppRouter = Backbone.Router.extend({
                 searchInside.filter(function () {
                     return searchText.test($(this).text().toLowerCase());
                 }).css('display','block');
+            });
+
+            $(document).on('mouseenter', ".bar-inner", function(e) {
+                var number = $(this).parent().next();
+
+                number.text($(this).data("item"));
+                number.css({"color":$(this).css("background-color")});
+            });
+
+            $(document).on('mouseleave', ".bar-inner", function(e) {
+                var number = $(this).parent().next();
+
+                number.text(number.data("item"));
+                number.css({"color":$(this).parent().find(".bar-inner:first-child").css("background-color")});
             });
         });
     }

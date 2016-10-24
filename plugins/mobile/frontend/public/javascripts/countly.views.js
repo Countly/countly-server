@@ -30,21 +30,6 @@ window.MobileDashboardView = countlyView.extend({
             $(this).find('.select').addClass("selected");
         });
 
-        $(".bar-inner").on({
-            mouseenter:function () {
-                var number = $(this).parent().next();
-
-                number.text($(this).data("item"));
-                number.css({"color":$(this).css("background-color")});
-            },
-            mouseleave:function () {
-                var number = $(this).parent().next();
-
-                number.text(number.data("item"));
-                number.css({"color":$(this).parent().find(".bar-inner:first-child").css("background-color")});
-            }
-        });
-
         var self = this;
         $(".big-numbers .inner").click(function () {
             var elID = $(this).find('.select').attr("id");

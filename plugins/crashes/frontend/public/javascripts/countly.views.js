@@ -296,21 +296,6 @@ window.CrashesView = countlyView.extend({
                 }
 			});
 
-            $(".bar-inner").on({
-                mouseenter:function () {
-                    var number = $(this).parent().next();
-    
-                    number.text($(this).data("item"));
-                    number.css({"color":$(this).css("background-color")});
-                },
-                mouseleave:function () {
-                    var number = $(this).parent().next();
-    
-                    number.text(number.data("item"));
-                    number.css({"color":$(this).parent().find(".bar-inner:first-child").css("background-color")});
-                }
-            });
-
             $('.crashes tbody').on("click", "tr", function (){
 				var id = $(this).attr("id");
 				if(id)
@@ -350,20 +335,7 @@ window.CrashesView = countlyView.extend({
                     self.curMetric = elID.replace("crash-", "");
                     self.switchMetric();
                 });
-                $(".bar-inner").on({
-                    mouseenter:function () {
-                        var number = $(this).parent().next();
-        
-                        number.text($(this).data("item"));
-                        number.css({"color":$(this).css("background-color")});
-                    },
-                    mouseleave:function () {
-                        var number = $(this).parent().next();
-        
-                        number.text(number.data("item"));
-                        number.css({"color":$(this).parent().find(".bar-inner:first-child").css("background-color")});
-                    }
-                });
+
                 self.dtable.fnDraw(false);
                 var chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric]);
                 countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
@@ -809,20 +781,6 @@ window.CrashgroupView = countlyView.extend({
                             CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red"); 
                     });
                 });
-            });
-            $(".bar-inner").on({
-                mouseenter:function () {
-                    var number = $(this).parent().next();
-
-                    number.text($(this).data("item"));
-                    number.css({"color":$(this).css("background-color")});
-                },
-                mouseleave:function () {
-                    var number = $(this).parent().next();
-
-                    number.text(number.data("item"));
-                    number.css({"color":$(this).parent().find(".bar-inner:first-child").css("background-color")});
-                }
             });
         }
     },
