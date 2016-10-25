@@ -1334,15 +1334,17 @@ window.CountriesView = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
 
-            if(countlyGlobal["config"].use_google){
+            if (countlyGlobal["config"].use_google) {
                 if (this.cityView) {
                     countlyCity.drawGeoChart({height:450, metric:self.maps[self.curMap]});
                 } else {
                     countlyLocation.drawGeoChart({height:450, metric:self.maps[self.curMap]});
                 }
+
+                $(".widget").removeClass("google-disabled");
             }
             else{
-                $(".widget-content.geo-switch").hide();
+                $(".widget").addClass("google-disabled");
             }
 
             this.drawTable();

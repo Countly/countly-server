@@ -252,7 +252,9 @@ table { border-collapse: collapse; }
 						.widget-header .logo.densities { background-position:-456px; }
 
 	.widget-footer { text-align:right; min-height:10px; color:#666; font-size:11px; border-bottom-left-radius:2px; border-bottom-right-radius:2px; border:1px solid #D0D0D0; border-top:none; background-color:#FFF; box-shadow:inset 0 1px 0 #FFF; overflow:hidden; }
-	.widget-content { background-color:#FFF; border:1px solid #D0D0D0; }
+	    .widget.google-disabled .widget-footer { border-top:2px solid #D0D0D0; }
+    .widget-content { background-color:#FFF; border:1px solid #D0D0D0; }
+        .widget.google-disabled .widget-content { display: none; }
 	.fix-two-columns { position:relative; }
 
     .widget-group { border:1px solid #D0D0D0; margin-bottom: 40px; border-radius:2px; }
@@ -419,6 +421,10 @@ table { border-collapse: collapse; }
 .big-numbers-v2 .big-numbers .trend i { font-size: 13px; }
 .big-numbers-v2 .big-numbers .trend.u { color:#6BB96E; }
 .big-numbers-v2 .big-numbers .trend.d { color:#C94C4C; }
+
+.google-disabled .big-numbers.radio .color { display: none; }
+.google-disabled .big-numbers.radio { cursor: default; }
+.google-disabled .big-numbers.radio:hover { opacity: 1; }
 
 /* APP NAVIGATION */
 #app-management-bar { z-index:3; }
