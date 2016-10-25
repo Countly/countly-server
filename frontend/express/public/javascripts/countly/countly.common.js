@@ -435,15 +435,14 @@
                     var dataSet = graphObj.getData(),
                         tooltipHTML = "<div class='title'>" + tickObj.tickTexts[dataIndex] + "</div>";
 
-                    // Change label to previous period if there is a ghost graph
-                    if (dataSet.length == 2) {
-                        if (dataSet[0].label == dataSet[1].label) {
-                            dataSet[0].label = jQuery.i18n.map["common.previous-period"];
-                        }
-                    }
-
                     for (i = dataSet.length - 1; i >= 0; --i) {
                         var series = dataSet[i];
+
+                        // Change label to previous period if there is a ghost graph
+                        if (series.mode == "ghost") {
+                            series.label = jQuery.i18n.map["common.previous-period"];
+                        }
+
                         tooltipHTML += "<div class='inner'>";
                         tooltipHTML += "<div class='color' style='background-color: "+ series.color + "'></div>";
                         tooltipHTML += "<div class='series'>" + series.label + "</div>";

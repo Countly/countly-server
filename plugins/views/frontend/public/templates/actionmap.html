@@ -1,15 +1,10 @@
+<a href="#/analytics/views" class="back-link"><span data-localize="views.back-to-views"></span></a>
+
 <div class="widget">
 	<div class="widget-header">
 		<div class="left">
-            {{#if logo-class}}
-			<div class="logo {{logo-class}}"></div>
-            {{else}}
-                <div class="logo font-logo2">
-                    <i class="fa {{font-logo-class}}"></i>
-                </div>
-            {{/if}}
-			<div class="title">{{page-title}}</div>    
-                <div class="cly-select" id="action-map-type" style="width:220px;  position:absolute; top: 10px; margin-left: 10px;">
+			<div class="title small">{{page-title}}</div>
+                <div class="cly-select inline" id="action-map-type">
                     <div class="select-inner">
                         <div class="text-container">
                             <div class="text">{{first-type}}</div>
@@ -36,7 +31,7 @@
             {{/if}}
             <canvas id="view-canvas-map"></canvas>
             <div id='action-map-tools'>
-                <div><input type='text' id='view_loaded_url'/>&nbsp;<a id='view_reload_url' class="cly-button-dark">Reload</a></div>
+                <div><input type='text' id='view_loaded_url'/>&nbsp;<a id='view_reload_url' class="icon-button green">Reload</a></div>
                 <!--<span>Select action: </span>
                 <div class="cly-select" id="action-map-type" style="width:220px;">
                     <div class="select-inner">

@@ -89,7 +89,8 @@
                         "api_key":countlyGlobal.member.api_key,
                         "app_id":countlyCommon.ACTIVE_APP_ID,
                         "method":"get_view_segments",
-                        "period":_period
+                        "period":_period,
+                        "display_loader": false
                     },
                     dataType:"jsonp",
                     success:function (json) {

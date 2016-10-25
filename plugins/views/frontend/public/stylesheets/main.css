@@ -20,6 +20,10 @@
 #action-map-tools span {position: relative; top:-7px; font: 16px Ubuntu,Helvetica,sans-serif; line-height: 111%; color: #333;}
 #action-map-tools .cly-button-dark{float:none;}
 #action-map-type {margin-right: 30px;}
-#view_loaded_url {width:80%; height: 20px;}
+#view_loaded_url {width:80%; height: 22px;}
+#view_reload_url { float:none; }
 .views-table div.color{ width: 10px; height: 10px; float: left; margin: 1px 10px 0 0; }
+.views-table tbody tr { cursor: pointer; }
 .btn-view-map {display: block;}
+
+.widget-header .title.small + #drill-down-for-view { margin-top:-4px !important; }

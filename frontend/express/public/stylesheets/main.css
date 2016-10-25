@@ -366,7 +366,7 @@ table { border-collapse: collapse; }
     .big-numbers.top.active .inner .logo.material .material-icons { color: #535353; }
 .big-numbers.top .number { font:30px Oswald; color:#666; margin: 0; }
     .big-numbers.top.active .number { color:#333; }
-.big-numbers.top .title { padding-top:3px; padding-bottom:3px; font-size:10px; color:#666666; text-transform: uppercase; }
+.big-numbers.top .title { padding-top:2px; padding-bottom:3px; font-size:10px; color:#666666; text-transform: uppercase; }
 .big-numbers.top .spark { margin-top:14px; }
     .big-numbers.top.active .spark { display: none; }
 .big-numbers.top .trend { display: none; font-size:11px; margin-top:20px; position: relative; top:inherit; right: inherit; width: auto; height: auto; }
@@ -571,9 +571,9 @@ div.datatablesubrow {display: none;}
 .dataTable thead th.sorting_asc,
 .dataTable thead th.sorting_desc,
 .dataTable thead th.sorting { position: relative; }
-.dataTable thead th.sorting_asc:before { color:#2FA732; position: absolute; font-family: 'FontAwesome'; top: 10px; right: 7px; content: "\f0dd"; }
-.dataTable thead th.sorting_desc:before { color:#2FA732; position: absolute; font-family: 'FontAwesome'; top: 15px; right: 7px; content: "\f0de"; }
-.dataTable thead th.sorting:before { color:#BBBBBB; position: absolute; font-family: 'FontAwesome'; top: 12px; right: 7px; content: "\f0dc"; }
+.dataTable thead th.sorting_asc:before { color:#2FA732; position: absolute; font-family: 'FontAwesome'; top: 50%; margin-top: -7px; right: 7px; content: "\f0dd"; }
+.dataTable thead th.sorting_desc:before { color:#2FA732; position: absolute; font-family: 'FontAwesome'; top: 50%; margin-top: -3px; right: 7px; content: "\f0de"; }
+.dataTable thead th.sorting:before { color:#BBBBBB; position: absolute; font-family: 'FontAwesome'; top: 50%; margin-top: -5px; right: 7px; content: "\f0dc"; }
 
 .d-table.horizontal { border:1px solid #D0D0D0; }
 .d-table.horizontal td { border-bottom:1px solid #ececec; padding: 12px; }

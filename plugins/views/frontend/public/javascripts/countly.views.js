@@ -61,7 +61,7 @@ window.ViewsView = countlyView.extend({
             if(typeof addDrill != "undefined"){
                 $(".widget-header .left .title").after(addDrill("up.lv"));
                 if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
-                    columns.push({ "mData": function(row, type){return '<a href="#/analytics/views/action-map/'+row.views+'" class="icon-button green btn-header btn-view-map" data-localize="views.table.view" style="margin:0px; padding:2px;">View</a>';}, sType:"string", "sTitle": jQuery.i18n.map["views.action-map"], "sClass":"shrink center"  });
+                    columns.push({ "mData": function(row, type){return '<a href="#/analytics/views/action-map/'+row.views+'" class="table-link green" data-localize="views.table.view" style="margin:0px; padding:2px;">View</a>';}, sType:"string", "sTitle": jQuery.i18n.map["views.action-map"], "sClass":"shrink center", bSortable: false });
                 }
             }
 
@@ -72,9 +72,6 @@ window.ViewsView = countlyView.extend({
                         self.selectedView = aData.views;
                         self.selectedViews.push(self.selectedView);
                     }
-
-                    if(_.contains(self.selectedViews, aData.views))
-                        $(nRow).addClass("selected");
                     
                     if(!self.ids[aData.views]){
                         self.ids[aData.views] = "view_"+self.lastId;
@@ -95,12 +92,10 @@ window.ViewsView = countlyView.extend({
                 if(_.contains(self.selectedViews, self.selectedView)){
                     var index = self.selectedViews.indexOf(self.selectedView);
                     self.selectedViews.splice(index, 1);
-                    row.removeClass("selected");
                     row.find(".color").css("background-color", "transparent");
                 }
                 else if(self.selectedViews.length < countlyCommon.GRAPH_COLORS.length){
                     self.selectedViews.push(self.selectedView);
-                    row.addClass("selected");
                 }
                 if(self.selectedViews.length == 0)
                     $("#empty-graph").show();
@@ -328,13 +323,9 @@ window.ActionMapView = countlyView.extend({
             var r = Math.max((48500-35*data.data.length)/900, 5);
             this.map.radius(r, r*1.6);
             this.map.draw();
-            
-            $("#date-selector").after('<a class="icon-button light btn-header btn-back-view" data-localize="views.back"><i class="fa fa-chevron-left"></i> Back</a>');
+
             app.localize();
-            $('.btn-back-view').off('click').on('click', function(){
-                window.location.hash = "/analytics/views";
-            });
-            
+
             $("#view_reload_url").on("click", function () {
 				$("#view-map iframe").attr("src", "/o/urlredir?url="+encodeURIComponent($("#view_loaded_url").val()));
 			});
