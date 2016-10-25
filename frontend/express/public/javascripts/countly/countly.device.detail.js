@@ -25,6 +25,8 @@
         "beos":{short: "bo", name: "BeOS"},
         "mac osx":{short: "o", name: "Mac"},
         "macos":{short: "o", name: "Mac"},
+        "mac":{short: "o", name: "Mac"},
+        "osx":{short: "o", name: "Mac"},
         "linux":{short: "l", name: "Linux"},
         "unix":{short: "u", name: "UNIX"},
         "ios":{short: "i", name: "iOS"},

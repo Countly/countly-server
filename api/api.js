@@ -145,6 +145,7 @@ if (cluster.isMaster) {
         "beos":"bo",
         "mac osx":"o",
         "macos":"o",
+        "mac":"o",
         "webos":"web",		
         "brew":"brew"
     };
