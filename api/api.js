@@ -140,11 +140,12 @@ if (cluster.isMaster) {
         "open bsd":"ob",
         "searchbot":"sb",
         "sun os":"so",
-        "solaris":"so",
+        "solaris":"so",		
         "beos":"bo",
         "mac osx":"o",
         "macos":"o",
-        "webos":"web",
+        "mac":"o",
+        "webos":"web",		
         "brew":"brew"
     };
 
