@@ -2185,17 +2185,17 @@ window.ManageAppsView = countlyView.extend({
         $("#clear-app-data").click(function () {
             if ($(this).hasClass("active")){
                 $(this).removeClass("active");
-                $(".options").slideUp();
+                $(".options").hide();
             }
             else{
-                $(this).addClass("active")
-                $(".options").slideDown();
+                $(this).addClass("active");
+                $(".options").show();
             }
         });
         
         $("#clear-data.options li").click(function(){
             $("#clear-app-data").removeClass('active');
-            $(".options").slideUp();
+            $(".options").hide();
             var period = $(this).attr("id").replace("clear-", "");
             CountlyHelpers.confirm(jQuery.i18n.map["management-applications.clear-confirm"], "red", function (result) {
                 if (!result) {

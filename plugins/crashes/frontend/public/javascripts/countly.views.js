@@ -632,13 +632,13 @@ window.CrashgroupView = countlyView.extend({
 			});
             
             $(".btn-share-crash").click(function(){
-				if ($(this).hasClass("active")){
+				if ($(this).hasClass("active")) {
                     $(this).removeClass("active");
-                    $("#crash-share-list").slideUp();
+                    $("#crash-share-list").hide();
                 }
                 else{
-                    $(this).addClass("active")
-                    $("#crash-share-list").slideDown();
+                    $(this).addClass("active");
+                    $("#crash-share-list").show();
                 }
 			});
             

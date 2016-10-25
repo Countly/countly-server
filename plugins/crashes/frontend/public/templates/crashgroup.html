@@ -3,8 +3,8 @@
     <div class="widget">
 		<div class="widget-header">
 			<div class="left">
-				<div class="title">{{fatal}} {{page-title}}</div>
-				<div class="cly-select" style="width:220px; position:absolute; top: 10px; margin-left: 10px;">
+				<div class="title small">{{fatal}} {{page-title}}</div>
+				<div class="cly-select inline">
 					<div class="select-inner">
 						<div class="text-container">
 							<div class="text">{{active-segmentation}}</div>
@@ -20,17 +20,17 @@
 					</div>
 				</div>
 			</div>
-			<div class="right crash-buttons help-zone-vs">
+			<div class="right btn-header help-zone-vs">
                 {{#unless external}}
                 {{#if hasPermission}}
-                <a class="icon-button red btn-header btn-delete-crash" data-id="{{id}}"><span data-localize="crashes.delete"></span></a>
-                <a class="icon-button light btn-header btn-share-crash" data-id="{{id}}"><span data-localize="crashes.share"></span></a>
+                <a class="icon-button red btn-delete-crash" data-id="{{id}}"><span data-localize="crashes.delete"></span></a>
+                <a class="icon-button light btn-share-crash" data-id="{{id}}"><span data-localize="crashes.share"></span></a>
                 {{#if data.is_hidden}}
-                <a class="icon-button light btn-header btn-show-crash" data-id="{{id}}"><span data-localize="crashes.show"></span></a>
-                <a class="icon-button light btn-header btn-hide-crash" style="display:none;" data-id="{{id}}"><span data-localize="crashes.hide"></span></a>
+                <a class="icon-button light btn-show-crash" data-id="{{id}}"><span data-localize="crashes.show"></span></a>
+                <a class="icon-button light btn-hide-crash" style="display:none;" data-id="{{id}}"><span data-localize="crashes.hide"></span></a>
                 {{else}}
-                <a class="icon-button light btn-header btn-show-crash" style="display:none;" data-id="{{id}}"><span data-localize="crashes.show"></span></a>
-                <a class="icon-button light btn-header btn-hide-crash" data-id="{{id}}"><span data-localize="crashes.hide"></span></a>
+                <a class="icon-button light btn-show-crash" style="display:none;" data-id="{{id}}"><span data-localize="crashes.show"></span></a>
+                <a class="icon-button light btn-hide-crash" data-id="{{id}}"><span data-localize="crashes.hide"></span></a>
                 {{/if}}
                 {{/if}}
                 <ul id="crash-share-list">
@@ -128,15 +128,15 @@
                     {{/unless}}
 				</div>
 			</div>
-			<div class="right help-zone-vs">
+			<div class="right btn-header help-zone-vs">
             {{#unless external}}
             {{#if hasPermission}}
 				{{#if data.is_resolved}}
-					<div class="button"><a class="back" id="mark-unresolved"><i class="fa fa-remove"></i><span data-localize="crashes.mark-unresolved"></span></a></div>
-					<div class="button"><a class="back" id="mark-resolved" style="display: none;"><i class="fa fa-check"></i><span data-localize="crashes.mark-resolved"></span></a></div>
+					<div class="icon-button light" id="mark-unresolved"><i class="fa fa-remove"></i><span data-localize="crashes.mark-unresolved"></span></div>
+					<div class="icon-button light" id="mark-resolved" style="display: none;"><i class="fa fa-check"></i><span data-localize="crashes.mark-resolved"></span></div>
 				{{else}}
-					<div class="button"><a class="back" id="mark-unresolved" style="display: none;"><i class="fa fa-remove"></i><span data-localize="crashes.mark-unresolved"></span></a></div>
-					<div class="button"><a class="back" id="mark-resolved"><i class="fa fa-check"></i><span data-localize="crashes.mark-resolved"></span></a></div>
+					<div class="icon-button light" id="mark-unresolved" style="display: none;"><i class="fa fa-remove"></i><span data-localize="crashes.mark-unresolved"></span></div>
+					<div class="icon-button light" id="mark-resolved"><i class="fa fa-check"></i><span data-localize="crashes.mark-resolved"></span></div>
 				{{/if}}
             {{/if}}
             {{/unless}}

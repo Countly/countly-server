@@ -957,13 +957,17 @@
 		</div>
 		<div id="event-main" style="margin-left:187px;">
 		<div class="widget">
-			<div class="widget-header" style="height:auto; position:static; overflow:auto;">
-				<div class="left" style="width: 50%; height: 35px;">
+			<div class="widget-header">
+				<div class="left">
 					<div id="event-update-area">
-						<div class="title dynamic-title">{{page-title}}</div>
+                        {{#if segmentations}}
+						<div class="title dynamic-title small">{{page-title}}</div>
+                        {{else}}
+                        <div class="title dynamic-title">{{page-title}}</div>
+                        {{/if}}
 						<div class="event-segmentation">
 							{{#if segmentations}}
-							<div class="cly-select" style="width:220px; position:absolute;">
+							<div class="cly-select inline">
 								<div class="select-inner">
 									<div class="text-container">
 										<div class="text">{{active-segmentation}}</div>
