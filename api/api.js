@@ -659,7 +659,7 @@ if (cluster.isMaster) {
                 
                                 return validateAppForWriteAPI(tmpParams, function(){
                                     function resolver(){
-                                        plugins.dispatch("/i/end", {params:tmpParams});
+                                        plugins.dispatch("/sdk/end", {params:tmpParams});
                                         processBulkRequest(i + 1);
                                     }
                                     Promise.all(tmpParams.promises).then(resolver, resolver);
@@ -764,7 +764,7 @@ if (cluster.isMaster) {
                             params.promises = [];
                             validateAppForWriteAPI(params, function(){
                                 function resolver(){
-                                    plugins.dispatch("/i/end", {params:params});
+                                    plugins.dispatch("/sdk/end", {params:params});
                                 }
                                 Promise.all(params.promises).then(resolver, resolver);
                             });
