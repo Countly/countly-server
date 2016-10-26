@@ -26,4 +26,4 @@
 .views-table tbody tr { cursor: pointer; }
 .btn-view-map {display: block;}
 
-.widget-header .title.small + #drill-down-for-view { margin-top:-4px !important; }
+.widget-header .title.small + #drill-down-for-view { margin-top:-3px !important; font-size: 10px !important; padding: 3px 5px 2px 5px !important; }

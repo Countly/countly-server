@@ -768,7 +768,7 @@ div.datatablesubrow {display: none;}
         .cly-select .search .fa { position: absolute; right:0; top:5px; color:#CCC; font-size: 10px; }
         .cly-select .search .inner { position:relative; margin:5px 8px; padding:4px 1px; padding-right:20px; background-color:#FFF; font:13px Ubuntu; line-height:111%; }
         .cly-select .search input { height:14px; padding:0; margin:0; border:none; outline:none; width:100%; font:13px Ubuntu; line-height:111%; }
-    .cly-select .search + .select-items { margin-top: 33px; }
+    .cly-select .search + .select-items { margin-top: 33px; border-top-left-radius: 0; border-top-right-radius: 0; }
     .cly-select .select-items { z-index:1000; display:none; position:absolute; margin-left:-1px; border-radius:2px; background-color:#FFF; border:1px solid #D0D0D0; width:135px; }
     .cly-select.dark .select-items { border-color:#d0d0d0; }
 	.cly-select .select-items .scroll-list {  max-height:188px; }
@@ -787,13 +787,6 @@ div.datatablesubrow {display: none;}
 		.cly-select .right.combo { }
             .cly-select .right.combo:before { color:#717171; font-family: 'Ionicons'; content: "\f123"; font-size: 9px; position: absolute; right: 8px; }
 	.cly-select .slimScrollBar.ui-draggable { cursor:default; }
-
-.cly-select.inline { border:none; left: 4px; top:26px; position: absolute; width: 220px; background-color: transparent; }
-.cly-select.inline .text-container { width:auto; }
-.cly-select.inline .right { position: relative; float:left; }
-.cly-select.inline .right.combo:before { right:auto; }
-.cly-select.inline:hover .text { color:#2FA732; }
-.cly-select.inline:hover .right.combo:before { color:#2FA732; }
 
 .cly-select.float { float:left; border:none; width: auto; background-color: transparent; margin-right: 5px; }
 .cly-select.float .text { padding-left: 3px; }
