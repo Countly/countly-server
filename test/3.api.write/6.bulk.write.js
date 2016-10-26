@@ -20,7 +20,7 @@ describe('Bulk writing', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'Missing parameter "requests"');
+				ob.should.have.property('result', 'Missing parameter &quot;requests&quot;');
 				setTimeout(done, 1000)
 			});
 		});
@@ -35,7 +35,7 @@ describe('Bulk writing', function(){
 				{"device_id":DEVICE_ID, "app_key":APP_KEY, "end_session":1, timestamp:parseInt(new Date().getTime()/1000 - 60 * 60 * 2)},
                 {"device_id":DEVICE_ID+"new", "app_key":APP_KEY, "begin_session":1, timestamp:parseInt(new Date().getTime()/1000 - 60 * 60 * 1)},
 			];
-			this.timeout(params.length*10000+10000);
+			this.timeout(params.length*5000+10000);
 			request
 			.get('/i/bulk?requests='+JSON.stringify(params))
 			.expect(200)
@@ -43,7 +43,7 @@ describe('Bulk writing', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result', 'Success');
-				setTimeout(done, params.length*10000)
+				setTimeout(done, params.length*5000)
 			});
 		});
 	});
@@ -126,7 +126,7 @@ describe('Bulk writing', function(){
 				{"device_id":DEVICE_ID+"9", "app_key":APP_KEY, "begin_session":1, "metrics":{"_os": "IOS","_os_version": "7.1","_resolution": "2048x1536", "_device": "iPod","_carrier": "Telecom","_app_version": "1.2"}},
 				{"device_id":DEVICE_ID+"10", "app_key":APP_KEY, "begin_session":1, "metrics":{"_os": "IOS","_os_version": "7.1","_resolution": "2048x1536", "_device": "iPod","_carrier": "Telecom","_app_version": "1.2"}}
 			];
-			this.timeout(params.length*10000+10000);
+			this.timeout(params.length*5000+10000);
 			request
 			.get('/i/bulk?requests='+JSON.stringify(params))
 			.expect(200)
@@ -134,7 +134,7 @@ describe('Bulk writing', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result', 'Success');
-				setTimeout(done, params.length*10000)
+				setTimeout(done, params.length*5000)
 			});
 		});
 	});
@@ -219,7 +219,7 @@ describe('Bulk writing', function(){
 				{"device_id":DEVICE_ID, "app_key":APP_KEY, "events":[{"key": "test2", "count": 2, "sum":1.50, "segmentation": {"country": "Latvia","market": "googleplay"}}]},
 				{"device_id":DEVICE_ID+"A", "app_key":APP_KEY, "events":[{"key": "test2", "count": 2, "sum":1.50, "segmentation": {"country": "Latvia","market": "googleplay"}}]},
 			];
-			this.timeout(params.length*10000+10000);
+			this.timeout(params.length*5000+10000);
 			request
 			.get('/i/bulk?requests='+JSON.stringify(params))
 			.expect(200)
@@ -227,7 +227,7 @@ describe('Bulk writing', function(){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('result', 'Success');
-				setTimeout(done, params.length*10000)
+				setTimeout(done, params.length*5000)
 			});
 		});
 	});
@@ -446,7 +446,7 @@ describe('Bulk writing', function(){
 					if (err) return done(err);
 					var ob = JSON.parse(res.text);
 					ob.should.have.property('result', 'Success');
-					setTimeout(done, 10000)
+					setTimeout(done, 5000)
 				});
 			});
 		});
