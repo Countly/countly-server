@@ -1,129 +1,100 @@
 <div class="widget" style="position:relative; border-bottom-left-radius:0; border-bottom-right-radius:0; margin-bottom:0;">
     <div class="widget-header">
         <div class="left">
-            <div class="title">Star rating</div>
-
-
-            <div  style="margin-left:5px;float: left;margin-top: 4px;">
-                <div class="cly-select" style="width:220px; position:absolute;">
+            <div style="overflow: auto;">
+                <div class="title small">{{page-title}}</div>
+            </div>
+            <div style="width:300px; display: inline-block;">
+                <div class="cly-select float">
                     <div class="select-inner">
                         <div class="text-container">
                             <div class="text" id="platform-selector" data-localize="star.all-platforms"></div>
                         </div>
                         <div class="right combo"></div>
                     </div>
-                    <div class="select-items square" style="width:220px;">
+                    <div class="select-items square">
                         <div id="platform-list">
 
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div  id="Version" style="margin-left:235px; float:left;margin-top: 4px;">
-                <div class="cly-select" style="width:220px; position:absolute;">
+                <div class="cly-select float">
                     <div class="select-inner">
                         <div class="text-container">
-                            <div class="text" data-localize="star.all-app-versions"></div>
+                            <div class="text" id="version-selector" data-localize="star.all-app-versions"></div>
                         </div>
                         <div class="right combo"></div>
                     </div>
-                    <div class="select-items square" style="width:220px;">
+                    <div class="select-items square">
                         <div id="version-list">
 
                         </div>
                     </div>
                 </div>
-
             </div>
-
         </div>
         {{> date-selector }}
     </div>
 </div>
 
-
-
-<div class="widget-content" style="">
+<div class="widget-content">
     <div id="graph-select-container" >
-
-        <div class="big-numbers top two-column help-zone-vs active" data-help-localize="" id="cumulative">
+        <div class="big-numbers top two-columns help-zone-vs active" data-help-localize="" id="cumulative">
             <div class="inner" style="height: 40px;">
                 <div class="select selected large" id="cumulative-tab">
                     <div class="title" data-localize="star.cumulative"></div>
                 </div>
             </div>
         </div>
-        <div class="big-numbers top two-column help-zone-vs" data-help-localize="" id="time-series">
+        <div class="big-numbers top two-columns help-zone-vs" data-help-localize="" id="time-series">
             <div class="inner" style="height: 40px;">
                 <div class="select large" id="view-metric-u">
                     <div class="title" data-localize="star.time-series"></div>
                 </div>
             </div>
         </div>
-
-
     </div>
-
     <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px; height:300px;"></div>
-
 </div>
 
-<div class="widget-footer  big-numbers-v2" style=" overflow:visible; box-shadow:none; position:relative;">
-
-
-    <div id="big-numbers-container" >
-
-        <div class="big-numbers check  selected"  style="width: 20%;" id="star1" id="star-bar">
-            <div class="inner2">
-                <div class="color"  ></div>
+<div class="widget-footer big-numbers-v2" style="overflow:visible; box-shadow:none; position:relative;">
+    <div id="big-numbers-container" class="star-selection">
+        <div class="big-numbers check selected"  style="width: 20%;" id="star1" id="star-bar">
+            <div class="inner">
+                <div class="color"></div>
                 <div class="select" data-localize="star.one-star"></div>
-
             </div>
         </div>
-
-        <div class="big-numbers check  selected" style="width: 20%;" id="star2" >
-            <div class="inner2">
+        <div class="big-numbers check selected" style="width: 20%;" id="star2" >
+            <div class="inner">
                 <div class="color" ></div>
                 <div class="select" data-localize="star.two-star"></div>
-
             </div>
         </div>
-
-        <div class="big-numbers check  selected"  style="width: 20%;" id="star3" >
-            <div class="inner2">
+        <div class="big-numbers check selected"  style="width: 20%;" id="star3" >
+            <div class="inner">
                 <div class="color" ></div>
                 <div class="select" data-localize="star.three-star"></div>
-
             </div>
         </div>
-        <div class="big-numbers check  selected" style="width: 20%;" id="star4" >
-            <div class="inner2">
+        <div class="big-numbers check selected" style="width: 20%;" id="star4" >
+            <div class="inner">
                 <div class="color" ></div>
                 <div class="select" data-localize="star.four-star"></div>
-
             </div>
         </div>
-        <div class="big-numbers check  selected" style="width: 20%;" id="star5" >
-            <div class="inner2">
+        <div class="big-numbers check selected" style="width: 20%;" id="star5" >
+            <div class="inner">
                 <div class="color"></div>
                 <div class="select" data-localize="star.five-star"></div>
-
             </div>
         </div>
-
     </div>
- </div>
+</div>
 
-
-
-<div class="widget-group" style="">
-
+<div class="widget-group" style="margin-top: 25px; margin-bottom: 25px;">
     <div id="big-numbers-container" class="crash-style crash-widgets">
-
-
-        <div class="big-numbers top widgets two-column help-zone-vs" >
-
+        <div class="big-numbers top widgets two-columns help-zone-vs" >
             <div class="inner">
                 <div class="title" data-localize="star.total-ratings"></div>
                 <div class="number">
@@ -131,10 +102,7 @@
                 </div>
             </div>
         </div>
-
-
-        <div class="big-numbers top widgets two-column help-zone-vs">
-
+        <div class="big-numbers top widgets two-columns help-zone-vs">
             <div class="inner">
                 <div class="title" data-localize="star.median-rating"></div>
                 <div class="number">
@@ -143,10 +111,7 @@
             </div>
         </div>
     </div>
-
 </div>
 
-<table class="d-table" id="tableOne"> </table>
-<table class="d-table" id="tableTwo"> </table>
-
-</table>
+<table class="d-table" id="tableOne"></table>
+<table class="d-table" id="tableTwo"></table>

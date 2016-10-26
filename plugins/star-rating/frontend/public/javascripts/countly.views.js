@@ -4,9 +4,10 @@ window.starView = countlyView.extend({
    * @type {object}
    */
   templateData: {
+    "page-title": jQuery.i18n.map["star.menu-title"],
     platform_version: null,
     rating: null,
-    timeSriesData: null
+    timeSeriesData: null
   },
   platform:'',
   version:'',
@@ -19,7 +20,8 @@ window.starView = countlyView.extend({
     return $.when(
       $.get(countlyGlobal["path"]+'/star-rating/templates/star.html'),
       starRatingPlugin.requestPlatformVersion(),
-      starRatingPlugin.requestRatingInPeriod()
+      starRatingPlugin.requestRatingInPeriod(),
+      starRatingPlugin.requesPeriod()
     ).done(function(result){
       self.template = Handlebars.compile(result[0]);
       self.templateData['platform_version'] = starRatingPlugin.getPlatformVersion();
@@ -34,18 +36,19 @@ window.starView = countlyView.extend({
    * @param {}
    * @return {null}
    */
-  loadPlatformData: function(){
-    $("#platform-list").html('<div data-value="All Platforms" class="platform-option item" data-localize="">All Platforms</div>');
-    for(var platform in this.templateData['platform_version']){
-      $("#platform-list").append(
-        '<div data-value="' + platform +
-        '" class="platform-option item" data-localize="">'
-        + platform +'</div>'
-      );
-    };
+  loadPlatformData: function() {
+    $("#platform-list").html('<div data-value="All Platforms" class="platform-option item" data-localize="star.all-platforms">' + jQuery.i18n.map['star.all-platforms'] + '</div>');
+
+    for(var platform in this.templateData['platform_version']) {
+      $("#platform-list").append('<div data-value="' + platform + '" class="platform-option item" data-localize="">' + platform +'</div>');
+    }
+
     var self = this;
     $(".platform-option").on("click", function () {
-      $("#Version > div > div.select-inner > div.text-container > div").html("All Versions");
+
+      $("#version-selector").text(jQuery.i18n.map['star.all-app-versions']);
+      self.version = '';
+
       var value = $(this).data("value");
       if(value === "All Platforms"){
         self.platform = '';
@@ -57,7 +60,6 @@ window.starView = countlyView.extend({
     });
   },
 
-
   /**
    * This is for render version dropdown select view.
    * @namespace starView
@@ -67,10 +69,11 @@ window.starView = countlyView.extend({
    */
   loadVersionData: function () {
     var versioinList=[];
-    if(this.platform === ''){
-      for(var platform in this.templateData['platform_version']){
+    if(this.platform === '') {
+      for(var platform in this.templateData['platform_version']) {
         var list = this.templateData['platform_version'][platform];
-        for(var i = 0; i < list.length; i++){
+
+          for(var i = 0; i < list.length; i++){
           if(versioinList.indexOf(list[i]) === -1){
             versioinList.push(list[i]);
           }
@@ -79,15 +82,13 @@ window.starView = countlyView.extend({
     } else {
       versioinList = this.templateData['platform_version'][this.platform];
     }
-    $("#version-list").html('<div data-value="All Versions" class="version-option item" data-localize="star.all-app-versions"></div>');
+
+    $("#version-list").html('<div data-value="All Versions" class="version-option item" data-localize="star.all-app-versions">' + jQuery.i18n.map['star.all-app-versions'] + '</div>');
+
     for(var i = 0; i < versioinList.length; i++){
       var versionShow = versioinList[i].replace(/:/g, ".");
-      $("#version-list").append(
-        '<div data-value="' + versioinList[i] +
-        '" class="version-option item" data-localize="">'
-        + versionShow +'</div>'
-      );
-    };
+      $("#version-list").append('<div data-value="' + versioinList[i] + '" class="version-option item" data-localize="">' + versionShow + '</div>');
+    }
 
     var self = this;
     $(".version-option").on("click", function () {
@@ -108,7 +109,7 @@ window.starView = countlyView.extend({
    * @param {}
    * @return {null}
    */
-  updateViews: function(){
+  updateViews: function (isRefresh) {
     var self = this;
     self.templateData['platform_version'] = starRatingPlugin.getPlatformVersion();
     self.templateData['rating'] = starRatingPlugin.getRatingInPeriod();
@@ -117,20 +118,19 @@ window.starView = countlyView.extend({
 
     if(self.currentTab === 'cumulative'){
       self.renderCumulativeChart();
-      self.renderCumulativeTable();
+      self.renderCumulativeTable(isRefresh);
       $('#tableTwo_wrapper').css("display","none");
       $('#tableOne_wrapper').css("display","block");
       $('#big-numbers-container').css("display","none");
     }
 
     if(self.currentTab === 'time-series'){
-      self.renderTimeSeriesTable();
+      self.renderTimeSeriesTable(isRefresh);
       self.renderTimeSeriesChart();
       $('#tableOne_wrapper').css("display","none");
       $('#tableTwo_wrapper').css("display","block");
       $('#big-numbers-container').css("display","block");
     }
-    $(".dataTables_length").remove();
   },
 
   /**
@@ -155,11 +155,7 @@ window.starView = countlyView.extend({
     }
 
     var matchResult = (new RegExp(regexString, 'i')).test(documentName);
-    if(matchResult){
-      console.log('match:',documentName);
-    }else{
-      console.log('not match:',documentName);
-    }
+
     return matchResult;
   },
 
@@ -171,21 +167,23 @@ window.starView = countlyView.extend({
    * @param {}
    * @return {Array} periodArray.
    */
-  getPeriodArray: function(){
-    var periodArray;
+  getPeriodArray: function() {
+    var periodArray = [];
     var periodObject = countlyCommon.getPeriodObj();
-    if(parseInt(periodObject.numberOfDays) === 1){
+
+    if (parseInt(periodObject.numberOfDays) === 1) {
       periodArray = [periodObject.activePeriod];
-    }else if(countlyCommon.getPeriod() === 'month'){
-        periodArray=starRatingPlugin.getPeriod().currentPeriodArr;
-    }else if(periodObject.currentPeriodArr === undefined){
+    } else if (countlyCommon.getPeriod() === 'month') {
+      periodArray=starRatingPlugin.getPeriod().currentPeriodArr;
+    } else if (periodObject.currentPeriodArr === undefined) {
       periodArray = [];
-      for(var i = periodObject.periodMin; i <= periodObject.periodMax; i++){
+      for(var i = periodObject.periodMin; i <= periodObject.periodMax; i++) {
         periodArray.push(periodObject.activePeriod + '.' + i);
       }
-    }else{
+    } else {
       periodArray = periodObject.currentPeriodArr
-    };
+    }
+
     return periodArray;
   },
 
@@ -209,7 +207,6 @@ window.starView = countlyView.extend({
     var result = this.templateData['rating'];
     var periodArray = this.getPeriodArray();
 
-    console.log(periodArray, result,countlyCommon.getPeriodObj());
     for(var i = 0; i < periodArray.length; i++) {
       var dateArray = periodArray[i].split('.');
       var year = dateArray[0];
@@ -219,7 +216,6 @@ window.starView = countlyView.extend({
       if (result[year] && result[year][month] && result[year][month][day]) {
         for (var rating in result[year][month][day]) {
           if (this.matchPlatformVersion(rating)) {
-            console.log(year, month, day, rating);
             var rank = (rating.split("**"))[2];
             this.cumulativeData[rank - 1].count += result[year][month][day][rating].c;
             var times = result[year][month][day][rating].c;
@@ -227,48 +223,55 @@ window.starView = countlyView.extend({
               ratingArray.push(parseInt(rank));
           }
         }
-      }
-      ;
+      };
     }
 
     var sum = 0;
     this.cumulativeData.forEach(function(star){sum += star.count});
-    this.cumulativeData.forEach(function(star){star.percent =(sum === 0) ? "0%" : ((star.count/sum)*100).toFixed(2) + '%'});
+    this.cumulativeData.forEach(function(star) {
+        var tmpPercent = (sum === 0)? 0 : ((star.count/sum)*100).toFixed(1);
+        star.percent = "<div class='percent-bar' style='width:" + (2 * tmpPercent) + "px;'></div>" + tmpPercent + "%";
+    });
     $("#total-rating").html(sum);
     ratingArray.sort();
-    console.log("calc cuml:",ratingArray, sum);
+
     var middle = (sum === 0)?  0 :
                 (sum%2 === 1) ? ratingArray[Math.round(sum/2)-1]: (ratingArray[sum/2-1] + ratingArray[sum/2])/2
     middle = (middle*1.0).toFixed(2);
     $("#median-rating").html(middle);
   },
 
-  renderCumulativeTable: function(){
-    var columnsDefine = [
-      { "mData": "rating", sType:"string", "sTitle": jQuery.i18n.map["star.rating"] },
-      { "mData": "count", sType:"numeric", "sTitle": jQuery.i18n.map["star.number-of-ratings"]},
-      { "mData": "percentage", sType:"string",  "sTitle": jQuery.i18n.map["star.percentage"]},
-    ];
+  renderCumulativeTable: function(isRefresh){
+      var data = [];
 
-    var tableData = {
-      "aaData": [],
-      "aoColumns": columnsDefine,
-    };
+      for(var i = 0; i < 5; i++){
+          data.push({
+              rating:this.iconGenerator(i+1),
+              count: this.cumulativeData[i].count,
+              percentage:this.cumulativeData[i].percent
+          })
+      }
 
-    for(var i = 0; i < 5; i++){
-      tableData.aaData.push({
-        rating:this.iconGenerator(i+1),
-        count: this.cumulativeData[i].count,
-        percentage:this.cumulativeData[i].percent
-      })
+    if (isRefresh) {
+        CountlyHelpers.refreshTable($('#tableOne').dataTable(), data);
+    } else {
+        var columnsDefine = [
+            { "mData": "rating", sType:"string", "sTitle": jQuery.i18n.map["star.rating"] },
+            { "mData": "count", sType:"numeric", "sTitle": jQuery.i18n.map["star.number-of-ratings"]},
+            { "mData": "percentage", sType:"percent", "sTitle": jQuery.i18n.map["star.percentage"]}
+        ];
+
+        var tableData = {
+            "aaData": data,
+            "aoColumns": columnsDefine
+        };
+
+        $('#tableOne').dataTable($.extend({}, $.fn.dataTable.defaults, tableData));
+        $('#tableOne').dataTable().fnSort([[2, 'desc']]);
     }
-    console.log(tableData);
-
-    $('#tableOne').dataTable($.extend({}, $.fn.dataTable.defaults, tableData));
   },
 
   renderCumulativeChart: function (){
-    console.log(this.platform, this.version);
     var da = {
       "dp": [{
         "data": [[-1, null], [0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, null],]
@@ -276,13 +279,12 @@ window.starView = countlyView.extend({
       "ticks": [
         [-1, ""], [0, this.iconGenerator(1)], [1, this.iconGenerator(2)],
         [2, this.iconGenerator(3)], [3, this.iconGenerator(4)],
-        [4, this.iconGenerator(5)], [5, ""],
+        [4, this.iconGenerator(5)], [5, ""]
       ]
     };
     for(var i = 1; i <=5; i++){
       da.dp[0].data[i][1] = this.cumulativeData[i-1].count;
     }
-    console.log(da.dp);
     countlyCommon.drawGraph(da, "#dashboard-graph", "bar", {colors:["#56a5ec"]});
   },
 
@@ -308,7 +310,7 @@ window.starView = countlyView.extend({
     var result = this.templateData['rating'];
     var periodArray = this.getPeriodArray();
 
-    this.templateData['timeSriesData'] = [];
+    this.templateData['timeSeriesData'] = [];
     var currentYear = (new Date()).getFullYear();
     var dateFormat = 'D MMM, YYYY';
     if(periodArray.length > 0 && (moment(periodArray[0]).isoyear() === currentYear) ){
@@ -325,49 +327,54 @@ window.starView = countlyView.extend({
       if(result[year] && result[year][month] && result[year][month][day]) {
         for (var rating in result[year][month][day]) {
           if (this.matchPlatformVersion(rating)) {
-            console.log(year, month, day, rating);
             var rank = (rating.split("**"))[2];
             row["star" + rank] += result[year][month][day][rating].c
           }
         }
       }
-      this.templateData['timeSriesData'].push(row);
-    };
+      this.templateData['timeSeriesData'].push(row);
+    }
   },
-  renderTimeSeriesTable: function(){
+  renderTimeSeriesTable: function(isRefresh) {
+      if (isRefresh) {
+          CountlyHelpers.refreshTable($('#tableTwo').dataTable(), this.templateData['timeSeriesData']);
+      } else {
+          var columnsDefine = [
+              { "mData": "date", "sType":"customDate", "sTitle": jQuery.i18n.map["star.date"] },
+              { "mData": "star1", sType:"string", "sTitle": this.iconGenerator(1) },
+              { "mData": "star2", sType:"string", "sTitle": this.iconGenerator(2) },
+              { "mData": "star3", sType:"string", "sTitle": this.iconGenerator(3) },
+              { "mData": "star4", sType:"string", "sTitle": this.iconGenerator(4) },
+              { "mData": "star5", sType:"string", "sTitle": this.iconGenerator(5) }
+          ];
 
+          $('#tableTwo').dataTable($.extend({}, $.fn.dataTable.defaults, {
+              "aaData":this.templateData['timeSeriesData'],
+              "aoColumns": columnsDefine
+          }));
 
-    var columnsDefine = [
-      { "mData": "date", sType:"string", "sTitle": jQuery.i18n.map["star.date"] },
-      { "mData": "star1", sType:"string", "sTitle": this.iconGenerator(1) },
-      { "mData": "star2", sType:"string", "sTitle": this.iconGenerator(2) },
-      { "mData": "star3", sType:"string", "sTitle": this.iconGenerator(3) },
-      { "mData": "star4", sType:"string", "sTitle": this.iconGenerator(4) },
-      { "mData": "star5", sType:"string", "sTitle": this.iconGenerator(5) },
-    ];
-
-    $('#tableTwo').dataTable($.extend({}, $.fn.dataTable.defaults, {
-      "aaData":this.templateData['timeSriesData'],
-      "aoColumns": columnsDefine,
-    }));
+          $('#tableTwo').dataTable().fnSort([[0, 'desc']]);
+          $('#tableTwo').stickyTableHeaders()
+      }
   },
   renderTimeSeriesChart: function(){
-    var timeSeriesData = this.templateData['timeSriesData'];
+    var timeSeriesData = this.templateData['timeSeriesData'];
     var graphData =[
-      {"data":[],"label":"1STAR","color":"#52A3EF"},
-      {"data":[],"label":"2STAR","color":"#FF8700"},
-      {"data":[],"label":"3STAR","color":"#0EC1B9"},
-      {"data":[],"label":"4STAR","color":"#ad41d5"},
-      {"data":[],"label":"5STAR","color":"#d63b3b"},
-
+      {"data":[],"label": jQuery.i18n.map["star.one-star"], "color":"#52A3EF"},
+      {"data":[],"label": jQuery.i18n.map["star.two-star"],"color":"#FF8700"},
+      {"data":[],"label": jQuery.i18n.map["star.three-star"],"color":"#0EC1B9"},
+      {"data":[],"label": jQuery.i18n.map["star.four-star"],"color":"#ad41d5"},
+      {"data":[],"label": jQuery.i18n.map["star.five-star"],"color":"#d63b3b"}
     ];
+
     for(var i = 0; i < timeSeriesData.length; i++){
       graphData[0].data.push([i,timeSeriesData[i].star1]);
       graphData[1].data.push([i,timeSeriesData[i].star2]);
       graphData[2].data.push([i,timeSeriesData[i].star3]);
       graphData[3].data.push([i,timeSeriesData[i].star4]);
       graphData[4].data.push([i,timeSeriesData[i].star5]);
-    };
+    }
+
     var renderData = [];
     for(var key in this.lineChartSelect){
       if(this.lineChartSelect[key]){
@@ -377,22 +384,15 @@ window.starView = countlyView.extend({
 
     countlyCommon.drawTimeGraph(renderData, "#dashboard-graph");
   },
-
   renderCommon: function (isRefresh) {
     var self = this;
     if (!isRefresh) {
       $(this.el).html(this.template(this.templateData));
 
-
       //add platform && version selector
-      this.loadPlatformData();
-      this.loadVersionData();
+      self.loadPlatformData();
+      self.loadVersionData();
 
-      var self = this;
-
-
-      var selectFirst = true;
-      var self = this;
       //tab select
       $(".widget-content .inner").click(function () {
         $(".big-numbers").removeClass("active");
@@ -402,6 +402,7 @@ window.starView = countlyView.extend({
         self.currentTab = $(this).parent(".big-numbers").attr('id');
         self.updateViews();
       });
+
       $("#date-selector").click(function(){
         $.when(
           starRatingPlugin.requestPlatformVersion(),
@@ -410,25 +411,28 @@ window.starView = countlyView.extend({
         ).done(function(result){
           self.updateViews();
         });
-      })
+      });
 
       $(".check").click(function(){
         var classes = $(this).attr('class');
         var id = $(this).attr('id');
         var count = 0;
-        for(var keyName in self.lineChartSelect){
+
+        for (var keyName in self.lineChartSelect) {
           if(self.lineChartSelect[keyName]){
             count ++;
           }
-        };
-        if(classes.indexOf('selected') >= 0){
+        }
+
+        if (classes.indexOf('selected') >= 0) {
           if(count == 1){
             return;
           }
           $(this).removeClass("selected");
-        }else{
+        } else {
           $(this).addClass("selected");
         }
+
         self.lineChartSelect[id] = !self.lineChartSelect[id];
         self.updateViews();
       });
@@ -442,30 +446,36 @@ window.starView = countlyView.extend({
           self.updateViews();
         });
       })
-    };
+    }
 
     this.updateViews();
-
   },
-
+  refresh: function() {
+      var self = this;
+      $.when(
+          starRatingPlugin.requestPlatformVersion(),
+          starRatingPlugin.requestRatingInPeriod()
+      ).done(function(result){
+          self.updateViews(true);
+          self.loadPlatformData();
+          self.loadVersionData();
+      });
+  }
 });
-
 
 //register views
 app.starView = new starView();
-
-
 
 app.route("/analytics/star-rating", 'star', function () {
   this.renderWhenReady(this.starView);
 });
 
-$( document ).ready(function() {
+$(document).ready(function() {
   var menu = '<a href="#/analytics/star-rating" class="item">'+
     '<div class="logo-icon fa fa-globe"></div>'+
     '<div class="text" data-localize="star.menu-title"></div>'+
     '</a>';
+
   $('#web-type #engagement-submenu').append(menu);
   $('#mobile-type #engagement-submenu').append(menu);
-
 });

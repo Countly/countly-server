@@ -21,7 +21,7 @@
         api_key:countlyGlobal['member'].api_key,
         app_id:countlyCommon.ACTIVE_APP_ID,
         method: 'star',
-        period: periodString,
+        period: periodString
       },
       success:function (json) {
         _pv = json;
@@ -39,7 +39,7 @@
   starRatingPlugin.requestRatingInPeriod = function () {
     var period = countlyCommon.getPeriod();
     var periodString = typeof period  === "object" ?  "[" + period.toString() + "]" : period;
-    console.log("period:", periodString);
+
     //returning promise
     return $.ajax({
       type:"GET",
@@ -68,7 +68,7 @@
   starRatingPlugin.requesPeriod = function(){
     var period = countlyCommon.getPeriod();
     var periodString = typeof period  === "object" ?  "[" + period.toString() + "]" : period;
-    console.log("period:", periodString);
+
     //returning promise
     return $.ajax({
       type:"GET",
@@ -77,13 +77,13 @@
         api_key:countlyGlobal['member'].api_key,
         app_id:countlyCommon.ACTIVE_APP_ID,
         method: 'get_period_obj',
-        period: periodString,
+        period: periodString
       },
       success:function (json) {
         _period = json;
       }
     });
-  }
+  };
 
   starRatingPlugin.getPlatformVersion = function () {
     return _pv;
