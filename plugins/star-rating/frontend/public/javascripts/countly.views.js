@@ -419,6 +419,9 @@ window.starView = countlyView.extend({
             self.loadPlatformData();
             self.loadVersionData();
 
+            $("#graph-select-container").find(".big-numbers").removeClass("active");
+            $("#" + self.currentTab).addClass("active");
+
             //tab select
             $(".widget-content .inner").click(function () {
                 $(".big-numbers").removeClass("active");
@@ -479,8 +482,8 @@ window.starView = countlyView.extend({
     refresh: function () {
         var self = this;
         $.when(
-            starRatingPlugin.requestPlatformVersion(),
-            starRatingPlugin.requestRatingInPeriod()
+            starRatingPlugin.requestPlatformVersion(true),
+            starRatingPlugin.requestRatingInPeriod(true)
         ).done(function (result) {
             self.updateViews(true);
             self.loadPlatformData();

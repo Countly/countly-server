@@ -10,7 +10,7 @@
      * @param {}
      * @return {func} ajax func to request data and store in _pv
      */
-    starRatingPlugin.requestPlatformVersion = function () {
+    starRatingPlugin.requestPlatformVersion = function (isRefresh) {
         var period = countlyCommon.getPeriod();
         var periodString = typeof period === "object" ? "[" + period.toString() + "]" : period;
         //returning promise
@@ -21,7 +21,8 @@
                 api_key: countlyGlobal['member'].api_key,
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 method: 'star',
-                period: periodString
+                period: periodString,
+                display_loader: !isRefresh
             },
             success: function (json) {
                 _pv = json;
@@ -36,7 +37,7 @@
      * @param {}
      * @return {func} ajax func to request data and store in _rating
      */
-    starRatingPlugin.requestRatingInPeriod = function () {
+    starRatingPlugin.requestRatingInPeriod = function (isRefresh) {
         var period = countlyCommon.getPeriod();
         var periodString = typeof period === "object" ? "[" + period.toString() + "]" : period;
 
@@ -51,6 +52,7 @@
                 period: periodString,
                 event: '[CLY]_star_rating',
                 segmentation: 'platform_version_rate',
+                display_loader: !isRefresh
             },
             success: function (json) {
                 _rating = json;
