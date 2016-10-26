@@ -1,6 +1,6 @@
 var countlyDeviceDetails = {},
     countlyCommon = require('./countly.common.js'),
-    underscore = require('underscore');
+    _ = require('underscore');
 
 (function (countlyDeviceDetails) {
 
