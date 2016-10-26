@@ -660,7 +660,7 @@ if (cluster.isMaster) {
                                     function resolver(){
                                         processBulkRequest(i + 1);
                                     }
-                                    Promise.all(params.promises).then(resolver, resolver);
+                                    Promise.all(tmpParams.promises).then(resolver, resolver);
                                 });
                             }
                             
