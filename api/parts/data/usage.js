@@ -635,18 +635,15 @@ var usage = {},
                     }
                 }
             }
-    
-            if (isNewUser) {
-                common.updateAppUser(params, {'$inc': {'sc': 1}, '$set': userProps});
+            
+            // sc: session count. common.dbUserMap is not used here for readability purposes.
+            common.updateAppUser(params, {'$inc': {'sc': 1}, '$set': userProps}, function(){
                 //Perform user retention analysis
                 plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
                 if (done) { done(); }
-            } else {
-                // sc: session count. common.dbUserMap is not used here for readability purposes.
-                common.updateAppUser(params, {'$inc': {'sc': 1}, '$set': userProps}, function(){
-                    //Perform user retention analysis
-                    plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
-                });
+            });
+
+            if (!isNewUser){
                 /*
                 If metricChanges object contains a uid this means we have at least one metric that has changed
                 in this begin_session so we'll insert it into metric_changesAPPID collection.
@@ -657,8 +654,6 @@ var usage = {},
                 if (metricChanges.uid) {
                     common.db.collection('metric_changes' + params.app_id).insert(metricChanges);
                 }
-        
-                if (done) { done(); }
             }
         });
         
