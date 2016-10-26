@@ -566,6 +566,7 @@ if (cluster.isMaster) {
             callback(params);
         });
     }
+    
     http.Server(function (req, res) {
         plugins.loadConfigs(common.db, function(){
             var urlParts = url.parse(req.url, true),
@@ -658,6 +659,7 @@ if (cluster.isMaster) {
                 
                                 return validateAppForWriteAPI(tmpParams, function(){
                                     function resolver(){
+                                        plugins.dispatch("/i/end", {params:tmpParams});
                                         processBulkRequest(i + 1);
                                     }
                                     Promise.all(tmpParams.promises).then(resolver, resolver);
@@ -758,8 +760,14 @@ if (cluster.isMaster) {
                                     console.log('Parse events JSON failed', params.qstring.events, req.url, req.body);
                                 }
                             }
-            
-                            validateAppForWriteAPI(params);
+                            
+                            params.promises = [];
+                            validateAppForWriteAPI(params, function(){
+                                function resolver(){
+                                    plugins.dispatch("/i/end", {params:params});
+                                }
+                                Promise.all(params.promises).then(resolver, resolver);
+                            });
             
                             if (!plugins.getConfig("api").safe && !params.res.finished) {
                                 common.returnMessage(params, 200, 'Success');
