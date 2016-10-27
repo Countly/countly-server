@@ -1383,13 +1383,15 @@
             tickTexts = [],
             skipReduction = false,
             limitAdjustment = 0;
-
-        if ((days == 1 && _period != "month" && _period != "day") || (days == 1 && bucket == "hourly")) {
+        if(bucket === 'daily'){
+            var thisDay = moment(countlyCommon.periodObj.activePeriod);
+            ticks.push([0, countlyCommon.formatDate(thisDay,"D MMM")]);
+            tickTexts[0] = countlyCommon.formatDate(thisDay,"D MMM, dddd");
+        }else if ((days == 1 && _period != "month" && _period != "day") || (days == 1 && bucket == "hourly")) {
             for (var i = 0; i < 24; i++) {
                 ticks.push([i, (i + ":00")]);
                 tickTexts.push((i + ":00"));
             }
-
             skipReduction = true;
         } else {
             var start = moment().subtract('days', days);

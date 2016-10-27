@@ -338,28 +338,41 @@ window.starView = countlyView.extend({
 
         this.templateData['timeSeriesData'] = [];
         var currentYear = (new Date()).getFullYear();
-        var dateFormat = 'D MMM, YYYY';
+        var dateFormat = 'MMM, YYYY';
         if (periodArray.length > 0 && (moment(periodArray[0]).isoyear() === currentYear)) {
             dateFormat = 'D MMM';
         }
+        var rows = {};
         for (var i = 0; i < periodArray.length; i++) {
             var dateArray = periodArray[i].split('.');
             var year = dateArray[0];
             var month = dateArray[1];
             var day = dateArray[2];
 
-            var row = {date: moment(year + "." + month + "." + day).format(dateFormat), 'star1': 0, 'star2': 0, 'star3': 0, 'star4': 0, 'star5': 0};
-
+            var LocalDateDisplayName = moment(year + "." + month + "." + day).format(dateFormat);
+            if(!rows[LocalDateDisplayName]){
+                rows[LocalDateDisplayName] = {
+                    'date': LocalDateDisplayName,
+                    'star1': 0,
+                    'star2': 0,
+                    'star3': 0,
+                    'star4': 0,
+                    'star5': 0
+                };
+            };
             if (result[year] && result[year][month] && result[year][month][day]) {
                 for (var rating in result[year][month][day]) {
                     if (this.matchPlatformVersion(rating)) {
                         var rank = (rating.split("**"))[2];
-                        row["star" + rank] += result[year][month][day][rating].c
+                        rows[LocalDateDisplayName]["star" + rank] += result[year][month][day][rating].c
                     }
                 }
             }
-            this.templateData['timeSeriesData'].push(row);
         }
+        for(var dateDisplayName in rows ){
+            this.templateData['timeSeriesData'].push(rows[dateDisplayName]);
+        }
+        return this.templateData['timeSeriesData'];
     },
     renderTimeSeriesTable: function (isRefresh) {
         if (isRefresh) {
@@ -380,7 +393,7 @@ window.starView = countlyView.extend({
             }));
 
             $('#tableTwo').dataTable().fnSort([[0, 'desc']]);
-            $('#tableTwo').stickyTableHeaders()
+            $('#tableTwo').stickyTableHeaders();
         }
     },
     renderTimeSeriesChart: function () {
@@ -407,8 +420,13 @@ window.starView = countlyView.extend({
                 renderData.push(graphData[parseInt(key.substring(4)) - 1]);
             }
         }
+        var period = countlyCommon.getPeriod();
+        var bucket = null;
+        if(period === 'yesterday' || period === 'hour'){
+            bucket = 'daily';
+        }
+        countlyCommon.drawTimeGraph(renderData, "#dashboard-graph", bucket);
 
-        countlyCommon.drawTimeGraph(renderData, "#dashboard-graph");
     },
     renderCommon: function (isRefresh) {
         var self = this;
