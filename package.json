@@ -18,13 +18,13 @@
     "grunt-cli": "1.2.0",
     "grunt-contrib-concat": "1.0.1",
     "grunt-contrib-copy": "1.0.0",
-    "grunt-contrib-cssmin": "1.0.1",
+    "grunt-contrib-cssmin": "1.0.2",
     "grunt-contrib-jshint": "1.0.0",
-    "grunt-contrib-uglify": "1.0.1",
+    "grunt-contrib-uglify": "2.0.0",
     "mocha": ">=1.20.0",
-    "grunt-mocha-test": "0.12.7",
-    "should": "9.0.1",
-    "supertest": "1.2.0"
+    "grunt-mocha-test": "0.13.2",
+    "should": "11.1.1",
+    "supertest": "2.0.1"
   },
   "scripts": {
     "test": "grunt --verbose"
