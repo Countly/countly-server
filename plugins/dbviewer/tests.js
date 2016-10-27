@@ -24,13 +24,13 @@ describe('Testing DBViewer', function(){
 				ob.should.be.an.instanceOf(Array);
 				ob[0].should.have.property("name", "countly");
 				ob[0].should.have.property("collections");
-				ob[0].should.have.property("collections").containEql("apps");
-				ob[0].should.have.property("collections").containEql("carriers");
-				ob[0].should.have.property("collections").containEql("device_details");
-				ob[0].should.have.property("collections").containEql("devices");
-				ob[0].should.have.property("collections").containEql("events");
-				ob[0].should.have.property("collections").containEql("members");
-				ob[0].should.have.property("collections").containEql("users");
+				ob[0].collections.should.have.property("apps");
+				ob[0].collections.should.have.property("carriers");
+				ob[0].collections.should.have.property("device_details");
+				ob[0].collections.should.have.property("devices");
+				ob[0].collections.should.have.property("events");
+				ob[0].collections.should.have.property("members");
+				ob[0].collections.should.have.property("users");
 				setTimeout(done, 100)
 			});
 		});
