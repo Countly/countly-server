@@ -43,7 +43,7 @@ gpgcheck=0
 enabled=1" > /etc/yum.repos.d/nginx.repo
 fi
 
-curl -sL https://rpm.nodesource.com/setup_5.x | bash -
+curl -sL https://rpm.nodesource.com/setup_6.x | bash -
 yum install -y nodejs mongodb-org
 
 set +e
