@@ -398,7 +398,8 @@
 						if (countlyCommon.getNotesForDateId(noteDateIds[k]).length) {
 							var graphNoteLabel = $('<div class="graph-note-label"><div class="fa fa-pencil"></div></div>');
                             graphNoteLabel.attr({
-								"title":countlyCommon.getNotesForDateId(noteDateIds[k])
+								"title":countlyCommon.getNotesForDateId(noteDateIds[k]),
+                                "data-points":"[" + frontData.data[l] + "]"
 							}).css({
 								"position":'absolute',
 								"left":graphPoint.left,
