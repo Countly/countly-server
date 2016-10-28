@@ -120,8 +120,8 @@ window.ConfigurationsView = countlyView.extend({
             "security-password_min":jQuery.i18n.map["configs.security-password_min"],
             "security-password_char":jQuery.i18n.map["configs.security-password_char"],
             "security-password_number":jQuery.i18n.map["configs.security-password_number"],
-            "security-security-password_symbol":jQuery.i18n.map["configs.security-password_symbol"],
-            "security-security-password_expiration":jQuery.i18n.map["configs.security-password_expiration"],
+            "security-password_symbol":jQuery.i18n.map["configs.security-password_symbol"],
+            "security-password_expiration":jQuery.i18n.map["configs.security-password_expiration"],
             "api-domain":jQuery.i18n.map["configs.api-domain"],
             "api-safe":jQuery.i18n.map["configs.api-safe"],
             "api-session_duration_limit":jQuery.i18n.map["configs.api-session_duration_limit"],
@@ -279,6 +279,8 @@ window.ConfigurationsView = countlyView.extend({
         }
     },
     renderCommon:function (isRefresh) {
+        if(this.reset)
+            $("#new-install-overlay").show();
         if(this.userConfig)
             this.configsData = countlyPlugins.getUserConfigsData();
         else
@@ -299,7 +301,8 @@ window.ConfigurationsView = countlyView.extend({
             "page-title":title,
             "configs":configsHTML,
             "namespace":this.namespace,
-            "user": this.userConfig
+            "user": this.userConfig,
+            "reset": this.reset
         };
         var self = this;
         if (!isRefresh) {
@@ -404,6 +407,15 @@ window.ConfigurationsView = countlyView.extend({
                         });
                         return true;
                     }
+                    
+                    if (new_pwd == old_pwd) {
+                        CountlyHelpers.notify({
+                            title: jQuery.i18n.map["user-settings.password-not-old"],
+                            message: jQuery.i18n.map["configs.not-saved"],
+                            type: "error"
+                        });
+                        return true;
+                    }
     
                     $.ajax({
                         type:"POST",
@@ -433,6 +445,18 @@ window.ConfigurationsView = countlyView.extend({
                                 });
                                 return true;
                             } else {
+                                if(!isNaN(parseInt(result))){
+                                    $("#new-install-overlay").fadeOut();
+                                    countlyGlobal["member"].password_changed = parseInt(result);
+                                }
+                                else if(typeof result === "string"){
+                                    CountlyHelpers.notify({
+                                        title: jQuery.i18n.map["user-settings.old-password-not-match"],
+                                        message: jQuery.i18n.map["configs.not-saved"],
+                                        type: "error"
+                                    });
+                                    return true;
+                                }
                                 $(".configs #old_pwd").val("");
                                 $(".configs #new_pwd").val("");
                                 $(".configs #re_new_pwd").val("");
@@ -616,24 +640,30 @@ if(countlyGlobal["member"].global_admin){
     
     app.route('/manage/configurations', 'configurations', function () {
         this.configurationsView.namespace = null;
+        this.configurationsView.reset = false;
         this.configurationsView.userConfig = false;
         this.renderWhenReady(this.configurationsView);
     });
     
     app.route('/manage/configurations/:namespace', 'configurations_namespace', function (namespace) {
         this.configurationsView.namespace = namespace;
+        this.configurationsView.reset = false;
         this.configurationsView.userConfig = false;
         this.renderWhenReady(this.configurationsView);
     });
 } 
 app.route('/manage/user-settings', 'user-settings', function () {
     this.configurationsView.namespace = null;
+    this.configurationsView.reset = false;
     this.configurationsView.userConfig = true;
     this.renderWhenReady(this.configurationsView);
 });
 
 app.route('/manage/user-settings/:namespace', 'user-settings_namespace', function (namespace) {
-    this.configurationsView.namespace = namespace;
+    if(namespace == "reset")
+        this.configurationsView.reset = true;
+    else
+        this.configurationsView.namespace = namespace;
     this.configurationsView.userConfig = true;
     this.renderWhenReady(this.configurationsView);
 });
