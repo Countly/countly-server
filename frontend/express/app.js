@@ -67,6 +67,11 @@ plugins.setUserConfigs("frontend", {
 plugins.setConfigs("security", {
     login_tries: 3,
     login_wait: 5*60,
+    password_min: 8,
+    password_char: true,
+    password_number: true,
+    password_symbol: true,
+    password_expiration: 0,
     dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
     api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block"
 });
@@ -484,6 +489,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             csrf_token:req.csrfToken(),
                             member:member,
                             config: req.config,
+                            security: plugins.getConfig("security"),
                             plugins:plugins.getPlugins(),
                             path:countlyConfig.path || "",
                             cdn:countlyConfig.cdn || "",

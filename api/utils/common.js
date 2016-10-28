@@ -416,6 +416,12 @@ var common = {},
                     }
                 }
                 
+                if (argProperties[arg]['has-upchar']) {
+                    if (!/[A-Z]/.test(args[arg])) {
+                        return false;
+                    }
+                }
+                
                 if (argProperties[arg]['has-special']) {
                     if (!/[^A-Za-z\d]/.test(args[arg])) {
                         return false;

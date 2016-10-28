@@ -2615,20 +2615,21 @@ window.ManageUsersView = countlyView.extend({
                 CountlyHelpers.expandRows(self.dtable, self.editUser, self);
                 function generatePassword() {
                     var text = [];
-                    var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+                    var chars = "abcdefghijklmnopqrstuvwxyz";
+                    var upchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
                     var numbers = "0123456789";
                     var specials = '!@#$%^&*()_+{}:"<>?\|[];\',./`~';
-                    var all = chars+numbers+specials;
+                    var all = chars+upchars+numbers+specials;
                      
                     //1 char
-                    text.push(chars.charAt(Math.floor(Math.random() * chars.length)));
+                    text.push(upchars.charAt(Math.floor(Math.random() * upchars.length)));
                     //1 number
                     text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
                     //1 special char
                     text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
                     
                     //5 any chars
-                    for( var i=0; i < 5; i++ )
+                    for( var i=0; i < Math.max(countlyGlobal["security"].password_min-3, 5); i++ )
                         text.push(all.charAt(Math.floor(Math.random() * all.length)));
                     
                     //randomize order
@@ -2648,13 +2649,13 @@ window.ManageUsersView = countlyView.extend({
                 }
                 
                 function validatePassword(password){
-                    if(password.length < 8)
-                        return jQuery.i18n.prop("management-users.password.length", 8);
-                    if(!/[A-Za-z]/.test(password))
+                    if(password.length < countlyGlobal["security"].password_min)
+                        return jQuery.i18n.prop("management-users.password.length", countlyGlobal["security"].password_min);
+                    if(countlyGlobal["security"].password_char && !/[A-Z]/.test(password))
                         return jQuery.i18n.map["management-users.password.has-char"];
-                    if(!/\d/.test(password))
+                    if(countlyGlobal["security"].password_number && !/\d/.test(password))
                         return jQuery.i18n.map["management-users.password.has-number"];
-                    if(!/[^A-Za-z\d]/.test(password))
+                    if(countlyGlobal["security"].password_symbol && !/[^A-Za-z\d]/.test(password))
                         return jQuery.i18n.map["management-users.password.has-special"];
                     return false;
                 }
@@ -2872,20 +2873,21 @@ window.ManageUsersView = countlyView.extend({
         var self = this;
         function generatePassword() {
             var text = [];
-            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            var chars = "abcdefghijklmnopqrstuvwxyz";
+            var upchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             var numbers = "0123456789";
             var specials = '!@#$%^&*()_+{}:"<>?\|[];\',./`~';
-            var all = chars+numbers+specials;
+            var all = chars+upchars+numbers+specials;
              
             //1 char
-            text.push(chars.charAt(Math.floor(Math.random() * chars.length)));
+            text.push(upchars.charAt(Math.floor(Math.random() * upchars.length)));
             //1 number
             text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
             //1 special char
             text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
             
             //5 any chars
-            for( var i=0; i < 5; i++ )
+            for( var i=0; i < Math.max(countlyGlobal["security"].password_min-3, 5); i++ )
                 text.push(all.charAt(Math.floor(Math.random() * all.length)));
             
             //randomize order
@@ -2903,14 +2905,15 @@ window.ManageUsersView = countlyView.extend({
             var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
             return re.test(email);
         }
+        
         function validatePassword(password){
-            if(password.length < 8)
-                return jQuery.i18n.prop("management-users.password.length", 8);
-            if(!/[A-Za-z]/.test(password))
+            if(password.length < countlyGlobal["security"].password_min)
+                return jQuery.i18n.prop("management-users.password.length", countlyGlobal["security"].password_min);
+            if(countlyGlobal["security"].password_char && !/[A-Z]/.test(password))
                 return jQuery.i18n.map["management-users.password.has-char"];
-            if(!/\d/.test(password))
+            if(countlyGlobal["security"].password_number && !/\d/.test(password))
                 return jQuery.i18n.map["management-users.password.has-number"];
-            if(!/[^A-Za-z\d]/.test(password))
+            if(countlyGlobal["security"].password_symbol && !/[^A-Za-z\d]/.test(password))
                 return jQuery.i18n.map["management-users.password.has-special"];
             return false;
         }
