@@ -3867,6 +3867,9 @@ var AppRouter = Backbone.Router.extend({
 
         this.activeView = viewName;
         clearInterval(this.refreshActiveView);
+        if(typeof countlyGlobal["member"].password_changed === "undefined"){
+            countlyGlobal["member"].password_changed = Math.round(new Date().getTime()/1000);
+        }
 
         if (_.isEmpty(countlyGlobal['apps'])) {
             if (Backbone.history.fragment != "/manage/apps") {
