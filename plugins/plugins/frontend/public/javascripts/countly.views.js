@@ -351,6 +351,57 @@ window.ConfigurationsView = countlyView.extend({
                 self.updateConfig(id, value);
             });
             
+            $(".configs #username").off("keyup").on("keyup",_.throttle(function() {
+                if (!($(this).val().length) || $("#menu-username").text() == $(this).val()) {
+                    $(".username-check").remove();
+                    return false;
+                }
+            
+                $(this).next(".required").remove();
+            
+                var existSpan = $("<span class='username-check red-text'>").html(jQuery.i18n.map["management-users.username.exists"]),
+                    notExistSpan = $("<span class='username-check green-text'>").html("&#10004;"),
+                    data = {};
+                
+                data.username = $(this).val();
+                data._csrf = countlyGlobal['csrf_token'];
+            
+                var self = $(this);
+                $.ajax({
+                    type: "POST",
+                    url: countlyGlobal["path"]+"/users/check/username",
+                    data: data,
+                    success: function(result) {
+                        $(".username-check").remove();
+                        if (result) {
+                            self.after(notExistSpan.clone());
+                        } else {
+                            self.after(existSpan.clone());
+                        }
+                    }
+                });
+            }, 300));
+            
+            $(".configs #new_pwd").off("keyup").on("keyup",_.throttle(function() {
+                $(".password-check").remove();
+                var error = CountlyHelpers.validatePassword($(this).val());
+                if (error) {
+                    var invalidSpan = $("<div class='password-check red-text'>").html(error);
+                    $(this).after(invalidSpan.clone());
+                    return false;
+                }
+            }, 300));
+            
+            $(".configs #re_new_pwd").off("keyup").on("keyup",_.throttle(function() {
+                $(".password-check").remove();
+                var error = CountlyHelpers.validatePassword($(this).val());
+                if (error) {
+                    var invalidSpan = $("<div class='password-check red-text'>").html(error);
+                    $(this).after(invalidSpan.clone());
+                    return false;
+                }
+            }, 300));
+            
             $(".configs .account-settings .input input").keyup(function () {
                 $("#configs-apply-changes").removeClass("settings-changes");
                 $(".configs .account-settings .input input").each(function(){
@@ -378,6 +429,15 @@ window.ConfigurationsView = countlyView.extend({
             
             $("#configs-apply-changes").click(function () {
                 if(self.userConfig){
+                    $(".username-check.green-text").remove();
+                    if ($(".red-text").length) {
+                        CountlyHelpers.notify({
+                            title: jQuery.i18n.map["user-settings.please-correct-input"],
+                            message: jQuery.i18n.map["configs.not-saved"],
+                            type: "error"
+                        });
+                        return false;
+                    }
                     var username = $(".configs #username").val(),
                         old_pwd = $(".configs #old_pwd").val(),
                         new_pwd = $(".configs #new_pwd").val(),
