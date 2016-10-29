@@ -14,13 +14,17 @@ var testUtils = function testUtils(){
 	var apiKey;
 	var isLoggedIn = false;
 	var that = this;
-	var props = {};
+	var props = {
+        APP_ID: "",
+        APP_KEY: "",
+        API_KEY_ADMIN: ""
+    };
 	var RE = /^-{0,1}\d*\.{0,1}\d+$/;
 	
 	this.url = "http://localhost";
 	this.name = "Test Test";
 	this.username = "test";
-	this.password = "test1test$";
+	this.password = "Test1test$";
 	this.email = "test@domain.com";
  
     this.setCSRF = function(token){
