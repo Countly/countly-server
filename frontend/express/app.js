@@ -652,7 +652,7 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
             if (req.body.full_name && req.body.username && req.body.password && req.body.email) {
                 var password = sha1Hash(req.body.password);
                 
-                var doc = {"full_name":req.body.full_name, "username":req.body.username, "password":password, "email":req.body.email, "global_admin":true, created_at = Math.floor(((new Date()).getTime()) / 1000), password_changed: Math.floor(((new Date()).getTime()) / 1000),};
+                var doc = {"full_name":req.body.full_name, "username":req.body.username, "password":password, "email":req.body.email, "global_admin":true, created_at: Math.floor(((new Date()).getTime()) / 1000), password_changed: Math.floor(((new Date()).getTime()) / 1000)};
                 if(req.body.lang)
                     doc.lang = req.body.lang;
                 countlyDb.collection('members').insert(doc, {safe:true}, function (err, member) {
