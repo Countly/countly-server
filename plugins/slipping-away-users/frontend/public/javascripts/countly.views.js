@@ -73,7 +73,11 @@ window.slippingView = countlyView.extend({
 
       var columnsDefine = [
         { "mData": "period", sType:"numeric", "sTitle": jQuery.i18n.map["slipping.period"] },
-        { "mData": "count", sType:"numeric", "sTitle": jQuery.i18n.map["slipping.count"] },
+        { "mData": "count",
+          "sType": "numeric",
+          "sTitle": jQuery.i18n.map["slipping.count"],
+          "mRender": function(d) {return countlyCommon.formatNumber(d);}
+        },
         { "mData": "percentage", sType:"string",  "sTitle": jQuery.i18n.map["slipping.percentage"] },
       ];
 

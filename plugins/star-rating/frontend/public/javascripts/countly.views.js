@@ -269,7 +269,11 @@ window.starView = countlyView.extend({
         } else {
             var columnsDefine = [
                 { "mData": "rating", sType: "string", "sTitle": jQuery.i18n.map["star.rating"] },
-                { "mData": "count", sType: "numeric", "sTitle": jQuery.i18n.map["star.number-of-ratings"]},
+                {   "mData": "count",
+                    "sType": "numeric",
+                    "sTitle": jQuery.i18n.map["star.number-of-ratings"],
+                    "mRender":function(d) { return countlyCommon.formatNumber(d);}
+                },
                 { "mData": "percentage", sType: "percent", "sTitle": jQuery.i18n.map["star.percentage"]}
             ];
 
@@ -380,11 +384,36 @@ window.starView = countlyView.extend({
         } else {
             var columnsDefine = [
                 { "mData": "date", "sType": "customDate", "sTitle": jQuery.i18n.map["star.date"] },
-                { "mData": "star1", sType: "string", "sTitle": this.iconGenerator(1) },
-                { "mData": "star2", sType: "string", "sTitle": this.iconGenerator(2) },
-                { "mData": "star3", sType: "string", "sTitle": this.iconGenerator(3) },
-                { "mData": "star4", sType: "string", "sTitle": this.iconGenerator(4) },
-                { "mData": "star5", sType: "string", "sTitle": this.iconGenerator(5) }
+                {
+                    "mData": "star1",
+                    sType: "numeric",
+                    "sTitle": this.iconGenerator(1),
+                    "mRender": function (d) {return countlyCommon.formatNumber(d);}
+                },
+                {
+                    "mData": "star2",
+                    sType: "numeric",
+                    "sTitle": this.iconGenerator(2),
+                    "mRender": function (d) {return countlyCommon.formatNumber(d);}
+                },
+                {
+                    "mData": "star3",
+                    sType: "numeric",
+                    "sTitle": this.iconGenerator(3),
+                    "mRender": function (d) {return countlyCommon.formatNumber(d);}
+                },
+                {
+                    "mData": "star4",
+                    sType: "numeric",
+                    "sTitle": this.iconGenerator(4),
+                    "mRender": function (d) {return countlyCommon.formatNumber(d);}
+                },
+                {
+                    "mData": "star5",
+                    sType: "numeric",
+                    "sTitle": this.iconGenerator(5),
+                    "mRender": function (d) {return countlyCommon.formatNumber(d);}
+                },
             ];
 
             $('#tableTwo').dataTable($.extend({}, $.fn.dataTable.defaults, {
