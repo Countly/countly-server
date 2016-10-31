@@ -4,12 +4,12 @@ window.SystemLogsView = countlyView.extend({
     },
     beforeRender: function() {
 		if(this.template)
-			return $.when(countlySystemLogs.initialize()).then(function () {});
+			return $.when(countlySystemLogs.initialize(this._query)).then(function () {});
 		else{
 			var self = this;
 			return $.when($.get(countlyGlobal["path"]+'/systemlogs/templates/logs.html', function(src){
 				self.template = Handlebars.compile(src);
-			}), countlySystemLogs.initialize()).then(function () {});
+			}), countlySystemLogs.initialize(this._query)).then(function () {});
 		}
     },
     renderCommon:function (isRefresh) {
@@ -44,7 +44,7 @@ window.SystemLogsView = countlyView.extend({
     },
     refresh:function () {
         var self = this;
-        $.when(countlySystemLogs.initialize()).then(function () {
+        $.when(countlySystemLogs.initialize(this._query)).then(function () {
             if (app.activeView != self) {
                 return false;
             }
@@ -59,6 +59,18 @@ window.SystemLogsView = countlyView.extend({
 app.systemLogsView = new SystemLogsView();
 if(countlyGlobal["member"].global_admin){
     app.route('/manage/systemlogs', 'systemlogs', function () {
+        this.systemLogsView._query = null;
+        this.renderWhenReady(this.systemLogsView);
+    });
+    
+    app.route('/manage/systemlogs/*query', 'systemlogs_query', function (query) {
+        try{
+            query = JSON.parse(query);
+        }
+        catch(ex){
+            query = null;
+        }
+        this.systemLogsView._query = query;
         this.renderWhenReady(this.systemLogsView);
     });
 }

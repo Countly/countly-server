@@ -9,8 +9,20 @@ var plugin = {},
 		var params = ob.params
 		var validate = ob.validateUserForGlobalAdmin;
 		if(params.qstring.method == 'systemlogs'){
+            var query = {};
+            if(typeof params.qstring.query === "string"){
+                try{
+                    query = JSON.parse(params.qstring.query);
+                }
+                catch(ex){
+                    console.log("Can't parse systelogs query");
+                    query = {};
+                }
+                if(query._id)
+                    query._id = common.db.ObjectID(query._id);
+            }
             validate(params, function(params){
-				common.db.collection('systemlogs').find().sort( { $natural: -1 } ).limit(1000).toArray(function(err, items) {
+				common.db.collection('systemlogs').find(query).sort( { $natural: -1 } ).limit(1000).toArray(function(err, items) {
 					if(err)
 						console.log(err);
 					common.returnOutput(params, items);
