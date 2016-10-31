@@ -92,7 +92,7 @@ var plugin = {},
         log.u = user.email || user.username || "";
         log.ip = common.getIpAddress(params.req);
         if(user._id){
-            log.user_id = user._id;
+            log.user_id = user._id + "";
             common.db.collection('systemlogs').insert(log, function () {});
         }
         else{
@@ -106,7 +106,7 @@ var plugin = {},
             if(Object.keys(query).length){
                 common.db.collection('members').findOne(query, function(err, res){
                     if(!err && res){
-                        log.user_id = res._id;
+                        log.user_id = res._id + "";
                         if(log.u == ""){
                             log.u = res.email || res.username;
                         }

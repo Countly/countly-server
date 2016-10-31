@@ -15,12 +15,15 @@ window.SystemLogsView = countlyView.extend({
     renderCommon:function (isRefresh) {
         var data = countlySystemLogs.getData();
         this.templateData = {
-            "page-title":jQuery.i18n.map["systemlogs.title"]
+            "page-title":jQuery.i18n.map["systemlogs.title"],
+            query: this._query
         };
 		var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-
+            $("#systemlogs-back").click(function(){
+                window.history.back();
+            });
 			this.dtable = $('#systemlogs-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": data,
                 "aoColumns": [
@@ -84,4 +87,19 @@ $( document ).ready(function() {
         if($('#management-submenu .help-toggle').length)
             $('#management-submenu .help-toggle').before(menu);
     }
+    
+    app.addPageScript("/manage/users", function(){
+        setTimeout(function(){
+            $("#user-table").on("click", "tr", function(){
+                var container = $(this);
+                if(container.find("td.details").length == 0){
+                    setTimeout(function(){
+                        container = container.next("tr");
+                        var id = container.find(".user_id").val();
+                        container.find(".button-container").append("<a class='icon-button light' data-localize='systemlogs.view-user-actions' href='#/manage/systemlogs/{\"user_id\":\""+id+"\"}'>"+jQuery.i18n.map["systemlogs.view-user-actions"]+"</a>");
+                    }, 0);
+                }
+            });
+        }, 1000);
+    });
 });

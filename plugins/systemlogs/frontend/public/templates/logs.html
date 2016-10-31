@@ -6,6 +6,11 @@
 				</div>
 				<div class="title">{{page-title}}</div>
 			</div>
+            <div class="right">
+                {{#if query}}
+                <div class="icon-button light" id="systemlogs-back"><i class="fa fa-chevron-left"></i>&nbsp;<span data-localize="plugins.back"></span></div>
+                {{/if}}
+            </div>
 		</div>
 	</div>
 	<div class="systemlogs" data-help-localize="help.{{{chart-helper}}}">
