@@ -916,47 +916,51 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
     }
 
     var updatedUser = {};
-
     if (req.body.username && req.body.api_key) {
         updatedUser.username = req.body["username"];
         updatedUser.api_key = req.body["api_key"];
         if (req.body.lang) {
             updatedUser.lang = req.body.lang;
         }
-
-        countlyDb.collection('members').findOne({username:req.body.username}, function (err, member) {
-            if ((member && member._id != req.session.uid) || err) {
-                res.send("username-exists");
-            } else {
-                if (req.body.old_pwd) {
-                    var password = sha1Hash(req.body.old_pwd),
-                        newPassword = sha1Hash(req.body.new_pwd);
-
-                    if(newPassword != password){
-                        updatedUser.password = newPassword;
-                        updatedUser.password_changed = Math.round(new Date().getTime()/1000);
-                        plugins.callMethod("userSettings", {req:req, res:res, next:next, data:member});
-                        countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid), "password":password}, {'$set':updatedUser}, {safe:true}, function (err, member) {
-                            if (member && member.result && member.result.ok && member.result.nModified > 0 && !err) {
-                                res.send(updatedUser.password_changed+"");
+        var change = JSON.parse(JSON.stringify(updatedUser));
+        countlyDb.collection('members').findOne({"_id":countlyDb.ObjectID(req.session.uid)}, function (err, member) {
+            countlyDb.collection('members').findOne({username:req.body.username}, function (err, user) {
+                member.change = change;
+                if ((user && user._id != req.session.uid) || err) {
+                    res.send("username-exists");
+                } else {
+                    if (req.body.old_pwd && req.body.old_pwd.length) {
+                        member.change.password = true;
+                        var password = sha1Hash(req.body.old_pwd),
+                            newPassword = sha1Hash(req.body.new_pwd);
+    
+                        if(newPassword != password){
+                            updatedUser.password = newPassword;
+                            updatedUser.password_changed = Math.round(new Date().getTime()/1000);
+                            countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid), "password":password}, {'$set':updatedUser}, {safe:true}, function (err, result) {
+                                if ( result &&  result.result &&  result.result.ok &&  result.result.nModified > 0 && !err) {
+                                    plugins.callMethod("userSettings", {req:req, res:res, next:next, data:member});
+                                    res.send(updatedUser.password_changed+"");
+                                } else {
+                                    res.send("user-settings.old-password-not-match");
+                                }
+                            });
+                        }
+                        else{
+                            res.send("user-settings.password-not-old");
+                        }
+                    } else {
+                        countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid)}, {'$set':updatedUser}, {safe:true}, function (err, result) {
+                            if (result && !err) {
+                                plugins.callMethod("userSettings", {req:req, res:res, next:next, data:member});
+                                res.send(true);
                             } else {
-                                res.send("user-settings.old-password-not-match");
+                                res.send(false);
                             }
                         });
                     }
-                    else{
-                        res.send("user-settings.password-not-old");
-                    }
-                } else {
-                    countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid)}, {'$set':updatedUser}, {safe:true}, function (err, member) {
-                        if (member && !err) {
-                            res.send(true);
-                        } else {
-                            res.send(false);
-                        }
-                    });
                 }
-            }
+            });
         });
     } else {
         res.send(false);

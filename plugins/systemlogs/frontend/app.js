@@ -23,7 +23,7 @@ var plugin = {},
     };
     
     plugin.userLogout = function(ob){
-        recordAction(ob.req, ob.data, "Settings changed", {});
+        recordAction(ob.req, ob.data, "Logout", {});
     };
     
     plugin.passwordReset = function(ob){
@@ -59,7 +59,7 @@ var plugin = {},
     };
     
     plugin.userSettings = function(ob){
-        recordAction(ob.req, ob.data, "Settings changed", ob.data);
+        recordAction(ob.req, ob.data, "Settings changed", ob.data.change);
     };
     
     function recordAction(req, user, action, data){
