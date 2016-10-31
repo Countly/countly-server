@@ -426,7 +426,6 @@ window.ConfigurationsView = countlyView.extend({
                         $("#configs-apply-changes").hide();
                 });
             });
-            
             $("#configs-apply-changes").click(function () {
                 if(self.userConfig){
                     $(".username-check.green-text").remove();
@@ -467,8 +466,8 @@ window.ConfigurationsView = countlyView.extend({
                         });
                         return true;
                     }
-                    
-                    if (new_pwd == old_pwd) {
+
+                    if (new_pwd.length && new_pwd == old_pwd) {
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["user-settings.password-not-old"],
                             message: jQuery.i18n.map["configs.not-saved"],
@@ -525,24 +524,32 @@ window.ConfigurationsView = countlyView.extend({
                                 countlyGlobal["member"].username = username;
                                 countlyGlobal["member"].api_key = api_key;
                             }
-                            countlyPlugins.updateUserConfigs(self.changes, function(err, services){
-                                if(err && !ignoreError){
-                                    CountlyHelpers.notify({
-                                        title: jQuery.i18n.map["configs.not-changed"],
-                                        message: jQuery.i18n.map["configs.not-saved"],
-                                        type: "error"
-                                    });
-                                }
-                                else{
-                                    CountlyHelpers.notify({
-                                        title: jQuery.i18n.map["configs.changed"],
-                                        message: jQuery.i18n.map["configs.saved"]
-                                    });
-                                    self.configsData = JSON.parse(JSON.stringify(self.cache));
-                                    $("#configs-apply-changes").hide();
-                                    self.changes = {};
-                                }
-                            });
+                            if(Object.keys(self.changes).length){
+                                countlyPlugins.updateUserConfigs(self.changes, function(err, services){
+                                    if(err && !ignoreError){
+                                        CountlyHelpers.notify({
+                                            title: jQuery.i18n.map["configs.not-changed"],
+                                            message: jQuery.i18n.map["configs.not-saved"],
+                                            type: "error"
+                                        });
+                                    }
+                                    else{
+                                        CountlyHelpers.notify({
+                                            title: jQuery.i18n.map["configs.changed"],
+                                            message: jQuery.i18n.map["configs.saved"]
+                                        });
+                                        self.configsData = JSON.parse(JSON.stringify(self.cache));
+                                        $("#configs-apply-changes").hide();
+                                        self.changes = {};
+                                    }
+                                });
+                            }
+                            else{
+                                CountlyHelpers.notify({
+                                    title: jQuery.i18n.map["configs.changed"],
+                                    message: jQuery.i18n.map["configs.saved"]
+                                });
+                            }
                         }
                     });
                 }
