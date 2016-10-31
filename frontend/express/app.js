@@ -972,20 +972,14 @@ app.post(countlyConfig.path+'/user/settings/lang', function (req, res, next) {
 
     var updatedUser = {};
 
-    if (req.body.username && req.body.lang) {
+    if (req.body.lang) {
         updatedUser.lang = req.body.lang;
 
-        countlyDb.collection('members').findOne({username:req.body.username}, function (err, member) {
-            if ((member && member._id != req.session.uid) || err) {
-                res.send("username-exists");
+        countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid)}, {'$set':updatedUser}, {safe:true}, function (err, member) {
+            if (member && !err) {
+                res.send(true);
             } else {
-                countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid)}, {'$set':updatedUser}, {safe:true}, function (err, member) {
-                    if (member && !err) {
-                        res.send(true);
-                    } else {
-                        res.send(false);
-                    }
-                });
+                res.send(false);
             }
         });
     } else {
