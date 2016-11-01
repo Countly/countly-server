@@ -44,6 +44,7 @@ var usersApi = {},
                     'user_of':((members[i].user_of && members[i].user_of.length > 0) ? members[i].user_of : []),
                     'global_admin':(members[i].global_admin === true),
                     'locked':(members[i].locked === true),
+                    'created_at':members[i].created_at || 0,
                     'last_login':members[i].last_login || 0,
                     'is_current_user':(members[i].api_key == params.member.api_key)
                 };
