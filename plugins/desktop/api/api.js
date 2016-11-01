@@ -3,12 +3,7 @@ var plugin = {},
     plugins = require('../../pluginManager.js');
 
 (function (plugin) {
-	//write api call
-	/*
-	plugins.register("/i", function(ob){
-		
-	});
-	*/
+    plugins.appTypes.push("desktop");
 }(plugin));
 
 module.exports = plugin;

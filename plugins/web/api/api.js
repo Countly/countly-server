@@ -4,6 +4,7 @@ var plugin = {},
     plugins = require('../../pluginManager.js');
 
 (function (plugin) {
+    plugins.appTypes.push("web");
     plugins.register("/sdk", function(ob){
         var params = ob.params;
         if(params.app.type == "web"){

@@ -393,9 +393,8 @@ var appsApi = {},
     }
     
     function isValidType(type) {
-        var types = ["mobile","web","iot"];
         //check if valid app type and it's plugin is enabled
-        return types.indexOf(type) !== -1 && plugins.isPluginEnabled(type);
+        return plugins.appTypes.indexOf(type) !== -1 && plugins.isPluginEnabled(type);
     }
 
     function isValidCountry(country) {
