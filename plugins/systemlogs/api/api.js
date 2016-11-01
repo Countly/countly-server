@@ -48,39 +48,39 @@ var plugin = {},
 	
 	plugins.register("/i/apps/create", function(ob){
         ob.data._id = ob.appId;
-        recordAction(ob.params, params.member, "App Created", ob.data);
+        recordAction(ob.params, ob.params.member, "App Created", ob.data);
 	});
 	
 	plugins.register("/i/apps/update", function(ob){
 		var appId = ob.appId;
 		ob.data._id = appId;
-        recordAction(ob.params, params.member, "App Updated", ob.data);
+        recordAction(ob.params, ob.params.member, "App Updated", ob.data);
 	});
 	
 	plugins.register("/i/apps/delete", function(ob){
-        recordAction(ob.params, params.member, "App Deleted", ob.data);
+        recordAction(ob.params, ob.params.member, "App Deleted", ob.data);
 	});
 	
 	plugins.register("/i/apps/reset", function(ob){
 		var appId = ob.appId;
         ob.data._id = appId;
-        recordAction(ob.params, params.member, "App Reset", ob.data);
+        recordAction(ob.params, ob.params.member, "App Reset", ob.data);
 	});
 	
 	plugins.register("/i/users/create", function(ob){
-        recordAction(ob.params, params.member, "User Created", ob.data);
+        recordAction(ob.params, ob.params.member, "User Created", ob.data);
 	});
 	
 	plugins.register("/i/users/update", function(ob){
-        recordAction(ob.params, params.member, "User Updated", ob.data);
+        recordAction(ob.params, ob.params.member, "User Updated", ob.data);
 	});
 	
 	plugins.register("/i/users/delete", function(ob){
-        recordAction(ob.params, params.member, "User Deleted", ob.data);
+        recordAction(ob.params, ob.params.member, "User Deleted", ob.data);
 	});
     
     plugins.register("/systemlogs", function(ob){
-        var user = ob.user || params.member;
+        var user = ob.user || ob.params.member;
         recordAction(ob.params, user, ob.action, ob.data);
     });
     
