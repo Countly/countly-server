@@ -584,17 +584,11 @@ var pluginManager = function pluginManager(){
         if(!countlyDb.ObjectID)
             countlyDb.ObjectID = mongo.ObjectID;
         countlyDb.encode = function(str){
-            if(str.substr(0,1) == '$'){
-                str = str.replace(/^\$/g, "&#36;");
-            }
-            return str.replace(/\./g, '&#46;');
+            return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;');
         };
         
         countlyDb.decode = function(str){
-            if(str.substr(0,5) == '&#36;'){
-                str = str.replace(/^&#36;/g, "$");
-            }
-            return str.replace(/&#46;/g, '.');
+            return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.');
         };
         return countlyDb;
     };
