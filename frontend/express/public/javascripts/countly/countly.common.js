@@ -54,6 +54,20 @@
         countlyCommon.ACTIVE_APP_ID = appId;
         store.set("countly_active_app", appId);
     };
+    
+    countlyCommon.encode = function(str){
+        if(str.substr(0,1) == '$'){
+            str = str.replace(/^\$/g, "&#36;");
+        }
+        return str.replace(/\./g, '&#46;');
+    };
+        
+    countlyCommon.decode = function(str){
+        if(str.substr(0,5) == '&#36;'){
+            str = str.replace(/^&#36;/g, "$").replace(/&amp;#36;/g, '.');
+        }
+        return str.replace(/&#46;/g, '.').replace(/&amp;#46;/g, '.');
+    };
 
     // Calculates the percent change between previous and current values.
     // Returns an object in the following format {"percent": "20%", "trend": "u"}

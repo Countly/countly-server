@@ -593,7 +593,7 @@ $.extend(Template.prototype, {
 				{
 					name:_name,
 					func:function (rangeArr, dataObj) {
-                        rangeArr = rangeArr.replace(/&#46;/g, '.').replace(/&amp;#46;/g, '.');
+                        rangeArr = countlyCommon.decode(rangeArr);
                         if(fetchValue && !clean)
                             return fetchValue(rangeArr);
                         else

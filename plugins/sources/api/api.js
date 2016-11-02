@@ -21,7 +21,7 @@ var plugin = {},
             }
         }
         if(params.qstring.metrics && typeof params.qstring.metrics._store != "undefined"){
-            params.qstring.metrics._store = params.qstring.metrics._store.replace(/\./g, '&#46;');
+            params.qstring.metrics._store = common.db.encode(params.qstring.metrics._store);
         }
 		predefinedMetrics.push({
             db: "sources",

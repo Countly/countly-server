@@ -275,7 +275,7 @@ var plugin = {},
     });
     
     function processView(params, currEvent){
-        var escapedMetricVal = (currEvent.segmentation.name+"").replace(/^\$/, "").replace(/\./g, "&#46;");
+        var escapedMetricVal = common.db.encode(currEvent.segmentation.name+"");
             
         var update = {$set:{lv:currEvent.segmentation.name}};
         
@@ -303,7 +303,7 @@ var plugin = {},
         tmpSet = {},
         zeroObjUpdate = [],
         monthObjUpdate = [],
-        escapedMetricVal = (currEvent.segmentation.name+"").replace(/^\$/, "").replace(/\./g, "&#46;"),
+        escapedMetricVal = common.db.encode(currEvent.segmentation.name+""),
         postfix = common.crypto.createHash("md5").update(escapedMetricVal).digest('base64')[0];
     
         //making sure metrics are strings
@@ -385,7 +385,7 @@ var plugin = {},
             }
             
             if(typeof currEvent.segmentation.segment != "undefined"){
-                currEvent.segmentation.segment = (currEvent.segmentation.segment+"").replace(/^\$/, "").replace(/\./g, "&#46;");
+                currEvent.segmentation.segment = common.db.encode(currEvent.segmentation.segment+"");
                 common.db.collection("app_viewdata"+params.app_id).update({'_id': "meta"}, {$addToSet: {"segments":currEvent.segmentation.segment}}, {'upsert': true}, function(){});
             }
             
