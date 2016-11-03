@@ -51,14 +51,11 @@ app.route( "/enterprise", "enterprise", function () {
 });
 
 $( document ).ready(function() {
-	var menu = '<a class="item" id="enterprise-menu" href="#/enterprise">'+
-		'<div class="logo ion-ios-infinite"></div>'+
-        '<div class="text" data-localize="enterpriseinfo.title">Enterprise</div>'+
-    '</a>';
-	$('#sidebar-menu .sidebar-menu').append(menu);
-	
 	if(typeof countlyGlobalEE != "undefined" && countlyGlobalEE["discount"]){
 		var msg = {title:"5000+ users reached", message: "<a href='https://count.ly/enterprise-edition/' target='_blank'>To get 20% off Enterprise edition contact us with code:<br/><strong>"+countlyGlobalEE["discount"]+"</strong></a>", info:"Thank you for being with us", sticky:true, closeOnClick:false};
 		CountlyHelpers.notify(msg);
     }
+
+    var badge = '<a id="enterprise-badge" href="#/enterprise"><div data-localize="enterpriseinfo.badge">Get Enterprise</div></a>';
+    $("#content-footer").find("span").append(badge);
 });

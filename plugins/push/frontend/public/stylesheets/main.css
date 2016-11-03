@@ -171,21 +171,6 @@ tr.push-no-messages:hover { background-color: white; }
 .cly-loading .message { text-align: center; }
 .cly-loading #content-loader { margin-left: -24px; }
 
-.btn-header { float: right; margin-top: 6px; height: 17px; margin-left: 8px; margin-right: 3px; overflow: hidden; }
-.btn-header.left { margin-top: 6px; margin-left: 17px; }
-.btn-header :before {line-height: 10px; vertical-align: bottom;}
-#segmentation .btn-header {margin-top: 0; margin-left: 5px;}
-
-#intermediate-numbers-container .big-numbers .inner { height: 65px; position: relative; padding: 20px; }
-#intermediate-numbers-container .big-numbers .inner .logo { position: absolute; top: 50%;  margin-top: -30px; left: 20px; }
-#intermediate-numbers-container .big-numbers .inner .title { margin-left: 80px; font-family: 'Ubuntu'; font-size: 14px; color: #808080; text-align: left; }
-#intermediate-numbers-container .big-numbers .inner .percentage { margin-left: 80px; font-family: 'Oswald'; font-size: 32px; color: #666666; text-align: left; }
-
-#intermediate-numbers-container .big-numbers .inner .logo { background-image:url('../images/messaging_icons.png'); width:60px; height:60px; }
-	#intermediate-numbers-container .big-numbers:nth-child(1) .logo { background-position:0; }
-	#intermediate-numbers-container .big-numbers:nth-child(2) .logo { background-position:-56px; }
-	#intermediate-numbers-container .big-numbers:nth-child(3) .logo { background-position:-115px; }
-
 .widget-header .logo.messaging {
 	background-image:url('../images/push/messaging_icons.png');
 	background-position: -175px;

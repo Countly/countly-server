@@ -1,17 +1,14 @@
 <div class="widget views-widget">
 	<div class="widget-header">
 		<div class="left">
-            {{#if logo-class}}
-			<div class="logo {{logo-class}}"></div>
+            {{#if segmentations}}
+            <div class="title small">{{page-title}}</div>
             {{else}}
-                <div class="logo font-logo2">
-                    <i class="fa {{font-logo-class}}"></i>
-                </div>
+			<div class="title">{{page-title}}</div>
             {{/if}}
-			<div class="title">{{page-title}}</div>     
-            <div class="event-segmentation" style="margin-left:5px;">
+            <div class="event-segmentation">
 				{{#if segmentations}}
-				<div class="cly-select" style="width:220px; position:absolute;">
+				<div class="cly-select float">
 					<div class="select-inner">
 						<div class="text-container">
 							<div class="text">{{active-segmentation}}</div>
@@ -35,24 +32,17 @@
     <div class="widget-content" style="border:none;">
 		<div id="big-numbers-container" class="dashboard">
 			{{#each usage}}
-			<div class="big-numbers seven-column help-zone-vs" data-help-localize="help.{{this.help}}">
+			<div class="big-numbers top seven-column help-zone-vs" data-help-localize="help.{{this.help}}">
 				<div class="inner">
 					<div class="select" id="{{this.id}}">
 						<div class="title">{{this.title}}</div>
 					</div>
-					<div class="arrow"></div>
 				</div>
 			</div>
 			{{/each}}
 		</div>
 	</div>
 	<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none; position:relative;">
-        <div id="graph-note">
-            <div class="main">
-                Notes
-                <div class="tail"></div>
-            </div>
-        </div>
         <div id="empty-graph" data-localize="views.empty-graph"></div>
 		<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
 	</div>

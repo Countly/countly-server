@@ -3,7 +3,7 @@
 		_os: ["Android", "iOS", "Windows Phone"],
         _os_web: ["Android", "iOS", "Windows Phone", "Windows", "OSX"],
 		_os_version: ["2.2", "2.3", "3.1", "3.2", "4.0", "4.1", "4.2", "4.3", "4.4", "5.0", "5.1", "6.0", "6.1", "7.0", "7.1", "8.0", "8.1"],
-		_resolution: ["320x480", "768x1024", "640x960", "1536x2048", "320x568", "640x1136", "480x800", "240x320", "540x960", "480x854", "240x400", "360x640", "800x1280", "600x1024", "600x800", "768x1366", "720x1280", "1080x1920"],	
+		_resolution: ["320x480", "768x1024", "640x960", "1536x2048", "320x568", "640x1136", "480x800", "240x320", "540x960", "480x854", "240x400", "360x640", "800x1280", "600x1024", "600x800", "768x1366", "720x1280", "1080x1920"],
 		_device: ["One Touch Idol X", "Kindle Fire HDX", "Fire Phone", "iPhone 5", "iPhone Mini", "iPhone 4S", "iPhone 5C", "iPad 4", "iPad Air","iPhone 6","Nexus 7","Nexus 10","Nexus 4","Nexus 5", "Windows Phone", "One S", "Optimus L5", "Lumia 920", "Galaxy Note", "Xperia Z"],
 		_manufacture: ["Samsung", "Sony Ericsson", "LG", "Google", "HTC", "Nokia", "Apple", "Huaiwei", "Lenovo", "Acer"],
 		_carrier: ["Telus", "Rogers Wireless", "T-Mobile", "Bell Canada", "	AT&T", "Verizon", "Vodafone", "Cricket Communications", "O2", "Tele2", "Turkcell", "Orange", "Sprint", "Metro PCS"],
@@ -17,13 +17,14 @@
         _source: ["https://www.google.lv", "https://www.google.co.in/", "https://www.google.ru/", "http://stackoverflow.com/questions", "http://stackoverflow.com/unanswered", "http://stackoverflow.com/tags", "http://r.search.yahoo.com/"]
 	};
 	var eventsMap = {
-		"Login": ["Lost", "Won"],
+		"Login": ["Lost", "Won","[CLY]_star_rating"],
 		"Logout": [],
 		"Lost": ["Won", "Achievement", "Lost"],
 		"Won": ["Lost", "Achievement"],
 		"Achievement": ["Sound", "Shared"],
 		"Sound": ["Lost", "Won"],
 		"Shared": ["Lost", "Won"],
+		"[CLY]_star_rating":[]
 	};
 	var pushEvents = ["[CLY]_push_sent", "[CLY]_push_open", "[CLY]_push_action"];
 	var segments  = {
@@ -32,7 +33,8 @@
 		Lost: {level: [1,2,3,4,5,6,7,8,9,10,11], mode:["arcade", "physics", "story"], difficulty:["easy", "medium", "hard"]},
 		Won: {level: [1,2,3,4,5,6,7,8,9,10,11], mode:["arcade", "physics", "story"], difficulty:["easy", "medium", "hard"]},
 		Achievement: {name:["Runner", "Jumper", "Shooter", "Berserker", "Tester"]},
-		Sound: {state:["on", "off"]}
+		Sound: {state:["on", "off"]},
+		"[CLY]_star_rating": {rating:[5,4,3,2,1],app_version:['1.2','1.3','2.0','3.0','3.5'],"platform":['iOS', 'Android']}
 	};
 	segments["[CLY]_push_open"]={i:"123456789012345678901234"};
 	segments["[CLY]_push_action"]={i:"123456789012345678901234"};
@@ -59,17 +61,17 @@
             "Facebook Login": (Math.random() > 0.5) ? true : false,
             "Twitter Login": (Math.random() > 0.5) ? true : false
         }
-        
+
         if(ob["Twitter Login"])
             ob["Twitter Login name"] = chance.twitter();
-        
+
         if((Math.random() > 0.5))
             ob["Has Apple Watch OS"] = (Math.random() > 0.5) ? true : false;
 		return ob;
 	}
-	
+
 	// helper functions
-	
+
 	function randomString(size)
 	{
 		var alphaChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -77,7 +79,7 @@
 		for(var i = 0; i < size; i++) {
 			generatedString += alphaChars[getRandomInt(0,alphaChars.length)];
 		}
-	
+
 		return generatedString;
 	}
     function getProp(name){
@@ -90,9 +92,9 @@
 			};
 			return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 		};
-		
+
 		this.getProp = getProp;
-		
+
 		var that = this;
         this.stats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
 		this.id = this.getId();
@@ -132,10 +134,10 @@
             this.metrics["_store"] = this.getProp("_source");
         else if(this.platform == "Android")
             this.metrics["_store"] = this.getProp("_store");
-		
+
 		this.getCrash = function(){
 			var crash = {};
-            
+
             crash._os = this.getProp("_os");
 			crash._os_version = this.getProp("_os_version");
 			crash._device = this.getProp("_device");
@@ -144,7 +146,7 @@
 			crash._app_version = this.getProp("_app_version");
 			crash._cpu = this.getProp("_cpu");
 			crash._opengl = this.getProp("_opengl");
-            
+
             crash._ram_total = getRandomInt(1, 4)*1024;
 			crash._ram_current = getRandomInt(1, crash._ram_total);
 			crash._disk_total = getRandomInt(1, 20)*1024;
@@ -152,18 +154,18 @@
 			crash._bat_total = 100;
 			crash._bat_current = getRandomInt(1, crash._bat_total);
 			crash._orientation = (Math.random() > 0.5) ? "landscape" : "portrait";
-            
+
 			crash._root = (Math.random() > 0.5) ? true : false;
 			crash._online = (Math.random() > 0.5) ? true : false;
 			crash._signal = (Math.random() > 0.5) ? true : false;
 			crash._muted = (Math.random() > 0.5) ? true : false;
 			crash._background = (Math.random() > 0.5) ? true : false;
-            
+
 			crash._error = this.getError();
 			crash._logs = this.getLog();
             crash._nonfatal = (Math.random() > 0.5) ? true : false;
             crash._run = getRandomInt(1, 1800);
-            
+
             var customs = ["facebook", "gideros", "admob", "chartboost", "googleplay"];
             crash._custom = {};
             for(var i = 0; i < customs.length; i++){
@@ -171,10 +173,10 @@
                     crash._custom[customs[i]] = getRandomInt(1, 2)+"."+getRandomInt(0, 9);
                 }
             }
-            
+
 			return crash;
 		};
-		
+
 		this.getError = function(){
 			var errors = ["java.lang.RuntimeException", "java.lang.NullPointerException", "java.lang.NoSuchMethodError", "java.lang.NoClassDefFoundError", "java.lang.ExceptionInInitializerError", "java.lang.IllegalStateException"];
 			var error = errors[Math.floor(Math.random()*errors.length)]+": com.domain.app.Exception<init>\n";
@@ -184,7 +186,7 @@
 			}
 			return error;
 		};
-        
+
         this.getLog = function(){
             var actions = [
                 "clicked button 1",
@@ -206,7 +208,7 @@
                 "gesture detected",
                 "shake detected"
             ];
-            
+
             var items = getRandomInt(5, 10);
             var logs = [];
             for(var i = 0; i < items; i++){
@@ -214,7 +216,7 @@
             }
             return logs.join("\n");
         };
-		
+
 		this.getEvent = function(id){
             this.stats.e++;
 			if (!id) {
@@ -262,7 +264,7 @@
 
 			return [event];
 		};
-        
+
         this.getEvents = function(count){
             var events = [];
             for(var i = 0; i < count; i++){
@@ -270,7 +272,7 @@
             }
             return events;
         };
-		
+
 		this.getPushEvents = function(){
 			var events = this.getPushEvent('[CLY]_push_sent');
             if(Math.random() >= 0.5){
@@ -302,7 +304,7 @@
 			}
 			return [event];
 		};
-		
+
 		this.startSession = function(){
 			this.ts = this.ts+60*60*24+100;
 			this.stats.s++;
@@ -336,7 +338,7 @@
             this.request(req);
 			this.timer = setTimeout(function(){that.extendSession()}, timeout);
 		};
-		
+
 		this.extendSession = function(){
 			if(this.hasSession){
                 var req = {};
@@ -358,7 +360,7 @@
                 this.request(req);
 			}
 		}
-		
+
 		this.endSession = function(){
 			if(this.timer){
 				clearTimeout(this.timer)
@@ -370,7 +372,7 @@
 				this.request({timestamp:this.ts, end_session:1, events:events});
 			}
 		};
-		
+
 		this.request = function(params){
 			this.stats.r++;
 			params.device_id = this.id;
@@ -383,7 +385,7 @@
 			countlyPopulator.sync();
 		};
 	}
-	
+
 	var bulk = [];
 	var startTs = 1356998400;
 	var endTs = new Date().getTime()/1000;
@@ -395,14 +397,14 @@
 	var userAmount = 1000;
 	var queued = 0;
 	var totalStats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
-	
+
 	function updateUI(stats){
 		for(var i in stats){
 			totalStats[i] += stats[i];
 			$("#populate-stats-"+i).text(totalStats[i]);
 		}
 	}
-    
+
     function createCampaign(id, name, cost, type, callback){
         $.ajax({
 			type:"GET",
@@ -424,7 +426,7 @@
             error:callback
 		});
     }
-    
+
     function clickCampaign(name){
         var ip = chance.ip();
         if(ip_address.length && Math.random() > 0.5){
@@ -439,7 +441,7 @@
             data:{ip_address:ip, test:true, timestamp:getRandomInt(startTs, endTs)}
 		});
     }
-    
+
     function genereateCampaigns(callback){
         if(typeof countlyAttribution === "undefined"){
             callback();
@@ -459,7 +461,7 @@
             });
         });
     }
-    
+
     function generateRetentionUser(ts, users, ids, callback){
         var bulk = [];
         for(var i = 0; i < users; i++){
@@ -481,9 +483,9 @@
                     metrics["_store"] = getProp("_source");
                 else if(this.platform == "Android")
                     metrics["_store"] = getProp("_store");
-                
+
                 var userdetails = {name: chance.name(), username: chance.twitter().substring(1), email:chance.email(), organization:capitaliseFirstLetter(chance.word()), phone:chance.phone(), gender:chance.gender().charAt(0), byear:chance.birthday().getFullYear(), custom:createRandomObj()};
-                
+
                 bulk.push({ip_address:chance.ip(), device_id:i+""+ids[j], begin_session:1, metrics:metrics, user_details:userdetails, timestamp:ts, hour:getRandomInt(0, 23), dow:getRandomInt(0, 6)});
                 totalStats.s++;
                 totalStats.u++;
@@ -501,7 +503,7 @@
             error:callback
         });
     }
-    
+
     function generateRetention(callback){
         if(typeof countlyRetention === "undefined"){
             callback();
@@ -540,7 +542,7 @@
             });
         });
     }
-	
+
 	//Public Methods
 	countlyPopulator.setStartTime = function(time){
 		startTs = time;
@@ -606,7 +608,7 @@
                     //     createUser();
                     // }
 	};
-	
+
 	countlyPopulator.stopGenerating = function (clb) {
 		generating = false;
 		stopCallback = clb;
@@ -622,11 +624,11 @@
 			countlyPopulator.ensureJobs();
 		}
 	};
-	
+
 	countlyPopulator.isGenerating = function(){
 		return generating;
 	}
-    
+
     countlyPopulator.sync = function (force) {
 		if(generating && (force || bulk.length > bucket) && !countlyPopulator.bulking){
 			queued++;
@@ -672,7 +674,7 @@
 				}
 			});
 		}
-    };	
+    };
 
     var ensuringJobs = false;
     countlyPopulator.ensureJobs = function() {
@@ -695,9 +697,9 @@
     					$.ajax({
     						type: "GET",
     						url: countlyCommon.API_URL + "/i/flows/lastJob",
-    						data: { 
-    							job: json.job, 
-    							app_key:countlyCommon.ACTIVE_APP_KEY 
+    						data: {
+    							job: json.job,
+    							app_key:countlyCommon.ACTIVE_APP_KEY
     						},
     						success: function (obj) {
     							if (obj && obj.done) {
@@ -732,5 +734,5 @@
     		}
     	});
 
-    };	
+    };
 }(window.countlyPopulator = window.countlyPopulator || {}, jQuery));

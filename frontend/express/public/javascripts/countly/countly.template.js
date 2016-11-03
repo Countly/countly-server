@@ -233,7 +233,7 @@ $.extend(Template.prototype, {
         $("#day").text(moment().format("MMM"));
         $("#yesterday").text(moment().subtract("days",1).format("Do"));
 
-        $("#date-selector").find(">.button").click(function () {
+        $("#date-selector").find(".date-selector").click(function () {
             if ($(this).hasClass("selected")) {
                 return true;
             }
@@ -256,7 +256,7 @@ $.extend(Template.prototype, {
             $("#" + selectedPeriod).addClass("active");
         });
 
-        $("#date-selector").find(">.button").each(function(){
+        $("#date-selector").find(".date-selector").each(function(){
             if (countlyCommon.getPeriod() == $(this).attr("id")) {
                 $(this).addClass("active").addClass("selected");
             }
@@ -289,7 +289,7 @@ $.extend(Template.prototype, {
                 $(this).addClass("active");
 
                 if (itemCount > 10 && !$(this).hasClass("centered")) {
-                    $("<div class='search'><div class='inner'><input type='text' /><i class= fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
+                    $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
                 }
             }
 
@@ -1010,6 +1010,13 @@ window.AllAppsView = countlyView.extend({
 	selectedView:"#draw-total-sessions",
 	selectedApps: {"all":true},
 	selectedCount: 0,
+    getTrendIcon: function(trend) {
+        if (trend == 'u') {
+            return '<i class="material-icons up">trending_up</i>';
+        } else if (trend == 'd') {
+            return '<i class="material-icons down">trending_down</i>';
+        }
+    },
 	initialize:function () {
         this.template = Handlebars.compile($("#template-allapps").html());
     },
@@ -1118,17 +1125,16 @@ window.AllAppsView = countlyView.extend({
                     $(nRow).attr("id", aData._id);
                 },
                 "aoColumns": [
-                    { "mData": function(row, type){if(self.selectedApps[row._id]) return "<i class='check fa fa-check'></i>"; else return "<i class='check fa fa-unchecked'></i>";}, "sWidth":"10px", "bSortable":false},
-                    { "mData": function(row, type){if(type == "display"){ var ret; if(row["_id"] == "all") ret = "<div class='logo' style='background-image: url("+countlyGlobal["path"]+"/images/favicon.png);'></div> "; else ret = "<div class='logo' style='background-image: url("+countlyGlobal["cdn"]+"appimages/" + row["_id"] + ".png);'></div> "; return ret+row.name+"<div class='color'></div>";} else return row.name;}, "sType":"string", "sTitle": jQuery.i18n.map["allapps.app-name"], "sClass": "break" },
-                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url("+countlyGlobal["cdn"]+"images/dashboard/"+row.sessions.trend+"trend.png);'></div> "+row.sessions.total; else return row.sessions.total;}, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-sessions"] },
-                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url("+countlyGlobal["cdn"]+"images/dashboard/"+row.users.trend+"trend.png);'></div> "+row.users.total; else return row.users.total;}, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-users"] },
-                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url("+countlyGlobal["cdn"]+"images/dashboard/"+row.newusers.trend+"trend.png);'></div> "+row.newusers.total; else return row.newusers.total;}, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.new-users"] },
-                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url("+countlyGlobal["cdn"]+"images/dashboard/"+row.duration.trend+"trend.png);'></div> "+countlyCommon.timeString(row.duration.total); else return row.duration.total;}, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-duration"] },
-                    { "mData": function(row, type){if(type == "display") return "<div class='trend' style='background-image:url("+countlyGlobal["cdn"]+"images/dashboard/"+row.avgduration.trend+"trend.png);'></div> "+countlyCommon.timeString(row.avgduration.total); else return row.avgduration.total;}, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.average-duration"] }
+                    { "mData": function(row, type){if(type == "display") { return row.name + "<div class='color'></div>"; } else { return row.name; } }, "sType":"string", "sTitle": jQuery.i18n.map["allapps.app-name"], "sClass": "break" },
+                    { "mData": function(row, type) { if (type == "display") { return self.getTrendIcon(row.sessions.trend) +  row.sessions.total; } else { return row.sessions.total; } }, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-sessions"] },
+                    { "mData": function(row, type) { if (type == "display") { return self.getTrendIcon(row.users.trend) +  row.users.total; } else { return row.users.total; } }, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-users"] },
+                    { "mData": function(row, type) { if (type == "display") { return self.getTrendIcon(row.newusers.trend) +  row.newusers.total; } else { return row.newusers.total; } }, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.new-users"] },
+                    { "mData": function(row, type) { if (type == "display") { return self.getTrendIcon(row.duration.trend) +  countlyCommon.timeString(row.duration.total); } else { return row.duration.total; } }, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-duration"] },
+                    { "mData": function(row, type) { if (type == "display") { return self.getTrendIcon(row.avgduration.trend) +  countlyCommon.timeString(row.avgduration.total); } else { return row.avgduration.total; } }, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.average-duration"] }
                 ]
             }));
             this.drawGraph();
-            $(".dataTable-bottom").append("<div clas='dataTables_info' style='float: right; margin-top:2px; margin-right: 10px;'>"+jQuery.i18n.map["allapps.maximum-items"]+" (10)</div>")
+            $(".dataTable-bottom").append("<div class='dataTables_info' style='float: right;'>"+jQuery.i18n.map["allapps.maximum-items"]+" (10)</div>")
 
             $(".d-table").stickyTableHeaders();
 
@@ -1290,19 +1296,25 @@ window.CountriesView = countlyView.extend({
                         "title":jQuery.i18n.map["common.total-sessions"],
                         "total":sessionData.usage["total-sessions"].total,
                         "trend":sessionData.usage["total-sessions"].trend,
-                        "help":"countries.total-sessions"
+                        "help":"countries.total-sessions",
+                        "radio-button-id": "map-list-sessions",
+                        "radio-button-class": (this.curMap == "map-list-sessions")? "selected" : ""
                     },
                     {
                         "title":jQuery.i18n.map["common.total-users"],
                         "total":sessionData.usage["total-users"].total,
                         "trend":sessionData.usage["total-users"].trend,
-                        "help":"countries.total-users"
+                        "help":"countries.total-users",
+                        "radio-button-id": "map-list-users",
+                        "radio-button-class": (this.curMap == "map-list-users")? "selected" : ""
                     },
                     {
                         "title":jQuery.i18n.map["common.new-users"],
                         "total":sessionData.usage["new-users"].total,
                         "trend":sessionData.usage["new-users"].trend,
-                        "help":"countries.new-users"
+                        "help":"countries.new-users",
+                        "radio-button-id": "map-list-new",
+                        "radio-button-class": (this.curMap == "map-list-new")? "selected" : ""
                     }
                 ]
             },
@@ -1322,15 +1334,17 @@ window.CountriesView = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
 
-            if(countlyGlobal["config"].use_google){
+            if (countlyGlobal["config"].use_google) {
                 if (this.cityView) {
                     countlyCity.drawGeoChart({height:450, metric:self.maps[self.curMap]});
                 } else {
                     countlyLocation.drawGeoChart({height:450, metric:self.maps[self.curMap]});
                 }
+
+                $(".widget").removeClass("google-disabled");
             }
             else{
-                $(".widget-content.geo-switch").hide();
+                $(".widget").addClass("google-disabled");
             }
 
             this.drawTable();
@@ -1372,10 +1386,11 @@ window.CountriesView = countlyView.extend({
                     $("#country-toggle").text(jQuery.i18n.map["common.show"]+" "+jQuery.i18n.map["countries.table.country"]);
             }
             
-            $(".geo-switch .cly-button-group .icon-button").click(function(){
-                $(".geo-switch .cly-button-group .icon-button").removeClass("active");
-                $(this).addClass("active");
-                self.curMap = $(this).attr("id");
+            $(".geo-switch").on("click", ".radio", function(){
+                $(".geo-switch").find(".radio").removeClass("selected");
+                $(this).addClass("selected");
+                self.curMap = $(this).data("id");
+
                 if (self.cityView)
                     countlyCity.refreshGeoChart(self.maps[self.curMap]);
                 else
@@ -1466,21 +1481,6 @@ window.DeviceView = countlyView.extend({
         return $.when(countlyDevice.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("devices")).then(function () {});
     },
     pageScript:function () {
-        $(".bar-inner").on({
-            mouseenter:function () {
-                var number = $(this).parent().next();
-
-                number.text($(this).data("item"));
-                number.css({"color":$(this).css("background-color")});
-            },
-            mouseleave:function () {
-                var number = $(this).parent().next();
-
-                number.text(number.data("item"));
-                number.css({"color":$(this).parent().find(".bar-inner:first-child").css("background-color")});
-            }
-        });
-
         app.localize();
     },
     renderCommon:function (isRefresh) {
@@ -1571,14 +1571,20 @@ window.PlatformView = countlyView.extend({
         var self = this;
         var platformData = countlyDeviceDetails.getPlatformData();
 
+        var chartHTML = "";
+
+        if (platformData && platformData.chartDP && platformData.chartDP.dp && platformData.chartDP.dp.length) {
+            chartHTML += '<div class="hsb-container top"><div class="label">Platforms</div><div class="chart"><svg id="hsb-platforms"></svg></div></div>';
+
+            for (var i = 0; i < platformData.chartDP.dp.length; i++) {
+                chartHTML += '<div class="hsb-container"><div class="label">'+ platformData.chartDP.dp[i].label +'</div><div class="chart"><svg id="hsb-platform'+ i +'"></svg></div></div>';
+            }
+        }
+
         this.templateData = {
             "page-title":jQuery.i18n.map["platforms.title"],
             "logo-class":"platforms",
-            "graph-type-double-pie":true,
-            "pie-titles":{
-                "left":jQuery.i18n.map["platforms.pie-left"],
-                "right":jQuery.i18n.map["platforms.pie-right"]
-            },
+            "chartHTML": chartHTML,
             "chart-helper":"platform-versions.chart",
             "table-helper":"",
             "two-tables": true
@@ -1588,13 +1594,11 @@ window.PlatformView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
             this.pageScript();
 
-            countlyCommon.drawGraph(platformData.chartDP, "#dashboard-graph", "pie");
-
             this.dtable = $('#dataTableOne').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": platformData.chartData,
                 "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
-					$(nRow).data("name", aData.origos_);
-					$(nRow).addClass("os-rows");
+                    $(nRow).data("name", aData.origos_);
+                    $(nRow).addClass("os-rows");
                     if (self.activePlatform && self.activePlatform == aData.origos_) {
                         $(nRow).addClass("active");
                     }
@@ -1602,7 +1606,7 @@ window.PlatformView = countlyView.extend({
                         self.activePlatform = aData.origos_;
                         $(nRow).addClass("active");
                     }
-				},
+                },
                 "aoColumns": [
                     { "mData": "os_", "sTitle": jQuery.i18n.map["platforms.table.platform"] },
                     { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
@@ -1610,17 +1614,26 @@ window.PlatformView = countlyView.extend({
                     { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
                 ]
             }));
-            
+
             $('#dataTableOne tbody').on("click", "tr", function (){
                 self.activePlatform = $(this).data("name");
                 $(".os-rows").removeClass("active");
                 $(this).addClass("active");
 
                 self.refresh();
-			});
-            
+            });
+
+            countlyCommon.drawHorizontalStackedBars(platformData.chartDP.dp, "#hsb-platforms");
+
+            if (platformData && platformData.chartDP) {
+                for (var i = 0; i < platformData.chartDP.dp.length; i++) {
+                    var tmpOsVersion = countlyDeviceDetails.getOSVersionData(platformData.chartDP.dp[i].label);
+
+                    countlyCommon.drawHorizontalStackedBars(tmpOsVersion.chartDP.dp, "#hsb-platform"+i, i);
+                }
+            }
+
             var oSVersionData = countlyDeviceDetails.getOSVersionData(this.activePlatform);
-            countlyCommon.drawGraph(oSVersionData.chartDP, "#dashboard-graph2", "pie");
 
             this.dtableTwo = $('#dataTableTwo').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": oSVersionData.chartData,
@@ -1647,10 +1660,18 @@ window.PlatformView = countlyView.extend({
                 platformData = countlyDeviceDetails.getPlatformData(),
                 newPage = $("<div>" + self.template(self.templateData) + "</div>");
 
+            $(self.el).find(".widget-content").replaceWith(newPage.find(".widget-content"));
             $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
 
-            countlyCommon.drawGraph(platformData.chartDP, "#dashboard-graph", "pie");
-            countlyCommon.drawGraph(oSVersionData.chartDP, "#dashboard-graph2", "pie");
+            countlyCommon.drawHorizontalStackedBars(platformData.chartDP.dp, "#hsb-platforms");
+
+            if (platformData && platformData.chartDP) {
+                for (var i = 0; i < platformData.chartDP.dp.length; i++) {
+                    var tmpOsVersion = countlyDeviceDetails.getOSVersionData(platformData.chartDP.dp[i].label);
+
+                    countlyCommon.drawHorizontalStackedBars(tmpOsVersion.chartDP.dp, "#hsb-platform"+i, i);
+                }
+            }
 
             CountlyHelpers.refreshTable(self.dtable, platformData.chartData);
             CountlyHelpers.refreshTable(self.dtableTwo, oSVersionData.chartData);
@@ -1866,10 +1887,6 @@ window.ManageAppsView = countlyView.extend({
     initialize:function () {
         this.template = Handlebars.compile($("#template-management-applications").html());
     },
-    destroy:function () {
-        app.closeAppTooltip();
-        app.disableAppTooltip();
-    },
     getAppCategories: function(){
         return { 1:jQuery.i18n.map["application-category.books"], 2:jQuery.i18n.map["application-category.business"], 3:jQuery.i18n.map["application-category.education"], 4:jQuery.i18n.map["application-category.entertainment"], 5:jQuery.i18n.map["application-category.finance"], 6:jQuery.i18n.map["application-category.games"], 7:jQuery.i18n.map["application-category.health-fitness"], 8:jQuery.i18n.map["application-category.lifestyle"], 9:jQuery.i18n.map["application-category.medical"], 10:jQuery.i18n.map["application-category.music"], 11:jQuery.i18n.map["application-category.navigation"], 12:jQuery.i18n.map["application-category.news"], 13:jQuery.i18n.map["application-category.photography"], 14:jQuery.i18n.map["application-category.productivity"], 15:jQuery.i18n.map["application-category.reference"], 16:jQuery.i18n.map["application-category.social-networking"], 17:jQuery.i18n.map["application-category.sports"], 18:jQuery.i18n.map["application-category.travel"], 19:jQuery.i18n.map["application-category.utilities"], 20:jQuery.i18n.map["application-category.weather"]};
     },
@@ -1877,7 +1894,6 @@ window.ManageAppsView = countlyView.extend({
         return { "AF":{"n":"Afghanistan","z":[{"(GMT+04:30) Kabul":"Asia/Kabul"}]}, "AL":{"n":"Albania","z":[{"(GMT+01:00) Tirane":"Europe/Tirane"}]}, "DZ":{"n":"Algeria","z":[{"(GMT+01:00) Algiers":"Africa/Algiers"}]}, "AS":{"n":"American Samoa","z":[{"(GMT-11:00) Pago Pago":"Pacific/Pago_Pago"}]}, "AD":{"n":"Andorra","z":[{"(GMT+01:00) Andorra":"Europe/Andorra"}]}, "AO":{"n":"Angola","z":[{"(GMT+01:00) Luanda":"Africa/Luanda"}]}, "AI":{"n":"Anguilla","z":[{"(GMT-04:00) Anguilla":"America/Anguilla"}]}, "AQ":{"n":"Antarctica","z":[{"(GMT-04:00) Palmer":"Antarctica/Palmer"},{"(GMT-03:00) Rothera":"Antarctica/Rothera"},{"(GMT+03:00) Syowa":"Antarctica/Syowa"},{"(GMT+05:00) Mawson":"Antarctica/Mawson"},{"(GMT+06:00) Vostok":"Antarctica/Vostok"},{"(GMT+07:00) Davis":"Antarctica/Davis"},{"(GMT+08:00) Casey":"Antarctica/Casey"},{"(GMT+10:00) Dumont D'Urville":"Antarctica/DumontDUrville"}]}, "AG":{"n":"Antigua and Barbuda","z":[{"(GMT-04:00) Antigua":"America/Antigua"}]}, "AR":{"n":"Argentina","z":[{"(GMT-03:00) Buenos Aires":"America/Buenos_Aires"}]}, "AM":{"n":"Armenia","z":[{"(GMT+04:00) Yerevan":"Asia/Yerevan"}]}, "AW":{"n":"Aruba","z":[{"(GMT-04:00) Aruba":"America/Aruba"}]}, "AU":{"n":"Australia","z":[{"(GMT+08:00) Western Time - Perth":"Australia/Perth"},{"(GMT+09:30) Central Time - Adelaide":"Australia/Adelaide"},{"(GMT+09:30) Central Time - Darwin":"Australia/Darwin"},{"(GMT+10:00) Eastern Time - Brisbane":"Australia/Brisbane"},{"(GMT+10:00) Eastern Time - Hobart":"Australia/Hobart"},{"(GMT+10:00) Eastern Time - Melbourne, Sydney":"Australia/Sydney"}]}, "AT":{"n":"Austria","z":[{"(GMT+01:00) Vienna":"Europe/Vienna"}]}, "AZ":{"n":"Azerbaijan","z":[{"(GMT+04:00) Baku":"Asia/Baku"}]}, "BS":{"n":"Bahamas","z":[{"(GMT-05:00) Nassau":"America/Nassau"}]}, "BH":{"n":"Bahrain","z":[{"(GMT+03:00) Bahrain":"Asia/Bahrain"}]}, "BD":{"n":"Bangladesh","z":[{"(GMT+06:00) Dhaka":"Asia/Dhaka"}]}, "BB":{"n":"Barbados","z":[{"(GMT-04:00) Barbados":"America/Barbados"}]}, "BY":{"n":"Belarus","z":[{"(GMT+03:00) Minsk":"Europe/Minsk"}]}, "BE":{"n":"Belgium","z":[{"(GMT+01:00) Brussels":"Europe/Brussels"}]}, "BZ":{"n":"Belize","z":[{"(GMT-06:00) Belize":"America/Belize"}]}, "BJ":{"n":"Benin","z":[{"(GMT+01:00) Porto-Novo":"Africa/Porto-Novo"}]}, "BM":{"n":"Bermuda","z":[{"(GMT-04:00) Bermuda":"Atlantic/Bermuda"}]}, "BT":{"n":"Bhutan","z":[{"(GMT+06:00) Thimphu":"Asia/Thimphu"}]}, "BO":{"n":"Bolivia","z":[{"(GMT-04:00) La Paz":"America/La_Paz"}]}, "BA":{"n":"Bosnia and Herzegovina","z":[{"(GMT+01:00) Central European Time - Belgrade":"Europe/Sarajevo"}]}, "BW":{"n":"Botswana","z":[{"(GMT+02:00) Gaborone":"Africa/Gaborone"}]}, "BR":{"n":"Brazil","z":[{"(GMT-04:00) Boa Vista":"America/Boa_Vista"},{"(GMT-04:00) Campo Grande":"America/Campo_Grande"},{"(GMT-04:00) Cuiaba":"America/Cuiaba"},{"(GMT-04:00) Manaus":"America/Manaus"},{"(GMT-04:00) Porto Velho":"America/Porto_Velho"},{"(GMT-04:00) Rio Branco":"America/Rio_Branco"},{"(GMT-03:00) Araguaina":"America/Araguaina"},{"(GMT-03:00) Belem":"America/Belem"},{"(GMT-03:00) Fortaleza":"America/Fortaleza"},{"(GMT-03:00) Maceio":"America/Maceio"},{"(GMT-03:00) Recife":"America/Recife"},{"(GMT-03:00) Salvador":"America/Bahia"},{"(GMT-03:00) Sao Paulo":"America/Sao_Paulo"},{"(GMT-02:00) Noronha":"America/Noronha"}]}, "IO":{"n":"British Indian Ocean Territory","z":[{"(GMT+06:00) Chagos":"Indian/Chagos"}]}, "VG":{"n":"British Virgin Islands","z":[{"(GMT-04:00) Tortola":"America/Tortola"}]}, "BN":{"n":"Brunei","z":[{"(GMT+08:00) Brunei":"Asia/Brunei"}]}, "BG":{"n":"Bulgaria","z":[{"(GMT+02:00) Sofia":"Europe/Sofia"}]}, "BF":{"n":"Burkina Faso","z":[{"(GMT+00:00) Ouagadougou":"Africa/Ouagadougou"}]}, "BI":{"n":"Burundi","z":[{"(GMT+02:00) Bujumbura":"Africa/Bujumbura"}]}, "KH":{"n":"Cambodia","z":[{"(GMT+07:00) Phnom Penh":"Asia/Phnom_Penh"}]}, "CM":{"n":"Cameroon","z":[{"(GMT+01:00) Douala":"Africa/Douala"}]}, "CA":{"n":"Canada","z":[{"(GMT-07:00) Mountain Time - Dawson Creek":"America/Dawson_Creek"},{"(GMT-08:00) Pacific Time - Vancouver":"America/Vancouver"},{"(GMT-08:00) Pacific Time - Whitehorse":"America/Whitehorse"},{"(GMT-06:00) Central Time - Regina":"America/Regina"},{"(GMT-07:00) Mountain Time - Edmonton":"America/Edmonton"},{"(GMT-07:00) Mountain Time - Yellowknife":"America/Yellowknife"},{"(GMT-06:00) Central Time - Winnipeg":"America/Winnipeg"},{"(GMT-05:00) Eastern Time - Iqaluit":"America/Iqaluit"},{"(GMT-05:00) Eastern Time - Montreal":"America/Montreal"},{"(GMT-05:00) Eastern Time - Toronto":"America/Toronto"},{"(GMT-04:00) Atlantic Time - Halifax":"America/Halifax"},{"(GMT-03:30) Newfoundland Time - St. Johns":"America/St_Johns"}]}, "CV":{"n":"Cape Verde","z":[{"(GMT-01:00) Cape Verde":"Atlantic/Cape_Verde"}]}, "KY":{"n":"Cayman Islands","z":[{"(GMT-05:00) Cayman":"America/Cayman"}]}, "CF":{"n":"Central African Republic","z":[{"(GMT+01:00) Bangui":"Africa/Bangui"}]}, "TD":{"n":"Chad","z":[{"(GMT+01:00) Ndjamena":"Africa/Ndjamena"}]}, "CL":{"n":"Chile","z":[{"(GMT-06:00) Easter Island":"Pacific/Easter"},{"(GMT-04:00) Santiago":"America/Santiago"}]}, "CN":{"n":"China","z":[{"(GMT+08:00) China Time - Beijing":"Asia/Shanghai"}]}, "CX":{"n":"Christmas Island","z":[{"(GMT+07:00) Christmas":"Indian/Christmas"}]}, "CC":{"n":"Cocos [Keeling] Islands","z":[{"(GMT+06:30) Cocos":"Indian/Cocos"}]}, "CO":{"n":"Colombia","z":[{"(GMT-05:00) Bogota":"America/Bogota"}]}, "KM":{"n":"Comoros","z":[{"(GMT+03:00) Comoro":"Indian/Comoro"}]}, "CD":{"n":"Congo [DRC]","z":[{"(GMT+01:00) Kinshasa":"Africa/Kinshasa"},{"(GMT+02:00) Lubumbashi":"Africa/Lubumbashi"}]}, "CG":{"n":"Congo [Republic]","z":[{"(GMT+01:00) Brazzaville":"Africa/Brazzaville"}]}, "CK":{"n":"Cook Islands","z":[{"(GMT-10:00) Rarotonga":"Pacific/Rarotonga"}]}, "CR":{"n":"Costa Rica","z":[{"(GMT-06:00) Costa Rica":"America/Costa_Rica"}]}, "CI":{"n":"Côte d’Ivoire","z":[{"(GMT+00:00) Abidjan":"Africa/Abidjan"}]}, "HR":{"n":"Croatia","z":[{"(GMT+01:00) Central European Time - Belgrade":"Europe/Zagreb"}]}, "CU":{"n":"Cuba","z":[{"(GMT-05:00) Havana":"America/Havana"}]}, "CW":{"n":"Curaçao","z":[{"(GMT-04:00) Curacao":"America/Curacao"}]}, "CY":{"n":"Cyprus","z":[{"(GMT+02:00) Nicosia":"Asia/Nicosia"}]}, "CZ":{"n":"Czech Republic","z":[{"(GMT+01:00) Central European Time - Prague":"Europe/Prague"}]}, "DK":{"n":"Denmark","z":[{"(GMT+01:00) Copenhagen":"Europe/Copenhagen"}]}, "DJ":{"n":"Djibouti","z":[{"(GMT+03:00) Djibouti":"Africa/Djibouti"}]}, "DM":{"n":"Dominica","z":[{"(GMT-04:00) Dominica":"America/Dominica"}]}, "DO":{"n":"Dominican Republic","z":[{"(GMT-04:00) Santo Domingo":"America/Santo_Domingo"}]}, "EC":{"n":"Ecuador","z":[{"(GMT-06:00) Galapagos":"Pacific/Galapagos"},{"(GMT-05:00) Guayaquil":"America/Guayaquil"}]}, "EG":{"n":"Egypt","z":[{"(GMT+02:00) Cairo":"Africa/Cairo"}]}, "SV":{"n":"El Salvador","z":[{"(GMT-06:00) El Salvador":"America/El_Salvador"}]}, "GQ":{"n":"Equatorial Guinea","z":[{"(GMT+01:00) Malabo":"Africa/Malabo"}]}, "ER":{"n":"Eritrea","z":[{"(GMT+03:00) Asmera":"Africa/Asmera"}]}, "EE":{"n":"Estonia","z":[{"(GMT+02:00) Tallinn":"Europe/Tallinn"}]}, "ET":{"n":"Ethiopia","z":[{"(GMT+03:00) Addis Ababa":"Africa/Addis_Ababa"}]}, "FK":{"n":"Falkland Islands [Islas Malvinas]","z":[{"(GMT-03:00) Stanley":"Atlantic/Stanley"}]}, "FO":{"n":"Faroe Islands","z":[{"(GMT+00:00) Faeroe":"Atlantic/Faeroe"}]}, "FJ":{"n":"Fiji","z":[{"(GMT+12:00) Fiji":"Pacific/Fiji"}]}, "FI":{"n":"Finland","z":[{"(GMT+02:00) Helsinki":"Europe/Helsinki"}]}, "FR":{"n":"France","z":[{"(GMT+01:00) Paris":"Europe/Paris"}]}, "GF":{"n":"French Guiana","z":[{"(GMT-03:00) Cayenne":"America/Cayenne"}]}, "PF":{"n":"French Polynesia","z":[{"(GMT-10:00) Tahiti":"Pacific/Tahiti"},{"(GMT-09:30) Marquesas":"Pacific/Marquesas"},{"(GMT-09:00) Gambier":"Pacific/Gambier"}]}, "TF":{"n":"French Southern Territories","z":[{"(GMT+05:00) Kerguelen":"Indian/Kerguelen"}]}, "GA":{"n":"Gabon","z":[{"(GMT+01:00) Libreville":"Africa/Libreville"}]}, "GM":{"n":"Gambia","z":[{"(GMT+00:00) Banjul":"Africa/Banjul"}]}, "GE":{"n":"Georgia","z":[{"(GMT+04:00) Tbilisi":"Asia/Tbilisi"}]}, "DE":{"n":"Germany","z":[{"(GMT+01:00) Berlin":"Europe/Berlin"}]}, "GH":{"n":"Ghana","z":[{"(GMT+00:00) Accra":"Africa/Accra"}]}, "GI":{"n":"Gibraltar","z":[{"(GMT+01:00) Gibraltar":"Europe/Gibraltar"}]}, "GR":{"n":"Greece","z":[{"(GMT+02:00) Athens":"Europe/Athens"}]}, "GL":{"n":"Greenland","z":[{"(GMT-04:00) Thule":"America/Thule"},{"(GMT-03:00) Godthab":"America/Godthab"},{"(GMT-01:00) Scoresbysund":"America/Scoresbysund"},{"(GMT+00:00) Danmarkshavn":"America/Danmarkshavn"}]}, "GD":{"n":"Grenada","z":[{"(GMT-04:00) Grenada":"America/Grenada"}]}, "GP":{"n":"Guadeloupe","z":[{"(GMT-04:00) Guadeloupe":"America/Guadeloupe"}]}, "GU":{"n":"Guam","z":[{"(GMT+10:00) Guam":"Pacific/Guam"}]}, "GT":{"n":"Guatemala","z":[{"(GMT-06:00) Guatemala":"America/Guatemala"}]}, "GN":{"n":"Guinea","z":[{"(GMT+00:00) Conakry":"Africa/Conakry"}]}, "GW":{"n":"Guinea-Bissau","z":[{"(GMT+00:00) Bissau":"Africa/Bissau"}]}, "GY":{"n":"Guyana","z":[{"(GMT-04:00) Guyana":"America/Guyana"}]}, "HT":{"n":"Haiti","z":[{"(GMT-05:00) Port-au-Prince":"America/Port-au-Prince"}]}, "HN":{"n":"Honduras","z":[{"(GMT-06:00) Central Time - Tegucigalpa":"America/Tegucigalpa"}]}, "HK":{"n":"Hong Kong","z":[{"(GMT+08:00) Hong Kong":"Asia/Hong_Kong"}]}, "HU":{"n":"Hungary","z":[{"(GMT+01:00) Budapest":"Europe/Budapest"}]}, "IS":{"n":"Iceland","z":[{"(GMT+00:00) Reykjavik":"Atlantic/Reykjavik"}]}, "IN":{"n":"India","z":[{"(GMT+05:30) India Standard Time":"Asia/Calcutta"}]}, "ID":{"n":"Indonesia","z":[{"(GMT+07:00) Jakarta":"Asia/Jakarta"},{"(GMT+08:00) Makassar":"Asia/Makassar"},{"(GMT+09:00) Jayapura":"Asia/Jayapura"}]}, "IR":{"n":"Iran","z":[{"(GMT+03:30) Tehran":"Asia/Tehran"}]}, "IQ":{"n":"Iraq","z":[{"(GMT+03:00) Baghdad":"Asia/Baghdad"}]}, "IE":{"n":"Ireland","z":[{"(GMT+00:00) Dublin":"Europe/Dublin"}]}, "IL":{"n":"Israel","z":[{"(GMT+02:00) Jerusalem":"Asia/Jerusalem"}]}, "IT":{"n":"Italy","z":[{"(GMT+01:00) Rome":"Europe/Rome"}]}, "JM":{"n":"Jamaica","z":[{"(GMT-05:00) Jamaica":"America/Jamaica"}]}, "JP":{"n":"Japan","z":[{"(GMT+09:00) Tokyo":"Asia/Tokyo"}]}, "JO":{"n":"Jordan","z":[{"(GMT+02:00) Amman":"Asia/Amman"}]}, "KZ":{"n":"Kazakhstan","z":[{"(GMT+05:00) Aqtau":"Asia/Aqtau"},{"(GMT+05:00) Aqtobe":"Asia/Aqtobe"},{"(GMT+06:00) Almaty":"Asia/Almaty"}]}, "KE":{"n":"Kenya","z":[{"(GMT+03:00) Nairobi":"Africa/Nairobi"}]}, "KI":{"n":"Kiribati","z":[{"(GMT+12:00) Tarawa":"Pacific/Tarawa"},{"(GMT+13:00) Enderbury":"Pacific/Enderbury"},{"(GMT+14:00) Kiritimati":"Pacific/Kiritimati"}]}, "KW":{"n":"Kuwait","z":[{"(GMT+03:00) Kuwait":"Asia/Kuwait"}]}, "KG":{"n":"Kyrgyzstan","z":[{"(GMT+06:00) Bishkek":"Asia/Bishkek"}]}, "LA":{"n":"Laos","z":[{"(GMT+07:00) Vientiane":"Asia/Vientiane"}]}, "LV":{"n":"Latvia","z":[{"(GMT+02:00) Riga":"Europe/Riga"}]}, "LB":{"n":"Lebanon","z":[{"(GMT+02:00) Beirut":"Asia/Beirut"}]}, "LS":{"n":"Lesotho","z":[{"(GMT+02:00) Maseru":"Africa/Maseru"}]}, "LR":{"n":"Liberia","z":[{"(GMT+00:00) Monrovia":"Africa/Monrovia"}]}, "LY":{"n":"Libya","z":[{"(GMT+02:00) Tripoli":"Africa/Tripoli"}]}, "LI":{"n":"Liechtenstein","z":[{"(GMT+01:00) Vaduz":"Europe/Vaduz"}]}, "LT":{"n":"Lithuania","z":[{"(GMT+02:00) Vilnius":"Europe/Vilnius"}]}, "LU":{"n":"Luxembourg","z":[{"(GMT+01:00) Luxembourg":"Europe/Luxembourg"}]}, "MO":{"n":"Macau","z":[{"(GMT+08:00) Macau":"Asia/Macau"}]}, "MK":{"n":"Macedonia [FYROM]","z":[{"(GMT+01:00) Central European Time - Belgrade":"Europe/Skopje"}]}, "MG":{"n":"Madagascar","z":[{"(GMT+03:00) Antananarivo":"Indian/Antananarivo"}]}, "MW":{"n":"Malawi","z":[{"(GMT+02:00) Blantyre":"Africa/Blantyre"}]}, "MY":{"n":"Malaysia","z":[{"(GMT+08:00) Kuala Lumpur":"Asia/Kuala_Lumpur"}]}, "MV":{"n":"Maldives","z":[{"(GMT+05:00) Maldives":"Indian/Maldives"}]}, "ML":{"n":"Mali","z":[{"(GMT+00:00) Bamako":"Africa/Bamako"}]}, "MT":{"n":"Malta","z":[{"(GMT+01:00) Malta":"Europe/Malta"}]}, "MH":{"n":"Marshall Islands","z":[{"(GMT+12:00) Kwajalein":"Pacific/Kwajalein"},{"(GMT+12:00) Majuro":"Pacific/Majuro"}]}, "MQ":{"n":"Martinique","z":[{"(GMT-04:00) Martinique":"America/Martinique"}]}, "MR":{"n":"Mauritania","z":[{"(GMT+00:00) Nouakchott":"Africa/Nouakchott"}]}, "MU":{"n":"Mauritius","z":[{"(GMT+04:00) Mauritius":"Indian/Mauritius"}]}, "YT":{"n":"Mayotte","z":[{"(GMT+03:00) Mayotte":"Indian/Mayotte"}]}, "MX":{"n":"Mexico","z":[{"(GMT-07:00) Mountain Time - Hermosillo":"America/Hermosillo"},{"(GMT-08:00) Pacific Time - Tijuana":"America/Tijuana"},{"(GMT-07:00) Mountain Time - Chihuahua, Mazatlan":"America/Mazatlan"},{"(GMT-06:00) Central Time - Mexico City":"America/Mexico_City"}]}, "FM":{"n":"Micronesia","z":[{"(GMT+10:00) Truk":"Pacific/Truk"},{"(GMT+11:00) Kosrae":"Pacific/Kosrae"},{"(GMT+11:00) Ponape":"Pacific/Ponape"}]}, "MD":{"n":"Moldova","z":[{"(GMT+02:00) Chisinau":"Europe/Chisinau"}]}, "MC":{"n":"Monaco","z":[{"(GMT+01:00) Monaco":"Europe/Monaco"}]}, "MN":{"n":"Mongolia","z":[{"(GMT+07:00) Hovd":"Asia/Hovd"},{"(GMT+08:00) Choibalsan":"Asia/Choibalsan"},{"(GMT+08:00) Ulaanbaatar":"Asia/Ulaanbaatar"}]}, "MS":{"n":"Montserrat","z":[{"(GMT-04:00) Montserrat":"America/Montserrat"}]}, "MA":{"n":"Morocco","z":[{"(GMT+00:00) Casablanca":"Africa/Casablanca"}]}, "MZ":{"n":"Mozambique","z":[{"(GMT+02:00) Maputo":"Africa/Maputo"}]}, "MM":{"n":"Myanmar [Burma]","z":[{"(GMT+06:30) Rangoon":"Asia/Rangoon"}]}, "NA":{"n":"Namibia","z":[{"(GMT+01:00) Windhoek":"Africa/Windhoek"}]}, "NR":{"n":"Nauru","z":[{"(GMT+12:00) Nauru":"Pacific/Nauru"}]}, "NP":{"n":"Nepal","z":[{"(GMT+05:45) Katmandu":"Asia/Katmandu"}]}, "NL":{"n":"Netherlands","z":[{"(GMT+01:00) Amsterdam":"Europe/Amsterdam"}]}, "NC":{"n":"New Caledonia","z":[{"(GMT+11:00) Noumea":"Pacific/Noumea"}]}, "NZ":{"n":"New Zealand","z":[{"(GMT+12:00) Auckland":"Pacific/Auckland"}]}, "NI":{"n":"Nicaragua","z":[{"(GMT-06:00) Managua":"America/Managua"}]}, "NE":{"n":"Niger","z":[{"(GMT+01:00) Niamey":"Africa/Niamey"}]}, "NG":{"n":"Nigeria","z":[{"(GMT+01:00) Lagos":"Africa/Lagos"}]}, "NU":{"n":"Niue","z":[{"(GMT-11:00) Niue":"Pacific/Niue"}]}, "NF":{"n":"Norfolk Island","z":[{"(GMT+11:30) Norfolk":"Pacific/Norfolk"}]}, "KP":{"n":"North Korea","z":[{"(GMT+09:00) Pyongyang":"Asia/Pyongyang"}]}, "MP":{"n":"Northern Mariana Islands","z":[{"(GMT+10:00) Saipan":"Pacific/Saipan"}]}, "NO":{"n":"Norway","z":[{"(GMT+01:00) Oslo":"Europe/Oslo"}]}, "OM":{"n":"Oman","z":[{"(GMT+04:00) Muscat":"Asia/Muscat"}]}, "PK":{"n":"Pakistan","z":[{"(GMT+05:00) Karachi":"Asia/Karachi"}]}, "PW":{"n":"Palau","z":[{"(GMT+09:00) Palau":"Pacific/Palau"}]}, "PS":{"n":"Palestinian Territories","z":[{"(GMT+02:00) Gaza":"Asia/Gaza"}]}, "PA":{"n":"Panama","z":[{"(GMT-05:00) Panama":"America/Panama"}]}, "PG":{"n":"Papua New Guinea","z":[{"(GMT+10:00) Port Moresby":"Pacific/Port_Moresby"}]}, "PY":{"n":"Paraguay","z":[{"(GMT-04:00) Asuncion":"America/Asuncion"}]}, "PE":{"n":"Peru","z":[{"(GMT-05:00) Lima":"America/Lima"}]}, "PH":{"n":"Philippines","z":[{"(GMT+08:00) Manila":"Asia/Manila"}]}, "PN":{"n":"Pitcairn Islands","z":[{"(GMT-08:00) Pitcairn":"Pacific/Pitcairn"}]}, "PL":{"n":"Poland","z":[{"(GMT+01:00) Warsaw":"Europe/Warsaw"}]}, "PT":{"n":"Portugal","z":[{"(GMT-01:00) Azores":"Atlantic/Azores"},{"(GMT+00:00) Lisbon":"Europe/Lisbon"}]}, "PR":{"n":"Puerto Rico","z":[{"(GMT-04:00) Puerto Rico":"America/Puerto_Rico"}]}, "QA":{"n":"Qatar","z":[{"(GMT+03:00) Qatar":"Asia/Qatar"}]}, "RE":{"n":"Réunion","z":[{"(GMT+04:00) Reunion":"Indian/Reunion"}]}, "RO":{"n":"Romania","z":[{"(GMT+02:00) Bucharest":"Europe/Bucharest"}]}, "RU":{"n":"Russia","z":[{"(GMT+03:00) Moscow-01 - Kaliningrad":"Europe/Kaliningrad"},{"(GMT+04:00) Moscow+00":"Europe/Moscow"},{"(GMT+04:00) Moscow+00 - Samara":"Europe/Samara"},{"(GMT+06:00) Moscow+02 - Yekaterinburg":"Asia/Yekaterinburg"},{"(GMT+07:00) Moscow+03 - Omsk, Novosibirsk":"Asia/Omsk"},{"(GMT+08:00) Moscow+04 - Krasnoyarsk":"Asia/Krasnoyarsk"},{"(GMT+09:00) Moscow+05 - Irkutsk":"Asia/Irkutsk"},{"(GMT+10:00) Moscow+06 - Yakutsk":"Asia/Yakutsk"},{"(GMT+11:00) Moscow+07 - Yuzhno-Sakhalinsk":"Asia/Vladivostok"},{"(GMT+12:00) Moscow+08 - Magadan":"Asia/Magadan"},{"(GMT+12:00) Moscow+08 - Petropavlovsk-Kamchatskiy":"Asia/Kamchatka"}]}, "RW":{"n":"Rwanda","z":[{"(GMT+02:00) Kigali":"Africa/Kigali"}]}, "SH":{"n":"Saint Helena","z":[{"(GMT+00:00) St Helena":"Atlantic/St_Helena"}]}, "KN":{"n":"Saint Kitts and Nevis","z":[{"(GMT-04:00) St. Kitts":"America/St_Kitts"}]}, "LC":{"n":"Saint Lucia","z":[{"(GMT-04:00) St. Lucia":"America/St_Lucia"}]}, "PM":{"n":"Saint Pierre and Miquelon","z":[{"(GMT-03:00) Miquelon":"America/Miquelon"}]}, "VC":{"n":"Saint Vincent and the Grenadines","z":[{"(GMT-04:00) St. Vincent":"America/St_Vincent"}]}, "WS":{"n":"Samoa","z":[{"(GMT+13:00) Apia":"Pacific/Apia"}]}, "SM":{"n":"San Marino","z":[{"(GMT+01:00) Rome":"Europe/San_Marino"}]}, "ST":{"n":"São Tomé and Príncipe","z":[{"(GMT+00:00) Sao Tome":"Africa/Sao_Tome"}]}, "SA":{"n":"Saudi Arabia","z":[{"(GMT+03:00) Riyadh":"Asia/Riyadh"}]}, "SN":{"n":"Senegal","z":[{"(GMT+00:00) Dakar":"Africa/Dakar"}]}, "RS":{"n":"Serbia","z":[{"(GMT+01:00) Central European Time - Belgrade":"Europe/Belgrade"}]}, "SC":{"n":"Seychelles","z":[{"(GMT+04:00) Mahe":"Indian/Mahe"}]}, "SL":{"n":"Sierra Leone","z":[{"(GMT+00:00) Freetown":"Africa/Freetown"}]}, "SG":{"n":"Singapore","z":[{"(GMT+08:00) Singapore":"Asia/Singapore"}]}, "SK":{"n":"Slovakia","z":[{"(GMT+01:00) Central European Time - Prague":"Europe/Bratislava"}]}, "SI":{"n":"Slovenia","z":[{"(GMT+01:00) Central European Time - Belgrade":"Europe/Ljubljana"}]}, "SB":{"n":"Solomon Islands","z":[{"(GMT+11:00) Guadalcanal":"Pacific/Guadalcanal"}]}, "SO":{"n":"Somalia","z":[{"(GMT+03:00) Mogadishu":"Africa/Mogadishu"}]}, "ZA":{"n":"South Africa","z":[{"(GMT+02:00) Johannesburg":"Africa/Johannesburg"}]}, "GS":{"n":"South Georgia and the South Sandwich Islands","z":[{"(GMT-02:00) South Georgia":"Atlantic/South_Georgia"}]}, "KR":{"n":"South Korea","z":[{"(GMT+09:00) Seoul":"Asia/Seoul"}]}, "ES":{"n":"Spain","z":[{"(GMT+00:00) Canary Islands":"Atlantic/Canary"},{"(GMT+01:00) Ceuta":"Africa/Ceuta"},{"(GMT+01:00) Madrid":"Europe/Madrid"}]}, "LK":{"n":"Sri Lanka","z":[{"(GMT+05:30) Colombo":"Asia/Colombo"}]}, "SD":{"n":"Sudan","z":[{"(GMT+03:00) Khartoum":"Africa/Khartoum"}]}, "SR":{"n":"Suriname","z":[{"(GMT-03:00) Paramaribo":"America/Paramaribo"}]}, "SJ":{"n":"Svalbard and Jan Mayen","z":[{"(GMT+01:00) Oslo":"Arctic/Longyearbyen"}]}, "SZ":{"n":"Swaziland","z":[{"(GMT+02:00) Mbabane":"Africa/Mbabane"}]}, "SE":{"n":"Sweden","z":[{"(GMT+01:00) Stockholm":"Europe/Stockholm"}]}, "CH":{"n":"Switzerland","z":[{"(GMT+01:00) Zurich":"Europe/Zurich"}]}, "SY":{"n":"Syria","z":[{"(GMT+02:00) Damascus":"Asia/Damascus"}]}, "TW":{"n":"Taiwan","z":[{"(GMT+08:00) Taipei":"Asia/Taipei"}]}, "TJ":{"n":"Tajikistan","z":[{"(GMT+05:00) Dushanbe":"Asia/Dushanbe"}]}, "TZ":{"n":"Tanzania","z":[{"(GMT+03:00) Dar es Salaam":"Africa/Dar_es_Salaam"}]}, "TH":{"n":"Thailand","z":[{"(GMT+07:00) Bangkok":"Asia/Bangkok"}]}, "TL":{"n":"Timor-Leste","z":[{"(GMT+09:00) Dili":"Asia/Dili"}]}, "TG":{"n":"Togo","z":[{"(GMT+00:00) Lome":"Africa/Lome"}]}, "TK":{"n":"Tokelau","z":[{"(GMT+14:00) Fakaofo":"Pacific/Fakaofo"}]}, "TO":{"n":"Tonga","z":[{"(GMT+13:00) Tongatapu":"Pacific/Tongatapu"}]}, "TT":{"n":"Trinidad and Tobago","z":[{"(GMT-04:00) Port of Spain":"America/Port_of_Spain"}]}, "TN":{"n":"Tunisia","z":[{"(GMT+01:00) Tunis":"Africa/Tunis"}]}, "TR":{"n":"Turkey","z":[{"(GMT+02:00) Istanbul":"Europe/Istanbul"}]}, "TM":{"n":"Turkmenistan","z":[{"(GMT+05:00) Ashgabat":"Asia/Ashgabat"}]}, "TC":{"n":"Turks and Caicos Islands","z":[{"(GMT-05:00) Grand Turk":"America/Grand_Turk"}]}, "TV":{"n":"Tuvalu","z":[{"(GMT+12:00) Funafuti":"Pacific/Funafuti"}]}, "UM":{"n":"U.S. Minor Outlying Islands","z":[{"(GMT-11:00) Midway":"Pacific/Midway"},{"(GMT-10:00) Johnston":"Pacific/Johnston"},{"(GMT+12:00) Wake":"Pacific/Wake"}]}, "VI":{"n":"U.S. Virgin Islands","z":[{"(GMT-04:00) St. Thomas":"America/St_Thomas"}]}, "UG":{"n":"Uganda","z":[{"(GMT+03:00) Kampala":"Africa/Kampala"}]}, "UA":{"n":"Ukraine","z":[{"(GMT+02:00) Kiev":"Europe/Kiev"}]}, "AE":{"n":"United Arab Emirates","z":[{"(GMT+04:00) Dubai":"Asia/Dubai"}]}, "GB":{"n":"United Kingdom","z":[{"(GMT+00:00) GMT (no daylight saving)":"Etc/GMT"},{"(GMT+00:00) London":"Europe/London"}]}, "US":{"n":"United States","z":[{"(GMT-10:00) Hawaii Time":"Pacific/Honolulu"},{"(GMT-09:00) Alaska Time":"America/Anchorage"},{"(GMT-07:00) Mountain Time - Arizona":"America/Phoenix"},{"(GMT-08:00) Pacific Time":"America/Los_Angeles"},{"(GMT-07:00) Mountain Time":"America/Denver"},{"(GMT-06:00) Central Time":"America/Chicago"},{"(GMT-05:00) Eastern Time":"America/New_York"}]}, "UY":{"n":"Uruguay","z":[{"(GMT-03:00) Montevideo":"America/Montevideo"}]}, "UZ":{"n":"Uzbekistan","z":[{"(GMT+05:00) Tashkent":"Asia/Tashkent"}]}, "VU":{"n":"Vanuatu","z":[{"(GMT+11:00) Efate":"Pacific/Efate"}]}, "VA":{"n":"Vatican City","z":[{"(GMT+01:00) Rome":"Europe/Vatican"}]}, "VE":{"n":"Venezuela","z":[{"(GMT-04:30) Caracas":"America/Caracas"}]}, "VN":{"n":"Vietnam","z":[{"(GMT+07:00) Hanoi":"Asia/Saigon"}]}, "WF":{"n":"Wallis and Futuna","z":[{"(GMT+12:00) Wallis":"Pacific/Wallis"}]}, "EH":{"n":"Western Sahara","z":[{"(GMT+00:00) El Aaiun":"Africa/El_Aaiun"}]}, "YE":{"n":"Yemen","z":[{"(GMT+03:00) Aden":"Asia/Aden"}]}, "ZM":{"n":"Zambia","z":[{"(GMT+02:00) Lusaka":"Africa/Lusaka"}]}, "ZW":{"n":"Zimbabwe","z":[{"(GMT+02:00) Harare":"Africa/Harare"}]} };
     },
     renderCommon:function () {
-        app.enableAppTooltip();
         var appTypes = {};
         for(var i in app.appTypes){
             appTypes[i] = jQuery.i18n.map["management-applications.types."+i] || i;
@@ -2171,17 +2187,17 @@ window.ManageAppsView = countlyView.extend({
         $("#clear-app-data").click(function () {
             if ($(this).hasClass("active")){
                 $(this).removeClass("active");
-                $(".options").slideUp();
+                $(".options").hide();
             }
             else{
-                $(this).addClass("active")
-                $(".options").slideDown();
+                $(this).addClass("active");
+                $(".options").show();
             }
         });
         
         $("#clear-data.options li").click(function(){
             $("#clear-app-data").removeClass('active');
-            $(".options").slideUp();
+            $(".options").hide();
             var period = $(this).attr("id").replace("clear-", "");
             CountlyHelpers.confirm(jQuery.i18n.map["management-applications.clear-confirm"], "red", function (result) {
                 if (!result) {
@@ -2963,8 +2979,8 @@ window.ManageUsersView = countlyView.extend({
             activeRow = $(this).parent(".row");
             activeRow.addClass("selected");
             var buttonPos = $(this).offset();
-            buttonPos.top += 26;
-            buttonPos.left -= 18;
+            buttonPos.top = Math.floor(buttonPos.top) + 25;
+            buttonPos.left = Math.floor(buttonPos.left) - 18;
             
             if ($("#listof-apps").is(":visible") && JSON.stringify(buttonPos) === JSON.stringify(previousSelectAppPos)) {
                 $("#listof-apps").hide();
@@ -3002,6 +3018,7 @@ window.ManageUsersView = countlyView.extend({
             }
             
             $("#listof-apps").show().offset(buttonPos);
+            $("#listof-apps").find(".search input").focus();
         });
         
         $(".save-user").off("click").on("click", function() {
@@ -3361,21 +3378,8 @@ window.EventsView = countlyView.extend({
 		$("#event-nav .event-container").mouseenter(function(){
 			var elem = $(this);
 			var name = elem.find(".name");
-			if(name[0].scrollWidth >  name.innerWidth()){
-				$("#event-tooltip").html(elem.clone());
-				$("#event-tooltip .event-container").removeClass("active");
-				$("#event-tooltip").css(elem.offset());
-				$("#event-tooltip .name").css({"width":"auto"});
-				$("#event-tooltip").show();
-				$("#event-tooltip").bind("click", function(){
-					elem.trigger("click");
-				});
-			}
-		});
-		$("#event-tooltip").mouseleave(function(){
-			if($("#event-tooltip").is(':visible')){
-				$("#event-tooltip").hide();
-				$("#event-tooltip").unbind("click");
+			if(name[0].scrollWidth > name.innerWidth()){
+                elem.attr("title", name.text());
 			}
 		});
 
@@ -3433,11 +3437,10 @@ window.EventsView = countlyView.extend({
         for(var i in this.showOnGraph){
             if(this.showOnGraph[i]){
                 $(".big-numbers."+i).addClass("selected");
-                $(".big-numbers."+i+" .check").removeClass("fa-square-o").addClass("fa-check-square-o");
                 use.push(cnt);
             }
             else{
-                $(".big-numbers."+i+" .check").removeClass("fa-check-square-o").addClass("fa-square-o");
+
             }
             cnt++;
         }
@@ -3777,6 +3780,7 @@ window.EventsView = countlyView.extend({
             }
 
             app.localize();
+            $('.nav-search').find("input").trigger("input");
         });
     }
 });
@@ -4230,13 +4234,12 @@ var AppRouter = Backbone.Router.extend({
                     });
                 }
             });
+
             $("#sort-app-button").click(function () {
                 $(".app-container.app-navigate .drag").fadeToggle();
             });
 
             $(".app-navigate").live("click", function () {
-                self.closeAppTooltip();
-                self.disableAppTooltip();
                 var appKey = $(this).data("key"),
                     appId = $(this).data("id"),
                     appName = $(this).find(".name").text(),
@@ -4263,27 +4266,15 @@ var AppRouter = Backbone.Router.extend({
             });
             
             $(document).on("mouseenter", ".app-container", function(){
-                if(!$(this).find(".drag").is(":visible") && self.appTooltip){
+                if(!$(this).find(".drag").is(":visible")){
                     var elem = $(this);
                     var name = elem.find(".name");
-                    if(name[0].scrollWidth >  name.innerWidth()){
-                        if(elem.parents("#app-nav").length)
-                            $("#app-tooltip").css("margin-left", "21px");
-                        else
-                            $("#app-tooltip").css({"margin-left":"3px", "padding-left":"1px"});
-                        $("#app-tooltip").html(elem.clone());
-                        $("#app-tooltip .app-container").removeClass("active");
-                        $("#app-tooltip").css(elem.offset());
-                        $("#app-tooltip .name").css({"width":"auto"});
-                        $("#app-tooltip").show();
-                        $("#app-tooltip").bind("click", function(){
-                            elem.trigger("click");
-                            elem.addClass("active");
-                        });
+
+                    if(name[0].scrollWidth >  name.innerWidth()) {
+                        elem.attr("title", name.text());
                     }
                 }
             });
-            $("#app-tooltip").mouseleave(function(){self.closeAppTooltip()});
 
             $("#sidebar-events").click(function (e) {
                 $.when(countlyEvent.refreshEvents()).then(function () {
@@ -4328,7 +4319,6 @@ var AppRouter = Backbone.Router.extend({
                     }
 
                     if ($("#app-nav").offset().left == 201) {
-                        self.closeAppTooltip();
                         $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack'});
                         $("#sidebar-app-select").removeClass("active");
                     }
@@ -4420,9 +4410,9 @@ var AppRouter = Backbone.Router.extend({
                 var left = $("#app-nav").offset().left;
 
                 if (left == 201) {
-                    $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack', complete:function(){self.disableAppTooltip();}});
+                    $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack'});
                 } else {
-                    $("#app-nav").animate({left:'201px'}, {duration:500, easing:'easeOutBack', complete:function(){self.enableAppTooltip();}});
+                    $("#app-nav").animate({left:'201px'}, {duration:500, easing:'easeOutBack'});
                 }
 
             });
@@ -5089,7 +5079,7 @@ var AppRouter = Backbone.Router.extend({
 				"sInfo": jQuery.i18n.map["common.showing"],
 				"sInfoFiltered": jQuery.i18n.map["common.filtered"],
 				"sSearch": jQuery.i18n.map["common.search"],
-                "sLengthMenu": jQuery.i18n.map["common.show-items"]+":&nbsp;<input type='number' id='dataTables_length_input'/>"
+                "sLengthMenu": jQuery.i18n.map["common.show-items"]+"<input type='number' id='dataTables_length_input'/>"
 			},
             "oTableTools": {
                 "sSwfPath": countlyGlobal["cdn"]+"javascripts/dom/dataTables/swf/copy_csv_xls.swf",
@@ -5268,18 +5258,6 @@ var AppRouter = Backbone.Router.extend({
            both.off('mouseenter mouseleave');
         }
     },
-    enableAppTooltip: function(){
-        this.appTooltip = true;
-    },
-    disableAppTooltip: function(){
-        this.appTooltip = false;
-    },
-    closeAppTooltip: function(){
-        if($("#app-tooltip").is(':visible')){
-            $("#app-tooltip").hide();
-            $("#app-tooltip").unbind("click");
-        }
-    },
     addAppType:function(name, view){
         this.appTypes[name] = new view();
         var menu = $("#default-type").clone();
@@ -5429,6 +5407,7 @@ var AppRouter = Backbone.Router.extend({
                     dateTo.datepicker("option", "minDate", moment(self.dateFromSelected).toDate());
                 }
 
+                setSelectedDate();
                 e.stopPropagation();
             });
 
@@ -5450,6 +5429,8 @@ var AppRouter = Backbone.Router.extend({
 
                     dateFrom.datepicker("option", "maxDate", fromLimit);
                     self.dateToSelected = date.getTime();
+
+                    setSelectedDate();
                 }
             });
 
@@ -5471,8 +5452,17 @@ var AppRouter = Backbone.Router.extend({
 
                     dateTo.datepicker("option", "minDate", toLimit);
                     self.dateFromSelected = date.getTime();
+
+                    setSelectedDate();
                 }
             });
+
+            function setSelectedDate() {
+                var from = moment(dateFrom.datepicker("getDate")).format("D MMM, YYYY"),
+                    to = moment(dateTo.datepicker("getDate")).format("D MMM, YYYY");
+
+                $("#selected-date").text(from + " - " + to);
+            }
 
             $.datepicker.setDefaults($.datepicker.regional[""]);
             $("#date-to").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
@@ -5498,13 +5488,6 @@ var AppRouter = Backbone.Router.extend({
                 disableFadeOut:true
             });
 
-            $('.widget-header').noisy({
-                intensity:0.9,
-                size:50,
-                opacity:0.04,
-                monochrome:true
-            });
-
             $(".checkbox").on('click', function () {
                 $(this).toggleClass("checked");
             });
@@ -5519,6 +5502,46 @@ var AppRouter = Backbone.Router.extend({
                 if ($(this).next().hasClass("sidebar-submenu") && $(this).find(".ion-chevron-right").length == 0) {
                     $(this).append("<span class='ion-chevron-right'></span>");
                 }
+            });
+
+            $('.nav-search').on('input', "input", function(e){
+                var searchText = new RegExp($(this).val().toLowerCase()),
+                    searchInside = $(this).parent().next().find(".searchable");
+
+                searchInside.filter(function () {
+                    return !(searchText.test($(this).text().toLowerCase()));
+                }).css('display','none');
+
+                searchInside.filter(function () {
+                    return searchText.test($(this).text().toLowerCase());
+                }).css('display','block');
+            });
+
+            $(document).on('input', "#listof-apps .search input", function(e) {
+                var searchText = new RegExp($(this).val().toLowerCase()),
+                    searchInside = $(this).parent().next().find(".searchable");
+
+                searchInside.filter(function () {
+                    return !(searchText.test($(this).text().toLowerCase()));
+                }).css('display','none');
+
+                searchInside.filter(function () {
+                    return searchText.test($(this).text().toLowerCase());
+                }).css('display','block');
+            });
+
+            $(document).on('mouseenter', ".bar-inner", function(e) {
+                var number = $(this).parent().next();
+
+                number.text($(this).data("item"));
+                number.css({"color":$(this).css("background-color")});
+            });
+
+            $(document).on('mouseleave', ".bar-inner", function(e) {
+                var number = $(this).parent().next();
+
+                number.text(number.data("item"));
+                number.css({"color":$(this).parent().find(".bar-inner:first-child").css("background-color")});
             });
         });
     }

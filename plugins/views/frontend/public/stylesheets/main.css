@@ -5,7 +5,7 @@
 
 .views-widget .widget-content .big-numbers .inner{height: 30px;}
 .views-widget .widget-footer{border-radius: 0;}
-.views-widget #empty-graph {position: absolute; text-align: center; font-size: 35px; width:100%; top:50%; margin-top: -20px; display: none;}
+.views-widget #empty-graph { position: absolute; text-align: center; font-size: 15px; width:100%; top:50%; margin-top: -20px; display: none; height: 20px; line-height: 20px; text-shadow: none; color: #B3B3B3; }
 .views-widget div.color{ width: 10px; height: 20px; float: right;}
 
 .seven-column { width:14%; }
@@ -20,6 +20,10 @@
 #action-map-tools span {position: relative; top:-7px; font: 16px Ubuntu,Helvetica,sans-serif; line-height: 111%; color: #333;}
 #action-map-tools .cly-button-dark{float:none;}
 #action-map-type {margin-right: 30px;}
-#view_loaded_url {width:80%; height: 20px;}
-.views-table div.color{ width: 10px; height: 20px; float: left; margin-right: 5px; margin-left:-5px;}
+#view_loaded_url {width:80%; height: 22px;}
+#view_reload_url { float:none; }
+.views-table div.color{ width: 10px; height: 10px; float: left; margin: 1px 10px 0 0; }
+.views-table tbody tr { cursor: pointer; }
 .btn-view-map {display: block;}
+
+.widget-header .title.small + #drill-down-for-view { margin-top:-3px !important; font-size: 10px !important; padding: 3px 5px 2px 5px !important; }

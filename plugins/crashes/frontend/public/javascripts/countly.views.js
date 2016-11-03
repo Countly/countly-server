@@ -115,6 +115,7 @@ window.CrashesView = countlyView.extend({
             });
         }
 		var self = this;
+
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
 			$("#"+this.filter).addClass("selected").addClass("active");
@@ -143,42 +144,121 @@ window.CrashesView = countlyView.extend({
                 },
 				"fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
 					$(nRow).attr("id", aData._id);
-					if(aData.is_resolved)
+
+                    if(aData.is_resolved)
                         $(nRow).addClass("resolvedcrash");
 					else if(aData.is_new)
 						$(nRow).addClass("newcrash");
                     else if(aData.is_renewed)
                         $(nRow).addClass("renewedcrash");
+
+                    $(nRow).find(".tag").tipsy({gravity: 'w'});
 				},
                 "aoColumns": [
-					{ "mData": function(row, type){if(type == "display"){if(row.nonfatal) return jQuery.i18n.map["crashes.nonfatal"]; else return jQuery.i18n.map["crashes.fatal"];}else return (row.nonfatal) ? true : false;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.fatal"], "sWidth":"80px"} ,
-					{ "mData": function(row, type){if(type == "display"){if(row.session){return ((Math.round(row.session.total/row.session.count)*100)/100)+" "+jQuery.i18n.map["crashes.sessions"];} else {return jQuery.i18n.map["crashes.first-crash"];}}else{if(row.session)return row.session.total/row.session.count; else return 0;}}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.frequency"], "sWidth":"80px" },
-					{ "mData": "reports", "sType":"numeric", "sTitle": jQuery.i18n.map["crashes.reports"], "sWidth":"80px" },
-					{ "mData": function(row, type){row.users = row.users || 1; if(type == "display") return row.users+" ("+((row.users/crashData.users.total)*100).toFixed(2)+"%)"; else return row.users}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.users"], "sWidth":"60px" },
-                    { "mData": function(row, type){return (row.not_os_specific) ? jQuery.i18n.map["crashes.varies"] : row.os;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.platform"], "sWidth":"70px" },
-                    { "mData": function(row, type){return "<div class='truncated'>"+row.name+"</div>";}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.error"] },
-                    { "mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.lastTs); else return row.lastTs;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.last_time"], "sWidth":"100px" },
-                    { "mData": function(row, type){return row.latest_version.replace(/:/g, '.');}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.latest_app"], "sWidth":"100px" },
-                    { "mData": function(row, type){if(type == "display"){ if(row.is_resolved) return "<span style='color:green;'>"+jQuery.i18n.map["crashes.resolved"]+" ("+row.latest_version.replace(/:/g, '.')+")</span>"; else return "<span style='color:red;'>"+jQuery.i18n.map["crashes.unresolved"]+"</span>";}else return row.is_resolved;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.resolved"], "sWidth":"70px" }
+                    {
+                        "mData": function(row, type) {
+                            var tagDivs = "";
+
+                            // This separator is not visible in the UI but | is visible in exported data
+                            var separator = "<span class='separator'>|</span>";
+
+                            if (row.is_resolved) {
+                                tagDivs += separator + "<div class='tag'>" + "<span style='color:green;'>" + jQuery.i18n.map["crashes.resolved"] + " (" + row.latest_version.replace(/:/g, '.') + ")</span>" + "</div>";
+                            } else {
+                                tagDivs += separator + "<div class='tag'>" + "<span style='color:red;'>" + jQuery.i18n.map["crashes.unresolved"] + "</span>" + "</div>";
+                            }
+
+                            if (row.nonfatal) {
+                                tagDivs += separator + "<div class='tag'>" + jQuery.i18n.map["crashes.nonfatal"] + "</div>";
+                            } else {
+                                tagDivs += separator + "<div class='tag'>" + jQuery.i18n.map["crashes.fatal"] + "</div>";
+                            }
+
+                            if (row.session) {
+                                tagDivs += separator + "<div class='tag'>" + ((Math.round(row.session.total / row.session.count) * 100) / 100) + " " + jQuery.i18n.map["crashes.sessions"] + "</div>";
+                            } else {
+                                tagDivs += separator + "<div class='tag'>" + jQuery.i18n.map["crashes.first-crash"] + "</div>";
+                            }
+
+                            tagDivs += "<div class='tag not-viewed' title='" + jQuery.i18n.map["crashes.not-viewed"] + "'><i class='fa fa-eye-slash'></i></div>";
+                            tagDivs += "<div class='tag re-occurred' title='" + jQuery.i18n.map["crashes.re-occurred"] + "'><i class='fa fa-refresh'></i></div>";
+
+                            return "<div class='truncated'>" + row.name + "</div>" + tagDivs;
+                        },
+                        "sType": "string",
+                        "sTitle": jQuery.i18n.map["crashes.error"],
+                        "bSortable": false
+                    },
+                    {
+                        "mData": function(row, type) {
+                            return (row.not_os_specific) ? jQuery.i18n.map["crashes.varies"] : row.os;
+                        },
+                        "sType": "string",
+                        "sTitle": jQuery.i18n.map["crashes.platform"],
+                        "sWidth": "90px"
+                    },
+                    {
+                        "mData": "reports",
+                        "sType": "numeric",
+                        "sTitle": jQuery.i18n.map["crashes.reports"],
+                        "sWidth": "90px"
+                    },
+                    {
+                        "mData": function(row, type) {
+                            row.users = row.users || 1;
+                            if (type == "display") {
+                                return row.users + " (" + ((row.users / crashData.users.total) * 100).toFixed(2) + "%)";
+                            } else {
+                                return row.users;
+                            }
+                        },
+                        "sType": "string",
+                        "sTitle": jQuery.i18n.map["crashes.users"],
+                        "sWidth": "90px"
+                    },
+                    {
+                        "mData": function(row, type) {
+                            if (type == "display") {
+                                return countlyCommon.formatTimeAgo(row.lastTs);
+                            } else {
+                                return row.lastTs;
+                            }
+                        },
+                        "sType": "string",
+                        "sTitle": jQuery.i18n.map["crashes.last_time"],
+                        "sWidth": "150px"
+                    },
+                    {
+                        "mData": function(row, type) {
+                            return row.latest_version.replace(/:/g, '.');
+                        },
+                        "sType": "string",
+                        "sTitle": jQuery.i18n.map["crashes.latest_app"],
+                        "sWidth": "90px"
+                    }
                 ]
             }));
+
 			this.dtable.stickyTableHeaders();
-			this.dtable.fnSort( [ [6,'desc'] ] );
+			this.dtable.fnSort( [ [2,'desc'] ] );
+
             //dataTables_filter
             $('.dataTables_filter input').unbind();
             var timeout = null,
                 that = this;
+
             $('.dataTables_filter input').bind('keyup', function(e) {
                 self.showLoader = true;
                 $this = this;
-                if(timeout)
-                {
+
+                if (timeout) {
                     clearTimeout(timeout);
                     timeout = null;
                 }
+
                 timeout = setTimeout(function(){
                     that.dtable.fnFilter($this.value);   
-                }, 1000);
+                }, 500);
             });     
             
             var loader = $(this.el).find("#loader");
@@ -196,13 +276,15 @@ window.CrashesView = countlyView.extend({
             setTimeout(function(){$(".dataTables_filter input").attr("placeholder",jQuery.i18n.map["crashes.search"]);},1000);
             
             $("#crash-"+this.curMetric).parents(".big-numbers").addClass("active");
+
             $(".widget-content .inner").click(function () {
 				$(".big-numbers").removeClass("active");
 				$(".big-numbers .select").removeClass("selected");
 				$(this).parent(".big-numbers").addClass("active");
 				$(this).find('.select').addClass("selected");
 			});
-			$(".big-numbers .inner").click(function () {
+
+            $(".big-numbers .inner").click(function () {
 				var elID = $(this).find('.select').attr("id");
                 if(elID){
                     if (self.curMetric == elID.replace("crash-", "")) {
@@ -213,21 +295,8 @@ window.CrashesView = countlyView.extend({
                     self.switchMetric();
                 }
 			});
-            $(".bar-inner").on({
-                mouseenter:function () {
-                    var number = $(this).parent().next();
-    
-                    number.text($(this).data("item"));
-                    number.css({"color":$(this).css("background-color")});
-                },
-                mouseleave:function () {
-                    var number = $(this).parent().next();
-    
-                    number.text(number.data("item"));
-                    number.css({"color":$(this).parent().find(".bar-inner:first-child").css("background-color")});
-                }
-            });
-			$('.crashes tbody').on("click", "tr", function (){
+
+            $('.crashes tbody').on("click", "tr", function (){
 				var id = $(this).attr("id");
 				if(id)
 					window.location.hash = window.location.hash.toString()+"/"+id;
@@ -266,20 +335,7 @@ window.CrashesView = countlyView.extend({
                     self.curMetric = elID.replace("crash-", "");
                     self.switchMetric();
                 });
-                $(".bar-inner").on({
-                    mouseenter:function () {
-                        var number = $(this).parent().next();
-        
-                        number.text($(this).data("item"));
-                        number.css({"color":$(this).css("background-color")});
-                    },
-                    mouseleave:function () {
-                        var number = $(this).parent().next();
-        
-                        number.text(number.data("item"));
-                        number.css({"color":$(this).parent().find(".bar-inner:first-child").css("background-color")});
-                    }
-                });
+
                 self.dtable.fnDraw(false);
                 var chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric]);
                 countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
@@ -296,7 +352,7 @@ window.CrashesView = countlyView.extend({
     switchMetric:function(){
 		var chartData = countlyCrashes.getChartData(this.curMetric, this.metrics[this.curMetric]);
 		countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
-	},
+	}
 });
 
 window.CrashgroupView = countlyView.extend({
@@ -576,13 +632,13 @@ window.CrashgroupView = countlyView.extend({
 			});
             
             $(".btn-share-crash").click(function(){
-				if ($(this).hasClass("active")){
+				if ($(this).hasClass("active")) {
                     $(this).removeClass("active");
-                    $("#crash-share-list").slideUp();
+                    $("#crash-share-list").hide();
                 }
                 else{
-                    $(this).addClass("active")
-                    $("#crash-share-list").slideDown();
+                    $(this).addClass("active");
+                    $("#crash-share-list").show();
                 }
 			});
             
@@ -783,13 +839,13 @@ window.CrashgroupView = countlyView.extend({
 			str += '<div class="datatablesubrow">'+
 				'<table style="width: 100%;">'+
 						'<tr>'+
-							'<td class="text-left">'+jQuery.i18n.map["crashes.app_version"]+':</td>'+
-							'<td class="text-left">'+jQuery.i18n.map["crashes.device"]+':</td>'+
-							'<td class="text-left">'+jQuery.i18n.map["crashes.state"]+':</td>';
+							'<td class="text-left">'+jQuery.i18n.map["crashes.app_version"]+'</td>'+
+							'<td class="text-left">'+jQuery.i18n.map["crashes.device"]+'</td>'+
+							'<td class="text-left">'+jQuery.i18n.map["crashes.state"]+'</td>';
                             if(data.custom)
-                                str += '<td class="text-left">'+jQuery.i18n.map["crashes.custom"]+':</td>';
+                                str += '<td class="text-left">'+jQuery.i18n.map["crashes.custom"]+'</td>';
                             if(data.logs)
-                                str += '<td class="text-left">'+jQuery.i18n.map["crashes.logs"]+':</td>';
+                                str += '<td class="text-left">'+jQuery.i18n.map["crashes.logs"]+'</td>';
 						str += '</tr>'+
 						'<tr>'+
 							'<td class="text-right">'+data.app_version.replace(/:/g, '.')+'</td>'+
@@ -821,9 +877,9 @@ window.CrashgroupView = countlyView.extend({
                                     str += jQuery.i18n.map["crashes.after"]+' '+data.session+' '+jQuery.i18n.map["crashes.sessions"]+'<br/>';
                                 else
                                     str += jQuery.i18n.map["crashes.frequency"]+': '+jQuery.i18n.map["crashes.first-crash"]+'<br/>';
-                                str += jQuery.i18n.map["crashes.online"]+":"+((data.online)? "yes" : "no")+"<br/>";
-                                str += jQuery.i18n.map["crashes.background"]+":"+((data.background)? "yes" : "no")+"<br/>";
-                                str += jQuery.i18n.map["crashes.muted"]+":"+((data.muted)? "yes" : "no")+"<br/>";
+                                str += jQuery.i18n.map["crashes.online"]+": "+((data.online)? "yes" : "no")+"<br/>";
+                                str += jQuery.i18n.map["crashes.background"]+": "+((data.background)? "yes" : "no")+"<br/>";
+                                str += jQuery.i18n.map["crashes.muted"]+": "+((data.muted)? "yes" : "no")+"<br/>";
                             str += '</td>';
                             if(data.custom){
                                 str += '<td class="text-left">';

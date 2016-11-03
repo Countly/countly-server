@@ -2,3 +2,4 @@
 
 .systemlogs {margin-top: -16px;}
 .systemlogs .dataTable-top {border-radius: 0;}
+.systemlogs table td { font-family: Ubuntu; }

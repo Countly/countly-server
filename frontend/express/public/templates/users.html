@@ -1,12 +1,9 @@
 <div class="widget">
 	<div class="widget-header">
 		<div class="left">
-            <div class="logo font-logo">
-                <i class="fa fa-users"></i>
-            </div>
 			<div class="title">{{page-title}}</div>
 		</div>
-        <div class="right">
+        <div class="right btn-header">
 			<div class="icon-button green" id="add-user-mgmt" data-localize="management-users.create-new-user"></div>
 		</div>
 	</div>
@@ -44,6 +41,7 @@
 	<div class="row admin-apps help-zone-vs" data-help-localize="help.manage-users.admin-of">
 		<div class="title" data-localize="management-users.admin-of"></div>
 		<div class="select-apps">
+            <i class="fa fa-plus-circle"></i>
 			<input type="hidden" value="" class="app-list"/>
 		</div>
 		<div class="detail user-admin-list">
@@ -54,6 +52,7 @@
 	<div class="row user-apps help-zone-vs" data-help-localize="help.manage-users.user-of">
 		<div class="title" data-localize="management-users.user-of"></div>
 		<div class="select-apps">
+            <i class="fa fa-plus-circle"></i>
 			<input type="hidden" value="" class="app-list"/>
 		</div>
 		<div class="detail user-admin-list">
@@ -68,10 +67,13 @@
 </div>
 <table id="user-table" cellspacing="0" class="d-table"></table>
 <div id="listof-apps">
-	<div class="tip"></div>
+    <div class="search">
+        <i class="fa fa-search"></i>
+        <input type="text">
+    </div>
 	<div class="scrollable">
 		{{#eachOfObjectValue apps}}
-		<div class="app">
+		<div class="app searchable">
 			<div class="image" style="background-image: url('/appimages/{{this._id}}.png');"></div>
 			<div class="name">{{this.name}}</div>
 			<input class="app_id" type="hidden" value="{{this._id}}"/>
@@ -79,7 +81,7 @@
 		{{/eachOfObjectValue}}
 	</div>
 	<div class="button-container">
-		<a class="icon-button dark" id="done" data-localize="common.done"></a>
+		<a class="icon-button green" id="done" data-localize="common.done"></a>
 		<a class="icon-button dark" id="select-all" data-localize="common.select-all"></a>
 		<a class="icon-button dark" id="deselect-all" data-localize="common.deselect-all"></a>
 	</div>

@@ -1,0 +1,3 @@
+#graph-select-container { overflow: hidden; position: relative; padding-bottom: 20px; }
+.star-icon { color: #fed52d; font-size: 1.5em; }
+#big-numbers-container.star-selection .inner { border-left: none; border-top: none; text-align: center; padding-top: 30px; background-color: #FFF; height: 30px; }

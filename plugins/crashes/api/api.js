@@ -611,7 +611,8 @@ plugins.setConfigs("crashes", {
 					});
                 }
                 else{
-                    var columns = ["nonfatal", "session", "reports", "users", "os", "name", "lastTs", "latest_version", "is_resolved"];
+                    //var columns = ["nonfatal", "session", "reports", "users", "os", "name", "lastTs", "latest_version", "is_resolved"];
+                    var columns = ["name", "os", "reports", "users", "lastTs", "latest_version"];
                     var filter = {};
                     if(params.qstring.query && params.qstring.query != ""){
                         try{

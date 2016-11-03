@@ -1,109 +1,63 @@
-#dbviewer{ overflow: hidden; border-bottom-left-radius: 7px; border-bottom-right-radius: 7px; font-family:Ubuntu,Helvetica,sans-serif;}
-#dbviewer .clear {clear: both;}
-#dbviewer .left-side{ width: 300px; float: left; background-color: #fff; border-right: 1px solid #ccc; padding-bottom: 1000px; margin-bottom: -1000px; overflow: hidden;}
-#dbviewer .right-side{ margin-left: 300px; padding: 10px 25px;}
+#dbviewer { overflow: hidden; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; }
+#dbviewer .clear { clear: both;}
+#dbviewer .left-side { width: 300px; float: left; background-color: #fff; border-right: 1px solid #ddd; padding-bottom: 1000px; margin-bottom: -1000px; overflow: hidden;}
+#dbviewer .left-side .ui-widget-content { border:none; }
 #dbviewer .left-side ul {list-style: none; padding:0; margin:0; font-size: 13px;}
-#dbviewer .left-side ul li{padding-top: 3px; padding-bottom: 3px;}
-#dbviewer .left-side ul li:hover{background-color: #eee;}
+#dbviewer .left-side ul li {padding-top: 3px; padding-bottom: 3px;}
+#dbviewer .left-side ul li:hover {background-color: #eee;}
+#dbviewer .left-side ul li a { font-size: 10px; }
 #dbviewer .left-side ul li a.selected {font-weight: bold;}
 #dbviewer .left-side .ui-accordion .ui-accordion-content {padding: 10px;}
-#dbviewer .left-side .ui-state-active{
-border: none;
-border-left: 1px solid #F8F8F8;
-border-top: 1px solid #F8F8F8;
-color: #424242;
-font-size: 11px;
-padding: 5px 4px;
-background-color: #EEEEEE;
-text-align: center;
-background-image: linear-gradient(top, #EEEEEE 20%, #DEDEDE 100%);
-background-image: linear-gradient(to bottom, #EEEEEE 20%, #DEDEDE 100%);
-text-shadow: 0 1px #F2F2F2;
-border-radius: 0;}
+#dbviewer .left-side .ui-state-active,
+#dbviewer .left-side .ui-accordion .ui-accordion-header { border: none; border-bottom: 1px solid #d0d0d0; color: #424242; font-size: 11px; padding: 10px 4px; background-color: #f7f7f7; text-align: center; background-image: none; border-radius: 0; }
+
+#dbviewer .right-side { margin-left: 300px; padding: 10px 25px; border-left: 1px solid #ddd; }
+#dbviewer .right-side > p { font-size:13px; color:#464646; }
+#dbviewer .right-side p.breadcrumbs { display: inline-block; margin-bottom: 20px; font-size: 15px; }
+#dbviewer .right-side p.pagination { margin: 25px 0; text-align: center; }
+#dbviewer .right-side p.pagination a:last-of-type { margin-right: 20px; }
+#dbviewer .right-side select { height: 27px; position: relative; }
+#dbviewer .right-side .jh-type-string a[href] { color: #2FA732; }
+
 #dbviewer-collections {width: 100%; border-spacing: 2px; border: 1px solid #ccc; border-collapse: collapse;}
 #dbviewer-collections th {border: 1px solid #ccc;}
-#dbviewer-collections td {background-color: #f5f5f5; border: 1px solid #ccc; overflow: auto; display: block; height: 150px; white-space: pre-wrap;}
-.pagination a, #collection-filter{border: 1px solid #ccc; background-color: #f5f5f5; padding: 4px; cursor: pointer;}
-.pagination a.current{font-style: italic; color: #839B00;}
-.breadcrumbs{font-weight: bold; color: #666;}
-.breadcrumbs a{font-style: italic; color: #5286BC;}
-.collection-filter{width: 100%; min-height: 50px;}
-#dbviewer .right-side select{height: 27px; position: relative; top:-3px;}
+#dbviewer-collections td { background-color: #f9f9f9; font-size: 12px; overflow: auto; display: block; height: 150px; white-space: pre-wrap; padding:15px; }
+.jh-key.jh-object-key p { margin: 0; padding:10px; }
 
-.jh-root, .jh-type-object, .jh-type-array, .jh-key, .jh-value, .jh-root tr{
- -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
- -moz-box-sizing: border-box;    /* Firefox, other Gecko */
- box-sizing: border-box;         /* Opera/IE 8+ */
+.pagination a, #collection-filter { border: 1px solid #ccc; background-color: #f5f5f5; padding: 4px 10px; cursor: pointer; font-size: 11px; border-radius: 2px; }
+.pagination a.current { color:#2FA732; }
+.breadcrumbs {font-weight: bold; color: #666; }
+.breadcrumbs a { color: #2FA732; }
+.collection-filter { width: 100%; max-width: 100%; min-height: 50px; border-radius:2px; margin:0; margin-bottom:20px; font:14px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:5px; border:1px solid #DDD; }
+
+.jh-root,
+.jh-type-object,
+.jh-type-array,
+.jh-key,
+.jh-value,
+.jh-root tr{
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;         /* Opera/IE 8+ */
 }
 
-.jh-key, .jh-value{
- margin: 0;
- padding: 0.2em;
-}
-
-.jh-value{
-    border-left: 1px solid #ddd;
-}
-
-.jh-type-bool, .jh-type-number{
-    font-weight: bold;
-    text-align: center;
-    color: #5286BC;
-}
-
-.jh-type-string{
-    font-style: italic;
-    color: #839B00;
-}
-
-.jh-array-key{
-    font-style: italic;
-    font-size: small;
-    text-align: center;
-}
-
-.jh-object-key, .jh-array-key{
-    color: #444;
-    vertical-align: top;
-}
-
-.jh-type-object > tr:nth-child(odd), .jh-type-array > tr:nth-child(odd){
-    background-color: #f5f5f5;
-}
-
-.jh-type-object > tr:nth-child(even), .jh-type-array > tr:nth-child(even){
-    background-color: #fff;
-}
-
-.jh-type-object, .jh-type-array{
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.jh-root{
- border: 1px solid #ccc;
- margin: 0.2em;
-}
-
-th.jh-key{
- text-align: left;
-}
-
-.jh-type-object > tr, .jh-type-array > tr{
- border: 1px solid #ddd;
- border-bottom: none;
-}
-
-.jh-type-object > tr:last-child, .jh-type-array > tr:last-child{
- border-bottom: 1px solid #ddd;
-}
-
-.jh-type-object > tr:hover, .jh-type-array > tr:hover{
- border: 1px solid #F99927;
-}
-
-.jh-empty{
- font-style: italic;
- color: #999;
- font-size: small;
-}
+.jh-key,
+.jh-value { margin: 0; padding: 0.2em; }
+.jh-type-bool,
+.jh-type-number { color: #8e8e8e; }
+.jh-type-string { color: #8e8e8e; }
+.jh-array-key { font-style: italic; font-size: small; text-align: center; }
+.jh-object-key,
+.jh-array-key { color: #444; vertical-align: top; }
+.jh-type-object > tr { background-color: #fff; }
+.jh-type-object,
+.jh-type-array { width: 100%; border-collapse: collapse; }
+.jh-root { border: 1px solid #ccc; margin: 0.2em; }
+th.jh-key { text-align: left; }
+.jh-type-object > tr,
+.jh-type-array > tr{ border: 1px solid #ddd; border-bottom: none; }
+.jh-type-object > tr:last-child,
+.jh-type-array > tr:last-child{ border-bottom: 1px solid #ddd; }
+.jh-type-object > tr:hover,
+.jh-type-array > tr:hover { border: 1px solid #F99927; }
+.jh-empty{ font-style: italic; color: #999; font-size: small; }

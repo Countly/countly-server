@@ -181,6 +181,14 @@
         _chartOptions['resolution'] = 'countries';
         _chartOptions["displayMode"] = "region";
 
+        if (ob.metric == "t") {
+            _chartOptions.colorAxis.colors = ['#CAE3FB', '#52A3EF'];
+        } else if (ob.metric == "u") {
+            _chartOptions.colorAxis.colors = ['#FFDBB2', '#FF8700'];
+        } else if (ob.metric == "n") {
+            _chartOptions.colorAxis.colors = ['#B2ECEA', '#0EC1B9'];
+        }
+
         // This is how you handle regionClick and change zoom for only a specific country
 
         if (countlyCommon.CITY_DATA !== false && _chartOptions.height > 300) {
@@ -231,6 +239,14 @@
                 {v:value[ob.metric]}
             ]};
         });
+
+        if (ob.metric == "t") {
+            _chartOptions.colorAxis.colors = ['#CAE3FB', '#52A3EF'];
+        } else if (ob.metric == "u") {
+            _chartOptions.colorAxis.colors = ['#FFDBB2', '#FF8700'];
+        } else if (ob.metric == "n") {
+            _chartOptions.colorAxis.colors = ['#B2ECEA', '#0EC1B9'];
+        }
 
         _dataTable = new google.visualization.DataTable(chartData);
         _chart.draw(_dataTable, _chartOptions);
