@@ -373,22 +373,32 @@ var testUtils = function testUtils(){
                                             ob[i][j][k].should.have.property(c, correct[c]);
                                     }
 								}
+                                var totals = {}
 								for(n in ob[i][j][k])
 								{
 									if(RE.test(n))
 									{
-										for(var c in correct){
-											if(c != "meta"){
-                                                if(c == "s"){
-                                                    ob[i][j][k][n].should.have.property(c);
-                                                    ob[i][j][k][n][c].should.be.approximately(correct[c], 0.0001);
-                                                }
-                                                else
-                                                    ob[i][j][k][n].should.have.property(c, correct[c]);
+										for(var m in ob[i][j][k][n]){
+                                            if(!totals[m]){
+                                                totals[m] = 0;
                                             }
-										}
+                                            totals[m] += ob[i][j][k][n][m]; 
+                                        }
 									}
 								}
+                                if(Object.keys(totals).length){
+                                    //totals for hours should match
+                                    for(var c in correct){
+                                        if(c != "meta"){
+                                            if(c == "s"){
+                                                totals.should.have.property(c);
+                                                totals[c].should.be.approximately(correct[c], 0.0001);
+                                            }
+                                            else
+                                                totals.should.have.property(c, correct[c]);
+                                        }
+                                    }
+                                }
 							}
 						}
 					}
