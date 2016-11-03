@@ -18,15 +18,36 @@ var plugin = {},
                     console.log("Can't parse systelogs query");
                     query = {};
                 }
-                if(query._id)
-                    query._id = common.db.ObjectID(query._id);
+                if(params.qstring.sSearch && params.qstring.sSearch != ""){
+                    query["i"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};
+                    //filter["$text"] = { "$search": "\""+params.qstring.sSearch+"\"" };
+                }
+                query._id = {$ne:"meta_v2"};
             }
             validate(params, function(params){
-				common.db.collection('systemlogs').find(query).sort( { $natural: -1 } ).limit(1000).toArray(function(err, items) {
-					if(err)
-						console.log(err);
-					common.returnOutput(params, items);
-				});
+                var columns = ["ts", "u", "a", "ip", "i"];
+                common.db.collection('systemlogs').count({},function(err, total) {
+                    total--;
+                    var cursor = common.db.collection('systemlogs').find(query);
+                    cursor.count(function (err, count) {
+                        if(params.qstring.iDisplayStart && params.qstring.iDisplayStart != 0)
+                            cursor.skip(parseInt(params.qstring.iDisplayStart));
+                        if(params.qstring.iDisplayLength && params.qstring.iDisplayLength != -1)
+                            cursor.limit(parseInt(params.qstring.iDisplayLength));
+                        if(params.qstring.iSortCol_0 && params.qstring.sSortDir_0){
+                            var ob = {};
+                            ob[columns[params.qstring.iSortCol_0]] = (params.qstring.sSortDir_0 == "asc") ? 1 : -1;
+                            cursor.sort(ob);
+                        }
+                    
+                        cursor.toArray(function(err, res) {
+                            if(err)
+                                console.log(err);
+                            res = res || [];
+                            common.returnOutput(params, {sEcho:params.qstring.sEcho, iTotalRecords:total, iTotalDisplayRecords:count, aaData:res});
+                        });
+                    });
+                });
 			});
 			return true;
 		}

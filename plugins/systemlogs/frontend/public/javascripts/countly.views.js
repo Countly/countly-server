@@ -4,16 +4,15 @@ window.SystemLogsView = countlyView.extend({
     },
     beforeRender: function() {
 		if(this.template)
-			return $.when(countlySystemLogs.initialize(this._query)).then(function () {});
+			return true;
 		else{
 			var self = this;
 			return $.when($.get(countlyGlobal["path"]+'/systemlogs/templates/logs.html', function(src){
 				self.template = Handlebars.compile(src);
-			}), countlySystemLogs.initialize(this._query)).then(function () {});
+			})).then(function () {});
 		}
     },
     renderCommon:function (isRefresh) {
-        var data = countlySystemLogs.getData();
         this.templateData = {
             "page-title":jQuery.i18n.map["systemlogs.title"],
             query: this._query
@@ -25,7 +24,24 @@ window.SystemLogsView = countlyView.extend({
                 window.history.back();
             });
 			this.dtable = $('#systemlogs-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": data,
+                "bServerSide": true,
+                "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key="+countlyGlobal.member.api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID+"&method=systemlogs",
+                "fnServerData": function ( sSource, aoData, fnCallback ) {
+                    $.ajax({
+                        "dataType": 'json',
+                        "type": "POST",
+                        "url": sSource,
+                        "data": aoData,
+                        "success": function(data){
+                                fnCallback(data);
+                        }
+                    });
+                },
+                "fnServerParams": function ( aoData ) {
+                    if(self._query){
+                        aoData.push({ "name": "query", "value": JSON.stringify(self._query) });
+                    }
+                },
                 "aoColumns": [
                     { "mData": function(row, type){
 						if(type == "display"){
@@ -45,17 +61,7 @@ window.SystemLogsView = countlyView.extend({
 			this.dtable.fnSort( [ [0,'desc'] ] );
         }
     },
-    refresh:function () {
-        var self = this;
-        $.when(countlySystemLogs.initialize(this._query)).then(function () {
-            if (app.activeView != self) {
-                return false;
-            }
-            var data = countlySystemLogs.getData();
-			CountlyHelpers.refreshTable(self.dtable, data);
-            app.localize();
-        });
-    }
+    refresh:function () { }
 });
 
 //register views
