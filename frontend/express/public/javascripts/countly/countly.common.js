@@ -437,17 +437,22 @@
                         tooltipHTML = "<div class='title'>" + tickObj.tickTexts[dataIndex] + "</div>";
 
                     for (i = dataSet.length - 1; i >= 0; --i) {
-                        var series = dataSet[i];
+                        var series = dataSet[i],
+                            formattedValue = series.data[dataIndex][1];
 
                         // Change label to previous period if there is a ghost graph
                         if (series.mode == "ghost") {
                             series.label = jQuery.i18n.map["common.previous-period"];
                         }
 
+                        if (formattedValue) {
+                            formattedValue = parseFloat(formattedValue).toFixed(2).replace(/[.,]00$/, "");
+                        }
+
                         tooltipHTML += "<div class='inner'>";
                         tooltipHTML += "<div class='color' style='background-color: "+ series.color + "'></div>";
                         tooltipHTML += "<div class='series'>" + series.label + "</div>";
-                        tooltipHTML += "<div class='value'>" + series.data[dataIndex][1] + "</div>";
+                        tooltipHTML += "<div class='value'>" + formattedValue + "</div>";
                         tooltipHTML += "</div>";
                     }
 

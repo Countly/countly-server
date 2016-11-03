@@ -161,13 +161,13 @@ table { border-collapse: collapse; }
 
 #sidebar-menu { position: relative; }
     .scroll-active .sidebar-menu { height:auto; position:relative; }
-	#sidebar-menu .sidebar-menu>.item { width:225px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; height:36px; padding-top:3px; display:block; cursor:pointer; border-top: 1px solid #2D2D2D; border-bottom: 1px solid #232323; }
+	#sidebar-menu .sidebar-menu>.item { width:225px; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; height:33px; padding-top:3px; display:block; cursor:pointer; border-top: 1px solid #2D2D2D; border-bottom: 1px solid #232323; }
         #sidebar-menu .sidebar-menu>.item:last-child { box-shadow: 0 1px 0 0 #2D2D2D; }
         #sidebar-menu .sidebar-menu>.item.hide { display: none; }
         #sidebar-menu .sidebar-menu .item:hover { background-position:446px; }
 		#sidebar-menu .sidebar-menu>.item.active { background-color: #2FA732; border-color: #46C54A; }
         #sidebar-menu .sidebar-menu .item.menu-active { background-color: #212121; border-color: #212121; }
-		#sidebar-menu .sidebar-menu .item .logo { color:#888; width:25px; height:25px; float:left; margin-left:16px; margin-top:5px; font-size: 22px; text-align: center; }
+		#sidebar-menu .sidebar-menu .item .logo { color:#888; width:25px; height:22px; float:left; margin-left:16px; margin-top:4px; font-size: 19px; text-align: center; }
             /* Fix for old .fa icons, this can be removed once all enterprise plugins have updated icons */
             #sidebar-menu .sidebar-menu .item .logo.fa {
                 width: 24px !important;
@@ -178,7 +178,7 @@ table { border-collapse: collapse; }
             }
         #sidebar-menu .sidebar-menu>.item>.logo-icon { background-image:none; font-size:24px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px; line-height: 34px; }
             #sidebar-menu .sidebar-menu .item.active .logo { color:#FFF; }
-		#sidebar-menu .sidebar-menu .item .text { margin-left:15px; float:left; padding-top:8px; font:14px Ubuntu,Helvetica,sans-serif; line-height:130%; color:#888; }
+		#sidebar-menu .sidebar-menu .item .text { margin-left:15px; float:left; padding-top:6px; font:14px Ubuntu,Helvetica,sans-serif; line-height:130%; color:#888; }
             #sidebar-menu .sidebar-menu .item.active:hover .logo { color: #f6f6f6; }
             #sidebar-menu .sidebar-menu .item.menu-active:hover .logo,
             #sidebar-menu .sidebar-menu .item.menu-active .logo { color: #f6f6f6; }
@@ -1046,7 +1046,7 @@ table.events-table { width:100%; padding:0; margin:0; }
 #graph-tooltip.white { background-color: #FFF; border:1px solid #D0D0D0; color:#333; }
     #graph-tooltip.white .title { text-align: center; padding:0px 5px 5px 5px; color:#636363; font-size:12px; }
 
-#graph-tooltip .inner { overflow:auto; margin:6px 0; padding:0 1px; }
+#graph-tooltip .inner { overflow:auto; margin:6px 0; padding:0 1px; overflow: hidden; }
 #graph-tooltip .inner .color { float:left; width:12px; height:12px; margin-right:10px; }
 #graph-tooltip .inner .series { color:#636363; text-transform:uppercase; float:left; line-height:12px; font-size:12px; margin-right:20px; }
 #graph-tooltip .inner .value { color:#636363; float:right; line-height:12px; font-size:12px; }

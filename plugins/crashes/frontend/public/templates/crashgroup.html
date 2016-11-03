@@ -22,10 +22,9 @@
 					</div>
 				</div>
 			</div>
-			<div class="right btn-header help-zone-vs">
+			<div id="crash-group-buttons" class="right btn-header help-zone-vs">
                 {{#unless external}}
                 {{#if hasPermission}}
-                <a class="icon-button red btn-delete-crash" data-id="{{id}}"><span data-localize="crashes.delete"></span></a>
                 <a class="icon-button light btn-share-crash" data-id="{{id}}"><span data-localize="crashes.share"></span></a>
                 {{#if data.is_hidden}}
                 <a class="icon-button light btn-show-crash" data-id="{{id}}"><span data-localize="crashes.show"></span></a>
@@ -34,6 +33,7 @@
                 <a class="icon-button light btn-show-crash" style="display:none;" data-id="{{id}}"><span data-localize="crashes.show"></span></a>
                 <a class="icon-button light btn-hide-crash" data-id="{{id}}"><span data-localize="crashes.hide"></span></a>
                 {{/if}}
+                <a class="icon-button red btn-delete-crash" data-id="{{id}}"><span data-localize="crashes.delete"></span></a>
                 {{/if}}
                 <ul id="crash-share-list">
                     <li class="crash-share"><input id="crash-share-url" readonly onclick='this.select()' value="{{url}}"/></li>
