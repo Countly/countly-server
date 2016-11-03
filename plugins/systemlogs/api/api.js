@@ -51,6 +51,18 @@ var plugin = {},
 			});
 			return true;
 		}
+        else if(params.qstring.method == 'systemlogs_actions'){
+            validate(params, function(params){
+                common.db.collection('systemlogs').findOne({_id:"meta_v2"}, {_id:0}, function(err, res){
+                    var result = [];
+                    if(!err && res){
+                        result = Object.keys(res).map(function(arg){return common.db.decode(arg);});
+                    }
+                    common.returnOutput(params, result);
+                });
+            });
+            return true;
+        }
 	});
     
     plugins.register("/i/systemlogs", function(ob){
@@ -138,6 +150,7 @@ var plugin = {},
             else{
                 common.db.collection('systemlogs').insert(log, function () {});
             }
+            common.db.collection("systemlogs").update({_id:"meta_v2"}, {$set:{a:common.db.encode(action)}}, {upsert:true}, function(){});
         }
     };
 }(plugin));
