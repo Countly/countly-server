@@ -472,18 +472,19 @@ var usage = {},
             for (var i=0; i < predefinedMetrics.length; i++) {
                 for (var j=0; j < predefinedMetrics[i].metrics.length; j++) {
                     var tmpMetric = predefinedMetrics[i].metrics[j],
-                        recvMetricValue,
-                        postfix;
+                        recvMetricValue = null,
+                        postfix = null;
                     if (tmpMetric.is_user_prop) {
                         recvMetricValue = params.user[tmpMetric.name];
                     } else if (params.qstring.metrics && params.qstring.metrics[tmpMetric.name]) {
                         recvMetricValue = params.qstring.metrics[tmpMetric.name];
                     }
-            
+
                     // We check if city data logging is on and user's country is the configured country of the app
                     if (tmpMetric.name == "city" && (plugins.getConfig("api").city_data === false || params.app_cc != params.user.country)) {
                         continue;
                     }
+
                     if (recvMetricValue) {
                         recvMetricValue = (recvMetricValue+"").replace(/^\$/, "").replace(/\./g, ":");
                         postfix = common.crypto.createHash("md5").update(recvMetricValue).digest('base64')[0];
