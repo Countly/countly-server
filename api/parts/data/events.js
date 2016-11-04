@@ -74,15 +74,15 @@ var countlyEvents = {},
                                 tmpSegVal = "[CLY]" + tmpSegVal;
                             }
                             var postfix = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
-                            metaToFetch.push({
+                            metaToFetch[eventCollectionName + "no-segment_" + common.getDateIds(params).zero + "_" + postfix] = {
                                 coll: eventCollectionName,
                                 id: "no-segment_" + common.getDateIds(params).zero + "_" + postfix
-                            });
+                            };
                         }
                     }
                 }
     
-                async.map(metaToFetch, fetchEventMeta, function (err, eventMetaDocs) {
+                async.map(Object.keys(metaToFetch), fetchEventMeta, function (err, eventMetaDocs) {
                     var appSgValues = {};
     
                     for (var i = 0; i < eventMetaDocs.length; i++) {
@@ -102,10 +102,10 @@ var countlyEvents = {},
                     processEvents(appEvents, appSegments, appSgValues, params, resolve);
                 });
     
-                function fetchEventMeta(metaToFetch, callback) {
-                    common.db.collection(metaToFetch.coll).findOne({'_id':metaToFetch.id}, {meta_v2:1}, function (err, eventMetaDoc) {
+                function fetchEventMeta(id, callback) {
+                    common.db.collection(metaToFetch[id].coll).findOne({'_id':metaToFetch[id].id}, {meta_v2:1}, function (err, eventMetaDoc) {
                         var retObj = eventMetaDoc || {};
-                        retObj.coll = metaToFetch.coll;
+                        retObj.coll = metaToFetch[id].coll;
     
                         callback(false, retObj);
                     });
