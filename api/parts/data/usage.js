@@ -467,7 +467,7 @@ var usage = {},
         plugins.dispatch("/session/metrics", {params:params, predefinedMetrics:predefinedMetrics, userProps:userProps, user:user, isNewUser:isNewUser});
         
         var dateIds = common.getDateIds(params);
-        var metaToFetch = [];
+        var metaToFetch = {};
         if(plugins.getConfig("api").metric_limit > 0){
             for (var i=0; i < predefinedMetrics.length; i++) {
                 for (var j=0; j < predefinedMetrics[i].metrics.length; j++) {
@@ -488,25 +488,25 @@ var usage = {},
                     if (recvMetricValue) {
                         recvMetricValue = (recvMetricValue+"").replace(/^\$/, "").replace(/\./g, ":");
                         postfix = common.crypto.createHash("md5").update(recvMetricValue).digest('base64')[0];
-                        metaToFetch.push({
+                        metaToFetch[predefinedMetrics[i].db+params.app_id + "_" + dateIds.zero + "_" + postfix] = {
                             coll: predefinedMetrics[i].db,
                             id: params.app_id + "_" + dateIds.zero + "_" + postfix
-                        });
+                        };
                     }
                 }
             }
         }
         
-        function fetchMeta(metaToFetch, callback) {
-            common.db.collection(metaToFetch.coll).findOne({'_id':metaToFetch.id}, {meta_v2:1}, function (err, metaDoc) {
+        function fetchMeta(id, callback) {
+            common.db.collection(metaToFetch[id].coll).findOne({'_id':metaToFetch[id].id}, {meta_v2:1}, function (err, metaDoc) {
                 var retObj = metaDoc || {};
-                retObj.coll = metaToFetch.coll;
+                retObj.coll = metaToFetch[id].coll;
                 callback(false, retObj);
             });
         }
             
         var metas = {};
-        async.map(metaToFetch, fetchMeta, function (err, metaDocs) {
+        async.map(Object.keys(metaToFetch), fetchMeta, function (err, metaDocs) {
             for (var i = 0; i < metaDocs.length; i++) {
                 if (metaDocs[i].coll && metaDocs[i].meta_v2) {
                     metas[metaDocs[i]._id] = metaDocs[i].meta_v2;

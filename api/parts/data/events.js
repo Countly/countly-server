@@ -16,7 +16,7 @@ var countlyEvents = {},
             common.db.collection("events").findOne({'_id':params.app_id}, {list:1, segments:1}, function (err, eventColl) {
                 var appEvents = [],
                     appSegments = {},
-                    metaToFetch = [];
+                    metaToFetch = {};
     
                 if (!err && eventColl) {
                     if (eventColl.list) {
