@@ -315,7 +315,9 @@ var plugin = {},
                 
         common.db.collection("app_viewdata"+params.app_id).findOne({'_id': tmpZeroId}, {meta_v2:1}, function(err, res){
             //checking if view should be ignored because of limit
-            if(!err && res && res.meta_v2 && res.meta_v2.views && Object.keys(res.meta_v2.views).length >= plugins.getConfig("views").view_limit){
+            if(!err && res && res.meta_v2 && res.meta_v2.views &&
+                typeof res.meta_v2.views[escapedMetricVal] === "undefined" &&
+                Object.keys(res.meta_v2.views).length >= plugins.getConfig("views").view_limit){
                 return;
             }
             if(currEvent.segmentation.visit){
