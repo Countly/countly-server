@@ -678,10 +678,4 @@ $( document ).ready(function() {
         if($('#management-submenu .help-toggle').length)
             $('#management-submenu .help-toggle').before(menu);
     }
-    
-    //check if configuration view exists
-    if(app.configurationsView){
-        app.configurationsView.registerLabel("reports", "Reports");
-        app.configurationsView.registerLabel("reports-use_cron", "Create cronjobs for reports");
-    }
 });

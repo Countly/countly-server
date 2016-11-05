@@ -993,7 +993,6 @@ $( document ).ready(function() {
     
     //check if configuration view exists
     if(app.configurationsView){
-        app.configurationsView.registerLabel("crashes", "Crashes");
-        app.configurationsView.registerLabel("crashes-report_limit", "Amount of reports displayed");
+        app.configurationsView.registerLabel("crashes", "crashes.title");
     }
 });

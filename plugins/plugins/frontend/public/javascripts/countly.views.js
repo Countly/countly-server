@@ -104,38 +104,6 @@ window.ConfigurationsView = countlyView.extend({
     initialize:function () {
         this.predefinedInputs = {};
         this.predefinedLabels = {
-            "frontend":jQuery.i18n.map["configs.frontend"],
-            "api":jQuery.i18n.map["configs.api"],
-            "apps":jQuery.i18n.map["configs.apps"],
-            "logs": jQuery.i18n.map["configs.logs"],
-            "security": jQuery.i18n.map["configs.security"],
-            "frontend-production":jQuery.i18n.map["configs.frontend-production"],
-            "frontend-session_timeout":jQuery.i18n.map["configs.frontend-session_timeout"],
-            "frontend-theme":jQuery.i18n.map["configs.frontend-theme"],
-            "frontend-use_google":jQuery.i18n.map["configs.frontend-use_google"],
-            "frontend-code":jQuery.i18n.map["configs.frontend-code"],
-            "security-login_tries":jQuery.i18n.map["configs.security-login_tries"],
-            "security-login_wait":jQuery.i18n.map["configs.security-login_wait"],
-            "security-dashboard_additional_headers":jQuery.i18n.map["configs.security-dashboard_additional_headers"],
-            "security-password_min":jQuery.i18n.map["configs.security-password_min"],
-            "security-password_char":jQuery.i18n.map["configs.security-password_char"],
-            "security-password_number":jQuery.i18n.map["configs.security-password_number"],
-            "security-password_symbol":jQuery.i18n.map["configs.security-password_symbol"],
-            "security-password_expiration":jQuery.i18n.map["configs.security-password_expiration"],
-            "api-domain":jQuery.i18n.map["configs.api-domain"],
-            "api-safe":jQuery.i18n.map["configs.api-safe"],
-            "api-session_duration_limit":jQuery.i18n.map["configs.api-session_duration_limit"],
-            "api-city_data":jQuery.i18n.map["configs.api-city_data"],
-            "api-event_limit":jQuery.i18n.map["configs.api-event_limit"],
-            "api-event_segmentation_limit":jQuery.i18n.map["configs.api-event_segmentation_limit"],
-            "api-event_segmentation_value_limit":jQuery.i18n.map["configs.api-event_segmentation_value_limit"],
-            "api-sync_plugins":jQuery.i18n.map["configs.api-sync_plugins"],
-            "api-session_cooldown":jQuery.i18n.map["configs.api-session_cooldown"],
-            "api-total_users":jQuery.i18n.map["configs.api-total_users"],
-            "api-metric_limit":jQuery.i18n.map["configs.api-metric_limit"],
-            "security-api_additional_headers":jQuery.i18n.map["configs.security-api_additional_headers"],
-            "apps-country":jQuery.i18n.map["configs.apps-country"],
-            "apps-category":jQuery.i18n.map["configs.apps-category"]
         };
         this.configsData = {};
         this.cache = {};
@@ -201,7 +169,7 @@ window.ConfigurationsView = countlyView.extend({
             if(value && value.length)
                 select += '<div class="text">'+value+'</div>';
             else
-                select += '<div class="text">'+jQuery.i18n.map["configs.no-theme"]+'</div>';
+                select += '<div class="text" data-localize="configs.no-theme">'+jQuery.i18n.map["configs.no-theme"]+'</div>';
             
             select += '</div>'+
                     '<div class="right combo"></div>'+
@@ -211,7 +179,7 @@ window.ConfigurationsView = countlyView.extend({
                     
                 for(var i = 0; i < themes.length; i++){
                     if(themes[i] == "")
-                        select += '<div data-value="" class="segmentation-option item">'+jQuery.i18n.map["configs.no-theme"]+'</div>';
+                        select += '<div data-value="" class="segmentation-option item" data-localize="configs.no-theme">'+jQuery.i18n.map["configs.no-theme"]+'</div>';
                     else
                         select += '<div data-value="'+themes[i]+'" class="segmentation-option item">'+themes[i]+'</div>';
                 }
@@ -229,9 +197,9 @@ window.ConfigurationsView = countlyView.extend({
                 '<div class="select-inner">'+
                     '<div class="text-container">';
             if(value && value.length)
-                select += '<div class="text">'+jQuery.i18n.map["configs.logs."+value]+'</div>';
+                select += '<div class="text" data-localize="configs.logs.'+value+'">'+jQuery.i18n.map["configs.logs."+value]+'</div>';
             else
-                select += '<div class="text">'+Query.i18n.map["configs.logs.warn"]+'</div>';
+                select += '<div class="text" data-localzie="configs.logs.warn">'+Query.i18n.map["configs.logs.warn"]+'</div>';
             select += '</div>'+
                     '<div class="right combo"></div>'+
                 '</div>'+
@@ -239,7 +207,7 @@ window.ConfigurationsView = countlyView.extend({
                     '<div>';
 
                 for(var i = 0; i < categories.length; i++){
-                    select += '<div data-value="'+categories[i]+'" class="segmentation-option item">'+jQuery.i18n.map["configs.logs."+categories[i]]+'</div>';
+                    select += '<div data-value="'+categories[i]+'" class="segmentation-option item" data-localize="configs.logs.'+categories[i]+'">'+jQuery.i18n.map["configs.logs."+categories[i]]+'</div>';
                 }
 
             select += '</div>'+
@@ -359,7 +327,7 @@ window.ConfigurationsView = countlyView.extend({
             
                 $(this).next(".required").remove();
             
-                var existSpan = $("<span class='username-check red-text'>").html(jQuery.i18n.map["management-users.username.exists"]),
+                var existSpan = $("<span class='username-check red-text' data-localize='management-users.username.exists'>").html(jQuery.i18n.map["management-users.username.exists"]),
                     notExistSpan = $("<span class='username-check green-text'>").html("&#10004;"),
                     data = {};
                 
@@ -657,10 +625,15 @@ window.ConfigurationsView = countlyView.extend({
             return null;
         }
         var ret = "";
+        console.log("test", id, value);
         if(jQuery.i18n.map["configs.help."+id])
-            ret = "<span class='config-help'>"+jQuery.i18n.map["configs.help."+id]+"</span>";
+            ret = "<span class='config-help' data-localize='configs.help."+id+"'>"+jQuery.i18n.map["configs.help."+id]+"</span>";
         if(typeof this.predefinedLabels[id] != "undefined")
-            return "<div>"+this.predefinedLabels[id]+"</div>"+ret;
+            return "<div data-localize='"+this.predefinedLabels[id]+"'>"+jQuery.i18n.map[this.predefinedLabels[id]]+"</div>"+ret;
+        else if(jQuery.i18n.map["configs."+id])
+            return "<div data-localize='configs."+id+"'>"+jQuery.i18n.map["configs."+id]+"</div>"+ret;
+        else if(jQuery.i18n.map[id.replace("-", ".")])
+            return "<div data-localize='"+id.replace("-", ".")+"'>"+jQuery.i18n.map[id.replace("-", ".")]+"</div>"+ret;
         else
             return "<div>"+value+"</div>"+ret;
     },
