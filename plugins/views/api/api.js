@@ -1,6 +1,7 @@
 var plugin = {},
     crypto = require('crypto'),
     request = require('request'),
+    Promise = require("bluebird"),
 	common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
@@ -185,11 +186,11 @@ var plugin = {},
 	});
     
     plugins.register("/session/post", function(ob){
-        var params = ob.params;
-        var dbAppUser = ob.dbAppUser;
-        if(dbAppUser && dbAppUser.vc){
-            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id },{}, {$set:{vc:0}},{upsert:true, new:false}, function (err, user){
-                user = user && user.ok ? user.value : null;
+        return new Promise(function(resolve, reject){
+            var params = ob.params;
+            var dbAppUser = ob.dbAppUser;
+            if(dbAppUser && dbAppUser.vc){
+                var user = params.app_user;
                 if(user && user.vc){
                     var ranges = [
                         [0,2],
@@ -206,7 +207,7 @@ var plugin = {},
                     updateUsersZero = {},
                     dbDateIds = common.getDateIds(params),
                     monthObjUpdate = [];
-    
+        
                     if (user.vc >= rangesMax) {
                         calculatedRange = (ranges.length) + '';
                     } else {
@@ -217,7 +218,7 @@ var plugin = {},
                             }
                         }
                     }
-            
+                
                     monthObjUpdate.push('vc.' + calculatedRange);
                     common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
                     common.fillTimeObjectZero(params, updateUsersZero, 'vc.' + calculatedRange);
@@ -233,37 +234,48 @@ var plugin = {},
                             recordMetrics(params, {key:"[CLY]_view", segmentation:segmentation}, user);
                         }
                     }
+                    common.updateAppUser(params, {$set:{vc:0}});
+                    resolve();
                 }
-            });
-        }
+                else{
+                    resolve();
+                }
+            }
+            else{
+                resolve();
+            }
+        });
     });
     
     plugins.register("/i", function(ob){
-        var params = ob.params;
-        if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
-            params.qstring.events = params.qstring.events.filter(function(currEvent){
-                if (currEvent.key == "[CLY]_view"){
-                    if(currEvent.segmentation && currEvent.segmentation.name){
-                        processView(params, currEvent);
-                        if(currEvent.segmentation.visit){
-                            var events = [currEvent];
-                            plugins.dispatch("/plugins/drill", {params:params, dbAppUser:params.app_user, events:events});
-                        }
-                        else{
-                            if(currEvent.dur || currEvent.segmentation.dur){
-                                plugins.dispatch("/view/duration", {params:params, duration:currEvent.dur || currEvent.segmentation.dur});
+        return new Promise(function(resolve, reject){
+            var params = ob.params;
+            if (params.qstring.events && params.qstring.events.length && Array.isArray(params.qstring.events)) {
+                params.qstring.events = params.qstring.events.filter(function(currEvent){
+                    if (currEvent.key == "[CLY]_view"){
+                        if(currEvent.segmentation && currEvent.segmentation.name){
+                            processView(params, currEvent);
+                            if(currEvent.segmentation.visit){
+                                var events = [currEvent];
+                                plugins.dispatch("/plugins/drill", {params:params, dbAppUser:params.app_user, events:events});
+                            }
+                            else{
+                                if(currEvent.dur || currEvent.segmentation.dur){
+                                    plugins.dispatch("/view/duration", {params:params, duration:currEvent.dur || currEvent.segmentation.dur});
+                                }
                             }
                         }
+                        return false;
                     }
-                    return false;
-                }
-                return true;
-            });
-        }
+                    return true;
+                });
+            }
+            resolve();
+        });
     });
     
     function processView(params, currEvent){
-        var escapedMetricVal = (currEvent.segmentation.name+"").replace(/^\$/, "").replace(/\./g, "&#46;");
+        var escapedMetricVal = common.db.encode(currEvent.segmentation.name+"");
             
         var update = {$set:{lv:currEvent.segmentation.name}};
         
@@ -271,19 +283,17 @@ var plugin = {},
             update["$inc"] = {vc:1};
             update["$max"] = {lvt:params.time.timestamp};
         }
-            
-        common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id },{}, update,{upsert:true, new:false}, function (err, user){
-            if(currEvent.segmentation.visit){
-                var lastView = {};
-                lastView[escapedMetricVal] = params.time.timestamp;           
-                common.db.collection('app_views' + params.app_id).findAndModify({'_id': params.app_user_id },{}, {$max:lastView},{upsert:true, new:false}, function (err, view){
-                    recordMetrics(params, currEvent, user && user.ok ? user.value : null, view && view.ok ? view.value : null);
-                });
-            }
-            else{
-                recordMetrics(params, currEvent, user && user.ok ? user.value : null);
-            }
-        });
+        common.updateAppUser(params, update);
+        if(currEvent.segmentation.visit){
+            var lastView = {};
+            lastView[escapedMetricVal] = params.time.timestamp;           
+            common.db.collection('app_views' + params.app_id).findAndModify({'_id': params.app_user_id },{}, {$max:lastView},{upsert:true, new:false}, function (err, view){
+                recordMetrics(params, currEvent, params.app_user, view && view.ok ? view.value : null);
+            });
+        }
+        else{
+            recordMetrics(params, currEvent, params.app_user);
+        }
 	}
     
     function recordMetrics(params, currEvent, user, view){
@@ -293,18 +303,21 @@ var plugin = {},
         tmpSet = {},
         zeroObjUpdate = [],
         monthObjUpdate = [],
-        escapedMetricVal = (currEvent.segmentation.name+"").replace(/^\$/, "").replace(/\./g, "&#46;");
+        escapedMetricVal = common.db.encode(currEvent.segmentation.name+""),
+        postfix = common.crypto.createHash("md5").update(escapedMetricVal).digest('base64')[0];
     
         //making sure metrics are strings
-        tmpSet["meta." + tmpMetric.set] = escapedMetricVal;
+        tmpSet["meta_v2." + tmpMetric.set + "." + escapedMetricVal] = true;
         
         var dateIds = common.getDateIds(params),
-            tmpZeroId = "no-segment_" + dateIds.zero,
-            tmpMonthId = "no-segment_" + dateIds.month;
+            tmpZeroId = "no-segment_" + dateIds.zero + "_" + postfix,
+            tmpMonthId = "no-segment_" + dateIds.month + "_" + postfix;
                 
-        common.db.collection("app_viewdata"+params.app_id).findOne({'_id': tmpMonthId}, {meta:1}, function(err, res){
+        common.db.collection("app_viewdata"+params.app_id).findOne({'_id': tmpZeroId}, {meta_v2:1}, function(err, res){
             //checking if view should be ignored because of limit
-            if(!err && res && res.meta && res.meta.views && res.meta.views.length >= plugins.getConfig("views").view_limit){
+            if(!err && res && res.meta_v2 && res.meta_v2.views &&
+                typeof res.meta_v2.views[escapedMetricVal] === "undefined" &&
+                Object.keys(res.meta_v2.views).length >= plugins.getConfig("views").view_limit){
                 return;
             }
             if(currEvent.segmentation.visit){
@@ -374,31 +387,29 @@ var plugin = {},
             }
             
             if(typeof currEvent.segmentation.segment != "undefined"){
-                currEvent.segmentation.segment = (currEvent.segmentation.segment+"").replace(/^\$/, "").replace(/\./g, "&#46;");
+                currEvent.segmentation.segment = common.db.encode(currEvent.segmentation.segment+"");
                 common.db.collection("app_viewdata"+params.app_id).update({'_id': "meta"}, {$addToSet: {"segments":currEvent.segmentation.segment}}, {'upsert': true}, function(){});
             }
             
             if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
-                var update = {$set: {m: dateIds.zero, a: params.app_id + ""}};
+                tmpSet.m = dateIds.zero;
+                tmpSet.a = params.app_id + "";
+                var update = {$set: tmpSet};
                 if(Object.keys(tmpTimeObjZero).length)
                     update["$inc"] = tmpTimeObjZero;
-                if(Object.keys(tmpSet).length)
-                    update["$addToSet"] = tmpSet;
                 common.db.collection("app_viewdata"+params.app_id).update({'_id': tmpZeroId}, update, {'upsert': true}, function(){});
                 if(typeof currEvent.segmentation.segment != "undefined"){
-                    common.db.collection("app_viewdata"+params.app_id).update({'_id': currEvent.segmentation.segment+"_"+dateIds.zero}, update, {'upsert': true}, function(){});
+                    common.db.collection("app_viewdata"+params.app_id).update({'_id': currEvent.segmentation.segment+"_"+dateIds.zero + "_" + postfix}, update, {'upsert': true}, function(){});
                 }
             }
             
-            if (Object.keys(tmpTimeObjMonth).length || Object.keys(tmpSet).length){
+            if (Object.keys(tmpTimeObjMonth).length){
                 var update = {$set: {m: dateIds.month, a: params.app_id + ""}};
                 if(Object.keys(tmpTimeObjMonth).length)
                     update["$inc"] = tmpTimeObjMonth;
-                if(Object.keys(tmpSet).length)
-                    update["$addToSet"] = tmpSet;
                 common.db.collection("app_viewdata"+params.app_id).update({'_id': tmpMonthId}, update, {'upsert': true}, function(){});
                 if(typeof currEvent.segmentation.segment != "undefined"){
-                    common.db.collection("app_viewdata"+params.app_id).update({'_id': currEvent.segmentation.segment+"_"+dateIds.month}, update, {'upsert': true}, function(){});
+                    common.db.collection("app_viewdata"+params.app_id).update({'_id': currEvent.segmentation.segment+"_"+dateIds.month + "_" + postfix}, update, {'upsert': true}, function(){});
                 }
             }
         });

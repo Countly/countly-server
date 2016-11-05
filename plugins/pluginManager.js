@@ -9,6 +9,7 @@ var plugins = require('./plugins.json', 'dont-enclose'),
     async = require("async"),
     _ = require('underscore'),
     cluster = require('cluster'),
+    Promise = require("bluebird"),
     exec = cp.exec;
     
 var pluginManager = function pluginManager(){
@@ -22,6 +23,7 @@ var pluginManager = function pluginManager(){
     var excludeFromUI = {plugins:true};
     var finishedSyncing = true;
     
+    this.appTypes = [];
     this.internalEvents = [];
     this.internalDrillEvents = ["[CLY]_session"];
 
@@ -212,56 +214,37 @@ var pluginManager = function pluginManager(){
     } 
     
     this.dispatch = function(event, params, callback){
-        if(callback){
-            if(events[event]){
-                function runEvent(item, callback){
-                    var ran = false,
-                        timeout = null;
-                    function pluginCallback(){
-                        if(timeout){
-                            clearTimeout(timeout);
-                            timeout = null;
-                        }
-                        if(!ran){
-                            ran = true;
-                            callback(null, null);
-                        }
-                    }
-                    try{
-                        if(!item.call(null, params, pluginCallback)){
-                            //don't wait for callback
-                            pluginCallback();
-                        }
-                    } catch (ex) {
-                        console.error(ex.stack);
-                        //if there was an error, call callback just in case
-                        pluginCallback();
-                    }
-                    //set time out if there is no response from plugin for some time
-                    timeout = setTimeout(pluginCallback, 1000);
+        var used = false,
+            promises = [];
+        var promise;
+        if(events[event]){
+            try{
+                for(var i = 0, l = events[event].length; i < l; i++){
+                    promise = events[event][i].call(null, params)
+                    if(promise)
+                        used = true;
+                    promises.push(promise);
                 }
-                async.map(events[event], runEvent, function(){
-                    callback();
-                });
+            } catch (ex) {
+                console.error(ex.stack);
             }
-            else{
-                callback();
+            //should we create a promise for this dispatch
+            if(params && params.params && params.params.promises){
+                params.params.promises.push(new Promise(function(resolve, reject){
+                    function resolver(){
+                        resolve();
+                        if(callback){
+                            callback();
+                        }
+                    }
+                    Promise.all(promises).then(resolver, resolver);
+                }));
+            }
+            else if(callback){
+                Promise.all(promises).then(callback, callback);
             }
         }
-        else{
-            var used = false;
-            if(events[event]){
-                try{
-                    for(var i = 0, l = events[event].length; i < l; i++){
-                        if(events[event][i].call(null, params))
-                            used = true;
-                    }
-                } catch (ex) {
-                    console.error(ex.stack);
-                }
-            }
-            return used;
-        }
+        return used;
     }
     
     this.loadAppStatic = function(app, countlyDb, express){
@@ -600,7 +583,13 @@ var pluginManager = function pluginManager(){
         countlyDb._emitter.setMaxListeners(0);
         if(!countlyDb.ObjectID)
             countlyDb.ObjectID = mongo.ObjectID;
+        countlyDb.encode = function(str){
+            return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;');
+        };
         
+        countlyDb.decode = function(str){
+            return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.');
+        };
         return countlyDb;
     };
 

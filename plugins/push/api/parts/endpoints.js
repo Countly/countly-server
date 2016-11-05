@@ -498,9 +498,9 @@ var common          = require('../../../../api/utils/common.js'),
                 $set[field] = token;
                 $set[bool] = true;
                 if (!dbAppUser) {
-                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$set: $set}, {upsert: true}, function(){});
+                    common.updateAppUser(params, {$set: $set});
                 } else if (common.dot(dbAppUser, field) != token) {
-                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$set: $set}, {upsert: true}, function(){});
+                    common.updateAppUser(params, {$set: $set});
 
                     if (!dbAppUser[common.dbUserMap.tokens]) dbAppUser[common.dbUserMap.tokens] = {};
                     common.dot(dbAppUser, field, token);
@@ -511,7 +511,7 @@ var common          = require('../../../../api/utils/common.js'),
                 $unset[field] = 1;
                 $unset[bool] = 1;
                 if (common.dot(dbAppUser, field)) {
-                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$unset: $unset}, {upsert: false}, function(){});
+                    common.updateAppUser(params, {$unset: $unset});
                 }
             }
         }

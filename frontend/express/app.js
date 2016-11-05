@@ -67,6 +67,11 @@ plugins.setUserConfigs("frontend", {
 plugins.setConfigs("security", {
     login_tries: 3,
     login_wait: 5*60,
+    password_min: 8,
+    password_char: true,
+    password_number: true,
+    password_symbol: true,
+    password_expiration: 0,
     dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
     api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block"
 });
@@ -484,6 +489,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             csrf_token:req.csrfToken(),
                             member:member,
                             config: req.config,
+                            security: plugins.getConfig("security"),
                             plugins:plugins.getPlugins(),
                             path:countlyConfig.path || "",
                             cdn:countlyConfig.cdn || "",
@@ -646,7 +652,7 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
             if (req.body.full_name && req.body.username && req.body.password && req.body.email) {
                 var password = sha1Hash(req.body.password);
                 
-                var doc = {"full_name":req.body.full_name, "username":req.body.username, "password":password, "email":req.body.email, "global_admin":true};
+                var doc = {"full_name":req.body.full_name, "username":req.body.username, "password":password, "email":req.body.email, "global_admin":true, created_at: Math.floor(((new Date()).getTime()) / 1000), password_changed: Math.floor(((new Date()).getTime()) / 1000)};
                 if(req.body.lang)
                     doc.lang = req.body.lang;
                 countlyDb.collection('members').insert(doc, {safe:true}, function (err, member) {
@@ -761,6 +767,9 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                         req.session.email = member["email"];
                     req.session.settings = member.settings;
                     var update = {last_login:Math.round(new Date().getTime()/1000)};
+                    if(typeof member.password_changed === "undefined"){
+                        update.password_changed = Math.round(new Date().getTime()/1000);
+                    }
                     if(req.body.lang && req.body.lang != member["lang"]){
                         update.lang = req.body.lang;
                     }
@@ -907,41 +916,51 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
     }
 
     var updatedUser = {};
-
     if (req.body.username && req.body.api_key) {
         updatedUser.username = req.body["username"];
         updatedUser.api_key = req.body["api_key"];
         if (req.body.lang) {
             updatedUser.lang = req.body.lang;
         }
-
-        countlyDb.collection('members').findOne({username:req.body.username}, function (err, member) {
-            if ((member && member._id != req.session.uid) || err) {
-                res.send("username-exists");
-            } else {
-                if (req.body.old_pwd) {
-                    var password = sha1Hash(req.body.old_pwd),
-                        newPassword = sha1Hash(req.body.new_pwd);
-
-                    updatedUser.password = newPassword;
-                    plugins.callMethod("userSettings", {req:req, res:res, next:next, data:member});
-                    countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid), "password":password}, {'$set':updatedUser}, {safe:true}, function (err, member) {
-                        if (member && !err) {
-                            res.send(true);
-                        } else {
-                            res.send(false);
-                        }
-                    });
+        var change = JSON.parse(JSON.stringify(updatedUser));
+        countlyDb.collection('members').findOne({"_id":countlyDb.ObjectID(req.session.uid)}, function (err, member) {
+            countlyDb.collection('members').findOne({username:req.body.username}, function (err, user) {
+                member.change = change;
+                if ((user && user._id != req.session.uid) || err) {
+                    res.send("username-exists");
                 } else {
-                    countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid)}, {'$set':updatedUser}, {safe:true}, function (err, member) {
-                        if (member && !err) {
-                            res.send(true);
-                        } else {
-                            res.send(false);
+                    if (req.body.old_pwd && req.body.old_pwd.length) {
+                        member.change.password = true;
+                        var password = sha1Hash(req.body.old_pwd),
+                            newPassword = sha1Hash(req.body.new_pwd);
+    
+                        if(newPassword != password){
+                            updatedUser.password = newPassword;
+                            updatedUser.password_changed = Math.round(new Date().getTime()/1000);
+                            countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid), "password":password}, {'$set':updatedUser}, {safe:true}, function (err, result) {
+                                if ( result &&  result.result &&  result.result.ok &&  result.result.nModified > 0 && !err) {
+                                    plugins.callMethod("userSettings", {req:req, res:res, next:next, data:member});
+                                    res.send(updatedUser.password_changed+"");
+                                } else {
+                                    res.send("user-settings.old-password-not-match");
+                                }
+                            });
                         }
-                    });
+                        else{
+                            res.send("user-settings.password-not-old");
+                        }
+                    } else {
+                        countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid)}, {'$set':updatedUser}, {safe:true}, function (err, result) {
+                            if (result && !err) {
+                                plugins.callMethod("userSettings", {req:req, res:res, next:next, data:member});
+                                res.send(true);
+                            } else {
+                                res.send(false);
+                            }
+                        });
+                    }
                 }
-            }
+            });
         });
     } else {
         res.send(false);
@@ -957,20 +976,14 @@ app.post(countlyConfig.path+'/user/settings/lang', function (req, res, next) {
 
     var updatedUser = {};
 
-    if (req.body.username && req.body.lang) {
+    if (req.body.lang) {
         updatedUser.lang = req.body.lang;
 
-        countlyDb.collection('members').findOne({username:req.body.username}, function (err, member) {
-            if ((member && member._id != req.session.uid) || err) {
-                res.send("username-exists");
+        countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid)}, {'$set':updatedUser}, {safe:true}, function (err, member) {
+            if (member && !err) {
+                res.send(true);
             } else {
-                countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid)}, {'$set':updatedUser}, {safe:true}, function (err, member) {
-                    if (member && !err) {
-                        res.send(true);
-                    } else {
-                        res.send(false);
-                    }
-                });
+                res.send(false);
             }
         });
     } else {

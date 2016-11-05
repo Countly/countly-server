@@ -10,7 +10,7 @@
     });
 
     function getSourceName(code, data, separate){
-        code = (code+"").replace(/&#46;/g, '.').replace(/&amp;#46;/g, '.');
+        code = countlyCommon.decode(code+"");
         if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "mobile"){
             //ignore incorrect Android values, which are numbers
             if(!isNaN(parseFloat(code)) && isFinite(code))

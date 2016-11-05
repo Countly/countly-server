@@ -362,7 +362,7 @@ describe('Writing app metrics', function(){
 				.get('/o/analytics/dashboard?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateDashboard(err, res, done, {total_sessions:8,total_users:8,new_users:8,total_time:"0.0 min",avg_time:"0.0 min",avg_requests:"1.0",platforms:[{"name":"Android","percent":66},{"name":"IOS","percent":34}],resolutions:[{"name":"1200x800","percent":50}, {"name":"2048x1536","percent":50}],carriers:[{"name":"Vodafone","percent":50},{"name":"Telecom","percent":50}]});
+					testUtils.validateDashboard(err, res, done, {total_sessions:8,total_users:8,new_users:8,total_time:"0.0 min",avg_time:"0.0 min",avg_requests:"1.0",platforms:[{"name":"Android","percent":66},{"name":"IOS","percent":34}],resolutions:[{"name":"1200x800","percent":50}, {"name":"2048x1536","percent":50}],carriers:[{"name":"Telecom","percent":50},{"name":"Vodafone","percent":50}]});
 				});
 			});
 		});

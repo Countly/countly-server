@@ -117,6 +117,11 @@ window.ConfigurationsView = countlyView.extend({
             "security-login_tries":jQuery.i18n.map["configs.security-login_tries"],
             "security-login_wait":jQuery.i18n.map["configs.security-login_wait"],
             "security-dashboard_additional_headers":jQuery.i18n.map["configs.security-dashboard_additional_headers"],
+            "security-password_min":jQuery.i18n.map["configs.security-password_min"],
+            "security-password_char":jQuery.i18n.map["configs.security-password_char"],
+            "security-password_number":jQuery.i18n.map["configs.security-password_number"],
+            "security-password_symbol":jQuery.i18n.map["configs.security-password_symbol"],
+            "security-password_expiration":jQuery.i18n.map["configs.security-password_expiration"],
             "api-domain":jQuery.i18n.map["configs.api-domain"],
             "api-safe":jQuery.i18n.map["configs.api-safe"],
             "api-session_duration_limit":jQuery.i18n.map["configs.api-session_duration_limit"],
@@ -274,6 +279,8 @@ window.ConfigurationsView = countlyView.extend({
         }
     },
     renderCommon:function (isRefresh) {
+        if(this.reset)
+            $("#new-install-overlay").show();
         if(this.userConfig)
             this.configsData = countlyPlugins.getUserConfigsData();
         else
@@ -294,7 +301,8 @@ window.ConfigurationsView = countlyView.extend({
             "page-title":title,
             "configs":configsHTML,
             "namespace":this.namespace,
-            "user": this.userConfig
+            "user": this.userConfig,
+            "reset": this.reset
         };
         var self = this;
         if (!isRefresh) {
@@ -343,6 +351,57 @@ window.ConfigurationsView = countlyView.extend({
                 self.updateConfig(id, value);
             });
             
+            $(".configs #username").off("keyup").on("keyup",_.throttle(function() {
+                if (!($(this).val().length) || $("#menu-username").text() == $(this).val()) {
+                    $(".username-check").remove();
+                    return false;
+                }
+            
+                $(this).next(".required").remove();
+            
+                var existSpan = $("<span class='username-check red-text'>").html(jQuery.i18n.map["management-users.username.exists"]),
+                    notExistSpan = $("<span class='username-check green-text'>").html("&#10004;"),
+                    data = {};
+                
+                data.username = $(this).val();
+                data._csrf = countlyGlobal['csrf_token'];
+            
+                var self = $(this);
+                $.ajax({
+                    type: "POST",
+                    url: countlyGlobal["path"]+"/users/check/username",
+                    data: data,
+                    success: function(result) {
+                        $(".username-check").remove();
+                        if (result) {
+                            self.after(notExistSpan.clone());
+                        } else {
+                            self.after(existSpan.clone());
+                        }
+                    }
+                });
+            }, 300));
+            
+            $(".configs #new_pwd").off("keyup").on("keyup",_.throttle(function() {
+                $(".password-check").remove();
+                var error = CountlyHelpers.validatePassword($(this).val());
+                if (error) {
+                    var invalidSpan = $("<div class='password-check red-text'>").html(error);
+                    $(this).after(invalidSpan.clone());
+                    return false;
+                }
+            }, 300));
+            
+            $(".configs #re_new_pwd").off("keyup").on("keyup",_.throttle(function() {
+                $(".password-check").remove();
+                var error = CountlyHelpers.validatePassword($(this).val());
+                if (error) {
+                    var invalidSpan = $("<div class='password-check red-text'>").html(error);
+                    $(this).after(invalidSpan.clone());
+                    return false;
+                }
+            }, 300));
+            
             $(".configs .account-settings .input input").keyup(function () {
                 $("#configs-apply-changes").removeClass("settings-changes");
                 $(".configs .account-settings .input input").each(function(){
@@ -367,9 +426,17 @@ window.ConfigurationsView = countlyView.extend({
                         $("#configs-apply-changes").hide();
                 });
             });
-            
             $("#configs-apply-changes").click(function () {
                 if(self.userConfig){
+                    $(".username-check.green-text").remove();
+                    if ($(".red-text").length) {
+                        CountlyHelpers.notify({
+                            title: jQuery.i18n.map["user-settings.please-correct-input"],
+                            message: jQuery.i18n.map["configs.not-saved"],
+                            type: "error"
+                        });
+                        return false;
+                    }
                     var username = $(".configs #username").val(),
                         old_pwd = $(".configs #old_pwd").val(),
                         new_pwd = $(".configs #new_pwd").val(),
@@ -394,6 +461,15 @@ window.ConfigurationsView = countlyView.extend({
                     if (new_pwd != re_new_pwd) {
                         CountlyHelpers.notify({
                             title: jQuery.i18n.map["user-settings.password-match"],
+                            message: jQuery.i18n.map["configs.not-saved"],
+                            type: "error"
+                        });
+                        return true;
+                    }
+
+                    if (new_pwd.length && new_pwd == old_pwd) {
+                        CountlyHelpers.notify({
+                            title: jQuery.i18n.map["user-settings.password-not-old"],
                             message: jQuery.i18n.map["configs.not-saved"],
                             type: "error"
                         });
@@ -428,6 +504,18 @@ window.ConfigurationsView = countlyView.extend({
                                 });
                                 return true;
                             } else {
+                                if(!isNaN(parseInt(result))){
+                                    $("#new-install-overlay").fadeOut();
+                                    countlyGlobal["member"].password_changed = parseInt(result);
+                                }
+                                else if(typeof result === "string"){
+                                    CountlyHelpers.notify({
+                                        title: jQuery.i18n.map["user-settings.old-password-not-match"],
+                                        message: jQuery.i18n.map["configs.not-saved"],
+                                        type: "error"
+                                    });
+                                    return true;
+                                }
                                 $(".configs #old_pwd").val("");
                                 $(".configs #new_pwd").val("");
                                 $(".configs #re_new_pwd").val("");
@@ -436,24 +524,32 @@ window.ConfigurationsView = countlyView.extend({
                                 countlyGlobal["member"].username = username;
                                 countlyGlobal["member"].api_key = api_key;
                             }
-                            countlyPlugins.updateUserConfigs(self.changes, function(err, services){
-                                if(err && !ignoreError){
-                                    CountlyHelpers.notify({
-                                        title: jQuery.i18n.map["configs.not-changed"],
-                                        message: jQuery.i18n.map["configs.not-saved"],
-                                        type: "error"
-                                    });
-                                }
-                                else{
-                                    CountlyHelpers.notify({
-                                        title: jQuery.i18n.map["configs.changed"],
-                                        message: jQuery.i18n.map["configs.saved"]
-                                    });
-                                    self.configsData = JSON.parse(JSON.stringify(self.cache));
-                                    $("#configs-apply-changes").hide();
-                                    self.changes = {};
-                                }
-                            });
+                            if(Object.keys(self.changes).length){
+                                countlyPlugins.updateUserConfigs(self.changes, function(err, services){
+                                    if(err && !ignoreError){
+                                        CountlyHelpers.notify({
+                                            title: jQuery.i18n.map["configs.not-changed"],
+                                            message: jQuery.i18n.map["configs.not-saved"],
+                                            type: "error"
+                                        });
+                                    }
+                                    else{
+                                        CountlyHelpers.notify({
+                                            title: jQuery.i18n.map["configs.changed"],
+                                            message: jQuery.i18n.map["configs.saved"]
+                                        });
+                                        self.configsData = JSON.parse(JSON.stringify(self.cache));
+                                        $("#configs-apply-changes").hide();
+                                        self.changes = {};
+                                    }
+                                });
+                            }
+                            else{
+                                CountlyHelpers.notify({
+                                    title: jQuery.i18n.map["configs.changed"],
+                                    message: jQuery.i18n.map["configs.saved"]
+                                });
+                            }
                         }
                     });
                 }
@@ -611,24 +707,30 @@ if(countlyGlobal["member"].global_admin){
     
     app.route('/manage/configurations', 'configurations', function () {
         this.configurationsView.namespace = null;
+        this.configurationsView.reset = false;
         this.configurationsView.userConfig = false;
         this.renderWhenReady(this.configurationsView);
     });
     
     app.route('/manage/configurations/:namespace', 'configurations_namespace', function (namespace) {
         this.configurationsView.namespace = namespace;
+        this.configurationsView.reset = false;
         this.configurationsView.userConfig = false;
         this.renderWhenReady(this.configurationsView);
     });
 } 
 app.route('/manage/user-settings', 'user-settings', function () {
     this.configurationsView.namespace = null;
+    this.configurationsView.reset = false;
     this.configurationsView.userConfig = true;
     this.renderWhenReady(this.configurationsView);
 });
 
 app.route('/manage/user-settings/:namespace', 'user-settings_namespace', function (namespace) {
-    this.configurationsView.namespace = namespace;
+    if(namespace == "reset")
+        this.configurationsView.reset = true;
+    else
+        this.configurationsView.namespace = namespace;
     this.configurationsView.userConfig = true;
     this.renderWhenReady(this.configurationsView);
 });

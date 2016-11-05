@@ -25,7 +25,7 @@ window.DensityView = countlyView.extend({
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": densityData.chartData,
                 "aoColumns": [
-                    { "mData": "density", sType:"session-duration", "sTitle": jQuery.i18n.map["density.table.density"] },
+                    { "mData": function(row){return row.density.replace(/:/g, ".");}, sType:"session-duration", "sTitle": jQuery.i18n.map["density.table.density"] },
                     { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
                     { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
                     { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }

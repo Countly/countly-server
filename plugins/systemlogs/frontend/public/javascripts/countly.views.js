@@ -4,25 +4,44 @@ window.SystemLogsView = countlyView.extend({
     },
     beforeRender: function() {
 		if(this.template)
-			return $.when(countlySystemLogs.initialize()).then(function () {});
+			return true;
 		else{
 			var self = this;
 			return $.when($.get(countlyGlobal["path"]+'/systemlogs/templates/logs.html', function(src){
 				self.template = Handlebars.compile(src);
-			}), countlySystemLogs.initialize()).then(function () {});
+			})).then(function () {});
 		}
     },
     renderCommon:function (isRefresh) {
-        var data = countlySystemLogs.getData();
         this.templateData = {
-            "page-title":jQuery.i18n.map["systemlogs.title"]
+            "page-title":jQuery.i18n.map["systemlogs.title"],
+            query: this._query
         };
 		var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-
+            $("#systemlogs-back").click(function(){
+                window.history.back();
+            });
 			this.dtable = $('#systemlogs-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": data,
+                "bServerSide": true,
+                "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key="+countlyGlobal.member.api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID+"&method=systemlogs",
+                "fnServerData": function ( sSource, aoData, fnCallback ) {
+                    $.ajax({
+                        "dataType": 'json',
+                        "type": "POST",
+                        "url": sSource,
+                        "data": aoData,
+                        "success": function(data){
+                                fnCallback(data);
+                        }
+                    });
+                },
+                "fnServerParams": function ( aoData ) {
+                    if(self._query){
+                        aoData.push({ "name": "query", "value": JSON.stringify(self._query) });
+                    }
+                },
                 "aoColumns": [
                     { "mData": function(row, type){
 						if(type == "display"){
@@ -42,23 +61,25 @@ window.SystemLogsView = countlyView.extend({
 			this.dtable.fnSort( [ [0,'desc'] ] );
         }
     },
-    refresh:function () {
-        var self = this;
-        $.when(countlySystemLogs.initialize()).then(function () {
-            if (app.activeView != self) {
-                return false;
-            }
-            var data = countlySystemLogs.getData();
-			CountlyHelpers.refreshTable(self.dtable, data);
-            app.localize();
-        });
-    }
+    refresh:function () { }
 });
 
 //register views
 app.systemLogsView = new SystemLogsView();
 if(countlyGlobal["member"].global_admin){
     app.route('/manage/systemlogs', 'systemlogs', function () {
+        this.systemLogsView._query = null;
+        this.renderWhenReady(this.systemLogsView);
+    });
+    
+    app.route('/manage/systemlogs/*query', 'systemlogs_query', function (query) {
+        try{
+            query = JSON.parse(query);
+        }
+        catch(ex){
+            query = null;
+        }
+        this.systemLogsView._query = query;
         this.renderWhenReady(this.systemLogsView);
     });
 }
@@ -72,4 +93,19 @@ $( document ).ready(function() {
         if($('#management-submenu .help-toggle').length)
             $('#management-submenu .help-toggle').before(menu);
     }
+    
+    app.addPageScript("/manage/users", function(){
+        setTimeout(function(){
+            $("#user-table").on("click", "tr", function(){
+                var container = $(this);
+                if(container.find("td.details").length == 0){
+                    setTimeout(function(){
+                        container = container.next("tr");
+                        var id = container.find(".user_id").val();
+                        container.find(".button-container").append("<a class='icon-button light' data-localize='systemlogs.view-user-actions' href='#/manage/systemlogs/{\"user_id\":\""+id+"\"}'>"+jQuery.i18n.map["systemlogs.view-user-actions"]+"</a>");
+                    }, 0);
+                }
+            });
+        }, 1000);
+    });
 });

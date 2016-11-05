@@ -5,6 +5,7 @@ var http = require('http'),
     countlyConfig = require('./config', 'dont-enclose'),
     plugins = require('../plugins/pluginManager.js'),
     jobs = require('./parts/jobs'),
+    Promise = require("bluebird"),
     workers = [];
     
 plugins.setConfigs("api", {
@@ -30,6 +31,11 @@ plugins.setConfigs("apps", {
 plugins.setConfigs("security", {
     login_tries: 3,
     login_wait: 5*60,
+    password_min: 8,
+    password_char: true,
+    password_number: true,
+    password_symbol: true,
+    password_expiration: 0,
     dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
     api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block"
 });
@@ -200,6 +206,11 @@ if (cluster.isMaster) {
                     if (!isNaN(lat) && !isNaN(lon)) {
                         params.user.lat = lat;
                         params.user.lng = lon;
+                        if(params.user.lat && params.user.lng){
+                            var update = {};  
+                            update["$set"] = {lat:params.user.lat, lng:params.user.lng};
+                            common.updateAppUser(params, update);
+                        }
                     }
                 }
             }
@@ -207,30 +218,31 @@ if (cluster.isMaster) {
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, user){
                 params.app_user = user || {};
                 
-                if (params.qstring.metrics && typeof params.qstring.metrics === "string") {
-                    try {
-                        params.qstring.metrics = JSON.parse(params.qstring.metrics);
-                    } catch (SyntaxError) {
-                        console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);
-                    }
+                if (params.qstring.metrics && typeof params.qstring.metrics === "string") {		
+                    try {		
+                        params.qstring.metrics = JSON.parse(params.qstring.metrics);		
+                    } catch (SyntaxError) {		
+                        console.log('Parse metrics JSON failed', params.qstring.metrics, params.req.url, params.req.body);		
+                    }		
                 }
                 
                 plugins.dispatch("/sdk", {params:params, app:app});
                 
-                if (params.qstring.metrics) {
-                    if (params.qstring.metrics["_carrier"]) {
-                        params.qstring.metrics["_carrier"] = params.qstring.metrics["_carrier"].replace(/\w\S*/g, function (txt) {
-                            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-                        });
-                    }
-                
-                    if (params.qstring.metrics["_os"] && params.qstring.metrics["_os_version"]) {
-                        if(os_mapping[params.qstring.metrics["_os"].toLowerCase()])
-                            params.qstring.metrics["_os_version"] = os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_os_version"];
-                        else
-                            params.qstring.metrics["_os_version"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_os_version"];
-                    }
+                if (params.qstring.metrics) {		
+                    if (params.qstring.metrics["_carrier"]) {		
+                        params.qstring.metrics["_carrier"] = params.qstring.metrics["_carrier"].replace(/\w\S*/g, function (txt) {		
+                            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();		
+                        });		
+                    }		
+                		
+                    if (params.qstring.metrics["_os"] && params.qstring.metrics["_os_version"]) {		
+                        if(os_mapping[params.qstring.metrics["_os"].toLowerCase()])		
+                            params.qstring.metrics["_os_version"] = os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_os_version"];		
+                        else		
+                            params.qstring.metrics["_os_version"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_os_version"];		
+                    }		
                 }
+                
                 if(!params.cancelRequest){
                     //check if device id was changed
                     if(params.qstring.old_device_id && params.qstring.old_device_id != params.qstring.device_id){
@@ -293,7 +305,7 @@ if (cluster.isMaster) {
                                 }
                             }
                             //update new user
-                            common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {'$set': newAppUser}, {'upsert':true}, function(err, res) {
+                            common.updateAppUser(params, {'$set': newAppUser}, function(){
                                 //delete old user
                                 common.db.collection('app_users' + params.app_id).remove({_id:old_id}, function(){
                                     //let plugins know they need to merge user data
@@ -308,40 +320,39 @@ if (cluster.isMaster) {
                         common.db.collection('app_users' + params.app_id).findOne({'_id': old_id }, function (err, oldAppUser){
                             if(!err && oldAppUser){
                                 //checking if there is a new user
-                                common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, newAppUser){
-                                    if(!err && newAppUser){
-                                        if(newAppUser.ls && newAppUser.ls > oldAppUser.ls){
-                                            mergeUserData(newAppUser, oldAppUser);
-                                        }
-                                        else{
-                                            //switching user identidy
-                                            var temp = oldAppUser._id;
-                                            oldAppUser._id = newAppUser._id;
-                                            newAppUser._id = temp;
-                                            
-                                            temp = oldAppUser.did;
-                                            oldAppUser.did = newAppUser.did;
-                                            newAppUser.did = temp;
-                                            
-                                            temp = oldAppUser.uid;
-                                            oldAppUser.uid = newAppUser.uid;
-                                            newAppUser.uid = temp;
-                                            
-                                            mergeUserData(oldAppUser, newAppUser);
-                                        }
-                                    }
-                                    else{
-                                        //simply copy user document with old uid
-                                        //no harm is done
-                                        oldAppUser.did = params.qstring.device_id + "";
-                                        oldAppUser._id = params.app_user_id;
-                                        common.db.collection('app_users' + params.app_id).insert(oldAppUser, function(){
-                                            common.db.collection('app_users' + params.app_id).remove({_id:old_id}, function(){
-                                                restartRequest();
-                                            });
-                                        });
-                                    }
-                                });
+                                var newAppUser = params.app_user;
+                               if(Object.keys(newAppUser).length){
+                                   if(newAppUser.ls && newAppUser.ls > oldAppUser.ls){
+                                       mergeUserData(newAppUser, oldAppUser);
+                                   }
+                                   else{
+                                       //switching user identidy
+                                       var temp = oldAppUser._id;
+                                       oldAppUser._id = newAppUser._id;
+                                       newAppUser._id = temp;
+                                       
+                                       temp = oldAppUser.did;
+                                       oldAppUser.did = newAppUser.did;
+                                       newAppUser.did = temp;
+                                       
+                                       temp = oldAppUser.uid;
+                                       oldAppUser.uid = newAppUser.uid;
+                                       newAppUser.uid = temp;
+                                       
+                                       mergeUserData(oldAppUser, newAppUser);
+                                   }
+                               }
+                               else{
+                                   //simply copy user document with old uid
+                                   //no harm is done
+                                   oldAppUser.did = params.qstring.device_id + "";
+                                   oldAppUser._id = params.app_user_id;
+                                   common.db.collection('app_users' + params.app_id).insert(oldAppUser, function(){
+                                       common.db.collection('app_users' + params.app_id).remove({_id:old_id}, function(){
+                                           restartRequest();
+                                       });
+                                   });
+                               }
                             }
                             else{
                                 //process request
@@ -352,38 +363,71 @@ if (cluster.isMaster) {
                         //do not proceed with request
                         return false;
                     }
-                    
-                    plugins.dispatch("/i", {params:params, app:app});
-            
-                    if (params.qstring.events) {
-                        countlyApi.data.events.processEvents(params);
-                    } else if (plugins.getConfig("api").safe) {
-                        common.returnMessage(params, 200, 'Success');
+                    else if(!params.app_user.uid){
+                        function parseSequence(num){
+                            var valSeq = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+                            var digits = [];
+                            var base = valSeq.length;
+                            while (num > base-1){
+                                digits.push(num % base);
+                                num = Math.floor(num / base);
+                            }
+                            digits.push(num);
+                            var result = "";
+                            for(var i = digits.length-1; i>=0; --i){
+                                result = result + valSeq[digits[i]];
+                            }
+                            return result;
+                        }
+                        common.db.collection('app_users' + params.app_id).findAndModify({_id:"uid-sequence"},{},{$inc:{seq:1}},{new:true}, function(err,result){
+                            result = result && result.ok ? result.value : null;
+                            if (result && result.seq) {
+                                params.app_user.uid = parseSequence(result.seq);
+                                common.updateAppUser(params, {$set:{uid:params.app_user.uid}});
+                                processRequestData();
+                            }
+                        });
                     }
-            
-                    if (params.qstring.begin_session) {
-                        countlyApi.data.usage.beginUserSession(params, done);
-                    } else if (params.qstring.end_session) {
-                        if (params.qstring.session_duration) {
+                    else{
+                        processRequestData();
+                    }
+                    
+                    function processRequestData(){
+                        plugins.dispatch("/i", {params:params, app:app});
+                
+                        if (params.qstring.events) {
+                            if(params.promises)
+                                params.promises.push(countlyApi.data.events.processEvents(params));
+                            else
+                                countlyApi.data.events.processEvents(params);
+                        } else if (plugins.getConfig("api").safe) {
+                            common.returnMessage(params, 200, 'Success');
+                        }
+                
+                        if (params.qstring.begin_session) {
+                            countlyApi.data.usage.beginUserSession(params, done);
+                        } else if (params.qstring.end_session) {
+                            if (params.qstring.session_duration) {
+                                countlyApi.data.usage.processSessionDuration(params, function () {
+                                    countlyApi.data.usage.endUserSession(params, done);
+                                });
+                            } else {
+                                countlyApi.data.usage.endUserSession(params, done);
+                            }
+                        } else if (params.qstring.session_duration) {
                             countlyApi.data.usage.processSessionDuration(params, function () {
-                                countlyApi.data.usage.endUserSession(params);
+                                return done ? done() : false;
                             });
                         } else {
-                            countlyApi.data.usage.endUserSession(params);
+                            // begin_session, session_duration and end_session handle incrementing request count in usage.js
+                            var dbDateIds = common.getDateIds(params),
+                                updateUsers = {};
+                
+                            common.fillTimeObjectMonth(params, updateUsers, common.dbMap['events']);
+                            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, {'upsert':true}, function(err, res){});
+                            
+                            return done ? done() : false;
                         }
-                        return done ? done() : false;
-                    } else if (params.qstring.session_duration) {
-                        countlyApi.data.usage.processSessionDuration(params);
-                        return done ? done() : false;
-                    } else {
-                        // begin_session, session_duration and end_session handle incrementing request count in usage.js
-                        var dbDateIds = common.getDateIds(params),
-                            updateUsers = {};
-            
-                        common.fillTimeObjectMonth(params, updateUsers, common.dbMap['events']);
-                        common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, {'upsert':true}, function(err, res){});
-            
-                        return done ? done() : false;
                     }
                 } else {
                     return done ? done() : false;
@@ -527,6 +571,7 @@ if (cluster.isMaster) {
             callback(params);
         });
     }
+    
     http.Server(function (req, res) {
         plugins.loadConfigs(common.db, function(){
             var urlParts = url.parse(req.url, true),
@@ -603,8 +648,8 @@ if (cluster.isMaster) {
                                         'city':requests[i].city || 'Unknown'
                                     },
                                     'qstring':requests[i],
-                                    'href':params.href,
-                                    'res':params.res,
+                                    'href':params.href,		
+                                    'res':params.res,		
                                     'req':params.req,
                                     'promises':[]
                                 };
@@ -616,7 +661,14 @@ if (cluster.isMaster) {
                                 } else {
                                     tmpParams.app_user_id = common.crypto.createHash('sha1').update(tmpParams.qstring.app_key + tmpParams.qstring.device_id + "").digest('hex');
                                 }
-                                return validateAppForWriteAPI(tmpParams, processBulkRequest.bind(null, i + 1));
+                
+                                return validateAppForWriteAPI(tmpParams, function(){
+                                    function resolver(){
+                                        plugins.dispatch("/sdk/end", {params:tmpParams});
+                                        processBulkRequest(i + 1);
+                                    }
+                                    Promise.all(tmpParams.promises).then(resolver, resolver);
+                                });
                             }
                             
                             processBulkRequest(0);
@@ -713,10 +765,14 @@ if (cluster.isMaster) {
                                     console.log('Parse events JSON failed', params.qstring.events, req.url, req.body);
                                 }
                             }
-            
-                            log.i('New /i request: %j', params.qstring);
-
-                            validateAppForWriteAPI(params);
+                            
+                            params.promises = [];
+                            validateAppForWriteAPI(params, function(){
+                                function resolver(){
+                                    plugins.dispatch("/sdk/end", {params:params});
+                                }
+                                Promise.all(params.promises).then(resolver, resolver);
+                            });
             
                             if (!plugins.getConfig("api").safe && !params.res.finished) {
                                 common.returnMessage(params, 200, 'Success');

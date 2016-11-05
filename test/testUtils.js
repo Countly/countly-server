@@ -14,13 +14,17 @@ var testUtils = function testUtils(){
 	var apiKey;
 	var isLoggedIn = false;
 	var that = this;
-	var props = {};
+	var props = {
+        APP_ID: "",
+        APP_KEY: "",
+        API_KEY_ADMIN: ""
+    };
 	var RE = /^-{0,1}\d*\.{0,1}\d+$/;
 	
 	this.url = "http://localhost";
 	this.name = "Test Test";
 	this.username = "test";
-	this.password = "test1test$";
+	this.password = "Test1test$";
 	this.email = "test@domain.com";
  
     this.setCSRF = function(token){
@@ -140,56 +144,58 @@ var testUtils = function testUtils(){
 		//ob.should.have.property("meta", {"countries":["Unknown"],"f-ranges":["0"],"l-ranges":["0"]});
 		for(i in ob)
 		{
-			ob.should.have.property(i).and.not.eql({});
-			if(RE.test(i))
-			{
-				for(var c in correct){
-					if(c == "Unknown")
-						ob[i].should.have.property(c, {"u":correct.u,"t":correct.t,"n":correct.n});
-					else if(c != "meta")
-						ob[i].should.have.property(c, correct[c]);
-				}
-				for(j in ob[i])
-				{
-					if(RE.test(j))
-					{
-						for(var c in correct){
-							if(c == "Unknown")
-								ob[i][j].should.have.property(c, {"u":correct.u,"t":correct.t,"n":correct.n});
-							else if(c != "meta")
-								ob[i][j].should.have.property(c, correct[c]);
-						}
-						for(k in ob[i][j])
-						{
-							if(RE.test(k))
-							{
-								for(var c in correct){
-									if(c == "Unknown")
-										ob[i][j][k].should.have.property(c, {"u":correct.u,"t":correct.t,"n":correct.n});
-									else if(c != "meta")
-										ob[i][j][k].should.have.property(c, correct[c]);
-								}
-							}
-						}
-					}
-					else if(j.indexOf("w") == 0){
-						var w = {};
-						if(correct.u)
-							w["u"] = correct.u;
-						if(correct.f)
-							w["f"] = correct.f;
-						if(correct.l)
-							w["l"] = correct.l;
-						if(correct.ds)
-							w["ds"] = correct.ds;
-						if(correct.p)
-							w["p"] = correct.p;
-						if(correct.Unknown)
-							w["Unknown"] = {"u":correct.u};
-						ob[i].should.have.property(j, w);
-					}
-				}
-			}
+            if(i != "meta"){
+                ob.should.have.property(i).and.not.eql({});
+                if(RE.test(i))
+                {
+                    for(var c in correct){
+                        if(c == "Unknown")
+                            ob[i].should.have.property(c, {"u":correct.u,"t":correct.t,"n":correct.n});
+                        else if(c != "meta")
+                            ob[i].should.have.property(c, correct[c]);
+                    }
+                    for(j in ob[i])
+                    {
+                        if(RE.test(j))
+                        {
+                            for(var c in correct){
+                                if(c == "Unknown")
+                                    ob[i][j].should.have.property(c, {"u":correct.u,"t":correct.t,"n":correct.n});
+                                else if(c != "meta")
+                                    ob[i][j].should.have.property(c, correct[c]);
+                            }
+                            for(k in ob[i][j])
+                            {
+                                if(RE.test(k))
+                                {
+                                    for(var c in correct){
+                                        if(c == "Unknown")
+                                            ob[i][j][k].should.have.property(c, {"u":correct.u,"t":correct.t,"n":correct.n});
+                                        else if(c != "meta")
+                                            ob[i][j][k].should.have.property(c, correct[c]);
+                                    }
+                                }
+                            }
+                        }
+                        else if(j.indexOf("w") == 0){
+                            var w = {};
+                            if(correct.u)
+                                w["u"] = correct.u;
+                            if(correct.f)
+                                w["f"] = correct.f;
+                            if(correct.l)
+                                w["l"] = correct.l;
+                            if(correct.ds)
+                                w["ds"] = correct.ds;
+                            if(correct.p)
+                                w["p"] = correct.p;
+                            if(correct.Unknown)
+                                w["Unknown"] = {"u":correct.u};
+                            ob[i].should.have.property(j, w);
+                        }
+                    }
+                }
+            }
 		}
 		setTimeout(done, 100)
 	};
@@ -367,22 +373,32 @@ var testUtils = function testUtils(){
                                             ob[i][j][k].should.have.property(c, correct[c]);
                                     }
 								}
+                                var totals = {}
 								for(n in ob[i][j][k])
 								{
 									if(RE.test(n))
 									{
-										for(var c in correct){
-											if(c != "meta"){
-                                                if(c == "s"){
-                                                    ob[i][j][k][n].should.have.property(c);
-                                                    ob[i][j][k][n][c].should.be.approximately(correct[c], 0.0001);
-                                                }
-                                                else
-                                                    ob[i][j][k][n].should.have.property(c, correct[c]);
+										for(var m in ob[i][j][k][n]){
+                                            if(!totals[m]){
+                                                totals[m] = 0;
                                             }
-										}
+                                            totals[m] += ob[i][j][k][n][m]; 
+                                        }
 									}
 								}
+                                if(Object.keys(totals).length){
+                                    //totals for hours should match
+                                    for(var c in correct){
+                                        if(c != "meta"){
+                                            if(c == "s"){
+                                                totals.should.have.property(c);
+                                                totals[c].should.be.approximately(correct[c], 0.0001);
+                                            }
+                                            else
+                                                totals.should.have.property(c, correct[c]);
+                                        }
+                                    }
+                                }
 							}
 						}
 					}

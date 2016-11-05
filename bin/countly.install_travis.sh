@@ -32,7 +32,7 @@ fi
 
 #add node.js repo
 #echo | apt-add-repository ppa:chris-lea/node.js
-wget -qO- https://deb.nodesource.com/setup_5.x | bash -
+wget -qO- https://deb.nodesource.com/setup_6.x | bash -
 
 #update g++ to 4.8
 add-apt-repository ppa:ubuntu-toolchain-r/test -y

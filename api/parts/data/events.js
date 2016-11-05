@@ -2,82 +2,119 @@ var countlyEvents = {},
     common = require('./../../utils/common.js'),
     async = require('async'),
     crypto = require('crypto'),
+    Promise = require("bluebird"),
 	plugins = require('../../../plugins/pluginManager.js');
 
 (function (countlyEvents) {
 
     countlyEvents.processEvents = function(params) {
-        common.db.collection("events").findOne({'_id':params.app_id}, {list:1, segments:1}, function (err, eventColl) {
-            var appEvents = [],
-                appSegments = {},
-                metaToFetch = [];
-
-            if (!err && eventColl) {
-                if (eventColl.list) {
-                    appEvents = eventColl.list;
-                }
-
-                if (eventColl.segments) {
-                    appSegments = eventColl.segments;
-                }
+        return new Promise(function(resolve, reject){
+            var forbiddenSegValues = [];
+            for (var i = 1; i < 32; i++) {
+                forbiddenSegValues.push(i + "");
             }
-
-            for (var i=0; i < params.qstring.events.length; i++) {
-                var currEvent = params.qstring.events[i],
-                    shortEventName = "",
-                    eventCollectionName = "";
-                if (!currEvent.key || !currEvent.count || !common.isNumber(currEvent.count) || (currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalEvents.indexOf(currEvent.key) === -1)) {
-                    continue;
-                }
-
-                if (plugins.getConfig("api").event_limit &&
-                    appEvents.length >= plugins.getConfig("api").event_limit &&
-                    appEvents.indexOf(currEvent.key) === -1) {
-                    continue;
-                }
-
-                shortEventName = common.fixEventKey(currEvent.key);
-
-                if (!shortEventName) {
-                    continue;
-                }
-
-                eventCollectionName = "events" + crypto.createHash('sha1').update(shortEventName + params.app_id).digest('hex');
-
-                if (params.qstring.events[i].timestamp) {
-                    params.time = common.initTimeObj(params.appTimezone, params.qstring.events[i].timestamp);
-                }
-
-                metaToFetch.push({
-                   coll: eventCollectionName,
-                   id: "no-segment_" + common.getDateIds(params).zero
-                });
-            }
-
-            async.map(metaToFetch, fetchEventMeta, function (err, eventMetaDocs) {
-                var appSgValues = {};
-
-                for (var i = 0; i < eventMetaDocs.length; i++) {
-                    if (eventMetaDocs[i].coll && eventMetaDocs[i].meta) {
-                        appSgValues[eventMetaDocs[i].coll] = eventMetaDocs[i].meta;
+            common.db.collection("events").findOne({'_id':params.app_id}, {list:1, segments:1}, function (err, eventColl) {
+                var appEvents = [],
+                    appSegments = {},
+                    metaToFetch = {};
+    
+                if (!err && eventColl) {
+                    if (eventColl.list) {
+                        appEvents = eventColl.list;
+                    }
+    
+                    if (eventColl.segments) {
+                        appSegments = eventColl.segments;
                     }
                 }
-
-                processEvents(appEvents, appSegments, appSgValues, params);
-            });
-
-            function fetchEventMeta(metaToFetch, callback) {
-                common.db.collection(metaToFetch.coll).findOne({'_id':metaToFetch.id}, {meta:1}, function (err, eventMetaDoc) {
-                    var retObj = eventMetaDoc || {};
-                    retObj.coll = metaToFetch.coll;
-
-                    callback(false, retObj);
+    
+                for (var i=0; i < params.qstring.events.length; i++) {
+                    var currEvent = params.qstring.events[i],
+                        shortEventName = "",
+                        eventCollectionName = "";
+                    if (!currEvent.key || !currEvent.count || !common.isNumber(currEvent.count) || (currEvent.key.indexOf('[CLY]_') === 0 && plugins.internalEvents.indexOf(currEvent.key) === -1)) {
+                        continue;
+                    }
+    
+                    if (plugins.getConfig("api").event_limit &&
+                        appEvents.length >= plugins.getConfig("api").event_limit &&
+                        appEvents.indexOf(currEvent.key) === -1) {
+                        continue;
+                    }
+    
+                    shortEventName = common.fixEventKey(currEvent.key);
+    
+                    if (!shortEventName) {
+                        continue;
+                    }
+    
+                    eventCollectionName = "events" + crypto.createHash('sha1').update(shortEventName + params.app_id).digest('hex');
+    
+                    if (currEvent.segmentation) {
+        
+                        for (var segKey in currEvent.segmentation) {
+        
+                            if (plugins.getConfig("api").event_segmentation_limit &&
+                                appSegments[currEvent.key] &&
+                                appSegments[currEvent.key].indexOf(segKey) === -1 &&
+                                appSegments[currEvent.key].length >= plugins.getConfig("api").event_segmentation_limit) {
+                                continue;
+                            }
+                            
+                            var tmpSegVal = currEvent.segmentation[segKey] + "";
+        
+                            if (tmpSegVal == "") {
+                                continue;
+                            }
+        
+                            // Mongodb field names can't start with $ or contain .
+                            tmpSegVal = tmpSegVal.replace(/^\$/, "").replace(/\./g, ":");
+        
+                            if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
+                                tmpSegVal = "[CLY]" + tmpSegVal;
+                            }
+                            var postfix = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
+                            metaToFetch[eventCollectionName + "no-segment_" + common.getDateIds(params).zero + "_" + postfix] = {
+                                coll: eventCollectionName,
+                                id: "no-segment_" + common.getDateIds(params).zero + "_" + postfix
+                            };
+                        }
+                    }
+                }
+    
+                async.map(Object.keys(metaToFetch), fetchEventMeta, function (err, eventMetaDocs) {
+                    var appSgValues = {};
+    
+                    for (var i = 0; i < eventMetaDocs.length; i++) {
+                        if (eventMetaDocs[i].coll) {
+                            if(eventMetaDocs[i].meta_v2){
+                                if(!appSgValues[eventMetaDocs[i].coll])
+                                    appSgValues[eventMetaDocs[i].coll] = {};
+                                if(!appSgValues[eventMetaDocs[i].coll][eventMetaDocs[i]._id])
+                                    appSgValues[eventMetaDocs[i].coll][eventMetaDocs[i]._id] = {};
+                                for(var segment in eventMetaDocs[i].meta_v2){
+                                    appSgValues[eventMetaDocs[i].coll][eventMetaDocs[i]._id][segment] = Object.keys(eventMetaDocs[i].meta_v2[segment]);
+                                }
+                            }
+                        }
+                    }
+    
+                    processEvents(appEvents, appSegments, appSgValues, params, resolve);
                 });
-            }
+    
+                function fetchEventMeta(id, callback) {
+                    common.db.collection(metaToFetch[id].coll).findOne({'_id':metaToFetch[id].id}, {meta_v2:1}, function (err, eventMetaDoc) {
+                        var retObj = eventMetaDoc || {};
+                        retObj.coll = metaToFetch[id].coll;
+    
+                        callback(false, retObj);
+                    });
+                }
+            });
         });
     };
 
-    function processEvents(appEvents, appSegments, appSgValues, params) {
+    function processEvents(appEvents, appSegments, appSgValues, params, done) {
         var events = [],
             eventCollections = {},
             eventSegments = {},
@@ -126,6 +163,10 @@ var countlyEvents = {},
             // If present use timestamp inside each event while recording
             if (params.qstring.events[i].timestamp) {
                 params.time = common.initTimeObj(params.appTimezone, params.qstring.events[i].timestamp);
+            }
+            else{
+                //switch back to request time
+                params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
             }
 
             common.arrayAddUniq(events, shortEventName);
@@ -178,12 +219,15 @@ var countlyEvents = {},
                     if (forbiddenSegValues.indexOf(tmpSegVal) !== -1) {
                         tmpSegVal = "[CLY]" + tmpSegVal;
                     }
+                    
+                    var postfix = common.crypto.createHash("md5").update(tmpSegVal).digest('base64')[0];
 
                     if (plugins.getConfig("api").event_segmentation_value_limit &&
                         appSgValues[eventCollectionName] &&
-                        appSgValues[eventCollectionName][segKey] &&
-                        appSgValues[eventCollectionName][segKey].indexOf(tmpSegVal) === -1 &&
-                        appSgValues[eventCollectionName][segKey].length >= plugins.getConfig("api").event_segmentation_value_limit) {
+                        appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix] &&
+                        appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey] &&
+                        appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey].indexOf(tmpSegVal) === -1 &&
+                        appSgValues[eventCollectionName]["no-segment" + "_" + dateIds.zero + "_" + postfix][segKey].length >= plugins.getConfig("api").event_segmentation_value_limit) {
                         continue;
                     }
 
@@ -199,32 +243,19 @@ var countlyEvents = {},
 
                     if (!eventSegmentsZeroes[eventCollectionName]) {
                         eventSegmentsZeroes[eventCollectionName] = [];
-                        common.arrayAddUniq(eventSegmentsZeroes[eventCollectionName], dateIds.zero);
+                        common.arrayAddUniq(eventSegmentsZeroes[eventCollectionName], dateIds.zero + "." + postfix);
                     } else {
-                        common.arrayAddUniq(eventSegmentsZeroes[eventCollectionName], dateIds.zero);
+                        common.arrayAddUniq(eventSegmentsZeroes[eventCollectionName], dateIds.zero + "." + postfix);
                     }
-
-                    if (!eventSegments[eventCollectionName + "." + dateIds.zero]) {
-                        eventSegments[eventCollectionName + "." + dateIds.zero] = {};
+                    
+                    if (!eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]) {
+                        eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix] = {};
                     }
-
-                    if (!eventSegments[eventCollectionName + "." + dateIds.zero]['meta.' + segKey]) {
-                        eventSegments[eventCollectionName + "." + dateIds.zero]['meta.' + segKey] = {};
-                    }
-
-                    if (eventSegments[eventCollectionName + "." + dateIds.zero]['meta.' + segKey]["$each"] && eventSegments[eventCollectionName + "." + dateIds.zero]['meta.' + segKey]["$each"].length) {
-                        common.arrayAddUniq(eventSegments[eventCollectionName + "." + dateIds.zero]['meta.' + segKey]["$each"], tmpSegVal);
-                    } else {
-                        eventSegments[eventCollectionName + "." + dateIds.zero]['meta.' + segKey]["$each"] = [tmpSegVal];
-                    }
-
-                    if (!eventSegments[eventCollectionName + "." + dateIds.zero]["meta.segments"]) {
-                        eventSegments[eventCollectionName + "." + dateIds.zero]["meta.segments"] = {};
-                        eventSegments[eventCollectionName + "." + dateIds.zero]["meta.segments"]["$each"] = [];
-                    }
-
-                    common.arrayAddUniq(eventSegments[eventCollectionName + "." + dateIds.zero]["meta.segments"]["$each"], segKey);
-                    tmpEventColl[segKey + "." + dateIds.month] = tmpEventObj;
+                    
+                    eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]['meta_v2.' + segKey + '.' + tmpSegVal]= true;
+                    eventSegments[eventCollectionName + "." + dateIds.zero + "." + postfix]["meta_v2.segments."+segKey] = true;
+ 
+                    tmpEventColl[segKey + "." + dateIds.month + "." + postfix] = tmpEventObj;
                 }
             }
 
@@ -246,15 +277,15 @@ var countlyEvents = {},
                         } else {
                             zeroId = eventSegmentsZeroes[collection][i];
                         }
-
-                        common.db.collection(collection).update({'_id': "no-segment_" + zeroId}, {$set: {"m":zeroId, "s":"no-segment"}, '$addToSet': eventSegments[collection + "." +  zeroId]}, {'upsert': true}, function(err, res) {});
+                        eventSegments[collection + "." +  zeroId].m = zeroId.split(".")[0];
+                        eventSegments[collection + "." +  zeroId].s = "no-segment";
+                        common.db.collection(collection).update({'_id': "no-segment_" + zeroId.replace(".", "_")}, {$set: eventSegments[collection + "." +  zeroId]}, {'upsert': true}, function(err, res) {});
                     }
                 }
 
                 for (var segment in eventCollections[collection]) {
                     var collIdSplits = segment.split("."),
-                        collId = segment.replace(".","_");
-
+                        collId = segment.replace(/\./g,"_");
                     common.db.collection(collection).update({'_id': collId}, {$set: {"m":collIdSplits[1], "s":collIdSplits[0]}, "$inc":eventCollections[collection][segment]}, {'upsert': true}, function(err, res) {});
                 }
             }
@@ -271,18 +302,21 @@ var countlyEvents = {},
                         } else {
                             zeroId = eventSegmentsZeroes[collection][i];
                         }
+                        
+                        eventSegments[collection + "." +  zeroId].m = zeroId.split(".")[0];
+                        eventSegments[collection + "." +  zeroId].s = "no-segment";
 
                         eventDocs.push({
                             "collection": collection,
-                            "_id": "no-segment_" + zeroId,
-                            "updateObj": {$set: {"m":zeroId, "s":"no-segment"}, '$addToSet': eventSegments[collection + "." +  zeroId]}
+                            "_id": "no-segment_" + zeroId.replace(".", "_"),
+                            "updateObj": {$set: eventSegments[collection + "." +  zeroId]}
                         });
                     }
                 }
 
                 for (var segment in eventCollections[collection]) {
                     var collIdSplits = segment.split("."),
-                        collId = segment.replace(".","_");
+                        collId = segment.replace(/\./g,"_");
 
                     eventDocs.push({
                         "collection": collection,
@@ -360,18 +394,24 @@ var countlyEvents = {},
                 if (!eventSegmentList['$addToSet']["segments." + realEventKey]) {
                     eventSegmentList['$addToSet']["segments." + realEventKey] = {};
                 }
-
-                if (eventSegments[event]['meta.segments']) {
-                    if (eventSegmentList['$addToSet']["segments." + realEventKey] && eventSegmentList['$addToSet']["segments." + realEventKey]["$each"]) {
-                        common.arrayAddUniq(eventSegmentList['$addToSet']["segments." + realEventKey]["$each"], eventSegments[event]['meta.segments']["$each"]);
-                    } else {
-                        eventSegmentList['$addToSet']["segments." + realEventKey] = eventSegments[event]['meta.segments'];
+                
+                if (eventSegments[event]) {
+                    for(var segment in eventSegments[event]){
+                        if(segment.indexOf("meta_v2.segments.") === 0){
+                            var name = segment.replace("meta_v2.segments.", "");
+                            if (eventSegmentList['$addToSet']["segments." + realEventKey] && eventSegmentList['$addToSet']["segments." + realEventKey]["$each"]) {
+                                common.arrayAddUniq(eventSegmentList['$addToSet']["segments." + realEventKey]["$each"], name);
+                            } else {
+                                eventSegmentList['$addToSet']["segments." + realEventKey] = {$each:[name]};
+                            }
+                        }
                     }
                 }
             }
 
             common.db.collection('events').update({'_id': params.app_id}, eventSegmentList, {'upsert': true}, function(err, res){});
         }
+        done();
     }
 
     function mergeEvents(firstObj, secondObj) {

@@ -593,7 +593,7 @@ $.extend(Template.prototype, {
 				{
 					name:_name,
 					func:function (rangeArr, dataObj) {
-                        rangeArr = rangeArr.replace(/&#46;/g, '.').replace(/&amp;#46;/g, '.');
+                        rangeArr = countlyCommon.decode(rangeArr);
                         if(fetchValue && !clean)
                             return fetchValue(rangeArr);
                         else
@@ -818,6 +818,53 @@ $.extend(Template.prototype, {
     CountlyHelpers.removeDialog = function(dialog){
         dialog.remove();
         $("#overlay").fadeOut();
+    };
+    
+    CountlyHelpers.generatePassword = function() {
+        var text = [];
+        var chars = "abcdefghijklmnopqrstuvwxyz";
+        var upchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        var numbers = "0123456789";
+        var specials = '!@#$%^&*()_+{}:"<>?\|[];\',./`~';
+        var all = chars+upchars+numbers+specials;
+         
+        //1 char
+        text.push(upchars.charAt(Math.floor(Math.random() * upchars.length)));
+        //1 number
+        text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
+        //1 special char
+        text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
+        
+        //5 any chars
+        for( var i=0; i < Math.max(countlyGlobal["security"].password_min-3, 5); i++ )
+            text.push(all.charAt(Math.floor(Math.random() * all.length)));
+        
+        //randomize order
+        var j, x, i;
+        for (i = text.length; i; i--) {
+            j = Math.floor(Math.random() * i);
+            x = text[i - 1];
+            text[i - 1] = text[j];
+            text[j] = x;
+        }
+        
+        return text.join("");
+    };
+    CountlyHelpers.validateEmail = function(email) { 
+        var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
+        return re.test(email);
+    };
+                
+    CountlyHelpers.validatePassword = function(password){
+        if(password.length < countlyGlobal["security"].password_min)
+            return jQuery.i18n.prop("management-users.password.length", countlyGlobal["security"].password_min);
+        if(countlyGlobal["security"].password_char && !/[A-Z]/.test(password))
+            return jQuery.i18n.map["management-users.password.has-char"];
+        if(countlyGlobal["security"].password_number && !/\d/.test(password))
+            return jQuery.i18n.map["management-users.password.has-number"];
+        if(countlyGlobal["security"].password_symbol && !/[^A-Za-z\d]/.test(password))
+            return jQuery.i18n.map["management-users.password.has-special"];
+        return false;
     };
 
     $(document).ready(function () {
@@ -2623,57 +2670,13 @@ window.ManageUsersView = countlyView.extend({
                         { "mData": function(row, type){return row.username;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.username"]},
                         { "mData": function(row, type){if(row.global_admin) return jQuery.i18n.map["management-users.global-admin"]; else if(row.admin_of && row.admin_of.length) return jQuery.i18n.map["management-users.admin"]; else if(row.user_of && row.user_of.length)  return jQuery.i18n.map["management-users.user"]; else return jQuery.i18n.map["management-users.no-role"]}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.no-role"]},
                         { "mData": function(row, type){return row.email;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.email"]},
+                        { "mData": function(row, type){if(type == "display") return (row["created_at"]) ? countlyCommon.formatTimeAgo(row["created_at"]) : ""; else return (row["created_at"]) ? row["created_at"] : 0;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.created"]},
                         { "mData": function(row, type){if(type == "display") return (row["last_login"]) ? countlyCommon.formatTimeAgo(row["last_login"]) : jQuery.i18n.map["common.never"]; else return (row["last_login"]) ? row["last_login"] : 0;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.last_login"]}
                     ]
                 }));
                 self.dtable.fnSort( [ [0,'desc'] ] );
                 self.dtable.stickyTableHeaders();
                 CountlyHelpers.expandRows(self.dtable, self.editUser, self);
-                function generatePassword() {
-                    var text = [];
-                    var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-                    var numbers = "0123456789";
-                    var specials = '!@#$%^&*()_+{}:"<>?\|[];\',./`~';
-                    var all = chars+numbers+specials;
-                     
-                    //1 char
-                    text.push(chars.charAt(Math.floor(Math.random() * chars.length)));
-                    //1 number
-                    text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
-                    //1 special char
-                    text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
-                    
-                    //5 any chars
-                    for( var i=0; i < 5; i++ )
-                        text.push(all.charAt(Math.floor(Math.random() * all.length)));
-                    
-                    //randomize order
-                    var j, x, i;
-                    for (i = text.length; i; i--) {
-                        j = Math.floor(Math.random() * i);
-                        x = text[i - 1];
-                        text[i - 1] = text[j];
-                        text[j] = x;
-                    }
-                    
-                    return text.join("");
-                }
-                function validateEmail(email) { 
-                    var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-                    return re.test(email);
-                }
-                
-                function validatePassword(password){
-                    if(password.length < 8)
-                        return jQuery.i18n.prop("management-users.password.length", 8);
-                    if(!/[A-Za-z]/.test(password))
-                        return jQuery.i18n.map["management-users.password.has-char"];
-                    if(!/\d/.test(password))
-                        return jQuery.i18n.map["management-users.password.has-number"];
-                    if(!/[^A-Za-z\d]/.test(password))
-                        return jQuery.i18n.map["management-users.password.has-special"];
-                    return false;
-                }
                 
                 self.initTable();
                 $("#add-user-mgmt").on("click", function(){
@@ -2769,7 +2772,7 @@ window.ManageUsersView = countlyView.extend({
                         currUserDetails.find(".password-text").after(reqSpan.clone());
                     } else {
                         $(".password-check").remove();
-                        var error = validatePassword(data.password);
+                        var error = CountlyHelpers.validatePassword(data.password);
                         if(error){
                             var invalidSpan = $("<span class='password-check red-text'>").html(error);
                             currUserDetails.find(".password-text").after(invalidSpan.clone());
@@ -2786,7 +2789,7 @@ window.ManageUsersView = countlyView.extend({
                     
                     if (!data.email.length) {
                         currUserDetails.find(".email-text").after(reqSpan.clone());
-                    } else if (!validateEmail(data.email)) {
+                    } else if (!CountlyHelpers.validateEmail(data.email)) {
                         $(".email-check").remove();
                         var invalidSpan = $("<span class='email-check red-text'>").html(jQuery.i18n.map["management-users.email.invalid"]);
                         currUserDetails.find(".email-text").after(invalidSpan.clone());
@@ -2886,50 +2889,6 @@ window.ManageUsersView = countlyView.extend({
     initTable: function(userData){
         userData = userData || {};
         var self = this;
-        function generatePassword() {
-            var text = [];
-            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-            var numbers = "0123456789";
-            var specials = '!@#$%^&*()_+{}:"<>?\|[];\',./`~';
-            var all = chars+numbers+specials;
-             
-            //1 char
-            text.push(chars.charAt(Math.floor(Math.random() * chars.length)));
-            //1 number
-            text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
-            //1 special char
-            text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
-            
-            //5 any chars
-            for( var i=0; i < 5; i++ )
-                text.push(all.charAt(Math.floor(Math.random() * all.length)));
-            
-            //randomize order
-            var j, x, i;
-            for (i = text.length; i; i--) {
-                j = Math.floor(Math.random() * i);
-                x = text[i - 1];
-                text[i - 1] = text[j];
-                text[j] = x;
-            }
-            
-            return text.join("");
-        }
-        function validateEmail(email) { 
-            var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-            return re.test(email);
-        }
-        function validatePassword(password){
-            if(password.length < 8)
-                return jQuery.i18n.prop("management-users.password.length", 8);
-            if(!/[A-Za-z]/.test(password))
-                return jQuery.i18n.map["management-users.password.has-char"];
-            if(!/\d/.test(password))
-                return jQuery.i18n.map["management-users.password.has-number"];
-            if(!/[^A-Za-z\d]/.test(password))
-                return jQuery.i18n.map["management-users.password.has-special"];
-            return false;
-        }
         var adminsOf = [],
 		activeRow,
 		userDetailsClone,
@@ -3145,7 +3104,7 @@ window.ManageUsersView = countlyView.extend({
             
             $(this).next(".required").remove();
             
-            if (!validateEmail($(this).val())) {
+            if (!CountlyHelpers.validateEmail($(this).val())) {
                 $(".email-check").remove();
                 var invalidSpan = $("<span class='email-check red-text'>").html(jQuery.i18n.map["management-users.email.invalid"]);
                 $(this).after(invalidSpan.clone());
@@ -3177,7 +3136,7 @@ window.ManageUsersView = countlyView.extend({
         
         $(".password-text").off("keyup").on("keyup",_.throttle(function() {
             $(".password-check").remove();
-            var error = validatePassword($(this).val());
+            var error = CountlyHelpers.validatePassword($(this).val());
             if (error) {
                 var invalidSpan = $("<span class='password-check red-text'>").html(error);
                 $(this).after(invalidSpan.clone());
@@ -3232,7 +3191,7 @@ window.ManageUsersView = countlyView.extend({
             $(".row").removeClass("selected");
         });
         $(".generate-password").off("click").on('click', function() {
-            $(this).parent().find(".password-text").val(generatePassword());
+            $(this).parent().find(".password-text").val(CountlyHelpers.generatePassword());
         });
         
         $(".change-password").off("click").on('click', function() {
@@ -3913,6 +3872,9 @@ var AppRouter = Backbone.Router.extend({
 
         this.activeView = viewName;
         clearInterval(this.refreshActiveView);
+        if(typeof countlyGlobal["member"].password_changed === "undefined"){
+            countlyGlobal["member"].password_changed = Math.round(new Date().getTime()/1000);
+        }
 
         if (_.isEmpty(countlyGlobal['apps'])) {
             if (Backbone.history.fragment != "/manage/apps") {
@@ -3920,6 +3882,13 @@ var AppRouter = Backbone.Router.extend({
             } else {
                 viewName.render();
             }
+            return false;
+        }
+        else if(countlyGlobal["security"].password_expiration > 0 && countlyGlobal["member"].password_changed + countlyGlobal["security"].password_expiration*24*60*60 < new Date().getTime()/1000){
+            if(Backbone.history.fragment != "/manage/user-settings/reset")
+                this.navigate("/manage/user-settings/reset", true);
+            else
+                viewName.render();
             return false;
         }
 

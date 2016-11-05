@@ -54,6 +54,14 @@
         countlyCommon.ACTIVE_APP_ID = appId;
         store.set("countly_active_app", appId);
     };
+    
+    countlyCommon.encode = function(str){
+        return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;');
+    };
+        
+    countlyCommon.decode = function(str){
+        return str.replace(/^&#36;/g, "$").replace(/^&amp;#36;/g, '$').replace(/&#46;/g, '.').replace(/&amp;#46;/g, '.');
+    };
 
     // Calculates the percent change between previous and current values.
     // Returns an object in the following format {"percent": "20%", "trend": "u"}
@@ -1432,7 +1440,7 @@
                     var parts = allWeeks[i].split(" ");
                     if(parseInt(parts[1]) == moment().year(parseInt(parts[1])).isoweek(parseInt(parts[0])).isoday(1).year()){
                         ticks.push([i, "W" + allWeeks[i]]);
-
+    
                         var weekText = countlyCommon.formatDate(moment().year(parseInt(parts[1])).isoweek(parseInt(parts[0])).isoday(1), ", D MMM YYYY");
                         tickTexts[i] = "W" + parts[0] + weekText;
                     }

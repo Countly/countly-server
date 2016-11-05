@@ -12,32 +12,32 @@ var common = {},
 
     var log = logger('common');
     
-    function escape_html_entities(key, value) {
-        if(typeof value === 'object' && value){
-            if(Array.isArray(value)){
-                var replacement = [];
-                for (var k = 0; k < value.length; k++) {
-                    if(typeof value[k] === "string")
-                    replacement[k] = escape_html(value[k]);
-                    else
-                    replacement[k] = value[k];
-                }
-                return replacement;
-            }
-            else{
-                var replacement = {};
-                for (var k in value) {
-                    if (Object.hasOwnProperty.call(value, k)) {
-                        if(typeof value[k] === "string")
-                            replacement[escape_html(k)] = escape_html(value[k]);
-                        else
-                            replacement[escape_html(k)] = value[k];
-                    }
-                }
-                return replacement;
-            }
-        }
-        return value;
+    function escape_html_entities(key, value) {		
+        if(typeof value === 'object' && value){		
+            if(Array.isArray(value)){		
+                var replacement = [];		
+                for (var k = 0; k < value.length; k++) {		
+                    if(typeof value[k] === "string")		
+                    replacement[k] = escape_html(value[k]);		
+                    else		
+                    replacement[k] = value[k];		
+                }		
+                return replacement;		
+            }		
+            else{		
+                var replacement = {};		
+                for (var k in value) {		
+                    if (Object.hasOwnProperty.call(value, k)) {		
+                        if(typeof value[k] === "string")		
+                            replacement[escape_html(k)] = escape_html(value[k]);		
+                        else		
+                            replacement[escape_html(k)] = value[k];		
+                    }		
+                }		
+                return replacement;		
+            }		
+        }		
+        return value;		
     }
 
     common.log = logger;
@@ -412,6 +412,12 @@ var common = {},
                 
                 if (argProperties[arg]['has-char']) {
                     if (!/[A-Za-z]/.test(args[arg])) {
+                        return false;
+                    }
+                }
+                
+                if (argProperties[arg]['has-upchar']) {
+                    if (!/[A-Z]/.test(args[arg])) {
                         return false;
                     }
                 }
@@ -852,153 +858,26 @@ var common = {},
         });
     };
     
-    //extend object including checking sub objects
-    common.extendDeep = function(target, source) {
-        for (var prop in source) {
-            if (source.hasOwnProperty(prop)) {
-                if (target[prop] && typeof source[prop] === 'object') {
-                    common.extendDeep(target[prop], source[prop]);
-                }
-                else {
-                    target[prop] = source[prop];
-                }
-            }
-        }
-        return target;
-    };
-    
-    //access flatten property
-    function updateFlattenValue(key, ob, command, val){
-        var parts = key.split(".");
-        for(var i = 0; i < parts.length-1; i++){
-            ob = ob[parts[i]] || {};
-        }
-        key = parts.pop();
-        switch(command){
-            case "$set":
-                ob[key] = val;
-                break;
-            case "$unset":
-                if(val)
-                    delete ob[key];
-                break;
-            case "$inc":
-                if(!ob[key])
-                    ob[key] = 0;
-                ob[key] += val;
-                break;
-            case "$mul":
-                if(!ob[key])
-                    ob[key] = 0;
-                ob[key] *= val;
-                break;
-            case "$max":
-                if(typeof ob[key] === "undefined")
-                    ob[key] = val;
-                else if(val > ob[key])
-                    ob[key] = val;
-                break;
-            case "$min":
-                if(typeof ob[key] === "undefined")
-                    ob[key] = val;
-                else if(update[i][key] < ob[key])
-                    ob[key] = val;
-                break;
-            case "$push":
-                if(typeof ob[key] === "undefined")
-                    ob[key] = [];
-                ob[key].push(val);
-                break;
-            case "$addToSet":
-                if(typeof ob[key] === "undefined")
-                    ob[key] = [];
-                if(ob[key].indexOf(val) === -1)
-                    ob[key].push(val);
-                break;
-            case "$pull":
-                if(typeof ob[key] === "undefined")
-                    ob[key] = [];
-                var index = ob[key].indexOf(val);
-                if(index > -1)
-                    ob[key].splice(val, 1);
-                break;
-            case "$rename":
-                //todo
-                break;
-            case "$setOnInsert":
-                //todo
-                break;
-        }
-    }
-    
-    //update object MongoDB Style
-    common.updateMongoObject = function(ob, update){
-        ob = ob || {};
-        update = update || {};
-        for(var i in update){
-            for(var key in update[i]){
-                updateFlattenValue(key, ob, i, update[i][key]);
-            }
-        }
-    };
-    
-    common.updateAppUser = function(params, update, commit, callback){
+    common.updateAppUser = function(params, update, callback){
         if(Object.keys(update).length){
-            if(!params._app_user_fallback)
-                params._app_user_fallback = {};
-            common.updateMongoObject(params.app_user, update);
-            common.updateMongoObject(params._app_user_fallback, update);
-            if(!params._app_user_changes)
-                params._app_user_changes = {};
-            params._app_user_changes = common.extendDeep(params._app_user_changes, update)
-        }
-        if(commit && params._app_user_changes && Object.keys(params._app_user_changes).length){
-            var update = JSON.parse(JSON.stringify(params._app_user_changes));
-            params._app_user_changes = {};
-            common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, update, {'upsert':true}, function(err, res) {
-                if(err){
-                    console.log("Error commiting app_user changes", params.app_user, update, err);
-                    console.log("Falling back to", params._app_user_fallback);
-                    if(Object.keys(params._app_user_fallback).length){
-                        common.db.collection('app_users' + params.app_id).update({'_id': params.app_user_id}, {$set:common.flattenObject(params._app_user_fallback)}, {'upsert':true}, function(err, res) {
-                            if(err){
-                                console.log("Error commiting fallback", {$set:common.flattenObject(params._app_user_fallback)}, err);
-                            }
-                            if(callback)
-                                callback(err, res)
-                        });
-                    }
+            for(var i in update){
+                if(i.indexOf("$") !== 0){
+                    var err = "Unkown modifier " + i + " in " + update + " for " + params.href
+                    console.log(err);
+                    if(callback)
+                        callback(err);
+                    return;
                 }
-                else if(callback)
+            }
+            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id},{}, update, {new:true, upsert:true}, function(err, res) {
+                if(!err && res && res.value)
+                    params.app_user = res.value;
+                if(callback)
                     callback(err, res);
             });
         }
-    };
-    
-    common.flattenObject = function(ob, prefix) {
-        if(prefix){
-            prefix += ".";
-        }
-        else{
-            prefix = "";
-        }
-        var toReturn = {};
-        
-        for (var i in ob) {
-            if (!ob.hasOwnProperty(i)) continue;
-            
-            if ((typeof ob[i]) == 'object' && ob[i] != null) {
-                var flatObject = common.flattenObject(ob[i]);
-                for (var x in flatObject) {
-                    if (!flatObject.hasOwnProperty(x)) continue;
-                    
-                    toReturn[prefix + i + '.' + x] = flatObject[x];
-                }
-            } else {
-                toReturn[prefix + i] = ob[i];
-            }
-        }
-        return toReturn;
+        else if(callback)
+            callback();
     };
 }(common));
 
