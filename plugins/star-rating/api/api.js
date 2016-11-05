@@ -80,8 +80,12 @@ var plugin = {},
             var collectionName = 'events' + crypto.createHash('sha1')
                 .update('[CLY]_star_rating' + params.qstring.app_id).digest('hex');
             var documents = [];
+            var base64 = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
             for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
                 documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]);
+                for(var m = 0; m < base64.length; m++){
+                        documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]+"_"+base64[m]);
+                    }
             }
 
             common.db.collection(collectionName).find({'_id': {$in: documents}}).toArray(
@@ -89,6 +93,13 @@ var plugin = {},
                     if (!err) {
                         var result = {};
                         docs.forEach(function (doc) {
+                            if(!doc.meta)
+                                doc.meta = {};
+                            if(!doc.meta.platform_version_rate)
+                                doc.meta.platform_version_rate = [];
+                            if(doc.meta_v2 && doc.meta_v2.platform_version_rate){
+                                common.arrayAddUniq(doc.meta.platform_version_rate, Object.keys(doc.meta_v2.platform_version_rate));
+                            }
                             doc.meta.platform_version_rate.forEach(function (item) {
                                 var data = item.split('**');
                                 if (result[data[0]] === undefined)
@@ -96,7 +107,7 @@ var plugin = {},
                                 if (result[data[0]].indexOf(data[1]) === -1) {
                                     result[data[0]].push(data[1]);
                                 }
-                            })
+                            });
                         });
                         common.returnOutput(params, result);
                         return true;
