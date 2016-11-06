@@ -1370,12 +1370,8 @@ window.CountriesView = countlyView.extend({
         };
 
         var self = this;
-        $(document).bind('selectMapCountry', function () {
-            self.cityView = true;
-            store.set("countly_location_city", true);
-
-            countlyCity.drawGeoChart({height:450, metric:self.maps[self.curMap]});
-            self.refresh(true);
+        $(document).unbind('selectMapCountry').bind('selectMapCountry', function () {
+            $("#country-toggle").trigger("click");
         });
 
         if (!isRefresh) {
@@ -1413,7 +1409,7 @@ window.CountriesView = countlyView.extend({
                     else
                         $(this).text(jQuery.i18n.map["common.show"]+" "+jQuery.i18n.map["countries.table.country"]);
                 } else {
-                    app.countriesView.cityView = true;
+                    self.cityView = true;
                     if(countlyGlobal["config"].use_google)
                         countlyCity.drawGeoChart({height:450, metric:self.maps[self.curMap]});
                     $(this).addClass("country_selected");
