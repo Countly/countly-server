@@ -308,6 +308,7 @@ window.ReportingView = countlyView.extend({
     initTable: function() {
         var self = this;
         function closeActiveEdit() {
+            $(".create-report-row").slideUp();
             CountlyHelpers.closeRows(self.dtable);
             $("#listof-apps").hide();
         }

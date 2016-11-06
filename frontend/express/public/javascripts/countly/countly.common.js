@@ -158,7 +158,7 @@
                     if (dataPoints.ticks.length > 20) {
                         graphProperties.xaxis.rotateTicks = 45;
                     }
-                    graphProperties.series = {bars:{ show:true, align:"center", barWidth:0.6 }};
+                    graphProperties.series = {bars:{ show:true, align:"center", barWidth:0.6, tickLength:0, fill:1 }};
                     graphProperties.xaxis.ticks = dataPoints.ticks;
                     break;
                 case "pie":
