@@ -609,6 +609,7 @@ window.ReportingView = countlyView.extend({
             str += '<div class="row admin-apps help-zone-vs">';
 			str += '<div class="title" data-localize="reports.apps">'+jQuery.i18n.map["reports.apps"]+'</div>';
 			str += '<div class="select-apps">';
+            str += '<i class="fa fa-plus-circle"></i>';
 			str += '<input type="hidden" value="'+d.apps+'" class="app-list"/>';
 			str += '</div>';
 			str += '<div class="detail user-admin-list">';
