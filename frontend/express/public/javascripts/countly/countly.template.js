@@ -3511,7 +3511,7 @@ window.EventsView = countlyView.extend({
                 });
 
                 $(".dialog .events-table").sortable({
-                    items:"tr",
+                    items:"tbody tr",
                     revert:true,
                     handle:"td:first-child",
                     helper:function (e, elem) {
