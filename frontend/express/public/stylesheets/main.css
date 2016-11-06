@@ -454,6 +454,7 @@ table { border-collapse: collapse; }
         .app-container.app-navigate.ui-sortable-helper { border-top:1px solid #d4d4d4; }
 	.app-container.app-navigate .name { width:109px; }
 	.app-container.app-navigate .drag { display:none; width:15px; height:13px; cursor:move; position:absolute; top:17px; right:12px; font-size: 13px; color: #808080; background-color: #efefef; }
+        .app-container.app-navigate:hover .drag { background-color: #dedede; }
 #sort-app-button { padding: 7px 1px; }
 #sort-app-button i { font-size: 20px; margin: 0; line-height: 16px; }
 /* APP NAVIGATION END */
@@ -833,7 +834,7 @@ div.datatablesubrow {display: none;}
 
 #sidebar-new-app { display:none; }
 
-.required { font-size:20px; color:#B94A48; vertical-align:top; display:none; padding-left:2px; }
+.required { font-size:23px; color:#B94A48; vertical-align:top; display:none; padding-left:7px; margin-top: -2px; position: absolute; }
 .red-text { font-size:12px; color:#B94A48; vertical-align:text-top; padding-left:5px; }
 .green-text { font-size:12px; color:#50C354; vertical-align:text-top; padding-left:5px; }
 .required-color { color:#B94A48 !important; }
@@ -1013,6 +1014,8 @@ table.events-table { width:100%; padding:0; margin:0; }
 .button-selector .button:hover { background-color:#F9F9F9; }
 .button-selector .button:active  { background-color:#F9F9F9; }
 .button-selector .button.active { background-color:#F9F9F9; }
+.button-selector .button.icon { padding:7px 9px; line-height: 12px; }
+.button-selector .button.icon .entypo { line-height: 11px; }
 
 /* GRAPH NOTES */
 .widget-footer:hover #graph-note { opacity:0.7; transition:opacity .5s; }
@@ -1177,7 +1180,7 @@ td.details table tr:first-child:hover { background-color:#F3F3F3 !important; lin
 td.details table tr:first-child td,
 td.details table tr:first-child th { border:none; font-family:Ubuntu; font-size:11px; text-transform:uppercase; }
 
-.graph-description { background-color: #f9f9f9; padding: 10px 18px; color: #868686; font-size: 13px; border: 1px solid #d0d0d0; border-bottom-color: #e9e9e9; }
+.graph-description { background-color: #f9f9f9; padding: 10px 14px; color: #868686; font-size: 13px; border: 1px solid #d0d0d0; border-bottom-color: #e9e9e9; overflow:auto; }
 .graph-description + .widget-content { border-top:none; }
 
 .nav-search { background-color: #fbfbfb; position:relative; box-shadow: inset -1px 0 0 0 #d4d4d4; border-bottom: 1px solid #d4d4d4; }
