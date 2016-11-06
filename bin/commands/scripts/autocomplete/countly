@@ -1,0 +1,9 @@
+have countly &&
+_countly()
+{
+        COMPREPLY=()
+        words=$(IFS=, ; echo "${COMP_WORDS[*]}")
+        COMPREPLY=($( countly autocomplete $words ))
+}
+complete -F _countly countly
+
