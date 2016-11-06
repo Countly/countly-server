@@ -3205,9 +3205,10 @@ window.ManageUsersView = countlyView.extend({
         CountlyHelpers.closeRows(self.dtable);
 		// `d` is the original data object for the row
 		var str = '';
-		if(d){
+		if (d) {
 			str += '<div class="user-details datatablesubrow">';
-            if(countlyGlobal["member"].global_admin){
+
+            if (countlyGlobal["member"].global_admin) {
 				str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.full-name">';
                     str += '<div class="title" data-localize="management-users.full-name">'+jQuery.i18n.map["management-users.full-name"]+'</div>';
                     str += '<div class="detail"><input class="full-name-text" type="text" value="'+d.full_name+'"/></div>';
@@ -3231,80 +3232,104 @@ window.ManageUsersView = countlyView.extend({
 					str += '<div class="detail"><input class="email-text" type="text" value="'+d.email+'"/></div>';
 				str += '</div>';
             }
-			if(!d.is_current_user){
-                if(countlyGlobal["member"].global_admin){
+
+			if (!d.is_current_user) {
+                if (countlyGlobal["member"].global_admin) {
 					str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.global-admin">';
-						str += '<div class="title" data-localize="management-users.global-admin">'+jQuery.i18n.map["management-users.global-admin"]+'</div>';
-						str += '<div class="detail">';
-							str += '<div class="option">';
-                            if(d.global_admin)
-								str += '<div class="global-admin checkbox checked"></div>';
-                            else
-								str += '<div class="global-admin checkbox"></div>';
-								str += '<div class="text"></div>';
-							str += '</div>';
-						str += '</div>';
+                    str += '<div class="title" data-localize="management-users.global-admin">'+jQuery.i18n.map["management-users.global-admin"]+'</div>';
+                    str += '<div class="detail">';
+                    str += '<div class="option">';
+
+                    if (d.global_admin) {
+                        str += '<div class="global-admin checkbox checked"></div>';
+                    } else {
+                        str += '<div class="global-admin checkbox"></div>';
+                    }
+
+                    str += '<div class="text"></div>';
+                    str += '</div>';
+                    str += '</div>';
 					str += '</div>';
-                    if(!d.global_admin){
+
+                    if (!d.global_admin) {
                         str += '<div class="row help-zone-vs" data-help-localize="help.manage-users.lock-account">';
-                            str += '<div class="title" data-localize="management-users.lock-account">'+jQuery.i18n.map["management-users.lock-account"]+'</div>';
-                            str += '<div class="detail">';
-                                str += '<div class="option">';
-                                if(d.locked)
-                                    str += '<div class="lock-account checkbox checked"></div>';
-                                else
-                                    str += '<div class="lock-account checkbox"></div>';
-                                    str += '<div class="text"></div>';
-                                str += '</div>';
-                            str += '</div>';
+                        str += '<div class="title" data-localize="management-users.lock-account">'+jQuery.i18n.map["management-users.lock-account"]+'</div>';
+                        str += '<div class="detail">';
+                        str += '<div class="option">';
+
+                        if (d.locked) {
+                            str += '<div class="lock-account checkbox checked"></div>';
+                        } else {
+                            str += '<div class="lock-account checkbox"></div>';
+                        }
+
+                        str += '<div class="text"></div>';
+                        str += '</div>';
+                        str += '</div>';
                         str += '</div>';
                     }
                 }
-                if(d.global_admin)
+
+                if (d.global_admin) {
 					str += '<div class="row admin-apps help-zone-vs" data-help-localize="help.manage-users.admin-of" style="display:none;">';
-                else
+                } else {
 					str += '<div class="row admin-apps help-zone-vs" data-help-localize="help.manage-users.admin-of">';
-						str += '<div class="title" data-localize="management-users.admin-of">'+jQuery.i18n.map["management-users.admin-of"]+'</div>';
-						str += '<div class="select-apps">';
-							str += '<input type="hidden" value="'+d.admin_of+'" class="app-list"/>';
-						str += '</div>';
-						str += '<div class="detail user-admin-list">';
-				if(d.admin_of && d.admin_of.length){
-						str += CountlyHelpers.appIdsToNames(d.admin_of);
-				}else{
-						str += '<span data-localize="management-users.admin-of.tip">'+jQuery.i18n.map["management-users.admin-of.tip"]+'</span>';
+                }
+
+                str += '<div class="title" data-localize="management-users.admin-of">'+jQuery.i18n.map["management-users.admin-of"]+'</div>';
+                str += '<div class="select-apps">';
+                str += '<i class="fa fa-plus-circle"></i>';
+                str += '<input type="hidden" value="'+d.admin_of+'" class="app-list"/>';
+                str += '</div>';
+                str += '<div class="detail user-admin-list">';
+
+				if (d.admin_of && d.admin_of.length) {
+                    str += CountlyHelpers.appIdsToNames(d.admin_of);
+				} else {
+                    str += '<span data-localize="management-users.admin-of.tip">'+jQuery.i18n.map["management-users.admin-of.tip"]+'</span>';
 				}
-						str += '</div>';
-						str += '<div class="no-apps" data-localize="management-users.admin-of.tip">'+jQuery.i18n.map["management-users.admin-of.tip"]+'</div>';
-					str += '</div>';
-                    if(d.global_admin)
-                        str += '<div class="row user-apps help-zone-vs" data-help-localize="help.manage-users.user-of" style="display:none;">';
-                    else
-                        str += '<div class="row user-apps help-zone-vs" data-help-localize="help.manage-users.user-of">';
-						str += '<div class="title" data-localize="management-users.user-of">'+jQuery.i18n.map["management-users.user-of"]+'</div>';
-						str += '<div class="select-apps">';
-							str += '<input type="hidden" value="'+d.user_of+'" class="app-list"/>';
-						str += '</div>';
-						str += '<div class="detail user-admin-list">';
-				if(d.user_of && d.user_of.length){
-						str += CountlyHelpers.appIdsToNames(d.user_of);
-				}else{
-						str += '<span data-localize="management-users.user-of.tip">'+jQuery.i18n.map["management-users.user-of.tip"]+'</span>';
-				}
-						str += '</div>';
-						str += '<div class="no-apps" data-localize="management-users.user-of.tip">'+jQuery.i18n.map["management-users.user-of.tip"]+'</div>';
-					str += '</div>';
-			}
-					str += '<div class="button-container">';
-						str += '<input class="user_id" type="hidden" value="'+d._id+'"/>';
-						str += '<a class="icon-button light save-user" data-localize="common.save">'+jQuery.i18n.map["common.save"]+'</a>';
-						str += '<a class="icon-button light cancel-user" data-localize="common.cancel">'+jQuery.i18n.map["common.cancel"]+'</a>';
-				if(!d.is_current_user){
-						str += '<a class="icon-button red delete-user" data-localize="management-users.delete-user">'+jQuery.i18n.map["management-users.delete-user"]+'</a>';
-				}
-					str += '</div>';
+
+                str += '</div>';
+                str += '<div class="no-apps" data-localize="management-users.admin-of.tip">'+jQuery.i18n.map["management-users.admin-of.tip"]+'</div>';
 				str += '</div>';
+
+                if(d.global_admin) {
+                    str += '<div class="row user-apps help-zone-vs" data-help-localize="help.manage-users.user-of" style="display:none;">';
+                } else {
+                    str += '<div class="row user-apps help-zone-vs" data-help-localize="help.manage-users.user-of">';
+                }
+
+                str += '<div class="title" data-localize="management-users.user-of">'+jQuery.i18n.map["management-users.user-of"]+'</div>';
+                str += '<div class="select-apps">';
+                str += '<i class="fa fa-plus-circle"></i>';
+                str += '<input type="hidden" value="'+d.user_of+'" class="app-list"/>';
+                str += '</div>';
+                str += '<div class="detail user-admin-list">';
+
+				if (d.user_of && d.user_of.length) {
+                    str += CountlyHelpers.appIdsToNames(d.user_of);
+				} else {
+                    str += '<span data-localize="management-users.user-of.tip">'+jQuery.i18n.map["management-users.user-of.tip"]+'</span>';
+				}
+
+                str += '</div>';
+                str += '<div class="no-apps" data-localize="management-users.user-of.tip">'+jQuery.i18n.map["management-users.user-of.tip"]+'</div>';
+                str += '</div>';
+			}
+
+            str += '<div class="button-container">';
+            str += '<input class="user_id" type="hidden" value="'+d._id+'"/>';
+            str += '<a class="icon-button light save-user" data-localize="common.save">'+jQuery.i18n.map["common.save"]+'</a>';
+            str += '<a class="icon-button light cancel-user" data-localize="common.cancel">'+jQuery.i18n.map["common.cancel"]+'</a>';
+
+            if (!d.is_current_user) {
+                str += '<a class="icon-button red delete-user" data-localize="management-users.delete-user">'+jQuery.i18n.map["management-users.delete-user"]+'</a>';
+            }
+
+            str += '</div>';
+			str += '</div>';
 		}
+
         setTimeout(function(){self.initTable(d);}, 1);
 		return str;
 	}
