@@ -1370,12 +1370,8 @@ window.CountriesView = countlyView.extend({
         };
 
         var self = this;
-        $(document).bind('selectMapCountry', function () {
-            self.cityView = true;
-            store.set("countly_location_city", true);
-
-            countlyCity.drawGeoChart({height:450, metric:self.maps[self.curMap]});
-            self.refresh(true);
+        $(document).unbind('selectMapCountry').bind('selectMapCountry', function () {
+            $("#country-toggle").trigger("click");
         });
 
         if (!isRefresh) {
@@ -1413,7 +1409,7 @@ window.CountriesView = countlyView.extend({
                     else
                         $(this).text(jQuery.i18n.map["common.show"]+" "+jQuery.i18n.map["countries.table.country"]);
                 } else {
-                    app.countriesView.cityView = true;
+                    self.cityView = true;
                     if(countlyGlobal["config"].use_google)
                         countlyCity.drawGeoChart({height:450, metric:self.maps[self.curMap]});
                     $(this).addClass("country_selected");
@@ -2697,14 +2693,8 @@ window.ManageUsersView = countlyView.extend({
                     }
                     
                     $(this).toggleClass("selected");
-                    
-                    if ($("#listof-apps .app.selected").length == $("#listof-apps .app").length) {
-                        $("#select-all").hide();
-                        $("#deselect-all").show();
-                    } else {
-                        $("#select-all").show();
-                        $("#deselect-all").hide();
-                    }
+
+                    self.setSelectDeselect();
                     
                     adminsOf = [];
                     var adminOfIds = [];
@@ -2886,6 +2876,25 @@ window.ManageUsersView = countlyView.extend({
             }
         });
     },
+    setSelectDeselect: function() {
+        var searchInput = $("#listof-apps").find(".search input").val();
+
+        if (searchInput == "") {
+            if ($("#listof-apps .app:not(.disabled)").length == 0) {
+                $("#select-all").hide();
+                $("#deselect-all").hide();
+            } else if ($("#listof-apps .app.selected").length == $("#listof-apps .app").length) {
+                $("#select-all").hide();
+                $("#deselect-all").show();
+            } else {
+                $("#select-all").show();
+                $("#deselect-all").hide();
+            }
+        } else {
+            $("#select-all").hide();
+            $("#deselect-all").hide();
+        }
+    },
     initTable: function(userData){
         userData = userData || {};
         var self = this;
@@ -2964,22 +2973,17 @@ window.ManageUsersView = countlyView.extend({
                     $(this).parent().removeClass("disabled");
                 }
             });
-            
-            if ($("#listof-apps .app:not(.disabled)").length == 0) {
-                $("#select-all").hide();
-                $("#deselect-all").hide();
-            } else if ($("#listof-apps .app.selected").length == $("#listof-apps .app").length) {
-                $("#select-all").hide();
-                $("#deselect-all").show();
-            } else {
-                $("#select-all").show();
-                $("#deselect-all").hide();
-            }
+
+            self.setSelectDeselect();
             
             $("#listof-apps").show().offset(buttonPos);
             $("#listof-apps").find(".search input").focus();
         });
-        
+
+        $("#listof-apps").find(".search").on('input', 'input', function(e,v) {
+            self.setSelectDeselect();
+        });
+
         $(".save-user").off("click").on("click", function() {
             $("#listof-apps").hide();
             $(".row").removeClass("selected");
@@ -5511,7 +5515,7 @@ var AppRouter = Backbone.Router.extend({
                 }).css('display','block');
             });
 
-            $(document).on('input', "#listof-apps .search input", function(e) {
+            $(document).on('input', "#listof-apps .search input, #listof-plugins .search input", function(e) {
                 var searchText = new RegExp($(this).val().toLowerCase()),
                     searchInside = $(this).parent().next().find(".searchable");
 

@@ -8,3 +8,4 @@
 .user-details.create-report-row { padding-bottom:45px; box-shadow:inset 2px 0 0 -1px #DDD, inset -2px 0 0 -1px #DDD, inset 0 2px 0 -1px #DDD; position:relative; font-size: 12px; font-weight: normal; color: #6B6B6B; margin-bottom: -15px; }
 .reports-table td { font-family: Ubuntu; line-height: 16px; }
 .reports-table td.details { padding:0; }
+#reports-table .user-details .select-apps { margin-top: -1px; }

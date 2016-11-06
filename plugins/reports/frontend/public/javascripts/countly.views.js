@@ -253,14 +253,8 @@ window.ReportingView = countlyView.extend({
                 }
                 
                 $(this).toggleClass("selected");
-                
-                if ($("#listof-apps .app.selected").length == $("#listof-apps .app").length) {
-                    $("#select-all").hide();
-                    $("#deselect-all").show();
-                } else {
-                    $("#select-all").show();
-                    $("#deselect-all").hide();
-                }
+
+                self.setSelectDeselect();
                 
                 adminsOf = [];
                 var adminOfIds = [];
@@ -305,13 +299,34 @@ window.ReportingView = countlyView.extend({
             });	
         }
     },
+    setSelectDeselect: function() {
+        var searchInput = $("#listof-apps").find(".search input").val();
+
+        if (searchInput == "") {
+            if ($("#listof-apps .app:not(.disabled)").length == 0) {
+                $("#select-all").hide();
+                $("#deselect-all").hide();
+            } else if ($("#listof-apps .app.selected").length == $("#listof-apps .app").length) {
+                $("#select-all").hide();
+                $("#deselect-all").show();
+            } else {
+                $("#select-all").show();
+                $("#deselect-all").hide();
+            }
+        } else {
+            $("#select-all").hide();
+            $("#deselect-all").hide();
+        }
+    },
     initTable: function() {
         var self = this;
+
         function closeActiveEdit() {
             $(".create-report-row").slideUp();
             CountlyHelpers.closeRows(self.dtable);
             $("#listof-apps").hide();
         }
+
         $(".select-apps").off("click").on('click', function() {
             $("#listof-apps .app").removeClass("selected");
             activeRow = $(this).parent(".row");
@@ -333,20 +348,15 @@ window.ReportingView = countlyView.extend({
                     $(this).parent().addClass("selected");
                 }
             });
-            
-            if ($("#listof-apps .app:not(.disabled)").length == 0) {
-                $("#select-all").hide();
-                $("#deselect-all").hide();
-            } else if ($("#listof-apps .app.selected").length == $("#listof-apps .app").length) {
-                $("#select-all").hide();
-                $("#deselect-all").show();
-            } else {
-                $("#select-all").show();
-                $("#deselect-all").hide();
-            }
+
+            self.setSelectDeselect();
             
             $("#listof-apps").show().offset(buttonPos);
             $("#listof-apps").find(".search input").focus();
+        });
+
+        $("#listof-apps").find(".search").on('input', 'input', function(e,v) {
+            self.setSelectDeselect();
         });
         
         $(".save-report").off("click").on("click", function() {
@@ -609,6 +619,7 @@ window.ReportingView = countlyView.extend({
             str += '<div class="row admin-apps help-zone-vs">';
 			str += '<div class="title" data-localize="reports.apps">'+jQuery.i18n.map["reports.apps"]+'</div>';
 			str += '<div class="select-apps">';
+            str += '<i class="fa fa-plus-circle"></i>';
 			str += '<input type="hidden" value="'+d.apps+'" class="app-list"/>';
 			str += '</div>';
 			str += '<div class="detail user-admin-list">';

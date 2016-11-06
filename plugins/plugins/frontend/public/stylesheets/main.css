@@ -26,3 +26,8 @@
 
 .plugins #loader { position:absolute; left:50%; top:50%; margin-top:-24px; margin-left:-24px; width:48px; height:48px; font-size:48px;}
 .plugins #loader i {font-size:48px; color: #888;}
+
+.configs .button-selector .button:nth-child(1) { background-color: #2EB52B; color:#FFF; border-color:#2EB52B; cursor:pointer; }
+.configs .button-selector .button:nth-child(2) { background-color: #D63E40; color:#FFF; border-color:#D63E40; cursor:pointer; }
+.configs .button-selector .button:nth-child(1).active { background-color:#F9F9F9; color:#6B6B6B; border-color:#D0D0D0; cursor:default; }
+.configs .button-selector .button:nth-child(2).active { background-color:#F9F9F9; color:#6B6B6B; border-color:#D0D0D0; cursor:default; }
