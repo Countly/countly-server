@@ -2,11 +2,20 @@
 
     // Private Properties
     var _period = (store.get("countly_date")) ? store.get("countly_date") : "30days";
+    
+    countlyCommon.browserLang = function(){
+        var lang = navigator.language || navigator.userLanguage;
+        if(lang){
+            lang = lang.toLowerCase();
+            lang.length > 3 && ( lang = lang.substring(0,3) + lang.substring(3).toUpperCase());
+        };
+        return lang;
+    };
 
     // Public Properties
     countlyCommon.ACTIVE_APP_KEY = 0;
     countlyCommon.ACTIVE_APP_ID = 0;
-    countlyCommon.BROWSER_LANG = jQuery.i18n.browserLang() || "en-US";
+    countlyCommon.BROWSER_LANG = countlyCommon.browserLang() || "en-US";
     countlyCommon.BROWSER_LANG_SHORT = countlyCommon.BROWSER_LANG.split("-")[0];
     countlyCommon.periodObj = getPeriodObj();
 
