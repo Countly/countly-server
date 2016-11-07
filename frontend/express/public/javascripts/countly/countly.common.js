@@ -1989,7 +1989,7 @@
         if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length == 2) {
             var tmpDate = new Date (_period[1]);
             tmpDate.setHours(0,0,0,0);
-            _period[1]= tmpDate.getTime();
+            _period[1]= tmpDate.getTime() - tmpDate.getTimezoneOffset()*60000;
             // One day is selected from the datepicker
             if (_period[0] == _period[1]) {
                 var selectedDate = moment(_period[0]),
