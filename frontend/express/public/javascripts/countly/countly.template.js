@@ -5378,29 +5378,22 @@ var AppRouter = Backbone.Router.extend({
                 $("#date-picker").toggle();
 
                 if (self.dateToSelected) {
-                    var dateToDate = moment(self.dateToSelected).toDate();
-                    self.dateToOffset = dateToDate.getTimezoneOffset() * 60000;
-                    dateTo.datepicker("setDate", dateToDate);
+                    dateTo.datepicker("setDate", moment(self.dateToSelected).toDate());
+                    dateFrom.datepicker("option", "maxDate", moment(self.dateToSelected).toDate());
                     //dateFrom.datepicker("option", "maxDate", moment(self.dateToSelected).subtract("days", 1).toDate());
                 } else {
-                    var dateToDate = moment().toDate();
-                    self.dateToOffset = dateToDate.getTimezoneOffset() * 60000;
-                    self.dateToSelected = dateToDate.getTime();
+                    self.dateToSelected = moment().toDate().getTime();
                     dateTo.datepicker("setDate",moment().toDate());
                     dateFrom.datepicker("option", "maxDate", moment(self.dateToSelected).toDate());
                 }
 
                 if (self.dateFromSelected) {
-                    var dateFromDate = moment(self.dateFromSelected).toDate();
-                    self.dateFromOffset = dateFromDate.getTimezoneOffset() * 60000;
-                    dateFrom.datepicker("setDate", dateFromDate);
+                    dateFrom.datepicker("setDate", moment(self.dateFromSelected).toDate());
                     dateTo.datepicker("option", "minDate", moment(self.dateFromSelected).toDate());
                 } else {
                     extendDate = moment(dateTo.datepicker("getDate")).subtract('days', 30).toDate();
                     dateFrom.datepicker("setDate", extendDate);
-                    var dateFromDate = moment(dateTo.datepicker("getDate")).subtract('days', 30).toDate();
-                    self.dateFromOffset = dateFromDate.getTimezoneOffset() * 60000;
-                    self.dateFromSelected = dateFromDate.getTime();
+                    self.dateFromSelected = moment(dateTo.datepicker("getDate")).subtract('days', 30).toDate().getTime();
                     dateTo.datepicker("option", "minDate", moment(self.dateFromSelected).toDate());
                 }
 
@@ -5469,7 +5462,11 @@ var AppRouter = Backbone.Router.extend({
                 if (!self.dateFromSelected && !self.dateToSelected) {
                     return false;
                 }
-                countlyCommon.setPeriod([self.dateFromSelected - self.dateFromOffset, self.dateToSelected - self.dateFromOffset]);
+                var dateFromOffset = new Date().getTimezoneOffset() * 60000;
+                if(dateFromOffset < 0)
+                    countlyCommon.setPeriod([self.dateFromSelected - dateFromOffset, self.dateToSelected - dateFromOffset]);
+                else
+                    countlyCommon.setPeriod([self.dateFromSelected, self.dateToSelected]);
 
                 self.activeView.dateChanged();
 
