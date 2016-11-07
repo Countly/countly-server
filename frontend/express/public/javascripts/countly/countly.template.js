@@ -5399,7 +5399,7 @@ var AppRouter = Backbone.Router.extend({
                     extendDate = moment(dateTo.datepicker("getDate")).subtract('days', 30).toDate();
                     dateFrom.datepicker("setDate", extendDate);
                     var dateFromDate = moment(dateTo.datepicker("getDate")).subtract('days', 30).toDate();
-                    self.dateFromOffset = dateFromDate.getTimezoneOffset();
+                    self.dateFromOffset = dateFromDate.getTimezoneOffset() * 60000;
                     self.dateFromSelected = dateFromDate.getTime();
                     dateTo.datepicker("option", "minDate", moment(self.dateFromSelected).toDate());
                 }
