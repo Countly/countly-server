@@ -26,7 +26,9 @@ var plugin = {},
 		}
         else if (params.qstring.method == "get_view_segments") {
 			validateUserForDataReadAPI(params, function(){
-                common.db.collection("app_viewdata"+params.app_id).findOne({'_id': "meta"}, function(err, res){
+                common.db.collection("app_viewdata"+params.app_id).findOne({'_id': "meta_v2"}, function(err, res){
+                    if(res && res.segments)
+                        res.segments = Object.keys(res.segments);
                     common.returnOutput(params,res);
                 });
             });
@@ -80,13 +82,13 @@ var plugin = {},
 			validateUserForDataReadAPI(params, function(){
                 var result = {types:[], data:[]};
                 var collectionName = "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex');
-                common.drillDb.collection(collectionName).findOne( {"_id": "meta"},{_id:0, "sg.type":1, "sg.domain":1} ,function(err,meta){
+                common.drillDb.collection(collectionName).findOne( {"_id": "meta_v2"},{_id:0, "sg.type":1, "sg.domain":1} ,function(err,meta){
                     if(meta && meta.sg && meta.sg.type)
-                        result.types = meta.sg.type.values || values
+                        result.types = Object.keys(meta.sg.type.values)
                     else
                         result.types = [];
                     if(meta && meta.sg && meta.sg.domain)
-                        result.domains = meta.sg.domain.values || values
+                        result.domains = Object.keys(meta.sg.domain.values)
                     else
                         result.domains = [];
                     if (params.qstring.period) {
@@ -223,7 +225,9 @@ var plugin = {},
                     common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
                     common.fillTimeObjectZero(params, updateUsersZero, 'vc.' + calculatedRange);
                     common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, function(){});
-                    common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, {'$inc': updateUsersZero, '$addToSet': {'meta.v-ranges': calculatedRange}}, function(){});
+                    var update = {'$inc': updateUsersZero, '$set': {}};
+                    update["$set"]['meta_v2.v-ranges.' +  calculatedRange] = true;
+                    common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, update, function(err, res){console.log("update v-ranges", err);});
                     
                     if(user.lv){
                         if(ob.end_session || user.lvt && params.time.timestamp - user.lvt > 300){
@@ -385,10 +389,11 @@ var plugin = {},
                     dur = parseInt(currEvent.segmentation.dur);
                 common.fillTimeObjectMonth(params, tmpTimeObjMonth, escapedMetricVal + '.' + common.dbMap['duration'], dur, true);
             }
-            
             if(typeof currEvent.segmentation.segment != "undefined"){
                 currEvent.segmentation.segment = common.db.encode(currEvent.segmentation.segment+"");
-                common.db.collection("app_viewdata"+params.app_id).update({'_id': "meta"}, {$addToSet: {"segments":currEvent.segmentation.segment}}, {'upsert': true}, function(){});
+                var update = {$set:{}};
+                update["$set"]["segments."+currEvent.segmentation.segment] =  true;
+                common.db.collection("app_viewdata"+params.app_id).update({'_id': "meta_v2"}, update, {'upsert': true}, function(err, res){});
             }
             
             if (Object.keys(tmpTimeObjZero).length || Object.keys(tmpSet).length) {
@@ -418,7 +423,7 @@ var plugin = {},
     plugins.register("/i/apps/create", function(ob){
 		var params = ob.params;
 		var appId = ob.appId;
-        common.db.collection("app_viewdata" + appId).insert({_id:"meta"},function(){});
+        common.db.collection("app_viewdata" + appId).insert({_id:"meta_v2"},function(){});
 	});
 	
 	plugins.register("/i/apps/delete", function(ob){
@@ -434,11 +439,12 @@ var plugin = {},
     plugins.register("/i/apps/clear", function(ob){
 		var appId = ob.appId;
         var ids = ob.ids;
-        common.db.collection('app_viewdata' + appId).findOne({_id:"meta"}, function(err, doc){
+        common.db.collection('app_viewdata' + appId).findOne({_id:"meta_v2"}, function(err, doc){
             if(!err && doc && doc.segments){
-                doc.segments.push("no-segment");
-                for(var i = 0; i < doc.segments.length; i++){
-                    common.db.collection('app_viewdata' + appId).remove({$and:[{'_id': {$regex: doc.segments[i] + ".*"}}, {'_id': {$nin:ids}}]},function(){}); 
+                var segments = Object.keys(doc.segments);
+                segments.push("no-segment");
+                for(var i = 0; i < segments.length; i++){
+                    common.db.collection('app_viewdata' + appId).remove({$and:[{'_id': {$regex: segments[i] + ".*"}}, {'_id': {$nin:ids}}]},function(){}); 
                 }
             }
         });
@@ -451,7 +457,7 @@ var plugin = {},
 	plugins.register("/i/apps/reset", function(ob){
 		var appId = ob.appId;
         common.db.collection('app_viewdata' + appId).drop(function() {
-            common.db.collection("app_viewdata" + appId).insert({_id:"meta"},function(){});
+            common.db.collection("app_viewdata" + appId).insert({_id:"meta_v2"},function(){});
         });
 		common.db.collection('app_views' + appId).drop(function() {});
         if(common.drillDb){
