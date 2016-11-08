@@ -44,7 +44,8 @@
         visit:[1],
         start:[0,1],
         exit:[0,1],
-        bounce:[0,1]
+        bounce:[0,1],
+        segment:["Android", "iOS", "Windows Phone"]
     };
 	var crashProps = ["root", "ram_current", "ram_total", "disk_current", "disk_total", "bat_current", "bat_total", "orientation", "stack", "log", "custom", "features", "settings", "comment", "os", "os_version", "manufacture", "device", "resolution", "app_version"];
     var ip_address = [];
