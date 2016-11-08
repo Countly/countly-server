@@ -10,22 +10,6 @@
 #crash-big-numbers th{text-align: center; text-transform: uppercase; font-family:Ubuntu,Helvetica,sans-serif;}
 #crash-big-numbers td{background-color: #fff; text-align: center; font-family:Oswald; font-size: 27px; padding: 20px 5px; word-wrap: break-word;}
 
-.crash-ranges .inner { padding:0; margin-left:8px; margin-right:8px; }
-.crash-ranges .item:first-child .inner { margin-right:8px; margin-left:0; }
-.crash-ranges .item:last-child .inner { margin-right:0; margin-left:8px; }
-
-.crash-ranges table td { padding:10px; text-align: center; color:#666; }
-.crash-ranges table tr:first-child td { background-color: #ECECEC; border-bottom:1px solid #D0D0D0; color:#9c9c9c; padding:12px 10px; }
-.crash-ranges table tr:nth-child(2) td { font-size: 25px; border-bottom: 1px solid #eaeaea; }
-
-.crash-ranges div:first-child {border-left: none;}
-.crash-ranges table {width: 100%; border-spacing: 1px; border-collapse: separate;}
-.crash-ranges table td span { font-size: 14px; padding-top: 2px; display: block; color:#b1b1b1; }
-.crash-ranges table td { font-size: 18px;}
-.crash-ranges table td.range-main { text-transform: uppercase; }
-.crash-ranges table td.range-main i { font-size: 22px; }
-.crash-ranges table td.range-main span { display: inline-block; padding-top: 0; vertical-align: text-top; margin-left: 3px; font-size: 15px; color: #848484; }
-
 #crash-header { color: #646464; font-size: 20px; font-family: Ubuntu; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 #crash-header span {color: #000;}
 
@@ -55,13 +39,13 @@
 #note-edit.fa-times{color: #e11a15;}
 #note-edit.fa-pencil{color: #F3A300;}
 
-#crash-share-list{ display: none; list-style: none; background-color: #FFF; border:1px solid #D0D0D0; padding:10px; width: 410px; position: absolute; z-index: 1000; top:35px; right:35px;}
+#crash-share-list { display: none; list-style: none; background-color: #FFF; border:1px solid #D0D0D0; padding:10px; width: 410px; position: absolute; z-index: 1000; top:35px; right:35px;}
 #crash-share-list li { font:12px Ubuntu,Helvetica,sans-serif; color: #636363; padding: 5px; }
 #crash-share-list #crash-share-url { width: 100%; height: 22px; font-size: 11px; border: 1px solid #D0D0D0; }
 #crash-share-list input[type=checkbox] {float: left; height: 18px; vertical-align: middle; margin: 6px 9px 0 0; }
 #crash-share-list li span { line-height: 23px; }
 
-.crashes #loader { position:absolute; left:50%; top:50%; margin-top:-24px; margin-left:-24px; width:48px; height:48px; font-size:48px;}
+.crashes #loader { z-index:1; position:absolute; left:50%; top:50%; margin-top:-24px; margin-left:-24px; width:48px; height:48px; font-size:48px;}
 .crashes #loader i {font-size:48px; color: #888;}
 
 .crash-stack #comment,
@@ -91,7 +75,7 @@
 
 #crash-table .separator { display: none; }
 
-#crash-table .tag { margin-top:10px; float:left; margin-right:10px; border-radius: 2px; padding:2px 5px; font-size: 10px; color: #8e8e8e; border: 1px solid #d4d4d4; }
+#crash-table .tag { font-weight:100; margin-top:10px; float:left; margin-right:10px; border-radius: 2px; padding:2px 5px; font-size: 10px; color: #8e8e8e; border: 1px solid #d4d4d4; }
 #crash-table .tag.not-viewed,
 #crash-table .tag.re-occurred { display:none; }
 

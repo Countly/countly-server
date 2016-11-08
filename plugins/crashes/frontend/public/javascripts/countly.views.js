@@ -836,7 +836,7 @@ window.CrashgroupView = countlyView.extend({
                 self.renderCommon(true);
                 var newPage = $("<div>" + self.template(self.templateData) + "</div>");
                 $("#big-numbers-container").replaceWith(newPage.find("#big-numbers-container"));
-                $(".crash-ranges").replaceWith(newPage.find(".crash-ranges"));
+                $(".grouped-numbers").replaceWith(newPage.find(".grouped-numbers"));
                 $(".crash-bars").replaceWith(newPage.find(".crash-bars"));
 
                 var crashData = countlyCrashes.getGroupData();

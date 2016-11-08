@@ -257,7 +257,7 @@ table { border-collapse: collapse; }
         .widget.google-disabled .widget-content { display: none; }
 	.fix-two-columns { position:relative; }
 
-    .widget-group { border:1px solid #D0D0D0; margin-bottom: 40px; border-radius:2px; }
+    .widget-group { border:1px solid #D0D0D0; margin-bottom: 16px; border-radius:2px; }
     .widget-group .dashboard-summary { margin:0; border-top:1px solid #d0d0d0; }
     .widget-group .big-numbers.top.widgets .inner,
     .widget-group .dashboard-summary .item .inner { border-radius:0; margin-left:0; box-shadow: none !important; border-left: 1px solid #D0D0D0; padding:15px 15px; }
@@ -652,7 +652,7 @@ div.datatablesubrow {display: none;}
 
 .three-column { width:33%; }
 .three-column:nth-child(2) { width:34%; }
-.three-column:last-child { width:34%; }
+.three-column:last-child { width:33%; }
 
 .six-column { width:17%; }
 .six-column:first-child { width:16%; }
@@ -1188,3 +1188,18 @@ td.details table tr:first-child th { border:none; font-family:Ubuntu; font-size:
 
 .table-link { color:#2FA732; text-decoration: underline; cursor: pointer; text-transform: lowercase; }
 .table-link.green { color:#2FA732; }
+
+.grouped-numbers .inner { padding:0; margin-left:8px; margin-right:8px; }
+.grouped-numbers .item:first-child .inner { margin-right:8px; margin-left:0; }
+.grouped-numbers .item:last-child .inner { margin-right:0; margin-left:8px; }
+.grouped-numbers table td { padding:10px; text-align: center; color:#666; }
+.grouped-numbers table tr:first-child td { background-color: #ECECEC; border-bottom:1px solid #D0D0D0; color:#9c9c9c; padding:6px 10px; padding-bottom: 3px; }
+.grouped-numbers table tr:nth-child(2) td { font-size: 25px; }
+.grouped-numbers table tr:nth-child(3) td { border-top: 1px solid #eaeaea; }
+.grouped-numbers div:first-child {border-left: none;}
+.grouped-numbers table {width: 100%; border-spacing: 1px; border-collapse: separate;}
+.grouped-numbers table td span { font-size: 14px; display: block; color:#b1b1b1; }
+.grouped-numbers table td { font-size: 18px;}
+.grouped-numbers table td.range-main { text-transform: uppercase; }
+.grouped-numbers table td.range-main i { font-size: 22px; }
+.grouped-numbers table td.range-main span { display: inline-block; padding-top: 0; vertical-align: text-top; margin-left: 3px; font-size: 15px; color: #848484; }
