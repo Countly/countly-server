@@ -71,9 +71,17 @@
     countlyGlobal["path"] = "<%- path %>";
     countlyGlobal["cdn"] = "<%- cdn %>";
     countlyCommon = {};
+    countlyCommon.browserLang = function(){
+        var lang = navigator.language || navigator.userLanguage;
+        if(lang){
+            lang = lang.toLowerCase();
+            lang.length > 3 && ( lang = lang.substring(0,3) + lang.substring(3).toUpperCase());
+        };
+        return lang;
+    };
     countlyCommon.ACTIVE_APP_KEY = 0;
     countlyCommon.ACTIVE_APP_ID = 0;
-    countlyCommon.BROWSER_LANG = jQuery.i18n.browserLang() || "en-US";
+    countlyCommon.BROWSER_LANG = countlyCommon.browserLang() || "en-US";
     countlyCommon.BROWSER_LANG_SHORT = countlyCommon.BROWSER_LANG.split("-")[0];
     countlyCommon.timeString = function(timespent){
         var timeSpentString = (timespent.toFixed(1)) + " " + jQuery.i18n.map["common.minute.abrv"];
@@ -87,6 +95,7 @@
         }
         return timeSpentString;
     };
+    // Draws a graph with the given dataPoints to container. Used for drawing bar and pie charts.
     countlyCommon.drawGraph = function (dataPoints, container, graphType, inGraphProperties) {
         _.defer(function(){
             if ((!dataPoints.dp || !dataPoints.dp.length) || (graphType == "bar" && dataPoints.dp[0].data[0][1]== null && dataPoints.dp[0].data[1][1] == null)) {
@@ -144,7 +153,7 @@
                     if (dataPoints.ticks.length > 20) {
                         graphProperties.xaxis.rotateTicks = 45;
                     }
-                    graphProperties.series = {bars:{ show:true, align:"center", barWidth:0.6 }};
+                    graphProperties.series = {bars:{ show:true, align:"center", barWidth:0.6, tickLength:0, fill:1 }};
                     graphProperties.xaxis.ticks = dataPoints.ticks;
                     break;
                 case "pie":
@@ -303,9 +312,24 @@
         element.off("keyup", ".cly-select .search input").on("keyup", ".cly-select .search input", function(event) {
             if (!$(this).val()) {
                 $(this).parents(".cly-select").find(".item").removeClass("hidden");
+                $(this).parents(".cly-select").find(".group").show();
             } else {
                 $(this).parents(".cly-select").find(".item:not(:contains('" + $(this).val() + "'))").addClass("hidden");
                 $(this).parents(".cly-select").find(".item:contains('" + $(this).val() + "')").removeClass("hidden");
+                var prevHeader = $(this).parents(".cly-select").find(".group").first();
+                prevHeader.siblings().each(function(){
+                    if($(this).hasClass("group")){
+                        if(prevHeader)
+                            prevHeader.hide();
+                        prevHeader = $(this);
+                    }
+                    else if($(this).hasClass("item") && $(this).is(":visible")){
+                        prevHeader = null;
+                    }
+                    
+                    if(!$(this).next().length && prevHeader)
+                        prevHeader.hide();
+                })
             }
         });
 
@@ -322,7 +346,7 @@
             $(".cly-select").find(".search").remove();
         });
     };
-    CountlyHelpers.expandRows = function(dTable, getData){
+    CountlyHelpers.expandRows = function(dTable, getData, context){
 		dTable.aOpen = [];
 		dTable.on("click", "tr", function (e){
 			var nTr = this;
@@ -335,7 +359,7 @@
 			
 				if ( i === -1 ) {
 					$(nTr).addClass("selected");
-					var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr )), 'details' );
+					var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr ), context), 'details' );
 					$('div.datatablesubrow', nDetailsRow).slideDown();
 					dTable.aOpen.push( id );
 				}
@@ -350,12 +374,13 @@
 		});
 	};
     CountlyHelpers.initializeSelect();
+    // Function to show the tooltip when any data point in the graph is hovered on.
     function showTooltip(args) {
         var x = args.x || 0,
-                y = args.y || 0,
-                contents = args.contents,
-                title = args.title,
-                notes = args.notes;
+            y = args.y || 0,
+            contents = args.contents,
+            title = args.title,
+            notes = args.notes;
 
         var tooltip = $('<div id="graph-tooltip" class="v2"></div>').append('<span class="content">' + contents + '</span>');
 
@@ -373,11 +398,11 @@
 
         $("#content").append("<div id='tooltip-calc'>" + $('<div>').append(tooltip.clone()).html() + "</div>");
         var widthVal = $("#graph-tooltip").outerWidth(),
-                heightVal = $("#graph-tooltip").outerHeight();
+            heightVal = $("#graph-tooltip").outerHeight();
         $("#tooltip-calc").remove();
 
         var newLeft = (x - (widthVal / 2)),
-                xReach = (x + (widthVal / 2));
+            xReach = (x + (widthVal / 2));
 
         if (notes) {
             newLeft += 10.5;
@@ -491,7 +516,31 @@ window.CrashgroupView = {
                     }
                 ]
             },
-			"ranges":[
+            "bars":[
+                {
+                    "title":jQuery.i18n.map["crashes.root"],
+                    "data": countlyCrashes.getBoolBars("root"),
+                    "help":"crashes.help-root"
+                },
+				{
+                    "title":jQuery.i18n.map["crashes.online"],
+                    "data":countlyCrashes.getBoolBars("online"),
+                    "help":"crashes.help-online"
+                },
+                {
+                    "title":jQuery.i18n.map["crashes.muted"],
+                    "data": countlyCrashes.getBoolBars("muted"),
+                    "help":"crashes.help-muted"
+                },
+				{
+                    "title":jQuery.i18n.map["crashes.background"],
+                    "data": countlyCrashes.getBoolBars("background"),
+                    "help":"crashes.help-background"
+                }
+            ]
+        };
+        if(crashData.ram){
+            this.templateData["ranges"] = [
 				{
                     "title":jQuery.i18n.map["crashes.ram"],
 					"icon":"memory",
@@ -524,30 +573,8 @@ window.CrashgroupView = {
                     "max":countlyCommon.timeString(crashData.run.max/60),
                     "avg":countlyCommon.timeString((crashData.run.total/crashData.run.count)/60)
                 }
-            ],
-            "bars":[
-                {
-                    "title":jQuery.i18n.map["crashes.root"],
-                    "data": countlyCrashes.getBoolBars("root"),
-                    "help":"crashes.help-root"
-                },
-				{
-                    "title":jQuery.i18n.map["crashes.online"],
-                    "data":countlyCrashes.getBoolBars("online"),
-                    "help":"crashes.help-online"
-                },
-                {
-                    "title":jQuery.i18n.map["crashes.muted"],
-                    "data": countlyCrashes.getBoolBars("muted"),
-                    "help":"crashes.help-muted"
-                },
-				{
-                    "title":jQuery.i18n.map["crashes.background"],
-                    "data": countlyCrashes.getBoolBars("background"),
-                    "help":"crashes.help-background"
-                }
-            ]
-        };
+            ];
+        }
         if(crashData.users){
             this.templateData["big-numbers"]["items"].push({
                 "title":jQuery.i18n.map["crashes.affected-users"],
@@ -569,14 +596,15 @@ window.CrashgroupView = {
             this.templateData["big-numbers"]["class"] = "five-column";
         if(crashData.session){
             this.templateData["frequency"] = true;
-            this.templateData["ranges"].push({
-                "title":jQuery.i18n.map["crashes.sessions"],
-				"icon":"repeat",
-                "help":"crashes.help-frequency",
-                "min":crashData.session.min,
-                "max":crashData.session.max,
-                "avg":((Math.round(crashData.session.total/crashData.session.count)*100)/100)
-            });
+            if(this.templateData["ranges"])
+                this.templateData["ranges"].push({
+                    "title":jQuery.i18n.map["crashes.sessions"],
+                    "icon":"repeat",
+                    "help":"crashes.help-frequency",
+                    "min":crashData.session.min,
+                    "max":crashData.session.max,
+                    "avg":((Math.round(crashData.session.total/crashData.session.count)*100)/100)
+                });
         }
         $('#content').html(this.template(this.templateData));
         var self = this;
@@ -592,7 +620,7 @@ window.CrashgroupView = {
                 "aoColumns": [
 					{ "mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.ts); else return row.ts;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.crashed"]},
 					{ "mData": function(row, type){return row.os + " " + row.os_version.replace(/:/g, '.');}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.os_version"] },
-					{ "mData": function(row, type){return row.manufacture + " " + row.device;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.platform"]},
+					{ "mData": function(row, type){var str = ""; if(row.manufacture) str += row.manufacture+" "; if(row.device) str += countlyDeviceList[row.device] || row.device; return str;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.device"]},
 					{ "mData": function(row, type){return row.app_version.replace(/:/g, '.');}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.app_version"] }
                 ]
             }));

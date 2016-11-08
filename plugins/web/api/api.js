@@ -45,7 +45,6 @@ var plugin = {},
                     params.qstring.crash = JSON.parse(params.qstring.crash);
                 } catch (SyntaxError) {
                     console.log('Parse crash JSON failed');
-                    resolve();
                     return false;
                 }
                 if(!params.qstring.crash._os)
@@ -56,6 +55,9 @@ var plugin = {},
                
                 if(!params.qstring.crash._browser)
                    params.qstring.crash._browser = agent.family;
+               
+               if(!params.qstring.crash._device)
+                   params.qstring.crash._device = (agent.device.family == "Other") ? "Unknown" : agent.device.family;
             }
         }
 	});
