@@ -1408,6 +1408,7 @@
             limitAdjustment = 0;
         if(bucket === 'daily'){
             var thisDay = moment(countlyCommon.periodObj.activePeriod);
+            var thisDay = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
             ticks.push([0, countlyCommon.formatDate(thisDay,"D MMM")]);
             tickTexts[0] = countlyCommon.formatDate(thisDay,"D MMM, dddd");
         }else if ((days == 1 && _period != "month" && _period != "day") || (days == 1 && bucket == "hourly")) {
