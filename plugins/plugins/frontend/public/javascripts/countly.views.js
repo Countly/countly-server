@@ -625,7 +625,6 @@ window.ConfigurationsView = countlyView.extend({
             return null;
         }
         var ret = "";
-        console.log("test", id, value);
         if(jQuery.i18n.map["configs.help."+id])
             ret = "<span class='config-help' data-localize='configs.help."+id+"'>"+jQuery.i18n.map["configs.help."+id]+"</span>";
         if(typeof this.predefinedLabels[id] != "undefined")
