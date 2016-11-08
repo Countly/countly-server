@@ -10,20 +10,6 @@
 #crash-big-numbers th{text-align: center; text-transform: uppercase; font-family:Ubuntu,Helvetica,sans-serif;}
 #crash-big-numbers td{background-color: #fff; text-align: center; font-family:Oswald; font-size: 27px; padding: 20px 5px; word-wrap: break-word;}
 
-.crash-ranges .inner { padding:0; margin-left:8px; margin-right:8px; }
-.crash-ranges .item:first-child .inner { margin-right:8px; margin-left:0; }
-.crash-ranges .item:last-child .inner { margin-right:0; margin-left:8px; }
-
-.crash-ranges table td { padding:10px; text-align: center; color:#666; }
-.crash-ranges table tr:first-child td { background-color: #ECECEC; border-bottom:1px solid #D0D0D0; color:#9c9c9c; padding:12px 10px; }
-.crash-ranges table tr:nth-child(2) td { font-size: 25px; padding-bottom: 0; }
-
-.crash-ranges div:first-child {border-left: none;}
-.crash-ranges table {width: 100%; border-spacing: 1px; border-collapse: separate;}
-.crash-ranges table td span { font-size: 14px; padding-top: 2px; display: block; color:#b1b1b1; }
-.crash-ranges table td { font-size: 18px;}
-.crash-ranges table td.range-main { text-transform: uppercase; font-size: 14px; }
-
 #crash-header { color: #646464; font-size: 20px; font-family: Ubuntu; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 #crash-header span {color: #000;}
 
@@ -38,8 +24,10 @@
 .widget-footer .crashnumbers .big-numbers .inner {height: 31px;}
 .widget-header .left>.title #resolved-text {color: #45b849; padding-top: 2px; font-size: 11px;}
 .widget-header .left>.title #unresolved-text {color: #e11a15; padding-top: 2px; font-size: 11px;}
-.widget-header .right #mark-resolved {color: #45b849;}
-.widget-header .right #mark-unresolved {color: #e11a15;}
+#mark-resolved i {color: #45b849;}
+#mark-unresolved i {color: #e11a15;}
+#mark-resolved.disabled,
+#mark-unresolved.disabled { opacity:0.8; }
 
 .widget-header .left>.title #error-title { display: block; }
 
@@ -51,14 +39,13 @@
 #note-edit.fa-times{color: #e11a15;}
 #note-edit.fa-pencil{color: #F3A300;}
 
-#crash-share-list{ display: none; list-style: none; background-color: #292929; padding:10px; width: 400px; position: absolute; z-index: 1000; top:38px; right:137px;}
-#crash-share-list:before { border: 6px solid rgba(194, 225, 245, 0); border-bottom-color: #292929; right: 21px; top: -12px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; }
-#crash-share-list li { font:12px Ubuntu,Helvetica,sans-serif; color: #9c9c9c; padding: 5px; }
-#crash-share-list #crash-share-url { width: 100%; height: 22px; font-size: 10px; border: 1px solid #FFF; }
+#crash-share-list { display: none; list-style: none; background-color: #FFF; border:1px solid #D0D0D0; padding:10px; width: 410px; position: absolute; z-index: 1000; top:35px; right:35px;}
+#crash-share-list li { font:12px Ubuntu,Helvetica,sans-serif; color: #636363; padding: 5px; }
+#crash-share-list #crash-share-url { width: 100%; height: 22px; font-size: 11px; border: 1px solid #D0D0D0; }
 #crash-share-list input[type=checkbox] {float: left; height: 18px; vertical-align: middle; margin: 6px 9px 0 0; }
 #crash-share-list li span { line-height: 23px; }
 
-.crashes #loader { position:absolute; left:50%; top:50%; margin-top:-24px; margin-left:-24px; width:48px; height:48px; font-size:48px;}
+.crashes #loader { z-index:1; position:absolute; left:50%; top:50%; margin-top:-24px; margin-left:-24px; width:48px; height:48px; font-size:48px;}
 .crashes #loader i {font-size:48px; color: #888;}
 
 .crash-stack #comment,
@@ -66,7 +53,8 @@
 .crash-stack #comment_edit textarea { margin-bottom: 10px; }
 .crash-stack #comments .comment {margin-bottom: 20px; border-bottom: 1px dashed #e8e8e8;}
 .crash-stack #comments .comment .comment-meta{overflow: auto;}
-.crash-stack #comments .comment .comment-meta .icon-button{float: right;}
+.crash-stack #comments .comment .comment-meta .icon-button{float: right; display:none;}
+.crash-stack #comments .comment:hover .comment-meta .icon-button { display: block; }
 .crash-stack #comments .comment .author{font: 15px Ubuntu,Helvetica,sans-serif; text-align: left; color:#666;}
 .crash-stack #comments .comment .time {font: 12px Ubuntu,Helvetica,sans-serif; text-align: left; color: #666;}
 .crash-stack #comments .comment .text {font: 15px Ubuntu,Helvetica,sans-serif; padding: 5px 0; color: #757575;}
@@ -76,7 +64,8 @@
 .crash-comment-count{display:none; color:red;}
 
 .crash-stack pre code,
-.crash-stack pre .line-number { color:black; display:block; }
+.crash-stack pre .line-number { display:block; }
+.crash-stack pre .line-number { color:#6c6e6c; }
 .crash-stack pre .line-number { float:left; margin:0 1em 0 -1em; border-right:1px solid; text-align:right; }
 .crash-stack pre .line-number span { display:block; padding:0 .5em 0 1em; }
 .crash-stack pre .cl { display:block; clear:both; }
@@ -86,9 +75,37 @@
 
 #crash-table .separator { display: none; }
 
-#crash-table .tag { margin-top:10px; float:left; margin-right:10px; border-radius: 2px; padding:2px 5px; font-size: 10px; color: #8e8e8e; border: 1px solid #d4d4d4; }
+#crash-table .tag { font-weight:100; margin-top:10px; float:left; margin-right:10px; border-radius: 2px; padding:2px 5px; font-size: 10px; color: #8e8e8e; border: 1px solid #d4d4d4; }
 #crash-table .tag.not-viewed,
 #crash-table .tag.re-occurred { display:none; }
 
 #crash-table tr.newcrash .tag.not-viewed { display: block; }
 #crash-table tr.renewedcrash .tag.re-occurred { display: block; }
+
+#crash-group-buttons.btn-header { margin-top: 0; margin-right: 0px; }
+.graph-description.crash { background-color: #ececec; padding:7px 14px; border-bottom-color:#d0d0d0; }
+
+#error { position: relative; }
+#expandable { max-height: none; overflow: auto; }
+#expandable.collapsed { max-height: 200px; overflow: hidden; }
+#expand-crash { font-size:12px; padding-bottom:10px; cursor:pointer; text-align: center; position:absolute; bottom:0; width:300px; left:50%; margin-left: -150px; }
+    #expand-crash .expand { display: block; }
+    #expand-crash .collapse { display: none; }
+    #expand-crash.active .collapse { display: block; }
+    #expand-crash.active .expand { display: none; }
+
+/* Syntax highlighting - Highlight.js GoogleCode theme */
+.hljs{display:block;overflow-x:auto;background:#fff;color:#000}
+.hljs-comment,.hljs-quote{color:#800}
+.hljs-keyword,.hljs-selector-tag,.hljs-section,.hljs-title,.hljs-name{color:#008}
+.hljs-variable,.hljs-template-variable{color:#660}
+.hljs-string,.hljs-selector-attr,.hljs-selector-pseudo,.hljs-regexp{color:#080}
+.hljs-literal,.hljs-symbol,.hljs-bullet,.hljs-meta,.hljs-number,.hljs-link{color:#066}
+.hljs-title,.hljs-doctag,.hljs-type,.hljs-attr,.hljs-built_in,.hljs-builtin-name,.hljs-params{color:#606}
+.hljs-attribute,.hljs-subst{color:#000}
+.hljs-formula{background-color:#eee;font-style:italic}
+.hljs-selector-id,.hljs-selector-class{color:#9B703F}
+.hljs-addition{background-color:#baeeba}
+.hljs-deletion{background-color:#ffc8bd}
+.hljs-doctag,.hljs-strong{font-weight:bold}
+.hljs-emphasis{font-style:italic}

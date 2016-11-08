@@ -1,5 +1,150 @@
-    <a href="#/crashes" class="back-link"><span data-localize="crashes.back-to-crashes"></span></a>
+    <a href="#/crashes" class="back-link" style="margin-bottom: 25px;"><span data-localize="crashes.back-to-crashes"></span></a>
+    {{#unless external}}
+    <div style="float:right; overflow: auto;">
+        <div id="crash-group-buttons" class="right btn-header help-zone-vs">
+            {{#if hasPermission}}
+            <a class="icon-button light btn-share-crash" data-id="{{id}}"><span data-localize="crashes.share"></span></a>
+            <ul id="crash-share-list">
+                <li><input type="checkbox" id="crash-share-public"/>&nbsp;<span data-localize="crashes.public-crashes"></span></li>
+                <li class="crash-share">
+                    <span data-localize="crashes.public-link">Public link</span>
+                    <input id="crash-share-url" readonly onclick='this.select()' value="{{url}}"/>
+                </li>
+                <li class="crash-share"><input type="checkbox" id="crash-share-reports"/>&nbsp;<span data-localize="crashes.public-reports"></span></li>
+                <li class="crash-share"><input type="checkbox" id="crash-share-loss"/>&nbsp;<span data-localize="crashes.public-loss"></span></li>
+                <li class="crash-share"><input type="checkbox" id="crash-share-users"/>&nbsp;<span data-localize="crashes.public-users"></span></li>
+                <div style="margin-top:10px;">
+                    <div id="share-crash-done" style="float:right" class="icon-button light" data-localize="common.done"></div>
+                </div>
+            </ul>
 
+            {{#if data.is_hidden}}
+            <a class="icon-button light btn-show-crash" data-id="{{id}}"><span data-localize="crashes.show"></span></a>
+            <a class="icon-button light btn-hide-crash" style="display:none;" data-id="{{id}}"><span data-localize="crashes.hide"></span></a>
+            {{else}}
+            <a class="icon-button light btn-show-crash" style="display:none;" data-id="{{id}}"><span data-localize="crashes.show"></span></a>
+            <a class="icon-button light btn-hide-crash" data-id="{{id}}"><span data-localize="crashes.hide"></span></a>
+            {{/if}}
+
+            {{#if data.is_resolved}}
+            <div class="icon-button light" id="mark-unresolved"><i class="fa fa-remove"></i><span data-localize="crashes.mark-unresolved"></span></div>
+            <div class="icon-button light" id="mark-resolved" style="display: none;"><i class="fa fa-check"></i><span data-localize="crashes.mark-resolved"></span></div>
+            {{else}}
+            <div class="icon-button light" id="mark-unresolved" style="display: none;"><i class="fa fa-remove"></i><span data-localize="crashes.mark-unresolved"></span></div>
+            <div class="icon-button light" id="mark-resolved"><i class="fa fa-check"></i><span data-localize="crashes.mark-resolved"></span></div>
+            {{/if}}
+
+            <a class="icon-button red btn-delete-crash" data-id="{{id}}"><span data-localize="crashes.delete"></span></a>
+            {{/if}}
+        </div>
+    </div>
+    {{/unless}}
+    <div class="widget main-error">
+        <div class="widget-header">
+            <div class="left">
+                <div class="title">
+                    <span id="error-title">{{error}}</span>
+                    {{#unless external}}
+                    {{#if data.is_resolved}}
+                    <div id="resolved-text"><span data-localize="crashes.resolved-for"></span> <span id="resolved-version">{{data.resolved_version}}</span></div>
+                    <div id="unresolved-text" style="display: none;"><span data-localize="crashes.unresolved"></span></div>
+                    {{else}}
+                    <div id="resolved-text" style="display: none;"><span data-localize="crashes.resolved-for"></span> <span id="resolved-version">{{data.latest_version}}</span></div>
+                    <div id="unresolved-text"><span data-localize="crashes.unresolved"></span></div>
+                    {{/if}}
+                    {{/unless}}
+                </div>
+            </div>
+        </div>
+
+        <div class="widget-content help-zone-vb crash-stack" data-help-localize="{{{chart-helper}}}">
+            {{#if external}}
+            <div style="overflow: auto; padding: 20px; margin-top: -1px; position: relative;">
+                <pre id="expandable" class="collapsed"><code>{{data.error}}</code></pre>
+                <div id="expand-crash">
+                    <span class="expand"><i class="fa fa-angle-down"></i> <span data-localize="crashes.expand">EXPAND</span></span>
+                    <span class="collapse"><i class="fa fa-angle-up"></i> <span data-localize="crashes.collapse">COLLAPSE</span></span>
+                </div>
+            </div>
+            {{else}}
+            <div style="overflow: auto;" id="tabs">
+                <ul>
+                    <li><a href="#error" data-localize="crashes.error"></a></li>
+                    <li><a href="#notes" id="crash-notes"><span data-localize="crashes.comments"></span>&nbsp;<span class='crash-comment-count'>(<span></span>)</span></a></li>
+                </ul>
+                <div id="error">
+                    <pre id="expandable" class="collapsed"><code>{{data.error}}</code></pre>
+                    <div id="expand-crash">
+                        <span class="expand"><i class="fa fa-angle-down"></i> <span data-localize="crashes.expand">EXPAND</span></span>
+                        <span class="collapse"><i class="fa fa-angle-up"></i> <span data-localize="crashes.collapse">COLLAPSE</span></span>
+                    </div>
+                </div>
+                <div id="notes">
+                    <br/>
+                    <div id="comments">
+                        {{#if data.comments}}
+                        {{#eachOfArray data.comments}}
+                        <div class="comment" id="comment_{{value._id}}">
+                            <div class="comment-meta">
+                                {{#if value.is_owner}}
+                                <a class="icon-button red btn-header crash-comment-delete" data-id="{{value._id}}"><span data-localize="crashes.delete"></span></a>
+                                <a class="icon-button light btn-header crash-comment-edit" data-id="{{value._id}}"><span data-localize="crashes.edit"></span></a>
+                                {{/if}}
+                                <div class="author">{{value.author}}</div>
+                                <div class="time">{{{formatTimeAgo value.time}}
+                                    {{#if value.edit_time}}
+                                    | <span data-localize="crashes.edited_comment"></span>: {{{formatTimeAgo value.edit_time}}}
+                                    {{/if}}
+                                </div>
+                            </div>
+                            <div class="text"><p>{{{value.html}}}</p></div>
+                        </div>
+                        {{/eachOfArray}}
+                        {{/if}}
+                    </div>
+                    <p><textarea id="comment"></textarea></p>
+                    <a class="icon-button green btn-header" id="add_comment"><span data-localize="crashes.add_comment"></span></a>
+                    <div style="display:none">
+                        <div id="comment_edit">
+                            <textarea id="edited_comment"></textarea><br/>
+                            <a class="icon-button green btn-header edit_comment"><span data-localize="crashes.edit"></span></a>
+                            <a class="icon-button light btn-header cancel_comment"><span data-localize="crashes.cancel"></span></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+    <div id="crash-numbers-container">
+        <div class="dashboard-summary grouped-numbers" style="margin-top: 16px;">
+            {{#each ranges}}
+            {{#if ../frequency}}
+            <div class="item light five-column help-zone-vs" data-help-localize="{{this.help}}">
+            {{else}}
+            <div class="item light four-column help-zone-vs" data-help-localize="{{this.help}}">
+                {{/if}}
+                <div class="inner">
+                    <table cellpadding="0" cellspacing="0">
+                        <tr colspan="2">
+                            <td colspan="2" class="range-main">
+                                <i class="material-icons">{{this.icon}}</i>
+                                <span>{{this.title}}</span>
+                            </td>
+                        </tr>
+                        <tr colspan="2">
+                            <td colspan="2">{{this.avg}}<span data-localize="crashes.avg"></span></td>
+                        </tr>
+                        <tr>
+                            <td>{{this.min}}<span data-localize="crashes.min"></span></td>
+                            <td>{{this.max}}<span data-localize="crashes.max"></span></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
     <div class="widget">
 		<div class="widget-header">
 			<div class="left">
@@ -22,58 +167,10 @@
 					</div>
 				</div>
 			</div>
-			<div id="crash-group-buttons" class="right btn-header help-zone-vs">
-                {{#unless external}}
-                {{#if hasPermission}}
-                <a class="icon-button light btn-share-crash" data-id="{{id}}"><span data-localize="crashes.share"></span></a>
-                {{#if data.is_hidden}}
-                <a class="icon-button light btn-show-crash" data-id="{{id}}"><span data-localize="crashes.show"></span></a>
-                <a class="icon-button light btn-hide-crash" style="display:none;" data-id="{{id}}"><span data-localize="crashes.hide"></span></a>
-                {{else}}
-                <a class="icon-button light btn-show-crash" style="display:none;" data-id="{{id}}"><span data-localize="crashes.show"></span></a>
-                <a class="icon-button light btn-hide-crash" data-id="{{id}}"><span data-localize="crashes.hide"></span></a>
-                {{/if}}
-                <a class="icon-button red btn-delete-crash" data-id="{{id}}"><span data-localize="crashes.delete"></span></a>
-                {{/if}}
-                <ul id="crash-share-list">
-                    <li class="crash-share"><input id="crash-share-url" readonly onclick='this.select()' value="{{url}}"/></li>
-                    <li class="crash-share"><input type="checkbox" id="crash-share-reports"/>&nbsp;<span data-localize="crashes.public-reports"></span></li>
-                    <li class="crash-share"><input type="checkbox" id="crash-share-loss"/>&nbsp;<span data-localize="crashes.public-loss"></span></li>
-                    <li class="crash-share"><input type="checkbox" id="crash-share-users"/>&nbsp;<span data-localize="crashes.public-users"></span></li>
-                    <li><input type="checkbox" id="crash-share-public"/>&nbsp;<span data-localize="crashes.public-crashes"></span></li>
-                </ul>
-                {{/unless}}
-			</div>
 		</div>
 		<div class="widget-content help-zone-vb" data-help-localize="{{{chart-helper}}}" style="height:300px; padding-top:20px; padding-bottom:10px;">
 			<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
 		</div>
-	</div>
-	<div id="crash-numbers-container">
-	<div class="dashboard-summary crash-ranges" style="margin-top: 16px;">
-		{{#each ranges}}
-            {{#if ../frequency}}
-		<div class="item light five-column help-zone-vs" data-help-localize="{{this.help}}">
-            {{else}}
-        <div class="item light four-column help-zone-vs" data-help-localize="{{this.help}}">
-            {{/if}}
-            <div class="inner">
-                <table cellpadding="0" cellspacing="0">
-                    <tr colspan="2">
-                        <td colspan="2" class="range-main">{{this.title}}</td>
-                    </tr>
-                    <tr colspan="2">
-                        <td colspan="2">{{this.avg}}<span data-localize="crashes.avg"></span></td>
-                    </tr>
-                    <tr>
-                        <td>{{this.min}}<span data-localize="crashes.min"></span></td>
-                        <td>{{this.max}}<span data-localize="crashes.max"></span></td>
-                    </tr>
-                </table>
-            </div>
-		</div>
-		{{/each}}
-	</div>
 	</div>
     <div class="widget-group">
         {{#if big-numbers}}
@@ -114,87 +211,7 @@
 		</div>
 		{{/if}}
     </div>
-	<div class="widget main-error">
-		<div class="widget-header">
-			<div class="left">
-				<div class="title">
-					<span id="error-title">{{error}}</span>
-                    {{#unless external}}
-					{{#if data.is_resolved}}
-						<div id="resolved-text"><span data-localize="crashes.resolved-for"></span> <span id="resolved-version">{{data.resolved_version}}</span></div>
-						<div id="unresolved-text" style="display: none;"><span data-localize="crashes.unresolved"></span></div>
-					{{else}}
-						<div id="resolved-text" style="display: none;"><span data-localize="crashes.resolved-for"></span> <span id="resolved-version">{{data.latest_version}}</span></div>
-						<div id="unresolved-text"><span data-localize="crashes.unresolved"></span></div>
-					{{/if}}
-                    {{/unless}}
-				</div>
-			</div>
-			<div class="right btn-header help-zone-vs">
-            {{#unless external}}
-            {{#if hasPermission}}
-				{{#if data.is_resolved}}
-					<div class="icon-button light" id="mark-unresolved"><i class="fa fa-remove"></i><span data-localize="crashes.mark-unresolved"></span></div>
-					<div class="icon-button light" id="mark-resolved" style="display: none;"><i class="fa fa-check"></i><span data-localize="crashes.mark-resolved"></span></div>
-				{{else}}
-					<div class="icon-button light" id="mark-unresolved" style="display: none;"><i class="fa fa-remove"></i><span data-localize="crashes.mark-unresolved"></span></div>
-					<div class="icon-button light" id="mark-resolved"><i class="fa fa-check"></i><span data-localize="crashes.mark-resolved"></span></div>
-				{{/if}}
-            {{/if}}
-            {{/unless}}
-			</div>
-		</div>
-		<div class="widget-content help-zone-vb crash-stack" data-help-localize="{{{chart-helper}}}">
-             {{#if external}}
-                <div style="overflow: auto; padding: 20px; padding-top:0; margin-top: -1px;">
-                    <pre><code>{{data.error}}</code></pre>
-                </div>
-             {{else}}
-			<div style="overflow: auto;" id="tabs">
-                <ul>
-                    <li><a href="#error" data-localize="crashes.error"></a></li>
-                    <li><a href="#notes" id="crash-notes"><span data-localize="crashes.comments"></span>&nbsp;<span class='crash-comment-count'>(<span></span>)</span></a></li>
-                </ul>
-                <div id="error">
-                    <pre><code>{{data.error}}</code></pre>
-                </div>
-                <div id="notes">
-                    <br/>
-                    <div id="comments">
-                    {{#if data.comments}}
-                    {{#eachOfArray data.comments}}
-                    <div class="comment" id="comment_{{value._id}}">
-                        <div class="comment-meta">
-                        {{#if value.is_owner}}
-                            <a class="icon-button red btn-header crash-comment-delete" data-id="{{value._id}}"><span data-localize="crashes.delete"></span></a>
-                            <a class="icon-button light btn-header crash-comment-edit" data-id="{{value._id}}"><span data-localize="crashes.edit"></span></a> 
-                        {{/if}}
-                            <div class="author">{{value.author}}</div>
-                            <div class="time">{{{formatTimeAgo value.time}}
-                                {{#if value.edit_time}}
-                                    | <span data-localize="crashes.edited_comment"></span>: {{{formatTimeAgo value.edit_time}}} 
-                                {{/if}}
-                            </div>
-                        </div>
-                        <div class="text"><p>{{{value.html}}}</p></div>
-                    </div>
-                    {{/eachOfArray}}
-                    {{/if}}
-                    </div>
-                    <p><textarea id="comment"></textarea></p>
-                    <a class="icon-button green btn-header" id="add_comment"><span data-localize="crashes.add_comment"></span></a>
-                    <div style="display:none">
-                        <div id="comment_edit">
-                            <textarea id="edited_comment"></textarea><br/>
-                            <a class="icon-button green btn-header edit_comment"><span data-localize="crashes.edit"></span></a>
-                            <a class="icon-button light btn-header cancel_comment"><span data-localize="crashes.cancel"></span></a>
-                        </div>
-                    </div>
-                </div>
-			</div>
-            {{/if}}
-		</div>
-	</div>
+
     {{#if data.data}}
 	<div class="crash-reports" data-help-localize="{{{chart-helper}}}">
 		<table class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="{{{table-helper}}}"></table>
