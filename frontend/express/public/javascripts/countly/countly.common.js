@@ -220,7 +220,7 @@
     };
 
     // Draws a line graph with the given dataPoints to container.
-    countlyCommon.drawTimeGraph = function (dataPoints, container, bucket) {
+    countlyCommon.drawTimeGraph = function (dataPoints, container, bucket, overrideBucket) {
         _.defer(function(){
             if (!dataPoints.length) {
                 $(container).hide();
@@ -264,13 +264,17 @@
 
             graphProperties.series.points.show = (dataPoints[0].data.length <= 90);
 
+            if (overrideBucket) {
+                graphProperties.series.points.radius = 4;
+            }
+
             var graphTicks = [],
                 tickObj = {};
 
             if (_period == "month" && !bucket) {
                 tickObj = countlyCommon.getTickObj("monthly");
             } else {
-                tickObj = countlyCommon.getTickObj(bucket);
+                tickObj = countlyCommon.getTickObj(bucket, overrideBucket);
             }
 
             graphProperties.xaxis.max = tickObj.max;
@@ -286,6 +290,12 @@
 
             if (graphObj && graphObj.getOptions().series && graphObj.getOptions().series.splines && graphObj.getOptions().series.splines.show) {
                 graphObj = $(container).data("plot");
+
+                if (overrideBucket) {
+                    graphObj.getOptions().series.points.radius = 4;
+                } else {
+                    graphObj.getOptions().series.points.radius = 0;
+                }
 
                 graphObj.getOptions().xaxes[0].max = tickObj.max;
                 graphObj.getOptions().xaxes[0].min = tickObj.min;
@@ -1400,18 +1410,18 @@
         return temp;
     };
 
-    countlyCommon.getTickObj = function(bucket) {
+    countlyCommon.getTickObj = function(bucket, overrideBucket) {
         var days = parseInt(countlyCommon.periodObj.numberOfDays, 10),
             ticks = [],
             tickTexts = [],
             skipReduction = false,
             limitAdjustment = 0;
-        if(bucket === 'daily'){
-            var thisDay = moment(countlyCommon.periodObj.activePeriod);
+
+        if (overrideBucket) {
             var thisDay = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
             ticks.push([0, countlyCommon.formatDate(thisDay,"D MMM")]);
             tickTexts[0] = countlyCommon.formatDate(thisDay,"D MMM, dddd");
-        }else if ((days == 1 && _period != "month" && _period != "day") || (days == 1 && bucket == "hourly")) {
+        } else if ((days == 1 && _period != "month" && _period != "day") || (days == 1 && bucket == "hourly")) {
             for (var i = 0; i < 24; i++) {
                 ticks.push([i, (i + ":00")]);
                 tickTexts.push((i + ":00"));

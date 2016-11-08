@@ -453,11 +453,14 @@ window.starView = countlyView.extend({
         }
         var period = countlyCommon.getPeriod();
         var bucket = null;
-        if(period === 'yesterday' || period === 'hour'){
-            bucket = 'daily';
-        }
-        countlyCommon.drawTimeGraph(renderData, "#dashboard-graph", bucket);
+        var overrideBucket = false;
 
+        if (period === 'yesterday' || period === 'hour' || countlyCommon.getPeriodObj().numberOfDays == 1) {
+            bucket = 'daily';
+            overrideBucket = true;
+        }
+
+        countlyCommon.drawTimeGraph(renderData, "#dashboard-graph", bucket, overrideBucket);
     },
     renderCommon: function (isRefresh) {
         var self = this;
