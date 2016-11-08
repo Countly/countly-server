@@ -227,7 +227,7 @@ var plugin = {},
                     common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, function(){});
                     var update = {'$inc': updateUsersZero, '$set': {}};
                     update["$set"]['meta_v2.v-ranges.' +  calculatedRange] = true;
-                    common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, update, function(err, res){console.log("update v-ranges", err);});
+                    common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, update, function(err, res){});
                     
                     if(user.lv){
                         if(ob.end_session || user.lvt && params.time.timestamp - user.lvt > 300){

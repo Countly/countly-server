@@ -186,7 +186,9 @@ var usage = {},
         common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
         common.fillTimeObjectZero(params, updateUsersZero, common.dbMap['durations'] + '.' + calculatedDurationRange);
         common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, function(){});
-        common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, {'$inc': updateUsersZero, '$addToSet': {'meta.d-ranges': calculatedDurationRange}}, function(){});
+        var update = {'$inc': updateUsersZero, '$set': {}};
+        update["$set"]['meta_v2.d-ranges.'+calculatedDurationRange] = true;
+        common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, update, function(){});
 
         // sd: session duration. common.dbUserMap is not used here for readability purposes.
         common.updateAppUser(params, {'$set': {'sd': 0}}, function(){
