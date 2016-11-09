@@ -81,49 +81,49 @@ var plugin = {},
 	
 	plugins.register("/i/apps/create", function(ob){
         ob.data._id = ob.appId;
-        recordAction(ob.params, ob.params.member, "App Created", ob.data);
+        recordAction(ob.params, ob.params.member, "app_created", ob.data);
 	});
 	
 	plugins.register("/i/apps/update", function(ob){
 		var appId = ob.appId;
 		ob.data._id = appId;
-        recordAction(ob.params, ob.params.member, "App Updated", ob.data);
+        recordAction(ob.params, ob.params.member, "app_updated", ob.data);
 	});
 	
 	plugins.register("/i/apps/delete", function(ob){
-        recordAction(ob.params, ob.params.member, "App Deleted", ob.data);
+        recordAction(ob.params, ob.params.member, "app_deleted", ob.data);
 	});
 	
 	plugins.register("/i/apps/reset", function(ob){
 		var appId = ob.appId;
         ob.data._id = appId;
-        recordAction(ob.params, ob.params.member, "App Reset", ob.data);
+        recordAction(ob.params, ob.params.member, "app_reset", ob.data);
 	});
     
     plugins.register("/i/apps/clear", function(ob){
 		var appId = ob.appId;
         ob.data._id = appId;
         ob.data.before = ob.moment.format("YYYY-MM-DD");
-        recordAction(ob.params, ob.params.member, "App Clear older data", ob.data);
+        recordAction(ob.params, ob.params.member, "app_clear_old_data", ob.data);
 	});
 	
 	plugins.register("/i/users/create", function(ob){
         ob.data = JSON.parse(JSON.stringify(ob.data));
         delete ob.data.password;
-        recordAction(ob.params, ob.params.member, "User Created", ob.data);
+        recordAction(ob.params, ob.params.member, "user_created", ob.data);
 	});
 	
 	plugins.register("/i/users/update", function(ob){
         ob.data = JSON.parse(JSON.stringify(ob.data));
         if(ob.data.password)
             ob.data.password = true;
-        recordAction(ob.params, ob.params.member, "User Updated", ob.data);
+        recordAction(ob.params, ob.params.member, "user_updated", ob.data);
 	});
 	
 	plugins.register("/i/users/delete", function(ob){
         ob.data = JSON.parse(JSON.stringify(ob.data));
         delete ob.data.password;
-        recordAction(ob.params, ob.params.member, "User Deleted", ob.data);
+        recordAction(ob.params, ob.params.member, "user_deleted", ob.data);
 	});
     
     plugins.register("/systemlogs", function(ob){

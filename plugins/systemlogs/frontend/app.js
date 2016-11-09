@@ -23,43 +23,43 @@ var plugin = {},
     };
     
     plugin.userLogout = function(ob){
-        recordAction(ob.req, ob.data, "Logout", ob.data.query || {});
+        recordAction(ob.req, ob.data, "logout", ob.data.query || {});
     };
     
     plugin.passwordReset = function(ob){
-        recordAction(ob.req, ob.data, "Password reset", {});
+        recordAction(ob.req, ob.data, "password_reset", {});
     };
     
     plugin.passwordRequest = function(ob){
-        recordAction(ob.req, ob.data, "Password request", {});
+        recordAction(ob.req, ob.data, "password_request", {});
     };
     
     plugin.loginSuccessful = function(ob){
-        recordAction(ob.req, ob.data, "Login Successful", {});
+        recordAction(ob.req, ob.data, "login_success", {});
     };
     
     plugin.loginFailed = function(ob){
-        recordAction(ob.req, ob.data, "Login Unsuccessful", {});
+        recordAction(ob.req, ob.data, "login_failed", {});
     };
     
     plugin.apikeySuccessful = function(ob){
-        recordAction(ob.req, ob.data, "API KEY Successful", {});
+        recordAction(ob.req, ob.data, "api-key_success", {});
     };
     
     plugin.apikeyFailed = function(ob){
-        recordAction(ob.req, ob.data, "API KEY Unsuccessful", {});
+        recordAction(ob.req, ob.data, "api-key_failed", {});
     };
     
     plugin.mobileloginSuccessful = function(ob){
-        recordAction(ob.req, ob.data, "Mobile Login Successful", {});
+        recordAction(ob.req, ob.data, "mobile_login_success", {});
     };
     
     plugin.mobileloginFailed = function(ob){
-        recordAction(ob.req, ob.data, "Mobile Login Unsuccessful", {});
+        recordAction(ob.req, ob.data, "mobile_login_failed", {});
     };
     
     plugin.userSettings = function(ob){
-        recordAction(ob.req, ob.data, "Settings changed", ob.data.change);
+        recordAction(ob.req, ob.data, "account_settings_updated", ob.data.change);
     };
     
     plugin.logAction = function(ob){

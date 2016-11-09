@@ -1034,7 +1034,7 @@ app.post(countlyConfig.path+'/events/map/edit', function (req, res, next) {
         countlyDb.collection('members').findOne({"_id":countlyDb.ObjectID(req.session.uid)}, function (err, member) {
             if (!err && member.admin_of && member.admin_of.indexOf(req.body.app_id) != -1) {
                 countlyDb.collection('events').update({"_id":countlyDb.ObjectID(req.body.app_id)}, {'$set':{"map":req.body.event_map, "order":req.body.event_order}}, function (err, events) {
-                    plugins.callMethod("logAction", {req:req, user:{_id:req.session.uid, email:req.session.email}, action:"Events updated", data:req.body});
+                    plugins.callMethod("logAction", {req:req, user:{_id:req.session.uid, email:req.session.email}, action:"events_updated", data:req.body});
                 });
                 res.send(true);
                 return true;
@@ -1045,7 +1045,7 @@ app.post(countlyConfig.path+'/events/map/edit', function (req, res, next) {
         });
     } else {
         countlyDb.collection('events').update({"_id":countlyDb.ObjectID(req.body.app_id)}, {'$set':{"map":req.body.event_map, "order":req.body.event_order}}, function (err, events) {
-            plugins.callMethod("logAction", {req:req, user:{_id:req.session.uid, email:req.session.email}, action:"Events updated", data:req.body});
+            plugins.callMethod("logAction", {req:req, user:{_id:req.session.uid, email:req.session.email}, action:"events_updated", data:req.body});
         });
         res.send(true);
         return true;
@@ -1103,7 +1103,7 @@ app.post(countlyConfig.path+'/events/delete', function (req, res, next) {
     }
     
     deleteEvent(req, req.body.event_key, req.body.app_id, function(result){
-        plugins.callMethod("logAction", {req:req, user:{_id:req.session.uid, email:req.session.email}, action:"Event deleted", data:req.body});
+        plugins.callMethod("logAction", {req:req, user:{_id:req.session.uid, email:req.session.email}, action:"event_deleted", data:req.body});
         res.send(result);
     })
 });
@@ -1152,7 +1152,7 @@ app.post(countlyConfig.path+'/graphnotes/create', function (req, res, next) {
         noteObj["notes." + req.body.date_id] = sanNote;
 
         countlyDb.collection('graph_notes').update({"_id": countlyDb.ObjectID(req.body.app_id)}, { $addToSet: noteObj }, {upsert: true}, function(err, res) {
-            plugins.callMethod("logAction", {req:req, user:{_id:req.session.uid, email:req.session.email}, action:"Graph note created", data:req.body});
+            plugins.callMethod("logAction", {req:req, user:{_id:req.session.uid, email:req.session.email}, action:"graph_note_created", data:req.body});
         });
         res.send(sanNote);
     }
@@ -1184,7 +1184,7 @@ app.post(countlyConfig.path+'/graphnotes/delete', function (req, res, next) {
         noteObj["notes." + req.body.date_id] = req.body.note;
 
         countlyDb.collection('graph_notes').update({"_id": countlyDb.ObjectID(req.body.app_id)}, { $pull: noteObj }, function(err, res) {
-            plugins.callMethod("logAction", {req:req, user:{_id:req.session.uid, email:req.session.email}, action:"Graph note deleted", data:req.body});
+            plugins.callMethod("logAction", {req:req, user:{_id:req.session.uid, email:req.session.email}, action:"graph_note_deleted", data:req.body});
         });
         res.send(true);
     }
