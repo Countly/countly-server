@@ -396,6 +396,7 @@ var common          = require('../../../../api/utils/common.js'),
                                 if (err) {
                                     common.returnOutput(params, {error: 'Server db Error'});
                                 } else {
+                                    plugins.dispatch("/systemlogs", {params:params, action:"push_message_created", data:json});
                                     common.returnOutput(params, message);
                                 }
                             });
@@ -441,6 +442,7 @@ var common          = require('../../../../api/utils/common.js'),
                 common.db.collection('messages').update({_id: message._id}, {$set: {'deleted': true}},function(){});
                 common.returnOutput(params, message);
             }
+            plugins.dispatch("/systemlogs", {params:params, action:"push_message_deleted", data:message});
 
             // TODO: need to delete analytics?
 
