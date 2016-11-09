@@ -99,16 +99,30 @@ var plugin = {},
         ob.data._id = appId;
         recordAction(ob.params, ob.params.member, "App Reset", ob.data);
 	});
+    
+    plugins.register("/i/apps/clear", function(ob){
+		var appId = ob.appId;
+        ob.data._id = appId;
+        ob.data.before = ob.moment.format("YYYY-MM-DD");
+        recordAction(ob.params, ob.params.member, "App Clear older data", ob.data);
+	});
 	
 	plugins.register("/i/users/create", function(ob){
+        ob.data = JSON.parse(JSON.stringify(ob.data));
+        delete ob.data.password;
         recordAction(ob.params, ob.params.member, "User Created", ob.data);
 	});
 	
 	plugins.register("/i/users/update", function(ob){
+        ob.data = JSON.parse(JSON.stringify(ob.data));
+        if(ob.data.password)
+            ob.data.password = true;
         recordAction(ob.params, ob.params.member, "User Updated", ob.data);
 	});
 	
 	plugins.register("/i/users/delete", function(ob){
+        ob.data = JSON.parse(JSON.stringify(ob.data));
+        delete ob.data.password;
         recordAction(ob.params, ob.params.member, "User Deleted", ob.data);
 	});
     
