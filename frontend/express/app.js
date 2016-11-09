@@ -361,7 +361,9 @@ app.post('*', checkRequestForSession);
 
 app.get(countlyConfig.path+'/logout', function (req, res, next) {
     if (req.session) {
-        plugins.callMethod("userLogout", {req:req, res:res, next:next, data:{uid:req.session.uid, email:req.session.email}});
+        if(req.session.uid && req.session.email){
+            plugins.callMethod("userLogout", {req:req, res:res, next:next, data:{uid:req.session.uid, email:req.session.email, query:req.query}});
+        }
         req.session.uid = null;
         req.session.gadm = null;
         req.session.email = null;
