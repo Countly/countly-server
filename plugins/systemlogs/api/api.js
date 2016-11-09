@@ -67,16 +67,26 @@ var plugin = {},
     
     plugins.register("/i/systemlogs", function(ob){
 		var params = ob.params;
-        if(typeof params.qstring.data === "string"){
-            try{
-                params.qstring.data = JSON.parse(params.qstring.data);
+        common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
+            if (!member || err) {
+                common.returnMessage(params, 401, 'User does not exist');
+                return false;
             }
-            catch(ex){
-                console.log("Error parsing systemlogs data", params.qstring.data);
+            params.member = member;
+            if(typeof params.qstring.data === "string"){
+                try{
+                    params.qstring.data = JSON.parse(params.qstring.data);
+                }
+                catch(ex){
+                    console.log("Error parsing systemlogs data", params.qstring.data);
+                }
             }
-        }
-        if(typeof params.qstring.action == "string")
-            recordAction(params, {}, params.qstring.action, params.qstring.data);
+            if(typeof params.qstring.action == "string")
+                recordAction(params, {}, params.qstring.action, params.qstring.data || {});
+            
+            common.returnOutput(params, {result:"Success"});
+        });
+        return true;
 	});
 	
 	plugins.register("/i/apps/create", function(ob){
