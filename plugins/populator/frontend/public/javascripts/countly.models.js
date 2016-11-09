@@ -605,6 +605,17 @@
                 setTimeout(processUsers, timeout);
             });
         });
+        if(countlyGlobal["plugins"].indexOf("systemlogs") !== -1){
+            $.ajax({
+                type: "GET",
+                url: countlyCommon.API_URL + "/i/systemlogs",
+                data: {
+                    api_key:countlyGlobal["member"].api_key,
+                    action:"populator_run"
+                },
+                success:function (json) {}
+            });
+        }
                     // for(var i = 0; i < amount; i++){
                     //     createUser();
                     // }
