@@ -737,6 +737,7 @@ plugins.setConfigs("crashes", {
                                 if(group.is_new)
                                     inc.isnew = -1;
                                 common.db.collection('app_crashgroups' + params.qstring.app_id).update({_id:"meta"},{$inc:inc}, function(err,result){});
+                                plugins.dispatch("/systemlogs", {params:params, action:"crash_resolved", data:{app_id:params.qstring.app_id, crash_id: params.qstring.args.crash_id}});
                                 common.returnOutput(params, {version: group.latest_version});
                                 return true;
                             });
@@ -751,6 +752,7 @@ plugins.setConfigs("crashes", {
                 validate(params, function (params) {
 					common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': params.qstring.args.crash_id }, {"$set":{is_resolved:false, resolved_version:null}}, function (err, res){
 						common.db.collection('app_crashgroups' + params.qstring.app_id).update({_id:"meta"},{$inc:{resolved:-1}}, function(err,result){});
+                        plugins.dispatch("/systemlogs", {params:params, action:"crash_unresolved", data:{app_id:params.qstring.app_id, crash_id: params.qstring.args.crash_id}});
 						common.returnMessage(params, 200, 'Success');
 						return true;
 					});
@@ -770,6 +772,7 @@ plugins.setConfigs("crashes", {
                     var id = common.crypto.createHash('sha1').update(params.qstring.app_id + params.qstring.args.crash_id+"").digest('hex');
 					common.db.collection('crash_share').insert({_id:id, app_id:params.qstring.app_id+"", crash_id:params.qstring.args.crash_id+""}, function (err, res){
                         common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': params.qstring.args.crash_id }, {"$set":{is_public:true}}, function (err, res){});
+                        plugins.dispatch("/systemlogs", {params:params, action:"crash_shared", data:{app_id:params.qstring.app_id, crash_id: params.qstring.args.crash_id}});
 						common.returnMessage(params, 200, 'Success');
 						return true;
 					});
@@ -780,6 +783,7 @@ plugins.setConfigs("crashes", {
                     var id = common.crypto.createHash('sha1').update(params.qstring.app_id + params.qstring.args.crash_id+"").digest('hex');
 					common.db.collection('crash_share').remove({'_id': id }, function (err, res){
                         common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': params.qstring.args.crash_id }, {"$set":{is_public:false}}, function (err, res){});
+                        plugins.dispatch("/systemlogs", {params:params, action:"crash_unshared", data:{app_id:params.qstring.app_id, crash_id: params.qstring.args.crash_id}});
 						common.returnMessage(params, 200, 'Success');
 						return true;
 					});
@@ -789,6 +793,7 @@ plugins.setConfigs("crashes", {
                 validate(params, function (params) {
                     if(params.qstring.args.data)
                         common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': params.qstring.args.crash_id }, {"$set":{share:params.qstring.args.data}}, function (err, res){
+                            plugins.dispatch("/systemlogs", {params:params, action:"crash_modify_share", data:{app_id:params.qstring.app_id, crash_id: params.qstring.args.crash_id, data:params.qstring.args.data}});
                             common.returnMessage(params, 200, 'Success');
                             return true;
                         });
@@ -799,6 +804,7 @@ plugins.setConfigs("crashes", {
             case 'hide':
                 validate(params, function (params) {
                     common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': params.qstring.args.crash_id }, {"$set":{is_hidden:true}}, function (err, res){
+                        plugins.dispatch("/systemlogs", {params:params, action:"crash_hidden", data:{app_id:params.qstring.app_id, crash_id: params.qstring.args.crash_id}});
                         common.returnMessage(params, 200, 'Success');
 						return true;
                     });
@@ -807,6 +813,7 @@ plugins.setConfigs("crashes", {
             case 'show':
                 validate(params, function (params) {
                     common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': params.qstring.args.crash_id }, {"$set":{is_hidden:false}}, function (err, res){
+                        plugins.dispatch("/systemlogs", {params:params, action:"crash_shown", data:{app_id:params.qstring.app_id, crash_id: params.qstring.args.crash_id}});
                         common.returnMessage(params, 200, 'Success');
 						return true;
                     });
@@ -829,6 +836,7 @@ plugins.setConfigs("crashes", {
                     comment.author_id = params.member._id+"";
                     comment._id = common.crypto.createHash('sha1').update(params.qstring.args.app_id + params.qstring.args.crash_id+JSON.stringify(comment)+"").digest('hex');
                     common.db.collection('app_crashgroups' + params.qstring.args.app_id).update({'_id': params.qstring.args.crash_id }, {"$push":{'comments':comment}}, function (err, res){
+                        plugins.dispatch("/systemlogs", {params:params, action:"crash_added_comment", data:{app_id:params.qstring.args.app_id, crash_id: params.qstring.args.crash_id, comment:comment}});
                         common.returnMessage(params, 200, 'Success');
 						return true;
                     });
@@ -856,6 +864,7 @@ plugins.setConfigs("crashes", {
                                 comment.text = params.qstring.args.text;
                             
                             common.db.collection('app_crashgroups' + params.qstring.args.app_id).update({'_id': params.qstring.args.crash_id,"comments._id":params.qstring.args.comment_id},{$set:{"comments.$": comment}}, function (err, res){
+                                plugins.dispatch("/systemlogs", {params:params, action:"crash_edited_comment", data:{app_id:params.qstring.args.app_id, crash_id: params.qstring.args.crash_id, comment:comment}});
                                 common.returnMessage(params, 200, 'Success');
                                 return true;
                             });
@@ -881,6 +890,7 @@ plugins.setConfigs("crashes", {
                         }
                         if(comment && (comment.author_id == params.member._id+"" || params.member.global_admin)){
                             common.db.collection('app_crashgroups' + params.qstring.args.app_id).update({'_id': params.qstring.args.crash_id }, { $pull: { comments: { _id: params.qstring.args.comment_id } } }, function (err, res){
+                                plugins.dispatch("/systemlogs", {params:params, action:"crash_deleted_comment", data:{app_id:params.qstring.args.app_id, crash_id: params.qstring.args.crash_id, comment:comment}});
                                 common.returnMessage(params, 200, 'Success');
                                 return true;
                             });
@@ -896,6 +906,7 @@ plugins.setConfigs("crashes", {
                 validate(params, function (params) {
                     common.db.collection('app_crashgroups' + params.qstring.app_id).findOne({'_id': params.qstring.args.crash_id }, function (err, crash){
                         if(crash){
+                            plugins.dispatch("/systemlogs", {params:params, action:"crash_deleted", data:{app_id:params.qstring.app_id, crash: crash}});
                             common.db.collection('app_crashes' + params.qstring.app_id).remove({'group': params.qstring.args.crash_id }, function(){});
                             common.db.collection('app_crashgroups' + params.qstring.app_id).remove({'_id': params.qstring.args.crash_id }, function(){});
                             var id = common.crypto.createHash('sha1').update(params.qstring.app_id + params.qstring.args.crash_id+"").digest('hex');
