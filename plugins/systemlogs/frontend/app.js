@@ -23,7 +23,7 @@ var plugin = {},
     };
     
     plugin.userLogout = function(ob){
-        recordAction(ob.req, ob.data, "Logout", {});
+        recordAction(ob.req, ob.data, "Logout", ob.data.query || {});
     };
     
     plugin.passwordReset = function(ob){
@@ -60,6 +60,12 @@ var plugin = {},
     
     plugin.userSettings = function(ob){
         recordAction(ob.req, ob.data, "Settings changed", ob.data.change);
+    };
+    
+    plugin.logAction = function(ob){
+        ob.data = JSON.parse(JSON.stringify(ob.data));
+        delete ob.data._csrf;
+        recordAction(ob.req, ob.user, ob.action, ob.data);
     };
     
     function recordAction(req, user, action, data){
