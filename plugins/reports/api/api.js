@@ -110,6 +110,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                             common.returnMessage(params, 200, err);
                         }
                         else{
+                            plugins.dispatch("/systemlogs", {params:params, action:"reports_create", data:result[0]});
                             common.returnMessage(params, 200, "Success");
                         }
                     });
@@ -166,6 +167,8 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                             common.returnMessage(params, 200, err);
                         }
                         else{
+                            props._id = id;
+                            plugins.dispatch("/systemlogs", {params:params, action:"reports_edited", data:props});
                             common.returnMessage(params, 200, "Success");
                         }
                     });
@@ -182,13 +185,17 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         common.returnMessage(params, 200, 'Not enough args');
                         return false;
                     }
-                    common.db.collection('reports').remove({'_id': common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, {safe: true}, function(err, result) {
-                        if (err) {
-                            common.returnMessage(params, 200, 'Error deleting report');
-                        }
-                        else{
-                            common.returnMessage(params, 200, "Success");
-                        }
+                    common.db.collection('reports').findOne({'_id': common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, function(err, props){
+                        common.db.collection('reports').remove({'_id': common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, {safe: true}, function(err, result) {
+                            if (err) {
+                                common.returnMessage(params, 200, 'Error deleting report');
+                            }
+                            else{
+                                if(props)
+                                    plugins.dispatch("/systemlogs", {params:params, action:"reports_deleted", data:props});
+                                common.returnMessage(params, 200, "Success");
+                            }
+                        });
                     });
 				});
                 break;
