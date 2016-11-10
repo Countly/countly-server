@@ -17,7 +17,7 @@
     countlyCommon.ACTIVE_APP_ID = 0;
     countlyCommon.BROWSER_LANG = countlyCommon.browserLang() || "en-US";
     countlyCommon.BROWSER_LANG_SHORT = countlyCommon.BROWSER_LANG.split("-")[0];
-    countlyCommon.periodObj = getPeriodObj();
+    countlyCommon.periodObj = calculatePeriodObj();
 
     if (store.get("countly_active_app")) {
         if (countlyGlobal['apps'][store.get("countly_active_app")]) {
@@ -42,7 +42,7 @@
 
     countlyCommon.setPeriod = function (period) {
         _period = period;
-        countlyCommon.periodObj = getPeriodObj();
+        countlyCommon.periodObj = calculatePeriodObj();
         store.set("countly_date", period);
     };
 
@@ -1797,12 +1797,6 @@
 		return leadingZero(d.getHours())+":"+leadingZero(d.getMinutes());
 	}
 
-	function leadingZero(value){
-		if(value > 9)
-			return value
-		return "0"+value;
-	}
-
     countlyCommon.round = function(num, digits) {
         digits = Math.pow(10, digits || 0);
         return Math.round(num * digits) / digits;
@@ -1905,6 +1899,10 @@
 
     // Returns a period object used by all time related data calculation functions.
     function getPeriodObj() {
+        return countlyCommon.periodObj;
+    }
+
+    function calculatePeriodObj() {
 
         var now = moment(),
             year = now.year(),
@@ -1998,11 +1996,15 @@
 
         // Check whether period object is array
         if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length == 2) {
+
+            // "Date to" selected date timezone changes based on how the
+            // date picker is initialised so we take care of it here
             var tmpDate = new Date (_period[1]);
             tmpDate.setHours(0,0,0,0);
+
             _period[1] = tmpDate.getTime();
-            if(tmpDate.getTimezoneOffset() < 0)
-                 _period[1] -= tmpDate.getTimezoneOffset()*60000;
+            _period[1] -= getOffsetCorrectionForTimestamp(_period[1]);
+
             // One day is selected from the datepicker
             if (_period[0] == _period[1]) {
                 var selectedDate = moment(_period[0]),
@@ -2396,5 +2398,29 @@
 
         return toReturn;
     }
+
+    function leadingZero(value) {
+        if(value > 9)
+            return value
+        return "0"+value;
+    }
+
+    function getOffsetCorrectionForTimestamp(inTS) {
+        var timeZoneOffset = new Date().getTimezoneOffset(),
+            intLength = inTS.toString().length,
+            tzAdjustment = 0;
+
+        if (timeZoneOffset < 0) {
+            if (intLength == 13) {
+                tzAdjustment = timeZoneOffset * 60000;
+            } else if (intLength == 10) {
+                tzAdjustment = timeZoneOffset * 60;
+            }
+        }
+
+        return tzAdjustment;
+    }
+
+    countlyCommon.getOffsetCorrectionForTimestamp = getOffsetCorrectionForTimestamp;
 
 }(window.countlyCommon = window.countlyCommon || {}, jQuery));

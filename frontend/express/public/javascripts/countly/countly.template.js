@@ -5380,7 +5380,6 @@ var AppRouter = Backbone.Router.extend({
                 if (self.dateToSelected) {
                     dateTo.datepicker("setDate", moment(self.dateToSelected).toDate());
                     dateFrom.datepicker("option", "maxDate", moment(self.dateToSelected).toDate());
-                    //dateFrom.datepicker("option", "maxDate", moment(self.dateToSelected).subtract("days", 1).toDate());
                 } else {
                     self.dateToSelected = moment().toDate().getTime();
                     dateTo.datepicker("setDate",moment().toDate());
@@ -5407,17 +5406,13 @@ var AppRouter = Backbone.Router.extend({
                 maxDate:moment().toDate(),
                 onSelect:function (selectedDate) {
                     var instance = $(this).data("datepicker"),
-                        date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings),
-                        dateCopy = new Date(date.getTime()),
-                        fromLimit = dateCopy;//moment(dateCopy).subtract("days", 1).toDate();
+                        date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
 
-                    // If limit of the left datepicker is less than the global we store in self
-                    // than we should update the global with the new value
-                    if (fromLimit.getTime() < self.dateFromSelected) {
-                        self.dateFromSelected = fromLimit.getTime();
+                    if (date.getTime() < self.dateFromSelected) {
+                        self.dateFromSelected = date.getTime();
                     }
 
-                    dateFrom.datepicker("option", "maxDate", fromLimit);
+                    dateFrom.datepicker("option", "maxDate", date);
                     self.dateToSelected = date.getTime();
 
                     setSelectedDate();
@@ -5430,17 +5425,13 @@ var AppRouter = Backbone.Router.extend({
                 maxDate:moment().subtract('days', 1).toDate(),
                 onSelect:function (selectedDate) {
                     var instance = $(this).data("datepicker"),
-                        date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings),
-                        dateCopy = new Date(date.getTime()),
-                        toLimit = dateCopy;//moment(dateCopy).add("days", 1).toDate();
+                        date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
 
-                    // If limit of the right datepicker is bigger than the global we store in self
-                    // than we should update the global with the new value
-                    if (toLimit.getTime() > self.dateToSelected) {
-                        self.dateToSelected = toLimit.getTime();
+                    if (date.getTime() > self.dateToSelected) {
+                        self.dateToSelected = date.getTime();
                     }
 
-                    dateTo.datepicker("option", "minDate", toLimit);
+                    dateTo.datepicker("option", "minDate", date);
                     self.dateFromSelected = date.getTime();
 
                     setSelectedDate();
@@ -5462,11 +5453,9 @@ var AppRouter = Backbone.Router.extend({
                 if (!self.dateFromSelected && !self.dateToSelected) {
                     return false;
                 }
-                var dateFromOffset = new Date().getTimezoneOffset() * 60000;
-                if(dateFromOffset < 0)
-                    countlyCommon.setPeriod([self.dateFromSelected - dateFromOffset, self.dateToSelected - dateFromOffset]);
-                else
-                    countlyCommon.setPeriod([self.dateFromSelected, self.dateToSelected]);
+
+                var tzCorr = countlyCommon.getOffsetCorrectionForTimestamp(self.dateFromSelected);
+                countlyCommon.setPeriod([self.dateFromSelected - tzCorr, self.dateToSelected - tzCorr]);
 
                 self.activeView.dateChanged();
 
