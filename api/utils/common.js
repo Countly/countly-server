@@ -98,6 +98,27 @@ var common = {},
     common.moment = moment;
 
     common.crypto = crypto;
+    
+    common.os_mapping = {
+        "unknown":"unk",
+        "undefined":"unk",
+        "tvos":"atv",
+        "watchos":"wos",
+        "unity editor":"uty",
+        "qnx":"qnx",
+        "os/2":"os2",
+        "windows":"mw",
+        "open bsd":"ob",
+        "searchbot":"sb",
+        "sun os":"so",
+        "solaris":"so",		
+        "beos":"bo",
+        "mac osx":"o",
+        "macos":"o",
+        "mac":"o",
+        "webos":"web",		
+        "brew":"brew"
+    };
 
     common.dbPromise = function() {
         var args = Array.prototype.slice.call(arguments);

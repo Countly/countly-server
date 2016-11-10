@@ -659,6 +659,89 @@ $.extend(Template.prototype, {
 		countlyMetric.getBars = function () {
 			return countlyCommon.extractBarData(_Db, _metrics, this.clearObject, fetchValue);
 		};
+        
+        countlyMetric.getOSSegmentedData = function (os, clean) {
+            var _os = countlyDeviceDetails.getPlatforms();
+            var oSVersionData = countlyCommon.extractTwoLevelData(_Db, _metrics, this.clearObject, [
+				{
+					name:_name,
+					func:function (rangeArr, dataObj) {
+                        rangeArr = countlyCommon.decode(rangeArr);
+                        if(fetchValue && !clean)
+                            return fetchValue(rangeArr);
+                        else
+                            return rangeArr;
+					}
+				},
+				{ "name":"t" },
+				{ "name":"u" },
+				{ "name":"n" }
+			], _estOverrideMetric);
+        
+            var osSegmentation = ((os) ? os : ((_os) ? _os[0] : null)),
+                platformVersionTotal = _.pluck(oSVersionData.chartData, 'u'),
+                chartData2 = [];
+            var osName = osSegmentation;
+            if(osSegmentation){
+                if(countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()])
+                    osName = countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()].short;
+                else
+                    osName = osSegmentation.toLowerCase()[0];
+            }
+        
+            if (oSVersionData.chartData) {
+                var reg = new RegExp("^"+osName,"g");
+                for (var i = 0; i < oSVersionData.chartData.length; i++) {
+                    var shouldDelete = true;
+
+                    if(reg.test(oSVersionData.chartData[i][_name])){
+                        shouldDelete = false;
+                        oSVersionData.chartData[i][_name] = oSVersionData.chartData[i][_name].replace(osName, "");
+                    }
+                    else if(countlyMetric.checkOS && countlyMetric.checkOS(osSegmentation, oSVersionData.chartData[i][_name])){
+                        shouldDelete = false;
+                    }
+                    if(shouldDelete)
+                        delete oSVersionData.chartData[i];
+                }
+            }
+        
+            oSVersionData.chartData = _.compact(oSVersionData.chartData);
+        
+            var platformVersionNames = _.pluck(oSVersionData.chartData, _name),
+                platformNames = [];
+        
+            var sum = _.reduce(platformVersionTotal, function (memo, num) {
+                return memo + num;
+            }, 0);
+        
+            for (var i = 0; i < platformVersionNames.length; i++) {
+                var percent = (platformVersionTotal[i] / sum) * 100;
+        
+                chartData2[chartData2.length] = {data:[
+                    [0, platformVersionTotal[i]]
+                ], label:platformVersionNames[i].replace(((countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()]) ? countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()].name : osSegmentation) + " ", "")};
+            }
+        
+            oSVersionData.chartDP = {};
+            oSVersionData.chartDP.dp = chartData2;
+            oSVersionData.os = [];
+        
+            if (_os && _os.length > 1) {
+                for (var i = 0; i < _os.length; i++) {
+                    //if (_os[i] != osSegmentation) {
+                    //    continue;
+                    //}
+        
+                    oSVersionData.os.push({
+                        "name":_os[i],
+                        "class":_os[i].toLowerCase()
+                    });
+                }
+            }
+        
+            return oSVersionData;
+        };
 	
 		function setMeta() {
 			if (_Db['meta']) {

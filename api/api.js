@@ -134,27 +134,6 @@ if (cluster.isMaster) {
     
     process.on('message', common.log.ipcHandler);
 
-    var os_mapping = {
-        "unknown":"unk",
-        "undefined":"unk",
-        "tvos":"atv",
-        "watchos":"wos",
-        "unity editor":"uty",
-        "qnx":"qnx",
-        "os/2":"os2",
-        "windows":"mw",
-        "open bsd":"ob",
-        "searchbot":"sb",
-        "sun os":"so",
-        "solaris":"so",		
-        "beos":"bo",
-        "mac osx":"o",
-        "macos":"o",
-        "mac":"o",
-        "webos":"web",		
-        "brew":"brew"
-    };
-
     plugins.dispatch("/worker", {common:common});
     // Checks app_key from the http request against "apps" collection.
     // This is the first step of every write request to API.
@@ -236,8 +215,8 @@ if (cluster.isMaster) {
                     }		
                 		
                     if (params.qstring.metrics["_os"] && params.qstring.metrics["_os_version"]) {		
-                        if(os_mapping[params.qstring.metrics["_os"].toLowerCase()])		
-                            params.qstring.metrics["_os_version"] = os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_os_version"];		
+                        if(common.os_mapping[params.qstring.metrics["_os"].toLowerCase()])		
+                            params.qstring.metrics["_os_version"] = common.os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_os_version"];		
                         else		
                             params.qstring.metrics["_os_version"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_os_version"];		
                     }		
