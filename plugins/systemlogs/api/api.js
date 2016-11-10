@@ -51,14 +51,20 @@ var plugin = {},
 			});
 			return true;
 		}
-        else if(params.qstring.method == 'systemlogs_actions'){
+        else if(params.qstring.method == 'systemlogs_meta'){
             validate(params, function(params){
-                common.db.collection('systemlogs').findOne({_id:"meta_v2"}, {_id:0}, function(err, res){
-                    var result = [];
-                    if(!err && res){
-                        result = Object.keys(res).map(function(arg){return common.db.decode(arg);});
-                    }
-                    common.returnOutput(params, result);
+                //get all users
+                common.db.collection('members').find({}, {username:1, email:1, full_name:1}).toArray(function(err, users){
+                    common.db.collection('systemlogs').findOne({_id:"meta_v2"}, {_id:0}, function(err, res){
+                        var result = {};
+                        if(!err && res){
+                            for(var i in res){
+                                result[i] = Object.keys(res[i]).map(function(arg){return common.db.decode(arg);});
+                            }
+                        }
+                        result.users = users || [];
+                        common.returnOutput(params, result);
+                    });
                 });
             });
             return true;
@@ -174,8 +180,10 @@ var plugin = {},
             else{
                 common.db.collection('systemlogs').insert(log, function () {});
             }
-            common.db.collection("systemlogs").update({_id:"meta_v2"}, {$set:{a:common.db.encode(action)}}, {upsert:true}, function(){});
         }
+        var update = {};
+        update["a."+common.db.encode(action)] = true;
+        common.db.collection("systemlogs").update({_id:"meta_v2"}, {$set:update}, {upsert:true}, function(){});
     };
 }(plugin));
 

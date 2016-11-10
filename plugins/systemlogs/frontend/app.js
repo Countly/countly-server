@@ -100,6 +100,9 @@ var plugin = {},
                 countlyDb.collection('systemlogs').insert(log, function () {});
             }
         }
+        var update = {};
+        update["a."+countlyDb.encode(action)] = true;
+        countlyDb.collection("systemlogs").update({_id:"meta_v2"}, {$set:update}, {upsert:true}, function(err, res){});
     };
     
 }(plugin));

@@ -4,17 +4,37 @@ window.SystemLogsView = countlyView.extend({
     },
     beforeRender: function() {
 		if(this.template)
-			return true;
+			return $.when(countlySystemLogs.initialize()).then(function () {});
 		else{
 			var self = this;
 			return $.when($.get(countlyGlobal["path"]+'/systemlogs/templates/logs.html', function(src){
 				self.template = Handlebars.compile(src);
-			})).then(function () {});
+			}), countlySystemLogs.initialize()).then(function () {});
 		}
     },
     renderCommon:function (isRefresh) {
+        var meta = countlySystemLogs.getMetaData();
+        var activeAction = jQuery.i18n.map["systemlogs.all-actions"];
+        var activeUser = jQuery.i18n.map["systemlogs.all-users"];
+        if(this._query){
+            if(this._query.a){
+                activeAction = jQuery.i18n.prop("systemlogs.action."+this._query.a);
+            }
+            if(this._query.user_id){
+                for(var i = 0; i < meta.users.length; i++){
+                    if(meta.users[i]._id == this._query.user_id){
+                        activeUser = meta.users[i].full_name;
+                        break;
+                    }
+                }
+            }
+        }
         this.templateData = {
             "page-title":jQuery.i18n.map["systemlogs.title"],
+            "active-action": activeAction,
+            "actions": meta.a,
+            "active-user": activeUser,
+            "users": meta.users,
             query: this._query
         };
 		var self = this;
@@ -59,9 +79,29 @@ window.SystemLogsView = countlyView.extend({
             }));
 			this.dtable.stickyTableHeaders();
 			this.dtable.fnSort( [ [0,'desc'] ] );
+            $(".action-segmentation .segmentation-option").on("click", function () {
+                if(!self._query)
+                    self._query = {};
+                self._query.a = $(this).data("value");
+                if(self._query.a === "")
+                    delete self._query.a;
+                app.navigate("#/manage/systemlogs/"+JSON.stringify(self._query));
+                self.refresh();
+			});
+            $(".user-segmentation .segmentation-option").on("click", function () {
+                if(!self._query)
+                    self._query = {};
+                self._query.user_id = $(this).data("value");
+                if(self._query.user_id === "")
+                    delete self._query.user_id;
+                app.navigate("#/manage/systemlogs/"+JSON.stringify(self._query));
+                self.refresh();
+			});
         }
     },
-    refresh:function () { }
+    refresh:function () {
+		this.dtable.fnDraw(false);
+    },
 });
 
 //register views
