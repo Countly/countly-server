@@ -1361,9 +1361,7 @@ app.addAppManagementSwitchCallback(function(appId, type){
 
 app.addPageScript("/drill#", function(){
     if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "mobile"){
-        $("#bookmark-filter").after(
-        '<div id="create-message-connector" style="display:none; float:left; height:1px; border-top:1px solid #999; width:50px; margin-top:14px; margin-left:5px;"></div>'+
-        '<a class="icon-button green btn-header btn-create-message" data-localize="push.create" style="display:none"></a>');
+        $("#drill-actions").append('<a class="link icon-button light btn-create-message"><i class="ion-chatbox-working"></i><span data-localize="push.create"></span></a>');
         app.localize();
         $('.btn-create-message').off('click').on('click', function(){
             var filterData = app.drillView.getFilterObjAndByVal();
