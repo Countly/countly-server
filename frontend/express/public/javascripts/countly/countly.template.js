@@ -693,10 +693,10 @@ $.extend(Template.prototype, {
                 var reg = new RegExp("^"+osName,"g");
                 for (var i = 0; i < oSVersionData.chartData.length; i++) {
                     var shouldDelete = true;
-
+                    oSVersionData.chartData[i][_name] = oSVersionData.chartData[i][_name].replace(/:/g, ".");
                     if(reg.test(oSVersionData.chartData[i][_name])){
                         shouldDelete = false;
-                        oSVersionData.chartData[i][_name] = oSVersionData.chartData[i][_name].replace(osName, "");
+                        oSVersionData.chartData[i][_name] = oSVersionData.chartData[i][_name].replace(reg, "");
                     }
                     else if(countlyMetric.checkOS && countlyMetric.checkOS(osSegmentation, oSVersionData.chartData[i][_name])){
                         shouldDelete = false;
