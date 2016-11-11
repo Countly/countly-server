@@ -973,13 +973,13 @@ app.addPageScript("/drill#", function(){
     var drillClone;
     var self = app.drillView;
     if(countlyGlobal["record_crashes"]){
-        $("#drill-types").append('<div id="drill-type-crashes" style="padding: 6px 8px 7px 8px;" class="icon-button light">'+jQuery.i18n.map["crashes.title"]+'</div>');
+        $("#drill-types").append('<div id="drill-type-crashes" class="item">'+jQuery.i18n.map["crashes.title"]+'</div>');
         $("#drill-type-crashes").on("click", function() {
             if ($(this).hasClass("active")) {
                 return true;
             }
     
-            $("#drill-types").find(".icon-button").removeClass("active");
+            $("#drill-types").find(".item").removeClass("active");
             $(this).addClass("active");
             $("#event-selector").hide();
     
