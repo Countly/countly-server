@@ -288,29 +288,55 @@ $.extend(Template.prototype, {
                 $(".select-items").hide();
                 $(this).addClass("active");
 
-                if (itemCount > 10 && !$(this).hasClass("centered")) {
+                if (itemCount > 10) {
                     $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
                 }
             }
 
             if ($(this).hasClass("centered")) {
-                var height = $(this).find(".select-items").height();
-                $(this).find(".select-items").css("margin-top", (-(height/2).toFixed(0) - ($(this).height()/2).toFixed(0)) + "px");
+                if (itemCount > 5 || $(this).hasClass("force")) {
+                    var height = $(this).find(".select-items").height(),
+                        searchItem = $(this).find(".search");
+
+                    var addThis = 0;
+
+                    if (searchItem.length) {
+                        addThis = (searchItem.height()/2).toFixed(0) - 1;
+                        $(this).find(".select-items").css({"min-height": height});
+                    } else {
+                        $(this).find(".select-items").css({"min-height": "auto"});
+                        height = $(this).find(".select-items").height();
+                    }
+
+                    $(this).find(".select-items").css("margin-top", (-(height/2).toFixed(0) - ($(this).height()/2).toFixed(0)+ parseInt(addThis)) + "px");
+                    $(this).find(".search").css("margin-top", (-(height/2).toFixed(0) - searchItem.height()) + "px");
+                } else {
+                    $(this).find(".select-items").css({"min-height": "auto"});
+                    $(this).find(".select-items").css("margin-top", 0);
+                    $(this).find(".search").css("margin-top", 0);
+                }
             }
 
             if ($(this).find(".select-items").is(":visible")) {
                 $(this).find(".select-items").hide();
             } else {
                 $(this).find(".select-items").show();
-                $(this).find(".select-items>div").addClass("scroll-list");
-                $(this).find(".scroll-list").slimScroll({
-                    height:'100%',
-                    start:'top',
-                    wheelStep:10,
-                    position:'right',
-                    disableFadeOut:true
-                });
+                if ($(this).find(".select-items").find(".scroll-list").length == 0) {
+                    $(this).find(".select-items").wrapInner("<div class='scroll-list'></div>");
+                    $(this).find(".scroll-list").slimScroll({
+                        height:'100%',
+                        start:'top',
+                        wheelStep:10,
+                        position:'right',
+                        disableFadeOut:true
+                    });
+                }
             }
+
+            $(this).find(".select-items").find(".item").removeClass("hidden");
+            $(this).find(".select-items").find(".group").show();
+            $(this).find(".select-items").find(".item").removeClass("last");
+            $(this).find(".select-items").find(".item:visible:last").addClass("last");
 
             $(this).find(".search input").focus();
 
@@ -4553,7 +4579,6 @@ var AppRouter = Backbone.Router.extend({
                         self.origLang = JSON.stringify(jQuery.i18n.map);
                         $.when(countlyLocation.changeLanguage()).then(function () {
                             self.activeView.render();
-                            self.pageScript();
                         });
                     }
                 });
