@@ -2,3 +2,7 @@
 #sidebar-menu .sidebar-submenu .item.active .logo.densities { background-position:-720px; }
 
 .widget-header .logo.densities { background-position:-456px; }
+
+.density-table {margin-top: 0px; overflow: auto; position: relative;}
+.density-table #dataTableOne_wrapper {margin: 0px; overflow: auto; position: relative;}
+.density-widget {margin-bottom: 0px;}
