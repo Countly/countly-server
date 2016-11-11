@@ -10,7 +10,7 @@
 		_app_version: ["1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "2.0", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8", "2.9", "3.0", "3.1", "3.2"],
 		_cpu: ["armv6", "armv7", "x86"],
 		_opengl: ["opengl_es1", "opengl_es2"],
-		_density: ["XHDPI", "MDPI", "HDPI", "XXHDPI", "TVDPI", "@1", "@2", "@3"],
+		_density: ["XHDPI", "MDPI", "HDPI", "XXHDPI", "TVDPI"],
 		_locale: ["en_CA", "fr_FR", "de_DE", "it_IT", "ja_JP", "ko_KR", "en_US"],
         _browser: ["Opera", "Chrome", "Internet Explorer", "Safari", "Firefox"],
         _store: ["com.android.vending","com.google.android.feedback","com.google.vending","com.slideme.sam.manager","com.amazon.venezia","com.sec.android.app.samsungapps","com.nokia.payment.iapenabler","com.qihoo.appstore","cn.goapk.market","com.wandoujia.phoenix2","com.hiapk.marketpho","com.hiapk.marketpad","com.dragon.android.pandaspace","me.onemobile.android","com.aspire.mm","com.xiaomi.market","com.miui.supermarket","com.baidu.appsearch","com.tencent.android.qqdownloader","com.android.browser","com.bbk.appstore","cm.aptoide.pt","com.nduoa.nmarket","com.rim.marketintent","com.lenovo.leos.appstore","com.lenovo.leos.appstore.pad","com.keenhi.mid.kitservice","com.yingyonghui.market","com.moto.mobile.appstore","com.aliyun.wireless.vos.appstore","com.appslib.vending","com.mappn.gfan","com.diguayouxi","um.market.android","com.huawei.appmarket","com.oppo.market","com.taobao.appcenter"],
@@ -123,19 +123,51 @@
                     this.platform = this.getProp(i);
                     this.metrics["_os"] = this.platform;
                 }
-                else{
+                else if(i == "_os"){
                     this.platform = this.getProp(i);
                     this.metrics[i] = this.platform;
                 }
 			}
-			else if(i != "_store" && i != "_source")
+			else if(i != "_store" && i != "_source" && i != "_density" && i != "_os_version" && i != "_device")
 				this.metrics[i] = this.getProp(i);
 		}
+        
+        var versions = [getRandomInt(1, 9)+"."+getRandomInt(0, 5)]
+        if(this.platform == "Android")
+            versions = ["2.3", "2.3.7", "3.0", "3.2.6", "4.0", "4.0.4", "4.1", "4.3.1", "4.4", "4.4.4", "5.0", "5.1.1", "6.0", "6.0.1", "7.0", "7.1"];
+        else if(this.platform == "iOS")
+            versions = ["7.1.2", "8.4.1", "9.3.5", "10.1.1", "10.2"];
+        else if(this.platform == "Windows Phone")
+            versions = ["7", "8"];
+        else if(this.platform == "Windows")
+            versions = ["7", "8", "10"];
+        else if(this.platform == "OSX")
+            versions = ["10.8", "10.9", "10.10", "10.11", "10.12"];
+        
+        this.metrics["_os_version"] = versions[Math.floor(Math.random()*versions.length)];
+        
+        var devices = [];
+        if(this.platform == "Android")
+            devices = ["GT-S5830L", "HTC6525LVW", "MB860", "LT18i", "LG-P500", "Desire V", "Wildfire S A510e"];
+        else if(this.platform == "iOS")
+            devices = ["iPhone8,1", "iPhone9,1", "iPhone9,2", "iPod7,1", "iPad3,6"];
+        else if(this.platform == "Windows Phone")
+            devices = ["Lumia 535", "Lumia 540", "Lumia 640 XL"];
+        if(devices.length)
+            this.metrics["_device"] = devices[Math.floor(Math.random()*devices.length)];
+                
         if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web")
             this.metrics["_store"] = this.getProp("_source");
         else if(this.platform == "Android")
             this.metrics["_store"] = this.getProp("_store");
-
+        
+        if(this.platform == "Android")
+            this.metrics["_density"] = this.getProp("_density");
+        else if(this.platform == "iOS")
+            this.metrics["_density"] = "@"+getRandomInt(1, 3);
+        else
+            this.metrics["_density"] = getRandomInt(1, 3)+"."+getRandomInt(0, 5);
+        
 		this.getCrash = function(){
 			var crash = {};
 
@@ -179,13 +211,34 @@
 		};
 
 		this.getError = function(){
-			var errors = ["java.lang.RuntimeException", "java.lang.NullPointerException", "java.lang.NoSuchMethodError", "java.lang.NoClassDefFoundError", "java.lang.ExceptionInInitializerError", "java.lang.IllegalStateException"];
-			var error = errors[Math.floor(Math.random()*errors.length)]+": com.domain.app.Exception<init>\n";
-			var stacks = getRandomInt(5, 9);
-			for(var i = 0; i < stacks; i++){
-				error += "at com.domain.app.<init>(Activity.java:"+(i*32)+")\n";
-			}
-			return error;
+            if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
+                var errors = ["EvalError", "InternalError", "RangeError", "ReferenceError", "SyntaxError", "TypeError", "URIError"];
+                var err = new Error(errors[Math.floor(Math.random()*errors.length)], randomString(5)+".js", getRandomInt(1, 100));
+                return err.stack+"";
+            }
+            else if(this.platform == "Android"){
+                var errors = ["java.lang.RuntimeException", "java.lang.NullPointerException", "java.lang.NoSuchMethodError", "java.lang.NoClassDefFoundError", "java.lang.ExceptionInInitializerError", "java.lang.IllegalStateException"];
+                var error = errors[Math.floor(Math.random()*errors.length)]+": com.domain.app.Exception<init>\n";
+                var stacks = getRandomInt(5, 9);
+                for(var i = 0; i < stacks; i++){
+                    error += "at com.domain.app.<init>(Activity.java:"+(i*32)+")\n";
+                }
+                return error;
+            }
+            else if(this.platform == "iOS"){
+                var errors = ["CoreFoundation 0x30629f9b + 154", "libobjc.A.dylib 0x3b110ccf objc_exception_throw + 38", "CoreFoundation 0x30629ec5 + 0", "UIKit 0x33090e75 + 88", "libobjc.A.dylib 0x3b11fb6b + 174", "kounter 0x0010427d kounter + 94845", "UIKit 0x32e7c037 + 90", "CoreFoundation 0x3055debf CFRunLoopRunSpecific + 522", "CoreFoundation 0x3055dca3 CFRunLoopRunInMode + 106", "GraphicsServices 0x35458663 GSEventRunModal + 138", "libdyld.dylib 0x3b61dab7 + 2"];
+                var error = "";
+                var stacks = getRandomInt(5, 9);
+                for(var i = 0; i < stacks; i++){
+                    error += i + " " + errors[Math.floor(Math.random()*errors.length)] + "\n";
+                }
+            }
+            else{
+                return "System.ArgumentOutOfRangeException\n"+
+                "   at System.ThrowHelper.ThrowArgumentOutOfRangeException()\n"+
+                "   at System.Collections.Generic.List`1.get_Item(Int32 index)\n"+
+                "   at StorePuzzle.PuzzleRenderer.HandleTileReleased(Object sender, PointerRoutedEventArgs e)";
+            }
 		};
 
         this.getLog = function(){
@@ -468,22 +521,56 @@
         for(var i = 0; i < users; i++){
             for(var j = 0; j < ids.length; j++){
                 var metrics = {};
+                var platform;
                 for(var i in props){
                     if(i == "_os" || i == "_os_web"){
                         if(i == "_os_web" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
                             metrics["_os"] = getProp(i);
+                            platform = metrics["_os"];
                         }
-                        else{
+                        else if(i == "_os"){
                             metrics[i] = getProp(i);
+                            platform = metrics["_os"];
                         }
                     }
-                    else if(i != "_store" && i != "_source")
+                    else if(i != "_store" && i != "_source" && i != "_density" && i != "_os_version" && i != "_device")
                         metrics[i] = getProp(i);
                 }
                 if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web")
                     metrics["_store"] = getProp("_source");
-                else if(this.platform == "Android")
+                else if(platform == "Android")
                     metrics["_store"] = getProp("_store");
+                
+                var versions = [getRandomInt(1, 9)+"."+getRandomInt(0, 5)]
+                if(platform == "Android")
+                    versions = ["2.3", "2.3.7", "3.0", "3.2.6", "4.0", "4.0.4", "4.1", "4.3.1", "4.4", "4.4.4", "5.0", "5.1.1", "6.0", "6.0.1", "7.0", "7.1"];
+                else if(platform == "iOS")
+                    versions = ["7.1.2", "8.4.1", "9.3.5", "10.1.1", "10.2"];
+                else if(platform == "Windows Phone")
+                    versions = ["7", "8"];
+                else if(platform == "Windows")
+                    versions = ["7", "8", "10"];
+                else if(platform == "OSX")
+                    versions = ["10.8", "10.9", "10.10", "10.11", "10.12"];
+                
+                metrics["_os_version"] = versions[Math.floor(Math.random()*versions.length)];
+                
+                var devices = [];
+                if(platform == "Android")
+                    devices = ["GT-S5830L", "HTC6525LVW", "MB860", "LT18i", "LG-P500", "Desire V", "Wildfire S A510e"];
+                else if(platform == "iOS")
+                    devices = ["iPhone8,1", "iPhone9,1", "iPhone9,2", "iPod7,1", "iPad3,6"];
+                else if(platform == "Windows Phone")
+                    devices = ["Lumia 535", "Lumia 540", "Lumia 640 XL"];
+                if(devices.length)
+                    metrics["_device"] = devices[Math.floor(Math.random()*devices.length)];
+                
+                if(platform == "Android")
+                    metrics["_density"] = getProp("_density");
+                else if(platform == "iOS")
+                    metrics["_density"] = "@"+getRandomInt(1, 3);
+                else
+                    metrics["_density"] = getRandomInt(1, 3)+"."+getRandomInt(0, 5);
 
                 var userdetails = {name: chance.name(), username: chance.twitter().substring(1), email:chance.email(), organization:capitaliseFirstLetter(chance.word()), phone:chance.phone(), gender:chance.gender().charAt(0), byear:chance.birthday().getFullYear(), custom:createRandomObj()};
 
