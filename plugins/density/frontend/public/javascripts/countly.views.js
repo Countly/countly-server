@@ -1,26 +1,40 @@
 window.DensityView = countlyView.extend({
-    activePlatform:null,
+    initialize:function () {
+		
+    },
+    activePlatform:{},
     beforeRender: function() {
-        return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
+        if(this.template)
+			return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
+		else{
+			var self = this;
+			return $.when($.get(countlyGlobal["path"]+'/density/templates/density.html', function(src){
+				self.template = Handlebars.compile(src);
+			}), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
+		}
     },
     pageScript:function () {
         var self = this;
-
+        $(".density-segmentation .segmentation-option").on("click", function () {
+            self.activePlatform[countlyCommon.ACTIVE_APP_ID] = $(this).data("value");
+            self.refresh();
+		});
         app.localize();
     },
     renderCommon:function (isRefresh) {
         var self = this;
         var platformData = countlyDeviceDetails.getPlatformData();
+        platformData.chartData.sort(function(a,b) {return (a.os_ > b.os_) ? 1 : ((b.os_ > a.os_) ? -1 : 0);});
 
         var chartHTML = "";
 
         if (platformData && platformData.chartDP && platformData.chartDP.dp && platformData.chartDP.dp.length) {
-            chartHTML += '<div class="hsb-container top"><div class="label">Platforms</div><div class="chart"><svg id="hsb-platforms"></svg></div></div>';
-
             for (var i = 0; i < platformData.chartDP.dp.length; i++) {
                 chartHTML += '<div class="hsb-container"><div class="label">'+ platformData.chartDP.dp[i].label +'</div><div class="chart"><svg id="hsb-platform'+ i +'"></svg></div></div>';
             }
         }
+        if(!this.activePlatform[countlyCommon.ACTIVE_APP_ID])
+            this.activePlatform[countlyCommon.ACTIVE_APP_ID] = (platformData.chartData[0]) ? platformData.chartData[0].os_ : "";
 
         this.templateData = {
             "page-title":jQuery.i18n.map["density.title"],
@@ -28,41 +42,13 @@ window.DensityView = countlyView.extend({
             "chartHTML": chartHTML,
             "chart-helper":"density.chart",
             "table-helper":"",
-            "two-tables": true
+            "active-platform": this.activePlatform[countlyCommon.ACTIVE_APP_ID],
+            "platforms": platformData.chartData
         };
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             this.pageScript();
-
-            this.dtable = $('#dataTableOne').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": platformData.chartData,
-                "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
-                    $(nRow).data("name", aData.origos_);
-                    $(nRow).addClass("os-rows");
-                    if (self.activePlatform && self.activePlatform == aData.origos_) {
-                        $(nRow).addClass("active");
-                    }
-                    else if(!self.activePlatform){
-                        self.activePlatform = aData.origos_;
-                        $(nRow).addClass("active");
-                    }
-                },
-                "aoColumns": [
-                    { "mData": "os_", "sTitle": jQuery.i18n.map["platforms.table.platform"] },
-                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
-                    { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
-                    { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
-                ]
-            }));
-
-            $('#dataTableOne tbody').on("click", "tr", function (){
-                self.activePlatform = $(this).data("name");
-                $(".os-rows").removeClass("active");
-                $(this).addClass("active");
-
-                self.refresh();
-            });
 
             countlyCommon.drawHorizontalStackedBars(platformData.chartDP.dp, "#hsb-platforms");
 
@@ -74,9 +60,9 @@ window.DensityView = countlyView.extend({
                 }
             }
 
-            var oSVersionData = countlyDensity.getOSSegmentedData(this.activePlatform);
+            var oSVersionData = countlyDensity.getOSSegmentedData(this.activePlatform[countlyCommon.ACTIVE_APP_ID]);
 
-            this.dtableTwo = $('#dataTableTwo').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            this.dtable = $('#dataTableOne').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": oSVersionData.chartData,
                 "aoColumns": [
                     { "mData": "density", "sTitle": jQuery.i18n.map["density.table.density"] },
@@ -86,7 +72,7 @@ window.DensityView = countlyView.extend({
                 ]
             }));
 
-            $("#dataTableTwo").stickyTableHeaders();
+            $("#dataTableOne").stickyTableHeaders();
         }
     },
     refresh:function () {
@@ -96,15 +82,12 @@ window.DensityView = countlyView.extend({
                 return false;
             }
             self.renderCommon(true);
-
-            var oSVersionData = countlyDensity.getOSSegmentedData(self.activePlatform),
+            var oSVersionData = countlyDensity.getOSSegmentedData(self.activePlatform[countlyCommon.ACTIVE_APP_ID]),
                 platformData = countlyDeviceDetails.getPlatformData(),
                 newPage = $("<div>" + self.template(self.templateData) + "</div>");
 
             $(self.el).find(".widget-content").replaceWith(newPage.find(".widget-content"));
             $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
-
-            countlyCommon.drawHorizontalStackedBars(platformData.chartDP.dp, "#hsb-platforms");
 
             if (platformData && platformData.chartDP) {
                 for (var i = 0; i < platformData.chartDP.dp.length; i++) {
@@ -114,8 +97,7 @@ window.DensityView = countlyView.extend({
                 }
             }
 
-            CountlyHelpers.refreshTable(self.dtable, platformData.chartData);
-            CountlyHelpers.refreshTable(self.dtableTwo, oSVersionData.chartData);
+            CountlyHelpers.refreshTable(self.dtable, oSVersionData.chartData);
 
             self.pageScript();
         });
