@@ -38,7 +38,7 @@
     "express": "4.14.0",
     "express-expose": "0.3.4",
     "cookie-parser": "1.4.3",
-    "express-session": "1.14.1",
+    "express-session": "1.14.2",
     "method-override": "2.3.6",
     "csurf": "1.9.0",
     "errorhandler": "1.4.3",
@@ -55,7 +55,7 @@
     "nodemailer-smtp-transport": "2.7.2",
     "nodemailer-smtp-pool": "2.8.2",
     "nodemailer-sendmail-transport": "1.0.0",
-    "request": "2.76.0",
+    "request": "2.78.0",
     "string": "3.3.3",
     "time": "0.11.4",
     "underscore": "1.8.3",
@@ -64,7 +64,7 @@
     "properties-parser":"0.3.1",
     "external-ip":"0.2.4",
     "escape-html":"1.0.3",
-    "bluebird":"3.4.1"
+    "bluebird":"3.4.6"
   },
   "jshintConfig": {
     "esversion": 6,
