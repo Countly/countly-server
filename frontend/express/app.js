@@ -524,8 +524,18 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             path:countlyConfig.path || "",
                             cdn:countlyConfig.cdn || "",
                             use_google:configs.use_google || false,
-                            themeFiles:theme
+                            themeFiles:theme,
+                            javascripts: []
                         };
+
+                        plugins.getPlugins().forEach(plugin => {
+                            try {
+                                let contents = fs.readdirSync(`../../plugins/${plugin}/frontend/public/javascripts`) || [];
+                                toDashboard.javascripts.push.apply(toDashboard.javascripts, contents.filter(n => n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
+                            } catch (e) {
+                                console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
+                            }
+                        });
                         
                         if(req.session.install){
                             req.session.install = null;
