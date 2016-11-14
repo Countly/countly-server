@@ -5175,7 +5175,7 @@ var AppRouter = Backbone.Router.extend({
             "bLengthChange":true,
             "bPaginate":true,
             "sPaginationType": "four_button",
-            "iDisplayLength": 50,
+            "iDisplayLength": (store.get("iDisplayLength")) ? parseInt(store.get("iDisplayLength")) : 50,
             "bDestroy": true,
             "bDeferRender": true,
             "oLanguage": {
@@ -5281,6 +5281,9 @@ var AppRouter = Backbone.Router.extend({
                         return ($(this).data("help")) ? jQuery.i18n.map[$(this).data("help")] : "";
                     }, fade:true, offset:5, cssClass:'yellow', opacity:1, html:true});
                     tableWrapper.find(".dataTables_length").show();
+                    tableWrapper.find('#dataTables_length_input').bind( 'change.DT', function(e) {
+                        store.set("iDisplayLength", $(this).val());
+                    });
                 }
                 else{
                     tableWrapper.find(".dataTables_length").hide();
