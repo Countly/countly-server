@@ -278,22 +278,21 @@ var appsApi = {},
             "1year":12,
             "2year":24
         };
-        var base64 = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
         var back = periods[params.qstring.args.period];
         var skip = {};
         var dates = {};
         var now = moment();
         skip[appId+"_"+now.format('YYYY:M')] = true;
-        for(var i = 0; i < base64.length; i++){
-            skip[appId+"_"+now.format('YYYY:M')+"_"+base64[i]] = true;
+        for(var i = 0; i < common.base64.length; i++){
+            skip[appId+"_"+now.format('YYYY:M')+"_"+common.base64[i]] = true;
         }
         dates[now.format('YYYY:M')] = true;
         for(var i = 0; i < back; i++){
             skip[appId+"_"+now.subtract("months", 1).format('YYYY:M')] = true;
             skip[appId+"_"+now.format('YYYY')+":0"] = true;
-            for(var i = 0; i < base64.length; i++){
-                skip[appId+"_"+now.format('YYYY:M')+"_"+base64[i]] = true;
-                skip[appId+"_"+now.format('YYYY')+":0"+"_"+base64[i]] = true;
+            for(var i = 0; i < common.base64.length; i++){
+                skip[appId+"_"+now.format('YYYY:M')+"_"+common.base64[i]] = true;
+                skip[appId+"_"+now.format('YYYY')+":0"+"_"+common.base64[i]] = true;
             }
             dates[now.format('YYYY:M')] = true;
             dates[now.format('YYYY')+":0"] = true;
