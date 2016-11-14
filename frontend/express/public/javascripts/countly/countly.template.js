@@ -294,7 +294,7 @@ $.extend(Template.prototype, {
             }
 
             if ($(this).hasClass("centered")) {
-                if (itemCount > 5 || $(this).hasClass("force")) {
+                if ((itemCount > 5 && $(this).offset().top > 400) || $(this).hasClass("force")) {
                     var height = $(this).find(".select-items").height(),
                         searchItem = $(this).find(".search");
 
@@ -312,8 +312,8 @@ $.extend(Template.prototype, {
                     $(this).find(".search").css("margin-top", (-(height/2).toFixed(0) - searchItem.height()) + "px");
                 } else {
                     $(this).find(".select-items").css({"min-height": "auto"});
-                    $(this).find(".select-items").css("margin-top", 0);
-                    $(this).find(".search").css("margin-top", 0);
+                    $(this).find(".select-items").css("margin-top", '');
+                    $(this).find(".search").css("margin-top", '');
                 }
             }
 
