@@ -218,6 +218,11 @@ var plugin = {},
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]},function(){});
     });
+    
+    plugins.register("/i/apps/clear_all", function(ob){
+        var appId = ob.appId;
+        common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]},function(){});
+    });
 
     plugins.register("/i/apps/delete", function(ob){
         var appId = ob.appId;

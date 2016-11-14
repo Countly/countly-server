@@ -55,6 +55,11 @@ var plugin = {},
 		common.db.collection('sources').remove({'_id': {$regex: appId + ".*"}},function(){});
 	});
     
+    plugins.register("/i/apps/clear_all", function(ob){
+		var appId = ob.appId;
+		common.db.collection('sources').remove({'_id': {$regex: appId + ".*"}},function(){});
+	});
+    
     plugins.register("/i/apps/clear", function(ob){
 		var appId = ob.appId;
         var ids = ob.ids;

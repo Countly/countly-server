@@ -214,9 +214,31 @@
                 return error;
             }
             else if(this.platform == "iOS"){
-                var errors = ["CoreFoundation 0x30629f9b + 154", "libobjc.A.dylib 0x3b110ccf objc_exception_throw + 38", "CoreFoundation 0x30629ec5 + 0", "UIKit 0x33090e75 + 88", "libobjc.A.dylib 0x3b11fb6b + 174", "kounter 0x0010427d kounter + 94845", "UIKit 0x32e7c037 + 90", "CoreFoundation 0x3055debf CFRunLoopRunSpecific + 522", "CoreFoundation 0x3055dca3 CFRunLoopRunInMode + 106", "GraphicsServices 0x35458663 GSEventRunModal + 138", "libdyld.dylib 0x3b61dab7 + 2"];
+                var errors = ["CoreFoundation                  0x182e3adb0 __exceptionPreprocess + 124", 
+                    "libobjc.A.dylib                 0x18249ff80 objc_exception_throw + 56", 
+                    "CoreFoundation                  0x182d1b098 -[__NSArrayI objectAtIndex:] + 196", 
+                    "CountlyTestApp-iOS              0x100046988 0x100030000 + 92552", 
+                    "CountlyTestApp-iOS              0x100044340 0x100030000 + 82752", 
+                    "UIKit                           0x187fd0be8 -[UIApplication sendAction:to:from:forEvent:] + 100", 
+                    "UIKit                           0x187fd0b64 -[UIControl sendAction:to:forEvent:] + 80", 
+                    "UIKit                           0x187fb8870 -[UIControl _sendActionsForEvents:withEvent:] + 436", 
+                    "UIKit                           0x187fd0454 -[UIControl touchesEnded:withEvent:] + 572", 
+                    "UIKit                           0x187f88c0c _UIGestureRecognizerUpdate + 8988", 
+                    "UIKit                           0x187fc9610 -[UIWindow _sendGesturesForEvent:] + 1132", 
+                    "UIKit                           0x187fc8c0c -[UIWindow sendEvent:] + 764", 
+                    "UIKit                           0x187f9904c -[UIApplication sendEvent:] + 248", 
+                    "UIKit                           0x187f97628 _UIApplicationHandleEventQueue + 6568", 
+                    "CoreFoundation                  0x182df109c __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__ + 24", 
+                    "CoreFoundation                  0x182df0b30 __CFRunLoopDoSources0 + 540", 
+                    "CoreFoundation                  0x182dee830 __CFRunLoopRun + 724", 
+                    "CoreFoundation                  0x182d18c50 CFRunLoopRunSpecific + 384", 
+                    "GraphicsServices                0x184600088 GSEventRunModal + 180", 
+                    "UIKit                           0x188002088 UIApplicationMain + 204", 
+                    "CountlyTestApp-iOS              0x10004342c 0x100030000 + 78892", 
+                    "libdyld.dylib                   0x1828b68b8 start + 4"
+                ];
                 var error = "";
-                var stacks = getRandomInt(5, 9);
+                var stacks = getRandomInt(9, 19);
                 for(var i = 0; i < stacks; i++){
                     error += i + " " + errors[Math.floor(Math.random()*errors.length)] + "\n";
                 }

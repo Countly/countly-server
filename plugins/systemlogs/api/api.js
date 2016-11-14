@@ -116,6 +116,12 @@ var plugin = {},
         recordAction(ob.params, ob.params.member, "app_reset", ob.data);
 	});
     
+    plugins.register("/i/apps/clear_all", function(ob){
+		var appId = ob.appId;
+        ob.data._id = appId;
+        recordAction(ob.params, ob.params.member, "clear_all", ob.data);
+	});
+    
     plugins.register("/i/apps/clear", function(ob){
 		var appId = ob.appId;
         ob.data._id = appId;

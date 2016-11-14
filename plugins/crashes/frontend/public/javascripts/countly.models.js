@@ -33,7 +33,7 @@
         });
     }
     
-    if(countlyGlobal.member && countlyGlobal.member.api_key){
+    if(countlyGlobal.member && countlyGlobal.member.api_key && countlyCommon.ACTIVE_APP_ID != 0){
         countlyCrashes.loadList(countlyCommon.ACTIVE_APP_ID);
     }
 

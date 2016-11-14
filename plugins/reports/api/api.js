@@ -264,6 +264,11 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
 		return true;
 	});
     
+    plugins.register("/i/apps/delete", function(ob){
+		var appId = ob.appId;
+        common.db.collection("reports").update({}, {$pull:{apps:appId+""}}, { multi: true }, function(err, res){});
+	});
+    
     function convertToTimezone(props){
         //convert time
         var date = new time.Date();
