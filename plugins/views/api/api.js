@@ -462,13 +462,18 @@ var plugin = {},
     plugins.register("/i/apps/clear", function(ob){
 		var appId = ob.appId;
         var ids = ob.ids;
+        var dates = ob.dates;
         common.db.collection('app_viewdata' + appId).findOne({_id:"meta_v2"}, function(err, doc){
             if(!err && doc && doc.segments){
                 var segments = Object.keys(doc.segments);
                 segments.push("no-segment");
-                for(var i = 0; i < segments.length; i++){
-                    common.db.collection('app_viewdata' + appId).remove({$and:[{'_id': {$regex: segments[i] + ".*"}}, {'_id': {$nin:ids}}]},function(){}); 
+                var docs = [];
+                for(var j = 0; j < segments.length; j++){
+                    for(var k = 0; k < dates.length; k++){
+                        docs.push(segments[j]+"_"+dates[k]);
+                    }
                 }
+                common.db.collection('app_viewdata' + appId).remove({'_id': {$nin:docs}},function(){});
             }
         });
         if(common.drillDb){
