@@ -17,12 +17,6 @@ var plugin = {},
             common.dbUserMap[k] = creds.DB_USER_MAP[k];
         }
     }
-    
-    plugins.internalEvents.push("[CLY]_push_action");
-    plugins.internalEvents.push("[CLY]_push_open");
-    plugins.internalEvents.push("[CLY]_push_sent");
-    plugins.internalDrillEvents.push("[CLY]_push_action");
-    plugins.internalDrillEvents.push("[CLY]_push_open");
 
     plugins.register('/worker', function(ob){
         setUpCommons();
@@ -53,7 +47,9 @@ var plugin = {},
             }
         }
         if (params.qstring.token_session) {
-            push.processTokenSession(params.app_user, params);
+            common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, dbAppUser){
+                push.processTokenSession(dbAppUser, params);
+            });
         }
     });
 

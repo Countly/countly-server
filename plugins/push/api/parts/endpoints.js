@@ -228,10 +228,7 @@ var common          = require('../../../../api/utils/common.js'),
             query.apps = {$in: ids};
         }
 
-        query.$or = [
-            {date: params.period.date},
-            {date: {$gte: new Date()}}
-        ];
+        query.date = params.period.date;
 
         /*
          var pageNo = (params.qstring.args && params.qstring.args.page && common.isNumber(params.qstring.args.page))? params.qstring.args.page : 1;
@@ -396,7 +393,6 @@ var common          = require('../../../../api/utils/common.js'),
                                 if (err) {
                                     common.returnOutput(params, {error: 'Server db Error'});
                                 } else {
-                                    plugins.dispatch("/systemlogs", {params:params, action:"push_message_created", data:json});
                                     common.returnOutput(params, message);
                                 }
                             });
@@ -442,7 +438,6 @@ var common          = require('../../../../api/utils/common.js'),
                 common.db.collection('messages').update({_id: message._id}, {$set: {'deleted': true}},function(){});
                 common.returnOutput(params, message);
             }
-            plugins.dispatch("/systemlogs", {params:params, action:"push_message_deleted", data:message});
 
             // TODO: need to delete analytics?
 
@@ -500,9 +495,9 @@ var common          = require('../../../../api/utils/common.js'),
                 $set[field] = token;
                 $set[bool] = true;
                 if (!dbAppUser) {
-                    common.updateAppUser(params, {$set: $set});
+                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$set: $set}, {upsert: true}, function(){});
                 } else if (common.dot(dbAppUser, field) != token) {
-                    common.updateAppUser(params, {$set: $set});
+                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$set: $set}, {upsert: true}, function(){});
 
                     if (!dbAppUser[common.dbUserMap.tokens]) dbAppUser[common.dbUserMap.tokens] = {};
                     common.dot(dbAppUser, field, token);
@@ -513,7 +508,7 @@ var common          = require('../../../../api/utils/common.js'),
                 $unset[field] = 1;
                 $unset[bool] = 1;
                 if (common.dot(dbAppUser, field)) {
-                    common.updateAppUser(params, {$unset: $unset});
+                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$unset: $unset}, {upsert: false}, function(){});
                 }
             }
         }

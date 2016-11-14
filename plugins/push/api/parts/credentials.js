@@ -158,11 +158,13 @@ let p12 = function(path, password) {
 				}
 
 				var topics = safeBag.cert.getExtension({id: '1.2.840.113635.100.6.3.6'});
+				log.d('topics 1', topics);
 				if (topics) {
 					topics = topics.value.replace(/0[\x00-\x1f\(\)!]/gi, '')
 										.replace('\f\f', '\f')
 										.split('\f')
-										.map(s => s.replace(/[\x00-\x1f\(\)!,$#\+]/gi, '').trim());
+										.map(s => s.replace(/[\x00-\x1f\(\)!,$]/gi, '').trim());
+log.d('topics 2', topics);
 					topics.shift();
 
 					for (var i = 0; i < topics.length; i++) {

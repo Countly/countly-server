@@ -1,3 +1,4 @@
+
 window.MessagingDashboardView = countlyView.extend({
     showOnGraph: 3,
     initialize:function () {
@@ -72,7 +73,6 @@ window.MessagingDashboardView = countlyView.extend({
             newPage = $("<div>" + this.template(this.templateData) + "</div>");
             $(this.el).find("#big-numbers-container").replaceWith(newPage.find("#big-numbers-container"));
             $(this.el).find("#intermediate-numbers-container").replaceWith(newPage.find("#intermediate-numbers-container"));
-            $(this.el).find(".widget-header .left .title").replaceWith(newPage.find(".widget-header .left .title"));
 
             // $('.widget-intermediate .big-numbers').eq(0).find('.percentage').text(enabling + '%');
             // $('.widget-intermediate .big-numbers').eq(1).find('.percentage').text(delivery + '%');
@@ -163,11 +163,12 @@ window.MessagingListView = countlyView.extend({
 
         $(".d-table").stickyTableHeaders();
 
-        $('.btn-create-message').off('click').on('click', PushPopup.bind(window, undefined, undefined));
+        $('.btn-create-message').off('click').on('click', components.push.popup.show.bind(null, {}));
         $('.d-table tr:not(.push-no-messages)').off('click').on('click', function(){
             var mid = $(this).attr('data-mid');
             for (var i in pushes) if (pushes[i]._id === mid) {
-                PushPopup(pushes[i]);
+                components.push.view.show(pushes[i]);
+                // PushPopup(pushes[i]);
                 return;
             }
         });
@@ -359,7 +360,7 @@ var PushPopup = function(message, duplicate, dontReplaceApp) {
         function showAppsSelector(pos) {
             $('#listof-apps').remove();
 
-            var listofApps = $('<div id="listof-apps"><div class="scrollable"></div><div class="button-container"><a class="icon-button green btn-done">' + jQuery.i18n.map["common.done"] + '</a><a class="icon-button dark btn-select-all">' + jQuery.i18n.map["common.select-all"] + '</a><a class="icon-button dark btn-deselect-all">' + jQuery.i18n.map["common.deselect-all"] + '</a></div></div>').hide(),
+            var listofApps = $('<div id="listof-apps"><div class="tip"></div><div class="scrollable"></div><div class="button-container"><a class="icon-button dark btn-done">' + jQuery.i18n.map["common.done"] + '</a><a class="icon-button dark btn-select-all">' + jQuery.i18n.map["common.select-all"] + '</a><a class="icon-button dark btn-deselect-all">' + jQuery.i18n.map["common.deselect-all"] + '</a></div></div>').hide(),
                 listofAppsScrollable = listofApps.find('.scrollable');
                 ap = function(app){
                     return $('<div class="app" data-app-id="' + app._id + '"><div class="image" style="background-image: url(\'/files/' + app._id + '.png\');"></div><div class="name">' + app.name + '</div><input class="app_id" type="hidden" value="{{this._id}}"/></div>');
@@ -1361,13 +1362,14 @@ app.addAppManagementSwitchCallback(function(appId, type){
 
 app.addPageScript("/drill#", function(){
     if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "mobile"){
-        $("#drill-actions").append('<a class="link icon-button light btn-create-message"><i class="ion-chatbox-working"></i><span data-localize="push.create"></span></a>');
+        $("#bookmark-filter").after(
+        '<div id="create-message-connector" style="display:none; float:left; height:1px; border-top:1px solid #999; width:50px; margin-top:14px; margin-left:5px;"></div>'+
+        '<a class="icon-button green btn-header btn-create-message" data-localize="push.create" style="display:none"></a>');
         app.localize();
         $('.btn-create-message').off('click').on('click', function(){
             var filterData = app.drillView.getFilterObjAndByVal();
             var message = {
                 apps: [countlyCommon.ACTIVE_APP_ID],
-                platforms: [],
                 drillConditions: countlySegmentation.getRequestData()
             };
     
@@ -1375,7 +1377,7 @@ app.addPageScript("/drill#", function(){
             //     if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filterData.dbFilter[k];
             // }
     
-            PushPopup(message, false, true);
+            components.push.popup.show(message);
         });
         $("#bookmark-view").on("click", ".bookmark-action.send", function() {
             var filter = $(this).data("query");
@@ -1390,12 +1392,12 @@ app.addPageScript("/drill#", function(){
             //     if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filter[k];
             // }
     
-            PushPopup(message, false, true);
+            components.push.popup.show(message);
         });
     }
 });
 
-app.addPageScript("^/users#", function(){
+app.addPageScript("/users#", function(){
     if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "mobile"){
         //check if it is profile view
         if(app.activeView.updateEngagement){
@@ -1414,12 +1416,12 @@ app.addPageScript("^/users#", function(){
             }
             $('.btn-create-message').show().off('click').on('click', function(){
                 if (platforms.length) {
-                    PushPopup({
+                    components.push.popup.show({
                         platforms: platforms,
                         apps: [countlyCommon.ACTIVE_APP_ID],
                         test: test && !prod,
                         userConditions: {_id: app.userdetailsView.user_id}
-                    }, true, true);
+                    });
                 } else {
                     CountlyHelpers.alert(jQuery.i18n.map["push.no-user-token"], "red");
                 }
@@ -1444,13 +1446,10 @@ app.addPageScript("^/users#", function(){
                 if($('.dataTables_filter input').val().length)
                     filterData["$text"] = { "$search": "\""+$('.dataTables_filter input').val()+"\"" };
                 
-                var message = {
+                components.push.popup.show({
                     apps: [countlyCommon.ACTIVE_APP_ID],
-                    platforms: [],
                     userConditions: filterData
-                };
-                
-                PushPopup(message, false, true);
+                });
             });
         }
     }
