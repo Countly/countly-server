@@ -222,7 +222,7 @@ var appsApi = {},
     };
     
     function deleteAppData(appId, fromAppDelete, params, app) {
-        if(fromAppDelete || !params.qstring.args.period || params.qstring.args.period == "all"){
+        if(fromAppDelete || !params.qstring.args.period || params.qstring.args.period == "all" || params.qstring.args.period == "reset"){
             deleteAllAppData(appId, fromAppDelete, params, app);
         }
         else{
@@ -253,8 +253,12 @@ var appsApi = {},
             if (!fromAppDelete) {
                 common.db.collection('app_users' + appId).insert({_id:"uid-sequence", seq:0},function(){});
             }
-            if (!fromAppDelete)
-                plugins.dispatch("/i/apps/reset", {params:params, appId:appId, data:app}, deleteEvents);
+            if (!fromAppDelete){
+                if(params.qstring.args.period == "reset")
+                    plugins.dispatch("/i/apps/reset", {params:params, appId:appId, data:app}, deleteEvents);
+                else
+                    plugins.dispatch("/i/apps/clear_all", {params:params, appId:appId, data:app}, deleteEvents);
+            }
             else
                 plugins.dispatch("/i/apps/delete", {params:params, appId:appId, data:app}, deleteEvents);
         });
