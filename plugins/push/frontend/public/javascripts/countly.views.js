@@ -1410,7 +1410,7 @@ app.addPageScript("^/users#", function(){
                 prod = !!userDetails.tk.ip || !!userDetails.tk.ap;
             }
             if (!$('.btn-create-message').length) {
-                $('.widget-header .left').append($('<a class="icon-button green btn-header left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
+                $('#user-profile-detail-buttons').append($('<a class="icon-button green left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
             }
             $('.btn-create-message').show().off('click').on('click', function(){
                 if (platforms.length) {
