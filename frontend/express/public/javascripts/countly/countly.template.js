@@ -2137,6 +2137,56 @@ window.ManageAppsView = countlyView.extend({
                     }
                 }
             }
+            
+            function joinUsers(users){
+                var ret = "";
+                if(users && users.length){
+                    for(var i = 0; i < users.length; i++){
+                        if(users[i].full_name && users[i].full_name != "")
+                            ret += users[i].full_name + ", ";
+                        else if(users[i].username && users[i].username != "")
+                            ret += users[i].username + ", ";
+                        else
+                            ret += users[i]._id + ", ";
+                    }
+                    ret = ret.substring(0, ret.length - 2);
+                }
+                return ret;
+            }
+            $("#app_details").off("click").on("click", function(){
+                $.ajax({
+                    type:"GET",
+                    url:countlyCommon.API_PARTS.apps.r + '/details',
+                    data:{
+                        app_id:appId,
+                        api_key:countlyGlobal['member'].api_key
+                    },
+                    dataType:"json",
+                    success:function (result) {
+                        if(result && result.app){
+                            var table = "<i class='popup-close ion-close'></i><table class='d-table horizontal' cellpadding='0' cellspacing='0'>";
+                            table += "<colgroup><col width='200px'><col width='155px'><col width='100%'></colgroup>";
+                            //app creator
+                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-creator"]+"</td><td colspan='2'>"+((result.app.owner == "") ? jQuery.i18n.map["common.unknown"] : result.app.owner) +"</td></tr>";
+                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-created-at"]+"</td><td colspan='2'>"+((result.app.created_at == 0)? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.created_at))+"</td></tr>";
+                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-edited-at"]+"</td><td colspan='2'>"+((result.app.edited_at == 0)? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.edited_at))+"</td></tr>";
+                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-last-data"]+"</td><td colspan='2'>"+((result.app.last_data == 0)? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.last_data))+"</td></tr>";
+                            table += "<tr><td rowspan='3'>"+jQuery.i18n.map["management-applications.app-users"]+"</td>";
+                            table += "<td class='second-header'>"+jQuery.i18n.map["management-applications.global_admins"]+"</td><td>"+joinUsers(result.global_admin)+"</td></tr>";
+                            table += "<tr><td class='second-header'>"+jQuery.i18n.map["management-applications.admins"]+"</td><td>"+joinUsers(result.admin)+"</td></tr>";
+                            table += "<tr><td class='second-header'>"+jQuery.i18n.map["management-applications.users"]+"</td><td>"+joinUsers(result.user)+"</td></tr>";
+                            CountlyHelpers.popup(table+"</table>", "app_details_table", true);
+                            $(".popup-close").off("click").on("click", function(){$("#overlay").trigger('click');});
+                        }
+                        else{
+                            CountlyHelpers.alert(jQuery.i18n.map["management-applications.application-no-details"], "red");
+                        }
+                    },
+                    error: function(){
+                        CountlyHelpers.alert(jQuery.i18n.map["management-applications.application-no-details"], "red");
+                    }
+                });
+            });
         }
 
         function initCountrySelect(parent, countryCode, timezoneText, timezone) {
