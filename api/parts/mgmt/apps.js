@@ -61,6 +61,30 @@ var appsApi = {},
 
         return true;
     };
+    
+    appsApi.getAppsDetails = function (params) {
+        common.db.collection('app_users'+params.qstring.app_id).find({}, {ls:1, _id:0}).sort({ls:-1}).limit(1).toArray(function(err, last) {
+            common.db.collection('members').find({ global_admin: true }, {full_name:1, username:1}).toArray(function(err, global_admins) {
+                common.db.collection('members').find({ admin_of: params.qstring.app_id }, {full_name:1, username:1}).toArray(function(err, admins) {
+                    common.db.collection('members').find({ user_of: params.qstring.app_id }, {full_name:1, username:1}).toArray(function(err, users) {
+                        common.returnOutput(params, {
+                            app: {
+                                owner: params.app.owner || "",
+                                created_at: params.app.created_at || 0,
+                                edited_at: params.app.edited_at || 0,
+                                last_data: (typeof last !== "undefined" && last.length) ? last[0].ls : 0,
+                            },
+                            global_admin: global_admins || [],
+                            admin: admins || [],
+                            user: users || []
+                        });
+                    });
+                });
+            });
+        });
+
+        return true;
+    };
 
     appsApi.createApp = function (params) {
         if (!(params.member.global_admin)) {
@@ -84,6 +108,10 @@ var appsApi = {},
         }
 
         processAppProps(newApp);
+        
+        newApp.created_at = Math.floor(((new Date()).getTime()) / 1000);
+        newApp.edited_at = newApp.created_at;
+        newApp.owner = params.member._id;
 
         common.db.collection('apps').insert(newApp, function(err, app) {
             var appKey = common.sha1Hash(app.ops[0]._id, true);
@@ -123,6 +151,8 @@ var appsApi = {},
         }
 
         processAppProps(updatedApp);
+        
+        updatedApp.edited_at = Math.floor(((new Date()).getTime()) / 1000);
 
 		common.db.collection('apps').findOne(common.db.ObjectID(params.qstring.args.app_id), function(err, app){
             if (err || !app) common.returnMessage(params, 404, 'App not found');

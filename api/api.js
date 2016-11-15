@@ -442,6 +442,11 @@ if (cluster.isMaster) {
                 common.returnMessage(params, 401, 'User does not exist');
                 return false;
             }
+            
+            if (typeof params.qstring.app_id === "undefined") {
+                common.returnMessage(params, 401, 'No app_id provided');
+                return false;
+            }
     
             if (!((member.user_of && member.user_of.indexOf(params.qstring.app_id) != -1) || member.global_admin)) {
                 common.returnMessage(params, 401, 'User does not have view right for this application');
@@ -462,6 +467,7 @@ if (cluster.isMaster) {
                 params.app_id = app['_id'];
                 params.app_cc = app['country'];
                 params.appTimezone = app['timezone'];
+                params.app = app;
                 params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
                 
                 plugins.dispatch("/o/validate", {params:params, app:app});
@@ -799,8 +805,11 @@ if (cluster.isMaster) {
                                 case 'mine':
                                     validateUserForMgmtReadAPI(countlyApi.mgmt.apps.getCurrentUserApps, params);
                                     break;
+                                case 'details':
+                                    validateUserForDataReadAPI(params, countlyApi.mgmt.apps.getAppsDetails);
+                                    break;
                                 default:
-                                    common.returnMessage(params, 400, 'Invalid path, must be one of /all or /mine');
+                                    common.returnMessage(params, 400, 'Invalid path, must be one of /all , /mine or /details');
                                     break;
                             }
             
