@@ -28,7 +28,8 @@ var versionInfo = require('./version.info'),
     countlyStats = require('../../api/parts/data/stats.js'),
     bruteforce = require('./libs/preventBruteforce.js'),
 	plugins = require('../../plugins/pluginManager.js'),
-    countlyConfig = require('./config', 'dont-enclose');
+    countlyConfig = require('./config', 'dont-enclose'),
+    log = require('../../api/utils/log.js')('core:app');
     
     var COUNTLY_NAMED_TYPE = "Countly Community Edition v"+COUNTLY_VERSION;
     var COUNTLY_TYPE_CE = true;
@@ -78,11 +79,15 @@ plugins.setConfigs("security", {
 
 process.on('uncaughtException', (err) => {
   console.log('Caught exception: %j', err, err.stack);
+  if(log && log.e)
+    log.e('Logging caught exception');
   process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, p) => {
-  console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+  console.log("Unhandled rejection at: Promise ", p, " reason: ", reason);
+  if(log && log.e)
+    log.e("Logging unhandled rejection");
 });
 
 var countlyDb = plugins.dbConnection(countlyConfig);

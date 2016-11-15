@@ -6,7 +6,8 @@ var http = require('http'),
     plugins = require('../plugins/pluginManager.js'),
     jobs = require('./parts/jobs'),
     Promise = require("bluebird"),
-    workers = [];
+    workers = [],
+    log = require('./utils/log.js')('core:api');
     
 plugins.setConfigs("api", {
     domain: "",
@@ -58,11 +59,15 @@ http.globalAgent.maxSockets = countlyConfig.api.max_sockets || 1024;
 
 process.on('uncaughtException', (err) => {
     console.log('Caught exception: %j', err, err.stack);
+    if(log && log.e)
+        log.e('Logging caught exception');
     process.exit(1);
 });
  
 process.on('unhandledRejection', (reason, p) => {
     console.log('Unhandled rejection for %j with reason %j stack ', p, reason, reason ? reason.stack : undefined);
+    if(log && log.e)
+        log.e('Logging unhandled rejection');
 });
 
 if (cluster.isMaster) {
