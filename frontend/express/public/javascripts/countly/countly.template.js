@@ -419,15 +419,14 @@ $.extend(Template.prototype, {
 				if ( i === -1 ) {
 					$(nTr).addClass("selected");
 					var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr ), context), 'details' );
-					$('div.datatablesubrow', nDetailsRow).slideDown();
+					$('div.datatablesubrow', nDetailsRow).show();
 					dTable.aOpen.push( id );
 				}
 				else {
 					$(nTr).removeClass("selected");
-					$('div.datatablesubrow', $(nTr).next()[0]).slideUp( function () {
-						dTable.fnClose( nTr );
-						dTable.aOpen.splice( i, 1 );
-					} );
+					$('div.datatablesubrow', $(nTr).next()[0]).hide();
+                    dTable.fnClose( nTr );
+                    dTable.aOpen.splice( i, 1 );
 				}
 			}
 		});
