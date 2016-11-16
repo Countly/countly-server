@@ -2154,6 +2154,7 @@ window.ManageAppsView = countlyView.extend({
                 return ret;
             }
             $("#app_details").off("click").on("click", function(){
+                var dialog = CountlyHelpers.loading(jQuery.i18n.map["common.loading"]);
                 $.ajax({
                     type:"GET",
                     url:countlyCommon.API_PARTS.apps.r + '/details',
@@ -2163,6 +2164,7 @@ window.ManageAppsView = countlyView.extend({
                     },
                     dataType:"json",
                     success:function (result) {
+                        dialog.remove();
                         if(result && result.app){
                             var table = "<table class='d-table' cellpadding='0' cellspacing='0'>";
                             table += "<colgroup><col width='200px'><col width='155px'><col width='100%'></colgroup>";
@@ -2184,6 +2186,7 @@ window.ManageAppsView = countlyView.extend({
                         }
                     },
                     error: function(){
+                        dialog.remove();
                         CountlyHelpers.alert(jQuery.i18n.map["management-applications.application-no-details"], "red");
                     }
                 });
