@@ -1,0 +1,59 @@
+<div class="widget">
+    <div class="widget-header">
+        <div class="left">
+            <div class="title">{{page-title}}</div>
+        </div>
+    </div>
+</div>
+<div class="assistant_stuff">
+    <div id="tabs">
+        <ul>
+            <li><a href="#log-all">All</a></li>
+            <li><a href="#log-private">YOU SAVED</a></li>
+            <li><a href="#log-global">SAVED GLOBALY</a></li>
+        </ul>
+
+        <div id="log-all" class="errorlog">
+            {{#eachOfArray all_notifs}}
+            <div class="assistant_notif">
+
+                <div>
+                    <a class="icon-button light btn-header btn-save-global" data-id="{{value._id}}" data-localize="assistant.save.global"></a>
+                    <a class="icon-button light btn-header btn-save-private" data-id="{{value._id}}" data-localize="assistant.save.private"></a>
+                </div>
+                <p>{{value.title}}</p>
+                <p>{{value.msg}}</p>
+            </div>
+            {{/eachOfArray}}
+        </div>
+
+        <div id="log-private" class="errorlog">
+            {{#eachOfArray saved_private}}
+            <div class="assistant_notif">
+
+                <div>
+                    <a class="icon-button light btn-header btn-unsave-private" data-id="{{value._id}}" data-localize="assistant.save.private"></a>
+                </div>
+
+                <p>{{value.title}}</p>
+                <p>{{value.msg}}</p>
+            </div>
+            {{/eachOfArray}}
+        </div>
+
+        <div id="log-global" class="errorlog">
+            {{#eachOfArray saved_global}}
+            <div class="assistant_notif">
+
+                <div>
+                    <a class="icon-button light btn-header btn-unsave-global" data-id="{{value._id}}" data-localize="assistant.save.global"></a>
+                </div>
+
+                <p>{{value.title}}</p>
+                <p>{{value.msg}}</p>
+            </div>
+            {{/eachOfArray}}
+        </div>
+
+    </div>
+</div>

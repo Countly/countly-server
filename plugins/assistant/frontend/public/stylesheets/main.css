@@ -1,0 +1,9 @@
+.assistant_stuff .ui-tabs .ui-tabs-nav li {
+    width: 33.33%;
+}
+
+.assistant_notif {
+    border-bottom: 1px solid black;
+    padding: 10px;
+    margin-bottom: 5px;
+}
