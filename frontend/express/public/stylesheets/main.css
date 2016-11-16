@@ -490,11 +490,11 @@ table { border-collapse: collapse; }
 #add-new-app .hint, .app-details .hint { padding-top: 8px; font-size:11px; color:#B7B6B6; clear: both; }
 #app_details {margin-left: 10px; text-decoration:underline; font-size: 11px; color: #2FA732; cursor: pointer;}
 .app_details_table{min-width: 800px; position: relative;}
-.app_details_table .popup-close{position: absolute; top: -20px; right: -20px; color: #fff; cursor: pointer; font-size:16px;}
-.app_details_table .indicator{display: none;}
-.app_details_table table.d-table{margin-bottom:-6px;}
+.dialog.app_details_table .indicator{margin-bottom: 0;}
+.app_details_table table.d-table{margin-bottom:0;}
 .app_details_table td{border-left: 1px solid #ececec;}
-.app_details_table table.d-table tr td.second-header{color: #2FA732;  width: 150px;}
+.app_details_table table.d-table tr td.second-header{width: 150px;}
+.app_details_table table.d-table tr td.details-value{color:#000;}
 
 #code-countly {background-color: #fff; border-radius: 2px; padding: 20px; border: 1px solid #D0D0D0; margin-left: 187px;}
 #code-countly h3 {font-size: 16px; color: #636363; margin-top: 0px;}

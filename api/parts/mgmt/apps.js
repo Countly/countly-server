@@ -63,20 +63,30 @@ var appsApi = {},
     };
     
     appsApi.getAppsDetails = function (params) {
+        if(params.app.owner)
+            params.app.owner = common.db.ObjectID(params.app.owner+"");
         common.db.collection('app_users'+params.qstring.app_id).find({}, {ls:1, _id:0}).sort({ls:-1}).limit(1).toArray(function(err, last) {
-            common.db.collection('members').find({ global_admin: true }, {full_name:1, username:1}).toArray(function(err, global_admins) {
-                common.db.collection('members').find({ admin_of: params.qstring.app_id }, {full_name:1, username:1}).toArray(function(err, admins) {
-                    common.db.collection('members').find({ user_of: params.qstring.app_id }, {full_name:1, username:1}).toArray(function(err, users) {
-                        common.returnOutput(params, {
-                            app: {
-                                owner: params.app.owner || "",
-                                created_at: params.app.created_at || 0,
-                                edited_at: params.app.edited_at || 0,
-                                last_data: (typeof last !== "undefined" && last.length) ? last[0].ls : 0,
-                            },
-                            global_admin: global_admins || [],
-                            admin: admins || [],
-                            user: users || []
+            common.db.collection('members').findOne({ _id: params.app.owner }, {full_name:1, username:1}, function(err, owner) {
+                if(owner){
+                    if(owner.full_name && owner.full_name != "")
+                        params.app.owner = owner.full_name;
+                    else if(owner.username && owner.username != "")
+                        params.app.owner = owner.username;
+                }
+                common.db.collection('members').find({ global_admin: true }, {full_name:1, username:1}).toArray(function(err, global_admins) {
+                    common.db.collection('members').find({ admin_of: params.qstring.app_id }, {full_name:1, username:1}).toArray(function(err, admins) {
+                        common.db.collection('members').find({ user_of: params.qstring.app_id }, {full_name:1, username:1}).toArray(function(err, users) {
+                            common.returnOutput(params, {
+                                app: {
+                                    owner: params.app.owner || "",
+                                    created_at: params.app.created_at || 0,
+                                    edited_at: params.app.edited_at || 0,
+                                    last_data: (typeof last !== "undefined" && last.length) ? last[0].ls : 0,
+                                },
+                                global_admin: global_admins || [],
+                                admin: admins || [],
+                                user: users || []
+                            });
                         });
                     });
                 });
@@ -111,7 +121,7 @@ var appsApi = {},
         
         newApp.created_at = Math.floor(((new Date()).getTime()) / 1000);
         newApp.edited_at = newApp.created_at;
-        newApp.owner = params.member._id;
+        newApp.owner = params.member._id+"";
 
         common.db.collection('apps').insert(newApp, function(err, app) {
             var appKey = common.sha1Hash(app.ops[0]._id, true);

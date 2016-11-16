@@ -2107,7 +2107,7 @@ window.ManageAppsView = countlyView.extend({
 
             $("#app-edit-id").val(appId);
             $("#view-app").find(".widget-header .title").text(countlyGlobal['apps'][appId].name);
-            $("#app-edit-name").find(".read").text(countlyGlobal['apps'][appId].name);
+            $("#app-edit-name").find(".read span").text(countlyGlobal['apps'][appId].name);
             $("#app-edit-name").find(".edit input").val(countlyGlobal['apps'][appId].name);
             $("#app-edit-key").find(".read").text(countlyGlobal['apps'][appId].key);
             $("#app-edit-key").find(".edit input").val(countlyGlobal['apps'][appId].key);
@@ -2164,19 +2164,20 @@ window.ManageAppsView = countlyView.extend({
                     dataType:"json",
                     success:function (result) {
                         if(result && result.app){
-                            var table = "<i class='popup-close ion-close'></i><table class='d-table horizontal' cellpadding='0' cellspacing='0'>";
+                            var table = "<table class='d-table' cellpadding='0' cellspacing='0'>";
                             table += "<colgroup><col width='200px'><col width='155px'><col width='100%'></colgroup>";
                             //app creator
-                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-creator"]+"</td><td colspan='2'>"+((result.app.owner == "") ? jQuery.i18n.map["common.unknown"] : result.app.owner) +"</td></tr>";
-                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-created-at"]+"</td><td colspan='2'>"+((result.app.created_at == 0)? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.created_at))+"</td></tr>";
-                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-edited-at"]+"</td><td colspan='2'>"+((result.app.edited_at == 0)? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.edited_at))+"</td></tr>";
-                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-last-data"]+"</td><td colspan='2'>"+((result.app.last_data == 0)? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.last_data))+"</td></tr>";
+                            table += "<tr><th colspan='3'>"+jQuery.i18n.map["management-applications.app-details"]+"</th></tr>";
+                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-creator"]+"</td><td class='details-value' colspan='2'>"+((result.app.owner == "") ? jQuery.i18n.map["common.unknown"] : result.app.owner) +"</td></tr>";
+                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-created-at"]+"</td><td class='details-value' colspan='2'>"+((result.app.created_at == 0)? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.created_at))+"</td></tr>";
+                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-edited-at"]+"</td><td class='details-value' colspan='2'>"+((result.app.edited_at == 0)? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.edited_at))+"</td></tr>";
+                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-last-data"]+"</td><td class='details-value' colspan='2'>"+((result.app.last_data == 0)? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.last_data))+"</td></tr>";
                             table += "<tr><td rowspan='3'>"+jQuery.i18n.map["management-applications.app-users"]+"</td>";
-                            table += "<td class='second-header'>"+jQuery.i18n.map["management-applications.global_admins"]+"</td><td>"+joinUsers(result.global_admin)+"</td></tr>";
-                            table += "<tr><td class='second-header'>"+jQuery.i18n.map["management-applications.admins"]+"</td><td>"+joinUsers(result.admin)+"</td></tr>";
-                            table += "<tr><td class='second-header'>"+jQuery.i18n.map["management-applications.users"]+"</td><td>"+joinUsers(result.user)+"</td></tr>";
-                            CountlyHelpers.popup(table+"</table>", "app_details_table", true);
-                            $(".popup-close").off("click").on("click", function(){$("#overlay").trigger('click');});
+                            table += "<td class='second-header'>"+jQuery.i18n.map["management-applications.global_admins"]+"</td><td class='details-value'>"+joinUsers(result.global_admin)+"</td></tr>";
+                            table += "<tr><td class='second-header'>"+jQuery.i18n.map["management-applications.admins"]+"</td><td class='details-value'>"+joinUsers(result.admin)+"</td></tr>";
+                            table += "<tr><td class='second-header'>"+jQuery.i18n.map["management-applications.users"]+"</td><td class='details-value'>"+joinUsers(result.user)+"</td></tr>";
+                            CountlyHelpers.popup(table+"</table><div class='icon-button light btn-header btn-close'>"+jQuery.i18n.map["common.close"]+"</div>", "app_details_table", true);
+                            $(".btn-close").off("click").on("click", function(){$("#overlay").trigger('click');});
                         }
                         else{
                             CountlyHelpers.alert(jQuery.i18n.map["management-applications.application-no-details"], "red");
