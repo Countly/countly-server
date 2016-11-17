@@ -661,8 +661,8 @@ div.datatablesubrow {display: none;}
 .six-column:first-child { width:16%; }
 .six-column:last-child { width:17%; }
 
-.four-column { width:25%; }
-.five-column { width:20%; }
+.four-column, .dashboard-summary .item.four-column { width:25%; }
+.five-column, .dashboard-summary .item.five-column { width:20%; }
 
 .sticky-header.hide { display:none; }
 .sticky-header { top:0; position:fixed; }
