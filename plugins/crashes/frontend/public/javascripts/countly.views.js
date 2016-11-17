@@ -509,7 +509,7 @@ window.CrashgroupView = countlyView.extend({
             this.templateData["loss"] = true;
             this.templateData["big-numbers"]["items"].push({
                 "title":jQuery.i18n.map["crashes.loss"],
-                "total":crashData.loss,
+                "total":parseFloat(crashData.loss).toFixed(2),
                 "help":"crashes.help-loss"
             });
         }
