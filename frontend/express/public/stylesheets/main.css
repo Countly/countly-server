@@ -1025,6 +1025,7 @@ table.events-table { width:100%; padding:0; margin:0; }
 .button-selector .button.icon { padding:5px; line-height: 12px; width: 18px; text-align: center; }
 .button-selector .button.icon i.material-icons { font-size: 16px; }
 .button-selector .button.icon span.ion-icons { font-size: 17px; }
+.button-selector .button.icon i.fa { font-size: 18px; line-height: 14px; padding-bottom: 3px; }
 
 /* GRAPH NOTES */
 .widget-footer:hover #graph-note { opacity:0.7; transition:opacity .5s; }
@@ -1057,8 +1058,9 @@ table.events-table { width:100%; padding:0; margin:0; }
 
 #graph-tooltip.white { background-color: #FFF; border:1px solid #D0D0D0; color:#333; }
     #graph-tooltip.white .title { text-align: center; padding:0px 5px 5px 5px; color:#636363; font-size:12px; }
+    #graph-tooltip.white .separator { border-top-color:#D0D0D0; border-bottom: none; opacity: 1; }
 
-#graph-tooltip .inner { overflow:auto; margin:6px 0; padding:0 1px; overflow: hidden; }
+#graph-tooltip .inner { overflow:auto; margin:6px 0; padding:0 1px; overflow: hidden; color:#636363; font-size:12px; text-transform:uppercase; }
 #graph-tooltip .inner .color { float:left; width:12px; height:12px; margin-right:10px; }
 #graph-tooltip .inner .series { color:#636363; text-transform:uppercase; float:left; line-height:12px; font-size:12px; margin-right:20px; }
 #graph-tooltip .inner .value { color:#636363; float:right; line-height:12px; font-size:12px; }
