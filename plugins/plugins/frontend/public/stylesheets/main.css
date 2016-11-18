@@ -19,6 +19,7 @@
 .configs > table > tbody > tr > td { border-bottom: 1px solid #d0d0d0; border-left: 1px solid #d0d0d0; }
 
 .configs span.config-help{font-size: 13px; color: #929292; padding-top: 10px; display: inline-block; line-height: 17px;}
+.configs span.config-help a{font-size: 13px; color: #2EB52B; padding-top: 10px; display: inline-block; line-height: 17px; text-decoration: underline;}
 
 #configs-apply-changes{ display: none; }
 
