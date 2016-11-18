@@ -5392,7 +5392,7 @@ var AppRouter = Backbone.Router.extend({
             } else if (elem.is("input[type=button]") || elem.is("input[type=submit]")) {
                 elem.attr("value", localizedValue);
             } else {
-                elem.text(localizedValue);
+                elem.html(localizedValue);
             }
         });
     },
