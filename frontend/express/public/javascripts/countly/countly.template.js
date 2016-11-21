@@ -5221,6 +5221,14 @@ var AppRouter = Backbone.Router.extend({
 
             return ((x < y) ?  1 : ((x > y) ? -1 : 0));
         };
+        
+        jQuery.fn.dataTableExt.oSort['format-ago-asc']  = function(x, y) {
+            return x-y;
+        };
+
+        jQuery.fn.dataTableExt.oSort['format-ago-desc']  = function(x, y) {
+            return x-y;
+        };
 
         $.extend(true, $.fn.dataTable.defaults, {
             "sDom": '<"dataTable-top"lfpT>t<"dataTable-bottom"i>',
