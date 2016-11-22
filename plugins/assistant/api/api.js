@@ -133,8 +133,6 @@ var plugin = {},
                     });
 */
 
-                    //var fff = JSON.stringify(app_id);
-
                     log.i('Doing stuff at step: %s', 1);
 					common.db.collection('apps').findOne({_id:common.db.ObjectID(app_id)}, {type:1}, function(err, document) {
 					    //todo handle null case
@@ -147,15 +145,15 @@ var plugin = {},
 						//get global notifications for this app
 						common.db.collection(db_name_notifs).find({app_id:app_id}, {}).toArray(function(err1, notifs) {
                             //todo handle null case
-                            log.i('Doing stuff at step: %s, error: [%j], data: [%j]', 3, err1, notifs);
+                            log.i('Doing stuff at step: %s, ALL, error: [%j], data: [%j]', 3, err1, notifs);
 							//get global saved notifications for this app
-							common.db.collection(db_name_notifs).find({app_id:app_id, global:true}, {}).toArray(function(err2, notifs_global) {
+							common.db.collection(db_name_notifs).find({app_id:app_id, saved_global:true}, {}).toArray(function(err2, notifs_global) {
                                 //todo handle null case
-                                log.i('Doing stuff at step: %s, error: [%j], data: [%j]', 4, err2, notifs_global);
+                                log.i('Doing stuff at step: %s, SAVED GLOBAL, error: [%j], data: [%j]', 4, err2, notifs_global);
                                 //get privatly saved notifications for this app
                                 common.db.collection(db_name_notifs).find({app_id: app_id, saved_private: api_key}, {}).toArray(function (err3, notifs_saved) {
                                     //todo handle null case
-                                    log.i('Doing stuff at step: %s, error: [%j], data: [%j]', 4, err3, notifs_saved);
+                                    log.i('Doing stuff at step: %s, SAVED PRIVATE, error: [%j], data: [%j]', 5, err3, notifs_saved);
 
                                     callback(null, {
                                         id: app_id,
@@ -164,7 +162,7 @@ var plugin = {},
                                         notifs_saved_global: notifs_global,
                                         notifs_saved_private: notifs_saved
                                     });
-                                    log.i('Doing stuff at step: %s', 5);
+                                    log.i('Doing stuff at step: %s', 6);
                                 });
                             });
 						});
@@ -222,8 +220,10 @@ var plugin = {},
 		validate(function (params) {
 
 			var member = params.member;
+            var api_key = params.qstring.api_key;
 			var memberID = member._id;
             var save_action;
+            var notif = params.qstring.notif;
 
 
             var save_val = params.qstring.save;
@@ -233,43 +233,48 @@ var plugin = {},
 
             log.i('Assistant plugin request: 1');
             var saving_function = function(do_personal, do_save, notif_id, user_id) {
-
+                log.i('Assistant plugin request saving_function: [%j], [%j], [%j], [%j], [%j]', 1, do_personal, do_save, notif_id, user_id);
                 if(do_save) {
                     //we need to save it
+                    log.i('Assistant plugin request saving_function: [%j]', 2);
 
                     if(do_personal) {
+                        log.i('Assistant plugin request saving_function: [%j]', 3);
                         // add the person reference to user list
-                        common.db.collection(db_name_notifs).update({_id:notif_id}, {$unset:{cd:""}, $addToSet:{saved_private:user_id}}, function (error, ret) {
-                            
+                        common.db.collection(db_name_notifs).update({_id:common.db.ObjectID(notif_id)}, {$unset:{cd:""}, $addToSet:{saved_private:user_id}}, function (error, ret) {
                         });
                     } else {
+                        log.i('Assistant plugin request saving_function: [%j]', 4);
                         // set the global saved flag to true
                         // set bool to true, remove TTL
-                        common.db.collection(db_name_notifs).update({_id:notif_id}, {$unset:{cd:""}, $set:{saved_global:true}}, function (error, ret) {
-
+                        common.db.collection(db_name_notifs).update({_id:common.db.ObjectID(notif_id)}, {$unset:{cd:""}, $set:{saved_global:true}}, function (error, ret) {
+                            log.i('Assistant plugin request saving_function: [%j], error: [%j], ret: [%j]', 4.1, error, ret);
                         });
                     }
                 } else {
                     //we need to unsave it
-                    
+                    log.i('Assistant plugin request saving_function: [%j]', 5);
                     var check_and_set_ttl = function (ret_obj) {
+                        log.i('Assistant plugin request saving_function: [%j], [%j]', 8, ret_obj);
                         var obj = ret_obj.value;
                         if(obj.saved_global == false && obj.saved_private.length === 0) {
                             //todo set cd to old created date
-                            common.db.collection(db_name_notifs).update({_id:notif_id, saved_global:false, saved_private:[]}, {}, {$set:{cd:new Date()}}, {new:true}, function (error, ret) {
-
+                            common.db.collection(db_name_notifs).update({_id:common.db.ObjectID(notif_id), saved_global:false, saved_private:[]}, {$set:{cd:new Date()}}, {new:true}, function (error, ret) {
                             });
                         }
                     };
 
                     if(do_personal) {
+                        log.i('Assistant plugin request saving_function: [%j]', 6);
                         // remove the personal save reference from the user list
-                        common.db.collection(db_name_notifs).findAndModify({_id:notif_id}, {}, {$pull:{saved_private:user_id}}, {new:true}, function (error, ret) {
+                        common.db.collection(db_name_notifs).findAndModify({_id:common.db.ObjectID(notif_id)}, {}, {$pull:{saved_private:user_id}}, {new:true}, function (error, ret) {
                             check_and_set_ttl(ret);
                         });
                     } else {
+                        log.i('Assistant plugin request saving_function: [%j]', 7);
                         // set the global saved flag to false
-                        common.db.collection(db_name_notifs).findAndModify({_id:notif_id}, {}, {$set:{saved_global:false}}, {new:true}, function (error, ret) {
+                        //todo deleting notifications
+                        common.db.collection(db_name_notifs).findAndModify({_id:common.db.ObjectID(notif_id)}, {}, {$set:{saved_global:false}}, {new:true}, function (error, ret) {
                             check_and_set_ttl(ret);
                         });
 
@@ -280,12 +285,12 @@ var plugin = {},
 			switch (paths[3]) {
 				case 'global':
 					log.i('Assistant plugin request: Change global notification status');
-                    saving_function(false, save_action, 123);
+                    saving_function(false, save_action, notif, api_key);
 					common.returnOutput(params, "the global action was done " + save_action);
 					break;
 				case 'private':
 					log.i('Assistant plugin request: Change personal notification status');
-                    saving_function(true, save_action, 123);
+                    saving_function(true, save_action, notif, api_key);
 					common.returnOutput(params, "the private action was done " + save_action);
 					break;
 				case 'create':
@@ -356,14 +361,12 @@ var plugin = {},
             };
 
             //todo add the amount of times a notification has been shown
-            //todo replace with async.map
-            //for(var a = 0 ; a < result_app_data.length; a++) {//todo is this correct
             async.map(result_app_data, function(ret_app_data, callback){
                 var is_mobile = ret_app_data.type == "mobile";//check if app type is mobile or web
-                var app_id_1 = ret_app_data._id;
-                log.i('Assistant plugin inside loop, id: [%j], result: [%j] ', app_id_1, is_mobile);
+                var app_id = ret_app_data._id;
+                log.i('Assistant plugin inside loop, id: [%j], result: [%j] ', app_id, is_mobile);
 
-                common.db.collection('events').findOne({_id:app_id_1}, {}, function(events_err, events_result) {
+                common.db.collection('events').findOne({_id:app_id}, {}, function(events_err, events_result) {
                     //continue;
                     //map the array of objects to an array of strings
                     /*
@@ -372,14 +375,14 @@ var plugin = {},
                      });*/
 
 
-                    params.app_id = app_id_1;
+                    params.app_id = app_id;
                     params.qstring.period = "30days";//todo generate qstring
                     fetch.getTimeObj('users', params, function (fetchResultUsers) {//collect user info
-                        var app_id = app_id_1;
+                        //log.i('Assistant plugin doing steps: [%j] [%j]', 0.01, fetchResultUsers);
                         countlySession.setDb(fetchResultUsers);
                         var retSession = countlySession.getSessionData();
 
-                        log.i('Assistant plugin doing steps: [%j] [%j] [%j] [%j] [%j]', 0.1, retSession, params.app_id, app_id, app_id_1);
+                        log.i('Assistant plugin doing steps: [%j] [%j] [%j] [%j]', 0.1, retSession, params.app_id, app_id);
 
 
                         log.i('Assistant plugin doing steps: [%j] ', 1);
@@ -393,7 +396,7 @@ var plugin = {},
 
                             if (correct_day_and_time(2, 14) && crash_data_not_available && enough_users && is_mobile && max_show_time_not_exceeded) {
                                 log.i('Assistant plugin doing steps: [%j] ', 1.1);
-                                create_notification("", 1, 1, "assistant.crash-integration", app_id, common.db);
+                                create_notification([], 1, 1, "assistant.crash-integration", app_id, common.db);
                             }
                         })();
 
@@ -405,7 +408,7 @@ var plugin = {},
                             var max_show_time_not_exceeded = true;
                             if (correct_day_and_time(3, 15) && no_certificate_uploaded && is_mobile && max_show_time_not_exceeded) {
                                 log.i('Assistant plugin doing steps: [%j] ', 2.1);
-                                create_notification("", 1, 2, "assistant.push-integration", app_id, common.db);
+                                create_notification([], 1, 2, "assistant.push-integration", app_id, common.db);
                             }
                         })();
 
@@ -420,7 +423,7 @@ var plugin = {},
                             log.i('Assistant plugin doing steps: [%j] [%j] [%j] [%j] ', 3.01, no_star_rating, star_rating_not_enabled, max_show_time_not_exceeded);
                             if (correct_day_and_time(4, 15) && (no_star_rating || star_rating_not_enabled) && is_mobile && max_show_time_not_exceeded) {
                                 log.i('Assistant plugin doing steps: [%j] ', 3.1);
-                                create_notification("", 1, 3, "assistant.star-rating-integration", app_id, common.db);
+                                create_notification([], 1, 3, "assistant.star-rating-integration", app_id, common.db);
                             }
                         })();
 
@@ -433,7 +436,7 @@ var plugin = {},
                             log.i('Assistant plugin doing steps: [%j] [%j] ', 4.01, no_custom_event_defined);
                             if (correct_day_and_time(5, 15) && no_custom_event_defined && is_mobile && max_show_time_not_exceeded) {
                                 log.i('Assistant plugin doing steps: [%j] ', 4.1);
-                                create_notification("", 1, 4, "assistant.custom-event-integration", app_id, common.db);
+                                create_notification([], 1, 4, "assistant.custom-event-integration", app_id, common.db);
                             }
                         })();
 
@@ -445,7 +448,7 @@ var plugin = {},
                             var max_show_time_not_exceeded = true;
                             if (correct_day_and_time(2, 10) && not_enough_dashboard_users && max_show_time_not_exceeded) {
                                 log.i('Assistant plugin doing steps: [%j] ', 5.1);
-                                create_notification("", 1, 5, "", app_id, common.db);
+                                create_notification([], 1, 5, "", app_id, common.db);
                             }
                         })();
 
@@ -495,20 +498,104 @@ var plugin = {},
 
                         // (2) generate insight notifications
 
-                        // (2.1) active users bow
+                        log.i('Assistant plugin doing steps: [%j] ', 10);
 
-                        // (2.2) active users eow
+                        // (2.1) active users bow positive
+                        (function () {
+                            var enough_active_users = retSession.total_users.total > 100;//active users > 20
+                            var change_amount = parseFloat(retSession.total_users.change);
+                            var enough_active_user_change = change_amount>= 10;
 
-                        // (2.3) page view summary
+                            if (correct_day_and_time(1, 10) && enough_active_users && enough_active_user_change) {
+                                var val_previous_period = retSession.total_users.total / (change_amount / 100 + 1);
+                                log.i('Assistant plugin doing steps: [%j] ', 10.1);
+                                create_notification([retSession.total_users.total, val_previous_period], 2, 1, "assistant.active-users-bow-pos", app_id, common.db);
+                            }
+                        })();
+
+                        // (2.2) active users bow negative
+                        log.i('Assistant plugin doing steps: [%j] ', 11);
+                        (function () {
+                            var enough_active_users = retSession.total_users.total > 100;//active users > 20
+                            var change_amount = parseFloat(retSession.total_users.change);
+                            var enough_active_user_change = change_amount <= -10;
+
+                            if (correct_day_and_time(1, 10) && enough_active_users && enough_active_user_change) {
+                                var val_previous_period = retSession.total_users.total / (retSession.total_users.change / 100 + 1);
+                                log.i('Assistant plugin doing steps: [%j] ', 11.1);
+                                create_notification([retSession.total_users.total, val_previous_period], 2, 2, "assistant.active-users-bow-neg", app_id, common.db);
+                            }
+                        })();
+
+                        // (2.3) active users eow positive
+                        log.i('Assistant plugin doing steps: [%j] ', 12);
+                        (function () {
+                            var enough_active_users = retSession.total_users.total > 100;//active users > 20
+                            var change_amount = parseFloat(retSession.total_users.change);
+                            var enough_active_user_change = change_amount >= 10;
+
+                            if (correct_day_and_time(4, 16) && enough_active_users && enough_active_user_change) {
+                                log.i('Assistant plugin doing steps: [%j] ', 12.1);
+                                create_notification([retSession.total_users.total, val_previous_period], 2, 3, "assistant.active-users-eow-pos", app_id, common.db);
+                            }
+                        })();
+
+                        // (2.4) active users eow positive
+                        log.i('Assistant plugin doing steps: [%j] ', 13);
+                        (function () {
+                            var enough_active_users = retSession.total_users.total > 100;//active users > 20
+                            var change_amount = parseFloat(retSession.total_users.change);
+                            var enough_active_user_change = change_amount <= -10;
+
+                            if (correct_day_and_time(4, 16) && enough_active_users && enough_active_user_change) {
+                                log.i('Assistant plugin doing steps: [%j] ', 13.1);
+                                create_notification([retSession.total_users.total, val_previous_period], 2, 3, "assistant.active-users-eow-neg", app_id, common.db);
+                            }
+                        })();
+
+                        // (2.5) page view summary positive
                         // todo needs functionality from frontend
 
-                        // (2.4) top install sources
+                        // (2.6) page view summary negative
                         // todo needs functionality from frontend
 
-                        // (2.5) top referrals
+                        // (2.7) top install sources positive
                         // todo needs functionality from frontend
 
-                        // (2.6) session duration bow
+                        // (2.8) top install sources negative
+                        // todo needs functionality from frontend
+
+                        // (2.9) top referrals positive
+                        // todo needs functionality from frontend
+
+                        // (2.10) top referrals negative
+                        // todo needs functionality from frontend
+
+                        // (2.11) session duration bow positive
+                        log.i('Assistant plugin doing steps: [%j] ', 20);
+                        (function () {
+                            var enough_active_users = retSession.total_users.total > 100;//active users > 20
+                            var change_amount = parseFloat(retSession.avg_time.change);
+                            var enough_session_duration_change = change_amount >= 10;
+
+                            if (correct_day_and_time(4, 16) && enough_active_users && enough_session_duration_change) {
+                                log.i('Assistant plugin doing steps: [%j] ', 20.1);
+                                create_notification([], 2, 3, "assistant.avg-session-duration-bow-pos", app_id, common.db);
+                            }
+                        })();
+
+                        // (2.12) session duration bow positive
+                        log.i('Assistant plugin doing steps: [%j] ', 21);
+                        (function () {
+                            var enough_active_users = retSession.total_users.total > 100;//active users > 20
+                            var change_amount = parseFloat(retSession.avg_time.change);
+                            var enough_session_duration_change = change_amount <= -10;
+
+                            if (correct_day_and_time(4, 16) && enough_active_users && enough_session_duration_change) {
+                                log.i('Assistant plugin doing steps: [%j] ', 21.1);
+                                create_notification([], 2, 3, "assistant.avg-session-duration-bow-neg", app_id, common.db);
+                            }
+                        })();
 
                         // (3) generate announcment notifications
 

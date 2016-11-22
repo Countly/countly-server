@@ -22,9 +22,13 @@
                     <a class="icon-button light btn-header btn-save-private" data-id="{{value._id}}" data-localize="assistant.save.private"></a>
                 </div>
                 <p>{{value.title}}</p>
-                <p>{{value.msg}}</p>
+                <p>{{{value.msg}}}</p>
+                <p>{{value.created_date}}</p>
             </div>
             {{/eachOfArray}}
+            <div>
+                <p>End of line image</p>
+            </div>
         </div>
 
         <div id="log-private" class="errorlog">
@@ -32,13 +36,17 @@
             <div class="assistant_notif">
 
                 <div>
-                    <a class="icon-button light btn-header btn-unsave-private" data-id="{{value._id}}" data-localize="assistant.save.private"></a>
+                    <a class="icon-button light btn-header btn-unsave-private" data-id="{{value._id}}" data-localize="assistant.unsave.private"></a>
                 </div>
 
                 <p>{{value.title}}</p>
                 <p>{{value.msg}}</p>
+                <p>{{value.created_date}}</p>
             </div>
             {{/eachOfArray}}
+            <div>
+                <p>End of line image</p>
+            </div>
         </div>
 
         <div id="log-global" class="errorlog">
@@ -46,13 +54,17 @@
             <div class="assistant_notif">
 
                 <div>
-                    <a class="icon-button light btn-header btn-unsave-global" data-id="{{value._id}}" data-localize="assistant.save.global"></a>
+                    <a class="icon-button light btn-header btn-unsave-global" data-id="{{value._id}}" data-localize="assistant.unsave.global"></a>
                 </div>
 
                 <p>{{value.title}}</p>
                 <p>{{value.msg}}</p>
+                <p>{{value.created_date}}</p>
             </div>
             {{/eachOfArray}}
+            <div>
+                <p>End of line image</p>
+            </div>
         </div>
 
     </div>

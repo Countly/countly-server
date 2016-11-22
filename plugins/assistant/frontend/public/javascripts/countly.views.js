@@ -16,25 +16,44 @@ window.AssistantView = countlyView.extend({
         }
     },
     renderCommon:function (isRefresh) {
-        CountlyHelpers.alert("boop", "green");
+        //CountlyHelpers.alert("boop", "green");
         var data = countlyAssistant.getDataForApp(countlyCommon.ACTIVE_APP_ID);
 
-        CountlyHelpers.alert(4, "green");
+
+        //CountlyHelpers.alert(4, "green");
 
         this.templateData = {
             "page-title":jQuery.i18n.map["assistant.title"],
             all_notifs: data.notifications,
             saved_private: data.notifs_saved_private,
-            saved_global: data.notifs_saved_global
+            saved_global: data.notifs_saved_global,
         };
-        CountlyHelpers.alert(5, "green");
-        var changeNotification = function (id, is_private, is_save) {
+        //CountlyHelpers.alert(JSON.stringify(data.created_date), "green");
+        var changeNotification = function (id, is_private, is_save, parent) {
+            //CountlyHelpers.alert(5, "green");
             $.when(countlyAssistant.changeNotification(id, is_private, is_save)).then(function (data) {
+               // CountlyHelpers.alert(6, "green");
                 if(true || data.result == "Success"){
-                    $.when(countlyAssistant.initialize()).then(function () {
-                        self.renderCommon();
-                        app.localize();
-                    });
+                    
+                    var refresh_stuff = function () {
+                        $.when(countlyAssistant.initialize()).then(function () {
+                            self.renderCommon();
+                            app.localize();
+
+                        });
+                    };
+
+                    if(!is_save) {
+                        parent.slideUp(function () {
+                            refresh_stuff();
+                        });
+                    } else {
+                        parent.fadeTo(500, 0.2, function () {
+                            parent.fadeTo(500, 1, function () {
+                                refresh_stuff();
+                            });
+                        });
+                    }
                 }
                 else{
                     CountlyHelpers.alert(data.result, "red");
@@ -43,43 +62,54 @@ window.AssistantView = countlyView.extend({
                 CountlyHelpers.alert(data, "red");
             });
         };
-        CountlyHelpers.alert(6, "green");
+        //CountlyHelpers.alert(6, "green");
         var self = this;
         if (!isRefresh) {
+            //CountlyHelpers.alert("tab: " + store.get("assistant_tab"), "green");
             $(this.el).html(this.template(this.templateData));
-            $( "#tabs" ).tabs();
+
+            $( "#tabs" ).tabs({
+                selected: store.get("assistant_tab") || 0,
+                show: function( event, ui ) {
+                    store.set("assistant_tab", ui.index);}
+            });
 
             $(".btn-save-global").on("click", function(){
                 var id = $(this).data("id");//notification id
-                changeNotification(id, false, true);
+                var parent = $(this).parents(".assistant_notif");
+                changeNotification(id, false, true, parent);
             });
 
-            $(".btn-btn-save-private").on("click", function(){
+            $(".btn-save-private").on("click", function(){
                 var id = $(this).data("id");//notification id
-                changeNotification(id, true, true);
+                var parent = $(this).parents(".assistant_notif");
+                //CountlyHelpers.alert(7, "green");
+                changeNotification(id, true, true, parent);
             });
 
             $(".btn-unsave-global").on("click", function(){
                 var id = $(this).data("id");//notification id
+                var parent = $(this).parents(".assistant_notif");
                 CountlyHelpers.confirm(jQuery.i18n.map["assistant.confirm-unsave-global"], "red", function (result) {
                     if (!result) {
                         return true;
                     }
-                    changeNotification(id, false, false);
+                    changeNotification(id, false, false, parent);
                 });
             });
 
             $(".btn-unsave-private").on("click", function(){
                 var id = $(this).data("id");//notification id
+                var parent = $(this).parents(".assistant_notif");
                 CountlyHelpers.confirm(jQuery.i18n.map["assistant.confirm-unsave-private"], "red", function (result) {
                     if (!result) {
                         return true;
                     }
-                    changeNotification(id, true, false);
+                    changeNotification(id, true, false, parent);
                 });
             });
         }
-        CountlyHelpers.alert(7, "green");
+        //CountlyHelpers.alert(7, "green");
     }
 });
 
@@ -92,7 +122,7 @@ app.route("/analytics/assistant", 'assistant', function () {
 
 $( document ).ready(function() {
 
-    CountlyHelpers.alert(1, "green");
+    //CountlyHelpers.alert(1, "green");
     var menu = '<a href="#/analytics/assistant" class="item">'+
         '<div class="logo densities"></div>'+
         '<div class="text" data-localize="sidebar.analytics.assistant">fsdfs</div>'+
@@ -100,6 +130,8 @@ $( document ).ready(function() {
     $('#mobile-type #analytics-submenu').append(menu);
     $('#web-type #analytics-submenu').append(menu);
 
+
+    //CountlyHelpers.alert(parseFloat("12.4%") + 2, "red");
     /*
     var storeValID = "countly_sll_last_login";
 

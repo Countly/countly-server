@@ -3,7 +3,7 @@
     //Private Properties
     var _data = {};
     countlyAssistant.initialize = function () {
-        CountlyHelpers.alert("2", "green");
+        //CountlyHelpers.alert("2", "green");
         return $.ajax({
             type:"GET",
             url:countlyCommon.API_URL + "/o/assistant",
@@ -12,7 +12,7 @@
             },
             success:function (json) {
                 _data = json;
-                CountlyHelpers.alert(3, "green");
+                //CountlyHelpers.alert(3, "green");
             }
         });
     };
@@ -41,7 +41,7 @@
     };
 
     countlyAssistant.getDataForApp = function (app_id) {
-        CountlyHelpers.alert(10, "green");
+        //CountlyHelpers.alert(10, "green");
         for(var a = 0 ; a < _data.length ; a++){
 
             if(_data[a].id === app_id) return fixData(_data[a]);
@@ -54,10 +54,11 @@
         //CountlyHelpers.alert("1.1", "green");
         return $.ajax({
             type:"GET",
-            url:countlyCommon.API_URL + "/o/assistant/" + (is_private?"private":"global"),
+            url:countlyCommon.API_URL + "/i/assistant/" + (is_private?"private":"global"),
             data:{
                 api_key:countlyGlobal['member'].api_key,
-                save: save_it
+                save: save_it,
+                notif: notif_id
             },
             success:function (json) {
 
