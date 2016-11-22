@@ -71,7 +71,8 @@
 .crash-stack pre .cl { display:block; clear:both; }
 #crash-table_wrapper { margin-top:0; }
 #notes { overflow: auto; }
-#notes .btn-header { margin-top:0; }
+#notes .btn-header { margin-top:0; margin-right: 0; }
+#notes #add_comment { margin-top: 5px; }
 
 #crash-table .separator { display: none; }
 
@@ -85,7 +86,7 @@
 #crash-group-buttons.btn-header { margin-top: 0; margin-right: 0px; }
 .graph-description.crash { background-color: #ececec; padding:7px 14px; border-bottom-color:#d0d0d0; }
 
-#error { position: relative; }
+#error { position: relative; font-size: 13px; line-height: 18px; }
 #expandable { max-height: none; overflow: auto; }
 #expandable.collapsed { max-height: 200px; overflow: hidden; }
 #expand-crash { font-size:12px; padding-bottom:10px; cursor:pointer; text-align: center; position:absolute; bottom:0; width:300px; left:50%; margin-left: -150px; }

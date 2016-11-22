@@ -891,8 +891,8 @@ window.CrashgroupView = countlyView.extend({
                                 str += '<td class="text-left">'+jQuery.i18n.map["crashes.logs"]+'</td>';
 						str += '</tr>'+
 						'<tr>'+
-							'<td class="text-right">'+data.app_version.replace(/:/g, '.')+'</td>'+
-							'<td class="text-right">'+data.os+' ';
+							'<td class="text-left">'+data.app_version.replace(/:/g, '.')+'</td>'+
+							'<td class="text-left">'+data.os+' ';
                                 if(data.os_version)
                                     str += data.os_version.replace(/:/g, '.')+'<br/>';
                                 if(data.manufacture)
