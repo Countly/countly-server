@@ -883,8 +883,8 @@ $.extend(Template.prototype, {
     function revealDialog(dialog) {
         $("body").append(dialog);
 
-        var dialogHeight = dialog.find('.content').length && dialog.find('.content').outerHeight() > 0 ? dialog.find('.content').outerHeight() + 14 : dialog.outerHeight()+5,
-            dialogWidth = dialog.outerWidth()+5;
+        var dialogHeight = dialog.height(),
+            dialogWidth = dialog.outerWidth() + 2;
 
         dialog.css({
             "height":dialogHeight,
@@ -898,9 +898,13 @@ $.extend(Template.prototype, {
     }
 	
 	function changeDialogHeight(dialog, animate) {
-        var dialogHeight = dialog.find('.content').length && dialog.find('.content').outerHeight() > 0 ? dialog.find('.content').outerHeight() + 14 : dialog.height() + 14,
+        var dialogHeight = 0,
             dialogWidth = dialog.width(),
             maxHeight = $("#sidebar").height() - 40;
+
+        dialog.children().each(function(){
+            dialogHeight += $(this).outerHeight(true);
+        });
 
         if (dialogHeight > maxHeight) {
             dialog[animate ? 'animate' : 'css']({
