@@ -398,8 +398,11 @@ window.CrashgroupView = countlyView.extend({
 		if (!isRefresh) {
 			this.metrics = countlyCrashes.getMetrics();
             for(var i in this.metrics){
-                this.curMetric = i;
-                this.curTitle = this.metrics[i];
+                for(var j in this.metrics[i]){
+                    this.curMetric = j;
+                    this.curTitle = this.metrics[i][j];
+                    break;
+                }
                 break;
             }
 		}

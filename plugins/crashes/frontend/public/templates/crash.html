@@ -484,8 +484,14 @@ window.CrashgroupView = {
         var crashData = countlyCrashes.getGroupData();
 		crashData.latest_version = crashData.latest_version.replace(/:/g, '.');
 		this.metrics = countlyCrashes.getMetrics();
-		this.curMetric = "os_version";
-		this.curTitle = jQuery.i18n.map["crashes.os_version"];
+        for(var i in this.metrics){
+            for(var j in this.metrics[i]){
+                this.curMetric = j;
+                this.curTitle = this.metrics[i][j];
+                break;
+            }
+            break;
+        }
 
         this.templateData = {
             "page-title":jQuery.i18n.map["crashes.crashes-by"],

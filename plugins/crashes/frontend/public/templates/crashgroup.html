@@ -161,7 +161,10 @@
 					<div class="select-items square" style="width:220px;">
 						<div>
 							{{#eachOfObject segmentations}}
+                            <div class="group">{{property}}</div>
+                            {{#eachOfObject value}}
 							<div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
+							{{/eachOfObject}}
 							{{/eachOfObject}}
 						</div>
 					</div>

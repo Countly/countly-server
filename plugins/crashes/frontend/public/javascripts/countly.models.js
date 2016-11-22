@@ -11,8 +11,12 @@
         _period = {},
 		_periodObj = {},
 		_metrics = {},
+		_groups = {},
         _lastId = null,
-        _usable_metrics = {};
+        _usable_metrics = {
+            metrics: {},
+            custom:{}
+        };
         
     countlyCrashes.loadList = function (id) {
         $.ajax({
@@ -52,7 +56,12 @@
 			"resolution":jQuery.i18n.map["crashes.resolution"], 
 			"orientation":jQuery.i18n.map["crashes.orientation"],
 			"cpu":jQuery.i18n.map["crashes.cpu"],
-			"opengl":jQuery.i18n.map["crashes.opengl"]};
+			"opengl":jQuery.i18n.map["crashes.opengl"]
+        };
+        _groups = {
+			"metrics":jQuery.i18n.map["crashes.group-metrics"],
+			"custom":jQuery.i18n.map["crashes.group-custom"]
+        };
             
         
         
@@ -77,14 +86,14 @@
 					_groupData.dp = {};
 					for(var i in _metrics){
                         if(_groupData[i]){
-                            _usable_metrics[i] = _metrics[i];
+                            _usable_metrics.metrics[i] = _metrics[i];
                             _groupData.dp[i] = countlyCrashes.processMetric(_groupData[i], i, _metrics[i]);
                         }
 					}
                     if(_groupData.custom){
                         for(var i in _groupData.custom){
                             _groupData.dp[i] = countlyCrashes.processMetric(_groupData.custom[i], i, i);
-                            _usable_metrics[i] = i.charAt(0).toUpperCase() + i.slice(1);
+                            _usable_metrics.custom[i] = i.charAt(0).toUpperCase() + i.slice(1);
                         }
                     }
 				}, 
@@ -313,14 +322,14 @@
 					_groupData.dp = {};
 					for(var i in _metrics){
                         if(_groupData[i]){
-                            _usable_metrics[i] = _metrics[i];
+                            _usable_metrics.metrics[i] = _metrics[i];
                             _groupData.dp[i] = countlyCrashes.processMetric(_groupData[i], i, _metrics[i]);
                         }
 					}
                     if(_groupData.custom){
                         for(var i in _groupData.custom){
                             _groupData.dp[i] = countlyCrashes.processMetric(_groupData.custom[i], i, i);
-                            _usable_metrics[i] = i.charAt(0).toUpperCase() + i.slice(1);
+                            _usable_metrics.custom[i] = i.charAt(0).toUpperCase() + i.slice(1);
                         }
                     }
 				}
@@ -361,7 +370,11 @@
 		_reportData = {};
         _crashTimeline = {};
         _metrics = {};
-        _usable_metrics = {};
+        _groups = {};
+        _usable_metrics = {
+            metrics:{},
+            custom:{}
+        };
     };
 	
 	countlyCrashes.processMetric = function (data, metric, label) {
@@ -402,7 +415,11 @@
 	};
 	
 	countlyCrashes.getMetrics = function () {
-		return _usable_metrics;
+		var ob = {};
+        for(var i in _usable_metrics){
+            ob[_groups[i]] = _usable_metrics[i];
+        }
+        return ob;
     };
 	
 	countlyCrashes.getData = function () {
@@ -418,26 +435,31 @@
             "os_name":jQuery.i18n.map["crashes.os"], 
             "browser":jQuery.i18n.map["crashes.browser"], 
             "view":jQuery.i18n.map["crashes.view"], 
-            "os_version":jQuery.i18n.map["crashes.os_version"], 
-			"app_version":jQuery.i18n.map["crashes.app_version"], 
+            "app_version":jQuery.i18n.map["crashes.app_version"], 
+            "os_version":jQuery.i18n.map["crashes.os_version"],
 			"manufacture":jQuery.i18n.map["crashes.manufacture"], 
 			"device":jQuery.i18n.map["crashes.device"], 
 			"resolution":jQuery.i18n.map["crashes.resolution"], 
 			"orientation":jQuery.i18n.map["crashes.orientation"],
 			"cpu":jQuery.i18n.map["crashes.cpu"],
-			"opengl":jQuery.i18n.map["crashes.opengl"]};
+			"opengl":jQuery.i18n.map["crashes.opengl"]
+        };
+        _groups = {
+			"metrics":jQuery.i18n.map["crashes.group-metrics"],
+			"custom":jQuery.i18n.map["crashes.group-custom"]
+        };
 		_groupData = data;
         _groupData.dp = {};
 		for(var i in _metrics){
             if(_groupData[i]){
-                _usable_metrics[i] = _metrics[i];
+                _usable_metrics.metrics[i] = _metrics[i];
                 _groupData.dp[i] = countlyCrashes.processMetric(_groupData[i], i, _metrics[i]);
             }
 		}
         if(_groupData.custom){
             for(var i in _groupData.custom){
                 _groupData.dp[i] = countlyCrashes.processMetric(_groupData.custom[i], i, i);
-                _usable_metrics[i] = i.charAt(0).toUpperCase() + i.slice(1);
+                _usable_metrics.custom[i] = i.charAt(0).toUpperCase() + i.slice(1);
             }
         }
     };
