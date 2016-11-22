@@ -1196,3 +1196,9 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 .grouped-numbers table td.range-main { text-transform: uppercase; }
 .grouped-numbers table td.range-main i { font-size: 22px; }
 .grouped-numbers table td.range-main span { display: inline-block; padding-top: 0; vertical-align: text-top; margin-left: 3px; font-size: 15px; color: #848484; }
+
+#clear-app-data .up,
+#clear-app-data .down { display: inline-block; margin-left: 7px; opacity: 0.8; font-size: 10px; line-height: 12px; }
+#clear-app-data .up { display: none; }
+#clear-app-data.active .up { display: inline-block; }
+#clear-app-data.active .down { display: none; }
