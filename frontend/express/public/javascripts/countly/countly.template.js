@@ -845,41 +845,6 @@ $.extend(Template.prototype, {
         });
     };
 
-    CountlyHelpers.initializeHugeDropdown = function () {
-        var dropdownHideFunc;
-
-        $("#content-container").on("mouseenter", ".cly-huge-dropdown-activator", function (e) {
-            clearInterval(dropdownHideFunc);
-
-            var target = $(this).next(".cly-huge-dropdown");
-
-            target.trigger("huge-dropdown-init");
-            target.find(".scroll").slimScroll({
-                height:'100%',
-                start:'top',
-                wheelStep:10,
-                position:'right',
-                disableFadeOut:true
-            });
-
-            target.find(".button-container .title").text($(this).text());
-            target.fadeIn("slow");
-        });
-
-        $("#content-container").on("mouseleave", ".cly-huge-dropdown", function (e) {
-            var target = $(this);
-            dropdownHideFunc = setTimeout(function() { target.fadeOut("fast") }, 500);
-        });
-
-        $("#content-container").on("mouseenter", ".cly-huge-dropdown", function (e) {
-            clearInterval(dropdownHideFunc);
-        });
-
-        $("#content-container").on("close", ".cly-huge-dropdown", function (e) {
-            $(this).fadeOut("fast");
-        });
-    };
-
     function revealDialog(dialog) {
         $("body").append(dialog);
 
@@ -4292,7 +4257,6 @@ var AppRouter = Backbone.Router.extend({
 
             CountlyHelpers.initializeSelect();
             CountlyHelpers.initializeTextSelect();
-            CountlyHelpers.initializeHugeDropdown();
 			
 			if(parseInt(countlyGlobal.config["session_timeout"])){
 				var minTimeout, tenSecondTimeout, logoutTimeout, actionTimeout;
