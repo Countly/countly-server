@@ -5226,7 +5226,7 @@ var AppRouter = Backbone.Router.extend({
                             var tableCols = $(nButton).parents(".dataTables_wrapper").find(".dataTable").dataTable().fnSettings().aoColumns,
                                 tableData = this.fnGetTableData(oConfig).split(/\r\n|\r|\n/g).join('","').split('","'),
                                 retStr = "";
-
+                                
                             for (var i = 0;  i < tableData.length; i++) {
                                 tableData[i] = tableData[i].replace("\"", "");
 
@@ -5237,6 +5237,8 @@ var AppRouter = Backbone.Router.extend({
                                         tableData[i] = tableData[i].replace(/,/g, "");
                                     } else if (tableCols[colIndex].sType == "percent") {
                                         tableData[i] = tableData[i].replace("%", "");
+                                    } else if (tableCols[colIndex].sType == "format-ago" || tableCols[colIndex].sType == "event-timeline") {
+                                        tableData[i] = tableData[i].split("|").pop();
                                     }
                                 }
 
@@ -5268,6 +5270,8 @@ var AppRouter = Backbone.Router.extend({
                                         tableData[i] = parseFloat(tableData[i].replace("%", "")).toLocaleString();
                                     } else if (tableCols[colIndex].sType == "numeric") {
                                         tableData[i] = parseFloat(tableData[i]).toLocaleString();
+                                    } else if (tableCols[colIndex].sType == "format-ago" || tableCols[colIndex].sType == "event-timeline") {
+                                        tableData[i] = tableData[i].split("|").pop();
                                     }
                                 }
 

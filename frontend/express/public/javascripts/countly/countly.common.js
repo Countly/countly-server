@@ -1706,21 +1706,26 @@
     };
 
 	countlyCommon.formatTimeAgo = function(timestamp) {
-		var target = new Date(timestamp*1000);
+        var target = new Date(timestamp*1000);
+        var tooltip = moment(target).format("ddd, D MMM YYYY HH:mm:ss");
+        var elem = $("<span>");
+        elem.prop("title", tooltip);
 		var now = new Date();
 		var diff = Math.floor((now - target) / 1000);
-		if (diff <= 1) {return "<span style='color:#50C354;'>just now</span>";}
-		if (diff < 20) {return "<span style='color:#50C354;'>" + diff + " seconds ago</span>";}
-		if (diff < 40) {return "<span style='color:#50C354;'>half a minute ago</span>";}
-		if (diff < 60) {return "<span style='color:#50C354;'>less than a minute ago</span>";}
-		if (diff <= 90) {return "one minute ago";}
-		if (diff <= 3540) {return Math.round(diff / 60) + " minutes ago";}
-		if (diff <= 5400) {return "1 hour ago";}
-		if (diff <= 86400) {return Math.round(diff / 3600) + " hours ago";}
-		if (diff <= 129600) {return "1 day ago";}
-		if (diff < 604800) {return Math.round(diff / 86400) + " days ago";}
-		if (diff <= 777600) {return "1 week ago";}
-		return "on " + target.toString().split(" GMT")[0];
+		if (diff <= 1) {elem.css("color", "#50C354"); elem.text("just now");}
+		else if (diff < 20) {elem.css("color", "#50C354"); elem.text(diff + " seconds ago");}
+		else if (diff < 40) {elem.css("color", "#50C354"); elem.text("half a minute ago");}
+		else if (diff < 60) {elem.css("color", "#50C354"); elem.text("less than a minute ago");}
+		else if (diff <= 90) {elem.text("one minute ago");}
+		else if (diff <= 3540) {elem.text(Math.round(diff / 60) + " minutes ago");}
+		else if (diff <= 5400) {elem.text("1 hour ago");}
+		else if (diff <= 86400) {elem.text(Math.round(diff / 3600) + " hours ago");}
+		else if (diff <= 129600) {elem.text("1 day ago");}
+		else if (diff < 604800) {elem.text(Math.round(diff / 86400) + " days ago");}
+		else if (diff <= 777600) {elem.text("1 week ago");}
+		else elem.text(tooltip);
+        elem.append("<a style='display: none;'>|"+tooltip+"</a>");
+        return elem.prop('outerHTML');
 	};
 
 	countlyCommon.formatTime = function(timestamp) {
