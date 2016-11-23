@@ -633,7 +633,7 @@
                 }
             })
             .attr("stroke", "#FFF")
-            .attr("stroke-width", 1);
+            .attr("stroke-width", 2);
 
         if (colorIndex || colorIndex === 0) {
             bar.attr("opacity", function(d) {
@@ -652,7 +652,7 @@
 
                 return myPercent + "%";
             })
-            .append("xhtml:body")
+            .append("xhtml:div")
             .attr("class", "hsb-tip")
             .html(function(d) { return "<div>" + d.perc + "</div>"; });
 

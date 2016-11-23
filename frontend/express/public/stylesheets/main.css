@@ -1139,8 +1139,8 @@ table.events-table { width:100%; padding:0; margin:0; }
 .hsb-container.top { margin-bottom:30px; margin-top:25px; }
 .hsb-container .label { text-align:left; font-size: 12px; margin-bottom: 3px; color:#777; }
 .hsb-container text { fill: #FFF; font: 10px sans-serif; text-anchor: initial; }
-.hsb-tip { background-color: transparent; text-align: center; padding:8px; opacity:0; color:#FFF; font-size:13px; }
-.hsb-tip:hover { opacity:1; }
+.hsb-tip { background-color: transparent; text-align: center; padding:8px 0; color:transparent; font-size:11px; cursor: default; overflow: hidden; }
+.hsb-tip:hover { color:#FFF; }
 .hsb-container foreignobject:hover + text { display: none; }
 
 /* Styles tabs */
