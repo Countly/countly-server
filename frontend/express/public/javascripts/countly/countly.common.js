@@ -1712,17 +1712,17 @@
         elem.prop("title", tooltip);
 		var now = new Date();
 		var diff = Math.floor((now - target) / 1000);
-		if (diff <= 1) {elem.css("color", "#50C354"); elem.text("just now");}
-		else if (diff < 20) {elem.css("color", "#50C354"); elem.text(diff + " seconds ago");}
-		else if (diff < 40) {elem.css("color", "#50C354"); elem.text("half a minute ago");}
-		else if (diff < 60) {elem.css("color", "#50C354"); elem.text("less than a minute ago");}
-		else if (diff <= 90) {elem.text("one minute ago");}
-		else if (diff <= 3540) {elem.text(Math.round(diff / 60) + " minutes ago");}
-		else if (diff <= 5400) {elem.text("1 hour ago");}
-		else if (diff <= 86400) {elem.text(Math.round(diff / 3600) + " hours ago");}
-		else if (diff <= 129600) {elem.text("1 day ago");}
-		else if (diff < 604800) {elem.text(Math.round(diff / 86400) + " days ago");}
-		else if (diff <= 777600) {elem.text("1 week ago");}
+		if (diff <= 1) {elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.just-now"]);}
+		else if (diff < 20) {elem.css("color", "#50C354"); elem.text(jQuery.i18n.prop("common.ago.seconds-ago", diff));}
+		else if (diff < 40) {elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.half-minute"]);}
+		else if (diff < 60) {elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.less-minute"]);}
+		else if (diff <= 90) {elem.text(jQuery.i18n.map["common.ago.one-minute"]);}
+		else if (diff <= 3540) {elem.text(jQuery.i18n.prop("common.ago.minutes-ago", Math.round(diff / 60)));}
+		else if (diff <= 5400) {elem.text(jQuery.i18n.map["common.ago.one-hour"]);}
+		else if (diff <= 86400) {elem.text(jQuery.i18n.prop("common.ago.hours-ago", Math.round(diff / 3600)));}
+		else if (diff <= 129600) {elem.text(jQuery.i18n.map["common.ago.one-day"]);}
+		else if (diff < 604800) {elem.text(jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400)));}
+		else if (diff <= 777600) {elem.text(jQuery.i18n.map["common.ago.one-week"]);}
 		else elem.text(tooltip);
         elem.append("<a style='display: none;'>|"+tooltip+"</a>");
         return elem.prop('outerHTML');
