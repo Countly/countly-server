@@ -570,9 +570,10 @@
         var processedData = [],
             tmpProcessedData = [],
             totalCount = 0,
-            maxToDisplay = 10;
+            maxToDisplay = 10,
+            barHeight = 30;
 
-        for (var i = 0; i < data.length; i++) {
+            for (var i = 0; i < data.length; i++) {
             tmpProcessedData.push({
                 label: data[i].label,
                 count: data[i].data[0][1],
@@ -605,68 +606,91 @@
             processedData.push(tmpProcessedData[i]);
         }
 
-        var barHeight = 30,
+        if (processedData.length > 0) {
+            var percentSoFar = 0;
+
+            var chart = d3.select(intoElement)
+                .attr("width", "100%")
+                .attr("height", barHeight);
+
+            var bar = chart.selectAll("g")
+                .data(processedData)
+                .enter().append("g");
+
+            bar.append("rect")
+                .attr("width", function(d) { return ((d.count / totalCount) * 100) + "%"; } )
+                .attr("x", function(d) {
+                    var myPercent = percentSoFar;
+                    percentSoFar = percentSoFar + (100 * (d.count / totalCount));
+
+                    return myPercent + "%";
+                })
+                .attr("height", barHeight)
+                .attr("fill",  function(d) {
+                    if (colorIndex || colorIndex === 0) {
+                        return countlyCommon.GRAPH_COLORS[colorIndex];
+                    } else {
+                        return countlyCommon.GRAPH_COLORS[d.index];
+                    }
+                })
+                .attr("stroke", "#FFF")
+                .attr("stroke-width", 2);
+
+            if (colorIndex || colorIndex === 0) {
+                bar.attr("opacity", function(d) {
+                    return 1 - (0.05 * d.index);
+                });
+            }
+
             percentSoFar = 0;
 
-        var chart = d3.select(intoElement)
-            .attr("width", "100%")
-            .attr("height", barHeight);
+            bar.append("foreignObject")
+                .attr("width", function(d) { return ((d.count / totalCount) * 100) + "%"; } )
+                .attr("height", barHeight)
+                .attr("x", function(d) {
+                    var myPercent = percentSoFar;
+                    percentSoFar = percentSoFar + (100 * (d.count / totalCount));
 
-        var bar = chart.selectAll("g")
-            .data(processedData)
-            .enter().append("g");
+                    return myPercent + "%";
+                })
+                .append("xhtml:div")
+                .attr("class", "hsb-tip")
+                .html(function(d) { return "<div>" + d.perc + "</div>"; });
 
-        bar.append("rect")
-            .attr("width", function(d) { return ((d.count / totalCount) * 100) + "%"; } )
-            .attr("x", function(d) {
-                var myPercent = percentSoFar;
-                percentSoFar = percentSoFar + (100 * (d.count / totalCount));
+            percentSoFar = 0;
 
-                return myPercent + "%";
-            })
-            .attr("height", barHeight)
-            .attr("fill",  function(d) {
-                if (colorIndex || colorIndex === 0) {
-                    return countlyCommon.GRAPH_COLORS[colorIndex];
-                } else {
-                    return countlyCommon.GRAPH_COLORS[d.index];
-                }
-            })
-            .attr("stroke", "#FFF")
-            .attr("stroke-width", 2);
+            bar.append("text")
+                .attr("x", function(d) {
+                    var myPercent = percentSoFar;
+                    percentSoFar = percentSoFar + (100 * (d.count / totalCount));
 
-        if (colorIndex || colorIndex === 0) {
-            bar.attr("opacity", function(d) {
-                return 1 - (0.05 * d.index);
-            });
+                    return myPercent + 0.5 + "%";
+                })
+                .attr("dy", "1.35em")
+                .text(function(d) { return d.label; });
+        } else {
+            var chart = d3.select(intoElement)
+                .attr("width", "100%")
+                .attr("height", barHeight);
+
+            var bar = chart.selectAll("g")
+                .data([{text: jQuery.i18n.map["common.bar.no-data"]}])
+                .enter().append("g");
+
+            bar.append("rect")
+                .attr("width", "100%" )
+                .attr("height", barHeight)
+                .attr("fill",  "#FBFBFB")
+                .attr("stroke", "#FFF")
+                .attr("stroke-width", 2);
+
+            bar.append("foreignObject")
+                .attr("width", "100%" )
+                .attr("height", barHeight)
+                .append("xhtml:div")
+                .attr("class", "no-data")
+                .html(function(d) { return d.text; });
         }
-
-        percentSoFar = 0;
-
-        bar.append("foreignObject")
-            .attr("width", function(d) { return ((d.count / totalCount) * 100) + "%"; } )
-            .attr("height", barHeight)
-            .attr("x", function(d) {
-                var myPercent = percentSoFar;
-                percentSoFar = percentSoFar + (100 * (d.count / totalCount));
-
-                return myPercent + "%";
-            })
-            .append("xhtml:div")
-            .attr("class", "hsb-tip")
-            .html(function(d) { return "<div>" + d.perc + "</div>"; });
-
-        percentSoFar = 0;
-
-        bar.append("text")
-            .attr("x", function(d) {
-                var myPercent = percentSoFar;
-                percentSoFar = percentSoFar + (100 * (d.count / totalCount));
-
-                return myPercent + 0.5 + "%";
-            })
-            .attr("dy", "1.35em")
-            .text(function(d) { return d.label; });
     };
 
     countlyCommon.extractRangeData = function (db, propertyName, rangeArray, explainRange) {
