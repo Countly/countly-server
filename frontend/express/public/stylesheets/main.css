@@ -1135,8 +1135,8 @@ table.events-table { width:100%; padding:0; margin:0; }
 .allapps .material-icons.down { color:#C94C4C; }
 
 /* Styles for horizontal d3 bar charts */
-.hsb-container { margin:15px 30px; position:relative; }
-.hsb-container.top { margin-bottom:30px; margin-top:25px; }
+.hsb-container { margin:20px 30px; position:relative; }
+.hsb-container.top { margin-bottom:30px; }
 .hsb-container .label { text-align:left; font-size: 12px; margin-bottom: 3px; color:#777; }
 .hsb-container text { fill: #FFF; font: 10px sans-serif; text-anchor: initial; }
 .hsb-tip { background-color: transparent; text-align: center; padding:9px 0; color:transparent; font-size:11px; cursor: default; overflow: hidden; }
