@@ -5204,7 +5204,7 @@ var AppRouter = Backbone.Router.extend({
             "bLengthChange":true,
             "bPaginate":true,
             "sPaginationType": "four_button",
-            "iDisplayLength": (store.get("iDisplayLength")) ? parseInt(store.get("iDisplayLength")) : 50,
+            "iDisplayLength": 50,//(store.get("iDisplayLength")) ? parseInt(store.get("iDisplayLength")) : 50,
             "bDestroy": true,
             "bDeferRender": true,
             "oLanguage": {
@@ -5315,7 +5315,7 @@ var AppRouter = Backbone.Router.extend({
                     }, fade:true, offset:5, cssClass:'yellow', opacity:1, html:true});
                     tableWrapper.find(".dataTables_length").show();
                     tableWrapper.find('#dataTables_length_input').bind( 'change.DT', function(e) {
-                        store.set("iDisplayLength", $(this).val());
+                        //store.set("iDisplayLength", $(this).val());
                     });
                 }
                 else{
