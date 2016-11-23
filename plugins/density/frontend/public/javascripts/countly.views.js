@@ -88,6 +88,7 @@ window.DensityView = countlyView.extend({
 
             $(self.el).find(".widget-content").replaceWith(newPage.find(".widget-content"));
             $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
+            $(self.el).find(".density-widget").replaceWith(newPage.find(".density-widget"));
 
             if (platformData && platformData.chartDP) {
                 for (var i = 0; i < platformData.chartDP.dp.length; i++) {

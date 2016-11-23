@@ -1135,13 +1135,14 @@ table.events-table { width:100%; padding:0; margin:0; }
 .allapps .material-icons.down { color:#C94C4C; }
 
 /* Styles for horizontal d3 bar charts */
-.hsb-container { margin:15px 30px; position:relative; }
-.hsb-container.top { margin-bottom:30px; margin-top:25px; }
+.hsb-container { margin:20px 30px; position:relative; }
+.hsb-container.top { margin-bottom:30px; }
 .hsb-container .label { text-align:left; font-size: 12px; margin-bottom: 3px; color:#777; }
 .hsb-container text { fill: #FFF; font: 10px sans-serif; text-anchor: initial; }
-.hsb-tip { background-color: transparent; text-align: center; padding:8px; opacity:0; color:#FFF; font-size:13px; }
-.hsb-tip:hover { opacity:1; }
+.hsb-tip { background-color: transparent; text-align: center; padding:9px 0; color:transparent; font-size:11px; cursor: default; overflow: hidden; }
+.hsb-tip:hover { color:#FFF; }
 .hsb-container foreignobject:hover + text { display: none; }
+.hsb-container .no-data { color:#C5C5C5; text-align: center; font-size: 11px; padding:9px 0; user-select:none; cursor: default; }
 
 /* Styles tabs */
 .ui-tabs .ui-tabs-nav li { width:50%; margin:0; padding:0; background-color: #f8f8f8; border-radius:0; }
