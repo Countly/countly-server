@@ -285,18 +285,11 @@ window.ConfigurationsView = countlyView.extend({
                 window.history.back();
             });
 
-            $(".boolean-selector>.button").click(function () {
-                var dictionary = {"plugins.enable":true, "plugins.disable":false};
-                var cur = $(this);
-                if (cur.hasClass("selected")) {
-                    return true;
-                }
-                var prev = cur.parent(".button-selector").find(">.button.selected");
-                prev.removeClass("selected").removeClass("active");
-                cur.addClass("selected").addClass("active");
-                var id = $(this).parent(".button-selector").attr("id");
-                var value = dictionary[$(this).data("localize")];
-                self.updateConfig(id, value);
+            $('.on-off-switch').click(function() {
+                var isChecked = $(this).find("input").is(":checked"),
+                    attrID = $(this).find("input").attr("id");
+
+                self.updateConfig(attrID, isChecked);
             });
             
             $(".configs input").keyup(function () {
@@ -542,6 +535,34 @@ window.ConfigurationsView = countlyView.extend({
                     });
                 }
             });
+
+            /*
+                Make header sticky if scroll is more than the height of header
+                This is done in order to make Apply Changes button visible
+             */
+            var navigationTop = $("#sticky-config-header").offset().top;
+
+            $(window).on("scroll", function(e) {
+                var $fixedHeader = $("#sticky-config-header");
+
+                if ($(this).scrollTop() > navigationTop) {
+                    var width = $("#content-container").width();
+                    $fixedHeader.addClass("fixed");
+                    $fixedHeader.css({width: width});
+                } else {
+                    $fixedHeader.removeClass("fixed");
+                    $fixedHeader.css({width: ""});
+                }
+            });
+
+            $(window).on("resize", function(e) {
+                var $fixedHeader = $("#sticky-config-header");
+
+                if ($fixedHeader.hasClass("fixed")) {
+                    var width = $("#content-container").width();
+                    $fixedHeader.css({width: width});
+                }
+            });
         }
     },
     updateConfig: function(id, value){
@@ -641,16 +662,17 @@ window.ConfigurationsView = countlyView.extend({
             return this.predefinedInputs[id](value);
         }
         else if(typeof value == "boolean"){
-            var input = '<div id="'+id+'" class="button-selector boolean-selector">';
-            if(value){
-                input += '<div class="button active selected" data-localize="plugins.enable"></div>';
-                input += '<div class="button" data-localize="plugins.disable"></div>';
+            var input = '<div class="on-off-switch">';
+
+            if (value) {
+                input += '<input type="checkbox" name="on-off-switch" class="on-off-switch-checkbox" id="' + id + '" checked>';
+            } else {
+                input += '<input type="checkbox" name="on-off-switch" class="on-off-switch-checkbox" id="' + id + '">';
             }
-            else{
-                input += '<div class="button" data-localize="plugins.enable"></div>';
-                input += '<div class="button active selected" data-localize="plugins.disable"></div>';
-            }
-            input += '</div>';
+
+            input += '<label class="on-off-switch-label" for="' + id + '"></label>';
+            input += '<span class="text">' + jQuery.i18n.map["plugins.enable"] + '</span>';
+
             return input;
         }
         else if(typeof value == "number"){

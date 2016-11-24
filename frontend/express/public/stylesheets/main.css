@@ -1219,3 +1219,49 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 .hljs-deletion{background-color:#ffc8bd}
 .hljs-doctag,.hljs-strong{font-weight:bold}
 .hljs-emphasis{font-style:italic}
+/* End of syntax highlighting - Highlight.js GoogleCode theme */
+
+/* Custom on-off switch based on input checkbox */
+.on-off-switch {
+    position: relative;
+    width: 45px;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select: none;
+}
+.on-off-switch-checkbox {
+    display: none;
+}
+.on-off-switch-label {
+    display: block;
+    overflow: hidden;
+    cursor: pointer;
+    height: 26px;
+    padding: 0;
+    line-height: 26px;
+    border-radius: 24px;
+    background-color: #d0d0d0;
+    transition: background-color 0.3s ease-in;
+}
+.on-off-switch-label:before {
+    content: "";
+    display: block;
+    width: 20px;
+    height: 20px;
+    margin: 3px 0 0 0;
+    background: #FFFFFF;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 21px;
+    border-radius: 24px;
+    transition: all 0.3s ease-in 0s;
+    box-shadow: 0 1px 1px 0 #8e8e8e;
+}
+.on-off-switch-checkbox:checked + .on-off-switch-label { background-color: #2EB52B; }
+.on-off-switch-checkbox:checked + .on-off-switch-label,
+.on-off-switch-checkbox:checked + .on-off-switch-label:before { }
+.on-off-switch-checkbox:checked + .on-off-switch-label:before { right: 3px; box-shadow: 0 1px 1px 0 #157313; }
+.on-off-switch .text { display: block; position: absolute; left: 53px; top: 8px; font-size: 12px; color: #d0d0d0; }
+.on-off-switch input:checked + label + .text { display: none; }
+/* End of custom on-off switch based on input checkbox */

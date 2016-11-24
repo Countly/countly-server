@@ -16,6 +16,7 @@
 .configs > table td {border-radius: 0 !important;}
 .configs > table > tbody > tr > td { padding:0; }
 .configs > table > tbody > tr > td:first-child { padding:20px 25px; background-color: #FFF; color: #2FA732; min-width: 125px; }
+@media (max-width: 1050px) { .configs > table > tbody > tr > td:first-child { padding:20px 10px; } }
 .configs > table > tbody > tr > td { border-bottom: 1px solid #d0d0d0; border-left: 1px solid #d0d0d0; }
 
 .configs span.config-help{font-size: 13px; color: #929292; padding-top: 10px; display: inline-block; line-height: 17px;}
@@ -32,3 +33,7 @@
 .configs .button-selector .button:nth-child(2) { background-color: #D63E40; color:#FFF; border-color:#D63E40; cursor:pointer; }
 .configs .button-selector .button:nth-child(1).active { background-color:#F9F9F9; color:#6B6B6B; border-color:#D0D0D0; cursor:default; }
 .configs .button-selector .button:nth-child(2).active { background-color:#F9F9F9; color:#6B6B6B; border-color:#D0D0D0; cursor:default; }
+
+#sticky-config-header.fixed { position: fixed; top:0; z-index: 2; border-bottom: 1px solid #d0d0d0; }
+#sticky-config-header.fixed .widget-header { border-top:none; }
+#sticky-config-header.fixed + .configs { margin-top: 58px; }
