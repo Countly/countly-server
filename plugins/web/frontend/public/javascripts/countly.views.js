@@ -194,7 +194,7 @@ window.WebDashboardView = countlyView.extend({
             }
             
             columns.push({ "mData": function(row){return (!row["sc"]) ? 0 : row["sc"]}, "sType":"numeric", "sTitle": jQuery.i18n.map["web.total-sessions"] , "bSortable":false },
-				{ "mData": function(row, type){if(type == "display") return (row["ls"]) ? countlyCommon.formatTimeAgo(row["ls"]) : jQuery.i18n.map["web.never"]; else return (row["ls"]) ? row["ls"] : 0;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["web.last-seen"] , "bSortable":false },
+				{ "mData": function(row, type){if(type == "display") return (row["ls"]) ? countlyCommon.formatTimeAgo(row["ls"]) : jQuery.i18n.map["web.never"]; else return (row["ls"]) ? row["ls"] : 0;}, "sType":"numeric", "sTitle": jQuery.i18n.map["web.last-seen"] , "bSortable":false },
 				{ "mData": function(row){return countlyCommon.formatTime((row["tsd"]) ? parseInt(row["tsd"]) : 0);}, "sType":"numeric", "sTitle": jQuery.i18n.map["web.time-spent"], "bSortable":false });
             
             this.latestdtable = $('#last-visitors').dataTable($.extend({}, $.fn.dataTable.defaults, {
