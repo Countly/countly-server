@@ -16,10 +16,12 @@ window.SystemLogsView = countlyView.extend({
         var meta = countlySystemLogs.getMetaData();
         var activeAction = jQuery.i18n.map["systemlogs.all-actions"];
         var activeUser = jQuery.i18n.map["systemlogs.all-users"];
+
         if(this._query){
             if(this._query.a){
                 activeAction = jQuery.i18n.prop("systemlogs.action."+this._query.a);
             }
+
             if(this._query.user_id){
                 for(var i = 0; i < meta.users.length; i++){
                     if(meta.users[i]._id == this._query.user_id){
@@ -29,6 +31,7 @@ window.SystemLogsView = countlyView.extend({
                 }
             }
         }
+
         this.templateData = {
             "page-title":jQuery.i18n.map["systemlogs.title"],
             "active-action": activeAction,
@@ -37,12 +40,15 @@ window.SystemLogsView = countlyView.extend({
             "users": meta.users,
             query: this._query
         };
+
 		var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
+
             $("#systemlogs-back").click(function(){
                 window.history.back();
             });
+
 			this.dtable = $('#systemlogs-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "bServerSide": true,
                 "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key="+countlyGlobal.member.api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID+"&method=systemlogs",
@@ -65,20 +71,29 @@ window.SystemLogsView = countlyView.extend({
                 "aoColumns": [
                     { "mData": function(row, type){
 						if(type == "display"){
-							return moment(row.ts*1000).format("MMMM Do YYYY, hh:mm:ss");
+							return moment(row.ts*1000).format("D MMM YYYY, hh:mm:ss");
 						}else return row.ts;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.timestamp"] },
 					{ "mData": function(row, type){return row.u;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.user"]},
 					{ "mData": function(row, type){return (jQuery.i18n.map["systemlogs.action."+row.a]) ? jQuery.i18n.map["systemlogs.action."+row.a] : row.a;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.action"]},
                     { "mData": function(row, type){return row.ip;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.ip-address"]},
                     { "mData": function(row, type){
 						if(typeof row.i == "object")
-							return "<pre style='white-space:pre-wrap;'>"+JSON.stringify(row.i, null, 2)+"</pre>";
+							return "<pre>"+JSON.stringify(row.i, null, 2)+"</pre>";
 						else
 							return row.i;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.info"], "bSortable": false }
-                ]
+                ],
+                "fnDrawCallback": function(settings) {
+                    $('#systemlogs-table').find("pre").each(function(i, block) {
+                        if(typeof hljs != "undefined") {
+                            hljs.highlightBlock(block);
+                        }
+                    });
+                }
             }));
+
 			this.dtable.stickyTableHeaders();
 			this.dtable.fnSort( [ [0,'desc'] ] );
+
             $(".action-segmentation .segmentation-option").on("click", function () {
                 if(!self._query)
                     self._query = {};
@@ -88,6 +103,7 @@ window.SystemLogsView = countlyView.extend({
                 app.navigate("#/manage/systemlogs/"+JSON.stringify(self._query));
                 self.refresh();
 			});
+
             $(".user-segmentation .segmentation-option").on("click", function () {
                 if(!self._query)
                     self._query = {};
@@ -101,7 +117,7 @@ window.SystemLogsView = countlyView.extend({
     },
     refresh:function () {
 		this.dtable.fnDraw(false);
-    },
+    }
 });
 
 //register views

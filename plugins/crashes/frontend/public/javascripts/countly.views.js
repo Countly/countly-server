@@ -1024,9 +1024,6 @@ $( document ).ready(function() {
     });
     if(!production){
         CountlyHelpers.loadJS("crashes/javascripts/marked.min.js");
-        CountlyHelpers.loadJS("crashes/javascripts/highlight.pack.js", function() {
-            hljs.initHighlightingOnLoad();
-        });
     }
 	var menu = '<a href="#/crashes" class="item" id="crash-menu">'+
         '<div class="logo ion-alert-circled"></div>'+
