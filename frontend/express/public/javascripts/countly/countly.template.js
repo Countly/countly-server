@@ -4132,6 +4132,7 @@ var AppRouter = Backbone.Router.extend({
     initialize:function () { //initialize the dashboard, register helpers etc.
 		this.appTypes = {};
 		this.pageScripts = {};
+        this.dataExports = {};
         this.appSwitchCallbacks = [];
         this.appManagementSwitchCallbacks = [];
 		this.refreshScripts = {};
@@ -5228,12 +5229,40 @@ var AppRouter = Backbone.Router.extend({
                                 tableData = this.fnGetTableData(oConfig).split(/\r\n|\r|\n/g).join('","').split('","'),
                                 retStr = "";
                                 
+                            //check if exported data needs to be processed by some other lib    
+                            if(tableCols[0].sExport && app.dataExports[tableCols[0].sExport]){
+                                
+                                //get data to export
+                                var data = app.dataExports[tableCols[0].sExport]();
+                                
+                                //get all columns
+                                var cols = [];
+                                for(var i = 0; i < data.length; i++){
+                                    for(var col in data[i]){
+                                         if(cols.indexOf(col) === -1)
+                                             cols.push(col);
+                                        
+                                     }
+                                }
+                                
+                                //generate data in the needed format
+                                var tdata = JSON.parse(JSON.stringify(cols));
+                                for(var i = 0; i < data.length; i++){
+                                    for(var j = 0; j < cols.length; j++){
+                                        tdata.push('"'+(data[i][cols[j]] || ""));
+                                    }
+                                }
+                                
+                                tableCols = cols;
+                                tableData = tdata;
+                            }
+
                             for (var i = 0;  i < tableData.length; i++) {
-                                tableData[i] = tableData[i].replace("\"", "");
+                                tableData[i] = tableData[i].replace(/^"/, "");
 
                                 if (i >= tableCols.length) {
                                     var colIndex = i % tableCols.length;
-
+                                     
                                     if (tableCols[colIndex].sType == "formatted-num") {
                                         tableData[i] = tableData[i].replace(/,/g, "");
                                     } else if (tableCols[colIndex].sType == "percent") {
@@ -5249,7 +5278,7 @@ var AppRouter = Backbone.Router.extend({
                                     retStr += "\"" + tableData[i] + "\", ";
                                 }
                             }
-
+                            flash.setFileName( getFileName("csv") );
                             this.fnSetText(flash, retStr);
                         }
                     },
@@ -5260,6 +5289,34 @@ var AppRouter = Backbone.Router.extend({
                             var tableCols = $(nButton).parents(".dataTables_wrapper").find(".dataTable").dataTable().fnSettings().aoColumns,
                                 tableData = this.fnGetTableData(oConfig).split(/\r\n|\r|\n/g).join('\t').split('\t'),
                                 retStr = "";
+                                
+                            //check if exported data needs to be processed by some other lib    
+                            if(tableCols[0].sExport && app.dataExports[tableCols[0].sExport]){
+                                
+                                //get data to export
+                                var data = app.dataExports[tableCols[0].sExport]();
+                                
+                                //get all columns
+                                var cols = [];
+                                for(var i = 0; i < data.length; i++){
+                                    for(var col in data[i]){
+                                         if(cols.indexOf(col) === -1)
+                                             cols.push(col);
+                                        
+                                     }
+                                }
+                                
+                                //generate data in the needed format
+                                var tdata = JSON.parse(JSON.stringify(cols));
+                                for(var i = 0; i < data.length; i++){
+                                    for(var j = 0; j < cols.length; j++){
+                                        tdata.push('"'+(data[i][cols[j]] || ""));
+                                    }
+                                }
+                                
+                                tableCols = cols;
+                                tableData = tdata;
+                            }
 
                             for (var i = 0;  i < tableData.length; i++) {
                                 if (i >= tableCols.length) {
@@ -5282,7 +5339,7 @@ var AppRouter = Backbone.Router.extend({
                                     retStr += tableData[i] + "\t";
                                 }
                             }
-
+                            flash.setFileName( getFileName("xls") );
                             this.fnSetText(flash, retStr);
                         }
                     }
@@ -5412,6 +5469,9 @@ var AppRouter = Backbone.Router.extend({
     },
     addAppManagementSwitchCallback:function(callback){
         this.appManagementSwitchCallbacks.push(callback);
+    },
+    addDataExport(name, callback){
+        this.dataExports[name] = callback;
     },
 	addPageScript:function(view, callback){
 		if(!this.pageScripts[view])
