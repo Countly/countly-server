@@ -5199,6 +5199,13 @@ var AppRouter = Backbone.Router.extend({
         jQuery.fn.dataTableExt.oSort['format-ago-desc']  = function(x, y) {
             return x-y;
         };
+        
+        function getFileName(ext){
+            var name = "countly";
+            if($(".widget-header .title").length)
+                name = $(".widget-header .title").first().text();
+            return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase())+"."+ext;
+        }
 
         $.extend(true, $.fn.dataTable.defaults, {
             "sDom": '<"dataTable-top"lfpT>t<"dataTable-bottom"i>',
