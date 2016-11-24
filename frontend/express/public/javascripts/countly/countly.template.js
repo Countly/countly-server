@@ -2794,7 +2794,7 @@ window.ManageUsersView = countlyView.extend({
                         $(nRow).attr("id", aData._id);
                     },
                     "aoColumns": [
-                        { "mData": function(row, type){return row.full_name;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.full-name"]},
+                        { "mData": function(row, type){return row.full_name;}, "sType":"string", "sExport":"userinfo", "sTitle": jQuery.i18n.map["management-users.full-name"]},
                         { "mData": function(row, type){return row.username;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.username"]},
                         { "mData": function(row, type){if(row.global_admin) return jQuery.i18n.map["management-users.global-admin"]; else if(row.admin_of && row.admin_of.length) return jQuery.i18n.map["management-users.admin"]; else if(row.user_of && row.user_of.length)  return jQuery.i18n.map["management-users.user"]; else return jQuery.i18n.map["management-users.no-role"]}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.no-role"]},
                         { "mData": function(row, type){return row.email;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.email"]},
@@ -2802,9 +2802,51 @@ window.ManageUsersView = countlyView.extend({
                         { "mData": function(row, type){if(type == "display") return (row["last_login"]) ? countlyCommon.formatTimeAgo(row["last_login"]) : jQuery.i18n.map["common.never"]; else return (row["last_login"]) ? row["last_login"] : 0;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.last_login"]}
                     ]
                 }));
-                self.dtable.fnSort( [ [0,'desc'] ] );
+                self.dtable.fnSort( [ [0,'asc'] ] );
                 self.dtable.stickyTableHeaders();
                 CountlyHelpers.expandRows(self.dtable, self.editUser, self);
+                app.addDataExport("userinfo", function(){
+                    var ret = [];
+                    var elem;
+                    for(var i = 0; i < tableData.length; i++){
+                        elem = {};
+                        elem[jQuery.i18n.map["management-users.full-name"]] = tableData[i].full_name;
+                        elem[jQuery.i18n.map["management-users.username"]] = tableData[i].username;
+                        elem[jQuery.i18n.map["management-users.email"]] = tableData[i].email;
+                        elem[jQuery.i18n.map["management-users.global-admin"]] = tableData[i].global_admin;
+                        elem[jQuery.i18n.map["management-users.lock-account"]] = tableData[i].locked;
+                        
+                        if(tableData[i].created_at == 0)
+                            elem[jQuery.i18n.map["management-users.created"]] = jQuery.i18n.map["common.unknown"];
+                        else
+                            elem[jQuery.i18n.map["management-users.created"]] = moment(parseInt(tableData[i].created_at)*1000).format("ddd, D MMM YYYY HH:mm:ss");
+                        
+                        if(tableData[i].last_login == 0)
+                            elem[jQuery.i18n.map["management-users.last_login"]] = jQuery.i18n.map["common.unknown"];
+                        else
+                            elem[jQuery.i18n.map["management-users.last_login"]] = moment(parseInt(tableData[i].last_login)*1000).format("ddd, D MMM YYYY HH:mm:ss");
+
+                        if(tableData[i].admin_of && tableData[i].admin_of.length)
+                            elem[jQuery.i18n.map["management-users.admin-of"]] = CountlyHelpers.appIdsToNames(tableData[i].admin_of);
+                        else
+                            elem[jQuery.i18n.map["management-users.admin-of"]] = "";
+                        
+                        if(tableData[i].user_of && tableData[i].user_of.length)
+                            elem[jQuery.i18n.map["management-users.user-of"]] = CountlyHelpers.appIdsToNames(tableData[i].user_of);
+                        else
+                            elem[jQuery.i18n.map["management-users.user-of"]] = "";
+                        
+                        if(typeof pathsToSectionNames !== "undefined"){
+                            if(tableData[i].restrict && tableData[i].restrict.length)
+                                elem[jQuery.i18n.map["restrict.restricted-sections"]] = pathsToSectionNames(tableData[i].restrict);
+                            else
+                                elem[jQuery.i18n.map["restrict.restricted-sections"]] = "";
+                        }
+                        
+                        ret.push(elem);
+                    }
+                    return ret;
+                });
                 
                 self.initTable();
                 $("#add-user-mgmt").on("click", function(){
