@@ -18,7 +18,7 @@ var usersApi = {},
             common.returnMessage(params, 401, 'User is not a global administrator');
             return false;
         }
-        common.db.collection('members').find({}).toArray(function (err, members) {
+        common.db.collection('members').find({},{password:0, appSortList:0}).toArray(function (err, members) {
     
             if (!members || err) {
                 common.returnOutput(params, {});
@@ -34,20 +34,15 @@ var usersApi = {},
                 if(members[i].user_of && members[i].user_of.length > 0 && members[i].user_of[0] == ""){
                     members[i].user_of.splice(0, 1);
                 }
-                membersObj[members[i]._id] = {
-                    '_id':members[i]._id,
-                    'api_key':members[i].api_key,
-                    'full_name':members[i].full_name,
-                    'username':members[i].username,
-                    'email':members[i].email,
-                    'admin_of':((members[i].admin_of && members[i].admin_of.length > 0) ? members[i].admin_of : []),
-                    'user_of':((members[i].user_of && members[i].user_of.length > 0) ? members[i].user_of : []),
-                    'global_admin':(members[i].global_admin === true),
-                    'locked':(members[i].locked === true),
-                    'created_at':members[i].created_at || 0,
-                    'last_login':members[i].last_login || 0,
-                    'is_current_user':(members[i].api_key == params.member.api_key)
-                };
+               
+                members[i]['admin_of'] = ((members[i].admin_of && members[i].admin_of.length > 0) ? members[i].admin_of : []);
+                members[i]['user_of'] = ((members[i].user_of && members[i].user_of.length > 0) ? members[i].user_of : []);
+                members[i]['global_admin'] = (members[i].global_admin === true);
+                members[i]['locked'] = (members[i].locked === true);
+                members[i]['created_at'] = members[i].created_at || 0;
+                members[i]['last_login'] = members[i].last_login || 0;
+                members[i]['is_current_user'] = (members[i].api_key == params.member.api_key);
+                membersObj[members[i]._id] = members[i];
             }
     
             common.returnOutput(params, membersObj);
