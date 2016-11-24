@@ -71,7 +71,7 @@ window.SystemLogsView = countlyView.extend({
                 "aoColumns": [
                     { "mData": function(row, type){
 						if(type == "display"){
-							return moment(row.ts*1000).format("D MMM YYYY, hh:mm:ss");
+							return moment(new Date(row.ts*1000)).format("ddd, D MMM YYYY HH:mm:ss");
 						}else return row.ts;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.timestamp"] },
 					{ "mData": function(row, type){return row.u;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.user"]},
 					{ "mData": function(row, type){return (jQuery.i18n.map["systemlogs.action."+row.a]) ? jQuery.i18n.map["systemlogs.action."+row.a] : row.a;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.action"]},

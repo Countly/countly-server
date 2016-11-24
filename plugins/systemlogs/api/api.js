@@ -22,8 +22,8 @@ var plugin = {},
                     query["i"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};
                     //filter["$text"] = { "$search": "\""+params.qstring.sSearch+"\"" };
                 }
-                query._id = {$ne:"meta_v2"};
             }
+            query._id = {$ne:"meta_v2"};
             validate(params, function(params){
                 var columns = ["ts", "u", "a", "ip", "i"];
                 common.db.collection('systemlogs').count({},function(err, total) {
