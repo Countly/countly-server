@@ -48,6 +48,9 @@ window.DensityView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
+            if(typeof addDrill != "undefined"){
+                $(".widget-header .left .title").first().after(addDrill("up.dnst"));
+            }
             this.pageScript();
 
             countlyCommon.drawHorizontalStackedBars(platformData.chartDP.dp, "#hsb-platforms");
