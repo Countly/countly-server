@@ -1678,7 +1678,7 @@ window.DeviceView = countlyView.extend({
 });
 
 window.PlatformView = countlyView.extend({
-    activePlatform:null,
+    activePlatform:{},
     beforeRender: function() {
         return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("platforms"), countlyTotalUsers.initialize("platform_versions")).then(function () {});
     },
@@ -1690,7 +1690,7 @@ window.PlatformView = countlyView.extend({
     renderCommon:function (isRefresh) {
         var self = this;
         var platformData = countlyDeviceDetails.getPlatformData();
-
+        platformData.chartData.sort(function(a,b) {return (a.os_ > b.os_) ? 1 : ((b.os_ > a.os_) ? -1 : 0);});
         var chartHTML = "";
 
         if (platformData && platformData.chartDP && platformData.chartDP.dp && platformData.chartDP.dp.length) {
@@ -1700,14 +1700,25 @@ window.PlatformView = countlyView.extend({
                 chartHTML += '<div class="hsb-container"><div class="label">'+ platformData.chartDP.dp[i].label +'</div><div class="chart"><svg id="hsb-platform'+ i +'"></svg></div></div>';
             }
         }
+        
+        if(!this.activePlatform[countlyCommon.ACTIVE_APP_ID])
+            this.activePlatform[countlyCommon.ACTIVE_APP_ID] = (platformData.chartData[0]) ? platformData.chartData[0].os_ : "";
+        
+        var segments = [];
+        for(var i = 0; i < platformData.chartData.length; i++){
+            segments.push({name:platformData.chartData[i].os_, value:platformData.chartData[i].origos_})
+        }
 
         this.templateData = {
             "page-title":jQuery.i18n.map["platforms.title"],
+            "segment-title":jQuery.i18n.map["platforms.table.platform-version-for"],
             "logo-class":"platforms",
             "chartHTML": chartHTML,
             "chart-helper":"platform-versions.chart",
             "table-helper":"",
-            "two-tables": true
+            "two-tables": true,
+            "active-segment": this.activePlatform[countlyCommon.ACTIVE_APP_ID],
+            "segmentation": segments
         };
 
         if (!isRefresh) {
@@ -1719,13 +1730,6 @@ window.PlatformView = countlyView.extend({
                 "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
                     $(nRow).data("name", aData.origos_);
                     $(nRow).addClass("os-rows");
-                    if (self.activePlatform && self.activePlatform == aData.origos_) {
-                        $(nRow).addClass("active");
-                    }
-                    else if(!self.activePlatform){
-                        self.activePlatform = aData.origos_;
-                        $(nRow).addClass("active");
-                    }
                 },
                 "aoColumns": [
                     { "mData": "os_", "sTitle": jQuery.i18n.map["platforms.table.platform"] },
@@ -1734,12 +1738,9 @@ window.PlatformView = countlyView.extend({
                     { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
                 ]
             }));
-
-            $('#dataTableOne tbody').on("click", "tr", function (){
-                self.activePlatform = $(this).data("name");
-                $(".os-rows").removeClass("active");
-                $(this).addClass("active");
-
+            
+            $(".segmentation-widget .segmentation-option").on("click", function () {
+                self.activePlatform[countlyCommon.ACTIVE_APP_ID] = $(this).data("value");
                 self.refresh();
             });
 
@@ -1753,7 +1754,7 @@ window.PlatformView = countlyView.extend({
                 }
             }
 
-            var oSVersionData = countlyDeviceDetails.getOSVersionData(this.activePlatform);
+            var oSVersionData = countlyDeviceDetails.getOSVersionData(this.activePlatform[countlyCommon.ACTIVE_APP_ID]);
 
             this.dtableTwo = $('#dataTableTwo').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": oSVersionData.chartData,
@@ -1776,7 +1777,7 @@ window.PlatformView = countlyView.extend({
             }
             self.renderCommon(true);
 
-            var oSVersionData = countlyDeviceDetails.getOSVersionData(self.activePlatform),
+            var oSVersionData = countlyDeviceDetails.getOSVersionData(self.activePlatform[countlyCommon.ACTIVE_APP_ID]),
                 platformData = countlyDeviceDetails.getPlatformData(),
                 newPage = $("<div>" + self.template(self.templateData) + "</div>");
 

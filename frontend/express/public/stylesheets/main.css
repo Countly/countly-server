@@ -263,6 +263,8 @@ table { border-collapse: collapse; }
     .widget-group .dashboard-summary .item .inner { border-radius:0; margin-left:0; box-shadow: none !important; border-left: 1px solid #D0D0D0; padding:10px 15px; }
     .widget-group .big-numbers.top.widgets:first-child .inner,
     .widget-group .dashboard-summary .item:first-child .inner { margin-left:0; border:none; }
+    .widget.segmentation-widget {margin-bottom: 0px;}
+    .segmentation-table #dataTableTwo_wrapper {margin-top: 0px; overflow: auto; position: relative;}
 
 	#big-numbers-container,
     #intermediate-numbers-container { overflow:hidden; position:relative; }

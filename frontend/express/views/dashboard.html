@@ -494,7 +494,37 @@
 		{{/if}}
         <table id="dataTableOne" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
         {{#if two-tables}}
-        <table id="dataTableTwo" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
+            {{#if segmentation}}
+            <div class="widget segmentation-widget">
+                <div class="widget-header">
+                    <div class="left">
+                        <div class="title small">{{segment-title}}</div>
+                        <div>
+                            <div class="cly-select float">
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div class="text">{{active-segment}}</div>
+                                    </div>
+                                    <div class="right combo"></div>
+                                </div>
+                                <div class="select-items square" style="width:220px;">
+                                    <div>
+                                        {{#eachOfArray segmentation}}
+                                        <div data-value="{{value.value}}" class="segmentation-option item">{{value.name}}</div>
+                                        {{/eachOfArray}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="segmentation-table">
+                <table id="dataTableTwo" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
+            </div>
+            {{else}}
+            <table id="dataTableTwo" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
+            {{/if}}
         {{/if}}
 	</script>
 	
