@@ -78,6 +78,10 @@ var plugin = {},
             var data = {};
             if(typeof ob.data.app_id != "undefined")
                 data.app_id = ob.data.app_id;
+            if(typeof ob.data.user_id != "undefined")
+                data.user_id = ob.data.user_id;
+            if(typeof ob.data._id != "undefined")
+                data._id = ob.data._id;
             data.before = {};
             data.after = {};
             data.update = ob.data.update;
@@ -97,7 +101,7 @@ var plugin = {},
                     data.after[i] = after[i];
                 }
                 else{
-                    for (propName in after[i]) {
+                    for (var propName in after[i]) {
                         if(after[i][propName] != before[i][propName]){
                             if(!data.before[i])
                                 data.before[i] = {};
