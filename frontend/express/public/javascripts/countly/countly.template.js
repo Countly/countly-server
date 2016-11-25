@@ -4123,11 +4123,15 @@ var AppRouter = Backbone.Router.extend({
         init: function() {
             setTimeout(function() {
                 $("#sidebar-menu").find(".item").removeClass("active menu-active");
-
                 var selectedMenu = $($("#sidebar-menu").find("a[href='#" + Backbone.history.fragment + "']"));
                
-                if(!selectedMenu.length)
-                    selectedMenu = $($("#sidebar-menu").find("a[href='#/" + (Backbone.history.fragment.split("/")[1] || "") + "']"));
+                if(!selectedMenu.length){
+                    var parts = Backbone.history.fragment.split("/");
+                    selectedMenu = $($("#sidebar-menu").find("a[href='#/" + (parts[1] || "") + "']"));
+                    if(!selectedMenu.length){
+                        selectedMenu = $($("#sidebar-menu").find("a[href='#/" + (parts[1]+"/"+parts[2] || "") + "']"));
+                    }
+                }
                 
                 var selectedSubmenu = selectedMenu.parents(".sidebar-submenu");
 
