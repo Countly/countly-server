@@ -5519,7 +5519,7 @@ var AppRouter = Backbone.Router.extend({
     addAppManagementSwitchCallback:function(callback){
         this.appManagementSwitchCallbacks.push(callback);
     },
-    addDataExport(name, callback){
+    addDataExport:function(name, callback){
         this.dataExports[name] = callback;
     },
 	addPageScript:function(view, callback){
