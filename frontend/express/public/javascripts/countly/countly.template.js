@@ -5468,7 +5468,7 @@ var AppRouter = Backbone.Router.extend({
                 if (helpers[toLocal[0]]) {
                     localizedValue = helpers[toLocal[0]](jQuery.i18n.map[toLocal[1]]);
                 } else {
-                    localizedValue = jQuery.i18n.prop(toLocal[0], jQuery.i18n.map[toLocal[1]]);
+                    localizedValue = jQuery.i18n.prop(toLocal[0], (toLocal[1])? jQuery.i18n.map[toLocal[1]] : "");
                 }
             } else {
                 localizedValue = jQuery.i18n.map[elem.data("localize")];
