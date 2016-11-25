@@ -96,35 +96,36 @@ var plugin = {},
 	});
 	
 	plugins.register("/i/apps/create", function(ob){
-        ob.data._id = ob.appId;
+        ob.data.app_id = ob.appId;
         recordAction(ob.params, ob.params.member, "app_created", ob.data);
 	});
 	
 	plugins.register("/i/apps/update", function(ob){
 		var appId = ob.appId;
-		ob.data._id = appId;
+		ob.data.app_id = appId;
         recordAction(ob.params, ob.params.member, "app_updated", ob.data);
 	});
 	
 	plugins.register("/i/apps/delete", function(ob){
+        ob.data.app_id = ob.data._id;
         recordAction(ob.params, ob.params.member, "app_deleted", ob.data);
 	});
 	
 	plugins.register("/i/apps/reset", function(ob){
 		var appId = ob.appId;
-        ob.data._id = appId;
+        ob.data.app_id = appId;
         recordAction(ob.params, ob.params.member, "app_reset", ob.data);
 	});
     
     plugins.register("/i/apps/clear_all", function(ob){
 		var appId = ob.appId;
-        ob.data._id = appId;
+        ob.data.app_id = appId;
         recordAction(ob.params, ob.params.member, "clear_all", ob.data);
 	});
     
     plugins.register("/i/apps/clear", function(ob){
 		var appId = ob.appId;
-        ob.data._id = appId;
+        ob.data.app_id = appId;
         ob.data.before = ob.moment.format("YYYY-MM-DD");
         recordAction(ob.params, ob.params.member, "app_clear_old_data", ob.data);
 	});
@@ -160,6 +161,8 @@ var plugin = {},
         log.ts = Math.round(new Date().getTime()/1000);
         log.u = user.email || user.username || "";
         log.ip = common.getIpAddress(params.req);
+        if(typeof data.app_id != "undefined")
+            log.app_id = data.app_id;
         if(user._id){
             log.user_id = user._id + "";
             common.db.collection('systemlogs').insert(log, function () {});

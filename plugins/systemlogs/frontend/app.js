@@ -75,6 +75,8 @@ var plugin = {},
         log.ts = getTimestamp();
         log.u = user.email || user.username || "";
         log.ip = getIpAddress(req);
+        if(typeof data.app_id != "undefined")
+            log.app_id = data.app_id;
         if(user._id){
             log.user_id = user._id + "";
             countlyDb.collection('systemlogs').insert(log, function () {});
