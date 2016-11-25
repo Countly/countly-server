@@ -855,6 +855,7 @@ plugins.setConfigs("crashes", {
                             }
                         }
                         if(comment && (comment.author_id == params.member._id+"" || params.member.global_admin)){
+                            var commentBefore = JSON.parse(JSON.stringify(comment));
                             if(params.qstring.args.time)
                                 comment.edit_time = params.qstring.args.time;
                             else
@@ -864,7 +865,7 @@ plugins.setConfigs("crashes", {
                                 comment.text = params.qstring.args.text;
                             
                             common.db.collection('app_crashgroups' + params.qstring.args.app_id).update({'_id': params.qstring.args.crash_id,"comments._id":params.qstring.args.comment_id},{$set:{"comments.$": comment}}, function (err, res){
-                                plugins.dispatch("/systemlogs", {params:params, action:"crash_edited_comment", data:{app_id:params.qstring.args.app_id, crash_id: params.qstring.args.crash_id, comment:comment}});
+                                plugins.dispatch("/systemlogs", {params:params, action:"crash_edited_comment", data:{app_id:params.qstring.args.app_id, crash_id: params.qstring.args.crash_id, before:commentBefore, update:comment}});
                                 common.returnMessage(params, 200, 'Success');
                                 return true;
                             });

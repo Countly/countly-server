@@ -59,14 +59,63 @@ var plugin = {},
     };
     
     plugin.userSettings = function(ob){
-        recordAction(ob.req, ob.data, "account_settings_updated", ob.data.change);
+        var data = {};
+        data.before = {};
+        data.after = {};
+        data.update = ob.data.change;
+        compareChanges(data, ob.data, ob.data.change);
+        if(typeof data.before.password != "undefined"){
+            data.before.password = true;
+            data.after.password = true;
+        }
+        recordAction(ob.req, ob.data, "account_settings_updated", data);
     };
     
     plugin.logAction = function(ob){
         ob.data = JSON.parse(JSON.stringify(ob.data));
         delete ob.data._csrf;
-        recordAction(ob.req, ob.user, ob.action, ob.data);
+        if(typeof ob.data.before != "undefined" && typeof ob.data.update != "undefined"){
+            var data = {};
+            if(typeof ob.data.app_id != "undefined")
+                data.app_id = ob.data.app_id;
+            data.before = {};
+            data.after = {};
+            data.update = ob.data.update;
+            compareChanges(data, ob.data.before, ob.data.update);
+            recordAction(ob.req, ob.user, ob.action, data);
+        }
+        else{
+            recordAction(ob.req, ob.user, ob.action, ob.data);
+        }
     };
+    
+    function compareChanges(data, before, after){
+        for(var i in after){
+            if(typeof after[i] == "object" && after[i] && before[i]){
+                if(Array.isArray(after[i]) && JSON.stringify(after[i]) != JSON.stringify(before[i])){
+                    data.before[i] = before[i];
+                    data.after[i] = after[i];
+                }
+                else{
+                    for (propName in after[i]) {
+                        if(after[i][propName] != before[i][propName]){
+                            if(!data.before[i])
+                                data.before[i] = {};
+                            if(!data.after[i])
+                                data.after[i] = {};
+                            
+                            data.before[i][propName] = before[i][propName];
+                            data.after[i][propName] = after[i][propName];
+                        }
+                    }
+                }
+            }
+            else if(after[i] != before[i]){
+                data.before[i] = before[i];
+                data.after[i] = after[i];
+            }
+        }
+    }
     
     function recordAction(req, user, action, data){
         var log = {};

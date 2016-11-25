@@ -147,19 +147,20 @@ var usersApi = {},
                 updatedMember.password_changed = 0;
             }
         }
-
-        common.db.collection('members').update({'_id': common.db.ObjectID(params.qstring.args.user_id)}, {'$set': updatedMember}, {safe: true}, function(err, isOk) {
-            common.db.collection('members').findOne({'_id': common.db.ObjectID(params.qstring.args.user_id)}, function(err, member) {
-                if (member && !err) {
-                    updatedMember._id = params.qstring.args.user_id;
-					plugins.dispatch("/i/users/update", {params:params, data:updatedMember, member:member});
-                    if (params.qstring.args.send_notification && passwordNoHash) {
-                        mail.sendToUpdatedMember(member, passwordNoHash);
+        common.db.collection('members').findOne({'_id': common.db.ObjectID(params.qstring.args.user_id)}, function(err, memberBefore) {
+            common.db.collection('members').update({'_id': common.db.ObjectID(params.qstring.args.user_id)}, {'$set': updatedMember}, {safe: true}, function(err, isOk) {
+                common.db.collection('members').findOne({'_id': common.db.ObjectID(params.qstring.args.user_id)}, function(err, member) {
+                    if (member && !err) {
+                        updatedMember._id = params.qstring.args.user_id;
+                        plugins.dispatch("/i/users/update", {params:params, data:updatedMember, member:memberBefore});
+                        if (params.qstring.args.send_notification && passwordNoHash) {
+                            mail.sendToUpdatedMember(member, passwordNoHash);
+                        }
+                        common.returnMessage(params, 200, 'Success');
+                    } else {
+                        common.returnMessage(params, 500, 'Error updating user');
                     }
-                    common.returnMessage(params, 200, 'Success');
-                } else {
-                    common.returnMessage(params, 500, 'Error updating user');
-                }
+                });
             });
         });
 

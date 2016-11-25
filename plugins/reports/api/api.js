@@ -161,16 +161,18 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         props.apps = apps;
                     }
                     convertToTimezone(props);
-                    common.db.collection('reports').update({_id:common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, {$set:props}, function(err, app) {
-                        if(err){
-                            err = err.err;
-                            common.returnMessage(params, 200, err);
-                        }
-                        else{
-                            props._id = id;
-                            plugins.dispatch("/systemlogs", {params:params, action:"reports_edited", data:props});
-                            common.returnMessage(params, 200, "Success");
-                        }
+                    common.db.collection('reports').findOne({_id:common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, function(err, report) {
+                        common.db.collection('reports').update({_id:common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, {$set:props}, function(err, app) {
+                            if(err){
+                                err = err.err;
+                                common.returnMessage(params, 200, err);
+                            }
+                            else{
+                                props._id = id;
+                                plugins.dispatch("/systemlogs", {params:params, action:"reports_edited", data:{before:report, update:props}});
+                                common.returnMessage(params, 200, "Success");
+                            }
+                        });
                     });
 				});
                 break;

@@ -164,19 +164,19 @@ var appsApi = {},
         
         updatedApp.edited_at = Math.floor(((new Date()).getTime()) / 1000);
 
-		common.db.collection('apps').findOne(common.db.ObjectID(params.qstring.args.app_id), function(err, app){
-            if (err || !app) common.returnMessage(params, 404, 'App not found');
+		common.db.collection('apps').findOne(common.db.ObjectID(params.qstring.args.app_id), function(err, appBefore){
+            if (err || !appBefore) common.returnMessage(params, 404, 'App not found');
             else {
 				if (params.member && params.member.global_admin) {
 					common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function(err, app) {
-						plugins.dispatch("/i/apps/update", {params:params, appId:params.qstring.args.app_id, data:updatedApp});
+						plugins.dispatch("/i/apps/update", {params:params, appId:params.qstring.args.app_id, data:{app:appBefore, update:updatedApp}});
 						common.returnOutput(params, updatedApp);
 					});
 				} else {
 					common.db.collection('members').findOne({'_id': params.member._id}, {admin_of: 1}, function(err, member){
 						if (member.admin_of && member.admin_of.indexOf(params.qstring.args.app_id) !== -1) {
 							common.db.collection('apps').update({'_id': common.db.ObjectID(params.qstring.args.app_id)}, {$set: updatedApp}, function(err, app) {
-								plugins.dispatch("/i/apps/update", {params:params, appId:params.qstring.args.app_id, data:updatedApp});
+								plugins.dispatch("/i/apps/update", {params:params, appId:params.qstring.args.app_id, data:{app:appBefore, update:updatedApp}});
 								common.returnOutput(params, updatedApp);
 							});
 						} else {

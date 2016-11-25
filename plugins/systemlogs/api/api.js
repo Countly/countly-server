@@ -102,8 +102,13 @@ var plugin = {},
 	
 	plugins.register("/i/apps/update", function(ob){
 		var appId = ob.appId;
-		ob.data.app_id = appId;
-        recordAction(ob.params, ob.params.member, "app_updated", ob.data);
+        var data = {};
+        data.before = {};
+        data.after = {};
+        data.update = ob.data.update;
+		data.app_id = ob.appId;
+        compareChanges(data, ob.data.app, ob.data.update);
+        recordAction(ob.params, ob.params.member, "app_updated", data);
 	});
 	
 	plugins.register("/i/apps/delete", function(ob){
@@ -140,7 +145,18 @@ var plugin = {},
         ob.data = JSON.parse(JSON.stringify(ob.data));
         if(ob.data.password)
             ob.data.password = true;
-        recordAction(ob.params, ob.params.member, "user_updated", ob.data);
+        
+        var data = {};
+        data._id = ob.data._id;
+        data.before = {};
+        data.after = {};
+        data.update = ob.data;
+        compareChanges(data, ob.member, ob.data);
+        if(typeof data.before.password != "undefined"){
+            data.before.password = true;
+            data.after.password = true;
+        }
+        recordAction(ob.params, ob.params.member, "user_updated", data);
 	});
 	
 	plugins.register("/i/users/delete", function(ob){
@@ -151,8 +167,48 @@ var plugin = {},
     
     plugins.register("/systemlogs", function(ob){
         var user = ob.user || ob.params.member;
-        recordAction(ob.params, user, ob.action, ob.data);
+        if(typeof ob.data.before != "undefined" && typeof ob.data.update != "undefined"){
+            var data = {};
+            if(typeof ob.data.app_id != "undefined")
+                data.app_id = ob.data.app_id;
+            data.before = {};
+            data.after = {};
+            data.update = ob.data.update;
+            compareChanges(data, ob.data.before, ob.data.update);
+            recordAction(ob.params, user, ob.action, data);
+        }
+        else{
+            recordAction(ob.params, user, ob.action, ob.data);
+        }
     });
+    
+    function compareChanges(data, before, after){
+        for(var i in after){
+            if(typeof after[i] == "object" && after[i] && before[i]){
+                if(Array.isArray(after[i]) && JSON.stringify(after[i]) != JSON.stringify(before[i])){
+                    data.before[i] = before[i];
+                    data.after[i] = after[i];
+                }
+                else{
+                    for (propName in after[i]) {
+                        if(after[i][propName] != before[i][propName]){
+                            if(!data.before[i])
+                                data.before[i] = {};
+                            if(!data.after[i])
+                                data.after[i] = {};
+                            
+                            data.before[i][propName] = before[i][propName];
+                            data.after[i][propName] = after[i][propName];
+                        }
+                    }
+                }
+            }
+            else if(after[i] != before[i]){
+                data.before[i] = before[i];
+                data.after[i] = after[i];
+            }
+        }
+    }
     
     function recordAction(params, user, action, data){
         var log = {};
