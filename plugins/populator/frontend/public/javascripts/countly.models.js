@@ -682,6 +682,7 @@
                 url: countlyCommon.API_URL + "/i/systemlogs",
                 data: {
                     api_key:countlyGlobal["member"].api_key,
+                    data: JSON.stringify({app_id: countlyCommon.ACTIVE_APP_ID}),
                     action:"populator_run"
                 },
                 success:function (json) {}
