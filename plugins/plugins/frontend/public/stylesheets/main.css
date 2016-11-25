@@ -3,8 +3,10 @@
 .plugins {margin-top: -16px;}
 .configs {margin-top: -16px;}
 .plugins .dataTable-top {border-radius: 0;}
-.plugins table td { font-family: Ubuntu; }
+.plugins table td { font-family: Ubuntu; padding: 15px 10px; }
 .plugins table td.light { color:#969696; }
+.plugins table .plugin-link { color:#6B6B6B; font-size: 17px; }
+.plugins table .plugin-link:hover { color:#2FA732; }
 
 .configs table {margin-bottom: 0;}
 .configs table { border: none; }
@@ -24,9 +26,9 @@
 
 #configs-apply-changes{ display: none; }
 
-.btn-plugin-enabler{padding: 7px; margin-right: 20px; display: none; float: left;}
+.btn-plugin-enabler{padding: 7px; margin-right: 10px; display: none; float: right;}
 
-.plugins #loader { position:absolute; left:50%; top:50%; margin-top:-24px; margin-left:-24px; width:48px; height:48px; font-size:48px;}
+.plugins #loader { position:fixed; left:50%; top:50%; margin-top:-24px; margin-left:-24px; width:48px; height:48px; font-size:48px; line-height: 48px; }
 .plugins #loader i {font-size:48px; color: #888;}
 
 .configs .button-selector .button:nth-child(1) { background-color: #2EB52B; color:#FFF; border-color:#2EB52B; cursor:pointer; }
@@ -37,3 +39,8 @@
 #sticky-config-header.fixed { position: fixed; top:0; z-index: 2; border-bottom: 1px solid #d0d0d0; }
 #sticky-config-header.fixed .widget-header { border-top:none; }
 #sticky-config-header.fixed + .configs { margin-top: 58px; }
+
+#sticky-plugin-header.fixed { position: fixed; top:0; z-index: 2; }
+#sticky-plugin-header.fixed .widget-header { border-top:none; }
+#sticky-plugin-header.fixed + .plugins { margin-top: 57px; }
+#sticky-plugin-header.fixed + .plugins .sticky-header { top: 57px; }
