@@ -172,6 +172,7 @@ window.ConfigurationsView = countlyView.extend({
         
         //register some common system config inputs
         this.registerInput("apps-category", function(value){
+            return null;
             var categories = app.manageAppsView.getAppCategories();
             var select = '<div class="cly-select" id="apps-category">'+
                 '<div class="select-inner">'+
