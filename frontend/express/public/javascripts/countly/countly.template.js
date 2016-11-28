@@ -5367,7 +5367,7 @@ var AppRouter = Backbone.Router.extend({
                                 var tdata = JSON.parse(JSON.stringify(cols));
                                 for(var i = 0; i < data.length; i++){
                                     for(var j = 0; j < cols.length; j++){
-                                        tdata.push('"'+(data[i][cols[j]] || ""));
+                                        tdata.push(data[i][cols[j]] || "");
                                     }
                                 }
                                 
