@@ -545,6 +545,7 @@ var common          = require('../../../../api/utils/common.js'),
                             } else {
                                 log.d('Build is not finished yet for message %j', message._id);
                             }
+                            plugins.dispatch("/systemlogs", {params:params, action:"push_message_created", data:message});
                             common.returnOutput(params, doc.value);
                         }
                     });
@@ -671,25 +672,29 @@ var common          = require('../../../../api/utils/common.js'),
                 var needToCheckGCM = updatedApp['gcm.key'] && (!app.gcm || !app.gcm.key || app.gcm.key != updatedApp['gcm.key']);
 
                 if (params.member && params.member.global_admin) {
-                    common.db.collection('apps').findAndModify({_id: common.db.ObjectID(params.qstring.args.app_id)}, [['_id', 1]], update, {new:true}, function(err, app){
-                        if (err || !app || !app.ok) {
+                    common.db.collection('apps').findAndModify({_id: common.db.ObjectID(params.qstring.args.app_id)}, [['_id', 1]], update, {new:true}, function(err, new_app){
+                        if (err || !new_app || !new_app.ok) {
                             common.returnMessage(params, 404, 'App not found');
                         } else if (needToCheckGCM) {
-                            checkGCM(params, app.value);
+                            checkGCM(params, new_app.value);
+                            plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_app}});
                         } else {
-                            common.returnOutput(params, app.value);
+                            plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_app}});
+                            common.returnOutput(params, new_app.value);
                         }
                     });
                 } else {
                     common.db.collection('members').findOne({'_id': params.member._id}, {admin_of: 1}, function(err, member){
                         if (member.admin_of && member.admin_of.indexOf(params.qstring.args.app_id) !== -1) {
-                            common.db.collection('apps').findAndModify({_id: common.db.ObjectID(params.qstring.args.app_id)}, [['_id', 1]], update, {new:true}, function(err, app){
-                                if (err || !app || !app.ok) {
+                            common.db.collection('apps').findAndModify({_id: common.db.ObjectID(params.qstring.args.app_id)}, [['_id', 1]], update, {new:true}, function(err, new_app){
+                                if (err || !new_app || !new_app.ok) {
                                     common.returnMessage(params, 404, 'App not found');
                                 } else if (needToCheckGCM) {
-                                    checkGCM(params, app.value);
+                                    checkGCM(params, new_app.value);
+                                    plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_app}});
                                 } else {
-                                    common.returnOutput(params, app.value);
+                                    plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:new_app, update:new_app}});
+                                    common.returnOutput(params, new_app.value);
                                 }
                             });
                         } else {
@@ -957,7 +962,7 @@ var common          = require('../../../../api/utils/common.js'),
                 common.db.collection('messages').update({_id: message._id}, {$set: {'deleted': true}},function(){});
                 common.returnOutput(params, message);
             }
-
+            plugins.dispatch("/systemlogs", {params:params, action:"push_message_deleted", data:message});
             // TODO: need to delete analytics?
         });
 
