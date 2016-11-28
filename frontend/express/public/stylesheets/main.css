@@ -942,19 +942,6 @@ div.datatablesubrow {display: none;}
 .os-rows.active,
 .os-rows.active:hover { background-color:#777 !important; }
 .os-rows.active  td { color: #fff; }
-.os-segment { height:31px; width:28px; background-position:center; }
-.os-segment.ios { background-image:url('../images/dashboard/platform_buttons/apple.png'); }
-.active .os-segment.ios { background-image:url('../images/dashboard/platform_buttons/apple_active.png'); }
-.os-segment.android { background-image:url('../images/dashboard/platform_buttons/android.png'); }
-.active .os-segment.android { background-image:url('../images/dashboard/platform_buttons/android_active.png'); }
-.os-segment.blackberry { background-image:url('../images/dashboard/platform_buttons/b.png'); background-position:-5px -3px; }
-.active .os-segment.blackberry { background-image:url('../images/dashboard/platform_buttons/bb_active.png'); }
-.os-segment.windows { background-image:url('../images/dashboard/platform_buttons/windows.png'); background-position:-5px -4px; }
-.active .os-segment.windows { background-image:url('../images/dashboard/platform_buttons/windows_active.png'); }
-.os-segment.mac { background-image:url('../images/dashboard/platform_buttons/mac.png'); background-position:-5px -4px; }
-.active .os-segment.mac { background-image:url('../images/dashboard/platform_buttons/mac_active.png'); }
-.os-segment.os.x { background-image:url('../images/dashboard/platform_buttons/mac.png'); background-position:-5px -4px; }
-.active .os-segment.os.x { background-image:url('../images/dashboard/platform_buttons/mac_active.png'); }
 
 /* EVENTS */
 #event-nav  { z-index:3; width:190px; position:fixed; left:220px; top:0; text-align:right; background-color:#efefef; height:100%; box-sizing:border-box; padding-bottom: 130px; box-shadow: inset -1px 0 0 0 #d4d4d4; }
