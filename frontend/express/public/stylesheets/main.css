@@ -563,7 +563,7 @@ div.datatablesubrow {display: none;}
 .dataTable-top .DTTT_container a:hover { text-decoration:underline; }
 .DTTT_container { visibility:hidden; }
 .DTTT_container .DTTT_button { position:relative; display:inline-block; }
-.DTTT_container .DTTT_button div>* { vertical-align:initial; }
+.DTTT_container .DTTT_button div>* { vertical-align:inherit; }
 .save-table-data { float:right; font-size:18px; padding:8px; cursor:pointer; }
 .search-table-data { float:left; font-size:18px; padding:8px; cursor:pointer; }
 .FixedHeader_Cloned .dataTable { border-bottom:none; }
@@ -679,7 +679,7 @@ div.datatablesubrow {display: none;}
 .ui-datepicker-calendar tbody,
 .ui-datepicker-inline table tbody { border:1px solid #3a3a3a; }
 .ui-datepicker-group-last .ui-datepicker-calendar {}
-.ui-datepicker { width:190px ! important; background-color:default; border:none; }
+.ui-datepicker { width:190px ! important; border:none; }
 .ui-widget-header { border-radius:0; border:none; background-color:transparent; background-image:none; color:#FFF; font-weight:normal; font-size:12px; height:23px; }
 .ui-datepicker { font-weight:normal; line-height:111%; overflow:auto; }
 .ui-widget-content { background-color:transparent; background-image:none; padding:0; }
@@ -783,7 +783,7 @@ div.datatablesubrow {display: none;}
     .cly-select .flag { opacity:0.8; width:16px; height:11px; border-radius:2px; box-shadow:0 0 1px 0 #333; margin-right:8px; margin-top:2px; float:left; }
 		.cly-select .select-items .item:hover { background-color:#dedede; }
 		.cly-select .select-items .item:last-child,
-        .cly-select .select-items .item:last { border-bottom-left-radius:2px; border-bottom-right-radius:2px; }
+        .cly-select .select-items .item.last { border-bottom-left-radius:2px; border-bottom-right-radius:2px; }
 	.cly-select .text-container { float:left; width:100%; }
 		.cly-select .text { padding:6px 9px; padding-right:25px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap; color:#444; font-weight:normal; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; }
 	.cly-select .right { opacity: 0.8; right:0; position:absolute; width:15px; height:100%; line-height: 27px; }
