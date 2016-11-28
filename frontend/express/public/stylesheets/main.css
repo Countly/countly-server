@@ -1,4 +1,4 @@
-.@font-face {
+@font-face {
   font-family: 'Ubuntu';
   font-weight: 400;
   font-style: normal;
@@ -969,7 +969,7 @@ div.datatablesubrow {display: none;}
 	.event-container .name { width:151px; text-align:left; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; float:left; margin-left:10px; padding-top:7px; color:#6b6b6b; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; }
 #event-update-area { float:left; }
 #edit-event-table-container  { width:950px; max-height:400px; overflow:auto; }
-.events .buttons { margin-top:0; padding:13px 13px 5px 0; box-shadow:inset 0 1px 0 #ccc; border-bottom-left-radius:2px; border-bottom-right-radius:2px; }
+.events .buttons { margin-top:0; padding:13px; box-shadow:inset 0 1px 0 #ccc; border-bottom-left-radius:2px; border-bottom-right-radius:2px; }
 
 table.events-table { width:100%; padding:0; margin:0; }
 	.events-table  th { padding:5px 10px; height:17px; color:#666; font-weight:normal; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; background-color:#E2E2E2; box-shadow:inset 0 1px 0 #F6F6F6; text-align:left; border-bottom:1px solid #CCC; border-right:none; border-left:1px solid #ccc; background-color:#E2E2E2; background-image:linear-gradient(top, #EAEAEA 30%, #E2E2E2 100%); background-image:linear-gradient(to bottom, #EAEAEA 30%, #E2E2E2 100%); }
