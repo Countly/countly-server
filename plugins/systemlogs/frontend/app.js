@@ -76,15 +76,13 @@ var plugin = {},
         delete ob.data._csrf;
         if(typeof ob.data.before != "undefined" && typeof ob.data.update != "undefined"){
             var data = {};
-            if(typeof ob.data.app_id != "undefined")
-                data.app_id = ob.data.app_id;
-            if(typeof ob.data.user_id != "undefined")
-                data.user_id = ob.data.user_id;
-            if(typeof ob.data._id != "undefined")
-                data._id = ob.data._id;
+            for(var i in ob.data){
+                if(i != "before" && i != "after"){
+                    data[i] = ob.data[i];
+                }
+            }
             data.before = {};
             data.after = {};
-            data.update = ob.data.update;
             compareChanges(data, ob.data.before, ob.data.update);
             recordAction(ob.req, ob.user, ob.action, data);
         }
