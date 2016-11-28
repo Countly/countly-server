@@ -31,6 +31,11 @@ var usage = {},
             update["$set"] = {lat:params.user.lat, lng:params.user.lng};
             common.updateAppUser(params, update);
         }
+
+        if (params.user.tz) {
+            common.updateAppUser(params, {$set: {tz: params.user.tz}});
+        }
+
         dbAppUser = params.app_user
         if(dbAppUser){
             var lastTs = dbAppUser[common.dbUserMap['last_end_session_timestamp']] || dbAppUser[common.dbUserMap['last_begin_session_timestamp']];

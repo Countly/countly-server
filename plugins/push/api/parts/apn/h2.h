@@ -77,8 +77,10 @@ namespace apns {
 		std::string id;
 		std::string path;
 		std::string *data;
+		std::string response;
 		uint32_t data_written = 0;
 		int32_t stream_id = 0;
+		int32_t status = 0;
 		H2 *obj;
 	} h2_stream;
 
@@ -161,7 +163,7 @@ namespace apns {
 		nghttp2_data_provider global_data;
 		std::queue <h2_stream *> queue;							// stream_id = 0 until request is sent (it's not in queue at that time)					
 		std::unordered_map <int32_t, h2_stream *> requests;		// requests in socket, key is stream_id
-		std::vector<std::pair<std::string, int>> statuses;		// buffer for statuses
+		std::vector<std::tuple<std::string, int, std::string>> statuses;		// buffer for statuses
 		h2_stats stats;
 
 		uv_timer_t *conn_timer;

@@ -526,7 +526,7 @@ $.extend(Template.prototype, {
 
     CountlyHelpers.clip = function(f) {
         return function(opt) {
-            var res = f(opt);
+            var res = typeof f === 'fucnction' ? f(opt) : opt;
             return '<div class="clip' + (res ? '' : ' nothing') + '">' + (res || jQuery.i18n.map['push.no-message']) + '</div>';
         }
     };
@@ -4071,6 +4071,10 @@ var AppRouter = Backbone.Router.extend({
         // If there is an active view call its destroy function to perform cleanups before a new view renders
         if (this.activeView) {
             this.activeView.destroy();
+        }
+
+        if (window.components && window.components.slider && window.components.slider.instance) {
+            window.components.slider.instance.close();
         }
 
         this.activeView = viewName;

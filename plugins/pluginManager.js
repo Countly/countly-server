@@ -590,6 +590,7 @@ var pluginManager = function pluginManager(){
         countlyDb.decode = function(str){
             return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.');
         };
+        countlyDb.on('error', console.log);
         return countlyDb;
     };
 

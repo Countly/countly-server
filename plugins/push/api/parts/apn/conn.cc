@@ -712,13 +712,22 @@ namespace apns {
 		});
 
 		nghttp2_session_callbacks_set_on_data_chunk_recv_callback(callbacks, [](nghttp2_session *session, uint8_t flags, int32_t stream_id, const uint8_t *data, size_t len, void *user_data){
+			h2_stream *stream = (h2_stream *)nghttp2_session_get_stream_user_data(session, stream_id);
 			std::string str((const char *)data, len);
+			stream->response = str;
 			// LOG_DEBUG("H2: DATA chunk received for stream " << stream_id << ": " << str);
 			return 0;
 		});
 
 		nghttp2_session_callbacks_set_on_stream_close_callback(callbacks, [](nghttp2_session *session, int32_t stream_id, uint32_t error_code, void *user_data) -> int {
 			h2_stream *stream = (h2_stream *)nghttp2_session_get_stream_user_data(session, stream_id);
+
+			uv_mutex_lock(stream->obj->main_mutex);
+			{
+				stream->obj->statuses.push_back(std::make_tuple(stream->id, stream->status, stream->response));
+			}
+			uv_mutex_unlock(stream->obj->main_mutex);
+
 			stream->obj->requests.erase(stream->stream_id);
 			stream->obj->stats.sending--;
 			stream->obj->stats.sent++;
@@ -733,27 +742,35 @@ namespace apns {
 			// http2_session_data *session_data = (http2_session_data *)user_data;
 			switch (frame->hd.type) {
 				case NGHTTP2_HEADERS:
-						h2_stream *stream = (h2_stream *)nghttp2_session_get_stream_user_data(session, frame->hd.stream_id);
+					h2_stream *stream = (h2_stream *)nghttp2_session_get_stream_user_data(session, frame->hd.stream_id);
 					if (strncmp((const char *)name, ":status", MIN(namelen, 7)) == 0) {
-						// LOG_DEBUG("nghttp2_session_callbacks_set_on_header_callback block ");
-						uv_mutex_lock(stream->obj->main_mutex);
-						{
-							// LOG_DEBUG("nghttp2_session_callbacks_set_on_header_callback in ");
-							if (strncmp((const char *)value, "200", MIN(valuelen, 3)) == 0) {
-								// LOG_DEBUG(":status 200 for " << stream->id);
-								stream->obj->statuses.push_back(make_pair(stream->id, 1));
-							} else if (strncmp((const char *)value, "410", MIN(valuelen, 3)) == 0) {
-								// LOG_DEBUG(":status 410 for " << stream->id);
-								stream->obj->statuses.push_back(make_pair(stream->id, 0));
-							} else {
-								// LOG_DEBUG(":status " << std::string((const char *)value, valuelen) << " for " << stream->id);
-								std::string code_str((const char *)value, valuelen);
-								int code_int = std::stoi(code_str);
-								stream->obj->statuses.push_back(make_pair(stream->id, -1 * code_int));
-							}
-							// LOG_DEBUG("nghttp2_session_callbacks_set_on_header_callback out ");
+						std::string status_string((const char *)value, valuelen);
+						try {
+							int status = std::stoi(status_string);
+							stream->status = status;
+						} catch (const std::invalid_argument &e) {
+							stream->status = -1;
 						}
-						uv_mutex_unlock(stream->obj->main_mutex);
+
+						// // LOG_DEBUG("nghttp2_session_callbacks_set_on_header_callback block ");
+						// uv_mutex_lock(stream->obj->main_mutex);
+						// {
+						// 	// LOG_DEBUG("nghttp2_session_callbacks_set_on_header_callback in ");
+						// 	if (strncmp((const char *)value, "200", MIN(valuelen, 3)) == 0) {
+						// 		// LOG_DEBUG(":status 200 for " << stream->id);
+						// 		stream->obj->statuses.push_back(make_pair(stream->id, 1));
+						// 	} else if (strncmp((const char *)value, "410", MIN(valuelen, 3)) == 0) {
+						// 		// LOG_DEBUG(":status 410 for " << stream->id);
+						// 		stream->obj->statuses.push_back(make_pair(stream->id, 0));
+						// 	} else {
+						// 		// LOG_DEBUG(":status " << std::string((const char *)value, valuelen) << " for " << stream->id);
+						// 		std::string code_str((const char *)value, valuelen);
+						// 		int code_int = std::stoi(code_str);
+						// 		stream->obj->statuses.push_back(make_pair(stream->id, -1 * code_int));
+						// 	}
+						// 	// LOG_DEBUG("nghttp2_session_callbacks_set_on_header_callback out ");
+						// }
+						// uv_mutex_unlock(stream->obj->main_mutex);
 						// LOG_DEBUG("nghttp2_session_callbacks_set_on_header_callback unblock ");
 					} else {
 						// LOG_DEBUG("H2 recv: Header received for stream " << frame->hd.stream_id << ": " << std::string((const char *)name, namelen) << " = " << std::string((const char *)value, valuelen));

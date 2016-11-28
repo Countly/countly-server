@@ -17,12 +17,6 @@ var plugin = {},
             common.dbUserMap[k] = creds.DB_USER_MAP[k];
         }
     }
-    
-    plugins.internalEvents.push("[CLY]_push_action");
-    plugins.internalEvents.push("[CLY]_push_open");
-    plugins.internalEvents.push("[CLY]_push_sent");
-    plugins.internalDrillEvents.push("[CLY]_push_action");
-    plugins.internalDrillEvents.push("[CLY]_push_open");
 
     plugins.register('/worker', function(ob){
         setUpCommons();
@@ -53,7 +47,9 @@ var plugin = {},
             }
         }
         if (params.qstring.token_session) {
-            push.processTokenSession(params.app_user, params);
+            common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, dbAppUser){
+                push.processTokenSession(dbAppUser, params);
+            });
         }
     });
 
@@ -70,17 +66,20 @@ var plugin = {},
         }
 
         switch (paths[3]) {
-            case 'audience':
-                validateUserForWriteAPI(push.getAudience, params);
+            case 'dashboard':
+                validateUserForWriteAPI(push.dashboard, params);
+                break;
+            case 'prepare':
+                validateUserForWriteAPI(push.prepare, params);
+                break;
+            case 'clear':
+                validateUserForWriteAPI(push.clear, params);
                 break;
             case 'create':
-                validateUserForWriteAPI(push.createMessage, params);
-                break;
-            case 'refresh':
-                validateUserForWriteAPI(push.refreshMessage, params);
+                validateUserForWriteAPI(push.create, params);
                 break;
             case 'delete':
-                validateUserForWriteAPI(push.deleteMessage, params);
+                validateUserForWriteAPI(push.delete, params);
                 break;
             case 'check':
                 validateUserForWriteAPI(push.checkApp, params);
@@ -105,64 +104,6 @@ var plugin = {},
            } catch (SyntaxError) {
                console.log('Parse /o/pushes JSON failed');
            }
-       }
-
-       log.d('got /o/pushes request: %j', params.qstring.period);
-
-       if (params.qstring.period) {
-            //check if period comes from datepicker
-            if (params.qstring.period.indexOf(',') !== -1) {
-                try {
-                    params.period = JSON.parse(params.qstring.period);
-                } catch (e) {
-                    log.w('Parsing custom period failed: %j', e);
-                    common.returnMessage(params, 400, 'Bad request parameter: period');
-                    return true;
-                }
-            } else {
-                switch (params.qstring.period) {
-                    case 'month':
-                        params.period = params.qstring.period;
-                        break;
-                    case 'day':
-                    case 'yesterday':
-                    case 'hour':
-                    case '7days':
-                    case '30days':
-                    case '60days':
-                        params.period = params.qstring.period;
-                        break;
-                    default:
-                        common.returnMessage(params, 400, 'Bad request parameter: period');
-                        return true;
-                }
-            }
-
-            log.d('period %j', params.period);
-
-            countlyCommon.setPeriod(params.period, true);
-            countlyCommon.setTimezone(params.appTimezone, true);
-
-            log.d('parsed period %j - ', countlyCommon.periodObj.currentPeriodArr[0], countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length - 1]);
-
-            var tmpArr;
-
-            params.period = {date: {}};
-            tmpArr = countlyCommon.periodObj.currentPeriodArr[0].split('.');
-            params.period.date.$gte = new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])));
-            params.period.date.$gte.setTimezone(params.appTimezone);
-            params.period.date.$gte = new Date(params.period.date.$gte.getTime() + params.period.date.$gte.getTimezoneOffset() * 60000);
-
-            tmpArr = countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length - 1].split('.');
-            params.period.date.$lt = new Date(Date.UTC(parseInt(tmpArr[0]), parseInt(tmpArr[1]) - 1, parseInt(tmpArr[2])));
-            params.period.date.$lt.setDate(params.period.date.$lt.getDate() + 1);
-            params.period.date.$lt.setTimezone(params.appTimezone);
-            params.period.date.$lt = new Date(params.period.date.$lt.getTime() + params.period.date.$lt.getTimezoneOffset() * 60000);
-
-            // query.period.ts.$gte = 1325379600000;
-            // query.period.ts.$lt = 1514764800000;
-       } else {
-            return common.returnMessage(params, 400, 'Missing request parameter: period');
        }
 
        validateUserForWriteAPI(push.getAllMessages, params);

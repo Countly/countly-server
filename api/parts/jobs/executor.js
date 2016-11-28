@@ -1,5 +1,14 @@
 'use strict';
 
+process.on('uncaughtException', (err) => {
+    console.log('Caught exception: %j', err, err.stack);
+    process.exit(1);
+});
+ 
+process.on('unhandledRejection', (reason, p) => {
+    console.log('Unhandled rejection for %j with reason %j stack ', p, reason, reason ? reason.stack : undefined);
+});
+
 /**
  * Entry point for child_process.fork to run a corresponding resource / job.
  */
@@ -7,6 +16,7 @@ const IPC = require('./ipc.js'),
 	  LOGGER = require('../../utils/log.js'),
 	  log = LOGGER('jobs:executor'),
 	  plugins = require('../../../plugins/pluginManager.js');
+
 
 try {
 	const options = JSON.parse(process.argv[2]);

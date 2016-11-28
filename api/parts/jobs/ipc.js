@@ -135,7 +135,7 @@ class Channel extends EventEmitter {
 
 	attach (worker) {
 		this.worker = worker || process;
-		this.listener = (m) => {
+		this.onMessageListener = (m) => {
 			// log.d('[%d]: Got message in Channel in %d: %j', process.pid, this.worker.pid, m, this._id);
 			if (this.check(m)) {
 				// log.d('[%d]: Channeling %j', process.pid, m);
@@ -143,7 +143,7 @@ class Channel extends EventEmitter {
 			}
 		};
 		this.worker.setMaxListeners(this.worker.getMaxListeners() + 1);
-		this.worker.on('message', this.listener.bind(this));
+		this.worker.on('message', this.onMessageListener.bind(this));
 		this.worker.on('exit', this.emit.bind(this, 'exit'));
 		this.worker.on('error', this.emit.bind(this, 'crash'));
 		return this;
@@ -151,10 +151,10 @@ class Channel extends EventEmitter {
 
 	remove () {
 		log.d('[%d]: Removing Channel for %s', process.pid, this._id);
-		if (this.listener) {
-			this.worker.removeListener('message', this.listener);
+		if (this.onMessageListener) {
+			this.worker.removeListener('message', this.onMessageListener);
 			this.worker.setMaxListeners(this.worker.getMaxListeners() - 1);
-			this.listener = undefined;
+			this.onMessageListener = undefined;
 		}
 	}
 

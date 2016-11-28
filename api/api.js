@@ -117,7 +117,7 @@ if (cluster.isMaster) {
     setTimeout(() => {
         jobs.job('api:ping').replace().schedule('every 1 day');
         jobs.job('api:clear').replace().schedule('every 1 day');
-    }, 3000);
+    }, 10000);
 } else {
 
     var url = require('url'),
@@ -198,6 +198,10 @@ if (cluster.isMaster) {
                     }
                 }
             }
+
+            if (params.qstring.tz && typeof params.qstring.tz === 'number') {
+                params.user.tz = params.qstring.tz;
+            } 
             
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, user){
                 params.app_user = user || {};

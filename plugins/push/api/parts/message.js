@@ -5,20 +5,6 @@ var pushly = require('./pushly.js');
 var _ = require('underscore'),
     flatten = require('flat');
 
-var MessageStatus = _.extend({}, pushly.MessageStatus, {Deleted: 1 << 10});
-
-MessageStatus._deleted = [
-    MessageStatus.Deleted,
-    MessageStatus.InQueue | MessageStatus.Deleted,
-    MessageStatus.InProcessing | MessageStatus.Deleted,
-    MessageStatus.Done | MessageStatus.Deleted,
-    MessageStatus.Error | MessageStatus.Deleted,
-    MessageStatus.Aborted | MessageStatus.Deleted,
-    MessageStatus.Aborted | MessageStatus.Deleted | MessageStatus.Done,
-    MessageStatus.Aborted | MessageStatus.Deleted | MessageStatus.Error,
-    MessageStatus.Aborted | MessageStatus.Deleted
-];
-
 var MessageExpiryTime = 1000 * 60 * 60 * 24 * 7,     // one week by default
     MessagePlatform = pushly.Platform,
     cleanObj = function(msg) {
@@ -55,7 +41,7 @@ var MessageExpiryTime = 1000 * 60 * 60 * 24 * 7,     // one week by default
         return msg;
     };
 
-module.exports.MessageStatus = MessageStatus;
+module.exports.MessageStatus = pushly.Status;
 module.exports.MessagePlatform = MessagePlatform;
 module.exports.cleanObj = cleanObj;
 
@@ -79,10 +65,10 @@ module.exports.Message = function (apps, names) {
         this.type = undefined;
         this.apps = apps;
         this.appNames = names;
-        this.status = MessageStatus.Initial;
         this.platforms = [];
         this.userConditions = {};
         this.drillConditions = {};
+        this.source = undefined;                // api or dash
         this.geo = undefined;                   // ID of geo object
         this.message = undefined;               // Simple message for all clients
         this.messagePerLocale = undefined;      // Map of localized messages
@@ -99,7 +85,7 @@ module.exports.Message = function (apps, names) {
         this.badge = undefined;                 // Badge
 
         this.result = {
-            status: MessageStatus.Initial,
+            status: pushly.Status.Initial,
             total: 0,
             processed: 0,
             sent: 0,
@@ -120,6 +106,12 @@ module.exports.Message = function (apps, names) {
         setType: {
             value: function (typ) {
                 this.type = typ;
+                return this;
+            }
+        },
+        setSource: {
+            value: function (src) {
+                this.source = src;
                 return this;
             }
         },
@@ -283,7 +275,7 @@ module.exports.Message = function (apps, names) {
         },
         setStatus: {
             value: function (s) {
-                this.status = s;
+                this.result.status = s;
                 return this;
             }
         },
@@ -294,10 +286,11 @@ module.exports.Message = function (apps, names) {
             }
         },
         schedule: {
-            value: function (date) {
+            value: function (date, tz) {
                 this.date = date || new Date();
                 this.expiryDate = new Date(this.date.getTime() + MessageExpiryTime);     // one week by default
-                this.status = MessageStatus.Initial;
+                this.result.status = pushly.Status.Initial;
+                this.tz = tz || false;
                 return this;
             }
         },
