@@ -185,6 +185,10 @@ var plugin = {},
     });
     
     function compareChanges(data, before, after){
+        if(typeof before._id != "undefined")
+            before._id += "";
+        if(typeof after._id != "undefined")
+            after._id += "";
         for(var i in after){
             if(typeof after[i] == "object" && after[i] && before[i]){
                 if(Array.isArray(after[i]) && JSON.stringify(after[i]) != JSON.stringify(before[i])){
@@ -193,7 +197,24 @@ var plugin = {},
                 }
                 else{
                     for (var propName in after[i]) {
-                        if(after[i][propName] != before[i][propName]){
+                        if(after[i][propName] && typeof after[i][propName] == "object"){
+                            if(!data.before[i])
+                                data.before[i] = {};
+                            if(!data.after[i])
+                                data.after[i] = {};
+                            
+                            for(var subprop in after[i][propName]){
+                                if(after[i][propName][subprop] != before[i][propName][subprop]){
+                                    if(!data.before[i][propName])
+                                        data.before[i][propName] = {};
+                                    if(!data.after[i][propName])
+                                        data.after[i][propName] = {};
+                                    data.before[i][propName][subprop] = before[i][propName][subprop];
+                                    data.after[i][propName][subprop] = after[i][propName][subprop];
+                                }
+                            }
+                        }
+                        else if(after[i][propName] != before[i][propName]){
                             if(!data.before[i])
                                 data.before[i] = {};
                             if(!data.after[i])
