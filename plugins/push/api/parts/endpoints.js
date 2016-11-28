@@ -679,7 +679,7 @@ var common          = require('../../../../api/utils/common.js'),
                             checkGCM(params, new_app.value);
                             plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_app.value}});
                         } else {
-                            plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_ap.valuep}});
+                            plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_app.value}});
                             common.returnOutput(params, new_app.value);
                         }
                     });
@@ -693,7 +693,7 @@ var common          = require('../../../../api/utils/common.js'),
                                     checkGCM(params, new_app.value);
                                     plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_app.value}});
                                 } else {
-                                    plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:new_app, update:new_app.value}});
+                                    plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_app.value}});
                                     common.returnOutput(params, new_app.value);
                                 }
                             });
