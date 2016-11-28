@@ -198,6 +198,10 @@ if (cluster.isMaster) {
                     }
                 }
             }
+
+            if (params.qstring.tz && typeof params.qstring.tz === 'number') {
+                params.user.tz = params.qstring.tz;
+            } 
             
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, user){
                 params.app_user = user || {};
