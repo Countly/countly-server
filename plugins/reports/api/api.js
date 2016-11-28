@@ -168,8 +168,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                                 common.returnMessage(params, 200, err);
                             }
                             else{
-                                props._id = id;
-                                plugins.dispatch("/systemlogs", {params:params, action:"reports_edited", data:{before:report, update:props}});
+                                plugins.dispatch("/systemlogs", {params:params, action:"reports_edited", data:{_id:id, before:report, update:props}});
                                 common.returnMessage(params, 200, "Success");
                             }
                         });

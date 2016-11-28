@@ -91,6 +91,7 @@ var usersApi = {},
             newMember.created_at = Math.floor(((new Date()).getTime()) / 1000); //TODO: Check if UTC
             newMember.admin_of = newMember.admin_of || [];
             newMember.user_of = newMember.user_of || [];
+            newMember.locked = false;
 
             common.db.collection('members').insert(newMember, {safe: true}, function(err, member) {
                 member = member.ops;

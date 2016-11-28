@@ -147,7 +147,7 @@ var plugin = {},
             ob.data.password = true;
         
         var data = {};
-        data._id = ob.data._id;
+        data.user_id = ob.data._id;
         data.before = {};
         data.after = {};
         data.update = ob.data;

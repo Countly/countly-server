@@ -1044,14 +1044,25 @@ app.post(countlyConfig.path+'/events/map/edit', function (req, res, next) {
         res.end();
         return false;
     }
+    
+    function eventMapToString(map){
+        var ret = "";
+        if(map){
+            for(var i in map){
+                ret += i+" = "+map[i].name+" \n";
+            }
+        }
+        return ret;
+    }
 
     if (!isGlobalAdmin(req)) {
         countlyDb.collection('members').findOne({"_id":countlyDb.ObjectID(req.session.uid)}, function (err, member) {
             if (!err && member.admin_of && member.admin_of.indexOf(req.body.app_id) != -1) {
                 countlyDb.collection('events').findOne({"_id":countlyDb.ObjectID(req.body.app_id)}, function (err, event) {
                     countlyDb.collection('events').update({"_id":countlyDb.ObjectID(req.body.app_id)}, {'$set':{"map":req.body.event_map, "order":req.body.event_order}}, function (err, events) {
-                        req.body.update = {"map":req.body.event_map, "order":req.body.event_order};
+                        req.body.update = {"map":eventMapToString(req.body.event_map), "order":req.body.event_order};
                         req.body.before = event || {};
+                        req.body.before.map = eventMapToString(req.body.before.map);
                         plugins.callMethod("logAction", {req:req, user:{_id:req.session.uid, email:req.session.email}, action:"events_updated", data:req.body});
                     });
                 });
@@ -1065,8 +1076,9 @@ app.post(countlyConfig.path+'/events/map/edit', function (req, res, next) {
     } else {
         countlyDb.collection('events').findOne({"_id":countlyDb.ObjectID(req.body.app_id)}, function (err, event) {
             countlyDb.collection('events').update({"_id":countlyDb.ObjectID(req.body.app_id)}, {'$set':{"map":req.body.event_map, "order":req.body.event_order}}, function (err, events) {
-                req.body.update = {"map":req.body.event_map, "order":req.body.event_order};
+                req.body.update = {"map":eventMapToString(req.body.event_map), "order":req.body.event_order};
                 req.body.before = event || {};
+                req.body.before.map = eventMapToString(req.body.before.map);
                 plugins.callMethod("logAction", {req:req, user:{_id:req.session.uid, email:req.session.email}, action:"events_updated", data:req.body});
             });
         });
