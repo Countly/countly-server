@@ -530,7 +530,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 
                         plugins.getPlugins().forEach(plugin => {
                             try {
-                                let contents = fs.readdirSync(`../../plugins/${plugin}/frontend/public/javascripts`) || [];
+                                let contents = fs.readdirSync(__dirname + `/../../plugins/${plugin}/frontend/public/javascripts`) || [];
                                 toDashboard.javascripts.push.apply(toDashboard.javascripts, contents.filter(n => n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
                             } catch (e) {
                                 console.log('Error while reading folder of plugin %s: %j', plugin, e.stack);
