@@ -865,7 +865,7 @@ plugins.setConfigs("crashes", {
                                 comment.text = params.qstring.args.text;
                             
                             common.db.collection('app_crashgroups' + params.qstring.args.app_id).update({'_id': params.qstring.args.crash_id,"comments._id":params.qstring.args.comment_id},{$set:{"comments.$": comment}}, function (err, res){
-                                plugins.dispatch("/systemlogs", {params:params, action:"crash_edited_comment", data:{app_id:params.qstring.args.app_id, crash_id: params.qstring.args.crash_id, before:commentBefore, update:comment}});
+                                plugins.dispatch("/systemlogs", {params:params, action:"crash_edited_comment", data:{app_id:params.qstring.args.app_id, crash_id: params.qstring.args.crash_id, _id:params.qstring.args.comment_id, before:commentBefore, update:comment}});
                                 common.returnMessage(params, 200, 'Success');
                                 return true;
                             });
@@ -907,7 +907,8 @@ plugins.setConfigs("crashes", {
                 validate(params, function (params) {
                     common.db.collection('app_crashgroups' + params.qstring.app_id).findOne({'_id': params.qstring.args.crash_id }, function (err, crash){
                         if(crash){
-                            plugins.dispatch("/systemlogs", {params:params, action:"crash_deleted", data:{app_id:params.qstring.app_id, crash: crash}});
+                            crash.app_id = params.qstring.app_id;
+                            plugins.dispatch("/systemlogs", {params:params, action:"crash_deleted", data:crash});
                             common.db.collection('app_crashes' + params.qstring.app_id).remove({'group': params.qstring.args.crash_id }, function(){});
                             common.db.collection('app_crashgroups' + params.qstring.app_id).remove({'_id': params.qstring.args.crash_id }, function(){});
                             var id = common.crypto.createHash('sha1').update(params.qstring.app_id + params.qstring.args.crash_id+"").digest('hex');
