@@ -677,9 +677,9 @@ var common          = require('../../../../api/utils/common.js'),
                             common.returnMessage(params, 404, 'App not found');
                         } else if (needToCheckGCM) {
                             checkGCM(params, new_app.value);
-                            plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_app}});
+                            plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_app.value}});
                         } else {
-                            plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_app}});
+                            plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_ap.valuep}});
                             common.returnOutput(params, new_app.value);
                         }
                     });
@@ -691,9 +691,9 @@ var common          = require('../../../../api/utils/common.js'),
                                     common.returnMessage(params, 404, 'App not found');
                                 } else if (needToCheckGCM) {
                                     checkGCM(params, new_app.value);
-                                    plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_app}});
+                                    plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_app.value}});
                                 } else {
-                                    plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:new_app, update:new_app}});
+                                    plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:new_app, update:new_app.value}});
                                     common.returnOutput(params, new_app.value);
                                 }
                             });
