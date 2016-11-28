@@ -13,7 +13,8 @@ class Streamer {
 		this.projection = {
 			_id: 1, 
 			[credentials.DB_USER_MAP.tokens + this.field]: '$' + credentials.DB_USER_MAP.tokens + '.' + this.field, 
-			'la': 1
+			la: 1,
+			tz: 1
 		};
 	}
 
@@ -26,18 +27,14 @@ class Streamer {
 	}
 
 	clear (db) {
-		log.d('Clearing streamer for %j', this.pushly.id, this.built);
-		if (this.built) {
-			return new Promise((resolve, reject) => {
-				db.collection(this.built).drop((err) => {
-					log.d('Dropped streamer collection %j', err);
-					if (err) { reject(err); }
-					else { resolve(); }
-				});
+		log.d('Clearing streamer for %j', this.pushly.id, this.collection());
+		return new Promise((resolve, reject) => {
+			db.collection(this.collection()).drop((err) => {
+				log.d('Dropped streamer collection, error %j', err);
+				if (err) { reject(err); }
+				else { resolve(); }
 			});
-		} else {
-			return Promise.resolve();
-		}
+		});
 	}
 
 	build (db) {

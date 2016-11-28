@@ -29,13 +29,13 @@ class Handle {
 	}
 
 	runTransient(name, data) {
-		data._id = data.id = '' + this.db.ObjectID();
+		data._id = data.id = '' + (data._id || this.db.ObjectID());
 
 		let Constructor = this.classes[name];
 		if (Constructor) {
 			return new Promise((resolve, reject) => {
 
-				let timeout = setTimeout(() => {
+				var timeout = setTimeout(() => {
 					if (channel !== null) {
 						channel.remove();
 						channel = null;
@@ -46,7 +46,7 @@ class Handle {
 				j = new Constructor(name, data),
 
 				channel = new ipc.IdChannel(job.EVT.TRANSIENT_CHANNEL).attach(process).on(job.EVT.TRANSIENT_DONE, (json) => {
-					log.d('[%d]: Got transient job response %j', process.pid, j._json);
+					log.d('[%d]: Got transient job response %j', process.pid, j._json, json);
 					if (json._id === data._id) {
 						if (channel === null) { 
 							return;
@@ -57,7 +57,7 @@ class Handle {
 							if (json.error) { 
 								reject(json);
 							} else {
-								resolve(json);
+								resolve(json.result);
 							}
 						}
 					}

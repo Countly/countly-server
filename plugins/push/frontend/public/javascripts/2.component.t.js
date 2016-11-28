@@ -8,8 +8,8 @@ if (!window.components) {
 }
 
 if (!window.components.t) {
-	window.components.t = function(key, num) {
-		return window.jQuery.i18n.map[key];
+	window.components.t = function(key, def) {
+		return window.jQuery.i18n.map[key] || (typeof def === 'undefined' ? key : def);
 	};
 
 	window.components.t.set = function(key, text) {

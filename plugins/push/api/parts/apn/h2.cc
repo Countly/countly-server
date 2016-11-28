@@ -673,11 +673,12 @@ namespace apns {
 
 				v8::Local<v8::Array> array = v8::Array::New(isolate);
 				while (obj->statuses.size()) {
-					std::pair<std::string, int> pair = obj->statuses.back();
+					std::tuple<std::string, int, std::string> status = obj->statuses.back();
 
 					v8::Local<v8::Array> one = v8::Array::New(isolate);
-					one->Set(0, Nan::New<String>(pair.first.c_str()).ToLocalChecked());
-					one->Set(1, v8::Integer::New(isolate, pair.second));
+					one->Set(0, Nan::New<String>(std::get<0>(status).c_str()).ToLocalChecked());
+					one->Set(1, v8::Integer::New(isolate, std::get<1>(status)));
+					one->Set(2, Nan::New<String>(std::get<2>(status).c_str()).ToLocalChecked());
 
 					array->Set(array->Length(), one);
 

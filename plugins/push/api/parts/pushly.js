@@ -8,6 +8,7 @@ var crypto = require('crypto'),
  */
 var Status = {
     Initial:        0,          // 0  Nothing happened yet
+    Preparing:      1,          // 1  Preparing
     InQueue:        1 << 1,     // 2  Master level
     InProcessing:   1 << 2,     // 4  Worker level
     Done:           1 << 3,     // 8  Done on worker level

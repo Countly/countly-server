@@ -128,10 +128,18 @@ var common = {},
             var collection = common.db.collection(args[0]),
                 method = args[1];
 
-            collection[method].apply(collection, args.slice(2).concat([function(err, result){
-                if (err) { reject(err); }
-                else { resolve(result); }
-            }]));
+            if (method === 'find') {
+                collection[method].apply(collection, args.slice(2)).toArray(function(err, result){
+                    if (err) { reject(err); }
+                    else { resolve(result); }
+                });
+            } else {
+                collection[method].apply(collection, args.slice(2).concat([function(err, result){
+                    if (err) { reject(err); }
+                    else { resolve(result); }
+                }]));
+            }
+
         });
     };
 

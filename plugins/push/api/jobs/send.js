@@ -177,8 +177,11 @@ class PushJob extends job.IPCJob {
 								if (users.length && users[0]._id === status.bookmark) {
 									users.shift();
 								}
-								let fed, lst;
-								if (users.length === 1) {
+								var fed, lst;
+								if (!users || users.length === 0) {
+									log.d('Nothing to feed anymore');
+									this.resource.feed([]);
+								} else if (users.length === 1) {
 									log.d('Feeding last user');
 									fed = this.resource.feed(users.map(this.mapUser.bind(this)));
 
@@ -192,7 +195,7 @@ class PushJob extends job.IPCJob {
 									}
 								} else {
 									lst = users.pop();
-									log.d('Going to feed %d users while %d is requested', users.length, count);
+									log.d('Going to feed %d users while %d is requested: %j / %j', users.length, count, users, lst);
 									fed = this.resource.feed(users.map(this.mapUser.bind(this)));
 								
 									status.size += fed;
@@ -283,14 +286,14 @@ class PushJob extends job.IPCJob {
 							log.d('[%d]: Send promise returned success in %s', process.pid, this._idIpc);
 							if (!this.completed) {
 								done();
-								this.stream.clear(db);
+								this.streamer.clear(db);
 							}
 						}, (err) => {
 							log.d('[%d]: Send promise returned error %j in %s', process.pid, err, this._idIpc);
 							if (!this.completed) {
 								this._json.data.bookmark = this.json.data.first;
 								done(err || 'Unknown APN error');
-								this.stream.clear(db);
+								this.streamer.clear(db);
 							}
 						});
 					}

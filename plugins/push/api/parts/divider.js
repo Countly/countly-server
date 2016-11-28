@@ -14,7 +14,7 @@ class Divider {
 	}
 
 	subs (db, clear, audience) {
-		log.d('Dividing message %j', this.message._id);
+		log.d('Dividing message %j clear %j', this.message._id, clear);
 
 		return new Promise((resolve, reject) => {
 			this.apps(db).then((apps) => {
@@ -41,17 +41,22 @@ class Divider {
 							let streamer = new Streamer(pushly, app);
 							log.d('Streamer is going to count %j', pushly);
 
-							streamer[audience ? 'audience' : 'count'](db).then((count) => {
-								if (clear) { streamer.clear(db); }
-								resolve({
-									mid: this.message._id,
-									app: app,
-									pushly: pushly,
-									streamer: streamer,
-									[audience ? 'audience' : 'count']: count,
-									field: pushly.credentials.id.split('.')[0]
-								});
-							}, reject);
+							if (audience === null) {
+								streamer.clear(db);
+								resolve();
+							} else {
+								streamer[audience ? 'audience' : 'count'](db).then((count) => {
+									if (clear) { streamer.clear(db); }
+									resolve({
+										mid: this.message._id,
+										app: app,
+										pushly: pushly,
+										streamer: streamer,
+										[audience ? 'audience' : 'count']: count,
+										field: pushly.credentials.id.split('.')[0]
+									});
+								}, reject);
+							}
 						}));
 					});
 				});
@@ -62,6 +67,7 @@ class Divider {
 	}
 
 	count (db, skipClear) {
+		log.d('Counting message %j skipClear %j', this.message._id, skipClear);
 		return new Promise((resolve, reject) => {
 			this.subs(db, !skipClear).then((subs) => {
 				var TOTALLY = {TOTALLY: 0};
@@ -76,21 +82,26 @@ class Divider {
 		});
 	}
 
+	clear (db) {
+		return this.subs(db, true, null);
+	}
+
 	audience (db, skipClear) {
+		log.d('Audiencing message %j skipClear %j', this.message._id, skipClear);
 		return new Promise((resolve, reject) => {
 			this.subs(db, !skipClear, true).then((subs) => {
 				log.d('Done audiencing in divider: %j', subs);
 				var TOTALLY = {TOTALLY: 0};
 				for (var i in subs) {
 					var sub = subs[i], field = credentials.DB_USER_MAP.tokens + '.' + sub.field;
-					if (!TOTALLY[field]) {
-						TOTALLY[field] = {TOTALLY: 0};
-					}
-					var L = TOTALLY[field];
+					// if (!TOTALLY[field]) {
+						// TOTALLY[field] = {TOTALLY: 0};
+					// }
+					// var L = TOTALLY[field];
 					for (let i in sub.audience) {
 						let a = sub.audience[i];
-						if (!L[a._id]) { L[a._id] = a.count; }
-						else { L[a._id] += a.count; }
+						// if (!L[a._id]) { L[a._id] = a.count; }
+						// else { L[a._id] += a.count; }
 						if (!TOTALLY[a._id]) { TOTALLY[a._id] = a.count; }
 						else { TOTALLY[a._id] += a.count; }
 						TOTALLY.TOTALLY += a.count;
@@ -103,8 +114,7 @@ class Divider {
 	}
 
 	divide (db, skipClear/*, transient*/) {
-		log.d('Dividing message %j', this.message._id);
-
+		log.d('Dividing message %j skipClear %j', this.message._id, skipClear);
 
 		return new Promise((resolve, reject) => {
 			// var workerCount = 1;
