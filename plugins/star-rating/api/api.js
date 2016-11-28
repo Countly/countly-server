@@ -20,7 +20,7 @@ var plugin = {},
     var ratingEventProcess = function (ob) {
         var params = ob.params;
         var events = (params.qstring && params.qstring.events);
-        if (events) {
+        if (events && events.length && Array.isArray(events)) {
             events.forEach(function (event) {
                 if (event.key === '[CLY]_star_rating') {
                     event.segmentation['platform_version_rate'] =
