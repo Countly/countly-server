@@ -436,6 +436,12 @@ if (cluster.isMaster) {
                 return false;
             }
             params.member = member;
+            if(plugins.dispatch("/validation/user", {params:params})){
+                if(!params.res.finished){
+                    common.returnMessage(params, 401, 'User does not have permission');
+                }
+                return false;
+            }
             callback(params);
         });
     }
@@ -473,6 +479,13 @@ if (cluster.isMaster) {
                 params.appTimezone = app['timezone'];
                 params.app = app;
                 params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                
+                if(plugins.dispatch("/validation/user", {params:params})){
+                    if(!params.res.finished){
+                        common.returnMessage(params, 401, 'User does not have permission');
+                    }
+                    return false;
+                }
                 
                 plugins.dispatch("/o/validate", {params:params, app:app});
     
@@ -512,6 +525,13 @@ if (cluster.isMaster) {
                 params.appTimezone = app['timezone'];
                 params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
                 params.member = member;
+                
+                if(plugins.dispatch("/validation/user", {params:params})){
+                    if(!params.res.finished){
+                        common.returnMessage(params, 401, 'User does not have permission');
+                    }
+                    return false;
+                }
     
                 if (callbackParam) {
                     callback(callbackParam, params);
@@ -540,6 +560,13 @@ if (cluster.isMaster) {
             }
             
             params.member = member;
+            
+            if(plugins.dispatch("/validation/user", {params:params})){
+                if(!params.res.finished){
+                    common.returnMessage(params, 401, 'User does not have permission');
+                }
+                return false;
+            }
     
             if (callbackParam) {
                 callback(callbackParam, params);
@@ -562,6 +589,14 @@ if (cluster.isMaster) {
             }
     
             params.member = member;
+            
+            if(plugins.dispatch("/validation/user", {params:params})){
+                if(!params.res.finished){
+                    common.returnMessage(params, 401, 'User does not have permission');
+                }
+                return false;
+            }
+            
             callback(params);
         });
     }
@@ -602,6 +637,7 @@ if (cluster.isMaster) {
         
                     apiPath += "/" + paths[i];
                 }
+                params.apiPath = apiPath;
                 plugins.dispatch("/", {params:params, apiPath:apiPath, validateAppForWriteAPI:validateAppForWriteAPI, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin, paths:paths, urlParts:urlParts});
         
                 if(!params.cancelRequest){
