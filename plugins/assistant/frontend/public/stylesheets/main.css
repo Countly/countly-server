@@ -7,3 +7,7 @@
     padding: 10px;
     margin-bottom: 5px;
 }
+
+.ui-widget-content a.assistant-link {
+    color: #78ba00;
+}
