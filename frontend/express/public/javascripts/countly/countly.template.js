@@ -5761,9 +5761,9 @@ var AppRouter = Backbone.Router.extend({
                 }).css('display','block');
             });
 
-            $(document).on('input', "#listof-apps .search input, #listof-plugins .search input", function(e) {
+            $(document).on('input', "#listof-apps .search input", function(e) {
                 var searchText = new RegExp($(this).val().toLowerCase()),
-                    searchInside = $(this).parent().parent().find(".searchable");
+                    searchInside = $(this).parent().next().find(".searchable");
 
                 searchInside.filter(function () {
                     return !(searchText.test($(this).text().toLowerCase()));
