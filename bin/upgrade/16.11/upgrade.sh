@@ -25,8 +25,9 @@ cp -n $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.
 
 pkill -f executor.js
 
-#upgrade push plugin if it is installed
+#upgrade plugins
 countly plugin upgrade push
+countly plugin upgrade systemlogs
 
 countly update sdk-web
 

@@ -77,8 +77,8 @@ window.SystemLogsView = countlyView.extend({
 						if(type == "display"){
 							return moment(new Date(row.ts*1000)).format("ddd, D MMM YYYY HH:mm:ss");
 						}else return row.ts;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.timestamp"] },
-					{ "mData": function(row, type){return row.u;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.user"]},
-                    { "mData": function(row, type){return row.ip;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.ip-address"]},
+					{ "mData": function(row, type){return row.u;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.user"], bSortable: false},
+                    { "mData": function(row, type){return row.ip;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.ip-address"], bSortable: false},
 					{ "mData": function(row, type){
                         var ret = "<p>"+((jQuery.i18n.map["systemlogs.action."+row.a]) ? jQuery.i18n.map["systemlogs.action."+row.a] : row.a)+"</p>";
                         if(typeof row.i == "object"){
@@ -113,7 +113,7 @@ window.SystemLogsView = countlyView.extend({
                              }
                         }
                         return ret;
-                    }, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.action"]}
+                    }, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.action"], bSortable: false}
                 ]
             }));
 
