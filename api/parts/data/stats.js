@@ -226,7 +226,7 @@ var stats = {},
     }
     
     function getAllPlatforms(callback, apps) {
-        countlyDb.collection("device_details").find({_id: {"$regex": ".*:0$"}}, {"a":1, "meta":1}).toArray(function (err, arr) {
+        countlyDb.collection("device_details").find({_id: {"$regex": ".*:0.*"}}, {"a":1, "meta":1}).toArray(function (err, arr) {
 			if (err || !arr)
                 callback(0);
 			else{
