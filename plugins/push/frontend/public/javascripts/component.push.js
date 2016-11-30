@@ -1,7 +1,7 @@
 'use strict';
 
 /* jshint undef: true, unused: true */
-/* globals m, moment */
+/* globals m, moment, vprop */
 
 window.component('push', function(push) {
 	push.C = {
@@ -31,20 +31,6 @@ window.component('push', function(push) {
 	};
 
 	var t = window.components.t,
-		vprop = function(val, validator, errorText) {
-			var prop = m.prop(), 
-				f = function() {
-					if (arguments.length) {
-						f.valid = validator(arguments[0]);
-						return prop(arguments[0]);
-					} else {
-						return prop();
-					}
-				};
-			f.errorText = errorText;
-			f(val);
-			return f;
-		},
 		URL_REGEXP = new RegExp( "([A-Za-z][A-Za-z0-9+\\-.]*):(?:(//)(?:((?:[A-Za-z0-9\\-._~!$&'()*+,;=:]|%[0-9A-Fa-f]{2})*)@)?((?:\\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\\.[A-Za-z0-9\\-._~!$&'()*+,;=:]+)\\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\\-._~!$&'()*+,;=]|%[0-9A-Fa-f]{2})*))(?::([0-9]*))?((?:/(?:[A-Za-z0-9\\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|/((?:(?:[A-Za-z0-9\\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?)|((?:[A-Za-z0-9\\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|)(?:\\?((?:[A-Za-z0-9\\-._~!$&'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?(?:\\#((?:[A-Za-z0-9\\-._~!$&'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?");
 
 	push.Message = function(data) {
@@ -196,7 +182,7 @@ window.component('push', function(push) {
 			});
 		};
 
-		// Clean audience built previously
+		// Clear audience built previously
 		this.remoteClear = function() {
 			if (this._id()) {
 				return m.request({
@@ -298,15 +284,23 @@ window.component('push', function(push) {
 		};
 	};
 
-	push.dashboard = function(appId) {
-		return m.request({
-			method: 'GET',
-			url: window.countlyCommon.API_URL + '/i/pushes/dashboard',
-			data: {
-				api_key: window.countlyGlobal.member.api_key,
-				app_id: appId
-			}
-		});
+	push.remoteDashboard = function(appId, refresh) {
+		if (!push.dashboard || push.dashboard.app_id !== appId || refresh) {
+			return m.request({
+				method: 'GET',
+				url: window.countlyCommon.API_URL + '/i/pushes/dashboard',
+				data: {
+					api_key: window.countlyGlobal.member.api_key,
+					app_id: appId
+				}
+			}).then(function(data){
+				data.app_id = appId;
+				push.dashboard = data;
+				return data;
+			});
+		} else {
+			return Promise.resolve(push.dashboard);
+		}
 	};
 
 });

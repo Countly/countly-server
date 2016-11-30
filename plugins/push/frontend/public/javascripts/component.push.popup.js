@@ -7,8 +7,6 @@ window.component('push.popup', function(popup) {
 	var t = window.components.t,
 		push = window.components.push;
 
-	var locations = [];
-
 	popup.show = function(prefilled){
 		var message = new push.Message(prefilled || {});
 		push.popup.slider = window.components.slider.show({
@@ -45,7 +43,7 @@ window.component('push.popup', function(popup) {
 	popup.controller = function(message){
 		var popup = this, apps = [];
 
-		t.set('pu.po.tab1.title', t('pu.po.tab1.title.' + !!window.countlyGeo));
+		// t.set('pu.po.tab1.title', t('pu.po.tab1.title' + !!window.countlyGeo));
 	
 		this.message = message;
 		this.renderTab = function(i, active) {
@@ -121,14 +119,7 @@ window.component('push.popup', function(popup) {
 								t('pu.po.no-users'),
 								m('br'),
 								t('pu.po.no-users-try-change') + ' ',
-								m('a[href=#]', {onclick: swtch.bind(popup, 0)}, t('pu.po.no-users-try-change-apps')),
-								push.locations && push.locations.length ? 
-									m('span', [
-										' ' + t('pu.po.no-users-try-change-or') + ' ',
-										m('a[href=#]', {onclick: swtch.bind(popup, 1)}, t('pu.po.no-users-try-change-loc')),
-										'.'
-									]) 
-									: '.',
+								m('a[href=#]', {onclick: swtch.bind(popup, 0)}, t('pu.po.no-users-try-change-apps') + '.'),
 								m('br'),
 								m('a.btn-next[href=#]', {onclick: swtch.bind(popup, 0)}, t('pu.po.no-users-start-over'))
 							])
@@ -247,7 +238,7 @@ window.component('push.popup', function(popup) {
 							return m('div', [
 								m('textarea', {placeholder: t('pu.po.tab2.placeholder'), 'data-locale': l.value, value: message.messagePerLocale()[l.value] || '', onkeyup: m.withAttr('value', self.ontext)}),
 								!message.messagePerLocale().default ? 
-									m('.error', window.components.tooltip.config(t('pu.po.tab2.default-message.invalid')), push.ICON.WARN)
+									m('.error', window.components.tooltip.config(t('pu.po.tab2.default-message.invalid')), push.ICON.WARN())
 									: ''
 							]);
 						};
@@ -310,7 +301,7 @@ window.component('push.popup', function(popup) {
 					}}, [
 						m('input[type=' + ctrl.typ + ']', inp),
 						ctrl.value() !== undefined && !ctrl.value.valid ? 
-							m('.error', window.components.tooltip.config(ctrl.value.errorText), push.ICON.WARN)
+							m('.error', window.components.tooltip.config(ctrl.value.errorText), push.ICON.WARN())
 							: ''
 					])
 				]);
@@ -387,12 +378,12 @@ window.component('push.popup', function(popup) {
 										return message.test();
 									}}),
 								]),
-								push.locations && push.locations.length ? 
+								push.dashboard.geos && push.dashboard.geos.length ? 
 									m('.comp-push-vert-panel', [
 										m('h4', t('pu.po.tab1.geos')),
 										m('h6', t('pu.po.tab1.geos-desc')),
 										m.component(window.components.select, {
-											options: [{value: '', title: t('pu.po.tab1.geos.no')}].concat(push.locations.map(function(geo){
+											options: [{value: '', title: t('pu.po.tab1.geos.no')}].concat(push.dashboard.geos.map(function(geo){
 												return {value: geo._id, title: geo.title};
 											})), 
 											value: message.geo
@@ -419,9 +410,18 @@ window.component('push.popup', function(popup) {
 						m.component(window.components.radio, {options: [
 							{value: false, title: t('pu.po.tab1.scheduling-now'), desc: t('pu.po.tab1.scheduling-now-desc')},
 							{value: true, title: t('pu.po.tab1.scheduling-date'), desc: t('pu.po.tab1.scheduling-date-desc'), view: function(){
-								return m.component(window.components.datepicker, {date: message.date, tz: m.prop()});
+								return m.component(window.components.datepicker, {date: message.date});
 							}}
 						], value: message.schedule}),
+						m('h4', t('pu.po.tab1.tz')),
+						m('h6', [
+							t('pu.po.tab1.tz-desc'), 
+							m('span.warn', window.components.tooltip.config(t('pu.po.tab1.tz-yes-help')), push.ICON.WARN())
+						]),
+						m.component(window.components.radio, {options: [
+							{value: false, title: t('pu.po.tab1.tz-no'), desc: t('pu.po.tab1.tz-no-desc')},
+							{value: true, title: t('pu.po.tab1.tz-yes'), desc: t('pu.po.tab1.tz-yes-desc')}
+						], value: message.tz}),
 						m('.btns', [
 							popup.tabs.tab() > 0 ? m('a.btn-prev', {href: '#', onclick: popup.prev}, t('pu.po.prev')) : '',
 							m('a.btn-next', {href: '#', onclick: popup.next, disabled: popup.tabenabled(2) ? false : 'disabled'}, t('pu.po.next'))

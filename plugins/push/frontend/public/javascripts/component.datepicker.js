@@ -84,10 +84,12 @@ window.component('datepicker', function(datepicker) {
 					m('span.comp-datepicker-time-spacer', ':'),
 					m('input[type=number][min=0][max=59]', {value: ctrl.minutes(), oninput: m.withAttr('value', ctrl.minutes)})
 				]),
-				m('.comp-datepicker-tz', {onclick: ctrl.ontz}, [
-					m('input[type=checkbox]', {onclick: ctrl.ontz, checked: ctrl.tz() ? 'checked' : undefined, onchange: ctrl.ontz}),
-					m('label', t('datepicker.tz'))
-				]),
+				ctrl.tz ? 
+					m('.comp-datepicker-tz', {onclick: ctrl.ontz}, [
+						m('input[type=checkbox]', {onclick: ctrl.ontz, checked: ctrl.tz() ? 'checked' : undefined, onchange: ctrl.ontz}),
+						m('label', t('datepicker.tz'))
+					])
+					: ''
 			])
 		]);
 	};

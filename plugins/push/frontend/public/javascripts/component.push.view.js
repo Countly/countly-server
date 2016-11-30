@@ -223,8 +223,8 @@ window.component('push.view', function(view) {
 
 		view: function(ctrl) {
 			var geo;
-			if (ctrl.message.geo() && push.locations) {
-				push.locations.forEach(function(loc){
+			if (ctrl.message.geo() && push.dashboard.geos) {
+				push.dashboard.geos.forEach(function(loc){
 					if (loc._id === ctrl.message.geo()) { geo = loc; }
 				});
 			}

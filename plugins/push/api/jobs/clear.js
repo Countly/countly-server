@@ -5,7 +5,8 @@ const job = require('../../../../api/parts/jobs/job.js'),
 	  retry = require('../../../../api/parts/jobs/retry.js'),
 	  Divider = require('../parts/divider.js'),
 	  mess = require('../parts/message.js'),
-	  Message = mess.Message;
+	  Message = mess.Message,
+	  MessageStatus = mess.MessageStatus;
 
 
 class ClearJob extends job.Job {
@@ -30,7 +31,7 @@ class ClearJob extends job.Job {
 		
 		db.collection('message').findOne({_id: db.ObjectID(this.data._id)}, (err, msg) => {
 			if (err) { done(err); }
-			else if (!msg) {
+			else if (!msg || msg.clear || (msg.result.status === MessageStatus.Preparing && msg.created === null) || (msg.result.status & MessageStatus.Done)) {
 				let divider = new Divider(this.message);
 				divider.clear(db).then(() => {
 					log.d('Done clearing audience for %j', this.data._id);
