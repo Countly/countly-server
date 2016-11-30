@@ -793,6 +793,21 @@ var fetch = {},
                 callback(getMergedObj(dataObjects));
             });
         }
+        
+        function deepMerge(ob1, ob2){
+            for(var i in ob2){
+                if(typeof ob1[i] === "undefined"){
+                    ob1[i] = ob2[i];
+                }
+                else if(ob1[i] && typeof ob1[i] === "object"){
+                    ob1[i] = deepMerge(ob1[i], ob2[i]);
+                }
+                else{
+                    ob1[i] += ob2[i];
+                }
+            }
+            return ob1;
+        }
 
         function getMergedObj(dataObjects, isRefresh) {
             var mergedDataObj = {};
@@ -837,27 +852,13 @@ var fetch = {},
                         }
         
                         if (mergedDataObj[year]) {
-                            for (var prop in dataObjects[i]['d']) {
-                                if(mergedDataObj[year][prop]){
-                                    _.extend(mergedDataObj[year][prop], dataObjects[i]['d'][prop]) 
-                                }
-                                else{
-                                    mergedDataObj[year][prop] = dataObjects[i]['d'][prop];
-                                }
-                            }
+                            mergedDataObj[year] = deepMerge(mergedDataObj[year], dataObjects[i]['d']);
                         } else {
                             mergedDataObj[year] = dataObjects[i]['d'] || {};
                         }
                     } else {
                         if (mergedDataObj[year][month]) {
-                            for (var prop in dataObjects[i]['d']) {
-                                if(mergedDataObj[year][month][prop]){
-                                    _.extend(mergedDataObj[year][month][prop], dataObjects[i]['d'][prop]) 
-                                }
-                                else{
-                                    mergedDataObj[year][month][prop] = dataObjects[i]['d'][prop];
-                                }
-                            }
+                            mergedDataObj[year][month] = deepMerge(mergedDataObj[year][month], dataObjects[i]['d']);
                         } else {
                             mergedDataObj[year][month] = dataObjects[i]['d'] || {};
                         }
