@@ -59,7 +59,7 @@ var common          = require('../../../../api/utils/common.js'),
             // query on app users to list users with any token
             qtk = {$or: [...new Set(Object.keys(creds.DB_USER_MAP).map(k => creds.DB_USER_MAP[k]).filter(f => ['i', 'a'].indexOf(f.charAt(0)) !== -1))].map(f => { return {[creds.DB_USER_MAP.tokens + f]: true}; })},
             // query on geos for this app
-            qge = {$or: [{app: common.db.ObjectID(params.qstring.app_id)}, {app: {$exists: false}}]},
+            qge = {deleted: {$exists: false}, $or: [{app: common.db.ObjectID(params.qstring.app_id)}, {app: {$exists: false}}]},
 
             rxp = /([0-9]{4}):([0-9]{1,2})/;
 

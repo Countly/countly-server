@@ -381,7 +381,7 @@ table { border-collapse: collapse; }
 .big-numbers-v2 .big-numbers .inner { border-left: none; border-top: none; text-align: center; padding-top: 30px; background-color: #FFF; height: 100px; }
 .big-numbers-v2.condensed .big-numbers .inner { padding-top: 10px; background-color: #FFF; height: 80px; }
 .big-numbers-v2 .big-numbers:nth-child(1) .inner { border-left:none; }
-.big-numbers-v2 .big-numbers .select { color: #484848; font-size:13px; border:none; box-shadow:none; background: transparent; display: inline-block; width: auto; padding-top: 0px; margin-left: 8px; vertical-align: top; height: auto; }
+.big-numbers-v2 .big-numbers .select { text-transform: uppercase; color: #484848; font-size:13px; border:none; box-shadow:none; background: transparent; display: inline-block; width: auto; padding-top: 0px; margin-left: 8px; vertical-align: top; height: auto; }
 .big-numbers-v2 .big-numbers .color { display: inline-block; width:15px; height:15px; margin-top: 0; border-radius: 1px; }
     .big-numbers-v2 .big-numbers.radio,
     .big-numbers-v2 .big-numbers.check { cursor: pointer; }

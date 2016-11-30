@@ -12,8 +12,7 @@ window.component('push.dash', function(dash) {
 		this.messages = m.prop([]);
 		this.data = m.prop();
 
-		components.push.dashboard(countlyCommon.ACTIVE_APP_ID).then(function(data){
-			window.components.push.locations = data.geos;
+		components.push.remoteDashboard(countlyCommon.ACTIVE_APP_ID).then(function(data){
 			m.startComputation();
 			['sent', 'actions'].forEach(function(ev) {
 				ev = data[ev];

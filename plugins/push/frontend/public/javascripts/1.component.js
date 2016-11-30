@@ -31,4 +31,18 @@ if (!window.component) {
 		}
 	};
 
+	window.vprop = function(val, validator, errorText) {
+		var prop = m.prop(), 
+			f = function() {
+				if (arguments.length) {
+					f.valid = validator(arguments[0]);
+					return prop(arguments[0]);
+				} else {
+					return prop();
+				}
+			};
+		f.errorText = errorText;
+		f(val);
+		return f;
+	};
 }
