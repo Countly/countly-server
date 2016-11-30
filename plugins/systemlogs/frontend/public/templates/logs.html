@@ -1,4 +1,7 @@
-	<div class="widget">
+	{{#if back}}
+    <a class="back back-link" style="margin-bottom: 25px;"><span data-localize="plugins.back"></span></a>
+    {{/if}}
+    <div class="widget">
 		<div class="widget-header">
 			<div class="left">
                 <div style="overflow: auto">
@@ -44,11 +47,6 @@
                 </div>
 			</div>
             {{> date-selector }}
-            <div class="right">
-                {{#if query}}
-                <div class="icon-button light" id="systemlogs-back"><i class="fa fa-chevron-left"></i>&nbsp;<span data-localize="plugins.back"></span></div>
-                {{/if}}
-            </div>
 		</div>
 	</div>
 	<div class="systemlogs" data-help-localize="help.{{{chart-helper}}}">

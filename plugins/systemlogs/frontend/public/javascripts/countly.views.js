@@ -38,14 +38,15 @@ window.SystemLogsView = countlyView.extend({
             "actions": meta.a,
             "active-user": activeUser,
             "users": meta.users,
-            query: this._query
+            query: this._query,
+            back: this._back
         };
 
 		var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
 
-            $("#systemlogs-back").click(function(){
+            $(".back-link").click(function(){
                 window.history.back();
             });
 
@@ -128,7 +129,7 @@ window.SystemLogsView = countlyView.extend({
                 self._query.a = $(this).data("value");
                 if(self._query.a === "")
                     delete self._query.a;
-                app.navigate("#/manage/systemlogs/"+JSON.stringify(self._query));
+                app.navigate("#/manage/systemlogs/query/"+JSON.stringify(self._query));
                 self.refresh();
 			});
 
@@ -138,7 +139,7 @@ window.SystemLogsView = countlyView.extend({
                 self._query.user_id = $(this).data("value");
                 if(self._query.user_id === "")
                     delete self._query.user_id;
-                app.navigate("#/manage/systemlogs/"+JSON.stringify(self._query));
+                app.navigate("#/manage/systemlogs/query/"+JSON.stringify(self._query));
                 self.refresh();
 			});
         }
@@ -236,7 +237,7 @@ if(countlyGlobal["member"].global_admin){
         this.renderWhenReady(this.systemLogsView);
     });
     
-    app.route('/manage/systemlogs/*query', 'systemlogs_query', function (query) {
+    app.route('/manage/systemlogs/query/*query', 'systemlogs_query', function (query) {
         try{
             query = JSON.parse(query);
         }
@@ -244,6 +245,18 @@ if(countlyGlobal["member"].global_admin){
             query = null;
         }
         this.systemLogsView._query = query;
+        this.renderWhenReady(this.systemLogsView);
+    });
+    
+    app.route('/manage/systemlogs/filter/*query', 'systemlogs_query', function (query) {
+        try{
+            query = JSON.parse(query);
+        }
+        catch(ex){
+            query = null;
+        }
+        this.systemLogsView._query = query;
+        this.systemLogsView._back = true;
         this.renderWhenReady(this.systemLogsView);
     });
 }
@@ -266,7 +279,7 @@ $( document ).ready(function() {
                     setTimeout(function(){
                         container = container.next("tr");
                         var id = container.find(".user_id").val();
-                        container.find(".button-container").append("<a class='icon-button light' data-localize='systemlogs.view-user-actions' href='#/manage/systemlogs/{\"user_id\":\""+id+"\"}'>"+jQuery.i18n.map["systemlogs.view-user-actions"]+"</a>");
+                        container.find(".button-container").append("<a class='icon-button light' data-localize='systemlogs.view-user-actions' href='#/manage/systemlogs/filter/{\"user_id\":\""+id+"\"}'>"+jQuery.i18n.map["systemlogs.view-user-actions"]+"</a>");
                     }, 0);
                 }
             });
