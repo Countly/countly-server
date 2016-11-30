@@ -195,14 +195,14 @@ window.SystemLogsView = countlyView.extend({
     expandTable: function( row, self ) {
 		// `d` is the original data object for the row
 		if(typeof row.i == "object"){
-            var ret = "";
+            var ret = "<div class='datatablesubrow'>";
             if(typeof row.i.before != "undefined" && typeof row.i.after != "undefined"){
                 if(!jQuery.isEmptyObject(row.i.before)){
                     ret += "<p>"+jQuery.i18n.map["systemlogs.changed-data"]+":</p>";
                     ret += "<table style='width:100%;'>";
                     ret += "<tr><th style='width:20%;'>"+jQuery.i18n.map["systemlogs.field"]+"</th><th style='width:40%;'>"+jQuery.i18n.map["systemlogs.before"]+"</th><th style='width:40%;'>"+jQuery.i18n.map["systemlogs.after"]+"</th></tr>";
                     for(var i in row.i.before){
-                        ret += "<tr><td>"+i+"</td><td><pre>"+self.renderField(i, row.i.before[i])+"</pre></td><td><pre>"+self.renderField(i, row.i.after[i])+"</pre></td></tr>";
+                        ret += "<tr><td>"+i+"</td><td>"+self.renderField(i, row.i.before[i])+"</td><td>"+self.renderField(i, row.i.after[i])+"</td></tr>";
                     }
                     ret += "</table>";
                 }
@@ -212,13 +212,13 @@ window.SystemLogsView = countlyView.extend({
                 ret += "<table style='width:100%;'>";
                 ret += "<tr><th>"+jQuery.i18n.map["systemlogs.field"]+"</th><th>"+jQuery.i18n.map["systemlogs.value"]+"</th></tr>";
                 for(var i in row.i){
-                    ret += "<tr><td style='width:20%;'>"+i+"</td><td style='width:80%;'><pre>"+self.renderField(i, row.i[i])+"</pre></td></tr>";
+                    ret += "<tr><td style='width:20%;'>"+i+"</td><td style='width:80%;'>"+self.renderField(i, row.i[i])+"</td></tr>";
                 }
                 ret += "</table>";
             }
-            if(ret == "")
+            if(ret == "<div class='datatablesubrow'>")
                 ret = "<p>"+jQuery.i18n.map["systemlogs.no-data"]+"</p>";
-            return ret;
+            return ret+"</div>";
         }
 		else
 			return row.i;
