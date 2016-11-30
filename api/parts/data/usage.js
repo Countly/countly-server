@@ -145,8 +145,9 @@ var usage = {},
             common.fillTimeObjectMonth(params, updateUsers, common.dbMap['events']);
             common.fillTimeObjectMonth(params, updateUsers, common.dbMap['duration'], session_duration);
 
+            var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
             var dbDateIds = common.getDateIds(params);
-            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, function(){});
+            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, function(){});
             
             var update = {'$inc': {'sd': session_duration, 'tsd': session_duration}};         
             common.updateAppUser(params, update, function(){
@@ -190,10 +191,11 @@ var usage = {},
         monthObjUpdate.push(common.dbMap['durations'] + '.' + calculatedDurationRange);
         common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
         common.fillTimeObjectZero(params, updateUsersZero, common.dbMap['durations'] + '.' + calculatedDurationRange);
-        common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, function(){});
+        var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
+        common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, function(){});
         var update = {'$inc': updateUsersZero, '$set': {}};
         update["$set"]['meta_v2.d-ranges.'+calculatedDurationRange] = true;
-        common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, update, function(){});
+        common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero + "_" + postfix}, update, function(){});
 
         // sd: session duration. common.dbUserMap is not used here for readability purposes.
         common.updateAppUser(params, {'$set': {'sd': 0}}, function(){
@@ -386,6 +388,7 @@ var usage = {},
         common.fillTimeObjectZero(params, updateUsersZero, zeroObjUpdate);
         common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate);
 
+        var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
         if (Object.keys(updateUsersZero).length || Object.keys(usersMeta).length) {
             usersMeta.m = dbDateIds.zero;
             usersMeta.a = params.app_id + "";
@@ -397,10 +400,10 @@ var usage = {},
                 updateObjZero["$inc"] = updateUsersZero;
             }
 
-            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, updateObjZero, {'upsert': true}, function(){});
+            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero + "_" + postfix}, updateObjZero, {'upsert': true}, function(){});
         }
 
-        common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true}, function(){});
+        common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true}, function(){});
 
         plugins.dispatch("/session/user", {params:params, dbAppUser:dbAppUser});
         processMetrics(dbAppUser, uniqueLevelsZero, uniqueLevelsMonth, params, done);

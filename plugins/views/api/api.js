@@ -235,10 +235,11 @@ var plugin = {},
                     monthObjUpdate.push('vc.' + calculatedRange);
                     common.fillTimeObjectMonth(params, updateUsers, monthObjUpdate);
                     common.fillTimeObjectZero(params, updateUsersZero, 'vc.' + calculatedRange);
-                    common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, function(){});
+                    var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
+                    common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, function(){});
                     var update = {'$inc': updateUsersZero, '$set': {}};
                     update["$set"]['meta_v2.v-ranges.' +  calculatedRange] = true;
-                    common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero}, update, function(err, res){});
+                    common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero + "_" + postfix}, update, function(err, res){});
                     
                     if(user.lv){
                         if(ob.end_session || user.lvt && params.time.timestamp - user.lvt > 300){

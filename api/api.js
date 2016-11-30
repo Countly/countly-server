@@ -412,7 +412,8 @@ if (cluster.isMaster) {
                                 updateUsers = {};
                 
                             common.fillTimeObjectMonth(params, updateUsers, common.dbMap['events']);
-                            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, {'upsert':true}, function(err, res){});
+                            var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
+                            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, {'upsert':true}, function(err, res){});
                             
                             return done ? done() : false;
                         }

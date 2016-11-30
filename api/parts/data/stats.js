@@ -118,7 +118,7 @@ var stats = {},
     }
 
     function getTotalMsgUsers(callback) {
-        countlyDb.collection("users").find({_id: {"$regex": ".*:0$"}}, {"d.m":1}).toArray(function (err, msgUsers) {
+        countlyDb.collection("users").find({_id: {"$regex": ".*:0.*"}}, {"d.m":1}).toArray(function (err, msgUsers) {
 			if (err || !msgUsers)
                 callback(0);
 			else{
