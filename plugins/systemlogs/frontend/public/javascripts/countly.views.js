@@ -187,6 +187,9 @@ window.SystemLogsView = countlyView.extend({
         else if(!isNaN(field) && (Math.round(parseFloat(field, 10)) + "").length == 13){
             ret += moment(parseFloat(field, 10)).format("ddd, D MMM YYYY HH:mm:ss");
         }
+        else if(key == "map"){
+            ret += field.replace(/\n/g, '<br />');
+        }
         else if(field != null){
             ret += field;
         }
