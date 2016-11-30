@@ -388,7 +388,7 @@ if (cluster.isMaster) {
                                 params.promises.push(countlyApi.data.events.processEvents(params));
                             else
                                 countlyApi.data.events.processEvents(params);
-                        } else if (plugins.getConfig("api").safe) {
+                        } else if (plugins.getConfig("api").safe && !params.bulk) {
                             common.returnMessage(params, 200, 'Success');
                         }
                 
@@ -681,7 +681,8 @@ if (cluster.isMaster) {
                                     'href':params.href,		
                                     'res':params.res,		
                                     'req':params.req,
-                                    'promises':[]
+                                    'promises':[],
+                                    'bulk':true
                                 };
                                 
                                 tmpParams["qstring"]['app_key'] = requests[i].app_key || appKey;

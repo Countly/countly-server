@@ -339,9 +339,10 @@ var countlyEvents = {},
 
                 if (needRollback) {
                     async.map(eventUpdateResults, rollbackEventDb, function (err, eventRollbackResults) {
-                        common.returnMessage(params, 500, 'Failure');
+                        if(!params.bulk) 
+                            common.returnMessage(params, 500, 'Failure');
                     });
-                } else {
+                } else if(!params.bulk) {
                     common.returnMessage(params, 200, 'Success');
                 }
             });
