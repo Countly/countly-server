@@ -9,6 +9,7 @@
 .systemlogs table td:last-child { width:44%; }
 .systemlogs table td { font-family: Ubuntu; }
 .systemlogs table td pre { background-color: transparent !important; line-height: 15px; white-space: pre-wrap; }
+.systemlogs .search-table-data {display: none;}
 
 .systemlogs table td pre .hljs-keyword,
 .systemlogs table td pre .hljs-selector-tag,
