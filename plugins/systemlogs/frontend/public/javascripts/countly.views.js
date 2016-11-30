@@ -60,6 +60,7 @@ window.SystemLogsView = countlyView.extend({
                         "data": aoData,
                         "success": function(data){
                                 fnCallback(data);
+                                CountlyHelpers.reopenRows(self.dtable, self.expandTable, self);
                         }
                     });
                 },
@@ -68,31 +69,57 @@ window.SystemLogsView = countlyView.extend({
                         aoData.push({ "name": "query", "value": JSON.stringify(self._query) });
                     }
                 },
+                "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+					$(nRow).attr("id", aData._id);
+				},
                 "aoColumns": [
                     { "mData": function(row, type){
 						if(type == "display"){
 							return moment(new Date(row.ts*1000)).format("ddd, D MMM YYYY HH:mm:ss");
 						}else return row.ts;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.timestamp"] },
 					{ "mData": function(row, type){return row.u;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.user"]},
-					{ "mData": function(row, type){return (jQuery.i18n.map["systemlogs.action."+row.a]) ? jQuery.i18n.map["systemlogs.action."+row.a] : row.a;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.action"]},
                     { "mData": function(row, type){return row.ip;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.ip-address"]},
-                    { "mData": function(row, type){
-						if(typeof row.i == "object")
-							return "<pre>"+JSON.stringify(row.i, null, 2)+"</pre>";
-						else
-							return row.i;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.info"], "bSortable": false }
-                ],
-                "fnDrawCallback": function(settings) {
-                    $('#systemlogs-table').find("pre").each(function(i, block) {
-                        if(typeof hljs != "undefined") {
-                            hljs.highlightBlock(block);
+					{ "mData": function(row, type){
+                        var ret = "<p>"+((jQuery.i18n.map["systemlogs.action."+row.a]) ? jQuery.i18n.map["systemlogs.action."+row.a] : row.a)+"</p>";
+                        if(typeof row.i == "object"){
+                            if(typeof row.i.app_id != "undefined" && countlyGlobal["apps"][row.i.app_id]){
+                                ret += "<p title='"+row.i.app_id+"'>"+jQuery.i18n.map["systemlogs.for-app"]+": "+countlyGlobal["apps"][row.i.app_id].name+"</p>";
+                            }
+                            if(typeof row.i.user_id != "undefined"){
+                                var id = row.i.user_id;
+                                for(var i = 0; i < meta.users.length; i++){
+                                    if(meta.users[i]._id == row.i.user_id){
+                                        id = meta.users[i].full_name;
+                                        break;
+                                    }
+                                }
+                                ret += "<p title='"+id+"'>"+jQuery.i18n.map["systemlogs.for-user"]+": "+id+"</p>";
+                            }
+                            if(typeof row.i.campaign_id != "undefined" && typeof countlyAttribution != "undefined"){
+                                ret += "<p title='"+row.i.campaign_id+"'>"+jQuery.i18n.map["systemlogs.for-campaign"]+": "+countlyAttribution.getCampaignName(row.i.campaign_id)+"</p>";
+                            }
+                            if(typeof row.i.crash_id != "undefined" && typeof countlyCrashes != "undefined"){
+                                ret += "<p title='"+row.i.crash_id+"'>"+jQuery.i18n.map["systemlogs.for-crash"]+": "+countlyCrashes.getCrashName(row.i.crash_id)+"</p>";
+                            }
+                            if(typeof row.i.appuser_id != "undefined"){
+                                ret += "<p title='"+row.i.appuser_id+"'>"+jQuery.i18n.map["systemlogs.for-appuser"]+": "+row.i.appuser_id+"</p>";
+                            }
+                            if(typeof row.i.before != "undefined" && typeof row.i.after != "undefined"){
+                                if(!jQuery.isEmptyObject(row.i.before)){
+                                    if(typeof row.i._id != "undefined"){
+                                        ret += "<p title='"+row.i._id+"'>"+jQuery.i18n.map["systemlogs.for-id"]+": "+row.i._id+"</p>";
+                                    }
+                                }
+                             }
                         }
-                    });
-                }
+                        return ret;
+                    }, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.action"]}
+                ]
             }));
 
 			this.dtable.stickyTableHeaders();
 			this.dtable.fnSort( [ [0,'desc'] ] );
+            CountlyHelpers.expandRows(this.dtable, this.expandTable, this);
 
             $(".action-segmentation .segmentation-option").on("click", function () {
                 if(!self._query)
@@ -117,7 +144,84 @@ window.SystemLogsView = countlyView.extend({
     },
     refresh:function () {
 		this.dtable.fnDraw(false);
-    }
+    },
+    renderField:function(key, field, sub){
+        var ret = "";
+        if (field && field.constructor == Array){
+            if(sub){
+                ret += field.join(", ");
+            }
+            else{
+                ret += "<ul>";
+                if(key == "restrict" && typeof pathsToSectionNames != "undefined"){
+                    field = pathsToSectionNames(field).split(", ");
+                }
+                for(var i = 0; i < field.length; i++){
+                    if(field[i] != ""){
+                        if(key == "user_of" || key == "admin_of"){
+                            if(countlyGlobal["apps"][field[i]])
+                                ret += "<li>"+countlyGlobal["apps"][field[i]].name+"</li>";
+                            else
+                                ret += "<li>"+field[i]+"</li>";
+                        }
+                        else
+                            ret += "<li>"+this.renderField(i, field[i])+"</li>";
+                    }
+                }
+                ret += "</ul>";
+            }
+        }
+        else if(field && typeof field == "object"){
+            if(!jQuery.isEmptyObject(field)){
+                ret += "<ul>";
+                for(var i in field){
+                    ret += "<li>"+i+" = "+this.renderField(i, field[i], true)+"</li>";
+                }
+                ret += "</ul>";
+            }
+        }
+        else if(!isNaN(field) && (Math.round(parseFloat(field, 10)) + "").length == 10){
+            ret += moment(parseFloat(field, 10)*1000).format("ddd, D MMM YYYY HH:mm:ss");
+        }
+        else if(!isNaN(field) && (Math.round(parseFloat(field, 10)) + "").length == 13){
+            ret += moment(parseFloat(field, 10)).format("ddd, D MMM YYYY HH:mm:ss");
+        }
+        else if(field != null){
+            ret += field;
+        }
+        return ret;
+    },
+    expandTable: function( row, self ) {
+		// `d` is the original data object for the row
+		if(typeof row.i == "object"){
+            var ret = "";
+            if(typeof row.i.before != "undefined" && typeof row.i.after != "undefined"){
+                if(!jQuery.isEmptyObject(row.i.before)){
+                    ret += "<p>"+jQuery.i18n.map["systemlogs.changed-data"]+":</p>";
+                    ret += "<table style='width:100%;'>";
+                    ret += "<tr><th style='width:20%;'>"+jQuery.i18n.map["systemlogs.field"]+"</th><th style='width:40%;'>"+jQuery.i18n.map["systemlogs.before"]+"</th><th style='width:40%;'>"+jQuery.i18n.map["systemlogs.after"]+"</th></tr>";
+                    for(var i in row.i.before){
+                        ret += "<tr><td>"+i+"</td><td><pre>"+self.renderField(i, row.i.before[i])+"</pre></td><td><pre>"+self.renderField(i, row.i.after[i])+"</pre></td></tr>";
+                    }
+                    ret += "</table>";
+                }
+            }
+            else if(!jQuery.isEmptyObject(row.i)){
+                ret += "<p>"+jQuery.i18n.map["systemlogs.has-data"]+":</p>";
+                ret += "<table style='width:100%;'>";
+                ret += "<tr><th>"+jQuery.i18n.map["systemlogs.field"]+"</th><th>"+jQuery.i18n.map["systemlogs.value"]+"</th></tr>";
+                for(var i in row.i){
+                    ret += "<tr><td style='width:20%;'>"+i+"</td><td style='width:80%;'><pre>"+self.renderField(i, row.i[i])+"</pre></td></tr>";
+                }
+                ret += "</table>";
+            }
+            if(ret == "")
+                ret = "<p>"+jQuery.i18n.map["systemlogs.no-data"]+"</p>";
+            return ret;
+        }
+		else
+			return row.i;
+	}
 });
 
 //register views
