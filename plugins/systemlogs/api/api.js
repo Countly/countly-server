@@ -1,8 +1,26 @@
 var plugin = {},
 	common = require('../../../api/utils/common.js'),
+    countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js');
 
 (function (plugin) {
+    
+    function getPeriodObj(params) {
+		params.qstring.period = params.qstring.period || "month";
+        if (params.qstring.period && params.qstring.period.indexOf(",") !== -1) {
+            try {
+                params.qstring.period = JSON.parse(params.qstring.period);
+            } catch (SyntaxError) {
+				console.log('Parse period JSON failed');
+                return false;
+            }
+        }
+
+        countlyCommon.setPeriod(params.qstring.period);
+        countlyCommon.setTimezone(params.appTimezone);
+
+        return countlyCommon.periodObj;
+    }
 	
 	//read api call
 	plugins.register("/o", function(ob){
@@ -24,6 +42,8 @@ var plugin = {},
                 }
             }
             query._id = {$ne:"meta_v2"};
+            getPeriodObj(params);
+            query.ts = countlyCommon.getTimestampRangeQuery(params, true);
             validate(params, function(params){
                 var columns = ["ts", "u", "a", "ip", "i"];
                 common.db.collection('systemlogs').count({},function(err, total) {

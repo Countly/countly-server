@@ -68,6 +68,7 @@ window.SystemLogsView = countlyView.extend({
                     if(self._query){
                         aoData.push({ "name": "query", "value": JSON.stringify(self._query) });
                     }
+                    aoData.push({ "name": "period", "value": countlyCommon.getPeriodForAjax() });
                 },
                 "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
 					$(nRow).attr("id", aData._id);
