@@ -544,6 +544,10 @@ var fetch = {},
         fetchTimeObj(collection, params, null, callback);
     };
 
+    fetch.getTimeObjForEvents = function (collection, params, callback) {
+        fetchTimeObj(collection, params, true, callback);
+    };
+
     fetch.fetchTotalUsersObj = function (metric, params) {
         getTotalUsersObj(metric, params, function(output) {
             common.returnOutput(params, output);
