@@ -572,10 +572,10 @@ input:disabled + label {
 .comp-datepicker-ui-picker .ui-state-disabled, 
 .comp-datepicker-ui-picker .ui-widget-content .ui-state-disabled, 
 .comp-datepicker-ui-picker .ui-widget-header .ui-state-disabled {
-    /* border: none; */
-    /* background: white; */
-    /* background-image: none; */
-}
+     border: none; 
+     background: white;
+     background-image: none;
+}*/
 
 .comp-datepicker-ui-picker a.ui-state-default.ui-state-highlight.ui-state-active {
     /*// border: none;*/
