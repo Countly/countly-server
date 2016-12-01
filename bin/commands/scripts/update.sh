@@ -20,8 +20,10 @@ elif [ "$1" = "sdk-web" ]; then
     mkdir -p $DIR/../../../frontend/express/public/sdk/web;
     SERVER_VERSION="$(countly version)";
     LATEST_SDK="$(wget -qO- https://api.github.com/repos/countly/countly-sdk-web/releases | grep tag_name | grep $SERVER_VERSION | head -n 1 | cut -d '"' -f 4)";
-    wget -nv --no-check-certificate https://raw.githubusercontent.com/Countly/countly-sdk-web/$LATEST_SDK/lib/countly.min.js -O $DIR/../../../frontend/express/public/sdk/web/countly.min.js
-    wget -nv --no-check-certificate https://raw.githubusercontent.com/Countly/countly-sdk-web/$LATEST_SDK/lib/countly.js -O $DIR/../../../frontend/express/public/sdk/web/countly.js
+    (cd $DIR/../../../ ;
+    npm install countly-sdk-web@$LATEST_SDK ;
+    cp -rf $DIR/../../../node_modules/countly-sdk-web/lib/* $DIR/../../../frontend/express/public/sdk/web/
+    )
 else
     usage ;
 fi
