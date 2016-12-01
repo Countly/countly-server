@@ -49,6 +49,8 @@ window.SystemLogsView = countlyView.extend({
             $(".back-link").click(function(){
                 window.history.back();
             });
+            
+            var tableData = [];
 
 			this.dtable = $('#systemlogs-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "bServerSide": true,
@@ -61,6 +63,7 @@ window.SystemLogsView = countlyView.extend({
                         "data": aoData,
                         "success": function(data){
                                 fnCallback(data);
+                                tableData = data.aaData; 
                                 CountlyHelpers.reopenRows(self.dtable, self.expandTable, self);
                         }
                     });
@@ -78,7 +81,7 @@ window.SystemLogsView = countlyView.extend({
                     { "mData": function(row, type){
 						if(type == "display"){
 							return moment(new Date(row.ts*1000)).format("ddd, D MMM YYYY HH:mm:ss");
-						}else return row.ts;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.timestamp"] },
+						}else return row.ts;}, "sType":"string", "sExport":"systemlogs", "sTitle": jQuery.i18n.map["systemlogs.timestamp"] },
 					{ "mData": function(row, type){return row.u;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.user"], bSortable: false},
                     { "mData": function(row, type){return row.ip;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.ip-address"], bSortable: false},
 					{ "mData": function(row, type){
@@ -122,6 +125,51 @@ window.SystemLogsView = countlyView.extend({
 			this.dtable.stickyTableHeaders();
 			this.dtable.fnSort( [ [0,'desc'] ] );
             CountlyHelpers.expandRows(this.dtable, this.expandTable, this);
+            
+            app.addDataExport("systemlogs", function(){
+                var ret = [];
+                var elem;
+                var users = {};
+                for(var i = 0; i < meta.users.length; i++){
+                    users[meta.users[i]._id] = meta.users[i];
+                }
+                if(tableData){
+                    for(var i = 0; i < tableData.length; i++){
+                        elem = {};
+                        elem[jQuery.i18n.map["systemlogs.timestamp"]] = moment(parseInt(tableData[i].ts)*1000).format("ddd, D MMM YYYY HH:mm:ss");
+                        if(tableData[i].user_id && users[tableData[i].user_id])
+                            elem[jQuery.i18n.map["systemlogs.user"]] = users[tableData[i].user_id].email+" ("+users[tableData[i].user_id].username+")";
+                        else
+                            elem[jQuery.i18n.map["systemlogs.user"]] = tableData[i].u;
+                        elem[jQuery.i18n.map["systemlogs.ip-address"]] = tableData[i].ip;
+                        elem[jQuery.i18n.map["systemlogs.action"]] = ((jQuery.i18n.map["systemlogs.action."+tableData[i].a]) ? jQuery.i18n.map["systemlogs.action."+tableData[i].a] : tableData[i].a);
+                        elem[jQuery.i18n.map["systemlogs.data"]] = "";
+                        elem[jQuery.i18n.map["systemlogs.before"]] = "";
+                        elem[jQuery.i18n.map["systemlogs.after"]] = "";
+                        if(typeof tableData[i].i == "object"){
+                            if(typeof tableData[i].i.before != "undefined" && typeof tableData[i].i.after != "undefined"){
+                                var data = {};
+                                for(var d in tableData[i].i){
+                                    if(d != "before" && d != "after" && d != "update"){
+                                        data[d] = tableData[i].i[d];
+                                    }
+                                }
+                                elem[jQuery.i18n.map["systemlogs.data"]] = JSON.stringify(data);
+                                elem[jQuery.i18n.map["systemlogs.before"]] = JSON.stringify(tableData[i].i.before);
+                                elem[jQuery.i18n.map["systemlogs.after"]] = JSON.stringify(tableData[i].i.after);
+                            }
+                            else if(!jQuery.isEmptyObject(tableData[i].i)){
+                                elem[jQuery.i18n.map["systemlogs.data"]] = JSON.stringify(tableData[i].i);
+                            }
+                        }
+                        else{
+                            elem[jQuery.i18n.map["systemlogs.data"]] = tableData[i].i;
+                        }
+                        ret.push(elem);
+                    }
+                }
+                return ret;
+            });
 
             $(".action-segmentation .segmentation-option").on("click", function () {
                 if(!self._query)
