@@ -9,6 +9,7 @@ var plugin = {},
      *    register internalEvent
      */
     plugins.internalEvents.push('[CLY]_star_rating');
+    plugins.internalDrillEvents.push("[CLY]_star_rating");
 
     /**
      *  register for process new  rating event data.
