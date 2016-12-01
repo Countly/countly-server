@@ -265,6 +265,7 @@ $.extend(Template.prototype, {
 
     CountlyHelpers.initializeSelect = function (element) {
         element = element || $("#content-container");
+
         element.off("click", ".cly-select").on("click", ".cly-select", function (e) {
             if ($(this).hasClass("disabled")) {
                 return true;
@@ -344,7 +345,7 @@ $.extend(Template.prototype, {
             e.stopPropagation();
         });
 
-        element.off("click", ".select-items .item").on("click", ".select-items .item", function () {
+        element.off("click", ".cly-select .select-items .item").on("click", ".cly-select .select-items .item", function () {
             var selectedItem = $(this).parents(".cly-select").find(".text");
             selectedItem.text($(this).text());
             selectedItem.data("value", $(this).data("value"));
@@ -450,7 +451,7 @@ $.extend(Template.prototype, {
             e.stopPropagation();
         });
 
-        element.off("click", ".select-items .item").on("click", ".select-items .item", function (e) {
+        element.off("click", ".cly-multi-select .select-items .item").on("click", ".cly-multi-select .select-items .item", function (e) {
             if ($(this).hasClass("disabled")) {
                 e.stopPropagation();
                 return;
@@ -531,11 +532,11 @@ $.extend(Template.prototype, {
             }
         });
 
-        element.off("click", ".selection").on("click", ".selection", function (e) {
+        element.off("click", ".cly-multi-select .selection").on("click", ".cly-multi-select .selection", function (e) {
             e.stopPropagation();
         });
 
-        element.off("click", ".selection .remove").on("click", ".selection .remove", function (e) {
+        element.off("click", ".cly-multi-select .selection .remove").on("click", ".cly-multi-select .selection .remove", function (e) {
             var $multiSelect = $(this).parents(".cly-multi-select");
 
             $multiSelect.find(".item[data-value='" + $(this).parent(".selection").data("value") + "']").removeClass("selected");
