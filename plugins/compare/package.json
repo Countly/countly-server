@@ -1,0 +1,19 @@
+{
+  "name": "compare",
+  "title": "Compare",
+  "version": "1.0.0",
+  "description": "Extensible plugin to compare multiple apps and custom events",
+  "author": "Count.ly",
+  "homepage": "https://count.ly/plugins/",
+  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
+  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "keywords": [
+    "countly",
+    "analytics",
+    "compare",
+    "comparison"
+  ],
+  "dependencies": {
+  },
+  "private": true
+}

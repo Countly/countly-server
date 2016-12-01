@@ -31,5 +31,8 @@ countly plugin upgrade systemlogs
 
 countly update sdk-web
 
+#add new plugins
+countly plugin enable compare
+
 #install dependencies, process files and restart countly
 countly upgrade

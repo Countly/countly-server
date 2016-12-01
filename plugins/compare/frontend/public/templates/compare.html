@@ -1,0 +1,56 @@
+{{#if back-link}}
+<a class="back back-link" href="{{back-link.href}}"><span data-localize="">{{back-link.text}}</span></a>
+{{/if}}
+
+<div class="widget compare-view views-widget">
+    <div class="widget-header">
+        <div class="left">
+            <div class="title">{{page-title}}</div>
+        </div>
+        {{> date-selector }}
+    </div>
+    <div class="alternative-selection">
+        <div style="display: inline-block; box-sizing: border-box; width: 100%; padding-right: 85px;">
+            <div id="alternative-selector" class="cly-multi-select" data-max="{{max-alternatives}}" style="width: 100%; box-sizing: border-box;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text">{{multi-select-text}}</div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width:100%;">
+                    <div>
+                        {{#eachOfObject alternatives}}
+                        <div data-value="{{property}}" class="item">{{value}}</div>
+                        {{/eachOfObject}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="position: absolute; top:50%; right:15px; margin-top: -18px;">
+            <div id="compare-button" class="icon-button green disabled" data-localize="compare.button"></div>
+        </div>
+    </div>
+    <div class="widget-content" style="border:none;">
+        <div id="big-numbers-container" class="dashboard">
+            {{#each metrics}}
+            <div class="big-numbers top cly-grid-{{../metrics.length}} help-zone-vs" data-help-localize="help.{{this.help}}">
+                <div class="inner">
+                    <div class="select" id="{{this.id}}">
+                        <div class="title">{{this.title}}</div>
+                    </div>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+    <div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none; position:relative;">
+        <div id="empty-graph">
+            <i class="material-icons">show_chart</i>
+        </div>
+        <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
+    </div>
+</div>
+<table id="dataTableOne" class="d-table views-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>

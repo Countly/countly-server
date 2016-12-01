@@ -1,0 +1,13 @@
+.compare-view .alternative-selection { position: relative; background-color:#FFF; padding:20px 13px; border:1px solid #d0d0d0; border-bottom: none; }
+.compare-view .d-table .name { cursor: pointer; margin-left: 15px; }
+.compare-view .d-table .color { float: left; margin:0; }
+.compare-view #empty-graph { position: absolute; text-align: center; width: 100%; top: 50%; margin-top: -35px; display: none; height: 70px; line-height: 70px; text-shadow: none; color: #B3B3B3; }
+.compare-view #empty-graph i { font-size: 70px; color: #ECECEC; user-select:none; }
+.compare-view #compare-button { padding: 8px 15px 9px 15px; }
+.compare-view #compare-button.disabled { background-color: #6d6d6d; cursor: default; box-shadow: inset 0 0 0 1px #6d6d6d; }
+.compare-view #alternative-selector .default-text { color:#2fa732; }
+
+/* For compare events view */
+#compare-events { margin-bottom: 0; padding: 3px 12px; text-align: center; }
+#compare-events .icon { background-image: url("/compare/images/compare-events.svg"); width:20px; height: 20px; float:none; margin:4px 0 0 0; display: inline-block; }
+#compare-events .name { float: none; width: auto; display: inline-block; vertical-align: top; }
