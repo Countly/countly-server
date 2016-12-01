@@ -1288,3 +1288,17 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 .on-off-switch .text { display: inline-block; opacity:1; font-size: 12px; color: #d0d0d0; vertical-align: top; margin-top: 8px; margin-left: 8px; }
 .on-off-switch input:checked + label + .text { opacity:0; }
 /* End of custom on-off switch based on input checkbox */
+
+.cly-grid-1 { width: 100%; }
+.cly-grid-2 { width: 50%; }
+.cly-grid-3 { width: 33%; }
+.cly-grid-3:nth-child(2) { width: 34%; }
+.cly-grid-4 { width: 25%; }
+.cly-grid-5 { width: 20%; }
+.cly-grid-6 { width: 17%; }
+.cly-grid-6:first-child { width: 16%; }
+.cly-grid-6:last-child { width: 16%; }
+.cly-grid-7 { width: 14%; }
+.cly-grid-7:first-child { width: 15%; }
+.cly-grid-7:last-child { width: 15%; }
+.cly-grid-8 { width: 12.5%; }
