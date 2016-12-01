@@ -61,7 +61,8 @@ countly_dir (){
 
 countly_test (){
     countly_root ;
-    bash $DIR/scripts/countly.run.tests.sh ;
+    DATE=`date +%Y-%m-%d:%H:%M:%S`
+    bash $DIR/scripts/countly.run.tests.sh 2>&1 | tee $DIR/../../log/countly-test-$DATE.log ;
 }
 
 countly_backupfiles (){
