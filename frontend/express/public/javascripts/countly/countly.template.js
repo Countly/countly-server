@@ -392,6 +392,193 @@ $.extend(Template.prototype, {
         });
     };
 
+    CountlyHelpers.initializeMultiSelect = function (element) {
+        element = element || $("#content-container");
+
+        element.off("click", ".cly-multi-select").on("click", ".cly-multi-select", function (e) {
+            if ($(this).hasClass("disabled")) {
+                return true;
+            }
+
+            $(this).removeClass("req");
+
+            var selectItems = $(this).find(".select-items"),
+                itemCount = selectItems.find(".item").length;
+
+            if (!selectItems.length) {
+                return false;
+            }
+
+            $(".cly-multi-select").find(".search").remove();
+
+            if (selectItems.is(":visible")) {
+                $(this).removeClass("active");
+            } else {
+                $(".cly-multi-select").removeClass("active");
+                $(".select-items").hide();
+                $(this).addClass("active");
+
+                if (itemCount > 10) {
+                    $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
+                }
+            }
+
+            if ($(this).find(".select-items").is(":visible")) {
+                $(this).find(".select-items").hide();
+            } else {
+                $(this).find(".select-items").show();
+                if ($(this).find(".select-items").find(".scroll-list").length == 0) {
+                    $(this).find(".select-items").wrapInner("<div class='scroll-list'></div>");
+                    $(this).find(".scroll-list").slimScroll({
+                        height:'100%',
+                        start:'top',
+                        wheelStep:10,
+                        position:'right',
+                        disableFadeOut:true
+                    });
+                }
+            }
+
+            $(this).find(".select-items").find(".item").removeClass("hidden");
+            $(this).find(".select-items").find(".group").show();
+            $(this).find(".select-items").find(".item").removeClass("last");
+            $(this).find(".select-items").find(".item:visible:last").addClass("last");
+
+            $(this).find(".search input").focus();
+
+            $("#date-picker").hide();
+            e.stopPropagation();
+        });
+
+        element.off("click", ".select-items .item").on("click", ".select-items .item", function (e) {
+            if ($(this).hasClass("disabled")) {
+                e.stopPropagation();
+                return;
+            }
+
+            var $multiSelect = $(this).parents(".cly-multi-select"),
+                selectionContainer = $multiSelect.find(".text"),
+                selectedValue = $(this).data("value"),
+                maxToSelect = $multiSelect.data("max");
+
+            if ($(this).hasClass("selected")) {
+                selectionContainer.find(".selection[data-value='" + selectedValue + "']").remove();
+                $(this).removeClass("selected");
+            } else {
+                var $selection = $("<div class='selection'></div>");
+
+                $selection.text($(this).text());
+                $selection.attr("data-value", selectedValue);
+                $selection.append("<div class='remove'><i class='ion-android-close'></i></div>");
+
+                selectionContainer.append($selection);
+
+                $(this).addClass("selected");
+            }
+
+            if (maxToSelect) {
+                if (getSelected($multiSelect).length >= maxToSelect) {
+                    $multiSelect.find(".item").addClass("disabled");
+                }
+            }
+
+            if ($multiSelect.find(".item.selected").length > 0) {
+                $multiSelect.addClass("selection-exists");
+            } else {
+                $multiSelect.removeClass("selection-exists");
+            }
+
+            $multiSelect.data("value", getSelected($multiSelect));
+            $multiSelect.trigger("cly-multi-select-change");
+            e.stopPropagation();
+        });
+
+        element.off("click", ".cly-multi-select .search").on("click", ".cly-multi-select .search", function (e) {
+            e.stopPropagation();
+        });
+
+        element.off("keyup", ".cly-multi-select .search input").on("keyup", ".cly-multi-select .search input", function(event) {
+            var $multiSelect = $(this).parents(".cly-multi-select");
+
+            if (!$(this).val()) {
+                $multiSelect.find(".item").removeClass("hidden");
+                $multiSelect.find(".group").show();
+            } else {
+                $multiSelect.find(".item:not(:contains('" + $(this).val() + "'))").addClass("hidden");
+                $multiSelect.find(".item:contains('" + $(this).val() + "')").removeClass("hidden");
+                var prevHeader = $multiSelect.find(".group").first();
+                prevHeader.siblings().each(function(){
+                    if($(this).hasClass("group")){
+                        if(prevHeader)
+                            prevHeader.hide();
+                        prevHeader = $(this);
+                    }
+                    else if($(this).hasClass("item") && $(this).is(":visible")){
+                        prevHeader = null;
+                    }
+
+                    if(!$(this).next().length && prevHeader)
+                        prevHeader.hide();
+                })
+            }
+        });
+
+        element.off('mouseenter').on('mouseenter', ".cly-multi-select .item", function () {
+            var item = $(this);
+
+            if (this.offsetWidth < this.scrollWidth && !item.attr('title')) {
+                item.attr('title', item.text());
+            }
+        });
+
+        element.off("click", ".selection").on("click", ".selection", function (e) {
+            e.stopPropagation();
+        });
+
+        element.off("click", ".selection .remove").on("click", ".selection .remove", function (e) {
+            var $multiSelect = $(this).parents(".cly-multi-select");
+
+            $multiSelect.find(".item[data-value='" + $(this).parent(".selection").data("value") + "']").removeClass("selected");
+
+            if ($multiSelect.find(".item.selected").length > 0) {
+                $multiSelect.addClass("selection-exists");
+            } else {
+                $multiSelect.removeClass("selection-exists");
+            }
+
+            $(this).parent(".selection").remove();
+
+            var maxToSelect = $multiSelect.data("max");
+
+            if (maxToSelect) {
+                if (getSelected($multiSelect).length < maxToSelect) {
+                    $multiSelect.find(".item").removeClass("disabled");
+                }
+            }
+
+            $multiSelect.data("value", getSelected($multiSelect));
+            $multiSelect.trigger("cly-multi-select-change");
+
+            e.stopPropagation();
+        });
+
+        $(window).click(function () {
+            $(".select-items").hide();
+            $(".cly-multi-select").find(".search").remove();
+            $(".cly-multi-select").removeClass("active");
+        });
+
+        function getSelected(multiSelectEl) {
+            var selected = [];
+
+            multiSelectEl.find(".text .selection").each(function() {
+                selected.push($(this).data("value"));
+            });
+
+            return selected;
+        }
+    };
+
     CountlyHelpers.refreshTable = function(dTable, newDataArr) {
         var oSettings = dTable.fnSettings();
         dTable.fnClearTable(false);
@@ -4309,6 +4496,7 @@ var AppRouter = Backbone.Router.extend({
 
             CountlyHelpers.initializeSelect();
             CountlyHelpers.initializeTextSelect();
+            CountlyHelpers.initializeMultiSelect();
 			
 			if(parseInt(countlyGlobal.config["session_timeout"])){
 				var minTimeout, tenSecondTimeout, logoutTimeout, actionTimeout;
