@@ -342,6 +342,11 @@ $.extend(Template.prototype, {
             $(this).find(".search input").focus();
 
             $("#date-picker").hide();
+
+            $(this).find(".search").off("click").on("click", function (e) {
+                e.stopPropagation();
+            });
+
             e.stopPropagation();
         });
 
@@ -349,10 +354,6 @@ $.extend(Template.prototype, {
             var selectedItem = $(this).parents(".cly-select").find(".text");
             selectedItem.text($(this).text());
             selectedItem.data("value", $(this).data("value"));
-        });
-
-        element.off("click", ".cly-select .search").on("click", ".cly-select .search", function (e) {
-            e.stopPropagation();
         });
 
         element.off("keyup", ".cly-select .search input").on("keyup", ".cly-select .search input", function(event) {
@@ -388,8 +389,11 @@ $.extend(Template.prototype, {
         });
 
         $(window).click(function () {
-            $(".select-items").hide();
-            $(".cly-select").find(".search").remove();
+            var $clySelect = $(".cly-select");
+
+            $clySelect.find(".select-items").hide();
+            $clySelect.find(".search").remove();
+            $clySelect.removeClass("active");
         });
     };
 
@@ -448,6 +452,11 @@ $.extend(Template.prototype, {
             $(this).find(".search input").focus();
 
             $("#date-picker").hide();
+
+            $(this).find(".search").off("click").on("click", function (e) {
+                e.stopPropagation();
+            });
+
             e.stopPropagation();
         });
 
@@ -491,10 +500,6 @@ $.extend(Template.prototype, {
 
             $multiSelect.data("value", getSelected($multiSelect));
             $multiSelect.trigger("cly-multi-select-change");
-            e.stopPropagation();
-        });
-
-        element.off("click", ".cly-multi-select .search").on("click", ".cly-multi-select .search", function (e) {
             e.stopPropagation();
         });
 
@@ -564,9 +569,11 @@ $.extend(Template.prototype, {
         });
 
         $(window).click(function () {
-            $(".select-items").hide();
-            $(".cly-multi-select").find(".search").remove();
-            $(".cly-multi-select").removeClass("active");
+            var $clyMultiSelect = $(".cly-multi-select");
+
+            $clyMultiSelect.find(".select-items").hide();
+            $clyMultiSelect.find(".search").remove();
+            $clyMultiSelect.removeClass("active");
         });
 
         function getSelected(multiSelectEl) {
@@ -984,7 +991,7 @@ $.extend(Template.prototype, {
             e.stopPropagation();
         });
 
-        $("#content-container").on("click", ".select-items .item", function () {
+        $("#content-container").on("click", ".cly-text-select .select-items .item", function () {
             var selectedItem = $(this).parents(".cly-text-select").find(".text");
             selectedItem.text($(this).text());
             selectedItem.data("value", $(this).data("value"));
