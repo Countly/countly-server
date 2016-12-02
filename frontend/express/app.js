@@ -528,7 +528,12 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             javascripts: []
                         };
 
-                        plugins.getPlugins().forEach(plugin => {
+                        var plgns = [].concat(plugins.getPlugins());
+                        if (plgns.indexOf('push') !== -1) {
+                            plgns.splice(plgns.indexOf('push'), 1);
+                            plgns.unshift('push');
+                        }
+                        plgns.forEach(plugin => {
                             try {
                                 let contents = fs.readdirSync(__dirname + `/../../plugins/${plugin}/frontend/public/javascripts`) || [];
                                 toDashboard.javascripts.push.apply(toDashboard.javascripts, contents.filter(n => n.indexOf('.js') === n.length - 3).map(n => `${plugin}/javascripts/${n}`));
