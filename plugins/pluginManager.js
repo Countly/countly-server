@@ -10,6 +10,9 @@ var plugins = require('./plugins.json', 'dont-enclose'),
     _ = require('underscore'),
     cluster = require('cluster'),
     Promise = require("bluebird"),
+    log = require('../api/utils/log.js'),
+    logDbRead = log('db:read'),
+    logDbWrite = log('db:write'),
     exec = cp.exec;
     
 var pluginManager = function pluginManager(){
@@ -591,6 +594,179 @@ var pluginManager = function pluginManager(){
             return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.');
         };
         countlyDb.on('error', console.log);
+        
+        //overwrite some methods
+        countlyDb._collection = countlyDb.collection;
+        countlyDb.collection = function(name, options, callback){
+            
+            //get original collection object
+            var ob = this._collection(name, options, callback);
+            
+            //overwrite with retry policy
+            var retryifNeeded = function(callback, retry, e){
+                return function(err, res){
+                    if(err){
+                        logDbWrite.e("Error writing %j", err);
+                        if(e)
+                            logDbWrite.d(e.stack)
+                        if(retry && err.code == 11000){
+                            retry();
+                        }
+                        else if(callback){
+                            callback(err, res);
+                        }
+                    }
+                    else if(callback){
+                        callback(err, res);
+                    }
+                };
+            };
+            ob._findAndModify = ob.findAndModify;
+            ob.findAndModify = function(query, sort, doc, options, callback){
+                var e;
+                if(log.getLevel("db") === "debug")
+                    e = new Error();
+                if(typeof options === "function"){
+                    //options was not passed, we have callback
+                    logDbWrite.d("findAndModify %j %j %j", query, sort, doc);
+                    this._findAndModify(query, sort, doc, retryifNeeded(options, null, e));
+                }
+                else{
+                    //we have options
+                    logDbWrite.d("findAndModify %j %j %j %j", query, sort, doc, options);
+                    if(options.upsert){
+                        var self = this;
+                        
+                        this._findAndModify(query, sort, doc, options, retryifNeeded(callback, function(){
+                            self._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e));
+                        }, e));
+                    }
+                    else{
+                        this._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e));
+                    }
+                }
+            };
+            
+            var overwriteRetryWrite = function(ob, name){
+                ob["_"+name] = ob[name];
+                ob[name] = function(selector, doc, options, callback){
+                    var e;
+                    if(log.getLevel("db") === "debug")
+                        e = new Error();
+                    if(typeof options === "function"){
+                        //options was not passed, we have callback
+                        logDbWrite.d(name+" %j %j", selector, doc);
+                        this["_"+name](selector, doc, retryifNeeded(options, null, e));
+                    }
+                    else{
+                        //we have options
+                        logDbWrite.d(name+" %j %j %j", selector, doc, options);
+                        if(options.upsert){
+                            var self = this;
+                            
+                            this["_"+name](selector, doc, options, retryifNeeded(callback, function(){
+                                self["_"+name](selector, doc, options, retryifNeeded(callback, null, e));
+                            }, e));
+                        }
+                        else{
+                            this["_"+name](selector, doc, options, retryifNeeded(callback, null, e));
+                        }
+                    }
+                };
+            }
+            
+            overwriteRetryWrite(ob, "update");
+            overwriteRetryWrite(ob, "updateOne");
+            
+            //overwrite with write logging
+            var logForWrites = function(callback, e){
+                return function(err, res){
+                    if(err){
+                        logDbWrite.e("Error writing %j", err);
+                        if(e)
+                            logDbWrite.d(e.stack)
+                    }
+                    if(callback)
+                        callback(err, res);
+                };
+            };
+            
+            var overwriteDefaultWrite = function(ob, name){
+                ob["_"+name] = ob[name];
+                ob[name] = function(selector, options, callback){
+                    var e;
+                    if(log.getLevel("db") === "debug")
+                        e = new Error();
+                    if(typeof options === "function"){
+                        //options was not passed, we have callback
+                        logDbWrite.d(name+" %j", selector);
+                        this["_"+name](selector, logForWrites(options, e));
+                    }
+                    else{
+                        //we have options
+                        logDbWrite.d(name+" %j %j", selector, options);
+                        this["_"+name](selector, options, logForWrites(callback, e));
+                    }
+                };
+            };
+            overwriteDefaultWrite(ob, "remove");
+            overwriteDefaultWrite(ob, "insert");
+            overwriteDefaultWrite(ob, "save");
+            overwriteDefaultWrite(ob, "deleteMany");
+            
+            //overwrite with read logging
+            var logForReads = function(callback, e){
+                return function(err, res){
+                    if(err){
+                        logDbRead.e("Error reading %j", err);
+                        if(e)
+                            logDbRead.d(e.stack)
+                    }
+                    if(callback)
+                        callback(err, res);
+                };
+            };
+            
+            var overwriteDefaultRead = function(ob, name){
+                ob["_"+name] = ob[name];
+                ob[name] = function(query, options, callback){
+                    var e;
+                    if(log.getLevel("db") === "debug")
+                        e = new Error();
+                    if(typeof options === "function"){
+                        //options was not passed, we have callback
+                        logDbRead.d(name+" %j", query);
+                        this["_"+name](query, logForReads(options, e));
+                    }
+                    else{
+                        //we have options
+                        logDbRead.d(name+" %j %j", query, options);
+                        this["_"+name](query, options, logForReads(callback, e));
+                    }
+                };
+            };
+            
+            overwriteDefaultRead(ob, "findOne");
+            overwriteDefaultRead(ob, "aggregate");
+            
+            ob._find = ob.find;
+            ob.find = function(query, options){
+                var e;
+                var cursor;
+                if(log.getLevel("db") === "debug")
+                    e = new Error();
+                logDbRead.d("find %j %j", query, options);
+                var cursor = this._find(query, options);
+                cursor._toArray = cursor.toArray;
+                cursor.toArray = function(callback){
+                    cursor._toArray(logForReads(callback, e));
+                };
+                return cursor;
+            };
+            
+            //return original collection object
+            return ob;
+        };
         return countlyDb;
     };
 
