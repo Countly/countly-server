@@ -502,7 +502,7 @@ table { border-collapse: collapse; }
 #add-app-button i { font-size: 22px; margin: 0; line-height: 22px; }
 
 /* TABLES */
-.dataTables_wrapper { margin:15px 0; }
+.dataTables_wrapper { margin:15px 0; position: relative; }
 table.d-table { width:100%; padding:0; margin:0; border-radius:2px; margin-bottom:20px; border-left: 1px solid #D0D0D0; border-right: 1px solid #D0D0D0; }
 table.d-table:not(.no-fix) { table-layout:fixed; }
     .d-table  th { padding:11px 10px 10px 10px; color:#484848; font-weight:normal; font-size:11px; text-transform: uppercase; line-height:12px; text-align:left; border-bottom:1px solid #E2E2E2; background-color:#F3F3F3; border-top: 1px solid #D0D0D0; }
@@ -551,7 +551,7 @@ div.datatablesubrow {display: none;}
 .dataTable td { border-radius:0 !important; }
 .dataTable-bottom, .dataTable-top { border: 1px solid #D0D0D0; padding:0; overflow:auto; color:#969696; font-weight:normal; font-size:10px; line-height:111%; text-align:left; background-color:#ECECEC; }
 .dataTable-top { border-bottom:none; color:#BBB; transition:color 0.5s; border-top-left-radius:2px; border-top-right-radius:2px; }
-.dataTable-bottom { border-top:1px solid #E2E2E2; border-bottom-left-radius:2px; border-bottom-right-radius:2px; background-color: #ECECEC; }
+.dataTable-bottom { display:none; border-top:1px solid #E2E2E2; border-bottom-left-radius:2px; border-bottom-right-radius:2px; background-color: #ECECEC; }
 .dataTable-top:hover { color:#888; transition:color 0.5s; }
 .dataTable-top .dataTables_filter { float:left; padding-top:6px; display:none; }
 .dataTable-top .dataTables_filter input { font-size:13px; margin:0; border-radius:2px; background-color:#FFF; border:1px solid #CCC; width:200px; transition:width 0.5s; outline:none; padding:2px 6px; }
@@ -573,12 +573,9 @@ div.datatablesubrow {display: none;}
 .dataTable-bottom .dataTables_paginate span { font-size:18px; padding-right:5px; }
 .dataTables_paginate .paginate_disabled_previous { opacity:0.2; }
 .dataTables_paginate .paginate_disabled_next { opacity:0.2; }
-.dataTable thead th.sorting_asc,
-.dataTable thead th.sorting_desc,
-.dataTable thead th.sorting { position: relative; }
-.dataTable thead th.sorting_asc:after { color:#2FA732; display: inline-block; font-family: 'FontAwesome'; content: "\f0de"; margin-left: 7px; vertical-align: top; margin-top: 7px; line-height: 5px; }
-.dataTable thead th.sorting_desc:after { color:#2FA732; display: inline-block; font-family: 'FontAwesome'; content: "\f0dd"; margin-left: 7px; vertical-align: top; margin-top: 2px; line-height: 6px; }
-.dataTable thead th.sorting:after { color:#BBBBBB; display: inline-block; font-family: 'FontAwesome'; content: "\f0dc"; margin-left: 7px; vertical-align: top; margin-top: 4px; line-height: 6px; }
+.dataTable thead th.sorting_asc:after { color:#2FA732; display: inline-block; font-family: 'FontAwesome'; content: "\f0de"; margin-left: 7px; vertical-align: text-top; margin-top: 7px; line-height: 5px; }
+.dataTable thead th.sorting_desc:after { color:#2FA732; display: inline-block; font-family: 'FontAwesome'; content: "\f0dd"; margin-left: 7px; vertical-align: text-top; margin-top: 2px; line-height: 6px; }
+.dataTable thead th.sorting:after { color:#BBBBBB; display: inline-block; font-family: 'FontAwesome'; content: "\f0dc"; margin-left: 7px; vertical-align: text-top; margin-top: 4px; line-height: 6px; }
 
 .d-table.horizontal { border:1px solid #D0D0D0; }
 .d-table.horizontal td { border-bottom:1px solid #ececec; padding: 12px; }
@@ -590,6 +587,20 @@ div.datatablesubrow {display: none;}
 .d-table.horizontal .populate-demo-data td,
 .d-table.horizontal td td { border-bottom:none; }
 
+.table-placeholder { z-index:-1; display:block; height: 100%; min-height:120px; background-color: #FFF; border:1px solid #D0D0D0; border-radius:2px; border-top-left-radius: 0; border-top-right-radius: 0; opacity: 1; position: absolute; top:0; width: 100%; box-sizing: border-box; }
+.table-placeholder .top { height: 34px; border-bottom: 1px solid #d0d0d0; background-color: #ECECEC; }
+.table-placeholder .header { height: 33px; border-bottom: 1px solid #d0d0d0; background-color: #F3F3F3; }
+
+.table-loader { height: 1px; width: 100%; position: absolute; overflow: hidden; background-color: transparent; top:35px; left:0; box-sizing: border-box; margin:0; z-index: 1; }
+.table-loader:before{ display: block; position: absolute; content: ""; left:-200px; width: 200px; height: 1px; background-color: #2fa732; animation: table-loading 2s linear infinite; }
+@keyframes table-loading {
+    from {left: -30%; width: 30%;}
+    50% {width: 30%;}
+    70% {width: 70%;}
+    80% { left: 50%;}
+    95% {left: 120%;}
+    to {left: 100%;}
+}
 /* TABLES END */
 
 .icon-button { min-height:14px; cursor:pointer; float:left; padding:7px 12px; border-radius:2px; font:12px Ubuntu,Helvetica,sans-serif; line-height:15px; overflow:auto; margin-left:8px; }

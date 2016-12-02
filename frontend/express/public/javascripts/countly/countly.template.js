@@ -5634,6 +5634,24 @@ var AppRouter = Backbone.Router.extend({
                 }
 
                 //tableWrapper.css({"min-height": tableWrapper.height()});
+            },
+            fnPreDrawCallback: function(oSettings, json) {
+                var tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
+
+                if (tableWrapper.find(".table-placeholder").length == 0) {
+                    var $placeholder = $('<div class="table-placeholder"><div class="top"></div><div class="header"></div></div>');
+                    tableWrapper.append($placeholder);
+                }
+
+                if (tableWrapper.find(".table-loader").length == 0) {
+                    tableWrapper.append("<div class='table-loader'></div>");
+                }
+            },
+            fnDrawCallback: function(oSettings) {
+                var tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
+                tableWrapper.find(".dataTable-bottom").show();
+                tableWrapper.find(".table-placeholder").remove();
+                tableWrapper.find(".table-loader").remove();
             }
         });
 

@@ -248,7 +248,6 @@ window.CrashesView = countlyView.extend({
                 that = this;
 
             $('.dataTables_filter input').bind('keyup', function(e) {
-                self.showLoader = true;
                 $this = this;
 
                 if (timeout) {
@@ -259,18 +258,6 @@ window.CrashesView = countlyView.extend({
                 timeout = setTimeout(function(){
                     that.dtable.fnFilter($this.value);   
                 }, 500);
-            });     
-            
-            var loader = $(this.el).find("#loader");
-            loader.show();
-            var loadTimeout = null;
-            this.dtable.on("processing", function(e, oSettings, bShow){
-                if(bShow && self.showLoader){
-                    self.showLoader = false;
-                    loader.show();
-                }
-                else
-                    loader.hide();
             });
             
             setTimeout(function(){$(".dataTables_filter input").attr("placeholder",jQuery.i18n.map["crashes.search"]);},1000);
