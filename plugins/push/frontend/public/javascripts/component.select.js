@@ -14,7 +14,7 @@ window.component('select', function(select) {
 		this.options = m.prop(opts.options.map(window.components.selector.Option));
 	};
 	select.view = function(ctrl){
-		return m('select.comp-select' + (ctrl.opts.class ? '.' + ctrl.opts.class : ''), {onchange: m.withAttr('value', ctrl.value)}, ctrl.options().map(function(o){
+		return m('.comp-select', m('select' + (ctrl.opts.class ? '.' + ctrl.opts.class : ''), {onchange: m.withAttr('value', ctrl.value)}, ctrl.options().map(function(o){
 			var opts = {
 				value: o.value()
 			};
@@ -23,6 +23,6 @@ window.component('select', function(select) {
 			}
 
 			return m('option', opts, o.title());
-		}));
+		})));
 	};
 });

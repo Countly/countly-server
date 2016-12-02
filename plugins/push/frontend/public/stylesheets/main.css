@@ -77,7 +77,7 @@
 .comp-push h6 .warn { position: relative; font-size: 22px; vertical-align: sub; margin-left: 5px;  }
 .comp-push .help { color: #7F8FA4; font-size: 12px; margin: 19px 0; }
 
-.comp-slider .btns { position: fixed; bottom: 35px; right: 0; width: 768px; height: 68px; padding: 0; background-color: white; }
+.comp-slider .btns { position: fixed; bottom: 35px; right: 0; width: 768px; height: 68px; padding: 0; background-color: white; z-index: 1001; }
 .comp-slider .btns > a { margin: 18px; }
 .comp-slider .btns > a:first-child { margin-left: 36px; }
 .comp-slider .btns > a:last-child { margin-right: 36px; }
@@ -113,12 +113,28 @@
 .widget-header .comp-segmented-option { padding: 8px 9px; }
 
 .comp-push .comp-datepicker { margin-left: 24px; }
+.comp-push .comp-select { border-radius: 4px; }
 
 
 .comp-push-panel-compose-left { width: auto; }
 .comp-push-panel-compose-right { width: 210px; }
 
-.comp-select { width: 100%; height: 30px; border: 1px solid #C5C5C5; padding: 12px; font-size: 12px; color: #354052; background-color: white; }
+.comp-select { position: relative; background-color: white; border: 1px solid #C5C5C5; }
+.comp-select > select { width: 100%; height: 30px; padding: 0 10px; font-size: 12px; color: #354052; background-color: white; -webkit-appearance:none; -moz-appearance:none; -ms-appearance:none; appearance:none; border: none; border-radius: none; }
+.comp-select:after {
+    content:"";
+    position:absolute;
+    z-index:2;
+    right:8px;
+    top:50%;
+    margin-top:-2px;
+    width: 0; 
+    height: 0; 
+    border-style: solid;
+    border-width: 3px 3px 0 3px;
+    border-color: rgba(0, 0, 0, .6) transparent transparent transparent;
+}
+
 
 .comp-slider .loader { opacity: 0; visibility: hidden; position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
 .comp-slider.loading .loadable { filter: blur(10px); -webkit-filter: blur(10px); }
