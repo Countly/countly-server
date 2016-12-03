@@ -624,16 +624,19 @@ var pluginManager = function pluginManager(){
             ob._findAndModify = ob.findAndModify;
             ob.findAndModify = function(query, sort, doc, options, callback){
                 var e;
-                if(log.getLevel("db") === "debug")
+                var at = "";
+                if(log.getLevel("db") === "debug"){
                     e = new Error();
+                    at = " at "+e.stack().replace(/\r\n|\r|\n|\/n/g, "\n").split("\n")[2];
+                }
                 if(typeof options === "function"){
                     //options was not passed, we have callback
-                    logDbWrite.d("findAndModify %j %j %j", query, sort, doc);
+                    logDbWrite.d("findAndModify %j %j %j"+at, query, sort, doc);
                     this._findAndModify(query, sort, doc, retryifNeeded(options, null, e));
                 }
                 else{
                     //we have options
-                    logDbWrite.d("findAndModify %j %j %j %j", query, sort, doc, options);
+                    logDbWrite.d("findAndModify %j %j %j %j"+at, query, sort, doc, options);
                     if(options.upsert){
                         var self = this;
                         
@@ -651,16 +654,19 @@ var pluginManager = function pluginManager(){
                 ob["_"+name] = ob[name];
                 ob[name] = function(selector, doc, options, callback){
                     var e;
-                    if(log.getLevel("db") === "debug")
+                    var at = "";
+                    if(log.getLevel("db") === "debug"){
                         e = new Error();
+                        at = " at "+e.stack().replace(/\r\n|\r|\n|\/n/g, "\n").split("\n")[2];
+                    }
                     if(typeof options === "function"){
                         //options was not passed, we have callback
-                        logDbWrite.d(name+" %j %j", selector, doc);
+                        logDbWrite.d(name+" %j %j"+at, selector, doc);
                         this["_"+name](selector, doc, retryifNeeded(options, null, e));
                     }
                     else{
                         //we have options
-                        logDbWrite.d(name+" %j %j %j", selector, doc, options);
+                        logDbWrite.d(name+" %j %j %j"+at, selector, doc, options);
                         if(options.upsert){
                             var self = this;
                             
@@ -695,16 +701,19 @@ var pluginManager = function pluginManager(){
                 ob["_"+name] = ob[name];
                 ob[name] = function(selector, options, callback){
                     var e;
-                    if(log.getLevel("db") === "debug")
+                    var at = "";
+                    if(log.getLevel("db") === "debug"){
                         e = new Error();
+                        at = " at "+e.stack().replace(/\r\n|\r|\n|\/n/g, "\n").split("\n")[2];
+                    }
                     if(typeof options === "function"){
                         //options was not passed, we have callback
-                        logDbWrite.d(name+" %j", selector);
+                        logDbWrite.d(name+" %j"+at, selector);
                         this["_"+name](selector, logForWrites(options, e));
                     }
                     else{
                         //we have options
-                        logDbWrite.d(name+" %j %j", selector, options);
+                        logDbWrite.d(name+" %j %j"+at, selector, options);
                         this["_"+name](selector, options, logForWrites(callback, e));
                     }
                 };
@@ -731,16 +740,19 @@ var pluginManager = function pluginManager(){
                 ob["_"+name] = ob[name];
                 ob[name] = function(query, options, callback){
                     var e;
-                    if(log.getLevel("db") === "debug")
+                    var at = "";
+                    if(log.getLevel("db") === "debug"){
                         e = new Error();
+                        at = " at "+e.stack().replace(/\r\n|\r|\n|\/n/g, "\n").split("\n")[2];
+                    }
                     if(typeof options === "function"){
                         //options was not passed, we have callback
-                        logDbRead.d(name+" %j", query);
+                        logDbRead.d(name+" %j"+at, query);
                         this["_"+name](query, logForReads(options, e));
                     }
                     else{
                         //we have options
-                        logDbRead.d(name+" %j %j", query, options);
+                        logDbRead.d(name+" %j %j"+at, query, options);
                         this["_"+name](query, options, logForReads(callback, e));
                     }
                 };
@@ -753,9 +765,12 @@ var pluginManager = function pluginManager(){
             ob.find = function(query, options){
                 var e;
                 var cursor;
-                if(log.getLevel("db") === "debug")
+                var at = "";
+                if(log.getLevel("db") === "debug"){
                     e = new Error();
-                logDbRead.d("find %j %j", query, options);
+                    at = " at "+e.stack().replace(/\r\n|\r|\n|\/n/g, "\n").split("\n")[2];
+                }
+                logDbRead.d("find %j %j"+at, query, options);
                 var cursor = this._find(query, options);
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(callback){
