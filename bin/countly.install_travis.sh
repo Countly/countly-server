@@ -118,3 +118,6 @@ cd $DIR && grunt dist-all
 
 #finally start countly api and dashboard
 countly start
+
+#set debug level for db logging
+countly config "log.db" "db"
