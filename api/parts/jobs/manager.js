@@ -51,7 +51,7 @@ class Manager {
 				try {
 					let promise = toCancel && toCancel.length ? Promise.all(toCancel.map(j => this.create(j).cancel())) : Promise.resolve(),
 						resume = () => {
-							log.d('Resuming after cancellation')
+							log.d('Resuming after cancellation');
 							this.collection.find({status: STATUS.PAUSED}).toArray((err, array) => {
 								if (!err && array && array.length) {
 									log.i('Going to resume following jobs: %j', array.map(j => {
@@ -222,14 +222,19 @@ class Manager {
 			if (!this.running[job.name]) { this.running[job.name] = []; }
 			this.running[job.name].push(job);
 
-			return this.run(job).then((upd) => {
-				log.d('result in start, %j', upd);
-				this.schedule(job);
-				return upd ? upd.result : undefined;
-			}, (error) => {
-				this.schedule(job);
-				throw error;
-			} );
+			return new Promise((resolve, reject) => {
+				job.prepare(this, this.db).then(() => {
+					log.d('prepared %j', job._idIpc);
+					this.run(job).then((upd) => {
+						log.d('result in start, %j', upd);
+						this.schedule(job);
+						resolve(upd ? upd.result : undefined);
+					}, (error) => {
+						this.schedule(job);
+						reject(error);
+					} );
+				}, reject);
+			});
 		}
 	}
 

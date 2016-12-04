@@ -81,6 +81,9 @@ var plugin = {},
             case 'delete':
                 validateUserForWriteAPI(push.delete, params);
                 break;
+            case 'validate':
+                validateUserForWriteAPI(push.validate, params);
+                break;
             case 'check':
                 validateUserForWriteAPI(push.checkApp, params);
                 break;

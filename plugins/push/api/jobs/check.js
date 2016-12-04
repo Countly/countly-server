@@ -120,7 +120,7 @@ class CheckJob extends job.TransientJob {
 					log.d('[%d]: Send promise returned success in %s', process.pid, this._idIpc);
 					if (!this.completed) {
 						done();
-						this.resource.close();
+						// this.resource.close();
 					}
 				}, (err) => {
 					log.d('[%d]: Send promise returned error %j in %s', process.pid, err, this._idIpc);

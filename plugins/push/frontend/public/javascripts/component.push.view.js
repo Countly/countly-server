@@ -12,6 +12,10 @@ window.component('push.view', function(view) {
 			i: 'https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CommunicatingwithAPNs.html#//apple_ref/doc/uid/TP40008194-CH11-SW17',
 			a: 'https://developers.google.com/cloud-messaging/http-server-ref#error-codes'
 		};
+
+	['push.errorCode.i405.desc', 'push.errorCode.i429.desc', 'push.errorCode.a200+MissingRegistration.desc', 'push.errorCode.a200+InvalidTtl.desc'].forEach(function(code){
+		t.set(code, t('push.errorCodes.bug'));
+	});
 	
 	view.show = function(message){
 		message = message instanceof components.push.Message ? message : new components.push.Message(message);

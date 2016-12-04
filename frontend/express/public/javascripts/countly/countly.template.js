@@ -5759,6 +5759,9 @@ var AppRouter = Backbone.Router.extend({
             jQuery.i18n.map = JSON.parse(app.origLang);
             if(!refresh){
                 app.main(true);
+                if (window.components && window.components.slider && window.components.slider.instance) {
+                    window.components.slider.instance.close();
+                }
             }
             $("#sidebar-menu .sidebar-menu").hide();
             var type = countlyGlobal["apps"][appId].type;

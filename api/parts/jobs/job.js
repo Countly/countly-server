@@ -568,6 +568,10 @@ class ResourcefulJob extends Job {
 		throw new Error('ResourcefulJob.createResource must be overridden to return possibly open resource instance');
 	}
 
+	releaseResource (/* resource */) {
+		throw new Error('ResourcefulJob.releaseResource must be overridden to return possibly open resource instance');
+	}
+
 	resourceName () {
 		throw new Error('ResourcefulJob.resourceName must be overridden to return non-unique string which identifies type of a resource');
 	}
@@ -593,6 +597,10 @@ class IPCJob extends ResourcefulJob {
 
 	retryPolicy () {
 		return new retry.IPCRetryPolicy(1);
+	}
+
+	releaseResource (/* resource */) {
+		return Promise.resolve();
 	}
 
 	_sendSave(data) {
@@ -711,6 +719,10 @@ class IPCFaçadeJob extends ResourcefulJob {
 
 	resourceName () {
 		return this.job.resourceName();
+	}
+
+	releaseResource (resource) {
+		return this.job.releaseResource(resource);
 	}
 
 	retryPolicy () {

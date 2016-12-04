@@ -160,6 +160,18 @@ window.component('push.dash', function(dash) {
 	};
 	dash.view = function(ctrl){
 		return m('.push-overview', [
+			m('input[type=file]', {onchange: function(ev){
+				var file;
+				if ((file = ev.target.files[0])) {
+					var reader = new window.FileReader();
+					reader.addEventListener('load', function(){
+						components.push.remoteValidate('a', 'gcm', 'AIzaSyA2lKRYR6x4MoMyJG_sMQ8XBpN_ksAI-ng', '');
+						// components.push.remoteValidate('i', 'apn_universal', reader.result, 'aaaa1111');
+					});
+					reader.readAsDataURL(file);
+				}
+			}}),
+
 			m.component(components.widget, {
 				header: {
 					title: 'pu.dash.users', 

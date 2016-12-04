@@ -303,4 +303,19 @@ window.component('push', function(push) {
 		}
 	};
 
+	push.remoteValidate = function(platform, type, key, secret) {
+		var data = new FormData();
+		data.append('platform', platform);
+		data.append('type', type);
+		data.append('key', key);
+		data.append('secret', secret);
+
+		return m.request({
+			method: 'POST',
+			url: window.countlyCommon.API_URL + '/i/pushes/validate?api_key=' + window.countlyGlobal.member.api_key,
+			data: data,
+			serialize: function(data) { return data; }
+		});
+	};
+
 });
