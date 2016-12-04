@@ -11,6 +11,7 @@ addons:
       - mongodb-org-server
 before_install: sudo bash ./bin/countly.install_travis.sh
 install: sudo npm install
+after_install: countly config "log.db" "db"
 before_script:
   - nodejs --version
   - mongod --version
