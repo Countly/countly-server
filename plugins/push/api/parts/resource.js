@@ -13,8 +13,8 @@ class Connection extends res.Resource {
 		} else if (credentials.platform === 'a') {
 			this.connection = new GCM.ConnectionResource(credentials.key);
 		} else {
-			log.e(`Platform ${options.platform} is not supported`);
-			throw new Error(`Platform ${options.platform} is not supported`);
+			log.e(`Platform ${credentials.platform} is not supported`);
+			throw new Error(`Platform ${credentials.platform} is not supported`);
 		}
 	}
 
