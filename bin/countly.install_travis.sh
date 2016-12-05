@@ -85,8 +85,6 @@ bash $DIR/scripts/detect.init.sh
 
 #create api configuration file from sample
 cp $DIR/../api/config.sample.js $DIR/../api/config.js
-#make logging output debug info
-sed -i 's/default: "warn"/default: "debug"/' $DIR/../api/config.js
 
 #create app configuration file from sample
 cp $DIR/../frontend/express/config.sample.js $DIR/../frontend/express/config.js
