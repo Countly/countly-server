@@ -56,7 +56,8 @@
 .comp-push-tab-desc { font-size: 12px; margin-top: 2px; }
 /*.comp-push-tab-content { padding: 9px 0;}*/
 
-.comp-push-platform { margin-bottom: 9px; }
+.comp-push .platforms { height: 27px; }
+.comp-push-platform { margin-bottom: 9px; display: table-cell; width: 2%; }
 .comp-push-platform:hover { cursor: pointer; }
 
 .comp-selector { width: 220px; height: 440px; padding: 9px; background-color: white; position: relative; }

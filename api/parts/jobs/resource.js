@@ -120,17 +120,17 @@ class ResourceFaçade extends ResourceInterface {
 			file: this._file,
 			job: job._json
 		})]);
-		log.i('[jobs]: Started resource façade %j in %d for %j: %j', this.name, process.pid, this._worker.pid, this.id);
+		log.i('[façade]: Started resource %j in %d for %j: %j', this.name, process.pid, this._worker.pid, this.id);
 
 		this.channel = new ipc.IdChannel(this.id);
 		this.channel.attach(this._worker);
 		
 		this.channel.on(CMD.DONE, (json) => {
 			if (json.error) {
-				log.i('[jobs]: Done running %s with error %j %j (%j) in %d', json._id, json.error, this.name, this.id, this._worker.pid);
+				log.i('[façade]: Done running %s with error %j %j (%j) in %d', json._id, json.error, this.name, this.id, this._worker.pid);
 				this.reject(json.error);
 			} else {
-				log.i('[jobs]: Done running %s with success %j (%j) in %d', json._id, this.name, this.id, this._worker.pid);
+				log.i('[façade]: Done running %s with success %j (%j) in %d', json._id, this.name, this.id, this._worker.pid);
 				this.resolve(json);
 			}
 		});
@@ -140,17 +140,17 @@ class ResourceFaçade extends ResourceInterface {
 		});
 		
 		this.channel.on(CMD.OPENED, () => {
-			log.i('[jobs]: Resource %j opened in %d: %j', this.name, this._worker.pid, this.id);
+			log.i('[façade]: Resource %j opened in %d: %j', this.name, this._worker.pid, this.id);
 			this._open = true;
 			this.emit(EVT.OPENED);
 		});
 		
 		this.channel.on(CMD.CLOSED, (err) => {
-			log.i('[jobs]: Resource %j closed in %d: %j', this.name, this._worker.pid, this.id, err);
+			log.i('[façade]: Resource %j closed in %d: %j', this.name, this._worker.pid, this.id, err);
 			this._open = false;
 			if (!this._crashed) {
 				if (this._job) {
-					log.i('[jobs]: Resource %j closed in %d (%j) while running %s, will reject', this.name, this._worker.pid, this.id, this._job._idIpc, err);
+					log.i('[façade]: Resource %j closed in %d (%j) while running %s, will reject', this.name, this._worker.pid, this.id, this._job._idIpc, err);
 					this.reject(err || EVT.CLOSED);
 				}
 				this.emit(EVT.CLOSED, err);
@@ -158,10 +158,10 @@ class ResourceFaçade extends ResourceInterface {
 		});
 
 		this.channel.on('exit', () => {
-			log.i('[jobs]: Resource %j exited in %d: %j', this.name, this._worker.pid, this.id);
+			log.i('[façade]: Resource %j exited in %d: %j', this.name, this._worker.pid, this.id);
 			if (!this._crashed) {
 				if (this._job) {
-					log.i('[jobs]: Resource %j exited in %d (%j) while running %s, will reject', this.name, this._worker.pid, this.id, this._job._idIpc);
+					log.i('[façade]: Resource %j exited in %d (%j) while running %s, will reject', this.name, this._worker.pid, this.id, this._job._idIpc);
 					this.reject('Process exited');
 				}
 				if (this._open) {
@@ -174,7 +174,7 @@ class ResourceFaçade extends ResourceInterface {
 
 		this.channel.on(CMD.CRASH, (err) => {
 			if (!this._crashed) {
-				log.e('[jobs]: Resource %s (%s) crashed in %d: %j', this.name, this.id, this._worker.pid, err);
+				log.e('[façade]: Resource %s (%s) crashed in %d: %j', this.name, this.id, this._worker.pid, err);
 				if (this.job) {
 					this.reject([JOB.ERROR.CRASH, err]);
 				} else {
@@ -186,7 +186,7 @@ class ResourceFaçade extends ResourceInterface {
 
 		this.channel.on(CMD.TIMEOUT, (err) => {
 			if (!this._crashed) {
-				log.e('[jobs]: Resource %s (%s) timed out in %d: %j', this.name, this.id, this._worker.pid, err);
+				log.e('[façade]: Resource %s (%s) timed out in %d: %j', this.name, this.id, this._worker.pid, err);
 				if (this.job) {
 					this.reject([JOB.ERROR.TIMEOUT, err]);
 				} else {
@@ -207,11 +207,11 @@ class ResourceFaçade extends ResourceInterface {
 
 	run (job) {
 		if (this.isBusy) { 
-			log.w('[jobs]: Resource façade %j is busy in %d: %j', this.name, this._worker.pid, this.id);
+			log.w('[façade]: Resource façade %j is busy in %d: %j', this.name, this._worker.pid, this.id);
 			return Promise.reject('busy'); 
 		}
 		this.job = job;
-		log.i('[jobs]: Resource façade %j in %d (%j) is going to run %s', this.name, this._worker.pid, this.id, job._idIpc);
+		log.i('[façade]: Resource façade %j in %d (%j) is going to run %s', this.name, this._worker.pid, this.id, job._idIpc);
 		return new Promise((resolve, reject) => {
 			this._resolve = resolve;
 			this._reject = reject;
@@ -259,12 +259,12 @@ class ResourceFaçade extends ResourceInterface {
 
 	abort (job) {
 		if (!this.job) {
-			log.w('[jobs]: Resource façade %j is not open in %d: %j', this.name, this._worker.pid, this.id);
+			log.w('[façade]: Resource façade %j is not open in %d: %j', this.name, this._worker.pid, this.id);
 			return Promise.reject('no job is running to abort'); 
 		}
 
 		if (this.job._id !== job._id) {
-			log.w('[jobs]: Resource façade %j is not open in %d: %j', this.name, this._worker.pid, this.id);
+			log.w('[façade]: Resource façade %j is not open in %d: %j', this.name, this._worker.pid, this.id);
 			return Promise.reject('busy with job other than requested to abort'); 
 		}
 
@@ -273,9 +273,16 @@ class ResourceFaçade extends ResourceInterface {
 
 	resolve () {
 		if (this._resolve) {
-			log.w('[jobs]: Resolving %s', this.job._idIpc);
+			log.w('[façade]: Resolving %s', this.job._idIpc);
 			this._resolve.apply(this, arguments);
-			this._resolve = this._reject = this.job.resource = this.job = null;
+			this.job.releaseResource(this).then(() => {
+				log.i('[façade]: Released resource for %s', this.job._idIpc);
+				this.job = null;
+			}, err => {
+				log.e('[façade]: Resource release returned error for %s: %j', this.job._idIpc, err);
+				this.job = null;
+			});
+			this._resolve = this._reject = this.job.resource = null;
 		} else {
 			log.w('ResourceFaçade %s already returned, nothing to resolve', this.id);
 		}
@@ -283,9 +290,16 @@ class ResourceFaçade extends ResourceInterface {
 
 	reject (error) {
 		if (this._reject) {
-			log.w('[jobs]: Rejecting %s', this.job._idIpc);
+			log.w('[façade]: Rejecting %s', this.job._idIpc);
 			this._reject.apply(this, arguments);
-			this._resolve = this._reject = this.job.resource = this.job = null;
+			this.job.releaseResource(this).then(() => {
+				log.i('[façade]: Released resource for %s', this.job._idIpc);
+				this.job = null;
+			}, err => {
+				log.e('[façade]: Resource release returned error for %s: %j', this.job._idIpc, err);
+				this.job = null;
+			});
+			this._resolve = this._reject = this.job.resource = null;
 		} else {
 			log.w('ResourceFaçade %s already returned, nothing to reject with %j', this.id, error);
 		}
@@ -380,11 +394,6 @@ class Resource extends ResourceInterface {
 		this.channel.send(CMD.CLOSED);
 		this.channel.remove();
 		log.i('[%d]: Closed resource %j (%j), exiting', process.pid, this.name, this.id);
-		if (this.terminate) {
-			this.terminate();
-		} else {
-			process.exit(0);
-		}
 	}
 	
 	open () {

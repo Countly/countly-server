@@ -12,6 +12,7 @@ var common          = require('../../../../api/utils/common.js'),
     Divider         = require('./divider.js'),
     jobs            = require('../../../../api/parts/jobs'),
     plugins         = require('../../../pluginManager.js'),
+    geoip           = require('geoip-lite'),
     Platform        = mess.MessagePlatform,
     Message         = mess.Message,
     MessageStatus   = mess.MessageStatus;
@@ -75,6 +76,7 @@ var common          = require('../../../../api/utils/common.js'),
             common.dbPromise(app, 'count', qtk),
             common.dbPromise(app, 'count'),
             getGeoPluginApi() ? common.dbPromise(geo, 'find', qge) : Promise.resolve(),
+            getGeoPluginApi() ? new Promise((resolve) => resolve(geoip.lookup(params.ip_address))) : Promise.resolve()
         ]).then(results => {
             try {
                 var events = results.slice(0, 2).map(events => {
@@ -111,7 +113,8 @@ var common          = require('../../../../api/utils/common.js'),
                     actions: events[1],
                     enabled: results[2] || 0,
                     users: results[3] || 0,
-                    geos: results[4] || []
+                    geos: results[4] || [],
+                    location: results[5] ? results[5].ll || null : null
                 });
             } catch (error) {
                 log.e(error, error.stack);
@@ -586,6 +589,82 @@ var common          = require('../../../../api/utils/common.js'),
         }, err => {
             log.e('Error while loading apps & geo: %j', err);
             common.returnMessage(params, 400, 'DB error');
+        });
+
+        return true;
+    };
+
+    api.validate = function (params) {
+        var argProps = {
+                'key':              { 'required': true,  'type': 'String'   },
+                'secret':           { 'required': true,  'type': 'String'   },
+                'type':             { 'required': false, 'type': 'String'   },
+                'platform':         { 'required': true,  'type': 'String'   }
+            },
+            args = {};
+
+        if (!(args = common.validateArgs(params.qstring, argProps))) {
+            log.d('Wrong arguments at /validate: %j', params.qstring);
+            common.returnMessage(params, 400, 'Not enough args');
+            return false;
+        }
+
+        var mime = args.key.indexOf(';base64,') === -1 ? null : args.key.substring(0, args.key.indexOf(';base64,')),
+            detected;
+
+        log.d('mime', mime);
+        log.d('args.key', args.key);
+        
+        if (args.platform === Platform.APNS) {
+            if (mime === 'data:application/x-pkcs12') {
+                detected = [creds.CRED_TYPE[Platform.APNS].UNIVERSAL, creds.CRED_TYPE[Platform.APNS].DEV, creds.CRED_TYPE[Platform.APNS].PROD];
+            } else if (mime === 'data:application/x-pkcs8') {
+                detected = [creds.CRED_TYPE[Platform.APNS].TOKEN];
+            } else {
+                common.returnMessage(params, 400, 'Certificate must be in P12 or P8 formats');
+                return false;
+            }
+
+            if (args.type) {
+                if (detected.indexOf(args.type) === -1) {
+                    common.returnMessage(params, 400, 'Certificate must be in P12 or P8 formats (bad type value)');
+                    return false;
+                }
+            } else {
+                if (detected.length > 1) {
+                    common.returnMessage(params, 400, 'Please set type of credentials supplied');
+                    return false;
+                }
+                args.type = detected[0];
+            }
+   
+            args.key = args.key.substring(args.key.indexOf(',') + 1);
+        } else if (args.platform === Platform.GCM) {
+            if (!args.type) {
+                args.type = creds.CRED_TYPE[Platform.GCM].GCM;
+            }
+        } else {
+            common.returnMessage(params, 400, 'Bad platform ' + args.platform);
+            return false;
+        }
+
+
+        common.db.collection('credentials').insertOne(args, (err, credentials) => {
+            if (err) {
+                log.e('Error while saving credentials', err);
+                common.returnOutput(params, {error: 'DB Error'});
+            } else {
+                credentials = credentials.ops[0];
+                log.i('Saved credentials', credentials);
+                jobs.runTransient('push:validate', {_id: credentials._id, cid: credentials._id, platform: args.platform}).then(() => {
+                    log.d('Check app returned ok');
+                    common.returnOutput(params, {cid: credentials._id});
+                }, (json) => {
+                    log.d('Check app returned error', json);
+                    let err = json && json.error === '3-EOF' ? 'badcert' : json;
+                    common.returnOutput(params, {error: err});
+                });
+            }
         });
 
         return true;

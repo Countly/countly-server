@@ -364,6 +364,9 @@ module.exports.Message = function (apps, names) {
 
                 if (this.data) {
                      _.extend(content.data, this.data);
+                     if (!content.messagePerLocale && !content.sound) {
+                        content.data.c.s = 'true';
+                     }
                 }
 
                 var idComponents = [this._id + ''];

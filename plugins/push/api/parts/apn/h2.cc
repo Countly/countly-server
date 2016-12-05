@@ -198,20 +198,34 @@ namespace apns {
 			PKCS12 *p12;
 			EVP_PKEY *key;
 			X509 *cert;
-			FILE *fp = std::fopen(obj->certificate.c_str(), "r");
-			if (!fp) {
-				persistentHandle->error = "Certificate file doesn't exist";
-				LOG_ERROR(persistentHandle->error);
-				return;
-			}
+			// FILE *fp = std::fopen(obj->certificate.c_str(), "r");
+			// if (!fp) {
+			// 	persistentHandle->error = "Certificate file doesn't exist";
+			// 	LOG_ERROR(persistentHandle->error);
+			// 	return;
+			// }
+			unsigned char *buffer;
+			size_t length;
+
+			base64_decode(obj->certificate.c_str(), &buffer, &length);
+
+			BIO *bio = BIO_new_mem_buf(buffer, length);
+			// BIO *b64 = BIO_new(BIO_f_base64());
+			// bio = BIO_push(b64, bio);
+			// BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL)
+
+			// bio = BIO_new(BIO_s_mem());
+			// BIO_puts(bio, obj->certificate.c_str());
+
 
 			SSL_load_error_strings();
 			SSL_library_init();
 			OpenSSL_add_all_algorithms();
 			ERR_load_crypto_strings();
 
-			p12 = d2i_PKCS12_fp(fp, NULL);
-			std::fclose(fp);
+			p12 = d2i_PKCS12_bio(bio, NULL);
+			// p12 = d2i_PKCS12_fp(fp, NULL);
+			// std::fclose(fp);
 			
 			if (!p12) {
 				persistentHandle->error = "Error reading PKCS#12 file";

@@ -23,22 +23,32 @@ try {
 
 	log.d('[%d]: Starting executor %j', process.pid, options);
 
-	const  _id = options._id,
+	const _id = options._id,
 		  nam = options.name,
 		  file = options.file,
 		  json = options.job,
 		  Constructor = require(file),
 		  channel = new IPC.IdChannel(_id),
 		  tmp = new Constructor(json),
-		  resource = tmp.createResource(_id, nam),
 		  db = plugins.singleDefaultConnection();
 
 	process.on('message', LOGGER.ipcHandler);
 	channel.attach(process);
 
-	resource.start(channel, db, Constructor);
+	plugins.loadConfigs(db, () => {
+		LOGGER.ipcHandler({cmd: 'log', config: plugins.getConfig('logs')});
 
-	log.d('[%d]: Started resource %j (%j): options %j', process.pid, nam, _id);
+		log.d('[%d]: Preparing resource %j (%j): options %j', process.pid, nam, _id, options);
+		tmp.prepare(null, db).then(() => {
+			var resource = tmp.createResource(_id, nam);
+			resource.start(channel, db, Constructor);
+			log.d('[%d]: Started resource %j (%j): options %j', process.pid, nam, _id, options);
+		}, err => {
+			log.e('Error while preparing job: %j / %j', err, err.stack);
+			process.exit(1);
+		});
+	});
+
 } catch (e) {
 	log.e('[%d]: Error in executor %j', process.pid, e, e.stack);
 }
