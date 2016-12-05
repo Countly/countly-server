@@ -610,7 +610,10 @@ var pluginManager = function pluginManager(){
                         if(e)
                             logDbWrite.d(e.stack)
                         if(retry && err.code == 11000){
-                            retry();
+                            if(typeof retry === "function")
+                                retry();
+                            else
+                                logDbWrite.d("Retry failed");
                         }
                         else if(callback){
                             callback(err, res);
@@ -641,6 +644,7 @@ var pluginManager = function pluginManager(){
                         var self = this;
                         
                         this._findAndModify(query, sort, doc, options, retryifNeeded(callback, function(){
+                            logDbWrite.d("retrying findAndModify %j %j %j %j"+at, query, sort, doc, options);
                             self._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e));
                         }, e));
                     }
@@ -671,6 +675,7 @@ var pluginManager = function pluginManager(){
                             var self = this;
                             
                             this["_"+name](selector, doc, options, retryifNeeded(callback, function(){
+                                logDbWrite.d("retrying "+name+" %j %j %j"+at, selector, doc, options);
                                 self["_"+name](selector, doc, options, retryifNeeded(callback, null, e));
                             }, e));
                         }
