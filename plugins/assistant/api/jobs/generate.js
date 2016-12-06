@@ -2,9 +2,14 @@
 
 const job = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('job:generate_notif');
+
 var pluginManager = require('../../../pluginManager.js'),
     async = require("async");
 var Promise = require("bluebird");
+
+var time = require('time')(Date);
+var assistant = require("../assistant.js");
+
 
 class GenerateNotifJob extends job.Job {
     run (countlyDb, doneJob, progressJob) {
@@ -19,24 +24,46 @@ class GenerateNotifJob extends job.Job {
         }
         var timeout = setTimeout(ping, 10000);
 
-        var plugins = pluginManager.getPlugins();
-        var promises = [];
-        for(var i = 0, l = plugins.length; i < l; i++){
-            try{
-                log.i('Preparing job: ' + plugins[i]);
-                promises.push(require("../../../"+plugins[i]+"/api/assistantJob").prepareNotifications(countlyDb));
-            } catch (ex) {
-            }
-        }
-        
-        var finishIt = function () {
-            log.i("Notifications generated");
-            clearTimeout(timeout);
-            timeout = 0;
-            doneJob();
-        };
+        countlyDb.collection('apps').find({}, {}).toArray(function(err_apps_data, result_apps_data) {
+            assistant.getAssistantConfig(countlyDb, function (returnedConfiguration) {
 
-        Promise.all(promises).then(finishIt, finishIt);
+                log.i("Generate Notifications job, apps DB :" + JSON.stringify(result_apps_data));
+
+                //get current day and time
+                //todo get time based on apps timezone
+                var date = new Date();
+
+                var providedInfo = {};
+                providedInfo.appsData = result_apps_data;
+                providedInfo.assistantConfiguration = returnedConfiguration;
+                //set the current time info
+                providedInfo.timeAndDate = {};
+                providedInfo.timeAndDate.date = date;
+                providedInfo.timeAndDate.hour = date.getHours();
+                providedInfo.timeAndDate.dow = date.getDay();
+                if (providedInfo.timeAndDate.dow === 0) providedInfo.timeAndDate.dow = 7;
+
+                var plugins = pluginManager.getPlugins();
+                var promises = [];
+                for (var i = 0, l = plugins.length; i < l; i++) {
+                    try {
+                        //log.i('Preparing job: ' + plugins[i]);
+                        promises.push(require("../../../" + plugins[i] + "/api/assistantJob").prepareNotifications(countlyDb, providedInfo));
+                    } catch (ex) {
+                        //log.i('Preparation FAILED [%j]', ex);
+                    }
+                }
+
+                var finishIt = function () {
+                    log.i("Notifications generated");
+                    clearTimeout(timeout);
+                    timeout = 0;
+                    doneJob();
+                };
+
+                Promise.all(promises).then(finishIt, finishIt);
+            });
+        });
 
         /* Job types and subtypes
             1 - quick tips

@@ -12,14 +12,14 @@ var plugin = {},
     var scheduleAssistantJob = function (schedule) {
 
     };
-
+/*
 	plugins.register("/master", function(ob){
 		// Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
             require('../../../api/parts/jobs').job('assistant:generate').replace().schedule("every " + assistant.JOB_SCHEDULE_INTERVAL + " minutes starting on the 0 min");
         }, 3000);
 	});
-
+*/
 	plugins.register("/o/assistant", function(ob){
 		var params = ob.params;
 		var paths = ob.paths;
@@ -47,8 +47,6 @@ var plugin = {},
 		}, params);
 		return true;
 	});
-
-    var db_name_notifs = "assistant_notifs";
 
 	plugins.register("/i/assistant", function(ob){
 		var params = ob.params;
@@ -121,6 +119,9 @@ var plugin = {},
         return true;
     });
 
+	var db_name_notifs = "assistant_notifs";
+	var db_name_config = "assistant_config";
+
     plugins.register("/i/asistdelete", function(ob) {
         var params = ob.params;
 
@@ -131,6 +132,7 @@ var plugin = {},
         log.i('Assistant plugin request: /i/asistdelete');
 
         common.db.collection(db_name_notifs).drop();
+		common.db.collection(db_name_config).drop();
 
         common.returnOutput(params, "Delete was ! completed");
         return true;

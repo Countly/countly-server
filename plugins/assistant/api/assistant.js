@@ -7,25 +7,24 @@ var assistant = {},
     countlySession = require('../../../api/lib/countly.session.js');
 
 (function (assistant) {
-
     var NOTIFICATION_VERSION = 1;
     var db_name_notifs = "assistant_notifs";
     var db_name_config = "assistant_config";
 
     //notification types
-    assistant.NOTIF_TYPE_QUICK_TIPS = 1;
-    assistant.NOTIF_TYPE_INSIGHTS = 2;
-    assistant.NOTIF_TYPE_ANNOUNCEMENTS = 3;
+    assistant.NOTIF_TYPE_QUICK_TIPS = "1";
+    assistant.NOTIF_TYPE_INSIGHTS = "2";
+    assistant.NOTIF_TYPE_ANNOUNCEMENTS = "3";
 
-    assistant.JOB_SCHEDULE_INTERVAL = 10;//in minutes
+    assistant.JOB_SCHEDULE_INTERVAL = 30;//in minutes
 
     assistant.createNotification = function (db, data, pluginName, type, subtype, i18n, appId) {
 
         var new_notif = {
             data: data,
             plugin_name: pluginName,
-            notif_type: type,
-            notif_subtype: subtype,
+            notif_type: "" + type,
+            notif_subtype: "" + subtype,
             created_date: new Date(),
             version: NOTIFICATION_VERSION,
             app_id: "" + appId,
@@ -157,6 +156,54 @@ var assistant = {},
 
             }
         }
+    };
+
+    assistant.getAssistantConfig = function(db, callback) {
+        //log.i('Assistant plugin getAssistantConfig: [%j]', 17);
+        db.collection(db_name_config).find({}, {}).toArray(function(err, result){
+            log.i('Assistant plugin getAssistantConfig: [%j][%j][%j][%j]', 18, err, result, typeof result);
+            callback(result);
+        });
+    };
+
+    assistant.getNotificationShowAmount = function (assistantConfig, pluginName, type, subtype, appID) {
+        log.i('Assistant plugin getNotificationShowAmount start [%j]', 1);
+        if(typeof assistantConfig === "undefined") return 0;
+        log.i('Assistant plugin getNotificationShowAmount start [%j]', 2);
+        for(var a = 0 ; a < assistantConfig.length; a++) {
+            log.i('Assistant plugin getNotificationShowAmount start [%j][%j][%j]', 3, assistantConfig[a]._id, appID);
+            if("" + assistantConfig[a]._id === "" + appID) {
+                log.i('Assistant plugin getNotificationShowAmount start [%j][%j][%j][%j][%j][%j]', 4, assistantConfig[a].notifShowAmount, type, subtype, typeof type, typeof subtype);
+                if(typeof assistantConfig[a].notifShowAmount === "undefined") return 0;
+                if(typeof assistantConfig[a].notifShowAmount[pluginName] === "undefined") return 0;
+                log.i('Assistant plugin getNotificationShowAmount start [%j][%j][%j][%j]', 4.1, typeof assistantConfig[a].notifShowAmount[pluginName][type], assistantConfig[a].notifShowAmount, assistantConfig[a]);
+                if(typeof assistantConfig[a].notifShowAmount[pluginName][type] === "undefined") return 0;
+                log.i('Assistant plugin getNotificationShowAmount start [%j][%j][%j]', 5, assistantConfig[a].notifShowAmount, assistantConfig[a].notifShowAmount[pluginName][type]);
+                if(typeof assistantConfig[a].notifShowAmount[pluginName][type][subtype] === "undefined") return 0;
+                log.i('Assistant plugin getNotificationShowAmount: [%j][%j]', assistantConfig[a].notifShowAmount[pluginName][type][subtype], pluginName);
+                return assistantConfig[a].notifShowAmount[pluginName][type][subtype];
+            }
+        }
+        return 0;
+    };
+
+    assistant.setNotificationShowAmount = function (db, notifValueSet, newShowAmount, appID) {
+        var updateQuery ={};
+        updateQuery["notifShowAmount." + notifValueSet.pluginName + "." + notifValueSet.type + "." + notifValueSet.subtype] = newShowAmount;
+        db.collection(db_name_config).update({_id:db.ObjectID(appID)}, {$set:updateQuery}, {upsert:true}, function (err, res) {
+            log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', err, res);
+        });
+    };
+
+    assistant.createNotificationValueSet = function (notificationName, notificationType, notificationSubtype, pluginName, assistantConfig, appID) {
+        //put in notification values for quick access
+        var valueSet = {};
+        valueSet.pluginName = pluginName;
+        valueSet.type = "" + notificationType;
+        valueSet.subtype = "" + notificationSubtype;
+        valueSet.nName = notificationName;
+        valueSet.showAmount = assistant.getNotificationShowAmount(assistantConfig, pluginName, valueSet.type, valueSet.subtype, appID);
+        return valueSet;
     };
 
 }(assistant));

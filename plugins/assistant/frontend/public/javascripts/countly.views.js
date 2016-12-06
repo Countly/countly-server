@@ -27,13 +27,28 @@ window.AssistantView = countlyView.extend({
             all_notifs: data.notifications,
             saved_private: data.notifs_saved_private,
             saved_global: data.notifs_saved_global,
+            icon_styling_class: 'assistant_icon_regular',
         };
         //CountlyHelpers.alert(JSON.stringify(data.created_date), "green");
         var changeNotification = function (id, is_private, is_save, parent) {
+
+            if(typeof Countly !== "undefined") {
+                var nAction = is_save ? "save" : "unsave";
+                var nKey = is_private ? "assistant-change-status-private" : "assistant-change-status-global";
+                var sendObj = ['add_event', {
+                    "key": nKey,
+                    "count": 1,
+                    "segmentation": {
+                        "action" : nAction
+                    }
+                }];
+                Countly.q.push(sendObj);
+            }
+
             //CountlyHelpers.alert(5, "green");
             $.when(countlyAssistant.changeNotification(id, is_private, is_save)).then(function (data) {
                // CountlyHelpers.alert(6, "green");
-                if(true || data.result == "Success"){
+                if(true || data.result == "Success"){//todo finish this
                     
                     var refresh_stuff = function () {
                         $.when(countlyAssistant.initialize()).then(function () {
@@ -71,7 +86,19 @@ window.AssistantView = countlyView.extend({
             $( "#tabs" ).tabs({
                 selected: store.get("assistant_tab") || 0,
                 show: function( event, ui ) {
-                    store.set("assistant_tab", ui.index);}
+                    store.set("assistant_tab", ui.index);
+
+                    var tabName = ["all", "saved-private", "saved-global"][ui.index];
+                    if(typeof Countly !== "undefined") {
+                        Countly.q.push(['add_event', {
+                            "key": "assistant-click-tab",
+                            "count": 1,
+                            "segmentation": {
+                                "tab_name" : tabName
+                            }
+                        }]);
+                    }
+                }
             });
 
             $(".btn-save-global").on("click", function(){
@@ -108,8 +135,14 @@ window.AssistantView = countlyView.extend({
                     changeNotification(id, true, false, parent);
                 });
             });
+
+
+            $("#assistant_container").css("height", $( window ).height() - $("#content-footer").height());
         }
         //CountlyHelpers.alert(7, "green");
+        //"all": "1",
+        //"saved-private": "1",
+
     }
 });
 

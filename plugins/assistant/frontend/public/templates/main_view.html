@@ -1,74 +1,95 @@
-<div class="widget">
-    <div class="widget-header">
-        <div class="left">
-            <div class="title">{{page-title}}</div>
-        </div>
-    </div>
-</div>
-<div class="assistant_stuff">
-    <div id="tabs">
-        <ul>
-            <li><a href="#log-all">All</a></li>
-            <li><a href="#log-private">YOU SAVED</a></li>
-            <li><a href="#log-global">SAVED GLOBALY</a></li>
-        </ul>
+<div id="assistant_container">
+    <div class="scrollable">
+        <div class="assistant_stuff">
+            <div id="tabs">
+                <ul>
+                    <li><a href="#log-all">All</a></li>
+                    <li><a href="#log-private">YOU SAVED</a></li>
+                    <li><a href="#log-global">SAVED GLOBALY</a></li>
+                </ul>
 
-        <div id="log-all" class="errorlog">
-            {{#eachOfArray all_notifs}}
-            <div class="assistant_notif">
+                <div class="assistant_space"></div>
 
-                <div>
-                    <a class="icon-button light btn-header btn-save-global" data-id="{{value._id}}" data-localize="assistant.save.global"></a>
-                    <a class="icon-button light btn-header btn-save-private" data-id="{{value._id}}" data-localize="assistant.save.private"></a>
-                </div>
-                <p>{{value.title}}</p>
-                <p>{{{value.msg}}}</p>
-                <p>{{value.created_date}}</p>
-                <p>{{value.timeSince}} ago</p>
-            </div>
-            {{/eachOfArray}}
-            <div>
-                <img src="./assistant/images/assistant/img_assistant_end.png">
-            </div>
-        </div>
+                <div id="log-all" class="errorlog">
+                    {{#eachOfArray all_notifs}}
+                    <div class="assistant_notif">
 
-        <div id="log-private" class="errorlog">
-            {{#eachOfArray saved_private}}
-            <div class="assistant_notif">
-
-                <div>
-                    <a class="icon-button light btn-header btn-unsave-private" data-id="{{value._id}}" data-localize="assistant.unsave.private"></a>
+                        <div>
+                            <a class="icon-button light btn-header btn-save-global" data-id="{{value._id}}" data-localize="assistant.save.global"></a>
+                            <a class="icon-button light btn-header btn-save-private" data-id="{{value._id}}" data-localize="assistant.save.private"></a>
+                        </div>
+                        <div style="width: 100%; display: table;">
+                            <div style="display: table-row">
+                                <div style="width: 30px; display: table-cell;">
+                                    <i class="fa fa-circle {{value.icon_styling_class}}" aria-hidden="true"></i>
+                                </div>
+                                <div style="display: table-cell;">
+                                    <p class="assistant_notif_title">{{value.title}}</p>
+                                    <p class="assistant_notif_timesince">{{value.timeSince}}</p>
+                                    <p class="assistant_notif_message">{{{value.msg}}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{/eachOfArray}}
+                    <div class="assistant_end_image_container">
+                        <img src="./assistant/images/assistant/img_assistant_end.png">
+                    </div>
                 </div>
 
-                <p>{{value.title}}</p>
-                <p>{{{value.msg}}}</p>
-                <p>{{value.created_date}}</p>
-                <p>{{value.timeSince}} ago</p>
-            </div>
-            {{/eachOfArray}}
-            <div>
-                <img src="./assistant/images/assistant/img_assistant_end.png">
-            </div>
-        </div>
+                <div id="log-private" class="errorlog">
+                    {{#eachOfArray saved_private}}
+                    <div class="assistant_notif">
 
-        <div id="log-global" class="errorlog">
-            {{#eachOfArray saved_global}}
-            <div class="assistant_notif">
-
-                <div>
-                    <a class="icon-button light btn-header btn-unsave-global" data-id="{{value._id}}" data-localize="assistant.unsave.global"></a>
+                        <div>
+                            <a class="icon-button light btn-header btn-unsave-private" data-id="{{value._id}}" data-localize="assistant.unsave.private"></a>
+                        </div>
+                        <div style="width: 100%; display: table;">
+                            <div style="display: table-row">
+                                <div style="width: 30px; display: table-cell;">
+                                    <i class="fa fa-circle {{value.icon_styling_class}}" aria-hidden="true"></i>
+                                </div>
+                                <div style="display: table-cell;">
+                                    <p class="assistant_notif_title">{{value.title}}</p>
+                                    <p class="assistant_notif_timesince">{{value.timeSince}}</p>
+                                    <p class="assistant_notif_message">{{{value.msg}}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{/eachOfArray}}
+                    <div class="assistant_end_image_container">
+                        <img src="./assistant/images/assistant/img_assistant_end.png">
+                    </div>
                 </div>
 
-                <p>{{value.title}}</p>
-                <p>{{{value.msg}}}</p>
-                <p>{{value.created_date}}</p>
-                <p>{{value.timeSince}} ago</p>
-            </div>
-            {{/eachOfArray}}
-            <div>
-                <img src="./assistant/images/assistant/img_assistant_end.png">
+                <div id="log-global" class="errorlog">
+                    {{#eachOfArray saved_global}}
+                    <div class="assistant_notif">
+
+                        <div>
+                            <a class="icon-button light btn-header btn-unsave-global" data-id="{{value._id}}" data-localize="assistant.unsave.global"></a>
+                        </div>
+                        <div style="width: 100%; display: table;">
+                            <div style="display: table-row">
+                                <div style="width: 30px; display: table-cell;">
+                                    <i class="fa fa-circle {{value.icon_styling_class}}" aria-hidden="true"></i>
+                                </div>
+                                <div style="display: table-cell;">
+                                    <p class="assistant_notif_title">{{value.title}}</p>
+                                    <p class="assistant_notif_timesince">{{value.timeSince}}</p>
+                                    <p class="assistant_notif_message">{{{value.msg}}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{/eachOfArray}}
+                    <div class="assistant_end_image_container">
+                        <img src="./assistant/images/assistant/img_assistant_end.png">
+                    </div>
+                </div>
+
             </div>
         </div>
-
     </div>
 </div>

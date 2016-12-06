@@ -38,25 +38,26 @@
         var interval = Math.floor(seconds / 31536000);
 
         if (interval > 1) {
-            return interval + " years";
+            return interval + " years ago";
         }
         interval = Math.floor(seconds / 2592000);
         if (interval > 1) {
-            return interval + " months";
+            return interval + " months ago";
         }
         interval = Math.floor(seconds / 86400);
         if (interval > 1) {
-            return interval + " days";
+            return interval + " days ago";
         }
         interval = Math.floor(seconds / 3600);
         if (interval > 1) {
-            return interval + " hours";
+            return interval + " hours ago";
         }
         interval = Math.floor(seconds / 60);
         if (interval > 1) {
-            return interval + " minutes";
+            return interval + " minutes ago";
         }
-        return Math.floor(seconds) + " seconds";
+        return "now";
+        //return Math.floor(seconds) + " seconds";
     };
 
 
@@ -65,18 +66,39 @@
         var the_notifs = [given_data.notifications, given_data.notifs_saved_private, given_data.notifs_saved_global];
 
         for(var b = 0 ; b < the_notifs.length ; b++) {
+            //set the notification lists to be from newer to older
+            the_notifs[b].sort(function (x, y) {
+                return x.created_date < y.created_date;
+            });
+
             for (var a = 0; a < the_notifs[b].length; a++) {
                 var obj = the_notifs[b][a];
 
+                //check if a plugin provids it's own formating for it's notifications
                 if(plugins[obj.plugin_name] && plugins[obj.plugin_name][obj.notif_type]) {
-                    obj.msg = plugins[obj.plugin_name][obj.notif_type](obj);
-                } else {
+                    var styling_info = plugins[obj.plugin_name][obj.notif_type](obj);
+
+                    obj.title = styling_info.title;
+                    obj.msg = styling_info.msg;
+                    obj.icon_styling_class = styling_info.icon_class;
+                } else {//use the default style
                     var arr = obj.data.slice();
                     arr.unshift(obj.i18n_id + ".message");
                     var res = jQuery.i18n.prop.apply(null, arr);
 
                     obj.title = jQuery.i18n.map[obj.i18n_id + ".title"];
                     obj.msg = res;
+
+                    //set icon styling
+                    if(obj.notif_type === "1") {//quick tips
+                        obj.icon_styling_class = "assistant_icon_quicktips";
+                    } else if(obj.notif_type === "2") {//insight
+                        obj.icon_styling_class = "assistant_icon_insight";
+                    } else if(obj.notif_type === "3") {//announcments
+                        obj.icon_styling_class = "assistant_icon_announcments";
+                    } else {//default
+                        obj.icon_styling_class = "assistant_icon_regular";
+                    }
                 }
                 //todo sometines events with a negative time are returned
                 obj.timeSince = timeSince(new Date(obj.created_date));

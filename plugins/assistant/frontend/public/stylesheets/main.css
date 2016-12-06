@@ -9,5 +9,59 @@
 }
 
 .ui-widget-content a.assistant-link {
-    color: #78ba00;
+    color: #03BD4A;
+}
+
+.assistant_notif_title {
+    font-size: 0.95em;
+    font-weight: bold;
+    margin-top: 5px;
+    margin-bottom: 1px;
+}
+.assistant_notif_timesince {
+    font-size: 0.7em;
+    color: #C9C9C9;
+    margin-top: 1px;
+    margin-bottom: 5px;
+}
+.assistant_notif_message {
+    font-size: 0.8em;
+    color: #949494;
+    margin-top: 1px;
+    margin-bottom: 1px;
+}
+
+.assistant_icon_quicktips{
+    color: #44baa0;
+}
+
+.assistant_icon_insight{
+    color: #Fcb11A;
+}
+
+.assistant_icon_announcments{
+    color: #EC8C45;
+}
+
+.assistant_icon_regular {
+    color: #7cFaa0;
+}
+
+.assistant_space {
+    height: 40px;
+}
+
+.assistant_end_image_container {
+    display: table;
+    margin: 0 auto;
+}
+
+#assistant_container {
+    position: fixed;
+    top: 0px;
+    right: 0px;
+    width: 400px;
+    height: 300px;
+    overflow: auto;
+    background-color: #fff;
 }
