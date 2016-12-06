@@ -293,13 +293,7 @@ window.MobileDashboardView = countlyView.extend({
 app.addAppType("mobile", MobileDashboardView);
 
 $( document ).ready(function() {
-    var menu = '<a href="#/all" id="allapps-menu" class="item analytics">'+
-		'<div class="logo ion-android-apps"></div>'+
-		'<div class="text" data-localize="mobile.allapps.title"></div>'+
-	'</a>';
-	$('#mobile-type a').first().before(menu);
-    
-    menu = '<a href="#/analytics/platforms" class="item">'+
+    var menu = '<a href="#/analytics/platforms" class="item">'+
 		'<div class="logo platforms"></div>'+
 		'<div class="text" data-localize="sidebar.analytics.platforms"></div>'+
 	'</a>';

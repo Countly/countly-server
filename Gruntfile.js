@@ -101,7 +101,6 @@ module.exports = function(grunt) {
 				'frontend/express/public/javascripts/countly/countly.device.detail.js',
 				'frontend/express/public/javascripts/countly/countly.app.version.js',
 				'frontend/express/public/javascripts/countly/countly.carrier.js',
-				'frontend/express/public/javascripts/countly/countly.allapps.js',
                 'frontend/express/public/javascripts/countly/countly.total.users.js',
 				'frontend/express/public/javascripts/countly/countly.template.js'
 			],

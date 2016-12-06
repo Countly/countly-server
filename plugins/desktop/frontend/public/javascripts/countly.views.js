@@ -288,13 +288,7 @@ window.DesktopDashboardView = countlyView.extend({
 app.addAppType("desktop", DesktopDashboardView);
 
 $( document ).ready(function() {
-    var menu = '<a href="#/all" id="allapps-menu" class="item analytics">'+
-		'<div class="logo ion-android-apps"></div>'+
-		'<div class="text" data-localize="desktop.allapps.title"></div>'+
-	'</a>';
-	$('#desktop-type a').first().before(menu);
-    
-    menu = '<a href="#/analytics/platforms" class="item">'+
+    var menu = '<a href="#/analytics/platforms" class="item">'+
 		'<div class="logo platforms"></div>'+
 		'<div class="text" data-localize="sidebar.analytics.platforms"></div>'+
 	'</a>';

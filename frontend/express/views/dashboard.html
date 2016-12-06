@@ -525,37 +525,6 @@
             {{/if}}
         {{/if}}
 	</script>
-	
-	<script id="template-allapps"  type="text/x-handlebars-template">
-		<div class="widget allappview">
-			<div class="widget-header">
-				<div class="title" style="letter-spacing:-1px; font-size:19px; margin-top:10px; margin-left:5px;">{{toUpperCase page-title}}</div>
-				{{> date-selector }}
-			</div>
-            {{#if usage}}
-			<div class="widget-content" style="border:none;">
-				<div id="big-numbers-container" class="dashboard">
-					{{#each usage}}
-					<div class="big-numbers top {{#if ../../usage-class}}{{../../usage-class}}{{else}}six-column{{/if}} help-zone-vs" data-help-localize="help.{{this.help}}">
-						<div class="inner">
-							<div class="select" id="{{this.id}}">
-								<div class="title">{{this.title}}</div>
-							</div>
-						</div>
-					</div>
-					{{/each}}
-				</div>
-			</div>
-            {{/if}}
-			<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none; position:relative;">
-				<div id="empty-graph" data-localize="allapps.empty-graph"></div>
-				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
-			</div>
-		</div>
-		<div class="allapps" data-help-localize="help.{{{chart-helper}}}">
-			<table class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
-		</div>
-	</script>
 
 	<script id="template-analytics-countries"  type="text/x-handlebars-template">
 		<div class="widget">
@@ -1223,7 +1192,6 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.device.detail.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.version.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.carrier.js?<%= countlyVersion %>"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.allapps.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.total.users.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.template.js?<%= countlyVersion %>"></script>
 			<% if (javascripts) { %>
