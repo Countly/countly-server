@@ -463,6 +463,8 @@
                     var dataSet = graphObj.getData(),
                         tooltipHTML = "<div class='title'>" + tickObj.tickTexts[dataIndex] + "</div>";
 
+                    dataSet = _.sortBy(dataSet, function(obj) { return obj.data[dataIndex][1]; });
+
                     for (i = dataSet.length - 1; i >= 0; --i) {
                         var series = dataSet[i],
                             formattedValue = series.data[dataIndex][1];

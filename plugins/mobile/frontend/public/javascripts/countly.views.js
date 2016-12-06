@@ -15,7 +15,7 @@ window.MobileDashboardView = countlyView.extend({
     afterRender: function() {
         if(countlyGlobal["config"].use_google){
             var self = this;
-            countlyLocation.drawGeoChart({height:290, metric:self.maps[self.curMap]});
+            countlyLocation.drawGeoChart({height:330, metric:self.maps[self.curMap]});
         }
     },
     pageScript:function () {
@@ -23,15 +23,11 @@ window.MobileDashboardView = countlyView.extend({
             CountlyHelpers.alert($("#total-user-estimate-exp").html(), "black");
         });
 
-        $(".widget-content .inner").click(function () {
-            $(".big-numbers").removeClass("active");
-            $(".big-numbers .select").removeClass("selected");
-            $(this).parent(".big-numbers").addClass("active");
-            $(this).find('.select').addClass("selected");
-        });
-
         var self = this;
-        $(".big-numbers .inner").click(function () {
+        $("#big-numbers-container").find(".big-numbers .inner").click(function () {
+            $("#big-numbers-container").find(".big-numbers").removeClass("active");
+            $(this).parent(".big-numbers").addClass("active");
+
             var elID = $(this).find('.select').attr("id");
 
             if (self.selectedView == "#" + elID) {
@@ -256,6 +252,12 @@ window.MobileDashboardView = countlyView.extend({
                 '<div class="total">'+country[self.maps[self.curMap].metric]+'</div>'+
             '</div>');
         }
+
+        if (self.locationData.length == 0) {
+            $("#geo-chart-outer").addClass("empty");
+        } else {
+            $("#geo-chart-outer").removeClass("empty");
+        }
     },
     countryTable:function(refresh){
         var self = this;
@@ -277,8 +279,8 @@ window.MobileDashboardView = countlyView.extend({
             $("#countries-alternative_wrapper .dataTable-top .save-table-data").hide();
             $("#countries-alternative_wrapper .dataTable-top .dataTables_paginate").hide();
             $("#countries-alternative_wrapper .dataTable-top .DTTT_container").hide();
-            $("#countries-alternative_wrapper .dataTable-top").append("<div style='font:13px Ubuntu,Helvetica,sans-serif; color:#636363; text-shadow:0 1px #F6F6F6; margin-right:10px; padding: 10px; float: right;'><a href='#/analytics/countries'>"+jQuery.i18n.map["common.go-to-countries"]+"&nbsp;&nbsp;&nbsp;<i class='fa fa-chevron-right' aria-hidden='true'></i></a></div>");
-            $("#countries-alternative_wrapper .dataTable-top").append("<div style='font:15px Ubuntu,Helvetica,sans-serif; color:#636363; text-shadow:0 1px #F6F6F6; letter-spacing:-1px; margin-left:10px; margin-top: 8px; text-transform: uppercase;'>"+jQuery.i18n.map["sidebar.analytics.countries"]+"</div>");
+            $("#countries-alternative_wrapper .dataTable-top").append("<div style='font:13px Ubuntu,Helvetica,sans-serif; color:#636363; margin-right:10px; padding: 10px; float: right;'><a href='#/analytics/countries'>"+jQuery.i18n.map["common.go-to-countries"]+"&nbsp;&nbsp;&nbsp;<i class='fa fa-chevron-right' aria-hidden='true'></i></a></div>");
+            $("#countries-alternative_wrapper .dataTable-top").append("<div style='font:15px Ubuntu,Helvetica,sans-serif; color:#636363; margin-left:10px; margin-top: 8px; text-transform: uppercase;'>"+jQuery.i18n.map["sidebar.analytics.countries"]+"</div>");
         }
         else{
             CountlyHelpers.refreshTable(self.country_dtable, countlyLocation.getLocationData({maxCountries:10}));

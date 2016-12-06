@@ -5,7 +5,7 @@
         _appId = "";
 
     //Public Methods
-    countlyWebDashboard.initialize = function () {
+    countlyWebDashboard.initialize = function (isRefresh) {
         if(_appId != countlyCommon.ACTIVE_APP_ID){
             countlyWebDashboard.reset();
             _appId = countlyCommon.ACTIVE_APP_ID;
@@ -16,7 +16,8 @@
 			data:{
 				"api_key":countlyGlobal.member.api_key,
 				"app_id":countlyCommon.ACTIVE_APP_ID,
-				"method":"latest_users"
+				"method":"latest_users",
+                "display_loader": !isRefresh
 			},
 			dataType:"jsonp",
 			success:function (json) {

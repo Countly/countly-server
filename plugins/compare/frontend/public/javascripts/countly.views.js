@@ -371,6 +371,8 @@ var compareAppsViewHelper = {
         }
 
         $("#app-nav.compare-active").find(".app-navigate").on("click", function (e) {
+            $("#sidebar-app-select").data("before-compare", '');
+
             var appId = $(this).data("id");
 
             if (countlyCommon.ACTIVE_APP_ID == appId) {
