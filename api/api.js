@@ -734,7 +734,8 @@ if (cluster.isMaster) {
                                     validateUserForWriteAPI(countlyApi.mgmt.users.deleteUser, params);
                                     break;
                                 default:
-                                    common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update or /delete');
+                                    if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
+                                        common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update or /delete');
                                     break;
                             }
             
@@ -769,7 +770,8 @@ if (cluster.isMaster) {
                                     validateUserForWriteAPI(countlyApi.mgmt.apps.resetApp, params);
                                     break;
                                 default:
-                                    common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update, /delete or /reset');
+                                    if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
+                                        common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update, /delete or /reset');
                                     break;
                             }
             
@@ -828,7 +830,8 @@ if (cluster.isMaster) {
                                     validateUserForMgmtReadAPI(countlyApi.mgmt.users.getCurrentUser, params);
                                     break;
                                 default:
-                                    common.returnMessage(params, 400, 'Invalid path, must be one of /all or /me');
+                                    if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
+                                        common.returnMessage(params, 400, 'Invalid path, must be one of /all or /me');
                                     break;
                             }
             
@@ -852,7 +855,8 @@ if (cluster.isMaster) {
                                     validateUserForDataReadAPI(params, countlyApi.mgmt.apps.getAppsDetails);
                                     break;
                                 default:
-                                    common.returnMessage(params, 400, 'Invalid path, must be one of /all , /mine or /details');
+                                    if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
+                                        common.returnMessage(params, 400, 'Invalid path, must be one of /all , /mine or /details');
                                     break;
                             }
             
