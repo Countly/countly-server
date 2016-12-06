@@ -47,6 +47,10 @@ window.CompareView = countlyView.extend({
         };
 
         if (!isRefresh) {
+            if (self.viewHelper && self.viewHelper.onRender) {
+                self.viewHelper.onRender();
+            }
+
             self.el.html(this.template(this.templateData));
 
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
@@ -145,18 +149,22 @@ window.CompareView = countlyView.extend({
             var color = countlyCommon.GRAPH_COLORS[i];
             var data = this.viewHelper.model.getChartData(this.selectedAlts[i], this.selectedMetric).chartDP;
 
-            data[1].color = color;
+            if (data) {
+                data[1].color = color;
 
-            $("#"+this.alternativeIDs[this.selectedAlts[i]]+" .color").css("background-color", color);
+                $("#"+this.alternativeIDs[this.selectedAlts[i]]+" .color").css("background-color", color);
 
-            if (this.selectedAlts.length == 1) {
-                var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
-                data[0].color = "rgba("+parseInt(result[1], 16)+","+parseInt(result[2], 16)+","+parseInt(result[3], 16)+",0.5"+")";
+                if (this.selectedAlts.length == 1 && !_.isEmpty(data[0])) {
+                    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(color);
+                    data[0].color = "rgba("+parseInt(result[1], 16)+","+parseInt(result[2], 16)+","+parseInt(result[3], 16)+",0.5"+")";
 
-                dp.push(data[0])
+                    dp.push(data[0])
+                }
+
+                if (data && data[1]) {
+                    dp.push(data[1]);
+                }
             }
-
-            dp.push(data[1]);
         }
 
         if (this.selectedAlts.length == 0) {
@@ -178,6 +186,11 @@ window.CompareView = countlyView.extend({
             CountlyHelpers.refreshTable(self.dtable, self.viewHelper.model.getTableData());
             self.drawGraph();
         });
+    },
+    destroy:function() {
+        if (this.viewHelper && this.viewHelper.onDestroy) {
+            this.viewHelper.onDestroy();
+        }
     }
 });
 
@@ -241,3 +254,131 @@ app.route("/analytics/events/compare", 'views', function () {
     this.renderWhenReady(this.compareView);
 });
 /* End of compare for the events view */
+
+/* Compare applications */
+$(document).ready(function() {
+    $("#app-nav-head").after(
+        "<a href='#/compare'>" +
+            "<div id='compare-apps' class='app-container'>" +
+                "<div class='icon'></div>" +
+                "<div class='name'>" + jQuery.i18n.map["compare.button"] + "</div>" +
+            "</div>" +
+        "</a>"
+    );
+});
+
+var compareAppsViewHelper = {
+    title: jQuery.i18n.map["compare.apps.title"],
+    model: countlyAppCompare,
+    defaultMetric: "draw-total-sessions",
+    compareText: jQuery.i18n.map["compare.apps.limit"],
+    maxAlternatives: 10,
+    getTableColumns: function() {
+        function getTrendIcon(trend) {
+            // We are returning empty for the trend icon
+            return '';
+
+            if (trend == 'u') {
+                return '<i class="material-icons up">trending_up</i>';
+            } else if (trend == 'd') {
+                return '<i class="material-icons down">trending_down</i>';
+            }
+        }
+
+        return [
+            { "mData": function(row, type) {
+                if (type == "display") {
+                    return "<div class='color'></div><span class='name'>" + row.name + "</span>";
+                } else {
+                    return row.name;
+                }
+            }, "sType":"string", "sTitle": jQuery.i18n.map["compare.apps.app-name"], "sClass": "break" },
+            { "mData": function(row, type) {
+                if (type == "display") {
+                    return getTrendIcon(row.sessions.trend) +  row.sessions.total;
+                } else {
+                    return row.sessions.total;
+                }
+            }, "sType":"numeric", "sTitle": jQuery.i18n.map["common.total-sessions"] },
+            { "mData": function(row, type) {
+                if (type == "display") {
+                    return getTrendIcon(row.users.trend) +  row.users.total;
+                } else {
+                    return row.users.total;
+                }
+            }, "sType":"numeric", "sTitle": jQuery.i18n.map["compare.apps.total-unique"] },
+            { "mData": function(row, type) {
+                if (type == "display") {
+                    return getTrendIcon(row.newusers.trend) +  row.newusers.total;
+                } else {
+                    return row.newusers.total;
+                }
+            }, "sType":"numeric", "sTitle": jQuery.i18n.map["compare.apps.new-unique"] },
+            { "mData": function(row, type) {
+                if (type == "display") {
+                    return getTrendIcon(row.duration.trend) +  countlyCommon.timeString(row.duration.total);
+                } else {
+                    return row.duration.total;
+                }
+            }, "sType":"numeric", "sTitle": jQuery.i18n.map["dashboard.time-spent"] },
+            { "mData": function(row, type) {
+                if (type == "display") {
+                    return getTrendIcon(row.avgduration.trend) +  countlyCommon.timeString(row.avgduration.total);
+                } else {
+                    return row.avgduration.total;
+                }
+            }, "sType":"numeric", "sTitle": jQuery.i18n.map["dashboard.avg-time-spent"] }
+        ];
+    },
+    getAlternatives: function() {
+        var apps = countlyGlobal.apps,
+            ids = _.pluck(apps, "_id"),
+            names = _.pluck(apps, "name");
+
+        var toReturn = {};
+
+        for (var i = 0; i < ids.length; i++) {
+            toReturn[ids[i]] = names[i] || ids[i];
+        }
+
+        return toReturn;
+    },
+    onRender: function() {
+        $("#sidebar-menu").css({visibility: "hidden"});
+        $("#app-nav").addClass("compare-active");
+        $("#sidebar").append(
+            "<div id='compare-apps-pointer'>" +
+                "<div>" + jQuery.i18n.map["compare.apps.tip"] + "</div>" +
+            "</div>"
+        );
+
+        if ($("#app-nav").offset().left == 201) {
+            $("#sidebar-app-select").trigger("click");
+        }
+
+        $("#app-nav.compare-active").find(".app-navigate").on("click", function (e) {
+            var appId = $(this).data("id");
+
+            if (countlyCommon.ACTIVE_APP_ID == appId) {
+                $("#sidebar-app-select").trigger("click");
+                app.navigate("/", true);
+            }
+        });
+
+        var sidebarApp = $("#sidebar-app-select");
+        sidebarApp.addClass("compare-active");
+        sidebarApp.find(".text").text(jQuery.i18n.map["compare.apps.app-select"]);
+    },
+    onDestroy: function() {
+        $("#sidebar-menu").css({visibility: "visible"});
+        $("#app-nav").removeClass("compare-active");
+        $("#sidebar").find("#compare-apps-pointer").remove();
+        $("#sidebar-app-select").removeClass("compare-active");
+    }
+};
+
+app.route("/compare", 'views', function () {
+    this.compareView.setHelper(compareAppsViewHelper);
+    this.renderWhenReady(this.compareView);
+});
+/* End of compare applications */

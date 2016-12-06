@@ -554,6 +554,8 @@ var fetch = {},
         });
     };
 
+    fetch.getTotalUsersObj = getTotalUsersObj;
+
     function getTotalUsersObj(metric, params, callback) {
         if(!plugins.getConfig("api").total_users){
             return callback([]);
@@ -675,6 +677,8 @@ var fetch = {},
             callback([]);
         }
     }
+
+    fetch.formatTotalUsersObj = formatTotalUsersObj;
 
     function formatTotalUsersObj(obj, forMetric) {
         var tmpObj = {},

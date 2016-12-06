@@ -4625,6 +4625,8 @@ var AppRouter = Backbone.Router.extend({
                 if (self.activeAppKey == appKey) {
                     sidebarApp.removeClass("active");
                     $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack'});
+                    sidebarApp.find(".text").text(appName);
+                    sidebarApp.find(".logo").css("background-image", appImage);
                     return false;
                 }
 
