@@ -312,10 +312,9 @@ window.WebDashboardView = countlyView.extend({
                 "iDisplayLength": 10,
                 "aoColumns": [
                         { "mData": "country_flag", "sType":"string", "sTitle": jQuery.i18n.map["countries.table.country"]},
-                        { "mData": "t", "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-sessions"]},
-                        { "mData": "u", "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-users"]},
-                        { "mData": "n", "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.new-users"]},
-                        
+                        { "mData": "t", "sType":"numeric", "sTitle": jQuery.i18n.map["common.table.total-sessions"]},
+                        { "mData": "u", "sType":"numeric", "sTitle": jQuery.i18n.map["common.table.total-users"]},
+                        { "mData": "n", "sType":"numeric", "sTitle": jQuery.i18n.map["common.table.new-users"]}
                     ]
             }));
             this.country_dtable.stickyTableHeaders();
@@ -442,8 +441,6 @@ $( document ).ready(function() {
             jQuery.i18n.map["sidebar.analytics.users"] = jQuery.i18n.map["web.sidebar.analytics.users"];
             jQuery.i18n.map["sidebar.analytics.user-loyalty"] = jQuery.i18n.map["web.sidebar.analytics.user-loyalty"];
             jQuery.i18n.map["users.title"] = jQuery.i18n.map["web.users.title"];
-            jQuery.i18n.map["allapps.total-users"] = jQuery.i18n.map["web.allapps.total-users"];
-            jQuery.i18n.map["allapps.new-users"] = jQuery.i18n.map["web.allapps.new-users"];
             jQuery.i18n.map["crashes.users"] = jQuery.i18n.map["web.crashes.users"];
             jQuery.i18n.map["crashes.affected-users"] = jQuery.i18n.map["web.crashes.affected-users"];
             jQuery.i18n.map["crashes.public-users"] = jQuery.i18n.map["web.crashes.public-users"];

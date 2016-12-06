@@ -261,10 +261,9 @@ window.DesktopDashboardView = countlyView.extend({
                 "iDisplayLength": 10,
                 "aoColumns": [
                         { "mData": "country_flag", "sType":"string", "sTitle": jQuery.i18n.map["countries.table.country"]},
-                        { "mData": "t", "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-sessions"]},
-                        { "mData": "u", "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-users"]},
-                        { "mData": "n", "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.new-users"]},
-                        
+                        { "mData": "t", "sType":"numeric", "sTitle": jQuery.i18n.map["common.table.total-sessions"]},
+                        { "mData": "u", "sType":"numeric", "sTitle": jQuery.i18n.map["common.table.total-users"]},
+                        { "mData": "n", "sType":"numeric", "sTitle": jQuery.i18n.map["common.table.new-users"]}
                     ]
             }));
             this.country_dtable.stickyTableHeaders();
