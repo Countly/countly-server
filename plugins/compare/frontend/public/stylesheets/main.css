@@ -17,7 +17,7 @@
 #compare-events .name { float: none; width: auto; display: inline-block; vertical-align: top; }
 
 /* For compare apps view */
-#compare-apps { margin-bottom: 0; padding: 3px 12px 3px 37px; text-align: center; }
+#compare-apps { margin-bottom: 0; padding: 2px 12px 2px 37px; text-align: center; }
 #compare-apps .icon { background-image: url("/compare/images/compare-apps.svg"); width:20px; height: 20px; float:none; margin:5px 0 0 0; display: inline-block; }
 #compare-apps .name { float: none; width: auto; display: inline-block; vertical-align: top; }
 #compare-apps-pointer { background-image: url("/compare/images/compare-apps-pointer.svg"); width:224px; height:200px; top:130px; background-repeat: no-repeat; position: absolute; }

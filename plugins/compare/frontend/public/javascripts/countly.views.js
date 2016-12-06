@@ -381,13 +381,20 @@ var compareAppsViewHelper = {
 
         var sidebarApp = $("#sidebar-app-select");
         sidebarApp.addClass("compare-active");
+        sidebarApp.data("before-compare", sidebarApp.find(".text").text());
         sidebarApp.find(".text").text(jQuery.i18n.map["compare.apps.app-select"]);
     },
     onDestroy: function() {
         $("#sidebar-menu").css({visibility: "visible"});
         $("#app-nav").removeClass("compare-active");
         $("#sidebar").find("#compare-apps-pointer").remove();
-        $("#sidebar-app-select").removeClass("compare-active");
+
+        var sidebarApp = $("#sidebar-app-select");
+        if (sidebarApp.data("before-compare")) {
+            sidebarApp.find(".text").text(sidebarApp.data("before-compare"));
+            sidebarApp.data("before-compare", '');
+        }
+        sidebarApp.removeClass("compare-active");
     }
 };
 
