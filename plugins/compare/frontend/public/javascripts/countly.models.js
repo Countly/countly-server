@@ -199,7 +199,7 @@
 
                 _appData["all"] = {};
                 _appData["all"].id = "all";
-                _appData["all"].name = "All apps";
+                _appData["all"].name = jQuery.i18n.map["compare.apps.all-apps"] || "All apps";
                 _appData["all"].sessions = {total:0, trend:0};
                 _appData["all"].users = {total:0, trend:0};
                 _appData["all"].newusers = {total:0, trend:0};

@@ -187,6 +187,19 @@ window.CompareView = countlyView.extend({
             self.drawGraph();
         });
     },
+    dateChanged:function () {
+        var self = this;
+        if (this.viewHelper.initOnDateChange) {
+            var forAlternatives = $("#alternative-selector").data("value");
+
+            $.when(self.viewHelper.model.initialize(forAlternatives)).then(function() {
+                CountlyHelpers.refreshTable(self.dtable, self.viewHelper.model.getTableData());
+                self.drawGraph();
+            });
+        } else {
+            this.refresh();
+        }
+    },
     destroy:function() {
         if (this.viewHelper && this.viewHelper.onDestroy) {
             this.viewHelper.onDestroy();
@@ -273,6 +286,7 @@ var compareAppsViewHelper = {
     defaultMetric: "draw-total-sessions",
     compareText: jQuery.i18n.map["compare.apps.limit"],
     maxAlternatives: 10,
+    initOnDateChange: true,
     getTableColumns: function() {
         function getTrendIcon(trend) {
             // We are returning empty for the trend icon
