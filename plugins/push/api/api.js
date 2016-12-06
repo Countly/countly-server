@@ -159,6 +159,8 @@ var plugin = {},
         }
     });
 
+    plugins.register("/i/apps/update", push.appUpdate);
+
     plugins.register("/i/apps/reset", function(ob){
         var appId = ob.appId;
         common.db.collection('messages').remove({'apps': [common.db.ObjectID(appId)]},function(){});

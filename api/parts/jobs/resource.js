@@ -240,6 +240,15 @@ class ResourceFaçade extends ResourceInterface {
  		}
 	}
 
+	kill () {
+		return new Promise((resolve) => {
+			this._worker.kill();
+			this._open = false;
+			this._job = null;
+			resolve();
+		});
+	}
+
 	open () {
 		if (this.isOpen) {
 			return Promise.resolve();
@@ -350,8 +359,14 @@ class ResourcePool extends EventEmitter {
 	}
 
 	close () {
-		return Promise.all(this.pool.map(r => r.close())).catch((error) => {
+		return Promise.all(this.pool.map(r => r.close().catch(e => e.kill()))).catch((error) => {
 			log.w('Error while closing pooled resources', error);
+		});
+	}
+
+	kill () {
+		return Promise.all(this.pool.map(r => r.kill())).catch((error) => {
+			log.w('Error while killing pooled resources', error);
 		});
 	}
 }
@@ -402,6 +417,10 @@ class Resource extends ResourceInterface {
 
 	close () {
 		throw new Error('Resource.open must be overridden to return a Promise which calls Resource.closed in case of success');
+	}
+
+	kill () {
+		throw new Error('Resource.kill should not be ever called');
 	}
 
 	checkActive () {

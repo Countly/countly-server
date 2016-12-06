@@ -1,14 +1,14 @@
 'use strict';
 
 const log = require('../../../../api/utils/log.js')('push:credentials'),
-	  Platform = require('./pushly.js').Platform,
+	  Platform = require('./note.js').Platform,
 	  forge = require('node-forge');
 
-let DB_MAP = {
+const DB_MAP = {
 	'messaging-enabled': 'm'
 };
 
-let DB_USER_MAP = {
+const DB_USER_MAP = {
 	'tokens': 'tk',
 	'apn_prod': 'ip',                   // production
 	'apn_0': 'ip',                      // production
@@ -32,12 +32,13 @@ const CRED_TYPE = {
 	},
 
 	[Platform.GCM]: {
-		GCM: 'a'
+		GCM: 'gcm'
 	}
 };
 
 class Credentials {
 	constructor (cid) {
+		if (!(this instanceof Credentials)) { return new Credentials(cid); }
 		this._id = cid;
 		// properties loaded from db object:
 		// 		this.platform = Platform.APNS
@@ -45,6 +46,14 @@ class Credentials {
 
 		// 		this.key = '' 		// base64 of APN P12 / P8 or GCM key
 		// 		this.secret = '' 	// passphrase
+	}
+
+	toJSON () {
+		return {
+			_id: this._id,
+			platform: this.platform,
+			type: this.type
+		};
 	}
 
 	divide (test) { 
@@ -66,9 +75,9 @@ class Credentials {
 			}
 		} else if (this.platform === Platform.GCM) {
 			if (test === false) {
-				return [new SubCredentials(this, DB_USER_MAP.gcm_test, false)];
-			} else if (test === true) {
 				return [new SubCredentials(this, DB_USER_MAP.gcm_prod, false)];
+			} else if (test === true) {
+				return [new SubCredentials(this, DB_USER_MAP.gcm_test, false)];
 			}
 		}
 		return [];
@@ -165,8 +174,8 @@ class SubCredentials extends Credentials {
 			this[k] = credentials[k];
 		}
 
-		this.field = field;
-		this.test = test;
+		this.field = field || credentials.field;
+		this.test = test || credentials.test;
 
 		if (this.platform === Platform.APNS) {
 			if (this.field === DB_USER_MAP.apn_dev || 
@@ -189,11 +198,43 @@ class SubCredentials extends Credentials {
 	}
 
 	get id () { return this._id + ':' + this.field + ':' + this.host; }
+
+	app (app_id) {
+		return new AppSubCredentials(this, app_id);
+	}
+
+	toJSON () {
+		var json = super.toJSON();
+		json.field = this.field;
+		json.test = this.test;
+		json.host = this.host;
+		json.port = this.port;
+		return json;
+	}
+}
+
+class AppSubCredentials extends SubCredentials {
+	constructor (subcredentials, app_id, app_timezone) {
+		super(subcredentials, subcredentials.field, subcredentials.test);
+		// || for a case when constructor is called with single json parameter
+		this.app_id = app_id || subcredentials.app_id;
+		this.app_timezone = app_timezone || subcredentials.app_timezone;
+	}
+
+	get id () { return this.app_id + '::' + this._id + ':' + this.field + ':' + this.host; }
+
+	toJSON () {
+		var json = super.toJSON();
+		json.app_id = this.app_id;
+		json.app_timezone = this.app_timezone;
+		return json;
+	}
 }
 
 
 module.exports = {
 	Credentials: Credentials,
+	AppSubCredentials: AppSubCredentials,
 	CRED_TYPE: CRED_TYPE,
 	DB_MAP: DB_MAP,
 	DB_USER_MAP: DB_USER_MAP

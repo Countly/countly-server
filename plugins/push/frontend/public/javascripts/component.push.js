@@ -94,8 +94,8 @@ window.component('push', function(push) {
 			var platofrms = [];
 			this.apps().forEach(function(id){
 				var a = window.countlyGlobal.apps[id];
-				if (a.apn && (a.apn.universal || a.apn.prod || a.apn.dev) && platofrms.indexOf(push.C.PLATFORMS.IOS) === -1) { platofrms.push(push.C.PLATFORMS.IOS); } 
-				if (a.gcm && (a.gcm.key) && platofrms.indexOf(push.C.PLATFORMS.ANDROID) === -1) { platofrms.push(push.C.PLATFORMS.ANDROID); } 
+				if (a.apn && a.apn.length && platofrms.indexOf(push.C.PLATFORMS.IOS) === -1) { platofrms.push(push.C.PLATFORMS.IOS); } 
+				if (a.gcm && a.gcm.length && platofrms.indexOf(push.C.PLATFORMS.ANDROID) === -1) { platofrms.push(push.C.PLATFORMS.ANDROID); } 
 			});
 			return platofrms;
 		};
@@ -315,6 +315,9 @@ window.component('push', function(push) {
 			url: window.countlyCommon.API_URL + '/i/pushes/validate?api_key=' + window.countlyGlobal.member.api_key,
 			data: data,
 			serialize: function(data) { return data; }
+		}).then(function(data){
+			if (data.error) { throw data.error; }
+			return data;
 		});
 	};
 
