@@ -784,7 +784,7 @@ div.datatablesubrow {display: none;}
     .cly-select .select-items { top:100%; z-index:2; display:none; position:absolute; margin-left:-1px; border-radius:2px; background-color:#FFF; border:1px solid #D0D0D0; width:135px; }
     .cly-select.dark .select-items { border-color:#d0d0d0; }
 	.cly-select .select-items .scroll-list {  max-height:188px; }
-    .cly-select .select-items .warning { color:#FD8624; font-weight:normal; border-bottom:1px solid #e6e6e6; font:11px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:5px 9px; padding-bottom:7px; cursor: default; }
+    .cly-select .select-items .warning { color:#FF8700; font-weight:normal; border-bottom:1px solid #e6e6e6; font:11px Ubuntu,Helvetica,sans-serif; line-height:14px; padding:7px 9px; cursor: default; text-align: center; }
 	.cly-select .select-items .item { text-overflow:ellipsis; overflow:hidden; white-space:nowrap; color:#666; font-weight:normal; border-bottom:1px solid #e6e6e6; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:5px 9px; padding-bottom:7px; }
         .cly-select .select-items .item:last-child,
         .cly-select .select-items .item.last { border-bottom: none; }
@@ -804,6 +804,8 @@ div.datatablesubrow {display: none;}
                 .cly-select:hover .right.combo:before { color:#2fa732; }
                 .cly-select.active .right.combo:before { content: "\f126"; color:#2fa732; }
 	.cly-select .slimScrollBar.ui-draggable { cursor:default; }
+
+.cly-select.loading:after { content:"Loading..."; position: absolute; top:1px; left: 0; color:#d0d0d0; background-color: #fdfdfd; padding: 5px 40px 5px 11px; font-size: 13px; }
 
 .cly-select.float { float:left; border:none; width: auto; background-color: transparent; margin-right: 5px; }
 .cly-select.float .text { padding-left: 3px; }
