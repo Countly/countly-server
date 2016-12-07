@@ -114,11 +114,11 @@
         _.defer(function(){
             if ((!dataPoints.dp || !dataPoints.dp.length) || (graphType == "bar" && dataPoints.dp[0].data[0][1]== null && dataPoints.dp[0].data[1][1] == null)) {
                 $(container).hide();
-                $(container).siblings(".no-data").show();
+                $(container).siblings(".graph-no-data").show();
                 return true;
             } else {
                 $(container).show();
-                $(container).siblings(".no-data").hide();
+                $(container).siblings(".graph-no-data").hide();
             }
 
             var graphProperties = {
@@ -224,11 +224,11 @@
         _.defer(function(){
             if (!dataPoints.length) {
                 $(container).hide();
-                $(container).siblings(".no-data").show();
+                $(container).siblings(".graph-no-data").show();
                 return true;
             } else {
                 $(container).show();
-                $(container).siblings(".no-data").hide();
+                $(container).siblings(".graph-no-data").hide();
             }
 
             // Some data points start with [1, XXX] (should be [0, XXX]) and brakes the new tick logic

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="76px" height="76px" viewBox="0 0 76 76" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 3.8.2 (29753) - http://www.bohemiancoding.com/sketch -->
+    <title>Group 4</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M38,76 C58.9868205,76 76,58.9868205 76,38 C76,17.0131795 58.9868205,0 38,0 C17.0131795,0 0,17.0131795 0,38 C0,58.9868205 17.0131795,76 38,76 Z" id="path-1"></path>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard-1" transform="translate(-42.000000, -44.000000)">
+            <g id="Group-4" transform="translate(42.002164, 44.002164)">
+                <mask id="mask-2" fill="white">
+                    <use xlink:href="#path-1"></use>
+                </mask>
+                <g id="Mask">
+                    <use fill="#FFEDD5" xlink:href="#path-1"></use>
+                    <use fill="#EEEEEE" xlink:href="#path-1"></use>
+                </g>
+                <g id="Group" mask="url(#mask-2)">
+                    <g transform="translate(-1.000000, 30.000000)">
+                        <g id="Group-4" stroke-width="1" fill="none">
+                            <rect id="Rectangle-12" fill="#545A54" x="40" y="4" width="10" height="3" rx="1"></rect>
+                            <rect id="Rectangle-12" fill="#545A54" x="40" y="10" width="10" height="3" rx="1"></rect>
+                            <rect id="Rectangle-19" fill="#4C87D7" x="66" y="8" width="12" height="3"></rect>
+                            <rect id="Rectangle-9" fill="#5099E8" x="66.2756374" y="6.0387383" width="12" height="1.9612617"></rect>
+                            <rect id="Rectangle-12" fill="#545A54" x="31" y="4" width="3" height="3"></rect>
+                            <rect id="Rectangle-12" fill="#545A54" x="31" y="10" width="3" height="3"></rect>
+                            <rect id="Rectangle-16" fill="#B2D7FF" x="46" y="-1.13686838e-13" width="3" height="17"></rect>
+                            <rect id="Rectangle-23" fill="#4F93E3" x="0" y="7" width="30" height="4"></rect>
+                            <rect id="Rectangle-16-Copy" fill="#B2D7FF" x="30" y="-2.27373675e-13" width="2" height="17"></rect>
+                        </g>
+                        <rect id="Rectangle-32" fill="#7A7A7A" x="41" y="4" width="5" height="1"></rect>
+                        <rect id="Rectangle-32" fill="#7A7A7A" x="41" y="10" width="5" height="1"></rect>
+                        <rect id="Rectangle-30" fill="#5099E8" opacity="0.12604944" x="46" y="8" width="3" height="1"></rect>
+                        <rect id="Rectangle-28" fill="#5099E8" opacity="0.12604944" x="46" y="-1.13686838e-13" width="3" height="2"></rect>
+                        <rect id="Rectangle-28-Copy" fill="#9FC7F1" x="46" y="15" width="3" height="2"></rect>
+                        <rect id="Rectangle-26" fill="#7A7A7A" x="32" y="5" width="2" height="1"></rect>
+                        <rect id="Rectangle-26" fill="#7A7A7A" x="32" y="11" width="2" height="1"></rect>
+                        <rect id="Rectangle-24" fill="#383838" opacity="0.727262127" x="41" y="5" width="5" height="1"></rect>
+                        <rect id="Rectangle-24-Copy" fill="#383838" opacity="0.727262127" x="41" y="11" width="5" height="1"></rect>
+                    </g>
+                </g>
+            </g>
+            <path d="M71,91 L57.9986759,91 C54.6856987,91 52,88.3062995 52,85.0064359 L52,79.9935641 C52,76.68341 54.681938,74 57.9986759,74 L71,74 L71,91 Z" id="Path-1" fill="#5099E8"></path>
+            <path d="M109,91 L95.9986759,91 C92.6856987,91 90,88.3062995 90,85.0064359 L90,79.9935641 C90,76.68341 92.681938,74 95.9986759,74 L109,74 L109,91 Z" id="Path-1" fill="#5099E8" transform="translate(99.500000, 82.500000) scale(-1, 1) translate(-99.500000, -82.500000) "></path>
+        </g>
+    </g>
+</svg>

@@ -10,7 +10,14 @@
     {{/if}}
     <div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} {{#if chartHTML}}  {{else}} height:300px; padding-top:35px; padding-bottom:10px; {{/if}}{{/if}}">
         {{#if chartHTML}}
-        {{{chartHTML}}}
+            {{{chartHTML}}}
+        {{else}}
+        <div class="graph-no-data" style="display: block;">
+            <div class="inner">
+                <div class="icon"></div>
+                <div class="text" data-localize="common.graph.no-data"></div>
+            </div>
+        </div>
         {{/if}}
 	</div>
 </div>

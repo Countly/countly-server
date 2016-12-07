@@ -1717,6 +1717,7 @@ window.PlatformView = countlyView.extend({
             "segment-title":jQuery.i18n.map["platforms.table.platform-version-for"],
             "logo-class":"platforms",
             "chartHTML": chartHTML,
+            "isChartEmpty": (chartHTML)? false : true,
             "chart-helper":"platform-versions.chart",
             "table-helper":"",
             "two-tables": true,
