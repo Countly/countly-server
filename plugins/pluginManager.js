@@ -538,10 +538,10 @@ var pluginManager = function pluginManager(){
         var db;
         if(typeof config == "string"){
             db = config;
-            config = countlyConfig;
+            config = JSON.parse(JSON.stringify(countlyConfig));
         }
         else
-            config = config || countlyConfig;
+            config = config || JSON.parse(JSON.stringify(countlyConfig));
             
         var dbName;
         var dbOptions = {
