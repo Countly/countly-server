@@ -289,7 +289,7 @@ $.extend(Template.prototype, {
                 $(".select-items").hide();
                 $(this).addClass("active");
 
-                if (itemCount > 10) {
+                if (itemCount > 10 || $(this).hasClass("big-list")) {
                     $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
                 }
             }

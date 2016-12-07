@@ -784,6 +784,7 @@ div.datatablesubrow {display: none;}
     .cly-select .select-items { top:100%; z-index:2; display:none; position:absolute; margin-left:-1px; border-radius:2px; background-color:#FFF; border:1px solid #D0D0D0; width:135px; }
     .cly-select.dark .select-items { border-color:#d0d0d0; }
 	.cly-select .select-items .scroll-list {  max-height:188px; }
+    .cly-select .select-items .warning { color:#FD8624; font-weight:normal; border-bottom:1px solid #e6e6e6; font:11px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:5px 9px; padding-bottom:7px; cursor: default; }
 	.cly-select .select-items .item { text-overflow:ellipsis; overflow:hidden; white-space:nowrap; color:#666; font-weight:normal; border-bottom:1px solid #e6e6e6; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:5px 9px; padding-bottom:7px; }
         .cly-select .select-items .item:last-child,
         .cly-select .select-items .item.last { border-bottom: none; }
