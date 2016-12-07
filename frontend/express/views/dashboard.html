@@ -439,9 +439,15 @@
 				</div>
 				{{else}}
                     {{#if chartHTML}}
-                    {{{chartHTML}}}
+                        {{{chartHTML}}}
                     {{else}}
-                    <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
+                    <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px; {{#if isChartEmpty}} display:none; {{/if}}"></div>
+                    <div class="graph-no-data" {{#if isChartEmpty}} style="display:block;" {{/if}}>
+                        <div class="inner">
+                            <div class="icon"></div>
+                            <div class="text" data-localize="common.graph.no-data"></div>
+                        </div>
+                    </div>
                     {{/if}}
 				{{/if}}
 			</div>
