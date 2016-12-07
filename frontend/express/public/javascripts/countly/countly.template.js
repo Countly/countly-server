@@ -4172,9 +4172,20 @@ var AppRouter = Backbone.Router.extend({
                 }
 
                 function addText() {
+                    var mainMenuText = $(el.prev()[0]).find(".text").text();
+
                     $(".menu-title").remove();
-                    var menuTitle = $("<div class='menu-title'></div>").text($(el.prev()[0]).text()).prepend("<i class='submenu-close ion-close'></i>");
+                    var menuTitle = $("<div class='menu-title'></div>").text(mainMenuText).prepend("<i class='submenu-close ion-close'></i>");
                     el.prepend(menuTitle);
+
+                    // Try setting submenu title once again if it was empty
+                    // during previous try
+                    if (!mainMenuText) {
+                        setTimeout(function() {
+                            $(".menu-title").text($(el.prev()[0]).find(".text").text());
+                            $(".menu-title").prepend("<i class='submenu-close ion-close'></i>")
+                        }, 1000);
+                    }
                 }
             }
         }
