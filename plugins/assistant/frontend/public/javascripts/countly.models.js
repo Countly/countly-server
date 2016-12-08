@@ -100,7 +100,6 @@
                         obj.icon_styling_class = "assistant_icon_regular";
                     }
                 }
-                //todo sometines events with a negative time are returned
                 obj.timeSince = timeSince(new Date(obj.created_date));
             }
         }

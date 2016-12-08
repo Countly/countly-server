@@ -1,14 +1,13 @@
 'use strict';
 
 const job = require('../../../../api/parts/jobs/job.js'),
-    log = require('../../../../api/utils/log.js')('job:generate_notif');
+      log = require('../../../../api/utils/log.js')('job:generate_notif');
 
 var pluginManager = require('../../../pluginManager.js'),
-    async = require("async");
-var Promise = require("bluebird");
-
-var time = require('time')(Date);
-var assistant = require("../assistant.js");
+    async = require("async"),
+    Promise = require("bluebird"),
+    time = require('time')(Date),
+    assistant = require("../assistant.js");
 
 
 class GenerateNotifJob extends job.Job {
@@ -27,10 +26,9 @@ class GenerateNotifJob extends job.Job {
         countlyDb.collection('apps').find({}, {}).toArray(function(err_apps_data, result_apps_data) {
             assistant.getAssistantConfig(countlyDb, function (returnedConfiguration) {
 
-                log.i("Generate Notifications job, apps DB :" + JSON.stringify(result_apps_data));
+                //log.i("Generate Notifications job, apps DB :" + JSON.stringify(result_apps_data));
 
                 //get current day and time
-                //todo get time based on apps timezone
                 var date = new Date();
 
                 var providedInfo = {};
@@ -64,30 +62,6 @@ class GenerateNotifJob extends job.Job {
                 Promise.all(promises).then(finishIt, finishIt);
             });
         });
-
-        /* Job types and subtypes
-            1 - quick tips
-                1 - Crash integration
-                2 - Push integration
-                3 - star rating integration
-                4 - custom event integration
-                5 - share dashboard
-                6 - use funnels
-                7 - use drills
-                8 - use attribution
-                9 - use dashboard localization
-             2 - Insight
-                1 - active users bow
-                2 - active users eow
-                3 - page view summary
-                4 - top install sources
-                5 - top referrals
-                6 - session duration bow
-             3 - announcments
-                1 - blog page
-                2 - ios sdk
-                3 - android sdk
-         */
     }
 }
 

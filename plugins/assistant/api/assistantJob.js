@@ -11,15 +11,12 @@ var assistantJob = {},
     var PLUGIN_NAME = "assistant-base";
     assistantJob.prepareNotifications = function (db, providedInfo) {
         return new Promise(function(resolve, reject){
-            //here goes all the code
-            log.i('Doing stuff un basic place: ' + 1);
             var result_apps_data = providedInfo.appsData;
             var dow = providedInfo.timeAndDate.dow;
             var hour = providedInfo.timeAndDate.hour;
             var assistantConfig = providedInfo.assistantConfiguration;
 
-            log.i('Assistant plugin stuffo: [%j] ', assistantConfig);
-            log.i('Doing stuff un basic place: ' + 2);
+            //log.i('Assistant plugin stuffo: [%j] ', assistantConfig);
 
             var params = {};
             params.qstring = {};
@@ -28,12 +25,10 @@ var assistantJob = {},
             async.map(result_apps_data, function(ret_app_data, callback){
                 var is_mobile = ret_app_data.type == "mobile";//check if app type is mobile or web
                 var app_id = "" + ret_app_data._id;
-                log.i('Assistant plugin inside loop, id: [%j], result: [%j] ', app_id, is_mobile);
 
                 db.collection('events').findOne({_id:app_id}, {}, function(events_err, events_result) {
-                    log.i('Doing stuff un basic place: ' + 3);
                     params.app_id = app_id;
-                    params.qstring.period = "30days";//todo generate qstring
+                    params.qstring.period = "7days";
                     fetch.getTimeObj('users', params, function (fetchResultUsers) {//collect user info
                         //log.i('Assistant plugin doing steps: [%j] [%j]', 0.01, fetchResultUsers);
                         countlySession.setDb(fetchResultUsers);
@@ -41,9 +36,7 @@ var assistantJob = {},
 
                         log.i('Assistant plugin doing steps: [%j] [%j] [%j] [%j]', 0.1, retSession, params.app_id, app_id);
 
-                        //log.i('Assistant plugin doing steps: [%j] ', 1);
                         // (1) generate quick tip notifications
-
                         // (1.1) Crash integration
 
                         db.collection("app_crashgroups" + app_id).findOne({_id:"meta"}, function(err_crash, res_crash) {
@@ -51,7 +44,7 @@ var assistantJob = {},
                             if(typeof res_crash !== "undefined")//todo is this enough?
                             (function () {
                                 var valueSet = assistant.createNotificationValueSet("assistant.crash-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 1, PLUGIN_NAME, assistantConfig, app_id);
-                                var crash_data_not_available = res_crash.crashes === 0;//todo missing
+                                var crash_data_not_available = res_crash.crashes === 0;
                                 var enough_users = res_crash.users > 20;//total users > 20
                                 var max_show_time_not_exceeded = valueSet.showAmount < 3;
 
@@ -62,8 +55,6 @@ var assistantJob = {},
                                 }
                             })();
                         });
-
-                        //log.i('Assistant plugin doing steps: [%j] ', 2);
 
                         // (1.2) Push integration
                         (function () {
@@ -77,8 +68,6 @@ var assistantJob = {},
                             }
                         })();
 
-                        //log.i('Assistant plugin doing steps: [%j] ', 4);
-
                         // (1.4) Custom event integration
                         (function () {
                             var valueSet = assistant.createNotificationValueSet("assistant.custom-event-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 3, PLUGIN_NAME, assistantConfig, app_id);
@@ -91,9 +80,9 @@ var assistantJob = {},
                             }
                         })();
 
-                        //log.i('Assistant plugin doing steps: [%j] ', 5);
-
                         // (1.5) Share dashboard
+                        //todo implement this
+                        /*
                         (function () {
                             var valueSet = assistant.createNotificationValueSet("assistant.share-dashboard", assistant.NOTIF_TYPE_QUICK_TIPS, 4, PLUGIN_NAME, assistantConfig, app_id);
                             var not_enough_dashboard_users = false;//todo finish this
@@ -103,16 +92,12 @@ var assistantJob = {},
                                 //assistant.createNotification(db, [], valueSet.pluginName, valueSet.type, valueSet.subtype, valueSet.nName, app_id);
                                 assistant.setNotificationShowAmount(db, valueSet, valueSet.showAmount + 1, app_id);
                             }
-                        })();
-
-                        //log.i('Assistant plugin doing steps: [%j] ', 6);
+                        })();*/
 
                         // (1.9) Use dashboard localization
                         //todo implement this
 
                         // (2) generate insight notifications
-
-                        //log.i('Assistant plugin doing steps: [%j] ', 10);
 
                         // (2.1) active users bow positive
                         (function () {
@@ -132,7 +117,6 @@ var assistantJob = {},
                         })();
 
                         // (2.2) active users bow negative
-                        //log.i('Assistant plugin doing steps: [%j] ', 11);
                         (function () {
                             var valueSet = assistant.createNotificationValueSet("assistant.active-users-bow-neg", assistant.NOTIF_TYPE_INSIGHTS, 2, PLUGIN_NAME, assistantConfig, app_id);
                             var enough_active_users = retSession.total_users.total > 100;//active users > 20
@@ -150,7 +134,6 @@ var assistantJob = {},
                         })();
 
                         // (2.3) active users eow positive
-                        //log.i('Assistant plugin doing steps: [%j] ', 12);
                         (function () {
                             var valueSet = assistant.createNotificationValueSet("assistant.active-users-eow-pos", assistant.NOTIF_TYPE_INSIGHTS, 3, PLUGIN_NAME, assistantConfig, app_id);
                             var enough_active_users = retSession.total_users.total > 100;//active users > 20
@@ -168,7 +151,6 @@ var assistantJob = {},
                         })();
 
                         // (2.4) active users eow positive
-                        //log.i('Assistant plugin doing steps: [%j] ', 13);
                         (function () {
                             var valueSet = assistant.createNotificationValueSet("assistant.active-users-eow-neg", assistant.NOTIF_TYPE_INSIGHTS, 4, PLUGIN_NAME, assistantConfig, app_id);
                             var enough_active_users = retSession.total_users.total > 100;//active users > 20
@@ -186,7 +168,6 @@ var assistantJob = {},
                         })();
 
                         // (2.11) session duration bow positive
-                        //log.i('Assistant plugin doing steps: [%j] ', 20);
                         (function () {
                             var valueSet = assistant.createNotificationValueSet("assistant.avg-session-duration-bow-pos", assistant.NOTIF_TYPE_INSIGHTS, 5, PLUGIN_NAME, assistantConfig, app_id);
                             var enough_active_users = retSession.total_sessions.total > 100;//active users > 20
@@ -204,7 +185,6 @@ var assistantJob = {},
                         })();
 
                         // (2.12) session duration bow negative
-                        //log.i('Assistant plugin doing steps: [%j] ', 21);
                         (function () {
                             var valueSet = assistant.createNotificationValueSet("assistant.avg-session-duration-bow-neg", assistant.NOTIF_TYPE_INSIGHTS, 6, PLUGIN_NAME, assistantConfig, app_id);
                             var enough_active_users = retSession.total_sessions.total > 100;//active users > 20
@@ -212,8 +192,6 @@ var assistantJob = {},
                             if(retSession.avg_time.change === "NA") retSession.avg_time.change = "0";
                             var change_amount = parseFloat(retSession.avg_time.change);
                             var enough_session_duration_change = change_amount <= -10;
-
-                            //log.i('Assistant plugin doing steps: [%j][%j][%j][%j] ', 21, val_current_period, change_amount, retSession.avg_time.change);
 
                             if (assistant.correct_day_and_time(4, 16, dow, hour) && enough_active_users && enough_session_duration_change) {
                                 log.i('Assistant plugin doing steps: [%j] ', 21.1);

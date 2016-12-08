@@ -9,18 +9,10 @@ var assistantJob = {},
 (function (assistantJob) {
     var PLUGIN_NAME = "star-rating";
     assistantJob.prepareNotifications = function (db, providedInfo) {
-        //log.i('Assistant plugin inside STAR RATINGS!!!!!');
-
-        /*
-        return new Promise(function (res, rej) {
-            log.i("STAR RATINGS!!!!! [%j]", 1);
-            res();
-        });*/
 
         return new Promise(function(resolve, reject){
 
-            log.i('Assistant plugin inside STAR RATINGS!!!!! loop [%j], id: [%j], result: [%j] ', PLUGIN_NAME, 1,2 );
-            //resolve();
+            log.i('Assistant plugin inside STAR RATINGS');
 
             try {
                 var result_apps_data = providedInfo.appsData;

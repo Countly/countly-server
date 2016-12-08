@@ -1,10 +1,8 @@
 var assistant = {},
-    //common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
     log = require('../../../api/utils/log.js')('assistant:module'),
     fetch = require('../../../api/parts/data/fetch.js'),
-    async = require("async"),
-    countlySession = require('../../../api/lib/countly.session.js');
+    async = require("async");
 
 (function (assistant) {
     var NOTIFICATION_VERSION = 1;
@@ -40,34 +38,27 @@ var assistant = {},
     };
     
     assistant.getNotificationsForUser = function (db, member, api_key, givenCallback) {
-        log.i('Assistant plugin request: Get All Notifications ' + 2);
         //prepare the function to use in both cases
         var getAppData = function (appList) {
-            log.i('Assistant plugin request: Get All Notifications ' + 6);
             async.map(appList, function(app_id, callback){
                 log.i('App id: %s', app_id);
-                log.i('Assistant plugin request: Get All Notifications ' + 7);
 
-                log.i('Doing stuff at step: %s', 1);
                 db.collection('apps').findOne({_id:db.ObjectID(app_id)}, {type:1}, function(err, document) {
                     //todo handle null case
                     var isMobile = document.type == "mobile";//check if app type is mobile or web
 
-                    //log.i('App id: %s, error: %j, result: %j, is mobile: %s', appID, err, document, isMobile);
-                    log.i('Doing stuff at step: %s', 2);
-
                     //get global notifications for this app
                     db.collection(db_name_notifs).find({app_id:app_id}, {}).toArray(function(err1, notifs) {
                         //todo handle null case
-                        log.i('Doing stuff at step: %s, ALL, error: [%j], data: [%j]', 3, err1, notifs);
+                        //log.i('Doing stuff at step: %s, ALL, error: [%j], data: [%j]', 3, err1, notifs);
                         //get global saved notifications for this app
                         db.collection(db_name_notifs).find({app_id:app_id, saved_global:true}, {}).toArray(function(err2, notifs_global) {
                             //todo handle null case
-                            log.i('Doing stuff at step: %s, SAVED GLOBAL, error: [%j], data: [%j]', 4, err2, notifs_global);
+                            //log.i('Doing stuff at step: %s, SAVED GLOBAL, error: [%j], data: [%j]', 4, err2, notifs_global);
                             //get privatly saved notifications for this app
                             db.collection(db_name_notifs).find({app_id: app_id, saved_private: api_key}, {}).toArray(function (err3, notifs_saved) {
                                 //todo handle null case
-                                log.i('Doing stuff at step: %s, SAVED PRIVATE, error: [%j], data: [%j]', 5, err3, notifs_saved);
+                                //log.i('Doing stuff at step: %s, SAVED PRIVATE, error: [%j], data: [%j]', 5, err3, notifs_saved);
 
                                 callback(null, {
                                     id: app_id,
@@ -76,7 +67,6 @@ var assistant = {},
                                     notifs_saved_global: notifs_global,
                                     notifs_saved_private: notifs_saved
                                 });
-                                log.i('Doing stuff at step: %s', 6);
                             });
                         });
                     });
@@ -84,8 +74,6 @@ var assistant = {},
 
             }, givenCallback);
         };
-
-        log.i('Assistant plugin request: Get All Notifications ' + 4);
 
         if(member.global_admin) {
             //get app list from db if user is global admin
@@ -100,38 +88,52 @@ var assistant = {},
             //get user list from member field
             getAppData(member.user_of);
         }
-
-        log.i('Assistant plugin request: Get All Notifications ' + 5);
     };
 
+    /*
+    th - target time
+    ch - current time
+    hw - half width
+
+    this functions return true if:
+    tt - hw <= ct < tt + hw
+     */
     assistant.correct_day_and_time = function (target_day, target_hour, current_day, current_hour) {
-        return true;//todo finish this
+        var halfWidthHours = (JOB_SCHEDULE_INTERVAL / 2) / 60;// half of the width/length in hours
+        var hw = halfWidthHours / 24;//half of the width in days
+
+        var ct = current_day + (current_hour / 24);//current time
+        var tt = target_day + (target_hour / 24);//target time
+
+        if((tt - hw     <= ct && ct < tt + hw    ) ||
+           (tt - hw - 7 <= ct && ct < tt + hw - 7)||
+           (tt - hw + 7 <= ct && ct < tt + hw + 7)) {
+            return true
+        }
+
+        return false;
+        //return true;//override for testing
     };
 
     assistant.changeNotificationSavedStatus = function(do_personal, do_save, notif_id, user_id, db) {
-        log.i('Assistant plugin request saving_function: [%j], [%j], [%j], [%j], [%j]', 1, do_personal, do_save, notif_id, user_id);
         if(do_save) {
             //we need to save it
-            log.i('Assistant plugin request saving_function: [%j]', 2);
 
             if(do_personal) {
-                log.i('Assistant plugin request saving_function: [%j]', 3);
                 // add the person reference to user list
                 db.collection(db_name_notifs).update({_id:db.ObjectID(notif_id)}, {$unset:{cd:""}, $addToSet:{saved_private:user_id}}, function (error, ret) {
                 });
             } else {
-                log.i('Assistant plugin request saving_function: [%j]', 4);
                 // set the global saved flag to true
                 // set bool to true, remove TTL
                 db.collection(db_name_notifs).update({_id:db.ObjectID(notif_id)}, {$unset:{cd:""}, $set:{saved_global:true}}, function (error, ret) {
-                    log.i('Assistant plugin request saving_function: [%j], error: [%j], ret: [%j]', 4.1, error, ret);
+                    //log.i('Assistant plugin request saving_function: [%j], error: [%j], ret: [%j]', 4.1, error, ret);
                 });
             }
         } else {
             //we need to unsave it
-            log.i('Assistant plugin request saving_function: [%j]', 5);
             var check_and_set_ttl = function (ret_obj) {
-                log.i('Assistant plugin request saving_function: [%j], [%j]', 8, ret_obj);
+                //log.i('Assistant plugin request saving_function: [%j], [%j]', 8, ret_obj);
                 var obj = ret_obj.value;
                 if(obj.saved_global == false && obj.saved_private.length === 0) {
                     //todo set cd to old created date
@@ -141,15 +143,12 @@ var assistant = {},
             };
 
             if(do_personal) {
-                log.i('Assistant plugin request saving_function: [%j]', 6);
                 // remove the personal save reference from the user list
                 db.collection(db_name_notifs).findAndModify({_id:db.ObjectID(notif_id)}, {}, {$pull:{saved_private:user_id}}, {new:true}, function (error, ret) {
                     check_and_set_ttl(ret);
                 });
             } else {
-                log.i('Assistant plugin request saving_function: [%j]', 7);
                 // set the global saved flag to false
-                //todo deleting notifications
                 db.collection(db_name_notifs).findAndModify({_id:db.ObjectID(notif_id)}, {}, {$set:{saved_global:false}}, {new:true}, function (error, ret) {
                     check_and_set_ttl(ret);
                 });
@@ -159,28 +158,20 @@ var assistant = {},
     };
 
     assistant.getAssistantConfig = function(db, callback) {
-        //log.i('Assistant plugin getAssistantConfig: [%j]', 17);
         db.collection(db_name_config).find({}, {}).toArray(function(err, result){
-            log.i('Assistant plugin getAssistantConfig: [%j][%j][%j][%j]', 18, err, result, typeof result);
+            //log.i('Assistant plugin getAssistantConfig: [%j][%j][%j][%j]', 18, err, result, typeof result);
             callback(result);
         });
     };
 
     assistant.getNotificationShowAmount = function (assistantConfig, pluginName, type, subtype, appID) {
-        log.i('Assistant plugin getNotificationShowAmount start [%j]', 1);
         if(typeof assistantConfig === "undefined") return 0;
-        log.i('Assistant plugin getNotificationShowAmount start [%j]', 2);
         for(var a = 0 ; a < assistantConfig.length; a++) {
-            log.i('Assistant plugin getNotificationShowAmount start [%j][%j][%j]', 3, assistantConfig[a]._id, appID);
             if("" + assistantConfig[a]._id === "" + appID) {
-                log.i('Assistant plugin getNotificationShowAmount start [%j][%j][%j][%j][%j][%j]', 4, assistantConfig[a].notifShowAmount, type, subtype, typeof type, typeof subtype);
                 if(typeof assistantConfig[a].notifShowAmount === "undefined") return 0;
                 if(typeof assistantConfig[a].notifShowAmount[pluginName] === "undefined") return 0;
-                log.i('Assistant plugin getNotificationShowAmount start [%j][%j][%j][%j]', 4.1, typeof assistantConfig[a].notifShowAmount[pluginName][type], assistantConfig[a].notifShowAmount, assistantConfig[a]);
                 if(typeof assistantConfig[a].notifShowAmount[pluginName][type] === "undefined") return 0;
-                log.i('Assistant plugin getNotificationShowAmount start [%j][%j][%j]', 5, assistantConfig[a].notifShowAmount, assistantConfig[a].notifShowAmount[pluginName][type]);
                 if(typeof assistantConfig[a].notifShowAmount[pluginName][type][subtype] === "undefined") return 0;
-                log.i('Assistant plugin getNotificationShowAmount: [%j][%j]', assistantConfig[a].notifShowAmount[pluginName][type][subtype], pluginName);
                 return assistantConfig[a].notifShowAmount[pluginName][type][subtype];
             }
         }
@@ -191,7 +182,7 @@ var assistant = {},
         var updateQuery ={};
         updateQuery["notifShowAmount." + notifValueSet.pluginName + "." + notifValueSet.type + "." + notifValueSet.subtype] = newShowAmount;
         db.collection(db_name_config).update({_id:db.ObjectID(appID)}, {$set:updateQuery}, {upsert:true}, function (err, res) {
-            log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', err, res);
+            //log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', err, res);
         });
     };
 

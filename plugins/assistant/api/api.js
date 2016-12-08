@@ -4,7 +4,6 @@ var plugin = {},
 	log = common.log('assistant:api'),
 	fetch = require('../../../api/parts/data/fetch.js'),
 	async = require("async"),
-    countlySession = require('../../../api/lib/countly.session.js'),
     assistant = require("./assistant.js");
 
 (function (plugin) {
@@ -12,14 +11,14 @@ var plugin = {},
     var scheduleAssistantJob = function (schedule) {
 
     };
-/*
+
 	plugins.register("/master", function(ob){
 		// Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
             require('../../../api/parts/jobs').job('assistant:generate').replace().schedule("every " + assistant.JOB_SCHEDULE_INTERVAL + " minutes starting on the 0 min");
         }, 3000);
 	});
-*/
+
 	plugins.register("/o/assistant", function(ob){
 		var params = ob.params;
 		var paths = ob.paths;
@@ -36,7 +35,6 @@ var plugin = {},
 		validate(function (params) {
             log.i('Assistant plugin request: Get All Notifications ' + 1);
 			var member = params.member;
-			var memberID = member._id;
 
             assistant.getNotificationsForUser(common.db, member, api_key, function(err, results) {
                 log.i('Assistant plugin request: Get All Notifications ' + 10);
@@ -73,7 +71,6 @@ var plugin = {},
 
 			var member = params.member;
             var api_key = params.qstring.api_key;
-			var memberID = member._id;
             var save_action;
             var notif = params.qstring.notif;
             var save_val = params.qstring.save;
@@ -118,7 +115,8 @@ var plugin = {},
         common.returnOutput(params, "Magic was ! completed");
         return true;
     });
-
+/*
+    //for debugging
 	var db_name_notifs = "assistant_notifs";
 	var db_name_config = "assistant_config";
 
@@ -137,7 +135,7 @@ var plugin = {},
         common.returnOutput(params, "Delete was ! completed");
         return true;
     });
-
+*/
 }(plugin));
 
 module.exports = plugin;
