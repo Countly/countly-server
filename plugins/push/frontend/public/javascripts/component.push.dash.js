@@ -242,3 +242,9 @@ window.MessagingDashboardView = countlyView.extend({
 		if (this.mounted) { this.mounted.refresh(); }
 	}
 });
+
+window.app.messagingDashboardView = new window.MessagingDashboardView();
+
+window.app.route('/messaging', 'messagingDashboardView', function () {
+    this.renderWhenReady(this.messagingDashboardView);
+});

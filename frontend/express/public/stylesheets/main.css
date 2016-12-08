@@ -528,7 +528,6 @@ table.d-table:not(.no-fix) { table-layout:fixed; }
 .table-edit { display:none; }
 	.table-edit td, .table-add td { padding:10px; }
 	.table-edit .icon-button, .table-add .icon-button { float:right; }
-	.table-edit-prev>td { border-bottom:none; }
 
 .dataTable td { font-family:Oswald; font-size:12px; }
 .d-table .shrink {width: 1%;}
@@ -582,7 +581,6 @@ div.datatablesubrow {display: none;}
 .d-table.horizontal tr:hover,
 .d-table.horizontal tr:nth-child(even),
 .d-table.horizontal tr:nth-child(even):hover { background-color: #FFF; }
-.d-table.horizontal .table-edit-prev>td,
 .d-table.horizontal .populate-demo-data td,
 .d-table.horizontal td td { border-bottom:none; }
 

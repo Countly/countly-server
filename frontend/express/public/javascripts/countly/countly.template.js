@@ -2516,20 +2516,26 @@ window.ManageAppsView = countlyView.extend({
 
             $(this).addClass("disabled");
 
+            var args = {
+                app_id:appId,
+                name:appName,
+                type:$("#app-edit-type .cly-select .text").data("value") + '',
+                category:$("#app-edit-category .cly-select .text").data("value") + '',
+                key:app_key,
+                timezone:$("#app-edit-timezone #app-timezone").val(),
+                country:$("#app-edit-timezone #app-country").val(),
+                checksum_salt:$("#app-edit-salt .edit input").val()
+            };
+
+            app.appObjectModificators.forEach(function(mode){
+                mode(args);
+            });
+
             $.ajax({
                 type:"GET",
                 url:countlyCommon.API_PARTS.apps.w + '/update',
                 data:{
-                    args:JSON.stringify({
-                        app_id:appId,
-                        name:appName,
-                        type:$("#app-edit-type .cly-select .text").data("value") + '',
-                        category:$("#app-edit-category .cly-select .text").data("value") + '',
-                        key:app_key,
-                        timezone:$("#app-edit-timezone #app-timezone").val(),
-                        country:$("#app-edit-timezone #app-country").val(),
-                        checksum_salt:$("#app-edit-salt .edit input").val()
-                    }),
+                    args:JSON.stringify(args),
                     api_key:countlyGlobal['member'].api_key
                 },
                 dataType:"jsonp",
@@ -4197,6 +4203,7 @@ var AppRouter = Backbone.Router.extend({
         this.dataExports = {};
         this.appSwitchCallbacks = [];
         this.appManagementSwitchCallbacks = [];
+        this.appObjectModificators = [];
 		this.refreshScripts = {};
         this.dashboardView = new DashboardView();
         this.sessionView = new SessionView();
@@ -5558,6 +5565,9 @@ var AppRouter = Backbone.Router.extend({
     },
     addAppManagementSwitchCallback:function(callback){
         this.appManagementSwitchCallbacks.push(callback);
+    },
+    addAppObjectModificator:function(callback){
+        this.appObjectModificators.push(callback);
     },
     addDataExport:function(name, callback){
         this.dataExports[name] = callback;

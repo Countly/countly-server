@@ -652,7 +652,7 @@ var pluginManager = function pluginManager(){
                         this._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e));
                     }
                 }
-            };
+            }.bind(ob);
             
             var overwriteRetryWrite = function(ob, name){
                 ob["_"+name] = ob[name];

@@ -59,7 +59,7 @@ window.component('push.popup', function(popup) {
 
 		for (var k in window.countlyGlobal.apps) {
 			var a = window.countlyGlobal.apps[k];
-			if (a.apn || a.gcm) {
+			if ((a.apn && a.apn.length) || (a.gcm && a.gcm.length)) {
 				apps.push(window.components.selector.Option({value: a._id, title: a.name, selected: message.apps().indexOf(a._id) !== -1}));
 			}
 		}

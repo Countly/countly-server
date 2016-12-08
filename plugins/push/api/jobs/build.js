@@ -5,29 +5,30 @@ const job = require('../../../../api/parts/jobs/job.js'),
 	  plugins = require('../../../../plugins/pluginManager.js'),
 	  retry = require('../../../../api/parts/jobs/retry.js'),
 	  Divider = require('../parts/divider.js'),
-	  mess = require('../parts/message.js'),
-	  Message = mess.Message;
+	  N = require('../parts/note.js');
 
 
 class BuildJob extends job.TransientJob {
 	constructor(name, data) {
 		super(name, data);
 		log.d('Preparing to build audience for %j', this.data);
-		this.message = new Message(this.data.apps, '')
-				.setId(this.data._id)
-				.addPlatform(this.data.platforms)
-				.setUserConditions(this.data.userConditions)
-				.setDrillConditions(this.data.drillConditions)
-				.setGeo(this.data.geo)
-				.setTest(this.data.test);
+	}
 
+	prepare (manager, db) {
+		log.d('Preparing build job ', this.data);
+		var json = this.data;
+		json._id = db.ObjectID(json._id);
+		json.apps = json.apps.map(db.ObjectID);
+		json.geo = json.geo ? db.ObjectID(json.geo) : undefined;
+		this.note = new N.Note(json);
+		return Promise.resolve();
 	}
 
 	retryPolicy () {
 		return new retry.NoRetryPolicy();
 	}
 
-	run (db, done, progress) {
+	run (db, done) {
 		log.d('Building audience for %j', this.data);
 		
 		let geoPromise = this.data.geo && plugins.getPluginsApis().geo ? 
@@ -37,7 +38,7 @@ class BuildJob extends job.TransientJob {
 					if (err || !geo) {
 						reject(err || 'No geo');
 					} else {
-						this.message.setUserConditions(plugins.getPluginsApis().geo.conditions(geo, this.message.getUserConditions()));
+						this.note.userConditions = plugins.getPluginsApis().geo.conditions(geo, this.note.userConditions);
 						resolve();
 					}
 				});
@@ -47,13 +48,13 @@ class BuildJob extends job.TransientJob {
 
 		setTimeout(() => {
 		geoPromise.then(() => {
-			let divider = new Divider(this.message);
+			let divider = new Divider(this.note);
 			divider.audience(db, true).then((TOTALLY) => {
 				log.d('Done building audience %j: %j', this.data._id, TOTALLY);
 				done(null, TOTALLY);
 			}, done);
 		}, done);
-		}, 14000);
+		}, 10);
 	}
 
 	timeout () {

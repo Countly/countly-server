@@ -2,20 +2,15 @@
 
 var common          = require('../../../../api/utils/common.js'),
     log             = common.log('push:endpoints'),
-    _               = require('underscore'),
     api             = {},
     crypto          = require('crypto'),
     creds           = require('./credentials.js'),
     moment          = require('moment'),
     momentiso       = require('moment-isocalendar'),
-    mess            = require('./message.js'),
-    Divider         = require('./divider.js'),
+    N               = require('./note.js'),
     jobs            = require('../../../../api/parts/jobs'),
     plugins         = require('../../../pluginManager.js'),
-    geoip           = require('geoip-lite'),
-    Platform        = mess.MessagePlatform,
-    Message         = mess.Message,
-    MessageStatus   = mess.MessageStatus;
+    geoip           = require('geoip-lite');
 
 (function (api) {
 
@@ -149,8 +144,8 @@ var common          = require('../../../../api/utils/common.js'),
         if (!msg.apps || !msg.apps.length || !msg.platforms || !msg.platforms.length) {
             log.w('no apps or platforms: %j / %j', msg.apps, msg.platforms);
             common.returnMessage(params, 400, 'Not enough args');
-        } else for (var platform in msg.platforms) if ([Platform.APNS, Platform.GCM].indexOf(msg.platforms[platform]) === -1) {
-            common.returnOutput(params, {error: 'Bad message plaform "' + msg.platforms[platform] + '", only "' + Platform.APNS + '" (APNS) and "' + Platform.GCM + '" (GCM) are supported'});
+        } else for (var platform in msg.platforms) if ([N.Platform.APNS, N.Platform.GCM].indexOf(msg.platforms[platform]) === -1) {
+            common.returnOutput(params, {error: 'Bad message plaform "' + msg.platforms[platform] + '", only "' + N.Platform.APNS + '" (APNS) and "' + N.Platform.GCM + '" (GCM) are supported'});
             return false;
         }
 
@@ -185,36 +180,39 @@ var common          = require('../../../../api/utils/common.js'),
                 } else {
                     msg._id = new common.db.ObjectID();
                     msg.apps = apps.map(a => a._id);
-                    var message = new Message(msg.apps, apps.map(a => a.name))
-                        .setId(msg._id)
-                        .setStatus(MessageStatus.Preparing)
-                        .addPlatform(msg.platforms)
-                        .setUserConditions(msg.userConditions)
-                        .setDrillConditions(msg.drillConditions)
-                        .setGeo(geo ? msg.geo : undefined)
-                        .setTest(msg.test);
-            
-                    log.d('saving message to prepare %j: %j', MessageStatus.Preparing, message);
-                    message = mess.cleanObj(message);
-                    message.created = null;
 
-                    log.d('saving message to prepare %j', message);
-                    common.db.collection('messages').insert(message, (err, saved) => {
+                    var note = new N.Note({
+                        _id: msg._id,
+                        result: {status: N.Status.Preparing},
+                        apps: apps.map(a => a._id),
+                        appNames: apps.map(a => a.name),
+                        platforms: msg.platforms,
+                        userConditions: msg.userConditions && Object.keys(msg.userConditions).length ? msg.userConditions : undefined,
+                        drillConditions: msg.drillConditions && Object.keys(msg.drillConditions).length ? msg.drillConditions : undefined,
+                        geo: geo ? msg.geo : undefined,
+                        test: msg.test || false
+                    });
+                    note.created = null;
+            
+                    log.d('saving message to prepare %j', note);
+
+                    common.db.collection('messages').insert(note, (err, saved) => {
                         if (err || !saved || !saved.result.ok) {
                             log.e('Error while saving message: %j', err || saved);
                             common.returnMessage(params, 400, 'DB error');
                         } else {
-                            log.d('saved & building audience for message %j', message);
+                            log.d('saved & building audience for message %j', note);
 
-                            var returned, 
+                            var json = note.toJSON(),
+                                returned, 
                                 // build timeout (return app_users count if aggregation in push:build is too slow)
                                 timeout = setTimeout(function() {
                                     if (!returned) {
                                         var query = {$or: [...new Set(
                                                 Object.keys(creds.DB_USER_MAP)
                                                     .map(k => creds.DB_USER_MAP[k])
-                                                    .filter(f => message.platforms.indexOf(f.charAt(0)) !== -1)
-                                                    .filter(f => (message.test ? ['d', 't', 'a'] : ['p']).indexOf(f.charAt(f.length - 1)) !== -1)
+                                                    .filter(f => note.platforms.indexOf(f.charAt(0)) !== -1)
+                                                    .filter(f => (note.test ? ['d', 't', 'a'] : ['p']).indexOf(f.charAt(f.length - 1)) !== -1)
                                             )].map(f => { return {[creds.DB_USER_MAP.tokens + f]: true}; })};
 
                                         if (msg.userConditions) {
@@ -227,8 +225,8 @@ var common          = require('../../../../api/utils/common.js'),
                                             if (!returned) {
                                                 returned = true;
                                                 log.i('Returning fast queried audience: %j', counts);
-                                                message.build = {total: counts.reduce((a, b) => a + b)};
-                                                common.returnOutput(params, message);
+                                                json.build = {total: counts.reduce((a, b) => a + b)};
+                                                common.returnOutput(params, json);
                                             }
                                         }, error => {
                                             if (!returned) {
@@ -241,59 +239,61 @@ var common          = require('../../../../api/utils/common.js'),
 
                             jobs.runTransient('push:build', msg).then(build => {
                                 log.d('Scheduling message %j clear in 1 hour', msg._id);
-                                jobs.job('push:clear', msg).in(3600);
+                                jobs.job('push:clear', {mid: msg._id}).in(3600);
 
-                                message.build = {count: build, total: build.TOTALLY};
-                                delete message.build.count.TOTALLY;
+                                json.build = {count: build, total: build.TOTALLY};
+                                delete json.build.count.TOTALLY;
 
                                 if (!returned) {
                                     returned = true;
                                     clearTimeout(timeout);
-                                    log.i('Returning audience: %j', build);
-                                    common.returnOutput(params, message);
+                                    log.i('Returning audience: %j / %j', json, build);
+                                    common.returnOutput(params, json);
                                 }
 
+                                log.d('note id ', typeof note._id, note._id);
                                 // already returned, thus possible that message is already created
                                 // first check for message creation
                                 common.db.collection('messages').findAndModify(
-                                    {_id: message._id, 'result.status': MessageStatus.Preparing, created: null}, 
+                                    {_id: note._id, 'result.status': N.Status.Preparing, created: null}, 
                                     [['_id', 1]], 
-                                    {$set: {build: message.build, 'result.total': message.build.total}}, 
+                                    {$set: {build: json.build, 'result.total': json.build.total}}, 
                                     {new: true}, 
                                     (err, doc) => {
+                                        log.d('err', err, 'doc', doc, 'args', arguments);
                                         if (err) {
                                             log.e('Error while updating message with build result: %j', err);
                                         } else if (!doc || !doc.value) {
-                                            log.d('Message %j is created or cleared', message._id);
+                                            log.d('Message %j is created or cleared', note._id);
 
                                             // message is either created or already cleared, let's put build in it and initiate job if it's not deleted
                                             common.db.collection('messages').findAndModify(
-                                                {_id: message._id, 'result.status': MessageStatus.Preparing}, 
+                                                {_id: note._id, 'result.status': N.Status.Preparing}, 
                                                 [['_id', 1]], 
-                                                {$set: {build: message.build, 'result.total': message.build.total}}, 
+                                                {$set: {build: json.build, 'result.total': json.build.total}}, 
                                                 {new: true}, 
                                                 (err, doc) => {
                                                     if (err) {
                                                         log.e('Error while fastsending message: %j', err);
                                                     } else if (!doc || !doc.value) {
-                                                        log.w('Message is either cleared or is in unsupported state: %j', message);
+                                                        log.w('Message is either cleared or is in unsupported state: %j', note);
 
                                                     } else if (doc.value.clear) {
                                                         log.d('Message %j is set to clear 1', msg._id);
-                                                        jobs.job('push:clear', msg).now();
+                                                        jobs.job('push:clear', {mid: msg._id}).now();
                                                     } else {
-                                                        message = doc.value;
-                                                        log.d('Message %j is created, starting job', message._id);
-                                                        if (message.date) {
-                                                            jobs.job('push:send', {mid: message._id}).once(message.date);
+                                                        note = doc.value;
+                                                        log.d('Message %j is created, starting job', note._id);
+                                                        if (note.date) {
+                                                            jobs.job('push:send', {mid: note._id}).once(note.date);
                                                         } else {
-                                                            jobs.job('push:send', {mid: message._id}).now();
+                                                            jobs.job('push:send', {mid: note._id}).now();
                                                         }
                                                     }
                                                 });
                                         } else if (doc && doc.value && doc.value.clear) {
                                             log.d('Message %j is set to clear 2', msg._id);
-                                            jobs.job('push:clear', message).now();
+                                            jobs.job('push:clear', {mid: msg._id}).now();
                                         } else {
                                             log.d('Message %j is not created yet', msg._id);
                                             // all good, message not created yet, build is set
@@ -301,13 +301,13 @@ var common          = require('../../../../api/utils/common.js'),
                                     });
 
                             }, error => {
-                                message.error = error;
-                                common.db.collection('messages').update({_id: message._id, $or: [{error: {$exists: false}}, {error: null}]}, {$set: {error: error}}, () => {});
+                                note.error = note.result.error = error;
+                                common.db.collection('messages').update({_id: note._id, $or: [{error: {$exists: false}}, {error: null}]}, {$set: {error: error}}, () => {});
 
-                                jobs.job('push:clear', msg).now();
+                                jobs.job('push:clear', {mid: msg._id}).now();
                                 if (!returned) {
                                     returned = true;
-                                    common.returnMessage(params, 500, message);
+                                    common.returnMessage(params, 500, note);
                                 }
                             });
                         }
@@ -353,7 +353,7 @@ var common          = require('../../../../api/utils/common.js'),
                 } else {
                     if (doc.value.build) {
                         log.d('Build finished, clearing it');
-                        jobs.job('push:clear', msg).now();
+                        jobs.job('push:clear', {mid: msg._id}).now();
                     } else {
                         log.d('Build is not finished yet, will clear on finish');
                     }
@@ -400,24 +400,25 @@ var common          = require('../../../../api/utils/common.js'),
             return false;
         }
 
-        for (var platform in msg.platforms) if ([Platform.APNS, Platform.GCM].indexOf(msg.platforms[platform]) === -1) {
-            common.returnOutput(params, {error: 'Bad message plaform "' + msg.platforms[platform] + '", only "' + Platform.APNS + '" (APNS) and "' + Platform.GCM + '" (GCM) are supported'});
+        for (var platform in msg.platforms) if ([N.Platform.APNS, N.Platform.GCM].indexOf(msg.platforms[platform]) === -1) {
+            common.returnOutput(params, {error: 'Bad message plaform "' + msg.platforms[platform] + '", only "' + N.Platform.APNS + '" (APNS) and "' + N.Platform.GCM + '" (GCM) are supported'});
             return false;
         }
 
         if (msg.type !== 'data' && (!msg.messagePerLocale || !msg.messagePerLocale.default)) {
             common.returnOutput(params, {error: 'Messages of type other than "data" must have "messagePerLocale" object with at least "default" key set'});
             return false;
+        } else if (msg.type !== 'data') {
+            var mpl = {};
+            for (var k in msg.messagePerLocale) {
+                mpl[k.replace(/[\[\]]/g, '')] = msg.messagePerLocale[k];
+            }
+            msg.messagePerLocale = mpl;
         }
 
         if (msg.type === 'data' && !msg.data) {
             common.returnOutput(params, {error: 'Messages of type "data" must have "data" property'});
             return false;
-        }
-
-        var message = {};
-        for (var k in msg.messagePerLocale) {
-            message[k.replace(/[\[\]]/g, '')] = msg.messagePerLocale[k];
         }
 
         if (msg.source && ['api', 'dash'].indexOf(msg.source) === -1) {
@@ -437,8 +438,6 @@ var common          = require('../../../../api/utils/common.js'),
             msg.date = null;
         }
         msg.tz = msg.tz || false;
-
-        msg.messagePerLocale = msg.type === 'data' ? undefined : msg.messagePerLocale;
 
         log.d('Entering message creation with %j', msg);
 
@@ -495,60 +494,59 @@ var common          = require('../../../../api/utils/common.js'),
                 }
             }
 
-            var message = new Message(apps.map(a => a._id), apps.map(a => a.name))
-                .setId(msg._id ? common.db.ObjectID(msg._id) : new common.db.ObjectID())
-                .setStatus(MessageStatus.Preparing)
-                .setType(msg.type)
-                .setSource(msg.source)
-                .setMessagePerLocale(msg.messagePerLocale)
-                .setLocales(msg.locales)
-                .setURL(msg.url)
-                .setCategory(msg.category)
-                .addPlatform(msg.platforms)
-                .setUserConditions(msg.userConditions)
-                .setDrillConditions(msg.drillConditions)
-                .setGeo(geo ? msg.geo : undefined)
-                .setSound(msg.sound)
-                .setBadge(msg.badge)
-                .setTest(msg.test)
-                .setContentAvailable(msg.contentAvailable)
-                .setNewsstandAvailable(msg.newsstandAvailable)
-                .setCollapseKey(msg.collapseKey)
-                .setDelayWhileIdle(msg.delayWhileIdle)
-                .setData(msg.data)
-                .schedule(msg.date, msg.tz);
-
-            message = mess.cleanObj(message);
+            var note = new N.Note({
+                _id: msg._id ? common.db.ObjectID(msg._id) : new common.db.ObjectID(),
+                status: N.Status.Preparing,
+                type: msg.type,
+                source: msg.source,
+                apps: apps.map(a => a._id),
+                appNames: apps.map(a => a.name),
+                platforms: msg.platforms,
+                messagePerLocale: msg.messagePerLocale,
+                locales: msg.locales,
+                url: msg.url,
+                sound: msg.sound,
+                badge: msg.badge,
+                contentAvailable: msg.contentAvailable,
+                collapseKey: msg.collapseKey,
+                delayWhileIdle: msg.delayWhileIdle,
+                data: msg.data,
+                userConditions: msg.userConditions && Object.keys(msg.userConditions).length ? msg.userConditions : undefined,
+                drillConditions: msg.drillConditions && Object.keys(msg.drillConditions).length ? msg.drillConditions : undefined,
+                geo: geo ? msg.geo : undefined,
+                test: msg.test || false,
+                date: msg.date || new Date(),
+                tz: msg.tz || false
+            });
 
             if (prepared) {
-                message.result.status = MessageStatus.Preparing;
-                message.result.total = prepared.result.total;
+                note.result.status = N.Status.Preparing;
+                note.result.total = prepared.result.total;
                 common.db.collection('messages').findAndModify(
-                    {_id: message._id, 'result.status': MessageStatus.Preparing, created: null}, 
+                    {_id: note._id, 'result.status': N.Status.Preparing, created: null}, 
                     [['_id', 1]], 
-                    {$set: message}, // <- created here
+                    {$set: note}, // <- created here
                     {new: true}, 
                     (err, doc) => {
                         if (err) {
                             log.e('Error while updating message with build result: %j', err);
                             common.returnMessage(params, 500, 'DB Error');
                         } else if (!doc || !doc.value) {
-                            log.d('Message %j is already created or cleared, doing nothing', message._id);
+                            log.d('Message %j is already created or cleared, doing nothing', note._id);
                             common.returnMessage(params, 400, 'Already created or cleared');
                         } else {
                             if (doc.value.build) {
                                 log.d('Build finished, starting job');
                                 // build already finished, lets schedule the job
-                                message = doc.value;
-                                if (message.date) {
-                                    jobs.job('push:send', {mid: message._id}).once(message.date);
+                                if (note.date) {
+                                    jobs.job('push:send', {mid: note._id}).once(note.date);
                                 } else {
-                                    jobs.job('push:send', {mid: message._id}).now();
+                                    jobs.job('push:send', {mid: note._id}).now();
                                 }
                             } else {
-                                log.d('Build is not finished yet for message %j', message._id);
+                                log.d('Build is not finished yet for message %j', note._id);
                             }
-                            plugins.dispatch("/systemlogs", {params:params, action:"push_message_created", data:message});
+                            plugins.dispatch("/systemlogs", {params:params, action:"push_message_created", data: doc.value});
                             common.returnOutput(params, doc.value);
                         }
                     });
@@ -558,23 +556,23 @@ var common          = require('../../../../api/utils/common.js'),
                     return common.returnMessage(params, 403, 'Only app / global admins are allowed to push');
                 }
 
-                jobs.runTransient('push:build', message).then(build => {
+                jobs.runTransient('push:build', note).then(build => {
                     if (build.TOTALLY === 0) {
                         common.returnMessage(params, 400, 'No audience');
                     } else {
-                        message.build = build;
-                        message.result.tital = build.TOTALLY;
-                        common.db.collection('messages').save(message, (err, message) => {
+                        note.build = build;
+                        note.result.tital = build.TOTALLY;
+                        common.db.collection('messages').save(note, (err) => {
                             if (err) {
                                 log.e('Error while saving message: %j', err);
                                 common.returnMessage(params, 500, 'DB error');
                             } else {
-                                common.returnOutput(params, message);
+                                common.returnOutput(params, note);
                                 log.d('Scheduling push job on date %j', msg.date);
-                                if (msg.date) {
-                                    jobs.job('push:send', {mid: message._id}).once(msg.date);
+                                if (note.date) {
+                                    jobs.job('push:send', {mid: note._id}).once(msg.date);
                                 } else {
-                                    jobs.job('push:send', {mid: message._id}).now();
+                                    jobs.job('push:send', {mid: note._id}).now();
                                 }
                             }
                         });
@@ -615,11 +613,11 @@ var common          = require('../../../../api/utils/common.js'),
         log.d('mime', mime);
         log.d('args.key', args.key);
         
-        if (args.platform === Platform.APNS) {
+        if (args.platform === N.Platform.APNS) {
             if (mime === 'data:application/x-pkcs12') {
-                detected = [creds.CRED_TYPE[Platform.APNS].UNIVERSAL, creds.CRED_TYPE[Platform.APNS].DEV, creds.CRED_TYPE[Platform.APNS].PROD];
+                detected = [creds.CRED_TYPE[N.Platform.APNS].UNIVERSAL, creds.CRED_TYPE[N.Platform.APNS].DEV, creds.CRED_TYPE[N.Platform.APNS].PROD];
             } else if (mime === 'data:application/x-pkcs8') {
-                detected = [creds.CRED_TYPE[Platform.APNS].TOKEN];
+                detected = [creds.CRED_TYPE[N.Platform.APNS].TOKEN];
             } else {
                 common.returnMessage(params, 400, 'Certificate must be in P12 or P8 formats');
                 return false;
@@ -639,9 +637,9 @@ var common          = require('../../../../api/utils/common.js'),
             }
    
             args.key = args.key.substring(args.key.indexOf(',') + 1);
-        } else if (args.platform === Platform.GCM) {
+        } else if (args.platform === N.Platform.GCM) {
             if (!args.type) {
-                args.type = creds.CRED_TYPE[Platform.GCM].GCM;
+                args.type = creds.CRED_TYPE[N.Platform.GCM].GCM;
             }
         } else {
             common.returnMessage(params, 400, 'Bad platform ' + args.platform);
@@ -661,65 +659,14 @@ var common          = require('../../../../api/utils/common.js'),
                     common.returnOutput(params, {cid: credentials._id});
                 }, (json) => {
                     log.d('Check app returned error', json);
-                    let err = json && json.error === '3-EOF' ? 'badcert' : json;
+                    let err = json && json.error === '3-EOF' ? 'badcert' : json.error || json;
                     common.returnOutput(params, {error: err});
                 });
+                jobs.job('push:clear', {cid: credentials._id}).in(3600);
             }
         });
 
         return true;
-    };
-
-    api.checkApp = function (params) {
-        var argProps = {
-                'appId':            { 'required': true,  'type': 'String'   },
-                'platform':         { 'required': true,  'type': 'String'   },
-                'test':             { 'required': false, 'type': 'Boolean'  },
-            },
-            options = {};
-
-        if (params.qstring.test === 'false') { params.qstring.test = false; }
-        if (params.qstring.test === 'true') { params.qstring.test = true; }
-
-        if (!(options = common.validateArgs(params.qstring, argProps))) {
-            common.returnMessage(params, 400, 'Not enough args');
-            return false;
-        }
-
-        api.check(options.appId, options.platform, options.test, function(ok, error){
-            common.returnOutput(params, {ok: ok, error: error});
-        });
-    };
-
-    api.check = function (appId, platform, test, callback) {
-        var message = new Message([appId], ['Test app'])
-            .setId(new common.db.ObjectID())
-            .setMessage('[CLY]_test_message')
-            .addPlatform(platform)
-            .setTest(test);
-
-            log.d('%j', message);
-
-        jobs.runTransient('push:check', mess.cleanObj(message)).then(() => {
-            log.d('Check app returned ok');
-            callback(true);
-        }, (json) => {
-            log.d('Check app returned error', json);
-            let err = json && json.error === '3-EOF' ? 'badcert' : undefined;
-            callback(false, err);
-        });
-    };
-
-    var withAppsAndGeo = function(appIds, geoId, callback) {
-        common.db.collection('apps').find({_id: {$in: appIds}}).toArray(function(error, apps){
-            if (geoId) {
-                common.db.collection('geos').findOne({_id: common.db.ObjectID(geoId)}, function(err, geo) {
-                    callback(err || error, apps, geo);
-                });
-            } else {
-                callback(error, apps);
-            }
-        });
     };
 
     api.updateApp = function(params) {
@@ -796,132 +743,6 @@ var common          = require('../../../../api/utils/common.js'),
 
         return geoPlugin;
     }
-
-    api.audience = function(message, callback) {
-        withAppsAndGeo(message.apps, message.geo, function(err, apps, geo){
-            if (err || !apps || !apps.length) {
-                log.i('No apps found');
-                callback(null, []);
-            } else {
-                message.appNames = _.pluck(apps, 'name');
-
-                if (geo && getGeoPluginApi()) {
-                    message.setUserConditions(getGeoPluginApi().conditions(geo, message.getUserConditions()));
-                }
-
-                let divider = new Divider(message);
-                divider.audience(common.db).then((TOTALLY) => {
-                    callback(null, TOTALLY);
-                }, (err) => {
-                    callback(500, err);
-                });
-            }
-        });
-    };
-
-    // build audience collections
-    api.build = function (params) {
-        var argProps = {
-                'build':            { 'required': false, 'type': 'String', 'min-length': 24, 'max-length': 24 },
-                'apps':             { 'required': true,  'type': 'Array'   },
-                'platforms':        { 'required': true,  'type': 'Array'   },
-                'geo':              { 'required': false, 'type': 'String', 'min-length': 24, 'max-length': 24 },
-                'userConditions':   { 'required': false, 'type': 'Object'  },
-                'drillConditions':  { 'required': false, 'type': 'Object'  },
-                'test':             { 'required': false, 'type': 'Boolean' }
-            },
-            msg = {};
-
-        if (!(msg = common.validateArgs(params.qstring.args, argProps))) {
-            common.returnMessage(params, 400, 'Not enough args');
-            return;
-        }
-
-        msg.apps = msg.apps.map(common.db.ObjectID);
-   
-        if (msg.build) {
-            // second, third, etc. request - lookup build by id returned in first request in case build took too long and preliminary count was returned
-            common.collection('jobs').findOne({name: 'push:clear', 'data._id': common.db.ObjectID(msg.build)}, (err, job) => {
-                if (err) {
-                    common.returnOutput(params, {code: 500, error: err});
-                } else if (!job) {
-                    common.returnOutput(params, {code: 404, error: 'Build not found'});
-                } else if (job.failed) {
-                    common.returnOutput(params, {code: 500, error: job.failed});
-                } else if (!job.data || !job.data.result) {
-                    common.returnOutput(params, {code: 500, error: 'No result'});
-                } else {
-                    common.returnOutput(params, job.data.result);
-                }
-            });
-        } else {
-            // initiate audience build:
-            // - start transient push:build job
-            //      - if it's done running within 3 seconds, return result
-            //      - if not, start simple app_users counting
-            //          - if app_users counting returned and build is not yet done, return preliminary count of all users (+userConditions)
-            //          - if build is done before counting done, return build and dismiss app_users count
-            // - once build is done, schedule push:clear to be run in 1 hour if no message was created with this build
-            // - build result (counts by token type & locale) is saved in push:clear job's data.result key once build is done running so it could be queried later on
-
-            msg._id = new common.db.ObjectID(); 
-
-            var returned, 
-                // build timeout (return app_users count if aggregation in push:build is too slow)
-                timeout = setTimeout(function() {
-                    if (!returned) {
-                        var query = {$or: [...new Set(Object.keys(creds.DB_USER_MAP)
-                                .map(k => creds.DB_USER_MAP[k])
-                                .filter(f => msg.platforms.indexOf(f.charAt(0)) !== -1)
-                                .filter(f => (msg.test ? ['d', 't', 'a'] : ['p']).indexOf(f.charAt(f.length - 1)) !== -1)
-                            )].map(f => { return {[creds.DB_USER_MAP.tokens + f]: true}; })};
-
-                        if (msg.userConditions && Object.keys(msg.userConditions).length) {
-                            for (var k in msg.userConditions) { query.k = msg.userConditions[k]; }
-                        }
-
-                        log.i('Fast querying audience: %j', query);
-
-                        Promise.all(msg.apps.map(appId => common.dbPromise('app_users' + appId, 'count', query))).then(counts => {
-                            if (!returned) {
-                                returned = true;
-                                log.i('Returning fast queried audience: %j', counts);
-                                common.returnOutput(params, {_id: msg._id, total: counts.reduce((a, b) => a + b)});
-                            }
-                        }, error => {
-                            if (!returned) {
-                                returned = true;
-                                common.returnMessage(params, 500, 'Error ' + error);
-                            }
-                        });
-                    }
-                }, 3000);
-
-            log.i('Building audience %j', msg);
-
-            jobs.runTransient('push:build', msg).then(result => {
-                msg.result = {_id: msg._id, count: result, total: result.TOTALLY};
-                jobs.job('push:clear', msg).in(3600);
-
-                if (!returned) {
-                    returned = true;
-                    clearTimeout(timeout);
-                    log.i('Returning audience: %j', result);
-                    common.returnOutput(params, msg.result);
-                }
-            }, error => {
-                msg.failed = error;
-                jobs.job('push:clear', msg).now();
-
-                if (!returned) {
-                    returned = true;
-                    common.returnMessage(params, 500, 'Error ' + error);
-                }
-            });
-        }
-
-        return true;
-    };
 
     api.getAllMessages = function (params) {
         var query = {
@@ -1028,7 +849,7 @@ var common          = require('../../../../api/utils/common.js'),
                 return false;
             }
 
-            if ((message.result.status & MessageStatus.InProcessing) > 0) {
+            if ((message.result.status & N.Status.InProcessing) > 0) {
                 // if (message.pushly && message.pushly.length) {
                 //     message.pushly.forEach(function(pushlyMessage){
                 //         pushly.abort(pushlyMessage);
@@ -1046,6 +867,33 @@ var common          = require('../../../../api/utils/common.js'),
         });
 
         return true;
+    };
+
+
+    api.appUpdate = function(ob) {
+        var args = ob.params.qstring.args;
+        if (typeof args === 'object') {
+            var update = {$set: {}};
+            if (args.apn) { 
+                update.$set.apn = args.apn; 
+                ob.data.update.apn = args.apn; 
+            } else { 
+                update.$unset = {apn: 1};
+            }
+            if (args.gcm) { 
+                update.$set.gcm = args.gcm; 
+                ob.data.update.gcm = args.gcm; 
+            } else {
+                if (!update.$unset) { update.$unset = {}; }
+                update.$unset.$gcm = 1;
+            }
+
+            Object.keys(update.$set).forEach(p => update.$set[p].forEach(cred => cred._id = common.db.ObjectID(cred._id)));
+            
+            log.d('App update query: %j, data %j', update, ob.data.update);
+            common.db.collection('apps').updateOne({_id: common.db.ObjectID(args.app_id)}, update, log.logdb('updating app with credentials'));
+        }
+        return false;
     };
 
     api.processTokenSession = function(dbAppUser, params) {
