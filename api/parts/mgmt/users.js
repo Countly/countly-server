@@ -18,7 +18,7 @@ var usersApi = {},
             common.returnMessage(params, 401, 'User is not a global administrator');
             return false;
         }
-        common.db.collection('members').find({}).toArray(function (err, members) {
+        common.db.collection('members').find({},{password:0, appSortList:0}).toArray(function (err, members) {
     
             if (!members || err) {
                 common.returnOutput(params, {});
@@ -34,20 +34,15 @@ var usersApi = {},
                 if(members[i].user_of && members[i].user_of.length > 0 && members[i].user_of[0] == ""){
                     members[i].user_of.splice(0, 1);
                 }
-                membersObj[members[i]._id] = {
-                    '_id':members[i]._id,
-                    'api_key':members[i].api_key,
-                    'full_name':members[i].full_name,
-                    'username':members[i].username,
-                    'email':members[i].email,
-                    'admin_of':((members[i].admin_of && members[i].admin_of.length > 0) ? members[i].admin_of : []),
-                    'user_of':((members[i].user_of && members[i].user_of.length > 0) ? members[i].user_of : []),
-                    'global_admin':(members[i].global_admin === true),
-                    'locked':(members[i].locked === true),
-                    'created_at':members[i].created_at || 0,
-                    'last_login':members[i].last_login || 0,
-                    'is_current_user':(members[i].api_key == params.member.api_key)
-                };
+               
+                members[i]['admin_of'] = ((members[i].admin_of && members[i].admin_of.length > 0) ? members[i].admin_of : []);
+                members[i]['user_of'] = ((members[i].user_of && members[i].user_of.length > 0) ? members[i].user_of : []);
+                members[i]['global_admin'] = (members[i].global_admin === true);
+                members[i]['locked'] = (members[i].locked === true);
+                members[i]['created_at'] = members[i].created_at || 0;
+                members[i]['last_login'] = members[i].last_login || 0;
+                members[i]['is_current_user'] = (members[i].api_key == params.member.api_key);
+                membersObj[members[i]._id] = members[i];
             }
     
             common.returnOutput(params, membersObj);
@@ -96,6 +91,7 @@ var usersApi = {},
             newMember.created_at = Math.floor(((new Date()).getTime()) / 1000); //TODO: Check if UTC
             newMember.admin_of = newMember.admin_of || [];
             newMember.user_of = newMember.user_of || [];
+            newMember.locked = false;
 
             common.db.collection('members').insert(newMember, {safe: true}, function(err, member) {
                 member = member.ops;
@@ -152,18 +148,20 @@ var usersApi = {},
                 updatedMember.password_changed = 0;
             }
         }
-
-        common.db.collection('members').update({'_id': common.db.ObjectID(params.qstring.args.user_id)}, {'$set': updatedMember}, {safe: true}, function(err, isOk) {
-            common.db.collection('members').findOne({'_id': common.db.ObjectID(params.qstring.args.user_id)}, function(err, member) {
-                if (member && !err) {
-					plugins.dispatch("/i/users/update", {params:params, data:updatedMember, member:member});
-                    if (params.qstring.args.send_notification && passwordNoHash) {
-                        mail.sendToUpdatedMember(member, passwordNoHash);
+        common.db.collection('members').findOne({'_id': common.db.ObjectID(params.qstring.args.user_id)}, function(err, memberBefore) {
+            common.db.collection('members').update({'_id': common.db.ObjectID(params.qstring.args.user_id)}, {'$set': updatedMember}, {safe: true}, function(err, isOk) {
+                common.db.collection('members').findOne({'_id': common.db.ObjectID(params.qstring.args.user_id)}, function(err, member) {
+                    if (member && !err) {
+                        updatedMember._id = params.qstring.args.user_id;
+                        plugins.dispatch("/i/users/update", {params:params, data:updatedMember, member:memberBefore});
+                        if (params.qstring.args.send_notification && passwordNoHash) {
+                            mail.sendToUpdatedMember(member, passwordNoHash);
+                        }
+                        common.returnMessage(params, 200, 'Success');
+                    } else {
+                        common.returnMessage(params, 500, 'Error updating user');
                     }
-                    common.returnMessage(params, 200, 'Success');
-                } else {
-                    common.returnMessage(params, 500, 'Error updating user');
-                }
+                });
             });
         });
 

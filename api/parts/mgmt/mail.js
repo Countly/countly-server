@@ -119,7 +119,7 @@ mail.lookup = function(callback) {
         if(domain.indexOf("://") == -1){
             domain = "http://"+domain;
         }
-        callback(false, domain);
+        callback(false, stripTrailingSlash(domain));
     } else {
         getIP(function (err, ip) {
             if(err)
@@ -128,6 +128,13 @@ mail.lookup = function(callback) {
                 callback(err, "http://"+ip);
         });
     }
+}
+
+function stripTrailingSlash(str) {
+	if(str.substr(str.length - 1) == '/') {
+		return str.substr(0, str.length - 1);
+	}
+	return str;
 }
 
 var getIP = extIP({

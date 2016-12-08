@@ -11,10 +11,11 @@
 <head> 
 	<title>Countly</title> 
 	<meta name="viewport" content="width=device-width, user-scalable=0, maximum-scale=1.0">
+    <meta name="robots" content="noindex">
 	<link rel="icon" type="image/png" href="<%- cdn %>images/favicon.png">
     <link rel="stylesheet" href="<%- cdn %>stylesheets/font-awesome/css/font-awesome.min.css" />
-	<link rel="stylesheet" href="<%- cdn %>stylesheets/entypo/css/entypo.css" />
     <link rel="stylesheet" href="<%- cdn %>stylesheets/ionicons/css/ionicons.min.css" />
+    <link rel="stylesheet" href="<%- cdn %>stylesheets/material/material-icons.css" />
 	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.base.css" />
 	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.theme.css" />
     <link rel="stylesheet" href="<%- cdn %>stylesheets/main.min.css?<%= countlyVersion %>" />
@@ -23,6 +24,7 @@
     <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/handlebars.js?<%= countlyVersion %>"></script>
     <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.i18n.properties-min-1.0.9.js?<%= countlyVersion %>"></script>
     <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/underscore-min.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/highlight/highlight.pack.js?<%= countlyVersion %>"></script>
     <style>
         #content-container { margin: 0; position: relative; }
         #content { padding: 0; position: relative; }
@@ -69,9 +71,17 @@
     countlyGlobal["path"] = "<%- path %>";
     countlyGlobal["cdn"] = "<%- cdn %>";
     countlyCommon = {};
+    countlyCommon.browserLang = function(){
+        var lang = navigator.language || navigator.userLanguage;
+        if(lang){
+            lang = lang.toLowerCase();
+            lang.length > 3 && ( lang = lang.substring(0,3) + lang.substring(3).toUpperCase());
+        };
+        return lang;
+    };
     countlyCommon.ACTIVE_APP_KEY = 0;
     countlyCommon.ACTIVE_APP_ID = 0;
-    countlyCommon.BROWSER_LANG = jQuery.i18n.browserLang() || "en-US";
+    countlyCommon.BROWSER_LANG = countlyCommon.browserLang() || "en-US";
     countlyCommon.BROWSER_LANG_SHORT = countlyCommon.BROWSER_LANG.split("-")[0];
     countlyCommon.timeString = function(timespent){
         var timeSpentString = (timespent.toFixed(1)) + " " + jQuery.i18n.map["common.minute.abrv"];
@@ -85,6 +95,7 @@
         }
         return timeSpentString;
     };
+    // Draws a graph with the given dataPoints to container. Used for drawing bar and pie charts.
     countlyCommon.drawGraph = function (dataPoints, container, graphType, inGraphProperties) {
         _.defer(function(){
             if ((!dataPoints.dp || !dataPoints.dp.length) || (graphType == "bar" && dataPoints.dp[0].data[0][1]== null && dataPoints.dp[0].data[1][1] == null)) {
@@ -142,7 +153,7 @@
                     if (dataPoints.ticks.length > 20) {
                         graphProperties.xaxis.rotateTicks = 45;
                     }
-                    graphProperties.series = {bars:{ show:true, align:"center", barWidth:0.6 }};
+                    graphProperties.series = {bars:{ show:true, align:"center", barWidth:0.6, tickLength:0, fill:1 }};
                     graphProperties.xaxis.ticks = dataPoints.ticks;
                     break;
                 case "pie":
@@ -301,9 +312,24 @@
         element.off("keyup", ".cly-select .search input").on("keyup", ".cly-select .search input", function(event) {
             if (!$(this).val()) {
                 $(this).parents(".cly-select").find(".item").removeClass("hidden");
+                $(this).parents(".cly-select").find(".group").show();
             } else {
                 $(this).parents(".cly-select").find(".item:not(:contains('" + $(this).val() + "'))").addClass("hidden");
                 $(this).parents(".cly-select").find(".item:contains('" + $(this).val() + "')").removeClass("hidden");
+                var prevHeader = $(this).parents(".cly-select").find(".group").first();
+                prevHeader.siblings().each(function(){
+                    if($(this).hasClass("group")){
+                        if(prevHeader)
+                            prevHeader.hide();
+                        prevHeader = $(this);
+                    }
+                    else if($(this).hasClass("item") && $(this).is(":visible")){
+                        prevHeader = null;
+                    }
+                    
+                    if(!$(this).next().length && prevHeader)
+                        prevHeader.hide();
+                })
             }
         });
 
@@ -320,7 +346,7 @@
             $(".cly-select").find(".search").remove();
         });
     };
-    CountlyHelpers.expandRows = function(dTable, getData){
+    CountlyHelpers.expandRows = function(dTable, getData, context){
 		dTable.aOpen = [];
 		dTable.on("click", "tr", function (e){
 			var nTr = this;
@@ -333,7 +359,7 @@
 			
 				if ( i === -1 ) {
 					$(nTr).addClass("selected");
-					var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr )), 'details' );
+					var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr ), context), 'details' );
 					$('div.datatablesubrow', nDetailsRow).slideDown();
 					dTable.aOpen.push( id );
 				}
@@ -348,12 +374,13 @@
 		});
 	};
     CountlyHelpers.initializeSelect();
+    // Function to show the tooltip when any data point in the graph is hovered on.
     function showTooltip(args) {
         var x = args.x || 0,
-                y = args.y || 0,
-                contents = args.contents,
-                title = args.title,
-                notes = args.notes;
+            y = args.y || 0,
+            contents = args.contents,
+            title = args.title,
+            notes = args.notes;
 
         var tooltip = $('<div id="graph-tooltip" class="v2"></div>').append('<span class="content">' + contents + '</span>');
 
@@ -371,11 +398,11 @@
 
         $("#content").append("<div id='tooltip-calc'>" + $('<div>').append(tooltip.clone()).html() + "</div>");
         var widthVal = $("#graph-tooltip").outerWidth(),
-                heightVal = $("#graph-tooltip").outerHeight();
+            heightVal = $("#graph-tooltip").outerHeight();
         $("#tooltip-calc").remove();
 
         var newLeft = (x - (widthVal / 2)),
-                xReach = (x + (widthVal / 2));
+            xReach = (x + (widthVal / 2));
 
         if (notes) {
             newLeft += 10.5;
@@ -457,8 +484,14 @@ window.CrashgroupView = {
         var crashData = countlyCrashes.getGroupData();
 		crashData.latest_version = crashData.latest_version.replace(/:/g, '.');
 		this.metrics = countlyCrashes.getMetrics();
-		this.curMetric = "os_version";
-		this.curTitle = jQuery.i18n.map["crashes.os_version"];
+        for(var i in this.metrics){
+            for(var j in this.metrics[i]){
+                this.curMetric = j;
+                this.curTitle = this.metrics[i][j];
+                break;
+            }
+            break;
+        }
 
         this.templateData = {
             "page-title":jQuery.i18n.map["crashes.crashes-by"],
@@ -489,40 +522,6 @@ window.CrashgroupView = {
                     }
                 ]
             },
-			"ranges":[
-				{
-                    "title":jQuery.i18n.map["crashes.ram"],
-					"icon":"crash-icon ram-icon",
-                    "help":"crashes.help-ram",
-                    "min":crashData.ram.min+" %",
-                    "max":crashData.ram.max+" %",
-                    "avg":(crashData.ram.total/crashData.ram.count).toFixed(2)+" %"
-                },
-				{
-                    "title":jQuery.i18n.map["crashes.disk"],
-					"icon":"crash-icon disk-icon",
-                    "help":"crashes.help-disk",
-                    "min":crashData.disk.min+" %",
-                    "max":crashData.disk.max+" %",
-                    "avg":(crashData.disk.total/crashData.disk.count).toFixed(2)+" %"
-                },
-				{
-                    "title":jQuery.i18n.map["crashes.battery"],
-					"icon":"crash-icon battery-icon",
-                    "help":"crashes.help-battery",
-                    "min":crashData.bat.min+" %",
-                    "max":crashData.bat.max+" %",
-                    "avg":(crashData.bat.total/crashData.bat.count).toFixed(2)+" %"
-                },
-				{
-                    "title":jQuery.i18n.map["crashes.run"],
-					"icon":"font-icon fa fa-youtube-play",
-                    "help":"crashes.help-run",
-                    "min":countlyCommon.timeString(crashData.run.min/60),
-                    "max":countlyCommon.timeString(crashData.run.max/60),
-                    "avg":countlyCommon.timeString((crashData.run.total/crashData.run.count)/60)
-                }
-            ],
             "bars":[
                 {
                     "title":jQuery.i18n.map["crashes.root"],
@@ -546,6 +545,42 @@ window.CrashgroupView = {
                 }
             ]
         };
+        if(crashData.ram){
+            this.templateData["ranges"] = [
+				{
+                    "title":jQuery.i18n.map["crashes.ram"],
+					"icon":"memory",
+                    "help":"crashes.help-ram",
+                    "min":crashData.ram.min+" %",
+                    "max":crashData.ram.max+" %",
+                    "avg":(crashData.ram.total/crashData.ram.count).toFixed(2)+" %"
+                },
+				{
+                    "title":jQuery.i18n.map["crashes.disk"],
+					"icon":"sd_storage",
+                    "help":"crashes.help-disk",
+                    "min":crashData.disk.min+" %",
+                    "max":crashData.disk.max+" %",
+                    "avg":(crashData.disk.total/crashData.disk.count).toFixed(2)+" %"
+                },
+				{
+                    "title":jQuery.i18n.map["crashes.battery"],
+					"icon":"battery_full",
+                    "help":"crashes.help-battery",
+                    "min":crashData.bat.min+" %",
+                    "max":crashData.bat.max+" %",
+                    "avg":(crashData.bat.total/crashData.bat.count).toFixed(2)+" %"
+                },
+				{
+                    "title":jQuery.i18n.map["crashes.run"],
+					"icon":"play_arrow",
+                    "help":"crashes.help-run",
+                    "min":countlyCommon.timeString(crashData.run.min/60),
+                    "max":countlyCommon.timeString(crashData.run.max/60),
+                    "avg":countlyCommon.timeString((crashData.run.total/crashData.run.count)/60)
+                }
+            ];
+        }
         if(crashData.users){
             this.templateData["big-numbers"]["items"].push({
                 "title":jQuery.i18n.map["crashes.affected-users"],
@@ -567,14 +602,15 @@ window.CrashgroupView = {
             this.templateData["big-numbers"]["class"] = "five-column";
         if(crashData.session){
             this.templateData["frequency"] = true;
-            this.templateData["ranges"].push({
-                "title":jQuery.i18n.map["crashes.sessions"],
-				"icon":"font-icon fa fa-refresh",
-                "help":"crashes.help-frequency",
-                "min":crashData.session.min,
-                "max":crashData.session.max,
-                "avg":((Math.round(crashData.session.total/crashData.session.count)*100)/100)
-            });
+            if(this.templateData["ranges"])
+                this.templateData["ranges"].push({
+                    "title":jQuery.i18n.map["crashes.sessions"],
+                    "icon":"repeat",
+                    "help":"crashes.help-frequency",
+                    "min":crashData.session.min,
+                    "max":crashData.session.max,
+                    "avg":((Math.round(crashData.session.total/crashData.session.count)*100)/100)
+                });
         }
         $('#content').html(this.template(this.templateData));
         var self = this;
@@ -590,7 +626,7 @@ window.CrashgroupView = {
                 "aoColumns": [
 					{ "mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.ts); else return row.ts;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.crashed"]},
 					{ "mData": function(row, type){return row.os + " " + row.os_version.replace(/:/g, '.');}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.os_version"] },
-					{ "mData": function(row, type){return row.manufacture + " " + row.device;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.platform"]},
+					{ "mData": function(row, type){var str = ""; if(row.manufacture) str += row.manufacture+" "; if(row.device) str += countlyDeviceList[row.device] || row.device; return str;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.device"]},
 					{ "mData": function(row, type){return row.app_version.replace(/:/g, '.');}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.app_version"] }
                 ]
             }));
@@ -614,6 +650,37 @@ window.CrashgroupView = {
                 $(this).tipsy("hide");
             }
         );
+
+        var pre = $(".crash-stack pre")[0];
+        pre.innerHTML = '<span class="line-number"></span>' + pre.innerHTML + '<span class="cl"></span>';
+        var num = pre.innerHTML.split(/\n/).length;
+        for (var i = 0; i < num; i++) {
+            var line_num = pre.getElementsByTagName('span')[0];
+            line_num.innerHTML += '<span>' + (i + 1) + '</span>';
+        }
+
+        $("#expand-crash").on("click", function() {
+            $(this).toggleClass("active");
+            $("#expandable").toggleClass("collapsed");
+        });
+
+        var errorHeight = $("#expandable").find("code").outerHeight();
+
+        if (errorHeight < 200) {
+            $("#expandable").removeClass("collapsed");
+            $("#expand-crash").hide();
+        } else {
+            $("#expandable").addClass("collapsed");
+            $("#expand-crash").show();
+        }
+
+        $("document").ready(function() {
+            $('pre code').each(function(i, block) {
+                if(typeof hljs != "undefined"){
+                    hljs.highlightBlock(block);
+                }
+            });
+        });
     },
 	formatData: function( data ) {
 		// `d` is the original data object for the row

@@ -18,19 +18,27 @@ window.PluginsView = countlyView.extend({
         this.templateData = {
             "page-title":jQuery.i18n.map["plugins.title"]
         };
+
         var self = this;
+
         if (!isRefresh) {
+
             $(this.el).html(this.template(this.templateData));
             $("#"+this.filter).addClass("selected").addClass("active");
+
             $.fn.dataTableExt.afnFiltering.push(function( oSettings, aData, iDataIndex ) {
-                if(!$(oSettings.nTable).hasClass("plugins-filter"))
+                if (!$(oSettings.nTable).hasClass("plugins-filter")) {
                     return true;
-                if(self.filter == "plugins-enabled") {
-                    return aData[4]
                 }
+
+                if (self.filter == "plugins-enabled") {
+                    return aData[1]
+                }
+
                 if(self.filter == "plugins-disabled") {
-                    return !aData[4]
+                    return !aData[1]
                 }
+
                 return true;
             });
 
@@ -38,19 +46,72 @@ window.PluginsView = countlyView.extend({
                 "aaData": pluginsData,
                 "aoColumns": [
                     { "mData": function(row, type){return row.title;}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.name"]},
+                    { "mData": function(row, type){
+                        if (type == "display") {
+                            var disabled = (row.prepackaged)? 'disabled' : '';
+                            var input = '<div class="on-off-switch ' + disabled + '">';
+
+                            if (row.enabled) {
+                                input += '<input type="checkbox" class="on-off-switch-checkbox" id="plugin-' + row.code + '" checked ' + disabled + '>';
+                            } else {
+                                input += '<input type="checkbox" class="on-off-switch-checkbox" id="plugin-' + row.code + '" ' + disabled + '>';
+                            }
+
+                            input += '<label class="on-off-switch-label" for="plugin-' + row.code + '"></label>';
+                            input += '<span class="text">' + jQuery.i18n.map["plugins.enable"] + '</span>';
+
+                            return input;
+                        } else {
+                            return row.enabled;
+                        }
+                    },
+                        "sType":"string", "sTitle": jQuery.i18n.map["plugins.state"], "sClass":"shrink"},
                     { "mData": function(row, type){return row.description;}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.description"], "bSortable": false, "sClass": "light" },
-                    { "mData": function(row, type){return row.version;}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.version"], "sClass":"center" },
-                    { "mData": function(row, type){if(!row.enabled) return jQuery.i18n.map["plugins.disabled"]; else return jQuery.i18n.map["plugins.enabled"];}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.status"], "sClass":"center" },
-                    { "mData": function(row, type){if(type == "display"){ var prepackagedClass = row.prepackaged ? 'disabled' : 'btn-plugins'; if(!row.enabled) return '<a class="icon-button green '+prepackagedClass+'" id="plugin-'+row.code+'">'+jQuery.i18n.map["plugins.enable"]+'</a>'; else return '<a class="icon-button red '+prepackagedClass+'" id="plugin-'+row.code+'">'+jQuery.i18n.map["plugins.disable"]+'</a>';}else return row.enabled;}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.state"], "sClass":"shrink center"},
-                    { "mData": function(row, type){if(row.homepage != "") return '<a href="'+ row.homepage + '" target="_blank"><i class="ion-android-open"></i></a>'; else return "";}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.homepage"], "sClass":"shrink center", "bSortable": false }
+                    { "mData": function(row, type){return row.version;}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.version"], "sClass":"center", "bSortable": false },
+                    { "mData": function(row, type){if(row.homepage != "") return '<a class="plugin-link" href="'+ row.homepage + '" target="_blank"><i class="ion-android-open"></i></a>'; else return "";}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.homepage"], "sClass":"shrink center", "bSortable": false }
                 ]
             }));
             this.dtable.stickyTableHeaders();
             this.dtable.fnSort( [ [0,'asc'] ] );
+
+            /*
+             Make header sticky if scroll is more than the height of header
+             This is done in order to make Apply Changes button visible
+             */
+            var navigationTop = $("#sticky-plugin-header").offset().top;
+            var tableHeaderTop = $("#plugins-table").find("thead").offset().top;
+
+            $(window).on("scroll", function(e) {
+                var $fixedHeader = $("#sticky-plugin-header");
+
+                if ($(this).scrollTop() > navigationTop) {
+                    var width = $("#content-container").width();
+                    $fixedHeader.addClass("fixed");
+                    $fixedHeader.css({width: width});
+                } else {
+                    $fixedHeader.removeClass("fixed");
+                    $fixedHeader.css({width: ""});
+                }
+
+                if (($(this).scrollTop() + $fixedHeader.outerHeight()) > tableHeaderTop) {
+                    $(".sticky-header").removeClass("hide");
+                } else {
+                    $(".sticky-header").addClass("hide");
+                }
+
+            });
+
+            $(window).on("resize", function(e) {
+                var $fixedHeader = $("#sticky-plugin-header");
+
+                if ($fixedHeader.hasClass("fixed")) {
+                    var width = $("#content-container").width();
+                    $fixedHeader.css({width: width});
+                }
+            });
         }
     },
-    refresh:function (){
-    },
+    refresh:function () {},
     togglePlugin: function(plugins){
         var self = this;
         var overlay = $("#overlay").clone();
@@ -111,6 +172,7 @@ window.ConfigurationsView = countlyView.extend({
         
         //register some common system config inputs
         this.registerInput("apps-category", function(value){
+            return null;
             var categories = app.manageAppsView.getAppCategories();
             var select = '<div class="cly-select" id="apps-category">'+
                 '<div class="select-inner">'+
@@ -285,18 +347,11 @@ window.ConfigurationsView = countlyView.extend({
                 window.history.back();
             });
 
-            $(".boolean-selector>.button").click(function () {
-                var dictionary = {"plugins.enable":true, "plugins.disable":false};
-                var cur = $(this);
-                if (cur.hasClass("selected")) {
-                    return true;
-                }
-                var prev = cur.parent(".button-selector").find(">.button.selected");
-                prev.removeClass("selected").removeClass("active");
-                cur.addClass("selected").addClass("active");
-                var id = $(this).parent(".button-selector").attr("id");
-                var value = dictionary[$(this).data("localize")];
-                self.updateConfig(id, value);
+            $('.on-off-switch input').on("change", function() {
+                var isChecked = $(this).is(":checked"),
+                    attrID = $(this).attr("id");
+
+                self.updateConfig(attrID, isChecked);
             });
             
             $(".configs input").keyup(function () {
@@ -542,6 +597,34 @@ window.ConfigurationsView = countlyView.extend({
                     });
                 }
             });
+
+            /*
+                Make header sticky if scroll is more than the height of header
+                This is done in order to make Apply Changes button visible
+             */
+            var navigationTop = $("#sticky-config-header").offset().top;
+
+            $(window).on("scroll", function(e) {
+                var $fixedHeader = $("#sticky-config-header");
+
+                if ($(this).scrollTop() > navigationTop) {
+                    var width = $("#content-container").width();
+                    $fixedHeader.addClass("fixed");
+                    $fixedHeader.css({width: width});
+                } else {
+                    $fixedHeader.removeClass("fixed");
+                    $fixedHeader.css({width: ""});
+                }
+            });
+
+            $(window).on("resize", function(e) {
+                var $fixedHeader = $("#sticky-config-header");
+
+                if ($fixedHeader.hasClass("fixed")) {
+                    var width = $("#content-container").width();
+                    $fixedHeader.css({width: width});
+                }
+            });
         }
     },
     updateConfig: function(id, value){
@@ -625,7 +708,6 @@ window.ConfigurationsView = countlyView.extend({
             return null;
         }
         var ret = "";
-        console.log("test", id, value);
         if(jQuery.i18n.map["configs.help."+id])
             ret = "<span class='config-help' data-localize='configs.help."+id+"'>"+jQuery.i18n.map["configs.help."+id]+"</span>";
         if(typeof this.predefinedLabels[id] != "undefined")
@@ -642,16 +724,17 @@ window.ConfigurationsView = countlyView.extend({
             return this.predefinedInputs[id](value);
         }
         else if(typeof value == "boolean"){
-            var input = '<div id="'+id+'" class="button-selector boolean-selector">';
-            if(value){
-                input += '<div class="button active selected" data-localize="plugins.enable"></div>';
-                input += '<div class="button" data-localize="plugins.disable"></div>';
+            var input = '<div class="on-off-switch">';
+
+            if (value) {
+                input += '<input type="checkbox" name="on-off-switch" class="on-off-switch-checkbox" id="' + id + '" checked>';
+            } else {
+                input += '<input type="checkbox" name="on-off-switch" class="on-off-switch-checkbox" id="' + id + '">';
             }
-            else{
-                input += '<div class="button" data-localize="plugins.enable"></div>';
-                input += '<div class="button active selected" data-localize="plugins.disable"></div>';
-            }
-            input += '</div>';
+
+            input += '<label class="on-off-switch-label" for="' + id + '"></label>';
+            input += '<span class="text">' + jQuery.i18n.map["plugins.enable"] + '</span>';
+
             return input;
         }
         else if(typeof value == "number"){
@@ -673,6 +756,7 @@ window.ConfigurationsView = countlyView.extend({
 //register views
 app.pluginsView = new PluginsView();
 app.configurationsView = new ConfigurationsView();
+
 if(countlyGlobal["member"].global_admin){
     app.route('/manage/plugins', 'plugins', function () {
         this.renderWhenReady(this.pluginsView);
@@ -692,6 +776,7 @@ if(countlyGlobal["member"].global_admin){
         this.renderWhenReady(this.configurationsView);
     });
 } 
+
 app.route('/manage/user-settings', 'user-settings', function () {
     this.configurationsView.namespace = null;
     this.configurationsView.reset = false;
@@ -708,54 +793,49 @@ app.route('/manage/user-settings/:namespace', 'user-settings_namespace', functio
     this.renderWhenReady(this.configurationsView);
 });
 
-
 app.addPageScript("/manage/plugins", function(){
-   $("#plugins-selector").find(">.button").click(function () {
+    $("#plugins-selector").find(">.button").click(function () {
         if ($(this).hasClass("selected")) {
             return true;
         }
 
         $(".plugins-selector").removeClass("selected").removeClass("active");
         var filter = $(this).attr("id");
+
         app.activeView.filterPlugins(filter);
     });
-    var plugins = countlyGlobal["plugins"].slice();
-    $("#plugins-table").on("click", ".btn-plugins", function () {
-        var show = false;
-        var plugin = this.id.toString().replace(/^plugin-/, '');
-        if($(this).hasClass("green")){
-            $(this).removeClass("green").addClass("red");
-            $(this).text(jQuery.i18n.map["plugins.disable"]);
+
+    var plugins = _.clone(countlyGlobal["plugins"]);
+
+    $("#plugins-table").on("change", ".on-off-switch input", function () {
+        var $checkBox = $(this),
+            plugin = $checkBox.attr("id").replace(/^plugin-/, '');
+
+        if ($checkBox.is(":checked")) {
             plugins.push(plugin);
+            plugins = _.uniq(plugins);
+        } else {
+            plugins = _.without(plugins, plugin);
         }
-        else if($(this).hasClass("red")){
-            $(this).removeClass("red").addClass("green");
-            $(this).text(jQuery.i18n.map["plugins.enable"]);
-            var index = $.inArray(plugin, plugins);
-            plugins.splice(index, 1);
-        }
-        if(plugins.length != countlyGlobal["plugins"].length)
-            show = true;
-        else{
-            for(var i = 0; i < plugins.length; i++){
-                if($.inArray(plugins[i], countlyGlobal["plugins"]) == -1){
-                    show = true;
-                    break;
-                }
-            }
-        }
-        if(show)
-            $(".btn-plugin-enabler").show();
-        else
+
+        if (_.difference(countlyGlobal["plugins"], plugins).length == 0 &&
+            _.difference(plugins, countlyGlobal["plugins"]).length == 0) {
             $(".btn-plugin-enabler").hide();
+        } else {
+            $(".btn-plugin-enabler").show();
+        }
     });
-    $("#plugins-selector").on("click", ".btn-plugin-enabler", function () {
+
+    $(document).on("click", ".btn-plugin-enabler", function () {
         var plugins = {};
-        $(".btn-plugins").each(function(){
-            var plugin = this.id.toString().replace(/^plugin-/, '');
-            var state = ($(this).hasClass("green")) ? false : true;
+
+        $("#plugins-table").find(".on-off-switch input").each(function() {
+            var plugin = this.id.toString().replace(/^plugin-/, ''),
+                state = ($(this).is(":checked")) ? true : false;
+
             plugins[plugin] = state;
-        })
+        });
+
         var text = jQuery.i18n.map["plugins.confirm"];
         var msg = {title:jQuery.i18n.map["plugins.processing"], message: jQuery.i18n.map["plugins.wait"], info:jQuery.i18n.map["plugins.hold-on"], sticky:true};
         CountlyHelpers.confirm(text, "red", function (result) {

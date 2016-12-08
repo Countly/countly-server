@@ -4,13 +4,13 @@ window.WebDashboardView = countlyView.extend({
         this.curMap = "map-list-sessions";
         this.template = Handlebars.compile($("#dashboard-template").html());
     },
-    beforeRender: function() {
+    beforeRender: function(isRefresh) {
         this.maps = {
             "map-list-sessions": {id:'total', label:jQuery.i18n.map["sidebar.analytics.sessions"], type:'number', metric:"t"},
             "map-list-users": {id:'total', label:jQuery.i18n.map["sidebar.analytics.users"], type:'number', metric:"u"},
             "map-list-new": {id:'total', label:jQuery.i18n.map["common.table.new-users"], type:'number', metric:"n"}
         };
-        var defs = [countlyUser.initialize(), countlyDeviceDetails.initialize(), countlyWebDashboard.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
+        var defs = [countlyUser.initialize(), countlyDeviceDetails.initialize(), countlyWebDashboard.initialize(isRefresh), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
         if(typeof window.countlyBrowser != "undefined")
             defs.push(countlyBrowser.initialize());
         if(typeof window.countlySources != "undefined")
@@ -21,7 +21,7 @@ window.WebDashboardView = countlyView.extend({
     afterRender: function() {
         if(countlyGlobal["config"].use_google){
             var self = this;
-            countlyLocation.drawGeoChart({height:290, metric:self.maps[self.curMap]});
+            countlyLocation.drawGeoChart({height:330, metric:self.maps[self.curMap]});
         }
     },
     pageScript:function () {
@@ -29,15 +29,11 @@ window.WebDashboardView = countlyView.extend({
             CountlyHelpers.alert($("#total-user-estimate-exp").html(), "black");
         });
 
-        $(".widget-content .inner").click(function () {
-            $(".big-numbers").removeClass("active");
-            $(".big-numbers .select").removeClass("selected");
-            $(this).parent(".big-numbers").addClass("active");
-            $(this).find('.select').addClass("selected");
-        });
-
         var self = this;
-        $(".big-numbers .inner").click(function () {
+        $("#big-numbers-container").find(".big-numbers .inner").click(function () {
+            $("#big-numbers-container").find(".big-numbers").removeClass("active");
+            $(this).parent(".big-numbers").addClass("active");
+
             var elID = $(this).find('.select').attr("id");
 
             if (self.selectedView == "#" + elID) {
@@ -194,7 +190,7 @@ window.WebDashboardView = countlyView.extend({
             }
             
             columns.push({ "mData": function(row){return (!row["sc"]) ? 0 : row["sc"]}, "sType":"numeric", "sTitle": jQuery.i18n.map["web.total-sessions"] , "bSortable":false },
-				{ "mData": function(row, type){if(type == "display") return (row["ls"]) ? countlyCommon.formatTimeAgo(row["ls"]) : jQuery.i18n.map["web.never"]; else return (row["ls"]) ? row["ls"] : 0;}, "sType":"numeric", "sTitle": jQuery.i18n.map["web.last-seen"] , "bSortable":false },
+				{ "mData": function(row, type){if(type == "display") return (row["ls"]) ? countlyCommon.formatTimeAgo(row["ls"]) : jQuery.i18n.map["web.never"]; else return (row["ls"]) ? row["ls"] : 0;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["web.last-seen"] , "bSortable":false },
 				{ "mData": function(row){return countlyCommon.formatTime((row["tsd"]) ? parseInt(row["tsd"]) : 0);}, "sType":"numeric", "sTitle": jQuery.i18n.map["web.time-spent"], "bSortable":false });
             
             this.latestdtable = $('#last-visitors').dataTable($.extend({}, $.fn.dataTable.defaults, {
@@ -206,7 +202,7 @@ window.WebDashboardView = countlyView.extend({
             this.latestdtable.fnSort( [ [sort,'desc'] ] );
             $("#last-visitors_wrapper .dataTable-top .search-table-data").hide();
             $("#last-visitors_wrapper .dataTable-top .save-table-data").hide();
-            $("#last-visitors_wrapper .dataTable-top").append("<div style='font:15px Ubuntu,Helvetica,sans-serif; color:#636363; text-shadow:0 1px #F6F6F6; letter-spacing:-1px; margin-left:10px; margin-top: 8px; text-transform: uppercase;'>"+jQuery.i18n.map["web.latest-visitors"]+"</div>");
+            $("#last-visitors_wrapper .dataTable-top").append("<div style='font:15px Ubuntu,Helvetica,sans-serif; color:#636363; margin-left:10px; margin-top: 8px; text-transform: uppercase;'>"+jQuery.i18n.map["web.latest-visitors"]+"</div>");
             
             $(this.selectedView).parents(".big-numbers").addClass("active");
             this.pageScript();
@@ -225,7 +221,7 @@ window.WebDashboardView = countlyView.extend({
     refresh:function (isFromIdle) {
 
         var self = this;
-        $.when(this.beforeRender()).then(function () {
+        $.when(this.beforeRender(true)).then(function () {
             if (app.activeView != self) {
                 return false;
             }
@@ -302,6 +298,12 @@ window.WebDashboardView = countlyView.extend({
                 '<div class="total">'+country[self.maps[self.curMap].metric]+'</div>'+
             '</div>');
         }
+
+        if (self.locationData.length == 0) {
+            $("#geo-chart-outer").addClass("empty");
+        } else {
+            $("#geo-chart-outer").removeClass("empty");
+        }
     },
     countryTable:function(refresh){
         var self = this;
@@ -312,10 +314,9 @@ window.WebDashboardView = countlyView.extend({
                 "iDisplayLength": 10,
                 "aoColumns": [
                         { "mData": "country_flag", "sType":"string", "sTitle": jQuery.i18n.map["countries.table.country"]},
-                        { "mData": "t", "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-sessions"]},
-                        { "mData": "u", "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-users"]},
-                        { "mData": "n", "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.new-users"]},
-                        
+                        { "mData": "t", "sType":"numeric", "sTitle": jQuery.i18n.map["common.table.total-sessions"]},
+                        { "mData": "u", "sType":"numeric", "sTitle": jQuery.i18n.map["common.table.total-users"]},
+                        { "mData": "n", "sType":"numeric", "sTitle": jQuery.i18n.map["common.table.new-users"]}
                     ]
             }));
             this.country_dtable.stickyTableHeaders();
@@ -324,8 +325,8 @@ window.WebDashboardView = countlyView.extend({
             $("#countries-alternative_wrapper .dataTable-top .save-table-data").hide();
             $("#countries-alternative_wrapper .dataTable-top .dataTables_paginate").hide();
             $("#countries-alternative_wrapper .dataTable-top .DTTT_container").hide();
-            $("#countries-alternative_wrapper .dataTable-top").append("<div style='font:13px Ubuntu,Helvetica,sans-serif; color:#636363; text-shadow:0 1px #F6F6F6; margin-right:10px; padding: 10px; float: right;'><a href='#/analytics/countries'>"+jQuery.i18n.map["common.go-to-countries"]+"&nbsp;&nbsp;&nbsp;<i class='fa fa-chevron-right' aria-hidden='true'></i></a></div>");
-            $("#countries-alternative_wrapper .dataTable-top").append("<div style='font:15px Ubuntu,Helvetica,sans-serif; color:#636363; text-shadow:0 1px #F6F6F6; letter-spacing:-1px; margin-left:10px; margin-top: 8px; text-transform: uppercase;'>"+jQuery.i18n.map["sidebar.analytics.countries"]+"</div>");
+            $("#countries-alternative_wrapper .dataTable-top").append("<div style='font:13px Ubuntu,Helvetica,sans-serif; color:#636363; margin-right:10px; padding: 10px; float: right;'><a href='#/analytics/countries'>"+jQuery.i18n.map["common.go-to-countries"]+"&nbsp;&nbsp;&nbsp;<i class='fa fa-chevron-right' aria-hidden='true'></i></a></div>");
+            $("#countries-alternative_wrapper .dataTable-top").append("<div style='font:15px Ubuntu,Helvetica,sans-serif; color:#636363; margin-left:10px; margin-top: 8px; text-transform: uppercase;'>"+jQuery.i18n.map["sidebar.analytics.countries"]+"</div>");
         }
         else{
             CountlyHelpers.refreshTable(self.country_dtable, countlyLocation.getLocationData({maxCountries:10}));
@@ -339,13 +340,7 @@ window.WebDashboardView = countlyView.extend({
 app.addAppType("web", WebDashboardView);
 
 $( document ).ready(function() {
-    var menu = '<a href="#/all" id="allapps-menu" class="item analytics active">'+
-		'<div class="logo ion-android-apps"></div>'+
-		'<div class="text" data-localize="web.all-websites"></div>'+
-	'</a>';
-	$('#web-type a').first().before(menu);
-    
-    menu = '<a href="#/analytics/platforms" class="item">'+
+    var menu = '<a href="#/analytics/platforms" class="item">'+
 		'<div class="logo platforms"></div>'+
 		'<div class="text" data-localize="sidebar.analytics.platforms"></div>'+
 	'</a>';
@@ -448,8 +443,6 @@ $( document ).ready(function() {
             jQuery.i18n.map["sidebar.analytics.users"] = jQuery.i18n.map["web.sidebar.analytics.users"];
             jQuery.i18n.map["sidebar.analytics.user-loyalty"] = jQuery.i18n.map["web.sidebar.analytics.user-loyalty"];
             jQuery.i18n.map["users.title"] = jQuery.i18n.map["web.users.title"];
-            jQuery.i18n.map["allapps.total-users"] = jQuery.i18n.map["web.allapps.total-users"];
-            jQuery.i18n.map["allapps.new-users"] = jQuery.i18n.map["web.allapps.new-users"];
             jQuery.i18n.map["crashes.users"] = jQuery.i18n.map["web.crashes.users"];
             jQuery.i18n.map["crashes.affected-users"] = jQuery.i18n.map["web.crashes.affected-users"];
             jQuery.i18n.map["crashes.public-users"] = jQuery.i18n.map["web.crashes.public-users"];

@@ -51,7 +51,7 @@ class Manager {
 				try {
 					let promise = toCancel && toCancel.length ? Promise.all(toCancel.map(j => this.create(j).cancel())) : Promise.resolve(),
 						resume = () => {
-							log.d('Resuming after cancellation')
+							log.d('Resuming after cancellation');
 							this.collection.find({status: STATUS.PAUSED}).toArray((err, array) => {
 								if (!err && array && array.length) {
 									log.i('Going to resume following jobs: %j', array.map(j => {
@@ -78,8 +78,11 @@ class Manager {
 		require('cluster').on('online', worker => {
 			let channel = new IPC.IdChannel(JOB.EVT.TRANSIENT_CHANNEL).attach(worker).on(JOB.EVT.TRANSIENT_RUN, (json) => {
 				log.d('[%d]: Got transient job request %j', process.pid, json);
-				this.start(this.create(json)).then(() => {
-					log.d('[%d]: Success running transient job %j', process.pid, json);
+				this.start(this.create(json)).then((data) => {
+					log.d('[%d]: Success running transient job %j', process.pid, json, data);
+					if (data) {
+						json.result = data;
+					}
 					channel.send(JOB.EVT.TRANSIENT_DONE, json);
 				}, (error) => {
 					log.d('[%d]: Error when running transient job %j: ', process.pid, json, error);
@@ -87,6 +90,11 @@ class Manager {
 					channel.send(JOB.EVT.TRANSIENT_DONE, json);
 				});
 			});
+		});
+
+		// Close all resources on main process exit
+		process.on('exit', () => {
+			for (let k in this.resources) { this.resources[k].close(); }
 		});
 	}
 
@@ -219,12 +227,19 @@ class Manager {
 			if (!this.running[job.name]) { this.running[job.name] = []; }
 			this.running[job.name].push(job);
 
-			return this.run(job).then(() => {
-				this.schedule(job);
-			}, (error) => {
-				this.schedule(job);
-				throw error;
-			} );
+			return new Promise((resolve, reject) => {
+				job.prepare(this, this.db).then(() => {
+					log.d('prepared %j', job._idIpc);
+					this.run(job).then((upd) => {
+						log.d('result in start, %j', upd);
+						this.schedule(job);
+						resolve(upd ? upd.result : undefined);
+					}, (error) => {
+						this.schedule(job);
+						reject(error);
+					} );
+				}, reject);
+			});
 		}
 	}
 

@@ -9,6 +9,7 @@ var plugin = {},
      *    register internalEvent
      */
     plugins.internalEvents.push('[CLY]_star_rating');
+    plugins.internalDrillEvents.push("[CLY]_star_rating");
 
     /**
      *  register for process new  rating event data.
@@ -20,7 +21,7 @@ var plugin = {},
     var ratingEventProcess = function (ob) {
         var params = ob.params;
         var events = (params.qstring && params.qstring.events);
-        if (events) {
+        if (events && events.length && Array.isArray(events)) {
             events.forEach(function (event) {
                 if (event.key === '[CLY]_star_rating') {
                     event.segmentation['platform_version_rate'] =
@@ -80,11 +81,10 @@ var plugin = {},
             var collectionName = 'events' + crypto.createHash('sha1')
                 .update('[CLY]_star_rating' + params.qstring.app_id).digest('hex');
             var documents = [];
-            var base64 = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
             for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
                 documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]);
-                for(var m = 0; m < base64.length; m++){
-                        documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]+"_"+base64[m]);
+                for(var m = 0; m < common.base64.length; m++){
+                        documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]+"_"+common.base64[m]);
                     }
             }
 

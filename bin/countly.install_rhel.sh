@@ -120,7 +120,7 @@ if [ "$(rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3)" -
     source /opt/rh/devtoolset-2/enable
 
     # and then install dependencies for sharp
-    curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | bash -
+    curl -s https://gist.githubusercontent.com/ar2rsawseen/dbd9d732f5eb6cc5e206b40a17728ddc/raw/f3c152b5225863df5392965c82f43535ebfb66be/sharp-preinstall.sh | bash -
     source /opt/rh/devtoolset-2/enable
     export CC=`which gcc` CXX=`which g++`
 fi

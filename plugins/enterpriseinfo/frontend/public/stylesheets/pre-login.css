@@ -10,6 +10,7 @@
 #slider_inner{ display:none; cursor: default; width: 512px; padding: 0 !important; height: 380px; -webkit-filter: blur(0px); overflow: hidden; }
     #slider_inner .title { text-transform: uppercase; color: #A7A7A7; line-height: 22px; font-size: 14px; padding-top:30px; text-align: center; }
     #slider_inner .text { color: #626262; line-height: 22px; font-size: 12px; padding:15px 35px; text-align: center; }
+    #slider_inner .text a { color: #2EB52B; line-height: 22px; font-size: 12px; }
     #slider_inner .link { color: #2FA732; line-height: 22px; font-size: 13px; text-align: center; margin-top:5px; }
         #slider_inner .link a { color: #2FA732 !important; }
         #slider_inner .link a:hover { text-decoration: underline; }

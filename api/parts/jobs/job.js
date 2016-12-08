@@ -177,6 +177,10 @@ class Job extends EventEmitter {
 		return this;
 	}
 
+	timeout () {
+		return MAXIMUM_JOB_TIMEOUT;
+	}
+
 	_timeoutCancelled () {
 		return false;
 	}
@@ -200,7 +204,7 @@ class Job extends EventEmitter {
 					log.e('Job %s has been changed while doing _save: %j / setting %j for query %j', this._id, this._json, update, query);
 					reject('Job cannot be found while doing _save');
 				} else {
-					resolve(set);
+					resolve(set || res);
 				}
 
 				if (this.isSub && this.parent) {
@@ -451,7 +455,7 @@ class Job extends EventEmitter {
 							job._abort('Timeout').then(reject, reject);
 						}
 					}
-				}, MAXIMUM_JOB_TIMEOUT),
+				}, job.timeout()),
 				// debounce save to once in 500 - 10000 ms
 				debouncedProgress = debounce(job._progress.bind(job), 500, 10000),
 				progressSave = (size, done, bookmark) => {
@@ -487,7 +491,7 @@ class Job extends EventEmitter {
 								job._abort('Timeout').then(reject, reject);
 							}
 						}
-					}, MAXIMUM_JOB_TIMEOUT);
+					}, job.timeout());
 
 					if (!job.completed) {
 						progressSave(size, done, bookmark);
@@ -564,6 +568,10 @@ class ResourcefulJob extends Job {
 		throw new Error('ResourcefulJob.createResource must be overridden to return possibly open resource instance');
 	}
 
+	releaseResource (/* resource */) {
+		throw new Error('ResourcefulJob.releaseResource must be overridden to return possibly open resource instance');
+	}
+
 	resourceName () {
 		throw new Error('ResourcefulJob.resourceName must be overridden to return non-unique string which identifies type of a resource');
 	}
@@ -589,6 +597,10 @@ class IPCJob extends ResourcefulJob {
 
 	retryPolicy () {
 		return new retry.IPCRetryPolicy(1);
+	}
+
+	releaseResource (/* resource */) {
+		return Promise.resolve();
 	}
 
 	_sendSave(data) {
@@ -624,7 +636,7 @@ class IPCJob extends ResourcefulJob {
 							reject(ERROR.TIMEOUT);
 						}
 					}
-				}, MAXIMUM_JOB_TIMEOUT),
+				}, this.timeout()),
 				// debounce save to once in 500 - 10000 ms
 				progressSave = debounce((size, done, bookmark) => {
 					if (size) { this._json.size = size; }
@@ -639,7 +651,7 @@ class IPCJob extends ResourcefulJob {
 
 			this.run(
 				this.db(),
-				(err) => {
+				(err, result) => {
 					log.d('%s: done running, status %d' + (err ? ' with error ' + err : ''), this._id, this._json.status);
 					clearTimeout(timeout);
 					if (!this.isCompleted) {
@@ -651,6 +663,9 @@ class IPCJob extends ResourcefulJob {
 						this._json.error = err;
 
 						let upd = {status: this._json.status, finished: this._json.finished, duration: this._json.duration, error: this._json.error};
+						if (result) {
+							upd.result = result;
+						}
 
 						if (err) {
 							reject(err);
@@ -676,7 +691,7 @@ class IPCJob extends ResourcefulJob {
 								reject(ERROR.TIMEOUT);
 							}
 						}
-					}, MAXIMUM_JOB_TIMEOUT);
+					}, this.timeout());
 
 					if (!this.isCompleted) {
 						progressSave(size, done, bookmark);
@@ -704,6 +719,10 @@ class IPCFaçadeJob extends ResourcefulJob {
 
 	resourceName () {
 		return this.job.resourceName();
+	}
+
+	releaseResource (resource) {
+		return this.job.releaseResource(resource);
 	}
 
 	retryPolicy () {
@@ -775,6 +794,10 @@ class IPCFaçadeJob extends ResourcefulJob {
 }
 
 class TransientJob extends IPCJob {
+	_sendSave(data) {
+		log.d('Transient job got _sendSave: %j', data);
+	}
+
 	_save (set) {
 		if (set) {
 			for (let k in set) {

@@ -17,7 +17,7 @@
     countlyCommon.ACTIVE_APP_ID = 0;
     countlyCommon.BROWSER_LANG = countlyCommon.browserLang() || "en-US";
     countlyCommon.BROWSER_LANG_SHORT = countlyCommon.BROWSER_LANG.split("-")[0];
-    countlyCommon.periodObj = getPeriodObj();
+    countlyCommon.periodObj = calculatePeriodObj();
 
     if (store.get("countly_active_app")) {
         if (countlyGlobal['apps'][store.get("countly_active_app")]) {
@@ -42,7 +42,7 @@
 
     countlyCommon.setPeriod = function (period) {
         _period = period;
-        countlyCommon.periodObj = getPeriodObj();
+        countlyCommon.periodObj = calculatePeriodObj();
         store.set("countly_date", period);
     };
 
@@ -114,11 +114,11 @@
         _.defer(function(){
             if ((!dataPoints.dp || !dataPoints.dp.length) || (graphType == "bar" && dataPoints.dp[0].data[0][1]== null && dataPoints.dp[0].data[1][1] == null)) {
                 $(container).hide();
-                $(container).siblings(".no-data").show();
+                $(container).siblings(".graph-no-data").show();
                 return true;
             } else {
                 $(container).show();
-                $(container).siblings(".no-data").hide();
+                $(container).siblings(".graph-no-data").hide();
             }
 
             var graphProperties = {
@@ -220,15 +220,15 @@
     };
 
     // Draws a line graph with the given dataPoints to container.
-    countlyCommon.drawTimeGraph = function (dataPoints, container, bucket) {
+    countlyCommon.drawTimeGraph = function (dataPoints, container, bucket, overrideBucket) {
         _.defer(function(){
             if (!dataPoints.length) {
                 $(container).hide();
-                $(container).siblings(".no-data").show();
+                $(container).siblings(".graph-no-data").show();
                 return true;
             } else {
                 $(container).show();
-                $(container).siblings(".no-data").hide();
+                $(container).siblings(".graph-no-data").hide();
             }
 
             // Some data points start with [1, XXX] (should be [0, XXX]) and brakes the new tick logic
@@ -264,13 +264,17 @@
 
             graphProperties.series.points.show = (dataPoints[0].data.length <= 90);
 
+            if (overrideBucket) {
+                graphProperties.series.points.radius = 4;
+            }
+
             var graphTicks = [],
                 tickObj = {};
 
             if (_period == "month" && !bucket) {
                 tickObj = countlyCommon.getTickObj("monthly");
             } else {
-                tickObj = countlyCommon.getTickObj(bucket);
+                tickObj = countlyCommon.getTickObj(bucket, overrideBucket);
             }
 
             graphProperties.xaxis.max = tickObj.max;
@@ -286,6 +290,12 @@
 
             if (graphObj && graphObj.getOptions().series && graphObj.getOptions().series.splines && graphObj.getOptions().series.splines.show) {
                 graphObj = $(container).data("plot");
+
+                if (overrideBucket) {
+                    graphObj.getOptions().series.points.radius = 4;
+                } else {
+                    graphObj.getOptions().series.points.radius = 0;
+                }
 
                 graphObj.getOptions().xaxes[0].max = tickObj.max;
                 graphObj.getOptions().xaxes[0].min = tickObj.min;
@@ -453,6 +463,8 @@
                     var dataSet = graphObj.getData(),
                         tooltipHTML = "<div class='title'>" + tickObj.tickTexts[dataIndex] + "</div>";
 
+                    dataSet = _.sortBy(dataSet, function(obj) { return obj.data[dataIndex][1]; });
+
                     for (i = dataSet.length - 1; i >= 0; --i) {
                         var series = dataSet[i],
                             formattedValue = series.data[dataIndex][1];
@@ -560,9 +572,10 @@
         var processedData = [],
             tmpProcessedData = [],
             totalCount = 0,
-            maxToDisplay = 10;
+            maxToDisplay = 10,
+            barHeight = 30;
 
-        for (var i = 0; i < data.length; i++) {
+            for (var i = 0; i < data.length; i++) {
             tmpProcessedData.push({
                 label: data[i].label,
                 count: data[i].data[0][1],
@@ -595,68 +608,91 @@
             processedData.push(tmpProcessedData[i]);
         }
 
-        var barHeight = 30,
+        if (processedData.length > 0) {
+            var percentSoFar = 0;
+
+            var chart = d3.select(intoElement)
+                .attr("width", "100%")
+                .attr("height", barHeight);
+
+            var bar = chart.selectAll("g")
+                .data(processedData)
+                .enter().append("g");
+
+            bar.append("rect")
+                .attr("width", function(d) { return ((d.count / totalCount) * 100) + "%"; } )
+                .attr("x", function(d) {
+                    var myPercent = percentSoFar;
+                    percentSoFar = percentSoFar + (100 * (d.count / totalCount));
+
+                    return myPercent + "%";
+                })
+                .attr("height", barHeight)
+                .attr("fill",  function(d) {
+                    if (colorIndex || colorIndex === 0) {
+                        return countlyCommon.GRAPH_COLORS[colorIndex];
+                    } else {
+                        return countlyCommon.GRAPH_COLORS[d.index];
+                    }
+                })
+                .attr("stroke", "#FFF")
+                .attr("stroke-width", 2);
+
+            if (colorIndex || colorIndex === 0) {
+                bar.attr("opacity", function(d) {
+                    return 1 - (0.05 * d.index);
+                });
+            }
+
             percentSoFar = 0;
 
-        var chart = d3.select(intoElement)
-            .attr("width", "100%")
-            .attr("height", barHeight);
+            bar.append("foreignObject")
+                .attr("width", function(d) { return ((d.count / totalCount) * 100) + "%"; } )
+                .attr("height", barHeight)
+                .attr("x", function(d) {
+                    var myPercent = percentSoFar;
+                    percentSoFar = percentSoFar + (100 * (d.count / totalCount));
 
-        var bar = chart.selectAll("g")
-            .data(processedData)
-            .enter().append("g");
+                    return myPercent + "%";
+                })
+                .append("xhtml:div")
+                .attr("class", "hsb-tip")
+                .html(function(d) { return "<div>" + d.perc + "</div>"; });
 
-        bar.append("rect")
-            .attr("width", function(d) { return ((d.count / totalCount) * 100) + "%"; } )
-            .attr("x", function(d) {
-                var myPercent = percentSoFar;
-                percentSoFar = percentSoFar + (100 * (d.count / totalCount));
+            percentSoFar = 0;
 
-                return myPercent + "%";
-            })
-            .attr("height", barHeight)
-            .attr("fill",  function(d) {
-                if (colorIndex || colorIndex === 0) {
-                    return countlyCommon.GRAPH_COLORS[colorIndex];
-                } else {
-                    return countlyCommon.GRAPH_COLORS[d.index];
-                }
-            })
-            .attr("stroke", "#FFF")
-            .attr("stroke-width", 1);
+            bar.append("text")
+                .attr("x", function(d) {
+                    var myPercent = percentSoFar;
+                    percentSoFar = percentSoFar + (100 * (d.count / totalCount));
 
-        if (colorIndex || colorIndex === 0) {
-            bar.attr("opacity", function(d) {
-                return 1 - (0.05 * d.index);
-            });
+                    return myPercent + 0.5 + "%";
+                })
+                .attr("dy", "1.35em")
+                .text(function(d) { return d.label; });
+        } else {
+            var chart = d3.select(intoElement)
+                .attr("width", "100%")
+                .attr("height", barHeight);
+
+            var bar = chart.selectAll("g")
+                .data([{text: jQuery.i18n.map["common.bar.no-data"]}])
+                .enter().append("g");
+
+            bar.append("rect")
+                .attr("width", "100%" )
+                .attr("height", barHeight)
+                .attr("fill",  "#FBFBFB")
+                .attr("stroke", "#FFF")
+                .attr("stroke-width", 2);
+
+            bar.append("foreignObject")
+                .attr("width", "100%" )
+                .attr("height", barHeight)
+                .append("xhtml:div")
+                .attr("class", "no-data")
+                .html(function(d) { return d.text; });
         }
-
-        percentSoFar = 0;
-
-        bar.append("foreignObject")
-            .attr("width", function(d) { return ((d.count / totalCount) * 100) + "%"; } )
-            .attr("height", barHeight)
-            .attr("x", function(d) {
-                var myPercent = percentSoFar;
-                percentSoFar = percentSoFar + (100 * (d.count / totalCount));
-
-                return myPercent + "%";
-            })
-            .append("xhtml:body")
-            .attr("class", "hsb-tip")
-            .html(function(d) { return "<div>" + d.perc + "</div>"; });
-
-        percentSoFar = 0;
-
-        bar.append("text")
-            .attr("x", function(d) {
-                var myPercent = percentSoFar;
-                percentSoFar = percentSoFar + (100 * (d.count / totalCount));
-
-                return myPercent + 0.5 + "%";
-            })
-            .attr("dy", "1.35em")
-            .text(function(d) { return d.label; });
     };
 
     countlyCommon.extractRangeData = function (db, propertyName, rangeArray, explainRange) {
@@ -1400,17 +1436,18 @@
         return temp;
     };
 
-    countlyCommon.getTickObj = function(bucket) {
+    countlyCommon.getTickObj = function(bucket, overrideBucket) {
         var days = parseInt(countlyCommon.periodObj.numberOfDays, 10),
             ticks = [],
             tickTexts = [],
             skipReduction = false,
             limitAdjustment = 0;
-        if(bucket === 'daily'){
-            var thisDay = moment(countlyCommon.periodObj.activePeriod);
+
+        if (overrideBucket) {
+            var thisDay = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
             ticks.push([0, countlyCommon.formatDate(thisDay,"D MMM")]);
             tickTexts[0] = countlyCommon.formatDate(thisDay,"D MMM, dddd");
-        }else if ((days == 1 && _period != "month" && _period != "day") || (days == 1 && bucket == "hourly")) {
+        } else if ((days == 1 && _period != "month" && _period != "day") || (days == 1 && bucket == "hourly")) {
             for (var i = 0; i < 24; i++) {
                 ticks.push([i, (i + ":00")]);
                 tickTexts.push((i + ":00"));
@@ -1695,21 +1732,26 @@
     };
 
 	countlyCommon.formatTimeAgo = function(timestamp) {
-		var target = new Date(timestamp*1000);
+        var target = new Date(timestamp*1000);
+        var tooltip = moment(target).format("ddd, D MMM YYYY HH:mm:ss");
+        var elem = $("<span>");
+        elem.prop("title", tooltip);
 		var now = new Date();
 		var diff = Math.floor((now - target) / 1000);
-		if (diff <= 1) {return "<span style='color:#50C354;'>just now</span>";}
-		if (diff < 20) {return "<span style='color:#50C354;'>" + diff + " seconds ago</span>";}
-		if (diff < 40) {return "<span style='color:#50C354;'>half a minute ago</span>";}
-		if (diff < 60) {return "<span style='color:#50C354;'>less than a minute ago</span>";}
-		if (diff <= 90) {return "one minute ago";}
-		if (diff <= 3540) {return Math.round(diff / 60) + " minutes ago";}
-		if (diff <= 5400) {return "1 hour ago";}
-		if (diff <= 86400) {return Math.round(diff / 3600) + " hours ago";}
-		if (diff <= 129600) {return "1 day ago";}
-		if (diff < 604800) {return Math.round(diff / 86400) + " days ago";}
-		if (diff <= 777600) {return "1 week ago";}
-		return "on " + target.toString().split(" GMT")[0];
+		if (diff <= 1) {elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.just-now"]);}
+		else if (diff < 20) {elem.css("color", "#50C354"); elem.text(jQuery.i18n.prop("common.ago.seconds-ago", diff));}
+		else if (diff < 40) {elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.half-minute"]);}
+		else if (diff < 60) {elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.less-minute"]);}
+		else if (diff <= 90) {elem.text(jQuery.i18n.map["common.ago.one-minute"]);}
+		else if (diff <= 3540) {elem.text(jQuery.i18n.prop("common.ago.minutes-ago", Math.round(diff / 60)));}
+		else if (diff <= 5400) {elem.text(jQuery.i18n.map["common.ago.one-hour"]);}
+		else if (diff <= 86400) {elem.text(jQuery.i18n.prop("common.ago.hours-ago", Math.round(diff / 3600)));}
+		else if (diff <= 129600) {elem.text(jQuery.i18n.map["common.ago.one-day"]);}
+		else if (diff < 604800) {elem.text(jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400)));}
+		else if (diff <= 777600) {elem.text(jQuery.i18n.map["common.ago.one-week"]);}
+		else elem.text(tooltip);
+        elem.append("<a style='display: none;'>|"+tooltip+"</a>");
+        return elem.prop('outerHTML');
 	};
 
 	countlyCommon.formatTime = function(timestamp) {
@@ -1784,12 +1826,6 @@
 	countlyCommon.getTime = function(timestamp) {
 		var d = new Date(timestamp*1000);
 		return leadingZero(d.getHours())+":"+leadingZero(d.getMinutes());
-	}
-
-	function leadingZero(value){
-		if(value > 9)
-			return value
-		return "0"+value;
 	}
 
     countlyCommon.round = function(num, digits) {
@@ -1894,6 +1930,10 @@
 
     // Returns a period object used by all time related data calculation functions.
     function getPeriodObj() {
+        return countlyCommon.periodObj;
+    }
+
+    function calculatePeriodObj() {
 
         var now = moment(),
             year = now.year(),
@@ -1987,9 +2027,15 @@
 
         // Check whether period object is array
         if (Object.prototype.toString.call(_period) === '[object Array]' && _period.length == 2) {
+
+            // "Date to" selected date timezone changes based on how the
+            // date picker is initialised so we take care of it here
             var tmpDate = new Date (_period[1]);
             tmpDate.setHours(0,0,0,0);
-            _period[1]= tmpDate.getTime();
+
+            _period[1] = tmpDate.getTime();
+            _period[1] -= getOffsetCorrectionForTimestamp(_period[1]);
+
             // One day is selected from the datepicker
             if (_period[0] == _period[1]) {
                 var selectedDate = moment(_period[0]),
@@ -2383,5 +2429,29 @@
 
         return toReturn;
     }
+
+    function leadingZero(value) {
+        if(value > 9)
+            return value
+        return "0"+value;
+    }
+
+    function getOffsetCorrectionForTimestamp(inTS) {
+        var timeZoneOffset = new Date().getTimezoneOffset(),
+            intLength = inTS.toString().length,
+            tzAdjustment = 0;
+
+        if (timeZoneOffset < 0) {
+            if (intLength == 13) {
+                tzAdjustment = timeZoneOffset * 60000;
+            } else if (intLength == 10) {
+                tzAdjustment = timeZoneOffset * 60;
+            }
+        }
+
+        return tzAdjustment;
+    }
+
+    countlyCommon.getOffsetCorrectionForTimestamp = getOffsetCorrectionForTimestamp;
 
 }(window.countlyCommon = window.countlyCommon || {}, jQuery));

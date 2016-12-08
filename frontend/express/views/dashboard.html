@@ -20,7 +20,6 @@
         };
     </script>
     <link rel="stylesheet" href="<%- cdn %>stylesheets/font-awesome/css/font-awesome.min.css" />
-	<link rel="stylesheet" href="<%- cdn %>stylesheets/entypo/css/entypo.css" />
     <link rel="stylesheet" href="<%- cdn %>stylesheets/ionicons/css/ionicons.min.css" />
     <link rel="stylesheet" href="<%- cdn %>stylesheets/material/material-icons.css" />
 	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.base.css" />
@@ -37,6 +36,7 @@
         <link rel="stylesheet" href="<%- cdn %>stylesheets/amaranjs/amaran.min.css" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/visualization/rickshaw/rickshaw.min.css" />
         <link rel="stylesheet" href="<%- cdn %>javascripts/dom/pace/pace-theme-flash.css" />
+        <link rel="stylesheet" href="<%- cdn %>javascripts/utils/tooltipster/tooltipster.bundle.min.css" />
 		<% if (plugins) { %>
 			<% for(var i=0, l=plugins.length; i<l; i++) {%>
 		<link rel="stylesheet" href="<%- cdn %><%= plugins[i] %>/stylesheets/main.css?<%= countlyVersion %>" />
@@ -67,6 +67,8 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.amaran.min.js"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.titlealert.js"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.hoverIntent.minified.js"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/tooltipster/tooltipster.bundle.min.js"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/highlight/highlight.pack.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/jquery.dataTables.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/ZeroClipboard.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js"></script>
@@ -164,6 +166,7 @@
 					<a data-language-code="zh" class="item">中文</a>
 					<a data-language-code="ja" class="item">日本語</a>
                     <a data-language-code="ko" class="item">한국어</a>
+                    <a data-language-code="vi" class="item">Tiếng Việt</a>
 				</div>
 			</div>
 			<div class="username" id="menu-username"><%= member['username'] %></div>
@@ -176,11 +179,9 @@
 		<div id="app-nav-head">
 			<div id="app-nav-title" style="max-width: 105px;" data-localize="management-applications.title"></div>
 			<div class="button-container">
-				<% if((member['global_admin'] && adminOfApps.length > 1) || config.autonomous) { %>
 				<div class="icon-button dark help-zone-vs" id="sort-app-button">
                     <i class="fa fa-bars"></i>
 				</div>
-				<% } %>
 			</div>
 		</div>
         <div class="nav-search">
@@ -439,9 +440,15 @@
 				</div>
 				{{else}}
                     {{#if chartHTML}}
-                    {{{chartHTML}}}
+                        {{{chartHTML}}}
                     {{else}}
-                    <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
+                    <div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px; {{#if isChartEmpty}} display:none; {{/if}}"></div>
+                    <div class="graph-no-data" {{#if isChartEmpty}} style="display:block;" {{/if}}>
+                        <div class="inner">
+                            <div class="icon"></div>
+                            <div class="text" data-localize="common.graph.no-data"></div>
+                        </div>
+                    </div>
                     {{/if}}
 				{{/if}}
 			</div>
@@ -491,39 +498,38 @@
 		{{/if}}
         <table id="dataTableOne" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
         {{#if two-tables}}
-        <table id="dataTableTwo" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
-        {{/if}}
-	</script>
-	
-	<script id="template-allapps"  type="text/x-handlebars-template">
-		<div class="widget allappview">
-			<div class="widget-header">
-				<div class="title" style="letter-spacing:-1px; font-size:19px; margin-top:10px; margin-left:5px;">{{toUpperCase page-title}}</div>
-				{{> date-selector }}
-			</div>
-            {{#if usage}}
-			<div class="widget-content" style="border:none;">
-				<div id="big-numbers-container" class="dashboard">
-					{{#each usage}}
-					<div class="big-numbers top {{#if ../../usage-class}}{{../../usage-class}}{{else}}six-column{{/if}} help-zone-vs" data-help-localize="help.{{this.help}}">
-						<div class="inner">
-							<div class="select" id="{{this.id}}">
-								<div class="title">{{this.title}}</div>
-							</div>
-						</div>
-					</div>
-					{{/each}}
-				</div>
-			</div>
+            {{#if segmentation}}
+            <div class="widget segmentation-widget">
+                <div class="widget-header">
+                    <div class="left">
+                        <div class="title small">{{segment-title}}</div>
+                        <div>
+                            <div class="cly-select float">
+                                <div class="select-inner">
+                                    <div class="text-container">
+                                        <div class="text">{{active-segment}}</div>
+                                    </div>
+                                    <div class="right combo"></div>
+                                </div>
+                                <div class="select-items square" style="width:220px;">
+                                    <div>
+                                        {{#eachOfArray segmentation}}
+                                        <div data-value="{{value.value}}" class="segmentation-option item">{{value.name}}</div>
+                                        {{/eachOfArray}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="segmentation-table">
+                <table id="dataTableTwo" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
+            </div>
+            {{else}}
+            <table id="dataTableTwo" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
             {{/if}}
-			<div class="widget-footer" style="height:220px; padding-top:20px; padding-bottom:10px; overflow:visible; box-shadow:none; position:relative;">
-				<div id="empty-graph" data-localize="allapps.empty-graph"></div>
-				<div id="dashboard-graph" class="graph" style="height:100%; margin-left:-10px;"></div>
-			</div>
-		</div>
-		<div class="allapps" data-help-localize="help.{{{chart-helper}}}">
-			<table class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
-		</div>
+        {{/if}}
 	</script>
 
 	<script id="template-analytics-countries"  type="text/x-handlebars-template">
@@ -713,7 +719,11 @@
 					</div>
 					<div style="float:right; min-width:260px; overflow:hidden; margin-top:6px;">
                         <div style="float:right;" class="icon-button light help-zone-vs" data-help-localize="help.manage-apps.app-edit-button" id="edit-app" data-localize="common.edit"></div>
-						<div style="float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="help.manage-apps.app-clear-button" id="clear-app-data" data-localize="management-applications.clear-data"></div>
+						<div style="float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="help.manage-apps.app-clear-button" id="clear-app-data">
+                            <span data-localize="management-applications.clear-data"></span>
+                            <span class="down ion-chevron-down"></span>
+                            <span class="up ion-chevron-up"></span>
+						</div>
 						<div style="display:none; float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="help.manage-apps.app-delete-button" id="delete-app" data-localize="common.delete"></div>
                         <ul id="clear-data" class="options">
                             <li id="clear-all"><span data-localize="management-applications.clear-all-data"></span></li>
@@ -732,7 +742,7 @@
 							<tr class="help-zone-vs" data-help-localize="help.manage-apps.app-name">
 								<td data-localize="management-applications.application-name"></td>
 								<td id="app-edit-name">
-									<div class="read"></div>
+									<div class="read"><span></span><a id="app_details" data-localize="management-applications.application-details"></a></div>
 									<div class="edit">
 										<input type="text" value="">
 									</div>
@@ -868,7 +878,7 @@
                             </tr>
 							<tr class="table-edit">
 								<td colspan="2">
-									<a id="save-app-edit" class="icon-button light" data-localize="common.save-changes"></a>
+									<a id="save-app-edit" class="icon-button green" data-localize="common.save-changes"></a>
 									<a id="cancel-app-edit" class="icon-button light" data-localize="common.cancel"></a>
 								</td>
 							</tr>
@@ -946,7 +956,7 @@
 			</div>
 			<div class="buttons">
 				<div id="settings-save-result" class="result-message"></div>
-				<a id="events-save" class="icon-button light" data-localize="common.save"></a>
+				<a id="events-save" class="icon-button green" data-localize="common.save"></a>
 				<a id="dialog-cancel" class="icon-button light" data-localize="common.close"></a>
 			</div>
 		</div>
@@ -1137,14 +1147,26 @@
 		</div>
 		<div class="widget map-list geo-switch help-zone-vb" data-help-localize="help.dashboard.map">
             <div class="data-type-selector-group">
-                <div id="map-list-sessions" class="selector active">
-                    <div class="text" data-localize="sidebar.analytics.sessions"></div>
+                <div id="map-list-sessions" class="selector big-numbers top cly-grid-3 active">
+                    <div class="inner">
+                        <div class="select">
+                            <div class="title" data-localize="sidebar.analytics.sessions"></div>
+                        </div>
+                    </div>
                 </div>
-                <div id="map-list-users" class="selector">
-                    <div class="text" data-localize="sidebar.analytics.users"></div>
+                <div id="map-list-users" class="selector big-numbers top cly-grid-3">
+                    <div class="inner">
+                        <div class="select">
+                            <div class="title" data-localize="sidebar.analytics.users"></div>
+                        </div>
+                    </div>
                 </div>
-                <div id="map-list-new" class="selector">
-                    <div class="text" data-localize="common.table.new-users"></div>
+                <div id="map-list-new" class="selector big-numbers top cly-grid-3">
+                    <div class="inner">
+                        <div class="select">
+                            <div class="title" data-localize="common.table.new-users"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 			<div id="geo-chart-outer"><div id="geo-chart"></div></div>
@@ -1188,13 +1210,11 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.device.detail.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.app.version.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.carrier.js?<%= countlyVersion %>"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.allapps.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.total.users.js?<%= countlyVersion %>"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.template.js?<%= countlyVersion %>"></script>
-			<% if (plugins) { %>
-				<% for(var i=0, l=plugins.length; i<l; i++) {%>
-					<script language="javascript" type="text/javascript" src="<%- cdn %><%= plugins[i] %>/javascripts/countly.models.js?<%= countlyVersion %>"></script>
-					<script language="javascript" type="text/javascript" src="<%- cdn %><%= plugins[i] %>/javascripts/countly.views.js?<%= countlyVersion %>"></script>
+			<% if (javascripts) { %>
+				<% for(var i=0, l=javascripts.length; i<l; i++) {%>
+					<script language="javascript" type="text/javascript" src="<%- cdn %><%= javascripts[i] %>?<%= countlyVersion %>"></script>
 				<% } %>
 			<% } %>
 	<% } %>

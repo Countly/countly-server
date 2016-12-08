@@ -39,6 +39,11 @@ var plugin = {},
 		common.db.collection('browser').remove({'_id': {$regex: appId + ".*"}},function(){});
 	});
     
+    plugins.register("/i/apps/clear_all", function(ob){
+		var appId = ob.appId;
+		common.db.collection('browser').remove({'_id': {$regex: appId + ".*"}},function(){});
+	});
+    
     plugins.register("/i/apps/clear", function(ob){
 		var appId = ob.appId;
         var ids = ob.ids;

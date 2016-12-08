@@ -26,7 +26,7 @@ db.collection('messages').ensureIndex({'apps': 1, deleted: 1}, function(){
 			console.log('Adding push token indexes to ' + app.name);
 			function cb(){
 				cnt++;
-				if (cnt == 10) {
+				if (cnt == 12) {
 					done();
 				}
 			}        
@@ -40,6 +40,60 @@ db.collection('messages').ensureIndex({'apps': 1, deleted: 1}, function(){
 			db.collection('app_users' + app._id).ensureIndex({'tkid': 1}, {sparse: true}, cb);
 			db.collection('app_users' + app._id).ensureIndex({'tkap': 1}, {sparse: true}, cb);
 			db.collection('app_users' + app._id).ensureIndex({'tkat': 1}, {sparse: true}, cb);
+
+			if (app.gcm && app.gcm.key) {
+				console.log('Moving GCM credentials for ' + app._id + '...');
+				db.collection('credentials').insertOne({platform: 'a', type: 'gcm', key: app.gcm.key}, function(err, credentials){
+					if (err) {
+						console.log('ERROR while moving GCM credentials for ' + app._id + '...', err);
+						process.exit(1);
+					}
+	                credentials = credentials.ops[0];
+					db.collection('apps').updateOne({_id: app._id}, {$set: {gcm: [{_id: credentials._id, type: credentials.type}]}}, function(err, updated){
+						if (err || !updated || !updated.result || !updated.result.ok) {
+							console.log('ERROR 2 while moving GCM credentials for ' + app._id + '...', err);
+							process.exit(1);
+						}
+						console.log('Moved GCM credentials for ' + app._id + ' into ' + credentials._id);
+						cb();
+					});
+				});
+			} else if (typeof app.gcm !== 'object' || !app.gcm.length) {
+				db.collection('apps').updateOne({_id: app._id}, {$unset: {gcm: 1}}, cb);
+			} else {
+				cb();
+			}
+
+			if (app.apn && app.apn.universal && app.apn.universal.key) {
+				console.log('Moving APN universal credentials for ' + app._id + '...');
+				var path = __dirname + '/../../frontend/express/certificates/' + app.apn.universal.key;
+				fs.readFile(path, function(err, data){
+					if (err) { 
+						console.log('ERROR: couldn\'t read certificate file from %j: %j', path, err);
+						db.collection('apps').updateOne({_id: app._id}, {$unset: {apn: 1}}, cb);
+					} else {
+						db.collection('credentials').insertOne({platform: 'i', type: 'apn_universal', key: data.toString('base64'), secret: app.apn.universal.passphrase || ''}, function(err, credentials){
+							if (err) {
+								console.log('ERROR while moving APN credentials for ' + app._id + '...', err);
+								process.exit(1);
+							}
+			                credentials = credentials.ops[0];
+							db.collection('apps').updateOne({_id: app._id}, {$set: {apn: [{_id: credentials._id, type: credentials.type}]}}, function(err, updated){
+								if (err || !updated || !updated.result || !updated.result.ok) {
+									console.log('ERROR 2 while moving APN credentials for ' + app._id + '...', err);
+									process.exit(1);
+								}
+								console.log('Moved APN credentials for ' + app._id + ' into ' + credentials._id);
+								cb();
+							});
+						});
+					}
+				});
+			} else if (typeof app.apn !== 'object' || !app.apn.length) {
+				db.collection('apps').updateOne({_id: app._id}, {$unset: {apn: 1}}, cb);
+			} else {
+				cb();
+			}
 		}
 
 		async.forEach(apps, upgrade, function(){

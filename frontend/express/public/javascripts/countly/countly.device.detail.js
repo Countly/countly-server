@@ -10,7 +10,7 @@
         _initialized = false,
         _period = null;
         
-    var os_mapping = {
+    countlyDeviceDetails.os_mapping = {
         "unknown":{short: "unk", name: "Unknown"},
         "undefined":{short: "unk", name: "Unknown"},
         "tvos":{short: "atv", name: "Apple TV"},
@@ -143,8 +143,8 @@
             {
                 name:"os_",
                 func:function (rangeArr, dataObj) {
-                    if(os_mapping[rangeArr.toLowerCase()])
-                        return os_mapping[rangeArr.toLowerCase()].name;
+                    if(countlyDeviceDetails.os_mapping[rangeArr.toLowerCase()])
+                        return countlyDeviceDetails.os_mapping[rangeArr.toLowerCase()].name;
                     return rangeArr;
                 }
             },
@@ -274,8 +274,8 @@
             chartData2 = [];
         var osName = osSegmentation;
         if(osSegmentation){
-            if(os_mapping[osSegmentation.toLowerCase()])
-                osName = os_mapping[osSegmentation.toLowerCase()].short;
+            if(countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()])
+                osName = countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()].short;
             else
                 osName = osSegmentation.toLowerCase()[0];
         }
@@ -305,7 +305,7 @@
 
             chartData2[chartData2.length] = {data:[
                 [0, platformVersionTotal[i]]
-            ], label:platformVersionNames[i].replace(((os_mapping[osSegmentation.toLowerCase()]) ? os_mapping[osSegmentation.toLowerCase()].name : osSegmentation) + " ", "")};
+            ], label:platformVersionNames[i].replace(((countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()]) ? countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()].name : osSegmentation) + " ", "")};
         }
 
         oSVersionData.chartDP = {};
@@ -329,10 +329,10 @@
     };
 
     countlyDeviceDetails.fixOSVersion = function(osName) {
-        osName = osName.replace(/:/g, ".");
+        osName = (osName+"").replace(/:/g, ".");
         
-        for(var i in os_mapping){
-            osName = osName.replace(new RegExp("^"+os_mapping[i].short,"g"), os_mapping[i].name+" ");
+        for(var i in countlyDeviceDetails.os_mapping){
+            osName = osName.replace(new RegExp("^"+countlyDeviceDetails.os_mapping[i].short,"g"), countlyDeviceDetails.os_mapping[i].name+" ");
         }
         return osName;
     };

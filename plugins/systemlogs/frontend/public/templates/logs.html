@@ -1,13 +1,52 @@
-	<div class="widget">
+	{{#if back}}
+    <a class="back back-link"><span data-localize="plugins.back"></span></a>
+    {{/if}}
+    <div class="widget">
 		<div class="widget-header">
 			<div class="left">
-				<div class="title">{{page-title}}</div>
+                <div style="overflow: auto">
+                    <div class="title small">{{page-title}}</div>
+                </div>
+                <div style="width:300px; display: block;">
+                    {{#if actions}}
+                    <div class="cly-select float action-segmentation">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">{{active-action}}</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:220px;">
+                            <div>
+                                <div data-value="" class="segmentation-option item" data-localize="systemlogs.all-actions"></div>
+                                {{#eachOfArray actions}}
+                                <div data-value="{{value}}" class="segmentation-option item" data-localize="systemlogs.action.{{value}}">{{value}}</div>
+                                {{/eachOfArray}}
+                            </div>
+                        </div>
+                    </div>
+                    {{/if}}
+                    {{#if users}}
+                    <div class="cly-select float user-segmentation">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">{{active-user}}</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:220px;">
+                            <div>
+                                <div data-value="" class="segmentation-option item" data-localize="systemlogs.all-users"></div>
+                                {{#eachOfArray users}}
+                                <div data-value="{{value._id}}" class="segmentation-option item">{{value.full_name}}</div>
+                                {{/eachOfArray}}
+                            </div>
+                        </div>
+                    </div>
+                    {{/if}}
+                </div>
 			</div>
-            <div class="right">
-                {{#if query}}
-                <div class="icon-button light" id="systemlogs-back"><i class="fa fa-chevron-left"></i>&nbsp;<span data-localize="plugins.back"></span></div>
-                {{/if}}
-            </div>
+            {{> date-selector }}
 		</div>
 	</div>
 	<div class="systemlogs" data-help-localize="help.{{{chart-helper}}}">

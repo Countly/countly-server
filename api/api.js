@@ -6,7 +6,8 @@ var http = require('http'),
     plugins = require('../plugins/pluginManager.js'),
     jobs = require('./parts/jobs'),
     Promise = require("bluebird"),
-    workers = [];
+    workers = [],
+    log = require('./utils/log.js')('core:api');
     
 plugins.setConfigs("api", {
     domain: "",
@@ -58,11 +59,15 @@ http.globalAgent.maxSockets = countlyConfig.api.max_sockets || 1024;
 
 process.on('uncaughtException', (err) => {
     console.log('Caught exception: %j', err, err.stack);
+    if(log && log.e)
+        log.e('Logging caught exception');
     process.exit(1);
 });
  
 process.on('unhandledRejection', (reason, p) => {
     console.log('Unhandled rejection for %j with reason %j stack ', p, reason, reason ? reason.stack : undefined);
+    if(log && log.e)
+        log.e('Logging unhandled rejection');
 });
 
 if (cluster.isMaster) {
@@ -112,7 +117,7 @@ if (cluster.isMaster) {
     setTimeout(() => {
         jobs.job('api:ping').replace().schedule('every 1 day');
         jobs.job('api:clear').replace().schedule('every 1 day');
-    }, 3000);
+    }, 10000);
 } else {
 
     var url = require('url'),
@@ -133,27 +138,6 @@ if (cluster.isMaster) {
     };
     
     process.on('message', common.log.ipcHandler);
-
-    var os_mapping = {
-        "unknown":"unk",
-        "undefined":"unk",
-        "tvos":"atv",
-        "watchos":"wos",
-        "unity editor":"uty",
-        "qnx":"qnx",
-        "os/2":"os2",
-        "windows":"mw",
-        "open bsd":"ob",
-        "searchbot":"sb",
-        "sun os":"so",
-        "solaris":"so",		
-        "beos":"bo",
-        "mac osx":"o",
-        "macos":"o",
-        "mac":"o",
-        "webos":"web",		
-        "brew":"brew"
-    };
 
     plugins.dispatch("/worker", {common:common});
     // Checks app_key from the http request against "apps" collection.
@@ -214,6 +198,10 @@ if (cluster.isMaster) {
                     }
                 }
             }
+
+            if (params.qstring.tz && typeof params.qstring.tz === 'number') {
+                params.user.tz = params.qstring.tz;
+            } 
             
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, user){
                 params.app_user = user || {};
@@ -236,8 +224,8 @@ if (cluster.isMaster) {
                     }		
                 		
                     if (params.qstring.metrics["_os"] && params.qstring.metrics["_os_version"]) {		
-                        if(os_mapping[params.qstring.metrics["_os"].toLowerCase()])		
-                            params.qstring.metrics["_os_version"] = os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_os_version"];		
+                        if(common.os_mapping[params.qstring.metrics["_os"].toLowerCase()])		
+                            params.qstring.metrics["_os_version"] = common.os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_os_version"];		
                         else		
                             params.qstring.metrics["_os_version"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_os_version"];		
                     }		
@@ -400,7 +388,7 @@ if (cluster.isMaster) {
                                 params.promises.push(countlyApi.data.events.processEvents(params));
                             else
                                 countlyApi.data.events.processEvents(params);
-                        } else if (plugins.getConfig("api").safe) {
+                        } else if (plugins.getConfig("api").safe && !params.bulk) {
                             common.returnMessage(params, 200, 'Success');
                         }
                 
@@ -424,7 +412,8 @@ if (cluster.isMaster) {
                                 updateUsers = {};
                 
                             common.fillTimeObjectMonth(params, updateUsers, common.dbMap['events']);
-                            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month}, {'$inc': updateUsers}, {'upsert':true}, function(err, res){});
+                            var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
+                            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, {'upsert':true}, function(err, res){});
                             
                             return done ? done() : false;
                         }
@@ -448,6 +437,12 @@ if (cluster.isMaster) {
                 return false;
             }
             params.member = member;
+            if(plugins.dispatch("/validation/user", {params:params})){
+                if(!params.res.finished){
+                    common.returnMessage(params, 401, 'User does not have permission');
+                }
+                return false;
+            }
             callback(params);
         });
     }
@@ -456,6 +451,11 @@ if (cluster.isMaster) {
         common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
             if (!member || err) {
                 common.returnMessage(params, 401, 'User does not exist');
+                return false;
+            }
+            
+            if (typeof params.qstring.app_id === "undefined") {
+                common.returnMessage(params, 401, 'No app_id provided');
                 return false;
             }
     
@@ -478,7 +478,15 @@ if (cluster.isMaster) {
                 params.app_id = app['_id'];
                 params.app_cc = app['country'];
                 params.appTimezone = app['timezone'];
+                params.app = app;
                 params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                
+                if(plugins.dispatch("/validation/user", {params:params})){
+                    if(!params.res.finished){
+                        common.returnMessage(params, 401, 'User does not have permission');
+                    }
+                    return false;
+                }
                 
                 plugins.dispatch("/o/validate", {params:params, app:app});
     
@@ -518,6 +526,13 @@ if (cluster.isMaster) {
                 params.appTimezone = app['timezone'];
                 params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
                 params.member = member;
+                
+                if(plugins.dispatch("/validation/user", {params:params})){
+                    if(!params.res.finished){
+                        common.returnMessage(params, 401, 'User does not have permission');
+                    }
+                    return false;
+                }
     
                 if (callbackParam) {
                     callback(callbackParam, params);
@@ -546,6 +561,13 @@ if (cluster.isMaster) {
             }
             
             params.member = member;
+            
+            if(plugins.dispatch("/validation/user", {params:params})){
+                if(!params.res.finished){
+                    common.returnMessage(params, 401, 'User does not have permission');
+                }
+                return false;
+            }
     
             if (callbackParam) {
                 callback(callbackParam, params);
@@ -568,6 +590,14 @@ if (cluster.isMaster) {
             }
     
             params.member = member;
+            
+            if(plugins.dispatch("/validation/user", {params:params})){
+                if(!params.res.finished){
+                    common.returnMessage(params, 401, 'User does not have permission');
+                }
+                return false;
+            }
+            
             callback(params);
         });
     }
@@ -608,6 +638,8 @@ if (cluster.isMaster) {
         
                     apiPath += "/" + paths[i];
                 }
+                params.apiPath = apiPath;
+                params.fullPath = paths.join("/");
                 plugins.dispatch("/", {params:params, apiPath:apiPath, validateAppForWriteAPI:validateAppForWriteAPI, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin, paths:paths, urlParts:urlParts});
         
                 if(!params.cancelRequest){
@@ -651,7 +683,8 @@ if (cluster.isMaster) {
                                     'href':params.href,		
                                     'res':params.res,		
                                     'req':params.req,
-                                    'promises':[]
+                                    'promises':[],
+                                    'bulk':true
                                 };
                                 
                                 tmpParams["qstring"]['app_key'] = requests[i].app_key || appKey;
@@ -701,7 +734,8 @@ if (cluster.isMaster) {
                                     validateUserForWriteAPI(countlyApi.mgmt.users.deleteUser, params);
                                     break;
                                 default:
-                                    common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update or /delete');
+                                    if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
+                                        common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update or /delete');
                                     break;
                             }
             
@@ -736,7 +770,8 @@ if (cluster.isMaster) {
                                     validateUserForWriteAPI(countlyApi.mgmt.apps.resetApp, params);
                                     break;
                                 default:
-                                    common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update, /delete or /reset');
+                                    if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
+                                        common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update, /delete or /reset');
                                     break;
                             }
             
@@ -795,7 +830,8 @@ if (cluster.isMaster) {
                                     validateUserForMgmtReadAPI(countlyApi.mgmt.users.getCurrentUser, params);
                                     break;
                                 default:
-                                    common.returnMessage(params, 400, 'Invalid path, must be one of /all or /me');
+                                    if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
+                                        common.returnMessage(params, 400, 'Invalid path, must be one of /all or /me');
                                     break;
                             }
             
@@ -815,8 +851,12 @@ if (cluster.isMaster) {
                                 case 'mine':
                                     validateUserForMgmtReadAPI(countlyApi.mgmt.apps.getCurrentUserApps, params);
                                     break;
+                                case 'details':
+                                    validateUserForDataReadAPI(params, countlyApi.mgmt.apps.getAppsDetails);
+                                    break;
                                 default:
-                                    common.returnMessage(params, 400, 'Invalid path, must be one of /all or /mine');
+                                    if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
+                                        common.returnMessage(params, 400, 'Invalid path, must be one of /all , /mine or /details');
                                     break;
                             }
             
@@ -944,8 +984,11 @@ if (cluster.isMaster) {
                             break;
                         }
                         default:
-                            if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, validateUserForWriteAPI:validateUserForWriteAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
-                                common.returnMessage(params, 400, 'Invalid path');
+                            if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, validateUserForWriteAPI:validateUserForWriteAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin})){
+                                if(!plugins.dispatch(params.fullPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, validateUserForWriteAPI:validateUserForWriteAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin})){
+                                    common.returnMessage(params, 400, 'Invalid path');
+                                }
+                            }
                     }
                 }
             };

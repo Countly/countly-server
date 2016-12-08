@@ -23,6 +23,17 @@ var plugin = {},
 				}
 				
 				if (params.qstring.plugin && typeof params.qstring.plugin === 'object') {
+                    var before = {};
+                    var arr = plugins.getPlugins();
+                    for(var i in params.qstring.plugin){
+                        if(arr.indexOf(i) === -1){
+                            before[i] = false;
+                        }
+                        else{
+                            before[i] = true;
+                        }
+                    }
+                    plugins.dispatch("/systemlogs", {params:params, action:"change_plugins", data:{before:before, update:params.qstring.plugin}});
                     process.send({ cmd: "startPlugins" });
                     plugins.syncPlugins(params.qstring.plugin, function(err){
                         process.send({ cmd: "endPlugins" });
@@ -124,6 +135,7 @@ var plugin = {},
                 }
             }
             if(Object.keys(data).length > 0){
+                plugins.dispatch("/systemlogs", {params:params, action:"change_configs", data:{before:plugins.getAllConfigs(), update:data}});
                 plugins.updateAllConfigs(common.db, data, function(){
                     plugins.loadConfigs(common.db, function(){
                         common.returnOutput(params, plugins.getAllConfigs());

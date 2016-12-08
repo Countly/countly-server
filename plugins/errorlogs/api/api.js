@@ -61,6 +61,7 @@ var plugin = {},
         
         validate(params, function (params) {
             if(params.qstring.log && logs[params.qstring.log]){
+                plugins.dispatch("/systemlogs", {params:params, action:"errologs_clear", data:{log:params.qstring.log}});
                 fs.truncate(dir+"/"+logs[params.qstring.log], 0, function(err){
                     if(err)
                         common.returnMessage(params, 200, err);

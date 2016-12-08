@@ -30,7 +30,7 @@ describe('Reading apps', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'Invalid path, must be one of /all or /mine');
+				ob.should.have.property('result', 'Invalid path, must be one of /all , /mine or /details');
 				done()
 			});
 		});

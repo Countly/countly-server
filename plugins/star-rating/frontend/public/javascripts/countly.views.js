@@ -343,9 +343,10 @@ window.starView = countlyView.extend({
         this.templateData['timeSeriesData'] = [];
         var currentYear = (new Date()).getFullYear();
         var dateFormat = 'MMM, YYYY';
-        if (periodArray.length > 0 && (moment(periodArray[0]).isoyear() === currentYear)) {
+        if (periodArray.length > 0 && (moment(periodArray[0], "YYYY.M.D").isoyear() === currentYear)) {
             dateFormat = 'D MMM';
         }
+
         var rows = {};
         for (var i = 0; i < periodArray.length; i++) {
             var dateArray = periodArray[i].split('.');
@@ -353,7 +354,7 @@ window.starView = countlyView.extend({
             var month = dateArray[1];
             var day = dateArray[2];
 
-            var LocalDateDisplayName = moment(year + "." + month + "." + day).format(dateFormat);
+            var LocalDateDisplayName = moment(periodArray[i], "YYYY.M.D").format(dateFormat);
             if(!rows[LocalDateDisplayName]){
                 rows[LocalDateDisplayName] = {
                     'date': LocalDateDisplayName,
@@ -363,7 +364,8 @@ window.starView = countlyView.extend({
                     'star4': 0,
                     'star5': 0
                 };
-            };
+            }
+
             if (result[year] && result[year][month] && result[year][month][day]) {
                 for (var rating in result[year][month][day]) {
                     if (this.matchPlatformVersion(rating)) {
@@ -451,11 +453,14 @@ window.starView = countlyView.extend({
         }
         var period = countlyCommon.getPeriod();
         var bucket = null;
-        if(period === 'yesterday' || period === 'hour'){
-            bucket = 'daily';
-        }
-        countlyCommon.drawTimeGraph(renderData, "#dashboard-graph", bucket);
+        var overrideBucket = false;
 
+        if (period === 'yesterday' || period === 'hour' || countlyCommon.getPeriodObj().numberOfDays == 1) {
+            bucket = 'daily';
+            overrideBucket = true;
+        }
+
+        countlyCommon.drawTimeGraph(renderData, "#dashboard-graph", bucket, overrideBucket);
     },
     renderCommon: function (isRefresh) {
         var self = this;

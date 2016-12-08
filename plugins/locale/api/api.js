@@ -65,6 +65,11 @@ var plugin = {},
         var ids = ob.ids;
 		common.db.collection('langs').remove({$and:[{'_id': {$regex: appId + ".*"}}, {'_id': {$nin:ids}}]},function(){});
 	});
+
+    plugins.register("/i/apps/clear_all", function(ob){
+        var appId = ob.appId;
+		common.db.collection('langs').remove({'_id': {$regex: appId + ".*"}},function(){});
+    });
 }(plugin));
 
 module.exports = plugin;

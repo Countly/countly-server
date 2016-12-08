@@ -98,6 +98,29 @@ var common = {},
     common.moment = moment;
 
     common.crypto = crypto;
+    
+    common.os_mapping = {
+        "unknown":"unk",
+        "undefined":"unk",
+        "tvos":"atv",
+        "watchos":"wos",
+        "unity editor":"uty",
+        "qnx":"qnx",
+        "os/2":"os2",
+        "windows":"mw",
+        "open bsd":"ob",
+        "searchbot":"sb",
+        "sun os":"so",
+        "solaris":"so",		
+        "beos":"bo",
+        "mac osx":"o",
+        "macos":"o",
+        "mac":"o",
+        "webos":"web",		
+        "brew":"brew"
+    };
+    
+    common.base64 = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","+","/"];
 
     common.dbPromise = function() {
         var args = Array.prototype.slice.call(arguments);
@@ -105,10 +128,18 @@ var common = {},
             var collection = common.db.collection(args[0]),
                 method = args[1];
 
-            collection[method].apply(collection, args.slice(2).concat([function(err, result){
-                if (err) { reject(err); }
-                else { resolve(result); }
-            }]));
+            if (method === 'find') {
+                collection[method].apply(collection, args.slice(2)).toArray(function(err, result){
+                    if (err) { reject(err); }
+                    else { resolve(result); }
+                });
+            } else {
+                collection[method].apply(collection, args.slice(2).concat([function(err, result){
+                    if (err) { reject(err); }
+                    else { resolve(result); }
+                }]));
+            }
+
         });
     };
 
@@ -458,7 +489,7 @@ var common = {},
     common.returnMessage = function (params, returnCode, message) {
         //set provided in configuration headers
         var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
-        var add_headers = plugins.getConfig("security").api_additional_headers.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
+        var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
         var parts;
         for(var i = 0; i < add_headers.length; i++){
             if(add_headers[i] && add_headers[i].length){
@@ -483,7 +514,7 @@ var common = {},
     common.returnOutput = function (params, output) {
         //set provided in configuration headers
         var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
-        var add_headers = plugins.getConfig("security").api_additional_headers.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
+        var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
         var parts;
         for(var i = 0; i < add_headers.length; i++){
             if(add_headers[i] && add_headers[i].length){

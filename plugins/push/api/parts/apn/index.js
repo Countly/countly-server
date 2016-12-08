@@ -52,10 +52,6 @@ class ConnectionResource {
 			throw error;
 		});
 	}
-
-	terminate() {
-		this.connection.terminate();
-	}
 }
 
 module.exports = {

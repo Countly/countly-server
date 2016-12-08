@@ -130,6 +130,13 @@ var plugin = {},
             common.db.createCollection('logs' + appId, {capped: true, size: 10000000, max: 1000}, function(){});
         });
 	});
+    
+    plugins.register("/i/apps/clear_all", function(ob){
+        var appId = ob.appId;
+        common.db.collection('logs' + appId).drop(function() {
+            common.db.createCollection('logs' + appId, {capped: true, size: 10000000, max: 1000}, function(){});
+        });
+    });
 }(plugin));
 
 module.exports = plugin;

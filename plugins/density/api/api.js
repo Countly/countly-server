@@ -11,6 +11,13 @@ var plugin = {},
         ob.shortcodesForMetrics["densities"] = "dnst";
     });
 	plugins.register("/session/metrics", function(ob){
+        var params = ob.params;
+        if (params.qstring.metrics && params.qstring.metrics["_os"] && params.qstring.metrics["_density"]) {		
+            if(common.os_mapping[params.qstring.metrics["_os"].toLowerCase()])		
+                params.qstring.metrics["_density"] = common.os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_density"];		
+            else		
+                params.qstring.metrics["_density"] = params.qstring.metrics["_os"][0].toLowerCase() + params.qstring.metrics["_density"];		
+        }
 		var predefinedMetrics = ob.predefinedMetrics;
 		predefinedMetrics.push({
             db: "density",
@@ -38,6 +45,11 @@ var plugin = {},
 		var appId = ob.appId;
 		common.db.collection('density').remove({'_id': {$regex: appId + ".*"}},function(){});
 	});
+    
+    plugins.register("/i/apps/clear_all", function(ob){
+        var appId = ob.appId;
+		common.db.collection('density').remove({'_id': {$regex: appId + ".*"}},function(){});
+    });
     
     plugins.register("/i/apps/clear", function(ob){
 		var appId = ob.appId;

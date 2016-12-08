@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <ellipse id="a" cx="27" cy="19.505" rx="19.56" ry="19.505"/>
+    <mask id="c" width="39.12" height="39.009" x="0" y="0" fill="white">
+      <use xlink:href="#a"/>
+    </mask>
+    <rect id="b" width="3.171" height="18.192" x="5.922" y="5.282" rx="1.585"/>
+    <mask id="d" width="6.473" height="21.494" x="-1.651" y="-1.651">
+      <rect width="6.473" height="21.494" x="4.271" y="3.631" fill="white"/>
+      <use fill="black" xlink:href="#b"/>
+    </mask>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <circle cx="30" cy="30" r="30" fill="#EEEEEE"/>
+    <g transform="translate(3 13)">
+      <use stroke="#8C8C8C" stroke-width="6" mask="url(#c)" xlink:href="#a"/>
+      <polygon fill="#EEEEEE" points="0 13.176 26 22.662 52 13.176 50.5 35.5 39 41 13 41 3 35.5"/>
+      <g transform="rotate(-80 14.519 9.575)">
+        <polygon fill="#EEEEEE" points="11 2 3.5 1 1 10 10.5 10" transform="scale(1 -1) rotate(-5 -119.97 0)"/>
+        <use fill="#5390E6" xlink:href="#b"/>
+        <use stroke="#EEEEEE" stroke-width="3.302" mask="url(#d)" xlink:href="#b"/>
+        <ellipse cx="7.306" cy="23.567" fill="#5293E7" rx="4.439" ry="4.426"/>
+        <ellipse cx="7.306" cy="23.567" fill="#95BEEF" rx="2.077" ry="2.071"/>
+      </g>
+    </g>
+  </g>
+</svg>

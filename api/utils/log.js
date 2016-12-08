@@ -132,7 +132,7 @@ var setDefault = function(level) {
 };
 
 var getLevel = function(module) {
-	return levels[module];
+	return levels[module] || deflt;
 };
 
 var getEnabledWithLevel = function(acceptable, module) {

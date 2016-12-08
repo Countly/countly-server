@@ -1,0 +1,25 @@
+.compare-view .alternative-selection { position: relative; background-color:#FFF; padding:20px 13px; border:1px solid #d0d0d0; border-bottom: none; }
+.compare-view.d-table .name { cursor: pointer; margin-left: 15px; }
+.compare-view.d-table .color { float: left; margin:0; }
+.compare-view.d-table .up,
+.compare-view.d-table .down { font-size: 11px; margin-right: 8px; }
+.compare-view.d-table .up { color: #2fa732; }
+.compare-view.d-table .down { color: #D63E40; }
+.compare-view #empty-graph { position: absolute; text-align: center; width: 100%; top: 50%; margin-top: -35px; display: none; height: 70px; line-height: 70px; text-shadow: none; color: #B3B3B3; }
+.compare-view #empty-graph i { font-size: 70px; color: #ECECEC; user-select:none; }
+.compare-view #compare-button { padding: 8px 15px 9px 15px; }
+.compare-view #compare-button.disabled { background-color: #6d6d6d; cursor: default; box-shadow: inset 0 0 0 1px #6d6d6d; }
+.compare-view #alternative-selector .default-text { color:#2fa732; }
+
+/* For compare events view */
+#compare-events { margin-bottom: 0; padding: 3px 12px; text-align: center; }
+#compare-events .icon { background-image: url("/compare/images/compare-events.svg"); width:20px; height: 20px; float:none; margin:4px 0 0 0; display: inline-block; }
+#compare-events .name { float: none; width: auto; display: inline-block; vertical-align: top; }
+
+/* For compare apps view */
+#compare-apps { margin-bottom: 0; padding: 2px 12px 2px 37px; text-align: center; }
+#compare-apps .icon { background-image: url("/compare/images/compare-apps.svg"); width:20px; height: 20px; float:none; margin:5px 0 0 0; display: inline-block; }
+#compare-apps .name { float: none; width: auto; display: inline-block; vertical-align: top; }
+#compare-apps-pointer { background-image: url("/compare/images/compare-apps-pointer.svg"); width:224px; height:200px; top:130px; background-repeat: no-repeat; position: absolute; }
+#compare-apps-pointer > div { margin-top: 120px; padding: 0 40px; font-size: 12px; text-align: center; color: #6d6d6d; margin-bottom: 10px; line-height: 17px; }
+#sidebar-app-select.compare-active .logo { border: none; border-radius: 0; background-image: url("/compare/images/compare-apps.svg") !important; }

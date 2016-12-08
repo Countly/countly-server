@@ -2,4 +2,27 @@
 
 .systemlogs {margin-top: -16px;}
 .systemlogs .dataTable-top {border-radius: 0;}
+.systemlogs table { table-layout: fixed; }
+.systemlogs table td,
+.systemlogs table th { width:14%; }
+.systemlogs table th:last-child,
+.systemlogs table td:last-child { width:44%; }
 .systemlogs table td { font-family: Ubuntu; }
+.systemlogs table td pre { background-color: transparent !important; line-height: 15px; white-space: pre-wrap; }
+.systemlogs .search-table-data {display: none;}
+
+.systemlogs table td pre .hljs-keyword,
+.systemlogs table td pre .hljs-selector-tag,
+.systemlogs table td pre .hljs-name,
+.systemlogs table td pre .hljs-attr {
+    color: #ff4f42;
+}
+
+.systemlogs table td pre .hljs-bullet,
+.systemlogs table td pre .hljs-quote,
+.systemlogs table td pre .hljs-number,
+.systemlogs table td pre .hljs-regexp,
+.systemlogs table td pre .hljs-literal,
+.systemlogs table td pre .hljs-link {
+    color: #8150da;
+}

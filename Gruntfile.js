@@ -65,6 +65,8 @@ module.exports = function(grunt) {
 				'frontend/express/public/javascripts/utils/jquery.amaran.min.js',
 				'frontend/express/public/javascripts/utils/jquery.titlealert.js',
                 'frontend/express/public/javascripts/utils/jquery.hoverIntent.minified.js',
+                'frontend/express/public/javascripts/utils/tooltipster/tooltipster.bundle.min.js',
+                'frontend/express/public/javascripts/utils/highlight/highlight.pack.js',
 				'frontend/express/public/javascripts/countly/countly.common.js'
 			],
 			dest: 'frontend/express/public/javascripts/min/countly.utils.concat.js'
@@ -99,7 +101,6 @@ module.exports = function(grunt) {
 				'frontend/express/public/javascripts/countly/countly.device.detail.js',
 				'frontend/express/public/javascripts/countly/countly.app.version.js',
 				'frontend/express/public/javascripts/countly/countly.carrier.js',
-				'frontend/express/public/javascripts/countly/countly.allapps.js',
                 'frontend/express/public/javascripts/countly/countly.total.users.js',
 				'frontend/express/public/javascripts/countly/countly.template.js'
 			],
@@ -131,7 +132,8 @@ module.exports = function(grunt) {
 	    			'frontend/express/public/stylesheets/amaranjs/amaran.min.css',
 	    			'frontend/express/public/javascripts/dom/tipsy/tipsy.css',
 	    		    'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.css',
-                    'frontend/express/public/javascripts/dom/pace/pace-theme-flash.css'
+                    'frontend/express/public/javascripts/dom/pace/pace-theme-flash.css',
+                    'frontend/express/public/javascripts/utils/tooltipster/tooltipster.bundle.min.css'
 	    		]
     		}
     	}

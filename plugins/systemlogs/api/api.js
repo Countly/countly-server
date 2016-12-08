@@ -1,8 +1,26 @@
 var plugin = {},
 	common = require('../../../api/utils/common.js'),
+    countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js');
 
 (function (plugin) {
+    
+    function getPeriodObj(params) {
+		params.qstring.period = params.qstring.period || "month";
+        if (params.qstring.period && params.qstring.period.indexOf(",") !== -1) {
+            try {
+                params.qstring.period = JSON.parse(params.qstring.period);
+            } catch (SyntaxError) {
+				console.log('Parse period JSON failed');
+                return false;
+            }
+        }
+
+        countlyCommon.setPeriod(params.qstring.period);
+        countlyCommon.setTimezone(params.appTimezone);
+
+        return countlyCommon.periodObj;
+    }
 	
 	//read api call
 	plugins.register("/o", function(ob){
@@ -22,8 +40,10 @@ var plugin = {},
                     query["i"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};
                     //filter["$text"] = { "$search": "\""+params.qstring.sSearch+"\"" };
                 }
-                query._id = {$ne:"meta_v2"};
             }
+            query._id = {$ne:"meta_v2"};
+            getPeriodObj(params);
+            query.ts = countlyCommon.getTimestampRangeQuery(params, true);
             validate(params, function(params){
                 var columns = ["ts", "u", "a", "ip", "i"];
                 common.db.collection('systemlogs').count({},function(err, total) {
@@ -51,14 +71,20 @@ var plugin = {},
 			});
 			return true;
 		}
-        else if(params.qstring.method == 'systemlogs_actions'){
+        else if(params.qstring.method == 'systemlogs_meta'){
             validate(params, function(params){
-                common.db.collection('systemlogs').findOne({_id:"meta_v2"}, {_id:0}, function(err, res){
-                    var result = [];
-                    if(!err && res){
-                        result = Object.keys(res).map(function(arg){return common.db.decode(arg);});
-                    }
-                    common.returnOutput(params, result);
+                //get all users
+                common.db.collection('members').find({}, {username:1, email:1, full_name:1}).toArray(function(err, users){
+                    common.db.collection('systemlogs').findOne({_id:"meta_v2"}, {_id:0}, function(err, res){
+                        var result = {};
+                        if(!err && res){
+                            for(var i in res){
+                                result[i] = Object.keys(res[i]).map(function(arg){return common.db.decode(arg);});
+                            }
+                        }
+                        result.users = users || [];
+                        common.returnOutput(params, result);
+                    });
                 });
             });
             return true;
@@ -67,55 +93,165 @@ var plugin = {},
     
     plugins.register("/i/systemlogs", function(ob){
 		var params = ob.params;
-        if(typeof params.qstring.data === "string"){
-            try{
-                params.qstring.data = JSON.parse(params.qstring.data);
+        common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
+            if (!member || err) {
+                common.returnMessage(params, 401, 'User does not exist');
+                return false;
             }
-            catch(ex){
-                console.log("Error parsing systemlogs data", params.qstring.data);
+            params.member = member;
+            if(typeof params.qstring.data === "string"){
+                try{
+                    params.qstring.data = JSON.parse(params.qstring.data);
+                }
+                catch(ex){
+                    console.log("Error parsing systemlogs data", params.qstring.data);
+                }
             }
-        }
-        if(typeof params.qstring.action == "string")
-            recordAction(params, {}, params.qstring.action, params.qstring.data);
+            if(typeof params.qstring.action == "string")
+                recordAction(params, {}, params.qstring.action, params.qstring.data || {});
+            
+            common.returnOutput(params, {result:"Success"});
+        });
+        return true;
 	});
 	
 	plugins.register("/i/apps/create", function(ob){
-        ob.data._id = ob.appId;
-        recordAction(ob.params, ob.params.member, "App Created", ob.data);
+        ob.data.app_id = ob.appId;
+        recordAction(ob.params, ob.params.member, "app_created", ob.data);
 	});
 	
 	plugins.register("/i/apps/update", function(ob){
 		var appId = ob.appId;
-		ob.data._id = appId;
-        recordAction(ob.params, ob.params.member, "App Updated", ob.data);
+        var data = {};
+        data.before = {};
+        data.after = {};
+        data.update = ob.data.update;
+		data.app_id = ob.appId;
+        compareChanges(data, ob.data.app, ob.data.update);
+        recordAction(ob.params, ob.params.member, "app_updated", data);
 	});
 	
 	plugins.register("/i/apps/delete", function(ob){
-        recordAction(ob.params, ob.params.member, "App Deleted", ob.data);
+        ob.data.app_id = ob.data._id;
+        recordAction(ob.params, ob.params.member, "app_deleted", ob.data);
 	});
 	
 	plugins.register("/i/apps/reset", function(ob){
 		var appId = ob.appId;
-        ob.data._id = appId;
-        recordAction(ob.params, ob.params.member, "App Reset", ob.data);
+        ob.data.app_id = appId;
+        recordAction(ob.params, ob.params.member, "app_reset", ob.data);
+	});
+    
+    plugins.register("/i/apps/clear_all", function(ob){
+		var appId = ob.appId;
+        ob.data.app_id = appId;
+        recordAction(ob.params, ob.params.member, "clear_all", ob.data);
+	});
+    
+    plugins.register("/i/apps/clear", function(ob){
+		var appId = ob.appId;
+        ob.data.app_id = appId;
+        ob.data.before = ob.moment.format("YYYY-MM-DD");
+        recordAction(ob.params, ob.params.member, "app_clear_old_data", ob.data);
 	});
 	
 	plugins.register("/i/users/create", function(ob){
-        recordAction(ob.params, ob.params.member, "User Created", ob.data);
+        ob.data = JSON.parse(JSON.stringify(ob.data));
+        delete ob.data.password;
+        recordAction(ob.params, ob.params.member, "user_created", ob.data);
 	});
 	
 	plugins.register("/i/users/update", function(ob){
-        recordAction(ob.params, ob.params.member, "User Updated", ob.data);
+        ob.data = JSON.parse(JSON.stringify(ob.data));
+        if(ob.data.password)
+            ob.data.password = true;
+        
+        var data = {};
+        data.user_id = ob.data._id;
+        data.before = {};
+        data.after = {};
+        data.update = ob.data;
+        compareChanges(data, ob.member, ob.data);
+        if(typeof data.before.password != "undefined"){
+            data.before.password = true;
+            data.after.password = true;
+        }
+        recordAction(ob.params, ob.params.member, "user_updated", data);
 	});
 	
 	plugins.register("/i/users/delete", function(ob){
-        recordAction(ob.params, ob.params.member, "User Deleted", ob.data);
+        ob.data = JSON.parse(JSON.stringify(ob.data));
+        delete ob.data.password;
+        recordAction(ob.params, ob.params.member, "user_deleted", ob.data);
 	});
     
     plugins.register("/systemlogs", function(ob){
         var user = ob.user || ob.params.member;
-        recordAction(ob.params, user, ob.action, ob.data);
+        if(typeof ob.data.before != "undefined" && typeof ob.data.update != "undefined"){
+            var data = {};
+            for(var i in ob.data){
+                if(i != "before" && i != "after"){
+                    data[i] = ob.data[i];
+                }
+            }
+            data.before = {};
+            data.after = {};
+            compareChanges(data, ob.data.before, ob.data.update);
+            recordAction(ob.params, user, ob.action, data);
+        }
+        else{
+            recordAction(ob.params, user, ob.action, ob.data);
+        }
     });
+    
+    function compareChanges(data, before, after){
+        if(typeof before._id != "undefined")
+            before._id += "";
+        if(typeof after._id != "undefined")
+            after._id += "";
+        for(var i in after){
+            if(typeof after[i] == "object" && after[i] && before[i]){
+                if(Array.isArray(after[i]) && JSON.stringify(after[i]) != JSON.stringify(before[i])){
+                    data.before[i] = before[i];
+                    data.after[i] = after[i];
+                }
+                else{
+                    for (var propName in after[i]) {
+                        if(after[i][propName] && typeof after[i][propName] == "object"){
+                            if(!data.before[i])
+                                data.before[i] = {};
+                            if(!data.after[i])
+                                data.after[i] = {};
+                            
+                            for(var subprop in after[i][propName]){
+                                if(after[i][propName][subprop] != before[i][propName][subprop]){
+                                    if(!data.before[i][propName])
+                                        data.before[i][propName] = {};
+                                    if(!data.after[i][propName])
+                                        data.after[i][propName] = {};
+                                    data.before[i][propName][subprop] = before[i][propName][subprop];
+                                    data.after[i][propName][subprop] = after[i][propName][subprop];
+                                }
+                            }
+                        }
+                        else if(after[i][propName] != before[i][propName]){
+                            if(!data.before[i])
+                                data.before[i] = {};
+                            if(!data.after[i])
+                                data.after[i] = {};
+                            
+                            data.before[i][propName] = before[i][propName];
+                            data.after[i][propName] = after[i][propName];
+                        }
+                    }
+                }
+            }
+            else if(after[i] != before[i]){
+                data.before[i] = before[i];
+                data.after[i] = after[i];
+            }
+        }
+    }
     
     function recordAction(params, user, action, data){
         var log = {};
@@ -124,6 +260,8 @@ var plugin = {},
         log.ts = Math.round(new Date().getTime()/1000);
         log.u = user.email || user.username || "";
         log.ip = common.getIpAddress(params.req);
+        if(typeof data.app_id != "undefined")
+            log.app_id = data.app_id;
         if(user._id){
             log.user_id = user._id + "";
             common.db.collection('systemlogs').insert(log, function () {});
@@ -150,8 +288,10 @@ var plugin = {},
             else{
                 common.db.collection('systemlogs').insert(log, function () {});
             }
-            common.db.collection("systemlogs").update({_id:"meta_v2"}, {$set:{a:common.db.encode(action)}}, {upsert:true}, function(){});
         }
+        var update = {};
+        update["a."+common.db.encode(action)] = true;
+        common.db.collection("systemlogs").update({_id:"meta_v2"}, {$set:update}, {upsert:true}, function(){});
     };
 }(plugin));
 

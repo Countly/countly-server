@@ -265,6 +265,7 @@ $.extend(Template.prototype, {
 
     CountlyHelpers.initializeSelect = function (element) {
         element = element || $("#content-container");
+
         element.off("click", ".cly-select").on("click", ".cly-select", function (e) {
             if ($(this).hasClass("disabled")) {
                 return true;
@@ -288,44 +289,71 @@ $.extend(Template.prototype, {
                 $(".select-items").hide();
                 $(this).addClass("active");
 
-                if (itemCount > 10 && !$(this).hasClass("centered")) {
+                if (itemCount > 10 || $(this).hasClass("big-list")) {
                     $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
                 }
             }
 
             if ($(this).hasClass("centered")) {
-                var height = $(this).find(".select-items").height();
-                $(this).find(".select-items").css("margin-top", (-(height/2).toFixed(0) - ($(this).height()/2).toFixed(0)) + "px");
+                if ((itemCount > 5 && $(this).offset().top > 400) || $(this).hasClass("force")) {
+                    var height = $(this).find(".select-items").height(),
+                        searchItem = $(this).find(".search");
+
+                    var addThis = 0;
+
+                    if (searchItem.length) {
+                        addThis = (searchItem.height()/2).toFixed(0) - 1;
+                        $(this).find(".select-items").css({"min-height": height});
+                    } else {
+                        $(this).find(".select-items").css({"min-height": "auto"});
+                        height = $(this).find(".select-items").height();
+                    }
+
+                    $(this).find(".select-items").css("margin-top", (-(height/2).toFixed(0) - ($(this).height()/2).toFixed(0)+ parseInt(addThis)) + "px");
+                    $(this).find(".search").css("margin-top", (-(height/2).toFixed(0) - searchItem.height()) + "px");
+                } else {
+                    $(this).find(".select-items").css({"min-height": "auto"});
+                    $(this).find(".select-items").css("margin-top", '');
+                    $(this).find(".search").css("margin-top", '');
+                }
             }
 
             if ($(this).find(".select-items").is(":visible")) {
                 $(this).find(".select-items").hide();
             } else {
                 $(this).find(".select-items").show();
-                $(this).find(".select-items>div").addClass("scroll-list");
-                $(this).find(".scroll-list").slimScroll({
-                    height:'100%',
-                    start:'top',
-                    wheelStep:10,
-                    position:'right',
-                    disableFadeOut:true
-                });
+                if ($(this).find(".select-items").find(".scroll-list").length == 0) {
+                    $(this).find(".select-items").wrapInner("<div class='scroll-list'></div>");
+                    $(this).find(".scroll-list").slimScroll({
+                        height:'100%',
+                        start:'top',
+                        wheelStep:10,
+                        position:'right',
+                        disableFadeOut:true
+                    });
+                }
             }
+
+            $(this).find(".select-items").find(".item").removeClass("hidden");
+            $(this).find(".select-items").find(".group").show();
+            $(this).find(".select-items").find(".item").removeClass("last");
+            $(this).find(".select-items").find(".item:visible:last").addClass("last");
 
             $(this).find(".search input").focus();
 
             $("#date-picker").hide();
+
+            $(this).find(".search").off("click").on("click", function (e) {
+                e.stopPropagation();
+            });
+
             e.stopPropagation();
         });
 
-        element.off("click", ".select-items .item").on("click", ".select-items .item", function () {
+        element.off("click", ".cly-select .select-items .item").on("click", ".cly-select .select-items .item", function () {
             var selectedItem = $(this).parents(".cly-select").find(".text");
             selectedItem.text($(this).text());
             selectedItem.data("value", $(this).data("value"));
-        });
-
-        element.off("click", ".cly-select .search").on("click", ".cly-select .search", function (e) {
-            e.stopPropagation();
         });
 
         element.off("keyup", ".cly-select .search input").on("keyup", ".cly-select .search input", function(event) {
@@ -361,9 +389,202 @@ $.extend(Template.prototype, {
         });
 
         $(window).click(function () {
-            $(".select-items").hide();
-            $(".cly-select").find(".search").remove();
+            var $clySelect = $(".cly-select");
+
+            $clySelect.find(".select-items").hide();
+            $clySelect.find(".search").remove();
+            $clySelect.removeClass("active");
         });
+    };
+
+    CountlyHelpers.initializeMultiSelect = function (element) {
+        element = element || $("#content-container");
+
+        element.off("click", ".cly-multi-select").on("click", ".cly-multi-select", function (e) {
+            if ($(this).hasClass("disabled")) {
+                return true;
+            }
+
+            $(this).removeClass("req");
+
+            var selectItems = $(this).find(".select-items"),
+                itemCount = selectItems.find(".item").length;
+
+            if (!selectItems.length) {
+                return false;
+            }
+
+            $(".cly-multi-select").find(".search").remove();
+
+            if (selectItems.is(":visible")) {
+                $(this).removeClass("active");
+            } else {
+                $(".cly-multi-select").removeClass("active");
+                $(".select-items").hide();
+                $(this).addClass("active");
+
+                if (itemCount > 10) {
+                    $("<div class='search'><div class='inner'><input type='text' /><i class='fa fa-search'></i></div></div>").insertBefore($(this).find(".select-items"));
+                }
+            }
+
+            if ($(this).find(".select-items").is(":visible")) {
+                $(this).find(".select-items").hide();
+            } else {
+                $(this).find(".select-items").show();
+                if ($(this).find(".select-items").find(".scroll-list").length == 0) {
+                    $(this).find(".select-items").wrapInner("<div class='scroll-list'></div>");
+                    $(this).find(".scroll-list").slimScroll({
+                        height:'100%',
+                        start:'top',
+                        wheelStep:10,
+                        position:'right',
+                        disableFadeOut:true
+                    });
+                }
+            }
+
+            $(this).find(".select-items").find(".item").removeClass("hidden");
+            $(this).find(".select-items").find(".group").show();
+            $(this).find(".select-items").find(".item").removeClass("last");
+            $(this).find(".select-items").find(".item:visible:last").addClass("last");
+
+            $(this).find(".search input").focus();
+
+            $("#date-picker").hide();
+
+            $(this).find(".search").off("click").on("click", function (e) {
+                e.stopPropagation();
+            });
+
+            e.stopPropagation();
+        });
+
+        element.off("click", ".cly-multi-select .select-items .item").on("click", ".cly-multi-select .select-items .item", function (e) {
+            if ($(this).hasClass("disabled")) {
+                e.stopPropagation();
+                return;
+            }
+
+            var $multiSelect = $(this).parents(".cly-multi-select"),
+                selectionContainer = $multiSelect.find(".text"),
+                selectedValue = $(this).data("value"),
+                maxToSelect = $multiSelect.data("max");
+
+            if ($(this).hasClass("selected")) {
+                selectionContainer.find(".selection[data-value='" + selectedValue + "']").remove();
+                $(this).removeClass("selected");
+            } else {
+                var $selection = $("<div class='selection'></div>");
+
+                $selection.text($(this).text());
+                $selection.attr("data-value", selectedValue);
+                $selection.append("<div class='remove'><i class='ion-android-close'></i></div>");
+
+                selectionContainer.append($selection);
+
+                $(this).addClass("selected");
+            }
+
+            if (maxToSelect) {
+                if (getSelected($multiSelect).length >= maxToSelect) {
+                    $multiSelect.find(".item").addClass("disabled");
+                }
+            }
+
+            if ($multiSelect.find(".item.selected").length > 0) {
+                $multiSelect.addClass("selection-exists");
+            } else {
+                $multiSelect.removeClass("selection-exists");
+            }
+
+            $multiSelect.data("value", getSelected($multiSelect));
+            $multiSelect.trigger("cly-multi-select-change");
+            e.stopPropagation();
+        });
+
+        element.off("keyup", ".cly-multi-select .search input").on("keyup", ".cly-multi-select .search input", function(event) {
+            var $multiSelect = $(this).parents(".cly-multi-select");
+
+            if (!$(this).val()) {
+                $multiSelect.find(".item").removeClass("hidden");
+                $multiSelect.find(".group").show();
+            } else {
+                $multiSelect.find(".item:not(:contains('" + $(this).val() + "'))").addClass("hidden");
+                $multiSelect.find(".item:contains('" + $(this).val() + "')").removeClass("hidden");
+                var prevHeader = $multiSelect.find(".group").first();
+                prevHeader.siblings().each(function(){
+                    if($(this).hasClass("group")){
+                        if(prevHeader)
+                            prevHeader.hide();
+                        prevHeader = $(this);
+                    }
+                    else if($(this).hasClass("item") && $(this).is(":visible")){
+                        prevHeader = null;
+                    }
+
+                    if(!$(this).next().length && prevHeader)
+                        prevHeader.hide();
+                })
+            }
+        });
+
+        element.off('mouseenter').on('mouseenter', ".cly-multi-select .item", function () {
+            var item = $(this);
+
+            if (this.offsetWidth < this.scrollWidth && !item.attr('title')) {
+                item.attr('title', item.text());
+            }
+        });
+
+        element.off("click", ".cly-multi-select .selection").on("click", ".cly-multi-select .selection", function (e) {
+            e.stopPropagation();
+        });
+
+        element.off("click", ".cly-multi-select .selection .remove").on("click", ".cly-multi-select .selection .remove", function (e) {
+            var $multiSelect = $(this).parents(".cly-multi-select");
+
+            $multiSelect.find(".item[data-value='" + $(this).parent(".selection").data("value") + "']").removeClass("selected");
+
+            if ($multiSelect.find(".item.selected").length > 0) {
+                $multiSelect.addClass("selection-exists");
+            } else {
+                $multiSelect.removeClass("selection-exists");
+            }
+
+            $(this).parent(".selection").remove();
+
+            var maxToSelect = $multiSelect.data("max");
+
+            if (maxToSelect) {
+                if (getSelected($multiSelect).length < maxToSelect) {
+                    $multiSelect.find(".item").removeClass("disabled");
+                }
+            }
+
+            $multiSelect.data("value", getSelected($multiSelect));
+            $multiSelect.trigger("cly-multi-select-change");
+
+            e.stopPropagation();
+        });
+
+        $(window).click(function () {
+            var $clyMultiSelect = $(".cly-multi-select");
+
+            $clyMultiSelect.find(".select-items").hide();
+            $clyMultiSelect.find(".search").remove();
+            $clyMultiSelect.removeClass("active");
+        });
+
+        function getSelected(multiSelectEl) {
+            var selected = [];
+
+            multiSelectEl.find(".text .selection").each(function() {
+                selected.push($(this).data("value"));
+            });
+
+            return selected;
+        }
     };
 
     CountlyHelpers.refreshTable = function(dTable, newDataArr) {
@@ -393,15 +614,14 @@ $.extend(Template.prototype, {
 				if ( i === -1 ) {
 					$(nTr).addClass("selected");
 					var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr ), context), 'details' );
-					$('div.datatablesubrow', nDetailsRow).slideDown();
+					$('div.datatablesubrow', nDetailsRow).show();
 					dTable.aOpen.push( id );
 				}
 				else {
 					$(nTr).removeClass("selected");
-					$('div.datatablesubrow', $(nTr).next()[0]).slideUp( function () {
-						dTable.fnClose( nTr );
-						dTable.aOpen.splice( i, 1 );
-					} );
+					$('div.datatablesubrow', $(nTr).next()[0]).hide();
+                    dTable.fnClose( nTr );
+                    dTable.aOpen.splice( i, 1 );
 				}
 			}
 		});
@@ -501,7 +721,7 @@ $.extend(Template.prototype, {
 
     CountlyHelpers.clip = function(f) {
         return function(opt) {
-            var res = f(opt);
+            var res = typeof f === 'fucnction' ? f(opt) : opt;
             return '<div class="clip' + (res ? '' : ' nothing') + '">' + (res || jQuery.i18n.map['push.no-message']) + '</div>';
         }
     };
@@ -659,6 +879,89 @@ $.extend(Template.prototype, {
 		countlyMetric.getBars = function () {
 			return countlyCommon.extractBarData(_Db, _metrics, this.clearObject, fetchValue);
 		};
+        
+        countlyMetric.getOSSegmentedData = function (os, clean) {
+            var _os = countlyDeviceDetails.getPlatforms();
+            var oSVersionData = countlyCommon.extractTwoLevelData(_Db, _metrics, this.clearObject, [
+				{
+					name:_name,
+					func:function (rangeArr, dataObj) {
+                        rangeArr = countlyCommon.decode(rangeArr);
+                        if(fetchValue && !clean)
+                            return fetchValue(rangeArr);
+                        else
+                            return rangeArr;
+					}
+				},
+				{ "name":"t" },
+				{ "name":"u" },
+				{ "name":"n" }
+			], _estOverrideMetric);
+        
+            var osSegmentation = ((os) ? os : ((_os) ? _os[0] : null)),
+                platformVersionTotal = _.pluck(oSVersionData.chartData, 'u'),
+                chartData2 = [];
+            var osName = osSegmentation;
+            if(osSegmentation){
+                if(countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()])
+                    osName = countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()].short;
+                else
+                    osName = osSegmentation.toLowerCase()[0];
+            }
+        
+            if (oSVersionData.chartData) {
+                var reg = new RegExp("^"+osName,"g");
+                for (var i = 0; i < oSVersionData.chartData.length; i++) {
+                    var shouldDelete = true;
+                    oSVersionData.chartData[i][_name] = oSVersionData.chartData[i][_name].replace(/:/g, ".");
+                    if(reg.test(oSVersionData.chartData[i][_name])){
+                        shouldDelete = false;
+                        oSVersionData.chartData[i][_name] = oSVersionData.chartData[i][_name].replace(reg, "");
+                    }
+                    else if(countlyMetric.checkOS && countlyMetric.checkOS(osSegmentation, oSVersionData.chartData[i][_name])){
+                        shouldDelete = false;
+                    }
+                    if(shouldDelete)
+                        delete oSVersionData.chartData[i];
+                }
+            }
+        
+            oSVersionData.chartData = _.compact(oSVersionData.chartData);
+        
+            var platformVersionNames = _.pluck(oSVersionData.chartData, _name),
+                platformNames = [];
+        
+            var sum = _.reduce(platformVersionTotal, function (memo, num) {
+                return memo + num;
+            }, 0);
+        
+            for (var i = 0; i < platformVersionNames.length; i++) {
+                var percent = (platformVersionTotal[i] / sum) * 100;
+        
+                chartData2[chartData2.length] = {data:[
+                    [0, platformVersionTotal[i]]
+                ], label:platformVersionNames[i].replace(((countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()]) ? countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()].name : osSegmentation) + " ", "")};
+            }
+        
+            oSVersionData.chartDP = {};
+            oSVersionData.chartDP.dp = chartData2;
+            oSVersionData.os = [];
+        
+            if (_os && _os.length > 1) {
+                for (var i = 0; i < _os.length; i++) {
+                    //if (_os[i] != osSegmentation) {
+                    //    continue;
+                    //}
+        
+                    oSVersionData.os.push({
+                        "name":_os[i],
+                        "class":_os[i].toLowerCase()
+                    });
+                }
+            }
+        
+            return oSVersionData;
+        };
 	
 		function setMeta() {
 			if (_Db['meta']) {
@@ -688,7 +991,7 @@ $.extend(Template.prototype, {
             e.stopPropagation();
         });
 
-        $("#content-container").on("click", ".select-items .item", function () {
+        $("#content-container").on("click", ".cly-text-select .select-items .item", function () {
             var selectedItem = $(this).parents(".cly-text-select").find(".text");
             selectedItem.text($(this).text());
             selectedItem.data("value", $(this).data("value"));
@@ -737,46 +1040,11 @@ $.extend(Template.prototype, {
         });
     };
 
-    CountlyHelpers.initializeHugeDropdown = function () {
-        var dropdownHideFunc;
-
-        $("#content-container").on("mouseenter", ".cly-huge-dropdown-activator", function (e) {
-            clearInterval(dropdownHideFunc);
-
-            var target = $(this).next(".cly-huge-dropdown");
-
-            target.trigger("huge-dropdown-init");
-            target.find(".scroll").slimScroll({
-                height:'100%',
-                start:'top',
-                wheelStep:10,
-                position:'right',
-                disableFadeOut:true
-            });
-
-            target.find(".button-container .title").text($(this).text());
-            target.fadeIn("slow");
-        });
-
-        $("#content-container").on("mouseleave", ".cly-huge-dropdown", function (e) {
-            var target = $(this);
-            dropdownHideFunc = setTimeout(function() { target.fadeOut("fast") }, 500);
-        });
-
-        $("#content-container").on("mouseenter", ".cly-huge-dropdown", function (e) {
-            clearInterval(dropdownHideFunc);
-        });
-
-        $("#content-container").on("close", ".cly-huge-dropdown", function (e) {
-            $(this).fadeOut("fast");
-        });
-    };
-
     function revealDialog(dialog) {
         $("body").append(dialog);
 
-        var dialogHeight = dialog.find('.content').length && dialog.find('.content').outerHeight() > 0 ? dialog.find('.content').outerHeight() + 14 : dialog.outerHeight()+5,
-            dialogWidth = dialog.outerWidth()+5;
+        var dialogHeight = dialog.height(),
+            dialogWidth = dialog.outerWidth() + 2;
 
         dialog.css({
             "height":dialogHeight,
@@ -790,9 +1058,13 @@ $.extend(Template.prototype, {
     }
 	
 	function changeDialogHeight(dialog, animate) {
-        var dialogHeight = dialog.find('.content').length && dialog.find('.content').outerHeight() > 0 ? dialog.find('.content').outerHeight() + 14 : dialog.height() + 14,
+        var dialogHeight = 0,
             dialogWidth = dialog.width(),
             maxHeight = $("#sidebar").height() - 40;
+
+        dialog.children().each(function(){
+            dialogHeight += $(this).outerHeight(true);
+        });
 
         if (dialogHeight > maxHeight) {
             dialog[animate ? 'animate' : 'css']({
@@ -1048,198 +1320,6 @@ window.UserView = countlyView.extend({
             countlyCommon.drawTimeGraph(userDP.chartDP, "#dashboard-graph");
             CountlyHelpers.refreshTable(self.dtable, userDP.chartData);
 
-            app.localize();
-        });
-    }
-});
-
-window.AllAppsView = countlyView.extend({
-	selectedView:"#draw-total-sessions",
-	selectedApps: {"all":true},
-	selectedCount: 0,
-    getTrendIcon: function(trend) {
-        if (trend == 'u') {
-            return '<i class="material-icons up">trending_up</i>';
-        } else if (trend == 'd') {
-            return '<i class="material-icons down">trending_down</i>';
-        }
-    },
-	initialize:function () {
-        this.template = Handlebars.compile($("#template-allapps").html());
-    },
-    beforeRender: function() {
-        return $.when(countlyAllApps.initialize()).then(function () {});
-    },
-	pageScript:function () {
-        $(".widget-content .inner").click(function () {
-            $(".big-numbers").removeClass("active");
-            $(".big-numbers .select").removeClass("selected");
-            $(this).parent(".big-numbers").addClass("active");
-            $(this).find('.select').addClass("selected");
-        });
-
-        var self = this;
-        $(".big-numbers .inner").click(function () {
-            var elID = $(this).find('.select').attr("id");
-
-            if (self.selectedView == "#" + elID) {
-                return true;
-            }
-
-            self.selectedView = "#" + elID;
-            self.drawGraph();
-        });
-
-        app.localize();
-    },
-    drawGraph:function() {
-        var sessionDP = [];
-        var sessions = countlyAllApps.getSessionData();
-        var data, color;
-        var cnt = 0;
-        for(var i in this.selectedApps){
-            try{
-                data = sessions[i][this.selectedView];
-                color = countlyCommon.GRAPH_COLORS[cnt];
-                if(i == "all")
-                    sessionDP.push({data:data.data, label:jQuery.i18n.map["allapps.title"], color:color});
-                else
-                    sessionDP.push({data:data.data, label:countlyGlobal["apps"][i].name, color:color});
-                $("#"+i+" .color").css("background-color", color);
-                cnt++;
-            }
-            catch(err){
-
-            }
-        }
-        _.defer(function () {
-            countlyCommon.drawTimeGraph(sessionDP, "#dashboard-graph");
-        });
-    },
-    renderCommon:function (isRefresh) {
-        var appData = countlyAllApps.getData();
-
-        this.templateData = {
-            "page-title":jQuery.i18n.map["allapps.title"],
-            "logo-class":"platforms",
-            "usage":[
-                {
-                    "title":jQuery.i18n.map["common.total-sessions"],
-                    "data":0,
-                    "id":"draw-total-sessions",
-                    "help":"dashboard.total-sessions"
-                },
-                {
-                    "title":jQuery.i18n.map["common.total-users"],
-                    "data":0,
-                    "id":"draw-total-users",
-                    "help":"dashboard.total-users"
-                },
-                {
-                    "title":jQuery.i18n.map["common.new-users"],
-                    "data":0,
-                    "id":"draw-new-users",
-                    "help":"dashboard.new-users"
-                },
-                {
-                    "title":jQuery.i18n.map["dashboard.time-spent"],
-                    "data":0,
-                    "id":"draw-total-time-spent",
-                    "help":"dashboard.total-time-spent"
-                },
-                {
-                    "title":jQuery.i18n.map["dashboard.avg-time-spent"],
-                    "data":0,
-                    "id":"draw-time-spent",
-                    "help":"dashboard.avg-time-spent2"
-                },
-                {
-                    "title":jQuery.i18n.map["dashboard.avg-reqs-received"],
-                    "data":0,
-                    "id":"draw-avg-events-served",
-                    "help":"dashboard.avg-reqs-received"
-                }
-            ]
-        };
-        var self = this;
-        if (!isRefresh) {
-            $(this.el).html(this.template(this.templateData));
-            $(this.selectedView).parents(".big-numbers").addClass("active");
-            this.pageScript();
-            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "aaData": appData,
-                "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
-                    $(nRow).attr("id", aData._id);
-                },
-                "aoColumns": [
-                    { "mData": function(row, type){if(type == "display") { return row.name + "<div class='color'></div>"; } else { return row.name; } }, "sType":"string", "sTitle": jQuery.i18n.map["allapps.app-name"], "sClass": "break" },
-                    { "mData": function(row, type) { if (type == "display") { return self.getTrendIcon(row.sessions.trend) +  row.sessions.total; } else { return row.sessions.total; } }, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-sessions"] },
-                    { "mData": function(row, type) { if (type == "display") { return self.getTrendIcon(row.users.trend) +  row.users.total; } else { return row.users.total; } }, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-users"] },
-                    { "mData": function(row, type) { if (type == "display") { return self.getTrendIcon(row.newusers.trend) +  row.newusers.total; } else { return row.newusers.total; } }, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.new-users"] },
-                    { "mData": function(row, type) { if (type == "display") { return self.getTrendIcon(row.duration.trend) +  countlyCommon.timeString(row.duration.total); } else { return row.duration.total; } }, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.total-duration"] },
-                    { "mData": function(row, type) { if (type == "display") { return self.getTrendIcon(row.avgduration.trend) +  countlyCommon.timeString(row.avgduration.total); } else { return row.avgduration.total; } }, "sType":"numeric", "sTitle": jQuery.i18n.map["allapps.average-duration"] }
-                ]
-            }));
-            this.drawGraph();
-            $(".dataTable-bottom").append("<div class='dataTables_info' style='float: right;'>"+jQuery.i18n.map["allapps.maximum-items"]+" (10)</div>")
-
-            $(".d-table").stickyTableHeaders();
-
-            $('.allapps tbody').on("click", "tr", function (event){
-                var td = $(event.target).closest("td");
-                var row = $(this);
-
-                if(self.selectedApps[row.attr("id")]){
-                    row.find(".check").removeClass("fa fa-check").addClass("fa fa-unchecked");
-                    row.find(".color").css("background-color", "transparent");
-                    delete self.selectedApps[row.attr("id")];
-                    if(row.attr("id") != "all")
-                        self.selectedCount--;
-                    if(self.selectedCount==0){
-                        $("#empty-graph").show();
-                        $(".big-numbers").removeClass("active");
-                        $(".big-numbers .select").removeClass("selected");
-                    }
-
-                }
-                else if(self.selectedCount < 10 || row.attr("id") == "all"){
-                    if(self.selectedCount==0){
-                        $("#empty-graph").hide();
-                        $(self.selectedView).parents(".big-numbers").addClass("active");
-                    }
-                    if(row.attr("id") == "all"){
-                        $(".check").removeClass("fa fa-check").addClass("fa fa-unchecked");
-                        $('.d-table').find(".color").css("background-color", "transparent");
-                        self.selectedApps = {};
-                        self.selectedCount = 0;
-                    }
-                    else{
-                        if(self.selectedApps["all"]){
-                            $(".d-table #all .check").removeClass("fa fa-check").addClass("fa fa-unchecked");
-                            $('.d-table #all').find(".color").css("background-color", "transparent");
-                            delete self.selectedApps["all"];
-                        }
-                        self.selectedCount++;
-                    }
-                    row.find(".check").removeClass("fa fa-unchecked").addClass("fa fa-check");
-                    self.selectedApps[row.attr("id")] = true;
-                }
-                self.drawGraph();
-            });
-        }
-    },
-    dateChanged:function () {
-        var self = this;
-        $.when(countlyAllApps.initialize()).then(function () {
-            if (app.activeView != self) {
-                return false;
-            }
-            self.renderCommon(true);
-            newPage = $("<div>" + self.template(self.templateData) + "</div>");
-
-            var appData = countlyAllApps.getData();
-            CountlyHelpers.refreshTable(self.dtable, appData);
-            self.drawGraph();
             app.localize();
         });
     }
@@ -1601,7 +1681,7 @@ window.DeviceView = countlyView.extend({
 });
 
 window.PlatformView = countlyView.extend({
-    activePlatform:null,
+    activePlatform:{},
     beforeRender: function() {
         return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("platforms"), countlyTotalUsers.initialize("platform_versions")).then(function () {});
     },
@@ -1613,7 +1693,7 @@ window.PlatformView = countlyView.extend({
     renderCommon:function (isRefresh) {
         var self = this;
         var platformData = countlyDeviceDetails.getPlatformData();
-
+        platformData.chartData.sort(function(a,b) {return (a.os_ > b.os_) ? 1 : ((b.os_ > a.os_) ? -1 : 0);});
         var chartHTML = "";
 
         if (platformData && platformData.chartDP && platformData.chartDP.dp && platformData.chartDP.dp.length) {
@@ -1623,14 +1703,26 @@ window.PlatformView = countlyView.extend({
                 chartHTML += '<div class="hsb-container"><div class="label">'+ platformData.chartDP.dp[i].label +'</div><div class="chart"><svg id="hsb-platform'+ i +'"></svg></div></div>';
             }
         }
+        
+        if(!this.activePlatform[countlyCommon.ACTIVE_APP_ID])
+            this.activePlatform[countlyCommon.ACTIVE_APP_ID] = (platformData.chartData[0]) ? platformData.chartData[0].os_ : "";
+        
+        var segments = [];
+        for(var i = 0; i < platformData.chartData.length; i++){
+            segments.push({name:platformData.chartData[i].os_, value:platformData.chartData[i].origos_})
+        }
 
         this.templateData = {
             "page-title":jQuery.i18n.map["platforms.title"],
+            "segment-title":jQuery.i18n.map["platforms.table.platform-version-for"],
             "logo-class":"platforms",
             "chartHTML": chartHTML,
+            "isChartEmpty": (chartHTML)? false : true,
             "chart-helper":"platform-versions.chart",
             "table-helper":"",
-            "two-tables": true
+            "two-tables": true,
+            "active-segment": this.activePlatform[countlyCommon.ACTIVE_APP_ID],
+            "segmentation": segments
         };
 
         if (!isRefresh) {
@@ -1642,13 +1734,6 @@ window.PlatformView = countlyView.extend({
                 "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
                     $(nRow).data("name", aData.origos_);
                     $(nRow).addClass("os-rows");
-                    if (self.activePlatform && self.activePlatform == aData.origos_) {
-                        $(nRow).addClass("active");
-                    }
-                    else if(!self.activePlatform){
-                        self.activePlatform = aData.origos_;
-                        $(nRow).addClass("active");
-                    }
                 },
                 "aoColumns": [
                     { "mData": "os_", "sTitle": jQuery.i18n.map["platforms.table.platform"] },
@@ -1657,12 +1742,9 @@ window.PlatformView = countlyView.extend({
                     { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
                 ]
             }));
-
-            $('#dataTableOne tbody').on("click", "tr", function (){
-                self.activePlatform = $(this).data("name");
-                $(".os-rows").removeClass("active");
-                $(this).addClass("active");
-
+            
+            $(".segmentation-widget .segmentation-option").on("click", function () {
+                self.activePlatform[countlyCommon.ACTIVE_APP_ID] = $(this).data("value");
                 self.refresh();
             });
 
@@ -1676,7 +1758,7 @@ window.PlatformView = countlyView.extend({
                 }
             }
 
-            var oSVersionData = countlyDeviceDetails.getOSVersionData(this.activePlatform);
+            var oSVersionData = countlyDeviceDetails.getOSVersionData(this.activePlatform[countlyCommon.ACTIVE_APP_ID]);
 
             this.dtableTwo = $('#dataTableTwo').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": oSVersionData.chartData,
@@ -1699,7 +1781,7 @@ window.PlatformView = countlyView.extend({
             }
             self.renderCommon(true);
 
-            var oSVersionData = countlyDeviceDetails.getOSVersionData(self.activePlatform),
+            var oSVersionData = countlyDeviceDetails.getOSVersionData(self.activePlatform[countlyCommon.ACTIVE_APP_ID]),
                 platformData = countlyDeviceDetails.getPlatformData(),
                 newPage = $("<div>" + self.template(self.templateData) + "</div>");
 
@@ -1999,7 +2081,7 @@ window.ManageAppsView = countlyView.extend({
 
             $("#app-edit-id").val(appId);
             $("#view-app").find(".widget-header .title").text(countlyGlobal['apps'][appId].name);
-            $("#app-edit-name").find(".read").text(countlyGlobal['apps'][appId].name);
+            $("#app-edit-name").find(".read span").text(countlyGlobal['apps'][appId].name);
             $("#app-edit-name").find(".edit input").val(countlyGlobal['apps'][appId].name);
             $("#app-edit-key").find(".read").text(countlyGlobal['apps'][appId].key);
             $("#app-edit-key").find(".edit input").val(countlyGlobal['apps'][appId].key);
@@ -2029,6 +2111,60 @@ window.ManageAppsView = countlyView.extend({
                     }
                 }
             }
+            
+            function joinUsers(users){
+                var ret = "";
+                if(users && users.length){
+                    for(var i = 0; i < users.length; i++){
+                        if(users[i].full_name && users[i].full_name != "")
+                            ret += users[i].full_name + ", ";
+                        else if(users[i].username && users[i].username != "")
+                            ret += users[i].username + ", ";
+                        else
+                            ret += users[i]._id + ", ";
+                    }
+                    ret = ret.substring(0, ret.length - 2);
+                }
+                return ret;
+            }
+            $("#app_details").off("click").on("click", function(){
+                var dialog = CountlyHelpers.loading(jQuery.i18n.map["common.loading"]);
+                $.ajax({
+                    type:"GET",
+                    url:countlyCommon.API_PARTS.apps.r + '/details',
+                    data:{
+                        app_id:appId,
+                        api_key:countlyGlobal['member'].api_key
+                    },
+                    dataType:"json",
+                    success:function (result) {
+                        dialog.remove();
+                        if(result && result.app){
+                            var table = "<table class='d-table' cellpadding='0' cellspacing='0'>";
+                            table += "<colgroup><col width='200px'><col width='155px'><col width='100%'></colgroup>";
+                            //app creator
+                            table += "<tr><th colspan='3'>"+jQuery.i18n.map["management-applications.app-details"]+"</th></tr>";
+                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-creator"]+"</td><td class='details-value' colspan='2'>"+((result.app.owner == "") ? jQuery.i18n.map["common.unknown"] : result.app.owner) +"</td></tr>";
+                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-created-at"]+"</td><td class='details-value' colspan='2'>"+((result.app.created_at == 0)? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.created_at))+"</td></tr>";
+                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-edited-at"]+"</td><td class='details-value' colspan='2'>"+((result.app.edited_at == 0)? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.edited_at))+"</td></tr>";
+                            table += "<tr><td>"+jQuery.i18n.map["management-applications.app-last-data"]+"</td><td class='details-value' colspan='2'>"+((result.app.last_data == 0)? jQuery.i18n.map["common.unknown"] : countlyCommon.formatTimeAgo(result.app.last_data))+"</td></tr>";
+                            table += "<tr><td rowspan='3'>"+jQuery.i18n.map["management-applications.app-users"]+"</td>";
+                            table += "<td class='second-header'>"+jQuery.i18n.map["management-applications.global_admins"]+"</td><td class='details-value'>"+joinUsers(result.global_admin)+"</td></tr>";
+                            table += "<tr><td class='second-header'>"+jQuery.i18n.map["management-applications.admins"]+"</td><td class='details-value'>"+joinUsers(result.admin)+"</td></tr>";
+                            table += "<tr><td class='second-header'>"+jQuery.i18n.map["management-applications.users"]+"</td><td class='details-value'>"+joinUsers(result.user)+"</td></tr>";
+                            CountlyHelpers.popup(table+"</table><div class='icon-button light btn-header btn-close'>"+jQuery.i18n.map["common.close"]+"</div>", "app_details_table", true);
+                            $(".btn-close").off("click").on("click", function(){$("#overlay").trigger('click');});
+                        }
+                        else{
+                            CountlyHelpers.alert(jQuery.i18n.map["management-applications.application-no-details"], "red");
+                        }
+                    },
+                    error: function(){
+                        dialog.remove();
+                        CountlyHelpers.alert(jQuery.i18n.map["management-applications.application-no-details"], "red");
+                    }
+                });
+            });
         }
 
         function initCountrySelect(parent, countryCode, timezoneText, timezone) {
@@ -2380,20 +2516,26 @@ window.ManageAppsView = countlyView.extend({
 
             $(this).addClass("disabled");
 
+            var args = {
+                app_id:appId,
+                name:appName,
+                type:$("#app-edit-type .cly-select .text").data("value") + '',
+                category:$("#app-edit-category .cly-select .text").data("value") + '',
+                key:app_key,
+                timezone:$("#app-edit-timezone #app-timezone").val(),
+                country:$("#app-edit-timezone #app-country").val(),
+                checksum_salt:$("#app-edit-salt .edit input").val()
+            };
+
+            app.appObjectModificators.forEach(function(mode){
+                mode(args);
+            });
+
             $.ajax({
                 type:"GET",
                 url:countlyCommon.API_PARTS.apps.w + '/update',
                 data:{
-                    args:JSON.stringify({
-                        app_id:appId,
-                        name:appName,
-                        type:$("#app-edit-type .cly-select .text").data("value") + '',
-                        category:$("#app-edit-category .cly-select .text").data("value") + '',
-                        key:app_key,
-                        timezone:$("#app-edit-timezone #app-timezone").val(),
-                        country:$("#app-edit-timezone #app-country").val(),
-                        checksum_salt:$("#app-edit-salt .edit input").val()
-                    }),
+                    args:JSON.stringify(args),
                     api_key:countlyGlobal['member'].api_key
                 },
                 dataType:"jsonp",
@@ -2662,17 +2804,59 @@ window.ManageUsersView = countlyView.extend({
                         $(nRow).attr("id", aData._id);
                     },
                     "aoColumns": [
-                        { "mData": function(row, type){return row.full_name;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.full-name"]},
+                        { "mData": function(row, type){return row.full_name;}, "sType":"string", "sExport":"userinfo", "sTitle": jQuery.i18n.map["management-users.full-name"]},
                         { "mData": function(row, type){return row.username;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.username"]},
                         { "mData": function(row, type){if(row.global_admin) return jQuery.i18n.map["management-users.global-admin"]; else if(row.admin_of && row.admin_of.length) return jQuery.i18n.map["management-users.admin"]; else if(row.user_of && row.user_of.length)  return jQuery.i18n.map["management-users.user"]; else return jQuery.i18n.map["management-users.no-role"]}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.no-role"]},
                         { "mData": function(row, type){return row.email;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.email"]},
-                        { "mData": function(row, type){if(type == "display") return (row["created_at"]) ? countlyCommon.formatTimeAgo(row["created_at"]) : ""; else return (row["created_at"]) ? row["created_at"] : 0;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.created"]},
-                        { "mData": function(row, type){if(type == "display") return (row["last_login"]) ? countlyCommon.formatTimeAgo(row["last_login"]) : jQuery.i18n.map["common.never"]; else return (row["last_login"]) ? row["last_login"] : 0;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.last_login"]}
+                        { "mData": function(row, type){if(type == "display") return (row["created_at"]) ? countlyCommon.formatTimeAgo(row["created_at"]) : ""; else return (row["created_at"]) ? row["created_at"] : 0;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["management-users.created"]},
+                        { "mData": function(row, type){if(type == "display") return (row["last_login"]) ? countlyCommon.formatTimeAgo(row["last_login"]) : jQuery.i18n.map["common.never"]; else return (row["last_login"]) ? row["last_login"] : 0;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["management-users.last_login"]}
                     ]
                 }));
-                self.dtable.fnSort( [ [0,'desc'] ] );
+                self.dtable.fnSort( [ [0,'asc'] ] );
                 self.dtable.stickyTableHeaders();
                 CountlyHelpers.expandRows(self.dtable, self.editUser, self);
+                app.addDataExport("userinfo", function(){
+                    var ret = [];
+                    var elem;
+                    for(var i = 0; i < tableData.length; i++){
+                        elem = {};
+                        elem[jQuery.i18n.map["management-users.full-name"]] = tableData[i].full_name;
+                        elem[jQuery.i18n.map["management-users.username"]] = tableData[i].username;
+                        elem[jQuery.i18n.map["management-users.email"]] = tableData[i].email;
+                        elem[jQuery.i18n.map["management-users.global-admin"]] = tableData[i].global_admin;
+                        elem[jQuery.i18n.map["management-users.lock-account"]] = tableData[i].locked;
+                        
+                        if(tableData[i].created_at == 0)
+                            elem[jQuery.i18n.map["management-users.created"]] = jQuery.i18n.map["common.unknown"];
+                        else
+                            elem[jQuery.i18n.map["management-users.created"]] = moment(parseInt(tableData[i].created_at)*1000).format("ddd, D MMM YYYY HH:mm:ss");
+                        
+                        if(tableData[i].last_login == 0)
+                            elem[jQuery.i18n.map["management-users.last_login"]] = jQuery.i18n.map["common.unknown"];
+                        else
+                            elem[jQuery.i18n.map["management-users.last_login"]] = moment(parseInt(tableData[i].last_login)*1000).format("ddd, D MMM YYYY HH:mm:ss");
+
+                        if(tableData[i].admin_of && tableData[i].admin_of.length)
+                            elem[jQuery.i18n.map["management-users.admin-of"]] = CountlyHelpers.appIdsToNames(tableData[i].admin_of);
+                        else
+                            elem[jQuery.i18n.map["management-users.admin-of"]] = "";
+                        
+                        if(tableData[i].user_of && tableData[i].user_of.length)
+                            elem[jQuery.i18n.map["management-users.user-of"]] = CountlyHelpers.appIdsToNames(tableData[i].user_of);
+                        else
+                            elem[jQuery.i18n.map["management-users.user-of"]] = "";
+                        
+                        if(typeof pathsToSectionNames !== "undefined"){
+                            if(tableData[i].restrict && tableData[i].restrict.length)
+                                elem[jQuery.i18n.map["restrict.restricted-sections"]] = pathsToSectionNames(tableData[i].restrict);
+                            else
+                                elem[jQuery.i18n.map["restrict.restricted-sections"]] = "";
+                        }
+                        
+                        ret.push(elem);
+                    }
+                    return ret;
+                });
                 
                 self.initTable();
                 $("#add-user-mgmt").on("click", function(){
@@ -3470,17 +3654,17 @@ window.EventsView = countlyView.extend({
         if (eventData.tableColumns[2]) {
             if(eventData.tableColumns[2] == jQuery.i18n.map["events.table.dur"]){
                 aaColumns.push({"mData":"dur", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":eventData.tableColumns[2]});
-                aaColumns.push({"mData":function(row, type){if(row.c == 0 || row.dur == 0) return 0; else return (row.dur/row.c);}, sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":jQuery.i18n.map["events.table.avg-dur"]});
+                aaColumns.push({"sClass": "dynamic-col", "mData":function(row, type){if(row.c == 0 || row.dur == 0) return 0; else return (row.dur/row.c);}, sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":jQuery.i18n.map["events.table.avg-dur"]});
             }
             else{
                 aaColumns.push({"mData":"s", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":eventData.tableColumns[2]});
-                aaColumns.push({"mData":function(row, type){if(row.c == 0 || row.s == 0) return 0; else return (row.s/row.c);}, sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":jQuery.i18n.map["events.table.avg-sum"]});
+                aaColumns.push({"sClass": "dynamic-col","mData":function(row, type){if(row.c == 0 || row.s == 0) return 0; else return (row.s/row.c);}, sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":jQuery.i18n.map["events.table.avg-sum"]});
             }
         }
         
         if (eventData.tableColumns[3]) {
             aaColumns.push({"mData":"dur", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":eventData.tableColumns[3]});
-            aaColumns.push({"mData":function(row, type){if(row.c == 0 || row.dur == 0) return 0; else return (row.dur/row.c);}, sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":jQuery.i18n.map["events.table.avg-dur"]});
+            aaColumns.push({"sClass": "dynamic-col","mData":function(row, type){if(row.c == 0 || row.dur == 0) return 0; else return (row.dur/row.c);}, sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle":jQuery.i18n.map["events.table.avg-dur"]});
         }
         
         this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
@@ -3491,7 +3675,7 @@ window.EventsView = countlyView.extend({
         $(".d-table").stickyTableHeaders();
     },
     getColumnCount:function(){
-        return $(".dataTable").find("thead th").length;
+        return $(".dataTable").find("thead th:not(.dynamic-col)").length;
     },
     renderCommon:function (isRefresh) {
         var eventData = countlyEvent.getEventData(),
@@ -3865,9 +4049,6 @@ var AppRouter = Backbone.Router.extend({
     users:function () {
         this.renderWhenReady(this.userView);
     },
-	allapps:function () {
-        this.renderWhenReady(this.allAppsView);
-    },
     loyalty:function () {
         this.renderWhenReady(this.loyaltyView);
     },
@@ -3897,6 +4078,10 @@ var AppRouter = Backbone.Router.extend({
         // If there is an active view call its destroy function to perform cleanups before a new view renders
         if (this.activeView) {
             this.activeView.destroy();
+        }
+
+        if (window.components && window.components.slider && window.components.slider.instance) {
+            window.components.slider.instance.close();
         }
 
         this.activeView = viewName;
@@ -3949,11 +4134,15 @@ var AppRouter = Backbone.Router.extend({
         init: function() {
             setTimeout(function() {
                 $("#sidebar-menu").find(".item").removeClass("active menu-active");
-
                 var selectedMenu = $($("#sidebar-menu").find("a[href='#" + Backbone.history.fragment + "']"));
                
-                if(!selectedMenu.length)
-                    selectedMenu = $($("#sidebar-menu").find("a[href='#/" + (Backbone.history.fragment.split("/")[1] || "") + "']"));
+                if(!selectedMenu.length){
+                    var parts = Backbone.history.fragment.split("/");
+                    selectedMenu = $($("#sidebar-menu").find("a[href='#/" + (parts[1] || "") + "']"));
+                    if(!selectedMenu.length){
+                        selectedMenu = $($("#sidebar-menu").find("a[href='#/" + (parts[1]+"/"+parts[2] || "") + "']"));
+                    }
+                }
                 
                 var selectedSubmenu = selectedMenu.parents(".sidebar-submenu");
 
@@ -3990,9 +4179,20 @@ var AppRouter = Backbone.Router.extend({
                 }
 
                 function addText() {
+                    var mainMenuText = $(el.prev()[0]).find(".text").text();
+
                     $(".menu-title").remove();
-                    var menuTitle = $("<div class='menu-title'></div>").text($(el.prev()[0]).text()).prepend("<i class='submenu-close ion-close'></i>");
+                    var menuTitle = $("<div class='menu-title'></div>").text(mainMenuText).prepend("<i class='submenu-close ion-close'></i>");
                     el.prepend(menuTitle);
+
+                    // Try setting submenu title once again if it was empty
+                    // during previous try
+                    if (!mainMenuText) {
+                        setTimeout(function() {
+                            $(".menu-title").text($(el.prev()[0]).find(".text").text());
+                            $(".menu-title").prepend("<i class='submenu-close ion-close'></i>")
+                        }, 1000);
+                    }
                 }
             }
         }
@@ -4000,14 +4200,15 @@ var AppRouter = Backbone.Router.extend({
     initialize:function () { //initialize the dashboard, register helpers etc.
 		this.appTypes = {};
 		this.pageScripts = {};
+        this.dataExports = {};
         this.appSwitchCallbacks = [];
         this.appManagementSwitchCallbacks = [];
+        this.appObjectModificators = [];
 		this.refreshScripts = {};
         this.dashboardView = new DashboardView();
         this.sessionView = new SessionView();
         this.countriesView = new CountriesView();
         this.userView = new UserView();
-		this.allAppsView = new AllAppsView();
         this.loyaltyView = new LoyaltyView();
         this.deviceView = new DeviceView();
         this.platformView = new PlatformView();
@@ -4126,7 +4327,7 @@ var AppRouter = Backbone.Router.extend({
 
             CountlyHelpers.initializeSelect();
             CountlyHelpers.initializeTextSelect();
-            CountlyHelpers.initializeHugeDropdown();
+            CountlyHelpers.initializeMultiSelect();
 			
 			if(parseInt(countlyGlobal.config["session_timeout"])){
 				var minTimeout, tenSecondTimeout, logoutTimeout, actionTimeout;
@@ -4247,6 +4448,8 @@ var AppRouter = Backbone.Router.extend({
                 if (self.activeAppKey == appKey) {
                     sidebarApp.removeClass("active");
                     $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack'});
+                    sidebarApp.find(".text").text(appName);
+                    sidebarApp.find(".logo").css("background-image", appImage);
                     return false;
                 }
 
@@ -4470,7 +4673,6 @@ var AppRouter = Backbone.Router.extend({
                         self.origLang = JSON.stringify(jQuery.i18n.map);
                         $.when(countlyLocation.changeLanguage()).then(function () {
                             self.activeView.render();
-                            self.pageScript();
                         });
                     }
                 });
@@ -5060,6 +5262,21 @@ var AppRouter = Backbone.Router.extend({
 
             return ((x < y) ?  1 : ((x > y) ? -1 : 0));
         };
+        
+        jQuery.fn.dataTableExt.oSort['format-ago-asc']  = function(x, y) {
+            return x-y;
+        };
+
+        jQuery.fn.dataTableExt.oSort['format-ago-desc']  = function(x, y) {
+            return y-x;
+        };
+        
+        function getFileName(ext){
+            var name = "countly";
+            if($(".widget-header .title").length)
+                name = $(".widget-header .title").first().text();
+            return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase())+"."+ext;
+        }
 
         $.extend(true, $.fn.dataTable.defaults, {
             "sDom": '<"dataTable-top"lfpT>t<"dataTable-bottom"i>',
@@ -5067,7 +5284,7 @@ var AppRouter = Backbone.Router.extend({
             "bLengthChange":true,
             "bPaginate":true,
             "sPaginationType": "four_button",
-            "iDisplayLength": 50,
+            "iDisplayLength": 50,//(store.get("iDisplayLength")) ? parseInt(store.get("iDisplayLength")) : 50,
             "bDestroy": true,
             "bDeferRender": true,
             "oLanguage": {
@@ -5089,17 +5306,47 @@ var AppRouter = Backbone.Router.extend({
                             var tableCols = $(nButton).parents(".dataTables_wrapper").find(".dataTable").dataTable().fnSettings().aoColumns,
                                 tableData = this.fnGetTableData(oConfig).split(/\r\n|\r|\n/g).join('","').split('","'),
                                 retStr = "";
+                                
+                            //check if exported data needs to be processed by some other lib    
+                            if(tableCols[0].sExport && app.dataExports[tableCols[0].sExport]){
+                                
+                                //get data to export
+                                var data = app.dataExports[tableCols[0].sExport]();
+                                
+                                //get all columns
+                                var cols = [];
+                                for(var i = 0; i < data.length; i++){
+                                    for(var col in data[i]){
+                                         if(cols.indexOf(col) === -1)
+                                             cols.push(col);
+                                        
+                                     }
+                                }
+                                
+                                //generate data in the needed format
+                                var tdata = JSON.parse(JSON.stringify(cols));
+                                for(var i = 0; i < data.length; i++){
+                                    for(var j = 0; j < cols.length; j++){
+                                        tdata.push('"'+(data[i][cols[j]] || ""));
+                                    }
+                                }
+                                
+                                tableCols = cols;
+                                tableData = tdata;
+                            }
 
                             for (var i = 0;  i < tableData.length; i++) {
-                                tableData[i] = tableData[i].replace("\"", "");
+                                tableData[i] = tableData[i].replace(/^"/, "");
 
                                 if (i >= tableCols.length) {
                                     var colIndex = i % tableCols.length;
-
+                                     
                                     if (tableCols[colIndex].sType == "formatted-num") {
                                         tableData[i] = tableData[i].replace(/,/g, "");
                                     } else if (tableCols[colIndex].sType == "percent") {
                                         tableData[i] = tableData[i].replace("%", "");
+                                    } else if (tableCols[colIndex].sType == "format-ago" || tableCols[colIndex].sType == "event-timeline") {
+                                        tableData[i] = tableData[i].split("|").pop();
                                     }
                                 }
 
@@ -5109,7 +5356,7 @@ var AppRouter = Backbone.Router.extend({
                                     retStr += "\"" + tableData[i] + "\", ";
                                 }
                             }
-
+                            flash.setFileName( getFileName("csv") );
                             this.fnSetText(flash, retStr);
                         }
                     },
@@ -5120,6 +5367,34 @@ var AppRouter = Backbone.Router.extend({
                             var tableCols = $(nButton).parents(".dataTables_wrapper").find(".dataTable").dataTable().fnSettings().aoColumns,
                                 tableData = this.fnGetTableData(oConfig).split(/\r\n|\r|\n/g).join('\t').split('\t'),
                                 retStr = "";
+                                
+                            //check if exported data needs to be processed by some other lib    
+                            if(tableCols[0].sExport && app.dataExports[tableCols[0].sExport]){
+                                
+                                //get data to export
+                                var data = app.dataExports[tableCols[0].sExport]();
+                                
+                                //get all columns
+                                var cols = [];
+                                for(var i = 0; i < data.length; i++){
+                                    for(var col in data[i]){
+                                         if(cols.indexOf(col) === -1)
+                                             cols.push(col);
+                                        
+                                     }
+                                }
+                                
+                                //generate data in the needed format
+                                var tdata = JSON.parse(JSON.stringify(cols));
+                                for(var i = 0; i < data.length; i++){
+                                    for(var j = 0; j < cols.length; j++){
+                                        tdata.push(data[i][cols[j]] || "");
+                                    }
+                                }
+                                
+                                tableCols = cols;
+                                tableData = tdata;
+                            }
 
                             for (var i = 0;  i < tableData.length; i++) {
                                 if (i >= tableCols.length) {
@@ -5131,6 +5406,8 @@ var AppRouter = Backbone.Router.extend({
                                         tableData[i] = parseFloat(tableData[i].replace("%", "")).toLocaleString();
                                     } else if (tableCols[colIndex].sType == "numeric") {
                                         tableData[i] = parseFloat(tableData[i]).toLocaleString();
+                                    } else if (tableCols[colIndex].sType == "format-ago" || tableCols[colIndex].sType == "event-timeline") {
+                                        tableData[i] = tableData[i].split("|").pop();
                                     }
                                 }
 
@@ -5140,7 +5417,7 @@ var AppRouter = Backbone.Router.extend({
                                     retStr += tableData[i] + "\t";
                                 }
                             }
-
+                            flash.setFileName( getFileName("xls") );
                             this.fnSetText(flash, retStr);
                         }
                     }
@@ -5173,12 +5450,33 @@ var AppRouter = Backbone.Router.extend({
                         return ($(this).data("help")) ? jQuery.i18n.map[$(this).data("help")] : "";
                     }, fade:true, offset:5, cssClass:'yellow', opacity:1, html:true});
                     tableWrapper.find(".dataTables_length").show();
+                    tableWrapper.find('#dataTables_length_input').bind( 'change.DT', function(e) {
+                        //store.set("iDisplayLength", $(this).val());
+                    });
                 }
                 else{
                     tableWrapper.find(".dataTables_length").hide();
                 }
 
                 //tableWrapper.css({"min-height": tableWrapper.height()});
+            },
+            fnPreDrawCallback: function(oSettings, json) {
+                var tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
+
+                if (tableWrapper.find(".table-placeholder").length == 0) {
+                    var $placeholder = $('<div class="table-placeholder"><div class="top"></div><div class="header"></div></div>');
+                    tableWrapper.append($placeholder);
+                }
+
+                if (tableWrapper.find(".table-loader").length == 0) {
+                    tableWrapper.append("<div class='table-loader'></div>");
+                }
+            },
+            fnDrawCallback: function(oSettings) {
+                var tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
+                tableWrapper.find(".dataTable-bottom").show();
+                tableWrapper.find(".table-placeholder").remove();
+                tableWrapper.find(".table-loader").remove();
             }
         });
 
@@ -5217,7 +5515,7 @@ var AppRouter = Backbone.Router.extend({
                 if (helpers[toLocal[0]]) {
                     localizedValue = helpers[toLocal[0]](jQuery.i18n.map[toLocal[1]]);
                 } else {
-                    localizedValue = jQuery.i18n.prop(toLocal[0], jQuery.i18n.map[toLocal[1]]);
+                    localizedValue = jQuery.i18n.prop(toLocal[0], (toLocal[1])? jQuery.i18n.map[toLocal[1]] : "");
                 }
             } else {
                 localizedValue = jQuery.i18n.map[elem.data("localize")];
@@ -5228,7 +5526,7 @@ var AppRouter = Backbone.Router.extend({
             } else if (elem.is("input[type=button]") || elem.is("input[type=submit]")) {
                 elem.attr("value", localizedValue);
             } else {
-                elem.text(localizedValue);
+                elem.html(localizedValue);
             }
         });
     },
@@ -5268,6 +5566,12 @@ var AppRouter = Backbone.Router.extend({
     addAppManagementSwitchCallback:function(callback){
         this.appManagementSwitchCallbacks.push(callback);
     },
+    addAppObjectModificator:function(callback){
+        this.appObjectModificators.push(callback);
+    },
+    addDataExport:function(name, callback){
+        this.dataExports[name] = callback;
+    },
 	addPageScript:function(view, callback){
 		if(!this.pageScripts[view])
 			this.pageScripts[view] = [];
@@ -5283,6 +5587,9 @@ var AppRouter = Backbone.Router.extend({
             jQuery.i18n.map = JSON.parse(app.origLang);
             if(!refresh){
                 app.main(true);
+                if (window.components && window.components.slider && window.components.slider.instance) {
+                    window.components.slider.instance.close();
+                }
             }
             $("#sidebar-menu .sidebar-menu").hide();
             var type = countlyGlobal["apps"][appId].type;
@@ -5382,7 +5689,6 @@ var AppRouter = Backbone.Router.extend({
                     self.dateToOffset = dateToDate.getTimezoneOffset() * 60000;
                     dateTo.datepicker("setDate", dateToDate);
                     dateFrom.datepicker("option", "maxDate", moment(self.dateToSelected).toDate());
-                    //dateFrom.datepicker("option", "maxDate", moment(self.dateToSelected).subtract("days", 1).toDate());
                 } else {
                     var dateToDate = moment().toDate();
                     self.dateToOffset = dateToDate.getTimezoneOffset() * 60000;
@@ -5416,17 +5722,13 @@ var AppRouter = Backbone.Router.extend({
                 maxDate:moment().toDate(),
                 onSelect:function (selectedDate) {
                     var instance = $(this).data("datepicker"),
-                        date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings),
-                        dateCopy = new Date(date.getTime()),
-                        fromLimit = dateCopy;//moment(dateCopy).subtract("days", 1).toDate();
+                        date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
 
-                    // If limit of the left datepicker is less than the global we store in self
-                    // than we should update the global with the new value
-                    if (fromLimit.getTime() < self.dateFromSelected) {
-                        self.dateFromSelected = fromLimit.getTime();
+                    if (date.getTime() < self.dateFromSelected) {
+                        self.dateFromSelected = date.getTime();
                     }
 
-                    dateFrom.datepicker("option", "maxDate", fromLimit);
+                    dateFrom.datepicker("option", "maxDate", date);
                     self.dateToSelected = date.getTime();
 
                     setSelectedDate();
@@ -5439,17 +5741,13 @@ var AppRouter = Backbone.Router.extend({
                 maxDate:moment().subtract('days', 1).toDate(),
                 onSelect:function (selectedDate) {
                     var instance = $(this).data("datepicker"),
-                        date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings),
-                        dateCopy = new Date(date.getTime()),
-                        toLimit = dateCopy;//moment(dateCopy).add("days", 1).toDate();
+                        date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
 
-                    // If limit of the right datepicker is bigger than the global we store in self
-                    // than we should update the global with the new value
-                    if (toLimit.getTime() > self.dateToSelected) {
-                        self.dateToSelected = toLimit.getTime();
+                    if (date.getTime() > self.dateToSelected) {
+                        self.dateToSelected = date.getTime();
                     }
 
-                    dateTo.datepicker("option", "minDate", toLimit);
+                    dateTo.datepicker("option", "minDate", date);
                     self.dateFromSelected = date.getTime();
 
                     setSelectedDate();
@@ -5471,8 +5769,14 @@ var AppRouter = Backbone.Router.extend({
                 if (!self.dateFromSelected && !self.dateToSelected) {
                     return false;
                 }
+<<<<<<< HEAD
                 //countlyCommon.setPeriod([self.dateFromSelected, self.dateToSelected]);
                 countlyCommon.setPeriod([self.dateFromSelected - self.dateFromOffset, self.dateToSelected - self.dateFromOffset]);
+=======
+
+                var tzCorr = countlyCommon.getOffsetCorrectionForTimestamp(self.dateFromSelected);
+                countlyCommon.setPeriod([self.dateFromSelected - tzCorr, self.dateToSelected - tzCorr]);
+>>>>>>> 540c245e7f619020e0f862386a3c20539e1474af
 
                 self.activeView.dateChanged();
 
@@ -5516,7 +5820,7 @@ var AppRouter = Backbone.Router.extend({
                 }).css('display','block');
             });
 
-            $(document).on('input', "#listof-apps .search input, #listof-plugins .search input", function(e) {
+            $(document).on('input', "#listof-apps .search input", function(e) {
                 var searchText = new RegExp($(this).val().toLowerCase()),
                     searchInside = $(this).parent().next().find(".searchable");
 

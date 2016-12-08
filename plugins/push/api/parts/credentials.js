@@ -1,16 +1,14 @@
 'use strict';
 
-const merge = require('merge'),
-	  fs = require('fs'),
-	  log = require('../../../../api/utils/log.js')('push:p12'),
-	  Platform = require('./pushly.js').Platform,
+const log = require('../../../../api/utils/log.js')('push:credentials'),
+	  Platform = require('./note.js').Platform,
 	  forge = require('node-forge');
 
-let DB_MAP = {
+const DB_MAP = {
 	'messaging-enabled': 'm'
 };
 
-let DB_USER_MAP = {
+const DB_USER_MAP = {
 	'tokens': 'tk',
 	'apn_prod': 'ip',                   // production
 	'apn_0': 'ip',                      // production
@@ -25,184 +23,219 @@ let DB_USER_MAP = {
 	'messages': 'msgs'                  // messages sent
 };
 
-let credentials = function(message, app) {
-	var array = [];
-	for (var i = message.platforms.length - 1; i >= 0; i--) {
-		var platform = message.platforms[i];
+const CRED_TYPE = {
+	[Platform.APNS]: {
+		UNIVERSAL: 'apn_universal',
+		TOKEN: 'apn_p8',
+		DEV: 'apn_dev',
+		PROD: 'apn_prod',
+	},
 
-		if (platform == Platform.APNS) {
-			if (message.test) {
-				if (app.apn && app.apn.universal) {
-					array.push({
-						id: DB_USER_MAP.apn_dev + '.' + app._id,
-						platform: Platform.APNS,
-						platformId: app.apn.id,
-						key: APNCertificatePath(app._id.toString()),
-						passphrase: app.apn.universal.passphrase,
-						gateway: 'api.development.push.apple.com',
-						port: 443
-					});
-					array.push({
-						id: DB_USER_MAP.apn_adhoc + '.' + app._id,
-						platform: Platform.APNS,
-						platformId: app.apn.id,
-						key: APNCertificatePath(app._id.toString()),
-						passphrase: app.apn.universal.passphrase,
-						gateway: 'api.push.apple.com',
-						port: 443
-					});
+	[Platform.GCM]: {
+		GCM: 'gcm'
+	}
+};
+
+class Credentials {
+	constructor (cid) {
+		if (!(this instanceof Credentials)) { return new Credentials(cid); }
+		this._id = cid;
+		// properties loaded from db object:
+		// 		this.platform = Platform.APNS
+		// 		this.type = one of CRED_TYPE[this.platform]
+
+		// 		this.key = '' 		// base64 of APN P12 / P8 or GCM key
+		// 		this.secret = '' 	// passphrase
+	}
+
+	toJSON () {
+		return {
+			_id: this._id,
+			platform: this.platform,
+			type: this.type
+		};
+	}
+
+	divide (test) { 
+		log.d('Dividing %j, test %j', this, test);
+		var CT = CRED_TYPE[this.platform];
+		if (this.platform === Platform.APNS) {
+			if (test === false) {
+				return [CT.UNIVERSAL, CT.TOKEN, CT.PROD].indexOf(this.type) === -1 ? 
+					[] 
+					: [new SubCredentials(this, DB_USER_MAP.apn_prod, false)];
+			} else if (test === true) {
+				if ([CT.UNIVERSAL, CT.TOKEN].indexOf(this.type)) {
+					return [new SubCredentials(this, DB_USER_MAP.apn_dev, true), new SubCredentials(this, DB_USER_MAP.apn_adhoc, true)];
+				} else if (this.type === CT.DEV) {
+					return [new SubCredentials(this, DB_USER_MAP.apn_dev, true)];
 				} else {
-					if (app.apn && app.apn.test) {
-						array.push({
-							id: DB_USER_MAP.apn_dev + '.' + app._id,
-							platform: Platform.APNS,
-							platformId: app.apn.id,
-							key: APNCertificatePath(app._id.toString(), true),
-							passphrase: app.apn.test.passphrase,
-							gateway: 'api.development.push.apple.com',
-							port: 443
-						});
-					}
-					if (app.apn && app.apn.prod) {
-						array.push({
-							id: DB_USER_MAP.apn_adhoc + '.' + app._id,
-							platform: Platform.APNS,
-							platformId: app.apn.id,
-							key: APNCertificatePath(app._id.toString(), false),
-							passphrase: app.apn.prod.passphrase,
-							gateway: 'api.push.apple.com',
-							port: 443
-						});
-					}
-				}
-			} else {
-				if (app.apn && app.apn.universal) {
-					array.push({
-						id: DB_USER_MAP.apn_prod + '.' + app._id,
-						platform: Platform.APNS,
-						platformId: app.apn.id,
-						key: APNCertificatePath(app._id.toString()),
-						passphrase: app.apn.universal.passphrase,
-						gateway: 'api.push.apple.com',
-						port: 443
-					});
-				} else if (app.apn && app.apn.prod) {
-					array.push({
-						id: DB_USER_MAP.apn_prod + '.' + app._id,
-						platform: Platform.APNS,
-						platformId: app.apn.id,
-						key: APNCertificatePath(app._id.toString(), false),
-						passphrase: app.apn.prod.passphrase,
-						gateway: 'api.push.apple.com',
-						port: 443
-					});
+					return [];
 				}
 			}
-		} else {
-			if (app.gcm) {
-				array.push({
-					id: (message.test ? DB_USER_MAP.gcm_test : DB_USER_MAP.gcm_prod) + '.' + app._id,
-					platform: Platform.GCM,
-					platformId: app.gcm.id,
-					key: app.gcm.key,
-				});
+		} else if (this.platform === Platform.GCM) {
+			if (test === false) {
+				return [new SubCredentials(this, DB_USER_MAP.gcm_prod, false)];
+			} else if (test === true) {
+				return [new SubCredentials(this, DB_USER_MAP.gcm_test, false)];
 			}
 		}
+		return [];
 	}
-	return array;
-};
 
-let APNCertificateFile = function(appId, test) {
-    return appId + (typeof test === 'undefined' ? '' : test ? '.test' : '.prod') + '.p12';
-};
+	sub (field, test) {
+		return new SubCredentials(this, field, test);
+	}
 
-let APNCertificatePath = function(appId, test) {
-	return __dirname + '/../../../../frontend/express/certificates/' + APNCertificateFile(appId, test);
-};
-
-let p12 = function(path, password) {
-	if (log) { log.d('Reading certificate from %j', path); }
-
-	password = password || undefined;
-
-	var buffer = fs.readFileSync(path),
-		asn1 = forge.asn1.fromDer(buffer.toString("binary"), false),
-		p12 = forge.pkcs12.pkcs12FromAsn1(asn1, false, password);
-
-	var ret = {
-		id: path,
-		title: undefined,
-		key: undefined,
-		cert: undefined,
-		pfx: buffer,
-		passphrase: password,
-		topics: [],
-		bundle: undefined,
-		dev: undefined,
-		prod: undefined
-	};
-
-	p12.safeContents.forEach(safeContents => {
-		safeContents.safeBags.forEach(safeBag => {
-			if (safeBag.cert) {
-				var title = safeBag.cert.subject.getField({type: '2.5.4.3'});
-				if (title) { 
-					ret.title = title.value; 
-				}
-				if (safeBag.cert.getExtension({id: "1.2.840.113635.100.6.3.1"})) {
-					ret.dev = true;
-				}
-
-				if (safeBag.cert.getExtension({id: "1.2.840.113635.100.6.3.2"})) {
-					ret.prod = true;
-				}
-
-				var topics = safeBag.cert.getExtension({id: '1.2.840.113635.100.6.3.6'});
-				if (topics) {
-					topics = topics.value.replace(/0[\x00-\x1f\(\)!]/gi, '')
-										.replace('\f\f', '\f')
-										.split('\f')
-										.map(s => s.replace(/[\x00-\x1f\(\)!,$#\+]/gi, '').trim());
-					topics.shift();
-
-					for (var i = 0; i < topics.length; i++) {
-						for (var j = 0; j < topics.length; j++) {
-							if (i !== j && topics[j].indexOf(topics[i]) === 0) {
-								if (ret.topics.indexOf(topics[i]) === -1) {
-									ret.topics.push(topics[i]);
-								}
-								if (ret.topics.indexOf(topics[j]) === -1) {
-									ret.topics.push(topics[j]);
-								}
-								if (!ret.bundle) {
-									ret.bundle = topics[i];
-								}
-							}
-						}
+	load (db) {
+		if (typeof this._id === 'string') { this._id = db.ObjectID(this._id); }
+		log.d('loading credentials %j', this._id);
+		return new Promise((resolve, reject) => {
+			db.collection('credentials').findOne(this._id, (err, data) => {
+				if (err || !data) { reject(err || 'Credentials ' + this._id + ' not found'); }
+				else { 
+					log.d('loaded credentials %j', data);
+					for (let key in data) { 
+						this[key] = data[key]; 
 					}
+
+					try {
+						if (this.platform === Platform.APNS && this.type !== CRED_TYPE[Platform.APNS].TOKEN) {
+								var buffer = forge.util.decode64(this.key),
+									asn1 = forge.asn1.fromDer(buffer),
+									p12 = forge.pkcs12.pkcs12FromAsn1(asn1, false, this.secret || null),
+									dev = false, prod = false, topics = [];
+
+								p12.safeContents.forEach(safeContents => {
+									safeContents.safeBags.forEach(safeBag => {
+										if (safeBag.cert) {
+											var title = safeBag.cert.subject.getField({type: '2.5.4.3'});
+											if (title) { 
+												this.title = title.value;
+											}
+
+											if (safeBag.cert.getExtension({id: "1.2.840.113635.100.6.3.1"})) {
+												dev = true;
+											}
+
+											if (safeBag.cert.getExtension({id: "1.2.840.113635.100.6.3.2"})) {
+												prod = true;
+											}
+
+											var tpks = safeBag.cert.getExtension({id: '1.2.840.113635.100.6.3.6'});
+											if (tpks) {
+												tpks = tpks.value.replace(/0[\x00-\x1f\(\)!]/gi, '')
+																	.replace('\f\f', '\f')
+																	.split('\f')
+																	.map(s => s.replace(/[\x00-\x1f\(\)!,"$]/gi, '').trim());
+												tpks.shift();
+
+												for (var i = 0; i < tpks.length; i++) {
+													for (var j = 0; j < tpks.length; j++) {
+														if (i !== j && tpks[j].indexOf(tpks[i]) === 0) {
+															if (topics.indexOf(tpks[i]) === -1) {
+																topics.push(tpks[i]);
+															}
+															if (topics.indexOf(tpks[j]) === -1) {
+																topics.push(tpks[j]);
+															}
+														}
+													}
+												}
+											}
+										}
+									});
+								});
+
+								topics.sort((a, b) => a.length - b.length);
+
+								this.bundle = topics.length > 0 ? topics[0] : this.title.split(' ').pop();
+								this.topics = topics;
+								// this.certificate = buffer;
+
+								log.d('final topics %j, bundle %j', this.topics, this.bundle);
+						}
+					} catch (e) {
+						log.e('Error while parsing certificate: %j', e);
+						reject(e);
+					}
+					resolve();
 				}
-			}
+			});
 		});
-	});
+	}
+}
 
-	if (ret.title && !ret.bundle) {
-		ret.bundle = ret.title.split(' ').pop();
+class SubCredentials extends Credentials {
+	constructor (credentials, field, test) {
+		super(credentials._id);
+		log.d('constructing sub from %j / %j / %j', credentials, field, test);
+		for (var k in credentials) { 
+			this[k] = credentials[k];
+		}
+
+		this.field = field || credentials.field;
+		this.test = test || credentials.test;
+
+		if (this.platform === Platform.APNS) {
+			if (this.field === DB_USER_MAP.apn_dev || 
+				(this.test && this.field === DB_USER_MAP.apn_adhoc)) {
+				this.host = 'api.development.push.apple.com';
+				this.port = 443;
+			} else if (this.field === DB_USER_MAP.apn_prod) {
+				this.host = 'api.push.apple.com';
+				this.port = 443;
+			} else {
+				throw new Error('Unsupported field ' + this.field);
+			}
+		} else if (this.platform === Platform.GCM) {
+			this.host = 'android.googleapis.com';
+			this.port = 443;
+		} else {
+			throw new Error('Unsupported field / platform combination: ' + this.field + ' / ' + this.platform);
+		}
+		log.d('created SubCredentials %j', this);
 	}
 
-	if (log) { 
-		var out = merge({}, ret);
-		out.pfx = out.pfx instanceof Buffer ? 'Buffer' : out.pfx;
-		log.d('Read certificate from %j: %j', path, out); 
+	get id () { return this._id + ':' + this.field + ':' + this.host; }
+
+	app (app_id) {
+		return new AppSubCredentials(this, app_id);
 	}
 
-	return ret;
-};
+	toJSON () {
+		var json = super.toJSON();
+		json.field = this.field;
+		json.test = this.test;
+		json.host = this.host;
+		json.port = this.port;
+		return json;
+	}
+}
+
+class AppSubCredentials extends SubCredentials {
+	constructor (subcredentials, app_id, app_timezone) {
+		super(subcredentials, subcredentials.field, subcredentials.test);
+		// || for a case when constructor is called with single json parameter
+		this.app_id = app_id || subcredentials.app_id;
+		this.app_timezone = app_timezone || subcredentials.app_timezone;
+	}
+
+	get id () { return this.app_id + '::' + this._id + ':' + this.field + ':' + this.host; }
+
+	toJSON () {
+		var json = super.toJSON();
+		json.app_id = this.app_id;
+		json.app_timezone = this.app_timezone;
+		return json;
+	}
+}
 
 
 module.exports = {
-	credentials: credentials,
-	p12: p12,
+	Credentials: Credentials,
+	AppSubCredentials: AppSubCredentials,
+	CRED_TYPE: CRED_TYPE,
 	DB_MAP: DB_MAP,
-	DB_USER_MAP: DB_USER_MAP,
-	APNCertificatePath: APNCertificatePath,
-}
+	DB_USER_MAP: DB_USER_MAP
+};

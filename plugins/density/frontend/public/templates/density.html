@@ -1,0 +1,52 @@
+<div class="widget">
+	<div class="widget-header">
+		<div class="left">
+			<div class="title">{{page-title}}</div>
+		</div>
+		{{> date-selector }}
+	</div>
+    {{#if graph-description}}
+    <div class="graph-description">{{graph-description}}</div>
+    {{/if}}
+    <div class="widget-content help-zone-vb" data-help-localize="help.{{{chart-helper}}}" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} {{#if chartHTML}}  {{else}} height:300px; padding-top:35px; padding-bottom:10px; {{/if}}{{/if}}">
+        {{#if chartHTML}}
+            {{{chartHTML}}}
+        {{else}}
+        <div class="graph-no-data" style="display: block;">
+            <div class="inner">
+                <div class="icon"></div>
+                <div class="text" data-localize="common.graph.no-data"></div>
+            </div>
+        </div>
+        {{/if}}
+	</div>
+</div>
+<div class="widget density-widget">
+    {{#if platforms}}
+	<div class="widget-header">
+		<div class="left">
+            <div class="title small" data-localize="density.densities-for"></div>
+            <div>
+                <div class="cly-select float density-segmentation">
+                    <div class="select-inner">
+                        <div class="text-container">
+                            <div class="text">{{active-platform}}</div>
+                        </div>
+                        <div class="right combo"></div>
+                    </div>
+                    <div class="select-items square" style="width:220px;">
+                        <div>
+                            {{#eachOfArray platforms}}
+                            <div data-value="{{value.origos_}}" class="segmentation-option item">{{value.os_}}</div>
+                            {{/eachOfArray}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+		</div>
+    </div>
+    {{/if}}
+</div>
+<div class="density-table">
+<table id="dataTableOne" class="d-table help-zone-vb" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
+</div>

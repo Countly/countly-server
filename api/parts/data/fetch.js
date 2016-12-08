@@ -544,11 +544,17 @@ var fetch = {},
         fetchTimeObj(collection, params, null, callback);
     };
 
+    fetch.getTimeObjForEvents = function (collection, params, callback) {
+        fetchTimeObj(collection, params, true, callback);
+    };
+
     fetch.fetchTotalUsersObj = function (metric, params) {
         getTotalUsersObj(metric, params, function(output) {
             common.returnOutput(params, output);
         });
     };
+
+    fetch.getTotalUsersObj = getTotalUsersObj;
 
     function getTotalUsersObj(metric, params, callback) {
         if(!plugins.getConfig("api").total_users){
@@ -672,6 +678,8 @@ var fetch = {},
         }
     }
 
+    fetch.formatTotalUsersObj = formatTotalUsersObj;
+
     function formatTotalUsersObj(obj, forMetric) {
         var tmpObj = {},
             processingFunction;
@@ -695,7 +703,6 @@ var fetch = {},
     }
 
     function fetchTimeObj(collection, params, isCustomEvent, callback) {
-        var base64 = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
         if (params.qstring.action == "refresh") {
             var dbDateIds = common.getDateIds(params),
                 fetchFromZero = {},
@@ -744,9 +751,9 @@ var fetch = {},
             
             var zeroDocs = [zeroIdToFetch];
             var monthDocs = [monthIdToFetch];
-            for(var i = 0; i < base64.length; i++){
-                zeroDocs.push(zeroIdToFetch+"_"+base64[i]);
-                monthDocs.push(monthIdToFetch+"_"+base64[i]);
+            for(var i = 0; i < common.base64.length; i++){
+                zeroDocs.push(zeroIdToFetch+"_"+common.base64[i]);
+                monthDocs.push(monthIdToFetch+"_"+common.base64[i]);
             }
 
             common.db.collection(collection).find({'_id': {$in: zeroDocs}}, fetchFromZero).toArray(function(err, zeroObject) {
@@ -763,29 +770,29 @@ var fetch = {},
 
                 for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
                     documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]);
-                    for(var m = 0; m < base64.length; m++){
-                        documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]+"_"+base64[m]);
+                    for(var m = 0; m < common.base64.length; m++){
+                        documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]+"_"+common.base64[m]);
                     }
                 }
 
                 for (var i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
                     documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i]);
-                    for(var m = 0; m < base64.length; m++){
-                        documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i]+"_"+base64[m]);
+                    for(var m = 0; m < common.base64.length; m++){
+                        documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i]+"_"+common.base64[m]);
                     }
                 }
             } else {
                 for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
                     documents.push(params.app_id + "_" + periodObj.reqZeroDbDateIds[i]);
-                    for(var m = 0; m < base64.length; m++){
-                        documents.push(params.app_id + "_" + periodObj.reqZeroDbDateIds[i]+"_"+base64[m]);
+                    for(var m = 0; m < common.base64.length; m++){
+                        documents.push(params.app_id + "_" + periodObj.reqZeroDbDateIds[i]+"_"+common.base64[m]);
                     }
                 }
 
                 for (var i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
                     documents.push(params.app_id + "_" + periodObj.reqMonthDbDateIds[i]);
-                    for(var m = 0; m < base64.length; m++){
-                        documents.push(params.app_id + "_" + periodObj.reqMonthDbDateIds[i]+"_"+base64[m]);
+                    for(var m = 0; m < common.base64.length; m++){
+                        documents.push(params.app_id + "_" + periodObj.reqMonthDbDateIds[i]+"_"+common.base64[m]);
                     }
                 }
             }
@@ -793,6 +800,21 @@ var fetch = {},
             common.db.collection(collection).find({'_id': {$in: documents}}, {}).toArray(function(err, dataObjects) {
                 callback(getMergedObj(dataObjects));
             });
+        }
+        
+        function deepMerge(ob1, ob2){
+            for(var i in ob2){
+                if(typeof ob1[i] === "undefined"){
+                    ob1[i] = ob2[i];
+                }
+                else if(ob1[i] && typeof ob1[i] === "object"){
+                    ob1[i] = deepMerge(ob1[i], ob2[i]);
+                }
+                else{
+                    ob1[i] += ob2[i];
+                }
+            }
+            return ob1;
         }
 
         function getMergedObj(dataObjects, isRefresh) {
@@ -838,27 +860,13 @@ var fetch = {},
                         }
         
                         if (mergedDataObj[year]) {
-                            for (var prop in dataObjects[i]['d']) {
-                                if(mergedDataObj[year][prop]){
-                                    _.extend(mergedDataObj[year][prop], dataObjects[i]['d'][prop]) 
-                                }
-                                else{
-                                    mergedDataObj[year][prop] = dataObjects[i]['d'][prop];
-                                }
-                            }
+                            mergedDataObj[year] = deepMerge(mergedDataObj[year], dataObjects[i]['d']);
                         } else {
                             mergedDataObj[year] = dataObjects[i]['d'] || {};
                         }
                     } else {
                         if (mergedDataObj[year][month]) {
-                            for (var prop in dataObjects[i]['d']) {
-                                if(mergedDataObj[year][month][prop]){
-                                    _.extend(mergedDataObj[year][month][prop], dataObjects[i]['d'][prop]) 
-                                }
-                                else{
-                                    mergedDataObj[year][month][prop] = dataObjects[i]['d'][prop];
-                                }
-                            }
+                            mergedDataObj[year][month] = deepMerge(mergedDataObj[year][month], dataObjects[i]['d']);
                         } else {
                             mergedDataObj[year][month] = dataObjects[i]['d'] || {};
                         }

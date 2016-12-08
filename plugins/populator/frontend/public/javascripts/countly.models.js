@@ -1,16 +1,29 @@
 (function (countlyPopulator, $, undefined) {
+    var metric_props = ["_os", "_os_version", "_resolution", "_device", "_carrier", "_app_version", "_density", "_locale", "_store"];
 	var props = {
 		_os: ["Android", "iOS", "Windows Phone"],
-        _os_web: ["Android", "iOS", "Windows Phone", "Windows", "OSX"],
-		_os_version: ["2.2", "2.3", "3.1", "3.2", "4.0", "4.1", "4.2", "4.3", "4.4", "5.0", "5.1", "6.0", "6.1", "7.0", "7.1", "8.0", "8.1"],
+        _os_web: ["Android", "iOS", "Windows Phone", "Windows", "MacOS"],
+        _os_version_android: ["2.3", "2.3.7", "3.0", "3.2.6", "4.0", "4.0.4", "4.1", "4.3.1", "4.4", "4.4.4", "5.0", "5.1.1", "6.0", "6.0.1", "7.0", "7.1"],
+        _os_version_ios: ["7.1.2", "8.4.1", "9.3.5", "10.1.1", "10.2"],
+        _os_version_windows_phone: ["7", "8"],
+        _os_version_windows: ["7", "8", "10"],
+        _os_version_macos: ["10.8", "10.9", "10.10", "10.11", "10.12"],
+        _os_version: function(){return getRandomInt(1, 9)+"."+getRandomInt(0, 5);},
 		_resolution: ["320x480", "768x1024", "640x960", "1536x2048", "320x568", "640x1136", "480x800", "240x320", "540x960", "480x854", "240x400", "360x640", "800x1280", "600x1024", "600x800", "768x1366", "720x1280", "1080x1920"],
-		_device: ["One Touch Idol X", "Kindle Fire HDX", "Fire Phone", "iPhone 5", "iPhone Mini", "iPhone 4S", "iPhone 5C", "iPad 4", "iPad Air","iPhone 6","Nexus 7","Nexus 10","Nexus 4","Nexus 5", "Windows Phone", "One S", "Optimus L5", "Lumia 920", "Galaxy Note", "Xperia Z"],
-		_manufacture: ["Samsung", "Sony Ericsson", "LG", "Google", "HTC", "Nokia", "Apple", "Huaiwei", "Lenovo", "Acer"],
+        _device_android: ["GT-S5830L", "HTC6525LVW", "MB860", "LT18i", "LG-P500", "Desire V", "Wildfire S A510e"],
+        _device_ios: ["iPhone8,1", "iPhone9,1", "iPhone9,2", "iPod7,1", "iPad3,6"],
+        _device_windows_phone: ["Lumia 535", "Lumia 540", "Lumia 640 XL"],
+		_manufacture_android: ["Samsung", "Sony Ericsson", "LG", "Google", "HTC", "Huaiwei", "Lenovo", "Acer"],
+		_manufacture_ios: ["Apple"],
+		_manufacture_windows_phone: ["Nokia", "Microsoft"],
 		_carrier: ["Telus", "Rogers Wireless", "T-Mobile", "Bell Canada", "	AT&T", "Verizon", "Vodafone", "Cricket Communications", "O2", "Tele2", "Turkcell", "Orange", "Sprint", "Metro PCS"],
 		_app_version: ["1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "2.0", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8", "2.9", "3.0", "3.1", "3.2"],
 		_cpu: ["armv6", "armv7", "x86"],
 		_opengl: ["opengl_es1", "opengl_es2"],
-		_density: ["XHDPI", "MDPI", "HDPI", "XXHDPI", "TVDPI", "@1", "@2", "@3"],
+		_density_android: ["XHDPI", "MDPI", "HDPI", "XXHDPI", "TVDPI"],
+		_density_ios: ["@1","@2","@3"],
+		_density_macos: ["@1","@2","@3"],
+		_density: function(){return getRandomInt(1, 3)+"."+getRandomInt(0, 5);},
 		_locale: ["en_CA", "fr_FR", "de_DE", "it_IT", "ja_JP", "ko_KR", "en_US"],
         _browser: ["Opera", "Chrome", "Internet Explorer", "Safari", "Firefox"],
         _store: ["com.android.vending","com.google.android.feedback","com.google.vending","com.slideme.sam.manager","com.amazon.venezia","com.sec.android.app.samsungapps","com.nokia.payment.iapenabler","com.qihoo.appstore","cn.goapk.market","com.wandoujia.phoenix2","com.hiapk.marketpho","com.hiapk.marketpad","com.dragon.android.pandaspace","me.onemobile.android","com.aspire.mm","com.xiaomi.market","com.miui.supermarket","com.baidu.appsearch","com.tencent.android.qqdownloader","com.android.browser","com.bbk.appstore","cm.aptoide.pt","com.nduoa.nmarket","com.rim.marketintent","com.lenovo.leos.appstore","com.lenovo.leos.appstore.pad","com.keenhi.mid.kitservice","com.yingyonghui.market","com.moto.mobile.appstore","com.aliyun.wireless.vos.appstore","com.appslib.vending","com.mappn.gfan","com.diguayouxi","um.market.android","com.huawei.appmarket","com.oppo.market","com.taobao.appcenter"],
@@ -44,7 +57,8 @@
         visit:[1],
         start:[0,1],
         exit:[0,1],
-        bounce:[0,1]
+        bounce:[0,1],
+        segment:["Android", "iOS", "Windows Phone"]
     };
 	var crashProps = ["root", "ram_current", "ram_total", "disk_current", "disk_total", "bat_current", "bat_total", "orientation", "stack", "log", "custom", "features", "settings", "comment", "os", "os_version", "manufacture", "device", "resolution", "app_version"];
     var ip_address = [];
@@ -83,7 +97,10 @@
 		return generatedString;
 	}
     function getProp(name){
-		return props[name][Math.floor(Math.random()*props[name].length)];
+        if(typeof props[name] === "function")
+            return props[name]();
+        else if(typeof props[name] !== "undefined")
+            return props[name][Math.floor(Math.random()*props[name].length)];
 	}
 	function user(id){
 		this.getId = function() {
@@ -116,34 +133,38 @@
 		this.endTs = endTs;
 		this.events = [];
 		this.ts = getRandomInt(this.startTs, this.endTs);
-		for(var i in props){
-			if(i == "_os" || i == "_os_web"){
-                if(i == "_os_web" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
-                    this.platform = this.getProp(i);
-                    this.metrics["_os"] = this.platform;
+        if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
+            this.platform = this.getProp("_os_web");
+        }
+        else{
+            this.platform = this.getProp("_os");
+        }
+        this.metrics["_os"] = this.platform;
+		for(var i = 0; i < metric_props.length; i++){
+			if(metric_props[i] != "_os"){
+                //handle specific cases
+                if(metric_props[i] === "_store" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
+                    this.metrics[metric_props[i]] = this.getProp("_source");
                 }
                 else{
-                    this.platform = this.getProp(i);
-                    this.metrics[i] = this.platform;
+                    //check os specific metric
+                    if(typeof props[metric_props[i]+"_"+this.platform.toLowerCase().replace(/\s/g, "_")] != "undefined")
+                        this.metrics[metric_props[i]] = this.getProp(metric_props[i]+"_"+this.platform.toLowerCase().replace(/\s/g, "_"));
+                    else //default metric set
+                        this.metrics[metric_props[i]] = this.getProp(metric_props[i]);
                 }
 			}
-			else if(i != "_store" && i != "_source")
-				this.metrics[i] = this.getProp(i);
 		}
-        if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web")
-            this.metrics["_store"] = this.getProp("_source");
-        else if(this.platform == "Android")
-            this.metrics["_store"] = this.getProp("_store");
-
+        
 		this.getCrash = function(){
 			var crash = {};
 
-            crash._os = this.getProp("_os");
-			crash._os_version = this.getProp("_os_version");
-			crash._device = this.getProp("_device");
+            crash._os = this.metrics["_os"];
+			crash._os_version = this.metrics["_os_version"];
+			crash._device = this.metrics["_device"];
 			crash._manufacture = this.getProp("_manufacture");
-			crash._resolution = this.getProp("_resolution");
-			crash._app_version = this.getProp("_app_version");
+			crash._resolution = this.metrics["_resolution"];
+			crash._app_version = this.metrics["_app_version"];
 			crash._cpu = this.getProp("_cpu");
 			crash._opengl = this.getProp("_opengl");
 
@@ -178,13 +199,57 @@
 		};
 
 		this.getError = function(){
-			var errors = ["java.lang.RuntimeException", "java.lang.NullPointerException", "java.lang.NoSuchMethodError", "java.lang.NoClassDefFoundError", "java.lang.ExceptionInInitializerError", "java.lang.IllegalStateException"];
-			var error = errors[Math.floor(Math.random()*errors.length)]+": com.domain.app.Exception<init>\n";
-			var stacks = getRandomInt(5, 9);
-			for(var i = 0; i < stacks; i++){
-				error += "at com.domain.app.<init>(Activity.java:"+(i*32)+")\n";
-			}
-			return error;
+            if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
+                var errors = ["EvalError", "InternalError", "RangeError", "ReferenceError", "SyntaxError", "TypeError", "URIError"];
+                var err = new Error(errors[Math.floor(Math.random()*errors.length)], randomString(5)+".js", getRandomInt(1, 100));
+                return err.stack+"";
+            }
+            else if(this.platform == "Android"){
+                var errors = ["java.lang.RuntimeException", "java.lang.NullPointerException", "java.lang.NoSuchMethodError", "java.lang.NoClassDefFoundError", "java.lang.ExceptionInInitializerError", "java.lang.IllegalStateException"];
+                var error = errors[Math.floor(Math.random()*errors.length)]+": com.domain.app.Exception<init>\n";
+                var stacks = getRandomInt(5, 9);
+                for(var i = 0; i < stacks; i++){
+                    error += "at com.domain.app.<init>(Activity.java:"+(i*32)+")\n";
+                }
+                return error;
+            }
+            else if(this.platform == "iOS"){
+                var errors = ["CoreFoundation                  0x182e3adb0 __exceptionPreprocess + 124", 
+                    "libobjc.A.dylib                 0x18249ff80 objc_exception_throw + 56", 
+                    "CoreFoundation                  0x182d1b098 -[__NSArrayI objectAtIndex:] + 196", 
+                    "CountlyTestApp-iOS              0x100046988 0x100030000 + 92552", 
+                    "CountlyTestApp-iOS              0x100044340 0x100030000 + 82752", 
+                    "UIKit                           0x187fd0be8 -[UIApplication sendAction:to:from:forEvent:] + 100", 
+                    "UIKit                           0x187fd0b64 -[UIControl sendAction:to:forEvent:] + 80", 
+                    "UIKit                           0x187fb8870 -[UIControl _sendActionsForEvents:withEvent:] + 436", 
+                    "UIKit                           0x187fd0454 -[UIControl touchesEnded:withEvent:] + 572", 
+                    "UIKit                           0x187f88c0c _UIGestureRecognizerUpdate + 8988", 
+                    "UIKit                           0x187fc9610 -[UIWindow _sendGesturesForEvent:] + 1132", 
+                    "UIKit                           0x187fc8c0c -[UIWindow sendEvent:] + 764", 
+                    "UIKit                           0x187f9904c -[UIApplication sendEvent:] + 248", 
+                    "UIKit                           0x187f97628 _UIApplicationHandleEventQueue + 6568", 
+                    "CoreFoundation                  0x182df109c __CFRUNLOOP_IS_CALLING_OUT_TO_A_SOURCE0_PERFORM_FUNCTION__ + 24", 
+                    "CoreFoundation                  0x182df0b30 __CFRunLoopDoSources0 + 540", 
+                    "CoreFoundation                  0x182dee830 __CFRunLoopRun + 724", 
+                    "CoreFoundation                  0x182d18c50 CFRunLoopRunSpecific + 384", 
+                    "GraphicsServices                0x184600088 GSEventRunModal + 180", 
+                    "UIKit                           0x188002088 UIApplicationMain + 204", 
+                    "CountlyTestApp-iOS              0x10004342c 0x100030000 + 78892", 
+                    "libdyld.dylib                   0x1828b68b8 start + 4"
+                ];
+                var error = "";
+                var stacks = getRandomInt(9, 19);
+                for(var i = 0; i < stacks; i++){
+                    error += i + " " + errors[Math.floor(Math.random()*errors.length)] + "\n";
+                }
+                return error;
+            }
+            else{
+                return "System.ArgumentOutOfRangeException\n"+
+                "   at System.ThrowHelper.ThrowArgumentOutOfRangeException()\n"+
+                "   at System.Collections.Generic.List`1.get_Item(Int32 index)\n"+
+                "   at StorePuzzle.PuzzleRenderer.HandleTileReleased(Object sender, PointerRoutedEventArgs e)";
+            }
 		};
 
         this.getLog = function(){
@@ -467,22 +532,29 @@
         for(var i = 0; i < users; i++){
             for(var j = 0; j < ids.length; j++){
                 var metrics = {};
-                for(var i in props){
-                    if(i == "_os" || i == "_os_web"){
-                        if(i == "_os_web" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
-                            metrics["_os"] = getProp(i);
+                var platform;
+                if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
+                    platform = getProp("_os_web");
+                }
+                else{
+                    platform = getProp("_os");
+                }
+                metrics["_os"] = platform;
+                for(var i = 0; i < metric_props.length; i++){
+                    if(metric_props[i] != "_os"){
+                        //handle specific cases
+                        if(metric_props[i] === "_store" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
+                            metrics[metric_props[i]] = getProp("_source");
                         }
                         else{
-                            metrics[i] = getProp(i);
+                            //check os specific metric
+                            if(typeof props[metric_props[i]+"_"+platform.toLowerCase().replace(/\s/g, "_")] != "undefined")
+                                metrics[metric_props[i]] = getProp(metric_props[i]+"_"+platform.toLowerCase().replace(/\s/g, "_"));
+                            else //default metric set
+                                metrics[metric_props[i]] = getProp(metric_props[i]);
                         }
                     }
-                    else if(i != "_store" && i != "_source")
-                        metrics[i] = getProp(i);
                 }
-                if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web")
-                    metrics["_store"] = getProp("_source");
-                else if(this.platform == "Android")
-                    metrics["_store"] = getProp("_store");
 
                 var userdetails = {name: chance.name(), username: chance.twitter().substring(1), email:chance.email(), organization:capitaliseFirstLetter(chance.word()), phone:chance.phone(), gender:chance.gender().charAt(0), byear:chance.birthday().getFullYear(), custom:createRandomObj()};
 
@@ -604,6 +676,18 @@
                 setTimeout(processUsers, timeout);
             });
         });
+        if(countlyGlobal["plugins"].indexOf("systemlogs") !== -1){
+            $.ajax({
+                type: "GET",
+                url: countlyCommon.API_URL + "/i/systemlogs",
+                data: {
+                    api_key:countlyGlobal["member"].api_key,
+                    data: JSON.stringify({app_id: countlyCommon.ACTIVE_APP_ID}),
+                    action:"populator_run"
+                },
+                success:function (json) {}
+            });
+        }
                     // for(var i = 0; i < amount; i++){
                     //     createUser();
                     // }
