@@ -5769,14 +5769,9 @@ var AppRouter = Backbone.Router.extend({
                 if (!self.dateFromSelected && !self.dateToSelected) {
                     return false;
                 }
-<<<<<<< HEAD
-                //countlyCommon.setPeriod([self.dateFromSelected, self.dateToSelected]);
-                countlyCommon.setPeriod([self.dateFromSelected - self.dateFromOffset, self.dateToSelected - self.dateFromOffset]);
-=======
-
+		    
                 var tzCorr = countlyCommon.getOffsetCorrectionForTimestamp(self.dateFromSelected);
                 countlyCommon.setPeriod([self.dateFromSelected - tzCorr, self.dateToSelected - tzCorr]);
->>>>>>> 540c245e7f619020e0f862386a3c20539e1474af
 
                 self.activeView.dateChanged();
 
