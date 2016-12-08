@@ -99,7 +99,7 @@ var assistant = {},
     tt - hw <= ct < tt + hw
      */
     assistant.correct_day_and_time = function (target_day, target_hour, current_day, current_hour) {
-        var halfWidthHours = (JOB_SCHEDULE_INTERVAL / 2) / 60;// half of the width/length in hours
+        var halfWidthHours = (assistant.JOB_SCHEDULE_INTERVAL / 2) / 60;// half of the width/length in hours
         var hw = halfWidthHours / 24;//half of the width in days
 
         var ct = current_day + (current_hour / 24);//current time
