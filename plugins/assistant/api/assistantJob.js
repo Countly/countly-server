@@ -41,19 +41,20 @@ var assistantJob = {},
 
                         db.collection("app_crashgroups" + app_id).findOne({_id:"meta"}, function(err_crash, res_crash) {
                             log.i('Assistant plugin doing steps: [%j][%j] ', 1, res_crash);
-                            if(typeof res_crash !== "undefined")//todo is this enough?
-                            (function () {
-                                var valueSet = assistant.createNotificationValueSet("assistant.crash-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 1, PLUGIN_NAME, assistantConfig, app_id);
-                                var crash_data_not_available = res_crash.crashes === 0;
-                                var enough_users = res_crash.users > 20;//total users > 20
-                                var max_show_time_not_exceeded = valueSet.showAmount < 3;
+                            if(typeof res_crash !== "undefined") {//todo is this enough?
+                                (function () {
+                                    var valueSet = assistant.createNotificationValueSet("assistant.crash-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 1, PLUGIN_NAME, assistantConfig, app_id);
+                                    var crash_data_not_available = res_crash.crashes === 0;
+                                    var enough_users = res_crash.users > 20;//total users > 20
+                                    var max_show_time_not_exceeded = valueSet.showAmount < 3;
 
-                                if (assistant.correct_day_and_time(2, 14, dow, hour) && crash_data_not_available && enough_users && is_mobile && max_show_time_not_exceeded) {
-                                    log.i('Assistant plugin doing steps: [%j] ', 1.1);
-                                    assistant.createNotification(db, [], valueSet.pluginName, valueSet.type, valueSet.subtype, valueSet.nName, app_id);
-                                    assistant.setNotificationShowAmount(db, valueSet, valueSet.showAmount + 1, app_id);
-                                }
-                            })();
+                                    if (assistant.correct_day_and_time(2, 14, dow, hour) && crash_data_not_available && enough_users && is_mobile && max_show_time_not_exceeded) {
+                                        log.i('Assistant plugin doing steps: [%j] ', 1.1);
+                                        assistant.createNotification(db, [], valueSet.pluginName, valueSet.type, valueSet.subtype, valueSet.nName, app_id);
+                                        assistant.setNotificationShowAmount(db, valueSet, valueSet.showAmount + 1, app_id);
+                                    }
+                                })();
+                            }
                         });
 
                         // (1.2) Push integration
