@@ -1,4 +1,5 @@
-var assistantJob = {},
+'use strict';
+const assistantJob = {},
     plugins = require('../../pluginManager.js'),
     log = require('../../../api/utils/log.js')('assistantJob:module_star-rating'),
     fetch = require('../../../api/parts/data/fetch.js'),
@@ -7,37 +8,30 @@ var assistantJob = {},
 
 
 (function (assistantJob) {
-    var PLUGIN_NAME = "star-rating";
+    const PLUGIN_NAME = "star-rating";
     assistantJob.prepareNotifications = function (db, providedInfo) {
-
-        return new Promise(function(resolve, reject){
-
-            log.i('Assistant plugin inside STAR RATINGS');
-
+        return new Promise(function (resolve, reject) {
             try {
-                var result_apps_data = providedInfo.appsData;
-                var dow = providedInfo.timeAndDate.dow;
-                var hour = providedInfo.timeAndDate.hour;
-                var assistantConfig = providedInfo.assistantConfiguration;
+                log.i('Creating assistant notifications from [%j]', PLUGIN_NAME);
+                const result_apps_data = providedInfo.appsData;
+                const dow = providedInfo.timeAndDate.dow;
+                const hour = providedInfo.timeAndDate.hour;
+                const assistantConfig = providedInfo.assistantConfiguration;
+                const NOTIFICATION_VERSION = 1;
                 async.map(result_apps_data, function (ret_app_data, callback) {
-                    var is_mobile = ret_app_data.type == "mobile";//check if app type is mobile or web
-                    var app_id = ret_app_data._id;
-                    log.i('Assistant plugin inside loop, id: [%j], result: [%j] ', app_id, is_mobile);
+                    const is_mobile = ret_app_data.type == "mobile";//check if app type is mobile or web
+                    const app_id = ret_app_data._id;
 
-                    // (Star rating integration
-                    (function () {
-                        var valueSet = assistant.createNotificationValueSet("assistant.star-rating-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 3, PLUGIN_NAME, assistantConfig, app_id);
-                        var no_star_rating = (typeof events_result === "undefined") || (events_result === null) || (typeof events_result.list === "undefined") || (typeof events_result.list !== "undefined" && events_result.list.indexOf("[CLY]_star") === -1);
-                        var star_rating_not_enabled = !plugins.isPluginEnabled("star-rating");
-                        var max_show_time_not_exceeded = valueSet.showAmount < 3;
-                        log.i('Assistant plugin doing steps: [%j] [%j] [%j] [%j] [%j]', 3.01, no_star_rating, star_rating_not_enabled, max_show_time_not_exceeded, is_mobile);
-
+                    { //(1.1) Star rating integration
+                        const valueSet = assistant.createNotificationValueSet("assistant.star-rating-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 3, PLUGIN_NAME, assistantConfig, app_id, NOTIFICATION_VERSION);
+                        const no_star_rating = (typeof events_result === "undefined") || (events_result === null) || (typeof events_result.list === "undefined") || (typeof events_result.list !== "undefined" && events_result.list.indexOf("[CLY]_star") === -1);
+                        const star_rating_not_enabled = !plugins.isPluginEnabled("star-rating");
+                        const max_show_time_not_exceeded = valueSet.showAmount < 3;
+                        const data = [];
                         if (assistant.correct_day_and_time(4, 15, dow, hour) && (no_star_rating || star_rating_not_enabled) && is_mobile && max_show_time_not_exceeded) {
-                            log.i('Assistant plugin doing steps: [%j] ', 3.1);
-                            assistant.createNotification(db, [], valueSet.pluginName, valueSet.type, valueSet.subtype, valueSet.nName, app_id);
-                            assistant.setNotificationShowAmount(db, valueSet, valueSet.showAmount + 1, app_id);
+                            assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
                         }
-                    })();
+                    }
 
                     callback(null, null);
                 }, function (err, results) {
@@ -45,11 +39,11 @@ var assistantJob = {},
                     resolve();
                 });
             } catch (ex) {
-                log.i('Assistant plugin STAR RATINGS FAILED!!!!! [%j]', ex);
+                log.i('Assistant plugin [%j] FAILED!!!!! [%j]', PLUGIN_NAME, ex);
+                resolve();
             }
         });
     };
-
 }(assistantJob));
 
 module.exports = assistantJob;

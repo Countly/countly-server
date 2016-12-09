@@ -1,9 +1,7 @@
 'use strict';
-
 const job = require('../../../../api/parts/jobs/job.js'),
-      log = require('../../../../api/utils/log.js')('job:generate_notif');
-
-var pluginManager = require('../../../pluginManager.js'),
+    log = require('../../../../api/utils/log.js')('job:generate_notif'),
+    pluginManager = require('../../../pluginManager.js'),
     async = require("async"),
     Promise = require("bluebird"),
     time = require('time')(Date),
@@ -11,7 +9,7 @@ var pluginManager = require('../../../pluginManager.js'),
 
 
 class GenerateNotifJob extends job.Job {
-    run (countlyDb, doneJob, progressJob) {
+    run(countlyDb, doneJob, progressJob) {
         log.i("starting Generate Notifications job");
 
         function ping() {
@@ -21,17 +19,18 @@ class GenerateNotifJob extends job.Job {
                 setTimeout(ping, 10000);
             }
         }
-        var timeout = setTimeout(ping, 10000);
 
-        countlyDb.collection('apps').find({}, {}).toArray(function(err_apps_data, result_apps_data) {
+        let timeout = setTimeout(ping, 10000);
+
+        countlyDb.collection('apps').find({}, {}).toArray(function (err_apps_data, result_apps_data) {
             assistant.getAssistantConfig(countlyDb, function (returnedConfiguration) {
 
                 //log.i("Generate Notifications job, apps DB :" + JSON.stringify(result_apps_data));
 
                 //get current day and time
-                var date = new Date();
+                const date = new Date();
 
-                var providedInfo = {};
+                const providedInfo = {};
                 providedInfo.appsData = result_apps_data;
                 providedInfo.assistantConfiguration = returnedConfiguration;
                 //set the current time info
@@ -41,9 +40,9 @@ class GenerateNotifJob extends job.Job {
                 providedInfo.timeAndDate.dow = date.getDay();
                 if (providedInfo.timeAndDate.dow === 0) providedInfo.timeAndDate.dow = 7;
 
-                var plugins = pluginManager.getPlugins();
-                var promises = [];
-                for (var i = 0, l = plugins.length; i < l; i++) {
+                const plugins = pluginManager.getPlugins();
+                const promises = [];
+                for (let i = 0, l = plugins.length; i < l; i++) {
                     try {
                         //log.i('Preparing job: ' + plugins[i]);
                         promises.push(require("../../../" + plugins[i] + "/api/assistantJob").prepareNotifications(countlyDb, providedInfo));
@@ -52,7 +51,7 @@ class GenerateNotifJob extends job.Job {
                     }
                 }
 
-                var finishIt = function () {
+                const finishIt = function () {
                     log.i("Notifications generated");
                     clearTimeout(timeout);
                     timeout = 0;
