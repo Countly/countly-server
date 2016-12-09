@@ -22,18 +22,20 @@ const assistantJob = {},
                     const is_mobile = ret_app_data.type == "mobile";//check if app type is mobile or web
                     const app_id = ret_app_data._id;
 
-                    { //(1.1) Star rating integration
-                        const valueSet = assistant.createNotificationValueSet("assistant.star-rating-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 3, PLUGIN_NAME, assistantConfig, app_id, NOTIFICATION_VERSION);
-                        const no_star_rating = (typeof events_result === "undefined") || (events_result === null) || (typeof events_result.list === "undefined") || (typeof events_result.list !== "undefined" && events_result.list.indexOf("[CLY]_star") === -1);
-                        const star_rating_not_enabled = !plugins.isPluginEnabled("star-rating");
-                        const max_show_time_not_exceeded = valueSet.showAmount < 3;
-                        const data = [];
-                        if (assistant.correct_day_and_time(4, 15, dow, hour) && (no_star_rating || star_rating_not_enabled) && is_mobile && max_show_time_not_exceeded) {
-                            assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
+                    db.collection('events').findOne({_id: app_id}, {}, function (events_err, events_result) {
+                        { //(1.1) Star rating integration
+                            const valueSet = assistant.createNotificationValueSet("assistant.star-rating-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 3, PLUGIN_NAME, assistantConfig, app_id, NOTIFICATION_VERSION);
+                            const no_star_rating = (typeof events_result === "undefined") || (events_result === null) || (typeof events_result.list === "undefined") || (typeof events_result.list !== "undefined" && events_result.list.indexOf("[CLY]_star") === -1);
+                            const star_rating_not_enabled = !plugins.isPluginEnabled("star-rating");
+                            const max_show_time_not_exceeded = valueSet.showAmount < 3;
+                            const data = [];
+                            if (assistant.correct_day_and_time(4, 15, dow, hour) && (no_star_rating || star_rating_not_enabled) && is_mobile && max_show_time_not_exceeded) {
+                                assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
+                            }
                         }
-                    }
 
-                    callback(null, null);
+                        callback(null, null);
+                    });
                 }, function (err, results) {
                     log.i('Assistant for [%j] plugin resolving', PLUGIN_NAME);
                     resolve();
