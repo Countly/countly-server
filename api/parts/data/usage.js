@@ -648,7 +648,11 @@ var usage = {},
             }
             
             // sc: session count. common.dbUserMap is not used here for readability purposes.
-            common.updateAppUser(params, {'$inc': {'sc': 1}, '$set': userProps}, function(){
+            var update = {'$inc': {'sc': 1}};
+            if(Object.keys(userProps).length){
+                update["$set"] = userProps;
+            }
+            common.updateAppUser(params, update, function(){
                 //Perform user retention analysis
                 plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
                 if (done) { done(); }
