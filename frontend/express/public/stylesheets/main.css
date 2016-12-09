@@ -427,7 +427,7 @@ table { border-collapse: collapse; }
 #app-management-bar #app-nav-head { padding-left:15px; }
 #app-management-bar .nav-search input { width: 164px; }
 #app-nav-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px; float:left; padding-top:4px; }
-#app-nav { width:190px;  display:none; text-align:right; height:100%; position:fixed; left:31px; z-index:997; padding-bottom: 46px; box-sizing: border-box; box-shadow: inset -1px 0 0 0 #d4d4d4; background-color: rgba(239, 239, 239, 0.7); }
+#app-nav { width:190px;  display:none; text-align:right; height:100%; position:fixed; left:31px; z-index:997; padding-bottom: 120px; box-sizing: border-box; box-shadow: inset -1px 0 0 0 #d4d4d4; background-color: rgba(239, 239, 239, 0.7); }
 #app-nav-head { height:27px; padding:24px 20px; padding-left:32px; color:#BFBFBF; font:18px Ubuntu,Helvetica,sans-serif; line-height:111%; text-align:left; background-color: #292929; }
 	#app-nav-head .button-container { overflow:hidden; position:absolute; top:22px; right:10px; }
 .app-container { cursor:pointer; height:30px; padding:8px 12px; padding-left:32px; overflow:auto; border-bottom: 1px solid #d4d4d4; background-color: #efefef; box-shadow: inset -1px 0 0 0 #d4d4d4; }
@@ -446,7 +446,7 @@ table { border-collapse: collapse; }
 #sort-app-button i { font-size: 20px; margin: 0; line-height: 16px; }
 /* APP NAVIGATION END */
 
-#app-management-bar { width:190px; position:fixed; left:220px; top:0; text-align:right; background-color:#efefef; height:100%; padding-bottom: 46px; box-sizing: border-box; box-shadow: inset -1px 0px 0 0 #d4d4d4; }
+#app-management-bar { width:190px; position:fixed; left:220px; top:0; text-align:right; background-color:#efefef; height:100%; padding-bottom: 90px; box-sizing: border-box; box-shadow: inset -1px 0px 0 0 #d4d4d4; }
 #app-management-bar .app-container { padding-left:15px; position: relative; }
 #app-management-bar .app-container.active { }
 #app-management-bar .app-container.active:hover { opacity:1; }
@@ -984,7 +984,7 @@ div.datatablesubrow {display: none;}
 .os-rows.active  td { color: #fff; }
 
 /* EVENTS */
-#event-nav  { z-index:3; width:190px; position:fixed; left:220px; top:0; text-align:right; background-color:#efefef; height:100%; box-sizing:border-box; padding-bottom: 130px; box-shadow: inset -1px 0 0 0 #d4d4d4; }
+#event-nav  { z-index:3; width:190px; position:fixed; left:220px; top:0; text-align:right; background-color:#efefef; height:100%; box-sizing:border-box; padding-bottom: 120px; box-shadow: inset -1px 0 0 0 #d4d4d4; }
     #event-nav .nav-search input { width:158px; }
 #event-nav-head { background-color:#292929; position:relative; height:27px; padding:24px 20px; padding-left:15px; color:#BFBFBF; font:18px Ubuntu,Helvetica,sans-serif; line-height:111%; text-align:left; }
 #event-nav-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px; float:left; padding-top:4px; }
