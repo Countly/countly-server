@@ -649,6 +649,7 @@ class IPCJob extends ResourcefulJob {
 			this._json.started = Date.now();
 			this._sendSave({status: this._json.status, started: this._json.started});
 
+			try {
 			this.run(
 				this.db(),
 				(err, result) => {
@@ -698,6 +699,7 @@ class IPCJob extends ResourcefulJob {
 					}
 				}
 			);
+		} catch (e) { log.e(e, e.stack); }
 		});
 	}
 

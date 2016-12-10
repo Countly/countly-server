@@ -13,7 +13,7 @@ class Streamer {
 			_id: 1, 
 			[credentials.DB_USER_MAP.tokens + this.field]: '$' + credentials.DB_USER_MAP.tokens + '.' + this.field, 
 			la: 1,
-			tz: 1
+			tz: {$ifNull: ['$tz', this.anote.creds.app_timezone.offset]}
 		};
 	}
 
@@ -28,11 +28,12 @@ class Streamer {
 	clear (db) {
 		log.d('[%s]: Clearing streamer for %s', this.anote.id, this.collection());
 		return new Promise((resolve, reject) => {
-			db.collection(this.collection()).drop((err) => {
-				log.d('Dropped streamer collection, error %j', err);
-				if (err) { reject(err); }
-				else { resolve(); }
-			});
+			resolve();
+			// db.collection(this.collection()).drop((err) => {
+				// log.d('Dropped streamer collection, error %j', err);
+				// if (err) { reject(err); }
+				// else { resolve(); }
+			// });
 		});
 	}
 
@@ -57,7 +58,7 @@ class Streamer {
 						this.drill().openDrillDb();
 
 						var params = {
-							time: common.initTimeObj(this.anote.creds.app_timezone, Date.now()),
+							time: common.initTimeObj(this.anote.creds.app_timezone.tz, Date.now()),
 							qstring: Object.assign({app_id: this.anote.creds.app_id.toString()}, this.anote.query.drill)
 						};
 
@@ -115,7 +116,7 @@ class Streamer {
 		log.d('[%s]: Counting streamer', this.anote.id);
 		return new Promise((resolve, reject) => {
 			this.build(db).then(() => {
-				log.d('[%s]: Counting collection %j', this.collection());
+				log.d('[%s]: Counting collection %j', this.anote.id, this.collection());
 				db.collection(this.built).count((err, count) => {
 					log.d('[%s]: Counted collection %j: %j', this.anote.id, this.collection(), count);
 					if (err) { reject(err); }
@@ -188,13 +189,15 @@ class Streamer {
 
 	unload (db, ids) {
 		return new Promise((resolve, reject) => {
-			db.collection(this.built).remove({_id: {$in: ids}}, (err, ok) => {
-				if (err) { reject(err); }
-				else { 
-					log.d('[%s]: Removed %d users from collection %s', this.anote.id, ok.result.ops.length, this.built);
-					resolve(); 
-				}
-			});
+			log.d('[%s]: Removing users from collection %s [%j ... %j]', this.anote.id, this.built, ids[0], ids[ids.length - 1]);
+			resolve();
+			// db.collection(this.built).remove({_id: {$in: ids}}, (err, ok) => {
+			// 	if (err) { reject(err); }
+			// 	else { 
+			// 		log.d('[%s]: Removed %d users from collection %s', this.anote.id, ok, this.built);
+			// 		resolve(); 
+			// 	}
+			// });
 		});
 	}
 }

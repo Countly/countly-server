@@ -125,7 +125,7 @@ window.component('push', function(push) {
 			}.bind(this));
 		};
 
-		this.toJSON = function(includeId, includeOthers) {
+		this.toJSON = function(includeId, includeOthers, clearNulls) {
 			var obj = {
 				apps: this.apps(),
 				platforms: this.platforms(),
@@ -150,6 +150,13 @@ window.component('push', function(push) {
 				if (this.data()) {
 					obj.data = typeof this.data() === 'string' ? JSON.parse(this.data()) : this.data();
 				}
+			}
+			if (clearNulls) {
+				Object.keys(obj).forEach(function(k){
+					if (obj[k] === null) {
+						delete obj[k];
+					}
+				});
 			}
 			return obj;
 		};

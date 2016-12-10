@@ -449,7 +449,9 @@ class Resource extends ResourceInterface {
 		
 			this.onceOpened().then(() => {
 				log.d('[%d]: Resource is open for %j', process.pid, this.job._idIpc);
-				this.job._run(this.db, this).then(this.done.bind(this, this.job, null), this.done.bind(this, this.job));
+				this.job.prepare(null, db).then(() => {
+					this.job._run(this.db, this).then(this.done.bind(this, this.job, null), this.done.bind(this, this.job));
+				}, this.done.bind(this, this.job))
 			}, this.done.bind(this, this.job));
 		});
 

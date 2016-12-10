@@ -6,7 +6,8 @@ var common = require('../../../../api/utils/common.js'),
 	creds = require('./credentials.js'),
 	N = require('./note.js'),
 	Platform = N.Platform,
-	Streamer = require('./streamer.js');
+	Streamer = require('./streamer.js'),
+	momenttz = require('moment-timezone');
 
 const WORKER_CHUNK_SIZE = 10000;
 
@@ -34,6 +35,12 @@ class Divider {
 				apps.forEach((app) => {
 					if (this.note.platforms.indexOf(Platform.APNS) !== -1 && app.apn && app.apn.length) { credentials.push.apply(credentials, app.apn); }
 					if (this.note.platforms.indexOf(Platform.GCM) !== -1 && app.gcm && app.gcm.length) { credentials.push.apply(credentials, app.gcm); }
+
+					if (app.timezone) {
+						app.timezone_offset = momenttz.tz(app.timezone).utcOffset();
+					} else {
+						app.timezone_offset = 0;
+					}
 				});
 
 				credentials = credentials.map(c => new creds.Credentials(c));
@@ -48,9 +55,11 @@ class Divider {
 						c.divide(this.note.test).forEach(subc => {
 							subs.push(new Promise((resolve, reject) => {
 								let app = apps.filter(a => (a.apn && a.apn.filter(ac => ac._id.equals(c._id)).length) || (a.gcm && a.gcm.filter(ac => ac._id.equals(c._id)).length))[0],
-									appsubcred = subc.app(app._id),
+									appsubcred = subc.app(app._id, {tz: app.timezone, offset: app.timezone_offset}),
 									appsubnote = this.note.appsub(subs.length, appsubcred),
 									streamer = new Streamer(appsubnote);
+
+								log.d('Compiled appsub %j', appsubnote);
 
 								if (audience === null) {
 									streamer.clear(db);

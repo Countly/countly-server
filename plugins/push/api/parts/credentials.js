@@ -199,8 +199,8 @@ class SubCredentials extends Credentials {
 
 	get id () { return this._id + ':' + this.field + ':' + this.host; }
 
-	app (app_id) {
-		return new AppSubCredentials(this, app_id);
+	app (app_id, app_timezone) {
+		return new AppSubCredentials(this, app_id, app_timezone);
 	}
 
 	toJSON () {

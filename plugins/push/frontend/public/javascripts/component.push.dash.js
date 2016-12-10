@@ -7,12 +7,13 @@ window.component('push.dash', function(dash) {
 	var t = window.components.t;
 	
 	dash.controller = function() {
+		this.app_id = countlyCommon.ACTIVE_APP_ID;
 		this.period = m.prop('monthly');
 		this.source = m.prop('dash');
 		this.messages = m.prop([]);
 		this.data = m.prop();
 
-		components.push.remoteDashboard(countlyCommon.ACTIVE_APP_ID).then(function(data){
+		components.push.remoteDashboard(this.app_id).then(function(data){
 			m.startComputation();
 			['sent', 'actions'].forEach(function(ev) {
 				ev = data[ev];
@@ -131,7 +132,7 @@ window.component('push.dash', function(dash) {
 						{ mData: unprop.bind(null, 'dates.dateSeconds'), bVisible: false, sType: 'numeric', bSearchable: false },
 						{ mData: unprop.bind(null, 'dates'), sName: 'sent', sType: 'string', iDataSort: 5, sTitle: t('pu.t.sent-scheduled'), mRender: function(local){
 							var dates = local.dates();
-							return dates.sent || dates.date;
+							return dates.sent || dates.date || '';
 						}, bSearchable: false }
 					],
 					aaSorting: [[4, 'asc']]
@@ -245,6 +246,9 @@ window.MessagingDashboardView = countlyView.extend({
 	initialize:function () {
 	},
 	renderCommon:function () {
+		if (this.mounted && this.mounted.app_id !== countlyCommon.ACTIVE_APP_ID) {
+			this.destroy();
+		}
 		if (!this.mounted) {
 			this.div = $('<div />').appendTo($(this.el))[0];
 			this.mounted = m.mount(this.div, components.push.dash);

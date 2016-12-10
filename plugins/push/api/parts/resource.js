@@ -8,6 +8,7 @@ const res = require('../../../../api/parts/jobs/resource.js'),
 class Connection extends res.Resource {
 	constructor(_id, name, credentials) {
 		super(_id, name);
+		log.d('[%d]: Initializing push resource with %j / %j / %j', process.pid, _id, name, credentials);
 		if (credentials.platform === 'i') {
 			this.connection = new APN.ConnectionResource(credentials.key, credentials.secret || '', credentials.topic || '', credentials.expiration || '', credentials.host);
 		} else if (credentials.platform === 'a') {
@@ -16,6 +17,7 @@ class Connection extends res.Resource {
 			log.e(`Platform ${credentials.platform} is not supported`);
 			throw new Error(`Platform ${credentials.platform} is not supported`);
 		}
+		log.d('[%d]: Initialized push resource', process.pid);
 	}
 
 	open () {
