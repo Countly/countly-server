@@ -33,6 +33,9 @@ countly update sdk-web
 
 #add new plugins
 countly plugin enable compare
+countly plugin enable server-stats
+countly plugin enable slipping-away-users
+countly plugin enable star-rating
 
 #install dependencies, process files and restart countly
 countly upgrade
