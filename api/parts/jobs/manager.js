@@ -49,7 +49,7 @@ class Manager {
 
 				log.d('Cancelling %d jobs', toCancel ? toCancel.length : null);
 				try {
-					let promise = toCancel && toCancel.length ? Promise.all(toCancel.map(j => this.create(j).cancel())) : Promise.resolve(),
+					let promise = toCancel && toCancel.length ? Promise.all(toCancel.map(j => this.create(j).cancel(this.db))) : Promise.resolve(),
 						resume = () => {
 							log.d('Resuming after cancellation');
 							this.collection.find({status: STATUS.PAUSED}).toArray((err, array) => {
@@ -312,8 +312,12 @@ class Manager {
 										}
 									};
 
-								log.d('%s: starting first sub', job._idIpc);
-								next();
+								log.d('[%s]: prepaing subs', job._idIpc);
+								Promise.all(subs.map(s => s.prepare(this, this.db))).then(() => {
+									log.d('[%s]: starting first sub', job._idIpc);
+									next();
+								}, reject);
+
 							} catch (e) {
 								log.e(e, e.stack);
 								reject(e);

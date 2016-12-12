@@ -2140,7 +2140,7 @@ window.ManageAppsView = countlyView.extend({
                     success:function (result) {
                         dialog.remove();
                         if(result && result.app){
-                            var table = "<table class='d-table' cellpadding='0' cellspacing='0'>";
+                            var table = "<table class='events-table d-table' cellpadding='0' cellspacing='0'>";
                             table += "<colgroup><col width='200px'><col width='155px'><col width='100%'></colgroup>";
                             //app creator
                             table += "<tr><th colspan='3'>"+jQuery.i18n.map["management-applications.app-details"]+"</th></tr>";
@@ -2152,7 +2152,7 @@ window.ManageAppsView = countlyView.extend({
                             table += "<td class='second-header'>"+jQuery.i18n.map["management-applications.global_admins"]+"</td><td class='details-value'>"+joinUsers(result.global_admin)+"</td></tr>";
                             table += "<tr><td class='second-header'>"+jQuery.i18n.map["management-applications.admins"]+"</td><td class='details-value'>"+joinUsers(result.admin)+"</td></tr>";
                             table += "<tr><td class='second-header'>"+jQuery.i18n.map["management-applications.users"]+"</td><td class='details-value'>"+joinUsers(result.user)+"</td></tr>";
-                            CountlyHelpers.popup(table+"</table><div class='icon-button light btn-header btn-close'>"+jQuery.i18n.map["common.close"]+"</div>", "app_details_table", true);
+                            CountlyHelpers.popup(table+"</table><div class='buttons'><div class='icon-button light btn-close'>"+jQuery.i18n.map["common.close"]+"</div></div>", "app_details_table", true);
                             $(".btn-close").off("click").on("click", function(){$("#overlay").trigger('click');});
                         }
                         else{

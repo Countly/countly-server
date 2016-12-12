@@ -260,7 +260,7 @@ var common          = require('../../../../api/utils/common.js'),
                                     {$set: {build: json.build, 'result.total': json.build.total}}, 
                                     {new: true}, 
                                     (err, doc) => {
-                                        log.d('err', err, 'doc', doc, 'args', arguments);
+                                        // log.d('err', err, 'doc', doc, 'args', arguments);
                                         if (err) {
                                             log.e('Error while updating message with build result: %j', err);
                                         } else if (!doc || !doc.value) {
@@ -414,6 +414,8 @@ var common          = require('../../../../api/utils/common.js'),
                 mpl[k.replace(/[\[\]]/g, '')] = msg.messagePerLocale[k];
             }
             msg.messagePerLocale = mpl;
+        } else if (msg.type === 'data') {
+            msg.messagePerLocale = undefined;
         }
 
         if (msg.type === 'data' && !msg.data) {
@@ -522,10 +524,14 @@ var common          = require('../../../../api/utils/common.js'),
             if (prepared) {
                 note.result.status = N.Status.Preparing;
                 note.result.total = prepared.result.total;
+
+                var json = note.toJSON();
+                delete json.build;
+
                 common.db.collection('messages').findAndModify(
                     {_id: note._id, 'result.status': N.Status.Preparing, created: null}, 
                     [['_id', 1]], 
-                    {$set: note}, // <- created here
+                    {$set: json}, // <- created here
                     {new: true}, 
                     (err, doc) => {
                         if (err) {
@@ -544,7 +550,7 @@ var common          = require('../../../../api/utils/common.js'),
                                     jobs.job('push:send', {mid: note._id}).now();
                                 }
                             } else {
-                                log.d('Build is not finished yet for message %j', note._id);
+                                log.d('Build is not finished yet for message %j', doc.value);
                             }
                             plugins.dispatch("/systemlogs", {params:params, action:"push_message_created", data: doc.value});
                             common.returnOutput(params, doc.value);
@@ -556,12 +562,12 @@ var common          = require('../../../../api/utils/common.js'),
                     return common.returnMessage(params, 403, 'Only app / global admins are allowed to push');
                 }
 
-                jobs.runTransient('push:build', note).then(build => {
+                jobs.runTransient('push:build', note.toJSON()).then(build => {
                     if (build.TOTALLY === 0) {
                         common.returnMessage(params, 400, 'No audience');
                     } else {
                         note.build = build;
-                        note.result.tital = build.TOTALLY;
+                        note.result.total = build.TOTALLY;
                         common.db.collection('messages').save(note, (err) => {
                             if (err) {
                                 log.e('Error while saving message: %j', err);
@@ -809,7 +815,7 @@ var common          = require('../../../../api/utils/common.js'),
                         iTotalRecords: total, 
                         iTotalDisplayRecords: count, 
                         aaData: items || []
-                    });
+                    }, true);
                 });
             });
         });

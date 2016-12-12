@@ -14,15 +14,20 @@ const job = require('../../../../api/parts/jobs/job.js'),
 class PushJob extends job.IPCJob {
 	constructor(name, data) {
 		super(name, data);
+		log.d('initializing PushJob with %j & %j', name, data);
 	}
 
 	prepare (manager, db) {
 		if (this.data.appsub) {
-			log.d('[%d]: Preparing subjob %j (data %j)', process.pid, this._idIpc, this.data);
+			log.d('[%d]: Preparing subjob %j (data %j, content %j)', process.pid, this._idIpc, this.data);
 			this.anote = new N.AppSubNote(this.data.appsub);
+			this.aoid = db.ObjectID(this.anote._id);
+			log.d('[%d]: Preparing subjob creds %j', process.pid, this._idIpc, this.anote.creds);
+			this.anote.creds = new creds.AppSubCredentials(this.anote.creds);
 			this.fieldToken = creds.DB_USER_MAP.tokens + '.' + this.anote.creds.field;
 			this.fieldIndex = creds.DB_USER_MAP.tokens + this.anote.creds.field;
-			return Promise.resolve();
+			log.d('[%d]: Loading subjob creds %j', process.pid, this._idIpc, this.anote.creds);
+			return this.anote.creds.load(db);
 		} else {
 			log.d('[%d]: Preparing parent job %j (data %j)', process.pid, this._idIpc, this.data);
 			return N.Note.load(db, db.ObjectID(this.data.mid)).then((note) => {
@@ -32,7 +37,7 @@ class PushJob extends job.IPCJob {
 	}
 
 	resourceName () {
-		return 'send:' + this.anote.id;
+		return 'send:' + this.anote.creds.id;
 	}
 
 	createResource (_id, name) {
@@ -129,6 +134,7 @@ class PushJob extends job.IPCJob {
 
 		this.resource.send(this.datas, (count) => {
 			this.streamer.load(db, this.data.first, this.data.last, Math.max(count, 10)).then((users) => {
+				log.d('users %j', users);
 				// bookmark is not first of next batch, but rather last status from previous
 				// so it must be removed from array
 				if (users.length && users[0]._id === status.bookmark) {
@@ -136,33 +142,33 @@ class PushJob extends job.IPCJob {
 				}
 				var fed, lst;
 				if (!users || users.length === 0) {
-					log.d('Nothing to feed anymore');
+					log.d('[%s:%d]: Nothing to feed anymore', this.anote.id, process.pid);
 					this.resource.feed([]);
 				} else if (users.length === 1) {
-					log.d('Feeding last user');
+					log.d('[%s:%d]: Feeding last user', this.anote.id, process.pid);
 					fed = this.resource.feed(users.map(this.mapUser.bind(this)));
 
 					status.size += fed;
 
 					if (fed === 1) {
-						log.d('Fed last user');
+						log.d('[%s:%d]: Fed last user', this.anote.id, process.pid);
 						this._json.data.first += ' final ';
 					} else {
-						log.w('Cannot feed last user');
+						log.w('[%s:%d]: Cannot feed last user', this.anote.id, process.pid);
 					}
 				} else {
 					lst = users.pop();
-					log.d('Going to feed %d users while %d is requested: %j / %j', users.length, count, users, lst);
+					log.d('[%s:%d]: Going to feed %d users while %d is requested: %j / %j', this.anote.id, process.pid, users.length, count, users, lst);
 					fed = this.resource.feed(users.map(this.mapUser.bind(this)));
 				
 					status.size += fed;
 
-					log.d('Fed %j users out of %d', fed, users.length);
+					log.d('[%s:%d]: Fed %j users out of %d', this.anote.id, process.pid, fed, users.length);
 					if (fed === users.length) {
-						log.d('Fed all %d users, next batch will start with %s', fed, lst._id);
+						log.d('[%s:%d]: Fed all %d users, next batch will start with %s', this.anote.id, process.pid, fed, lst._id);
 						this._json.data.first = lst._id;
 					} else if (fed < users.length && fed > 0) {
-						log.d('Fed only %d users, next batch will start with %s', fed, users[fed]._id);
+						log.d('[%s:%d]: Fed only %d users, next batch will start with %s', this.anote.id, process.pid, fed, users[fed]._id);
 						this._json.data.first = users[fed]._id;
 					}
 				}
@@ -170,66 +176,67 @@ class PushJob extends job.IPCJob {
 				done(err || 'Error while loading users');
 			});
 		}, (statuses) => {
-			var codes = statuses.map(s => s[1]);
-			var ids = statuses.filter(s => s[1] === 1).map(s => s[0]);
-			var errors = codes.filter(s => s < 0).length;
-			var unset = statuses.filter(s => s[1] === 0).map(s => s[0]);
-			var sent = statuses.length - errors - unset.length;
+			var sent = statuses.filter(s => s[1] === 200  || (s[1] === -200 && s[3])).map(s => s[0]);
+			var reset = statuses.filter(s => s[1] === -200 && s[3]);
+			var unset = statuses.filter(s => s[1] === -200 && !s[3]).map(s => s[0]);
+			var errors = statuses.filter(s => !!s[2]);
 
-			log.d('Got %d statuses: %d sent, %d unset, %d errors', statuses.length, sent, unset.length, errors);
+			log.d('[%s:%d]: Got %d statuses: %d sent, %d unset, %d reset, %d errors', this.anote.id, process.pid, statuses.length, sent.length, unset.length, reset.length, errors.length);
+			log.d('[%s:%d]: statuses %j', this.anote.id, process.pid, statuses);
+
+			status.done += statuses.length;
+			this.streamer.unload(db, statuses.map(s => s[0])).then(() => {}, log.e);
 
 			if (unset.length) {
-				let q = unset.length === 1 ? {_id: unset[0]} : {_id: {$in: unset}},
+				let q = {_id: {$in: unset}},
 					$unset = {
 						[this.fieldToken]: 1,
 						[this.fieldIndex]: 1,
 					};
 
-				log.d('[%d]: Unsetting %d tokens in %j: %j / %j, pulling %j', process.pid, unset.length, 'app_users' + this.app._id, q, $unset, message._id);
-				db.collection('app_users' + this.app._id).update(q, {$unset: $unset}, {multi: true}, log.logdb('unsetting tokens'));
+				log.d('[%s:%d]: Unsetting %d tokens in %j: %j / %j', this.anote.id, process.pid, unset.length, 'app_users' + this.anote.creds.app_id, q, $unset);
+				db.collection('app_users' + this.anote.creds.app_id).update(q, {$unset: $unset}, {multi: true}, log.logdb('unsetting tokens'));
 			}
 
-			if (ids.length) {
-				db.collection('app_users' + this.app._id).update({_id: {$in: ids}}, {$push: {msgs: this.anote._id}}, {multi: true}, log.logdb('adding message to app_users'));
+			if (reset.length) {
+				reset.forEach(status => {
+					db.collection('app_users' + this.anote.creds.app_id).updateOne({_id: status[0]}, {$set: {[this.fieldToken]: status[3]}}, log.logdb('updating push token'));
+				});
 			}
 
 			if (statuses.length) {
-				db.collection('messages').update({_id: this.anote._id}, {$inc: {'result.sent': sent, 'result.processed': statuses.length, 'result.errors': errors}}, log.logdb('updating message with sent'));
+				db.collection('messages').update({_id: this.aoid}, {$inc: {'result.sent': sent.length, 'result.processed': statuses.length, 'result.errors': errors.length}}, log.logdb('updating message with sent'));
 			}
 
-			statuses.filter(s => s[1] === 2).forEach(status => {
-				db.collection('app_users' + this.app._id).updateOne({_id: status[0]}, {$set: {[this.fieldToken]: status[2]}}, log.logdb('updating GCM token'));
-			});
+			if (sent.length) {
+				db.collection('app_users' + this.anote.creds.app_id).update({_id: {$in: sent}}, {$push: {msgs: this.aoid}}, {multi: true}, log.logdb('adding message to app_users'));
 
-			status.done += statuses.length;
-
-			if (sent) {
 				var params = {
 					qstring: {
 						events: [
-							{ key: '[CLY]_push_sent', count: sent, segmentation: {i: this.anote._id } }
+							{ key: '[CLY]_push_sent', count: sent.length, segmentation: {i: this.anote._id } }
 						]
 					},
 					app_id: this.anote.creds.app_id,
-					appTimezone: this.anote.creds.app_timezone,
-					time: require('../../../../api/utils/common.js').initTimeObj(this.anote.creds.app_timezone)
+					appTimezone: this.anote.creds.app_timezone.tz,
+					time: require('../../../../api/utils/common.js').initTimeObj(this.anote.creds.app_timezone.tz)
 				};
 
 				require('../../../../api/parts/data/events.js').processEvents(params);
 			}
 
-			if (errors) {
+			if (errors.length) {
 				let errorsInc = {};
-				codes.filter(s => s < 0).forEach(c => {
-					let key = 'result.errorCodes.' + N.Platform.APNS + ((-1) * c);
+				errors.forEach(status => {
+					let key = 'result.errorCodes.' + this.anote.creds.platform + Math.abs(status[1]) + (status[2] ? '+' + status[2] : '');
 					if (errorsInc[key]) {
 						errorsInc[key]++;
 					} else {
 						errorsInc[key] = 1;
 					}
 				});
-				log.d('setting error codes for %s: %j', this.anote._id, {$inc: errorsInc});
-				db.collection('messages').update({_id: this.anote._id}, {$inc: errorsInc}, log.logdb('updating message with error codes'));
+				log.d('[%s:%d]: setting error codes for %s: %j', this.anote.id, process.pid, this.anote._id, {$inc: errorsInc});
+				db.collection('messages').update({_id: this.aoid}, {$inc: errorsInc}, log.logdb('updating message with error codes'));
 			}
 
 			var max = statuses.shift()[0];
@@ -258,10 +265,16 @@ class PushJob extends job.IPCJob {
 	cancel (db) {
 		return new Promise((resolve, reject) => {
 			super.cancel().then(() => {
-				let query = {_id: this.anote._id},
-					update = {$set: {'result.status': N.Status.Aborted, 'result.error': 'Cancelled'}};
+				let mid = this.note ? this.note._id : this.anote ? this.anote._id : this.data.mid;
 
-				db.collection('messages').update(query, update, log.logdb('cancelling message', resolve, reject));
+				if (mid) {
+					mid = typeof mid === 'string' ? db.ObjectID(mid) : mid;
+	
+					let query = {_id: mid},
+						update = {$set: {'result.status': N.Status.Aborted, 'result.error': 'Cancelled'}};
+
+					db.collection('messages').update(query, update, log.logdb('cancelling message', resolve, reject));
+				}
 			});
 		});
 	}

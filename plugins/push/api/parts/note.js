@@ -57,8 +57,8 @@ class Note {
 			error: null,
 		};
 
-		this.expiryDate = data.expiryDate || new Date(Date.now() + DEFAULT_EXPIRY);     // one week by default
-		this.created = data.created || new Date();
+		this.expiryDate = parseDate(data.expiryDate) || new Date(Date.now() + DEFAULT_EXPIRY);     // one week by default
+		this.created = parseDate(data.created) || new Date();
 		this.build = data.build;
 	}
 
@@ -200,7 +200,7 @@ class AppSubNote {
 		} else if (note && note._id) {
 			this._id = note._id;
 			this.idx = note.idx;
-			this.content = JSON.parse(note.content);
+			this.content = typeof note.content === 'string' ? JSON.parse(note.content) : note.content;
 			this.creds = note.creds;
 			if (note.query) {
 				this.query = {};
@@ -243,6 +243,13 @@ var flattenObject = function(ob) {
 		}
 	}
 	return toReturn;
+};
+
+var parseDate = function(d) {
+	if (d instanceof Date) { return d; } 
+	if (typeof d === 'string' && d) { return new Date(d); }
+	if (typeof d === 'number' && d) { return new Date(d); }
+	return d;
 };
 
 module.exports = {

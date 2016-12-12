@@ -101,7 +101,7 @@ if (!window.components.slider) {
 						]),
 						ctrl.model.loadingTitle() ? 
 							m('.loader', [
-								m('img[src="/images/loading.png"]'),
+								m('.loading-bars'),
 								m('div', [
 									m('h3', typeof ctrl.model.loadingTitle() === 'function' ? ctrl.model.loadingTitle()() : ctrl.model.loadingTitle()),
 									m('h6', typeof ctrl.model.loadingDesc() === 'function' ? ctrl.model.loadingDesc()() : ctrl.model.loadingDesc())
