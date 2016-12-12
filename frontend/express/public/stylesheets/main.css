@@ -482,10 +482,10 @@ table { border-collapse: collapse; }
 #app_details {margin-left: 10px; text-decoration:underline; font-size: 11px; color: #2FA732; cursor: pointer;}
 .app_details_table{min-width: 800px; position: relative;}
 .dialog.app_details_table .indicator{margin-bottom: 0;}
+.dialog.app_details_table .buttons { box-shadow: inset 0 1px 0 #ccc; padding: 13px; margin-top: -1px; }
 .app_details_table table.d-table{margin-bottom:0;}
 .app_details_table td{border-left: 1px solid #ececec;}
 .app_details_table table.d-table tr td.second-header{width: 150px;}
-.app_details_table table.d-table tr td.details-value{color:#000;}
 
 #code-countly {background-color: #fff; border-radius: 2px; padding: 20px; border: 1px solid #D0D0D0; margin-left: 187px;}
 #code-countly h3 {font-size: 16px; color: #636363; margin-top: 0px;}
@@ -745,17 +745,17 @@ div.datatablesubrow {display: none;}
 	.dashboard-summary .item:last-child .inner { border-right:none; }
 	.dashboard-summary .item .title { font:12px Ubuntu,Helvetica,sans-serif; line-height:111%; text-align:center; color:#FFF; text-transform:uppercase;}
 	.dashboard-summary .item .bar { width:80%; height:6px; padding-top:2px; padding-bottom:2px; overflow:auto; background-color:transparent; margin:0 auto; margin-top:5px; margin-bottom:5px; }
-		.dashboard-summary .item .bar .bar-inner { background-color:#0EC1B9; width:40%; float:left; height:6px; box-shadow:inset 2px 0 0 0 #333 }
+		.dashboard-summary .item .bar .bar-inner { background-color:#52A3EF; width:40%; float:left; height:6px; box-shadow:inset 2px 0 0 0 #333 }
 			.dashboard-summary .item .bar .bar-inner:hover { margin-bottom:-1px; margin-top:-1px; height:8px; }
 
 		.dashboard-summary .item .bar .bar-inner:first-child { box-shadow:none; }
 		.dashboard-summary .item .bar .bar-inner:last-child { }
-		.dashboard-summary .item .bar .bar-inner:nth-child(2) { background-color:#52A3EF; width:42%; }
-		.dashboard-summary .item .bar .bar-inner:nth-child(3) { background-color:#FF8700; width:16%; }
+		.dashboard-summary .item .bar .bar-inner:nth-child(2) { background-color:#FF8700; width:42%; }
+		.dashboard-summary .item .bar .bar-inner:nth-child(3) { background-color:#0EC1B9; width:16%; }
 
     .dashboard-summary.two-bars .item .bar .bar-inner:nth-child(2) { box-shadow: 2px 0 0 0 #ECECEC; background-color: #ECECEC; pointer-events:none; }
 
-	.dashboard-summary .item .number { font-size:26px; text-align:center; color:#0EC1B9; line-height:33px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+	.dashboard-summary .item .number { font-size:26px; text-align:center; color:#52A3EF; line-height:33px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 	.dashboard-summary .item .no-data { font:18px Ubuntu,Helvetica,sans-serif; line-height:111%; text-align:center; color:#222; padding-bottom:14px; padding-top:20px; }
         .dashboard-summary .item.light .no-data { color:#d8d8d8; }
 
