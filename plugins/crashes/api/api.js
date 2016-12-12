@@ -284,59 +284,57 @@ plugins.setConfigs("crashes", {
                                     report.session = dbAppUser.sc - user.sessions;
                                 common.db.collection('app_crashes' + params.app_id).insert(report, function (err, res){});
                                 
-                                //check if drill available
-                                if(common.drillDb){
-                                    var data = {};
-                                    data.crash = report.group;
-                                    var drillP = [
-                                        { name:"manufacture", type: "l" },
-                                        { name:"cpu", type: "l" },
-                                        { name:"opengl", type: "l" },
-                                        { name:"view", type: "l" },
-                                        { name:"browser", type: "l" },
-                                        { name:"os", type: "l" },
-                                        { name:"orientation", type: "l" },
-                                        { name:"nonfatal", type: "l" },
-                                        { name:"root", type: "l" },
-                                        { name:"online", type: "l" },
-                                        { name:"signal", type: "l" },
-                                        { name:"muted", type: "l" },
-                                        { name:"background", type: "l" },
-                                        { name:"ram_current", type: "n" },
-                                        { name:"ram_total", type: "n" },
-                                        { name:"disk_current", type: "n" },
-                                        { name:"disk_total", type: "n" },
-                                        { name:"bat_current", type: "n" },
-                                        { name:"bat_total", type: "n" },
-                                        { name:"bat", type: "n" },
-                                        { name:"run", type: "n" }
-                                    ];
-                                    for(var i = 0; i < drillP.length; i++){
-                                        if(report[drillP[i].name] != null && typeof report[drillP[i].name] != "undefined"){
-                                            if(bools[drillP[i].name]){
-                                                if(report[drillP[i].name])
-                                                    data[drillP[i].name] = "true";
-                                                else
-                                                    data[drillP[i].name] = "false";
-                                            }
+                                var data = {};
+                                data.crash = report.group;
+                                var drillP = [
+                                    { name:"manufacture", type: "l" },
+                                    { name:"cpu", type: "l" },
+                                    { name:"opengl", type: "l" },
+                                    { name:"view", type: "l" },
+                                    { name:"browser", type: "l" },
+                                    { name:"os", type: "l" },
+                                    { name:"orientation", type: "l" },
+                                    { name:"nonfatal", type: "l" },
+                                    { name:"root", type: "l" },
+                                    { name:"online", type: "l" },
+                                    { name:"signal", type: "l" },
+                                    { name:"muted", type: "l" },
+                                    { name:"background", type: "l" },
+                                    { name:"ram_current", type: "n" },
+                                    { name:"ram_total", type: "n" },
+                                    { name:"disk_current", type: "n" },
+                                    { name:"disk_total", type: "n" },
+                                    { name:"bat_current", type: "n" },
+                                    { name:"bat_total", type: "n" },
+                                    { name:"bat", type: "n" },
+                                    { name:"run", type: "n" }
+                                ];
+                                for(var i = 0; i < drillP.length; i++){
+                                    if(report[drillP[i].name] != null && typeof report[drillP[i].name] != "undefined"){
+                                        if(bools[drillP[i].name]){
+                                            if(report[drillP[i].name])
+                                                data[drillP[i].name] = "true";
                                             else
-                                                data[drillP[i].name] = report[drillP[i].name];
+                                                data[drillP[i].name] = "false";
                                         }
+                                        else
+                                            data[drillP[i].name] = report[drillP[i].name];
                                     }
-                                    if(report.custom){
-                                        for(var i in report.custom){
-                                            if(!data[i]){
-                                                data[i] = report.custom[i];
-                                            }
-                                        }
-                                    }
-                                    var events = [{
-                                        key: "[CLY]_crash",
-                                        count: 1,
-                                        segmentation: data
-                                    }];
-                                    plugins.dispatch("/plugins/drill", {params:params, dbAppUser:dbAppUser, events:events});
                                 }
+                                if(report.custom){
+                                    for(var i in report.custom){
+                                        if(!data[i]){
+                                            data[i] = report.custom[i];
+                                        }
+                                    }
+                                }
+                                var events = [{
+                                    key: "[CLY]_crash",
+                                    count: 1,
+                                    segmentation: data
+                                }];
+                                plugins.dispatch("/plugins/drill", {params:params, dbAppUser:dbAppUser, events:events});
+                                
                             
                                 function processCrash(userAll, lastTs){
                                     var groupSet = {};
