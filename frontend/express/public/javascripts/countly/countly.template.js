@@ -733,12 +733,13 @@ $.extend(Template.prototype, {
 			_metrics = [],
 			_activeAppKey = 0,
 			_initialized = false,
+            _processed = false,
 			_period = null,
             _name = (metric.name)? metric.name : metric,
             _estOverrideMetric = (metric.estOverrideMetric)? metric.estOverrideMetric : "";
 
 		//Public Methods
-		countlyMetric.initialize = function () {
+		countlyMetric.initialize = function (processed) {
 			if (_initialized &&  _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
 				return this.refresh();
 			}
@@ -748,22 +749,40 @@ $.extend(Template.prototype, {
 			if (!countlyCommon.DEBUG) {
 				_activeAppKey = countlyCommon.ACTIVE_APP_KEY;
 				_initialized = true;
-	
-				return $.ajax({
-					type:"GET",
-					url:countlyCommon.API_PARTS.data.r,
-					data:{
-						"api_key":countlyGlobal.member.api_key,
-						"app_id":countlyCommon.ACTIVE_APP_ID,
-						"method":_name,
-						"period":_period
-					},
-					dataType:"jsonp",
-					success:function (json) {
-						_Db = json;
-						setMeta();
-					}
-				});
+                
+                if(processed){
+                    _processed = true;
+                    return $.ajax({
+                        type:"GET",
+                        url:countlyCommon.API_PARTS.data.r+"/analytics/metric",
+                        data:{
+                            "api_key":countlyGlobal.member.api_key,
+                            "app_id":countlyCommon.ACTIVE_APP_ID,
+                            "metric":_name,
+                            "period":countlyCommon.getPeriodForAjax()
+                        },
+                        success:function (json) {
+                            _Db = json;
+                        }
+                    });
+                }
+                else{
+                    return $.ajax({
+                        type:"GET",
+                        url:countlyCommon.API_PARTS.data.r,
+                        data:{
+                            "api_key":countlyGlobal.member.api_key,
+                            "app_id":countlyCommon.ACTIVE_APP_ID,
+                            "method":_name,
+                            "period":_period
+                        },
+                        dataType:"jsonp",
+                        success:function (json) {
+                            _Db = json;
+                            setMeta();
+                        }
+                    });
+                }
 			} else {
 				_Db = {"2012":{}};
 				return true;
@@ -779,22 +798,27 @@ $.extend(Template.prototype, {
 					_activeAppKey = countlyCommon.ACTIVE_APP_KEY;
 					return this.initialize();
 				}
-	
-				return $.ajax({
-					type:"GET",
-					url:countlyCommon.API_PARTS.data.r,
-					data:{
-						"api_key":countlyGlobal.member.api_key,
-						"app_id":countlyCommon.ACTIVE_APP_ID,
-						"method":_name,
-						"action":"refresh"
-					},
-					dataType:"jsonp",
-					success:function (json) {
-						countlyCommon.extendDbObj(_Db, json);
-						extendMeta();
-					}
-				});
+                
+                if(_processed){
+                    
+                }
+                else{
+                    return $.ajax({
+                        type:"GET",
+                        url:countlyCommon.API_PARTS.data.r,
+                        data:{
+                            "api_key":countlyGlobal.member.api_key,
+                            "app_id":countlyCommon.ACTIVE_APP_ID,
+                            "method":_name,
+                            "action":"refresh"
+                        },
+                        dataType:"jsonp",
+                        success:function (json) {
+                            countlyCommon.extendDbObj(_Db, json);
+                            extendMeta();
+                        }
+                    });
+                }
 			} else {
 				_Db = {"2012":{}};
 	
@@ -803,27 +827,45 @@ $.extend(Template.prototype, {
 		};
 	
 		countlyMetric.reset = function () {
-			_Db = {};
-			setMeta();
+            if(_processed){
+                _Db = [];
+            }
+            else{
+                _Db = {};
+                setMeta();
+            }
 		};
 	
 		countlyMetric.getData = function (clean) {
-	
-			var chartData = countlyCommon.extractTwoLevelData(_Db, _metrics, this.clearObject, [
-				{
-					name:_name,
-					func:function (rangeArr, dataObj) {
-                        rangeArr = countlyCommon.decode(rangeArr);
-                        if(fetchValue && !clean)
-                            return fetchValue(rangeArr);
-                        else
-                            return rangeArr;
-					}
-				},
-				{ "name":"t" },
-				{ "name":"u" },
-				{ "name":"n" }
-			], _estOverrideMetric);
+            var chartData = {};
+            if(_processed){
+                chartData.chartData = [];
+                var data = JSON.parse(JSON.stringify(_Db));
+                for(var i = 0; i < _Db.length; i++){
+                    if(fetchValue && !clean)
+                        data[i][_name] = fetchValue(countlyCommon.decode(data[i]._id));
+                    else
+                        data[i][_name] = countlyCommon.decode(data[i]._id);
+                    chartData.chartData[i] = data[i];
+                }
+            }
+            else{
+                chartData = countlyCommon.extractTwoLevelData(_Db, _metrics, this.clearObject, [
+                    {
+                        name:_name,
+                        func:function (rangeArr, dataObj) {
+                            rangeArr = countlyCommon.decode(rangeArr);
+                            if(fetchValue && !clean)
+                                return fetchValue(rangeArr);
+                            else
+                                return rangeArr;
+                        }
+                    },
+                    { "name":"t" },
+                    { "name":"u" },
+                    { "name":"n" }
+                ], _estOverrideMetric);
+            }
 
             chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, _name);
 			var namesData = _.pluck(chartData.chartData, _name),
@@ -877,26 +919,55 @@ $.extend(Template.prototype, {
 		};
 	
 		countlyMetric.getBars = function () {
-			return countlyCommon.extractBarData(_Db, _metrics, this.clearObject, fetchValue);
+            if(_processed){
+                var rangeData = {};
+                rangeData.chartData = [];
+                var data = JSON.parse(JSON.stringify(_Db));
+                for(var i = 0; i < _Db.length; i++){
+                    if(fetchValue)
+                        data[i]["range"] = fetchValue(countlyCommon.decode(data[i]._id));
+                    else
+                        data[i]["range"] = countlyCommon.decode(data[i]._id);
+                    rangeData.chartData[i] = data[i];
+                }
+                return countlyCommon.calculateBarData(rangeData);
+            }
+            else{
+                return countlyCommon.extractBarData(_Db, _metrics, this.clearObject, fetchValue);
+            }
 		};
         
         countlyMetric.getOSSegmentedData = function (os, clean) {
             var _os = countlyDeviceDetails.getPlatforms();
-            var oSVersionData = countlyCommon.extractTwoLevelData(_Db, _metrics, this.clearObject, [
-				{
-					name:_name,
-					func:function (rangeArr, dataObj) {
-                        rangeArr = countlyCommon.decode(rangeArr);
-                        if(fetchValue && !clean)
-                            return fetchValue(rangeArr);
-                        else
-                            return rangeArr;
-					}
-				},
-				{ "name":"t" },
-				{ "name":"u" },
-				{ "name":"n" }
-			], _estOverrideMetric);
+            var oSVersionData = {};
+            if(_processed){
+                oSVersionData.chartData = [];
+                var data = JSON.parse(JSON.stringify(_Db));
+                for(var i = 0; i < _Db.length; i++){
+                    if(fetchValue && !clean)
+                        data[i][_name] = fetchValue(countlyCommon.decode(data[i]._id));
+                    else
+                        data[i][_name] = countlyCommon.decode(data[i]._id);
+                    oSVersionData.chartData[i] = data[i];
+                }
+            }
+            else{
+                oSVersionData = countlyCommon.extractTwoLevelData(_Db, _metrics, this.clearObject, [
+                    {
+                        name:_name,
+                        func:function (rangeArr, dataObj) {
+                            rangeArr = countlyCommon.decode(rangeArr);
+                            if(fetchValue && !clean)
+                                return fetchValue(rangeArr);
+                            else
+                                return rangeArr;
+                        }
+                    },
+                    { "name":"t" },
+                    { "name":"u" },
+                    { "name":"n" }
+                ], _estOverrideMetric);
+            }
         
             var osSegmentation = ((os) ? os : ((_os) ? _os[0] : null)),
                 platformVersionTotal = _.pluck(oSVersionData.chartData, 'u'),

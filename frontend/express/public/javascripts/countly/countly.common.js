@@ -1089,6 +1089,10 @@
             },
             { "name":"t" }
         ]);
+        return countlyCommon.calculateBarData(rangeData);
+    };
+    
+    countlyCommon.calculateBarData = function (rangeData) {
         rangeData.chartData = countlyCommon.mergeMetricsByName(rangeData.chartData, "range");
         rangeData.chartData = _.sortBy(rangeData.chartData, function(obj) { return -obj.t; });
 
