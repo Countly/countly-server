@@ -1,7 +1,7 @@
 window.SourcesView = countlyView.extend({
     beforeRender: function() {
         this.dataMap = {};
-        return $.when(countlySources.initialize(), countlyTotalUsers.initialize("sources")).then(function () {});
+        return $.when(countlySources.initialize(true)).then(function () {});
     },
     renderCommon:function (isRefresh) {
         this.updateDataMap();
