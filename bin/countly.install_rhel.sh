@@ -139,7 +139,7 @@ countly update sdk-web
 cd $DIR/.. && grunt dist-all
 
 # disable transparent huge pages
-countly thp
+#countly thp
 
 #finally start countly api and dashboard
 countly start

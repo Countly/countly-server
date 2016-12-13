@@ -37,7 +37,7 @@
 		"Achievement": ["Sound", "Shared"],
 		"Sound": ["Lost", "Won"],
 		"Shared": ["Lost", "Won"],
-		"[CLY]_star_rating":[]
+		"[CLY]_star_rating":["Lost", "Won", "Achievement"]
 	};
 	var pushEvents = ["[CLY]_push_sent", "[CLY]_push_open", "[CLY]_push_action"];
 	var segments  = {

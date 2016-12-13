@@ -137,6 +137,7 @@ function sortBy(arrayToSort, sortList) {
 
 var app = express();
 app = expose(app);
+app.enable('trust proxy');
 
 var loadedThemes = {};
 var curTheme;

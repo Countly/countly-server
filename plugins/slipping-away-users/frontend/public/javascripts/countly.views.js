@@ -28,17 +28,10 @@ window.slippingView = countlyView.extend({
     };
 
     window.slippingDataOnClick = function(timeStamp) {
-      const data = {
-        "api_key":countlyGlobal.member.api_key,
-        "app_id":countlyCommon.ACTIVE_APP_ID,
-        "event": "[CLY]_session",
-        "method":"segmentation_users",
-        "queryObject":JSON.stringify({"up.ls":{"$lt":timeStamp}}),
-        "period": [946684800000,timeStamp*1000],
-        "bucket": "daily",
-        "projectionKey":""
+      var data = {
+        "ls":{"$lt":timeStamp}
       };
-      window.location.hash = '/users/request/' + JSON.stringify(data);
+      window.location.hash = '/users/query/' + JSON.stringify(data);
     };
 
     for (var i = 0; i < slippingData.length; i++) {

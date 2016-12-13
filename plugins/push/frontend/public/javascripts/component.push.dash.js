@@ -7,12 +7,13 @@ window.component('push.dash', function(dash) {
 	var t = window.components.t;
 	
 	dash.controller = function() {
+		this.app_id = countlyCommon.ACTIVE_APP_ID;
 		this.period = m.prop('monthly');
 		this.source = m.prop('dash');
 		this.messages = m.prop([]);
 		this.data = m.prop();
 
-		components.push.remoteDashboard(countlyCommon.ACTIVE_APP_ID).then(function(data){
+		components.push.remoteDashboard(this.app_id).then(function(data){
 			m.startComputation();
 			['sent', 'actions'].forEach(function(ev) {
 				ev = data[ev];
@@ -56,8 +57,16 @@ window.component('push.dash', function(dash) {
 				countlyCommon.drawGraph(this.dataDP(), element, 'bar', {legend: {show: false}});
 			// }
 		}.bind(this);
-		this.tableConfig = function(element, isInitialized){
+		this.tableConfig = function(element, isInitialized, context){
 			if (!isInitialized) {
+				context.onunload = function() {
+					if (this.dtable) {
+						try {
+							this.dtable.fnDestroy(true);
+						} catch(e) {}
+						this.dtable = null;
+					}
+				}.bind(this);
 				var unprop = function(name, def, x, val, val2) { 
 					if (x === 'set') {
 						return val;
@@ -123,7 +132,7 @@ window.component('push.dash', function(dash) {
 						{ mData: unprop.bind(null, 'dates.dateSeconds'), bVisible: false, sType: 'numeric', bSearchable: false },
 						{ mData: unprop.bind(null, 'dates'), sName: 'sent', sType: 'string', iDataSort: 5, sTitle: t('pu.t.sent-scheduled'), mRender: function(local){
 							var dates = local.dates();
-							return dates.sent || dates.date;
+							return dates.sent || dates.date || '';
 						}, bSearchable: false }
 					],
 					aaSorting: [[4, 'asc']]
@@ -159,6 +168,9 @@ window.component('push.dash', function(dash) {
 		};
 	};
 	dash.view = function(ctrl){
+		if (!ctrl.data()) {
+			return m('.push-overview');
+		}
 		return m('.push-overview', [
 			m('input[type=file]', {onchange: function(ev){
 				var file;
@@ -234,13 +246,25 @@ window.MessagingDashboardView = countlyView.extend({
 	initialize:function () {
 	},
 	renderCommon:function () {
-		// if (!this.mounted) {
-			this.mounted = m.mount($('<div />').appendTo($(this.el))[0], components.push.dash);
-		// }
+		if (this.mounted && this.mounted.app_id !== countlyCommon.ACTIVE_APP_ID) {
+			this.destroy();
+		}
+		if (!this.mounted) {
+			this.div = $('<div />').appendTo($(this.el))[0];
+			this.mounted = m.mount(this.div, components.push.dash);
+		}
 	},
-	refresh: function(){
+	refresh: function() {
 		if (this.mounted) { this.mounted.refresh(); }
-	}
+	},
+
+    destroy: function () {
+		if (this.mounted) { 
+			m.mount(this.div, null); 
+			this.mounted = null;
+		}
+    }
+
 });
 
 window.app.messagingDashboardView = new window.MessagingDashboardView();

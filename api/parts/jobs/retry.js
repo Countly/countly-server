@@ -34,7 +34,7 @@ class DefaultRetryPolicy {
 			try {
 				log.d('Running job %d time out of %d attempts', this._retried + 1, this._retries);
 				runFun().then(resolve, (error) => {
-					log.e('Error in retry: ', error, error.stack);
+					log.i('Error in retry: ', error, error.stack);
 					if (this.errorIsRetriable(error)) {
 						log.w('Retriable error in retry: spent %d, left %d attempts', this._retried, this._retries);
 						if (this._retries) {
@@ -49,7 +49,7 @@ class DefaultRetryPolicy {
 						}
 					} else {
 						try {
-							log.w('Non-retriable error in retry: spent %d attempts, error %j', this._retried, error);
+							log.e('Non-retriable error in retry: spent %d attempts, error %j', this._retried, error);
 							reject(error);
 						} catch (e) {
 							log.e(e, e.stack);

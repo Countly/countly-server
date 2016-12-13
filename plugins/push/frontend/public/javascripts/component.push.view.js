@@ -94,7 +94,7 @@ window.component('push.view', function(view) {
 								r.errors() > 0 ? 
 									t.n('pu.po.errors', r.errors())
 									: '',
-							].join('; ').replace(/; $/, '')
+							].join('; ').replace(/; $/, '').replace(/^; /, '')
 					}),
 
 				r.actioned() > 0 ? 
@@ -148,7 +148,7 @@ window.component('push.view', function(view) {
 					href: '#', 
 					onclick: function(ev){ 
 						ev.preventDefault();
-						components.push.popup.show(ctrl.message.toJSON(false, true));
+						components.push.popup.show(ctrl.message.toJSON(false, true, true));
 					}
 				}, t('pu.po.duplicate')),
 				m('a.btn-next.red', {

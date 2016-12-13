@@ -50,24 +50,39 @@ db.collection("plugins").findOne({_id:"plugins"},function(err, list){
                 db.close();
             }
             else{
-                var update = {$set:{}};
                 var val = myArgs[1]+"";
-                if(val == "true")
-                    val = true;
-                else if(val == "false")
-                    val = false;
-                else if(!isNaN(val))
-                    val = parseFloat(val);
-                update["$set"][myArgs[0]] = val;
-                db.collection("plugins").update({_id:"plugins"}, update, function(err, res){
-                    if(err){
-                        console.log(err);
-                    }
-                    else{
-                        console.log("Configuration updated: ",myArgs[0],"=",myArgs[1]);
-                    }
-                    db.close();
-                });
+                if(val === "null"){
+                    var update = {$unset:{}};
+                    update["$unset"][myArgs[0]] = "";
+                    db.collection("plugins").update({_id:"plugins"}, update, function(err, res){
+                        if(err){
+                            console.log(err);
+                        }
+                        else{
+                            console.log("Configuration removed: ");
+                        }
+                        db.close();
+                    });
+                }
+                else{
+                    var update = {$set:{}};
+                    if(val == "true")
+                        val = true;
+                    else if(val == "false")
+                        val = false;
+                    else if(!isNaN(val))
+                        val = parseFloat(val);
+                    update["$set"][myArgs[0]] = val;
+                    db.collection("plugins").update({_id:"plugins"}, update, function(err, res){
+                        if(err){
+                            console.log(err);
+                        }
+                        else{
+                            console.log("Configuration updated: ",myArgs[0],"=",myArgs[1]);
+                        }
+                        db.close();
+                    });
+                }
             }
         }
         else{

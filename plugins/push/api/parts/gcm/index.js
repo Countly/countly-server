@@ -69,6 +69,7 @@ class ConnectionResource extends EventEmitter {
 	}
 
 	send(msgs, feeder, status) {
+		log.d('[%d]: send', process.pid);
 		this.messages = msgs;
 		this.devices = msgs.map(_ => []);
 		this.ids = msgs.map(_ => []);
@@ -183,46 +184,60 @@ class ConnectionResource extends EventEmitter {
 				}
 				var obj = JSON.parse(data);
 				if (obj.failure === 0 && obj.canonical_ids === 0) {
+					ids.forEach(id => id[1] = 200);
 					this.statuser(ids);
 				} else if (obj.results) {
 
-					obj.results.forEach((result, i) => {
-                    	if (result.message_id && result.registration_id) {
-                    		ids[i][1] = 2;
-                    		ids[i][2] = result.registration_id;
-						} else if (result.error === 'MessageTooBig') {
-							this.rejectAndClose(code + ': GCM Message Too Big');
-						} else if (result.error === 'InvalidDataKey') {
-							this.rejectAndClose(code + ': Invalid Data Key');
-						} else if (result.error === 'InvalidTtl') {
-							this.rejectAndClose(code + ': Invalid Time To Live');
-						} else if (result.error === 'InvalidTtl') {
-							this.rejectAndClose(code + ': Invalid Time To Live');
-						} else if (result.error === 'InvalidPackageName') {
-							this.rejectAndClose(code + ': Invalid Package Name');
-						} else if (result.error === 'Unavailable' || result.error === 'InternalServerError') {
-							ids[i] = -499; 
-							ids.splice(i, 1);
-							devices.splice(i, 1);
-						} else if (result.error === 'MismatchSenderId') {
-							ids[i][1] = -498;
-						} else if (result.error === 'NotRegistered' || result.error === 'InvalidRegistration') {
-							ids[i][1] = 0;
-						} else if (result.error) {
-							log.w('Unknown GCM error: %j', process.pid, result.error);
-							ids[i][1] = -497;
-						}
+					var messageErrorCode, messageError;
 
+					obj.results.forEach((result, i) => {
+						if (result.message_id) {
+							if (result.registration_id) {
+								ids[i][1] = -200;
+								ids[i][3] = result.registration_id;
+							} else {
+								ids[i][1] = 200;
+							}
+						} else if (result.error === 'InvalidRegistration') {
+							ids[i][1] = -200;
+							ids[i][2] = result.error;
+						} else if (result.error === 'NotRegistered') {
+							ids[i][1] = -200;
+						} else if (result.error === 'MessageTooBig' || result.error === 'InvalidDataKey' || result.error === 'InvalidTtl' ||
+								result.error === 'InvalidTtl' || result.error === 'InvalidPackageName') {
+							messageErrorCode = code;
+							messageError = result.error;
+						} else if (result.error === 'Unavailable' || result.error === 'InternalServerError') {
+							if (!ids[i][3]) {
+								ids[i][3] = 0;
+							}
+							ids[i][3]++;
+							// allow up to 5 InternalServerError's for a single token, then stop sending
+							if (ids[i][3] > 5) {
+								messageErrorCode = code;
+								messageError = result.error;
+							} else {
+								ids.splice(i, 1);
+								devices.splice(i, 1);
+							}
+						} else if (result.error) {
+							ids[i][1] = code;
+							ids[i][2] = result.error;
+						}
 					});
 
 					this.statuser(ids);
+
+					if (messageError) {
+						this.rejectAndClose(messageError);
+					}
 				}
 
 				this.serviceImmediate();
 			} catch (e) {
 				ids.forEach(i => i[1] = -1);
 				this.statuser(ids);
-				log.w('[%d]: Bad response from GCM: %j / %j / %j', process.pid, code, data, e);
+				log.w('[%d]: Bad response from GCM: %j / %j / %j', process.pid, code, data, e, e.stack);
 			}
 		}
 

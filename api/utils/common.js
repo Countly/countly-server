@@ -404,7 +404,7 @@ var common = {},
                             return false;
                         }
                     } else if (argProperties[arg].type === 'Object') {
-                        if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']') {
+                        if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']' && !(!argProperties[arg].required && args[arg] === null)) {
                             return false;
                         }
                     } 
@@ -511,11 +511,12 @@ var common = {},
         }
     };
 
-    common.returnOutput = function (params, output) {
+    common.returnOutput = function (params, output, noescape) {
         //set provided in configuration headers
         var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
         var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
         var parts;
+        var escape = noescape ? undefined : escape_html_entities;
         for(var i = 0; i < add_headers.length; i++){
             if(add_headers[i] && add_headers[i].length){
                 parts = add_headers[i].split(/:(.+)?/);
@@ -527,9 +528,9 @@ var common = {},
         if (params && params.res && !params.blockResponses) {
             params.res.writeHead(200, headers);
             if (params.qstring.callback) {
-                params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape_html_entities) + ')');
+                params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape) + ')');
             } else {
-                params.res.write(JSON.stringify(output, escape_html_entities));
+                params.res.write(JSON.stringify(output, escape));
             }
 
             params.res.end();

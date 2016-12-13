@@ -138,70 +138,30 @@
     border-color: rgba(0, 0, 0, .6) transparent transparent transparent;
 }
 
-
 .comp-slider .loader { opacity: 0; visibility: hidden; position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
-.comp-slider.loading .loadable { filter: blur(10px); -webkit-filter: blur(10px); }
-.comp-slider.loading .loader { opacity: 1; visibility: visible; }
+/*.comp-slider.loading .loadable { filter: blur(10px); -webkit-filter: blur(10px); }*/
+.comp-slider.loading .loader { opacity: 1; visibility: visible; background: rgba(255,255,255,.9); z-index: 10000; }
 
-.comp-push-message-type { width: 160px; }
-@-webkit-keyframes rotating /* Safari and Chrome */ {
-  from {
-    -ms-transform: rotate(0deg);
-    -moz-transform: rotate(0deg);
-    -webkit-transform: rotate(0deg);
-    -o-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  to {
-    -ms-transform: rotate(360deg);
-    -moz-transform: rotate(360deg);
-    -webkit-transform: rotate(360deg);
-    -o-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
+.loader > div.loading-bars {
+    position: absolute;
+    margin: 88px auto;
+    top: 31%;
+    left: 54%;
+    margin-top: -32px;
+    margin-left: -100px;
 }
-@keyframes rotating {
-  from {
-    -ms-transform: rotate(0deg);
-    -moz-transform: rotate(0deg);
-    -webkit-transform: rotate(0deg);
-    -o-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  to {
-    -ms-transform: rotate(360deg);
-    -moz-transform: rotate(360deg);
-    -webkit-transform: rotate(360deg);
-    -o-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-
-.comp-slider.loading .loader img {
-	position: absolute;
+.loader > div:last-child {
+    position: absolute;
     top: 30%;
-    left: 50%;
-    width: 60px;
-    margin-top: -30px;
-    margin-left: -185px;
-	-webkit-animation: rotating 2s linear infinite;
-	-moz-animation: rotating 2s linear infinite;
-	-ms-animation: rotating 2s linear infinite;
-	-o-animation: rotating 2s linear infinite;
-	animation: rotating 2s linear infinite;
- }
-
-.loader > div {
-	position: absolute;
-	top: 30%;
-	left: 50%;
-	margin-top: -32px;
-	margin-left: -100px;
+    left: 60%;
+    margin-top: -32px;
+    margin-left: -100px;
 }
 
 .loader h3, .loader h6 { margin: 9px 0;}
 
 .comp-push-compose select { width: 160px; }
+.comp-push-compose .comp-segmented { width: 160px; }
 .comp-push-locales { margin-right: 18px; background-color: #EEEFEF; }
 .comp-push-locales > div { position: relative; height: 185px; }
 .comp-push-locales .comp-tabs-tabs { display: block; position: absolute; top: 0; left: 0; width: 159px; height: 184px; overflow: auto; border: 1px solid #C2C2C2; border-width: 1px 0 1px 1px; border-radius: 2px 0 0 2px; }
