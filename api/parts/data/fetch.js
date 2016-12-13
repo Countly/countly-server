@@ -454,81 +454,87 @@ var fetch = {},
 		});
     };
 	
-	fetch.fetchMetric = function(params) {
-		function getMetric(metric, totalUsersMetric){
-			fetchTimeObj(metric, params, false, function(doc) {
-				var clearMetricObject = function (obj) {
-					if (obj) {
-						if (!obj["t"]) obj["t"] = 0;
-						if (!obj["n"]) obj["n"] = 0;
-						if (!obj["u"]) obj["u"] = 0;
-					}
-					else {
-						obj = {"t":0, "n":0, "u":0};
-					}
-			
-					return obj;
-				};
-
-				if (doc['meta'] && doc['meta'][params.qstring.metric]) {
-                    getTotalUsersObj(totalUsersMetric, params, function(dbTotalUsersObj) {
-                        var data = countlyCommon.extractMetric(doc, doc['meta'][params.qstring.metric], clearMetricObject, [
-                            {
-                                name:params.qstring.metric,
-                                func:function (rangeArr, dataObj) {
-                                    return rangeArr;
-                                }
-                            },
-                            { "name":"t" },
-                            { "name":"n" },
-                            { "name":"u" }
-                        ], formatTotalUsersObj(dbTotalUsersObj));
-
-                        common.returnOutput(params, data);
-                    });
+	fetch.getMetric = function(params, metric, totalUsersMetric, callback){
+        var queryMetric = params.qstring.metric || metric;
+		fetchTimeObj(metric, params, false, function(doc) {
+			var clearMetricObject = function (obj) {
+				if (obj) {
+					if (!obj["t"]) obj["t"] = 0;
+					if (!obj["n"]) obj["n"] = 0;
+					if (!obj["u"]) obj["u"] = 0;
 				}
-				else{
-					common.returnOutput(params, []);
+				else {
+					obj = {"t":0, "n":0, "u":0};
 				}
-			});
-		}
+		
+				return obj;
+			};
 
+			if (doc['meta'] && doc['meta'][queryMetric]) {
+                getTotalUsersObj(totalUsersMetric, params, function(dbTotalUsersObj) {
+                    var data = countlyCommon.extractMetric(doc, doc['meta'][queryMetric], clearMetricObject, [
+                        {
+                            name:queryMetric,
+                            func:function (rangeArr, dataObj) {
+                                return rangeArr;
+                            }
+                        },
+                        { "name":"t" },
+                        { "name":"n" },
+                        { "name":"u" }
+                    ], formatTotalUsersObj(dbTotalUsersObj));
+                    
+                    if(callback){
+                        callback(data);
+                    }
+                });
+			}
+			else if(callback){
+                callback([]);
+			}
+		});
+	};
+        
+    fetch.fetchMetric = function(params) {
+        var output = function(data){
+            common.returnOutput(params, data);
+        };
 		if(!params.qstring.metric) {
 			common.returnMessage(params, 400, 'Must provide metric');
         } else {
 			switch (params.qstring.metric) {
                 case 'locations':
                 case 'countries':
-                    getMetric('users', "countries");
+                    fetch.getMetric(params, 'users', "countries", output);
                     break;
                 case 'sessions':
                 case 'users':
-					getMetric('users');
+					fetch.getMetric(params, 'users', null, output);
                     break;
                 case 'app_versions':
-                    getMetric("device_details", "app_versions");
+                    fetch.getMetric(params, "device_details", "app_versions", output);
                     break;
                 case 'os':
-                    getMetric("device_details", "platforms");
+                    fetch.getMetric(params, "device_details", "platforms", output);
                     break;
                 case 'os_versions':
-                    getMetric("device_details", "platform_versions");
+                    fetch.getMetric(params, "device_details", "platform_versions", output);
                     break;
                 case 'resolutions':
-                    getMetric("device_details", "resolutions");
+                    fetch.getMetric(params, "device_details", "resolutions", output);
                     break;
                 case 'device_details':
-					getMetric('device_details');
+					fetch.getMetric(params, 'device_details', null, output);
                     break;
                 case 'cities':
                     if (plugins.getConfig("api").city_data !== false) {
-						getMetric("cities", "cities");
+						fetch.getMetric(params, "cities", "cities", output);
                     } else {
                         common.returnOutput(params, []);
                     }
                     break;
                 default:
-					getMetric(params.qstring.metric);
+					fetch.getMetric(params, params.qstring.metric, null, output);
                     break;
             }
 		}
