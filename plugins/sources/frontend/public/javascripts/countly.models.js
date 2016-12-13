@@ -40,18 +40,35 @@
             code = code.replace("://www.", "://");
             var matches = code.match(/^https?\:\/\/([^\/?#]+)(?:[\/?#]|$)/i);
             var domain = matches && matches[1] || code;
-            
-            if(domain.indexOf("google.") == 0)
-                domain = "Google";
-            else if(domain.indexOf("search.yahoo.") > -1)
-                domain = "Yahoo";
-            else if(domain.indexOf("search.ask.") > -1)
-                domain = "Ask";
             return domain;
         }
     }
 
     window.countlySources = window.countlySources || {};
     window.countlySources.getSourceName=getSourceName;
+    countlySources.initializeKeywords = function(){
+        var self = this;
+        return $.ajax({
+            type:"GET",
+            url:countlyCommon.API_PARTS.data.r+"/keywords",
+            data:{
+                "api_key":countlyGlobal.member.api_key,
+                "app_id":countlyCommon.ACTIVE_APP_ID,
+                "period":countlyCommon.getPeriodForAjax()
+            },
+            success:function (json) {
+                self._keywords = json;
+            }
+        });
+    };
+    countlySources.getKeywords = function(){
+        var data = JSON.parse(JSON.stringify(this._keywords));
+        for(var i = 0; i < this._keywords.length; i++){
+            data[i]._id = countlyCommon.decode(data[i]._id);
+        }
+        data = countlyCommon.mergeMetricsByName(data, "_id");
+        return data;
+    };
+    
     CountlyHelpers.createMetricModel(window.countlySources, {name: "sources", estOverrideMetric:"sources"}, jQuery, getSourceName);
 }());

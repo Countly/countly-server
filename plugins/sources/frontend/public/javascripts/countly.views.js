@@ -104,11 +104,63 @@ window.SourcesView = countlyView.extend({
     }
 });
 
+window.KeywordsView = countlyView.extend({
+    beforeRender: function() {
+        return $.when(countlySources.initializeKeywords()).then(function () {});
+    },
+    renderCommon:function (isRefresh) {
+        this.templateData = {
+            "page-title":jQuery.i18n.map["keywords.title"],
+            "font-logo-class":"fa-crosshairs"
+        };
+
+        if (!isRefresh) {
+            var data = countlySources.getKeywords();
+            $(this.el).html(this.template(this.templateData));
+            this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": data,
+                "aoColumns": [
+                    { "mData": "_id", sType:"string", "sTitle": jQuery.i18n.map["keywords.title"], "sClass": "break source-40" },
+                    { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"], "sClass": "source-20" },
+                    { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"], "sClass": "source-20" },
+                    { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"], "sClass": "source-20" }
+                ]
+            }));
+
+            this.dtable.stickyTableHeaders();
+            this.dtable.fnSort( [ [1,'desc'] ] );
+            $(".widget-content").hide();
+            $("#dataTableOne_wrapper").css({"margin-top":"-16px"});
+        }
+    },
+    refresh:function () {
+        var self = this;
+        $.when(this.beforeRender()).then(function () {
+            if (app.activeView != self) {
+                return false;
+            }
+            self.renderCommon(true);
+
+            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+        
+            $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
+
+            var data = countlySources.getKeywords();
+			CountlyHelpers.refreshTable(self.dtable, data);
+        });
+    }
+});
+
 //register views
 app.sourcesView = new SourcesView();
+app.keywordsView = new KeywordsView();
 
 app.route("/analytics/sources", 'sources', function () {
 	this.renderWhenReady(this.sourcesView);
+});
+
+app.route("/analytics/keywords", 'keywords', function () {
+	this.renderWhenReady(this.keywordsView);
 });
 
 $( document ).ready(function() {
@@ -118,4 +170,10 @@ $( document ).ready(function() {
 	'</a>';
 	$('#web-type #analytics-submenu').append(menu);
 	$('#mobile-type #analytics-submenu').append(menu);
+    
+    var menu = '<a href="#/analytics/keywords" class="item">'+
+		'<div class="logo-icon fa fa-crosshairs"></div>'+
+		'<div class="text" data-localize="keywords.title"></div>'+
+	'</a>';
+	$('#web-type #analytics-submenu').append(menu);
 });
