@@ -10,7 +10,7 @@ window.AssistantView = countlyView.extend({
             return $.when(countlyAssistant.initialize()).then(function () {});
         else{
             var self = this;
-            return $.when($.get(countlyGlobal["path"]+'/assistant/templates/main_view.html', function(src){
+            return $.when($.get(countlyGlobal["path"]+'/assistant/templates/panel.html', function(src){
                 self.template = Handlebars.compile(src);
             }), countlyAssistant.initialize()).then(function () {});
         }
@@ -135,7 +135,6 @@ window.AssistantView = countlyView.extend({
                     changeNotification(id, true, false, parent);
                 });
             });
-
 
             $("#assistant_container").css("height", $( window ).height() - $("#content-footer").height());
         }

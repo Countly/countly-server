@@ -3,9 +3,8 @@
 }
 
 .assistant_notif {
-    border-bottom: 1px solid black;
-    padding: 10px;
-    margin-bottom: 5px;
+    border-bottom: 1px solid #eee;
+    padding: 20px 10px;
 }
 
 .ui-widget-content a.assistant-link {
@@ -13,22 +12,20 @@
 }
 
 .assistant_notif_title {
-    font-size: 0.95em;
-    font-weight: bold;
+    font-size: 14px;
     margin-top: 5px;
-    margin-bottom: 1px;
+    color: #636363;
 }
 .assistant_notif_timesince {
-    font-size: 0.7em;
+    font-size: 10px;
     color: #C9C9C9;
-    margin-top: 1px;
-    margin-bottom: 5px;
+    margin-top: 5px;
 }
 .assistant_notif_message {
-    font-size: 0.8em;
+    font-size: 13px;
     color: #949494;
-    margin-top: 1px;
-    margin-bottom: 1px;
+    margin-top: 15px;
+    line-height: 17px;
 }
 
 .assistant_icon_quicktips{
@@ -53,15 +50,27 @@
 
 .assistant_end_image_container {
     display: table;
-    margin: 0 auto;
+    margin: 15px auto;
 }
 
 #assistant_container {
     position: fixed;
-    top: 0px;
-    right: 0px;
+    top: 0;
+    right: 0;
     width: 400px;
     height: 300px;
     overflow: auto;
     background-color: #fff;
+    border-left: 1px solid #eaeaea;
 }
+
+.assistant_notif { position: relative; }
+.assistant_notif .action-buttons { display:none; position: absolute; right:10px; top:21px; width: 20px; text-align: center; background-color: #fff; }
+.assistant_notif:hover .action-buttons { display: block; }
+.assistant_notif .action-buttons .more { font-size: 20px; color:#a2a2a2; }
+.assistant_notif .action-buttons .more:hover { color:#6b6b6b; }
+.assistant_notif .action-buttons .delete { font-size: 20px; color:#D63E40; cursor: pointer; }
+.assistant_notif .action-buttons .list { display:none; position:absolute; top:24px; right: -5px; padding:5px 0; border-radius: 2px; background-color: #FFF; border:1px solid #D0D0D0; }
+.assistant_notif .action-buttons:hover .list { display: block; }
+.assistant_notif .action-buttons .list .item { font-size: 11px; white-space: nowrap; display: block; padding: 5px 10px; cursor: pointer; }
+.assistant_notif .action-buttons .list .item:hover { background-color: #eaeaea; }

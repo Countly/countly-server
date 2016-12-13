@@ -2,10 +2,10 @@
     <div class="scrollable">
         <div class="assistant_stuff">
             <div id="tabs">
-                <ul>
+                <ul style="position: fixed; width: 400px; z-index: 1;">
                     <li><a href="#log-all">All</a></li>
-                    <li><a href="#log-private">YOU SAVED</a></li>
-                    <li><a href="#log-global">SAVED GLOBALY</a></li>
+                    <li><a href="#log-private">YOURS</a></li>
+                    <li><a href="#log-global">GLOBAL</a></li>
                 </ul>
 
                 <div class="assistant_space"></div>
@@ -13,10 +13,12 @@
                 <div id="log-all" class="errorlog">
                     {{#eachOfArray all_notifs}}
                     <div class="assistant_notif">
-
-                        <div>
-                            <a class="icon-button light btn-header btn-save-global" data-id="{{value._id}}" data-localize="assistant.save.global"></a>
-                            <a class="icon-button light btn-header btn-save-private" data-id="{{value._id}}" data-localize="assistant.save.private"></a>
+                        <div class="action-buttons">
+                            <div class="more"><i class="ion-android-more-vertical"></i></div>
+                            <div class="list">
+                                <div class="item btn-save-global" data-id="{{value._id}}" data-localize="assistant.save.global"></div>
+                                <div class="item btn-save-private" data-id="{{value._id}}" data-localize="assistant.save.private"></div>
+                            </div>
                         </div>
                         <div style="width: 100%; display: table;">
                             <div style="display: table-row">
@@ -24,25 +26,24 @@
                                     <i class="fa fa-circle {{value.icon_styling_class}}" aria-hidden="true"></i>
                                 </div>
                                 <div style="display: table-cell;">
-                                    <p class="assistant_notif_title">{{value.title}}</p>
-                                    <p class="assistant_notif_timesince">{{value.timeSince}}</p>
-                                    <p class="assistant_notif_message">{{{value.msg}}}</p>
+                                    <div class="assistant_notif_title">{{value.title}}</div>
+                                    <div class="assistant_notif_timesince">{{value.timeSince}}</div>
+                                    <div class="assistant_notif_message">{{{value.msg}}}</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     {{/eachOfArray}}
                     <div class="assistant_end_image_container">
-                        <img src="./assistant/images/assistant/img_assistant_end.png">
+                        <img src="./assistant/images/end-icon.svg">
                     </div>
                 </div>
 
                 <div id="log-private" class="errorlog">
                     {{#eachOfArray saved_private}}
                     <div class="assistant_notif">
-
-                        <div>
-                            <a class="icon-button light btn-header btn-unsave-private" data-id="{{value._id}}" data-localize="assistant.unsave.private"></a>
+                        <div class="action-buttons">
+                            <div class="delete btn-unsave-private" data-id="{{value._id}}"><i class="ion-close"></i></div>
                         </div>
                         <div style="width: 100%; display: table;">
                             <div style="display: table-row">
@@ -50,25 +51,24 @@
                                     <i class="fa fa-circle {{value.icon_styling_class}}" aria-hidden="true"></i>
                                 </div>
                                 <div style="display: table-cell;">
-                                    <p class="assistant_notif_title">{{value.title}}</p>
-                                    <p class="assistant_notif_timesince">{{value.timeSince}}</p>
-                                    <p class="assistant_notif_message">{{{value.msg}}}</p>
+                                    <div class="assistant_notif_title">{{value.title}}</div>
+                                    <div class="assistant_notif_timesince">{{value.timeSince}}</div>
+                                    <div class="assistant_notif_message">{{{value.msg}}}</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     {{/eachOfArray}}
                     <div class="assistant_end_image_container">
-                        <img src="./assistant/images/assistant/img_assistant_end.png">
+                        <img src="./assistant/images/end-icon.svg">
                     </div>
                 </div>
 
                 <div id="log-global" class="errorlog">
                     {{#eachOfArray saved_global}}
                     <div class="assistant_notif">
-
-                        <div>
-                            <a class="icon-button light btn-header btn-unsave-global" data-id="{{value._id}}" data-localize="assistant.unsave.global"></a>
+                        <div class="action-buttons">
+                            <div class="delete btn-unsave-global" data-id="{{value._id}}"><i class="ion-close"></i></div>
                         </div>
                         <div style="width: 100%; display: table;">
                             <div style="display: table-row">
@@ -76,16 +76,16 @@
                                     <i class="fa fa-circle {{value.icon_styling_class}}" aria-hidden="true"></i>
                                 </div>
                                 <div style="display: table-cell;">
-                                    <p class="assistant_notif_title">{{value.title}}</p>
-                                    <p class="assistant_notif_timesince">{{value.timeSince}}</p>
-                                    <p class="assistant_notif_message">{{{value.msg}}}</p>
+                                    <div class="assistant_notif_title">{{value.title}}</div>
+                                    <div class="assistant_notif_timesince">{{value.timeSince}}</div>
+                                    <div class="assistant_notif_message">{{{value.msg}}}</div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     {{/eachOfArray}}
                     <div class="assistant_end_image_container">
-                        <img src="./assistant/images/assistant/img_assistant_end.png">
+                        <img src="./assistant/images/end-icon.svg">
                     </div>
                 </div>
 
