@@ -456,6 +456,9 @@ var fetch = {},
 	
 	fetch.getMetric = function(params, metric, totalUsersMetric, callback){
         var queryMetric = params.qstring.metric || metric;
+        countlyCommon.setTimezone(params.appTimezone);
+        if(params.qstring.period)
+            countlyCommon.setPeriod(params.qstring.period);
 		fetchTimeObj(metric, params, false, function(doc) {
 			var clearMetricObject = function (obj) {
 				if (obj) {
