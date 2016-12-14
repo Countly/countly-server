@@ -56,7 +56,7 @@ var plugin = {},
             fetch.getMetric(params, "sources", null, function(data){
                 var result = [];
                 for(var i = 0; i < data.length; i ++){
-                    var parts = urlParse.parse(decodeURIComponent(common.db.decode(data[i]._id)), true);
+                    var parts = urlParse.parse(common.db.decode(data[i]._id), true);
                     if(parts.hostname && parts.query){
                         for(var c in check){
                             if(typeof parts.query[c] != "undefined" && parts.query[c] != ""){
