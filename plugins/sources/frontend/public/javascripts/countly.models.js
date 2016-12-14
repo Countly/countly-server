@@ -46,7 +46,7 @@
 
     window.countlySources = window.countlySources || {};
     window.countlySources.getSourceName=getSourceName;
-    countlySources.initializeKeywords = function(){
+    countlySources.initializeKeywords = function(isRefresh){
         var self = this;
         return $.ajax({
             type:"GET",
@@ -54,7 +54,8 @@
             data:{
                 "api_key":countlyGlobal.member.api_key,
                 "app_id":countlyCommon.ACTIVE_APP_ID,
-                "period":countlyCommon.getPeriodForAjax()
+                "period":countlyCommon.getPeriodForAjax(),
+                "display_loader": !isRefresh
             },
             success:function (json) {
                 self._keywords = json;
@@ -64,10 +65,9 @@
     countlySources.getKeywords = function(){
         var data = JSON.parse(JSON.stringify(this._keywords));
         for(var i = 0; i < this._keywords.length; i++){
-            data[i]._id = countlyCommon.decode(data[i]._id);
+            data[i]._id = countlyCommon.decode(data[i]._id.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '').toLowerCase());
         }
-        data = countlyCommon.mergeMetricsByName(data, "_id");
-        return data;
+        return countlyCommon.mergeMetricsByName(data, "_id");
     };
     
     CountlyHelpers.createMetricModel(window.countlySources, {name: "sources", estOverrideMetric:"sources"}, jQuery, getSourceName);
