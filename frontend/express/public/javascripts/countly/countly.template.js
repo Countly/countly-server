@@ -759,7 +759,7 @@ $.extend(Template.prototype, {
                             "api_key":countlyGlobal.member.api_key,
                             "app_id":countlyCommon.ACTIVE_APP_ID,
                             "metric":_name,
-                            "period":countlyCommon.getPeriodForAjax()
+                            "period":_period
                         },
                         success:function (json) {
                             _Db = json;
@@ -776,7 +776,6 @@ $.extend(Template.prototype, {
                             "method":_name,
                             "period":_period
                         },
-                        dataType:"jsonp",
                         success:function (json) {
                             _Db = json;
                             setMeta();
@@ -800,7 +799,7 @@ $.extend(Template.prototype, {
 				}
                 
                 if(_processed){
-                    
+
                 }
                 else{
                     return $.ajax({
@@ -812,7 +811,6 @@ $.extend(Template.prototype, {
                             "method":_name,
                             "action":"refresh"
                         },
-                        dataType:"jsonp",
                         success:function (json) {
                             countlyCommon.extendDbObj(_Db, json);
                             extendMeta();
