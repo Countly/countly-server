@@ -217,11 +217,7 @@ if (cluster.isMaster) {
                 plugins.dispatch("/sdk", {params:params, app:app});
                 
                 if (params.qstring.metrics) {		
-                    if (params.qstring.metrics["_carrier"]) {		
-                        params.qstring.metrics["_carrier"] = params.qstring.metrics["_carrier"].replace(/\w\S*/g, function (txt) {		
-                            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();		
-                        });		
-                    }		
+                    common.processCarrier(params.qstring.metrics);	
                 		
                     if (params.qstring.metrics["_os"] && params.qstring.metrics["_os_version"]) {		
                         if(common.os_mapping[params.qstring.metrics["_os"].toLowerCase()])		

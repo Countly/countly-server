@@ -5,6 +5,7 @@ var common = {},
     mongo = require('mongoskin'),
     logger = require('./log.js'),
     escape_html = require('escape-html'),
+    mcc_mnc_list = require('mcc-mnc-list'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./../config', 'dont-enclose');
 
@@ -910,6 +911,36 @@ var common = {},
         }
         else if(callback)
             callback();
+    };
+    
+    common.processCarrier = function(metrics){
+        if(metrics && metrics._carrier){
+            var carrier = metrics._carrier+"";
+            
+            //random hash without spaces
+            if(carrier.length === 16 && carrier.indexOf(" ") === -1){
+                delete metrics._carrier;
+                return;
+            }
+            
+            //random code
+            if((carrier.length === 5 || carrier.length === 6) && /^[0-9]+$/.test(carrier)){
+                //check if mcc and mnc match some operator
+                var arr = mcc_mnc_list.filter({ mccmnc: carrier });
+                if(arr && arr.length && (arr[0].brand || arr[0].operator)){
+                    carrier = arr[0].brand || arr[0].operator;
+                }
+                else{
+                    delete metrics._carrier
+                    return;
+                }
+            }
+            
+            carrier = carrier.replace(/\w\S*/g, function (txt) {
+                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+            });
+            metrics._carrier = carrier;
+        }
     };
 }(common));
 
