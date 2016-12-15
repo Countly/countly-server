@@ -18,8 +18,8 @@ countlyDb.collection('apps').find({}).toArray(function (err, apps) {
 			if(cnt == 2)
 				done();
 		}
-        countlyDb.collection('app_users' + app._id).ensureIndex({"ls":1},cb);
-        countlyDb.collection('metric_changes' + app._id).ensureIndex({"ts":1},cb);
+        countlyDb.collection('app_users' + app._id).ensureIndex({"ls":-1},cb);
+        countlyDb.collection('metric_changes' + app._id).ensureIndex({"ts":-1},cb);
 	}
 	async.forEach(apps, upgrade, function(){
 		console.log("Finished adding core indexes");
