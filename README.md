@@ -38,7 +38,7 @@ Countly is a unique, security-focused and 360-degree analytics approach with sev
 * Your data, your rules - since you can install Countly on your own server, or let us do the private cloud installations for you.
 * Configurable and extensible via open source [plugins](http://count.ly/plugins).
 * Modern and easy to use web dashboard with a focus on user experience, helping to get complex insights easily.
-* Tracking more than 2500 web sites and 4500 mobile applications.
+* Tracking more than 2500 web sites and 12000 mobile applications.
 * Collecting more than 60 billion datapoints worlwide.
 
 ##Installing & upgrading Countly server
