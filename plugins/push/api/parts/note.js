@@ -120,11 +120,11 @@ class Note {
 			log.d('Scheduling message to be sent in user timezones (min %d) on date %j', this.mintz, this._id, this.date);
 			var batch = new Date(this.date.getTime() + this.mintz);
 		    jobs.job('push:send', {mid: this._id}).once(batch);
-		    db.collection('messages').updateOne({_id: this._id}, {$set: {'result.status': N.Status.InQueue, 'result.nextbatch': batch}}, log.logdb('when updating message status with inqueue'));
+		    db.collection('messages').updateOne({_id: this._id}, {$set: {'result.status': Status.InQueue, 'result.nextbatch': batch}}, log.logdb('when updating message status with inqueue'));
 		} else if (this.date) {
 	        log.d('Scheduling messag %j to be sent on date %j',this._id, this.date);
 		    jobs.job('push:send', {mid: this._id}).once(this.date);
-		    db.collection('messages').updateOne({_id: this._id}, {$set: {'result.status': N.Status.InQueue}}, log.logdb('when updating message status with inqueue'));
+		    db.collection('messages').updateOne({_id: this._id}, {$set: {'result.status': Status.InQueue}}, log.logdb('when updating message status with inqueue'));
 		} else {
 	        log.d('Scheduling message %j to be sent immediately', this._id);
 		    jobs.job('push:send', {mid: this._id}).now();
