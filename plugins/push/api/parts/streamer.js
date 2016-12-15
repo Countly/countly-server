@@ -10,10 +10,10 @@ class Streamer {
 		this.anote = appsubnote;
 		this.field = this.anote.creds.field;
 		this.projection = {
+			tz: {$ifNull: ['$tz', this.anote.creds.app_timezone.offset]},
 			_id: 1, 
 			[credentials.DB_USER_MAP.tokens + this.field]: '$' + credentials.DB_USER_MAP.tokens + '.' + this.field, 
-			la: 1,
-			tz: {$ifNull: ['$tz', this.anote.creds.app_timezone.offset]}
+			la: 1
 		};
 	}
 
@@ -28,12 +28,12 @@ class Streamer {
 	clear (db) {
 		log.d('[%s]: Clearing streamer for %s', this.anote.id, this.collection());
 		return new Promise((resolve, reject) => {
-			resolve();
-			// db.collection(this.collection()).drop((err) => {
-				// log.d('Dropped streamer collection, error %j', err);
-				// if (err) { reject(err); }
-				// else { resolve(); }
-			// });
+			// resolve();
+			db.collection(this.collection()).drop((err) => {
+				log.d('Dropped streamer collection, error %j', err);
+				if (err) { reject(err); }
+				else { resolve(); }
+			});
 		});
 	}
 
@@ -48,7 +48,7 @@ class Streamer {
 					resolve(this.built);
 				} else {
 					var query;
-					log.d('[%s]: Building audience', this.anote.id);
+					log.d('[%s]: Building audience for %j', this.anote.id, this.anote);
 					
 					if (this.anote.query && this.anote.query.drill) {
 						if (!this.drill()) {
@@ -74,7 +74,7 @@ class Streamer {
 							db.collection('app_users' + this.anote.creds.app_id).aggregate([
 								{$match: query}, 
 								{$project: this.projection},
-								{$sort: {_id: 1}},
+								{$sort: {tz: 1, _id: 1}},
 								{$out: this.collection()}
 							], {allowDiskUse:true}, (err) => {
 								log.d('[%s]: Aggregation done: %j', this.anote.id, arguments);
@@ -95,7 +95,7 @@ class Streamer {
 						db.collection('app_users' + this.anote.creds.app_id).aggregate([
 							{$match: query},
 							{$project: this.projection},
-							{$sort: {_id: 1}},
+							{$sort: {tz: 1, _id: 1}},
 							{$out: this.collection()}
 						], {allowDiskUse:true}, (err) => {
 							if (err) {
@@ -127,62 +127,49 @@ class Streamer {
 	}
 
 	audience (db) {
-		log.d('[%s]: Audiencing streamer for %j', this.anote.id);
+		log.d('[%s]: Audiencing streamer', this.anote.id);
 		return new Promise((resolve, reject) => {
 			this.build(db).then(() => {
 				log.d('[%s]: Counting grouping by lang collection %j', this.anote.id, this.collection());
 				db.collection(this.built).aggregate([{$match: {}}, {$group: {_id: '$la', count: {$sum: 1}}}], (err, count) => {
 					log.d('[%s]: Counted grouping by lang collection %j: %j', this.anote.id, this.collection(), count);
 					if (err) { reject(err); }
-					else { resolve(count); }
+					else { 
+						if (this.anote.tz) {
+							db.collection(this.built).find().sort({tz: 1}).limit(1).toArray((err, users) => {
+								if (err) {
+									reject(err);
+								} else {
+									this.anote.mintz = users && users.length ? (users[0].tz || 0) : 0;
+									resolve(count);
+								}
+							});
+						} else {
+							resolve(count); 
+						}
+					}
 				});
 			}, reject);
 		});
 	}
 
-	// load (db) {
-	// 	return this.build().then((devices) => {
-	// 		if (typeof devices === 'string') {
-	// 			db.collection(this.built).find().toArray((err, devices) => {
-	// 				if (err) { reject(err); }
-	// 				else { resolve(devices); }
-	// 			});
-	// 		} else {
-	// 			resolve(devices);
-	// 		}
-	// 	});
-	// }
-
-	load (db, first, last, count) {
+	load (db, first, last, count, tz) {
 		log.d('Loading streamer for %j from %s to %s, totalling %d', this.anote.id, first, last, count);
 		return new Promise((resolve, reject) => {
-			this.build(db).then((devices) => {
-				if (typeof devices === 'string') {
-					let q = {};
-					if (first) { q._id = {$gte: first}; }
-					if (last) { 
-						if (!q._id) { q._id = {}; }
-						q._id.$lte = last;
-					}
-					db.collection(this.built).find(q).sort({_id: 1}).limit(count || 100000).toArray((err, devices) => {
-						if (err) { reject(err); }
-						else { resolve(devices); }
-					});
-				} else {
-					log.d('DEVICES: %j', devices);
-					let start = -1, end = -1;
-					devices.forEach((d, i) => {
-						if (first && d._id >= first) { start = i; }
-					});
-					if (start !== -1) { devices = devices.slice(start); }
-
-					for (let i = devices.length - 1; i >= 0; i--) {
-						if (last && devices[i]._id <= last ) { end = i; }
-					}
-					if (start !== -1) { devices = devices.slice(0, end + 1); }
-
-					resolve(devices);
+			this.build(db).then(() => {
+				let q = {};
+				if (first) { q._id = {$gte: first}; }
+				if (last) { 
+					if (!q._id) { q._id = {}; }
+					q._id.$lte = last;
 				}
+				if (tz) {
+					q.tz = tz;
+				}
+				db.collection(this.built).find(q).sort({tz: 1, _id: 1}).limit(count || 100000).toArray((err, devices) => {
+					if (err) { reject(err); }
+					else { resolve(devices); }
+				});
 			}, reject);
 		});
 	}
@@ -190,14 +177,14 @@ class Streamer {
 	unload (db, ids) {
 		return new Promise((resolve, reject) => {
 			log.d('[%s]: Removing users from collection %s [%j ... %j]', this.anote.id, this.built, ids[0], ids[ids.length - 1]);
-			resolve();
-			// db.collection(this.built).remove({_id: {$in: ids}}, (err, ok) => {
-			// 	if (err) { reject(err); }
-			// 	else { 
-			// 		log.d('[%s]: Removed %d users from collection %s', this.anote.id, ok, this.built);
-			// 		resolve(); 
-			// 	}
-			// });
+			// resolve();
+			db.collection(this.built).remove({_id: {$in: ids}}, (err, ok) => {
+				if (err) { reject(err); }
+				else { 
+					log.d('[%s]: Removed %j users from collection %s', this.anote.id, ok, this.built);
+					resolve(); 
+				}
+			});
 		});
 	}
 }

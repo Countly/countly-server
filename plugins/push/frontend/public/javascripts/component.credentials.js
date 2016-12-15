@@ -88,7 +88,7 @@ window.component('credentials', function(credentials) {
 										m('.form', [
 											m('input[type=file]', {onchange: m.withAttr('files', ctrl.cert)}),
 											m('br'),
-											m('input[type=text]', {oninput: m.withAttr('value', ctrl.passphrase)}),
+											m('input[type=text]', {oninput: m.withAttr('value', ctrl.passphrase), placeholder: t('pu.creds.pass')}),
 											m('a.icon-button.light[href=#]', {onclick: ctrl.validate}, t('pu.validate'))
 										])
 										: m('.form', [

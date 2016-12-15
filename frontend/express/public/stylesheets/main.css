@@ -1109,7 +1109,7 @@ table.events-table { width:100%; padding:0; margin:0; }
     .cly-button-group .icon-button:last-child, .cly-button-group .icon-button.last { border-radius:0 4px 4px 0; }
 
 .button-selector { font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#6B6B6B; padding:0;overflow:auto; user-select:none; }
-.button-selector .button { cursor:pointer; user-select:none; background-color:#ececec; float:left; padding:7px 5px; padding-top:6px; border:1px solid #D0D0D0; margin-left:-1px; }
+.button-selector .button { cursor:pointer; user-select:none; background-color:#ececec; float:left; padding:7px; padding-top:6px; border:1px solid #D0D0D0; margin-left:-1px; }
 .button-selector .button:nth-child(1),
 .button-selector .button.first { margin-left:0; border-left:1px solid #D0D0D0; border-top-left-radius:2px; border-bottom-left-radius:2px; }
 .button-selector .button:last-child,

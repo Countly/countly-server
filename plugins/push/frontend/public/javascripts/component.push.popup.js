@@ -8,7 +8,31 @@ window.component('push.popup', function(popup) {
 		push = window.components.push;
 
 	popup.show = function(prefilled){
+		if (!push.dashboard) {
+			return push.remoteDashboard(countlyCommon.ACTIVE_APP_ID).then(function(){
+				popup.show(prefilled);
+			});
+		}
+		m.startComputation();
 		var message = new push.Message(prefilled || {});
+
+		if (message.platforms().length && message.apps().length) {
+			var found = false;
+			message.platforms().forEach(function(p){
+				message.apps().forEach(function(a){
+					if (p === 'i' && window.countlyGlobal.apps[a] && window.countlyGlobal.apps[a].apn && window.countlyGlobal.apps[a].apn.length) {
+						found = true;
+					} else if (p === 'a' && window.countlyGlobal.apps[a] && window.countlyGlobal.apps[a].gcm && window.countlyGlobal.apps[a].gcm.length) {
+						found = true;
+					}
+				});
+			});
+
+			if (!found) {
+				return window.CountlyHelpers.alert(t('push.error.no-credentials'), 'red');
+			}
+		}
+
 		push.popup.slider = window.components.slider.show({
 			key: 'meow',
 			title: function(){
@@ -38,6 +62,7 @@ window.component('push.popup', function(popup) {
 				return message.count() ? message.saved() ? t('pu.po.sent-desc') : t('pu.po.sending-desc') : t('pu.po.loading-desc');
 			},
 		});
+		m.endComputation();
 	};
 
 	popup.controller = function(message){
@@ -413,15 +438,19 @@ window.component('push.popup', function(popup) {
 								return m.component(window.components.datepicker, {date: message.date});
 							}}
 						], value: message.schedule}),
-						m('h4', t('pu.po.tab1.tz')),
-						m('h6', [
-							t('pu.po.tab1.tz-desc'), 
-							m('span.warn', window.components.tooltip.config(t('pu.po.tab1.tz-yes-help')), push.ICON.WARN())
-						]),
-						m.component(window.components.radio, {options: [
-							{value: false, title: t('pu.po.tab1.tz-no'), desc: t('pu.po.tab1.tz-no-desc')},
-							{value: true, title: t('pu.po.tab1.tz-yes'), desc: t('pu.po.tab1.tz-yes-desc')}
-						], value: message.tz}),
+						message.date() && message.tz() ?
+							m('div', [
+								m('h4', t('pu.po.tab1.tz')),
+								m('h6', [
+									t('pu.po.tab1.tz-desc'), 
+									m('span.warn', window.components.tooltip.config(t('pu.po.tab1.tz-yes-help')), push.ICON.WARN())
+								]),
+								m.component(window.components.radio, {options: [
+									{value: false, title: t('pu.po.tab1.tz-no'), desc: t('pu.po.tab1.tz-no-desc')},
+									{value: true, title: t('pu.po.tab1.tz-yes'), desc: t('pu.po.tab1.tz-yes-desc')}
+								], value: message.tz}),
+							])
+							: '',
 						m('.btns', [
 							popup.tabs.tab() > 0 ? m('a.btn-prev', {href: '#', onclick: popup.prev}, t('pu.po.prev')) : '',
 							m('a.btn-next', {href: '#', onclick: popup.next, disabled: popup.tabenabled(2) ? false : 'disabled'}, t('pu.po.next'))

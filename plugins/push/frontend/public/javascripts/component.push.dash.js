@@ -113,7 +113,7 @@ window.component('push.dash', function(dash) {
 						$(nRow).attr('mid', aData._id());
 					},
 					aoColumns: [
-						{ mData: unprop.bind(null, 'messagePerLocale.default', ''), sName: 'message', mRender: CountlyHelpers.clip(), sTitle: t('pu.t.message') },
+						{ mData: unprop.bind(null, 'messagePerLocale.default', ''), sName: 'message', mRender: CountlyHelpers.clip(null, t('push.no-message')), sTitle: t('pu.t.message') },
 						{ mData: function(x){ return x.appNames().join(', '); }, sName: 'apps', sType: 'string', mRender: CountlyHelpers.clip(), sTitle: t('pu.t.apps'), bSearchable: false },
 						{ mData: unprop.bind(null, 'result'), sName: 'status', sType: 'string', mRender:function(d, type, result) { 
 							result = result.result;
@@ -172,17 +172,6 @@ window.component('push.dash', function(dash) {
 			return m('.push-overview');
 		}
 		return m('.push-overview', [
-			m('input[type=file]', {onchange: function(ev){
-				var file;
-				if ((file = ev.target.files[0])) {
-					var reader = new window.FileReader();
-					reader.addEventListener('load', function(){
-						components.push.remoteValidate('a', 'gcm', 'AIzaSyA2lKRYR6x4MoMyJG_sMQ8XBpN_ksAI-ng', '');
-						// components.push.remoteValidate('i', 'apn_universal', reader.result, 'aaaa1111');
-					});
-					reader.readAsDataURL(file);
-				}
-			}}),
 
 			m.component(components.widget, {
 				header: {
@@ -192,8 +181,8 @@ window.component('push.dash', function(dash) {
 				footer: {
 					config: {class: 'condensed'},
 					bignumbers: [
-						{title: 'pu.dash.users.total', number: ctrl.data().users || 0},
-						{title: 'pu.dash.users.enabl', number: ctrl.data().enabled || 0},
+						{title: 'pu.dash.users.total', number: ctrl.data().users || 0, help: 'help.dashboard.total-users'},
+						{title: 'pu.dash.users.enabl', number: ctrl.data().enabled || 0, help: 'help.dashboard.messaging-users'},
 					]
 				}
 			}),
@@ -206,7 +195,7 @@ window.component('push.dash', function(dash) {
 						opts: {value: ctrl.period, options: [
 							{value: 'weekly', title: t('pu.dash.weekly')},
 							{value: 'monthly', title: t('pu.dash.monthly')}
-						]}
+						], legacy: true}
 					}
 				},
 				content: {
@@ -214,8 +203,8 @@ window.component('push.dash', function(dash) {
 				},
 				footer: {
 					bignumbers: [
-						{title: 'pu.dash.metrics.sent', number: ctrl.data() ? ctrl.data().sent[ctrl.period()].total : 0, color: true},
-						{title: 'pu.dash.metrics.acti', number: ctrl.data() ? ctrl.data().actions[ctrl.period()].total : 0, color: true},
+						{title: 'pu.dash.metrics.sent', number: ctrl.data() ? ctrl.data().sent[ctrl.period()].total : 0, color: true, help: 'help.dashboard.push.sent'},
+						{title: 'pu.dash.metrics.acti', number: ctrl.data() ? ctrl.data().actions[ctrl.period()].total : 0, color: true, help: 'help.dashboard.push.actions'},
 					]
 				}
 			}),
@@ -229,7 +218,7 @@ window.component('push.dash', function(dash) {
 							{value: '', title: t('pu.dash.messages.all')},
 							{value: 'api', title: t('pu.dash.messages.api')},
 							{value: 'dash', title: t('pu.dash.messages.dash')}
-						], onchange: ctrl.refresh}
+						], onchange: ctrl.refresh, legacy: true}
 					}
 				},
 				content: {
@@ -253,6 +242,27 @@ window.MessagingDashboardView = countlyView.extend({
 			this.div = $('<div />').appendTo($(this.el))[0];
 			this.mounted = m.mount(this.div, components.push.dash);
 		}
+		setTimeout(function(){
+			if ($("#help-toggle").hasClass("active")) {
+			    $('.help-zone-vb').tipsy({gravity:$.fn.tipsy.autoNS, trigger:'manual', title:function () {
+			        return ($(this).data("help")) ? $(this).data("help") : "";
+			    }, fade:true, offset:5, cssClass:'yellow', opacity:1, html:true});
+			    $('.help-zone-vs').tipsy({gravity:$.fn.tipsy.autoNS, trigger:'manual', title:function () {
+			        return ($(this).data("help")) ? $(this).data("help") : "";
+			    }, fade:true, offset:5, cssClass:'yellow narrow', opacity:1, html:true});
+
+			    $.idleTimer('destroy');
+			    clearInterval(self.refreshActiveView);
+			    $(".help-zone-vs, .help-zone-vb").hover(
+			        function () {
+			            $(this).tipsy("show");
+			        },
+			        function () {
+			            $(this).tipsy("hide");
+			        }
+			    );
+			}
+		}, 500);
 	},
 	refresh: function() {
 		if (this.mounted) { this.mounted.refresh(); }

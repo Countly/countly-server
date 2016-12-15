@@ -71,9 +71,9 @@ window.component('push', function(push) {
 		}, t('pu.po.tab2.extras.data.invalid'));
 		this.test = buildClearingProp(typeof data.test === 'undefined' ? false : data.test);
 
-		this.userConditions = buildClearingProp(data.userConditions === '{}' ? undefined : data.userConditions);
-		this.drillConditions = buildClearingProp(data.drillConditions === '{}' ? undefined : data.drillConditions);
-		this.geo = buildClearingProp(data.geo || '');
+		this.userConditions = buildClearingProp(data.userConditions === '{}' ? undefined : typeof data.userConditions === 'string' ? JSON.parse(data.userConditions) : data.userConditions);
+		this.drillConditions = buildClearingProp(data.drillConditions === '{}' ? undefined : typeof data.drillConditions === 'string' ? JSON.parse(data.drillConditions) : data.drillConditions);
+		this.geo = buildClearingProp(data.geo || undefined);
 
 		this.count = m.prop();
 		this.locales = m.prop(data.locales || []);
@@ -103,9 +103,18 @@ window.component('push', function(push) {
 			this.platforms(this.availablePlatforms());
 		}
 
+		if (this.apps().length && this.platforms().length) {
+			var av = this.availablePlatforms();
+			this.platforms(this.platforms().filter(function(p){ return av.indexOf(p) !== -1; }));
+		}
+
 		this.schedule = m.prop(false);
 
 		this.ack = m.prop(false);
+
+		this._id(data._id);
+		this.locales(data.locales || []);
+		this.count(data.count);
 		
 		this.remotePrepare = function(onFullBuild) {
 			return m.request({
@@ -145,6 +154,7 @@ window.component('push', function(push) {
 				obj.badge = this.badge();
 				obj.url = this.url();
 				obj.source = 'dash';
+				obj.date = this.date();
 				obj.tz = this.tz();
 
 				if (this.data()) {

@@ -8,6 +8,11 @@ var plugin = {},
     plugins = require('../../pluginManager.js');
 
 (function (plugin) {
+
+    plugins.internalEvents.push('[CLY]_push_sent');
+    plugins.internalEvents.push('[CLY]_push_action');
+    plugins.internalDrillEvents.push('[CLY]_push_action');
+
     function setUpCommons() {
         let creds = require('./parts/credentials.js');
         for (let k in creds.DB_MAP) {

@@ -719,10 +719,10 @@ $.extend(Template.prototype, {
         return '';
     };
 
-    CountlyHelpers.clip = function(f) {
+    CountlyHelpers.clip = function(f, nothing) {
         return function(opt) {
             var res = typeof f === 'fucnction' ? f(opt) : opt;
-            return '<div class="clip' + (res ? '' : ' nothing') + '">' + (res || jQuery.i18n.map['push.no-message']) + '</div>';
+            return '<div class="clip' + (res ? '' : ' nothing') + '">' + (res || nothing) + '</div>';
         }
     };
 	
@@ -4142,6 +4142,19 @@ var AppRouter = Backbone.Router.extend({
     durations:function () {
         this.renderWhenReady(this.durationsView);
     },
+    runRefreshScripts: function() {
+        if(this.refreshScripts[Backbone.history.fragment])
+            for(var i = 0, l = this.refreshScripts[Backbone.history.fragment].length; i < l; i++)
+                this.refreshScripts[Backbone.history.fragment][i]();
+        for(var k in this.refreshScripts) 
+            if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match(k.replace(/#/g, '.*')))
+                for(var i = 0, l = this.refreshScripts[k].length; i < l; i++)
+                    this.refreshScripts[k][i]();
+        if(this.refreshScripts["#"])
+            for(var i = 0, l = this.refreshScripts["#"].length; i < l; i++)
+                this.refreshScripts["#"][i]();
+
+    },
     renderWhenReady:function (viewName) { //all view renders end up here
 
         // If there is an active view call its destroy function to perform cleanups before a new view renders
@@ -4180,16 +4193,7 @@ var AppRouter = Backbone.Router.extend({
         var self = this;
         this.refreshActiveView = setInterval(function () {
             self.activeView.refresh();
-			if(self.refreshScripts[Backbone.history.fragment])
-				for(var i = 0, l = self.refreshScripts[Backbone.history.fragment].length; i < l; i++)
-					self.refreshScripts[Backbone.history.fragment][i]();
-            for(var k in self.refreshScripts) 
-                if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match(k.replace(/#/g, '.*')))
-                    for(var i = 0, l = self.refreshScripts[k].length; i < l; i++)
-                        self.refreshScripts[k][i]();
-			if(self.refreshScripts["#"])
-				for(var i = 0, l = self.refreshScripts["#"].length; i < l; i++)
-					self.refreshScripts["#"][i]();
+            self.runRefreshScripts();
         }, countlyCommon.DASHBOARD_REFRESH_MS);
         
         if(countlyGlobal && countlyGlobal["message"]){

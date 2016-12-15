@@ -3,6 +3,7 @@
 const job = require('../../../../api/parts/jobs/job.js'),
 	  log = require('../../../../api/utils/log.js')('job:push:send'),
 	  retry = require('../../../../api/parts/jobs/retry.js'),
+	  plugins = require('../../../../plugins/pluginManager.js'),
 	  STATUS = job.STATUS,
 	  ConnectionResource = require('../parts/resource.js'),
 	  creds = require('../parts/credentials.js'),
@@ -14,6 +15,7 @@ const job = require('../../../../api/parts/jobs/job.js'),
 class PushJob extends job.IPCJob {
 	constructor(name, data) {
 		super(name, data);
+		this.promises = [];
 		log.d('initializing PushJob with %j & %j', name, data);
 	}
 
@@ -32,6 +34,7 @@ class PushJob extends job.IPCJob {
 			log.d('[%d]: Preparing parent job %j (data %j)', process.pid, this._idIpc, this.data);
 			return N.Note.load(db, db.ObjectID(this.data.mid)).then((note) => {
 				this.note = note;
+				return note;
 			});
 		}
 	}
@@ -84,6 +87,66 @@ class PushJob extends job.IPCJob {
 		});
 	}
 
+	watchPromise (promise) {
+		var wrapper = new Promise((resolve, reject) => {
+			promise.then((data) => {
+				this.promises.splice(this.promises.indexOf(wrapper), 1);
+				resolve(data);
+			}, (err) => {
+				log.e('Error in promise watcher: %j', err, err.stack);
+				this.promises.splice(this.promises.indexOf(wrapper), 1);
+				reject(err);
+			});
+		});
+		this.promises.push(wrapper);
+	}
+
+	waitForAllPromises () {
+		return new Promise((resolve, reject) => {
+			var times = 0,
+				f = () => {
+					if (this.promises.length === 0) {
+						resolve();
+					} else if (times > 1800) {
+						reject('30 min timeout');
+					} else {
+						times++;
+						setTimeout(f, 1000);
+					}
+				};
+			f();
+		});
+	}
+
+	rejectUsersWhoPassedTz (db) {
+		if (this.anote.tz) {
+			var now = Date.now(),
+				date = this.anote.date.getTime(),
+				diff = (now - date) / 1000 / 60,
+				del = Math.ceil(diff - 90),
+				send = Math.ceil(diff + 30);
+			log.d('[%s:%d] diff date %d: now is %d (%s), scheduled on %d (%s)', this.anote.id, process.pid, diff, now, date, new Date(now), new Date(date));
+			log.d('[%s:%d] going to unload users with tz < %d and sent to users with tz > %d', this.anote.id, process.pid, del, send);
+
+			return new Promise((resolve, reject) => {
+				this.tz = {$gt: del, $lt: send};
+				this.streamer.load(db, this.data.first, this.data.last, 1000000000, {$lt: del}).then((users) => {
+					if (users && users.length) {
+						log.d('[%s:%d] found %d users to skiptz: %j', this.anote.id, process.pid, users.length, users);
+						this.streamer.unload(db, users.map(u => u._id)).then(() => {
+							db.collection('messages').update({_id: this.aoid}, {$inc: {'result.errorCodes.skiptz': users.length}}, log.logdb('updating message with skiptz code'));
+							resolve();
+						}, reject);
+					} else {
+						resolve();
+					}
+				});
+			});
+		} else {
+			return Promise.resolve();
+		}
+	}
+	
 	run (db, done, progress) {
 		log.d('[%s:%d] going to run subjob %j: %j', this.anote.id, process.pid, this._idIpc, this._json);
 		if (this.idx === 0) {
@@ -133,49 +196,65 @@ class PushJob extends job.IPCJob {
 		}
 
 		this.resource.send(this.datas, (count) => {
-			this.streamer.load(db, this.data.first, this.data.last, Math.max(count, 10)).then((users) => {
-				log.d('users %j', users);
-				// bookmark is not first of next batch, but rather last status from previous
-				// so it must be removed from array
-				if (users.length && users[0]._id === status.bookmark) {
-					users.shift();
-				}
-				var fed, lst;
-				if (!users || users.length === 0) {
-					log.d('[%s:%d]: Nothing to feed anymore', this.anote.id, process.pid);
-					this.resource.feed([]);
-				} else if (users.length === 1) {
-					log.d('[%s:%d]: Feeding last user', this.anote.id, process.pid);
-					fed = this.resource.feed(users.map(this.mapUser.bind(this)));
+			Promise.all([
+				this.waitForAllPromises(),
+				this.rejectUsersWhoPassedTz(db)
+			]).then(() => {
+				this.streamer.load(db, this.data.first, this.data.last, Math.max(count, 10), this.tz).then((users) => {
+					log.d('users %j', users);
+					// bookmark is not first of next batch, but rather last status from previous
+					// so it must be removed from array
+					if (users.length && users[0]._id === status.bookmark) {
+						users.shift();
+					}
+					var fed, lst;
+					if (!users || users.length === 0) {
+						log.d('[%s:%d]: Nothing to feed anymore', this.anote.id, process.pid);
+						this.resource.feed([]);
+					} else if (users.length === 1) {
+						log.d('[%s:%d]: Feeding last user', this.anote.id, process.pid);
+						fed = this.resource.feed(users.map(this.mapUser.bind(this)));
 
-					status.size += fed;
+						status.size += fed;
 
-					if (fed === 1) {
-						log.d('[%s:%d]: Fed last user', this.anote.id, process.pid);
-						this._json.data.first += ' final ';
+						if (fed === 1) {
+							log.d('[%s:%d]: Fed last user', this.anote.id, process.pid);
+							this._json.data.first += ' final ';
+						} else {
+							log.w('[%s:%d]: Cannot feed last user', this.anote.id, process.pid);
+						}
 					} else {
-						log.w('[%s:%d]: Cannot feed last user', this.anote.id, process.pid);
-					}
-				} else {
-					lst = users.pop();
-					log.d('[%s:%d]: Going to feed %d users while %d is requested: %j / %j', this.anote.id, process.pid, users.length, count, users, lst);
-					fed = this.resource.feed(users.map(this.mapUser.bind(this)));
-				
-					status.size += fed;
+						lst = users.pop();
+						log.d('[%s:%d]: Going to feed %d users while %d is requested: %j / %j', this.anote.id, process.pid, users.length, count, users, lst);
+						fed = this.resource.feed(users.map(this.mapUser.bind(this)));
+					
+						status.size += fed;
 
-					log.d('[%s:%d]: Fed %j users out of %d', this.anote.id, process.pid, fed, users.length);
-					if (fed === users.length) {
-						log.d('[%s:%d]: Fed all %d users, next batch will start with %s', this.anote.id, process.pid, fed, lst._id);
-						this._json.data.first = lst._id;
-					} else if (fed < users.length && fed > 0) {
-						log.d('[%s:%d]: Fed only %d users, next batch will start with %s', this.anote.id, process.pid, fed, users[fed]._id);
-						this._json.data.first = users[fed]._id;
+						log.d('[%s:%d]: Fed %j users out of %d', this.anote.id, process.pid, fed, users.length);
+						if (fed === users.length) {
+							log.d('[%s:%d]: Fed all %d users, next batch will start with %s', this.anote.id, process.pid, fed, lst._id);
+							this._json.data.first = lst._id;
+						} else if (fed < users.length && fed > 0) {
+							log.d('[%s:%d]: Fed only %d users, next batch will start with %s', this.anote.id, process.pid, fed, users[fed]._id);
+							this._json.data.first = users[fed]._id;
+						}
 					}
-				}
-			}, (err) => {
-				done(err || 'Error while loading users');
+				}, (err) => {
+					done(err || 'Error while loading users');
+				});
 			});
 		}, (statuses) => {
+			if (this.anote.creds.platform === N.Platform.APNS) {
+				statuses.forEach(s => {
+					if (s[2]) { 
+						try {
+							s[2] = s[1] === -200 ? undefined : JSON.parse(s[2]).reason;
+						} catch (e) {
+							log.e('[%s:%d]: Error parsing error from APNS: %j, %j', e, e.stack);
+						}
+					}
+				});
+			}
 			var sent = statuses.filter(s => s[1] === 200  || (s[1] === -200 && s[3])).map(s => s[0]);
 			var reset = statuses.filter(s => s[1] === -200 && s[3]);
 			var unset = statuses.filter(s => s[1] === -200 && !s[3]).map(s => s[0]);
@@ -185,7 +264,7 @@ class PushJob extends job.IPCJob {
 			log.d('[%s:%d]: statuses %j', this.anote.id, process.pid, statuses);
 
 			status.done += statuses.length;
-			this.streamer.unload(db, statuses.map(s => s[0])).then(() => {}, log.e);
+			this.watchPromise(this.streamer.unload(db, statuses.map(s => s[0])));
 
 			if (unset.length) {
 				let q = {_id: {$in: unset}},
@@ -210,11 +289,15 @@ class PushJob extends job.IPCJob {
 
 			if (sent.length) {
 				db.collection('app_users' + this.anote.creds.app_id).update({_id: {$in: sent}}, {$push: {msgs: this.aoid}}, {multi: true}, log.logdb('adding message to app_users'));
+				
+				plugins.internalEvents.push('[CLY]_push_sent');
+				plugins.internalEvents.push('[CLY]_push_action');
+				plugins.internalDrillEvents.push('[CLY]_push_action');
 
 				var params = {
 					qstring: {
 						events: [
-							{ key: '[CLY]_push_sent', count: sent.length, segmentation: {i: this.anote._id } }
+							{ key: '[CLY]_push_sent', count: sent.length, segmentation: {i: '' + this.anote._id } }
 						]
 					},
 					app_id: this.anote.creds.app_id,
@@ -222,6 +305,7 @@ class PushJob extends job.IPCJob {
 					time: require('../../../../api/utils/common.js').initTimeObj(this.anote.creds.app_timezone.tz)
 				};
 
+				log.d('Recording %d [CLY]_push_sent\'s: %j', sent.length, params);
 				require('../../../../api/parts/data/events.js').processEvents(params);
 			}
 
@@ -250,7 +334,13 @@ class PushJob extends job.IPCJob {
 			log.d('[%d]: Send promise returned success in %s', process.pid, this._idIpc);
 			if (!this.completed) {
 				done();
-				this.streamer.clear(db);
+				this.streamer.count(db).then((count) => {
+					if (count) {
+						log.d('[%s:%d]: %d users left', this.anote.id, process.pid, count);
+					} else {
+						this.streamer.clear(db);
+					}
+				})
 			}
 		}, (err) => {
 			log.d('[%d]: Send promise returned error %j in %s', process.pid, err, this._idIpc);

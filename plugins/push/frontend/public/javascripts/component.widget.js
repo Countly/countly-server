@@ -42,7 +42,9 @@ window.component('widget', function(widget) {
 							m('.big-numbers-container', opts.footer.bignumbers.map(function(n){
 								n.config = n.config || {};
 								if (n.help) {
-									n.config = window.components.tooltip.config(n.help, n.config);
+									// n.config.class = (n.class || '') + ' help-zone-vs';
+									// n.config['data-help-localize'] = n.help;
+									n.config = window.components.tooltip.config(t(n.help), {class: 'help'});
 								}
 								return m('.big-numbers.two-columns', n.config, m('.inner', [
 									typeof n.color !== 'undefined' ?

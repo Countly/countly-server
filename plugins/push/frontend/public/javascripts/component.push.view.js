@@ -61,7 +61,7 @@ window.component('push.view', function(view) {
 			r.error() ? 
 				m('.comp-push-error', [
 					m('svg[width=21][height=18]', m('path[fill="#FFFFFF"][d="M20,18c0.6,0,0.8-0.4,0.5-0.9L11,0.9c-0.3-0.5-0.7-0.5-1,0L0.5,17.1C0.2,17.6,0.4,18,1,18H20zM10,13h2v2h-2V13z M10,8h2v4h-2V8z"]')),
-					m.trust(t('push.error.' + r.error() + '.desc', r.error()))
+					m.trust(t('push.error.' + r.error().toLowerCase(), r.error()))
 				])
 				: '',
 			m('h4', t('pu.po.metrics')),
@@ -85,7 +85,7 @@ window.component('push.view', function(view) {
 						title: t('pu.po.metrics.sent'),
 						helpr: t('pu.po.metrics.sent.desc'),
 						descr: r.sent() === 0 ? t('pu.po.metrics.sent.none') : r.sent() === r.total() ? 
-							t('pu.po.metrics.sent.all') 
+							r.sent() === 1 ? t('pu.po.metrics.sent.one') : t('pu.po.metrics.sent.all')
 							: 
 							[
 								r.total() - r.sent() - r.errors() > 0 ? 

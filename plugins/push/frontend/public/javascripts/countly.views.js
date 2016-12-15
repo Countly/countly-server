@@ -6,12 +6,12 @@
 
 function addPushHTMLIfNeeded() {
     if ($('.appmng-push').length === 0) {
-        $(".app-details table tr.table-edit").before('<tr class="appmng-push">' +
+        $(".app-details table tr.table-edit").before('<tr class="appmng-push help-zone-vs" data-help-localize="help.manage-apps.push-apn-certificate">' +
             '<td data-localize="management-applications.push-apn-creds"></td>' +
             '<td id="app-apn">' +
             '</td>' +
         '</tr>' +
-        '<tr class="table-edit-prev appmng-push">' +
+        '<tr class="table-edit-prev appmng-push help-zone-vs" data-help-localize="help.manage-apps.push-gcm-key">' +
             '<td data-localize="management-applications.push-gcm-creds"></td>' +
             '<td id="app-gcm">' +
             '</td>' +
@@ -49,9 +49,7 @@ app.addAppObjectModificator(function(args){
 
 app.addPageScript("/drill#", function(){
     if(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "mobile"){
-        $("#bookmark-filter").after(
-            '<div id="create-message-connector" style="display:none; float:left; height:1px; border-top:1px solid #999; width:50px; margin-top:14px; margin-left:5px;"></div>'+
-            '<a class="icon-button green btn-header btn-create-message" data-localize="push.create" style="display:none"></a>');
+        $("#drill-actions").append('<a class="link icon-button light btn-create-message"><i class="ion-chatbox-working"></i><span data-localize="push.create"></span></a>');
         app.localize();
         $('.btn-create-message').off('click').on('click', function(){
             var message = {
@@ -82,14 +80,15 @@ app.addPageScript("/drill#", function(){
     }
 });
 
-app.addPageScript("/users#", function(){
-    if(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "mobile"){
+function modifyUserDetailsForPush () {
+    if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == 'mobile') {
         //check if it is profile view
-        if(app.activeView.updateEngagement){
+        if (app.activeView.updateEngagement) {
             var userDetails = countlyUserdata.getUserdetails();
-        
-            var platforms = [], test = false, prod = false;
+
+            var tokens = [], platforms = [], test = false, prod = false;
             if (userDetails.tk) {
+                tokens = Object.keys(userDetails.tk);
                 if (userDetails.tk.id || userDetails.tk.ia || userDetails.tk.ip) { platforms.push('i'); }
                 if (userDetails.tk.at || userDetails.tk.ap) { platforms.push('a'); }
         
@@ -111,8 +110,15 @@ app.addPageScript("/users#", function(){
                     CountlyHelpers.alert(jQuery.i18n.map["push.no-user-token"], "red");
                 }
             });
-        }
-        else{
+            if (tokens.length) {
+                if (!$('#userdata-info > tbody > tr:last-child table .user-property-push').length) {
+                    $('<tr class="user-property-push"><td class="text-left"><span>' + components.t('userdata.push') + '</span></td><td class="text-right"></td></tr>').appendTo($('#userdata-info > tbody > tr:last-child table tbody'));
+                }
+                $('#userdata-info > tbody > tr:last-child table .user-property-push td.text-right').html(tokens.map(function(t){ return components.t('pu.tk.' + t); }).join('<br />'));
+            } else {
+                $('#userdata-info > tbody > tr:last-child table .user-property-push').remove();
+            }
+        } else {
             //list view
             if (!$('.btn-create-message').length) {
                 $('.widget-header .left').append($('<a class="icon-button green btn-header left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
@@ -138,7 +144,10 @@ app.addPageScript("/users#", function(){
             });
         }
     }
-});
+}
+
+app.addRefreshScript("/users#", modifyUserDetailsForPush);
+app.addPageScript("/users#", modifyUserDetailsForPush);
 
 $( document ).ready(function() {
 
