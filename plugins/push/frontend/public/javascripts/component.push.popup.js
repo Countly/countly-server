@@ -167,6 +167,12 @@ window.component('push.popup', function(popup) {
 
 			tab = typeof tab === 'undefined' ? this.tabs.tab() + 1 : tab;
 			if (this.tabenabled(tab)) {
+				if (tab === 2) {
+					if (!message.schedule()) {
+						message.date(undefined);
+						message.tz(false);
+					}
+				}
 				if (tab === 2 && !message.count()) {
 					window.components.slider.instance.loading(true);
 					message.remotePrepare(this.checkForNoUsers.bind(this, true)).then(function(){
@@ -435,10 +441,27 @@ window.component('push.popup', function(popup) {
 						m.component(window.components.radio, {options: [
 							{value: false, title: t('pu.po.tab1.scheduling-now'), desc: t('pu.po.tab1.scheduling-now-desc')},
 							{value: true, title: t('pu.po.tab1.scheduling-date'), desc: t('pu.po.tab1.scheduling-date-desc'), view: function(){
-								return m.component(window.components.datepicker, {date: message.date});
-							}}
-						], value: message.schedule}),
-						message.date() && message.tz() ?
+								if (!this.datepicker) {
+									this.datepicker = window.components.datepicker.controller({date: message.date, defaultDate: (() => { var d = new Date(); d.setHours(d.getHours() + 1); d.setMinutes(0); d.setSeconds(0); d.setMilliseconds(0); return d; })()});
+								}
+								return window.components.datepicker.view(this.datepicker);
+							}.bind(this)}
+						], value: function(){
+							if (arguments.length) {
+								message.schedule.apply(null, arguments);
+								if (message.schedule()) {
+									if (!message.date()) {
+										message.date(this.datepicker.opts.defaultDate);
+									}
+								} else {
+									message.date(null);
+									this.datepicker.open(false);
+								}
+							} else {
+								return message.schedule();
+							}
+						}.bind(this)}),
+						message.date() ?
 							m('div', [
 								m('h4', t('pu.po.tab1.tz')),
 								m('h6', [

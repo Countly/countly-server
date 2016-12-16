@@ -12,11 +12,14 @@ window.component('datepicker', function(datepicker) {
 		}
 		this.opts = opts;
 		this.value = opts.date;
+		this.open = opts.open || m.prop(false);
 		this.tz = opts.tz;
 		this.valueFormatter = opts.valueFormatter || function(d) { return moment(d).format('DD.MM.YYYY, HH:mm'); };
 		this.disabled = opts.disabled || function(){ return false; };
 
-		this.open = m.prop(false);
+		// if (!this.value() && opts.defaultDate) {
+		// 	this.value(opts.defaultDate);
+		// }
 
 		this.hours = function(v) {
 			if (this.value()) {
@@ -29,7 +32,7 @@ window.component('datepicker', function(datepicker) {
 					return this.value().getHours();
 				}
 			}
-			return 0;
+			return new Date().getHours();
 		}.bind(this);
 
 		this.minutes = function(v) {
@@ -99,6 +102,7 @@ window.component('datepicker', function(datepicker) {
 			if (typeof jQuery !== 'undefined' && typeof jQuery.fn.datepicker !== 'undefined') {
 				if (!isInitialized) {
 					$(element).datepicker({
+						defaultDate: ctrl.opts.defaultDate,
 						numberOfMonths:1,
 						showOtherMonths:true,
 						minDate:new Date(),

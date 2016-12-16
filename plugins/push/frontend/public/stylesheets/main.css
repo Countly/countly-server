@@ -8,7 +8,7 @@
 .d-table tr.app-apn-cert-old .note { font-size: 12px; color: #999;}
 .d-table tr tr td { border-bottom: none; }
 
-.comp-slider { position: fixed; overflow-y: auto; right: 0; top: 0; bottom: 0; left: auto; background-color: #F9F9F9; transition: 0.4s ease-in-out; box-shadow: -3px 2px 6px rgba(0,0,0,0.1); z-index: 5; }
+.comp-slider { position: fixed; overflow-y: auto; right: 0; top: 0; bottom: 0; left: auto; background-color: #F9F9F9; transition: 0.4s ease-in-out; box-shadow: -3px 2px 6px rgba(0,0,0,0.1); z-index: 100; }
 .comp-slider.comp-slider-closed { transform: translate(100%, 0); visibility: hidden; opacity: 0; }
 
 .comp-slider-inner { padding: 0 36px 92px 36px; }

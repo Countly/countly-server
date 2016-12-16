@@ -56,7 +56,6 @@ window.component('push', function(push) {
 		this.type = m.prop(data.type || push.C.TYPE.MESSAGE);
 		this.apps = buildClearingProp(data.apps || []);
 		this.platforms = buildClearingProp(data.platforms || []);
-		this.date = m.prop(data.date);
 		this.sent = m.prop(data.sent);
 		this.sound = vprop(data.sound || 'default', function(v){ return !!v; }, t('pu.po.tab2.extras.sound.invalid'));
 		this.badge = vprop(data.badge, function(v){ return v && (v + '') === (parseInt(v) + ''); }, t('pu.po.tab2.extras.badge.invalid'));
@@ -253,7 +252,7 @@ window.component('push', function(push) {
 			}
 		};
 
-		this.date = m.prop(data.date || null);
+		this.date = m.prop(typeof data.date === 'string' ? new Date(data.date) : data.date || null);
 		this.tz = m.prop(data.tz || false);
 		this.created = m.prop(data.created || null);
 		this.sent = m.prop(data.sent || null);
