@@ -68,6 +68,21 @@ easy_install supervisor
 yum -y install sendmail
 service sendmail start
 
+#install sharp dependencies
+if [ "$(rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3)" -eq "6" ]; then
+    echo "updating gcc to devtoolset-2..."
+    rpm --import http://ftp.scientificlinux.org/linux/scientific/5x/x86_64/RPM-GPG-KEYs/RPM-GPG-KEY-cern
+    yum install -y wget 
+    wget -O /etc/yum.repos.d/slc6-devtoolset.repo http://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo
+    yum install -y devtoolset-2-gcc devtoolset-2-gcc-c++ devtoolset-2-binutils
+    source /opt/rh/devtoolset-2/enable
+
+    # and then install dependencies for sharp
+    curl -s https://gist.githubusercontent.com/ar2rsawseen/dbd9d732f5eb6cc5e206b40a17728ddc/raw/f3c152b5225863df5392965c82f43535ebfb66be/sharp-preinstall.sh | bash -
+    source /opt/rh/devtoolset-2/enable
+    export CC=`which gcc` CXX=`which g++`
+fi
+
 #install grunt & npm modules
 ( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install )
 
@@ -98,20 +113,6 @@ fi
 
 if [ ! -f $DIR/../plugins/plugins.json ]; then
 	cp $DIR/../plugins/plugins.default.json $DIR/../plugins/plugins.json
-fi
-
-if [ "$(rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3)" -eq "6" ]; then
-    echo "updating gcc to devtoolset-2..."
-    rpm --import http://ftp.scientificlinux.org/linux/scientific/5x/x86_64/RPM-GPG-KEYs/RPM-GPG-KEY-cern
-    yum install -y wget 
-    wget -O /etc/yum.repos.d/slc6-devtoolset.repo http://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo
-    yum install -y devtoolset-2-gcc devtoolset-2-gcc-c++ devtoolset-2-binutils
-    source /opt/rh/devtoolset-2/enable
-
-    # and then install dependencies for sharp
-    curl -s https://gist.githubusercontent.com/ar2rsawseen/dbd9d732f5eb6cc5e206b40a17728ddc/raw/f3c152b5225863df5392965c82f43535ebfb66be/sharp-preinstall.sh | bash -
-    source /opt/rh/devtoolset-2/enable
-    export CC=`which gcc` CXX=`which g++`
 fi
 
 #install nghttp2
