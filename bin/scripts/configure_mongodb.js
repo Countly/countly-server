@@ -16,7 +16,7 @@ if(myArgs.length && fs.existsSync(myArgs[0])){
     
     if(!ob.net)
         ob.net = {};
-    ob.net.bindIp = 127.0.0.1;
+    ob.net.bindIp = "127.0.0.1";
     
     fs.writeFileSync(myArgs[0], yaml.stringify(ob, 4));
 }
