@@ -442,7 +442,12 @@ window.component('push.popup', function(popup) {
 							{value: false, title: t('pu.po.tab1.scheduling-now'), desc: t('pu.po.tab1.scheduling-now-desc')},
 							{value: true, title: t('pu.po.tab1.scheduling-date'), desc: t('pu.po.tab1.scheduling-date-desc'), view: function(){
 								if (!this.datepicker) {
-									this.datepicker = window.components.datepicker.controller({date: message.date, defaultDate: (() => { var d = new Date(); d.setHours(d.getHours() + 1); d.setMinutes(0); d.setSeconds(0); d.setMilliseconds(0); return d; })()});
+									var d = new Date(); 
+									d.setHours(d.getHours() + 1); 
+									d.setMinutes(0); 
+									d.setSeconds(0); 
+									d.setMilliseconds(0);
+									this.datepicker = window.components.datepicker.controller({date: message.date, defaultDate: d});
 								}
 								return window.components.datepicker.view(this.datepicker);
 							}.bind(this)}
