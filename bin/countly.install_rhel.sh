@@ -33,9 +33,6 @@ gpgcheck=0
 enabled=1" > /etc/yum.repos.d/nginx.repo
 fi
 
-#install mongodb
-bash $DIR/scripts/mongodb.install.sh
-
 #install nodejs
 curl -sL https://rpm.nodesource.com/setup_6.x | bash -
 yum install -y nodejs
@@ -73,6 +70,9 @@ service sendmail start
 
 #install grunt
 ( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm )
+
+#install mongodb
+bash $DIR/scripts/mongodb.install.sh
 
 #configure and start nginx
 cp $DIR/config/nginx.server.conf /etc/nginx/conf.d/default.conf

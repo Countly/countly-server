@@ -37,9 +37,6 @@ wget -qO- https://deb.nodesource.com/setup_6.x | bash -
 #update g++ to 4.8
 add-apt-repository ppa:ubuntu-toolchain-r/test -y
 
-#install mongodb
-#bash $DIR/scripts/mongodb.install.sh
-
 #update once more after adding new repos
 apt-get update
 
@@ -65,6 +62,9 @@ apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
 
 #install grunt & npm modules
 ( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install )
+
+#install mongodb
+#bash $DIR/scripts/mongodb.install.sh
 
 #configure and start nginx
 cp /etc/nginx/sites-enabled/default $DIR/config/nginx.default.backup

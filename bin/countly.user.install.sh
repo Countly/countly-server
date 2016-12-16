@@ -31,9 +31,6 @@ fi
 #echo | apt-add-repository ppa:chris-lea/node.js
 wget -qO- https://deb.nodesource.com/setup_6.x | bash -
 
-#install mongodb
-bash $DIR/scripts/mongodb.install.sh
-
 #update once more after adding new repos
 apt-get update
 
@@ -52,6 +49,9 @@ apt-get -y install sendmail
 
 #install grunt & npm modules
 ( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install )
+
+#install mongodb
+bash $DIR/scripts/mongodb.install.sh
 
 #configure and start nginx
 cp /etc/nginx/sites-enabled/default $DIR/config/nginx.default.backup
