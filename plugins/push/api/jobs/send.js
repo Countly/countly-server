@@ -63,6 +63,31 @@ class PushJob extends job.IPCJob {
 		});
 	}
 
+	_divide (subs) {
+		return super._divide(subs.map(s => {
+			log.d('cleaning sub %j', s);
+			var sub = {};
+			for (let k in s) {
+				sub[k] = s[k];
+				if (k === 'data') {
+					sub[k] = {};
+					for (let sk in s[k]) {
+						if (typeof s[k][sk].toJSON === 'function') {
+							sub[k][sk] = s[k][sk].toJSON();
+						} else {
+							sub[k][sk] = s[k][sk];
+						}
+					}
+				}
+			}
+			delete sub.data.appsub.creds.key;
+			delete sub.data.appsub.creds.secret;
+			delete sub.data.appsub.creds.topics;
+			delete sub.data.appsub.creds.bundle;
+			return sub;
+		}))
+	}
+
 	_subSaved () {
 		log.d('[%s:%d]: In _subSaved', this.note ? this.note.id : this.anote.id, process.pid);
 		return super._subSaved().then((set) => {
