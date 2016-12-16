@@ -68,8 +68,8 @@ easy_install supervisor
 yum -y install sendmail
 service sendmail start
 
-#install grunt
-( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm )
+#install grunt & npm modules
+( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install )
 
 #install mongodb
 bash $DIR/scripts/mongodb.install.sh
@@ -113,7 +113,6 @@ if [ "$(rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3)" -
     source /opt/rh/devtoolset-2/enable
     export CC=`which gcc` CXX=`which g++`
 fi
-cd $DIR/.. && npm install
 
 #install nghttp2
 bash $DIR/scripts/install.nghttp2.sh
