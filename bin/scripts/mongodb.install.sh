@@ -29,7 +29,7 @@ fi
 
 if [ -f /etc/lsb-release ]; then
     #install latest mongodb 
-	apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+	apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
     UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
     if [ "$UBUNTU_YEAR" != "16" ]
