@@ -50,7 +50,7 @@
     "moment": "1.7.2",
     "moment-isocalendar": "0.1.0",
     "moment-timezone": "0.5.10",
-    "mongodb": "2.2.12",
+    "mongodb": "2.2.16",
     "mongoskin": "2.1.0",
     "nodemailer": "2.6.4",
     "nodemailer-smtp-transport": "2.7.2",
