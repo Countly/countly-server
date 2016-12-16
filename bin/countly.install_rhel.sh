@@ -17,25 +17,15 @@ echo "
 "
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-#install nodejs & mongodb
+#install nginx
 yum -y install wget openssl-devel gcc-c++ make
 if [ "$(rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3)" -eq "6" ]; then
-	echo "[mongodb-org-3.2]
-name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/6/mongodb-org/3.2/x86_64/
-gpgcheck=0
-enabled=1" > /etc/yum.repos.d/mongodb-org-3.2.repo
 	echo "[nginx]
 name=nginx repo
 baseurl=http://nginx.org/packages/rhel/6/x86_64/
 gpgcheck=0
 enabled=1" > /etc/yum.repos.d/nginx.repo
 else
-	echo "[mongodb-org-3.2]
-name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/3.2/x86_64/
-gpgcheck=0
-enabled=1" > /etc/yum.repos.d/mongodb-org-3.2.repo
 	echo "[nginx]
 name=nginx repo
 baseurl=http://nginx.org/packages/rhel/7/x86_64/
@@ -43,19 +33,18 @@ gpgcheck=0
 enabled=1" > /etc/yum.repos.d/nginx.repo
 fi
 
+#install mongodb
+bash $DIR/scripts/mongodb.install.sh
+
+#install nodejs
 curl -sL https://rpm.nodesource.com/setup_6.x | bash -
-yum install -y nodejs mongodb-org
+yum install -y nodejs
 
 set +e
 NODE_JS_CMD=$(which nodejs)
 set -e
 if [[ -z $NODE_JS_CMD ]]; then
 	ln -s `which node` /usr/bin/nodejs
-fi
-if [ "$(rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3)" -eq "6" ]; then
-    service mongod start
-else
-    systemctl restart mongod
 fi
 
 #install nginx

@@ -31,12 +31,8 @@ fi
 #echo | apt-add-repository ppa:chris-lea/node.js
 wget -qO- https://deb.nodesource.com/setup_6.x | bash -
 
-#add mongodb repo
-#echo "deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen" > /etc/apt/sources.list.d/mongodb-10gen-countly.list
-#apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
-
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
-echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+#install mongodb
+bash $DIR/scripts/mongodb.install.sh
 
 #update once more after adding new repos
 apt-get update
@@ -47,9 +43,6 @@ apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 #install node.js
 #bash $DIR/scripts/install.nodejs.deb.sh || (echo "Failed to install nodejs." ; exit)
 apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
-
-#install mongodb
-apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
 
 #install supervisor
 apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
