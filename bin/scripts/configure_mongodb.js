@@ -12,8 +12,11 @@ if(myArgs.length && fs.existsSync(myArgs[0])){
     
     if(!ob.operationProfiling)
         ob.operationProfiling = {};
-    
     ob.operationProfiling.slowOpThresholdMs = 10000;
+    
+    if(!ob.net)
+        ob.net = {};
+    ob.net.bindIp = 127.0.0.1;
     
     fs.writeFileSync(myArgs[0], yaml.stringify(ob, 4));
 }
