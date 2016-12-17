@@ -412,6 +412,8 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 								apps[i]["notes"] = appNotes[apps[i]["_id"]] || null;
                                 countlyGlobalApps[apps[i]["_id"]] = apps[i];
 								countlyGlobalApps[apps[i]["_id"]]["_id"] = "" + apps[i]["_id"];
+                                if (apps[i].apn) { apps[i].apn.forEach(a => a._id = '' + a._id); }
+ -                              if (apps[i].gcm) { apps[i].gcm.forEach(a => a._id = '' + a._id); }
                             }
 
                             countlyGlobalAdminApps = countlyGlobalApps;
