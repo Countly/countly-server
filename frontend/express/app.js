@@ -10,7 +10,7 @@ var versionInfo = require('./version.info'),
     crypto = require('crypto'),
     fs = require('fs'),
     path = require('path'),
-    sharp = require('sharp'),
+    jimp = require('jimp'),
     request = require('request'),
     async = require('async'),
     stringJS = require('string'),
@@ -412,8 +412,6 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 								apps[i]["notes"] = appNotes[apps[i]["_id"]] || null;
                                 countlyGlobalApps[apps[i]["_id"]] = apps[i];
 								countlyGlobalApps[apps[i]["_id"]]["_id"] = "" + apps[i]["_id"];
-                                if (apps[i].apn) { apps[i].apn.forEach(a => a._id = '' + a._id); }
-                                if (apps[i].gcm) { apps[i].gcm.forEach(a => a._id = '' + a._id); }
                             }
 
                             countlyGlobalAdminApps = countlyGlobalApps;
@@ -925,10 +923,11 @@ app.post(countlyConfig.path+'/apps/icon', function (req, res, next) {
     plugins.callMethod("iconUpload", {req:req, res:res, next:next, data:req.body});
     fs.rename(tmp_path, target_path, function (err) {
         fs.unlink(tmp_path, function () {});
-        sharp(target_path)
-        .resize(72, 72)
-        .embed()
-        .toFile(target_path, function(err) {});
+        jimp.read(target_path, function (err, icon) {
+            if (err) console.log(err, err.stack);
+            icon.cover(72, 72)            // resize                // set JPEG quality                 // set greyscale 
+                .write(target_path); // save 
+        });
 
         res.send(countlyConfig.path+"/appimages/" + req.body.app_image_id + ".png");
     });
