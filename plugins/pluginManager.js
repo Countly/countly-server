@@ -616,17 +616,24 @@ var pluginManager = function pluginManager(){
             var retryifNeeded = function(callback, retry, e, data){
                 return function(err, res){
                     if(err){
-                        logDbWrite.e("Error writing "+collection+" %j %j", data, err);
-                        if(e)
-                            logDbWrite.e(e.stack)
                         if(retry && err.code == 11000){
-                            if(typeof retry === "function")
+                            if(typeof retry === "function"){
+                                logDbWrite.d("Retrying writing "+collection+" %j", data);
                                 retry();
-                            else
-                                logDbWrite.d("Retry writing "+collection+" failed");
+                            }
+                            else{
+                                logDbWrite.e("Error writing "+collection+" %j %j", data, err);
+                                if(e)
+                                    logDbWrite.e(e.stack)
+                            }
                         }
-                        else if(callback){
-                            callback(err, res);
+                        else{
+                            logDbWrite.e("Error writing "+collection+" %j %j", data, err);
+                            if(e)
+                                logDbWrite.e(e.stack)
+                            if(callback){
+                                callback(err, res);
+                            }
                         }
                     }
                     else if(callback){
