@@ -6,13 +6,13 @@ if [ -f /etc/redhat-release ]; then
     #install latest mongodb 
     
     #select source based on release
-	if [ "$(rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3)" -eq "6" ]; then
+	if grep -q -i "release 6" /etc/redhat-release ; then
         echo "[mongodb-org-3.2]
 name=MongoDB Repository
 baseurl=https://repo.mongodb.org/yum/redhat/6/mongodb-org/3.2/x86_64/
 gpgcheck=0
 enabled=1" > /etc/yum.repos.d/mongodb-org-3.2.repo
-    else
+    elif grep -q -i "release 7" /etc/redhat-release ; then
         echo "[mongodb-org-3.2]
 name=MongoDB Repository
 baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/3.2/x86_64/
@@ -54,7 +54,7 @@ nodejs $DIR/configure_mongodb.js /etc/mongod.conf
   
 if [ -f /etc/redhat-release ]; then
     #mongodb might need to be started
-    if [ "$(rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3)" -eq "6" ]; then
+    if grep -q -i "release 6" /etc/redhat-release ; then
         service mongod restart
     else
         systemctl restart mongod

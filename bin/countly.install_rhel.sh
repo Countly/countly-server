@@ -19,18 +19,21 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 #install nginx
 yum -y install wget openssl-devel gcc-c++ make
-if [ "$(rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3)" -eq "6" ]; then
+if grep -q -i "release 6" /etc/redhat-release ; then
 	echo "[nginx]
 name=nginx repo
 baseurl=http://nginx.org/packages/rhel/6/x86_64/
 gpgcheck=0
 enabled=1" > /etc/yum.repos.d/nginx.repo
-else
+elif grep -q -i "release 7" /etc/redhat-release ; then
 	echo "[nginx]
 name=nginx repo
 baseurl=http://nginx.org/packages/rhel/7/x86_64/
 gpgcheck=0
 enabled=1" > /etc/yum.repos.d/nginx.repo
+else
+    echo "Unsupported OS version, only support RHEL/Centos 7 and 6" 
+    exit 1
 fi
 
 #install nodejs
@@ -69,7 +72,7 @@ yum -y install sendmail
 service sendmail start
 
 #install new gcc
-if [ "$(rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3)" -eq "6" ]; then
+if grep -q -i "release 6" /etc/redhat-release ; then
     echo "updating gcc to devtoolset-2..."
     sudo rpm --import http://ftp.scientificlinux.org/linux/scientific/5x/x86_64/RPM-GPG-KEYs/RPM-GPG-KEY-cern
     yum install -y wget 
