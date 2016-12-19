@@ -45,7 +45,7 @@ window.PluginsView = countlyView.extend({
             this.dtable = $('#plugins-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": pluginsData,
                 "aoColumns": [
-                    { "mData": function(row, type){return row.title;}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.name"]},
+                    { "mData": function(row, type){return jQuery.i18n.map[row.code+".plugin-title"] || jQuery.i18n.map[row.code+".title"] || row.title;}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.name"]},
                     { "mData": function(row, type){
                         if (type == "display") {
                             var disabled = (row.prepackaged)? 'disabled' : '';
@@ -66,7 +66,7 @@ window.PluginsView = countlyView.extend({
                         }
                     },
                         "sType":"string", "sTitle": jQuery.i18n.map["plugins.state"], "sClass":"shrink"},
-                    { "mData": function(row, type){return row.description;}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.description"], "bSortable": false, "sClass": "light" },
+                    { "mData": function(row, type){return jQuery.i18n.map[row.code+".plugin-description"] || jQuery.i18n.map[row.code+".description"] || row.description;}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.description"], "bSortable": false, "sClass": "light" },
                     { "mData": function(row, type){return row.version;}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.version"], "sClass":"center", "bSortable": false },
                     { "mData": function(row, type){if(row.homepage != "") return '<a class="plugin-link" href="'+ row.homepage + '" target="_blank"><i class="ion-android-open"></i></a>'; else return "";}, "sType":"string", "sTitle": jQuery.i18n.map["plugins.homepage"], "sClass":"shrink center", "bSortable": false }
                 ]
