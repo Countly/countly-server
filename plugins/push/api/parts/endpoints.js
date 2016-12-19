@@ -150,6 +150,11 @@ var common          = require('../../../../api/utils/common.js'),
             return false;
         }
 
+        if (typeof params.qstring.args.tz === 'undefined') {
+            params.qstring.args.tz = false;
+        }
+        msg.tz = params.qstring.args.tz;
+
         if (msg._id) {
             common.db.collection('messages').findOne(common.db.ObjectID(msg._id), (err, message) => {
                 if (err) {
@@ -191,6 +196,7 @@ var common          = require('../../../../api/utils/common.js'),
                         userConditions: msg.userConditions && Object.keys(msg.userConditions).length ? msg.userConditions : undefined,
                         drillConditions: msg.drillConditions && Object.keys(msg.drillConditions).length ? msg.drillConditions : undefined,
                         geo: geo ? msg.geo : undefined,
+                        tz: msg.tz,
                         test: msg.test || false
                     }), json = note.toJSON();
                     json.created = null;
@@ -243,6 +249,8 @@ var common          = require('../../../../api/utils/common.js'),
                                 jobs.job('push:clear', {mid: msg._id}).in(3600);
 
                                 json.build = {count: build, total: build.TOTALLY};
+                                json.build.tzs = build.tzs;
+                                delete build.tzs;
                                 delete json.build.count.TOTALLY;
 
                                 if (!returned) {
@@ -284,11 +292,7 @@ var common          = require('../../../../api/utils/common.js'),
                                                     } else {
                                                         json = doc.value;
                                                         log.d('Message %j is created, starting job', json._id);
-                                                        if (json.date) {
-                                                            jobs.job('push:send', {mid: json._id}).once(json.date);
-                                                        } else {
-                                                            jobs.job('push:send', {mid: json._id}).now();
-                                                        }
+                                                        new N.Note(json).schedule(common.db, jobs);
                                                     }
                                                 });
                                         } else if (doc && doc.value && doc.value.clear) {
@@ -384,7 +388,6 @@ var common          = require('../../../../api/utils/common.js'),
                 'delayWhileIdle':       { 'required': false, 'type': 'Boolean' },
                 'data':                 { 'required': false, 'type': 'Object'  },
                 'source':               { 'required': false, 'type': 'String'  },
-                'tz':                   { 'required': false, 'type': 'Boolean' },
                 'test':                 { 'required': false, 'type': 'Boolean' }
             },
             msg = {};
@@ -439,7 +442,11 @@ var common          = require('../../../../api/utils/common.js'),
         } else {
             msg.date = null;
         }
-        msg.tz = msg.tz || false;
+
+        if (typeof params.qstring.args.tz === 'undefined') {
+            params.qstring.args.tz = false;
+        }
+        msg.tz = params.qstring.args.tz;
 
         log.d('Entering message creation with %j', msg);
 
@@ -483,12 +490,12 @@ var common          = require('../../../../api/utils/common.js'),
                     return common.returnMessage(params, 400, 'Test changed after preparing message');
                 }
 
-                if ((msg.userConditions || prepared.userConditions) && JSON.stringify(msg.userConditions || {}) !== prepared.userConditions) {
+                if ((msg.userConditions || prepared.userConditions) && JSON.stringify(msg.userConditions || {}) !== (prepared.userConditions || '{}')) {
                     log.d('userConditions in prepared message %j is not equal to current %j', prepared.userConditions, msg.userConditions);
                     return common.returnMessage(params, 400, 'userConditions changed after preparing message');
                 }
 
-                if ((msg.drillConditions || prepared.drillConditions) && JSON.stringify(msg.drillConditions || {}) !== prepared.drillConditions) {
+                if ((msg.drillConditions || prepared.drillConditions) && JSON.stringify(msg.drillConditions || {}) !== (prepared.drillConditions || '{}')) {
                     log.d('drillConditions in prepared message %j is not equal to current %j', prepared.drillConditions, msg.drillConditions);
                     return common.returnMessage(params, 400, 'drillConditions changed after preparing message');
                 }
@@ -516,7 +523,7 @@ var common          = require('../../../../api/utils/common.js'),
                 geo: geo ? msg.geo : undefined,
                 test: msg.test || false,
                 date: msg.date || new Date(),
-                tz: msg.tz || false
+                tz: msg.tz
             });
 
             note.date = momenttz(note.date).utc().toDate();
@@ -542,7 +549,8 @@ var common          = require('../../../../api/utils/common.js'),
                             common.returnMessage(params, 400, 'Already created or cleared');
                         } else {
                             if (doc.value.build) {
-                                log.d('Build finished, starting job');
+                                note.build = doc.value.build;
+                                log.d('Build finished, scheduling job with build %j', note.build);
                                 note.schedule(common.db, jobs);
                             } else {
                                 log.d('Build is not finished yet for message %j', doc.value);
@@ -561,8 +569,13 @@ var common          = require('../../../../api/utils/common.js'),
                     if (build.TOTALLY === 0) {
                         common.returnMessage(params, 400, 'No audience');
                     } else {
-                        note.build = build;
+                        note.build = {count: build, total: build.TOTALLY};
                         note.result.total = build.TOTALLY;
+                        note.build.tzs = build.tzs;
+
+                        delete build.tzs;
+                        delete note.build.count.TOTALLY;
+
                         common.db.collection('messages').save(note, (err) => {
                             if (err) {
                                 log.e('Error while saving message: %j', err);

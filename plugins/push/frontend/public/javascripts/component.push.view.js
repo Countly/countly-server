@@ -64,53 +64,71 @@ window.component('push.view', function(view) {
 					m.trust(t('push.error.' + r.error().toLowerCase(), r.error()))
 				])
 				: '',
-			m('h4', t('pu.po.metrics')),
-			m('.comp-push-view-table.comp-push-metrics', [
-				r.sending() ? 
-					m.component(view.metric, {
-						count: r.processed(),
-						total: r.total(),
-						color: '#53A3EB',
-						title: t('pu.po.metrics.processed'),
-						helpr: t('pu.po.metrics.processed.desc'),
-						descr: r.processed() === 0 ? '' : r.processed() === r.total() ? 
-							t('pu.po.left.to.send.none') 
-							: t.n('pu.po.left.to.send', r.total() - r.processed())
-					})
-					: 
-					m.component(view.metric, {
-						count: r.sent(),
-						total: r.total(),
-						color: '#53A3EB',
-						title: t('pu.po.metrics.sent'),
-						helpr: t('pu.po.metrics.sent.desc'),
-						descr: r.sent() === 0 ? t('pu.po.metrics.sent.none') : r.sent() === r.total() ? 
-							r.sent() === 1 ? t('pu.po.metrics.sent.one') : t('pu.po.metrics.sent.all')
+			r.sent() > 0 || !r.error() ? 
+				m('div', [
+					m('h4', t('pu.po.metrics')),
+					m('.comp-push-view-table.comp-push-metrics', [
+						r.sending() ? 
+							m.component(view.metric, {
+								count: r.processed(),
+								total: r.total(),
+								color: '#53A3EB',
+								title: t('pu.po.metrics.processed'),
+								helpr: t('pu.po.metrics.processed.desc'),
+								descr: [
+									r.processed() === 0 ? '' : r.processed() === r.total() ? 
+										t('pu.po.left.to.send.none') 
+										: t.n('pu.po.left.to.send', r.total() - r.processed()),
+									r.nextbatch() ? 
+										t.p('pu.po.left.to.send.batch', moment(r.nextbatch()).format('HH:mm'))
+										: ''
+								].join('; ').replace(/; $/, '').replace(/^; /, '')
+							})
 							: 
-							[
-								r.total() - r.sent() - r.errors() > 0 ? 
-									t.n('pu.po.expired', r.total() - r.sent() - r.errors())
-									: '',
-								r.errors() > 0 ? 
-									t.n('pu.po.errors', r.errors())
-									: '',
-							].join('; ').replace(/; $/, '').replace(/^; /, '')
-					}),
+							r.sent() > 0 || !r.error() ?
+								m.component(view.metric, {
+									count: r.sent(),
+									total: r.total(),
+									color: '#53A3EB',
+									title: t('pu.po.metrics.sent'),
+									helpr: t('pu.po.metrics.sent.desc'),
+									descr: r.sent() === 0 ? 
+										r.total() - r.sent() - r.errors() > 0 ? 
+											t.n('pu.po.expired', r.total() - r.sent() - r.errors())
+											: 
+											t('pu.po.metrics.sent.none')
+										: 
+										r.sent() === r.total() ? 
+											r.sent() === 1 ? t('pu.po.metrics.sent.one') : t('pu.po.metrics.sent.all')
+											: 
+											[
+												r.total() - r.sent() - r.errors() > 0 ? 
+													t.n('pu.po.expired', r.total() - r.sent() - r.errors())
+													: '',
+												r.errors() > 0 ? 
+													t.n('pu.po.errors', r.errors())
+													: '',
+											].join('; ').replace(/; $/, '').replace(/^; /, '')
+								})
+								:
+								'',
 
-				r.actioned() > 0 ? 
-					m.component(view.metric, {
-						count: r.actioned(),
-						total: r.sent(),
-						color: '#FE8827',
-						title: t('pu.po.metrics.actions'),
-						helpr: t('pu.po.metrics.actions.desc'),
-						descr: r.actioned() === r.sent() ? 
-							t('pu.po.metrics.actions.all') 
-							: t.n('pu.po.metrics.actions', r.actioned())
-					})
-					: ''
+						r.actioned() > 0 ? 
+							m.component(view.metric, {
+								count: r.actioned(),
+								total: r.sent(),
+								color: '#FE8827',
+								title: t('pu.po.metrics.actions'),
+								helpr: t('pu.po.metrics.actions.desc'),
+								descr: r.actioned() === r.sent() ? 
+									t('pu.po.metrics.actions.all') 
+									: t.n('pu.po.metrics.actions', r.actioned())
+							})
+							: ''
 
-			]),
+					])
+				])
+				: '',
 			m('h4', t('pu.po.tab3.view')),
 			m.component(components.push.view.contents, {message: ctrl.message, isView: true}),
 			r.errorCodes() ? 
@@ -137,7 +155,7 @@ window.component('push.view', function(view) {
 							return m('.comp-push-view-row', [
 								m('.col-left', m.trust(t('push.errorCode.' + k))),
 								m('.col-mid', r.errorCodes()[k]),
-								m('.col-right', ' ')
+								m('.col-right', m.trust(t('push.errorCode.' + k + '.desc', ' ')))
 							]);
 						}
 					}))
@@ -258,7 +276,7 @@ window.component('push.view', function(view) {
 					]),
 					m('.comp-push-view-row', [
 						m('.col-left', t('pu.po.tab3.date')),
-						m('.col-right', ctrl.message.date() ? moment(ctrl.message.date()).format('DD.MM.YYYY, HH:mm') : t('pu.po.tab3.date.now'))
+						m('.col-right', (ctrl.message.date() ? moment(ctrl.message.date()).format('DD.MM.YYYY, HH:mm') : t('pu.po.tab3.date.now')) + (ctrl.message.tz() ? t('pu.po.tab3.date.intz') : ''))
 					]),
 					ctrl.message.geo() ? m('.comp-push-view-row', [
 						m('.col-left', t('pu.po.tab3.location')),

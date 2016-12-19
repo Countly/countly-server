@@ -95,28 +95,29 @@ function modifyUserDetailsForPush () {
                 test = !!userDetails.tk.id || !!userDetails.tk.ia || !!userDetails.tk.at;
                 prod = !!userDetails.tk.ip || !!userDetails.tk.ap;
             }
-            if (!$('.btn-create-message').length) {
-                $('#user-profile-detail-buttons').append($('<a class="icon-button green left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
-            }
-            $('.btn-create-message').show().off('click').on('click', function(){
-                if (platforms.length) {
-                    components.push.popup.show({
-                        platforms: platforms,
-                        apps: [countlyCommon.ACTIVE_APP_ID],
-                        test: test && !prod,
-                        userConditions: {_id: app.userdetailsView.user_id}
-                    });
-                } else {
-                    CountlyHelpers.alert(jQuery.i18n.map["push.no-user-token"], "red");
-                }
-            });
             if (tokens.length) {
+                if (!$('.btn-create-message').length) {
+                    $('#user-profile-detail-buttons').append($('<a class="icon-button green left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
+                }
+                $('.btn-create-message').show().off('click').on('click', function(){
+                    if (platforms.length) {
+                        components.push.popup.show({
+                            platforms: platforms,
+                            apps: [countlyCommon.ACTIVE_APP_ID],
+                            test: test && !prod,
+                            userConditions: {_id: app.userdetailsView.user_id}
+                        });
+                    } else {
+                        CountlyHelpers.alert(jQuery.i18n.map["push.no-user-token"], "red");
+                    }
+                });
                 if (!$('#userdata-info > tbody > tr:last-child table .user-property-push').length) {
                     $('<tr class="user-property-push"><td class="text-left"><span>' + components.t('userdata.push') + '</span></td><td class="text-right"></td></tr>').appendTo($('#userdata-info > tbody > tr:last-child table tbody'));
                 }
                 $('#userdata-info > tbody > tr:last-child table .user-property-push td.text-right').html(tokens.map(function(t){ return components.t('pu.tk.' + t); }).join('<br />'));
             } else {
                 $('#userdata-info > tbody > tr:last-child table .user-property-push').remove();
+                $('.btn-create-message').remove();
             }
         } else {
             //list view
