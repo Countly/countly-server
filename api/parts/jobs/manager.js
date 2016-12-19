@@ -322,7 +322,7 @@ class Manager {
 								log.e(e, e.stack);
 								reject(e);
 							}
-						});
+						}, reject);
 					}
 				});
 			});

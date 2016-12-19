@@ -11,35 +11,35 @@ window.component('push.dash', function(dash) {
 		this.period = m.prop('monthly');
 		this.source = m.prop('dash');
 		this.messages = m.prop([]);
-		this.data = m.prop();
+		var dt = m.prop()
+		this.data = function(){
+			if (arguments.length){
+				var data = arguments[0];
+				if (data) {
+					['sent', 'actions'].forEach(function(ev) {
+						ev = data[ev];
 
-		components.push.remoteDashboard(this.app_id).then(function(data){
-			m.startComputation();
-			['sent', 'actions'].forEach(function(ev) {
-				ev = data[ev];
+						['weekly', 'monthly'].forEach(function(period){
+							if (period === 'weekly') {
+								period = ev[period];
+								
+								var len = Math.floor(period.data.length / 2);
+								period.data = period.data.slice(len);
+								period.keys = period.keys.slice(len);
+							} else {
+								period = ev[period];
+							}
 
-				['weekly', 'monthly'].forEach(function(period){
-					if (period === 'weekly') {
-						period = ev[period];
-						
-						var len = Math.floor(period.data.length / 2);
-						period.data = period.data.slice(len);
-						period.keys = period.keys.slice(len);
-					} else {
-						period = ev[period];
-					}
+							period.total = period.data.reduce(function(a, b){ return a + b; });
+						});
+					});
+					dt(data);
+				}
+			}
+			return dt();
+		};
 
-					period.total = period.data.reduce(function(a, b){ return a + b; });
-				});
-			});
-			// data.sent.weekly.total = data.sent.weekly
-			// data.sent.weekly.data.splice(Math.floor(data.sent.weekly.data.length / 2));
-			// data.sent.weekly.keys.splice(Math.floor(data.sent.weekly.keys.length / 2));
-			// data.actions.weekly.data.splice(Math.floor(data.actions.weekly.data.length / 2));
-			// data.actions.weekly.keys.splice(Math.floor(data.actions.weekly.keys.length / 2));
-			this.data(data);
-			m.endComputation();
-		}.bind(this), console.log);
+		components.push.remoteDashboard(this.app_id).then(this.data, console.log);
 
 		this.dataDP = function(){
 			return {
@@ -160,6 +160,7 @@ window.component('push.dash', function(dash) {
 
 		this.refresh = function(){
 			this.dtable.fnDraw(false);
+			components.push.remoteDashboard(this.app_id).then(this.data, console.log);
 		}.bind(this);
 
 		this.message = function(ev) {
@@ -265,7 +266,7 @@ window.MessagingDashboardView = countlyView.extend({
 		}, 500);
 	},
 	refresh: function() {
-		if (this.mounted) { this.mounted.refresh(); }
+		if (this.mounted) { this.mounted.refresh(true); }
 	},
 
     destroy: function () {

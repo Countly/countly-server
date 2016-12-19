@@ -57,7 +57,7 @@ class Channel extends EventEmitter {
 			}
 		};
 		this.worker.setMaxListeners(this.worker.getMaxListeners() + 1);
-		this.worker.on('message', this.onMessageListener.bind(this));
+		this.worker.on('message', this.onMessageListener);
 		this.worker.on('exit', this.emit.bind(this, 'exit'));
 		this.worker.on('error', this.emit.bind(this, 'crash'));
 		return this;

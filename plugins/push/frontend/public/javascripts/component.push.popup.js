@@ -475,7 +475,7 @@ window.component('push.popup', function(popup) {
 								]),
 								m.component(window.components.radio, {options: [
 									{value: false, title: t('pu.po.tab1.tz-no'), desc: t('pu.po.tab1.tz-no-desc')},
-									{value: true, title: t('pu.po.tab1.tz-yes'), desc: t('pu.po.tab1.tz-yes-desc')}
+									{value: -(new Date().getTimezoneOffset()), title: t('pu.po.tab1.tz-yes'), desc: t('pu.po.tab1.tz-yes-desc')}
 								], value: message.tz}),
 							])
 							: '',

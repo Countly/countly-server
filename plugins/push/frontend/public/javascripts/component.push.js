@@ -140,6 +140,7 @@ window.component('push', function(push) {
 				userConditions: this.userConditions(),
 				drillConditions: this.drillConditions(),
 				geo: this.geo(),
+				tz: this.tz(),
 				test: this.test()
 			};
 			if (includeId) {
@@ -154,7 +155,6 @@ window.component('push', function(push) {
 				obj.url = this.url();
 				obj.source = 'dash';
 				obj.date = this.date();
-				obj.tz = this.tz();
 
 				if (this.data()) {
 					obj.data = typeof this.data() === 'string' ? JSON.parse(this.data()) : this.data();
@@ -253,7 +253,7 @@ window.component('push', function(push) {
 		};
 
 		this.date = m.prop(typeof data.date === 'string' ? new Date(data.date) : data.date || null);
-		this.tz = m.prop(data.tz || false);
+		this.tz = buildClearingProp(typeof data.tz === 'undefined' ? false : data.tz);
 		this.created = m.prop(data.created || null);
 		this.sent = m.prop(data.sent || null);
 		this.dates = function() {
@@ -290,13 +290,18 @@ window.component('push', function(push) {
 		this.actioned = m.prop(data.actioned || 0);
 		this.error = m.prop(data.error);
 		this.errorCodes = m.prop(data.errorCodes);
+		this.nextbatch = m.prop(data.nextbatch);
 
 		this.percentSent = function() {
 			return this.total() === 0 ? 0 : Math.min(100, +(100 * this.sent() / (this.found() - (this.processed() - this.sent()))).toFixed(2));
 		};
 
 		this.sending = function() {
-			return (this.status() & 4) > 0 && (this.status() & (16 | 32)) === 0;
+			return ((this.status() & 4) > 0 || this.scheduled()) && (this.status() & (16 | 32)) === 0;
+		};
+
+		this.scheduled = function() {
+			return (this.status() & 2) > 0 && (this.status() & (16 | 32)) === 0;
 		};
 	};
 
@@ -315,7 +320,11 @@ window.component('push', function(push) {
 				return data;
 			});
 		} else {
-			return Promise.resolve(push.dashboard);
+			return new Promise(function(resolve){
+				m.startComputation();
+				resolve();
+				m.endComputation();
+			});
 		}
 	};
 

@@ -116,9 +116,9 @@ class Note {
 
 	schedule (db, jobs) {
 		// build already finished, lets schedule the job
-		if (this.date && this.tz) {
-			log.d('Scheduling message to be sent in user timezones (min %d) on date %j', this.mintz, this._id, this.date);
-			var batch = new Date(this.date.getTime() + this.mintz);
+		if (this.date && this.tz !== false && this.build.tzs.length) {
+			var batch = new Date(this.date.getTime() + (this.tz - this.build.tzs[0]) * 60000);
+			log.d('Scheduling message with date %j to be sent in user timezones (tz %j, tzs %j): %j', this.date, this.tz, this.build.tzs, batch);
 		    jobs.job('push:send', {mid: this._id}).once(batch);
 		    db.collection('messages').updateOne({_id: this._id}, {$set: {'result.status': Status.InQueue, 'result.nextbatch': batch}}, log.logdb('when updating message status with inqueue'));
 		} else if (this.date) {
@@ -177,6 +177,9 @@ class Note {
 				if (this.data) {
 					for (let k in this.data) { compiled[k] = this.data[k]; }
 				}
+				if (Object.keys(compiled.aps).length === 0) {
+					delete compiled.aps;
+				}
 				return JSON.stringify(compiled);
 			} else {
 				compiled = {};
@@ -206,8 +209,8 @@ class Note {
 		}
 	}
 
-	appsub (idx, appsubcreds) {
-		return new AppSubNote(this, idx, appsubcreds);
+	appsub (idx, appsubcreds, plan) {
+		return new AppSubNote(this, idx, appsubcreds, plan);
 	}
 }
 
@@ -215,16 +218,19 @@ class Note {
  * Class constructed from subjob data and used in job process
  */
 class AppSubNote {
-	constructor(note, idx, appsubcreds) {
+	constructor(note, idx, appsubcreds, plan) {
 		// initial case
 		if (note && note.compile) {
 			this._id = note._id;
 			this.idx = idx;
 			this.date = note.date;
-			this.tz = note.tz || false;
+			this.tz = note.tz;
 			this.mintz = note.build ? note.build.mintz : undefined;
 			this.content = note.compile(appsubcreds.platform);
 			this.creds = appsubcreds;
+			if (typeof plan !== 'undefined') {
+				this.plan = plan;
+			}
 			if (note.userConditions || note.drillConditions) {
 				this.query = {};
 				if (note.userConditions) { this.query.user = typeof note.userConditions === 'string' ? JSON.parse(note.userConditions) : note.userConditions; }
@@ -239,6 +245,9 @@ class AppSubNote {
 			this.mintz = note.mintz;
 			this.content = typeof note.content === 'string' ? JSON.parse(note.content) : note.content;
 			this.creds = note.creds;
+			if (note.plan) {
+				this.plan = note.plan;
+			}
 			if (note.query) {
 				this.query = {};
 				if (note.query.userConditions) { this.query.userConditions = JSON.parse(note.query.userConditions); }
@@ -260,7 +269,8 @@ class AppSubNote {
 			mintz: this.mintz,
 			content: JSON.stringify(this.content),
 			creds: this.creds,
-			query: this.query ? {} : undefined
+			query: this.query ? {} : undefined,
+			plan: this.plan
 		};
 
 		if (this.query && this.query.user) {

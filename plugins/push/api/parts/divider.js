@@ -118,10 +118,11 @@ class Divider {
 						TOTALLY.TOTALLY += a.count;
 					}
 				}
-				var mintzs = subs.map(s => s.appsub.mintz);
-				mintzs.sort();
-				if (mintzs[0] !== undefined) {
-					TOTALLY.mintz = mintzs[0];
+				var alltzs = [];
+				subs.forEach(s => alltzs = alltzs.concat(s.appsub.tzs || []));
+				alltzs.sort((a, b) => b - a);
+				if (alltzs[0] !== undefined) {
+					TOTALLY.tzs = alltzs;
 				}
 				log.d('Done counting %j', TOTALLY);
 				resolve(TOTALLY);
@@ -146,9 +147,7 @@ class Divider {
 					return reject('No audience found');
 				}
 
-				var total = subs.reduce((p, c) => {
-						return {count: p.count + c.count};
-					}).count,
+				var total = subs.map(x => x.count).reduce((a, b) => a + b),
 					chunk = WORKER_CHUNK_SIZE,
 					chunks = Math.max(1, Math.ceil(total / chunk));
 				// var total = subs.reduce((p, c) => {
@@ -166,7 +165,7 @@ class Divider {
 							appsub: s.appsub
 						};
 
-					if (this.note.tz || s.count < 1.5 * chunk) {
+					if (this.note.tz !== false || s.count < 1.5 * chunk) {
 						resolve([{data: Object.assign({size: s.count}, data)}]);
 					} else {
 						var parts = [];
@@ -219,6 +218,28 @@ class Divider {
 				}, reject);
 			}, reject);
 
+		});
+	}
+
+	// plan is a function which returns a promise with result:
+	// {appsub: {..., plan: 'some plan identifier'[, date: Date]}}
+	splitToPlan (db, plan) {
+		log.d('Splitting note %j skipClear %j', this.note._id);
+		return new Promise((resolve, reject) => {
+			// Then, for each app-platform combination whenver audience is too big for one core, split it between multiple cores
+			this.subs(db, false).then((subs) => {
+				log.d('Counted all audience for note %j: %d results', this.note._id, subs.length);
+				subs.filter(s => s.count <= 0).forEach(s => s.streamer.clear(db));
+				subs = subs.filter(s => s.count > 0);
+
+				Promise.all(subs.map(sub => plan(sub.streamer))).then(results => {
+					let splits = [];
+					results.forEach(results => splits = splits.concat(results));
+					splits.forEach(split => {
+
+					});
+				}, reject);
+			}, reject);
 		});
 	}
 
