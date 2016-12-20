@@ -29,6 +29,7 @@ pkill -f executor.js
 #upgrade plugins
 countly plugin upgrade push
 countly plugin upgrade systemlogs
+countly plugin upgrade errorlogs
 
 countly update sdk-web
 
