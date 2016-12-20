@@ -425,6 +425,10 @@ window.ConfigurationsView = countlyView.extend({
                 }
             }, 300));
             
+            $(".configs #usersettings_regenerate").click(function(){
+                $(".configs #api-key").val(CountlyHelpers.generatePassword(32, true)).trigger("keyup");
+            });
+            
             $(".configs .account-settings .input input").keyup(function () {
                 $("#configs-apply-changes").removeClass("settings-changes");
                 $(".configs .account-settings .input input").each(function(){
@@ -474,8 +478,8 @@ window.ConfigurationsView = countlyView.extend({
                     
                     if ((new_pwd.length || re_new_pwd.length) && !old_pwd.length) {
                         CountlyHelpers.notify({
-                            title: jQuery.i18n.map["user-settings.old-password-match"],
-                            message: jQuery.i18n.map["configs.not-saved"],
+                            title: jQuery.i18n.map["configs.not-saved"],
+                            message: jQuery.i18n.map["user-settings.old-password-match"],
                             type: "error"
                         });
                         return true;
@@ -483,8 +487,8 @@ window.ConfigurationsView = countlyView.extend({
     
                     if (new_pwd != re_new_pwd) {
                         CountlyHelpers.notify({
-                            title: jQuery.i18n.map["user-settings.password-match"],
-                            message: jQuery.i18n.map["configs.not-saved"],
+                            title: jQuery.i18n.map["configs.not-saved"],
+                            message: jQuery.i18n.map["user-settings.password-match"],
                             type: "error"
                         });
                         return true;
@@ -492,8 +496,17 @@ window.ConfigurationsView = countlyView.extend({
 
                     if (new_pwd.length && new_pwd == old_pwd) {
                         CountlyHelpers.notify({
-                            title: jQuery.i18n.map["user-settings.password-not-old"],
-                            message: jQuery.i18n.map["configs.not-saved"],
+                            title: jQuery.i18n.map["configs.not-saved"],
+                            message: jQuery.i18n.map["user-settings.password-not-old"],
+                            type: "error"
+                        });
+                        return true;
+                    }
+                    
+                    if (api_key.length != 32) {
+                        CountlyHelpers.notify({
+                            title: jQuery.i18n.map["configs.not-saved"],
+                            message: jQuery.i18n.map["user-settings.api-key-length"],
                             type: "error"
                         });
                         return true;
@@ -514,15 +527,15 @@ window.ConfigurationsView = countlyView.extend({
     
                             if (result == "username-exists") {
                                 CountlyHelpers.notify({
-                                    title: jQuery.i18n.map["management-users.username.exists"],
-                                    message: jQuery.i18n.map["configs.not-saved"],
+                                    title: jQuery.i18n.map["configs.not-saved"],
+                                    message: jQuery.i18n.map["management-users.username.exists"],
                                     type: "error"
                                 });
                                 return true;
                             } else if (!result) {
                                 CountlyHelpers.notify({
-                                    title: jQuery.i18n.map["user-settings.alert"],
-                                    message: jQuery.i18n.map["configs.not-saved"],
+                                    title:jQuery.i18n.map["configs.not-saved"],
+                                    message: jQuery.i18n.map["user-settings.alert"],
                                     type: "error"
                                 });
                                 return true;
@@ -533,12 +546,14 @@ window.ConfigurationsView = countlyView.extend({
                                 }
                                 else if(typeof result === "string"){
                                     CountlyHelpers.notify({
-                                        title: jQuery.i18n.map["user-settings.old-password-not-match"],
-                                        message: jQuery.i18n.map["configs.not-saved"],
+                                        title: jQuery.i18n.map["configs.not-saved"],
+                                        message: jQuery.i18n.map[result],
                                         type: "error"
                                     });
                                     return true;
                                 }
+                                $("#user-api-key").val(api_key);
+                                countlyGlobal["member"].api_key = api_key;
                                 $(".configs #old_pwd").val("");
                                 $(".configs #new_pwd").val("");
                                 $(".configs #re_new_pwd").val("");
@@ -551,8 +566,8 @@ window.ConfigurationsView = countlyView.extend({
                                 countlyPlugins.updateUserConfigs(self.changes, function(err, services){
                                     if(err && !ignoreError){
                                         CountlyHelpers.notify({
-                                            title: jQuery.i18n.map["configs.not-changed"],
-                                            message: jQuery.i18n.map["configs.not-saved"],
+                                            title: jQuery.i18n.map["configs.not-saved"],
+                                            message: jQuery.i18n.map["configs.not-changed"],
                                             type: "error"
                                         });
                                     }
@@ -572,6 +587,7 @@ window.ConfigurationsView = countlyView.extend({
                                     title: jQuery.i18n.map["configs.changed"],
                                     message: jQuery.i18n.map["configs.saved"]
                                 });
+                                $("#configs-apply-changes").hide();
                             }
                         }
                     });
@@ -580,8 +596,8 @@ window.ConfigurationsView = countlyView.extend({
                     countlyPlugins.updateConfigs(self.changes, function(err, services){
                         if(err){
                             CountlyHelpers.notify({
-                                title: jQuery.i18n.map["configs.not-changed"],
-                                message: jQuery.i18n.map["configs.not-saved"],
+                                title: jQuery.i18n.map["configs.not-saved"],
+                                message: jQuery.i18n.map["configs.not-changed"],
                                 type: "error"
                             });
                         }

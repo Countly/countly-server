@@ -1161,23 +1161,28 @@ $.extend(Template.prototype, {
         $("#overlay").fadeOut();
     };
     
-    CountlyHelpers.generatePassword = function() {
+    CountlyHelpers.generatePassword = function(length, no_special) {
         var text = [];
         var chars = "abcdefghijklmnopqrstuvwxyz";
         var upchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         var numbers = "0123456789";
         var specials = '!@#$%^&*()_+{}:"<>?\|[];\',./`~';
-        var all = chars+upchars+numbers+specials;
+        var all = chars+upchars+numbers;
+        if(!no_special)
+            all += specials;
          
         //1 char
         text.push(upchars.charAt(Math.floor(Math.random() * upchars.length)));
         //1 number
         text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
         //1 special char
-        text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
+        if(!no_special){
+            text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
+            length--;
+        }
         
         //5 any chars
-        for( var i=0; i < Math.max(countlyGlobal["security"].password_min-3, 5); i++ )
+        for( var i=0; i < Math.max(length-2, 5); i++ )
             text.push(all.charAt(Math.floor(Math.random() * all.length)));
         
         //randomize order
@@ -3448,7 +3453,7 @@ window.ManageUsersView = countlyView.extend({
             $(".row").removeClass("selected");
         });
         $(".generate-password").off("click").on('click', function() {
-            $(this).parent().find(".password-text").val(CountlyHelpers.generatePassword());
+            $(this).parent().find(".password-text").val(CountlyHelpers.generatePassword(countlyGlobal["security"].password_min));
         });
         
         $(".change-password").off("click").on('click', function() {
