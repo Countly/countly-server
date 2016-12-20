@@ -622,13 +622,16 @@ var pluginManager = function pluginManager(){
                                 retry();
                             }
                             else{
-                                logDbWrite.e("Error writing "+collection+" %j %j", data, err);
+                                logDbWrite.e("Error writing "+collection+" %j %s %j", data, err, err);
                                 if(e)
                                     logDbWrite.e(e.stack)
+                                if(callback){
+                                    callback(err, res);
+                                }
                             }
                         }
                         else{
-                            logDbWrite.e("Error writing "+collection+" %j %j", data, err);
+                            logDbWrite.e("Error writing "+collection+" %j %s %j", data, err, err);
                             if(e)
                                 logDbWrite.e(e.stack)
                             if(callback){
@@ -710,7 +713,7 @@ var pluginManager = function pluginManager(){
             var logForWrites = function(callback, e, data){
                 return function(err, res){
                     if(err){
-                        logDbWrite.e("Error writing "+collection+" %j %j", data, err);
+                        logDbWrite.e("Error writing "+collection+" %j %s %j", data, err, err);
                         if(e)
                             logDbWrite.e(e.stack)
                     }
@@ -749,7 +752,7 @@ var pluginManager = function pluginManager(){
             var logForReads = function(callback, e, data){
                 return function(err, res){
                     if(err){
-                        logDbRead.e("Error reading "+collection+" %j %j", data, err);
+                        logDbRead.e("Error reading "+collection+" %j %s %j", data, err, err);
                         if(e)
                             logDbRead.e(e.stack)
                     }
