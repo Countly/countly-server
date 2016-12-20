@@ -5,7 +5,7 @@
 .compare-view.d-table .down { font-size: 11px; margin-right: 8px; }
 .compare-view.d-table .up { color: #2fa732; }
 .compare-view.d-table .down { color: #D63E40; }
-.compare-view #empty-graph { position: absolute; text-align: center; width: 100%; top: 50%; margin-top: -35px; display: none; height: 70px; line-height: 70px; text-shadow: none; color: #B3B3B3; }
+.compare-view #empty-graph { z-index:1; position: absolute; text-align: center; width: 100%; top: 50%; margin-top: -35px; display: none; height: 70px; line-height: 70px; text-shadow: none; color: #B3B3B3; padding:0; }
 .compare-view #empty-graph i { font-size: 70px; color: #ECECEC; user-select:none; }
 .compare-view #compare-button { padding: 8px 15px 9px 15px; }
 .compare-view #compare-button.disabled { background-color: #6d6d6d; cursor: default; box-shadow: inset 0 0 0 1px #6d6d6d; }
