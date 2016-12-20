@@ -9,7 +9,7 @@ var common = require('../../../../api/utils/common.js'),
 	Streamer = require('./streamer.js'),
 	momenttz = require('moment-timezone');
 
-const WORKER_CHUNK_SIZE = 10000;
+const WORKER_CHUNK_SIZE = 100000;
 
 class Divider {
 	constructor (note) {
