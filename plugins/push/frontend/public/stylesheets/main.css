@@ -25,6 +25,8 @@
 .comp-slider-title h3 .count { float: right; font-size: 14px; color: #324351; font-weight: normal; }
 .comp-slider-title h3 .count .warn { position: relative; font-size: 22px; vertical-align: sub; margin-left: 5px; }
 .comp-slider-title h3 .count.ion-person::before { font-size: 22px; vertical-align: sub; margin-right: 5px; color: #3B4B59; }
+.comp-slider-title h3 .status { height: 20px; float: right; font-size: 14px; }
+.comp-slider-title h3 .status > svg { width: 20px; height: 20px; margin-right: 5px; margin-bottom: -4px; }
 
 .comp-push-panels { display: table; table-layout: fixed; width: 100%; }
 .comp-push-panel { display: table-cell; width: 2%; margin-bottom: 0; padding-right: 19px; }
@@ -478,7 +480,7 @@ input:disabled + label {
 .comp-datepicker.active .ion-chevron-down:before { transform: rotate(-90deg); }
 
 .comp-datepicker .picker { position: absolute; top: 33px; left: -1px; right: -1px; opacity: 0; transition: .3s ease-in; background-color: #565655; border: none; border-radius: 0 0 4px 4px; color: white; visibility: hidden; }
-.comp-datepicker.active .picker { visibility: visible; opacity: 1; }
+.comp-datepicker.active .picker { visibility: visible; opacity: 1; z-index: 2; }
 
 .comp-datepicker-ui-picker { overflow:auto; margin:2px; border-radius:2px;  }
 .comp-datepicker-ui-picker .calendar{ float:left; margin-right:6px; border:1px solid #666; border-radius:2px; }

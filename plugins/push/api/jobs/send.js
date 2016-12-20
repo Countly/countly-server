@@ -228,6 +228,7 @@ class PushJob extends job.IPCJob {
 			bookmark: this.bookmark
 		};
 
+		this.anote.nobuild = true;
 		this.streamer = new Streamer(this.anote);
 
 		log.d('[%d:%s]: Ready to stream with bookmark %s, first %s', process.pid, this.anote.id, status.bookmark, this.data.first);

@@ -46,6 +46,10 @@ class Streamer {
 					this.built = this.collection();
 					log.d('[%d:%s]: Already built collection %j', process.pid, this.anote.id, this.built);
 					resolve(this.built);
+				} else if (this.anote.nobuild) {
+					this.built = this.collection();
+					log.d('[%d:%s]: No build for collection %j', process.pid, this.anote.id, this.built);
+					resolve(this.built);
 				} else {
 					var query;
 					log.d('[%d:%s]: Building audience for %j', process.pid, this.anote.id, this.anote);
@@ -153,6 +157,7 @@ class Streamer {
 					reject(err);
 				} else {
 					this.anote.tzs = tzs || [];
+					this.anote.tzs.sort((a, b) => b - a);
 					resolve();
 				}
 			});

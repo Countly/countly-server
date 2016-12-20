@@ -266,7 +266,7 @@ window.component('push', function(push) {
 			    dates.date = moment(this.date()).format("D MMM, YYYY HH:mm");
 			    dates.dateSeconds = moment(this.date()).unix();
 			}
-			if (this.sent()) {
+			if (this.sent() && !this.result.sending()) {
 			    dates.sent = moment(this.sent()).format("D MMM, YYYY HH:mm");
 			    dates.dateSeconds = moment(this.sent()).unix();
 			}
@@ -293,7 +293,7 @@ window.component('push', function(push) {
 		this.nextbatch = m.prop(data.nextbatch);
 
 		this.percentSent = function() {
-			return this.total() === 0 ? 0 : Math.min(100, +(100 * this.sent() / (this.found() - (this.processed() - this.sent()))).toFixed(2));
+			return this.total() === 0 ? 0 : Math.min(100, +(100 * this.sent() / (this.total() - (this.processed() - this.sent()))).toFixed(2));
 		};
 
 		this.sending = function() {

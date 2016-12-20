@@ -29,6 +29,20 @@ var plugin = {},
 
     plugins.register('/master', function(ob){
         setUpCommons();
+        
+        require('child_process').exec('openssl version', (error, out, err) => {
+            if (error || err) {
+                log.e('=======================---------------- !!! OPENSSL ERROR !!! ----------------=======================');
+                log.e('Error: %j', error);
+                log.e('STDERR: %j', err);
+                log.e('STDOUT: %j', out);
+                log.e('=====================================================================================================');
+            } else if (!out || (out.indexOf('1.0.2') === -1 && out.indexOf('1.0.3') === -1)) {
+                log.e('=======================---------------- !!! OPENSSL ERROR !!! ----------------=======================');
+                log.e('STDOUT: %j', out);
+                log.e('=====================================================================================================');
+            }
+        });
     });
 
     //write api call

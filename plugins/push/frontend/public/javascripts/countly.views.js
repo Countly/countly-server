@@ -81,7 +81,7 @@ app.addPageScript("/drill#", function(){
 });
 
 function modifyUserDetailsForPush () {
-    if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == 'mobile') {
+    if (Backbone.history.fragment.indexOf('manage/') === -1 && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == 'mobile') {
         //check if it is profile view
         if (app.activeView.updateEngagement) {
             var userDetails = countlyUserdata.getUserdetails();
