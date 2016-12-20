@@ -94,7 +94,7 @@ class Credentials {
 			db.collection('credentials').findOne(this._id, (err, data) => {
 				if (err || !data) { reject(err || 'Credentials ' + this._id + ' not found'); }
 				else { 
-					log.d('loaded credentials %j', data);
+					log.d('loaded credentials %j', this._id);
 					for (let key in data) { 
 						this[key] = data[key]; 
 					}

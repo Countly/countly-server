@@ -31,7 +31,14 @@ class Streamer {
 			// resolve();
 			db.collection(this.collection()).drop((err) => {
 				log.d('Dropped streamer collection, error %j', err);
-				if (err) { reject(err); }
+				if (err) { 
+					if (this.anote.nobuild) {
+						log.d('[%d:%s]: Ignoring drop error for %s since nobuild is set', process.pid, this.anote.id, this.collection(), err);
+						resolve();
+					} else {
+						reject(err); 
+					}
+				}
 				else { resolve(); }
 			});
 		});
