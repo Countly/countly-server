@@ -117,15 +117,7 @@ window.component('push.dash', function(dash) {
 						{ mData: function(x){ return x.appNames().join(', '); }, sName: 'apps', sType: 'string', mRender: CountlyHelpers.clip(), sTitle: t('pu.t.apps'), bSearchable: false },
 						{ mData: unprop.bind(null, 'result'), sName: 'status', sType: 'string', mRender:function(d, type, result) { 
 							result = result.result;
-							if (result.sending() && result.found) {
-								return '<div class="bar" data-desc="' + d + '%">' +
-										 '<div class="bar-inner" style="width:' + result.percentSent() + '%;" data-item="' + result.percentSent() + '%"></div>' +
-										 '<div class="bar-inner" style="width:' + (100 - result.percentSent()) + '%;" data-item="' + (100 - result.percentSent()) + '%"></div> ' +
-									 '</div>' +
-									 '<div class="percent-text">' + t.p('push.count.sending', result.percentSent(), result.total() - (result.processed() - result.sent())) + '</div>';
-							} else {
-								return '<span>' + t('push.message.status.' + result.status()) + '</span>';
-							}
+							return '<span>' + t('push.message.status.' + result.status()) + '</span>';
 						}, sTitle: t('pu.t.status'), bSearchable: false },
 						{ mData: unprop.bind(null, 'dates.createdSeconds'), bVisible: false, sType: 'numeric', bSearchable: false },
 						{ mData: unprop.bind(null, 'dates.created'), sName: 'created', sType: 'date', iDataSort: 3, sTitle: t('pu.t.created'), mRender: function(x){ return x.dates().created; }, bSearchable: false},

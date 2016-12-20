@@ -63,6 +63,7 @@ class Divider {
 										appsubnote = this.note.appsub(subs.length, appsubcred),
 										streamer = new Streamer(appsubnote);
 
+									appsubnote.nobuild = !!this.note.build;
 									log.d('Compiled appsub %j', appsubnote);
 
 									if (audience === null) {
@@ -218,28 +219,6 @@ class Divider {
 				}, reject);
 			}, reject);
 
-		});
-	}
-
-	// plan is a function which returns a promise with result:
-	// {appsub: {..., plan: 'some plan identifier'[, date: Date]}}
-	splitToPlan (db, plan) {
-		log.d('Splitting note %j skipClear %j', this.note._id);
-		return new Promise((resolve, reject) => {
-			// Then, for each app-platform combination whenver audience is too big for one core, split it between multiple cores
-			this.subs(db, false).then((subs) => {
-				log.d('Counted all audience for note %j: %d results', this.note._id, subs.length);
-				subs.filter(s => s.count <= 0).forEach(s => s.streamer.clear(db));
-				subs = subs.filter(s => s.count > 0);
-
-				Promise.all(subs.map(sub => plan(sub.streamer))).then(results => {
-					let splits = [];
-					results.forEach(results => splits = splits.concat(results));
-					splits.forEach(split => {
-
-					});
-				}, reject);
-			}, reject);
 		});
 	}
 

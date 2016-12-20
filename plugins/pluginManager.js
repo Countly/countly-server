@@ -535,6 +535,11 @@ var pluginManager = function pluginManager(){
     };
     
     this.dbConnection = function(config) {
+        if (process.argv[1].endsWith('executor.js') && (!config || !config.mongodb || config.mongodb.max_pool_size !== 1)) {
+            console.log('************************************ executor.js common.db ***********************************', process.argv);
+            return this.singleDefaultConnection();
+        }
+            
         var db;
         if(typeof config == "string"){
             db = config;
@@ -542,7 +547,7 @@ var pluginManager = function pluginManager(){
         }
         else
             config = config || JSON.parse(JSON.stringify(countlyConfig));
-            
+
         var dbName;
         var dbOptions = {
             server:{poolSize: config.mongodb.max_pool_size, reconnectInterval: 100, socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 1, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
