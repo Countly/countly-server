@@ -106,6 +106,7 @@ a:active { color:inherit; }
 #app-tooltip{display: none; position: absolute; z-index: 1000; background-color: #CCC; height: 45px; margin-left:5px;}
 #app-tooltip .app-container{padding-left:11px;}
 .break {word-wrap: break-word; word-break: break-all;}
+.trim {text-overflow: ellipsis; overflow:hidden; white-space: nowrap;}
 .over {z-index:100;}
 #no-app-type{width: 100%; padding: 20px 0; text-align: center; border: 1px dashed #CCC; font: 13px Ubuntu,Helvetica,sans-serif;}
 #no-app-type a{color:#72AE4B; text-decoration: underline;}

@@ -180,7 +180,7 @@ window.WebDashboardView = countlyView.extend({
             }
             
             if(users[0] && users[0].lv){
-                columns.push({ "mData": function(row){return (!row["lv"]) ? jQuery.i18n.map["common.unknown"] : row["lv"]}, "sType":"string", "sTitle": jQuery.i18n.map["web.views.view"] , "bSortable":false, "sClass": "break web-20" });
+                columns.push({ "mData": function(row){return (!row["lv"]) ? jQuery.i18n.map["common.unknown"] : row["lv"]}, "sType":"string", "sTitle": jQuery.i18n.map["web.views.view"] , "bSortable":false, "sClass": "trim web-20" });
                 sort++;
             }
             
