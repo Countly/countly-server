@@ -814,29 +814,30 @@ var common          = require('../../../../api/utils/common.js'),
     };
 
 
-    api.appUpdate = function(ob) {
+    api.appCreateUpdate = function(ob) {
         var args = ob.params.qstring.args;
         if (typeof args === 'object') {
-            var update = {$set: {}};
+            var update = {$set: {}}, appObj = ob.data.update || ob.data;
             if (args.apn) { 
                 update.$set.apn = args.apn; 
-                ob.data.update.apn = args.apn; 
+                appObj.apn = args.apn; 
             } else { 
                 update.$unset = {apn: 1};
             }
             if (args.gcm) { 
                 update.$set.gcm = args.gcm; 
-                ob.data.update.gcm = args.gcm; 
+                appObj.gcm = args.gcm; 
             } else {
                 if (!update.$unset) { update.$unset = {}; }
                 update.$unset.$gcm = 1;
             }
 
             Object.keys(update.$set).forEach(p => update.$set[p].forEach(cred => cred._id = common.db.ObjectID(cred._id)));
+            if (!Object.keys(update.$set).length) { delete update.$set; }
             
-            log.d('App update query: %j, data %j', update, ob.data.update);
+            log.d('App %j update query: %j, data %j', ob.appId, update, appObj);
             common.db.collection('apps').findAndModify(
-                {_id: common.db.ObjectID(args.app_id)}, 
+                {_id: typeof ob.appId === 'string' ? common.db.ObjectID(ob.appId) : ob.appId}, 
                 [['_id', 1]], 
                 update, 
                 {new: false}, 
@@ -848,7 +849,7 @@ var common          = require('../../../../api/utils/common.js'),
                     } else {
                         var old = [], neo = [];
                         (doc.value.apn || []).concat(doc.value.gcm || []).forEach(cred => old.push('' + cred._id));
-                        Object.keys(update.$set).forEach(p => update.$set[p].forEach(cred => neo.push('' + cred._id)));
+                        if (update.$set) Object.keys(update.$set).forEach(p => update.$set[p].forEach(cred => neo.push('' + cred._id)));
 
                         log.d('Neo %j, old %j', neo, old);
                         var todel = old.filter(_id => neo.indexOf(_id) === -1);

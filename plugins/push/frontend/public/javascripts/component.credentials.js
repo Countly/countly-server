@@ -69,35 +69,41 @@ window.component('credentials', function(credentials) {
 				};
 			},
 			view: function(ctrl){
-				return m('.comp-credentials', [
-					m('.read', [
-						ctrl.creds._id() ? 
-							m('.comp-credentials-type', t('pu.creds.type.' + ctrl.creds.type()))
-							: m('.comp-credentials-type.none', t('pu.creds.none'))
-					]),
-					m('.edit', [
-						m('.comp-credentials-edit', [
-							ctrl.creds._id() ? 
-								m('div.existing', [
-									m('.comp-credentials-type', t('pu.creds.type.' + ctrl.creds.type())),
-									m('a.remove[href=#]', {onclick: ctrl.remove}, t('pu.remove'))
+				var edit = m('.comp-credentials-edit', [
+					ctrl.creds._id() ? 
+						m('div.existing', [
+							m('.comp-credentials-type', t('pu.creds.type.' + ctrl.creds.type())),
+							m('a.remove[href=#]', {onclick: ctrl.remove}, t('pu.remove'))
+						])
+						: m('div', [
+							m('.comp-credentials-type', t('pu.creds.set.' + ctrl.creds.type())),
+							ctrl.platform === 'apn' ? 
+								m('.form', [
+									m('input[type=file]', {onchange: m.withAttr('files', ctrl.cert)}),
+									m('br'),
+									m('input[type=text]', {oninput: m.withAttr('value', ctrl.passphrase), placeholder: t('pu.creds.pass')}),
+									m('a.icon-button.light[href=#]', {onclick: ctrl.validate}, t('pu.validate'))
 								])
-								: m('div', [
-									m('.comp-credentials-type', t('pu.creds.set.' + ctrl.creds.type())),
-									ctrl.platform === 'apn' ? 
-										m('.form', [
-											m('input[type=file]', {onchange: m.withAttr('files', ctrl.cert)}),
-											m('br'),
-											m('input[type=text]', {oninput: m.withAttr('value', ctrl.passphrase), placeholder: t('pu.creds.pass')}),
-											m('a.icon-button.light[href=#]', {onclick: ctrl.validate}, t('pu.validate'))
-										])
-										: m('.form', [
-											m('input[type=text]', {oninput: m.withAttr('value', ctrl.key)}),
-											m('a.icon-button.light[href=#]', {onclick: ctrl.validate}, t('pu.validate'))
-										])
+								: m('.form', [
+									m('input[type=text]', {oninput: m.withAttr('value', ctrl.key)}),
+									m('a.icon-button.light[href=#]', {onclick: ctrl.validate}, t('pu.validate'))
 								])
 						])
-					])
+				]);
+				return m('.comp-credentials', [
+					ctrl.app._id ? 
+						m('div', [
+							m('.read', [
+								ctrl.creds._id() ? 
+									m('.comp-credentials-type', t('pu.creds.type.' + ctrl.creds.type()))
+									: m('.comp-credentials-type.none', t('pu.creds.none'))
+							]),
+							m('.edit', [
+								edit
+							])
+						])
+						: 
+						edit
 				]);
 			}
 		};

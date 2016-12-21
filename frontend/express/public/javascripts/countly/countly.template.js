@@ -2117,6 +2117,9 @@ window.ManageAppsView = countlyView.extend({
         
         $(".select-app-types").on("click",".item", function(){
             app.onAppManagementSwitch($("#app-edit-id").val(), $(this).data("value"));
+            if ($(this).parents('#add-new-app').length) {
+                app.onAppAddTypeSwitch($(this).data('value'));
+            }
         });
 
         function initAppManagement(appId) {
@@ -2748,17 +2751,23 @@ window.ManageAppsView = countlyView.extend({
 
             $(this).addClass("disabled");
 
+            var args = {
+                name:appName,
+                type:type,
+                category:category,
+                timezone:timezone,
+                country:country
+            };
+
+            app.appObjectModificators.forEach(function(mode){
+                mode(args);
+            });
+
             $.ajax({
                 type:"GET",
                 url:countlyCommon.API_PARTS.apps.w + '/create',
                 data:{
-                    args:JSON.stringify({
-                        name:appName,
-                        type:type,
-                        category:category,
-                        timezone:timezone,
-                        country:country
-                    }),
+                    args:JSON.stringify(args),
                     api_key:countlyGlobal['member'].api_key
                 },
                 dataType:"jsonp",
@@ -2766,18 +2775,8 @@ window.ManageAppsView = countlyView.extend({
 
                     var sidebarApp = $("#sidebar-new-app>div").clone();
 
-                    var newAppObj = {
-                        "_id":data._id,
-                        "name":data.name,
-                        "key":data.key,
-                        "category":data.category,
-                        "type":data.type,
-                        "timezone":data.timezone,
-                        "country":data.country
-                    };
-
-                    countlyGlobal['apps'][data._id] = newAppObj;
-                    countlyGlobal['admin_apps'][data._id] = newAppObj;
+                    countlyGlobal['apps'][data._id] = data;
+                    countlyGlobal['admin_apps'][data._id] = data;
 
                     var newApp = $("#app-container-new");
                     newApp.data("id", data._id);
@@ -4282,6 +4281,7 @@ var AppRouter = Backbone.Router.extend({
         this.appSwitchCallbacks = [];
         this.appManagementSwitchCallbacks = [];
         this.appObjectModificators = [];
+        this.appAddTypeCallbacks = [];
 		this.refreshScripts = {};
         this.dashboardView = new DashboardView();
         this.sessionView = new SessionView();
@@ -5647,6 +5647,9 @@ var AppRouter = Backbone.Router.extend({
     addAppObjectModificator:function(callback){
         this.appObjectModificators.push(callback);
     },
+    addAppAddTypeCallback:function(callback){
+        this.appAddTypeCallbacks.push(callback);
+    },
     addDataExport:function(name, callback){
         this.dataExports[name] = callback;
     },
@@ -5688,6 +5691,11 @@ var AppRouter = Backbone.Router.extend({
             var newAppName = $("#app-add-name").val();
             $("#app-container-new .name").text(newAppName);
             $(".new-app-name").text(newAppName);
+        }
+    },
+    onAppAddTypeSwitch: function(type) {
+        for(var i = 0; i < this.appAddTypeCallbacks.length; i++){
+            this.appAddTypeCallbacks[i](type);
         }
     },
     pageScript:function () { //scripts to be executed on each view change

@@ -178,7 +178,8 @@ var plugin = {},
         }
     });
 
-    plugins.register("/i/apps/update", push.appUpdate);
+    plugins.register("/i/apps/update", push.appCreateUpdate);
+    plugins.register("/i/apps/create", push.appCreateUpdate);
 
     plugins.register("/i/apps/reset", function(ob){
         var appId = ob.appId;
