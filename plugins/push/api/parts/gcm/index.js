@@ -5,8 +5,8 @@ const log = require('../../../../../api/utils/log.js')('push:gcm'),
 	  EventEmitter = require('events');
 
 
-const MAX_QUEUE = 300,
-	  MAX_BATCH = 100;
+const MAX_QUEUE = 10000,
+	  MAX_BATCH = 500;
 
 class ConnectionResource extends EventEmitter {
 	constructor(key) {
