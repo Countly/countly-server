@@ -108,7 +108,7 @@ var common          = require('../../../../api/utils/common.js'),
                     sent: events[0],
                     actions: events[1],
                     enabled: results[2] || 0,
-                    users: results[3] || 0,
+                    users: results[3] ? results[3] - 1 : 0,
                     geos: results[4] || [],
                     location: results[5] ? results[5].ll || null : null
                 });
