@@ -98,7 +98,9 @@ if (cluster.isMaster) {
                 plugins.stopSyncing();
             }
             else if(msg.cmd === "dispatch" && msg.event){
-                plugins.dispatch(msg.event, msg.data || {});
+                workers.forEach(function(w){
+                    w.send(msg);
+                });
             }
         });
     };
@@ -141,6 +143,15 @@ if (cluster.isMaster) {
     };
     
     process.on('message', common.log.ipcHandler);
+    
+    process.on('message', function(msg){
+        if (msg.cmd === 'log') {
+            common.log.ipcHandler(msg);
+        }
+        else if(msg.cmd === "dispatch" && msg.event){
+            plugins.dispatch(msg.event, msg.data || {});
+        }
+    });
 
     plugins.dispatch("/worker", {common:common});
     // Checks app_key from the http request against "apps" collection.
