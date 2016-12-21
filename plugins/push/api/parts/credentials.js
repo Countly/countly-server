@@ -65,7 +65,7 @@ class Credentials {
 					[] 
 					: [new SubCredentials(this, DB_USER_MAP.apn_prod, false)];
 			} else if (test === true) {
-				if ([CT.UNIVERSAL, CT.TOKEN].indexOf(this.type)) {
+				if ([CT.UNIVERSAL, CT.TOKEN].indexOf(this.type) !== -1) {
 					return [new SubCredentials(this, DB_USER_MAP.apn_dev, true), new SubCredentials(this, DB_USER_MAP.apn_adhoc, true)];
 				} else if (this.type === CT.DEV) {
 					return [new SubCredentials(this, DB_USER_MAP.apn_dev, true)];
