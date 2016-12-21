@@ -137,7 +137,6 @@ var plugin = {},
             if(Object.keys(data).length > 0){
                 plugins.dispatch("/systemlogs", {params:params, action:"change_configs", data:{before:plugins.getAllConfigs(), update:data}});
                 plugins.updateAllConfigs(common.db, data, function(){
-                    process.send({ cmd: "dispatch", event:"/configs/update", data:data });
                     plugins.loadConfigs(common.db, function(){
                         common.returnOutput(params, plugins.getAllConfigs());
                     });
