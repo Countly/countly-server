@@ -171,7 +171,7 @@ class Note {
 				if (typeof this.badge !== 'undefined') {
 					compiled.aps.badge = this.badge;
 				}
-				if (this.contentAvailable) {
+				if (this.contentAvailable || (!compiled.aps.alert && !compiled.aps.sound)) {
 					compiled.aps['content-available'] = 1;
 				}
 				if (this.data) {
