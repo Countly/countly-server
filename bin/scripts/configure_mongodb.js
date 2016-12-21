@@ -17,11 +17,6 @@ if(myArgs.length && fs.existsSync(myArgs[0])){
     if(!ob.net)
         ob.net = {};
     ob.net.bindIp = "127.0.0.1";
- 
-    if(!ob.systemLog)
-        ob.systemLog = {};
-    ob.systemLog.logAppend = true;
-    ob.systemLog.logRotate = "reopen";
     
     fs.writeFileSync(myArgs[0], yaml.stringify(ob, 4));
 }
