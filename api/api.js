@@ -97,6 +97,9 @@ if (cluster.isMaster) {
             else if(msg.cmd === "endPlugins"){
                 plugins.stopSyncing();
             }
+            else if(msg.cmd === "dispatch" && msg.event){
+                plugins.dispatch(msg.event, msg.data || {});
+            }
         });
     };
 
