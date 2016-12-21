@@ -4,6 +4,13 @@ var plugin = {},
     log = common.log('server-stats:api');
 
 (function (plugin) {
+    
+    plugins.register("/master", function(ob){
+        // Allow configs to load & scanner to find all jobs classes
+        setTimeout(() => {
+            require('../../../api/parts/jobs').job('server-stats:stats').replace().schedule('every 1 day');
+        }, 10000);
+    });
 
     /*
         Register to all requests to /plugins/drill to catch all events
