@@ -3,19 +3,20 @@
 /* jshint undef: true, unused: true */
 /* globals m, app, $, countlyGlobal, components, countlyCommon, countlySegmentation, countlyUserdata, CountlyHelpers, jQuery */
 
-
-function addPushHTMLIfNeeded() {
-    if ($('.appmng-push').length === 0) {
-        $(".app-details table tr.table-edit").before('<tr class="appmng-push help-zone-vs" data-help-localize="help.manage-apps.push-apn-certificate">' +
+var pushHtml = '<tr class="appmng-push help-zone-vs" data-help-localize="help.manage-apps.push-apn-certificate">' +
             '<td data-localize="management-applications.push-apn-creds"></td>' +
-            '<td id="app-apn">' +
+            '<td class="app-apn">' +
             '</td>' +
         '</tr>' +
         '<tr class="table-edit-prev appmng-push help-zone-vs" data-help-localize="help.manage-apps.push-gcm-key">' +
             '<td data-localize="management-applications.push-gcm-creds"></td>' +
-            '<td id="app-gcm">' +
+            '<td class="app-gcm">' +
             '</td>' +
-        '</tr>');
+        '</tr>';
+
+function addPushHTMLIfNeeded(type) {
+    if ($('.appmng-push').length === 0) {
+        $("#view-app table tr.table-edit").before(pushHtml);
         $('.appmng-push').prev().removeClass('table-edit-prev');
     }
 }
@@ -23,13 +24,29 @@ function addPushHTMLIfNeeded() {
 var apnCtrl, gcmCtrl;
 
 app.addAppManagementSwitchCallback(function(appId, type){
+    $("#add-new-app .appmng-push").hide();
     if (type == "mobile") {
-        addPushHTMLIfNeeded();
-        apnCtrl = m.mount($('#app-apn')[0], window.components.credentials.app_component('apn', countlyGlobal.apps[appId] || {}));
-        gcmCtrl = m.mount($('#app-gcm')[0], window.components.credentials.app_component('gcm', countlyGlobal.apps[appId] || {}));
-        $(".appmng-push").show();
+        addPushHTMLIfNeeded(type);
+        apnCtrl = m.mount($('#view-app .app-apn')[0], window.components.credentials.app_component('apn', countlyGlobal.apps[appId] || {}));
+        gcmCtrl = m.mount($('#view-app .app-gcm')[0], window.components.credentials.app_component('gcm', countlyGlobal.apps[appId] || {}));
+        $("#view-app .appmng-push").show();
     } else {
-        $(".appmng-push").hide();
+        $("#view-app .appmng-push").hide();
+        apnCtrl = gcmCtrl = null;
+    }
+});
+
+app.addAppAddTypeCallback(function(type){
+    if (type == "mobile") {
+        if (type === 'mobile' && $('#add-new-app .appmng-push').length === 0) {
+            $('#add-new-app tr[data-help-localize="help.manage-apps.app-icon"]').after(pushHtml);
+            app.localize();
+        }
+        apnCtrl = m.mount($('#add-new-app .app-apn')[0], window.components.credentials.app_component('apn', {}));
+        gcmCtrl = m.mount($('#add-new-app .app-gcm')[0], window.components.credentials.app_component('gcm', {}));
+        $("#add-new-app .appmng-push").show();
+    } else {
+        $("#add-new-app .appmng-push").hide();
         apnCtrl = gcmCtrl = null;
     }
 });

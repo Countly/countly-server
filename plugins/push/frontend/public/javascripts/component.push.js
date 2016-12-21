@@ -326,7 +326,7 @@ window.component('push', function(push) {
 		} else {
 			return new Promise(function(resolve){
 				m.startComputation();
-				resolve();
+				resolve(push.dashboard);
 				m.endComputation();
 			});
 		}

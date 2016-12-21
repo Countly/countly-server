@@ -320,11 +320,32 @@ window.starView = countlyView.extend({
 
     iconGenerator: function (times) {
         var result = '';
+        var starName = '';
+        switch(times){
+            case 1:
+                starName = jQuery.i18n.map["star.one-star"]
+                break;
+            case 2:
+                starName = jQuery.i18n.map["star.two-star"]
+                break;
+            case 3:
+                starName = jQuery.i18n.map["star.three-star"]
+                break;
+            case 4:
+                starName = jQuery.i18n.map["star.four-star"]
+                break;
+            case 5:
+                starName = jQuery.i18n.map["star.five-star"]
+                break;
+
+        }
+        var typeName = '<a style="font-size: 1px; display:none;">' + starName + '</a>';
         if (times && times > 0) {
             while (times--) {
                 result += '<i class="fa fa-star star-icon" aria-hidden="true"></i>';
             }
         }
+        result += typeName;
         return result;
     },
 

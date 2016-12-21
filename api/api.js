@@ -213,8 +213,8 @@ if (cluster.isMaster) {
                 }
             }
 
-            if (params.qstring.tz && typeof params.qstring.tz === 'number') {
-                params.user.tz = params.qstring.tz;
+            if (params.qstring.tz && !isNaN(parseInt(params.qstring.tz))) {
+                params.user.tz = parseInt(params.qstring.tz);
             } 
             
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, user){
