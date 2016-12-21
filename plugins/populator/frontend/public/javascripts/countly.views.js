@@ -137,14 +137,6 @@ app.addPageScript("/manage/apps", function(){
     
     $("#add-new-app table .table-add").before(populateApp);
     
-    var appId = countlyCommon.ACTIVE_APP_ID;
-    if(countlyGlobal["apps"][appId] && (countlyGlobal["apps"][appId].type == "mobile" || countlyGlobal["apps"][appId].type == "web")) {
-        $(".populate-demo-data").show();
-    } 
-    else{
-        $(".populate-demo-data").hide();
-    }
-    
     $("#save-app-add").click(function () {
         if($("#add-new-app table #populate-app-after").is(':checked')){
             start_populating = true;
@@ -153,15 +145,6 @@ app.addPageScript("/manage/apps", function(){
             }, 5000);
         }
     });
-});
-
-app.addAppManagementSwitchCallback(function(appId, type){
-    if(type == "mobile" || type == "web"){
-        $(".populate-demo-data").show();
-    } 
-    else{
-        $(".populate-demo-data").hide();
-    }
 });
 
 app.addAppManagementSwitchCallback(function(appId, type){
