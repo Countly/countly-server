@@ -42,13 +42,13 @@ window.component('push.view', function(view) {
 						m('circle[fill="#ABCBFF"][cx=28][cy=29][r=5]'),
 						m('circle[fill="#6EA6FB"][cx=42][cy=29][r=5]'),
 					]), t('push.message.status.' + s)]));
-				} else if (s & 2) {
+				} else if (message.result.scheduled()) {
 					els.push(m('.status', [m('svg[viewBox="0 0 56 56"]', [
 						m('circle[fill="#50A1EA"][cx=28][cy=28][r=28]'),
 						m('rect[fill="#F9F9F9"][x=24][y=10][width=7][height=22]'),
 						m('rect[fill="#F9F9F9"][x=24][y=27][width=21][height=7]'),
 					]), t('push.message.status.' + s)]));
-				} else if (s & 8) {
+				} else if (message.result.isSent()) {
 					els.push(m('.status', [m('svg[viewBox="0 0 56 56"]', [
 						m('circle[fill="#2FA732"][cx=28][cy=28][r=28]'),
 						m('polyline[stroke="#FFFFFF"][fill=none][stroke-width=6][stroke-linecap=round][stroke-linejoin=round][points=15,29.4 24.2,40 40.3,16.7]'),
@@ -304,6 +304,12 @@ window.component('push.view', function(view) {
 						m('.col-left', t('pu.po.tab3.date')),
 						m('.col-right', (ctrl.message.date() ? moment(ctrl.message.date()).format('DD.MM.YYYY, HH:mm') : t('pu.po.tab3.date.now')) + (ctrl.message.tz() ? t('pu.po.tab3.date.intz') : ''))
 					]),
+					ctrl.message.result.isSent() ? 
+						m('.comp-push-view-row', [
+							m('.col-left', t('pu.po.tab3.date.sent')),
+							m('.col-right', ctrl.message.sent() ? moment(ctrl.message.sent()).format('DD.MM.YYYY, HH:mm') : '')
+						])
+						: '',
 					ctrl.message.geo() ? m('.comp-push-view-row', [
 						m('.col-left', t('pu.po.tab3.location')),
 						m('.col-right', geo ? geo.title : t('pu.po.tab3.location.unknown'))

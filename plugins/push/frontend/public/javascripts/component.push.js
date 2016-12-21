@@ -303,6 +303,10 @@ window.component('push', function(push) {
 		this.scheduled = function() {
 			return (this.status() & 2) > 0 && (this.status() & (16 | 32)) === 0;
 		};
+
+		this.isSent = function() {
+			return (this.status() & 8) > 0;
+		};
 	};
 
 	push.remoteDashboard = function(appId, refresh) {
