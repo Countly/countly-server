@@ -57,7 +57,7 @@ window.component('push', function(push) {
 		this.apps = buildClearingProp(data.apps || []);
 		this.platforms = buildClearingProp(data.platforms || []);
 		this.sent = m.prop(data.sent);
-		this.sound = vprop(data.sound || 'default', function(v){ return !!v; }, t('pu.po.tab2.extras.sound.invalid'));
+		this.sound = vprop(data.sound, function(v){ return !!v; }, t('pu.po.tab2.extras.sound.invalid'));
 		this.badge = vprop(data.badge, function(v){ return v === undefined || (v + '') === (parseInt(v) + ''); }, t('pu.po.tab2.extras.badge.invalid'));
 		this.url = vprop(data.url, function(v){ return v && URL_REGEXP.test(v); }, t('pu.po.tab2.extras.url.invalid'));
 		this.data = vprop(typeof data.data === 'object' ? JSON.stringify(data.data) : data.data, function(v){
