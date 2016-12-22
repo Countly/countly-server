@@ -13,13 +13,14 @@ describe('Deleting app', function(){
 			API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
 			API_KEY_USER = testUtils.get("API_KEY_USER");
 			APP_ID = testUtils.get("APP_ID");
+            var params = {app_id:APP_ID};
 			request
-			.get('/i/apps/delete?api_key='+API_KEY_USER)
+			.get('/i/apps/delete?api_key='+API_KEY_USER+"&args="+JSON.stringify(params))
 			.expect(401)
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'User is not a global administrator');
+				ob.should.have.property('result', 'User does not have admin rights for this app');
 				done()
 			});
 		});
