@@ -446,6 +446,7 @@ class Job extends EventEmitter {
 		var job = this;
 	
 		return new Promise((resolve, reject) => {
+			log.d('job timeout will be %d', job.timeout());
 			var timeout = setTimeout(() => {
 					log.d('%s: timeout called', this._idIpc);
 					if (!job.completed) {
@@ -729,6 +730,10 @@ class IPCFaçadeJob extends ResourcefulJob {
 
 	retryPolicy () {
 		return this.job.retryPolicy();
+	}
+
+	timeout () {
+		return this.job.timeout();
 	}
 
 	// _run(parent) {

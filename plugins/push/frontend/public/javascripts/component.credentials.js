@@ -40,6 +40,9 @@ window.component('credentials', function(credentials) {
 
 				this.validate = function(ev) {
 					ev.preventDefault();
+					if (!ev.target.attributes.disabled || ev.target.attributes.disabled.value === 'true') {
+						return;
+					}
 					if (this.platform === 'apn') {
 						if (this.cert() && this.cert().length === 1) {
 							var reader = new window.FileReader();
@@ -59,9 +62,9 @@ window.component('credentials', function(credentials) {
 						CountlyHelpers.removeDialog(loading);
 						this.creds._id(data.cid);
 					}.bind(this), function(err){
-						this.cert(null);
-						this.passphrase('');
-						this.key('');
+						// this.cert(null);
+						// this.passphrase('');
+						// this.key('');
 						err = err.error || err;
 						CountlyHelpers.removeDialog(loading);
 						CountlyHelpers.alert(t('pu.validation.error') + ' ' + t('pu.validation.error.' + err, err));
@@ -82,11 +85,11 @@ window.component('credentials', function(credentials) {
 									m('input[type=file]', {onchange: m.withAttr('files', ctrl.cert)}),
 									m('br'),
 									m('input[type=text]', {oninput: m.withAttr('value', ctrl.passphrase), placeholder: t('pu.creds.pass')}),
-									m('a.icon-button.light[href=#]', {onclick: ctrl.validate}, t('pu.validate'))
+									m('a.icon-button.light[href=#]', {onclick: ctrl.validate, disabled: !ctrl.cert()}, t('pu.validate'))
 								])
 								: m('.form', [
 									m('input[type=text]', {oninput: m.withAttr('value', ctrl.key)}),
-									m('a.icon-button.light[href=#]', {onclick: ctrl.validate}, t('pu.validate'))
+									m('a.icon-button.light[href=#]', {onclick: ctrl.validate, disabled: !ctrl.key()}, t('pu.validate'))
 								])
 						])
 				]);

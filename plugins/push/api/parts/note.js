@@ -119,15 +119,15 @@ class Note {
 		if (this.date && this.tz !== false && this.build.tzs.length) {
 			var batch = new Date(this.date.getTime() + (this.tz - this.build.tzs[0]) * 60000);
 			log.d('Scheduling message with date %j to be sent in user timezones (tz %j, tzs %j): %j', this.date, this.tz, this.build.tzs, batch);
-		    jobs.job('push:send', {mid: this._id}).once(batch);
-		    db.collection('messages').updateOne({_id: this._id}, {$set: {'result.status': Status.InQueue, 'result.nextbatch': batch}}, log.logdb('when updating message status with inqueue'));
+			jobs.job('push:send', {mid: this._id}).once(batch);
+			db.collection('messages').updateOne({_id: this._id}, {$set: {'result.status': Status.InQueue, 'result.nextbatch': batch}}, log.logdb('when updating message status with inqueue'));
 		} else if (this.date) {
-	        log.d('Scheduling messag %j to be sent on date %j',this._id, this.date);
-		    jobs.job('push:send', {mid: this._id}).once(this.date);
-		    db.collection('messages').updateOne({_id: this._id}, {$set: {'result.status': Status.InQueue}}, log.logdb('when updating message status with inqueue'));
+			log.d('Scheduling messag %j to be sent on date %j',this._id, this.date);
+			jobs.job('push:send', {mid: this._id}).once(this.date);
+			db.collection('messages').updateOne({_id: this._id}, {$set: {'result.status': Status.InQueue}}, log.logdb('when updating message status with inqueue'));
 		} else {
-	        log.d('Scheduling message %j to be sent immediately', this._id);
-		    jobs.job('push:send', {mid: this._id}).now();
+			log.d('Scheduling message %j to be sent immediately', this._id);
+			jobs.job('push:send', {mid: this._id}).now();
 		}
 	}
 
@@ -165,10 +165,10 @@ class Note {
 				if (message) {
 					compiled.aps.alert = message;
 				}
-				if (typeof this.sound !== 'undefined') {
+				if (this.sound !== undefined && this.sound !== null) {
 					compiled.aps.sound = this.sound;
 				}
-				if (typeof this.badge !== 'undefined') {
+				if (this.badge !== undefined && this.badge !== null) {
 					compiled.aps.badge = this.badge;
 				}
 				if (this.contentAvailable || (!compiled.aps.alert && !compiled.aps.sound)) {
@@ -177,9 +177,20 @@ class Note {
 				if (this.data) {
 					for (let k in this.data) { compiled[k] = this.data[k]; }
 				}
+
 				if (Object.keys(compiled.aps).length === 0) {
 					delete compiled.aps;
 				}
+
+				if (!compiled.c) { 
+					compiled.c = {}; 
+				}
+				compiled.c.i = this._id + '';
+				
+				if (this.url) {
+					compiled.c.l = this.url;
+				}
+
 				return JSON.stringify(compiled);
 			} else {
 				compiled = {};
@@ -192,18 +203,28 @@ class Note {
 					compiled.delay_while_idle = true;
 				}
 
-				compiled.data = {};
 				if (message) {
-					compiled.data.message = message;
+					compiled.message = message;
+				}
+
+				if (this.sound !== undefined && this.sound !== null) {
+					compiled.sound = this.sound;
+				}
+
+				if (!message && (this.sound === undefined || this.sound === null)) {
+					compiled['c.s'] = 'true';
 				}
 
 				if (this.data) {
 					var flattened = flattenObject(this.data);
-					for (let k in flattened) { compiled.data[k] = flattened[k]; }
+					for (let k in flattened) { compiled[k] = flattened[k]; }
 				}
-				if (this.category) {
-					compiled.data['c.c'] = this.content.category;
+				compiled['c.i'] = this._id + '';
+				
+				if (this.url) {
+					compiled['c.l'] = this.url;
 				}
+				
 				return compiled;
 			}
 		}

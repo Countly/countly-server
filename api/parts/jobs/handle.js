@@ -7,7 +7,7 @@ const logger = require('../../utils/log.js'),
 	  scan = require('./scanner.js'),
 	  manager = require('../../../plugins/pluginManager.js');
 
-const TRANSIENT_JOB_TIMEOUT = 15000;
+const TRANSIENT_JOB_TIMEOUT = 30000;
 
 class Handle {
 	constructor() {

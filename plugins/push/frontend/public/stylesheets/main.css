@@ -785,6 +785,10 @@ table.d-table .nothing { opacity: 0.3; }
     color: #2EB52B;
     box-shadow: inset 0 0 0 1px #2EB52B;
 }
+.comp-credentials-edit a.icon-button.light[disabled=true] {
+    color: #D0D0D0;
+    box-shadow: inset 0 0 0 1px #D0D0D0;
+}
 .comp-credentials-edit > div > .form {
     margin-top: 12px;
 }

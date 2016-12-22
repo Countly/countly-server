@@ -20,6 +20,10 @@ window.component('push.dash', function(dash) {
 						ev = data[ev];
 
 						['weekly', 'monthly'].forEach(function(period){
+							if (typeof ev[period].total !== 'undefined') {
+								return;
+							}
+
 							if (period === 'weekly') {
 								period = ev[period];
 								
@@ -151,7 +155,9 @@ window.component('push.dash', function(dash) {
 		}.bind(this);
 
 		this.refresh = function(){
-			this.dtable.fnDraw(false);
+			if (this.dtable) {
+				this.dtable.fnDraw(false);
+			}
 			components.push.remoteDashboard(this.app_id).then(this.data, console.log);
 		}.bind(this);
 
