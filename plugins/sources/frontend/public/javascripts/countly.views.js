@@ -45,6 +45,26 @@ window.SourcesView = countlyView.extend({
         }
     },
     refresh:function () {},
+    dateChanged:function () {    //called when user changes the date selected
+        var self = this;
+        $.when(this.beforeRender()).then(function () {
+            if (app.activeView != self) {
+                return false;
+            }
+            self.renderCommon(true);
+
+            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+        
+            $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
+
+            var data = countlySources.getData();
+
+            countlyCommon.drawGraph(data.chartDPTotal, "#dashboard-graph", "pie");
+            countlyCommon.drawGraph(data.chartDPNew, "#dashboard-graph2", "pie");
+			CountlyHelpers.refreshTable(self.dtable, data.chartData);
+            CountlyHelpers.reopenRows(self.dtable, self.expandTable, self);
+        });
+    },
     expandTable: function( d, self ) {
 		// `d` is the original data object for the row
 		var str = '';
@@ -114,7 +134,23 @@ window.KeywordsView = countlyView.extend({
             $("#dataTableOne_wrapper").css({"margin-top":"-16px"});
         }
     },
-    refresh:function () {}
+    refresh:function () {},
+    dateChanged:function () {    //called when user changes the date selected
+        var self = this;
+        $.when(this.beforeRender()).then(function () {
+            if (app.activeView != self) {
+                return false;
+            }
+            self.renderCommon(true);
+
+            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+        
+            $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
+
+            var data = countlySources.getKeywords();
+			CountlyHelpers.refreshTable(self.dtable, data);
+        });
+    }
 });
 
 //register views
