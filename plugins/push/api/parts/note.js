@@ -203,26 +203,27 @@ class Note {
 					compiled.delay_while_idle = true;
 				}
 
+				compiled.data = {};
 				if (message) {
-					compiled.message = message;
+					compiled.data.message = message;
 				}
 
 				if (this.sound !== undefined && this.sound !== null) {
-					compiled.sound = this.sound;
+					compiled.data.sound = this.sound;
 				}
 
 				if (!message && (this.sound === undefined || this.sound === null)) {
-					compiled['c.s'] = 'true';
+					compiled.data['c.s'] = 'true';
 				}
 
 				if (this.data) {
 					var flattened = flattenObject(this.data);
-					for (let k in flattened) { compiled[k] = flattened[k]; }
+					for (let k in flattened) { compiled.data[k] = flattened[k]; }
 				}
-				compiled['c.i'] = this._id + '';
+				compiled.data['c.i'] = this._id + '';
 				
 				if (this.url) {
-					compiled['c.l'] = this.url;
+					compiled.data['c.l'] = this.url;
 				}
 				
 				return compiled;

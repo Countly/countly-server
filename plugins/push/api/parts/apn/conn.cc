@@ -731,7 +731,7 @@ namespace apns {
 			stream->obj->requests.erase(stream->stream_id);
 			stream->obj->stats.sending--;
 			stream->obj->stats.sent++;
-			LOG_DEBUG("H2: -------- stream " << stream_id << " " << stream->id << " closed: " << stream->status << ", " << stream->response << ", " << stream->obj->stats.sending << " left");
+			// LOG_DEBUG("H2: -------- stream " << stream_id << " " << stream->id << " closed: " << stream->status << ", " << stream->response << ", " << stream->obj->stats.sending << " left");
 			uv_async_send(stream->obj->service_async);
 			// stream->obj->service();
 			delete stream;
