@@ -652,9 +652,17 @@ input:disabled + label {
     text-align: center;
 }
 
+.comp-push-view-row > .col-right .comp-bar {
+    position: absolute;
+    top: 9px;
+    left: 9px;
+    right: 9px;
+    bottom: 9px;
+}
 .comp-push-view-row > .col-right {
     width: 70%;
     color: rgb(68, 82, 101);
+    position: relative;
 }
 
 .comp-push-error-codes .comp-push-view-row > .col-right { width: 60%; }
