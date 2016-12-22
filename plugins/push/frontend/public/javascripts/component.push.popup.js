@@ -7,7 +7,7 @@ window.component('push.popup', function(popup) {
 	var t = window.components.t,
 		push = window.components.push;
 
-	popup.show = function(prefilled){
+	popup.show = function(prefilled, duplicate){
 		if (!push.dashboard) {
 			return push.remoteDashboard(countlyCommon.ACTIVE_APP_ID).then(function(){
 				popup.show(prefilled);
@@ -15,6 +15,9 @@ window.component('push.popup', function(popup) {
 		}
 		m.startComputation();
 		var message = new push.Message(prefilled || {});
+		if (!duplicate) {
+			message.sound('default');
+		}
 
 		if (message.platforms().length && message.apps().length) {
 			var found = false;
@@ -168,7 +171,7 @@ window.component('push.popup', function(popup) {
 			tab = typeof tab === 'undefined' ? this.tabs.tab() + 1 : tab;
 			if (this.tabenabled(tab)) {
 				if (tab === 2) {
-					if (!message.schedule()) {
+					if (!message.schedule() && (message.date() !== undefined || message.tz() !== false)) {
 						message.date(undefined);
 						message.tz(false);
 					}
@@ -504,7 +507,12 @@ window.component('push.popup', function(popup) {
 								m.component(window.components.segmented, {options: [
 									{value: push.C.TYPE.MESSAGE, title: t('pu.type.message')},
 									{value: push.C.TYPE.DATA, title: t('pu.type.data')},
-								], value: message.type, class: 'comp-push-message-type'}),
+								], value: message.type, class: 'comp-push-message-type', onchange: function(type){
+									if (type === 'data' && !message.data()) { message.data(''); }
+									if (type === 'message' && message.data() === '') { message.data(undefined); }
+									if (type === 'data' && message.sound()) { message.sound(undefined); }
+									if (type === 'message' && !message.sound()) { message.sound('default'); }
+								}}),
 								message.type() === push.C.TYPE.MESSAGE ? 
 									m('.comp-push-message.comp-push-space-top', [
 										locales.view(localesController) 
@@ -538,7 +546,9 @@ window.component('push.popup', function(popup) {
 						]),
 						m('h6.comp-push-space-top', t('pu.po.tab2.extras')),
 						m('.comp-push-extras', [
-							m(extra, {title: t('pu.po.tab2.extras.sound'), value: message.sound, def: 'default'}),
+							message.type() === 'message' ?
+								m(extra, {title: t('pu.po.tab2.extras.sound'), value: message.sound, def: 'default'})
+								: '',
 							m(extra, {title: t('pu.po.tab2.extras.badge'), value: message.badge, def: 0, typ: 'number', converter: function(val){ 
 								if (val === '') { return 0; }
 								else if (isNaN(parseInt(val))) { return null; }

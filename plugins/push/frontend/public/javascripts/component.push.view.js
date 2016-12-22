@@ -194,7 +194,7 @@ window.component('push.view', function(view) {
 						ev.preventDefault();
 						var json = ctrl.message.toJSON(false, true, true);
 						delete json.date;
-						components.push.popup.show(json);
+						components.push.popup.show(json, true);
 					}
 				}, t('pu.po.duplicate')),
 				m('a.btn-next.red', {
@@ -302,6 +302,30 @@ window.component('push.view', function(view) {
 						m('.col-left', t('pu.po.tab3.test')),
 						m('.col-right', t('pu.po.tab3.test.' + !!ctrl.message.test()))
 					]),
+					ctrl.message.sound() ?
+						m('.comp-push-view-row', [
+							m('.col-left', t('pu.po.tab3.extras.sound')),
+							m('.col-right', m.trust(ctrl.message.sound()))
+						])
+						: '',
+					ctrl.message.badge() !== undefined ?
+						m('.comp-push-view-row', [
+							m('.col-left', t('pu.po.tab3.extras.badge')),
+							m('.col-right', ctrl.message.badge())
+						])
+						: '',
+					ctrl.message.url() ?
+						m('.comp-push-view-row', [
+							m('.col-left', t('pu.po.tab3.extras.url')),
+							m('.col-right', m.trust(ctrl.message.url()))
+						])
+						: '',
+					ctrl.message.data() ?
+						m('.comp-push-view-row', [
+							m('.col-left', t('pu.po.tab3.extras.data')),
+							m('.col-right', m.trust(ctrl.message.data()))
+						])
+						: '',
 					m('.comp-push-view-row', [
 						m('.col-left', t('pu.po.tab3.date')),
 						m('.col-right', (ctrl.message.date() ? moment(ctrl.message.date()).format('DD.MM.YYYY, HH:mm') : t('pu.po.tab3.date.now')) + (ctrl.message.tz() ? t('pu.po.tab3.date.intz') : ''))

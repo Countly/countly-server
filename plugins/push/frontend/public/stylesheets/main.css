@@ -174,7 +174,7 @@
 .comp-push-locales .comp-tabs-tab.active { background-color: white; border-right: none; }
 .comp-push-locales .comp-tabs-content { position: absolute; top: 0; left: 160px; right: 0; bottom: 0; height: 148px; padding: 18px; border: 1px solid #C2C2C2; border-radius: 0 2px 2px 0; border-left: none; background-color: white; }
 .comp-push-locales .comp-tabs-content > div { width: 100%; height: 100%; }
-.comp-push-locales .comp-tabs-content > div > textarea { font-family: 'San Francisco', 'HelveticaNeue-UltraLight', 'Helvetica Neue', sans-serif; width: 100%; height: 100%; margin: 0; padding: 0; font-size: 16px; font-weight: normal; color: #324351; border: none; outline: none; resize: none; }
+.comp-push-locales .comp-tabs-content > div > textarea { font-family: 'San Francisco', 'Helvetica Neue', sans-serif; width: 100%; height: 100%; margin: 0; padding: 0; font-size: 16px; font-weight: normal; color: #324351; border: none; outline: none; resize: none; }
 .comp-push-locales .comp-tabs-content > div > textarea::-webkit-input-placeholder,
 .comp-push-locales .comp-tabs-content > div > textarea::-moz-input-placeholder { font-family: 'San Francisco', 'HelveticaNeue-UltraLight', 'Helvetica Neue', sans-serif; font-size: 16px; line-height: 20px; font-weight: normal; opacity: 0.3; }
 .comp-push-locales .comp-tabs-content > div > .error { position: absolute; top: 3px; right: 5px; z-index: 10; }
