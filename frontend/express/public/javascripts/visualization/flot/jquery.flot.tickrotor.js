@@ -87,7 +87,7 @@
                     font = $('.tickLabel').css('font');
                 }
                 if (!font) {
-                    font = 'smaller sans-serif';
+                    font = '11px sans-serif';
                 }
                 
                 var elem, maxLabelWidth = 0, maxLabelHeight = 0, minX = 0, maxX = 0;

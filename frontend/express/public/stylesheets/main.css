@@ -179,7 +179,7 @@ table { border-collapse: collapse; }
             }
         #sidebar-menu .sidebar-menu>.item>.logo-icon { background-image:none; font-size:24px; text-align:center; padding-top:4px; width: 35px; margin-left: 14px; line-height: 34px; }
             #sidebar-menu .sidebar-menu .item.active .logo { color:#FFF; }
-		#sidebar-menu .sidebar-menu .item .text { margin-left:15px; float:left; padding-top:6px; font:14px Ubuntu,Helvetica,sans-serif; line-height:130%; color:#888; }
+		#sidebar-menu .sidebar-menu .item .text { margin-left:15px; float:left; padding-top:6px; font:14px Ubuntu,Helvetica,sans-serif; line-height:130%; color:#888; max-width: 140px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
             #sidebar-menu .sidebar-menu .item.active:hover .logo { color: #f6f6f6; }
             #sidebar-menu .sidebar-menu .item.menu-active:hover .logo,
             #sidebar-menu .sidebar-menu .item.menu-active .logo { color: #f6f6f6; }
@@ -338,7 +338,8 @@ table { border-collapse: collapse; }
         .pie-overlay { position: absolute; z-index: 1; width: 225px; height: 225px; left: 50%; margin-left: -115px; top: 66px; border: 2px solid #e6e6e6; border-radius: 200px; }
 		.pie-overlay .title { font-size:11px; color:#969696; margin:0 auto; text-align:center; margin-top:8px; max-width:100px; line-height:17px; }
         .pie-overlay .logo { color:#969696; margin:0 auto; text-align:center; margin-top:79px; font-size: 40px; width: 100%; }
-		.pieLabel div { font-size:10px !important; }
+        .pieLabel { max-width: 100px; }
+            .pieLabel div { font-size:10px !important; }
 
 .big-numbers.top .inner { height:170px; cursor:pointer; }
 .big-numbers.top .select { bottom:1px; cursor:pointer; padding-top:7px; font-size:12px; line-height:111%; color:#969696; position:absolute; height:23px; width:100%; background-color: transparent !important; background-image: none !important; box-shadow: none; border:none;  }
@@ -1178,8 +1179,8 @@ table.events-table { width:100%; padding:0; margin:0; }
 	#edit-account-details .title { float:left; width:100px; }
 	#edit-account-details .input { margin-left:105px; }
 .tickLabel { color:#999; }
-    .xAxis .tickLabel { overflow: hidden; text-overflow: ellipsis; max-width: 100px; max-height: 60px; white-space: pre-wrap; }
-    .yAxis .tickLabel { text-align: right !important; font-size:11px; color:#CCC; z-index:-1; }
+    .xAxis .tickLabel { font-family:Oswald; overflow: hidden; text-overflow: ellipsis; max-width: 100px; max-height: 60px; white-space: pre-wrap; }
+    .yAxis .tickLabel { font-family:Oswald; text-align: right !important; font-size:11px; color:#CCC; z-index:-1; }
 
 #no-app-warning { display:none; margin-left:187px; }
 #first-app-success { display:none; margin-left:187px; margin-top:-5px; }
