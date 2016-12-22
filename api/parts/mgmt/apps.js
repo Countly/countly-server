@@ -97,11 +97,6 @@ var appsApi = {},
     };
 
     appsApi.createApp = function (params) {
-        if (!(params.member.global_admin)) {
-            common.returnMessage(params, 401, 'User is not a global administrator');
-            return false;
-        }
-
         var argProps = {
                 'name':     { 'required': true, 'type': 'String' },
                 'country':  { 'required': false, 'type': 'String' },
@@ -193,10 +188,6 @@ var appsApi = {},
     };
 
     appsApi.deleteApp = function (params) {
-        if (!(params.member.global_admin)) {
-            common.returnMessage(params, 401, 'User is not a global administrator');
-            return false;
-        }
 
         var argProps = {
                 'app_id': { 'required': true, 'type': 'String', 'min-length': 24, 'max-length': 24 }
@@ -208,26 +199,41 @@ var appsApi = {},
             return false;
         }
 		common.db.collection('apps').findOne({'_id': common.db.ObjectID(appId)}, function(err, app){
-			if(!err && app)
-				common.db.collection('apps').remove({'_id': common.db.ObjectID(appId)}, {safe: true}, function(err, result) {
-		
-					if (err) {
-						common.returnMessage(params, 500, 'Error deleting app');
-						return false;
-					}
-		
-					var iconPath = __dirname + '/public/appimages/' + appId + '.png';
-					fs.unlink(iconPath, function() {});
-		
-					common.db.collection('members').update({}, {$pull: {'apps': appId, 'admin_of': appId, 'user_of': appId}}, {multi: true}, function(err, app) {});
-		
-					deleteAppData(appId, true, params, app);
-					common.returnMessage(params, 200, 'Success');
-					return true;
-				});
+			if(!err && app){
+                if (params.member && params.member.global_admin) {
+                    removeApp(app)
+                }
+                else{
+                    common.db.collection('members').findOne({'_id': params.member._id}, {admin_of: 1}, function(err, member){
+						if (member.admin_of && member.admin_of.indexOf(params.qstring.args.app_id) !== -1) {
+							removeApp(app)
+						} else {
+							common.returnMessage(params, 401, 'User does not have admin rights for this app');
+						}
+					});
+                }
+            }
 			else
 				common.returnMessage(params, 500, 'Error deleting app');
 		});
+        
+        function removeApp(app){
+            common.db.collection('apps').remove({'_id': common.db.ObjectID(appId)}, {safe: true}, function(err, result) {
+				if (err) {
+					common.returnMessage(params, 500, 'Error deleting app');
+					return false;
+				}
+		
+				var iconPath = __dirname + '/public/appimages/' + appId + '.png';
+				fs.unlink(iconPath, function() {});
+		
+				common.db.collection('members').update({}, {$pull: {'apps': appId, 'admin_of': appId, 'user_of': appId}}, {multi: true}, function(err, app) {});
+		
+				deleteAppData(appId, true, params, app);
+				common.returnMessage(params, 200, 'Success');
+				return true;
+			});
+        }
 
         return true;
     };
