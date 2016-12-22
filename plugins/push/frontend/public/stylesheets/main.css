@@ -735,7 +735,8 @@ input:disabled + label {
 }
 
 .push-overview .dataTables_wrapper { margin: 0; }
-.push-overview .dataTable-top, .dataTable-bottom { border: none; }
+.push-overview .dataTable-top { border: none; }
+.push-overview .dataTable-bottom { border: none; border-top:1px solid #E2E2E2 }
 .push-overview table.d-table { border: none; }
 .push-overview table.d-table tbody tr td:hover { cursor: pointer; }
 table.d-table .nothing { opacity: 0.3; }
