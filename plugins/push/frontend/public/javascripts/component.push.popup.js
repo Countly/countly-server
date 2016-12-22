@@ -302,8 +302,10 @@ window.component('push.popup', function(popup) {
 				this.onchange = function(val) {
 					if (opts.converter) {
 						var v = opts.converter(val);
-						if (v) {
+						if (v !== null) {
 							this.value(v);
+						} else {
+							this.value(undefined);
 						}
 					}
 				}.bind(this);
@@ -316,7 +318,7 @@ window.component('push.popup', function(popup) {
 				if (ctrl.value() !== undefined) { check.checked = 'checked'; }
 
 				var inp = {
-					value: ctrl.value() || '',
+					value: ctrl.value() === undefined ? '' : ctrl.value(),
 					oninput: m.withAttr('value', ctrl.value),
 					onchange: m.withAttr('value', ctrl.onchange)
 				};
@@ -537,7 +539,11 @@ window.component('push.popup', function(popup) {
 						m('h6.comp-push-space-top', t('pu.po.tab2.extras')),
 						m('.comp-push-extras', [
 							m(extra, {title: t('pu.po.tab2.extras.sound'), value: message.sound, def: 'default'}),
-							m(extra, {title: t('pu.po.tab2.extras.badge'), value: message.badge, def: '0', typ: 'number'}),
+							m(extra, {title: t('pu.po.tab2.extras.badge'), value: message.badge, def: 0, typ: 'number', converter: function(val){ 
+								if (val === '') { return 0; }
+								else if (isNaN(parseInt(val))) { return null; }
+								return parseInt(val);
+							}}),
 							m(extra, {title: t('pu.po.tab2.extras.url'), value: message.url}),
 							m(extra, {title: t('pu.po.tab2.extras.data'), value: message.data, converter: function(val){ 
 								try {
