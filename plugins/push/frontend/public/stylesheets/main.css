@@ -304,7 +304,7 @@ input:disabled + label {
 }
 .preview-i .preview-time {
     font-size: 45px;
-	top: 59px;
+	top: 50px;
 }
 .preview-a .preview-time {
     top: 54px;
@@ -318,7 +318,7 @@ input:disabled + label {
     text-align: center;
 }
 .preview-i .preview-date {
-    top: 110px;
+    top: 100px;
     font-size: 10px;
 }
 .preview-a .preview-date {
@@ -333,11 +333,13 @@ input:disabled + label {
     overflow: hidden;
 }
 .preview-i .preview-message {
-    top: 140px;
-    left: 11px;
-    right: 0;
-    border: 1px solid rgba(255,255,255,0.15);
-    border-width: 1px 0 1px 0;
+    top: 120px;
+    left: 4px;
+    right: 4px;
+    background-color: rgba(255,255,255,0.6);
+    border-radius: 6px;
+    color: black;
+    font-family: 'San Francisco', 'HelveticaNeue-Light', 'Helvetica Neue', sans-serif;
 }
 .preview-a .preview-message {
 	background-color: rgba(250, 250, 250, .87);
@@ -348,7 +350,7 @@ input:disabled + label {
     height: 40px;
 }
 
-.preview-i .preview-message img { width: 14px; margin: 7px 0 0 0; border-radius: 2px; float: left; }
+.preview-i .preview-message img { width: 10px; margin: 4px; border-radius: 2px; float: left; }
 .preview-a .preview-message img { width: 24px; margin: 8px; border-radius: 100%; }
 
 .preview-message-title {
@@ -359,13 +361,11 @@ input:disabled + label {
 }
 .preview-i .preview-message-title {
 	position: initial;
-	float: right;
-	width: 170px;
-	height: 18px;
-    font-size: 9.7px;
+	height: 20px;
+    font-size: 8px;
     font-weight: bold;
-    line-height: 25px;
-    padding-right: 10px;
+    line-height: 20px;
+    background-color: rgba(255,255,255,0.3);
 }
 .preview-a .preview-message-title {
     left: 40px;
@@ -375,7 +375,8 @@ input:disabled + label {
     color: black;
 }
 
-.preview-i .preview-message-date { margin-left: 8px; opacity: 0.65; font-size: 8px; }
+.preview-i .preview-message-app { text-transform: uppercase; opacity: 0.7; }
+.preview-i .preview-message-date { margin-right: 8px; float: right; opacity: 0.5; font-size: 7px; }
 .preview-a .preview-message-date { margin-right: 8px; float: right; color: black; opacity: 0.5; font-size: 8px; }
 
 .preview-message-message {
@@ -385,15 +386,23 @@ input:disabled + label {
 }
 .preview-i .preview-message-message {
 	position: initial;
-	float: right;
-	width: 170px;
-    font-size: 9.7px;
-    margin-bottom: 7px;
-    padding-right: 10px;
-    -webkit-line-clamp: 3;
+    font-size: 8.8px;
+    margin-bottom: 12px;
+    padding: 2px 8px;
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     display: -webkit-box;
 }
+
+.preview-i .preview-message-message::after {
+    content: "Press for more";
+    position: absolute;
+    bottom: 4px;
+    left: 8px;
+    font-size: 8px;
+    opacity: .9;
+}
+
 .preview-a .preview-message-message {
     top: 20px;
     left: 40px;
