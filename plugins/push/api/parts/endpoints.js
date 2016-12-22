@@ -421,8 +421,13 @@ var common          = require('../../../../api/utils/common.js'),
             msg.messagePerLocale = undefined;
         }
 
-        if (msg.type === 'data' && !msg.data) {
+        if (msg.type === 'data' && !msg.data || !Object.keys(msg.data).length) {
             common.returnOutput(params, {error: 'Messages of type "data" must have "data" property'});
+            return false;
+        }
+
+        if (msg.type === 'data' && msg.sound) {
+            common.returnOutput(params, {error: 'Messages of type "data" cannot have sound'});
             return false;
         }
 
