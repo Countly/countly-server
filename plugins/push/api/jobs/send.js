@@ -243,7 +243,7 @@ class PushJob extends job.IPCJob {
 				this.rejectUsersWhoPassedTz(db, status)
 			]).then(() => {
 				this.streamer.load(db, this.data.first, this.data.last, Math.max(count, 10), this.tz).then((users) => {
-					log.d('users %j', users);
+					// log.d('users %j', users);
 					// bookmark is not first of next batch, but rather last status from previous
 					// so it must be removed from array
 					if (users.length && users[0]._id === status.bookmark) {
@@ -309,7 +309,7 @@ class PushJob extends job.IPCJob {
 			var errors = statuses.filter(s => !!s[2]);
 
 			log.d('[%d:%s]: Got %d statuses: %d sent, %d unset, %d reset, %d errors', process.pid, this.anote.id, statuses.length, sent.length, unset.length, reset.length, errors.length);
-			log.d('[%d:%s]: statuses %j', process.pid, this.anote.id, statuses);
+			// log.d('[%d:%s]: statuses %j', process.pid, this.anote.id, statuses);
 
 			status.done += statuses.length;
 			this.watchPromise(this.streamer.unload(db, statuses.map(s => s[0])));

@@ -768,7 +768,7 @@ table.d-table .nothing { opacity: 0.3; }
 .push-overview .widget-content + .widget-footer.big-numbers-v2 .big-numbers .inner { height: 90px; padding-top: 20px; }
 
 
-.comp-push-metrics h5 { font-size: 14px; text-align: center; margin: 2px 0 4px; }
+.comp-push-metrics h5 { font-size: 14px; font-weight: normal; text-align: center; margin: 2px 0 4px; }
 .comp-push-metrics i { margin-left: 9px; color: rgba(68, 82, 101, .5); /* font-weight: 100; */ }
 .comp-push-metrics span { text-align: center; display: block; }
 .comp-push-metrics span > b { margin: 0 4px; font-size: 18px; color: rgb(68, 82, 101); }
