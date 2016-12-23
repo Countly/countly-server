@@ -859,6 +859,10 @@ class TransientFaçadeJob extends IPCFaçadeJob {
 
 		return this.promise;
 	}
+
+	timeout () {
+		return 300000;
+	}
 }
 
 
