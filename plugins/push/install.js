@@ -12,6 +12,7 @@ console.log('Creating certificates directory');
 var dir = path.resolve(__dirname, '');
 fs.mkdir(dir+'/../../frontend/express/certificates', function(){});
 fs.unlink(dir+'/frontend/public/javascripts/countly.models.js', function(){});
+fs.unlink(dir+'/api/jobs/check.js', function(){});
 
 console.log('Adding messages indexes');
 db.collection('messages').ensureIndex({'apps': 1, deleted: 1}, function(){
