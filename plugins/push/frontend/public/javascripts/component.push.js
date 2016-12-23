@@ -116,19 +116,20 @@ window.component('push', function(push) {
 		this.count(data.count);
 		
 		this.remotePrepare = function(onFullBuild) {
+			var data = new FormData();
+			data.append('args', JSON.stringify(this.toJSON(true)));
+
 			return m.request({
-				method: 'GET',
-				url: window.countlyCommon.API_URL + '/i/pushes/prepare',
-				data: {
-					api_key: window.countlyGlobal.member.api_key,
-					args: JSON.stringify(this.toJSON(true))
-				}
+				method: 'POST',
+				url: window.countlyCommon.API_URL + '/i/pushes/prepare?api_key=' + window.countlyGlobal.member.api_key,
+				data: data,
+				serialize: function(data) { return data; }
 			}).then(function(data){
 				this.setBuild(data);
 				if (data.build && data.build.count) {
 					if (onFullBuild) { onFullBuild(); }
 				} else if (this._id()) {
-					setTimeout(this.remotePrepare.bind(this, onFullBuild), 1000);
+					setTimeout(this.remotePrepare.bind(this, onFullBuild), 2000);
 				}
 			}.bind(this));
 		};
@@ -171,13 +172,14 @@ window.component('push', function(push) {
 		};
 
 		this.remoteCreate = function() {
+			var data = new FormData();
+			data.append('args', JSON.stringify(this.toJSON(true, true)));
+
 			return m.request({
-				method: 'GET',
-				url: window.countlyCommon.API_URL + '/i/pushes/create',
-				data: {
-					api_key: window.countlyGlobal.member.api_key,
-					args: JSON.stringify(this.toJSON(true, true))
-				}
+				method: 'POST',
+				url: window.countlyCommon.API_URL + '/i/pushes/create?api_key=' + window.countlyGlobal.member.api_key,
+				data: data,
+				serialize: function(data) { return data; }
 			}).then(function(resp){
 				if (resp.error) { throw resp.error; }
 				return resp;
