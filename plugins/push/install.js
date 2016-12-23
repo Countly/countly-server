@@ -26,6 +26,31 @@ db.collection('messages').ensureIndex({'apps': 1, deleted: 1}, function(){
 		function upgrade(app, done){
 			var cnt = 0;
 			console.log('Adding push token indexes to ' + app.name);
+
+			// db.apps.find().forEach(function(app){
+			// 	print(app._id + ': 0 of 10');
+			// 	db.getCollection('app_users' + app._id).update({'tk.ip': {$exists: true}}, {$set: {tkip: true}}, {multi: true});
+			// 	print(app._id + ': 1 of 10');
+			// 	db.getCollection('app_users' + app._id).update({'tk.ia': {$exists: true}}, {$set: {tkia: true}}, {multi: true});
+			// 	print(app._id + ': 2 of 10');
+			// 	db.getCollection('app_users' + app._id).update({'tk.id': {$exists: true}}, {$set: {tkid: true}}, {multi: true});
+			// 	print(app._id + ': 3 of 10');
+			// 	db.getCollection('app_users' + app._id).update({'tk.ap': {$exists: true}}, {$set: {tkap: true}}, {multi: true});
+			// 	print(app._id + ': 4 of 10');
+			// 	db.getCollection('app_users' + app._id).update({'tk.at': {$exists: true}}, {$set: {tkat: true}}, {multi: true});
+			// 	print(app._id + ': 5 of 10');
+			// 	db.getCollection('app_users' + app._id).ensureIndex({'tkip': 1}, {sparse: true});
+			// 	print(app._id + ': 6 of 10');
+			// 	db.getCollection('app_users' + app._id).ensureIndex({'tkia': 1}, {sparse: true});
+			// 	print(app._id + ': 7 of 10');
+			// 	db.getCollection('app_users' + app._id).ensureIndex({'tkid': 1}, {sparse: true});
+			// 	print(app._id + ': 8 of 10');
+			// 	db.getCollection('app_users' + app._id).ensureIndex({'tkap': 1}, {sparse: true});
+			// 	print(app._id + ': 9 of 10');
+			// 	db.getCollection('app_users' + app._id).ensureIndex({'tkat': 1}, {sparse: true});
+			// 	print(app._id + ': 10 of 10');
+			// });
+
 			function cb(){
 				cnt++;
 				if (cnt == 12) {
