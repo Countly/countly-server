@@ -241,7 +241,7 @@ var common          = require('../../../../api/utils/common.js'),
                                             }
                                         });
                                     }
-                                }, 30000);
+                                }, 3000);
 
                             jobs.runTransient('push:build', json).then(build => {
                                 json._id = msg._id;
