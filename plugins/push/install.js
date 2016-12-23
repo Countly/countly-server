@@ -85,7 +85,7 @@ db.collection('messages').ensureIndex({'apps': 1, deleted: 1}, function(){
 						cb();
 					});
 				});
-			} else if (app.gcm && typeof app.gcm !== 'object' || !app.gcm.length) {
+			} else if (app.gcm && (typeof app.gcm !== 'object' || !app.gcm.length)) {
 				db.collection('apps').updateOne({_id: app._id}, {$unset: {gcm: 1}}, cb);
 			} else {
 				cb();
@@ -116,7 +116,7 @@ db.collection('messages').ensureIndex({'apps': 1, deleted: 1}, function(){
 						});
 					}
 				});
-			} else if (app.apn && typeof app.apn !== 'object' || !app.apn.length) {
+			} else if (app.apn && (typeof app.apn !== 'object' || !app.apn.length)) {
 				db.collection('apps').updateOne({_id: app._id}, {$unset: {apn: 1}}, cb);
 			} else {
 				cb();
