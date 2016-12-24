@@ -3,3 +3,19 @@
 .logger {margin-top: -16px;}
 .logger .dataTable-top {border-radius: 0;}
 .logger table td { font-family: Ubuntu; line-height: 15px; }
+.logger table td pre { background-color: transparent !important; line-height: 15px; white-space: pre-wrap; max-width:400px; }
+.logger table td pre .hljs-keyword,
+.logger table td pre .hljs-selector-tag,
+.logger table td pre .hljs-name,
+.logger table td pre .hljs-attr {
+    color: #ff4f42;
+}
+
+.logger table td pre .hljs-bullet,
+.logger table td pre .hljs-quote,
+.logger table td pre .hljs-number,
+.logger table td pre .hljs-regexp,
+.logger table td pre .hljs-literal,
+.logger table td pre .hljs-link {
+    color: #8150da;
+}

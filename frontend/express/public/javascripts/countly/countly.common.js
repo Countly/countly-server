@@ -72,6 +72,12 @@
         return str.replace(/^&#36;/g, "$").replace(/^&amp;#36;/g, '$').replace(/&#46;/g, '.').replace(/&amp;#46;/g, '.');
     };
 
+    countlyCommon.decodeHtml = function(html) {
+        var txt = document.createElement("textarea");
+        txt.innerHTML = html;
+        return txt.value;
+    };
+
     // Calculates the percent change between previous and current values.
     // Returns an object in the following format {"percent": "20%", "trend": "u"}
     countlyCommon.getPercentChange = function (previous, current) {

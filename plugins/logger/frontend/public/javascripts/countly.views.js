@@ -32,6 +32,13 @@ window.LoggerView = countlyView.extend({
 
 			this.dtable = $('#logger-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": data,
+                "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+                    $(nRow).find("pre").each(function(i, block) {
+                        if(typeof hljs != "undefined"){
+                            hljs.highlightBlock(block);
+                        }
+                    });
+                },
                 "aoColumns": [
                     { "mData": function(row, type){return row.t.charAt(0).toUpperCase() + row.t.slice(1).replace(/_/g, " ");}, "sType":"string", "sTitle": jQuery.i18n.map["logger.type"]},
                     { "mData": function(row, type){
@@ -52,10 +59,16 @@ window.LoggerView = countlyView.extend({
 						}
 						return ret;}, "sType":"string", "sTitle": jQuery.i18n.map["logger.device"]},
                     { "mData": function(row, type){
-						if(typeof row.i == "object")
-							return "<pre style='white-space:pre-wrap; max-width:400px;'>"+JSON.stringify(row.i, null, 2)+"</pre>";
-						else
-							return row.i;}, "sType":"string", "sTitle": jQuery.i18n.map["logger.info"], "bSortable": false },
+                        if(typeof row.i == "object") {
+                            return "<pre>" + JSON.stringify(row.i, null, 2) + "</pre>";
+                        } else {
+                            var infoVal = "";
+                            try {
+                                infoVal = JSON.parse(countlyCommon.decodeHtml(row.i));
+                            } catch (e) {}
+
+                            return "<pre>" + JSON.stringify(infoVal, null, 2) + "</pre>";
+                        }}, "sType":"string", "sTitle": jQuery.i18n.map["logger.info"], "bSortable": false },
                     { "mData": function(row, type){
 
                         var ret = "";
