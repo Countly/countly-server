@@ -1877,6 +1877,8 @@ CanvasRenderingContext2D.prototype.dashedLineTo = function(fromX, fromY, toX, to
                     ticks = oticks;
             }
 
+            var isYAxisTick = (axis && axis.direction == "y");
+
             // clean up/labelify the supplied ticks, copy them over
             var i, v;
             axis.ticks = [];
@@ -1892,8 +1894,15 @@ CanvasRenderingContext2D.prototype.dashedLineTo = function(fromX, fromY, toX, to
                     v = +t;
                 if (label == null)
                     label = axis.tickFormatter(v, axis);
-                if (!isNaN(v))
-                    axis.ticks.push({ v: v, label: label });
+
+                if (!isNaN(v)) {
+                    if (isYAxisTick) {
+                        //onur: Set yAxis ticks as short numbers such as 1B, 1M, 1K
+                        axis.ticks.push({v: v, label: countlyCommon.getShortNumber(label)});
+                    } else {
+                        axis.ticks.push({v: v, label: label});
+                    }
+                }
             }
         }
 
