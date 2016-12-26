@@ -7,7 +7,7 @@ var plugin = {},
 	plugins.register("/i", function(ob){
 		var params = ob.params;
 		var now = Math.round(new Date().getTime()/1000);
-		var ts = (params.qstring.timestamp) ? parseInt(params.qstring.timestamp) : now;
+		var ts = common.initTimeObj(params.qstring.timestamp || now).timestamp;
 		var device = {};
 		device.id = params.qstring.device_id || "";
 		var location = {};

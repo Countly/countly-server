@@ -43,8 +43,16 @@ window.LoggerView = countlyView.extend({
                     { "mData": function(row, type){return row.t.charAt(0).toUpperCase() + row.t.slice(1).replace(/_/g, " ");}, "sType":"string", "sTitle": jQuery.i18n.map["logger.type"]},
                     { "mData": function(row, type){
 						if(type == "display"){
-							return moment(row.ts*1000).format("MMMM Do YYYY<br/>hh:mm:ss");
-						}else return row.ts;}, "sType":"string", "sTitle": jQuery.i18n.map["logger.timestamp"] },
+                            if((Math.round(parseFloat(row.ts, 10)) + "").length === 10)
+                                return moment(row.ts*1000).format("MMMM Do YYYY<br/>hh:mm:ss");
+                            else
+                                return moment(row.ts).format("MMMM Do YYYY<br/>hh:mm:ss");
+						}else{
+                            if((Math.round(parseFloat(row.ts, 10)) + "").length === 10)
+                                return row.ts*1000;
+                            else
+                                return row.ts;
+                        }}, "sType":"string", "sTitle": jQuery.i18n.map["logger.timestamp"] },
                     { "mData": function(row, type){
 						var ret = "<b>Device ID:</b> <br/>" + row.d.id;
 						if(row.d.d){
