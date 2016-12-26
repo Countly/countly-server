@@ -85,7 +85,6 @@ var common          = require('../../../../api/utils/common.js'),
                             mon = parseInt(par[2]) - 1;
                         
                         Object.keys(e.d).forEach(d => {
-                            log.d('d', d);
                             d = parseInt(d);
                             if (yer === agy && mon === agm && d < agd) { return; }
                             if (yer === noy && mon === nom && d > nod) { return; }
