@@ -49,7 +49,7 @@
     "later": "^1.1.6",
     "moment": "1.7.2",
     "moment-isocalendar": "0.1.0",
-    "moment-timezone": "0.5.10",
+    "moment-timezone": "0.5.11",
     "mongodb": "2.2.16",
     "mongoskin": "2.1.0",
     "nodemailer": "2.7.0",
@@ -65,8 +65,8 @@
     "properties-parser":"0.3.1",
     "external-ip":"0.2.4",
     "escape-html":"1.0.3",
-    "bluebird":"3.4.6",
-    "mcc-mnc-list":"1.0.58",
+    "bluebird":"3.4.7",
+    "mcc-mnc-list":"1.0.59",
     "yamljs":"0.2.8"
   },
   "jshintConfig": {
