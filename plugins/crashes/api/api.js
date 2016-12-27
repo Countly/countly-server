@@ -625,7 +625,7 @@ plugins.setConfigs("crashes", {
 									}
 								}
                             }
-                            fetch.getTimeObj("crashdata", params, function(data){
+                            fetch.getTimeObj("crashdata", params, {unique: "cru"/*, levels:{daily:["cr","crnf","cru","crf", "crru"], monthly:["cr","crnf","cru","crf", "crru"]}*/}, function(data){
                                 result.data = data;
                                 common.returnOutput(params, result);
                             });
