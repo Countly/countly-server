@@ -717,7 +717,11 @@ var fetch = {},
             options = {};
         }
         
-        if(typeof options.unqique === "undefined")
+        if(typeof options === "undefined"){
+            options = {};
+        }
+        
+        if(typeof options.unique === "undefined")
             options.unique = common.dbMap.unique;
         
         if(typeof options.id === "undefined")
