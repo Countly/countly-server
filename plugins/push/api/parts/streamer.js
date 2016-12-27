@@ -172,7 +172,7 @@ class Streamer {
 	}
 
 	load (db, first, last, count, tz) {
-		log.d('Loading streamer for %j from %s to %s, totalling %d', process.pid, this.anote.id, first, last, count);
+		log.d('[%d:%s]: Loading streamer for %j from %s to %s, totalling %d', process.pid, this.anote.id, first, last, count);
 		return new Promise((resolve, reject) => {
 			this.build(db).then(() => {
 				let q = {};

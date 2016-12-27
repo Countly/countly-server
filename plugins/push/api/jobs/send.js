@@ -382,22 +382,26 @@ class PushJob extends job.IPCJob {
 			log.d('[%d]: Send promise returned success in %s', process.pid, this._idIpc);
 			if (!this.completed) {
 				done();
-				this.waitForAllPromises().then(() => {
-					this.anote.tzs = [];
-					this.streamer.loadTzs(db).then(() => {
-						if (this.anote.tzs && this.anote.tzs.length) {
-							log.d('[%d:%s]: %d tzs left: %j', process.pid, this.anote.id, this.anote.tzs.length, this.anote.tzs);
-							
-							var batch = new Date(this.anote.date.getTime() + (this.anote.tz - this.anote.tzs[0]) * 60000);
-							log.d('[%d:%s]: Scheduling message with date %j to be sent in user timezones (tz %j, tzs %j): %j', process.pid, this.anote.id, this.anote.date, this.anote.tz, this.anote.tzs, batch);
-						    jobs.job('push:send', {mid: this.aoid}).replace().once(batch);
-						    db.collection('messages').updateOne({_id: this.aoid}, {$set: {'result.status': N.Status.InQueue, 'result.nextbatch': batch}}, log.logdb('when updating message status with inqueue'));
-						} else {
-							log.d('[%d:%s]: 0 tzs left, clearing streamer', process.pid, this.anote.id);
-							this.streamer.clear(db);
-						}
+				if (this.anote.tz !== false) {
+					this.waitForAllPromises().then(() => {
+						this.anote.tzs = [];
+						this.streamer.loadTzs(db).then(() => {
+							if (this.anote.tzs && this.anote.tzs.length) {
+								log.d('[%d:%s]: %d tzs left: %j', process.pid, this.anote.id, this.anote.tzs.length, this.anote.tzs);
+								
+								var batch = new Date(this.anote.date.getTime() + (this.anote.tz - this.anote.tzs[0]) * 60000);
+								log.d('[%d:%s]: Scheduling message with date %j to be sent in user timezones (tz %j, tzs %j): %j', process.pid, this.anote.id, this.anote.date, this.anote.tz, this.anote.tzs, batch);
+							    jobs.job('push:send', {mid: this.aoid}).replace().once(batch);
+							    db.collection('messages').updateOne({_id: this.aoid}, {$set: {'result.status': N.Status.InQueue, 'result.nextbatch': batch}}, log.logdb('when updating message status with inqueue'));
+							} else {
+								log.d('[%d:%s]: 0 tzs left, clearing streamer', process.pid, this.anote.id);
+								this.streamer.clear(db);
+							}
+						});
 					});
-				});
+				} else {
+					this.streamer.clear(db);
+				}
 			}
 		}, (err) => {
 			log.d('[%d]: Send promise returned error %j in %s', process.pid, err, this._idIpc);
