@@ -399,8 +399,6 @@ class PushJob extends job.IPCJob {
 							}
 						});
 					});
-				} else {
-					this.streamer.clear(db);
 				}
 			}
 		}, (err) => {
