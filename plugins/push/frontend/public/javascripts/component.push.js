@@ -326,11 +326,13 @@ window.component('push', function(push) {
 				return data;
 			});
 		} else {
-			return new Promise(function(resolve){
+			var deferred = m.deferred();
+			setTimeout(function(){
 				m.startComputation();
-				resolve(push.dashboard);
+				deferred.resolve(push.dashboard);
 				m.endComputation();
 			});
+			return deferred.promise;
 		}
 	};
 

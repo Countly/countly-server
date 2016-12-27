@@ -11,7 +11,14 @@ window.component('push.dash', function(dash) {
 		this.period = m.prop('monthly');
 		this.source = m.prop('dash');
 		this.messages = m.prop([]);
-		var dt = m.prop()
+		var dt = m.prop({
+			users: 0,
+			enabled: 0,
+			geos: [],
+			location: null,
+			sent: {monthly: {data: [], keys: [], total: 0}, weekly: {data: [], keys: [], total: 0}},
+			actions: {monthly: {data: [], keys: [], total: 0}, weekly: {data: [], keys: [], total: 0}},
+		})
 		this.data = function(){
 			if (arguments.length){
 				var data = arguments[0];
@@ -43,7 +50,9 @@ window.component('push.dash', function(dash) {
 			return dt();
 		};
 
-		components.push.remoteDashboard(this.app_id).then(this.data, console.log);
+		setTimeout(function(){
+			components.push.remoteDashboard(this.app_id).then(this.data, console.log);
+		}.bind(this), 1);
 
 		this.dataDP = function(){
 			return {
@@ -167,9 +176,6 @@ window.component('push.dash', function(dash) {
 		};
 	};
 	dash.view = function(ctrl){
-		if (!ctrl.data()) {
-			return m('.push-overview');
-		}
 		return m('.push-overview', [
 
 			m.component(components.widget, {
