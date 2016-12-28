@@ -216,6 +216,7 @@ plugins.setConfigs("crashes", {
                     
                     //error info
                     "name", //optional if provided by OS/Platform, else will use first line of stack
+                    "type", //optional type of the error
                     "error", //error stack
                     "nonfatal", //true if handled exception, false or not provided if crash
                     "logs",//some additional logs provided, if any 
