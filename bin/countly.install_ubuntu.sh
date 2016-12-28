@@ -34,6 +34,18 @@ wget -qO- https://deb.nodesource.com/setup_6.x | bash -
 #update once more after adding new repos
 apt-get update
 
+#checking gcc version for older ubuntu
+currentver="$(gcc --version | head -n1 | cut -d" " -f4)"
+requiredver="4.8.0"
+if [ "$(printf "$requiredver\n$currentver" | sort -V | head -n1)" == "$currentver" ] && [ "$currentver" != "$requiredver" ]; then 
+    apt-get -y install gcc-4.8 g++-4.8
+
+    export CXX="g++-4.8"
+    export CC="gcc-4.8"
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
+    g++ --version
+fi
+
 #install nginx
 apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 
