@@ -586,7 +586,7 @@ plugins.setConfigs("crashes", {
                     common.db.collection('app_crashgroups' + params.app_id).find({_id:{$ne:"meta"}},{name:1}).toArray(function(err, res){
                         if(res){
                             for(var i = 0; i < res.length; i++){
-                                res[i] = (res[i]+"").split("\n")[0].trim();
+                                res[i].name = (res[i].name+"").split("\n")[0].trim();
                             }
                         }
                         common.returnOutput(params, res);
