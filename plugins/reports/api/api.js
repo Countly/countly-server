@@ -12,7 +12,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
         // Allow configs to load & scanner to find all jobs classes
         setTimeout(() => {
             require('../../../api/parts/jobs').job('reports:send').replace().schedule("every 1 hour starting on the 0 min");
-        }, 3000);
+        }, 10000);
     });
     
 	plugins.register("/o/reports", function(ob){

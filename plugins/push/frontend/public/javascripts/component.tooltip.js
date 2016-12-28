@@ -13,7 +13,7 @@ window.component('tooltip', function(tooltip) {
 			opts.class = (opts.class || '') + ' comp-tt-parent';
 			if (!init && (!opts.show || opts.show())) {
 				var tt = document.createElement('div'), timeout;
-				tt.className = 'comp-tt';
+				tt.className = 'comp-tt ' + (opts.class || '');
 				tt.innerHTML = text;
 				tt.style.width = '10px';
 				element.appendChild(tt);
@@ -24,10 +24,15 @@ window.component('tooltip', function(tooltip) {
 				}
 
 				element.onmouseover = function() {
+					if (opts.class.split(' ').indexOf('help') !== -1) {
+						var toggle = document.body.querySelector('#help-toggle');
+						if (toggle && toggle.className.split(' ').indexOf('active') === -1) {
+							return;
+						}
+					}
 					var r = element.getBoundingClientRect(),
 						c = r.left + r.width / 2,
 						a = 0, 
-						t = element.clientHeight,
 						add = r.right - r.width / 2 + w / 2 + 10 - document.body.clientWidth;
 
 					add = add > 0 ? add : 0;
@@ -47,14 +52,14 @@ window.component('tooltip', function(tooltip) {
 						}
 					}
 
-					tt.className = 'comp-tt visible';
+					tt.className = 'comp-tt visible ' + (opts.class || '');
 
 					tt.style.left = Math.floor(element.clientWidth / 2 + a) + 'px';
 					tt.style.top = Math.floor(element.clientHeight) + 'px';
 					tt.style['margin-left'] = Math.floor(-w / 2) + 'px';
 					clearTimeout(timeout);
 					timeout = setTimeout(function(){
-						tt.className = 'comp-tt';
+						tt.className = 'comp-tt ' + (opts.class || '');
 					}, 5000);
 				};
 

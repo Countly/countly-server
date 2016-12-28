@@ -9,7 +9,7 @@ var common = require('../../../../api/utils/common.js'),
 	Streamer = require('./streamer.js'),
 	momenttz = require('moment-timezone');
 
-const WORKER_CHUNK_SIZE = 10000;
+const WORKER_CHUNK_SIZE = 100000;
 
 class Divider {
 	constructor (note) {
@@ -21,6 +21,7 @@ class Divider {
 
 		return new Promise((resolve, reject) => {
 			this.apps(db).then((apps) => {
+				log.d('apps', apps);
 				if (!apps || !apps.length) {
 					return reject('No apps found');
 				}
@@ -28,6 +29,7 @@ class Divider {
 				if (apps.length > 1 && this.note.drillConditions) {
 					return reject('Drill conditions can only be used for single-app messages');
 				}
+
 
 				var credentials = [];
 
@@ -43,44 +45,51 @@ class Divider {
 					}
 				});
 
-				credentials = credentials.map(c => new creds.Credentials(c));
+				if (credentials.length) {
+					log.d('Going to check following credentials: %j', credentials);
+					credentials = credentials.map(c => new creds.Credentials(c._id));
 
-				// Load credentials from db
-				Promise.all(credentials.map(c => c.load(db))).then(() => {
-					var subs = [];
+					// Load credentials from db
+					Promise.all(credentials.map(c => c.load(db))).then(() => {
+						var subs = [];
 
-					// apn/gcm level
-					credentials.forEach(c => {	
-						// token field level
-						c.divide(this.note.test).forEach(subc => {
-							subs.push(new Promise((resolve, reject) => {
-								let app = apps.filter(a => (a.apn && a.apn.filter(ac => ac._id.equals(c._id)).length) || (a.gcm && a.gcm.filter(ac => ac._id.equals(c._id)).length))[0],
-									appsubcred = subc.app(app._id, {tz: app.timezone, offset: app.timezone_offset}),
-									appsubnote = this.note.appsub(subs.length, appsubcred),
-									streamer = new Streamer(appsubnote);
+						// apn/gcm level
+						credentials.forEach(c => {
+							// token field level
+							c.divide(this.note.test).forEach(subc => {
+								subs.push(new Promise((resolve, reject) => {
+									let app = apps.filter(a => (a.apn && a.apn.filter(ac => ac._id.equals(c._id)).length) || (a.gcm && a.gcm.filter(ac => ac._id.equals(c._id)).length))[0],
+										appsubcred = subc.app(app._id, {tz: app.timezone, offset: app.timezone_offset}),
+										appsubnote = this.note.appsub(subs.length, appsubcred),
+										streamer = new Streamer(appsubnote);
 
-								log.d('Compiled appsub %j', appsubnote);
+									appsubnote.nobuild = !!this.note.build;
+									log.d('Compiled appsub %j', appsubnote);
 
-								if (audience === null) {
-									streamer.clear(db);
-									resolve();
-								} else {
-									streamer[audience ? 'audience' : 'count'](db).then((count) => {
-										if (clear) { streamer.clear(db); }
-										resolve({
-											appsub: appsubnote,
-											streamer: streamer,
-											[audience ? 'audience' : 'count']: count
-										});
-									}, reject);
-								}
-							}));
+									if (audience === null) {
+										streamer.clear(db);
+										resolve();
+									} else {
+										streamer[audience ? 'audience' : 'count'](db).then((count) => {
+											if (clear) { streamer.clear(db); }
+											resolve({
+												appsub: appsubnote,
+												streamer: streamer,
+												[audience ? 'audience' : 'count']: count
+											});
+										}, reject);
+									}
+								}));
+							});
 						});
-					});
 
-					Promise.all(subs).then(resolve, reject);
-				}, reject);
-			});
+						Promise.all(subs).then(resolve, reject);
+					}, reject);
+				} else {
+					reject('No credentials found');
+				}
+
+			}, reject);
 		});
 
 	}
@@ -110,6 +119,12 @@ class Divider {
 						TOTALLY.TOTALLY += a.count;
 					}
 				}
+				var alltzs = [];
+				subs.forEach(s => alltzs = alltzs.concat(s.appsub.tzs || []));
+				alltzs.sort((a, b) => b - a);
+				if (alltzs[0] !== undefined) {
+					TOTALLY.tzs = alltzs;
+				}
 				log.d('Done counting %j', TOTALLY);
 				resolve(TOTALLY);
 			}, reject);
@@ -133,9 +148,7 @@ class Divider {
 					return reject('No audience found');
 				}
 
-				var total = subs.reduce((p, c) => {
-						return {count: p.count + c.count};
-					}).count,
+				var total = subs.map(x => x.count).reduce((a, b) => a + b),
 					chunk = WORKER_CHUNK_SIZE,
 					chunks = Math.max(1, Math.ceil(total / chunk));
 				// var total = subs.reduce((p, c) => {
@@ -153,7 +166,7 @@ class Divider {
 							appsub: s.appsub
 						};
 
-					if (s.count < 1.5 * chunk) {
+					if (this.note.tz !== false || s.count < 1.5 * chunk) {
 						resolve([{data: Object.assign({size: s.count}, data)}]);
 					} else {
 						var parts = [];
@@ -202,7 +215,7 @@ class Divider {
 					let ret = [];
 					subs.forEach(subs => ret = ret.concat(subs));
 					log.d('Done dividing message %j totalling %d workers with %d subs: %j', this.note._id, workerCount, ret.length, ret);
-					resolve({subs: ret, workers: workerCount});
+					resolve({subs: ret, workers: Math.min(workerCount, ret.length)});
 				}, reject);
 			}, reject);
 
@@ -213,7 +226,7 @@ class Divider {
 		log.d('Looking for apps %j', this.note.apps);
 		return new Promise((resolve, reject) => {
 			db.collection('apps').find({_id: {$in: this.note.apps}}).toArray((err, apps) => {
-				if (err) { reject(err); }
+				if (err || !apps.length) { reject(err || 'Apps not found'); }
 				else { resolve(apps); }
 			});
 		});

@@ -98,6 +98,10 @@ class ValidateJob extends job.TransientJob {
 			done(e);
 		}
 	}
+
+	timeout () {
+		return 30000; // 60 seconds
+	}
 }
 
 module.exports = ValidateJob;

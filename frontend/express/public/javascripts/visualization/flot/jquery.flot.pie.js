@@ -325,7 +325,8 @@ More detail and specific examples can be found in the included HTML file.
 
 			if (attempts >= REDRAW_ATTEMPTS) {
 				clear();
-				target.prepend("<div class='error'>Could not draw pie with labels contained inside canvas</div>");
+				// onur: remove error div
+				//target.prepend("<div class='error'>Could not draw pie with labels contained inside canvas</div>");
 			}
 
 			if (plot.setSeries && plot.insertLegend) {
@@ -505,7 +506,8 @@ More detail and specific examples can be found in the included HTML file.
 						// check to make sure that the label is not outside the canvas
 
 						if (0 - labelTop > 0 || 0 - labelLeft > 0 || canvasHeight - (labelTop + label.height()) < 0 || canvasWidth - (labelLeft + label.width()) < 0) {
-							return false;
+							// onur: remove return, even if labels don't fit just draw the pie
+							//return false;
 						}
 
 						if (options.series.pie.label.background.opacity != 0) {

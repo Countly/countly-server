@@ -1,8 +1,11 @@
 (function (countlyPopulator, $, undefined) {
-    var metric_props = ["_os", "_os_version", "_resolution", "_device", "_carrier", "_app_version", "_density", "_locale", "_store"];
+    var metric_props = {mobile: ["_os", "_os_version", "_resolution", "_device", "_carrier", "_app_version", "_density", "_locale", "_store"],
+    web:["_os", "_os_version", "_resolution", "_device", "_app_version", "_density", "_locale", "_store", "_browser"],
+    desktop:["_os", "_os_version", "_resolution", "_app_version", "_locale"]};
 	var props = {
 		_os: ["Android", "iOS", "Windows Phone"],
         _os_web: ["Android", "iOS", "Windows Phone", "Windows", "MacOS"],
+        _os_desktop: ["Windows", "MacOS", "Linux"],
         _os_version_android: ["2.3", "2.3.7", "3.0", "3.2.6", "4.0", "4.0.4", "4.1", "4.3.1", "4.4", "4.4.4", "5.0", "5.1.1", "6.0", "6.0.1", "7.0", "7.1"],
         _os_version_ios: ["7.1.2", "8.4.1", "9.3.5", "10.1.1", "10.2"],
         _os_version_windows_phone: ["7", "8"],
@@ -136,22 +139,29 @@
         if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
             this.platform = this.getProp("_os_web");
         }
+        else if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "desktop"){
+            this.platform = this.getProp("_os_desktop");
+        }
         else{
             this.platform = this.getProp("_os");
         }
         this.metrics["_os"] = this.platform;
-		for(var i = 0; i < metric_props.length; i++){
-			if(metric_props[i] != "_os"){
+        var m_props = metric_props.mobile;
+        if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type && metric_props[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type]){
+            m_props = metric_props[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type];
+        }
+		for(var i = 0; i < m_props.length; i++){
+			if(m_props[i] != "_os"){
                 //handle specific cases
-                if(metric_props[i] === "_store" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
-                    this.metrics[metric_props[i]] = this.getProp("_source");
+                if(m_props[i] === "_store" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
+                    this.metrics[m_props[i]] = this.getProp("_source");
                 }
                 else{
                     //check os specific metric
-                    if(typeof props[metric_props[i]+"_"+this.platform.toLowerCase().replace(/\s/g, "_")] != "undefined")
-                        this.metrics[metric_props[i]] = this.getProp(metric_props[i]+"_"+this.platform.toLowerCase().replace(/\s/g, "_"));
+                    if(typeof props[m_props[i]+"_"+this.platform.toLowerCase().replace(/\s/g, "_")] != "undefined")
+                        this.metrics[m_props[i]] = this.getProp(m_props[i]+"_"+this.platform.toLowerCase().replace(/\s/g, "_"));
                     else //default metric set
-                        this.metrics[metric_props[i]] = this.getProp(metric_props[i]);
+                        this.metrics[m_props[i]] = this.getProp(m_props[i]);
                 }
 			}
 		}
@@ -536,22 +546,28 @@
                 if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
                     platform = getProp("_os_web");
                 }
+                else if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "desktop"){
+                    platform = getProp("_os_desktop");
+                }
                 else{
                     platform = getProp("_os");
                 }
                 metrics["_os"] = platform;
-                for(var i = 0; i < metric_props.length; i++){
-                    if(metric_props[i] != "_os"){
+                var m_props = metric_props.mobile;
+                if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type && metric_props[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type])
+                    m_props = metric_props[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type];
+                for(var k = 0; k < m_props.length; k++){
+                    if(m_props[k] != "_os"){
                         //handle specific cases
-                        if(metric_props[i] === "_store" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
-                            metrics[metric_props[i]] = getProp("_source");
+                        if(m_props[k] === "_store" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID] && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
+                            metrics[m_props[k]] = getProp("_source");
                         }
                         else{
                             //check os specific metric
-                            if(typeof props[metric_props[i]+"_"+platform.toLowerCase().replace(/\s/g, "_")] != "undefined")
-                                metrics[metric_props[i]] = getProp(metric_props[i]+"_"+platform.toLowerCase().replace(/\s/g, "_"));
+                            if(typeof props[m_props[k]+"_"+platform.toLowerCase().replace(/\s/g, "_")] != "undefined")
+                                metrics[m_props[k]] = getProp(m_props[k]+"_"+platform.toLowerCase().replace(/\s/g, "_"));
                             else //default metric set
-                                metrics[metric_props[i]] = getProp(metric_props[i]);
+                                metrics[m_props[k]] = getProp(m_props[k]);
                         }
                     }
                 }
@@ -565,7 +581,7 @@
         }
         totalStats.r++;
         $.ajax({
-            type:"GET",
+            type:"POST",
             url:countlyCommon.API_URL + "/i/bulk",
             data:{
 				app_key:countlyCommon.ACTIVE_APP_KEY,

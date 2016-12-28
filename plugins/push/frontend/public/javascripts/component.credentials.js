@@ -40,6 +40,9 @@ window.component('credentials', function(credentials) {
 
 				this.validate = function(ev) {
 					ev.preventDefault();
+					if (!ev.target.attributes.disabled || ev.target.attributes.disabled.value === 'true') {
+						return;
+					}
 					if (this.platform === 'apn') {
 						if (this.cert() && this.cert().length === 1) {
 							var reader = new window.FileReader();
@@ -59,9 +62,9 @@ window.component('credentials', function(credentials) {
 						CountlyHelpers.removeDialog(loading);
 						this.creds._id(data.cid);
 					}.bind(this), function(err){
-						this.cert(null);
-						this.passphrase('');
-						this.key('');
+						// this.cert(null);
+						// this.passphrase('');
+						// this.key('');
 						err = err.error || err;
 						CountlyHelpers.removeDialog(loading);
 						CountlyHelpers.alert(t('pu.validation.error') + ' ' + t('pu.validation.error.' + err, err));
@@ -69,35 +72,41 @@ window.component('credentials', function(credentials) {
 				};
 			},
 			view: function(ctrl){
-				return m('.comp-credentials', [
-					m('.read', [
-						ctrl.creds._id() ? 
-							m('.comp-credentials-type', t('pu.creds.type.' + ctrl.creds.type()))
-							: m('.comp-credentials-type.none', t('pu.creds.none'))
-					]),
-					m('.edit', [
-						m('.comp-credentials-edit', [
-							ctrl.creds._id() ? 
-								m('div.existing', [
-									m('.comp-credentials-type', t('pu.creds.type.' + ctrl.creds.type())),
-									m('a.remove[href=#]', {onclick: ctrl.remove}, t('pu.remove'))
+				var edit = m('.comp-credentials-edit', [
+					ctrl.creds._id() ? 
+						m('div.existing', [
+							m('.comp-credentials-type', t('pu.creds.type.' + ctrl.creds.type())),
+							m('a.remove[href=#]', {onclick: ctrl.remove}, t('pu.remove'))
+						])
+						: m('div', [
+							m('.comp-credentials-type', t('pu.creds.set.' + ctrl.creds.type())),
+							ctrl.platform === 'apn' ? 
+								m('.form', [
+									m('input[type=file]', {onchange: m.withAttr('files', ctrl.cert)}),
+									m('br'),
+									m('input[type=text]', {oninput: m.withAttr('value', ctrl.passphrase), placeholder: t('pu.creds.pass')}),
+									m('a.icon-button.light[href=#]', {onclick: ctrl.validate, disabled: !ctrl.cert()}, t('pu.validate'))
 								])
-								: m('div', [
-									m('.comp-credentials-type', t('pu.creds.set.' + ctrl.creds.type())),
-									ctrl.platform === 'apn' ? 
-										m('.form', [
-											m('input[type=file]', {onchange: m.withAttr('files', ctrl.cert)}),
-											m('br'),
-											m('input[type=text]', {oninput: m.withAttr('value', ctrl.passphrase)}),
-											m('a.icon-button.light[href=#]', {onclick: ctrl.validate}, t('pu.validate'))
-										])
-										: m('.form', [
-											m('input[type=text]', {oninput: m.withAttr('value', ctrl.key)}),
-											m('a.icon-button.light[href=#]', {onclick: ctrl.validate}, t('pu.validate'))
-										])
+								: m('.form', [
+									m('input[type=text]', {oninput: m.withAttr('value', ctrl.key)}),
+									m('a.icon-button.light[href=#]', {onclick: ctrl.validate, disabled: !ctrl.key()}, t('pu.validate'))
 								])
 						])
-					])
+				]);
+				return m('.comp-credentials', [
+					ctrl.app._id ? 
+						m('div', [
+							m('.read', [
+								ctrl.creds._id() ? 
+									m('.comp-credentials-type', t('pu.creds.type.' + ctrl.creds.type()))
+									: m('.comp-credentials-type.none', t('pu.creds.none'))
+							]),
+							m('.edit', [
+								edit
+							])
+						])
+						: 
+						edit
 				]);
 			}
 		};

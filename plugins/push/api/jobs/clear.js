@@ -25,16 +25,20 @@ class ClearJob extends job.Job {
 				if (err) { done(err); }
 				else if (!msg) {
 					log.d('Nothing to clear - no message %j', this.data.mid);
+					done();
 				} else if (msg.clear || (msg.result.status === N.Status.Preparing && msg.created === null) || (msg.result.status & N.Status.Done)) {
 					let divider = new Divider(new N.Note(msg));
 					divider.clear(db).then(() => {
 						log.d('Done clearing audience for %j', this.data.mid);
 						done();
 					}, done);
+				} else {
+					log.d('Nothing to clear for message %j', this.data.mid);
+					done();
 				}
 			});
 		} else if (this.data.cid) {
-			db.collection('apps').find({$or: [{apn: db.ObjectID(this.data.cid)}, {gcm: db.ObjectID(this.data.cid)}]}).toArray((err, ok) => {
+			db.collection('apps').find({$or: [{'apn._id': db.ObjectID(this.data.cid)}, {'gcm._id': db.ObjectID(this.data.cid)}]}).toArray((err, ok) => {
 				if (err) { done(err); }
 				else {
 					if (ok && ok.length) {

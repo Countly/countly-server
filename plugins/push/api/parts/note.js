@@ -1,5 +1,7 @@
 'use strict';
 
+const log = require('../../../../api/utils/log.js')('push:note');
+
 /**
  * ENUM for message statuses.
  */
@@ -48,6 +50,8 @@ class Note {
 		this.sound = data.sound;                 					// Sound
 		this.badge = data.badge;                					// Badge
 		this.test = data.test;                						// Test
+		this.date = data.date;                						// Date to be sent on
+		this.tz = data.tz;                							// Send in user timezones
 
 		this.result = {
 			status: data.result ? data.result.status || Status.Initial : Status.Initial,
@@ -65,7 +69,7 @@ class Note {
 	get id () { return '' + this._id; }
 
 	toJSON () {
-		return {
+		var json = {
 			_id: this._id,
 			type: this.type,
 			apps: this.apps,
@@ -85,10 +89,20 @@ class Note {
 			badge: this.badge,
 			result: this.result,
 			expiryDate: this.expiryDate,
+			date: this.date,
+			tz: this.tz,
 			created: this.created,
 			test: this.test,
 			build: this.build
 		};
+
+		Object.keys(json).forEach(k => {
+			if (json[k] === null || json[k] === undefined) {
+				delete json[k];
+			}
+		});
+		
+		return json;
 	}
 
 	static load (db, _id) {
@@ -98,6 +112,23 @@ class Note {
 				else { resolve(new Note(message)); }
 			});
 		});
+	}
+
+	schedule (db, jobs) {
+		// build already finished, lets schedule the job
+		if (this.date && this.tz !== false && this.build.tzs.length) {
+			var batch = new Date(this.date.getTime() + (this.tz - this.build.tzs[0]) * 60000);
+			log.d('Scheduling message with date %j to be sent in user timezones (tz %j, tzs %j): %j', this.date, this.tz, this.build.tzs, batch);
+			jobs.job('push:send', {mid: this._id}).once(batch);
+			db.collection('messages').updateOne({_id: this._id}, {$set: {'result.status': Status.InQueue, 'result.nextbatch': batch}}, log.logdb('when updating message status with inqueue'));
+		} else if (this.date) {
+			log.d('Scheduling messag %j to be sent on date %j',this._id, this.date);
+			jobs.job('push:send', {mid: this._id}).once(this.date);
+			db.collection('messages').updateOne({_id: this._id}, {$set: {'result.status': Status.InQueue}}, log.logdb('when updating message status with inqueue'));
+		} else {
+			log.d('Scheduling message %j to be sent immediately', this._id);
+			jobs.job('push:send', {mid: this._id}).now();
+		}
 	}
 
 	save (db) {
@@ -134,18 +165,32 @@ class Note {
 				if (message) {
 					compiled.aps.alert = message;
 				}
-				if (typeof this.sound !== 'undefined') {
+				if (this.sound !== undefined && this.sound !== null) {
 					compiled.aps.sound = this.sound;
 				}
-				if (typeof this.badge !== 'undefined') {
+				if (this.badge !== undefined && this.badge !== null) {
 					compiled.aps.badge = this.badge;
 				}
-				if (this.contentAvailable) {
+				if (this.contentAvailable || (!compiled.aps.alert && !compiled.aps.sound)) {
 					compiled.aps['content-available'] = 1;
 				}
 				if (this.data) {
 					for (let k in this.data) { compiled[k] = this.data[k]; }
 				}
+
+				if (Object.keys(compiled.aps).length === 0) {
+					delete compiled.aps;
+				}
+
+				if (!compiled.c) { 
+					compiled.c = {}; 
+				}
+				compiled.c.i = this._id + '';
+				
+				if (this.url) {
+					compiled.c.l = this.url;
+				}
+
 				return JSON.stringify(compiled);
 			} else {
 				compiled = {};
@@ -163,20 +208,31 @@ class Note {
 					compiled.data.message = message;
 				}
 
+				if (this.sound !== undefined && this.sound !== null) {
+					compiled.data.sound = this.sound;
+				}
+
+				if (!message && (this.sound === undefined || this.sound === null)) {
+					compiled.data['c.s'] = 'true';
+				}
+
 				if (this.data) {
 					var flattened = flattenObject(this.data);
 					for (let k in flattened) { compiled.data[k] = flattened[k]; }
 				}
-				if (this.category) {
-					compiled.data['c.c'] = this.content.category;
+				compiled.data['c.i'] = this._id + '';
+				
+				if (this.url) {
+					compiled.data['c.l'] = this.url;
 				}
+				
 				return compiled;
 			}
 		}
 	}
 
-	appsub (idx, appsubcreds) {
-		return new AppSubNote(this, idx, appsubcreds);
+	appsub (idx, appsubcreds, plan) {
+		return new AppSubNote(this, idx, appsubcreds, plan);
 	}
 }
 
@@ -184,24 +240,36 @@ class Note {
  * Class constructed from subjob data and used in job process
  */
 class AppSubNote {
-	constructor(note, idx, appsubcreds) {
+	constructor(note, idx, appsubcreds, plan) {
 		// initial case
 		if (note && note.compile) {
 			this._id = note._id;
 			this.idx = idx;
+			this.date = note.date;
+			this.tz = note.tz;
+			this.mintz = note.build ? note.build.mintz : undefined;
 			this.content = note.compile(appsubcreds.platform);
 			this.creds = appsubcreds;
+			if (typeof plan !== 'undefined') {
+				this.plan = plan;
+			}
 			if (note.userConditions || note.drillConditions) {
 				this.query = {};
-				if (note.userConditions) { this.query.user = JSON.stringify(note.userConditions); }
-				if (note.drillConditions) { this.query.drill = JSON.stringify(note.drillConditions); }
+				if (note.userConditions) { this.query.user = typeof note.userConditions === 'string' ? JSON.parse(note.userConditions) : note.userConditions; }
+				if (note.drillConditions) { this.query.drill = typeof note.drillConditions === 'string' ? JSON.parse(note.drillConditions) : note.drillConditions; }
 			}
 		// from job data
 		} else if (note && note._id) {
 			this._id = note._id;
 			this.idx = note.idx;
+			this.date = note.date ? new Date(note.date) : undefined;
+			this.tz = note.tz;
+			this.mintz = note.mintz;
 			this.content = typeof note.content === 'string' ? JSON.parse(note.content) : note.content;
 			this.creds = note.creds;
+			if (note.plan) {
+				this.plan = note.plan;
+			}
 			if (note.query) {
 				this.query = {};
 				if (note.query.userConditions) { this.query.userConditions = JSON.parse(note.query.userConditions); }
@@ -215,13 +283,25 @@ class AppSubNote {
 	get id () { return this._id + '|' + this.idx + '::' + this.creds.id; }
 
 	toJSON () {
-		return {
+		var json = {
 			_id: this._id,
 			idx: this.idx,
+			date: this.date,
+			tz: this.tz,
+			mintz: this.mintz,
 			content: JSON.stringify(this.content),
 			creds: this.creds,
-			query: this.query
+			query: this.query ? {} : undefined,
+			plan: this.plan
 		};
+
+		if (this.query && this.query.user) {
+			json.query.user = JSON.stringify(this.query.user);
+		}
+		if (this.query && this.query.drill) {
+			json.query.drill = JSON.stringify(this.query.drill);
+		}
+		return json;
 	}
 }
 

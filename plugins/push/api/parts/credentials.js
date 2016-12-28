@@ -65,7 +65,7 @@ class Credentials {
 					[] 
 					: [new SubCredentials(this, DB_USER_MAP.apn_prod, false)];
 			} else if (test === true) {
-				if ([CT.UNIVERSAL, CT.TOKEN].indexOf(this.type)) {
+				if ([CT.UNIVERSAL, CT.TOKEN].indexOf(this.type) !== -1) {
 					return [new SubCredentials(this, DB_USER_MAP.apn_dev, true), new SubCredentials(this, DB_USER_MAP.apn_adhoc, true)];
 				} else if (this.type === CT.DEV) {
 					return [new SubCredentials(this, DB_USER_MAP.apn_dev, true)];
@@ -94,7 +94,7 @@ class Credentials {
 			db.collection('credentials').findOne(this._id, (err, data) => {
 				if (err || !data) { reject(err || 'Credentials ' + this._id + ' not found'); }
 				else { 
-					log.d('loaded credentials %j', data);
+					log.d('loaded credentials %j', this._id);
 					for (let key in data) { 
 						this[key] = data[key]; 
 					}

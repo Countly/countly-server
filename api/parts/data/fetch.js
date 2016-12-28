@@ -454,98 +454,107 @@ var fetch = {},
 		});
     };
 	
-	fetch.fetchMetric = function(params) {
-		function getMetric(metric, totalUsersMetric){
-			fetchTimeObj(metric, params, false, function(doc) {
-				var clearMetricObject = function (obj) {
-					if (obj) {
-						if (!obj["t"]) obj["t"] = 0;
-						if (!obj["n"]) obj["n"] = 0;
-						if (!obj["u"]) obj["u"] = 0;
-					}
-					else {
-						obj = {"t":0, "n":0, "u":0};
-					}
-			
-					return obj;
-				};
-
-				if (doc['meta'] && doc['meta'][params.qstring.metric]) {
-                    getTotalUsersObj(totalUsersMetric, params, function(dbTotalUsersObj) {
-                        var data = countlyCommon.extractMetric(doc, doc['meta'][params.qstring.metric], clearMetricObject, [
-                            {
-                                name:params.qstring.metric,
-                                func:function (rangeArr, dataObj) {
-                                    return rangeArr;
-                                }
-                            },
-                            { "name":"t" },
-                            { "name":"n" },
-                            { "name":"u" }
-                        ], formatTotalUsersObj(dbTotalUsersObj));
-
-                        common.returnOutput(params, data);
-                    });
+	fetch.getMetric = function(params, metric, totalUsersMetric, callback){
+        var queryMetric = params.qstring.metric || metric;
+        countlyCommon.setTimezone(params.appTimezone);
+        if(params.qstring.period)
+            countlyCommon.setPeriod(params.qstring.period);
+		fetchTimeObj(metric, params, false, function(doc) {
+			var clearMetricObject = function (obj) {
+				if (obj) {
+					if (!obj["t"]) obj["t"] = 0;
+					if (!obj["n"]) obj["n"] = 0;
+					if (!obj["u"]) obj["u"] = 0;
 				}
-				else{
-					common.returnOutput(params, []);
+				else {
+					obj = {"t":0, "n":0, "u":0};
 				}
-			});
-		}
+		
+				return obj;
+			};
 
+			if (doc['meta'] && doc['meta'][queryMetric]) {
+                getTotalUsersObj(totalUsersMetric, params, function(dbTotalUsersObj) {
+                    var data = countlyCommon.extractMetric(doc, doc['meta'][queryMetric], clearMetricObject, [
+                        {
+                            name:queryMetric,
+                            func:function (rangeArr, dataObj) {
+                                return rangeArr;
+                            }
+                        },
+                        { "name":"t" },
+                        { "name":"n" },
+                        { "name":"u" }
+                    ], formatTotalUsersObj(dbTotalUsersObj));
+                    
+                    if(callback){
+                        callback(data);
+                    }
+                });
+			}
+			else if(callback){
+                callback([]);
+			}
+		});
+	};
+        
+    fetch.fetchMetric = function(params) {
+        var output = function(data){
+            common.returnOutput(params, data);
+        };
 		if(!params.qstring.metric) {
 			common.returnMessage(params, 400, 'Must provide metric');
         } else {
 			switch (params.qstring.metric) {
                 case 'locations':
                 case 'countries':
-                    getMetric('users', "countries");
+                    fetch.getMetric(params, 'users', "countries", output);
                     break;
                 case 'sessions':
                 case 'users':
-					getMetric('users');
+					fetch.getMetric(params, 'users', null, output);
                     break;
                 case 'app_versions':
-                    getMetric("device_details", "app_versions");
+                    fetch.getMetric(params, "device_details", "app_versions", output);
                     break;
                 case 'os':
-                    getMetric("device_details", "platforms");
+                    fetch.getMetric(params, "device_details", "platforms", output);
                     break;
                 case 'os_versions':
-                    getMetric("device_details", "platform_versions");
+                    fetch.getMetric(params, "device_details", "platform_versions", output);
                     break;
                 case 'resolutions':
-                    getMetric("device_details", "resolutions");
+                    fetch.getMetric(params, "device_details", "resolutions", output);
                     break;
                 case 'device_details':
-					getMetric('device_details');
+					fetch.getMetric(params, 'device_details', null, output);
                     break;
                 case 'cities':
                     if (plugins.getConfig("api").city_data !== false) {
-						getMetric("cities", "cities");
+						fetch.getMetric(params, "cities", "cities", output);
                     } else {
                         common.returnOutput(params, []);
                     }
                     break;
                 default:
-					getMetric(params.qstring.metric);
+					fetch.getMetric(params, params.qstring.metric, null, output);
                     break;
             }
 		}
     };
 
-    fetch.fetchTimeObj = function (collection, params, isCustomEvent) {
-        fetchTimeObj(collection, params, isCustomEvent, function(output) {
+    fetch.fetchTimeObj = function (collection, params, isCustomEvent, options) {
+        fetchTimeObj(collection, params, isCustomEvent, options, function(output) {
             common.returnOutput(params, output);
         });
     };
     
-    fetch.getTimeObj = function (collection, params, callback) {
-        fetchTimeObj(collection, params, null, callback);
+    fetch.getTimeObj = function (collection, params, options, callback) {
+        fetchTimeObj(collection, params, null, options, callback);
     };
 
-    fetch.getTimeObjForEvents = function (collection, params, callback) {
-        fetchTimeObj(collection, params, true, callback);
+    fetch.getTimeObjForEvents = function (collection, params, options, callback) {
+        fetchTimeObj(collection, params, true, options, callback);
     };
 
     fetch.fetchTotalUsersObj = function (metric, params) {
@@ -702,7 +711,31 @@ var fetch = {},
         return tmpObj;
     }
 
-    function fetchTimeObj(collection, params, isCustomEvent, callback) {
+    function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
+        if(typeof options === "function"){
+            callback = options;
+            options = {};
+        }
+        
+        if(typeof options === "undefined"){
+            options = {};
+        }
+        
+        if(typeof options.unique === "undefined")
+            options.unique = common.dbMap.unique;
+        
+        if(typeof options.id === "undefined")
+            options.id = params.app_id;
+        
+        if(typeof options.levels === "undefined")
+            options.levels = {};
+        
+        if(typeof options.levels.daily === "undefined")
+            options.levels.daily = [common.dbMap.total, common.dbMap.new, common.dbEventMap.count, common.dbEventMap.sum, common.dbEventMap.duration];
+        
+        if(typeof options.levels.monthly === "undefined")
+            options.levels.monthly = [common.dbMap.total, common.dbMap.new, common.dbMap.duration, common.dbMap.events, common.dbEventMap.count, common.dbEventMap.sum, common.dbEventMap.duration];
+            
         if (params.qstring.action == "refresh") {
             var dbDateIds = common.getDateIds(params),
                 fetchFromZero = {},
@@ -715,13 +748,13 @@ var fetch = {},
                 fetchFromMonth["d." + params.time.day] = 1;
                 fetchFromMonth["m"] = 1;
             } else {
-                fetchFromZero["d." + common.dbMap.unique] = 1;
-                fetchFromZero["d." + params.time.month + "." + common.dbMap.unique] = 1;
+                fetchFromZero["d." + options.unique] = 1;
+                fetchFromZero["d." + params.time.month + "." + options.unique] = 1;
                 fetchFromZero['meta'] = 1;
                 fetchFromZero['meta_v2'] = 1;
                 fetchFromZero['m'] = 1;
 
-                fetchFromMonth["d.w" + params.time.weekly + "." + common.dbMap.unique] = 1;
+                fetchFromMonth["d.w" + params.time.weekly + "." + options.unique] = 1;
                 fetchFromMonth["d." + params.time.day] = 1;
                 fetchFromMonth["m"] = 1;
 
@@ -745,8 +778,8 @@ var fetch = {},
                 zeroIdToFetch = "no-segment_" + dbDateIds.zero;
                 monthIdToFetch = segment + "_" + dbDateIds.month;
             } else {
-                zeroIdToFetch = params.app_id + "_" + dbDateIds.zero;
-                monthIdToFetch = params.app_id + "_" + dbDateIds.month;
+                zeroIdToFetch = options.id + "_" + dbDateIds.zero;
+                monthIdToFetch = options.id + "_" + dbDateIds.month;
             }
             
             var zeroDocs = [zeroIdToFetch];
@@ -758,7 +791,7 @@ var fetch = {},
 
             common.db.collection(collection).find({'_id': {$in: zeroDocs}}, fetchFromZero).toArray(function(err, zeroObject) {
                 common.db.collection(collection).find({'_id': {$in: monthDocs}}, fetchFromMonth).toArray(function(err, monthObject) {
-                    callback(getMergedObj(zeroObject.concat(monthObject), true));
+                    callback(getMergedObj(zeroObject.concat(monthObject), true, options.levels));
                 });
             });
         } else {
@@ -783,22 +816,22 @@ var fetch = {},
                 }
             } else {
                 for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
-                    documents.push(params.app_id + "_" + periodObj.reqZeroDbDateIds[i]);
+                    documents.push(options.id + "_" + periodObj.reqZeroDbDateIds[i]);
                     for(var m = 0; m < common.base64.length; m++){
-                        documents.push(params.app_id + "_" + periodObj.reqZeroDbDateIds[i]+"_"+common.base64[m]);
+                        documents.push(options.id + "_" + periodObj.reqZeroDbDateIds[i]+"_"+common.base64[m]);
                     }
                 }
 
                 for (var i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
-                    documents.push(params.app_id + "_" + periodObj.reqMonthDbDateIds[i]);
+                    documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i]);
                     for(var m = 0; m < common.base64.length; m++){
-                        documents.push(params.app_id + "_" + periodObj.reqMonthDbDateIds[i]+"_"+common.base64[m]);
+                        documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i]+"_"+common.base64[m]);
                     }
                 }
             }
 
             common.db.collection(collection).find({'_id': {$in: documents}}, {}).toArray(function(err, dataObjects) {
-                callback(getMergedObj(dataObjects));
+                callback(getMergedObj(dataObjects, false, options.levels));
             });
         }
         
@@ -817,7 +850,7 @@ var fetch = {},
             return ob1;
         }
 
-        function getMergedObj(dataObjects, isRefresh) {
+        function getMergedObj(dataObjects, isRefresh, levels) {
             var mergedDataObj = {};
         
             if(dataObjects){
@@ -878,10 +911,9 @@ var fetch = {},
                                         continue;
                                     }
         
-                                    if (typeof dataObjects[i]['d'][day][prop] === 'object') {
+                                    if (typeof dataObjects[i]['d'][day][prop] === 'object') { 
                                         for (var secondLevel in dataObjects[i]['d'][day][prop]) {
-                                            if (secondLevel == common.dbMap.total || secondLevel == common.dbMap.new ||
-                                                secondLevel == common.dbEventMap.count || secondLevel == common.dbEventMap.sum || secondLevel == common.dbEventMap.duration) {
+                                            if (levels.daily.indexOf(secondLevel) !== -1) {
                                                 if (!mergedDataObj[year][month][prop]) {
                                                     mergedDataObj[year][month][prop] = {};
                                                 }
@@ -903,9 +935,7 @@ var fetch = {},
                                                 }
                                             }
                                         }
-                                    } else if (prop == common.dbMap.total || prop == common.dbMap.new ||
-                                        prop == common.dbMap.duration || prop == common.dbMap.events ||
-                                        prop == common.dbEventMap.count || prop == common.dbEventMap.sum || prop == common.dbEventMap.duration) {
+                                    } else if (levels.monthly.indexOf(prop) !== -1) {
         
                                         if (mergedDataObj[year][month][prop]) {
                                             mergedDataObj[year][month][prop] += dataObjects[i]['d'][day][prop];

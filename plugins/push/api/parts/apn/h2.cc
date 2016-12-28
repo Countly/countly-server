@@ -173,7 +173,7 @@ namespace apns {
 
 	void H2::init(const Nan::FunctionCallbackInfo<Value>& info) {
 		H2* obj = ObjectWrap::Unwrap<H2>(info.Holder());
-		LOG_DEBUG("initializing with " << obj->certificate);
+		// LOG_DEBUG("initializing with " << obj->certificate);
 
 		v8::Local<v8::Function> tpl = v8::Local<v8::Function>::Cast(info[0]);
 		obj->errorer.Reset(tpl);
@@ -192,7 +192,7 @@ namespace apns {
 			auto persistentHandle = static_cast<PeristentHandle*>(handle->data);
 			auto obj = persistentHandle->conn;
 
-			LOG_DEBUG("loading certificate from " << obj->certificate);
+			// LOG_DEBUG("loading certificate from " << obj->certificate);
 
 			STACK_OF(X509) *ca = NULL;
 			PKCS12 *p12;

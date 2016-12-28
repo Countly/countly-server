@@ -1,12 +1,13 @@
 'use strict';
 
 const log = require('../../../../../api/utils/log.js')('push:gcm'),
+	  config = require('../../../../../api/config.js'),
 	  https = require('https'),
 	  EventEmitter = require('events');
 
 
-const MAX_QUEUE = 300,
-	  MAX_BATCH = 100;
+const MAX_QUEUE = 10000,
+	  MAX_BATCH = 500;
 
 class ConnectionResource extends EventEmitter {
 	constructor(key) {
@@ -22,7 +23,8 @@ class ConnectionResource extends EventEmitter {
 		};
 
 		this.onError = (e) => {
-			log.e('socket error %j', e);
+			log.e('socket error %j', e, arguments);
+			this.rejectAndClose(e)
 		};
 	}
 
@@ -39,7 +41,13 @@ class ConnectionResource extends EventEmitter {
 			},
 		};
 
-		this.agent = new https.Agent(this.options);
+		if (config.api.push_proxy) {
+			console.log('initializing special agent');
+			var Agent = require('./agent.js');
+			this.agent = new Agent({proxyHost: config.api.push_proxy.host, proxyPort: config.api.push_proxy.port});
+		} else {
+			this.agent = new https.Agent(this.options);
+		}
 		this.agent.maxSockets = 1;
 
 		this.options.agent = this.agent;
@@ -129,8 +137,9 @@ class ConnectionResource extends EventEmitter {
 		if (devices.length) {
 			message.registration_ids = devices;
 
-			log.d('sending %j', message);
-			log.d('with %j', ids);
+			console.log('[%d]: sending %d', process.pid, this.requestCount);
+			this.requestCount++;
+			// console.log('with %j', ids);
 			
 			let content = JSON.stringify(message);
 
@@ -237,7 +246,7 @@ class ConnectionResource extends EventEmitter {
 			} catch (e) {
 				ids.forEach(i => i[1] = -1);
 				this.statuser(ids);
-				log.w('[%d]: Bad response from GCM: %j / %j / %j', process.pid, code, data, e, e.stack);
+				log.w('[%d]: Bad response from GCM: %j / %j / %j', process.pid, code, data, e, (e || {}).stack);
 			}
 		}
 

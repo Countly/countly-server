@@ -1052,7 +1052,7 @@ var countlyCommon = {},
                 dateString = "D MMM, HH:mm";
                 currPeriodArr.push(activePeriod);
                 prevPeriodArr.push(previousPeriod);
-                periodContainsToday = (moment(_period[0]).format("YYYYMMDD") == _currMoment.format("YYYYMMDD"));
+                periodContainsToday = (moment(_period[0]).utc().format("YYYYMMDD") == _currMoment.utc().format("YYYYMMDD"));
             } else {
                 var a = moment(fromDate),
                     b = moment(toDate);
@@ -1060,7 +1060,7 @@ var countlyCommon = {},
                 daysInPeriod = b.diff(a, 'days') + 1;
                 isSpecialPeriod = true;
                 rangeEndDay = _period[1];
-                periodContainsToday = (b.format("YYYYMMDD") == _currMoment.format("YYYYMMDD"));
+                periodContainsToday = (b.utc().format("YYYYMMDD") == _currMoment.utc().format("YYYYMMDD"));
             }
         }
 

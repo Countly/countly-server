@@ -2,6 +2,7 @@ var plugin = {},
     fs = require('fs'),
     path = require("path"),
     async = require('async'),
+    readLastLines = require('read-last-lines'),
 	common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js');
 
@@ -14,33 +15,60 @@ var plugin = {},
         var params = ob.params; //request params
         var validate = ob.validateUserForGlobalAdmin; //user validation
         var paths = ob.paths;
+        var lines = params.qstring.lines || 0;
         
         validate(params, function (params) {
             if(params.qstring.log && logs[params.qstring.log]){
                 if(params.qstring.download){
-                    fs.readFile(dir+"/"+logs[params.qstring.log], 'utf8', function (err,data) {
-                        if (err)
-                            data = "";
-                        params.res.writeHead(200, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition':'attachment; filename=countly-'+params.qstring.log+'.log'});
-                        params.res.write(data);
-                        params.res.end();
-                    });
+                    if(lines == 0){
+                        fs.readFile(dir+"/"+logs[params.qstring.log], 'utf8', function (err,data) {
+                            if (err)
+                                data = "";
+                            params.res.writeHead(200, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition':'attachment; filename=countly-'+params.qstring.log+'.log'});
+                            params.res.write(data);
+                            params.res.end();
+                        });
+                    }
+                    else{
+                        readLastLines.read(dir+"/"+logs[params.qstring.log], lines)
+                        .then(function(data){
+                            params.res.writeHead(200, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition':'attachment; filename=countly-'+params.qstring.log+'.log'});
+                            params.res.write(data);
+                            params.res.end();
+                        });
+                    }
                 }
                 else{
-                    fs.readFile(dir+"/"+logs[params.qstring.log], 'utf8', function (err,data) {
-                        if (err)
-                            data = "";
-                        common.returnOutput(params, data);
-                    });
+                    if(lines == 0){
+                        fs.readFile(dir+"/"+logs[params.qstring.log], 'utf8', function (err,data) {
+                            if (err)
+                                data = "";
+                            common.returnOutput(params, data);
+                        });
+                    }
+                    else{
+                        readLastLines.read(dir+"/"+logs[params.qstring.log], lines)
+                        .then(function(data){
+                            common.returnOutput(params, data);
+                        });
+                    }
                 }
             }
             else{
                 function readLog(key, done){
-                    fs.readFile(dir+"/"+logs[key], 'utf8', function (err,data) {
-                        if (err)
-                            data = "";
-                        done(null, {key:key, val:data});
-                    });
+                    if(lines == 0){
+                        fs.readFile(dir+"/"+logs[key], 'utf8', function (err,data) {
+                            if (err)
+                                data = "";
+                            done(null, {key:key, val:data});
+                        });
+                    }
+                    else{
+                        readLastLines.read(dir+"/"+logs[key], lines)
+                        .then(function(data){
+                            done(null, {key:key, val:data});
+                        });
+                    }
                 };
                 async.map(Object.keys(logs), readLog, function(err, results) {
                     var ret = {};

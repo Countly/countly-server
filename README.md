@@ -1,17 +1,17 @@
 #Countly [![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Install Countly on DigitalOcean](http://do.count.ly/button.svg?v2)](http://do.count.ly)
 
-* **We're hiring:** Countly is looking for Android SDK developers, full stack devs, devops and growth hackers (remote work). [Click this link for job description](https://angel.co/countly/jobs/)
+* **We're hiring:** Countly is looking for Android SDK developers, full stack devs, devops and growth hackers (remote work). [Click this link for job description](https://count.ly/full-stack-node-js-developer)
 * **Slack user?** [Join our Slack community](http://slack.count.ly:3000/)
 * **Questions?** [Ask in our Community forum](http://community.count.ly)
 
 ##What's Countly?
-[Countly](http://count.ly) is an innovative, real-time, open source mobile & [web analytics](http://count.ly/web-analytics), [push notifications](http://count.ly/push-notifications) and [crash reporting](http://count.ly/crash-reports) platform powering nearly 3000 mobile applications. It collects data from mobile phones, tablets, Apple Watch and other internet-connected devices, and visualizes this information to analyze mobile application usage and end-user behavior. 
+[Countly](http://count.ly) is an innovative, real-time, open source mobile & [web analytics](http://count.ly/web-analytics), [push notifications](http://count.ly/push-notifications) and [crash reporting](http://count.ly/crash-reports) platform powering more than 2500 web sites and 12000 mobile applications. It collects data from mobile phones, tablets, Apple Watch and other internet-connected devices, and visualizes this information to analyze mobile application usage and end-user behavior. 
 
 With the help of [Javascript SDK](http://github.com/countly/countly-sdk-web), Countly is a web analytics platform with features on par with mobile SDKs. For more information about web analytics capabilities, [see this link](http://count.ly/web-analytics).
 
 There are two parts of Countly: the server that collects and analyzes data, and an SDK (mobile, web or desktop) that sends this data. This repository includes Countly Community Edition (server side). For more information other versions (e.g Enterprise Edition), see [comparison of different Countly editions](https://count.ly/compare)
 
-![Countly dashboard screenshot](https://count.ly/wp-content/uploads/2016/08/countly_dashboard_community_16.06.png)
+![Countly dashboard screenshot](http://count.ly/wp-content/uploads/2016/12/countly_dashboard_community_16_12.png)
 
 ##What can Countly track? 
 
@@ -38,7 +38,7 @@ Countly is a unique, security-focused and 360-degree analytics approach with sev
 * Your data, your rules - since you can install Countly on your own server, or let us do the private cloud installations for you.
 * Configurable and extensible via open source [plugins](http://count.ly/plugins).
 * Modern and easy to use web dashboard with a focus on user experience, helping to get complex insights easily.
-* Tracking more than 2500 web sites and 4500 mobile applications.
+* Tracking more than 2500 web sites and 12000 mobile applications.
 * Collecting more than 60 billion datapoints worlwide.
 
 ##Installing & upgrading Countly server

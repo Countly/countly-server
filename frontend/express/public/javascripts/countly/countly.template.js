@@ -719,10 +719,10 @@ $.extend(Template.prototype, {
         return '';
     };
 
-    CountlyHelpers.clip = function(f) {
+    CountlyHelpers.clip = function(f, nothing) {
         return function(opt) {
             var res = typeof f === 'fucnction' ? f(opt) : opt;
-            return '<div class="clip' + (res ? '' : ' nothing') + '">' + (res || jQuery.i18n.map['push.no-message']) + '</div>';
+            return '<div class="clip' + (res ? '' : ' nothing') + '">' + (res || nothing) + '</div>';
         }
     };
 	
@@ -759,7 +759,7 @@ $.extend(Template.prototype, {
                             "api_key":countlyGlobal.member.api_key,
                             "app_id":countlyCommon.ACTIVE_APP_ID,
                             "metric":_name,
-                            "period":countlyCommon.getPeriodForAjax()
+                            "period":_period
                         },
                         success:function (json) {
                             _Db = json;
@@ -776,7 +776,6 @@ $.extend(Template.prototype, {
                             "method":_name,
                             "period":_period
                         },
-                        dataType:"jsonp",
                         success:function (json) {
                             _Db = json;
                             setMeta();
@@ -800,7 +799,7 @@ $.extend(Template.prototype, {
 				}
                 
                 if(_processed){
-                    
+
                 }
                 else{
                     return $.ajax({
@@ -812,7 +811,6 @@ $.extend(Template.prototype, {
                             "method":_name,
                             "action":"refresh"
                         },
-                        dataType:"jsonp",
                         success:function (json) {
                             countlyCommon.extendDbObj(_Db, json);
                             extendMeta();
@@ -1163,23 +1161,28 @@ $.extend(Template.prototype, {
         $("#overlay").fadeOut();
     };
     
-    CountlyHelpers.generatePassword = function() {
+    CountlyHelpers.generatePassword = function(length, no_special) {
         var text = [];
         var chars = "abcdefghijklmnopqrstuvwxyz";
         var upchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         var numbers = "0123456789";
         var specials = '!@#$%^&*()_+{}:"<>?\|[];\',./`~';
-        var all = chars+upchars+numbers+specials;
+        var all = chars+upchars+numbers;
+        if(!no_special)
+            all += specials;
          
         //1 char
         text.push(upchars.charAt(Math.floor(Math.random() * upchars.length)));
         //1 number
         text.push(numbers.charAt(Math.floor(Math.random() * numbers.length)));
         //1 special char
-        text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
+        if(!no_special){
+            text.push(specials.charAt(Math.floor(Math.random() * specials.length)));
+            length--;
+        }
         
         //5 any chars
-        for( var i=0; i < Math.max(countlyGlobal["security"].password_min-3, 5); i++ )
+        for( var i=0; i < Math.max(length-2, 5); i++ )
             text.push(all.charAt(Math.floor(Math.random() * all.length)));
         
         //randomize order
@@ -2114,6 +2117,9 @@ window.ManageAppsView = countlyView.extend({
         
         $(".select-app-types").on("click",".item", function(){
             app.onAppManagementSwitch($("#app-edit-id").val(), $(this).data("value"));
+            if ($(this).parents('#add-new-app').length) {
+                app.onAppAddTypeSwitch($(this).data('value'));
+            }
         });
 
         function initAppManagement(appId) {
@@ -2745,17 +2751,23 @@ window.ManageAppsView = countlyView.extend({
 
             $(this).addClass("disabled");
 
+            var args = {
+                name:appName,
+                type:type,
+                category:category,
+                timezone:timezone,
+                country:country
+            };
+
+            app.appObjectModificators.forEach(function(mode){
+                mode(args);
+            });
+
             $.ajax({
                 type:"GET",
                 url:countlyCommon.API_PARTS.apps.w + '/create',
                 data:{
-                    args:JSON.stringify({
-                        name:appName,
-                        type:type,
-                        category:category,
-                        timezone:timezone,
-                        country:country
-                    }),
+                    args:JSON.stringify(args),
                     api_key:countlyGlobal['member'].api_key
                 },
                 dataType:"jsonp",
@@ -2763,18 +2775,8 @@ window.ManageAppsView = countlyView.extend({
 
                     var sidebarApp = $("#sidebar-new-app>div").clone();
 
-                    var newAppObj = {
-                        "_id":data._id,
-                        "name":data.name,
-                        "key":data.key,
-                        "category":data.category,
-                        "type":data.type,
-                        "timezone":data.timezone,
-                        "country":data.country
-                    };
-
-                    countlyGlobal['apps'][data._id] = newAppObj;
-                    countlyGlobal['admin_apps'][data._id] = newAppObj;
+                    countlyGlobal['apps'][data._id] = data;
+                    countlyGlobal['admin_apps'][data._id] = data;
 
                     var newApp = $("#app-container-new");
                     newApp.data("id", data._id);
@@ -2877,7 +2879,7 @@ window.ManageUsersView = countlyView.extend({
                     "aoColumns": [
                         { "mData": function(row, type){return row.full_name;}, "sType":"string", "sExport":"userinfo", "sTitle": jQuery.i18n.map["management-users.full-name"]},
                         { "mData": function(row, type){return row.username;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.username"]},
-                        { "mData": function(row, type){if(row.global_admin) return jQuery.i18n.map["management-users.global-admin"]; else if(row.admin_of && row.admin_of.length) return jQuery.i18n.map["management-users.admin"]; else if(row.user_of && row.user_of.length)  return jQuery.i18n.map["management-users.user"]; else return jQuery.i18n.map["management-users.no-role"]}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.no-role"]},
+                        { "mData": function(row, type){if(row.global_admin) return jQuery.i18n.map["management-users.global-admin"]; else if(row.admin_of && row.admin_of.length) return jQuery.i18n.map["management-users.admin"]; else if(row.user_of && row.user_of.length)  return jQuery.i18n.map["management-users.user"]; else return jQuery.i18n.map["management-users.no-role"]}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.role"]},
                         { "mData": function(row, type){return row.email;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.email"]},
                         { "mData": function(row, type){if(type == "display") return (row["created_at"]) ? countlyCommon.formatTimeAgo(row["created_at"]) : ""; else return (row["created_at"]) ? row["created_at"] : 0;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["management-users.created"]},
                         { "mData": function(row, type){if(type == "display") return (row["last_login"]) ? countlyCommon.formatTimeAgo(row["last_login"]) : jQuery.i18n.map["common.never"]; else return (row["last_login"]) ? row["last_login"] : 0;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["management-users.last_login"]}
@@ -3450,7 +3452,7 @@ window.ManageUsersView = countlyView.extend({
             $(".row").removeClass("selected");
         });
         $(".generate-password").off("click").on('click', function() {
-            $(this).parent().find(".password-text").val(CountlyHelpers.generatePassword());
+            $(this).parent().find(".password-text").val(CountlyHelpers.generatePassword(countlyGlobal["security"].password_min));
         });
         
         $(".change-password").off("click").on('click', function() {
@@ -4144,6 +4146,19 @@ var AppRouter = Backbone.Router.extend({
     durations:function () {
         this.renderWhenReady(this.durationsView);
     },
+    runRefreshScripts: function() {
+        if(this.refreshScripts[Backbone.history.fragment])
+            for(var i = 0, l = this.refreshScripts[Backbone.history.fragment].length; i < l; i++)
+                this.refreshScripts[Backbone.history.fragment][i]();
+        for(var k in this.refreshScripts) 
+            if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match(k.replace(/#/g, '.*')))
+                for(var i = 0, l = this.refreshScripts[k].length; i < l; i++)
+                    this.refreshScripts[k][i]();
+        if(this.refreshScripts["#"])
+            for(var i = 0, l = this.refreshScripts["#"].length; i < l; i++)
+                this.refreshScripts["#"][i]();
+
+    },
     renderWhenReady:function (viewName) { //all view renders end up here
 
         // If there is an active view call its destroy function to perform cleanups before a new view renders
@@ -4182,16 +4197,7 @@ var AppRouter = Backbone.Router.extend({
         var self = this;
         this.refreshActiveView = setInterval(function () {
             self.activeView.refresh();
-			if(self.refreshScripts[Backbone.history.fragment])
-				for(var i = 0, l = self.refreshScripts[Backbone.history.fragment].length; i < l; i++)
-					self.refreshScripts[Backbone.history.fragment][i]();
-            for(var k in self.refreshScripts) 
-                if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match(k.replace(/#/g, '.*')))
-                    for(var i = 0, l = self.refreshScripts[k].length; i < l; i++)
-                        self.refreshScripts[k][i]();
-			if(self.refreshScripts["#"])
-				for(var i = 0, l = self.refreshScripts["#"].length; i < l; i++)
-					self.refreshScripts["#"][i]();
+            self.runRefreshScripts();
         }, countlyCommon.DASHBOARD_REFRESH_MS);
         
         if(countlyGlobal && countlyGlobal["message"]){
@@ -4275,6 +4281,7 @@ var AppRouter = Backbone.Router.extend({
         this.appSwitchCallbacks = [];
         this.appManagementSwitchCallbacks = [];
         this.appObjectModificators = [];
+        this.appAddTypeCallbacks = [];
 		this.refreshScripts = {};
         this.dashboardView = new DashboardView();
         this.sessionView = new SessionView();
@@ -5640,6 +5647,9 @@ var AppRouter = Backbone.Router.extend({
     addAppObjectModificator:function(callback){
         this.appObjectModificators.push(callback);
     },
+    addAppAddTypeCallback:function(callback){
+        this.appAddTypeCallbacks.push(callback);
+    },
     addDataExport:function(name, callback){
         this.dataExports[name] = callback;
     },
@@ -5681,6 +5691,11 @@ var AppRouter = Backbone.Router.extend({
             var newAppName = $("#app-add-name").val();
             $("#app-container-new .name").text(newAppName);
             $(".new-app-name").text(newAppName);
+        }
+    },
+    onAppAddTypeSwitch: function(type) {
+        for(var i = 0; i < this.appAddTypeCallbacks.length; i++){
+            this.appAddTypeCallbacks[i](type);
         }
     },
     pageScript:function () { //scripts to be executed on each view change

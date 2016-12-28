@@ -97,6 +97,11 @@ if (cluster.isMaster) {
             else if(msg.cmd === "endPlugins"){
                 plugins.stopSyncing();
             }
+            else if(msg.cmd === "dispatch" && msg.event){
+                workers.forEach(function(w){
+                    w.send(msg);
+                });
+            }
         });
     };
 
@@ -138,6 +143,15 @@ if (cluster.isMaster) {
     };
     
     process.on('message', common.log.ipcHandler);
+    
+    process.on('message', function(msg){
+        if (msg.cmd === 'log') {
+            common.log.ipcHandler(msg);
+        }
+        else if(msg.cmd === "dispatch" && msg.event){
+            plugins.dispatch(msg.event, msg.data || {});
+        }
+    });
 
     plugins.dispatch("/worker", {common:common});
     // Checks app_key from the http request against "apps" collection.
@@ -199,8 +213,8 @@ if (cluster.isMaster) {
                 }
             }
 
-            if (params.qstring.tz && typeof params.qstring.tz === 'number') {
-                params.user.tz = params.qstring.tz;
+            if (params.qstring.tz && !isNaN(parseInt(params.qstring.tz))) {
+                params.user.tz = parseInt(params.qstring.tz);
             } 
             
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, user){
@@ -217,11 +231,7 @@ if (cluster.isMaster) {
                 plugins.dispatch("/sdk", {params:params, app:app});
                 
                 if (params.qstring.metrics) {		
-                    if (params.qstring.metrics["_carrier"]) {		
-                        params.qstring.metrics["_carrier"] = params.qstring.metrics["_carrier"].replace(/\w\S*/g, function (txt) {		
-                            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();		
-                        });		
-                    }		
+                    common.processCarrier(params.qstring.metrics);	
                 		
                     if (params.qstring.metrics["_os"] && params.qstring.metrics["_os_version"]) {		
                         if(common.os_mapping[params.qstring.metrics["_os"].toLowerCase()])		
@@ -758,7 +768,13 @@ if (cluster.isMaster) {
             
                             switch (paths[3]) {
                                 case 'create':
-                                    validateUserForWriteAPI(countlyApi.mgmt.apps.createApp, params);
+                                    validateUserForWriteAPI(function(params){
+                                        if (!(params.member.global_admin)) {
+                                            common.returnMessage(params, 401, 'User is not a global administrator');
+                                            return false;
+                                        }
+                                        countlyApi.mgmt.apps.createApp(params);
+                                    }, params);
                                     break;
                                 case 'update':
                                     validateUserForWriteAPI(countlyApi.mgmt.apps.updateApp, params);

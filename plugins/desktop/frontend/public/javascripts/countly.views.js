@@ -10,7 +10,11 @@ window.DesktopDashboardView = countlyView.extend({
             "map-list-users": {id:'total', label:jQuery.i18n.map["sidebar.analytics.users"], type:'number', metric:"u"},
             "map-list-new": {id:'total', label:jQuery.i18n.map["common.table.new-users"], type:'number', metric:"n"}
         };
-		return $.when(countlyUser.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")).then(function () {});
+        var defs = [countlyUser.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
+        if(typeof window.countlyLanguage != "undefined")
+            defs.push(countlyLanguage.initialize());
+        
+		return $.when.apply($, defs).then(function () {});
     },
     afterRender: function() {
         if(countlyGlobal["config"].use_google){
@@ -145,6 +149,11 @@ window.DesktopDashboardView = countlyView.extend({
                 "title":jQuery.i18n.map["common.bar.top-users"],
                 "data":countlySession.getTopUserBars(),
                 "help":"dashboard.top-users"
+            },
+            {
+                "title":jQuery.i18n.map["common.bar.top-languages"],
+                "data":(typeof countlyLanguage != "undefined") ? countlyLanguage.getBars() : [],
+                "help":"dashboard.top-languages"
             }
         ];
 

@@ -322,7 +322,7 @@ class Manager {
 								log.e(e, e.stack);
 								reject(e);
 							}
-						});
+						}, reject);
 					}
 				});
 			});
@@ -375,7 +375,7 @@ class Manager {
 				return new RES.ResourceFaçade(job, this.files[job.name]);
 			}, 5);
 			this.resources[job.resourceName()].on(RES.EVT.CLOSED, () => {
-				log.e('all pool resources done');
+				log.w('all pool resources done');
 				delete this.resources[job.resourceName()];
 			});
 		}

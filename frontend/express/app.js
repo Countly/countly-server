@@ -10,7 +10,7 @@ var versionInfo = require('./version.info'),
     crypto = require('crypto'),
     fs = require('fs'),
     path = require('path'),
-    sharp = require('sharp'),
+    jimp = require('jimp'),
     request = require('request'),
     async = require('async'),
     stringJS = require('string'),
@@ -412,6 +412,8 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 								apps[i]["notes"] = appNotes[apps[i]["_id"]] || null;
                                 countlyGlobalApps[apps[i]["_id"]] = apps[i];
 								countlyGlobalApps[apps[i]["_id"]]["_id"] = "" + apps[i]["_id"];
+                                if (apps[i].apn) { apps[i].apn.forEach(a => a._id = '' + a._id); }
+                                if (apps[i].gcm) { apps[i].gcm.forEach(a => a._id = '' + a._id); }
                             }
 
                             countlyGlobalAdminApps = countlyGlobalApps;
@@ -923,10 +925,11 @@ app.post(countlyConfig.path+'/apps/icon', function (req, res, next) {
     plugins.callMethod("iconUpload", {req:req, res:res, next:next, data:req.body});
     fs.rename(tmp_path, target_path, function (err) {
         fs.unlink(tmp_path, function () {});
-        sharp(target_path)
-        .resize(72, 72)
-        .embed()
-        .toFile(target_path, function(err) {});
+        jimp.read(target_path, function (err, icon) {
+            if (err) console.log(err, err.stack);
+            icon.cover(72, 72)            // resize                // set JPEG quality                 // set greyscale 
+                .write(target_path); // save 
+        });
 
         res.send(countlyConfig.path+"/appimages/" + req.body.app_image_id + ".png");
     });
@@ -940,6 +943,10 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
 
     var updatedUser = {};
     if (req.body.username && req.body.api_key) {
+        if(req.body.api_key.length != 32){
+            res.send("user-settings.api-key-length");
+            return false;
+        }
         updatedUser.username = req.body["username"];
         updatedUser.api_key = req.body["api_key"];
         if (req.body.lang) {
@@ -1232,5 +1239,6 @@ app.post(countlyConfig.path+'/graphnotes/delete', function (req, res, next) {
 });
 
 countlyDb.collection('apps').ensureIndex({"key": 1}, function() {});
+countlyDb.collection('members').ensureIndex({"api_key": 1}, function() {});
 
 app.listen(countlyConfig.web.port, countlyConfig.web.host  || '');

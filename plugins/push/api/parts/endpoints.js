@@ -7,6 +7,7 @@ var common          = require('../../../../api/utils/common.js'),
     creds           = require('./credentials.js'),
     moment          = require('moment'),
     momentiso       = require('moment-isocalendar'),
+    momenttz        = require('moment-timezone'),
     N               = require('./note.js'),
     jobs            = require('../../../../api/parts/jobs'),
     plugins         = require('../../../pluginManager.js'),
@@ -84,7 +85,6 @@ var common          = require('../../../../api/utils/common.js'),
                             mon = parseInt(par[2]) - 1;
                         
                         Object.keys(e.d).forEach(d => {
-                            log.d('d', d);
                             d = parseInt(d);
                             if (yer === agy && mon === agm && d < agd) { return; }
                             if (yer === noy && mon === nom && d > nod) { return; }
@@ -107,7 +107,7 @@ var common          = require('../../../../api/utils/common.js'),
                     sent: events[0],
                     actions: events[1],
                     enabled: results[2] || 0,
-                    users: results[3] || 0,
+                    users: results[3] ? results[3] - 1 : 0,
                     geos: results[4] || [],
                     location: results[5] ? results[5].ll || null : null
                 });
@@ -148,6 +148,11 @@ var common          = require('../../../../api/utils/common.js'),
             common.returnOutput(params, {error: 'Bad message plaform "' + msg.platforms[platform] + '", only "' + N.Platform.APNS + '" (APNS) and "' + N.Platform.GCM + '" (GCM) are supported'});
             return false;
         }
+
+        if (typeof params.qstring.args.tz === 'undefined') {
+            params.qstring.args.tz = false;
+        }
+        msg.tz = params.qstring.args.tz;
 
         if (msg._id) {
             common.db.collection('messages').findOne(common.db.ObjectID(msg._id), (err, message) => {
@@ -190,29 +195,29 @@ var common          = require('../../../../api/utils/common.js'),
                         userConditions: msg.userConditions && Object.keys(msg.userConditions).length ? msg.userConditions : undefined,
                         drillConditions: msg.drillConditions && Object.keys(msg.drillConditions).length ? msg.drillConditions : undefined,
                         geo: geo ? msg.geo : undefined,
+                        tz: msg.tz,
                         test: msg.test || false
-                    });
-                    note.created = null;
+                    }), json = note.toJSON();
+                    json.created = null;
             
-                    log.d('saving message to prepare %j', note);
+                    log.d('saving message to prepare %j', json);
 
-                    common.db.collection('messages').insert(note, (err, saved) => {
+                    common.db.collection('messages').insert(json, (err, saved) => {
                         if (err || !saved || !saved.result.ok) {
                             log.e('Error while saving message: %j', err || saved);
                             common.returnMessage(params, 400, 'DB error');
                         } else {
-                            log.d('saved & building audience for message %j', note);
+                            log.d('saved & building audience for message %j', saved);
 
-                            var json = note.toJSON(),
-                                returned, 
+                            var returned, 
                                 // build timeout (return app_users count if aggregation in push:build is too slow)
                                 timeout = setTimeout(function() {
                                     if (!returned) {
                                         var query = {$or: [...new Set(
                                                 Object.keys(creds.DB_USER_MAP)
                                                     .map(k => creds.DB_USER_MAP[k])
-                                                    .filter(f => note.platforms.indexOf(f.charAt(0)) !== -1)
-                                                    .filter(f => (note.test ? ['d', 't', 'a'] : ['p']).indexOf(f.charAt(f.length - 1)) !== -1)
+                                                    .filter(f => json.platforms.indexOf(f.charAt(0)) !== -1)
+                                                    .filter(f => (json.test ? ['d', 't', 'a'] : ['p']).indexOf(f.charAt(f.length - 1)) !== -1)
                                             )].map(f => { return {[creds.DB_USER_MAP.tokens + f]: true}; })};
 
                                         if (msg.userConditions) {
@@ -235,13 +240,16 @@ var common          = require('../../../../api/utils/common.js'),
                                             }
                                         });
                                     }
-                                }, 30000);
+                                }, 3000);
 
-                            jobs.runTransient('push:build', msg).then(build => {
+                            jobs.runTransient('push:build', json).then(build => {
+                                json._id = msg._id;
                                 log.d('Scheduling message %j clear in 1 hour', msg._id);
                                 jobs.job('push:clear', {mid: msg._id}).in(3600);
 
                                 json.build = {count: build, total: build.TOTALLY};
+                                json.build.tzs = build.tzs;
+                                delete build.tzs;
                                 delete json.build.count.TOTALLY;
 
                                 if (!returned) {
@@ -251,11 +259,10 @@ var common          = require('../../../../api/utils/common.js'),
                                     common.returnOutput(params, json);
                                 }
 
-                                log.d('note id ', typeof note._id, note._id);
                                 // already returned, thus possible that message is already created
                                 // first check for message creation
                                 common.db.collection('messages').findAndModify(
-                                    {_id: note._id, 'result.status': N.Status.Preparing, created: null}, 
+                                    {_id: json._id, 'result.status': N.Status.Preparing, created: null}, 
                                     [['_id', 1]], 
                                     {$set: {build: json.build, 'result.total': json.build.total}}, 
                                     {new: true}, 
@@ -264,11 +271,11 @@ var common          = require('../../../../api/utils/common.js'),
                                         if (err) {
                                             log.e('Error while updating message with build result: %j', err);
                                         } else if (!doc || !doc.value) {
-                                            log.d('Message %j is created or cleared', note._id);
+                                            log.d('Message %j is created or cleared', json._id);
 
                                             // message is either created or already cleared, let's put build in it and initiate job if it's not deleted
                                             common.db.collection('messages').findAndModify(
-                                                {_id: note._id, 'result.status': N.Status.Preparing}, 
+                                                {_id: json._id, 'result.status': N.Status.Preparing}, 
                                                 [['_id', 1]], 
                                                 {$set: {build: json.build, 'result.total': json.build.total}}, 
                                                 {new: true}, 
@@ -276,19 +283,15 @@ var common          = require('../../../../api/utils/common.js'),
                                                     if (err) {
                                                         log.e('Error while fastsending message: %j', err);
                                                     } else if (!doc || !doc.value) {
-                                                        log.w('Message is either cleared or is in unsupported state: %j', note);
+                                                        log.w('Message is either cleared or is in unsupported state: %j', json);
 
                                                     } else if (doc.value.clear) {
                                                         log.d('Message %j is set to clear 1', msg._id);
                                                         jobs.job('push:clear', {mid: msg._id}).now();
                                                     } else {
-                                                        note = doc.value;
-                                                        log.d('Message %j is created, starting job', note._id);
-                                                        if (note.date) {
-                                                            jobs.job('push:send', {mid: note._id}).once(note.date);
-                                                        } else {
-                                                            jobs.job('push:send', {mid: note._id}).now();
-                                                        }
+                                                        json = doc.value;
+                                                        log.d('Message %j is created, starting job', json._id);
+                                                        new N.Note(json).schedule(common.db, jobs);
                                                     }
                                                 });
                                         } else if (doc && doc.value && doc.value.clear) {
@@ -301,13 +304,13 @@ var common          = require('../../../../api/utils/common.js'),
                                     });
 
                             }, error => {
-                                note.error = note.result.error = error;
-                                common.db.collection('messages').update({_id: note._id, $or: [{error: {$exists: false}}, {error: null}]}, {$set: {error: error}}, () => {});
+                                json.error = json.result.error = error;
+                                common.db.collection('messages').update({_id: json._id, $or: [{error: {$exists: false}}, {error: null}]}, {$set: {error: error}}, () => {});
 
                                 jobs.job('push:clear', {mid: msg._id}).now();
                                 if (!returned) {
                                     returned = true;
-                                    common.returnMessage(params, 500, note);
+                                    common.returnMessage(params, 500, json);
                                 }
                             });
                         }
@@ -384,7 +387,6 @@ var common          = require('../../../../api/utils/common.js'),
                 'delayWhileIdle':       { 'required': false, 'type': 'Boolean' },
                 'data':                 { 'required': false, 'type': 'Object'  },
                 'source':               { 'required': false, 'type': 'String'  },
-                'tz':                   { 'required': false, 'type': 'Boolean' },
                 'test':                 { 'required': false, 'type': 'Boolean' }
             },
             msg = {};
@@ -418,8 +420,13 @@ var common          = require('../../../../api/utils/common.js'),
             msg.messagePerLocale = undefined;
         }
 
-        if (msg.type === 'data' && !msg.data) {
+        if (msg.type === 'data' && !msg.data || !Object.keys(msg.data).length) {
             common.returnOutput(params, {error: 'Messages of type "data" must have "data" property'});
+            return false;
+        }
+
+        if (msg.type === 'data' && msg.sound) {
+            common.returnOutput(params, {error: 'Messages of type "data" cannot have sound'});
             return false;
         }
 
@@ -439,7 +446,11 @@ var common          = require('../../../../api/utils/common.js'),
         } else {
             msg.date = null;
         }
-        msg.tz = msg.tz || false;
+
+        if (typeof params.qstring.args.tz === 'undefined') {
+            params.qstring.args.tz = false;
+        }
+        msg.tz = params.qstring.args.tz;
 
         log.d('Entering message creation with %j', msg);
 
@@ -483,14 +494,12 @@ var common          = require('../../../../api/utils/common.js'),
                     return common.returnMessage(params, 400, 'Test changed after preparing message');
                 }
 
-                if (prepared.userConditions !== (msg.userConditions || "{}") && msg.userConditions && (Object.keys(prepared.userConditions).length !== Object.keys(msg.userConditions).length || 
-                    Object.keys(prepared.userConditions).filter(k => prepared.userConditions[k] !== msg.userConditions[k]).length)) {
+                if ((msg.userConditions || prepared.userConditions) && JSON.stringify(msg.userConditions || {}) !== (prepared.userConditions || '{}')) {
                     log.d('userConditions in prepared message %j is not equal to current %j', prepared.userConditions, msg.userConditions);
                     return common.returnMessage(params, 400, 'userConditions changed after preparing message');
                 }
 
-                if (prepared.drillConditions !== (msg.drillConditions || "{}") && msg.drillConditions && (Object.keys(prepared.drillConditions).length !== Object.keys(msg.drillConditions).length || 
-                    Object.keys(prepared.drillConditions).filter(k => prepared.drillConditions[k] !== msg.drillConditions[k]).length)) {
+                if ((msg.drillConditions || prepared.drillConditions) && JSON.stringify(msg.drillConditions || {}) !== (prepared.drillConditions || '{}')) {
                     log.d('drillConditions in prepared message %j is not equal to current %j', prepared.drillConditions, msg.drillConditions);
                     return common.returnMessage(params, 400, 'drillConditions changed after preparing message');
                 }
@@ -518,8 +527,10 @@ var common          = require('../../../../api/utils/common.js'),
                 geo: geo ? msg.geo : undefined,
                 test: msg.test || false,
                 date: msg.date || new Date(),
-                tz: msg.tz || false
+                tz: msg.tz
             });
+
+            note.date = momenttz(note.date).utc().toDate();
 
             if (prepared) {
                 note.result.status = N.Status.Preparing;
@@ -542,13 +553,9 @@ var common          = require('../../../../api/utils/common.js'),
                             common.returnMessage(params, 400, 'Already created or cleared');
                         } else {
                             if (doc.value.build) {
-                                log.d('Build finished, starting job');
-                                // build already finished, lets schedule the job
-                                if (note.date) {
-                                    jobs.job('push:send', {mid: note._id}).once(note.date);
-                                } else {
-                                    jobs.job('push:send', {mid: note._id}).now();
-                                }
+                                note.build = doc.value.build;
+                                log.d('Build finished, scheduling job with build %j', note.build);
+                                note.schedule(common.db, jobs);
                             } else {
                                 log.d('Build is not finished yet for message %j', doc.value);
                             }
@@ -566,20 +573,20 @@ var common          = require('../../../../api/utils/common.js'),
                     if (build.TOTALLY === 0) {
                         common.returnMessage(params, 400, 'No audience');
                     } else {
-                        note.build = build;
+                        note.build = {count: build, total: build.TOTALLY};
                         note.result.total = build.TOTALLY;
+                        note.build.tzs = build.tzs;
+
+                        delete build.tzs;
+                        delete note.build.count.TOTALLY;
+
                         common.db.collection('messages').save(note, (err) => {
                             if (err) {
                                 log.e('Error while saving message: %j', err);
                                 common.returnMessage(params, 500, 'DB error');
                             } else {
                                 common.returnOutput(params, note);
-                                log.d('Scheduling push job on date %j', msg.date);
-                                if (note.date) {
-                                    jobs.job('push:send', {mid: note._id}).once(msg.date);
-                                } else {
-                                    jobs.job('push:send', {mid: note._id}).now();
-                                }
+                                note.schedule(common.db, jobs);
                             }
                         });
                     }
@@ -669,71 +676,6 @@ var common          = require('../../../../api/utils/common.js'),
                     common.returnOutput(params, {error: err});
                 });
                 jobs.job('push:clear', {cid: credentials._id}).in(3600);
-            }
-        });
-
-        return true;
-    };
-
-    api.updateApp = function(params) {
-         var argProps = {
-                'gcm.key':  { 'required': false, 'type': 'String' }
-            },
-            updatedApp = {}, $unset = {};
-
-        if (!(updatedApp = common.validateArgs(params.qstring.args, argProps))) {
-            common.returnOutput(params, {error: 'Invalid arguments provided'});
-            return false;
-        }
-
-        if (Object.keys(updatedApp).length === 0) {
-            common.returnMessage(params, 200, 'Nothing changed');
-            return true;
-        }
-
-        if (!updatedApp['gcm.key']) {
-            $unset['gcm.key'] = true;
-        }
-
-        var update = {$set: updatedApp};
-        for (var k in $unset) update.$unset = $unset;
-
-        common.db.collection('apps').findOne(common.db.ObjectID(params.qstring.args.app_id), function(err, app){
-            if (err || !app) common.returnMessage(params, 404, 'App not found');
-            else {
-                var needToCheckGCM = updatedApp['gcm.key'] && (!app.gcm || !app.gcm.key || app.gcm.key != updatedApp['gcm.key']);
-
-                if (params.member && params.member.global_admin) {
-                    common.db.collection('apps').findAndModify({_id: common.db.ObjectID(params.qstring.args.app_id)}, [['_id', 1]], update, {new:true}, function(err, new_app){
-                        if (err || !new_app || !new_app.ok) {
-                            common.returnMessage(params, 404, 'App not found');
-                        } else if (needToCheckGCM) {
-                            checkGCM(params, new_app.value);
-                            plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_app.value}});
-                        } else {
-                            plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_app.value}});
-                            common.returnOutput(params, new_app.value);
-                        }
-                    });
-                } else {
-                    common.db.collection('members').findOne({'_id': params.member._id}, {admin_of: 1}, function(err, member){
-                        if (member.admin_of && member.admin_of.indexOf(params.qstring.args.app_id) !== -1) {
-                            common.db.collection('apps').findAndModify({_id: common.db.ObjectID(params.qstring.args.app_id)}, [['_id', 1]], update, {new:true}, function(err, new_app){
-                                if (err || !new_app || !new_app.ok) {
-                                    common.returnMessage(params, 404, 'App not found');
-                                } else if (needToCheckGCM) {
-                                    checkGCM(params, new_app.value);
-                                    plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_app.value}});
-                                } else {
-                                    plugins.dispatch("/systemlogs", {params:params, action:"push_credentials_update", data:{app_id:params.qstring.args.app_id, before:app, update:new_app.value}});
-                                    common.returnOutput(params, new_app.value);
-                                }
-                            });
-                        } else {
-                            common.returnMessage(params, 401, 'User does not have admin rights for this app');
-                        }
-                    });
-                }
             }
         });
 
@@ -876,28 +818,56 @@ var common          = require('../../../../api/utils/common.js'),
     };
 
 
-    api.appUpdate = function(ob) {
+    api.appCreateUpdate = function(ob) {
         var args = ob.params.qstring.args;
         if (typeof args === 'object') {
-            var update = {$set: {}};
+            var update = {$set: {}}, appObj = ob.data.update || ob.data;
             if (args.apn) { 
                 update.$set.apn = args.apn; 
-                ob.data.update.apn = args.apn; 
+                appObj.apn = args.apn; 
             } else { 
                 update.$unset = {apn: 1};
             }
             if (args.gcm) { 
                 update.$set.gcm = args.gcm; 
-                ob.data.update.gcm = args.gcm; 
+                appObj.gcm = args.gcm; 
             } else {
                 if (!update.$unset) { update.$unset = {}; }
                 update.$unset.$gcm = 1;
             }
 
             Object.keys(update.$set).forEach(p => update.$set[p].forEach(cred => cred._id = common.db.ObjectID(cred._id)));
+            if (!Object.keys(update.$set).length) { delete update.$set; }
             
-            log.d('App update query: %j, data %j', update, ob.data.update);
-            common.db.collection('apps').updateOne({_id: common.db.ObjectID(args.app_id)}, update, log.logdb('updating app with credentials'));
+            log.d('App %j update query: %j, data %j', ob.appId, update, appObj);
+            common.db.collection('apps').findAndModify(
+                {_id: typeof ob.appId === 'string' ? common.db.ObjectID(ob.appId) : ob.appId}, 
+                [['_id', 1]], 
+                update, 
+                {new: false}, 
+                (err, doc) => {
+                    if (err) {
+                        log.e('Error while updating app with push credentials', err, err.stack);
+                    } else if (!doc.value) {
+                        log.w('App not found while updating push credentials');
+                    } else {
+                        var old = [], neo = [];
+                        (doc.value.apn || []).concat(doc.value.gcm || []).forEach(cred => old.push('' + cred._id));
+                        if (update.$set) Object.keys(update.$set).forEach(p => update.$set[p].forEach(cred => neo.push('' + cred._id)));
+
+                        log.d('Neo %j, old %j', neo, old);
+                        var todel = old.filter(_id => neo.indexOf(_id) === -1);
+                        if (todel.length) {
+                            log.d('Deleting unused credentials: %j', todel);
+                            common.db.collection('credentials').remove({_id: {$in: todel}}, function(err){
+                                if (err) {
+                                    log.e('Error while deleting unused credentials: ', err, err.stack);
+                                }
+                            });
+                        }
+                    }
+                });
+            // common.db.collection('apps').updateOne({_id: common.db.ObjectID(args.app_id)}, update, log.logdb('updating app with credentials'));
         }
         return false;
     };
@@ -987,24 +957,6 @@ var common          = require('../../../../api/utils/common.js'),
 
         return authorized;
     }
-
-    function checkGCM(params, app) {
-        api.check('' + app._id, 'a', false, function(ok){
-            if (!ok) {
-                common.returnOutput(params, {error: 'Invalid GCM key'});
-            } else {
-                common.returnOutput(params, app);
-            }
-        });
-    }
-
-    api.APNCertificateFile = function(appId, test) {
-        return appId + (typeof test === 'undefined' ? '' : test ? '.test' : '.prod') + '.p12';
-    };
-
-    api.APNCertificatePath = function(appId, test) {
-        return __dirname + '/../../../../frontend/express/certificates/' + api.APNCertificateFile(appId, test);
-    };
 
 }(api));
 

@@ -56,10 +56,9 @@ window.component('push', function(push) {
 		this.type = m.prop(data.type || push.C.TYPE.MESSAGE);
 		this.apps = buildClearingProp(data.apps || []);
 		this.platforms = buildClearingProp(data.platforms || []);
-		this.date = m.prop(data.date);
 		this.sent = m.prop(data.sent);
-		this.sound = vprop(data.sound || 'default', function(v){ return !!v; }, t('pu.po.tab2.extras.sound.invalid'));
-		this.badge = vprop(data.badge, function(v){ return v && (v + '') === (parseInt(v) + ''); }, t('pu.po.tab2.extras.badge.invalid'));
+		this.sound = vprop(data.sound, function(v){ return !!v; }, t('pu.po.tab2.extras.sound.invalid'));
+		this.badge = vprop(data.badge, function(v){ return v === undefined || (v + '') === (parseInt(v) + ''); }, t('pu.po.tab2.extras.badge.invalid'));
 		this.url = vprop(data.url, function(v){ return v && URL_REGEXP.test(v); }, t('pu.po.tab2.extras.url.invalid'));
 		this.data = vprop(typeof data.data === 'object' ? JSON.stringify(data.data) : data.data, function(v){
 			try {
@@ -71,9 +70,9 @@ window.component('push', function(push) {
 		}, t('pu.po.tab2.extras.data.invalid'));
 		this.test = buildClearingProp(typeof data.test === 'undefined' ? false : data.test);
 
-		this.userConditions = buildClearingProp(data.userConditions === '{}' ? undefined : data.userConditions);
-		this.drillConditions = buildClearingProp(data.drillConditions === '{}' ? undefined : data.drillConditions);
-		this.geo = buildClearingProp(data.geo || '');
+		this.userConditions = buildClearingProp(data.userConditions === '{}' ? undefined : typeof data.userConditions === 'string' ? JSON.parse(data.userConditions) : data.userConditions);
+		this.drillConditions = buildClearingProp(data.drillConditions === '{}' ? undefined : typeof data.drillConditions === 'string' ? JSON.parse(data.drillConditions) : data.drillConditions);
+		this.geo = buildClearingProp(data.geo || undefined);
 
 		this.count = m.prop();
 		this.locales = m.prop(data.locales || []);
@@ -103,24 +102,34 @@ window.component('push', function(push) {
 			this.platforms(this.availablePlatforms());
 		}
 
+		if (this.apps().length && this.platforms().length) {
+			var av = this.availablePlatforms();
+			this.platforms(this.platforms().filter(function(p){ return av.indexOf(p) !== -1; }));
+		}
+
 		this.schedule = m.prop(false);
 
 		this.ack = m.prop(false);
+
+		this._id(data._id);
+		this.locales(data.locales || []);
+		this.count(data.count);
 		
 		this.remotePrepare = function(onFullBuild) {
+			var data = new FormData();
+			data.append('args', JSON.stringify(this.toJSON(true)));
+
 			return m.request({
-				method: 'GET',
-				url: window.countlyCommon.API_URL + '/i/pushes/prepare',
-				data: {
-					api_key: window.countlyGlobal.member.api_key,
-					args: JSON.stringify(this.toJSON(true))
-				}
+				method: 'POST',
+				url: window.countlyCommon.API_URL + '/i/pushes/prepare?api_key=' + window.countlyGlobal.member.api_key,
+				data: data,
+				serialize: function(data) { return data; }
 			}).then(function(data){
 				this.setBuild(data);
 				if (data.build && data.build.count) {
 					if (onFullBuild) { onFullBuild(); }
 				} else if (this._id()) {
-					setTimeout(this.remotePrepare.bind(this, onFullBuild), 1000);
+					setTimeout(this.remotePrepare.bind(this, onFullBuild), 2000);
 				}
 			}.bind(this));
 		};
@@ -132,6 +141,7 @@ window.component('push', function(push) {
 				userConditions: this.userConditions(),
 				drillConditions: this.drillConditions(),
 				geo: this.geo(),
+				tz: this.tz(),
 				test: this.test()
 			};
 			if (includeId) {
@@ -145,7 +155,7 @@ window.component('push', function(push) {
 				obj.badge = this.badge();
 				obj.url = this.url();
 				obj.source = 'dash';
-				obj.tz = this.tz();
+				obj.date = this.date();
 
 				if (this.data()) {
 					obj.data = typeof this.data() === 'string' ? JSON.parse(this.data()) : this.data();
@@ -162,13 +172,14 @@ window.component('push', function(push) {
 		};
 
 		this.remoteCreate = function() {
+			var data = new FormData();
+			data.append('args', JSON.stringify(this.toJSON(true, true)));
+
 			return m.request({
-				method: 'GET',
-				url: window.countlyCommon.API_URL + '/i/pushes/create',
-				data: {
-					api_key: window.countlyGlobal.member.api_key,
-					args: JSON.stringify(this.toJSON(true, true))
-				}
+				method: 'POST',
+				url: window.countlyCommon.API_URL + '/i/pushes/create?api_key=' + window.countlyGlobal.member.api_key,
+				data: data,
+				serialize: function(data) { return data; }
 			}).then(function(resp){
 				if (resp.error) { throw resp.error; }
 				return resp;
@@ -243,8 +254,8 @@ window.component('push', function(push) {
 			}
 		};
 
-		this.date = m.prop(data.date || null);
-		this.tz = m.prop(data.tz || false);
+		this.date = m.prop(typeof data.date === 'string' ? new Date(data.date) : data.date || null);
+		this.tz = buildClearingProp(typeof data.tz === 'undefined' ? false : data.tz);
 		this.created = m.prop(data.created || null);
 		this.sent = m.prop(data.sent || null);
 		this.dates = function() {
@@ -257,7 +268,7 @@ window.component('push', function(push) {
 			    dates.date = moment(this.date()).format("D MMM, YYYY HH:mm");
 			    dates.dateSeconds = moment(this.date()).unix();
 			}
-			if (this.sent()) {
+			if (this.sent() && !this.result.sending()) {
 			    dates.sent = moment(this.sent()).format("D MMM, YYYY HH:mm");
 			    dates.dateSeconds = moment(this.sent()).unix();
 			}
@@ -281,13 +292,22 @@ window.component('push', function(push) {
 		this.actioned = m.prop(data.actioned || 0);
 		this.error = m.prop(data.error);
 		this.errorCodes = m.prop(data.errorCodes);
+		this.nextbatch = m.prop(data.nextbatch);
 
 		this.percentSent = function() {
-			return this.total() === 0 ? 0 : Math.min(100, +(100 * this.sent() / (this.found() - (this.processed() - this.sent()))).toFixed(2));
+			return this.total() === 0 ? 0 : Math.min(100, +(100 * this.sent() / (this.total() - (this.processed() - this.sent()))).toFixed(2));
 		};
 
 		this.sending = function() {
-			return (this.status() & 4) > 0 && (this.status() & (16 | 32)) === 0;
+			return ((this.status() & 4) > 0 || this.scheduled()) && (this.status() & (16 | 32)) === 0;
+		};
+
+		this.scheduled = function() {
+			return (this.status() & 2) > 0 && (this.status() & (16 | 32)) === 0;
+		};
+
+		this.isSent = function() {
+			return (this.status() & 8) > 0;
 		};
 	};
 
@@ -306,7 +326,13 @@ window.component('push', function(push) {
 				return data;
 			});
 		} else {
-			return Promise.resolve(push.dashboard);
+			var deferred = m.deferred();
+			setTimeout(function(){
+				m.startComputation();
+				deferred.resolve(push.dashboard);
+				m.endComputation();
+			});
+			return deferred.promise;
 		}
 	};
 

@@ -11,35 +11,48 @@ window.component('push.dash', function(dash) {
 		this.period = m.prop('monthly');
 		this.source = m.prop('dash');
 		this.messages = m.prop([]);
-		this.data = m.prop();
+		var dt = m.prop({
+			users: 0,
+			enabled: 0,
+			geos: [],
+			location: null,
+			sent: {monthly: {data: [], keys: [], total: 0}, weekly: {data: [], keys: [], total: 0}},
+			actions: {monthly: {data: [], keys: [], total: 0}, weekly: {data: [], keys: [], total: 0}},
+		})
+		this.data = function(){
+			if (arguments.length){
+				var data = arguments[0];
+				if (data) {
+					['sent', 'actions'].forEach(function(ev) {
+						ev = data[ev];
 
-		components.push.remoteDashboard(this.app_id).then(function(data){
-			m.startComputation();
-			['sent', 'actions'].forEach(function(ev) {
-				ev = data[ev];
+						['weekly', 'monthly'].forEach(function(period){
+							if (typeof ev[period].total !== 'undefined') {
+								return;
+							}
 
-				['weekly', 'monthly'].forEach(function(period){
-					if (period === 'weekly') {
-						period = ev[period];
-						
-						var len = Math.floor(period.data.length / 2);
-						period.data = period.data.slice(len);
-						period.keys = period.keys.slice(len);
-					} else {
-						period = ev[period];
-					}
+							if (period === 'weekly') {
+								period = ev[period];
+								
+								var len = Math.floor(period.data.length / 2);
+								period.data = period.data.slice(len);
+								period.keys = period.keys.slice(len);
+							} else {
+								period = ev[period];
+							}
 
-					period.total = period.data.reduce(function(a, b){ return a + b; });
-				});
-			});
-			// data.sent.weekly.total = data.sent.weekly
-			// data.sent.weekly.data.splice(Math.floor(data.sent.weekly.data.length / 2));
-			// data.sent.weekly.keys.splice(Math.floor(data.sent.weekly.keys.length / 2));
-			// data.actions.weekly.data.splice(Math.floor(data.actions.weekly.data.length / 2));
-			// data.actions.weekly.keys.splice(Math.floor(data.actions.weekly.keys.length / 2));
-			this.data(data);
-			m.endComputation();
-		}.bind(this), console.log);
+							period.total = period.data.reduce(function(a, b){ return a + b; });
+						});
+					});
+					dt(data);
+				}
+			}
+			return dt();
+		};
+
+		setTimeout(function(){
+			components.push.remoteDashboard(this.app_id).then(this.data, console.log);
+		}.bind(this), 1);
 
 		this.dataDP = function(){
 			return {
@@ -113,19 +126,11 @@ window.component('push.dash', function(dash) {
 						$(nRow).attr('mid', aData._id());
 					},
 					aoColumns: [
-						{ mData: unprop.bind(null, 'messagePerLocale.default', ''), sName: 'message', mRender: CountlyHelpers.clip(), sTitle: t('pu.t.message') },
+						{ mData: unprop.bind(null, 'messagePerLocale.default', ''), sName: 'message', mRender: CountlyHelpers.clip(null, t('push.no-message')), sTitle: t('pu.t.message') },
 						{ mData: function(x){ return x.appNames().join(', '); }, sName: 'apps', sType: 'string', mRender: CountlyHelpers.clip(), sTitle: t('pu.t.apps'), bSearchable: false },
 						{ mData: unprop.bind(null, 'result'), sName: 'status', sType: 'string', mRender:function(d, type, result) { 
 							result = result.result;
-							if (result.sending() && result.found) {
-								return '<div class="bar" data-desc="' + d + '%">' +
-										 '<div class="bar-inner" style="width:' + result.percentSent() + '%;" data-item="' + result.percentSent() + '%"></div>' +
-										 '<div class="bar-inner" style="width:' + (100 - result.percentSent()) + '%;" data-item="' + (100 - result.percentSent()) + '%"></div> ' +
-									 '</div>' +
-									 '<div class="percent-text">' + t.p('push.count.sending', result.percentSent(), result.total() - (result.processed() - result.sent())) + '</div>';
-							} else {
-								return '<span>' + t('push.message.status.' + result.status()) + '</span>';
-							}
+							return '<span>' + t('push.message.status.' + result.status()) + '</span>';
 						}, sTitle: t('pu.t.status'), bSearchable: false },
 						{ mData: unprop.bind(null, 'dates.createdSeconds'), bVisible: false, sType: 'numeric', bSearchable: false },
 						{ mData: unprop.bind(null, 'dates.created'), sName: 'created', sType: 'date', iDataSort: 3, sTitle: t('pu.t.created'), mRender: function(x){ return x.dates().created; }, bSearchable: false},
@@ -159,7 +164,10 @@ window.component('push.dash', function(dash) {
 		}.bind(this);
 
 		this.refresh = function(){
-			this.dtable.fnDraw(false);
+			if (this.dtable) {
+				this.dtable.fnDraw(false);
+			}
+			components.push.remoteDashboard(this.app_id).then(this.data, console.log);
 		}.bind(this);
 
 		this.message = function(ev) {
@@ -168,21 +176,7 @@ window.component('push.dash', function(dash) {
 		};
 	};
 	dash.view = function(ctrl){
-		if (!ctrl.data()) {
-			return m('.push-overview');
-		}
 		return m('.push-overview', [
-			m('input[type=file]', {onchange: function(ev){
-				var file;
-				if ((file = ev.target.files[0])) {
-					var reader = new window.FileReader();
-					reader.addEventListener('load', function(){
-						components.push.remoteValidate('a', 'gcm', 'AIzaSyA2lKRYR6x4MoMyJG_sMQ8XBpN_ksAI-ng', '');
-						// components.push.remoteValidate('i', 'apn_universal', reader.result, 'aaaa1111');
-					});
-					reader.readAsDataURL(file);
-				}
-			}}),
 
 			m.component(components.widget, {
 				header: {
@@ -192,8 +186,8 @@ window.component('push.dash', function(dash) {
 				footer: {
 					config: {class: 'condensed'},
 					bignumbers: [
-						{title: 'pu.dash.users.total', number: ctrl.data().users || 0},
-						{title: 'pu.dash.users.enabl', number: ctrl.data().enabled || 0},
+						{title: 'pu.dash.users.total', number: ctrl.data().users || 0, help: 'help.dashboard.total-users'},
+						{title: 'pu.dash.users.enabl', number: ctrl.data().enabled || 0, help: 'help.dashboard.messaging-users'},
 					]
 				}
 			}),
@@ -206,7 +200,7 @@ window.component('push.dash', function(dash) {
 						opts: {value: ctrl.period, options: [
 							{value: 'weekly', title: t('pu.dash.weekly')},
 							{value: 'monthly', title: t('pu.dash.monthly')}
-						]}
+						], legacy: true}
 					}
 				},
 				content: {
@@ -214,8 +208,8 @@ window.component('push.dash', function(dash) {
 				},
 				footer: {
 					bignumbers: [
-						{title: 'pu.dash.metrics.sent', number: ctrl.data() ? ctrl.data().sent[ctrl.period()].total : 0, color: true},
-						{title: 'pu.dash.metrics.acti', number: ctrl.data() ? ctrl.data().actions[ctrl.period()].total : 0, color: true},
+						{title: 'pu.dash.metrics.sent', number: ctrl.data() ? ctrl.data().sent[ctrl.period()].total : 0, color: true, help: 'help.dashboard.push.sent'},
+						{title: 'pu.dash.metrics.acti', number: ctrl.data() ? ctrl.data().actions[ctrl.period()].total : 0, color: true, help: 'help.dashboard.push.actions'},
 					]
 				}
 			}),
@@ -229,7 +223,7 @@ window.component('push.dash', function(dash) {
 							{value: '', title: t('pu.dash.messages.all')},
 							{value: 'api', title: t('pu.dash.messages.api')},
 							{value: 'dash', title: t('pu.dash.messages.dash')}
-						], onchange: ctrl.refresh}
+						], onchange: ctrl.refresh, legacy: true}
 					}
 				},
 				content: {
@@ -253,9 +247,30 @@ window.MessagingDashboardView = countlyView.extend({
 			this.div = $('<div />').appendTo($(this.el))[0];
 			this.mounted = m.mount(this.div, components.push.dash);
 		}
+		setTimeout(function(){
+			if ($("#help-toggle").hasClass("active")) {
+			    $('.help-zone-vb').tipsy({gravity:$.fn.tipsy.autoNS, trigger:'manual', title:function () {
+			        return ($(this).data("help")) ? $(this).data("help") : "";
+			    }, fade:true, offset:5, cssClass:'yellow', opacity:1, html:true});
+			    $('.help-zone-vs').tipsy({gravity:$.fn.tipsy.autoNS, trigger:'manual', title:function () {
+			        return ($(this).data("help")) ? $(this).data("help") : "";
+			    }, fade:true, offset:5, cssClass:'yellow narrow', opacity:1, html:true});
+
+			    $.idleTimer('destroy');
+			    clearInterval(self.refreshActiveView);
+			    $(".help-zone-vs, .help-zone-vb").hover(
+			        function () {
+			            $(this).tipsy("show");
+			        },
+			        function () {
+			            $(this).tipsy("hide");
+			        }
+			    );
+			}
+		}, 500);
 	},
 	refresh: function() {
-		if (this.mounted) { this.mounted.refresh(); }
+		if (this.mounted) { this.mounted.refresh(true); }
 	},
 
     destroy: function () {

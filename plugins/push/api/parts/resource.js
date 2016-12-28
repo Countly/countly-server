@@ -10,7 +10,7 @@ class Connection extends res.Resource {
 		super(_id, name);
 		log.d('[%d]: Initializing push resource with %j / %j / %j', process.pid, _id, name, credentials);
 		if (credentials.platform === 'i') {
-			this.connection = new APN.ConnectionResource(credentials.key, credentials.secret || '', credentials.topic || '', credentials.expiration || '', credentials.host);
+			this.connection = new APN.ConnectionResource(credentials.key, credentials.secret || '', credentials.bundle || '', credentials.expiration || '', credentials.host);
 		} else if (credentials.platform === 'a') {
 			this.connection = new GCM.ConnectionResource(credentials.key);
 		} else {

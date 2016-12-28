@@ -21,11 +21,10 @@
 #include <openssl/x509v3.h>
 
 #define H2_QUEUE_SIZE 10000
-#define H2_SENDING_BATCH_SIZE 200
-#define H2_STATUSES_BATCH_SIZE 200
+#define H2_SENDING_BATCH_SIZE 500
+#define H2_STATUSES_BATCH_SIZE 500
 #define H2_TIMEOUT 30000
 #define H2_PING_TIMEOUT 3000
-#define H2_SOCKET_FLUSH_BYTES 1024
 #define H2_MAX_EOFS 3
 static std::string H2_APN_PATH("/3/device/");
 

@@ -1,6 +1,6 @@
 {
   "name": "countly-server",
-  "version": "16.6.0",
+  "version": "16.12.0",
   "description": "innovative, real-time, open source mobile analytics application",
   "keywords": [
     "analytics",
@@ -23,7 +23,7 @@
     "grunt-contrib-uglify": "2.0.0",
     "mocha": ">=1.20.0",
     "grunt-mocha-test": "0.13.2",
-    "should": "11.1.1",
+    "should": "11.1.2",
     "supertest": "2.0.1"
   },
   "scripts": {
@@ -34,7 +34,7 @@
     "colors": "^1.1.2",
     "connect-flash": "0.1.1",
     "connect-mongoskin": "0.1.2",
-    "ejs": "2.5.3",
+    "ejs": "2.5.5",
     "express": "4.14.0",
     "express-expose": "0.3.4",
     "cookie-parser": "1.4.3",
@@ -45,14 +45,14 @@
     "basic-auth": "1.1.0",
     "body-parser": "1.15.2",
     "geoip-lite": "1.1.8",
-    "sharp": "0.16.2",
+    "jimp": "0.2.27",
     "later": "^1.1.6",
     "moment": "1.7.2",
     "moment-isocalendar": "0.1.0",
-    "moment-timezone": "0.5.10",
-    "mongodb": "2.2.12",
+    "moment-timezone": "0.5.11",
+    "mongodb": "2.2.16",
     "mongoskin": "2.1.0",
-    "nodemailer": "2.6.4",
+    "nodemailer": "2.7.0",
     "nodemailer-smtp-transport": "2.7.2",
     "nodemailer-smtp-pool": "2.8.2",
     "nodemailer-sendmail-transport": "1.0.0",
@@ -65,7 +65,9 @@
     "properties-parser":"0.3.1",
     "external-ip":"0.2.4",
     "escape-html":"1.0.3",
-    "bluebird":"3.4.6"
+    "bluebird":"3.4.7",
+    "mcc-mnc-list":"1.0.59",
+    "yamljs":"0.2.8"
   },
   "jshintConfig": {
     "esversion": 6,

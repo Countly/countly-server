@@ -11,6 +11,8 @@ console.log('Installing push plugin');
 console.log('Creating certificates directory');
 var dir = path.resolve(__dirname, '');
 fs.mkdir(dir+'/../../frontend/express/certificates', function(){});
+fs.unlink(dir+'/frontend/public/javascripts/countly.models.js', function(){});
+fs.unlink(dir+'/api/jobs/check.js', function(){});
 
 console.log('Adding messages indexes');
 db.collection('messages').ensureIndex({'apps': 1, deleted: 1}, function(){
@@ -24,6 +26,31 @@ db.collection('messages').ensureIndex({'apps': 1, deleted: 1}, function(){
 		function upgrade(app, done){
 			var cnt = 0;
 			console.log('Adding push token indexes to ' + app.name);
+
+			// db.apps.find().forEach(function(app){
+			// 	print(app._id + ': 0 of 10');
+			// 	db.getCollection('app_users' + app._id).update({'tk.ip': {$exists: true}}, {$set: {tkip: true}}, {multi: true});
+			// 	print(app._id + ': 1 of 10');
+			// 	db.getCollection('app_users' + app._id).update({'tk.ia': {$exists: true}}, {$set: {tkia: true}}, {multi: true});
+			// 	print(app._id + ': 2 of 10');
+			// 	db.getCollection('app_users' + app._id).update({'tk.id': {$exists: true}}, {$set: {tkid: true}}, {multi: true});
+			// 	print(app._id + ': 3 of 10');
+			// 	db.getCollection('app_users' + app._id).update({'tk.ap': {$exists: true}}, {$set: {tkap: true}}, {multi: true});
+			// 	print(app._id + ': 4 of 10');
+			// 	db.getCollection('app_users' + app._id).update({'tk.at': {$exists: true}}, {$set: {tkat: true}}, {multi: true});
+			// 	print(app._id + ': 5 of 10');
+			// 	db.getCollection('app_users' + app._id).ensureIndex({'tkip': 1}, {sparse: true});
+			// 	print(app._id + ': 6 of 10');
+			// 	db.getCollection('app_users' + app._id).ensureIndex({'tkia': 1}, {sparse: true});
+			// 	print(app._id + ': 7 of 10');
+			// 	db.getCollection('app_users' + app._id).ensureIndex({'tkid': 1}, {sparse: true});
+			// 	print(app._id + ': 8 of 10');
+			// 	db.getCollection('app_users' + app._id).ensureIndex({'tkap': 1}, {sparse: true});
+			// 	print(app._id + ': 9 of 10');
+			// 	db.getCollection('app_users' + app._id).ensureIndex({'tkat': 1}, {sparse: true});
+			// 	print(app._id + ': 10 of 10');
+			// });
+
 			function cb(){
 				cnt++;
 				if (cnt == 12) {
@@ -58,7 +85,7 @@ db.collection('messages').ensureIndex({'apps': 1, deleted: 1}, function(){
 						cb();
 					});
 				});
-			} else if (typeof app.gcm !== 'object' || !app.gcm.length) {
+			} else if (app.gcm && (typeof app.gcm !== 'object' || !app.gcm.length)) {
 				db.collection('apps').updateOne({_id: app._id}, {$unset: {gcm: 1}}, cb);
 			} else {
 				cb();
@@ -89,7 +116,7 @@ db.collection('messages').ensureIndex({'apps': 1, deleted: 1}, function(){
 						});
 					}
 				});
-			} else if (typeof app.apn !== 'object' || !app.apn.length) {
+			} else if (app.apn && (typeof app.apn !== 'object' || !app.apn.length)) {
 				db.collection('apps').updateOne({_id: app._id}, {$unset: {apn: 1}}, cb);
 			} else {
 				cb();

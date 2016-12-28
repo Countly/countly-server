@@ -17,7 +17,7 @@ window.component('segmented', function(segmented) {
 		this.id = 'comp-segmented-' + count++;
 	};
 	segmented.view = function(ctrl){
-		return m('.comp-segmented' + (ctrl.opts.class ? '.' + ctrl.opts.class : ''), ctrl.options().map(function(o){
+		return m(ctrl.opts.legacy ? '.button-selector.btn-header' : '.comp-segmented' + (ctrl.opts.class ? '.' + ctrl.opts.class : ''), ctrl.options().map(function(o){
 			var opts = {name: ctrl.id, 
 				'data-value': o.value(), 
 				onclick: function() {
@@ -30,7 +30,7 @@ window.component('segmented', function(segmented) {
 				opts.class = 'active';
 			}
 
-			return m('.comp-segmented-option', opts, o.view ? o.view() : o.title());
+			return m(ctrl.opts.legacy ? '.button' : '.comp-segmented-option', opts, o.view ? o.view() : o.title());
 		}));
 	};
 });

@@ -535,6 +535,11 @@ var pluginManager = function pluginManager(){
     };
     
     this.dbConnection = function(config) {
+        if (process.argv[1].endsWith('executor.js') && (!config || !config.mongodb || config.mongodb.max_pool_size !== 1)) {
+            console.log('************************************ executor.js common.db ***********************************', process.argv);
+            return this.singleDefaultConnection();
+        }
+            
         var db;
         if(typeof config == "string"){
             db = config;
@@ -542,7 +547,7 @@ var pluginManager = function pluginManager(){
         }
         else
             config = config || JSON.parse(JSON.stringify(countlyConfig));
-            
+
         var dbName;
         var dbOptions = {
             server:{poolSize: config.mongodb.max_pool_size, reconnectInterval: 100, socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 1, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
@@ -597,26 +602,46 @@ var pluginManager = function pluginManager(){
         
         //overwrite some methods
         countlyDb._collection = countlyDb.collection;
-        countlyDb.collection = function(name, options, callback){
+        countlyDb.collection = function(collection, options, callback){
+            
+            function copyArguments(arg, name){
+                var data = {};
+                data.name = name || arg.callee;
+                data.args = [];
+                for(var i = 0; i < arg.length; i++){
+                    data.args.push(arg[i]);
+                }
+                return data;
+            }
             
             //get original collection object
-            var ob = this._collection(name, options, callback);
+            var ob = this._collection(collection, options, callback);
             
             //overwrite with retry policy
-            var retryifNeeded = function(callback, retry, e){
+            var retryifNeeded = function(callback, retry, e, data){
                 return function(err, res){
                     if(err){
-                        logDbWrite.e("Error writing %j", err);
-                        if(e)
-                            logDbWrite.e(e.stack)
                         if(retry && err.code == 11000){
-                            if(typeof retry === "function")
+                            if(typeof retry === "function"){
+                                logDbWrite.d("Retrying writing "+collection+" %j", data);
                                 retry();
-                            else
-                                logDbWrite.d("Retry failed");
+                            }
+                            else{
+                                logDbWrite.e("Error writing "+collection+" %j %s %j", data, err, err);
+                                if(e)
+                                    logDbWrite.e(e.stack)
+                                if(callback){
+                                    callback(err, res);
+                                }
+                            }
                         }
-                        else if(callback){
-                            callback(err, res);
+                        else{
+                            logDbWrite.e("Error writing "+collection+" %j %s %j", data, err, err);
+                            if(e)
+                                logDbWrite.e(e.stack)
+                            if(callback){
+                                callback(err, res);
+                            }
                         }
                     }
                     else if(callback){
@@ -634,22 +659,22 @@ var pluginManager = function pluginManager(){
                 }
                 if(typeof options === "function"){
                     //options was not passed, we have callback
-                    logDbWrite.d("findAndModify %j %j %j"+at, query, sort, doc);
-                    this._findAndModify(query, sort, doc, retryifNeeded(options, null, e));
+                    logDbWrite.d("findAndModify "+collection+" %j %j %j"+at, query, sort, doc);
+                    this._findAndModify(query, sort, doc, retryifNeeded(options, null, e, copyArguments(arguments, "findAndModify")));
                 }
                 else{
                     //we have options
-                    logDbWrite.d("findAndModify %j %j %j %j"+at, query, sort, doc, options);
+                    logDbWrite.d("findAndModify "+collection+" %j %j %j %j"+at, query, sort, doc, options);
                     if(options.upsert){
                         var self = this;
                         
                         this._findAndModify(query, sort, doc, options, retryifNeeded(callback, function(){
-                            logDbWrite.d("retrying findAndModify %j %j %j %j"+at, query, sort, doc, options);
-                            self._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e));
-                        }, e));
+                            logDbWrite.d("retrying findAndModify "+collection+" %j %j %j %j"+at, query, sort, doc, options);
+                            self._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
+                        }, e, copyArguments(arguments, "findAndModify")));
                     }
                     else{
-                        this._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e));
+                        this._findAndModify(query, sort, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, "findAndModify")));
                     }
                 }
             };
@@ -665,22 +690,22 @@ var pluginManager = function pluginManager(){
                     }
                     if(typeof options === "function"){
                         //options was not passed, we have callback
-                        logDbWrite.d(name+" %j %j"+at, selector, doc);
-                        this["_"+name](selector, doc, retryifNeeded(options, null, e));
+                        logDbWrite.d(name+" "+collection+" %j %j"+at, selector, doc);
+                        this["_"+name](selector, doc, retryifNeeded(options, null, e, copyArguments(arguments, name)));
                     }
                     else{
                         //we have options
-                        logDbWrite.d(name+" %j %j %j"+at, selector, doc, options);
+                        logDbWrite.d(name+" "+collection+" %j %j %j"+at, selector, doc, options);
                         if(options.upsert){
                             var self = this;
                             
                             this["_"+name](selector, doc, options, retryifNeeded(callback, function(){
-                                logDbWrite.d("retrying "+name+" %j %j %j"+at, selector, doc, options);
-                                self["_"+name](selector, doc, options, retryifNeeded(callback, null, e));
-                            }, e));
+                                logDbWrite.d("retrying "+name+" "+collection+" %j %j %j"+at, selector, doc, options);
+                                self["_"+name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, name)));
+                            }, e, copyArguments(arguments, name)));
                         }
                         else{
-                            this["_"+name](selector, doc, options, retryifNeeded(callback, null, e));
+                            this["_"+name](selector, doc, options, retryifNeeded(callback, null, e, copyArguments(arguments, name)));
                         }
                     }
                 };
@@ -690,10 +715,10 @@ var pluginManager = function pluginManager(){
             overwriteRetryWrite(ob, "updateOne");
             
             //overwrite with write logging
-            var logForWrites = function(callback, e){
+            var logForWrites = function(callback, e, data){
                 return function(err, res){
                     if(err){
-                        logDbWrite.e("Error writing %j", err);
+                        logDbWrite.e("Error writing "+collection+" %j %s %j", data, err, err);
                         if(e)
                             logDbWrite.e(e.stack)
                     }
@@ -713,13 +738,13 @@ var pluginManager = function pluginManager(){
                     }
                     if(typeof options === "function"){
                         //options was not passed, we have callback
-                        logDbWrite.d(name+" %j"+at, selector);
-                        this["_"+name](selector, logForWrites(options, e));
+                        logDbWrite.d(name+" "+collection+" %j"+at, selector);
+                        this["_"+name](selector, logForWrites(options, e, copyArguments(arguments, name)));
                     }
                     else{
                         //we have options
-                        logDbWrite.d(name+" %j %j"+at, selector, options);
-                        this["_"+name](selector, options, logForWrites(callback, e));
+                        logDbWrite.d(name+" "+collection+" %j %j"+at, selector, options);
+                        this["_"+name](selector, options, logForWrites(callback, e, copyArguments(arguments, name)));
                     }
                 };
             };
@@ -729,10 +754,10 @@ var pluginManager = function pluginManager(){
             overwriteDefaultWrite(ob, "deleteMany");
             
             //overwrite with read logging
-            var logForReads = function(callback, e){
+            var logForReads = function(callback, e, data){
                 return function(err, res){
                     if(err){
-                        logDbRead.e("Error reading %j", err);
+                        logDbRead.e("Error reading "+collection+" %j %s %j", data, err, err);
                         if(e)
                             logDbRead.e(e.stack)
                     }
@@ -752,13 +777,13 @@ var pluginManager = function pluginManager(){
                     }
                     if(typeof options === "function"){
                         //options was not passed, we have callback
-                        logDbRead.d(name+" %j"+at, query);
-                        this["_"+name](query, logForReads(options, e));
+                        logDbRead.d(name+" "+collection+" %j"+at, query);
+                        this["_"+name](query, logForReads(options, e, copyArguments(arguments, name)));
                     }
                     else{
                         //we have options
-                        logDbRead.d(name+" %j %j"+at, query, options);
-                        this["_"+name](query, options, logForReads(callback, e));
+                        logDbRead.d(name+" "+collection+" %j %j"+at, query, options);
+                        this["_"+name](query, options, logForReads(callback, e, copyArguments(arguments, name)));
                     }
                 };
             };
@@ -775,11 +800,11 @@ var pluginManager = function pluginManager(){
                     e = new Error();
                     at += e.stack.replace(/\r\n|\r|\n|\/n/g, "\n").split("\n")[2];
                 }
-                logDbRead.d("find %j %j"+at, query, options);
+                logDbRead.d("find "+collection+" %j %j"+at, query, options);
                 var cursor = this._find(query, options);
                 cursor._toArray = cursor.toArray;
                 cursor.toArray = function(callback){
-                    cursor._toArray(logForReads(callback, e));
+                    cursor._toArray(logForReads(callback, e, copyArguments(arguments, "find")));
                 };
                 return cursor;
             };

@@ -7,8 +7,35 @@ window.component('push.popup', function(popup) {
 	var t = window.components.t,
 		push = window.components.push;
 
-	popup.show = function(prefilled){
+	popup.show = function(prefilled, duplicate){
+		if (!push.dashboard) {
+			return push.remoteDashboard(countlyCommon.ACTIVE_APP_ID).then(function(){
+				popup.show(prefilled);
+			});
+		}
+		m.startComputation();
 		var message = new push.Message(prefilled || {});
+		if (!duplicate) {
+			message.sound('default');
+		}
+
+		if (message.platforms().length && message.apps().length) {
+			var found = false;
+			message.platforms().forEach(function(p){
+				message.apps().forEach(function(a){
+					if (p === 'i' && window.countlyGlobal.apps[a] && window.countlyGlobal.apps[a].apn && window.countlyGlobal.apps[a].apn.length) {
+						found = true;
+					} else if (p === 'a' && window.countlyGlobal.apps[a] && window.countlyGlobal.apps[a].gcm && window.countlyGlobal.apps[a].gcm.length) {
+						found = true;
+					}
+				});
+			});
+
+			if (!found) {
+				return window.CountlyHelpers.alert(t('push.error.no-credentials'), 'red');
+			}
+		}
+
 		push.popup.slider = window.components.slider.show({
 			key: 'meow',
 			title: function(){
@@ -38,6 +65,7 @@ window.component('push.popup', function(popup) {
 				return message.count() ? message.saved() ? t('pu.po.sent-desc') : t('pu.po.sending-desc') : t('pu.po.loading-desc');
 			},
 		});
+		m.endComputation();
 	};
 
 	popup.controller = function(message){
@@ -142,6 +170,12 @@ window.component('push.popup', function(popup) {
 
 			tab = typeof tab === 'undefined' ? this.tabs.tab() + 1 : tab;
 			if (this.tabenabled(tab)) {
+				if (tab === 2) {
+					if (!message.schedule() && (message.date() !== undefined || message.tz() !== false)) {
+						message.date(undefined);
+						message.tz(false);
+					}
+				}
 				if (tab === 2 && !message.count()) {
 					window.components.slider.instance.loading(true);
 					message.remotePrepare(this.checkForNoUsers.bind(this, true)).then(function(){
@@ -271,8 +305,10 @@ window.component('push.popup', function(popup) {
 				this.onchange = function(val) {
 					if (opts.converter) {
 						var v = opts.converter(val);
-						if (v) {
+						if (v !== null) {
 							this.value(v);
+						} else {
+							this.value(undefined);
 						}
 					}
 				}.bind(this);
@@ -285,7 +321,7 @@ window.component('push.popup', function(popup) {
 				if (ctrl.value() !== undefined) { check.checked = 'checked'; }
 
 				var inp = {
-					value: ctrl.value() || '',
+					value: ctrl.value() === undefined ? '' : ctrl.value(),
 					oninput: m.withAttr('value', ctrl.value),
 					onchange: m.withAttr('value', ctrl.onchange)
 				};
@@ -410,18 +446,44 @@ window.component('push.popup', function(popup) {
 						m.component(window.components.radio, {options: [
 							{value: false, title: t('pu.po.tab1.scheduling-now'), desc: t('pu.po.tab1.scheduling-now-desc')},
 							{value: true, title: t('pu.po.tab1.scheduling-date'), desc: t('pu.po.tab1.scheduling-date-desc'), view: function(){
-								return m.component(window.components.datepicker, {date: message.date});
-							}}
-						], value: message.schedule}),
-						m('h4', t('pu.po.tab1.tz')),
-						m('h6', [
-							t('pu.po.tab1.tz-desc'), 
-							m('span.warn', window.components.tooltip.config(t('pu.po.tab1.tz-yes-help')), push.ICON.WARN())
-						]),
-						m.component(window.components.radio, {options: [
-							{value: false, title: t('pu.po.tab1.tz-no'), desc: t('pu.po.tab1.tz-no-desc')},
-							{value: true, title: t('pu.po.tab1.tz-yes'), desc: t('pu.po.tab1.tz-yes-desc')}
-						], value: message.tz}),
+								if (!this.datepicker) {
+									var d = new Date(); 
+									d.setHours(d.getHours() + 1); 
+									d.setMinutes(0); 
+									d.setSeconds(0); 
+									d.setMilliseconds(0);
+									this.datepicker = window.components.datepicker.controller({date: message.date, defaultDate: d});
+								}
+								return window.components.datepicker.view(this.datepicker);
+							}.bind(this)}
+						], value: function(){
+							if (arguments.length) {
+								message.schedule.apply(null, arguments);
+								if (message.schedule()) {
+									if (!message.date()) {
+										message.date(this.datepicker.opts.defaultDate);
+									}
+								} else {
+									message.date(null);
+									this.datepicker.open(false);
+								}
+							} else {
+								return message.schedule();
+							}
+						}.bind(this)}),
+						message.date() ?
+							m('div', [
+								m('h4', t('pu.po.tab1.tz')),
+								m('h6', [
+									t('pu.po.tab1.tz-desc'), 
+									m('span.warn', window.components.tooltip.config(t('pu.po.tab1.tz-yes-help')), push.ICON.WARN())
+								]),
+								m.component(window.components.radio, {options: [
+									{value: false, title: t('pu.po.tab1.tz-no'), desc: t('pu.po.tab1.tz-no-desc')},
+									{value: -(new Date().getTimezoneOffset()), title: t('pu.po.tab1.tz-yes'), desc: t('pu.po.tab1.tz-yes-desc')}
+								], value: message.tz}),
+							])
+							: '',
 						m('.btns', [
 							popup.tabs.tab() > 0 ? m('a.btn-prev', {href: '#', onclick: popup.prev}, t('pu.po.prev')) : '',
 							m('a.btn-next', {href: '#', onclick: popup.next, disabled: popup.tabenabled(2) ? false : 'disabled'}, t('pu.po.next'))
@@ -445,7 +507,12 @@ window.component('push.popup', function(popup) {
 								m.component(window.components.segmented, {options: [
 									{value: push.C.TYPE.MESSAGE, title: t('pu.type.message')},
 									{value: push.C.TYPE.DATA, title: t('pu.type.data')},
-								], value: message.type, class: 'comp-push-message-type'}),
+								], value: message.type, class: 'comp-push-message-type', onchange: function(type){
+									if (type === 'data' && !message.data()) { message.data(''); }
+									if (type === 'message' && message.data() === '') { message.data(undefined); }
+									if (type === 'data' && message.sound()) { message.sound(undefined); }
+									if (type === 'message' && !message.sound()) { message.sound('default'); }
+								}}),
 								message.type() === push.C.TYPE.MESSAGE ? 
 									m('.comp-push-message.comp-push-space-top', [
 										locales.view(localesController) 
@@ -479,8 +546,14 @@ window.component('push.popup', function(popup) {
 						]),
 						m('h6.comp-push-space-top', t('pu.po.tab2.extras')),
 						m('.comp-push-extras', [
-							m(extra, {title: t('pu.po.tab2.extras.sound'), value: message.sound, def: 'default'}),
-							m(extra, {title: t('pu.po.tab2.extras.badge'), value: message.badge, def: '0', typ: 'number'}),
+							message.type() === 'message' ?
+								m(extra, {title: t('pu.po.tab2.extras.sound'), value: message.sound, def: 'default'})
+								: '',
+							m(extra, {title: t('pu.po.tab2.extras.badge'), value: message.badge, def: 0, typ: 'number', converter: function(val){ 
+								if (val === '') { return 0; }
+								else if (isNaN(parseInt(val))) { return null; }
+								return parseInt(val);
+							}}),
 							m(extra, {title: t('pu.po.tab2.extras.url'), value: message.url}),
 							m(extra, {title: t('pu.po.tab2.extras.data'), value: message.data, converter: function(val){ 
 								try {

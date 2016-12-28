@@ -731,7 +731,7 @@ namespace apns {
 			stream->obj->requests.erase(stream->stream_id);
 			stream->obj->stats.sending--;
 			stream->obj->stats.sent++;
-			// LOG_DEBUG("H2: -------- stream " << stream_id << " closed, " << stream->obj->stats.sending << " left");
+			// LOG_DEBUG("H2: -------- stream " << stream_id << " " << stream->id << " closed: " << stream->status << ", " << stream->response << ", " << stream->obj->stats.sending << " left");
 			uv_async_send(stream->obj->service_async);
 			// stream->obj->service();
 			delete stream;
@@ -747,6 +747,9 @@ namespace apns {
 						std::string status_string((const char *)value, valuelen);
 						try {
 							int status = std::stoi(status_string);
+							if (status == 410) {
+								status = -200;
+							}
 							stream->status = status;
 						} catch (const std::invalid_argument &e) {
 							stream->status = -1;
@@ -891,7 +894,7 @@ namespace apns {
 		service_timer->data = this;
 		uv_timer_start(service_timer, service_timeout, H2_TIMEOUT, 0);
 
-		LOG_DEBUG(uv_thread_self() << " H2 service: state " << stats.state << " sent " << stats.sent << " (statuses " << statuses.size() << ") sending " << stats.sending << " queue " << queue.size() << " feed_last " << stats.feed_last << " feeding " << stats.feeding << ", H2 state is " << nghttp2_session_want_read(session) << ", " << nghttp2_session_want_write(session));
+		// LOG_DEBUG(uv_thread_self() << " H2 service: state " << stats.state << " sent " << stats.sent << " (statuses " << statuses.size() << ") sending " << stats.sending << " queue " << queue.size() << " feed_last " << stats.feed_last << " feeding " << stats.feeding << ", H2 state is " << nghttp2_session_want_read(session) << ", " << nghttp2_session_want_write(session));
 		if (queue.size() == 0 && stats.feed_last == 0 && stats.sending == 0) {
 			if (!(stats.state & ST_DONE)) {
 				// LOG_DEBUG("H2 service: done sending");
@@ -1014,7 +1017,7 @@ namespace apns {
 
 				// stream_data->stream_id = stream_id;
 			}
-			LOG_DEBUG("sent " << batch << " messages");
+			// LOG_DEBUG("sent " << batch << " messages");
 		}
 		stats.transmitting = false;
 		uv_mutex_unlock(main_mutex);

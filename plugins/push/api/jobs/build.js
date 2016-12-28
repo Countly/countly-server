@@ -20,7 +20,10 @@ class BuildJob extends job.TransientJob {
 		json._id = db.ObjectID(json._id);
 		json.apps = json.apps.map(db.ObjectID);
 		json.geo = json.geo ? db.ObjectID(json.geo) : undefined;
+		json.userConditions = json.userConditions ? JSON.parse(json.userConditions) : undefined;
+		json.drillConditions = json.drillConditions ? JSON.parse(json.drillConditions) : undefined;
 		this.note = new N.Note(json);
+		log.d('Prepared build job ', this.note);
 		return Promise.resolve();
 	}
 

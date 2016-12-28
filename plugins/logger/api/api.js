@@ -7,7 +7,7 @@ var plugin = {},
 	plugins.register("/i", function(ob){
 		var params = ob.params;
 		var now = Math.round(new Date().getTime()/1000);
-		var ts = (params.qstring.timestamp) ? parseInt(params.qstring.timestamp) : now;
+		var ts = common.initTimeObj(null, params.qstring.timestamp || now).timestamp;
 		var device = {};
 		device.id = params.qstring.device_id || "";
 		var location = {};
@@ -54,6 +54,9 @@ var plugin = {},
 			known = true;
 			var type = "metrics";
 			var info = params.qstring.metrics;
+            if(info && typeof info == "object"){
+                info = JSON.stringify(info);
+            }
 			common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
 		}
 		if (params.qstring.events) {
@@ -76,12 +79,18 @@ var plugin = {},
 			known = true;
 			var type = "user_details";
 			var info = params.qstring.user_details;
+            if(info && typeof info == "object"){
+                info = JSON.stringify(info);
+            }
 			common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
 		}
         if (params.qstring.crash) {
 			known = true;
 			var type = "crash";
 			var info = params.qstring.crash;
+            if(info && typeof info == "object"){
+                info = JSON.stringify(info);
+            }
 			common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
 		}
 		if(!known){

@@ -5,7 +5,7 @@
 
 .views-widget .widget-content .big-numbers .inner{height: 30px;}
 .views-widget .widget-footer{border-radius: 0;}
-.views-widget #empty-graph { position: absolute; text-align: center; font-size: 15px; width:100%; top:50%; margin-top: -20px; display: none; height: 20px; line-height: 20px; text-shadow: none; color: #B3B3B3; }
+.views-widget #empty-graph { position: absolute; text-align: center; font-size: 15px; width:100%; top:50%; margin-top: -60px; display: none; height: 20px; line-height: 20px; text-shadow: none; color: #B3B3B3; z-index: 2; background-color: #FFF;  padding: 50px 0; }
 .views-widget div.color{ width: 10px; height: 20px; float: right;}
 
 .seven-column { width:14%; }

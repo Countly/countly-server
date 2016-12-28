@@ -10,7 +10,8 @@
             url:countlyCommon.API_PARTS.data.r+"/errorlogs",
             data:{
                 "api_key":countlyGlobal.member.api_key,
-                "app_id":countlyCommon.ACTIVE_APP_ID
+                "app_id":countlyCommon.ACTIVE_APP_ID,
+                "lines":500
             },
             success:function (json) {
                 _data = json;

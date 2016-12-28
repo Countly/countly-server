@@ -72,6 +72,12 @@
         return str.replace(/^&#36;/g, "$").replace(/^&amp;#36;/g, '$').replace(/&#46;/g, '.').replace(/&amp;#46;/g, '.');
     };
 
+    countlyCommon.decodeHtml = function(html) {
+        var txt = document.createElement("textarea");
+        txt.innerHTML = html;
+        return txt.value;
+    };
+
     // Calculates the percent change between previous and current values.
     // Returns an object in the following format {"percent": "20%", "trend": "u"}
     countlyCommon.getPercentChange = function (previous, current) {
@@ -1209,7 +1215,9 @@
 
         var tmpNumber = "";
 
-        if (number >= 1000000 || number <= -1000000) {
+        if (number >= 1000000000 || number <= -1000000000) {
+            tmpNumber = ((number / 1000000000).toFixed(1).replace(".0", "")) + "B";
+        } else if (number >= 1000000 || number <= -1000000) {
             tmpNumber = ((number / 1000000).toFixed(1).replace(".0", "")) + "M";
         } else if (number >= 10000 || number <= -10000) {
             tmpNumber = ((number / 1000).toFixed(1).replace(".0", "")) + "K";

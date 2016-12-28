@@ -2,7 +2,8 @@ var plugin = {},
 	common = require('../../../api/utils/common.js'),
     plugins = require('../../pluginManager.js'),
     stores = require("../stores.json"),
-	fetch = require('../../../api/parts/data/fetch.js');
+	fetch = require('../../../api/parts/data/fetch.js'),
+    urlParse = require('url');
 
 (function (plugin) {
 	plugins.register("/worker", function(ob){
@@ -38,6 +39,40 @@ var plugin = {},
 			return true;
 		}
 		return false;
+	});
+    
+    plugins.register("/o/keywords", function(ob){
+		var params = ob.params;
+		var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
+        validateUserForDataReadAPI(params, function(){
+            var check = {
+                "q":true, 
+                "search":true,
+                "searchfor": true,
+                "query": true,
+                "wd":"baidu", //only for baidu domains
+                "p":"yahoo" //only for yahoo domains
+            };
+            fetch.getMetric(params, "sources", null, function(data){
+                var result = [];
+                for(var i = 0; i < data.length; i ++){
+                    var parts = urlParse.parse(common.db.decode(data[i]._id), true);
+                    if(parts.hostname && parts.query){
+                        for(var c in check){
+                            if(typeof parts.query[c] != "undefined" && parts.query[c] != ""){
+                                if(typeof check[c] === "boolean" || (typeof check[c] === "string" && parts.hostname.indexOf(check[c]) !== -1)){
+                                    data[i]._id = common.db.encode(parts.query[c]+"");
+                                    result.push(data[i]);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                common.returnOutput(params, result);
+            });
+        });
+		return true;
 	});
     
     plugins.register("/o/sources", function(ob){
