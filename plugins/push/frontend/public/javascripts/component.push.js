@@ -309,6 +309,13 @@ window.component('push', function(push) {
 		this.isSent = function() {
 			return (this.status() & 8) > 0;
 		};
+
+		this.errorFixed = function() {
+			if (this.error() === 'Process exited') {
+				return (this.status() & (1 << 4)) ? 'exited' :  'exited-sent';
+			}
+			return this.error();
+		};
 	};
 
 	push.remoteDashboard = function(appId, refresh) {
