@@ -5353,7 +5353,7 @@ var AppRouter = Backbone.Router.extend({
             var name = "countly";
             if($(".widget-header .title").length)
                 name = $(".widget-header .title").first().text();
-            return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase())+"."+ext;
+            return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase())+"-"+moment().format("DD-MMM-YYYY")+"."+ext;
         }
 
         $.extend(true, $.fn.dataTable.defaults, {
