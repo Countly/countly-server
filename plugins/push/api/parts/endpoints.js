@@ -60,7 +60,7 @@ var common          = require('../../../../api/utils/common.js'),
 
             rxp = /([0-9]{4}):([0-9]{1,2})/;
 
-        // log.d(sen, act);
+        log.d(sen, act);
         // log.d('mts', mts);
         // log.d('wks', wks);
         // log.d('que', que);
@@ -77,9 +77,9 @@ var common          = require('../../../../api/utils/common.js'),
             try {
                 var events = results.slice(0, 2).map(events => {
                     var ret = {weekly: {data: Array(wks.length).fill(0), keys: wkt}, monthly: {data: Array(mts.length).fill(0), keys: mtt}, total: 0};
-                    // log.d('events', events);
+                    log.d('events', events);
                     events.forEach(e => {
-                        // log.d('event', e);
+                        log.d('event', e);
                         var par = e._id.match(rxp),
                             yer = parseInt(par[1]),
                             mon = parseInt(par[2]) - 1;
@@ -420,7 +420,7 @@ var common          = require('../../../../api/utils/common.js'),
             msg.messagePerLocale = undefined;
         }
 
-        if (msg.type === 'data' && !msg.data || !Object.keys(msg.data).length) {
+        if (msg.type === 'data' && (!msg.data || !Object.keys(msg.data).length)) {
             common.returnOutput(params, {error: 'Messages of type "data" must have "data" property'});
             return false;
         }
