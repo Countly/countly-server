@@ -10,7 +10,7 @@ if(myArgs.length && fs.existsSync(myArgs[0])){
     if(!ob.storage)
         ob.storage = {};
     
-    var path = (storage.dbPath || "/var/lib/mongodb")+"/WiredTiger";
+    var path = (ob.storage.dbPath || "/var/lib/mongodb")+"/WiredTiger";
     if (!fs.existsSync(path)) {
         ob.storage.engine = "mmapv1";
     }
