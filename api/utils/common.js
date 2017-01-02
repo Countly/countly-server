@@ -656,7 +656,7 @@ var common = {},
                     }
             
                     if (lastTimestamp < (params.time.timestamp - secInYear)) {
-                        updateUsersZero['d.' + '.' + metric] = 1;
+                        updateUsersZero['d.' + metric] = 1;
                     }
                 }
                 else{
