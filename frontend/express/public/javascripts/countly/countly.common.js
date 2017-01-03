@@ -1496,7 +1496,7 @@
 
                 for (var i = 0; i < allWeeks.length; i++) {
                     var parts = allWeeks[i].split(" ");
-                    if(parseInt(parts[1]) == moment().year(parseInt(parts[1])).isoweek(parseInt(parts[0])).isoday(1).year()){
+                    if(parseInt(parts[1]) == moment().year(parseInt(parts[1])).endOf("year").isoweek(parseInt(parts[0])).isoday(1).year()){
                         ticks.push([i, "W" + allWeeks[i]]);
     
                         var weekText = countlyCommon.formatDate(moment().year(parseInt(parts[1])).isoweek(parseInt(parts[0])).isoday(1), ", D MMM YYYY");
