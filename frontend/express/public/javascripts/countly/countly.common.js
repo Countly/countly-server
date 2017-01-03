@@ -1486,20 +1486,19 @@
                 }
             } else if (bucket == "weekly") {
                 var allWeeks = [];
-
                 for (var i = 0; i < days; i++) {
                     start.add('days', 1);
-                    allWeeks.push(start.isoweek()+" "+start.year());
+                    allWeeks.push(start.isoweek()+" "+start.isoyear());
                 }
 
                 allWeeks = _.uniq(allWeeks);
 
                 for (var i = 0; i < allWeeks.length; i++) {
                     var parts = allWeeks[i].split(" ");
-                    if(parseInt(parts[1]) == moment().year(parseInt(parts[1])).endOf("year").isoweek(parseInt(parts[0])).isoday(1).year()){
+                    if(parseInt(parts[1]) == moment().isoyear(parseInt(parts[1])).isoweek(parseInt(parts[0])).startOf('week').year()){
                         ticks.push([i, "W" + allWeeks[i]]);
     
-                        var weekText = countlyCommon.formatDate(moment().year(parseInt(parts[1])).isoweek(parseInt(parts[0])).isoday(1), ", D MMM YYYY");
+                        var weekText = countlyCommon.formatDate(moment().isoyear(parseInt(parts[1])).endOf("year").isoweek(parseInt(parts[0])).isoday(1), ", D MMM YYYY");
                         tickTexts[i] = "W" + parts[0] + weekText;
                     }
                 }
