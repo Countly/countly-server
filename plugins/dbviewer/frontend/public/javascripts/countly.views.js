@@ -163,9 +163,6 @@ app.route('/manage/db/:dbs/:collection/page/:page', 'dbs', function (db, collect
 }
 
 $( document ).ready(function() {
-    Handlebars.registerHelper('withItem', function(object, options) {
-        return options.fn(object[options.hash.key]);
-    });
     if(!production){
         CountlyHelpers.loadJS("dbviewer/javascripts/json.human.js");
     }

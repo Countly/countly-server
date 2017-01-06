@@ -4388,6 +4388,9 @@ var AppRouter = Backbone.Router.extend({
         Handlebars.registerHelper('formatTimeAgo', function (context, options) {
             return countlyCommon.formatTimeAgo(parseInt(context)/1000);
         });
+        Handlebars.registerHelper('withItem', function(object, options) {
+            return options.fn(object[options.hash.key]);
+        });
 
         var self = this;
         jQuery.i18n.properties({
