@@ -537,12 +537,22 @@ var common = {},
             params.res.end();
         }
     };
-    
+    var ipLogger = common.log('ip:api');
     common.getIpAddress = function(req) {
         var ipAddress = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : '');
-    
         /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
-        return ipAddress.split(',')[0];
+        var ips = ipAddress.split(',');
+        
+        //search for the outmost right ip address ignoring provided proxies
+        var ip = "";
+        for(var i = ips.length-1; i >= 0; i--){
+            if(ips[i].trim() != "127.0.0.1" && (!countlyConfig.ignoreProxies || countlyConfig.ignoreProxies.indexOf(ips[i].trim()) === -1)){
+                ip = ips[i].trim();
+                break;
+            }
+        }
+        ipLogger.d("From %s found ip %s", ipAddress, ip);
+        return ip;
     };
 
     common.fillTimeObjectZero = function (params, object, property, increment) {
