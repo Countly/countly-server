@@ -4,8 +4,8 @@ var countlyConfig = {
         db: "countly",
         port: 27017,
         max_pool_size: 500,
-        //username: "test",
-        //password: "test",
+		//username: test,
+		//password: test,
         //mongos: false,
         /*
         dbOptions:{
@@ -58,7 +58,7 @@ var countlyConfig = {
         info: ["jobs", "push"],
         default: "warn"
     },
-    ignoreProxies:["127.0.0.1"]
+    ignoreProxies:[/*"127.0.0.1"*/]
 };
 
 // Set your host IP or domain to be used in the emails sent

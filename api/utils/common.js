@@ -543,6 +543,11 @@ var common = {},
         /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
         var ips = ipAddress.split(',');
         
+        //if ignoreProxies not setup, use outmost left ip address
+        if(!countlyConfig.ignoreProxies || !countlyConfig.ignoreProxies.length){
+            ipLogger.d("From %s found ip %s", ipAddress, ips[0]);
+            return ips[0];
+        }
         //search for the outmost right ip address ignoring provided proxies
         var ip = "";
         for(var i = ips.length-1; i >= 0; i--){
