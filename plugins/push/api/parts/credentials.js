@@ -133,10 +133,10 @@ class Credentials {
 												for (var i = 0; i < tpks.length; i++) {
 													for (var j = 0; j < tpks.length; j++) {
 														if (i !== j && tpks[j].indexOf(tpks[i]) === 0) {
-															if (topics.indexOf(tpks[i]) === -1) {
+															if (topics.indexOf(tpks[i]) === -1 && tpks[i] && tpks[i].indexOf('.') !== -1) {
 																topics.push(tpks[i]);
 															}
-															if (topics.indexOf(tpks[j]) === -1) {
+															if (topics.indexOf(tpks[j]) === -1 && tpks[j] && tpks[j].indexOf('.') !== -1) {
 																topics.push(tpks[j]);
 															}
 														}
