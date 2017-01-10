@@ -680,7 +680,7 @@ namespace apns {
 				case NGHTTP2_SETTINGS:
 					for (size_t i = 0; i < frame->settings.niv; ++i) {
 						if (frame->settings.iv[i].settings_id == NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS) {
-							obj->stats.sending_max = frame->settings.iv[i].value - 10;
+							obj->stats.sending_max = frame->settings.iv[i].value / 2;
 							LOG_DEBUG("H2 recv: set sending_max to " << obj->stats.sending_max << "(" << obj->stats.sending << ")" << " in " << uv_thread_self());
 						}
 					}
