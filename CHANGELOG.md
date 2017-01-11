@@ -1,3 +1,124 @@
+## Version 16.12.1
+
+* Fix: Getting email report data correctly
+* Fix: Bug with recording custom metric functionality
+* Fix: Correct weekly buckets when year is changing
+* Fix: Correct titles to weekly buckets
+* Fix: Showing custom properties in user profiles
+* Fix: Do not refresh dashboard for past periods
+* Fix: Push - decreasing amount of concurrent streams
+* Fix: Push - remove scheduled job on message deletion
+* Fix: Push - certificate parsing
+* Fix: Push - send badge data to Android
+* Fix: Add uid even if uid-sequence was not created
+* Fix: Sorting data in bars
+* Feature: Allow detecting ip address from the right side of X-Forwarded-for header
+
+## Version 16.12
+
+**Improvements**
+
+- New user interface: 16.12 release includes the biggest visual overhaul to the entire Countly user interface, greatly improving not only the UI but also the user experience. Dashboard is now faster than ever with simplified graphs, icons, less CSS and markup. 
+- New languages: Countly is translated into Hungarian and Vietnamese, and now [supports more than 10 languages](https://www.transifex.com/projects/p/countly/). 
+- 5 new plugins 
+    - [Compare:](http://count.ly/plugins/compare) All custom event and application data can easily be compared on a time series chart. 
+    - [Star rating:](http://count.ly/plugins/star-rating) A simple plugin in order to understand end user’s ratings about your application. This plugin shows a popup when called on the SDK side (inside the mobile app) prompted the user to submit send rating information. 
+    - [Slipping Away Users:](https://count.ly/plugins/slipping-away-users) This plugin displays a list (and count) of users who haven’t used the application for a particular period, e.g for 7, 14, 30, 60 and 90 days. 
+    - [Server stats:](https://count.ly/plugins/data-points/) This plugin displays how many data points (sum of sessions, custom events, pageviews, crashes and push data) a Countly server has collected for the last 3 months. 
+    - Desktop analytics: Countly now has support for Windows and Mac OS X desktop application types. User interface changes accordingly to provide relevant information for desktop application types. 
+- Security 
+    - A new extensive login security plugin makes sure brute force login attempts are identified and eliminated by limiting number of wrong login attempts. 
+    - System administrators can specify how strong passwords need to be. Minimum password requirements such as length, uppercase or special characters can be set. 
+    - There are several additional HTTP response headers for a more secure infrastructure.  
+    - There is a password expiration mechanism, editable from Configurations. 
+    - Proper HTML escaping has been added to prevent HTML injections, editable from Configurations. 
+    - Javascript errors are hidden from the browser console. 
+    - MongoDB password in configuration file can be set in an encrypted way. 
+    - Countly can be configured to use a salt (from Management → Applications and inside the SDK) to add checksum to SDK requests in order to prevent parameter tampering. 
+    - System administrator can lock users in order to prevent them accessing the dashboard or API. 
+- Push notifications 
+    - Push overview is redesigned, to show only meaningful and important metrics. Instead of unreliable numbers that change from platform to platform (eg. delivery rate), we simplified metric page to show most important numbers and past performance, based on weekly and monthly deliveries. 
+    - It’s possible to view how a push message will look on Android and iOS prior to sending it. 
+    - You can send a push notification to a user based on her/his local timezone. 
+    - Geolocation definition is greatly improved, using OpenStreetMap and Leaflet JS. 
+    - Geolocations can now be app specific or global. 
+
+- Crash analytics 
+    - Error logs are now syntax highlighted for easier readability. 
+    - Fix displaying crashes for web apps externally. 
+    - Do not allow bots to index shared crashes which can be read by 3rd parties. 
+
+- System logs 
+    - There are now more than 30 system logs stored for audit purposes (Management → System Logs).  
+    - Filter system logs based on specific user and user actions. 
+    - System logs display before and after values for update operations. 
+    - Actions of a specific user can be accessed by clicking “View User Actions” button under Management → Users. 
+
+- General 
+    - New horizontal bar chart visualisation is added and is used for Analytics → Platforms and Analytics → Densities. 
+    - iOS density and web pages pixel ratio has been added to Density plugin, and values are now segmentable by platform. 
+    - Added “Show details” link to Management → Applications which displays information about the application including creation, edit, last data recorded time and all users who have access to that application. 
+    - Added a configuration option to prevent crash list from growing too long. 
+    - Better logging for uncaught/database errors & crashes.
+    - Error logs (Management → Error logs) now output shorter logs, eliminating potential page slow-downs when viewing this page.
+    - Single install script (countly.install.sh) which auto-detects which install procedure to execute based on OS and OS version (e.g Ubuntu, Red Hat or CentOS). 
+    - OS based MongoDB version is installed and configured automatically. 
+    - Accept all timestamps in second, millisecond or float format from the SDKs. 
+    - There is no need to call begin_session to create a user on server. This way, a user is created for any request with a new device_id. 
+    - Allow changing number of items displayed in server side paginated tables (e.g 50, 100 or 200). 
+    - Management → Users displays the last login time.  
+    - Clearing an application now only clears analytical data and leaves all other data (e.g configuration in push notifications or attribution analytics). 
+    - Time ago now displays actual time on hover tooltip. 
+    - Separate export and display data for some tables. 
+    - Export file name now changes based on where data is exported from, to eliminate file mixups. 
+    - Each user can now maintain their own app sort list. Previously when a change was made, it affected all users. 
+    - Instead of mobile device and model names (e.g SM-G930F), now we use marketing names of corresponding models (e.g Galaxy S7) under Devices and filtering dropdowns, using Google’s Android device mapping list. 
+    - Carriers are filtered out and converted to names using MCC and MNC codes. 
+    - For image resizing, jimp library is used instead of sharp for less OS specific library dependencies. 
+    - Application administrator can change App key and all users can change their API key. 
+    - Countly command line has autocomplete capabilities. Also new commands are added, namely countly reindex (reapply all Countly database indexes), countly encrypt (to encrypt a value), countly decrypt (to decrypt a value), countly task (to run grunt tasks in a more convenient way) and countly config (to allow unsetting configuration values). 
+    - Sources plugin uses preprocessed data for faster loading and can extract keywords from referral data and display it under Analytics → Search Terms. 
+    - DBViewer plugin 
+        - Allow users with read permission to access data for specific application(s) she/he has access to. 
+        - Enhanced API to provide filtering capabilities based on MongoDB query mechanism. 
+
+    - Populator plugin can generate more realistic and platform dependent data, to onboard end users easier. 
+    - IDFA fix plugin is introduced to ignore opted out iOS users until new app version upgrade. 
+
+**Performance**
+
+- Countly now uses a data splitting algorithm on all metrics, events and users collections. This results in better performance for high traffic deployments and takes better advantage of MongoDB sharding mechanism. 
+- Added better handling of capped collections, indexing and reindexing options. 
+- Now there is a single point for updating users collection, resulting in less read and writes from SDK requests. 
+- Using objects instead of MongoDB arrays for meta data. 
+- Optimize health check (ping) request. 
+  
+### Changelog specific to Enterprise Edition (available to Enterprise Edition customers only)
+
+- User Profiles, Drill, Funnel and several other plugins are simpler and more easier to work with, using a modern and up to date user interface. 
+- Retention plugin, Funnels and User Profiles have a visual overhaul to show even smallest details, all introducing new designs. 
+- Drill plugin 
+    - Checking property limits correctly, also for user properties. 
+    - Better labels and data sorting for time buckets with periods larger than a year. 
+    - More precise event timeline ordering based on unique millisecond timestamps from the SDKs. 
+    - Big list dropdown implementation for large amounts of list values (e.g for sources and views). 
+
+- Restrict plugin 
+    - Improved restriction UI. 
+    - Restrict API access for blocked users. 
+
+- User Profiles plugin 
+    - Custom properties are shown in alphabetical order. 
+    - Correctly display user's funnel progress and device names. 
+
+- Attribution Analytics:  
+    - Correctly record unique clicks for some time periods. 
+    - When there is a long list of campaigns, it’s possible to hide them so they don’t clutter user interface. 
+    - Greatly improved user experience and user interface. 
+    - Re-designed campaign popups. 
+
+- When recaptcha is enabled from Configurations, it asks for recaptcha confirmation on login. 
+
 ## Version 16.06
 
 This version provides several features and bugfixes to both server and SDKs. There are a lot of improvements in Countly core, and you are advised to upgrade. Below you can find notable changes for both Community Edition and Enterprise Edition. 
