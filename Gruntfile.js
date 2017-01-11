@@ -51,9 +51,7 @@ module.exports = function(grunt) {
 			src: [
 				'frontend/express/public/javascripts/utils/underscore-min.js',
 				'frontend/express/public/javascripts/utils/prefixfree.min.js',
-				'frontend/express/public/javascripts/utils/moment/moment.min.js',
-				'frontend/express/public/javascripts/utils/moment/moment.isocalendar.min.js',
-				'frontend/express/public/javascripts/utils/moment/lang-all.min.js',
+				'frontend/express/public/javascripts/utils/moment/moment-with-locales.min.js',
 				'frontend/express/public/javascripts/utils/handlebars.js',
 				'frontend/express/public/javascripts/utils/backbone-min.js',
 				'frontend/express/public/javascripts/utils/jquery.i18n.properties-min-1.0.9.js',

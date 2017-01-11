@@ -47,10 +47,9 @@
     "geoip-lite": "1.1.8",
     "jimp": "0.2.27",
     "later": "^1.1.6",
-    "moment": "1.7.2",
-    "moment-isocalendar": "0.1.0",
+    "moment": "2.17.1",
     "moment-timezone": "0.5.11",
-    "mongodb": "2.2.16",
+    "mongodb": "2.2.19",
     "mongoskin": "2.1.0",
     "nodemailer": "2.7.0",
     "nodemailer-smtp-transport": "2.7.2",
@@ -66,7 +65,7 @@
     "external-ip":"0.2.4",
     "escape-html":"1.0.3",
     "bluebird":"3.4.7",
-    "mcc-mnc-list":"1.0.59",
+    "mcc-mnc-list":"1.0.60",
     "yamljs":"0.2.8"
   },
   "jshintConfig": {

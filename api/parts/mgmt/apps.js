@@ -343,7 +343,7 @@ var appsApi = {},
             dates[now.format('YYYY')+":0"+"_"+common.base64[i]] = true;
         }
         for(var i = 0; i < back; i++){
-            skip[appId+"_"+now.subtract("months", 1).format('YYYY:M')] = true;
+            skip[appId+"_"+now.subtract(1, "months").format('YYYY:M')] = true;
             skip[appId+"_"+now.format('YYYY')+":0"] = true;
             dates[now.format('YYYY:M')] = true;
             dates[now.format('YYYY')+":0"] = true;

@@ -505,11 +505,11 @@ var countlyCommon = {},
                 formattedDateEnd = moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMax + ":00", "YYYY.M.D HH:mm");
 
                 var nowMin = _currMoment.format("mm");
-                formattedDateEnd.add("minutes", nowMin);
+                formattedDateEnd.add(nowMin, "minutes");
 
             } else if (countlyCommon.periodObj.dateString == "D MMM, HH:mm") {
                 formattedDateStart = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
-                formattedDateEnd = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D").add("hours", 23).add("minutes", 59);
+                formattedDateEnd = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D").add(23, "hours").add(59, "minutes");
             } else {
                 formattedDateStart = moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMin, "YYYY.M.D");
                 formattedDateEnd = moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMax, "YYYY.M.D");
@@ -920,27 +920,27 @@ var countlyCommon = {},
                 daysInPeriod = parseInt(_currMoment.format("DDD"),10);
                 startTimestamp = moment(_currMoment).utc().month(1).date(1).hours(0).minutes(0).seconds(0).unix();
 
-                _currMoment.subtract('days', daysInPeriod);
+                _currMoment.subtract(daysInPeriod, 'days');
                 for (var i = 0; i < daysInPeriod; i++) {
-                    _currMoment.add('days', 1);
+                    _currMoment.add(1, 'days');
                     currPeriodArr.push(_currMoment.format("YYYY.M.D"));
                 }
 
-                _currMoment.subtract('days', daysInPeriod + 365);
+                _currMoment.subtract(daysInPeriod + 365, 'days');
                 for (var i = 0; i < daysInPeriod; i++) {
                     prevPeriodArr.push(_currMoment.format("YYYY.M.D"));
-                    _currMoment.add('days', 1);
+                    _currMoment.add(1, 'days');
                 }
-                _currMoment.add('days', 365);
+                _currMoment.add(365, 'days');
 
                 break;
             }
             case "day": {
                 activePeriod = _currMoment.format("YYYY.M");
                 startTimestamp = moment(_currMoment).utc().date(1).hours(0).minutes(0).seconds(0).unix();
-                _currMoment.subtract('days', day);
+                _currMoment.subtract(day, 'days');
                 previousPeriod = _currMoment.format("YYYY.M");
-                _currMoment.add('days', day);
+                _currMoment.add(day, 'days');
 
                 periodMax = day;
                 periodMin = 1;
@@ -951,22 +951,22 @@ var countlyCommon = {},
                     currPeriodArr.push(activePeriod + "." + i);
                 }
 
-                _currMoment.subtract('days', day + 1);
+                _currMoment.subtract(day + 1, 'days');
                 var daysInMonth = _currMoment.daysInMonth();
-                _currMoment.subtract('days', daysInMonth - 1);
+                _currMoment.subtract(daysInMonth - 1, 'days');
                 for (var i = 0; i < day; i++) {
-                    _currMoment.add('days', 1);
+                    _currMoment.add(1, 'days');
                     prevPeriodArr.push(_currMoment.format("YYYY.M.D"));
                 }
-                _currMoment.add('days', daysInMonth);
+                _currMoment.add(daysInMonth, 'days');
 
                 break;
             }
             case "hour": {
                 activePeriod = _currMoment.format("YYYY.M.D");
-                _currMoment.subtract('days', 1);
+                _currMoment.subtract(1, 'days');
                 previousPeriod = _currMoment.format("YYYY.M.D");
-                _currMoment.add('days', 1);
+                _currMoment.add(1, 'days');
 
                 periodMax = hour;
                 periodMin = 0;
@@ -978,14 +978,14 @@ var countlyCommon = {},
                 break;
             }
             case "yesterday": {
-                _currMoment.subtract('days', 1);
+                _currMoment.subtract(1, 'days');
                 endTimestamp = moment(_currMoment).utc().hours(23).minutes(59).seconds(59).unix();
                 startTimestamp = moment(_currMoment).utc().hours(0).minutes(0).seconds(0).unix();
                 activePeriod = _currMoment.format("YYYY.M.D");
-                _currMoment.add('days', 1);
-                _currMoment.subtract('days', 2);
+                _currMoment.add(1, 'days');
+                _currMoment.subtract(2, 'days');
                 previousPeriod = _currMoment.format("YYYY.M.D");
-                _currMoment.add('days', 2);
+                _currMoment.add(2, 'days');
 
                 periodMax = 23;
                 periodMin = 0;
@@ -1023,9 +1023,9 @@ var countlyCommon = {},
         }
         
         if(isSpecialPeriod){
-            _currMoment.subtract('days', daysInPeriod-1);
+            _currMoment.subtract(daysInPeriod-1, 'days');
             startTimestamp = moment(_currMoment).utc().hours(0).minutes(0).seconds(0).unix();
-            _currMoment.add('days', daysInPeriod-1);
+            _currMoment.add(daysInPeriod-1, 'days');
         }
 
         // Check whether period object is array
@@ -1043,7 +1043,7 @@ var countlyCommon = {},
                 var selectedDate = moment(fromDate);
 
                 activePeriod = selectedDate.format("YYYY.M.D");
-                selectedDate.subtract('days', 1);
+                selectedDate.subtract(1, 'days');
                 previousPeriod = selectedDate.format("YYYY.M.D");
                 selectedDate.add('days', 1);
 
@@ -1085,9 +1085,9 @@ var countlyCommon = {},
                 var prevRangeEndDate = new Date(rangeEndDay);
                 prevRangeEndDate.setTimezone(_appTimezone);
 
-                var currIndex = (!rangeEndDay) ? momentOne.subtract('days', i) : moment(currRangeEndDate).subtract('days', i),
+                var currIndex = (!rangeEndDay) ? momentOne.subtract(i, 'days') : moment(currRangeEndDate).subtract(i, 'days'),
                     currIndexYear = currIndex.year(),
-                    prevIndex = (!rangeEndDay) ? momentTwo.subtract('days', (daysInPeriod + i)) : moment(prevRangeEndDate).subtract('days', (daysInPeriod + i)),
+                    prevIndex = (!rangeEndDay) ? momentTwo.subtract((daysInPeriod + i), 'days') : moment(prevRangeEndDate).subtract((daysInPeriod + i), 'days'),
                     prevYear = prevIndex.year();
 
                 if (i != (daysInPeriod - 1) && currentYear != currIndexYear) {

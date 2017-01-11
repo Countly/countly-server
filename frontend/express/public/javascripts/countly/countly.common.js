@@ -1241,7 +1241,7 @@
                 formattedDateEnd = moment(countlyCommon.periodObj.activePeriod + " " + countlyCommon.periodObj.periodMax + ":00", "YYYY.M.D HH:mm");
 
                 var nowMin = moment().format("mm");
-                formattedDateEnd.add("minutes", nowMin);
+                formattedDateEnd.add(nowMin, "minutes");
 
             } else if (countlyCommon.periodObj.dateString == "D MMM, HH:mm") {
                 formattedDateStart = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
@@ -1466,9 +1466,9 @@
             }
             skipReduction = true;
         } else {
-            var start = moment().subtract('days', days);
+            var start = moment().subtract(days, 'days');
             if (Object.prototype.toString.call(countlyCommon.getPeriod()) === '[object Array]'){
-                start = moment(countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length - 1], "YYYY.MM.DD").subtract('days',days);
+                start = moment(countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length - 1], "YYYY.MM.DD").subtract(days, 'days');
             }
             if (bucket == "monthly") {
                 var allMonths = [];
@@ -1977,7 +1977,7 @@
             case "day":
                 activePeriod = year + "." + month;
 
-                var previousDate = moment().subtract('days', day),
+                var previousDate = moment().subtract(day, 'days'),
                     previousYear = previousDate.year(),
                     previousMonth = (previousDate.month() + 1),
                     previousDay = previousDate.date();
@@ -1989,13 +1989,13 @@
                 numberOfDays = moment().format("D");
                 break;
             case "yesterday":
-                var yesterday = moment().subtract('days', 1),
+                var yesterday = moment().subtract(1, 'days'),
                     year = yesterday.year(),
                     month = (yesterday.month() + 1),
                     day = yesterday.date();
 
                 activePeriod = year + "." + month + "." + day;
-                var previousDate = moment().subtract('days', 2),
+                var previousDate = moment().subtract(2, 'days'),
                     previousYear = previousDate.year(),
                     previousMonth = (previousDate.month() + 1),
                     previousDay = previousDate.date();
@@ -2009,7 +2009,7 @@
                 break;
             case "hour":
                 activePeriod = year + "." + month + "." + day;
-                var previousDate = moment().subtract('days', 1),
+                var previousDate = moment().subtract(1, 'days'),
                     previousYear = previousDate.year(),
                     previousMonth = (previousDate.month() + 1),
                     previousDay = previousDate.date();
@@ -2057,7 +2057,7 @@
 
                 activePeriod = selectedYear + "." + selectedMonth + "." + selectedDay;
 
-                var previousDate = selectedDate.subtract('days', 1),
+                var previousDate = selectedDate.subtract(1, 'days'),
                     previousYear = previousDate.year(),
                     previousMonth = (previousDate.month() + 1),
                     previousDay = previousDate.date();
@@ -2093,9 +2093,9 @@
                 prevPeriodArr = [];
 
             for (var i = (daysInPeriod - 1); i > -1; i--) {
-                var currIndex = (!rangeEndDay) ? moment().subtract('days', i) : moment(rangeEndDay).subtract('days', i),
+                var currIndex = (!rangeEndDay) ? moment().subtract(i, 'days') : moment(rangeEndDay).subtract(i, 'days'),
                     currIndexYear = currIndex.year(),
-                    prevIndex = (!rangeEndDay) ? moment().subtract('days', (daysInPeriod + i)) : moment(rangeEndDay).subtract('days', (daysInPeriod + i)),
+                    prevIndex = (!rangeEndDay) ? moment().subtract((daysInPeriod + i), 'days') : moment(rangeEndDay).subtract((daysInPeriod + i), 'days'),
                     prevYear = prevIndex.year();
 
                 if (i != (daysInPeriod - 1) && currentYear != currIndexYear) {

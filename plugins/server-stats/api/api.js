@@ -115,13 +115,13 @@ var plugin = {},
             var periodsToFetch = [],
                 utcMoment = common.moment.utc();
 
-            utcMoment.subtract("months", 2);
+            utcMoment.subtract(2, "months");
             periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
-            utcMoment.add("months", 2);
+            utcMoment.add(2, "months");
 
-            utcMoment.subtract("months", 1);
+            utcMoment.subtract(1, "months");
             periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
-            utcMoment.add("months", 1);
+            utcMoment.add(1, "months");
 
             periodsToFetch.push(utcMoment.format("YYYY") + ":" + utcMoment.format("M"));
 

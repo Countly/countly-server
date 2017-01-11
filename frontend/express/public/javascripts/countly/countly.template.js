@@ -231,7 +231,7 @@ $.extend(Template.prototype, {
     CountlyHelpers.setUpDateSelectors = function(self) {
         $("#month").text(moment().year());
         $("#day").text(moment().format("MMM"));
-        $("#yesterday").text(moment().subtract("days",1).format("Do"));
+        $("#yesterday").text(moment().subtract(1, "days").format("Do"));
 
         $("#date-selector").find(".date-selector").click(function () {
             if ($(this).hasClass("selected")) {
@@ -5704,7 +5704,7 @@ var AppRouter = Backbone.Router.extend({
     pageScript:function () { //scripts to be executed on each view change
         $("#month").text(moment().year());
         $("#day").text(moment().format("MMM"));
-        $("#yesterday").text(moment().subtract("days",1).format("Do"));
+        $("#yesterday").text(moment().subtract(1, "days").format("Do"));
 
         var self = this;
         $(document).ready(function () {
@@ -5786,9 +5786,9 @@ var AppRouter = Backbone.Router.extend({
                     dateFrom.datepicker("setDate", moment(self.dateFromSelected).toDate());
                     dateTo.datepicker("option", "minDate", moment(self.dateFromSelected).toDate());
                 } else {
-                    extendDate = moment(dateTo.datepicker("getDate")).subtract('days', 30).toDate();
+                    extendDate = moment(dateTo.datepicker("getDate")).subtract(30, 'days').toDate();
                     dateFrom.datepicker("setDate", extendDate);
-                    self.dateFromSelected = moment(dateTo.datepicker("getDate")).subtract('days', 30).toDate().getTime();
+                    self.dateFromSelected = moment(dateTo.datepicker("getDate")).subtract(30, 'days').toDate().getTime();
                     dateTo.datepicker("option", "minDate", moment(self.dateFromSelected).toDate());
                 }
 
@@ -5818,7 +5818,7 @@ var AppRouter = Backbone.Router.extend({
             var dateFrom = $("#date-from").datepicker({
                 numberOfMonths:1,
                 showOtherMonths:true,
-                maxDate:moment().subtract('days', 1).toDate(),
+                maxDate:moment().subtract(1, 'days').toDate(),
                 onSelect:function (selectedDate) {
                     var instance = $(this).data("datepicker"),
                         date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
