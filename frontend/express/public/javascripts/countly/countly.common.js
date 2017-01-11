@@ -1039,16 +1039,16 @@
         }
 
         if (propertyNames.indexOf("u") !== -1) {
-            tableData = _.sortBy(tableData, function (obj) {
-                return -obj["u"];
+            tableData.sort(function(a,b){
+                return b.u - a.u;
             });
         } else if (propertyNames.indexOf("t") !== -1) {
-            tableData = _.sortBy(tableData, function (obj) {
-                return -obj["t"];
+            tableData.sort(function(a,b){
+                return b.t - a.t;
             });
         } else if (propertyNames.indexOf("c") !== -1) {
-            tableData = _.sortBy(tableData, function (obj) {
-                return -obj["c"];
+            tableData.sort(function(a,b){
+                return b.c - a.c;
             });
         }
 
@@ -1498,7 +1498,7 @@
                     if(parseInt(parts[1]) == moment().isoyear(parseInt(parts[1])).isoweek(parseInt(parts[0])).startOf('week').year()){
                         ticks.push([i, "W" + allWeeks[i]]);
     
-                        var weekText = countlyCommon.formatDate(moment().isoyear(parseInt(parts[1])).endOf("year").isoweek(parseInt(parts[0])).isoday(1), ", D MMM YYYY");
+                        var weekText = countlyCommon.formatDate(moment().isoyear(parseInt(parts[1])).isoweek(parseInt(parts[0])).startOf('week'), ", D MMM YYYY");
                         tickTexts[i] = "W" + parts[0] + weekText;
                     }
                 }

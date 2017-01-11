@@ -686,7 +686,8 @@
 
     function extendMeta() {
         for (var metaObj in _activeEventDb["meta"]) {
-            _activeSegmentationObj[metaObj] = countlyCommon.union(_activeSegmentationObj[metaObj], _activeEventDb["meta"][metaObj]);
+            if(_activeSegmentationObj[metaObj].length != _activeEventDb["meta"][metaObj].length)
+                _activeSegmentationObj[metaObj] = countlyCommon.union(_activeSegmentationObj[metaObj], _activeEventDb["meta"][metaObj]);
         }
 
         _activeSegmentations = _activeSegmentationObj["segments"];
