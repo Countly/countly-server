@@ -276,7 +276,7 @@ var common = {},
         if (reqTimestamp && (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 10 && common.isNumber(reqTimestamp)) {
             // If the received timestamp is greater than current time use the current time as timestamp
             currTimestamp = ( parseInt(reqTimestamp, 10) > time.time()) ? time.time() : parseInt(reqTimestamp, 10);
-            curMsTimestamp = ( parseInt(reqTimestamp, 10) > time.time()) ? time.time() : parseFloat(reqTimestamp, 10)*1000;
+            curMsTimestamp = ( parseInt(reqTimestamp, 10) > time.time()) ? time.time()*1000 : parseFloat(reqTimestamp, 10)*1000;
             currDate = new Date(currTimestamp * 1000);
         } else if (reqTimestamp && (reqTimestamp + "").length === 13 && common.isNumber(reqTimestamp)) {
             var tmpTimestamp = Math.round(parseInt(reqTimestamp, 10) / 1000);
