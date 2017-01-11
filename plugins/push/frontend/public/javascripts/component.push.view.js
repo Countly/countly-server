@@ -29,7 +29,8 @@ window.component('push.view', function(view) {
 					els.push(m('span.count.ion-person', 'Recipients: ' + message.count().TOTALLY));
 				}
 				var s = message.result.status();
-				if (message.result.error()) {
+				// if (message.result.error()) {
+				if (message.result.error() && !message.result.isSent()) {
 					els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
 						m('circle[fill="#D54043"][cx=28][cy=28][r=28]'),
 						m('path[fill="#FFFFFF"][d=M40.9,16.1L40.9,16.1c1.4,1.4,1.4,3.6,0,4.9L21.1,40.9c-1.4,1.4-3.6,1.4-4.9,0l0,0c-1.4-1.4-1.4-3.6,0-4.9l19.8-19.8C37.3,14.8,39.5,14.8,40.9,16.1z]'),
@@ -73,8 +74,6 @@ window.component('push.view', function(view) {
 	view.view = function(ctrl){
 		var r = ctrl.message.result, 
 			ec = r.errorCodes() ? Object.keys(r.errorCodes()).sort() : [],
-			ic = ec.filter(function(c){ return c.indexOf('i') === 0;}).length,
-			ac = ec.filter(function(c){ return c.indexOf('a') === 0;}).length,
 			fi = -1,
 			fa = -1;
 
@@ -85,9 +84,9 @@ window.component('push.view', function(view) {
 
 		return m('div.comp-push', [
 			r.error() ? 
-				m('.comp-push-error', [
+				m(r.errorFixed().toLowerCase() === 'exited-sent' ? '.comp-push-warn' : '.comp-push-error', [
 					m('svg[width=21][height=18]', m('path[fill="#FFFFFF"][d="M20,18c0.6,0,0.8-0.4,0.5-0.9L11,0.9c-0.3-0.5-0.7-0.5-1,0L0.5,17.1C0.2,17.6,0.4,18,1,18H20zM10,13h2v2h-2V13z M10,8h2v4h-2V8z"]')),
-					m.trust(t('push.error.' + r.error().toLowerCase(), r.error()))
+					m.trust(t('push.error.' + r.errorFixed().toLowerCase(), r.errorFixed()))
 				])
 				: '',
 			r.sent() > 0 || !r.error() ? 
@@ -160,7 +159,7 @@ window.component('push.view', function(view) {
 			r.errorCodes() ? 
 				m('div.comp-push-error-codes', [
 					m('h4', t('push.errorCodes')),
-					m('.comp-push-view-table', ec.map(function(k, i){
+					m('.comp-push-view-table', ec.map(function(k){
 						var comps = k.match(ERROR_PARSER);
 						if (comps && comps[1] && comps[2]) {
 							return m('.comp-push-view-row', [

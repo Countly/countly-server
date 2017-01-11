@@ -781,8 +781,9 @@ table.d-table .nothing { opacity: 0.3; }
 .comp-push-view .textarea { font-size: 13px; }
 .comp-push-view-message { font-size: 13px; background-color: white; padding: 9px; border: 1px solid #DFE3E9; border-radius: 2px; }
 
-.comp-push-error { background-color: #D54043; padding: 9px; font-size: 12px; color: rgba(240, 240, 240, 1); border-radius: 2px; }
-.comp-push-error svg { margin: -2px 10px -3px 0; }
+.comp-push-error, .comp-push-warn { background-color: #D54043; padding: 9px; font-size: 12px; color: rgba(240, 240, 240, 1); border-radius: 2px; }
+.comp-push-error svg, .comp-push-warn svg { margin: -2px 10px -3px 0; }
+.comp-push-warn { background-color: #FE8827; }
 
 .appmng-push .none { color: #B7B6B6; }
 .appmng-push .hint { padding-left: 12px; }

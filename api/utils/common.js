@@ -276,7 +276,7 @@ var common = {},
         if (reqTimestamp && (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 10 && common.isNumber(reqTimestamp)) {
             // If the received timestamp is greater than current time use the current time as timestamp
             currTimestamp = ( parseInt(reqTimestamp, 10) > time.time()) ? time.time() : parseInt(reqTimestamp, 10);
-            curMsTimestamp = ( parseInt(reqTimestamp, 10) > time.time()) ? time.time() : parseFloat(reqTimestamp, 10)*1000;
+            curMsTimestamp = ( parseInt(reqTimestamp, 10) > time.time()) ? time.time()*1000 : parseFloat(reqTimestamp, 10)*1000;
             currDate = new Date(currTimestamp * 1000);
         } else if (reqTimestamp && (reqTimestamp + "").length === 13 && common.isNumber(reqTimestamp)) {
             var tmpTimestamp = Math.round(parseInt(reqTimestamp, 10) / 1000);
@@ -537,12 +537,27 @@ var common = {},
             params.res.end();
         }
     };
-    
+    var ipLogger = common.log('ip:api');
     common.getIpAddress = function(req) {
         var ipAddress = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : '');
-    
         /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
-        return ipAddress.split(',')[0];
+        var ips = ipAddress.split(',');
+        
+        //if ignoreProxies not setup, use outmost left ip address
+        if(!countlyConfig.ignoreProxies || !countlyConfig.ignoreProxies.length){
+            ipLogger.d("From %s found ip %s", ipAddress, ips[0]);
+            return ips[0];
+        }
+        //search for the outmost right ip address ignoring provided proxies
+        var ip = "";
+        for(var i = ips.length-1; i >= 0; i--){
+            if(ips[i].trim() != "127.0.0.1" && (!countlyConfig.ignoreProxies || countlyConfig.ignoreProxies.indexOf(ips[i].trim()) === -1)){
+                ip = ips[i].trim();
+                break;
+            }
+        }
+        ipLogger.d("From %s found ip %s", ipAddress, ip);
+        return ip;
     };
 
     common.fillTimeObjectZero = function (params, object, property, increment) {
@@ -656,7 +671,7 @@ var common = {},
                     }
             
                     if (lastTimestamp < (params.time.timestamp - secInYear)) {
-                        updateUsersZero['d.' + '.' + metric] = 1;
+                        updateUsersZero['d.' + metric] = 1;
                     }
                 }
                 else{

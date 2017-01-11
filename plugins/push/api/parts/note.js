@@ -211,6 +211,9 @@ class Note {
 				if (this.sound !== undefined && this.sound !== null) {
 					compiled.data.sound = this.sound;
 				}
+				if (this.badge !== undefined && this.badge !== null) {
+					compiled.aps.badge = this.badge;
+				}
 
 				if (!message && (this.sound === undefined || this.sound === null)) {
 					compiled.data['c.s'] = 'true';

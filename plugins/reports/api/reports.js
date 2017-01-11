@@ -311,7 +311,6 @@ var metrics = {
                     collections["crashdata"] = true;
                 else if(i == "push"){
                     collections["events.[CLY]_push_sent"] = true;
-                    collections["events.[CLY]_push_open"] = true;
                     collections["events.[CLY]_push_action"] = true;
                 }
                 else if(i == "revenue"){
@@ -327,53 +326,152 @@ var metrics = {
         }
         return Object.keys(collections);
     }
-    
-    function fetchTimeObj(db, collection, params, isCustomEvent, callback) {
+    var common = {};
+    common.dbMap = {
+        'events': 'e',
+        'total': 't',
+        'new': 'n',
+        'unique': 'u',
+        'duration': 'd',
+        'durations': 'ds',
+        'frequency': 'f',
+        'loyalty': 'l',
+        'sum': 's',
+        'dur': 'dur',
+        'count': 'c'
+    };
+
+    common.dbUserMap = {
+        'device_id': 'did',
+        'user_id' : 'uid',
+        'first_seen': 'fs',
+        'last_seen': 'ls',
+        'last_payment': 'lp',
+        'session_duration': 'sd',
+        'total_session_duration': 'tsd',
+        'session_count': 'sc',
+        'device': 'd',
+        'carrier': 'c',
+        'city': 'cty',
+        'country_code': 'cc',
+        'platform': 'p',
+        'platform_version': 'pv',
+        'app_version': 'av',
+        'last_begin_session_timestamp': 'lbst',
+        'last_end_session_timestamp': 'lest',
+        'has_ongoing_session': 'hos',
+        'previous_events': 'pe',
+        'resolution': 'r'
+    };
+
+    common.dbEventMap = {
+        'user_properties':'up',
+        'timestamp':'ts',
+        'segmentations':'sg',
+        'count':'c',
+        'sum':'s',
+        'duration': 'dur',
+        'previous_events': 'pe'
+    };
+    var base64 = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","+","/"];
+    function fetchTimeObj(db, collection, params, isCustomEvent, options, callback) {
         var periodObj = getPeriodObj(params),
             documents = [];
+            
+        if(typeof options === "function"){
+            callback = options;
+            options = {};
+        }
+        
+        if(typeof options === "undefined"){
+            options = {};
+        }
+        
+        if(typeof options.unique === "undefined")
+            options.unique = common.dbMap.unique;
+        
+        if(typeof options.id === "undefined")
+            options.id = params.app_id;
+        
+        if(typeof options.levels === "undefined")
+            options.levels = {};
+        
+        if(typeof options.levels.daily === "undefined")
+            options.levels.daily = [common.dbMap.total, common.dbMap.new, common.dbEventMap.count, common.dbEventMap.sum, common.dbEventMap.duration];
+        
+        if(typeof options.levels.monthly === "undefined")
+            options.levels.monthly = [common.dbMap.total, common.dbMap.new, common.dbMap.duration, common.dbMap.events, common.dbEventMap.count, common.dbEventMap.sum, common.dbEventMap.duration];
 
         if (isCustomEvent) {
             var segment = params.qstring.segmentation || "no-segment";
 
             for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
                 documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]);
+                for(var m = 0; m < base64.length; m++){
+                    documents.push("no-segment_" + periodObj.reqZeroDbDateIds[i]+"_"+base64[m]);
+                }
             }
 
             for (var i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
                 documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i]);
+                for(var m = 0; m < base64.length; m++){
+                    documents.push(segment + "_" + periodObj.reqMonthDbDateIds[i]+"_"+base64[m]);
+                }
             }
         } else {
             for (var i = 0; i < periodObj.reqZeroDbDateIds.length; i++) {
-                documents.push(params.app_id + "_" + periodObj.reqZeroDbDateIds[i]);
+                documents.push(options.id + "_" + periodObj.reqZeroDbDateIds[i]);
+                for(var m = 0; m < base64.length; m++){
+                    documents.push(options.id + "_" + periodObj.reqZeroDbDateIds[i]+"_"+base64[m]);
+                }
             }
 
             for (var i = 0; i < periodObj.reqMonthDbDateIds.length; i++) {
-                documents.push(params.app_id + "_" + periodObj.reqMonthDbDateIds[i]);
+                documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i]);
+                for(var m = 0; m < base64.length; m++){
+                    documents.push(options.id + "_" + periodObj.reqMonthDbDateIds[i]+"_"+base64[m]);
+                }
             }
         }
 
         db.collection(collection).find({'_id': {$in: documents}}, {}).toArray(function(err, dataObjects) {
-            callback(getMergedObj(dataObjects));
+            callback(getMergedObj(dataObjects, false, options.levels));
         });
 
-        function getMergedObj(dataObjects, isRefresh) {
-            var mergedDataObj = {};
+        function deepMerge(ob1, ob2){
+            for(var i in ob2){
+                if(typeof ob1[i] === "undefined"){
+                    ob1[i] = ob2[i];
+                }
+                else if(ob1[i] && typeof ob1[i] === "object"){
+                    ob1[i] = deepMerge(ob1[i], ob2[i]);
+                }
+                else{
+                    ob1[i] += ob2[i];
+                }
+            }
+            return ob1;
+        }
 
+        function getMergedObj(dataObjects, isRefresh, levels) {
+            var mergedDataObj = {};
+        
             if(dataObjects){
                 for (var i = 0; i < dataObjects.length; i++) {
                     if (!dataObjects[i] || !dataObjects[i].m) {
                         continue;
                     }
-    
+        
                     var mSplit = dataObjects[i].m.split(":"),
                         year = mSplit[0],
                         month = mSplit[1];
-    
+        
                     if (!mergedDataObj[year]) {
                         mergedDataObj[year] = {};
                     }
-    
+        
                     if (month == 0) {
+                        //old meta merge
                         if (mergedDataObj['meta']) {
                             for (var metaEl in dataObjects[i]['meta']) {
                                 if (mergedDataObj['meta'][metaEl]) {
@@ -383,50 +481,56 @@ var metrics = {
                                 }
                             }
                         } else {
-                            mergedDataObj['meta'] = dataObjects[i]['meta'] || [];
+                            mergedDataObj['meta'] = dataObjects[i]['meta'] || {};
                         }
-    
-                        if (mergedDataObj[year]) {
-                            for (var prop in dataObjects[i]['d']) {
-                                mergedDataObj[year][prop] = dataObjects[i]['d'][prop];
+                        
+                        //new meta merge as hash tables
+                        if(dataObjects[i]['meta_v2']){
+                            for (var metaEl in dataObjects[i]['meta_v2']) {
+                                if (mergedDataObj['meta'][metaEl]) {
+                                    mergedDataObj['meta'][metaEl] = union(mergedDataObj['meta'][metaEl], Object.keys(dataObjects[i]['meta_v2'][metaEl]));
+                                } else {
+                                    mergedDataObj['meta'][metaEl] = Object.keys(dataObjects[i]['meta_v2'][metaEl]);
+                                }
                             }
+                        }
+        
+                        if (mergedDataObj[year]) {
+                            mergedDataObj[year] = deepMerge(mergedDataObj[year], dataObjects[i]['d']);
                         } else {
                             mergedDataObj[year] = dataObjects[i]['d'] || {};
                         }
                     } else {
                         if (mergedDataObj[year][month]) {
-                            for (var prop in dataObjects[i]['d']) {
-                                mergedDataObj[year][month][prop] = dataObjects[i]['d'][prop];
-                            }
+                            mergedDataObj[year][month] = deepMerge(mergedDataObj[year][month], dataObjects[i]['d']);
                         } else {
                             mergedDataObj[year][month] = dataObjects[i]['d'] || {};
                         }
-    
+        
                         if (!isRefresh) {
                             for (var day in dataObjects[i]['d']) {
                                 for (var prop in dataObjects[i]['d'][day]) {
                                     if ((collection == 'users' || dataObjects[i]['s'] == 'no-segment') && prop <= 23 && prop >= 0) {
                                         continue;
                                     }
-    
-                                    if (typeof dataObjects[i]['d'][day][prop] === 'object') {
+        
+                                    if (typeof dataObjects[i]['d'][day][prop] === 'object') { 
                                         for (var secondLevel in dataObjects[i]['d'][day][prop]) {
-                                            if (secondLevel == "t" || secondLevel == 'n' ||
-                                                secondLevel == 'c' || secondLevel == 's') {
+                                            if (levels.daily.indexOf(secondLevel) !== -1) {
                                                 if (!mergedDataObj[year][month][prop]) {
                                                     mergedDataObj[year][month][prop] = {};
                                                 }
-    
+        
                                                 if (mergedDataObj[year][month][prop][secondLevel]) {
                                                     mergedDataObj[year][month][prop][secondLevel] += dataObjects[i]['d'][day][prop][secondLevel];
                                                 } else {
                                                     mergedDataObj[year][month][prop][secondLevel] = dataObjects[i]['d'][day][prop][secondLevel];
                                                 }
-    
+        
                                                 if (!mergedDataObj[year][prop]) {
                                                     mergedDataObj[year][prop] = {};
                                                 }
-    
+        
                                                 if (mergedDataObj[year][prop][secondLevel]) {
                                                     mergedDataObj[year][prop][secondLevel] += dataObjects[i]['d'][day][prop][secondLevel];
                                                 } else {
@@ -434,16 +538,14 @@ var metrics = {
                                                 }
                                             }
                                         }
-                                    } else if (prop == 't' || prop == 'n' ||
-                                        prop == 'd' || prop == 'e' ||
-                                        prop == 'c' || prop == 's') {
-    
+                                    } else if (levels.monthly.indexOf(prop) !== -1) {
+        
                                         if (mergedDataObj[year][month][prop]) {
                                             mergedDataObj[year][month][prop] += dataObjects[i]['d'][day][prop];
                                         } else {
                                             mergedDataObj[year][month][prop] = dataObjects[i]['d'][day][prop];
                                         }
-    
+        
                                         if (mergedDataObj[year][prop]) {
                                             mergedDataObj[year][prop] += dataObjects[i]['d'][day][prop];
                                         } else {
@@ -456,10 +558,30 @@ var metrics = {
                     }
                 }
             }
-
+        
             return mergedDataObj;
         }
     };
+    
+    //returns the union of two arrays
+    function union(x, y) {
+        var obj = {};
+        for (var i = x.length-1; i >= 0; -- i) {
+            obj[x[i]] = x[i];
+        }
+
+        for (var i = y.length-1; i >= 0; -- i) {
+            obj[y[i]] = y[i];
+        }
+
+        var res = [];
+
+        for (var k in obj) {
+            res.push(obj[k]);
+        }
+
+        return res;
+    }
     
     function getPeriodObj(params) {
 		params.qstring.period = params.qstring.period || "month";

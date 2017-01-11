@@ -377,7 +377,7 @@ if (cluster.isMaster) {
                             }
                             return result;
                         }
-                        common.db.collection('app_users' + params.app_id).findAndModify({_id:"uid-sequence"},{},{$inc:{seq:1}},{new:true}, function(err,result){
+                        common.db.collection('app_users' + params.app_id).findAndModify({_id:"uid-sequence"},{},{$inc:{seq:1}},{new:true, upsert:true}, function(err,result){
                             result = result && result.ok ? result.value : null;
                             if (result && result.seq) {
                                 params.app_user.uid = parseSequence(result.seq);

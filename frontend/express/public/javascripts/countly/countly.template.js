@@ -4159,6 +4159,13 @@ var AppRouter = Backbone.Router.extend({
                 this.refreshScripts["#"][i]();
 
     },
+    performRefresh: function (self) {
+        //refresh only if we are on current period
+        if(countlyCommon.periodObj.periodContainsToday){
+            self.activeView.refresh();
+            self.runRefreshScripts();
+        }
+    },
     renderWhenReady:function (viewName) { //all view renders end up here
 
         // If there is an active view call its destroy function to perform cleanups before a new view renders
@@ -4195,10 +4202,7 @@ var AppRouter = Backbone.Router.extend({
         viewName.render();
 
         var self = this;
-        this.refreshActiveView = setInterval(function () {
-            self.activeView.refresh();
-            self.runRefreshScripts();
-        }, countlyCommon.DASHBOARD_REFRESH_MS);
+        this.refreshActiveView = setInterval(function(){self.performRefresh(self);}, countlyCommon.DASHBOARD_REFRESH_MS);
         
         if(countlyGlobal && countlyGlobal["message"]){
             CountlyHelpers.parseAndShowMsg(countlyGlobal["message"]);
@@ -4387,6 +4391,9 @@ var AppRouter = Backbone.Router.extend({
 		});
         Handlebars.registerHelper('formatTimeAgo', function (context, options) {
             return countlyCommon.formatTimeAgo(parseInt(context)/1000);
+        });
+        Handlebars.registerHelper('withItem', function(object, options) {
+            return options.fn(object[options.hash.key]);
         });
 
         var self = this;
@@ -4832,9 +4839,7 @@ var AppRouter = Backbone.Router.extend({
                     $.idleTimer('destroy');
                     clearInterval(self.refreshActiveView);
                 } else {
-                    self.refreshActiveView = setInterval(function () {
-                        self.activeView.refresh();
-                    }, countlyCommon.DASHBOARD_REFRESH_MS);
+                    self.refreshActiveView = setInterval(function(){self.performRefresh(self);}, countlyCommon.DASHBOARD_REFRESH_MS);
                     $.idleTimer(countlyCommon.DASHBOARD_IDLE_MS);
                 }
             });
@@ -5054,9 +5059,7 @@ var AppRouter = Backbone.Router.extend({
 
         $(document).bind("active.idleTimer", function () {
             self.activeView.restart();
-            self.refreshActiveView = setInterval(function () {
-                self.activeView.refresh();
-            }, countlyCommon.DASHBOARD_REFRESH_MS);
+            self.refreshActiveView = setInterval(function(){self.performRefresh(self);}, countlyCommon.DASHBOARD_REFRESH_MS);
         });
 
         $.fn.dataTableExt.oPagination.four_button = {
@@ -5353,7 +5356,7 @@ var AppRouter = Backbone.Router.extend({
             var name = "countly";
             if($(".widget-header .title").length)
                 name = $(".widget-header .title").first().text();
-            return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase())+"."+ext;
+            return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase())+"-"+moment().format("DD-MMM-YYYY")+"."+ext;
         }
 
         $.extend(true, $.fn.dataTable.defaults, {

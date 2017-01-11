@@ -57,7 +57,8 @@ var countlyConfig = {
     logging: {
         info: ["jobs", "push"],
         default: "warn"
-    }
+    },
+    ignoreProxies:[/*"127.0.0.1"*/]
 };
 
 // Set your host IP or domain to be used in the emails sent

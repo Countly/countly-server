@@ -216,6 +216,7 @@ plugins.setConfigs("crashes", {
                     
                     //error info
                     "name", //optional if provided by OS/Platform, else will use first line of stack
+                    "type", //optional type of the error
                     "error", //error stack
                     "nonfatal", //true if handled exception, false or not provided if crash
                     "logs",//some additional logs provided, if any 
@@ -346,7 +347,12 @@ plugins.setConfigs("crashes", {
                                     groupSet._id = hash;
                                     groupSet.os = report.os;
                                     groupSet.lastTs = report.ts;
-                                    groupSet.name = report.name || report.error.split('\n')[0];
+                                    if(report.name){
+                                        groupSet.name = ((report.name+"").split('\n')[0]+"").trim();
+                                    }
+                                    else{
+                                        groupSet.name = (report.error.split('\n')[0]+"").trim();
+                                    }
                                     groupSet.error = report.error;
                                     groupSet.nonfatal = (report.nonfatal) ? true : false;
                                     if(report.not_os_specific)
@@ -578,6 +584,11 @@ plugins.setConfigs("crashes", {
 				}
                 else if (params.qstring.list) {
                     common.db.collection('app_crashgroups' + params.app_id).find({_id:{$ne:"meta"}},{name:1}).toArray(function(err, res){
+                        if(res){
+                            for(var i = 0; i < res.length; i++){
+                                res[i].name = (res[i].name+"").split("\n")[0].trim();
+                            }
+                        }
                         common.returnOutput(params, res);
                     });
                 }

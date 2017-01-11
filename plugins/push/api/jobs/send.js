@@ -348,7 +348,7 @@ class PushJob extends job.IPCJob {
 							{ key: '[CLY]_push_sent', count: sent.length, segmentation: {i: '' + this.anote._id } }
 						]
 					},
-					app_id: this.anote.creds.app_id,
+					app_id: typeof this.anote.creds.app_id === 'string' ? db.ObjectID(this.anote.creds.app_id) : this.anote.creds.app_id,
 					appTimezone: this.anote.creds.app_timezone.tz,
 					time: require('../../../../api/utils/common.js').initTimeObj(this.anote.creds.app_timezone.tz)
 				};
@@ -399,8 +399,6 @@ class PushJob extends job.IPCJob {
 							}
 						});
 					});
-				} else {
-					this.streamer.clear(db);
 				}
 			}
 		}, (err) => {

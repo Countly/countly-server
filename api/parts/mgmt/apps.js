@@ -288,6 +288,8 @@ var appsApi = {},
         function deleteEvents(){
             common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
                 if (!err && events && events.list) {
+                    
+                    common.arrayAddUniq(events.list, plugins.internalEvents);
                     for (var i = 0; i < events.list.length; i++) {
                         var collectionNameWoPrefix = crypto.createHash('sha1').update(events.list[i] + appId).digest('hex');
                         common.db.collection("events" + collectionNameWoPrefix).drop(function(){});
@@ -369,6 +371,7 @@ var appsApi = {},
         
         common.db.collection('events').findOne({'_id': common.db.ObjectID(appId)}, function(err, events) {
             if (!err && events && events.list) {
+                common.arrayAddUniq(events.list, plugins.internalEvents);
                 for (var i = 0; i < events.list.length; i++) {
                     var segments = [];
                     
