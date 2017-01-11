@@ -12,6 +12,7 @@
 * Fix: Push - send badge data to Android
 * Fix: Add uid even if uid-sequence was not created
 * Fix: Sorting data in bars
+* Fix: Milisecond timestamp not recorded in some cases
 * Feature: Allow detecting ip address from the right side of X-Forwarded-for header
 
 ## Version 16.12
