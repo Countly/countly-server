@@ -971,7 +971,7 @@ var fetch = {},
                 dateName = date.year() + "." + (date.month() + 1) + "." + date.format("D");
                 break;
             case"weekly":
-                dateName = date.isoyear() + ".w" + date.isoweek();
+                dateName = date.isoWeekYear() + ".w" + date.isoWeek();
                 break;
             case "monthly":
                 dateName = date.year() + ".m" +  (date.month() + 1);

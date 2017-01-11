@@ -364,7 +364,7 @@ window.starView = countlyView.extend({
         this.templateData['timeSeriesData'] = [];
         var currentYear = (new Date()).getFullYear();
         var dateFormat = 'MMM, YYYY';
-        if (periodArray.length > 0 && (moment(periodArray[0], "YYYY.M.D").isoyear() === currentYear)) {
+        if (periodArray.length > 0 && (moment(periodArray[0], "YYYY.M.D").isoWeekYear() === currentYear)) {
             dateFormat = 'D MMM';
         }
 

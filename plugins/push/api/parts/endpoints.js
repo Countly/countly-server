@@ -25,17 +25,17 @@ var common          = require('../../../../api/utils/common.js'),
             noy = not.getFullYear(),
             nom = not.getMonth(),
             nod = not.getDate(),
-            // now = mom.isoweek(),
+            // now = mom.isoWeek(),
             ago = mom.clone().add(-365 * 24 * 3600 * 1000),
             agy = noy - 1,
             agm = nom,
             agd = nod,
-            // agw = ago.isoweek(),
+            // agw = ago.isoWeek(),
 
             // month numbers (Jan is 1)
             mts = [...Array(13).keys()].map((k, i) => ((agm + i) % 12) + 1),
             // week numbers
-            wks = [...new Set([...Array(common.getDaysInYear(agy)).keys()].map((k, i) => ago.clone().add(i * 24 * 3600 * 1000).isoweek()))],
+            wks = [...new Set([...Array(common.getDaysInYear(agy)).keys()].map((k, i) => ago.clone().add(i * 24 * 3600 * 1000).isoWeek()))],
 
             // month titles for mts
             mtt = mts.map((m, i) => (i === 0 || m > mts[0] ? agy : noy) + ' ' + moment.monthsShort[m - 1]),
@@ -89,7 +89,7 @@ var common          = require('../../../../api/utils/common.js'),
                             if (yer === noy && mon === nom && d > nod) { return; }
 
                             // current week & month numbers are first and last in wks / mts arrays
-                            var we = moment(new Date(yer, mon, d)).isoweek(),
+                            var we = moment(new Date(yer, mon, d)).isoWeek(),
                                 wi = wks[yer === agy ? 'indexOf' : 'lastIndexOf'](we),
                                 mi = mts[yer === agy ? 'indexOf' : 'lastIndexOf'](mon + 1);
 
