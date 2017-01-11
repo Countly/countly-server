@@ -1045,7 +1045,7 @@ var countlyCommon = {},
                 activePeriod = selectedDate.format("YYYY.M.D");
                 selectedDate.subtract(1, 'days');
                 previousPeriod = selectedDate.format("YYYY.M.D");
-                selectedDate.add('days', 1);
+                selectedDate.add(1, 'days');
 
                 periodMax = 23;
                 periodMin = 0;

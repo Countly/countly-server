@@ -1245,7 +1245,7 @@
 
             } else if (countlyCommon.periodObj.dateString == "D MMM, HH:mm") {
                 formattedDateStart = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
-                formattedDateEnd = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D").add("hours", 23).add("minutes", 59);
+                formattedDateEnd = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D").add(23, "hours").add(59, "minutes");
             } else {
                 formattedDateStart = moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMin, "YYYY.M.D");
                 formattedDateEnd = moment(countlyCommon.periodObj.activePeriod + "." + countlyCommon.periodObj.periodMax, "YYYY.M.D");
@@ -1474,7 +1474,7 @@
                 var allMonths = [];
 
                 for (var i = 0; i < days; i++) {
-                    start.add('days', 1);
+                    start.add(1, 'days');
                     allMonths.push(start.format("MMM YYYY"));
                 }
 
@@ -1487,7 +1487,7 @@
             } else if (bucket == "weekly") {
                 var allWeeks = [];
                 for (var i = 0; i < days; i++) {
-                    start.add('days', 1);
+                    start.add(1, 'days');
                     allWeeks.push(start.isoweek()+" "+start.isoyear());
                 }
 
@@ -1504,7 +1504,7 @@
                 }
             } else if (bucket == "hourly") {
                 for (var i = 0; i < days; i++) {
-                    start.add('days', 1);
+                    start.add(1, 'days');
 
                     for (var j = 0; j < 24; j++) {
                         if (j == 0) {
@@ -1516,7 +1516,7 @@
                 }
             } else {
                 for (var i = 0; i < days; i++) {
-                    start.add('days', 1);
+                    start.add(1, 'days');
                     ticks.push([i, countlyCommon.formatDate(start,"D MMM")]);
                     tickTexts[i] = countlyCommon.formatDate(start,"D MMM, dddd");
                 }
