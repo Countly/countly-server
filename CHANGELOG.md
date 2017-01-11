@@ -13,6 +13,7 @@
 * Fix: Add uid even if uid-sequence was not created
 * Fix: Sorting data in bars
 * Fix: Milisecond timestamp not recorded in some cases
+* Fix: Enable DBViewer by default on new installations
 * Feature: Allow detecting ip address from the right side of X-Forwarded-for header
 
 ## Version 16.12
