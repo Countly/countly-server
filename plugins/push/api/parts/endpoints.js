@@ -59,6 +59,11 @@ var common          = require('../../../../api/utils/common.js'),
 
             rxp = /([0-9]{4}):([0-9]{1,2})/;
 
+        if (moment().isoweek() === wks[0]) {
+            wks.push(wks.shift());
+            wkt.push(wkt.shift());
+        }
+
         // log.d(sen, act);
         // log.d('mts', mts);
         // log.d('wks', wks);
@@ -809,6 +814,7 @@ var common          = require('../../../../api/utils/common.js'),
                 common.db.collection('messages').update({_id: message._id}, {$set: {'deleted': true}},function(){});
                 common.returnOutput(params, message);
             }
+            common.db.collection('jobs').remove({name: 'push:send', status: 0, 'data.mid': message._id}, function(){});
             plugins.dispatch("/systemlogs", {params:params, action:"push_message_deleted", data:message});
             // TODO: need to delete analytics?
         });

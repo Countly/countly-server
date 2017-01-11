@@ -4159,6 +4159,13 @@ var AppRouter = Backbone.Router.extend({
                 this.refreshScripts["#"][i]();
 
     },
+    performRefresh: function (self) {
+        //refresh only if we are on current period
+        if(countlyCommon.periodObj.periodContainsToday){
+            self.activeView.refresh();
+            self.runRefreshScripts();
+        }
+    },
     renderWhenReady:function (viewName) { //all view renders end up here
 
         // If there is an active view call its destroy function to perform cleanups before a new view renders
@@ -4195,10 +4202,7 @@ var AppRouter = Backbone.Router.extend({
         viewName.render();
 
         var self = this;
-        this.refreshActiveView = setInterval(function () {
-            self.activeView.refresh();
-            self.runRefreshScripts();
-        }, countlyCommon.DASHBOARD_REFRESH_MS);
+        this.refreshActiveView = setInterval(function(){self.performRefresh(self);}, countlyCommon.DASHBOARD_REFRESH_MS);
         
         if(countlyGlobal && countlyGlobal["message"]){
             CountlyHelpers.parseAndShowMsg(countlyGlobal["message"]);
@@ -4835,9 +4839,7 @@ var AppRouter = Backbone.Router.extend({
                     $.idleTimer('destroy');
                     clearInterval(self.refreshActiveView);
                 } else {
-                    self.refreshActiveView = setInterval(function () {
-                        self.activeView.refresh();
-                    }, countlyCommon.DASHBOARD_REFRESH_MS);
+                    self.refreshActiveView = setInterval(function(){self.performRefresh(self);}, countlyCommon.DASHBOARD_REFRESH_MS);
                     $.idleTimer(countlyCommon.DASHBOARD_IDLE_MS);
                 }
             });
@@ -5057,9 +5059,7 @@ var AppRouter = Backbone.Router.extend({
 
         $(document).bind("active.idleTimer", function () {
             self.activeView.restart();
-            self.refreshActiveView = setInterval(function () {
-                self.activeView.refresh();
-            }, countlyCommon.DASHBOARD_REFRESH_MS);
+            self.refreshActiveView = setInterval(function(){self.performRefresh(self);}, countlyCommon.DASHBOARD_REFRESH_MS);
         });
 
         $.fn.dataTableExt.oPagination.four_button = {

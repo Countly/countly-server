@@ -1,6 +1,6 @@
 {
   "name": "countly-server",
-  "version": "16.12.0",
+  "version": "16.12.1",
   "description": "innovative, real-time, open source mobile analytics application",
   "keywords": [
     "analytics",
@@ -49,7 +49,7 @@
     "later": "^1.1.6",
     "moment": "2.17.1",
     "moment-timezone": "0.5.11",
-    "mongodb": "2.2.19",
+    "mongodb": "2.2.20",
     "mongoskin": "2.1.0",
     "nodemailer": "2.7.0",
     "nodemailer-smtp-transport": "2.7.2",

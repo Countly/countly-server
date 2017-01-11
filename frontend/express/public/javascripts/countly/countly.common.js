@@ -1039,16 +1039,16 @@
         }
 
         if (propertyNames.indexOf("u") !== -1) {
-            tableData = _.sortBy(tableData, function (obj) {
-                return -obj["u"];
+            tableData.sort(function(a,b){
+                return b.u - a.u;
             });
         } else if (propertyNames.indexOf("t") !== -1) {
-            tableData = _.sortBy(tableData, function (obj) {
-                return -obj["t"];
+            tableData.sort(function(a,b){
+                return b.t - a.t;
             });
         } else if (propertyNames.indexOf("c") !== -1) {
-            tableData = _.sortBy(tableData, function (obj) {
-                return -obj["c"];
+            tableData.sort(function(a,b){
+                return b.c - a.c;
             });
         }
 
