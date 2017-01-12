@@ -820,16 +820,16 @@
                 if (!countlyCommon.periodObj.isSpecialPeriod) {
 
                     if (countlyCommon.periodObj.periodMin == 0) {
-                        formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"));
+                        formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
                     } else if (("" + activeDate).indexOf(".") == -1) {
-                        formattedDate = moment((activeDate + "/" + i + "/1").replace(/\./g, "/"));
+                        formattedDate = moment((activeDate + "/" + i + "/1").replace(/\./g, "/"), "YYYY/MM/DD");
                     } else {
-                        formattedDate = moment((activeDate + "/" + i).replace(/\./g, "/"));
+                        formattedDate = moment((activeDate + "/" + i).replace(/\./g, "/"), "YYYY/MM/DD");
                     }
 
                     dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i+metric);
                 } else {
-                    formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"));
+                    formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"), "YYYY/MM/DD");
                     dataObj = countlyCommon.getDescendantProp(db, activeDateArr[i]+metric);
                 }
 
