@@ -4489,9 +4489,9 @@ var AppRouter = Backbone.Router.extend({
              */
 
             try {
-                moment.lang(countlyCommon.BROWSER_LANG_SHORT);
+                moment.locale(countlyCommon.BROWSER_LANG_SHORT);
             } catch(e) {
-                moment.lang("en");
+                moment.locale("en");
             }
 
             $(".reveal-language-menu").text(countlyCommon.BROWSER_LANG_SHORT.toUpperCase());
@@ -4729,9 +4729,9 @@ var AppRouter = Backbone.Router.extend({
                 countlyCommon.BROWSER_LANG = langCode;
 
                 try {
-                    moment.lang(countlyCommon.BROWSER_LANG_SHORT);
+                    moment.locale(countlyCommon.BROWSER_LANG_SHORT);
                 } catch(e) {
-                    moment.lang("en");
+                    moment.locale("en");
                 }
 
                 $("#date-to").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
