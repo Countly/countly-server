@@ -2464,5 +2464,13 @@
     }
 
     countlyCommon.getOffsetCorrectionForTimestamp = getOffsetCorrectionForTimestamp;
+    
+    countlyCommon.getMonths = function(){
+        var months = [];
+        for(var i = 0; i < 12; i++){
+            months.push(moment.monthsShort(moment([0, i]), ""));
+        }
+        return months;
+    };
 
 }(window.countlyCommon = window.countlyCommon || {}, jQuery));

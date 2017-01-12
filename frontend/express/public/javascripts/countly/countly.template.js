@@ -5168,14 +5168,14 @@ var AppRouter = Backbone.Router.extend({
                     s = s.replace(/,|:/g,"");
                     var dateParts = s.split(" ");
 
-                    return  parseInt((moment.monthsShort.indexOf(dateParts[1]) + 1) * 1000000) +
+                    return  parseInt((countlyCommon.getMonths().indexOf(dateParts[1]) + 1) * 1000000) +
                         parseInt(dateParts[0]) * 10000 +
                         parseInt(dateParts[2]);
                 } else {
                     return parseInt(s.replace(':', ''));
                 }
             } else if (s.length == 3) {
-                return moment.monthsShort.indexOf(s);
+                return countlyCommon.getMonths().indexOf(s);
             } else if (s.indexOf("W") == 0) {
                 s = s.replace(",","");
                 s = s.replace("W","");
@@ -5186,12 +5186,12 @@ var AppRouter = Backbone.Router.extend({
                 var dateParts = s.split(" ");
 
                 if (dateParts.length == 3) {
-                    return (parseInt(dateParts[2]) * 10000) + parseInt(moment.monthsShort.indexOf(dateParts[1]) * 100) + parseInt(dateParts[0]);
+                    return (parseInt(dateParts[2]) * 10000) + parseInt(countlyCommon.getMonths().indexOf(dateParts[1]) * 100) + parseInt(dateParts[0]);
                 } else {
                     if(dateParts[0].length == 3)
-                        return parseInt(moment.monthsShort.indexOf(dateParts[0]) * 100) + parseInt(dateParts[1]*10000);
+                        return parseInt(countlyCommon.getMonths().indexOf(dateParts[0]) * 100) + parseInt(dateParts[1]*10000);
                     else    
-                        return parseInt(moment.monthsShort.indexOf(dateParts[1]) * 100) + parseInt(dateParts[0]);
+                        return parseInt(countlyCommon.getMonths().indexOf(dateParts[1]) * 100) + parseInt(dateParts[0]);
                 }
             }
         }
