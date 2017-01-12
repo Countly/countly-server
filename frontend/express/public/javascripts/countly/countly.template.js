@@ -4733,6 +4733,8 @@ var AppRouter = Backbone.Router.extend({
                 } catch(e) {
                     moment.locale("en");
                 }
+                
+                countlyCommon.getMonths(true);
 
                 $("#date-to").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);
                 $("#date-from").datepicker("option", $.datepicker.regional[countlyCommon.BROWSER_LANG]);

@@ -2465,12 +2465,18 @@
 
     countlyCommon.getOffsetCorrectionForTimestamp = getOffsetCorrectionForTimestamp;
     
-    countlyCommon.getMonths = function(){
-        var months = [];
-        for(var i = 0; i < 12; i++){
-            months.push(moment.monthsShort(moment([0, i]), ""));
+    var __months = [];
+    countlyCommon.getMonths = function(reset){
+        if(reset){
+            __months = [];
         }
-        return months;
+        
+        if(!__months.length){
+            for(var i = 0; i < 12; i++){
+                __months.push(moment.monthsShort(moment([0, i]), ""));
+            }
+        }
+        return __months;
     };
 
 }(window.countlyCommon = window.countlyCommon || {}, jQuery));
