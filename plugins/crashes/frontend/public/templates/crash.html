@@ -21,9 +21,10 @@
     <link rel="stylesheet" href="<%- cdn %>stylesheets/main.min.css?<%= countlyVersion %>" />
     <link rel="stylesheet" href="<%- cdn %>crashes/stylesheets/main.css?<%= countlyVersion %>" />
     <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.dom.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/moment/moment-with-locales.min.js?<%= countlyVersion %>"></script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/underscore-min.js?<%= countlyVersion %>"></script>
     <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/handlebars.js?<%= countlyVersion %>"></script>
     <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.i18n.properties-min-1.0.9.js?<%= countlyVersion %>"></script>
-    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/underscore-min.js?<%= countlyVersion %>"></script>
     <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/highlight/highlight.pack.js?<%= countlyVersion %>"></script>
     <style>
         #content-container { margin: 0; position: relative; }
@@ -70,157 +71,11 @@
     window.countlyGlobal = window.countlyGlobal || {};
     countlyGlobal["path"] = "<%- path %>";
     countlyGlobal["cdn"] = "<%- cdn %>";
-    countlyCommon = {};
-    countlyCommon.browserLang = function(){
-        var lang = navigator.language || navigator.userLanguage;
-        if(lang){
-            lang = lang.toLowerCase();
-            lang.length > 3 && ( lang = lang.substring(0,3) + lang.substring(3).toUpperCase());
-        };
-        return lang;
-    };
-    countlyCommon.ACTIVE_APP_KEY = 0;
-    countlyCommon.ACTIVE_APP_ID = 0;
-    countlyCommon.BROWSER_LANG = countlyCommon.browserLang() || "en-US";
-    countlyCommon.BROWSER_LANG_SHORT = countlyCommon.BROWSER_LANG.split("-")[0];
-    countlyCommon.timeString = function(timespent){
-        var timeSpentString = (timespent.toFixed(1)) + " " + jQuery.i18n.map["common.minute.abrv"];
-
-        if (timespent >= 142560) {
-            timeSpentString = (timespent / 525600).toFixed(1) + " " + jQuery.i18n.map["common.year.abrv"];
-        } else if (timespent >= 1440) {
-            timeSpentString = (timespent / 1440).toFixed(1) + " " + jQuery.i18n.map["common.day.abrv"];
-        } else if (timespent >= 60) {
-            timeSpentString = (timespent / 60).toFixed(1) + " " + jQuery.i18n.map["common.hour.abrv"];
-        }
-        return timeSpentString;
-    };
-    // Draws a graph with the given dataPoints to container. Used for drawing bar and pie charts.
-    countlyCommon.drawGraph = function (dataPoints, container, graphType, inGraphProperties) {
-        _.defer(function(){
-            if ((!dataPoints.dp || !dataPoints.dp.length) || (graphType == "bar" && dataPoints.dp[0].data[0][1]== null && dataPoints.dp[0].data[1][1] == null)) {
-                $(container).hide();
-                $(container).siblings(".no-data").show();
-                return true;
-            } else {
-                $(container).show();
-                $(container).siblings(".no-data").hide();
-            }
-
-            var graphProperties = {
-                series:{
-                    lines:{ show:true, fill:true },
-                    points:{ show:true }
-                },
-                grid:{ hoverable:true, borderColor:"null", color:"#999", borderWidth:0, minBorderMargin:10},
-                xaxis:{ minTickSize:1, tickDecimals:"number", tickLength:0},
-                yaxis:{ min:0, minTickSize:1, tickDecimals:"number", position:"right" },
-                legend:{ backgroundOpacity:0, margin:[20, -19] },
-                colors:countlyCommon.GRAPH_COLORS
-            };
-
-            switch (graphType) {
-                case "line":
-                    graphProperties.series = {lines:{ show:true, fill:true }, points:{ show:true }};
-                    break;
-                case "bar":
-                    if (dataPoints.ticks.length > 20) {
-                        graphProperties.xaxis.rotateTicks = 45;
-                    }
-
-                    var barWidth = 0.6;
-
-                    switch(dataPoints.dp.length) {
-                        case 2:
-                            barWidth = 0.3;
-                            break;
-                        case 3:
-                            barWidth = 0.2;
-                            break;
-                    }
-
-                    for (var i = 0; i < dataPoints.dp.length; i++) {
-                        dataPoints.dp[i].bars = {
-                            order: i,
-                            barWidth: barWidth
-                        }
-                    }
-
-                    graphProperties.series = {stack:true, bars:{ show:true, barWidth:0.6, tickLength:0, fill:1 }};
-                    graphProperties.xaxis.ticks = dataPoints.ticks;
-                    break;
-                case "separate-bar":
-                    if (dataPoints.ticks.length > 20) {
-                        graphProperties.xaxis.rotateTicks = 45;
-                    }
-                    graphProperties.series = {bars:{ show:true, align:"center", barWidth:0.6, tickLength:0, fill:1 }};
-                    graphProperties.xaxis.ticks = dataPoints.ticks;
-                    break;
-                case "pie":
-                    graphProperties.series = { pie:{
-                        show:true,
-                        lineWidth:0,
-                        radius:115,
-                        innerRadius: 0.45,
-                        combine:{
-                            color:'#CCC',
-                            threshold:0.05
-                        },
-                        label:{
-                            show:true,
-                            radius:160
-                        }
-                    }};
-                    graphProperties.legend.show = false;
-                    break;
-                default:
-                    break;
-            }
-
-            if (inGraphProperties) {
-                $.extend(true, graphProperties, inGraphProperties);
-            }
-
-            $.plot($(container), dataPoints.dp, graphProperties);
-
-            if (graphType == "bar" || graphType == "separate-bar") {
-                $(container).unbind("plothover");
-                $(container).bind("plothover", function (event, pos, item) {
-                    $("#graph-tooltip").remove();
-
-                    if (item && item.datapoint && item.datapoint[1]) {
-                        // For stacked bar chart calculate the diff
-                        var yAxisValue = item.datapoint[1].toFixed(1).replace(".0", "") - item.datapoint[2].toFixed(1).replace(".0", "");
-
-                        showTooltip({
-                            x: pos.pageX,
-                            y: item.pageY,
-                            contents: yAxisValue || 0
-                        });
-                    }
-                });
-            } else {
-                $(container).unbind("plothover");
-            }
-        }, dataPoints, container, graphType, inGraphProperties);
-    };
-    countlyCommon.formatTimeAgo = function(timestamp) {
-		var target = new Date(timestamp*1000);
-		var now = new Date();
-		var diff = Math.floor((now - target) / 1000);
-		if (diff <= 1) {return "<span style='color:#50C354;'>just now</span>";}
-		if (diff < 20) {return "<span style='color:#50C354;'>" + diff + " seconds ago</span>";}
-		if (diff < 40) {return "<span style='color:#50C354;'>half a minute ago</span>";}
-		if (diff < 60) {return "<span style='color:#50C354;'>less than a minute ago</span>";}
-		if (diff <= 90) {return "one minute ago";}
-		if (diff <= 3540) {return Math.round(diff / 60) + " minutes ago";}
-		if (diff <= 5400) {return "1 hour ago";}
-		if (diff <= 86400) {return Math.round(diff / 3600) + " hours ago";}
-		if (diff <= 129600) {return "1 day ago";}
-		if (diff < 604800) {return Math.round(diff / 86400) + " days ago";}
-		if (diff <= 777600) {return "1 week ago";}
-		return "on " + target.toString().split(" GMT")[0];
-	};
+    countlyGlobal["member"] = {};
+    store = {get:function(){return null;}, set:function(){}};
+    </script>
+    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.common.js?<%= countlyVersion %>"></script>
+    <script>
     jQuery.i18n.properties({
         name:'locale',
         cache:true,
@@ -624,7 +479,7 @@ window.CrashgroupView = {
 					$(nRow).attr("id", aData._id);
 				},
                 "aoColumns": [
-					{ "mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.ts); else return row.ts;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.crashed"]},
+					{ "mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.ts); else return row.ts;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["crashes.crashed"]},
 					{ "mData": function(row, type){return row.os + " " + row.os_version.replace(/:/g, '.');}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.os_version"] },
 					{ "mData": function(row, type){var str = ""; if(row.manufacture) str += row.manufacture+" "; if(row.device) str += countlyDeviceList[row.device] || row.device; return str;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.device"]},
 					{ "mData": function(row, type){return row.app_version.replace(/:/g, '.');}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.app_version"] }
@@ -840,6 +695,7 @@ $(function() {
             }
         }
     };
+
     $.fn.dataTableExt.oApi.fnStandingRedraw = function(oSettings) {
         if(oSettings.oFeatures.bServerSide === false){
             var before = oSettings._iDisplayStart;
@@ -854,34 +710,87 @@ $(function() {
         // draw the 'current' page
         oSettings.oApi._fnDraw(oSettings);
     };
-    $.extend($.fn.dataTable.defaults, {
-        "sDom": '<"dataTable-top"fpT>t<"dataTable-bottom"i>',
+    jQuery.fn.dataTableExt.oSort['format-ago-asc']  = function(x, y) {
+        return x-y;
+    };
+
+    jQuery.fn.dataTableExt.oSort['format-ago-desc']  = function(x, y) {
+        return y-x;
+    };
+    function getFileName(ext){
+        var name = "Crash Reports";
+        return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase())+"-"+moment().format("DD-MMM-YYYY")+"."+ext;
+    }
+
+    $.extend(true, $.fn.dataTable.defaults, {
+        "sDom": '<"dataTable-top"lfpT>t<"dataTable-bottom"i>',
         "bAutoWidth": false,
+        "bLengthChange":true,
+        "bPaginate":true,
         "sPaginationType": "four_button",
-        "iDisplayLength": 50,
+        "iDisplayLength": 50,//(store.get("iDisplayLength")) ? parseInt(store.get("iDisplayLength")) : 50,
         "bDestroy": true,
         "bDeferRender": true,
+        "oLanguage": {
+			"sZeroRecords": jQuery.i18n.map["common.table.no-data"],
+			"sInfoEmpty": jQuery.i18n.map["common.table.no-data"],
+			"sEmptyTable": jQuery.i18n.map["common.table.no-data"],
+			"sInfo": jQuery.i18n.map["common.showing"],
+			"sInfoFiltered": jQuery.i18n.map["common.filtered"],
+			"sSearch": jQuery.i18n.map["common.search"],
+            "sLengthMenu": jQuery.i18n.map["common.show-items"]+"<input type='number' id='dataTables_length_input'/>"
+		},
         "oTableTools": {
             "sSwfPath": countlyGlobal["cdn"]+"javascripts/dom/dataTables/swf/copy_csv_xls.swf",
             "aButtons": [
                 {
                     "sExtends": "csv",
-                    "sButtonText": "Save to CSV",
+                    "sButtonText": jQuery.i18n.map["common.save-to-csv"],
                     "fnClick": function (nButton, oConfig, flash) {
                         var tableCols = $(nButton).parents(".dataTables_wrapper").find(".dataTable").dataTable().fnSettings().aoColumns,
                             tableData = this.fnGetTableData(oConfig).split(/\r\n|\r|\n/g).join('","').split('","'),
                             retStr = "";
+                            
+                        //check if exported data needs to be processed by some other lib    
+                        if(tableCols[0].sExport && app.dataExports[tableCols[0].sExport]){
+                            
+                            //get data to export
+                            var data = app.dataExports[tableCols[0].sExport]();
+                            
+                            //get all columns
+                            var cols = [];
+                            for(var i = 0; i < data.length; i++){
+                                for(var col in data[i]){
+                                     if(cols.indexOf(col) === -1)
+                                         cols.push(col);
+                                    
+                                 }
+                            }
+                            
+                            //generate data in the needed format
+                            var tdata = JSON.parse(JSON.stringify(cols));
+                            for(var i = 0; i < data.length; i++){
+                                for(var j = 0; j < cols.length; j++){
+                                    tdata.push('"'+(data[i][cols[j]] || ""));
+                                }
+                            }
+                            
+                            tableCols = cols;
+                            tableData = tdata;
+                        }
 
                         for (var i = 0;  i < tableData.length; i++) {
-                            tableData[i] = tableData[i].replace("\"", "");
+                            tableData[i] = tableData[i].replace(/^"/, "");
 
                             if (i >= tableCols.length) {
                                 var colIndex = i % tableCols.length;
-
+                                 
                                 if (tableCols[colIndex].sType == "formatted-num") {
                                     tableData[i] = tableData[i].replace(/,/g, "");
                                 } else if (tableCols[colIndex].sType == "percent") {
                                     tableData[i] = tableData[i].replace("%", "");
+                                } else if (tableCols[colIndex].sType == "format-ago" || tableCols[colIndex].sType == "event-timeline") {
+                                    tableData[i] = tableData[i].split("|").pop();
                                 }
                             }
 
@@ -891,17 +800,45 @@ $(function() {
                                 retStr += "\"" + tableData[i] + "\", ";
                             }
                         }
-
+                        flash.setFileName( getFileName("csv") );
                         this.fnSetText(flash, retStr);
                     }
                 },
                 {
                     "sExtends": "xls",
-                    "sButtonText": "Save for Excel",
+                    "sButtonText": jQuery.i18n.map["common.save-to-excel"],
                     "fnClick": function (nButton, oConfig, flash) {
                         var tableCols = $(nButton).parents(".dataTables_wrapper").find(".dataTable").dataTable().fnSettings().aoColumns,
                             tableData = this.fnGetTableData(oConfig).split(/\r\n|\r|\n/g).join('\t').split('\t'),
                             retStr = "";
+                            
+                        //check if exported data needs to be processed by some other lib    
+                        if(tableCols[0].sExport && app.dataExports[tableCols[0].sExport]){
+                            
+                            //get data to export
+                            var data = app.dataExports[tableCols[0].sExport]();
+                            
+                            //get all columns
+                            var cols = [];
+                            for(var i = 0; i < data.length; i++){
+                                for(var col in data[i]){
+                                     if(cols.indexOf(col) === -1)
+                                         cols.push(col);
+                                    
+                                 }
+                            }
+                            
+                            //generate data in the needed format
+                            var tdata = JSON.parse(JSON.stringify(cols));
+                            for(var i = 0; i < data.length; i++){
+                                for(var j = 0; j < cols.length; j++){
+                                    tdata.push(data[i][cols[j]] || "");
+                                }
+                            }
+                            
+                            tableCols = cols;
+                            tableData = tdata;
+                        }
 
                         for (var i = 0;  i < tableData.length; i++) {
                             if (i >= tableCols.length) {
@@ -913,6 +850,8 @@ $(function() {
                                     tableData[i] = parseFloat(tableData[i].replace("%", "")).toLocaleString();
                                 } else if (tableCols[colIndex].sType == "numeric") {
                                     tableData[i] = parseFloat(tableData[i]).toLocaleString();
+                                } else if (tableCols[colIndex].sType == "format-ago" || tableCols[colIndex].sType == "event-timeline") {
+                                    tableData[i] = tableData[i].split("|").pop();
                                 }
                             }
 
@@ -922,20 +861,20 @@ $(function() {
                                 retStr += tableData[i] + "\t";
                             }
                         }
-
+                        flash.setFileName( getFileName("xls") );
                         this.fnSetText(flash, retStr);
                     }
                 }
             ]
         },
         "fnInitComplete": function(oSettings, json) {
-            var saveHTML = "<div class='save-table-data'><i class='fa fa-download'></i></div>",
+            var saveHTML = "<div class='save-table-data' data-help='help.datatables-export'><i class='fa fa-download'></i></div>",
                 searchHTML = "<div class='search-table-data'><i class='fa fa-search'></i></div>",
                 tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
 
             $(saveHTML).insertBefore(tableWrapper.find(".DTTT_container"));
             $(searchHTML).insertBefore(tableWrapper.find(".dataTables_filter"));
-            tableWrapper.find(".dataTables_filter").html(tableWrapper.find(".dataTables_filter").find("input").attr("Placeholder","Search").clone(true));
+            tableWrapper.find(".dataTables_filter").html(tableWrapper.find(".dataTables_filter").find("input").attr("Placeholder",jQuery.i18n.map["common.search"]).clone(true));
 
             tableWrapper.find(".save-table-data").on("click", function() {
                 if ($(this).next(".DTTT_container").css('visibility') == 'hidden') {
@@ -949,8 +888,39 @@ $(function() {
                 $(this).next(".dataTables_filter").toggle();
                 $(this).next(".dataTables_filter").find("input").focus();
             });
+            
+            if(oSettings.oFeatures.bServerSide){
+                tableWrapper.find(".save-table-data").tipsy({gravity:$.fn.tipsy.autoNS, title:function () {
+                    return ($(this).data("help")) ? jQuery.i18n.map[$(this).data("help")] : "";
+                }, fade:true, offset:5, cssClass:'yellow', opacity:1, html:true});
+                tableWrapper.find(".dataTables_length").show();
+                tableWrapper.find('#dataTables_length_input').bind( 'change.DT', function(e) {
+                    //store.set("iDisplayLength", $(this).val());
+                });
+            }
+            else{
+                tableWrapper.find(".dataTables_length").hide();
+            }
 
-            tableWrapper.css({"min-height": tableWrapper.height()});
+            //tableWrapper.css({"min-height": tableWrapper.height()});
+        },
+        fnPreDrawCallback: function(oSettings, json) {
+            var tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
+
+            if (tableWrapper.find(".table-placeholder").length == 0) {
+                var $placeholder = $('<div class="table-placeholder"><div class="top"></div><div class="header"></div></div>');
+                tableWrapper.append($placeholder);
+            }
+
+            if (tableWrapper.find(".table-loader").length == 0) {
+                tableWrapper.append("<div class='table-loader'></div>");
+            }
+        },
+        fnDrawCallback: function(oSettings) {
+            var tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
+            tableWrapper.find(".dataTable-bottom").show();
+            tableWrapper.find(".table-placeholder").remove();
+            tableWrapper.find(".table-loader").remove();
         }
     });
 
