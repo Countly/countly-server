@@ -227,6 +227,7 @@ class ResourceFaçade extends ResourceInterface {
 	close () {
 		if (this.isOpen) {
 			log.w('Closing underlying resource %s from façade', this.id);
+			log.w('Stack %j', new Error().stack);
 			return new Promise((resolve, reject) => {
 				setTimeout(reject.bind(null, JOB.ERROR.TIMEOUT), RESOURCE_CMD_TIMEOUT);
 				this.channel.once(CMD.CLOSED, () => {
@@ -259,9 +260,9 @@ class ResourceFaçade extends ResourceInterface {
 					reject(JOB.ERROR.TIMEOUT);
 					this.close();
 				}, RESOURCE_CMD_TIMEOUT);
+				this.channel.send(CMD.OPENED);
 				this.channel.once(CMD.OPENED, resolve);
 				this.channel.once(CMD.CLOSED, reject);
-				this.channel.send(CMD.OPENED);
 			});
 		}
 	}
