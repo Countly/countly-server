@@ -160,6 +160,7 @@ namespace apns {
 		SSL_CTX* ssl_ctx;
 
 		nghttp2_data_provider global_data;
+		uint32_t max_data_size;
 		std::queue <h2_stream *> queue;							// stream_id = 0 until request is sent (it's not in queue at that time)					
 		std::unordered_map <int32_t, h2_stream *> requests;		// requests in socket, key is stream_id
 		std::vector<std::tuple<std::string, int, std::string>> statuses;		// buffer for statuses

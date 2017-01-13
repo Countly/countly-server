@@ -52,6 +52,7 @@ namespace apns {
 		hostname = host;
 		topic = top;
 		expiration = exp.empty() ? timestr(60 * 60 * 24 * 7) : exp;
+		max_data_size = 0;
 
 		stats = {};
 	

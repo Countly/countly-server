@@ -545,7 +545,6 @@ namespace apns {
 	}
 
 	void H2::conn_thread_uv_write_to_socket(char* buf, size_t len) {
-		// LOG_DEBUG("conn_thread_uv_write_to_socket");
 		if(len <= 0) {
 			return;
 		}
@@ -553,7 +552,9 @@ namespace apns {
 		uvbuf.base = buf;
 		uvbuf.len = len;
 		tcp_write = new uv_write_t;
+		// LOG_DEBUG("conn_thread_uv_write_to_socket: " << len);
 		int r = uv_write(tcp_write, (uv_stream_t*)tcp, &uvbuf, 1, conn_thread_uv_on_write);
+		// LOG_DEBUG("conn_thread_uv_write_to_socket result: " << r);
 		if (r < 0) {
 			delete tcp_write;
 			std::ostringstream out;
@@ -592,10 +593,10 @@ namespace apns {
 				}
 			}
 			if (r < 0) {
-				// LOG_DEBUG("SSL Error " << r);
+				LOG_DEBUG("SSL Error " << r);
 				conn_thread_ssl_handle_error(r);
 			} else {
-				// LOG_DEBUG("flushed socket, now " << buffer_out.size());
+				// LOG_DEBUG("flushing bio, buffer is " << buffer_out.size());
 				conn_thread_ssl_flush_read_bio();
 			}
 		} else if (SSL_is_init_finished(ssl) && tcp_init_sem) {
@@ -614,8 +615,14 @@ namespace apns {
 	long H2::conn_thread_h2_get_data(nghttp2_session *session, int32_t stream_id, uint8_t *buf, size_t length, uint32_t *data_flags, nghttp2_data_source *source, void *user_data) {
 		h2_stream *stream = (h2_stream *)nghttp2_session_get_stream_user_data(session, stream_id);
 		std::string string = *stream->data;
+		H2* obj = (H2 *)user_data;
 
 		// LOG_DEBUG("outing data for stream " << stream_id << " (" << stream->stream_id << "): " << stream->data << ", " << string << ", written " << stream->data_written);
+
+		if (string.size() > obj->max_data_size) {
+			LOG_DEBUG("H2 conn_thread_h2_get_data: setting max_data_size to " << string.size());
+			obj->max_data_size = string.size();
+		}
 
 		if (stream->data_written > 0) {
 			uint32_t copy = string.size() - stream->data_written;
@@ -668,7 +675,7 @@ namespace apns {
 			obj->buffer_out.insert(obj->buffer_out.end(), ch, ch + length);
 
 			obj->conn_thread_uv_check_out(!(obj->stats.state & ST_CONNECTED));
-			LOG_DEBUG("send_callback returns " << length);
+			// LOG_DEBUG("send_callback returns " << length);
 			return length;
 		});
 
@@ -679,8 +686,9 @@ namespace apns {
 			switch (frame->hd.type) {
 				case NGHTTP2_SETTINGS:
 					for (size_t i = 0; i < frame->settings.niv; ++i) {
+						LOG_DEBUG("H2 recv: got setting " << frame->settings.iv[i].settings_id << ": " << frame->settings.iv[i].value << " in " << uv_thread_self());
 						if (frame->settings.iv[i].settings_id == NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS) {
-							obj->stats.sending_max = frame->settings.iv[i].value / 2;
+							obj->stats.sending_max = frame->settings.iv[i].value;
 							LOG_DEBUG("H2 recv: set sending_max to " << obj->stats.sending_max << "(" << obj->stats.sending << ")" << " in " << uv_thread_self());
 						}
 					}
@@ -700,7 +708,29 @@ namespace apns {
 						}
 					}
 					break;
+				case NGHTTP2_GOAWAY:
+					LOG_DEBUG(" ========================== GOAWAY! ============================");
+
+					nghttp2_goaway *goaway = (nghttp2_goaway *) frame;
+					LOG_DEBUG(" error_code: " << goaway->error_code);
+					LOG_DEBUG(" last_stream_id: " << goaway->last_stream_id);
+
+					std::string str((const char*)goaway->opaque_data, goaway->opaque_data_len);
+					LOG_DEBUG(" opaque_data: " << str);
+
+					break;
 			}
+			return 0;
+		});
+
+		nghttp2_session_callbacks_set_error_callback(callbacks, [](nghttp2_session *session, const char *msg, size_t len, void *user_data) -> int {
+			std::string str(msg, len);
+			LOG_DEBUG(">>>>>>>>>>>>>> ERROR: " << str);
+			return 0;
+		});
+
+		nghttp2_session_callbacks_set_on_invalid_frame_recv_callback(callbacks, [](nghttp2_session *session, const nghttp2_frame *frame, int lib_error_code, void *user_data) -> int {
+			LOG_DEBUG(">>>>>>>>>>>>>> ERROR INVALID FRAME: " << lib_error_code);
 			return 0;
 		});
 
@@ -923,18 +953,50 @@ namespace apns {
 			}
 		}
 
-		int rv;
-		const uint8_t *ptr;
-		while ((rv = nghttp2_session_mem_send(session, &ptr)) > 0) {
-			buffer_out.insert(buffer_out.end(), (unsigned char *)ptr, (unsigned char *)ptr + rv);
+		if (nghttp2_session_want_write(session) > 0) {
+			int rv = 0;
+			const uint8_t *ptr;
+			while ((rv = nghttp2_session_mem_send(session, &ptr)) > 0) {
+				// LOG_DEBUG("H2 transmit nghttp2_session_mem_send " << rv);
+				buffer_out.insert(buffer_out.end(), (unsigned char *)ptr, (unsigned char *)ptr + rv);
+				uint32_t left = nghttp2_session_get_remote_window_size(session);
+				if (left < max_data_size * 2) {
+					LOG_DEBUG("H2 transmit break since buffer size 2 * " << max_data_size << " > " << nghttp2_session_get_remote_window_size(session));
+					stats.transmitting = false;
+					uv_mutex_unlock(main_mutex);
+					return;
+				}
+			}
+			if (rv < 0) {
+				std::ostringstream out;
+				out << "H2: Couldn't submit nghttp2_session_mem_send: " << nghttp2_strerror(rv);
+				send_error(out.str());
+				conn_thread_stop();
+				return;
+			}
 		}
-		if (rv < 0) {
-			std::ostringstream out;
-			out << "H2: Couldn't submit HTTP/2 session: " << nghttp2_strerror(rv);
-			send_error(out.str());
-			conn_thread_stop();
-			return;
-		}
+
+		// int limit;
+		// int rv;
+		// const uint8_t *ptr;
+		// while ((limit = nghttp2_session_get_remote_window_size(session)) > 1000 && (rv = nghttp2_session_mem_send(session, &ptr)) > 0) {
+		// 	LOG_DEBUG("H2 service nghttp2_session_mem_send " << rv << " while limit is " << limit);
+		// 	buffer_out.insert(buffer_out.end(), (unsigned char *)ptr, (unsigned char *)ptr + rv);
+		// }
+
+		// int rv = 0;
+		// const uint8_t *ptr;
+		// while (nghttp2_session_want_read(session) == 0 && (rv = nghttp2_session_mem_send(session, &ptr)) > 0) {
+		// 	LOG_DEBUG("H2 service nghttp2_session_mem_send " << rv);
+		// 	buffer_out.insert(buffer_out.end(), (unsigned char *)ptr, (unsigned char *)ptr + rv);
+		// }
+		// if (rv < 0) {
+		// 	std::ostringstream out;
+		// 	out << "H2: Couldn't submit HTTP/2 session: " << nghttp2_strerror(rv);
+		// 	send_error(out.str());
+		// 	conn_thread_stop();
+		// 	return;
+		// }
 
 		conn_thread_uv_on_event();
 	}
@@ -952,9 +1014,10 @@ namespace apns {
 			// LOG_DEBUG("H2: locking for transmission in ");
 			uint32_t count = stats.sending_max - stats.sending;
 			uint32_t batch = 0;
+			uint32_t left = nghttp2_session_get_remote_window_size(session);
 			if (queue.size() < count) { count = queue.size(); }
 			// LOG_INFO("transmiting " << ¨count << " notification(s)");
-			while (stats.sending < stats.sending_max && queue.size() > 0 && batch < H2_SENDING_BATCH_SIZE) {
+			while (stats.sending < stats.sending_max && queue.size() > 0 && batch < H2_SENDING_BATCH_SIZE && buffer_out.size() < left) {
 				// if (stats.sending  + stats.sent > 200) {
 				// 	if (stats.sending == 0) {
 				// 		int a = 5;
@@ -1001,6 +1064,27 @@ namespace apns {
 				} else {
 					requests[stream->stream_id] = stream;
 	
+					int rv = 0;
+					const uint8_t *ptr;
+					while ((rv = nghttp2_session_mem_send(session, &ptr)) > 0) {
+						// LOG_DEBUG("H2 transmit nghttp2_session_mem_send " << rv);
+						buffer_out.insert(buffer_out.end(), (unsigned char *)ptr, (unsigned char *)ptr + rv);
+						left = nghttp2_session_get_remote_window_size(session);
+						if (left < max_data_size * 2) {
+							LOG_DEBUG("H2 transmit break since buffer size 2 * " << max_data_size << " > " << nghttp2_session_get_remote_window_size(session));
+							stats.transmitting = false;
+							uv_mutex_unlock(main_mutex);
+							return;
+						}
+					}
+					if (rv < 0) {
+						std::ostringstream out;
+						out << "H2: Couldn't submit nghttp2_session_mem_send: " << nghttp2_strerror(rv);
+						send_error(out.str());
+						conn_thread_stop();
+						return;
+					}
+
 					// int rv = nghttp2_session_send(session);
 					// if (rv != 0) {
 					// 	stats.error_connection = nghttp2_strerror(rv);
@@ -1016,6 +1100,7 @@ namespace apns {
 				// }
 
 				// stream_data->stream_id = stream_id;
+				left = nghttp2_session_get_remote_window_size(session);
 			}
 			// LOG_DEBUG("sent " << batch << " messages");
 		}
