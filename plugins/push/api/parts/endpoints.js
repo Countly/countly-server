@@ -59,7 +59,7 @@ var common          = require('../../../../api/utils/common.js'),
 
             rxp = /([0-9]{4}):([0-9]{1,2})/;
 
-        if (moment().isoweek() === wks[0]) {
+        if (moment().isoWeek() === wks[0]) {
             wks.push(wks.shift());
             wkt.push(wkt.shift());
         }
