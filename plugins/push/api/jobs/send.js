@@ -267,7 +267,7 @@ class PushJob extends job.IPCJob {
 						}
 					} else {
 						lst = users.pop();
-						log.d('[%d:%s]: Going to feed %d users while %d is requested: %j / %j', process.pid, this.anote.id, users.length, count, users, lst);
+						log.d('[%d:%s]: Going to feed %d users while %d is requested', process.pid, this.anote.id, users.length, count);
 						fed = this.resource.feed(users.map(this.mapUser.bind(this)));
 					
 						status.size += fed;
