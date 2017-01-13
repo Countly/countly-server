@@ -20,9 +20,9 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
-#define H2_QUEUE_SIZE 10000
-#define H2_SENDING_BATCH_SIZE 500
-#define H2_STATUSES_BATCH_SIZE 500
+#define H2_QUEUE_SIZE 30000
+#define H2_SENDING_BATCH_SIZE 1000
+#define H2_STATUSES_BATCH_SIZE 3000
 #define H2_TIMEOUT 30000
 #define H2_PING_TIMEOUT 3000
 #define H2_MAX_EOFS 3

@@ -17,28 +17,28 @@ namespace apns {
 	void H2::conn_thread_run(void *arg) {
 		H2 *obj = static_cast<H2*>(arg);
 
-		LOG_DEBUG("going into conn_loop in " << uv_thread_self());
-		LOG_DEBUG("conn_loop returned " << uv_run(obj->conn_loop, UV_RUN_DEFAULT) << " in " << uv_thread_self());
+		LOG_DEBUG("CONN " << uv_thread_self() << ": going into conn_loop in " << uv_thread_self());
+		LOG_DEBUG("CONN " << uv_thread_self() << ": conn_loop returned " << uv_run(obj->conn_loop, UV_RUN_DEFAULT) << " in " << uv_thread_self());
 
 		free(obj->conn_loop);
 		obj->conn_loop = NULL;
 	}
 
 	void H2::conn_thread_stop_loop(uv_async_t *async) {
-		LOG_DEBUG("stopping conn_loop");
+		LOG_DEBUG("CONN " << uv_thread_self() << ": stopping conn_loop");
 		H2 *obj = static_cast<H2*>(async->data);
 		obj->conn_thread_stop();
 		// uv_stop(obj->conn_loop);
 	}
 
 	void H2::conn_thread_stop() {
-		LOG_INFO("Disconnecting: " << stats.state);
+		LOG_INFO("CONN " << uv_thread_self() << ": Disconnecting: " << stats.state);
 
 		if (tcp && (stats.state & ST_CONNECTED)) {
 			stats.state &= ~ST_CONNECTED;
 			
 			if (uv_is_active((uv_handle_t *)service_ping_timer)) {
-				LOG_DEBUG("disconnecting, stopping ping timer " << stats.state);
+				LOG_DEBUG("CONN " << uv_thread_self() << ": disconnecting, stopping ping timer " << stats.state);
 				uv_timer_stop(service_ping_timer);
 			}
 
@@ -61,24 +61,24 @@ namespace apns {
 				delete obj->tcp;
 				obj->tcp = NULL;
 
-				LOG_INFO("freed tcp & ssl for " << obj->hostname);
+				LOG_INFO("CONN " << uv_thread_self() << ": freed tcp & ssl for " << obj->hostname);
 
 				if (obj->send_sem) {
-					LOG_INFO("releasing send semaphore");
+					LOG_INFO("CONN " << uv_thread_self() << ": releasing send semaphore");
 					uv_sem_post(obj->send_sem);
 				} else {
 					if (obj->h2_sem) {
-						LOG_INFO("releasing h2 semaphore");
+						LOG_INFO("CONN " << uv_thread_self() << ": releasing h2 semaphore");
 						uv_sem_post(obj->h2_sem);
 					} else if (obj->tcp_init_sem) { 
-						LOG_INFO("releasing tcp semaphore");
+						LOG_INFO("CONN " << uv_thread_self() << ": releasing tcp semaphore");
 						uv_sem_post(obj->tcp_init_sem);
 					}
 				}
 				obj->stats.state = ST_INITIAL;
 
 				uv_stop(obj->conn_loop);
-				LOG_INFO("uv_loop_close: " << uv_loop_close(obj->conn_loop));
+				LOG_INFO("CONN " << uv_thread_self() << ": uv_loop_close: " << uv_loop_close(obj->conn_loop));
 				delete obj->conn_loop;
 
 				exit(0);
@@ -90,13 +90,13 @@ namespace apns {
 		H2 *obj = static_cast<H2*>(handle->data);
 
 		uv_timer_stop(obj->conn_timer);
-		LOG_WARNING("-------------------- TIMEOUT -------------------------");
+		LOG_WARNING("CONN " << uv_thread_self() << ": -------------------- TIMEOUT -------------------------");
 		if (!(obj->stats.state & ST_CONNECTED)) {
-		LOG_WARNING("------------------ NOT CONNECTED -------------------------");
+		LOG_WARNING("CONN " << uv_thread_self() << ": ------------------ NOT CONNECTED -------------------------");
 			if (obj->tcp) {
 				uv_read_stop((uv_stream_t *)obj->tcp);
 
-				LOG_WARNING("has next address ? " << !!obj->address->ai_next);
+				LOG_WARNING("CONN " << uv_thread_self() << ": has next address ? " << !!obj->address->ai_next);
 
 				uv_close((uv_handle_t *)obj->tcp, [](uv_handle_t* handle){
 					H2* obj = static_cast<H2 *>(handle->data);
@@ -111,14 +111,14 @@ namespace apns {
 						obj->fd = 0;
 					}
 
-					LOG_WARNING("freed tcp & ssl for " << obj->hostname);
+					LOG_WARNING("CONN " << uv_thread_self() << ": freed tcp & ssl for " << obj->hostname);
 					if (obj->address->ai_next) {
-						LOG_WARNING("going to try next address");
+						LOG_WARNING("CONN " << uv_thread_self() << ": going to try next address");
 						obj->address = obj->address->ai_next;
 						obj->conn_async->data = obj;
 						uv_async_send(obj->conn_async);
 					} else {
-						LOG_WARNING("no more addresses, quit");
+						LOG_WARNING("CONN " << uv_thread_self() << ": no more addresses, quit");
 						obj->stats.error_connection = "Timeout on all resolved servers";
 						if (obj->tcp_init_sem) {
 							uv_sem_post(obj->tcp_init_sem);
@@ -144,11 +144,11 @@ namespace apns {
 		// } else if (!(obj->stats.state & ST_RESOLVED)) {
 		// LOG_DEBUG("------------------ STREAM -------------------------");
 		}
-		// LOG_ERROR("timeout in state " << obj->stats.state);
+		// LOG_ERROR("CONN " << uv_thread_self() << ": timeout in state " << obj->stats.state);
 	}
 
 	void H2::conn_thread_connect() {
-		LOG_INFO("looping adresses of " << hostname << " in " << uv_thread_self());
+		LOG_INFO("CONN " << uv_thread_self() << ": looping adresses of " << hostname << " in " << uv_thread_self());
 		send_error("looping addresses");
 
 		session = NULL;
@@ -173,7 +173,7 @@ namespace apns {
 			}
 
 			if (stats.error_connection.empty()) {
-				LOG_INFO("done connecting to " << hostname);
+				LOG_INFO("CONN " << uv_thread_self() << ": done connecting to " << hostname);
 
 				const unsigned char *next_proto = nullptr;
 				unsigned int next_proto_len;
@@ -181,7 +181,7 @@ namespace apns {
 				for (int i = 0; i < 2; ++i) {
 					if (next_proto) {
 						std::string negotiated = std::string((const char *)next_proto, next_proto_len);
-						LOG_DEBUG("The negotiated protocol: " << negotiated << " while wating for " << NGHTTP2_H2);
+						LOG_DEBUG("CONN " << uv_thread_self() << ": The negotiated protocol: " << negotiated << " while wating for " << NGHTTP2_H2);
 						if (NGHTTP2_H2.compare(negotiated) != 0) {
 							next_proto = nullptr;
 						}
@@ -200,7 +200,7 @@ namespace apns {
 				// address = nullptr;
 				stats.connected = millis();
 
-				LOG_INFO("starting HTTP/2 stack");
+				LOG_INFO("CONN " << uv_thread_self() << ": starting HTTP/2 stack");
 				h2_sem = new uv_sem_t;
 				uv_sem_init(h2_sem, 0);
 				h2_async->data = this;
@@ -217,9 +217,9 @@ namespace apns {
 				stats.state &= ~(ST_ERROR_RECOVERABLE | ST_ERROR_NONRECOVERABLE);
 				stats.state |= ST_CONNECTED;
 
-				LOG_INFO("done with HTTP/2 stack");
+				LOG_INFO("CONN " << uv_thread_self() << ": done with HTTP/2 stack");
 			} else {
-				LOG_WARNING("failed to connect, trying next server");
+				LOG_WARNING("CONN " << uv_thread_self() << ": failed to connect, trying next server");
 				
 				if (tcp) {
 					uv_read_stop((uv_stream_t*)tcp);
@@ -243,13 +243,13 @@ namespace apns {
 
 		}
 
-		LOG_INFO("looping done: " << stats.error_connection);
+		LOG_INFO("CONN " << uv_thread_self() << ": looping done: " << stats.error_connection);
 	}
 
 	void H2::conn_thread_initiate(uv_async_t *async) {
 		H2* obj = static_cast<H2 *>(async->data);
 
-		LOG_DEBUG("Starting connect timer");
+		LOG_DEBUG("CONN " << uv_thread_self() << ": Starting connect timer");
 		if (uv_is_active((uv_handle_t *)obj->conn_timer)) {
 			uv_timer_again(obj->conn_timer);
 		} else {
@@ -262,13 +262,13 @@ namespace apns {
 		// inet_ntop(p->ai_family, addr, ipstr, sizeof ipstr); 
 		// char addr[17] = {'\0'};
 		// uv_ip4_name((struct sockaddr_in*) obj->address->ai_addr, addr, 16);
-		LOG_DEBUG("connecting to " << obj->hostname << " (" << addr << ": " << obj->address->ai_family << " (" << AF_INET << "), " << obj->address->ai_protocol << ") in " << uv_thread_self());
+		LOG_DEBUG("CONN " << uv_thread_self() << ": connecting to " << obj->hostname << " (" << addr << ": " << obj->address->ai_family << " (" << AF_INET << "), " << obj->address->ai_protocol << ") in " << uv_thread_self());
 
 		obj->stats.error_connection = "";
 		obj->tcp = nullptr;
 
 		obj->fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
-		LOG_DEBUG("socket " << obj->fd);
+		LOG_DEBUG("CONN " << uv_thread_self() << ": socket " << obj->fd);
 		if (obj->fd == -1) {
 			std::ostringstream out;
 			out << "socket creation failed: " << strerror(errno);
@@ -286,10 +286,10 @@ namespace apns {
 			return;
 		}
 
-		LOG_DEBUG("setsockopt ");
+		LOG_DEBUG("CONN " << uv_thread_self() << ": setsockopt ");
 
 		obj->ssl = SSL_new(obj->ssl_ctx);
-		LOG_DEBUG("ssl " << obj->ssl);
+		LOG_DEBUG("CONN " << uv_thread_self() << ": ssl " << obj->ssl);
 		if (!obj->ssl) {
 			std::ostringstream out;
 			out << "SSL_new() failed: " << ERR_error_string(ERR_get_error(), nullptr);
@@ -302,7 +302,7 @@ namespace apns {
 		SSL_set_tlsext_host_name(obj->ssl, obj->hostname.c_str());
 
 		val = connect(obj->fd, obj->address->ai_addr, obj->address->ai_addrlen);
-		LOG_DEBUG("connect " << val);
+		LOG_DEBUG("CONN " << uv_thread_self() << ": CONN " << uv_thread_self() << ": connect " << val);
 		if (val != 0 && errno != EINPROGRESS) {
 			std::ostringstream out;
 			out << "connect() failed: " << strerror(val);
@@ -317,7 +317,7 @@ namespace apns {
 		obj->tcp = new uv_tcp_t;
 		obj->tcp->data = obj;
 		val = uv_tcp_init(obj->conn_loop, obj->tcp);
-		LOG_DEBUG("uv_tcp_init " << val);
+		LOG_DEBUG("CONN " << uv_thread_self() << ": CONN " << uv_thread_self() << ": uv_tcp_init " << val);
 		if (val) {
 			std::ostringstream out;
 			out << "uv_tcp_init() failed: " << uv_strerror(val);
@@ -330,7 +330,7 @@ namespace apns {
 		}
 
 		val = uv_tcp_open(obj->tcp, obj->fd);
-		LOG_DEBUG("uv_tcp_open " << val);
+		LOG_DEBUG("CONN " << uv_thread_self() << ": uv_tcp_open " << val);
 		if (val) {
 			std::ostringstream out;
 			out << "uv_tcp_open() failed: " << uv_strerror(val);
@@ -343,7 +343,7 @@ namespace apns {
 		}
 
 		val = uv_tcp_nodelay(obj->tcp, 1);
-		LOG_DEBUG("uv_tcp_nodelay " << val);
+		LOG_DEBUG("CONN " << uv_thread_self() << ": uv_tcp_nodelay " << val);
 		if (val) {
 			std::ostringstream out;
 			out << "uv_tcp_nodelay() failed: " << uv_strerror(val);
@@ -359,11 +359,11 @@ namespace apns {
 		// // TLS & ALPN parts are handled here,
 		// // then packets are passed back and forth in H2:service on an established connection
 		// auto read_l = [](uv_stream_s*, long int size, const uv_buf_t* buf) -> void {
-		// 	LOG_DEBUG(" < " << size << "bytes: " << buf->base);
+		// 	LOG_DEBUG("CONN " << uv_thread_self() << ":  < " << size << "bytes: " << buf->base);
 		// };
 
 		// auto alloc_l = [](uv_handle_s*, long unsigned int size, uv_buf_t *buf) -> void {
-		// 	LOG_DEBUG("allocating " << size << "-byte buffer");
+		// 	LOG_DEBUG("CONN " << uv_thread_self() << ": allocating " << size << "-byte buffer");
 		// 	buf->base = (char*)malloc(size);
 		// };
 
@@ -387,12 +387,12 @@ namespace apns {
 		val = SSL_do_handshake(obj->ssl);
 		obj->conn_thread_uv_on_event();
 
-		LOG_INFO("waiting for SSL handshake to complete for " << addr << " in " << uv_thread_self());
+		LOG_INFO("CONN " << uv_thread_self() << ": waiting for SSL handshake to complete for " << addr << " in " << uv_thread_self());
 	}
 
 	void H2::conn_thread_uv_on_event() {
 		if (stats.reading) {
-			// LOG_DEBUG("already reading, won't run conn_thread_uv_on_event");
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": already reading, won't run conn_thread_uv_on_event");
 			return;
 		}
 
@@ -415,13 +415,13 @@ namespace apns {
 				s = SSL_read(ssl, buf, sizeof(buf));
 
 				if (s < 0) {
-					// LOG_DEBUG("SSL error " << s);
+					// LOG_DEBUG("CONN " << uv_thread_self() << ": SSL error " << s);
 					conn_thread_ssl_handle_error(s);
 				} else if(s > 0) {
-					// LOG_DEBUG("read " << s << " bytes from SSL");
+					// LOG_DEBUG("CONN " << uv_thread_self() << ": read " << s << " bytes from SSL");
 					
 					if (buffer_in.size() > 0) {
-						// LOG_DEBUG("copying " << s << " bytes to the end of buffer of " << buffer_in.size());
+						// LOG_DEBUG("CONN " << uv_thread_self() << ": copying " << s << " bytes to the end of buffer of " << buffer_in.size());
 						std::copy(buf, buf + s, std::back_inserter(buffer_in));
 
 						if (session) {
@@ -432,16 +432,16 @@ namespace apns {
 								send_error(out.str());
 							} else {
 								buffer_in.erase(buffer_in.begin(), buffer_in.begin() + ng);
-								// LOG_DEBUG("erased " << ng << " from buffer, now " << buffer_in.size());
+								// LOG_DEBUG("CONN " << uv_thread_self() << ": erased " << ng << " from buffer, now " << buffer_in.size());
 							}
 						} else {
-							// LOG_DEBUG("just copying to the back of buffer: " << s);
+							// LOG_DEBUG("CONN " << uv_thread_self() << ": just copying to the back of buffer: " << s);
 							std::copy(buf, buf + s, std::back_inserter(buffer_in));
 						}
 					} else {
 						if (session) {
 							ng = nghttp2_session_mem_recv(session, (const uint8_t *)buf, s);
-							// LOG_DEBUG("buffer empty, reading from memory: " << ng);
+							// LOG_DEBUG("CONN " << uv_thread_self() << ": buffer empty, reading from memory: " << ng);
 							if (ng < 0) {
 								std::ostringstream out;
 								out << "error in nghttp2_session_mem_recv() 2: " << nghttp2_strerror(ng);
@@ -450,7 +450,7 @@ namespace apns {
 								std::copy(buf + ng, buf + s, std::back_inserter(buffer_in));
 							}
 						} else {
-							// LOG_DEBUG("just copying to the back of buffer: " << s);
+							// LOG_DEBUG("CONN " << uv_thread_self() << ": just copying to the back of buffer: " << s);
 							std::copy(buf, buf + s, std::back_inserter(buffer_in));
 						}
 					}
@@ -473,7 +473,7 @@ namespace apns {
 	}
 
 	void H2::conn_thread_uv_on_read(uv_stream_s *stream, long int nread, const uv_buf_t* buf) {
-		// LOG_DEBUG("conn_thread_uv_on_read " << buf->len << " bytes in " << uv_thread_self() << ": " << nread);
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_on_read " << buf->len << " bytes in " << uv_thread_self() << ": " << nread);
 		H2* c = static_cast<H2*>(stream->data);
 		c->stats.service_timeouts = 0;
 		if (nread == -1) { // disconnected (?)
@@ -527,7 +527,7 @@ namespace apns {
 
 	void H2::conn_thread_uv_on_alloc(uv_handle_s* handle, long unsigned int size, uv_buf_t *buf) {
 		H2* obj = static_cast<H2*>(handle->data);
-		// LOG_DEBUG("conn_thread_uv_on_alloc");
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_on_alloc");
 		int len;
 		void *ptr = bufpool_acquire(obj->bufpool, &len);
 		*buf = uv_buf_init((char *)ptr, len);
@@ -536,7 +536,7 @@ namespace apns {
 	}
 
 	void H2::conn_thread_ssl_flush_read_bio() {
-		// LOG_DEBUG("conn_thread_ssl_flush_read_bio");
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_ssl_flush_read_bio");
 		char buf[1024*16];
 		int bytes_read = 0;
 		while((bytes_read = BIO_read(write_bio, buf, sizeof(buf))) > 0) {
@@ -552,9 +552,9 @@ namespace apns {
 		uvbuf.base = buf;
 		uvbuf.len = len;
 		tcp_write = new uv_write_t;
-		// LOG_DEBUG("conn_thread_uv_write_to_socket: " << len);
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_write_to_socket: " << len);
 		int r = uv_write(tcp_write, (uv_stream_t*)tcp, &uvbuf, 1, conn_thread_uv_on_write);
-		// LOG_DEBUG("conn_thread_uv_write_to_socket result: " << r);
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_uv_write_to_socket result: " << r);
 		if (r < 0) {
 			delete tcp_write;
 			std::ostringstream out;
@@ -564,7 +564,7 @@ namespace apns {
 	}
 
 	void H2::conn_thread_ssl_handle_error(int result) {
-		// LOG_DEBUG("conn_thread_ssl_handle_error");
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_ssl_handle_error");
 		if (result != 0) {
 			int error = SSL_get_error(ssl, result);
 			if (error == SSL_ERROR_WANT_READ) { // wants to read from bio
@@ -578,12 +578,12 @@ namespace apns {
 	}
 
 	void H2::conn_thread_uv_check_out(bool flush) {    
-		// LOG_DEBUG("outing data for SSL finished ? " << SSL_is_init_finished(ssl) << " buffer size " << buffer_out.size() << " flush? " << flush);
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": outing data for SSL finished ? " << SSL_is_init_finished(ssl) << " buffer size " << buffer_out.size() << " flush? " << flush);
 		if (SSL_is_init_finished(ssl) && buffer_out.size() > 0) {
 			// std::copy(buffer_out.begin(), buffer_out.end(), std::ostream_iterator<char>(std::cout,""));
 			int r = 0;
 			while ((r = SSL_write(ssl, &buffer_out[0], buffer_out.size())) > 0) {
-				// LOG_DEBUG("written " << r);
+				// LOG_DEBUG("CONN " << uv_thread_self() << ": written " << r);
 				if (r == (int)buffer_out.size()) {
 					buffer_out.clear();
 					// conn_thread_ssl_flush_read_bio();
@@ -593,15 +593,15 @@ namespace apns {
 				}
 			}
 			if (r < 0) {
-				LOG_DEBUG("SSL Error " << r);
+				LOG_DEBUG("CONN " << uv_thread_self() << ": SSL Error " << r);
 				conn_thread_ssl_handle_error(r);
 			} else {
-				// LOG_DEBUG("flushing bio, buffer is " << buffer_out.size());
+				// LOG_DEBUG("CONN " << uv_thread_self() << ": flushing bio, buffer is " << buffer_out.size());
 				conn_thread_ssl_flush_read_bio();
 			}
 		} else if (SSL_is_init_finished(ssl) && tcp_init_sem) {
 			if (tcp_init_sem) {
-				LOG_DEBUG("SSL handshake done");
+				LOG_DEBUG("CONN " << uv_thread_self() << ": SSL handshake done");
 				uv_sem_post(tcp_init_sem);
 			}
 		}
@@ -617,51 +617,51 @@ namespace apns {
 		std::string string = *stream->data;
 		H2* obj = (H2 *)user_data;
 
-		// LOG_DEBUG("outing data for stream " << stream_id << " (" << stream->stream_id << "): " << stream->data << ", " << string << ", written " << stream->data_written);
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": outing data for stream " << stream_id << " (" << stream->stream_id << "): " << stream->data << ", " << string << ", written " << stream->data_written);
 
 		if (string.size() > obj->max_data_size) {
-			LOG_DEBUG("H2 conn_thread_h2_get_data: setting max_data_size to " << string.size());
+			LOG_DEBUG("CONN " << uv_thread_self() << ": H2 conn_thread_h2_get_data: setting max_data_size to " << string.size());
 			obj->max_data_size = string.size();
 		}
 
 		if (stream->data_written > 0) {
 			uint32_t copy = string.size() - stream->data_written;
 			if (length < copy) {
-				// LOG_DEBUG("!!!!!!!!!!!!!!!!!!! copying left " << length << " bytes while we have more :" << string.size() - stream->data_written << " for " << stream_id);
+				// LOG_DEBUG("CONN " << uv_thread_self() << ": !!!!!!!!!!!!!!!!!!! copying left " << length << " bytes while we have more :" << string.size() - stream->data_written << " for " << stream_id);
 				copy = length;
 			}
 			if (copy > 0) {
-				// LOG_DEBUG("copying left " << copy << " bytes" << " for " << stream_id);
+				// LOG_DEBUG("CONN " << uv_thread_self() << ": copying left " << copy << " bytes" << " for " << stream_id);
 				std::memcpy(buf, (uint8_t *)(string.data() + stream->data_written), copy);
 				stream->data_written += copy;
 			}
 			if (stream->data_written  == string.size()) {
-				// LOG_DEBUG("setting EOF");
+				// LOG_DEBUG("CONN " << uv_thread_self() << ": setting EOF");
 				*data_flags |= NGHTTP2_DATA_FLAG_EOF;
 			}
-			// LOG_DEBUG("conn_thread_h2_get_data returns 1 " << copy << " for " << stream_id);
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_h2_get_data returns 1 " << copy << " for " << stream_id);
 			return copy;
 		} else {
 			stream->data_written = string.size();
 			if (stream->data_written > length) {
-				// LOG_DEBUG("copying only " << length << " bytes out of " << stream->data_written << " for " << stream_id);
+				// LOG_DEBUG("CONN " << uv_thread_self() << ": copying only " << length << " bytes out of " << stream->data_written << " for " << stream_id);
 				stream->data_written = length;
 			// } else {
-				// LOG_DEBUG("copying all " << stream->data_written << " bytes" << " for " << stream_id);
+				// LOG_DEBUG("CONN " << uv_thread_self() << ": copying all " << stream->data_written << " bytes" << " for " << stream_id);
 			}
 			if (string.size() <= length) {
-				// LOG_DEBUG("setting EOF");
+				// LOG_DEBUG("CONN " << uv_thread_self() << ": setting EOF");
 				*data_flags |= NGHTTP2_DATA_FLAG_EOF;
 			}
 			std::memcpy(buf, (uint8_t *)string.data(), stream->data_written);
-			// LOG_DEBUG("conn_thread_h2_get_data returns 2 " << stream->data_written << " for " << stream_id);
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": conn_thread_h2_get_data returns 2 " << stream->data_written << " for " << stream_id);
 			return stream->data_written;
 		}
 	}
 
 	void H2::conn_thread_initiate_h2(uv_async_t *async) {
 		H2 *obj = static_cast<H2*>(async->data);
-		// LOG_DEBUG("H2: conn_thread_initiate_h2 in " << uv_thread_self() << " hostname " << obj->hostname);
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: conn_thread_initiate_h2 in " << uv_thread_self() << " hostname " << obj->hostname);
 		nghttp2_session_callbacks *callbacks;
 
  
@@ -671,25 +671,25 @@ namespace apns {
 			H2* obj = (H2 *)user_data;
 			unsigned char *ch = (unsigned char *)data;
 
-			// LOG_DEBUG("H2: send " << length << " bytes (now " << obj->buffer_out.size() << ")");
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: send " << length << " bytes (now " << obj->buffer_out.size() << ")");
 			obj->buffer_out.insert(obj->buffer_out.end(), ch, ch + length);
 
 			obj->conn_thread_uv_check_out(!(obj->stats.state & ST_CONNECTED));
-			// LOG_DEBUG("send_callback returns " << length);
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": send_callback returns " << length);
 			return length;
 		});
 
 		nghttp2_session_callbacks_set_on_frame_recv_callback(callbacks, [](nghttp2_session *session, const nghttp2_frame *frame, void *user_data){
 			H2* obj = (H2 *)user_data;
-			// LOG_DEBUG("< " << (frame->hd.type == NGHTTP2_SETTINGS ? "settings" : frame->hd.type == NGHTTP2_HEADERS ? "headers" : "other"));
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": < " << (frame->hd.type == NGHTTP2_SETTINGS ? "settings" : frame->hd.type == NGHTTP2_HEADERS ? "headers" : "other"));
 			// verbose_on_frame_recv_callback(session, frame, user_data);
 			switch (frame->hd.type) {
 				case NGHTTP2_SETTINGS:
 					for (size_t i = 0; i < frame->settings.niv; ++i) {
-						LOG_DEBUG("H2 recv: got setting " << frame->settings.iv[i].settings_id << ": " << frame->settings.iv[i].value << " in " << uv_thread_self());
+						LOG_DEBUG("CONN " << uv_thread_self() << ": H2 recv: got setting " << frame->settings.iv[i].settings_id << ": " << frame->settings.iv[i].value << " in " << uv_thread_self());
 						if (frame->settings.iv[i].settings_id == NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS) {
 							obj->stats.sending_max = frame->settings.iv[i].value;
-							LOG_DEBUG("H2 recv: set sending_max to " << obj->stats.sending_max << "(" << obj->stats.sending << ")" << " in " << uv_thread_self());
+							LOG_DEBUG("CONN " << uv_thread_self() << ": H2 recv: set sending_max to " << obj->stats.sending_max << "(" << obj->stats.sending << ")" << " in " << uv_thread_self());
 						}
 					}
 					if (obj->h2_sem) {
@@ -697,10 +697,10 @@ namespace apns {
 					}
 					break;
 				case NGHTTP2_HEADERS:
-					// LOG_DEBUG("H2 recv: headers frame");
+					// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 recv: headers frame");
 					if (frame->headers.cat == NGHTTP2_HCAT_RESPONSE) {
 						// session_data->stream_data->stream_id == frame->hd.stream_id) {
-						// LOG_DEBUG("H2 recv: All headers received");
+						// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 recv: All headers received");
 					} else if (frame->headers.cat == NGHTTP2_HCAT_HEADERS) {
 						if ((frame->hd.flags & NGHTTP2_FLAG_END_STREAM) == 0) {
 							nghttp2_submit_rst_stream(session, NGHTTP2_FLAG_NONE, frame->hd.stream_id, NGHTTP2_PROTOCOL_ERROR);
@@ -709,14 +709,14 @@ namespace apns {
 					}
 					break;
 				case NGHTTP2_GOAWAY:
-					LOG_DEBUG(" ========================== GOAWAY! ============================");
+					LOG_DEBUG("CONN " << uv_thread_self() << ":  ========================== GOAWAY! ============================");
 
 					nghttp2_goaway *goaway = (nghttp2_goaway *) frame;
-					LOG_DEBUG(" error_code: " << goaway->error_code);
-					LOG_DEBUG(" last_stream_id: " << goaway->last_stream_id);
+					LOG_DEBUG("CONN " << uv_thread_self() << ":  error_code: " << goaway->error_code);
+					LOG_DEBUG("CONN " << uv_thread_self() << ":  last_stream_id: " << goaway->last_stream_id);
 
 					std::string str((const char*)goaway->opaque_data, goaway->opaque_data_len);
-					LOG_DEBUG(" opaque_data: " << str);
+					LOG_DEBUG("CONN " << uv_thread_self() << ":  opaque_data: " << str);
 
 					break;
 			}
@@ -725,18 +725,18 @@ namespace apns {
 
 		nghttp2_session_callbacks_set_error_callback(callbacks, [](nghttp2_session *session, const char *msg, size_t len, void *user_data) -> int {
 			std::string str(msg, len);
-			LOG_DEBUG(">>>>>>>>>>>>>> ERROR: " << str);
+			LOG_DEBUG("CONN " << uv_thread_self() << ": >>>>>>>>>>>>>> ERROR: " << str);
 			return 0;
 		});
 
 		nghttp2_session_callbacks_set_on_invalid_frame_recv_callback(callbacks, [](nghttp2_session *session, const nghttp2_frame *frame, int lib_error_code, void *user_data) -> int {
-			LOG_DEBUG(">>>>>>>>>>>>>> ERROR INVALID FRAME: " << lib_error_code);
+			LOG_DEBUG("CONN " << uv_thread_self() << ": >>>>>>>>>>>>>> ERROR INVALID FRAME: " << lib_error_code);
 			return 0;
 		});
 
 
 		nghttp2_session_callbacks_set_on_frame_send_callback(callbacks, [](nghttp2_session *session, const nghttp2_frame *frame, void *user_data){
-			// LOG_DEBUG("> " << (frame->hd.type == NGHTTP2_SETTINGS ? "settings" : frame->hd.type == NGHTTP2_HEADERS ? "headers" : "other"));
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": > " << (frame->hd.type == NGHTTP2_SETTINGS ? "settings" : frame->hd.type == NGHTTP2_HEADERS ? "headers" : "other"));
     		// verbose_on_frame_send_callback(session, frame, user_data);
     		return 0;
 		});
@@ -745,7 +745,7 @@ namespace apns {
 			h2_stream *stream = (h2_stream *)nghttp2_session_get_stream_user_data(session, stream_id);
 			std::string str((const char *)data, len);
 			stream->response = str;
-			// LOG_DEBUG("H2: DATA chunk received for stream " << stream_id << ": " << str);
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: DATA chunk received for stream " << stream_id << ": " << str);
 			return 0;
 		});
 
@@ -761,7 +761,7 @@ namespace apns {
 			stream->obj->requests.erase(stream->stream_id);
 			stream->obj->stats.sending--;
 			stream->obj->stats.sent++;
-			// LOG_DEBUG("H2: -------- stream " << stream_id << " " << stream->id << " closed: " << stream->status << ", " << stream->response << ", " << stream->obj->stats.sending << " left");
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: -------- stream " << stream_id << " " << stream->id << " closed: " << stream->status << ", " << stream->response << ", " << stream->obj->stats.sending << " left");
 			uv_async_send(stream->obj->service_async);
 			// stream->obj->service();
 			delete stream;
@@ -785,36 +785,36 @@ namespace apns {
 							stream->status = -1;
 						}
 
-						// // LOG_DEBUG("nghttp2_session_callbacks_set_on_header_callback block ");
+						// // LOG_DEBUG("CONN " << uv_thread_self() << ": nghttp2_session_callbacks_set_on_header_callback block ");
 						// uv_mutex_lock(stream->obj->main_mutex);
 						// {
-						// 	// LOG_DEBUG("nghttp2_session_callbacks_set_on_header_callback in ");
+						// 	// LOG_DEBUG("CONN " << uv_thread_self() << ": nghttp2_session_callbacks_set_on_header_callback in ");
 						// 	if (strncmp((const char *)value, "200", MIN(valuelen, 3)) == 0) {
-						// 		// LOG_DEBUG(":status 200 for " << stream->id);
+						// 		// LOG_DEBUG("CONN " << uv_thread_self() << ": :status 200 for " << stream->id);
 						// 		stream->obj->statuses.push_back(make_pair(stream->id, 1));
 						// 	} else if (strncmp((const char *)value, "410", MIN(valuelen, 3)) == 0) {
-						// 		// LOG_DEBUG(":status 410 for " << stream->id);
+						// 		// LOG_DEBUG("CONN " << uv_thread_self() << ": :status 410 for " << stream->id);
 						// 		stream->obj->statuses.push_back(make_pair(stream->id, 0));
 						// 	} else {
-						// 		// LOG_DEBUG(":status " << std::string((const char *)value, valuelen) << " for " << stream->id);
+						// 		// LOG_DEBUG("CONN " << uv_thread_self() << ": :status " << std::string((const char *)value, valuelen) << " for " << stream->id);
 						// 		std::string code_str((const char *)value, valuelen);
 						// 		int code_int = std::stoi(code_str);
 						// 		stream->obj->statuses.push_back(make_pair(stream->id, -1 * code_int));
 						// 	}
-						// 	// LOG_DEBUG("nghttp2_session_callbacks_set_on_header_callback out ");
+						// 	// LOG_DEBUG("CONN " << uv_thread_self() << ": nghttp2_session_callbacks_set_on_header_callback out ");
 						// }
 						// uv_mutex_unlock(stream->obj->main_mutex);
-						// LOG_DEBUG("nghttp2_session_callbacks_set_on_header_callback unblock ");
+						// LOG_DEBUG("CONN " << uv_thread_self() << ": nghttp2_session_callbacks_set_on_header_callback unblock ");
 					} else {
-						// LOG_DEBUG("H2 recv: Header received for stream " << frame->hd.stream_id << ": " << std::string((const char *)name, namelen) << " = " << std::string((const char *)value, valuelen));
+						// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 recv: Header received for stream " << frame->hd.stream_id << ": " << std::string((const char *)name, namelen) << " = " << std::string((const char *)value, valuelen));
 					}
 					if ((frame->hd.flags & NGHTTP2_FLAG_END_STREAM) == 0) {
-						// LOG_DEBUG("stream ended with headers");
+						// LOG_DEBUG("CONN " << uv_thread_self() << ": stream ended with headers");
 						stream->obj->conn_thread_uv_on_event();
 					}
 					return 0;
 			}
-			// LOG_DEBUG("H2 recv: something for stream " << frame->hd.stream_id << ": " << std::string((const char *)name, namelen) << " = " << std::string((const char *)value, valuelen));
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 recv: something for stream " << frame->hd.stream_id << ": " << std::string((const char *)name, namelen) << " = " << std::string((const char *)value, valuelen));
 			return 0;
 
 		});
@@ -831,20 +831,20 @@ namespace apns {
 		};
 		obj->stats.sending_max = 1000;
 
-		LOG_DEBUG("H2: sending SETTINGS");
+		LOG_DEBUG("CONN " << uv_thread_self() << ": H2: sending SETTINGS");
 		int rv = nghttp2_submit_settings(obj->session, NGHTTP2_FLAG_NONE, iv, 1);
 		if (rv != 0) {
 			obj->stats.error_connection = nghttp2_strerror(rv);
-			LOG_ERROR("H2: Couldn't submit HTTP/2 SETTINGS");
+			LOG_ERROR("CONN " << uv_thread_self() << ": H2: Couldn't submit HTTP/2 SETTINGS");
 			uv_sem_post(obj->h2_sem);
 			return;
 		}
 
-		LOG_DEBUG("H2: sending session");
+		LOG_DEBUG("CONN " << uv_thread_self() << ": H2: sending session");
 		rv = nghttp2_session_send(obj->session);
 		if (rv != 0) {
 			obj->stats.error_connection = nghttp2_strerror(rv);
-			LOG_ERROR("H2: Couldn't submit HTTP/2 SETTINGS");
+			LOG_ERROR("CONN " << uv_thread_self() << ": H2: Couldn't submit HTTP/2 SETTINGS");
 			uv_sem_post(obj->h2_sem);
 			return;
 		}
@@ -872,7 +872,7 @@ namespace apns {
 	// 		requests.erase(stream_id)
 	// 		stream->obj->stats.sending--;
 	// 		stream->obj->stats.sent++;
-	// 		LOG_DEBUG("H2: -------- stream " << stream_id << " closed, " << stream->obj->stats.sending << " left");
+	// 		LOG_DEBUG("CONN " << uv_thread_self() << ": H2: -------- stream " << stream_id << " closed, " << stream->obj->stats.sending << " left");
 	// 		stream->obj->service();
 	// 		delete stream;
 	// 	}
@@ -888,10 +888,10 @@ namespace apns {
 		H2 *obj = static_cast<H2*>(handle->data);
 
 		if ((obj->stats.state & ST_CONNECTED) && obj->stats.service_timeouts++ <= 0) {
-			LOG_DEBUG("H2 service one of first timeouts, servicing again");
+			LOG_DEBUG("CONN " << uv_thread_self() << ": H2 service one of first timeouts, servicing again");
 			obj->service();
 		} else {
-			LOG_DEBUG("H2 serviced last timeout, should stop");
+			LOG_DEBUG("CONN " << uv_thread_self() << ": H2 serviced last timeout, should stop");
 			obj->conn_thread_stop();
 		}
 	}
@@ -899,27 +899,27 @@ namespace apns {
 	void H2::service_ping(uv_timer_t* handle) {
 		H2 *obj = static_cast<H2*>(handle->data);
 
-		LOG_DEBUG("pinging H2 state " << obj->stats.state);
+		LOG_DEBUG("CONN " << uv_thread_self() << ": pinging H2 state " << obj->stats.state);
 		if (obj->stats.state & ST_CONNECTED) {
 			obj->service();
 		} else {
-			LOG_DEBUG("not connected anymore, stopping ping timer " << obj->stats.state);
+			LOG_DEBUG("CONN " << uv_thread_self() << ": not connected anymore, stopping ping timer " << obj->stats.state);
 			uv_timer_stop(obj->service_ping_timer);
 		}
 	}
 
 	void H2::service() {
-		// LOG_DEBUG("H2 service " << stats.state);
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 service " << stats.state);
 
 		if (stats.state == 0) {
 			return;
 		}
 
 		if (uv_is_active((uv_handle_t *)service_timer)) {
-			// LOG_DEBUG("H2 service active");
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 service active");
 			uv_timer_stop(service_timer);
 		// } else {
-			// LOG_DEBUG("H2 service inactive");
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 service inactive");
 		}
 		service_timer->data = this;
 		uv_timer_start(service_timer, service_timeout, H2_TIMEOUT, 0);
@@ -927,7 +927,7 @@ namespace apns {
 		// LOG_DEBUG(uv_thread_self() << " H2 service: state " << stats.state << " sent " << stats.sent << " (statuses " << statuses.size() << ") sending " << stats.sending << " queue " << queue.size() << " feed_last " << stats.feed_last << " feeding " << stats.feeding << ", H2 state is " << nghttp2_session_want_read(session) << ", " << nghttp2_session_want_write(session));
 		if (queue.size() == 0 && stats.feed_last == 0 && stats.sending == 0) {
 			if (!(stats.state & ST_DONE)) {
-				// LOG_DEBUG("H2 service: done sending");
+				// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 service: done sending");
 				stats.state |= ST_DONE;
 				uv_timer_stop(service_timer);
 				// uv_sem_post(send_sem);
@@ -939,16 +939,16 @@ namespace apns {
 			}
 		} else {
 			if (!stats.feeding && stats.feed_last != 0 && queue.size() < H2_QUEUE_SIZE / 2) {
-				// LOG_DEBUG("H2 service: need to feed");
+				// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 service: need to feed");
 				uv_async_send(main_async);
 			} else 
 			if (((stats.state & ST_DONE) && statuses.size()) || statuses.size() > H2_STATUSES_BATCH_SIZE) {
-				// LOG_DEBUG("H2 service: need to dump stats");
+				// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 service: need to dump stats");
 				uv_async_send(main_async);
 			}
 
 			if ((stats.state & ST_CONNECTED) && !(stats.state & ST_DONE) && stats.sending < stats.sending_max && queue.size() > 0) {
-				// LOG_DEBUG("H2 service: transmit");
+				// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 service: transmit");
 				transmit();
 			}
 		}
@@ -957,11 +957,11 @@ namespace apns {
 			int rv = 0;
 			const uint8_t *ptr;
 			while ((rv = nghttp2_session_mem_send(session, &ptr)) > 0) {
-				// LOG_DEBUG("H2 transmit nghttp2_session_mem_send " << rv);
+				// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 transmit nghttp2_session_mem_send " << rv);
 				buffer_out.insert(buffer_out.end(), (unsigned char *)ptr, (unsigned char *)ptr + rv);
 				uint32_t left = nghttp2_session_get_remote_window_size(session);
 				if (left < max_data_size * 2) {
-					LOG_DEBUG("H2 transmit break since buffer size 2 * " << max_data_size << " > " << nghttp2_session_get_remote_window_size(session));
+					// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 transmit break since buffer size 2 * " << max_data_size << " > " << nghttp2_session_get_remote_window_size(session));
 					stats.transmitting = false;
 					uv_mutex_unlock(main_mutex);
 					return;
@@ -970,6 +970,7 @@ namespace apns {
 			if (rv < 0) {
 				std::ostringstream out;
 				out << "H2: Couldn't submit nghttp2_session_mem_send: " << nghttp2_strerror(rv);
+				LOG_ERROR("CONN " << uv_thread_self() << ": " << out);
 				send_error(out.str());
 				conn_thread_stop();
 				return;
@@ -980,14 +981,14 @@ namespace apns {
 		// int rv;
 		// const uint8_t *ptr;
 		// while ((limit = nghttp2_session_get_remote_window_size(session)) > 1000 && (rv = nghttp2_session_mem_send(session, &ptr)) > 0) {
-		// 	LOG_DEBUG("H2 service nghttp2_session_mem_send " << rv << " while limit is " << limit);
+		// 	LOG_DEBUG("CONN " << uv_thread_self() << ": H2 service nghttp2_session_mem_send " << rv << " while limit is " << limit);
 		// 	buffer_out.insert(buffer_out.end(), (unsigned char *)ptr, (unsigned char *)ptr + rv);
 		// }
 
 		// int rv = 0;
 		// const uint8_t *ptr;
 		// while (nghttp2_session_want_read(session) == 0 && (rv = nghttp2_session_mem_send(session, &ptr)) > 0) {
-		// 	LOG_DEBUG("H2 service nghttp2_session_mem_send " << rv);
+		// 	LOG_DEBUG("CONN " << uv_thread_self() << ": H2 service nghttp2_session_mem_send " << rv);
 		// 	buffer_out.insert(buffer_out.end(), (unsigned char *)ptr, (unsigned char *)ptr + rv);
 		// }
 		// if (rv < 0) {
@@ -1003,27 +1004,27 @@ namespace apns {
 
 	void H2::transmit() {
 		if (stats.transmitting) {
-			// LOG_DEBUG("H2: already transmitting");
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: already transmitting");
 			return;
 		}
 
-		// LOG_DEBUG("H2: locking for transmission");
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: locking for transmission");
 		uv_mutex_lock(main_mutex);
 		stats.transmitting = true;
 		{
-			// LOG_DEBUG("H2: locking for transmission in ");
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: locking for transmission in ");
 			uint32_t count = stats.sending_max - stats.sending;
 			uint32_t batch = 0;
 			uint32_t left = nghttp2_session_get_remote_window_size(session);
 			if (queue.size() < count) { count = queue.size(); }
-			// LOG_INFO("transmiting " << ¨count << " notification(s)");
+			// LOG_INFO("CONN " << uv_thread_self() << ": transmiting " << ¨count << " notification(s)");
 			while (stats.sending < stats.sending_max && queue.size() > 0 && batch < H2_SENDING_BATCH_SIZE && buffer_out.size() < left) {
 				// if (stats.sending  + stats.sent > 200) {
 				// 	if (stats.sending == 0) {
 				// 		int a = 5;
 				// 		int b = 0;
 				// 		int c = a/b;
-				// 		LOG_DEBUG("H2: division by 0 " << c);
+				// 		LOG_DEBUG("CONN " << uv_thread_self() << ": H2: division by 0 " << c);
 				// 	} else {
 				// 		break;
 				// 	}
@@ -1037,7 +1038,7 @@ namespace apns {
 				queue.pop();
 
 
-				// LOG_DEBUG(":path: " << stream->path << " / " << (sizeof(stream->path.c_str()) - 1) << " / " << stream->path.size());
+				// LOG_DEBUG("CONN " << uv_thread_self() << ": :path: " << stream->path << " / " << (sizeof(stream->path.c_str()) - 1) << " / " << stream->path.size());
 				headers[2].value = (uint8_t *) stream->path.c_str();
 				headers[2].valuelen = stream->path.size();
 				// headers[2] = MAKE_NV(":path", (*tmp), NGHTTP2_NV_FLAG_NO_INDEX);
@@ -1054,10 +1055,10 @@ namespace apns {
 				// fprintf(stderr, "Request headers:\n");
 				// print_nv(headers, 6);
 				stream->stream_id = nghttp2_submit_request(session, NULL, headers, headers[5].flags == NGHTTP2_NV_FLAG_NO_INDEX ? 5 : 6, &global_data, stream);
-				// LOG_DEBUG("H2: sending " << stream->stream_id << " to " << stream->id);
+				// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: sending " << stream->stream_id << " to " << stream->id);
 
 				if (stream->stream_id < 0) {
-					LOG_DEBUG("H2: Couldn't nghttp2_submit_request " << nghttp2_strerror(stream->stream_id));
+					LOG_DEBUG("CONN " << uv_thread_self() << ": H2: Couldn't nghttp2_submit_request " << nghttp2_strerror(stream->stream_id));
 					stream->stream_id = 0;
 					stats.sending--;
 					queue.push(stream);
@@ -1067,11 +1068,11 @@ namespace apns {
 					int rv = 0;
 					const uint8_t *ptr;
 					while ((rv = nghttp2_session_mem_send(session, &ptr)) > 0) {
-						// LOG_DEBUG("H2 transmit nghttp2_session_mem_send " << rv);
+						// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 transmit nghttp2_session_mem_send " << rv);
 						buffer_out.insert(buffer_out.end(), (unsigned char *)ptr, (unsigned char *)ptr + rv);
 						left = nghttp2_session_get_remote_window_size(session);
 						if (left < max_data_size * 2) {
-							LOG_DEBUG("H2 transmit break since buffer size 2 * " << max_data_size << " > " << nghttp2_session_get_remote_window_size(session));
+							// LOG_DEBUG("CONN " << uv_thread_self() << ": H2 transmit break since buffer size 2 * " << max_data_size << " > " << nghttp2_session_get_remote_window_size(session));
 							stats.transmitting = false;
 							uv_mutex_unlock(main_mutex);
 							return;
@@ -1079,7 +1080,8 @@ namespace apns {
 					}
 					if (rv < 0) {
 						std::ostringstream out;
-						out << "H2: Couldn't submit nghttp2_session_mem_send: " << nghttp2_strerror(rv);
+						out << "H2: Couldn't submit nghttp2_session_mem_send in transmit: " << nghttp2_strerror(rv);
+						LOG_ERROR("CONN " << uv_thread_self() << ": " << out);
 						send_error(out.str());
 						conn_thread_stop();
 						return;
@@ -1088,7 +1090,7 @@ namespace apns {
 					// int rv = nghttp2_session_send(session);
 					// if (rv != 0) {
 					// 	stats.error_connection = nghttp2_strerror(rv);
-					// 	LOG_DEBUG("H2: Couldn't submit HTTP/2 requests");
+					// 	LOG_DEBUG("CONN " << uv_thread_self() << ": H2: Couldn't submit HTTP/2 requests");
 					// 	return;
 					// }
 				}
@@ -1102,11 +1104,11 @@ namespace apns {
 				// stream_data->stream_id = stream_id;
 				left = nghttp2_session_get_remote_window_size(session);
 			}
-			// LOG_DEBUG("sent " << batch << " messages");
+			// LOG_DEBUG("CONN " << uv_thread_self() << ": sent " << batch << " messages");
 		}
 		stats.transmitting = false;
 		uv_mutex_unlock(main_mutex);
-		// LOG_DEBUG("unlocked transmission: sending " << stats.sending << " out of max allowed " << stats.sending_max << " while queue is " << queue.size() << ", H2 state is " << nghttp2_session_want_read(session) << ", " << nghttp2_session_want_write(session) << " in " << uv_thread_self() );
+		// LOG_DEBUG("CONN " << uv_thread_self() << ": unlocked transmission: sending " << stats.sending << " out of max allowed " << stats.sending_max << " while queue is " << queue.size() << ", H2 state is " << nghttp2_session_want_read(session) << ", " << nghttp2_session_want_write(session) << " in " << uv_thread_self() );
 	}
 
 
