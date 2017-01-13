@@ -241,6 +241,12 @@ app.use(function(req, res, next) {
     req.template.html = "";
     req.template.js = "";
     req.template.form = "";
+    req.countly = {
+        version:COUNTLY_VERSION,
+        type:COUNTLY_TYPE,
+        page:COUNTLY_PAGE,
+        title:COUNTLY_NAME
+    };
     plugins.loadConfigs(countlyDb, function(){
         bruteforce.fails = plugins.getConfig("frontend").login_tries;
         bruteforce.wait = plugins.getConfig("frontend").login_wait;
