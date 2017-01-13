@@ -36,11 +36,11 @@ catch(err) {}
                                         cursor.limit(100);
                                     cursor.toArray(function(err, data){
                                         result.data = data;
-                                        res.render('../../../plugins/crashes/frontend/public/templates/crash', {path:countlyConfig.path || "", cdn:countlyConfig.cdn || "../../", countlyVersion:versionInfo.version, data:result});
+                                        res.render('../../../plugins/crashes/frontend/public/templates/crash', {path:countlyConfig.path || "", cdn:countlyConfig.cdn || "../../", countly:req.countly, data:result});
                                     });
                                 }
                                 else{
-                                    res.render('../../../plugins/crashes/frontend/public/templates/crash', {path:countlyConfig.path || "", cdn:countlyConfig.cdn || "../../", countlyVersion:versionInfo.version, data:result});
+                                    res.render('../../../plugins/crashes/frontend/public/templates/crash', {path:countlyConfig.path || "", cdn:countlyConfig.cdn || "../../", countly:req.countly, data:result});
                                 }
                             }
                             else{

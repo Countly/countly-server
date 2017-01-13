@@ -1222,7 +1222,7 @@ describe('Testing Crashes', function(){
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
-                var parts = res.text.split("var data = ");
+                var parts = res.text.split("var crash_data = ");
                 parts.should.have.lengthOf(2);
                 var data = parts[1].split(";\nwindow.CrashgroupView")[0];
 				var ob = JSON.parse(data);
@@ -1263,7 +1263,7 @@ describe('Testing Crashes', function(){
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
-                var parts = res.text.split("var data = ");
+                var parts = res.text.split("var crash_data = ");
                 parts.should.have.lengthOf(2);
                 var data = parts[1].split(";\nwindow.CrashgroupView")[0];
 				var ob = JSON.parse(data);
