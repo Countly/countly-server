@@ -78,6 +78,25 @@
     </script>
     <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.common.js?<%= countly.version %>"></script>
     <script>
+    // Shortens the given number by adding K (thousand) or M (million) postfix.
+    // K is added only if the number is bigger than 10000.
+    countlyCommon.getShortNumber = function (number) {
+
+        var tmpNumber = "";
+
+        if (number >= 1000000000 || number <= -1000000000) {
+            tmpNumber = ((number / 1000000000).toFixed(1).replace(".0", "")) + "B";
+        } else if (number >= 1000000 || number <= -1000000) {
+            tmpNumber = ((number / 1000000).toFixed(1).replace(".0", "")) + "M";
+        } else if (number >= 10000 || number <= -10000) {
+            tmpNumber = ((number / 1000).toFixed(1).replace(".0", "")) + "K";
+        } else {
+            number += "";
+            tmpNumber = number.replace(".0", "");
+        }
+
+        return tmpNumber;
+    };
     jQuery.i18n.properties({
         name:'locale',
         cache:true,

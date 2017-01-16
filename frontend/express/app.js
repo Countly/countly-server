@@ -866,6 +866,13 @@ app.get(countlyConfig.path+'/api-key', function (req, res, next) {
     };
 });
 
+app.get(countlyConfig.path+'/sdks.js', function (req, res, next) {
+    var options = {uri:"http://code.count.ly/js/sdks.js", method:"GET", timeout:4E3};
+    request(options, function(a, c, b) {
+        res.set('Content-type', 'application/javascript').status(200).send(b);
+    });
+});
+
 app.post(countlyConfig.path+'/mobile/login', function (req, res, next) {
     if (req.body.username && req.body.password) {
         var password = sha1Hash(req.body.password);

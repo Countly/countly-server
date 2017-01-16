@@ -90,7 +90,22 @@ class Streamer {
 							], {allowDiskUse:true}, (err) => {
 								log.d('[%d:%s]: Aggregation done: %j', process.pid, this.anote.id, arguments);
 								if (err) {
-									reject(err);
+									log.d('[%d:%s]: >>>>>>>>>>>>>>>> Running aggregation second time!!!1111 <<<<<<<<<<<<<<<<<<', process.pid, this.anote.id);
+									db.collection('app_users' + this.anote.creds.app_id).aggregate([
+										{$match: query}, 
+										{$project: this.projection},
+										{$sort: {_id: 1}},
+										{$out: this.collection()}
+									], {allowDiskUse:true}, (err) => {
+										log.d('[%d:%s]: 2nd Aggregation done: %j', process.pid, this.anote.id, arguments);
+										if (err) {
+											reject(err);
+										} else {
+											this.built = this.collection();
+											log.d('[%d:%s]: 2nd Just built collection %j after drilling', process.pid, this.anote.id, this.built);
+											resolve(this.built);
+										}
+									});
 								} else {
 									this.built = this.collection();
 									log.d('[%d:%s]: Just built collection %j after drilling', process.pid, this.anote.id, this.built);
@@ -109,8 +124,24 @@ class Streamer {
 							{$sort: {_id: 1}},
 							{$out: this.collection()}
 						], {allowDiskUse:true}, (err) => {
+							log.d('[%d:%s]: Aggregation done: %j', process.pid, this.anote.id, arguments);
 							if (err) {
-								reject(err);
+								log.d('[%d:%s]: >>>>>>>>>>>>>>>> Running aggregation second time!!!1111 <<<<<<<<<<<<<<<<<<', process.pid, this.anote.id);
+								db.collection('app_users' + this.anote.creds.app_id).aggregate([
+									{$match: query},
+									{$project: this.projection},
+									{$sort: {_id: 1}},
+									{$out: this.collection()}
+								], {allowDiskUse:true}, (err) => {
+									log.d('[%d:%s]: 2nd Aggregation done: %j', process.pid, this.anote.id, arguments);
+									if (err) {
+										reject(err);
+									} else {
+										this.built = this.collection();
+										log.d('[%d:%s]: 2nd Just built collection %j', process.pid, this.anote.id, this.built);
+										resolve(this.built);
+									}
+								});
 							} else {
 								this.built = this.collection();
 								log.d('[%d:%s]: Just built collection %j', process.pid, this.anote.id, this.built);

@@ -2416,10 +2416,10 @@ window.ManageAppsView = countlyView.extend({
         
         if(countlyGlobal["config"] && countlyGlobal["config"].code && $("#code-countly").length){
             $("#code-countly").show();
-            var url = (location.protocol || "http:")+"//countly.github.io/countly-code-generator/"; 
+            var url = (location.protocol || "http:")+"//"+location.hostname + "/" + countlyGlobal["path"]; 
                 
-            $.getScript( url+"js/sdks.js", function( data, textStatus, jqxhr ) {
-                var server = (location.protocol || "http:")+"//"+location.hostname;
+            $.getScript( url+"sdks.js", function( data, textStatus, jqxhr ) {
+                var server = (location.protocol || "http:")+"//"+location.hostname + "/" + countlyGlobal["path"];
                 if(sdks && server){
                     function initCountlyCode(appId, type){
                         var app_id = $("#app-edit-id").val();

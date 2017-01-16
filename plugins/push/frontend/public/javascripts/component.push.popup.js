@@ -170,13 +170,13 @@ window.component('push.popup', function(popup) {
 
 			tab = typeof tab === 'undefined' ? this.tabs.tab() + 1 : tab;
 			if (this.tabenabled(tab)) {
-				if (tab === 2) {
+				if (tab >= 2) {
 					if (!message.schedule() && (message.date() !== undefined || message.tz() !== false)) {
 						message.date(undefined);
 						message.tz(false);
 					}
 				}
-				if (tab === 2 && !message.count()) {
+				if (tab >= 2 && !message.count()) {
 					window.components.slider.instance.loading(true);
 					message.remotePrepare(this.checkForNoUsers.bind(this, true)).then(function(){
 						setTimeout(function(){
