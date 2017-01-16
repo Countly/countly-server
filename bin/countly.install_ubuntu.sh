@@ -21,7 +21,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 #update package index
 apt-get update
 
-apt-get -y install python-software-properties wget g++ build-essential libkrb5-dev
+apt-get -y install python-software-properties wget g++-4.8 build-essential libkrb5-dev
 
 if !(command -v apt-add-repository >/dev/null) then
     apt-get -y install software-properties-common
