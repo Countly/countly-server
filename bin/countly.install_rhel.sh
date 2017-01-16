@@ -18,7 +18,7 @@ echo "
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 #install nginx
-yum -y install wget openssl-devel gcc-c++ make
+yum -y install wget openssl-devel gcc-c++-4.8.5 make
 if grep -q -i "release 6" /etc/redhat-release ; then
 	echo "[nginx]
 name=nginx repo
