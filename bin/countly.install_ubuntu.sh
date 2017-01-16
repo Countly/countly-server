@@ -7,16 +7,9 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-echo "
-   ______                  __  __
-  / ____/___  __  ______  / /_/ /_  __
- / /   / __ \/ / / / __ \/ __/ / / / /
-/ /___/ /_/ / /_/ / / / / /_/ / /_/ /
-\____/\____/\__,_/_/ /_/\__/_/\__, /
-              http://count.ly/____/
-"
-
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+bash $DIR/scripts/logo.sh;
 
 #update package index
 apt-get update
