@@ -124,10 +124,10 @@ if (cluster.isMaster) {
         jobs.job('api:clear').replace().schedule('every 1 day');
     }, 10000);
 } else {
-
+    var common = require('./utils/common.js');
+    common.db = plugins.dbConnection(countlyConfig);
     var url = require('url'),
     querystring = require('querystring'),
-    common = require('./utils/common.js'),
     log = common.log('api'),
     crypto = require('crypto'),
     countlyApi = {

@@ -89,8 +89,6 @@ var common = {},
         'duration': 'dur',
         'previous_events': 'pe'
     };
-    
-    common.db = plugins.dbConnection(countlyConfig);
 
     common.config = countlyConfig;
 
