@@ -369,11 +369,19 @@ window.starView = countlyView.extend({
         }
 
         var rows = {};
+        var seriesChartList = []; //GroupByDate
         for (var i = 0; i < periodArray.length; i++) {
             var dateArray = periodArray[i].split('.');
             var year = dateArray[0];
             var month = dateArray[1];
             var day = dateArray[2];
+            var seriesChart = {
+                'star1': 0,
+                'star2': 0,
+                'star3': 0,
+                'star4': 0,
+                'star5': 0
+            }
 
             var LocalDateDisplayName = moment(periodArray[i], "YYYY.M.D").format(dateFormat);
             if(!rows[LocalDateDisplayName]){
@@ -392,10 +400,14 @@ window.starView = countlyView.extend({
                     if (this.matchPlatformVersion(rating)) {
                         var rank = (rating.split("**"))[2];
                         rows[LocalDateDisplayName]["star" + rank] += result[year][month][day][rating].c
+                        seriesChart["star" + rank] += result[year][month][day][rating].c;
                     }
                 }
             }
+            seriesChartList.push(seriesChart);
         }
+        this.templateData['seriesChartList'] = seriesChartList;
+
         for(var dateDisplayName in rows ){
             this.templateData['timeSeriesData'].push(rows[dateDisplayName]);
         }
@@ -450,6 +462,7 @@ window.starView = countlyView.extend({
     },
     renderTimeSeriesChart: function () {
         var timeSeriesData = this.templateData['timeSeriesData'];
+        var seriesChartList= this.templateData['seriesChartList'];
         var graphData = [
             {"data": [], "label": jQuery.i18n.map["star.one-star"], "color": "#52A3EF"},
             {"data": [], "label": jQuery.i18n.map["star.two-star"], "color": "#FF8700"},
@@ -458,12 +471,26 @@ window.starView = countlyView.extend({
             {"data": [], "label": jQuery.i18n.map["star.five-star"], "color": "#d63b3b"}
         ];
 
-        for (var i = 0; i < timeSeriesData.length; i++) {
-            graphData[0].data.push([i, timeSeriesData[i].star1]);
-            graphData[1].data.push([i, timeSeriesData[i].star2]);
-            graphData[2].data.push([i, timeSeriesData[i].star3]);
-            graphData[3].data.push([i, timeSeriesData[i].star4]);
-            graphData[4].data.push([i, timeSeriesData[i].star5]);
+        var period = countlyCommon.getPeriod();
+        var bucket = null;
+        var overrideBucket = false;
+        var chartData = seriesChartList;
+        if (period === 'yesterday' || period === 'hour' || countlyCommon.getPeriodObj().numberOfDays == 1) {
+            bucket = 'daily';
+            overrideBucket = true;
+        }
+
+        if(period === 'month'){
+            bucket = null;
+            chartData = timeSeriesData;
+        }
+
+        for (var i = 0; i < chartData.length; i++) {
+            graphData[0].data.push([i, chartData[i].star1]);
+            graphData[1].data.push([i, chartData[i].star2]);
+            graphData[2].data.push([i, chartData[i].star3]);
+            graphData[3].data.push([i, chartData[i].star4]);
+            graphData[4].data.push([i, chartData[i].star5]);
         }
 
         var renderData = [];
@@ -472,16 +499,8 @@ window.starView = countlyView.extend({
                 renderData.push(graphData[parseInt(key.substring(4)) - 1]);
             }
         }
-        var period = countlyCommon.getPeriod();
-        var bucket = null;
-        var overrideBucket = false;
 
-        if (period === 'yesterday' || period === 'hour' || countlyCommon.getPeriodObj().numberOfDays == 1) {
-            bucket = 'daily';
-            overrideBucket = true;
-        }
-
-        countlyCommon.drawTimeGraph(renderData, "#dashboard-graph", bucket, overrideBucket);
+        return countlyCommon.drawTimeGraph(renderData, "#dashboard-graph", bucket, overrideBucket);
     },
     renderCommon: function (isRefresh) {
         var self = this;
