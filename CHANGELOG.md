@@ -17,6 +17,7 @@
 * Fix: Loading code.count.ly for https servers
 * Fix: using unencrypted password for MongoDB
 * Fix: displaying bar data in external/shared crashes
+* Fix: installing g++ 4.8 specifically
 * Feature: Allow detecting ip address from the right side of X-Forwarded-for header
 
 ## Version 16.12
