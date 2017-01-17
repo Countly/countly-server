@@ -1,5 +1,5 @@
 Name:       countly
-Version:    16.12.1
+Version:    16.12.2
 Release:    1%{?dist}
 Summary:    countly
 # License text is included in README.md
@@ -56,5 +56,8 @@ cp %{SOURCE1} %{buildroot}%{_initddir}/countly
 /opt/countly
 
 %changelog
+* Fri Jan 20 2017 Sergey Alembekov <rt@aspirinka.net> - 16.12.2
+- new release
+
 * Tue Jan 17 2017 Sergey Alembekov <rt@aspirinka.net> - 16.12.1
 - initial build
