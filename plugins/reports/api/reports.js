@@ -307,7 +307,7 @@ var metrics = {
             if(metrics[i]){
                 if(i == "analytics")
                     collections["users"] = true;
-                else if(i == "crash" && plugins.getConfig("plugins").crashes)
+                else if(i == "crash" && plugins.isPluginEnabled("crashes"))
                     collections["crashdata"] = true;
                 else if(i == "push"){
                     collections["events.[CLY]_push_sent"] = true;
