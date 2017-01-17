@@ -721,6 +721,9 @@ var fetch = {},
             options = {};
         }
         
+        if(typeof options.db === "undefined")
+            options.db = common.db;
+        
         if(typeof options.unique === "undefined")
             options.unique = common.dbMap.unique;
         
@@ -789,8 +792,8 @@ var fetch = {},
                 monthDocs.push(monthIdToFetch+"_"+common.base64[i]);
             }
 
-            common.db.collection(collection).find({'_id': {$in: zeroDocs}}, fetchFromZero).toArray(function(err, zeroObject) {
-                common.db.collection(collection).find({'_id': {$in: monthDocs}}, fetchFromMonth).toArray(function(err, monthObject) {
+            options.db.collection(collection).find({'_id': {$in: zeroDocs}}, fetchFromZero).toArray(function(err, zeroObject) {
+                options.db.collection(collection).find({'_id': {$in: monthDocs}}, fetchFromMonth).toArray(function(err, monthObject) {
                     callback(getMergedObj(zeroObject.concat(monthObject), true, options.levels));
                 });
             });
@@ -830,7 +833,7 @@ var fetch = {},
                 }
             }
 
-            common.db.collection(collection).find({'_id': {$in: documents}}, {}).toArray(function(err, dataObjects) {
+            options.db.collection(collection).find({'_id': {$in: documents}}, {}).toArray(function(err, dataObjects) {
                 callback(getMergedObj(dataObjects, false, options.levels));
             });
         }
