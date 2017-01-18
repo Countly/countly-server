@@ -191,7 +191,9 @@ window.component('push.dash', function(dash) {
 			m.component(components.widget, {
 				header: {
 					title: 'pu.dash.users', 
-					view: m('a.icon-button.btn-header.green[href=#]', {onclick: ctrl.message}, t('pu.dash.create'))
+					view: countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1 ? 
+						m('a.icon-button.btn-header.green[href=#]', {onclick: ctrl.message}, t('pu.dash.create'))
+						: ''
 				},
 				footer: {
 					config: {class: 'condensed'},
