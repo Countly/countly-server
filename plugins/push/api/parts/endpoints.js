@@ -607,7 +607,7 @@ var common          = require('../../../../api/utils/common.js'),
                                 common.returnMessage(params, 500, 'DB error');
                             } else {
                                 common.returnOutput(params, note);
-                                plugins.dispatch("/systemlogs", {params:params, action:"push_message_created", data: doc.value});
+                                plugins.dispatch("/systemlogs", {params:params, action:"push_message_created", data: note});
                                 plugins.dispatch("/i/pushes/validate/schedule", {params:params, data: note});
                                 if (note.validation_error) {
                                     log.i('Won\'t schedule message %j now because of scheduling validation error %j', note._id, note.validation_error);
