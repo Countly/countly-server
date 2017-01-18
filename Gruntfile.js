@@ -235,6 +235,9 @@ module.exports = function(grunt) {
   		name = name.replace('.properties', '');
   		if (name.indexOf('_') !== -1) {
   			lang = name.split('_').pop();
+  			if (lang.length > 3) {
+  				lang = '';
+  			}
   		}
 
   		if (!locales[lang]) {
