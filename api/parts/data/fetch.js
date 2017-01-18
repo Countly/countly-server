@@ -957,6 +957,14 @@ var fetch = {},
                         }
                     }
                 }
+                
+                //truncate large meta on refresh
+                if (isRefresh) {
+                    for(var i in mergedDataObj['meta']){
+                        if(mergedDataObj['meta'][i].length > plugins.getConfig("api").metric_limit && plugins.getConfig("api").metric_limit != 0)
+                            delete mergedDataObj['meta'][i];
+                    }
+                }
             }
         
             return mergedDataObj;

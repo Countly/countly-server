@@ -8,12 +8,14 @@ if (!window.components) {
 }
 
 if (!window.components.t) {
+	var overrides = {};
+
 	window.components.t = function(key, def) {
-		return window.jQuery.i18n.map[key] || (typeof def === 'undefined' ? key : def);
+		return (key in overrides) ? overrides[key] : window.jQuery.i18n.map[key] || (typeof def === 'undefined' ? key : def);
 	};
 
 	window.components.t.set = function(key, text) {
-		window.jQuery.i18n.map[key] = text;
+		overrides[key] = text;
 	};
 
 	window.components.t.p = function() {
