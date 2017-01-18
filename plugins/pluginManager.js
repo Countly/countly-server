@@ -246,6 +246,8 @@ var pluginManager = function pluginManager(){
             else if(callback){
                 Promise.all(promises).then(callback, callback);
             }
+        } else if (callback) {
+            callback();
         }
         return used;
     }

@@ -544,6 +544,12 @@ var common          = require('../../../../api/utils/common.js'),
                 var json = note.toJSON();
                 delete json.build;
 
+                plugins.dispatch("/i/pushes/validate/create", {params:params, data: json});
+                plugins.dispatch("/i/pushes/validate/create", {params:params, data: note});
+                if (params.res.finished) {
+                    return;
+                }
+
                 common.db.collection('messages').findAndModify(
                     {_id: note._id, 'result.status': N.Status.Preparing, created: null}, 
                     [['_id', 1]], 
@@ -560,7 +566,13 @@ var common          = require('../../../../api/utils/common.js'),
                             if (doc.value.build) {
                                 note.build = doc.value.build;
                                 log.d('Build finished, scheduling job with build %j', note.build);
-                                note.schedule(common.db, jobs);
+                                plugins.dispatch("/i/pushes/validate/schedule", {params:params, data: note});
+                                if (note.validation_error) {
+                                    log.i('Won\'t schedule message %j now because of scheduling validation error %j', note._id, note.validation_error);
+                                    common.db.collection('messages').updateOne({_id: note._id}, {$set: {'result.status': N.Status.InQueue}}, log.logdb('when updating message status with inqueue'));
+                                } else {
+                                    note.schedule(common.db, jobs);
+                                }
                             } else {
                                 log.d('Build is not finished yet for message %j', doc.value);
                             }
@@ -585,13 +597,24 @@ var common          = require('../../../../api/utils/common.js'),
                         delete build.tzs;
                         delete note.build.count.TOTALLY;
 
+                        plugins.dispatch("/i/pushes/validate/create", {params:params, data: note});
+                        if (params.res.finished) {
+                            return;
+                        }
                         common.db.collection('messages').save(note, (err) => {
                             if (err) {
                                 log.e('Error while saving message: %j', err);
                                 common.returnMessage(params, 500, 'DB error');
                             } else {
                                 common.returnOutput(params, note);
-                                note.schedule(common.db, jobs);
+                                plugins.dispatch("/systemlogs", {params:params, action:"push_message_created", data: doc.value});
+                                plugins.dispatch("/i/pushes/validate/schedule", {params:params, data: note});
+                                if (note.validation_error) {
+                                    log.i('Won\'t schedule message %j now because of scheduling validation error %j', note._id, note.validation_error);
+                                    common.db.collection('messages').updateOne({_id: note._id}, {$set: {'result.status': N.Status.InQueue}}, log.logdb('when updating message status with inqueue'));
+                                } else {
+                                    note.schedule(common.db, jobs);
+                                }
                             }
                         });
                     }
