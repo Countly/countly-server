@@ -18,6 +18,11 @@
 * Fix: using unencrypted password for MongoDB
 * Fix: displaying bar data in external/shared crashes
 * Fix: installing g++ 4.8 specifically
+* Fix: Checking if crash plugin enabled in reports
+* Fix: Star rating time series data visualization
+* Fix: Geo plugin UI
+* Fix: Taking correct attribution campaign names in drill graphs
+* Fix: Recording campaign data before processing data in drill
 * Feature: Allow detecting ip address from the right side of X-Forwarded-for header
 
 ## Version 16.12
