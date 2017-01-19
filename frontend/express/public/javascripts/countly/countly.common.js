@@ -1578,32 +1578,19 @@
             return x;
         }
 
-        var needUnion = false;
-
-        for (var i = 0; i < y.length; i++) {
-            if (x.indexOf(y[i]) === -1) {
-                needUnion = true;
-                break;
-            }
-        }
-
-        if (!needUnion) {
-            return x;
-        }
-
         var obj = {};
         for (var i = x.length-1; i >= 0; -- i) {
-            obj[x[i]] = x[i];
+            obj[x[i]] = true;
         }
 
         for (var i = y.length-1; i >= 0; -- i) {
-            obj[y[i]] = y[i];
+            obj[y[i]] = true;
         }
 
         var res = [];
 
         for (var k in obj) {
-            res.push(obj[k]);
+            res.push(k);
         }
 
         return res;
