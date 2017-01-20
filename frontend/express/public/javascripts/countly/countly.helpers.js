@@ -2,8 +2,17 @@
  Some helper functions to be used throughout all views. Includes custom
  popup, alert and confirm dialogs for the time being.
  */
+ /**
+ * Some helper functions to be used throughout all views. Includes custom popup, alert and confirm dialogs for the time being.
+ * @name CountlyHelpers
+ * @global
+ * @namespace CountlyHelpers
+ */
 (function (CountlyHelpers, $, undefined) {
 
+    /**
+    * Legacy method for displaying notifications. User {@link CountlyHelpers.notify} instead
+    */
     CountlyHelpers.parseAndShowMsg = function (msg) {
         if (!msg || !msg.length) {
             return true;
@@ -29,6 +38,27 @@
         delete countlyGlobal["message"];
     };
 
+    /**
+    * Display dashboard notification using Amaran JS library
+    * @param {object} msg - notification message object
+    * @param {string=} msg.title - title of the notification
+    * @param {string=} msg.message - main notification text
+    * @param {string=} msg.info - some additional information to display in notification
+    * @param {number=} [msg.delay=10000] - delay time in miliseconds before displaying notification
+    * @param {string=} [msg.icon=fa fa-info] - css class for font icond to be used as notification icon
+    * @param {string=} [msg.type=ok] - message type, accepted values ok and error
+    * @param {string=} [msg.position=top right] - message position
+    * @param {string=} [msg.sticky=false] - should message stick until closed
+    * @param {string=} [msg.clearAll=false] - clear all previous notifications upon showing this one
+    * @param {string=} [msg.closeOnClick=false] - should notification be automatically closed when clicked on
+    * @param {function=} msg.onClick - on click listener
+    * @example
+    * CountlyHelpers.notify({
+        title: "This is title",
+        message: "Main message text",
+        info: "Additional info"
+    });
+    */
     CountlyHelpers.notify = function (msg) {
         $.titleAlert((msg.title || msg.message || msg.info || "Notification"), {
             requireBlur:true,
@@ -54,6 +84,14 @@
         });
     };
 
+    /**
+    * Display modal popup UI
+    * @param {string|object} element - if third parameter isHTML is true, then HTML code as string is expected, else element's selector or element itself is expected and it's HTML contents will be copied into popup
+    * @param {string=} custClass - add custom css class to dialog for easier manipulation
+    * @param {boolean=} isHTML - changes the behavior of first parameter element
+    * @example
+    * CountlyHelpers.popup("<h1>Hello</h1>", "red", true);
+    */
     CountlyHelpers.popup = function (element, custClass, isHTML) {
         var dialog = $("#cly-popup").clone();
         dialog.removeAttr("id");
@@ -70,6 +108,12 @@
         revealDialog(dialog);
     };
 
+    /**
+    * Display modal popup with external resource from provided URL in iframe. Make sure to use https version of resource for it to work on both http and https dashboard
+    * @param {string} url - full absolute url to external resource to display in popup
+    * @example
+    * CountlyHelpers.openResource("http://resources.count.ly/docs");
+    */
     CountlyHelpers.openResource = function(url) {
         var dialog = $("#cly-resource").clone();
         dialog.removeAttr("id");
@@ -78,6 +122,13 @@
         revealDialog(dialog);
     };
 
+    /**
+    * Display modal alert popup for quick short messages that require immediate user's attention, as error submitting form
+    * @param {string} msg - message to display in alert popup
+    * @param {string} type - type of alert red for errors and green for success
+    * @example
+    * CountlyHelpers.alert("Some error happened", "red");
+    */
     CountlyHelpers.alert = function (msg, type) {
         var dialog = $("#cly-alert").clone();
         dialog.removeAttr("id");
@@ -87,6 +138,21 @@
         revealDialog(dialog);
     };
 
+    /**
+    * Display modal popup that requires confirmation input from user
+    * @param {string} msg - message to display in alert popup
+    * @param {string} type - type of alert red for errors and green for success
+    * @param {function} callback - to determine result of the input
+    * @param {array=} buttonText - [0] element for cancle button text and [1] element for confirm button text
+    * @example
+    * CountlyHelpers.confirm("Are you sure?", "red", function (result) {
+        if (!result) {
+            //user did not confirm, just exit
+            return true;
+        }
+        //user confirmed, do what you need to do
+    });
+    */
     CountlyHelpers.confirm = function (msg, type, callback, buttonText) {
         var dialog = $("#cly-confirm").clone();
         dialog.removeAttr("id");
@@ -109,6 +175,15 @@
         });
     };
 
+    /**
+    * Displays loading icong and returns reference to dialog so you could close it once loading is done
+    * @param {string} msg - message to display in loading popup
+    * @returns {object} jQuery object reference to dialog
+    * @example
+    * var dialog = CountlyHelpers.loading("we are doing something");
+    * //later when done
+    * CountlyHelpers.removeDialog(dialog);
+    */
     CountlyHelpers.loading = function (msg) {
         var dialog = $("#cly-loading").clone();
         dialog.removeAttr("id");
@@ -116,6 +191,85 @@
         dialog.addClass('cly-loading');
         revealDialog(dialog);
         return dialog;
+    };
+    
+        /**
+    * Instead of creating dialog object you can use this method and directly pass jquery element to be used as dialog content, which means complete customization
+    * @param {jquery_object} dialog - jQuery object unnattached, like cloned existing object
+    * @example
+    * var dialog = $("#cly-popup").clone().removeAttr("id").addClass('campaign-create');
+    * CountlyHelpers.revealDialog(dialog);
+    */
+    CountlyHelpers.revealDialog = function (dialog) {
+        $("body").append(dialog);
+
+        var dialogHeight = dialog.height(),
+            dialogWidth = dialog.outerWidth() + 2;
+
+        dialog.css({
+            "height":dialogHeight,
+            "margin-top":Math.floor(-dialogHeight / 2),
+            "width":dialogWidth,
+            "margin-left":Math.floor(-dialogWidth / 2)
+        });
+
+        $("#overlay").fadeIn();
+        dialog.fadeIn(app.tipsify.bind(app, $("#help-toggle").hasClass("active"), dialog));
+    }
+
+    /**
+    * If contents of the popup change, you may want to resice the popup
+    * @param {jquery_object} dialog - jQuery dialog reference
+    * @param {boolean} animate - should resizing be animated
+    * @example
+    * var dialog = $("#cly-popup").clone().removeAttr("id").addClass('campaign-create');
+    * CountlyHelpers.revealDialog(dialog);
+    * //when content changes
+    * CountlyHelpers.changeDialogHeight(dialog, true)
+    */
+    CountlyHelpers.changeDialogHeight = function(dialog, animate) {
+        var dialogHeight = 0,
+            dialogWidth = dialog.width(),
+            maxHeight = $("#sidebar").height() - 40;
+
+        dialog.children().each(function(){
+            dialogHeight += $(this).outerHeight(true);
+        });
+
+        if (dialogHeight > maxHeight) {
+            dialog[animate ? 'animate' : 'css']({
+                "height":maxHeight,
+                "margin-top":Math.floor(-maxHeight / 2),
+                "width":dialogWidth,
+                "margin-left":Math.floor(-dialogWidth / 2),
+                "overflow-y": "auto"
+            });
+        } else {
+            dialog[animate ? 'animate' : 'css']({
+                "height":dialogHeight,
+                "margin-top":Math.floor(-dialogHeight / 2),
+                "width":dialogWidth,
+                "margin-left":Math.floor(-dialogWidth / 2)
+            });
+        }
+    }
+
+    var revealDialog = CountlyHelpers.revealDialog;
+
+    var changeDialogHeight = CountlyHelpers.changeDialogHeight;
+
+    /**
+    * Remove existing dialog
+    * @param {jquery_object} dialog - jQuery dialog reference
+    * @example
+    * var dialog = $("#cly-popup").clone().removeAttr("id").addClass('campaign-create');
+    * CountlyHelpers.revealDialog(dialog);
+    * //when dialog not needed anymore
+    * CountlyHelpers.removeDialog(dialog);
+    */
+    CountlyHelpers.removeDialog = function(dialog){
+        dialog.remove();
+        $("#overlay").fadeOut();
     };
 
     CountlyHelpers.setUpDateSelectors = function(self) {
@@ -153,6 +307,12 @@
         });
     };
 
+    /**
+    * Initialize countly dropdown select. In most cases it is done automatically, only in some cases, when content loaded via ajax request outside of view lifecycle, you may need to initialize it yourself for your content specifically
+    * @param {object} element - jQuery object reference
+    * @example
+    * CountlyHelpers.initializeSelect($("#my-dynamic-div"));
+    */
     CountlyHelpers.initializeSelect = function (element) {
         element = element || $("#content-container");
 
@@ -287,6 +447,12 @@
         });
     };
 
+    /**
+    * Initialize countly dropdown multi select. In most cases it is done automatically, only in some cases, when content loaded via ajax request outside of view lifecycle, you may need to initialize it yourself for your content specifically
+    * @param {object} element - jQuery object reference
+    * @example
+    * CountlyHelpers.initializeMultiSelect($("#my-dynamic-div"));
+    */
     CountlyHelpers.initializeMultiSelect = function (element) {
         element = element || $("#content-container");
 
@@ -477,6 +643,13 @@
         }
     };
 
+    /**
+    * Refresh existing datatable instance on view refresh, providing new data
+    * @param {object} dTable - jQuery object datatable reference
+    * @param {object} newDataArr - array with new data in same format as provided while initializing table
+    * @example
+    * CountlyHelpers.refreshTable(self.dtable, data);
+    */
     CountlyHelpers.refreshTable = function(dTable, newDataArr) {
         var oSettings = dTable.fnSettings();
         dTable.fnClearTable(false);
@@ -490,6 +663,37 @@
         dTable.fnStandingRedraw();
     };
 
+    /**
+    * In some cases you may want to allow expanding rows of your datatable. To do that you must add unique id to each row via datatables fnRowCallback property
+    * @param {object} dTable - jQuery object datatable reference
+    * @param {function} getData - callback function to be called when clicking ont he row. This function will receive original row data object you passed to data tables and should return HTML string to display in subcell
+    * @param {object} context - this context if needed, which will be passed to getData function as second parameter
+    * @example
+    * function formatData(data){
+        // `data` is the original data object for the row
+        //return string to display in subcell
+        var str = '';
+		if(data){
+			str += '<div class="datatablesubrow">'+
+            JSON.stringify(data)+
+            '</div>';
+        }
+        return str;
+      }
+    * this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+          "aaData": crashData.data,
+			"fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+				$(nRow).attr("id", aData._id);
+			},
+          "aoColumns": [
+				{ "mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.ts); else return row.ts;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["crashes.crashed"]},
+				{ "mData": function(row, type){var str = row.os; if(row.os_version) str += " "+row.os_version.replace(/:/g, '.'); return str;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.os_version"] },
+				{ "mData": function(row, type){var str = ""; if(row.manufacture) str += row.manufacture+" "; if(row.device) str += countlyDeviceList[row.device] || row.device; return str;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.device"]},
+				{ "mData": function(row, type){return row.app_version.replace(/:/g, '.');}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.app_version"] }
+          ]
+      }));
+      CountlyHelpers.expandRows(this.dtable, formatData);
+    */
     CountlyHelpers.expandRows = function(dTable, getData, context){
         dTable.aOpen = [];
         dTable.on("click", "tr", function (e){
@@ -517,6 +721,15 @@
         });
     };
 
+    /**
+    * If you allow to open/expand rows, then when refreshing table they will close again. To avoid that you must call this function on each refresh after calling {@link CountlyHelpers.refreshTable}
+    * @param {object} dTable - jQuery object datatable reference
+    * @param {function} getData - callback function to be called when clicking ont he row. This function will receive original row data object you passed to data tables and should return HTML string to display in subcell
+    * @param {object} context - this context if needed, which will be passed to getData function as second parameter
+    * @example
+    * CountlyHelpers.refreshTable(self.dtable, data);
+    * CountlyHelpers.reopenRows(self.dtable, formatData);
+    */
     CountlyHelpers.reopenRows = function(dTable, getData, context){
         var nTr;
         var oSettings = dTable.fnSettings();
@@ -530,6 +743,12 @@
         }
     };
 
+    /**
+    * Close all opened datatables rows
+    * @param {object} dTable - jQuery object datatable reference
+    * @example
+    * CountlyHelpers.closeRows(self.dtable);
+    */
     CountlyHelpers.closeRows = function(dTable){
         if(dTable.aOpen){
             $.each( dTable.aOpen, function ( i, id ) {
@@ -543,6 +762,13 @@
         }
     };
 
+    /**
+    * Convert array of app ids to comma separate string of app names
+    * @param {array} context - array with app ids
+    * @example
+    * //outputs Test1, Test2, Test3
+    * CountlyHelpers.appIdsToNames(["586e3216326a8b0a07b8d87f", "586e339a326a8b0a07b8ecb9", "586e3343c32cb30a01558cc3"]);
+    */
     CountlyHelpers.appIdsToNames = function(context){
         var ret = "";
 
@@ -563,6 +789,13 @@
         return ret;
     };
 
+    /**
+    * Load JS file
+    * @param {string} js - path or url to js file
+    * @param {callback=} calback - callback when file loaded
+    * @example
+    * CountlyHelpers.loadJS("/myplugin/javascripts/custom.js");
+    */
     CountlyHelpers.loadJS = function(js, callback){
         var fileref=document.createElement('script'),
             loaded;
@@ -579,6 +812,13 @@
         document.getElementsByTagName("head")[0].appendChild(fileref);
     };
 
+    /**
+    * Load CSS file
+    * @param {string} css - path or url to css file
+    * @param {callback=} calback - callback when file loaded
+    * @example
+    * CountlyHelpers.loadCSS("/myplugin/stylesheets/custom.css");
+    */
     CountlyHelpers.loadCSS = function(css, callback){
         var fileref=document.createElement("link"),
             loaded;
@@ -609,6 +849,11 @@
         return '';
     };
 
+    /**
+    * Returns function to be used as mRender for datatables to clip long values
+    * @param {function=} f - optional function to change passed data to render and return changed object
+    * @param {string=} nothing - text to display in cell
+    */
     CountlyHelpers.clip = function(f, nothing) {
         return function(opt) {
             var res = typeof f === 'fucnction' ? f(opt) : opt;
@@ -616,6 +861,33 @@
         }
     };
 
+    /**
+    * Create Countly metric model to fetch metric data from server and provide it to views
+    * @param {object} countlyMetric - initial metric object if you want to pre provide some methods, etc
+    * @param {string} metric - metric name to retrieve from server
+    * @param {jquery} $ - local jquery reference
+    * @param {function=} fetchValue - default function to fetch and transform if needed value from standard metric model
+    * @example
+    *   window.countlyDensity = {};
+        countlyDensity.checkOS = function(os, density){
+            var lastIndex = density.toUpperCase().lastIndexOf("DPI");
+            if(os.toLowerCase() == "android" && lastIndex !== -1 && lastIndex === density.length - 3)
+                return true;
+            if(os.toLowerCase() == "ios" && density[0] == "@")
+                return true;
+            return false;
+        };
+        CountlyHelpers.createMetricModel(window.countlyDensity, {name: "density", estOverrideMetric: "densities"}, jQuery, function(val, data, separate){
+            if(separate){
+                //request separated/unprocessed data
+                return val;
+            }
+            else{
+                //we can preprocess data and group, for example, by first letter
+                return val[0];
+            }
+        });
+    */
     CountlyHelpers.createMetricModel = function (countlyMetric, metric, $, fetchValue) {
         //Private Properties
         var _periodObj = {},
@@ -628,7 +900,23 @@
             _name = (metric.name)? metric.name : metric,
             _estOverrideMetric = (metric.estOverrideMetric)? metric.estOverrideMetric : "";
 
+        /**
+        * Common metric object, all metric models inherit from it and should have these methods
+        * @name countlyMetric
+        * @global
+        * @namespace countlyMetric
+        */
+ 
         //Public Methods
+        /**
+        * Initialize metric model to fetch initial data from server
+        * @param {boolean=} processed - if true will fetch processed data, will fetch raw data by default
+        * @returns {jquery_promise} jquery promise to wait while data is loaded
+        * @example
+        *beforeRender: function() {
+            return $.when(countlyMetric.initialize()).then(function () {});
+        }
+        */
         countlyMetric.initialize = function (processed) {
             if (_initialized &&  _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
                 return this.refresh();
@@ -678,6 +966,13 @@
             }
         };
 
+        /**
+        * Refresh metric model by fetching data only for the latest time bucket using action=refresh on server. Currently does not fetch data for processed data loaded on initialization
+        * @example
+        *$.when(countlyMetric.refresh()).then(function () {
+            //data loaded, do something
+        });
+        */
         countlyMetric.refresh = function () {
             _periodObj = countlyCommon.periodObj;
 
@@ -714,6 +1009,9 @@
             }
         };
 
+        /**
+        * Reset/delete all retrieved metric data, like when changing app or selected time period
+        */
         countlyMetric.reset = function () {
             if(_processed){
                 _Db = [];
@@ -724,6 +1022,40 @@
             }
         };
 
+        /**
+        * Get data after initialize finished and data was retrieved
+        * @param {boolean} clean - should retrieve clean data or preprocessed by fetchValue function
+        * returns {object} chartData
+        * @example <caption>Example output</caption>
+        * {"chartData":[
+            {"langs":"English","t":124,"u":112,"n":50},
+            {"langs":"Italian","t":83,"u":74,"n":30},
+            {"langs":"German","t":72,"u":67,"n":26},
+            {"langs":"Japanese","t":62,"u":61,"n":19},
+            {"langs":"French","t":66,"u":60,"n":28},
+            {"langs":"Korean","t":64,"u":58,"n":26}
+        ],
+        "chartDPTotal":{
+            "dp":[
+                {"data":[[0,124]],"label":"English"},
+                {"data":[[0,83]],"label":"Italian"},
+                {"data":[[0,72]],"label":"German"},
+                {"data":[[0,62]],"label":"Japanese"},
+                {"data":[[0,66]],"label":"French"},
+                {"data":[[0,64]],"label":"Korean"}
+            ]
+        },
+        "chartDPNew":{
+            "dp":[
+                {"data":[[0,50]],"label":"English"},
+                {"data":[[0,30]],"label":"Italian"},
+                {"data":[[0,26]],"label":"German"},
+                {"data":[[0,19]],"label":"Japanese"},
+                {"data":[[0,28]],"label":"French"},
+                {"data":[[0,26]],"label":"Korean"}
+            ]
+        }}
+        */
         countlyMetric.getData = function (clean) {
             var chartData = {};
             if(_processed){
@@ -789,10 +1121,15 @@
 
             chartData.chartDPNew = {};
             chartData.chartDPNew.dp = chartData3;
-
+            console.log(JSON.stringify(chartData));
             return chartData;
         };
 
+        /**
+        * Prefill all expected properties as u, t, n with 0, to avoid null values in the result, if they don't exist, which won't work when drawing graphs
+        * @param {object} obj - oject to prefill with  values if they don't exist
+        * @returns prefilled object
+        */
         countlyMetric.clearObject = function (obj) {
             if (obj) {
                 if (!obj["t"]) obj["t"] = 0;
@@ -806,6 +1143,10 @@
             return obj;
         };
 
+        /**
+        * Get bar data for metric
+        * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
+        */
         countlyMetric.getBars = function () {
             if(_processed){
                 var rangeData = {};
@@ -825,6 +1166,38 @@
             }
         };
 
+        /**
+        * If this metric's data should be segmented by OS (which means be prefixed by first os letter on server side), you can get OS segmented data
+        * @param {string} os - os name for which to get segmented metrics data
+        * @param {boolean} clean - should retrieve clean data or preprocessed by fetchValue function
+        * @returns os segmented metric object
+        * @example <caption>Example output</caption>
+        //call
+        //countlyMetric.getOSSegmentedData("wp")
+        //data for Windows Phone segment
+        {"chartData":[
+            {"density":"2.0","t":18,"u":18,"n":9},
+            {"density":"3.4","t":13,"u":12,"n":5},
+            {"density":"1.2","t":11,"u":10,"n":5},
+            {"density":"3.5","t":10,"u":10,"n":4},
+            {"density":"3.3","t":9,"u":9,"n":3}
+        ],
+        "chartDP":{
+            "dp":[
+                {"data":[[0,53]],"label":"2.0"},
+                {"data":[[0,49]],"label":"3.4"},
+                {"data":[[0,46]],"label":"1.2"},
+                {"data":[[0,36]],"label":"3.5"},
+                {"data":[[0,32]],"label":"3.3"}
+            ]
+        },
+        //list of all os segments
+        "os":[
+            {"name":"Windows Phone","class":"windows phone"},
+            {"name":"Android","class":"android"},
+            {"name":"iOS","class":"ios"}
+        ]}
+        */
         countlyMetric.getOSSegmentedData = function (os, clean) {
             var _os = countlyDeviceDetails.getPlatforms();
             var oSVersionData = {};
@@ -938,8 +1311,16 @@
 
     };
 
-    CountlyHelpers.initializeTextSelect = function () {
-        $("#content-container").on("click", ".cly-text-select", function (e) {
+    /**
+    * Initialize countly text select. In most cases it is done automatically, only in some cases, when content loaded via ajax request outside of view lifecycle, you may need to initialize it yourself for your content specifically
+    * @param {object} element - jQuery object reference
+    * @example
+    * CountlyHelpers.initializeTextSelect($("#my-dynamic-div"));
+    */
+    CountlyHelpers.initializeTextSelect = function (element) {
+        element = element || $("#content-container");
+
+        element.off("click", ".cly-text-select").on("click", ".cly-text-select", function (e) {
             if ($(this).hasClass("disabled")) {
                 return true;
             }
@@ -950,14 +1331,14 @@
             e.stopPropagation();
         });
 
-        $("#content-container").on("click", ".cly-text-select .select-items .item", function () {
+        element.off("click", ".cly-text-select .select-items .item").on("click", ".cly-text-select .select-items .item", function () {
             var selectedItem = $(this).parents(".cly-text-select").find(".text");
             selectedItem.text($(this).text());
             selectedItem.data("value", $(this).data("value"));
             selectedItem.val($(this).text());
         });
 
-        $("#content-container").on("keyup", ".cly-text-select input", function(event) {
+        element.off("keyup", ".cly-text-select input").on("keyup", ".cly-text-select input", function(event) {
             initItems($(this).parents(".cly-text-select"), true);
 
             $(this).data("value", $(this).val());
@@ -999,59 +1380,14 @@
         });
     };
 
-    function revealDialog(dialog) {
-        $("body").append(dialog);
-
-        var dialogHeight = dialog.height(),
-            dialogWidth = dialog.outerWidth() + 2;
-
-        dialog.css({
-            "height":dialogHeight,
-            "margin-top":Math.floor(-dialogHeight / 2),
-            "width":dialogWidth,
-            "margin-left":Math.floor(-dialogWidth / 2)
-        });
-
-        $("#overlay").fadeIn();
-        dialog.fadeIn(app.tipsify.bind(app, $("#help-toggle").hasClass("active"), dialog));
-    }
-
-    function changeDialogHeight(dialog, animate) {
-        var dialogHeight = 0,
-            dialogWidth = dialog.width(),
-            maxHeight = $("#sidebar").height() - 40;
-
-        dialog.children().each(function(){
-            dialogHeight += $(this).outerHeight(true);
-        });
-
-        if (dialogHeight > maxHeight) {
-            dialog[animate ? 'animate' : 'css']({
-                "height":maxHeight,
-                "margin-top":Math.floor(-maxHeight / 2),
-                "width":dialogWidth,
-                "margin-left":Math.floor(-dialogWidth / 2),
-                "overflow-y": "auto"
-            });
-        } else {
-            dialog[animate ? 'animate' : 'css']({
-                "height":dialogHeight,
-                "margin-top":Math.floor(-dialogHeight / 2),
-                "width":dialogWidth,
-                "margin-left":Math.floor(-dialogWidth / 2)
-            });
-        }
-    }
-
-    CountlyHelpers.revealDialog = revealDialog;
-
-    CountlyHelpers.changeDialogHeight = changeDialogHeight;
-
-    CountlyHelpers.removeDialog = function(dialog){
-        dialog.remove();
-        $("#overlay").fadeOut();
-    };
-
+    /**
+    * Generate random password
+    * @param {number} length - length of the password
+    * @param {boolean} no_special - do not include special characters
+    * @example
+    * //outputs 4UBHvRBG1v
+    * CountlyHelpers.generatePassword(10, true);
+    */
     CountlyHelpers.generatePassword = function(length, no_special) {
         var text = [];
         var chars = "abcdefghijklmnopqrstuvwxyz";
@@ -1088,11 +1424,27 @@
         return text.join("");
     };
 
+    /**
+    * Validate email address
+    * @param {string} email - email address to validate
+    * @returns {boolean} true if valid and false if invalid
+    * @example
+    * //outputs true
+    * CountlyHelpers.validateEmail("test@test.test");
+    *
+    * //outputs false
+    * CountlyHelpers.validateEmail("test@test");
+    */
     CountlyHelpers.validateEmail = function(email) {
         var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
         return re.test(email);
     };
-
+    
+    /**
+    * Validate password based on settings provided via security configuration
+    * @param {string} password - password to validate
+    * @returns {boolean} true if valid and false if invalid
+    */
     CountlyHelpers.validatePassword = function(password){
         if(password.length < countlyGlobal["security"].password_min)
             return jQuery.i18n.prop("management-users.password.length", countlyGlobal["security"].password_min);
