@@ -66,7 +66,9 @@
     "escape-html":"1.0.3",
     "bluebird":"3.4.7",
     "mcc-mnc-list":"1.0.60",
-    "yamljs":"0.2.8"
+    "yamljs":"0.2.8",
+    "jsdoc":"3.4.3",
+    "docdash":"0.4.0"
   },
   "jshintConfig": {
     "esversion": 6,
