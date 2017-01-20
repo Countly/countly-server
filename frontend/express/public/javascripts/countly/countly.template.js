@@ -1,15 +1,42 @@
-/*
- A countly view is defined as a page corresponding to a url fragment such 
- as #/manage/apps. This interface defines common functions or properties 
- the view object has. A view may override any function or property.
+ /**
+ * Default Backbone View template from which all countly views should inherit.
+ * A countly view is defined as a page corresponding to a url fragment such 
+ * as #/manage/apps. This interface defines common functions or properties 
+ * the view object has. A view may override any function or property.
+ * @name countlyView
+ * @global
+ * @namespace countlyView
  */
 var countlyView = Backbone.View.extend({
+    /**
+    * Handlebar template
+    * @type {object}
+    * @memberof countlyView
+    */
     template:null, //handlebars template of the view
+    /**
+    * Data to pass to Handlebar template when building it
+    * @type {object}
+    * @memberof countlyView
+    */
     templateData:{}, //data to be used while rendering the template
+    /**
+    * Main container which contents to replace by compiled template
+    * @type {jquery_object}
+    * @memberof countlyView
+    */
     el:$('#content'), //jquery element to render view into
+    /**
+    * Initialize view, overwrite it with at least empty function if you are using some custom remote template
+    * @memberof countlyView
+    */
     initialize:function () {    //compile view template
         this.template = Handlebars.compile($("#template-analytics-common").html());
     },
+    /**
+    * This method is called when date is changed, default behavior is to call refresh method of the view
+    * @memberof countlyView
+    */
     dateChanged:function () {    //called when user changes the date selected
         if (Backbone.history.fragment == "/") {
 			this.refresh(true);
@@ -17,6 +44,10 @@ var countlyView = Backbone.View.extend({
 			this.refresh();
 		}
     },
+    /**
+    * This method is called when app is changed, default behavior is to call render again
+    * @memberof countlyView
+    */
     appChanged:function () {    //called when user changes selected app from the sidebar
         countlyEvent.reset();
 
@@ -25,10 +56,33 @@ var countlyView = Backbone.View.extend({
             self.render();
         });
     },
+    /**
+    * This method is called before calling render, load your data and remote template if needed here
+    * @memberof countlyView
+    * @example
+    beforeRender: function() {
+        if(this.template)
+			return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
+		else{
+			var self = this;
+			return $.when($.get(countlyGlobal["path"]+'/density/templates/density.html', function(src){
+				self.template = Handlebars.compile(src);
+			}), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
+		}
+    }
+    */
     beforeRender: function () {
         return true;
     },
+    /**
+    * This method is called after calling render method
+    * @memberof countlyView
+    */
     afterRender: function() {},
+    /**
+    * Main render method, better not to over write it, but use {@link countlyView.renderCommon} instead
+    * @memberof countlyView
+    */
     render:function () {    //backbone.js view render function
         $("#content-top").html("");
         this.el.html('');
@@ -48,13 +102,62 @@ var countlyView = Backbone.View.extend({
 
         return this;
     },
+    /**
+    * Do all your rendering in this method
+    * @param {boolean} isRefresh - render is called from refresh method, so do not need to do initialization
+    * @memberof countlyView
+    * @example
+    renderCommon:function (isRefresh) {
+        //set initial data for template
+        this.templateData = {
+            "page-title":jQuery.i18n.map["density.title"],
+            "logo-class":"densities",
+            "chartHTML": chartHTML,
+        };
+    
+        if (!isRefresh) {
+            //populate template with data and add to html
+            $(this.el).html(this.template(this.templateData));
+        }
+    }
+    */
     renderCommon:function (isRefresh) {}, // common render function of the view
+    /**
+    * Called when view is refreshed, you can reload data here or call {@link countlyView.renderCommon} with parameter true for code reusability
+    * @memberof countlyView
+    * @example
+    * refresh:function () {
+        var self = this;
+        //reload data from beforeRender method
+        $.when(this.beforeRender()).then(function () {
+            if (app.activeView != self) {
+                return false;
+            }
+            //re render data again
+            self.renderCommon(true);
+            
+            //replace some parts manually from templateData
+            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
+            $(self.el).find(".widget-content").replaceWith(newPage.find(".widget-content"));
+            $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
+            $(self.el).find(".density-widget").replaceWith(newPage.find(".density-widget"));
+        });
+    }
+    */
     refresh:function () {    // resfresh function for the view called every 10 seconds by default
         return true;
     },
+    /**
+    * This method is called when user is active after idle period
+    * @memberof countlyView
+    */
     restart:function () { // triggered when user is active after idle period
         this.refresh();
     },
+    /**
+    * This method is called when view is destroyed (user entered inactive state or switched to other view) you can clean up here if there is anything to be cleaned
+    * @memberof countlyView
+    */
     destroy:function () {}
 });
 
@@ -2910,6 +3013,12 @@ window.DashboardView = countlyView.extend({
     }
 });
 
+/**
+ * Main app instance of Backbone AppRouter used to control views and view change flow
+ * @name app
+ * @global
+ * @namespace app
+ */
 var AppRouter = Backbone.Router.extend({
     routes:{
         "/":"dashboard",
