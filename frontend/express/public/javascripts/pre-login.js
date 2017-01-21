@@ -1,8 +1,30 @@
+/**
+ * Javascript file loaded on pre login pages with some handy global functions
+ * @name prelogin
+ * @global
+ * @namespace prelogin
+ */
+ 
+
+/**
+* This method is called to show user a message, like error when loging in. By default this is taken from query parameter or passed to template directly as message variable
+* @param {string} key - key from localization property file
+* @memberof prelogin
+*/
 function showMessage(key) {
 	$("#message").data("localize", key);
 	$("#message").html(jQuery.i18n.map[key]);
 }
 
+/**
+* By default only pre-login property file localization is available on prelogin pages, but you can additionally load other localization files, like for example needed for your plugin, using this function
+* @param {string} name - base name of the property file without the locale/language. Should be the same name as your plugin
+* @param {string} path - url path to where the localization file currently resides relative to the page you want to load it from
+* @param {function} callback - callback executed when localization file is loaded
+* @memberof prelogin
+* @example
+* addLocalization('enterpriseinfo', countlyGlobal["cdn"]+'enterpriseinfo/localization/');
+*/
 function addLocalization(name, path, callback){
     var langs = jQuery.i18n.map;
     var lang = store.get("countly_lang") || "en";
