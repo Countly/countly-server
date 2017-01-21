@@ -7,18 +7,18 @@
  * @global
  * @namespace countlyView
  * @example <caption>Extending default view and overwriting its methods</caption>
-   window.DashboardView = countlyView.extend({
-        renderCommon:function () {
-            if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID]){
-                var type = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type;
-                type = jQuery.i18n.map["management-applications.types."+type] || type;
-                $(this.el).html("<div id='no-app-type'><h1>"+jQuery.i18n.map["common.missing-type"]+": "+type+"</h1></div>");
-            }
-            else{
-                $(this.el).html("<div id='no-app-type'><h1>"+jQuery.i18n.map["management-applications.no-app-warning"]+"</h1></div>");
-            }
-        }
-    });
+ *  window.DashboardView = countlyView.extend({
+ *       renderCommon:function () {
+ *           if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID]){
+ *               var type = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type;
+ *               type = jQuery.i18n.map["management-applications.types."+type] || type;
+ *               $(this.el).html("<div id='no-app-type'><h1>"+jQuery.i18n.map["common.missing-type"]+": "+type+"</h1></div>");
+ *           }
+ *           else{
+ *               $(this.el).html("<div id='no-app-type'><h1>"+jQuery.i18n.map["management-applications.no-app-warning"]+"</h1></div>");
+ *           }
+ *       }
+ *   });
  */
 var countlyView = Backbone.View.extend({
     /**
@@ -73,16 +73,16 @@ var countlyView = Backbone.View.extend({
     * This method is called before calling render, load your data and remote template if needed here
     * @memberof countlyView
     * @example
-    beforeRender: function() {
-        if(this.template)
-			return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
-		else{
-			var self = this;
-			return $.when($.get(countlyGlobal["path"]+'/density/templates/density.html', function(src){
-				self.template = Handlebars.compile(src);
-			}), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
-		}
-    }
+    *beforeRender: function() {
+    *    if(this.template)
+	*		return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
+	*	else{
+	*		var self = this;
+	*		return $.when($.get(countlyGlobal["path"]+'/density/templates/density.html', function(src){
+	*			self.template = Handlebars.compile(src);
+	*		}), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
+	*	}
+    *}
     */
     beforeRender: function () {
         return true;
@@ -120,19 +120,19 @@ var countlyView = Backbone.View.extend({
     * @param {boolean} isRefresh - render is called from refresh method, so do not need to do initialization
     * @memberof countlyView
     * @example
-    renderCommon:function (isRefresh) {
-        //set initial data for template
-        this.templateData = {
-            "page-title":jQuery.i18n.map["density.title"],
-            "logo-class":"densities",
-            "chartHTML": chartHTML,
-        };
-    
-        if (!isRefresh) {
-            //populate template with data and add to html
-            $(this.el).html(this.template(this.templateData));
-        }
-    }
+    *renderCommon:function (isRefresh) {
+    *    //set initial data for template
+    *    this.templateData = {
+    *        "page-title":jQuery.i18n.map["density.title"],
+    *        "logo-class":"densities",
+    *        "chartHTML": chartHTML,
+    *    };
+    *
+    *    if (!isRefresh) {
+    *        //populate template with data and add to html
+    *        $(this.el).html(this.template(this.templateData));
+    *    }
+    *}
     */
     renderCommon:function (isRefresh) {}, // common render function of the view
     /**
@@ -140,22 +140,22 @@ var countlyView = Backbone.View.extend({
     * @memberof countlyView
     * @example
     * refresh:function () {
-        var self = this;
-        //reload data from beforeRender method
-        $.when(this.beforeRender()).then(function () {
-            if (app.activeView != self) {
-                return false;
-            }
-            //re render data again
-            self.renderCommon(true);
-            
-            //replace some parts manually from templateData
-            var newPage = $("<div>" + self.template(self.templateData) + "</div>");
-            $(self.el).find(".widget-content").replaceWith(newPage.find(".widget-content"));
-            $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
-            $(self.el).find(".density-widget").replaceWith(newPage.find(".density-widget"));
-        });
-    }
+    *    var self = this;
+    *    //reload data from beforeRender method
+    *    $.when(this.beforeRender()).then(function () {
+    *        if (app.activeView != self) {
+    *            return false;
+    *        }
+    *        //re render data again
+    *        self.renderCommon(true);
+    *        
+    *        //replace some parts manually from templateData
+    *        var newPage = $("<div>" + self.template(self.templateData) + "</div>");
+    *        $(self.el).find(".widget-content").replaceWith(newPage.find(".widget-content"));
+    *        $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
+    *        $(self.el).find(".density-widget").replaceWith(newPage.find(".density-widget"));
+    *    });
+    *}
     */
     refresh:function () {    // resfresh function for the view called every 10 seconds by default
         return true;

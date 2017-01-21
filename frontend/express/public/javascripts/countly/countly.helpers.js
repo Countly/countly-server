@@ -54,10 +54,10 @@
     * @param {function=} msg.onClick - on click listener
     * @example
     * CountlyHelpers.notify({
-        title: "This is title",
-        message: "Main message text",
-        info: "Additional info"
-    });
+    *    title: "This is title",
+    *    message: "Main message text",
+    *    info: "Additional info"
+    * });
     */
     CountlyHelpers.notify = function (msg) {
         $.titleAlert((msg.title || msg.message || msg.info || "Notification"), {
@@ -146,12 +146,12 @@
     * @param {array=} buttonText - [0] element for cancle button text and [1] element for confirm button text
     * @example
     * CountlyHelpers.confirm("Are you sure?", "red", function (result) {
-        if (!result) {
-            //user did not confirm, just exit
-            return true;
-        }
-        //user confirmed, do what you need to do
-    });
+    *    if (!result) {
+    *        //user did not confirm, just exit
+    *        return true;
+    *    }
+    *    //user confirmed, do what you need to do
+    * });
     */
     CountlyHelpers.confirm = function (msg, type, callback, buttonText) {
         var dialog = $("#cly-confirm").clone();
@@ -670,29 +670,29 @@
     * @param {object} context - this context if needed, which will be passed to getData function as second parameter
     * @example
     * function formatData(data){
-        // `data` is the original data object for the row
-        //return string to display in subcell
-        var str = '';
-		if(data){
-			str += '<div class="datatablesubrow">'+
-            JSON.stringify(data)+
-            '</div>';
-        }
-        return str;
-      }
+    *    // `data` is the original data object for the row
+    *    //return string to display in subcell
+    *    var str = '';
+	*	if(data){
+	*		str += '<div class="datatablesubrow">'+
+    *        JSON.stringify(data)+
+    *        '</div>';
+    *    }
+    *    return str;
+    * }
     * this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-          "aaData": crashData.data,
-			"fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
-				$(nRow).attr("id", aData._id);
-			},
-          "aoColumns": [
-				{ "mData": function(row, type){if(type == "display") return countlyCommon.formatTimeAgo(row.ts); else return row.ts;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["crashes.crashed"]},
-				{ "mData": function(row, type){var str = row.os; if(row.os_version) str += " "+row.os_version.replace(/:/g, '.'); return str;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.os_version"] },
-				{ "mData": function(row, type){var str = ""; if(row.manufacture) str += row.manufacture+" "; if(row.device) str += countlyDeviceList[row.device] || row.device; return str;}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.device"]},
-				{ "mData": function(row, type){return row.app_version.replace(/:/g, '.');}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.app_version"] }
-          ]
-      }));
-      CountlyHelpers.expandRows(this.dtable, formatData);
+    *      "aaData": crashData.data,
+	*		"fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+	*			$(nRow).attr("id", aData._id);
+	*		},
+    *      "aoColumns": [
+	*			{ "mData": "ts"}, "sType":"format-ago", "sTitle": jQuery.i18n.map["crashes.crashed"]},
+	*			{ "mData": "os", "sType":"string", "sTitle": jQuery.i18n.map["crashes.os_version"] },
+	*			{ "mData": "device"}, "sType":"string", "sTitle": jQuery.i18n.map["crashes.device"]},
+	*			{ "mData": "app_version", "sType":"string", "sTitle": jQuery.i18n.map["crashes.app_version"] }
+    *      ]
+    *  }));
+    *  CountlyHelpers.expandRows(this.dtable, formatData);
     */
     CountlyHelpers.expandRows = function(dTable, getData, context){
         dTable.aOpen = [];
@@ -869,24 +869,24 @@
     * @param {function=} fetchValue - default function to fetch and transform if needed value from standard metric model
     * @example
     *   window.countlyDensity = {};
-        countlyDensity.checkOS = function(os, density){
-            var lastIndex = density.toUpperCase().lastIndexOf("DPI");
-            if(os.toLowerCase() == "android" && lastIndex !== -1 && lastIndex === density.length - 3)
-                return true;
-            if(os.toLowerCase() == "ios" && density[0] == "@")
-                return true;
-            return false;
-        };
-        CountlyHelpers.createMetricModel(window.countlyDensity, {name: "density", estOverrideMetric: "densities"}, jQuery, function(val, data, separate){
-            if(separate){
-                //request separated/unprocessed data
-                return val;
-            }
-            else{
-                //we can preprocess data and group, for example, by first letter
-                return val[0];
-            }
-        });
+    *   countlyDensity.checkOS = function(os, density){
+    *        var lastIndex = density.toUpperCase().lastIndexOf("DPI");
+    *        if(os.toLowerCase() == "android" && lastIndex !== -1 && lastIndex === density.length - 3)
+    *            return true;
+    *        if(os.toLowerCase() == "ios" && density[0] == "@")
+    *            return true;
+    *        return false;
+    *   };
+    *   CountlyHelpers.createMetricModel(window.countlyDensity, {name: "density", estOverrideMetric: "densities"}, jQuery, function(val, data, separate){
+    *        if(separate){
+    *            //request separated/unprocessed data
+    *            return val;
+    *        }
+    *        else{
+    *            //we can preprocess data and group, for example, by first letter
+    *            return val[0];
+    *        }
+    *   });
     */
     CountlyHelpers.createMetricModel = function (countlyMetric, metric, $, fetchValue) {
         //Private Properties
@@ -913,9 +913,9 @@
         * @param {boolean=} processed - if true will fetch processed data, will fetch raw data by default
         * @returns {jquery_promise} jquery promise to wait while data is loaded
         * @example
-        *beforeRender: function() {
-            return $.when(countlyMetric.initialize()).then(function () {});
-        }
+        * beforeRender: function() {
+        *    return $.when(countlyMetric.initialize()).then(function () {});
+        * }
         */
         countlyMetric.initialize = function (processed) {
             if (_initialized &&  _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
@@ -970,8 +970,8 @@
         * Refresh metric model by fetching data only for the latest time bucket using action=refresh on server. Currently does not fetch data for processed data loaded on initialization
         * @example
         *$.when(countlyMetric.refresh()).then(function () {
-            //data loaded, do something
-        });
+        *    //data loaded, do something
+        *});
         */
         countlyMetric.refresh = function () {
             _periodObj = countlyCommon.periodObj;
@@ -1027,34 +1027,34 @@
         * @param {boolean} clean - should retrieve clean data or preprocessed by fetchValue function
         * returns {object} chartData
         * @example <caption>Example output</caption>
-        * {"chartData":[
-            {"langs":"English","t":124,"u":112,"n":50},
-            {"langs":"Italian","t":83,"u":74,"n":30},
-            {"langs":"German","t":72,"u":67,"n":26},
-            {"langs":"Japanese","t":62,"u":61,"n":19},
-            {"langs":"French","t":66,"u":60,"n":28},
-            {"langs":"Korean","t":64,"u":58,"n":26}
-        ],
-        "chartDPTotal":{
-            "dp":[
-                {"data":[[0,124]],"label":"English"},
-                {"data":[[0,83]],"label":"Italian"},
-                {"data":[[0,72]],"label":"German"},
-                {"data":[[0,62]],"label":"Japanese"},
-                {"data":[[0,66]],"label":"French"},
-                {"data":[[0,64]],"label":"Korean"}
-            ]
-        },
-        "chartDPNew":{
-            "dp":[
-                {"data":[[0,50]],"label":"English"},
-                {"data":[[0,30]],"label":"Italian"},
-                {"data":[[0,26]],"label":"German"},
-                {"data":[[0,19]],"label":"Japanese"},
-                {"data":[[0,28]],"label":"French"},
-                {"data":[[0,26]],"label":"Korean"}
-            ]
-        }}
+        *{"chartData":[
+        *    {"langs":"English","t":124,"u":112,"n":50},
+        *    {"langs":"Italian","t":83,"u":74,"n":30},
+        *    {"langs":"German","t":72,"u":67,"n":26},
+        *    {"langs":"Japanese","t":62,"u":61,"n":19},
+        *    {"langs":"French","t":66,"u":60,"n":28},
+        *    {"langs":"Korean","t":64,"u":58,"n":26}
+        *],
+        *"chartDPTotal":{
+        *    "dp":[
+        *        {"data":[[0,124]],"label":"English"},
+        *        {"data":[[0,83]],"label":"Italian"},
+        *        {"data":[[0,72]],"label":"German"},
+        *        {"data":[[0,62]],"label":"Japanese"},
+        *        {"data":[[0,66]],"label":"French"},
+        *        {"data":[[0,64]],"label":"Korean"}
+        *    ]
+        *},
+        *"chartDPNew":{
+        *    "dp":[
+        *        {"data":[[0,50]],"label":"English"},
+        *        {"data":[[0,30]],"label":"Italian"},
+        *        {"data":[[0,26]],"label":"German"},
+        *        {"data":[[0,19]],"label":"Japanese"},
+        *        {"data":[[0,28]],"label":"French"},
+        *        {"data":[[0,26]],"label":"Korean"}
+        *    ]
+        *}}
         */
         countlyMetric.getData = function (clean) {
             var chartData = {};
@@ -1172,31 +1172,31 @@
         * @param {boolean} clean - should retrieve clean data or preprocessed by fetchValue function
         * @returns os segmented metric object
         * @example <caption>Example output</caption>
-        //call
-        //countlyMetric.getOSSegmentedData("wp")
-        //data for Windows Phone segment
-        {"chartData":[
-            {"density":"2.0","t":18,"u":18,"n":9},
-            {"density":"3.4","t":13,"u":12,"n":5},
-            {"density":"1.2","t":11,"u":10,"n":5},
-            {"density":"3.5","t":10,"u":10,"n":4},
-            {"density":"3.3","t":9,"u":9,"n":3}
-        ],
-        "chartDP":{
-            "dp":[
-                {"data":[[0,53]],"label":"2.0"},
-                {"data":[[0,49]],"label":"3.4"},
-                {"data":[[0,46]],"label":"1.2"},
-                {"data":[[0,36]],"label":"3.5"},
-                {"data":[[0,32]],"label":"3.3"}
-            ]
-        },
-        //list of all os segments
-        "os":[
-            {"name":"Windows Phone","class":"windows phone"},
-            {"name":"Android","class":"android"},
-            {"name":"iOS","class":"ios"}
-        ]}
+        * //call
+        * //countlyMetric.getOSSegmentedData("wp")
+        * //data for Windows Phone segment
+        *{"chartData":[
+        *    {"density":"2.0","t":18,"u":18,"n":9},
+        *    {"density":"3.4","t":13,"u":12,"n":5},
+        *    {"density":"1.2","t":11,"u":10,"n":5},
+        *    {"density":"3.5","t":10,"u":10,"n":4},
+        *    {"density":"3.3","t":9,"u":9,"n":3}
+        *],
+        *"chartDP":{
+        *    "dp":[
+        *        {"data":[[0,53]],"label":"2.0"},
+        *        {"data":[[0,49]],"label":"3.4"},
+        *        {"data":[[0,46]],"label":"1.2"},
+        *        {"data":[[0,36]],"label":"3.5"},
+        *        {"data":[[0,32]],"label":"3.3"}
+        *    ]
+        *},
+        * //list of all os segments
+        *"os":[
+        *   {"name":"Windows Phone","class":"windows phone"},
+        *    {"name":"Android","class":"android"},
+        *    {"name":"iOS","class":"ios"}
+        *]}
         */
         countlyMetric.getOSSegmentedData = function (os, clean) {
             var _os = countlyDeviceDetails.getPlatforms();

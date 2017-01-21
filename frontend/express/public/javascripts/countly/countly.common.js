@@ -59,35 +59,35 @@
     * @property {array} previousUniquePeriodArr - array with ticks for previous period which contains data for unique values, like unique users, example ["2016.12.22","2016.w52","2016.12.30"]
     * @property {array} previousUniquePeriodCheckArr - array with ticks for higher buckets to previous period unique value estimation, example ["2016.w47","2016.w48","2016.12"]
     * @example <caption>Special period object (7days)</caption>
-        {
-            "currentPeriodArr":["2017.1.14","2017.1.15","2017.1.16","2017.1.17","2017.1.18","2017.1.19","2017.1.20"],
-            "previousPeriodArr":["2017.1.7","2017.1.8","2017.1.9","2017.1.10","2017.1.11","2017.1.12","2017.1.13"],
-            "isSpecialPeriod":true,
-            "dateString":"D MMM",
-            "daysInPeriod":7,
-            "numberOfDays":7,
-            "uniquePeriodArr":["2017.1.14","2017.w3"],
-            "uniquePeriodCheckArr":["2017.w2","2017.w3"],
-            "previousUniquePeriodArr":["2017.1.7","2017.1.8","2017.1.9","2017.1.10","2017.1.11","2017.1.12","2017.1.13"],
-            "previousUniquePeriodCheckArr":["2017.w1","2017.w2"],
-            "periodContainsToday":true
-        }
-     * @example <caption>Simple period object (today period - hour)</caption>
-        {
-            "activePeriod":"2017.1.20",
-            "periodMax":23,
-            "periodMin":0,
-            "previousPeriod":"2017.1.19",
-            "isSpecialPeriod":false,
-            "dateString":"HH:mm",
-            "daysInPeriod":0,
-            "numberOfDays":1,
-            "uniquePeriodArr":[],
-            "uniquePeriodCheckArr":[],
-            "previousUniquePeriodArr":[],
-            "previousUniquePeriodCheckArr":[],
-            "periodContainsToday":true
-        }
+    *    {
+    *        "currentPeriodArr":["2017.1.14","2017.1.15","2017.1.16","2017.1.17","2017.1.18","2017.1.19","2017.1.20"],
+    *        "previousPeriodArr":["2017.1.7","2017.1.8","2017.1.9","2017.1.10","2017.1.11","2017.1.12","2017.1.13"],
+    *        "isSpecialPeriod":true,
+    *        "dateString":"D MMM",
+    *        "daysInPeriod":7,
+    *        "numberOfDays":7,
+    *        "uniquePeriodArr":["2017.1.14","2017.w3"],
+    *        "uniquePeriodCheckArr":["2017.w2","2017.w3"],
+    *        "previousUniquePeriodArr":["2017.1.7","2017.1.8","2017.1.9","2017.1.10","2017.1.11","2017.1.12","2017.1.13"],
+    *        "previousUniquePeriodCheckArr":["2017.w1","2017.w2"],
+    *        "periodContainsToday":true
+    *    }
+    * @example <caption>Simple period object (today period - hour)</caption>
+    *    {
+    *        "activePeriod":"2017.1.20",
+    *        "periodMax":23,
+    *        "periodMin":0,
+    *        "previousPeriod":"2017.1.19",
+    *        "isSpecialPeriod":false,
+    *        "dateString":"HH:mm",
+    *        "daysInPeriod":0,
+    *        "numberOfDays":1,
+    *        "uniquePeriodArr":[],
+    *        "uniquePeriodCheckArr":[],
+    *        "previousUniquePeriodArr":[],
+    *        "previousUniquePeriodCheckArr":[],
+    *        "periodContainsToday":true
+    *    }
     */
     countlyCommon.periodObj = calculatePeriodObj();
 
@@ -383,15 +383,15 @@
     * @param {string=} overrideBucket - time bucket to display on graph. See {@link countlyCommon.getTickObj}
     * @example
     * countlyCommon.drawTimeGraph([{
-        "data":[[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,12],[8,9],[9,10],[10,5],[11,8],[12,7],[13,9],[14,4],[15,6]],
-        "label":"Total Sessions",
-        "color":"#DDDDDD",
-        "mode":"ghost"
-    },{
-        "data":[[1,74],[2,69],[3,60],[4,17],[5,6],[6,3],[7,13],[8,25],[9,62],[10,34],[11,34],[12,33],[13,34],[14,30],[15,1]],
-        "label":"Total Sessions",
-        "color":"#333933"
-    }], "#dashboard-graph");
+    *    "data":[[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,12],[8,9],[9,10],[10,5],[11,8],[12,7],[13,9],[14,4],[15,6]],
+    *    "label":"Total Sessions",
+    *    "color":"#DDDDDD",
+    *    "mode":"ghost"
+    *},{
+    *    "data":[[1,74],[2,69],[3,60],[4,17],[5,6],[6,3],[7,13],[8,25],[9,62],[10,34],[11,34],[12,33],[13,34],[14,30],[15,1]],
+    *    "label":"Total Sessions",
+    *    "color":"#333933"
+    *}], "#dashboard-graph");
     */
     countlyCommon.drawTimeGraph = function (dataPoints, container, bucket, overrideBucket) {
         _.defer(function(){
@@ -889,8 +889,8 @@
     * @param {function} explainRange - function to convert range/bucket index to meaningful label
     * @returns {array} array containing extracted ranged data as [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
     * @example <caption>Extracting session frequency from users collection</caption>
-        //outputs [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
-        countlyCommon.extractRangeData(_userDb, "f", _frequencies, countlyUser.explainFrequencyRange);
+    *    //outputs [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
+    *    countlyCommon.extractRangeData(_userDb, "f", _frequencies, countlyUser.explainFrequencyRange);
     */
     countlyCommon.extractRangeData = function (db, propertyName, rangeArray, explainRange) {
         countlyCommon.periodObj = getPeriodObj();
@@ -977,50 +977,50 @@
     * @returns {object} object to use in timeline graph with {"chartDP":chartData, "chartData":_.compact(tableData), "keyEvents":keyEvents}
     * @example <caption>Extracting total users data from users collection</caption>
     * countlyCommon.extractChartData(_sessionDb, countlySession.clearSessionObject, [
-          { data:[], label:"Total Users" }
-      ], [
-          {
-              name:"t",
-              func:function (dataObj) {
-                  return dataObj["u"]
-              }
-          }
-      ]);
-      @example <caption>Returned data</caption>
+    *      { data:[], label:"Total Users" }
+    *  ], [
+    *      {
+    *          name:"t",
+    *          func:function (dataObj) {
+    *              return dataObj["u"]
+    *          }
+    *      }
+    *  ]);
+    *  @example <caption>Returned data</caption>
     * {"chartDP":[
-        {
-            "data":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[12,0],[13,0],[14,0],[15,12]],
-            "label":"Total Sessions",
-            "color":"#DDDDDD",
-            "mode":"ghost"
-        },
-        {
-            "data":[[0,6],[1,14],[2,11],[3,18],[4,10],[5,32],[6,53],[7,55],[8,71],[9,82],[10,74],[11,69],[12,60],[13,17],[14,6],[15,3]],
-            "label":"Total Sessions",
-            "color":"#333933"
-        }
-      ],
-      "chartData":[
-        {"date":"22 Dec, 2016","pt":0,"t":6},
-        {"date":"23 Dec, 2016","pt":0,"t":14},
-        {"date":"24 Dec, 2016","pt":0,"t":11},
-        {"date":"25 Dec, 2016","pt":0,"t":18},
-        {"date":"26 Dec, 2016","pt":0,"t":10},
-        {"date":"27 Dec, 2016","pt":0,"t":32},
-        {"date":"28 Dec, 2016","pt":0,"t":53},
-        {"date":"29 Dec, 2016","pt":0,"t":55},
-        {"date":"30 Dec, 2016","pt":0,"t":71},
-        {"date":"31 Dec, 2016","pt":0,"t":82},
-        {"date":"1 Jan, 2017","pt":0,"t":74},
-        {"date":"2 Jan, 2017","pt":0,"t":69},
-        {"date":"3 Jan, 2017","pt":0,"t":60},
-        {"date":"4 Jan, 2017","pt":0,"t":17},
-        {"date":"5 Jan, 2017","pt":0,"t":6},
-        {"date":"6 Jan, 2017","pt":12,"t":3}
-      ],
-      "keyEvents":[{"min":0,"max":12},{"min":0,"max":82}]
-   }
-   */
+    *    {
+    *        "data":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[12,0],[13,0],[14,0],[15,12]],
+    *        "label":"Total Sessions",
+    *        "color":"#DDDDDD",
+    *        "mode":"ghost"
+    *    },
+    *    {
+    *        "data":[[0,6],[1,14],[2,11],[3,18],[4,10],[5,32],[6,53],[7,55],[8,71],[9,82],[10,74],[11,69],[12,60],[13,17],[14,6],[15,3]],
+    *        "label":"Total Sessions",
+    *        "color":"#333933"
+    *    }
+    *  ],
+    *  "chartData":[
+    *    {"date":"22 Dec, 2016","pt":0,"t":6},
+    *    {"date":"23 Dec, 2016","pt":0,"t":14},
+    *    {"date":"24 Dec, 2016","pt":0,"t":11},
+    *    {"date":"25 Dec, 2016","pt":0,"t":18},
+    *    {"date":"26 Dec, 2016","pt":0,"t":10},
+    *    {"date":"27 Dec, 2016","pt":0,"t":32},
+    *    {"date":"28 Dec, 2016","pt":0,"t":53},
+    *    {"date":"29 Dec, 2016","pt":0,"t":55},
+    *    {"date":"30 Dec, 2016","pt":0,"t":71},
+    *    {"date":"31 Dec, 2016","pt":0,"t":82},
+    *    {"date":"1 Jan, 2017","pt":0,"t":74},
+    *    {"date":"2 Jan, 2017","pt":0,"t":69},
+    *    {"date":"3 Jan, 2017","pt":0,"t":60},
+    *    {"date":"4 Jan, 2017","pt":0,"t":17},
+    *    {"date":"5 Jan, 2017","pt":0,"t":6},
+    *    {"date":"6 Jan, 2017","pt":12,"t":3}
+    *  ],
+    *  "keyEvents":[{"min":0,"max":12},{"min":0,"max":82}]
+    * }
+    */
     countlyCommon.extractChartData = function (db, clearFunction, chartData, dataProperties, metric) {
         if(metric)
             metric = "."+metric;
@@ -1124,21 +1124,21 @@
     * @returns {object} object to use in bar and pie charts with {"chartData":_.compact(tableData)}
     * @example <caption>Extracting carriers data from carriers collection</caption>
     * var chartData = countlyCommon.extractTwoLevelData(_carrierDb, ["At&t", "Verizon"], countlyCarrier.clearCarrierObject, [
-          {
-              name:"carrier",
-              func:function (rangeArr, dataObj) {
-                  return rangeArr;
-              }
-          },
-          { "name":"t" },
-          { "name":"u" },
-          { "name":"n" }
-      ]);
+    *      {
+    *          name:"carrier",
+    *          func:function (rangeArr, dataObj) {
+    *              return rangeArr;
+    *          }
+    *      },
+    *      { "name":"t" },
+    *      { "name":"u" },
+    *      { "name":"n" }
+    * ]);
     * @example <caption>Return data</caption>
     * {"chartData":['
-        {"carrier":"At&t","t":71,"u":62,"n":36},
-        {"carrier":"Verizon","t":66,"u":60,"n":30}
-    ]}
+    *    {"carrier":"At&t","t":71,"u":62,"n":36},
+    *    {"carrier":"Verizon","t":66,"u":60,"n":30}
+    * ]}
     */
     countlyCommon.extractTwoLevelData = function (db, rangeArray, clearFunction, dataProperties, estOverrideMetric) {
 
@@ -1336,16 +1336,16 @@
     * @param {string} metric - metric name to merge
     * @returns {object} chartData object with same metrics summed up
     * @example <caption>Sample input</caption>
-        {"chartData":[
-            {"metric":"Test","t":71,"u":62,"n":36},
-            {"metric":"Test1","t":66,"u":60,"n":30},
-            {"metric":"Test","t":2,"u":3,"n":4}
-        ]}
+    *    {"chartData":[
+    *        {"metric":"Test","t":71,"u":62,"n":36},
+    *        {"metric":"Test1","t":66,"u":60,"n":30},
+    *        {"metric":"Test","t":2,"u":3,"n":4}
+    *    ]}
     * @example <caption>Sample output</caption>
-        {"chartData":[
-            {"metric":"Test","t":73,"u":65,"n":40},
-            {"metric":"Test1","t":66,"u":60,"n":30}
-        ]}
+    *    {"chartData":[
+    *        {"metric":"Test","t":73,"u":65,"n":40},
+    *        {"metric":"Test1","t":66,"u":60,"n":30}
+    *    ]}
     */
     countlyCommon.mergeMetricsByName = function(chartData, metric){
         var uniqueNames = {},
@@ -1380,10 +1380,10 @@
     * @returns {array} array with top 3 values
     * @example <caption>Return data</caption>
     * [
-        {"name":"iOS","percent":35},
-        {"name":"Android","percent":33},
-        {"name":"Windows Phone","percent":32}
-      ]
+    *    {"name":"iOS","percent":35},
+    *    {"name":"Android","percent":33},
+    *    {"name":"Windows Phone","percent":32}
+    * ]
     */
     countlyCommon.extractBarData = function (db, rangeArray, clearFunction, fetchFunction) {
         fetchFunction = fetchFunction || function (rangeArr, dataObj) {return rangeArr;};
@@ -1404,10 +1404,10 @@
     * @returns {array} array with top 3 values
     * @example <caption>Return data</caption>
     * [
-        {"name":"iOS","percent":35},
-        {"name":"Android","percent":33},
-        {"name":"Windows Phone","percent":32}
-      ]
+    *    {"name":"iOS","percent":35},
+    *    {"name":"Android","percent":33},
+    *    {"name":"Windows Phone","percent":32}
+    * ]
     */
     countlyCommon.calculateBarData = function (rangeData) {
         rangeData.chartData = countlyCommon.mergeMetricsByName(rangeData.chartData, "range");
