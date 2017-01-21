@@ -1,0 +1,244 @@
+/**
+ * Object with values passed from server to template and is available directly in the source of logged in user's dashboard generated in frontend/express/views/dashboard.html template
+ * @name countlyGlobal
+ * @global
+ * @namespace countlyGlobal
+ */
+ 
+ /**
+ * Countly instance title to be used as page name
+ * @name countlyGlobal.countlyTitle
+ * @type {string}
+ * @memberof countlyGlobal
+ * @example
+ * countlyGlobal["countlyTitle"] = "Countly";
+ */
+ 
+ /**
+ * Object of all apps that user has access to using app _id string as key and app document from MongoDB as value
+ * @name countlyGlobal.apps
+ * @type {object}
+ * @memberof countlyGlobal
+ * @property {string} id._id - id of the app
+ * @property {string} id.name - name of the app
+ * @property {string} id.country - selected country of the app
+ * @property {string} id.timezone - selected country's timezone for the app (example: Europe/Riga)
+ * @property {string} id.type - app type (mobile, web, desktop, etc)
+ * @property {number} id.created_at - seconds timestamp when app was created
+ * @property {number} id.edited_at - seconds timestamp when app was last time edited
+ * @property {string} id.owner - MongoDB _id as string of the user who created this app
+ * @property {string} id.key - app key used to send SDK requests
+ * @property {string} id.checksum_salt - salt used for checksum to prevent parameter tampering
+ * @property {number} id.last_login - seconds timestamp when user last logged in
+ * @example <caption>Example object</caption>
+ *  countlyGlobal["apps"] = {
+ *       "586e3216326a8b0a07b8d87f":{
+ *           "_id":"586e3216326a8b0a07b8d87f", 
+ *           "name":"Test", 
+ *           "country":"LV", 
+ *           "type":"mobile", 
+ *           "category":"6", 
+ *           "timezone":"Europe/Riga", 
+ *           "created_at":1483616790, 
+ *           "edited_at":1483629279, 
+ *           "owner":"586e31f61424a909e8bd9e72", 
+ *           "key":"dbb1243f9c9ac891cebd63b5035a767c71b1e3d7", 
+ *           "checksum_salt":""
+ *       }, 
+ *       "586e339a326a8b0a07b8ecb9":{
+ *           "_id":"586e339a326a8b0a07b8ecb9", 
+ *           "name":"MobileApp", 
+ *           "country":"FI", 
+ *           "type":"mobile", 
+ *           "category":"6", 
+ *           "timezone":"Europe/Helsinki", 
+ *           "created_at":1483617178, 
+ *           "edited_at":1483617178, 
+ *           "owner":"586e31f61424a909e8bd9e72", 
+ *           "key":"b8fa15b9125dd54f534593639d3814b0a24e8c13"
+ *        }
+ *    };
+ */
+ 
+ /**
+ * Object with data of default app, which should be used if user does not have any app selected
+ * @name countlyGlobal.defaultApp
+ * @type {object}
+ * @memberof countlyGlobal
+ * @property {string} _id - id of the app
+ * @property {string} name - name of the app
+ * @property {string} country - selected country of the app
+ * @property {string} timezone - selected country's timezone for the app (example: Europe/Riga)
+ * @property {string} type - app type (mobile, web, desktop, etc)
+ * @property {number} created_at - seconds timestamp when app was created
+ * @property {number} edited_at - seconds timestamp when app was last time edited
+ * @property {string} owner - MongoDB _id as string of the user who created this app
+ * @property {string} key - app key used to send SDK requests
+ * @property {string} checksum_salt - salt used for checksum to prevent parameter tampering
+ * @property {number} last_login - seconds timestamp when user last logged in
+ * @example <caption>Example object</caption>
+ *   countlyGlobal["defaultApp"] = {
+ *       "_id":"586e3216326a8b0a07b8d87f", 
+ *       "name":"Test", 
+ *       "country":"LV", 
+ *       "type":"mobile", 
+ *       "category":"6", 
+ *       "timezone":"Europe/Riga", 
+ *       "created_at":1483616790, 
+ *       "edited_at":1483629279, 
+ *       "owner":"586e31f61424a909e8bd9e72", 
+ *       "key":"dbb1243f9c9ac891cebd63b5035a767c71b1e3d7", 
+ *       "checksum_salt":""
+ *   };
+ */
+ 
+ /**
+ * Object with all apps that user has admin access too, using app _id as keys and app document as value
+ * @name countlyGlobal.admin_apps
+ * @type {object}
+ * @memberof countlyGlobal
+ * @property {string} id._id - id of the app
+ * @property {string} id.name - name of the app
+ * @property {string} id.country - selected country of the app
+ * @property {string} id.timezone - selected country's timezone for the app (example: Europe/Riga)
+ * @property {string} id.type - app type (mobile, web, desktop, etc)
+ * @property {number} id.created_at - seconds timestamp when app was created
+ * @property {number} id.edited_at - seconds timestamp when app was last time edited
+ * @property {string} id.owner - MongoDB _id as string of the user who created this app
+ * @property {string} id.key - app key used to send SDK requests
+ * @property {string} id.checksum_salt - salt used for checksum to prevent parameter tampering
+ * @property {number} id.last_login - seconds timestamp when user last logged in
+ * @example <caption>Example object</caption>
+ *  countlyGlobal["apps"] = {
+ *       "586e3216326a8b0a07b8d87f":{
+ *           "_id":"586e3216326a8b0a07b8d87f", 
+ *           "name":"Test", 
+ *           "country":"LV", 
+ *           "type":"mobile", 
+ *           "category":"6", 
+ *           "timezone":"Europe/Riga", 
+ *           "created_at":1483616790, 
+ *           "edited_at":1483629279, 
+ *           "owner":"586e31f61424a909e8bd9e72", 
+ *           "key":"dbb1243f9c9ac891cebd63b5035a767c71b1e3d7", 
+ *           "checksum_salt":""
+ *       }, 
+ *       "586e339a326a8b0a07b8ecb9":{
+ *           "_id":"586e339a326a8b0a07b8ecb9", 
+ *           "name":"MobileApp", 
+ *           "country":"FI", 
+ *           "type":"mobile", 
+ *           "category":"6", 
+ *           "timezone":"Europe/Helsinki", 
+ *           "created_at":1483617178, 
+ *           "edited_at":1483617178, 
+ *           "owner":"586e31f61424a909e8bd9e72", 
+ *           "key":"b8fa15b9125dd54f534593639d3814b0a24e8c13"
+ *        }
+ *    };
+ */
+ 
+ /**
+ * CSRF token to be used on requests to the app.js server
+ * @name countlyGlobal.csrf_token
+ * @type {string}
+ * @memberof countlyGlobal
+ * @example
+ * countlyGlobal["csrf_token"] = "yvzAHjnM-t5LxZAAyAVYLooRvrzEss9aQ89Y";
+ */
+ 
+ /**
+ * Object containing all information about current user
+ * @name countlyGlobal.member
+ * @type {object}
+ * @memberof countlyGlobal
+ * @property {MongoObjectId} _id - id of the member document in MongoDB
+ * @property {string} full_name - full name of the user
+ * @property {string} username - username of the user
+ * @property {string} email - email address of the user
+ * @property {boolean} global_admin - true if user is global admin and has access to everything
+ * @property {number} created_at - seconds timestamp when user was created
+ * @property {number} password_changed - seconds timestamp when last time user has changed the password
+ * @property {string} lang - user's selected localization of dashboard, short version, as "en"
+ * @property {string} api_key - user's api key to use in ajax requests to server on user's behalf
+ * @property {number} last_login - seconds timestamp when user last logged in
+ * @example <caption>Example object</caption>
+ *  countlyGlobal["member"] = {
+ *       "_id":{"_bsontype":"ObjectID", "id":{"type":"Buffer","data":[88,110,49,246,20,36,169,9,232,189,158,114]}}, 
+ *       "full_name":"test", 
+ *       "username":"test", 
+ *       "email":"test", 
+ *       "global_admin":true, 
+ *       "created_at":1483616758, 
+ *       "password_changed":1483616758, 
+ *       "lang":"en", 
+ *       "api_key":"1fd3ef9c94e3218934792e097afa836a", 
+ *       "last_login":1484911071
+ *   };
+ */
+ 
+ /**
+ * Frontend configuration from serverside shared configs
+ * @name countlyGlobal.config
+ * @type {object}
+ * @memberof countlyGlobal
+ * @property {boolean} production - if true minimized and combined files are served, else separate unminimized files are served
+ * @property {string} theme - current theme or empty if no theme, default is empty
+ * @property {number} session_timeout - number of seconds when session should timeout or 0 if disabled
+ * @property {boolean} use_google - should use google services like vizualization api or disable all related functionality
+ * @property {boolean} code - if true, will display links to integration guide in Management -> Apps section
+ * @example <caption>Example object</caption>
+ *  countlyGlobal["config"] = {
+ *       "production":false, 
+ *       "theme":"", 
+ *       "session_timeout":0, 
+ *       "use_google":true, 
+ *       "code":true
+ *   };
+ */
+ 
+ /**
+ * Security configuration from serverside shared configs
+ * @name countlyGlobal.security
+ * @type {object}
+ * @memberof countlyGlobal
+ * @example <caption>Example object</caption>
+ *  countlyGlobal["security"] = {
+ *       "login_tries":3, 
+ *       "login_wait":300, 
+ *       "password_min":4, 
+ *       "password_char":false, 
+ *       "password_number":false, 
+ *       "password_symbol":false, 
+ *       "password_expiration":0, 
+ *       "dashboard_additional_headers":"X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains", 
+ *       "api_additional_headers":"X-Frame-Options:deny\nX-XSS-Protection:1; mode=block"
+ *   };
+ */
+ 
+ /**
+ * Array with all enabled plugin names
+ * @name countlyGlobal.plugins
+ * @type {array}
+ * @memberof countlyGlobal
+ * @example <caption>Example object</caption>
+ * countlyGlobal["plugins"] = ["mobile", "web", "desktop", "plugins", "density", "locale", "browser", "sources", "views"];
+ * @example <caption>Checking if plugin is enabled</caption>
+ * if(countlyGlobal.plugins.indexOf("myplugin") !== -1){
+ *      //my plugin is enabled
+ * }
+ */
+ 
+ /**
+ * String of directory path if Countly is configured to run in subdirectory
+ * @name countlyGlobal.path
+ * @type {string}
+ * @memberof countlyGlobal
+ */
+ 
+ /**
+ * String of host of cdn which you can prefix user serverd files like app icons with
+ * @name countlyGlobal.cdn
+ * @type {string}
+ * @memberof countlyGlobal
+ */

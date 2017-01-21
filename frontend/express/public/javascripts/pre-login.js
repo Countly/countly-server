@@ -1,15 +1,15 @@
 /**
  * Javascript file loaded on pre login pages with some handy global functions
- * @name prelogin
+ * @name Pre Login
  * @global
- * @namespace prelogin
+ * @namespace Pre Login
  */
  
 
 /**
 * This method is called to show user a message, like error when loging in. By default this is taken from query parameter or passed to template directly as message variable
 * @param {string} key - key from localization property file
-* @memberof prelogin
+* @memberof Pre Login
 */
 function showMessage(key) {
 	$("#message").data("localize", key);
@@ -21,7 +21,7 @@ function showMessage(key) {
 * @param {string} name - base name of the property file without the locale/language. Should be the same name as your plugin
 * @param {string} path - url path to where the localization file currently resides relative to the page you want to load it from
 * @param {function} callback - callback executed when localization file is loaded
-* @memberof prelogin
+* @memberof Pre Login
 * @example
 * addLocalization('enterpriseinfo', countlyGlobal["cdn"]+'enterpriseinfo/localization/');
 */
