@@ -24,24 +24,28 @@ var countlyView = Backbone.View.extend({
     /**
     * Handlebar template
     * @type {object}
+    * @instance
     * @memberof countlyView
     */
     template:null, //handlebars template of the view
     /**
     * Data to pass to Handlebar template when building it
     * @type {object}
+    * @instance
     * @memberof countlyView
     */
     templateData:{}, //data to be used while rendering the template
     /**
     * Main container which contents to replace by compiled template
     * @type {jquery_object}
+    * @instance
     * @memberof countlyView
     */
     el:$('#content'), //jquery element to render view into
     /**
     * Initialize view, overwrite it with at least empty function if you are using some custom remote template
     * @memberof countlyView
+    * @instance
     */
     initialize:function () {    //compile view template
         this.template = Handlebars.compile($("#template-analytics-common").html());
@@ -49,6 +53,7 @@ var countlyView = Backbone.View.extend({
     /**
     * This method is called when date is changed, default behavior is to call refresh method of the view
     * @memberof countlyView
+    * @instance
     */
     dateChanged:function () {    //called when user changes the date selected
         if (Backbone.history.fragment == "/") {
@@ -60,6 +65,7 @@ var countlyView = Backbone.View.extend({
     /**
     * This method is called when app is changed, default behavior is to call render again
     * @memberof countlyView
+    * @instance
     */
     appChanged:function () {    //called when user changes selected app from the sidebar
         countlyEvent.reset();
@@ -72,6 +78,7 @@ var countlyView = Backbone.View.extend({
     /**
     * This method is called before calling render, load your data and remote template if needed here
     * @memberof countlyView
+    * @instance
     * @example
     *beforeRender: function() {
     *    if(this.template)
@@ -90,11 +97,13 @@ var countlyView = Backbone.View.extend({
     /**
     * This method is called after calling render method
     * @memberof countlyView
+    * @instance
     */
     afterRender: function() {},
     /**
     * Main render method, better not to over write it, but use {@link countlyView.renderCommon} instead
     * @memberof countlyView
+    * @instance
     */
     render:function () {    //backbone.js view render function
         $("#content-top").html("");
@@ -119,6 +128,7 @@ var countlyView = Backbone.View.extend({
     * Do all your rendering in this method
     * @param {boolean} isRefresh - render is called from refresh method, so do not need to do initialization
     * @memberof countlyView
+    * @instance
     * @example
     *renderCommon:function (isRefresh) {
     *    //set initial data for template
@@ -138,6 +148,7 @@ var countlyView = Backbone.View.extend({
     /**
     * Called when view is refreshed, you can reload data here or call {@link countlyView.renderCommon} with parameter true for code reusability
     * @memberof countlyView
+    * @instance
     * @example
     * refresh:function () {
     *    var self = this;
@@ -163,6 +174,7 @@ var countlyView = Backbone.View.extend({
     /**
     * This method is called when user is active after idle period
     * @memberof countlyView
+    * @instance
     */
     restart:function () { // triggered when user is active after idle period
         this.refresh();
@@ -170,6 +182,7 @@ var countlyView = Backbone.View.extend({
     /**
     * This method is called when view is destroyed (user entered inactive state or switched to other view) you can clean up here if there is anything to be cleaned
     * @memberof countlyView
+    * @instance
     */
     destroy:function () {}
 });
@@ -234,6 +247,7 @@ $.expr[":"].contains = $.expr.createPseudo(function(arg) {
  * Main app instance of Backbone AppRouter used to control views and view change flow
  * @name app
  * @global
+ * @instance
  * @namespace app
  */
 var AppRouter = Backbone.Router.extend({
@@ -241,12 +255,34 @@ var AppRouter = Backbone.Router.extend({
         "/":"dashboard",
         "*path":"main"
     },
+    /**
+    * View that is currently being displayed
+    * @type {countlyView}
+    * @instance
+    * @memberof app
+    */
     activeView:null, //current view
     dateToSelected:null, //date to selected from the date picker
     dateFromSelected:null, //date from selected from the date picker
     activeAppName:'',
     activeAppKey:'',
     refreshActiveView:0, //refresh interval function reference
+    /**
+    * Navigate to another view programmatically. If you need to change the view without user clicking anything, like redirect. You can do this using this method. This method is not define by countly but is direct method of AppRouter object in Backbone js
+    * @name app#navigate
+    * @function
+    * @instance
+    * @param {string} fragment - url path (hash part) where to redirect user
+    * @param {boolean=} triggerRoute - to trigger route call, like initialize new view, etc. Default is false, so you may want to use false when redirecting to URL for your own same view where you are already, so no need to reload it
+    * @memberof app
+    * @example <caption>Redirect to url of the same view</caption>
+    * //you are at #/manage/systemlogs
+    * app.navigate("#/manage/systemlogs/query/{}");
+    *
+    * @example <caption>Redirect to url of other view</caption>
+    * //you are at #/manage/systemlogs
+    * app.navigate("#/crashes", true);
+    */
     main:function (forced) {
         var change = true,
             redirect = false;
@@ -1692,6 +1728,11 @@ var AppRouter = Backbone.Router.extend({
             },1)
         });
     },
+    /**
+    * Localize all found html elements with data-localize and data-help-localize attributes
+    * @param {jquery_object} el - jquery reference to parent element which contents to localize, by default all document is localized if not provided
+    * @memberof app
+    */
     localize:function (el) {
         var helpers = {
             onlyFirstUpper:function (str) {
@@ -1735,6 +1776,13 @@ var AppRouter = Backbone.Router.extend({
             }
         });
     },
+    /**
+    * Toggle showing tooltips, which are usually used in help mode for all elements containing css class help-zone-vs or help-zone-vb and having data-help attributes (which are generated automatically from data-help-localize attributes upon localization)
+    * @param {boolean} enable - if true tooltips will be shown on hover, if false tooltips will be disabled
+    * @param {jquery_object} el - jquery reference to parent element which contents to check for tooltips, by default all document is checked if not provided
+    * @memberof app
+    * @instance
+    */
     tipsify: function(enable, el){
         var vs = el ? el.find('.help-zone-vs') : $('.help-zone-vs'),
             vb = el ? el.find('.help-zone-vb') : $('.help-zone-vb'),
@@ -1759,35 +1807,174 @@ var AppRouter = Backbone.Router.extend({
            both.off('mouseenter mouseleave');
         }
     },
+    /**
+    * Register new app type as mobile, web, desktop, etc. You can create new plugin to add new app type with its own dashboard
+    * @param {string} name - name of the app type as mobile, web, desktop etc
+    * @param {countlyView} view - instance of the countlyView to show as main dashboard for provided app type
+    * @memberof app
+    * @instance
+    * @example
+    * app.addAppType("mobile", MobileDashboardView);
+    */
     addAppType:function(name, view){
         this.appTypes[name] = new view();
         var menu = $("#default-type").clone();
         menu.attr("id",name+"-type");
         $("#sidebar-menu").append(menu);
     },
+    /**
+    * Add callback to be called when user changes app in dashboard, which can be used globally, outside of the view
+    * @param {function} callback - function receives app_id param which is app id of the new app to which user switched
+    * @memberof app
+    * @instance
+    * @example
+    * app.addAppSwitchCallback(function(appId){
+    *    countlyCrashes.loadList(appId);
+    * });
+    */
     addAppSwitchCallback:function(callback){
         this.appSwitchCallbacks.push(callback);
     },
+    /**
+    * Add callback to be called when user changes app in Managment -> Applications section, useful when providing custom input additions to app editing for different app types
+    * @param {function} callback - function receives app_id param which is app id and type which is app type
+    * @memberof app
+    * @instance
+    * @example
+    * app.addAppManagementSwitchCallback(function(appId, type){
+    *   if (type == "mobile") {
+    *       addPushHTMLIfNeeded(type);
+    *       $("#view-app .appmng-push").show();
+    *   } else {
+    *       $("#view-app .appmng-push").hide();
+    *   }
+    * });
+    */
     addAppManagementSwitchCallback:function(callback){
         this.appManagementSwitchCallbacks.push(callback);
     },
     addAppObjectModificator:function(callback){
         this.appObjectModificators.push(callback);
     },
+    /**
+    * Add callback to be called when user changes app type in UI in Managment -> Applications section (even without saving app type, just chaning in UI), useful when providing custom input additions to app editing for different app types
+    * @param {function} callback - function receives type which is app type
+    * @memberof app
+    * @instance
+    * @example
+    * app.addAppAddTypeCallback(function(type){
+    *   if (type == "mobile") {
+    *       $("#view-app .appmng-push").show();
+    *   } else {
+    *       $("#view-app .appmng-push").hide();
+    *   }
+    * });
+    */
     addAppAddTypeCallback:function(callback){
         this.appAddTypeCallbacks.push(callback);
     },
+    /**
+    * Add callback to be called when user open user edit UI in Managment -> Users section (even without saving, just opening), useful when providing custom input additions to user editing
+    * @param {function} callback - function receives user object and paramm which can be true if saving data, false if opening data, string to modify data
+    * @memberof app
+    * @instance
+    */
     addUserEditCallback:function(callback){
         this.userEditCallbacks.push(callback);
     },
+    /**
+    * Add custom data export handler from datatables to csv/xls exporter. Provide exporter name and callback function. 
+    * Then add the same name as sExport attribute to the first datatables column. 
+    * Then when user will want to export data from this table, your callback function will be called to get the data. 
+    * You must perpare array of objects all with the same keys, where keys are columns and value are table data and return it from callback
+    * to be processed by exporter.
+    * @param {string} name - name of the export to expect in datatables sExport attribute
+    * @param {function} callback - callback to call when getting data
+    * @memberof app
+    * @instance
+    * @example
+    * app.addDataExport("userinfo", function(){
+    *    var ret = [];
+    *    var elem;
+    *    for(var i = 0; i < tableData.length; i++){
+    *        //use same keys for each array element with different user data
+    *        elem ={
+    *            "fullname": tableData[i].firstname + " " + tableData[i].lastname,
+    *            "job": tableData[i].company + ", " + tableData[i].jobtitle,
+    *            "email": tableData[i].email
+    *        };
+    *        ret.push(elem);
+    *    }
+    *    //return array
+    *    return ret;
+    * });
+    */
     addDataExport:function(name, callback){
         this.dataExports[name] = callback;
     },
+    /**
+    * Add callback to be called everytime new view/page is loaded, so you can modify view with javascript after it has been loaded
+    * @param {string} view - view url/hash or with possible # as wildcard or simply providing # for any view
+    * @param {function} callback - function to be called when view loaded
+    * @memberof app
+    * @instance
+    * @example <caption>Adding to single specific view with specific url</caption>
+    * //this will work only for view bind to #/analytics/events
+    * app.addPageScript("/analytics/events", function(){
+    *   $("#event-nav-head").after(
+    *       "<a href='#/analytics/events/compare'>" +
+    *           "<div id='compare-events' class='event-container'>" +
+    *               "<div class='icon'></div>" +
+    *               "<div class='name'>" + jQuery.i18n.map["compare.button"] + "</div>" +
+    *           "</div>" +
+    *       "</a>"
+    *   );
+    * });
+    
+    * @example <caption>Add to all view subpages</caption>
+    * //this will work /users/ and users/1 and users/abs etc
+    * app.addPageScript("/users#", modifyUserDetailsForPush);
+    
+    * @example <caption>Adding script to any view</caption>
+    * //this will work for any view
+    * app.addPageScript("#", function(){
+    *   alert("I am an annoying popup appearing on each view");
+    * });
+    */
 	addPageScript:function(view, callback){
 		if(!this.pageScripts[view])
 			this.pageScripts[view] = [];
 		this.pageScripts[view].push(callback);
 	},
+    /**
+    * Add callback to be called everytime view is refreshed, because view may reset some html, and we may want to remodify it again. By default this happens every 10 seconds, so not cpu intensive tasks
+    * @param {string} view - view url/hash or with possible # as wildcard or simply providing # for any view
+    * @param {function} callback - function to be called when view refreshed
+    * @memberof app
+    * @instance
+    * @example <caption>Adding to single specific view with specific url</caption>
+    * //this will work only for view bind to #/analytics/events
+    * app.addPageScript("/analytics/events", function(){
+    *   $("#event-nav-head").after(
+    *       "<a href='#/analytics/events/compare'>" +
+    *           "<div id='compare-events' class='event-container'>" +
+    *               "<div class='icon'></div>" +
+    *               "<div class='name'>" + jQuery.i18n.map["compare.button"] + "</div>" +
+    *           "</div>" +
+    *       "</a>"
+    *   );
+    * });
+    
+    * @example <caption>Add to all view subpage refreshed</caption>
+    * //this will work /users/ and users/1 and users/abs etc
+    * app.addRefreshScript("/users#", modifyUserDetailsForPush);
+    
+    * @example <caption>Adding script to any view</caption>
+    * //this will work for any view
+    * app.addRefreshScript("#", function(){
+    *   alert("I am an annoying popup appearing on each refresh of any view");
+    * });
+    */
 	addRefreshScript:function(view, callback){
 		if(!this.refreshScripts[view])
 			this.refreshScripts[view] = [];
