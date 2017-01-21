@@ -2120,14 +2120,16 @@
 
     /**
     * Format timestamp to twitter like time ago format with real date as tooltip and hidden data for exporting
-    * @param {number} timestamp - timestamp in seconds
+    * @param {number} timestamp - timestamp in seconds or miliseconds
     * @returns {string} formated time ago
     * @example
     * //outputs <span title="Tue, 17 Jan 2017 13:54:26">3 days ago<a style="display: none;">|Tue, 17 Jan 2017 13:54:26</a></span>
     * countlyCommon.formatTimeAgo(1484654066);
     */
 	countlyCommon.formatTimeAgo = function(timestamp) {
-        var target = new Date(timestamp*1000);
+        if(timestamp.toString().length === 10)
+            timestamp *= 1000;
+        var target = new Date(timestamp);
         var tooltip = moment(target).format("ddd, D MMM YYYY HH:mm:ss");
         var elem = $("<span>");
         elem.prop("title", tooltip);
@@ -2151,13 +2153,15 @@
 
     /**
     * Format duration to units of how much time have passed
-    * @param {number} timestamp - amount in seconds passed since some reference point
+    * @param {number} timestamp - amount in seconds or miliseconds passed since some reference point
     * @returns {string} formated time with how much units passed
     * @example
     * //outputs 47 year(s) 28 day(s) 11:54:26
     * countlyCommon.formatTime(1484654066);
     */
 	countlyCommon.formatTime = function(timestamp) {
+        if(timestamp.toString().length === 13)
+            timestamp = Math.round(timestamp/1000);
 		var str = "";
 		var seconds = timestamp % 60;
 		str = str+leadingZero(seconds);
@@ -2181,13 +2185,15 @@
 
     /**
     * Format duration into highest unit of how much time have passed. Used in big numbers
-    * @param {number} timestamp - amount in seconds passed since some reference point
+    * @param {number} timestamp - amount in seconds or miliseconds passed since some reference point
     * @returns {string} formated time with how much highest units passed
     * @example
     * //outputs 2824.7 yrs
     * countlyCommon.timeString(1484654066);
     */
     countlyCommon.timeString = function(timespent){
+        if(timespent.toString().length === 13)
+            timespent = Math.round(timespent/1000);
         var timeSpentString = (timespent.toFixed(1)) + " " + jQuery.i18n.map["common.minute.abrv"];
 
         if (timespent >= 142560) {
@@ -2231,27 +2237,31 @@
 
     /**
     * Get date from seconds timestamp
-    * @param {number} timestamp - timestamp in seconds
+    * @param {number} timestamp - timestamp in seconds or miliseconds
     * @returns {string} formated date
     * @example
     * //outputs 17.01.2017
     * countlyCommon.getDate(1484654066);
     */
 	countlyCommon.getDate = function(timestamp) {
-		var d = new Date(timestamp*1000);
+        if(timestamp.toString().length === 10)
+            timestamp *= 1000;
+		var d = new Date(timestamp);
 		return leadingZero(d.getDate())+"."+leadingZero(d.getMonth()+1)+"."+d.getFullYear();
 	}
 
     /**
     * Get time from seconds timestamp
-    * @param {number} timestamp - timestamp in seconds
+    * @param {number} timestamp - timestamp in seconds or miliseconds
     * @returns {string} formated time
     * @example
     * //outputs 13:54
     * countlyCommon.getTime(1484654066);
     */
 	countlyCommon.getTime = function(timestamp) {
-		var d = new Date(timestamp*1000);
+        if(timestamp.toString().length === 10)
+            timestamp *= 1000;
+		var d = new Date(timestamp);
 		return leadingZero(d.getHours())+":"+leadingZero(d.getMinutes());
 	}
 
