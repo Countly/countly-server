@@ -242,3 +242,39 @@
  * @type {string}
  * @memberof countlyGlobal
  */
+ 
+/**
+* Object for persistently storing values on browser side using localStorage as main storage and fallback to cookies
+* @name store
+* @global
+* @namespace store
+* @example
+* //saving value
+* store.set("lang", "lv");
+*
+* //returns lv
+* store.get("lang");
+*
+* //delete value
+* store.set("lang", nul);
+*/
+ 
+ /**
+* Persistently store value
+* @name store.set
+* @memberof store
+* @param {string} key - key under which we should store the value
+* @param {string} value - value to store
+* @example
+* store.set("lang", "lv");
+*/
+    
+/**
+* Get persistantly stored value
+* @name store.get
+* @memberof store
+* @param {string} key - key under which value was stored
+* @returns {string} previously stored value or undefined if value is not found
+* @example
+* var lang = store.get("lang");
+*/
