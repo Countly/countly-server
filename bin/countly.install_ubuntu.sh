@@ -96,4 +96,12 @@ cd $DIR && grunt dist-all
 if [ "$INSIDE_DOCKER" != "1" ]
 then
 	countly start
+
+	# close google services for China area
+    if ping -c 1 google.com >> /dev/null 2>&1; then
+        echo "enable google services"
+    else
+        echo "should close google services"
+        countly config "frontend.use_google" false
+    fi
 fi
