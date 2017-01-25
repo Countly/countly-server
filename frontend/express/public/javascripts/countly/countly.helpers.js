@@ -1050,6 +1050,7 @@
         
         /**
         * Get array of unique segments available for metric data
+        * @param {string} metric - name of the segment/metric to get meta for, by default will use default _name provided on initialization
         * @returns {array} of unique metric values
         */
         countlyMetric.getMeta = function (metric) {
@@ -1061,6 +1062,7 @@
         * Get data after initialize finished and data was retrieved
         * @param {boolean} clean - should retrieve clean data or preprocessed by fetchValue function
         * @param {boolean} join - join new and total users into single graph, for example to dispaly in bars on the same graph and not 2 separate pie charts
+        * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
         * returns {object} chartData
         * @example <caption>Example output of separate data for 2 pie charts</caption>
         *{"chartData":[
@@ -1231,6 +1233,7 @@
 
         /**
         * Get bar data for metric
+        * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
         * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
         */
         countlyMetric.getBars = function (metric) {
@@ -1256,6 +1259,7 @@
         * If this metric's data should be segmented by OS (which means be prefixed by first os letter on server side), you can get OS segmented data
         * @param {string} os - os name for which to get segmented metrics data
         * @param {boolean} clean - should retrieve clean data or preprocessed by fetchValue function
+        * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
         * @returns os segmented metric object
         * @example <caption>Example output</caption>
         * //call
