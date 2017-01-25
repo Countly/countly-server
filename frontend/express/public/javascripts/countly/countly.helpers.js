@@ -1036,6 +1036,16 @@
         */
         countlyMetric.setDb = function (db) {
             _Db = db;
+            setMeta();
+        };
+        
+        /**
+        * Extend current data for model with some additional information about latest period (like data from action=refresh request)
+        * @param {object} db - set new data to be used by model
+        */
+        countlyMetric.extendDb = function (data) {
+            countlyCommon.extendDbObj(_Db, data);
+            extendMeta();
         };
         
         /**
