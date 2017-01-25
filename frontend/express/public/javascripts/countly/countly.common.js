@@ -1123,7 +1123,7 @@
     * @param {object=} estOverrideMetric - data from total users api request to correct unique user values
     * @returns {object} object to use in bar and pie charts with {"chartData":_.compact(tableData)}
     * @example <caption>Extracting carriers data from carriers collection</caption>
-    * var chartData = countlyCommon.extractTwoLevelData(_carrierDb, ["At&t", "Verizon"], countlyCarrier.clearCarrierObject, [
+    * var chartData = countlyCommon.extractTwoLevelData(_carrierDb, ["At&t", "Verizon"], countlyCarrier.clearObject, [
     *      {
     *          name:"carrier",
     *          func:function (rangeArr, dataObj) {

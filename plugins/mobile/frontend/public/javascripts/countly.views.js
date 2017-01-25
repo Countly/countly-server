@@ -143,7 +143,7 @@ window.MobileDashboardView = countlyView.extend({
             },
             {
                 "title":jQuery.i18n.map["common.bar.top-carrier"],
-                "data":countlyCarrier.getCarrierBars(),
+                "data":countlyCarrier.getBars(),
                 "help":"dashboard.top-carriers"
             },
             {

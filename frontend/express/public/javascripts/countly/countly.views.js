@@ -674,7 +674,7 @@ window.CarrierView = countlyView.extend({
         return $.when(countlyCarrier.initialize(), countlyTotalUsers.initialize("carriers")).then(function () {});
     },
     renderCommon:function (isRefresh) {
-        var carrierData = countlyCarrier.getCarrierData();
+        var carrierData = countlyCarrier.getData();
 
         this.templateData = {
             "page-title":jQuery.i18n.map["carriers.title"],
@@ -714,7 +714,7 @@ window.CarrierView = countlyView.extend({
                 return false;
             }
 
-            var carrierData = countlyCarrier.getCarrierData();
+            var carrierData = countlyCarrier.getData();
             countlyCommon.drawGraph(carrierData.chartDPTotal, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(carrierData.chartDPNew, "#dashboard-graph2", "pie");
             CountlyHelpers.refreshTable(self.dtable, carrierData.chartData);
