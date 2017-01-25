@@ -629,8 +629,7 @@ window.AppVersionView = countlyView.extend({
         return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("app_versions")).then(function () {});
     },
     renderCommon:function (isRefresh) {
-        var appVersionData = countlyAppVersion.getAppVersionData();
-
+        var appVersionData = countlyAppVersion.getData(false, true);
         this.templateData = {
             "page-title":jQuery.i18n.map["app-versions.title"],
             "logo-class":"app-versions",
@@ -645,7 +644,7 @@ window.AppVersionView = countlyView.extend({
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": appVersionData.chartData,
                 "aoColumns": [
-                    { "mData": "app_version", "sTitle": jQuery.i18n.map["app-versions.table.app-version"] },
+                    { "mData": "app_versions", "sTitle": jQuery.i18n.map["app-versions.table.app-version"] },
                     { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
                     { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
                     { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
@@ -662,7 +661,7 @@ window.AppVersionView = countlyView.extend({
                 return false;
             }
 
-            var appVersionData = countlyAppVersion.getAppVersionData();
+            var appVersionData = countlyAppVersion.getData(false, true);
             countlyCommon.drawGraph(appVersionData.chartDP, "#dashboard-graph", "bar");
             CountlyHelpers.refreshTable(self.dtable, appVersionData.chartData);
         });

@@ -1059,8 +1059,9 @@
         /**
         * Get data after initialize finished and data was retrieved
         * @param {boolean} clean - should retrieve clean data or preprocessed by fetchValue function
+        * @param {boolean} join - join new and total users into single graph, for example to dispaly in bars on the same graph and not 2 separate pie charts
         * returns {object} chartData
-        * @example <caption>Example output</caption>
+        * @example <caption>Example output of separate data for 2 pie charts</caption>
         *{"chartData":[
         *    {"langs":"English","t":124,"u":112,"n":50},
         *    {"langs":"Italian","t":83,"u":74,"n":30},
@@ -1089,8 +1090,33 @@
         *        {"data":[[0,26]],"label":"Korean"}
         *    ]
         *}}
+        * @example <caption>Example output of joined data for 1 bar chart</caption>
+        *{"chartData":[
+        *    {"langs":"English","t":124,"u":112,"n":50},
+        *    {"langs":"Italian","t":83,"u":74,"n":30},
+        *    {"langs":"German","t":72,"u":67,"n":26},
+        *    {"langs":"Japanese","t":62,"u":61,"n":19},
+        *    {"langs":"French","t":66,"u":60,"n":28},
+        *    {"langs":"Korean","t":64,"u":58,"n":26}
+        *],
+        *"chartDP":{
+        *    "dp":[
+        *        {"data":[[-1,null],[0,124],[1,83],[2,72],[3,62],[4,66],[5,64],[6,null]],"label":"Total Sessions"},
+        *        {"data":[[-1,null],[0,50],[1,30],[2,26],[3,19],[4,28],[5,26],[6,null]],"label":"New Users"}
+        *    ],
+        *   "ticks":[
+        *        [-1,""], //used for padding for bars
+        *        [23,""], //used for padding for bars
+        *        [0,"English"],
+        *        [1,"Italian"],
+        *        [2,"German"],
+        *        [3,"Japanese"],
+        *        [4,"French"],
+        *        [5,"Korean"]
+        *    ]
+        *}}
         */
-        countlyMetric.getData = function (clean) {
+        countlyMetric.getData = function (clean, join) {
             var chartData = {};
             if(_processed){
                 chartData.chartData = [];
@@ -1120,41 +1146,67 @@
                     { "name":"n" }
                 ], _estOverrideMetric);
             }
-
             chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, _name);
+            chartData.chartData.sort(function(a,b){return b.t-a.t})
             var namesData = _.pluck(chartData.chartData, _name),
                 totalData = _.pluck(chartData.chartData, 't'),
-                newData = _.pluck(chartData.chartData, 'n'),
-                chartData2 = [],
+                newData = _.pluck(chartData.chartData, 'n');
+                
+            if(join){
+                chartData.chartDP = {ticks:[]};
+                var chartDP = [
+                    {data:[], label:jQuery.i18n.map["common.table.total-sessions"]},
+                    {data:[], label:jQuery.i18n.map["common.table.new-users"]}
+                ];
+    
+                chartDP[0]["data"][0] = [-1, null];
+                chartDP[0]["data"][namesData.length + 1] = [namesData.length, null];
+                chartDP[1]["data"][0] = [-1, null];
+                chartDP[1]["data"][namesData.length + 1] = [namesData.length, null];
+        
+                chartData.chartDP.ticks.push([-1, ""]);
+                chartData.chartDP.ticks.push([namesData.length, ""]);
+        
+                for (var i = 0; i < namesData.length; i++) {
+                    chartDP[0]["data"][i + 1] = [i, totalData[i]];
+                    chartDP[1]["data"][i + 1] = [i, newData[i]];
+                    chartData.chartDP.ticks.push([i, namesData[i]]);
+                }
+        
+                chartData.chartDP.dp = chartDP;
+            }
+            else{
+                var chartData2 = [],
                 chartData3 = [];
 
-            var sum = _.reduce(totalData, function (memo, num) {
-                return memo + num;
-            }, 0);
-
-            for (var i = 0; i < namesData.length; i++) {
-                var percent = (totalData[i] / sum) * 100;
-                chartData2[i] = {data:[
-                    [0, totalData[i]]
-                ], label:namesData[i]};
+                var sum = _.reduce(totalData, function (memo, num) {
+                    return memo + num;
+                }, 0);
+    
+                for (var i = 0; i < namesData.length; i++) {
+                    var percent = (totalData[i] / sum) * 100;
+                    chartData2[i] = {data:[
+                        [0, totalData[i]]
+                    ], label:namesData[i]};
+                }
+    
+                var sum2 = _.reduce(newData, function (memo, num) {
+                    return memo + num;
+                }, 0);
+    
+                for (var i = 0; i < namesData.length; i++) {
+                    var percent = (newData[i] / sum) * 100;
+                    chartData3[i] = {data:[
+                        [0, newData[i]]
+                    ], label:namesData[i]};
+                }
+    
+                chartData.chartDPTotal = {};
+                chartData.chartDPTotal.dp = chartData2;
+    
+                chartData.chartDPNew = {};
+                chartData.chartDPNew.dp = chartData3;
             }
-
-            var sum2 = _.reduce(newData, function (memo, num) {
-                return memo + num;
-            }, 0);
-
-            for (var i = 0; i < namesData.length; i++) {
-                var percent = (newData[i] / sum) * 100;
-                chartData3[i] = {data:[
-                    [0, newData[i]]
-                ], label:namesData[i]};
-            }
-
-            chartData.chartDPTotal = {};
-            chartData.chartDPTotal.dp = chartData2;
-
-            chartData.chartDPNew = {};
-            chartData.chartDPNew.dp = chartData3;
             return chartData;
         };
 
