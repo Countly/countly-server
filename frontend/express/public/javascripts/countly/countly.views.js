@@ -209,7 +209,7 @@ window.CountriesView = countlyView.extend({
 
         if (this.cityView) {
             locationData = countlyCity.getLocationData();
-            firstCollData = "city";
+            firstCollData = "cities";
         } else {
             locationData = countlyLocation.getLocationData();
         }

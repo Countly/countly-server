@@ -1,10 +1,7 @@
-(function (countlyCity, $, undefined) {
+(function () {
 
     // Private Properties
     var _periodObj = {},
-        _locationsDb = {},
-        _activeAppKey = 0,
-        _cities = [],
         _chart,
         _dataTable,
         _chartElementId = "geo-chart",
@@ -17,9 +14,7 @@
             backgroundColor:"transparent",
             datalessRegionColor:"#FFF",
             region:"TR"
-        },
-        _initialized = false,
-        _period = null;
+        };
 
     if (countlyCommon.CITY_DATA === false) {
         countlyCity.initialize = function() { return true; };
@@ -28,76 +23,12 @@
         countlyCity.refreshGeoChart = function() { return true; };
         countlyCity.getLocationData = function() { return []; };
     } else {
-        // Public Methods
-        countlyCity.initialize = function () {
-
-            if (_initialized && _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
-                return countlyCity.refresh();
-            }
-
-            _period = countlyCommon.getPeriodForAjax();
-
-            if (!countlyCommon.DEBUG) {
-                _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
-                _initialized = true;
-
-                return $.ajax({
-                    type:"GET",
-                    url:countlyCommon.API_PARTS.data.r,
-                    data:{
-                        "api_key":countlyGlobal.member.api_key,
-                        "app_id":countlyCommon.ACTIVE_APP_ID,
-                        "method":"cities",
-                        "period":_period
-                    },
-                    dataType:"jsonp",
-                    success:function (json) {
-                        _locationsDb = json;
-                        setMeta();
-                    }
-                });
-            } else {
-                _locationsDb = {"2012":{}};
-                return true;
-            }
-        };
-
-        countlyCity.refresh = function () {
-
-            _periodObj = countlyCommon.periodObj;
-
-            if (!countlyCommon.DEBUG) {
-
-                if (_activeAppKey != countlyCommon.ACTIVE_APP_KEY) {
-                    _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
-                    return countlyCity.initialize();
-                }
-
-                return $.ajax({
-                    type:"GET",
-                    url:countlyCommon.API_PARTS.data.r,
-                    data:{
-                        "api_key":countlyGlobal.member.api_key,
-                        "app_id":countlyCommon.ACTIVE_APP_ID,
-                        "method":"cities",
-                        "action":"refresh"
-                    },
-                    dataType:"jsonp",
-                    success:function (json) {
-                        countlyCommon.extendDbObj(_locationsDb, json);
-                        setMeta();
-                    }
-                });
-            } else {
-                _locationsDb = {"2012":{}};
-                return true;
-            }
-        };
-
-        countlyCity.reset = function () {
-            _locationsDb = {};
-            setMeta();
-        };
+        window.countlyCity = window.countlyCity || {};
+        CountlyHelpers.createMetricModel(window.countlyCity, {name: "cities", estOverrideMetric:"cities"}, jQuery, function (rangeArr, dataObj) {
+            if(rangeArr == "Unknown")
+                return jQuery.i18n.map["common.unknown"];
+            return rangeArr;
+        });
 
         countlyCity.drawGeoChart = function (options) {
 
@@ -133,19 +64,7 @@
 
         countlyCity.getLocationData = function (options) {
 
-            var locationData = countlyCommon.extractTwoLevelData(_locationsDb, _cities, countlyCity.clearLocationObject, [
-                {
-                    "name":"city",
-                    "func":function (rangeArr, dataObj) {
-                        if(rangeArr == "Unknown")
-                            return jQuery.i18n.map["common.unknown"];
-                        return rangeArr;
-                    }
-                },
-                { "name":"t" },
-                { "name":"u" },
-                { "name":"n" }
-            ], "cities");
+            var locationData = countlyCity.getData();
 
             if (options && options.maxCountries && locationData.chartData) {
                 if (locationData.chartData.length > options.maxCountries) {
@@ -157,19 +76,6 @@
         };
     }
 
-    countlyCity.clearLocationObject = function (obj) {
-        if (obj) {
-            if (!obj["t"]) obj["t"] = 0;
-            if (!obj["n"]) obj["n"] = 0;
-            if (!obj["u"]) obj["u"] = 0;
-        }
-        else {
-            obj = {"t":0, "n":0, "u":0};
-        }
-
-        return obj;
-    };
-
     //Private Methods
     function draw(ob) {
         ob = ob || {id:'total', label:jQuery.i18n.map["sidebar.analytics.sessions"], type:'number', metric:"t"};
@@ -177,7 +83,7 @@
 
         _chart = new google.visualization.GeoChart(document.getElementById(_chartElementId));
 
-        var tt = countlyCommon.extractTwoLevelData(_locationsDb, _cities, countlyCity.clearLocationObject, [
+        var tt = countlyCommon.extractTwoLevelData(countlyCity.getDb(), countlyCity.getMeta(), countlyCity.clearObject, [
             {
                 "name":"city",
                 "func":function (rangeArr, dataObj) {
@@ -232,7 +138,7 @@
         ob = ob || {id:'total', label:jQuery.i18n.map["sidebar.analytics.sessions"], type:'number', metric:"t"};
         var chartData = {cols:[], rows:[]};
 
-        var tt = countlyCommon.extractTwoLevelData(_locationsDb, _cities, countlyCity.clearLocationObject, [
+        var tt = countlyCommon.extractTwoLevelData(countlyCity.getDb(), countlyCity.getMeta(), countlyCity.clearObject, [
             {
                 "name":"city",
                 "func":function (rangeArr, dataObj) {
@@ -275,12 +181,4 @@
         _chart.draw(_dataTable, _chartOptions);
     }
 
-    function setMeta() {
-        if (_locationsDb['meta']) {
-            _cities = (_locationsDb['meta']['cities']) ? _locationsDb['meta']['cities'] : [];
-        } else {
-            _cities = [];
-        }
-    }
-
-}(window.countlyCity = window.countlyCity || {}, jQuery));
+}());

@@ -1021,6 +1021,30 @@
                 setMeta();
             }
         };
+        
+        /**
+        * Get current data, if some view or model requires access to raw data
+        * @return {object} raw data returned from server either in standard metric model or preprocessed data, based on what model uses
+        */
+        countlyMetric.getDb = function () {
+            return _Db;
+        };
+        
+        /**
+        * Set current data for model, if you need to provide data for model from another resource (as loaded in different model)
+        * @param {object} db - set new data to be used by model
+        */
+        countlyMetric.setDb = function (db) {
+            _Db = db;
+        };
+        
+        /**
+        * Get array of unique segments available for metric data
+        * @returns {array} of unique metric values
+        */
+        countlyMetric.getMeta = function () {
+            return _metrics;
+        };
 
         /**
         * Get data after initialize finished and data was retrieved
@@ -1121,7 +1145,6 @@
 
             chartData.chartDPNew = {};
             chartData.chartDPNew.dp = chartData3;
-            console.log(JSON.stringify(chartData));
             return chartData;
         };
 
