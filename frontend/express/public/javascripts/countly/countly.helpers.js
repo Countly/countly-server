@@ -892,7 +892,7 @@
         //Private Properties
         var _periodObj = {},
             _Db = {},
-            _metrics = [],
+            _metrics = {},
             _activeAppKey = 0,
             _initialized = false,
             _processed = false,
@@ -1052,8 +1052,9 @@
         * Get array of unique segments available for metric data
         * @returns {array} of unique metric values
         */
-        countlyMetric.getMeta = function () {
-            return _metrics;
+        countlyMetric.getMeta = function (metric) {
+            metric = metric || _name;
+            return _metrics[metric] || [];
         };
 
         /**
@@ -1116,7 +1117,7 @@
         *    ]
         *}}
         */
-        countlyMetric.getData = function (clean, join) {
+        countlyMetric.getData = function (clean, join, metric) {
             var chartData = {};
             if(_processed){
                 chartData.chartData = [];
@@ -1130,7 +1131,7 @@
                 }
             }
             else{
-                chartData = countlyCommon.extractTwoLevelData(_Db, _metrics, this.clearObject, [
+                chartData = countlyCommon.extractTwoLevelData(_Db, this.getMeta(metric), this.clearObject, [
                     {
                         name:_name,
                         func:function (rangeArr, dataObj) {
@@ -1232,7 +1233,7 @@
         * Get bar data for metric
         * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
         */
-        countlyMetric.getBars = function () {
+        countlyMetric.getBars = function (metric) {
             if(_processed){
                 var rangeData = {};
                 rangeData.chartData = [];
@@ -1247,7 +1248,7 @@
                 return countlyCommon.calculateBarData(rangeData);
             }
             else{
-                return countlyCommon.extractBarData(_Db, _metrics, this.clearObject, fetchValue);
+                return countlyCommon.extractBarData(_Db, this.getMeta(metric), this.clearObject, fetchValue);
             }
         };
 
@@ -1283,7 +1284,7 @@
         *    {"name":"iOS","class":"ios"}
         *]}
         */
-        countlyMetric.getOSSegmentedData = function (os, clean) {
+        countlyMetric.getOSSegmentedData = function (os, clean, metric) {
             var _os = countlyDeviceDetails.getPlatforms();
             var oSVersionData = {};
             if(_processed){
@@ -1298,7 +1299,7 @@
                 }
             }
             else{
-                oSVersionData = countlyCommon.extractTwoLevelData(_Db, _metrics, this.clearObject, [
+                oSVersionData = countlyCommon.extractTwoLevelData(_Db, this.getMeta(metric), this.clearObject, [
                     {
                         name:_name,
                         func:function (rangeArr, dataObj) {
@@ -1382,15 +1383,19 @@
 
         function setMeta() {
             if (_Db['meta']) {
-                _metrics = (_Db['meta'][_name]) ? _Db['meta'][_name] : [];
+                for(var i in _Db['meta']){
+                    _metrics[i] = (_Db['meta'][i]) ? _Db['meta'][i] : [];
+                }
             } else {
-                _metrics = [];
+                _metrics = {};
             }
         }
 
         function extendMeta() {
             if (_Db['meta']) {
-                _metrics = countlyCommon.union(_metrics, _Db['meta'][_name]);
+                for(var i in _Db['meta']){
+                    _metrics[i] = countlyCommon.union(_metrics[i], _Db['meta'][i]);
+                }
             }
         }
 

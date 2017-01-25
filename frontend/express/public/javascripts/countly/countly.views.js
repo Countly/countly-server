@@ -696,7 +696,7 @@ window.CarrierView = countlyView.extend({
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": carrierData.chartData,
                 "aoColumns": [
-                    { "mData": "carrier", "sTitle": jQuery.i18n.map["carriers.table.carrier"] },
+                    { "mData": "carriers", "sTitle": jQuery.i18n.map["carriers.table.carrier"] },
                     { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
                     { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
                     { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
