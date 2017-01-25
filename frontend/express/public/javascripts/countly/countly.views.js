@@ -425,7 +425,7 @@ window.DeviceView = countlyView.extend({
         app.localize();
     },
     renderCommon:function (isRefresh) {
-        var deviceData = countlyDevice.getDeviceData();
+        var deviceData = countlyDevice.getData();
 
         this.templateData = {
             "page-title":jQuery.i18n.map["devices.title"],
@@ -466,7 +466,7 @@ window.DeviceView = countlyView.extend({
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": deviceData.chartData,
                 "aoColumns": [
-                    { "mData": "device", "sTitle": jQuery.i18n.map["devices.table.device"] },
+                    { "mData": "devices", "sTitle": jQuery.i18n.map["devices.table.device"] },
                     { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
                     { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
                     { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
@@ -487,7 +487,7 @@ window.DeviceView = countlyView.extend({
             newPage = $("<div>" + self.template(self.templateData) + "</div>");
             $(self.el).find(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
 
-            var deviceData = countlyDevice.getDeviceData();
+            var deviceData = countlyDevice.getData();
 
             countlyCommon.drawGraph(deviceData.chartDPTotal, "#dashboard-graph", "pie");
             countlyCommon.drawGraph(deviceData.chartDPNew, "#dashboard-graph2", "pie");
