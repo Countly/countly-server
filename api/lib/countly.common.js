@@ -918,7 +918,7 @@ var countlyCommon = {},
                 periodMin = 1;
                 dateString = "MMM";
                 daysInPeriod = parseInt(_currMoment.format("DDD"),10);
-                startTimestamp = moment(_currMoment).utc().month(1).date(1).hours(0).minutes(0).seconds(0).unix();
+                startTimestamp = moment(_currMoment).utc().month(0).date(1).hours(0).minutes(0).seconds(0).unix();
 
                 _currMoment.subtract(daysInPeriod, 'days');
                 for (var i = 0; i < daysInPeriod; i++) {

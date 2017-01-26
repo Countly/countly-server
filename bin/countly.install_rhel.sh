@@ -127,9 +127,9 @@ countly start
 
 # close google services for China area
 if ping -c 1 google.com >> /dev/null 2>&1; then
-    echo "enable google services"
+    echo "Pinging Google successful. Enabling Google services."
 else
-    echo "should close google services"
+    echo "Cannot reach Google. Disabling Google services. You can enable this from Configurations later."
     countly config "frontend.use_google" false
 fi
 
