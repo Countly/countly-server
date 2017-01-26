@@ -6,7 +6,7 @@
     
     //Public Methods
     countlyAppVersion.initialize = function () {
-        countlyAppVersion.setDb(countlyDeviceDetails.getDbObj());
+        countlyAppVersion.setDb(countlyDeviceDetails.getDb());
     };
 
     countlyAppVersion.refresh = function (newJSON) {

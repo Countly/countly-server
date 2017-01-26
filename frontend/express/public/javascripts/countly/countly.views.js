@@ -438,17 +438,17 @@ window.DeviceView = countlyView.extend({
             "bars":[
                 {
                     "title":jQuery.i18n.map["common.bar.top-platform"],
-                    "data":countlyDeviceDetails.getPlatformBars(),
+                    "data":countlyDeviceDetails.getBars("os"),
                     "help":"dashboard.top-platforms"
                 },
                 {
                     "title":jQuery.i18n.map["common.bar.top-platform-version"],
-                    "data":countlyDeviceDetails.getOSVersionBars(),
+                    "data":countlyDeviceDetails.getBars("os_versions"),
                     "help":"devices.platform-versions2"
                 },
                 {
                     "title":jQuery.i18n.map["common.bar.top-resolution"],
-                    "data":countlyDeviceDetails.getResolutionBars(),
+                    "data":countlyDeviceDetails.getBars("resolutions"),
                     "help":"dashboard.top-resolutions"
                 }
             ],
@@ -570,18 +570,17 @@ window.PlatformView = countlyView.extend({
 
             if (platformData && platformData.chartDP) {
                 for (var i = 0; i < platformData.chartDP.dp.length; i++) {
-                    var tmpOsVersion = countlyDeviceDetails.getOSVersionData(platformData.chartDP.dp[i].label);
+                    var tmpOsVersion = countlyDeviceDetails.getOSSegmentedData(platformData.chartDP.dp[i].label, false, "os_versions", "platform_versions");
 
                     countlyCommon.drawHorizontalStackedBars(tmpOsVersion.chartDP.dp, "#hsb-platform"+i, i);
                 }
             }
 
-            var oSVersionData = countlyDeviceDetails.getOSVersionData(this.activePlatform[countlyCommon.ACTIVE_APP_ID]);
-
+            var oSVersionData = countlyDeviceDetails.getOSSegmentedData(this.activePlatform[countlyCommon.ACTIVE_APP_ID], false, "os_versions", "platform_versions");
             this.dtableTwo = $('#dataTableTwo').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": oSVersionData.chartData,
                 "aoColumns": [
-                    { "mData": "os_version", "sTitle": jQuery.i18n.map["platforms.table.platform-version"] },
+                    { "mData": "os_versions", "sTitle": jQuery.i18n.map["platforms.table.platform-version"] },
                     { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },
                     { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
                     { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] }
@@ -599,7 +598,7 @@ window.PlatformView = countlyView.extend({
             }
             self.renderCommon(true);
 
-            var oSVersionData = countlyDeviceDetails.getOSVersionData(self.activePlatform[countlyCommon.ACTIVE_APP_ID]),
+            var oSVersionData = countlyDeviceDetails.getOSSegmentedData(self.activePlatform[countlyCommon.ACTIVE_APP_ID], false, "os_versions", "platform_versions"),
                 platformData = countlyDeviceDetails.getPlatformData(),
                 newPage = $("<div>" + self.template(self.templateData) + "</div>");
 
@@ -610,7 +609,7 @@ window.PlatformView = countlyView.extend({
 
             if (platformData && platformData.chartDP) {
                 for (var i = 0; i < platformData.chartDP.dp.length; i++) {
-                    var tmpOsVersion = countlyDeviceDetails.getOSVersionData(platformData.chartDP.dp[i].label);
+                    var tmpOsVersion = countlyDeviceDetails.getOSSegmentedData(platformData.chartDP.dp[i].label, false, "os_versions", "platform_versions");
 
                     countlyCommon.drawHorizontalStackedBars(tmpOsVersion.chartDP.dp, "#hsb-platform"+i, i);
                 }

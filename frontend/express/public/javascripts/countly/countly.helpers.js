@@ -941,6 +941,8 @@
                         },
                         success:function (json) {
                             _Db = json;
+                            if(countlyMetric.callback)
+                                countlyMetric.callback(false, json);
                         }
                     });
                 }
@@ -957,17 +959,22 @@
                         success:function (json) {
                             _Db = json;
                             setMeta();
+                            if(countlyMetric.callback)
+                                countlyMetric.callback(false, json);
                         }
                     });
                 }
             } else {
                 _Db = {"2012":{}};
+                if(countlyMetric.callback)
+                    countlyMetric.callback(false, _Db);
                 return true;
             }
         };
 
         /**
         * Refresh metric model by fetching data only for the latest time bucket using action=refresh on server. Currently does not fetch data for processed data loaded on initialization
+        * @returns {jquery_promise} jquery promise to wait while data is loaded
         * @example
         *$.when(countlyMetric.refresh()).then(function () {
         *    //data loaded, do something
@@ -984,7 +991,8 @@
                 }
 
                 if(_processed){
-
+                    if(countlyMetric.callback)
+                        countlyMetric.callback(true);
                 }
                 else{
                     return $.ajax({
@@ -999,15 +1007,32 @@
                         success:function (json) {
                             countlyCommon.extendDbObj(_Db, json);
                             extendMeta();
+                            if(countlyMetric.callback)
+                                countlyMetric.callback(true, json);
                         }
                     });
                 }
             } else {
                 _Db = {"2012":{}};
-
+                if(countlyMetric.callback)
+                    countlyMetric.callback(true, _Db);
                 return true;
             }
         };
+        
+        /**
+        * Callback that each metric model can define, to be called when data is loaded or refreshed
+        * @example
+        *countlyDeviceDetails.callback = function(isRefresh, data){
+        *    if(isRefresh){
+        *        countlyAppVersion.refresh(data);
+        *    }
+        *    else{
+        *        countlyAppVersion.initialize();
+        *    }
+        *};
+        */
+        countlyMetric.callback = undefined;
 
         /**
         * Reset/delete all retrieved metric data, like when changing app or selected time period
@@ -1051,7 +1076,7 @@
         /**
         * Get array of unique segments available for metric data
         * @param {string} metric - name of the segment/metric to get meta for, by default will use default _name provided on initialization
-        * @returns {array} of unique metric values
+        * @returns {array} array of unique metric values
         */
         countlyMetric.getMeta = function (metric) {
             metric = metric || _name;
@@ -1063,6 +1088,7 @@
         * @param {boolean} clean - should retrieve clean data or preprocessed by fetchValue function
         * @param {boolean} join - join new and total users into single graph, for example to dispaly in bars on the same graph and not 2 separate pie charts
         * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
+        * @param {string} estOverrideMetric - name of the total users estimation override, by default will use default _estOverrideMetric provided on initialization
         * returns {object} chartData
         * @example <caption>Example output of separate data for 2 pie charts</caption>
         *{"chartData":[
@@ -1119,23 +1145,23 @@
         *    ]
         *}}
         */
-        countlyMetric.getData = function (clean, join, metric) {
+        countlyMetric.getData = function (clean, join, metric, estOverrideMetric) {
             var chartData = {};
             if(_processed){
                 chartData.chartData = [];
                 var data = JSON.parse(JSON.stringify(_Db));
                 for(var i = 0; i < _Db.length; i++){
                     if(fetchValue && !clean)
-                        data[i][_name] = fetchValue(countlyCommon.decode(data[i]._id));
+                        data[i][metric || _name] = fetchValue(countlyCommon.decode(data[i]._id));
                     else
-                        data[i][_name] = countlyCommon.decode(data[i]._id);
+                        data[i][metric || _name] = countlyCommon.decode(data[i]._id);
                     chartData.chartData[i] = data[i];
                 }
             }
             else{
                 chartData = countlyCommon.extractTwoLevelData(_Db, this.getMeta(metric), this.clearObject, [
                     {
-                        name:_name,
+                        name:metric || _name,
                         func:function (rangeArr, dataObj) {
                             rangeArr = countlyCommon.decode(rangeArr);
                             if(fetchValue && !clean)
@@ -1147,11 +1173,11 @@
                     { "name":"t" },
                     { "name":"u" },
                     { "name":"n" }
-                ], _estOverrideMetric);
+                ], estOverrideMetric || _estOverrideMetric);
             }
-            chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, _name);
+            chartData.chartData = countlyCommon.mergeMetricsByName(chartData.chartData, metric || _name);
             chartData.chartData.sort(function(a,b){return b.t-a.t})
-            var namesData = _.pluck(chartData.chartData, _name),
+            var namesData = _.pluck(chartData.chartData, metric || _name),
                 totalData = _.pluck(chartData.chartData, 't'),
                 newData = _.pluck(chartData.chartData, 'n');
                 
@@ -1260,6 +1286,7 @@
         * @param {string} os - os name for which to get segmented metrics data
         * @param {boolean} clean - should retrieve clean data or preprocessed by fetchValue function
         * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
+        * @param {string} estOverrideMetric - name of the total users estimation override, by default will use default _estOverrideMetric provided on initialization
         * @returns os segmented metric object
         * @example <caption>Example output</caption>
         * //call
@@ -1288,7 +1315,7 @@
         *    {"name":"iOS","class":"ios"}
         *]}
         */
-        countlyMetric.getOSSegmentedData = function (os, clean, metric) {
+        countlyMetric.getOSSegmentedData = function (os, clean, metric, estOverrideMetric) {
             var _os = countlyDeviceDetails.getPlatforms();
             var oSVersionData = {};
             if(_processed){
@@ -1296,16 +1323,16 @@
                 var data = JSON.parse(JSON.stringify(_Db));
                 for(var i = 0; i < _Db.length; i++){
                     if(fetchValue && !clean)
-                        data[i][_name] = fetchValue(countlyCommon.decode(data[i]._id));
+                        data[i][metric || _name] = fetchValue(countlyCommon.decode(data[i]._id));
                     else
-                        data[i][_name] = countlyCommon.decode(data[i]._id);
+                        data[i][metric || _name] = countlyCommon.decode(data[i]._id);
                     oSVersionData.chartData[i] = data[i];
                 }
             }
             else{
                 oSVersionData = countlyCommon.extractTwoLevelData(_Db, this.getMeta(metric), this.clearObject, [
                     {
-                        name:_name,
+                        name:metric || _name,
                         func:function (rangeArr, dataObj) {
                             rangeArr = countlyCommon.decode(rangeArr);
                             if(fetchValue && !clean)
@@ -1317,7 +1344,7 @@
                     { "name":"t" },
                     { "name":"u" },
                     { "name":"n" }
-                ], _estOverrideMetric);
+                ], estOverrideMetric || _estOverrideMetric);
             }
 
             var osSegmentation = ((os) ? os : ((_os) ? _os[0] : null)),
@@ -1335,12 +1362,12 @@
                 var reg = new RegExp("^"+osName,"g");
                 for (var i = 0; i < oSVersionData.chartData.length; i++) {
                     var shouldDelete = true;
-                    oSVersionData.chartData[i][_name] = oSVersionData.chartData[i][_name].replace(/:/g, ".");
-                    if(reg.test(oSVersionData.chartData[i][_name])){
+                    oSVersionData.chartData[i][metric || _name] = oSVersionData.chartData[i][metric || _name].replace(/:/g, ".");
+                    if(reg.test(oSVersionData.chartData[i][metric || _name])){
                         shouldDelete = false;
-                        oSVersionData.chartData[i][_name] = oSVersionData.chartData[i][_name].replace(reg, "");
+                        oSVersionData.chartData[i][metric || _name] = oSVersionData.chartData[i][metric || _name].replace(reg, "");
                     }
-                    else if(countlyMetric.checkOS && countlyMetric.checkOS(osSegmentation, oSVersionData.chartData[i][_name])){
+                    else if(countlyMetric.checkOS && countlyMetric.checkOS(osSegmentation, oSVersionData.chartData[i][metric || _name], osName)){
                         shouldDelete = false;
                     }
                     if(shouldDelete)
@@ -1350,7 +1377,7 @@
 
             oSVersionData.chartData = _.compact(oSVersionData.chartData);
 
-            var platformVersionNames = _.pluck(oSVersionData.chartData, _name),
+            var platformVersionNames = _.pluck(oSVersionData.chartData, metric || _name),
                 platformNames = [];
 
             var sum = _.reduce(platformVersionTotal, function (memo, num) {

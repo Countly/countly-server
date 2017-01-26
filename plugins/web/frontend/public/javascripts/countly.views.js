@@ -139,7 +139,7 @@ window.WebDashboardView = countlyView.extend({
         sessionData["bars"] = [
             {
                 "title":jQuery.i18n.map["common.bar.top-platform"],
-                "data":countlyDeviceDetails.getPlatformBars(),
+                "data":countlyDeviceDetails.getBars("os"),
                 "help":"dashboard.top-platforms"
             },
             {

@@ -1,14 +1,7 @@
-(function (countlyDeviceDetails, $, undefined) {
-
-    //Private Properties
-    var _periodObj = {},
-        _deviceDetailsDb = {},
-        _os = [],
-        _resolutions = [],
-        _os_versions = [],
-        _activeAppKey = 0,
-        _initialized = false,
-        _period = null;
+(function () {
+        
+    window.countlyDeviceDetails = window.countlyDeviceDetails || {};
+    CountlyHelpers.createMetricModel(window.countlyDeviceDetails, {name: "device_details", estOverrideMetric:"platforms"}, jQuery);
         
     countlyDeviceDetails.os_mapping = {
         "unknown":{short: "unk", name: "Unknown"},
@@ -43,103 +36,26 @@
         "tizen":{short: "t", name: "Tizen"}
     };
 
-    //Public Methods
-    countlyDeviceDetails.initialize = function () {
-        if (_initialized && _period == countlyCommon.getPeriodForAjax() && _activeAppKey == countlyCommon.ACTIVE_APP_KEY) {
-            return countlyDeviceDetails.refresh();
-        }
-
-        _period = countlyCommon.getPeriodForAjax();
-
-        if (!countlyCommon.DEBUG) {
-            _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
-            _initialized = true;
-
-            return $.ajax({
-                type:"GET",
-                url:countlyCommon.API_PARTS.data.r,
-                data:{
-                    "api_key":countlyGlobal.member.api_key,
-                    "app_id":countlyCommon.ACTIVE_APP_ID,
-                    "method":"device_details",
-                    "period":_period
-                },
-                dataType:"jsonp",
-                success:function (json) {
-                    _deviceDetailsDb = json;
-                    setMeta();
-
-                    countlyAppVersion.initialize();
-                }
-            });
-        } else {
-            _deviceDetailsDb = {"2012":{}};
-            return true;
-        }
-    };
-
-    countlyDeviceDetails.refresh = function () {
-        _periodObj = countlyCommon.periodObj;
-
-        if (!countlyCommon.DEBUG) {
-
-            if (_activeAppKey != countlyCommon.ACTIVE_APP_KEY) {
-                _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
-                return countlyDeviceDetails.initialize();
-            }
-
-            return $.ajax({
-                type:"GET",
-                url:countlyCommon.API_PARTS.data.r,
-                data:{
-                    "api_key":countlyGlobal.member.api_key,
-                    "app_id":countlyCommon.ACTIVE_APP_ID,
-                    "method":"device_details",
-                    "action":"refresh"
-                },
-                dataType:"jsonp",
-                success:function (json) {
-                    countlyCommon.extendDbObj(_deviceDetailsDb, json);
-                    extendMeta();
-
-                    countlyAppVersion.refresh(json);
-                }
-            });
-        } else {
-            _deviceDetailsDb = {"2012":{}};
-            return true;
-        }
-    };
-
-    countlyDeviceDetails.reset = function () {
-        _deviceDetailsDb = {};
-        setMeta();
-    };
-
-    countlyDeviceDetails.clearDeviceDetailsObject = function (obj) {
-        if (obj) {
-            if (!obj["t"]) obj["t"] = 0;
-            if (!obj["n"]) obj["n"] = 0;
-            if (!obj["u"]) obj["u"] = 0;
-        }
-        else {
-            obj = {"t":0, "n":0, "u":0};
-        }
-
-        return obj;
+    countlyDeviceDetails.callback = function(isRefresh, data){
+      if(isRefresh){
+          countlyAppVersion.refresh(data);
+      }
+      else{
+          countlyAppVersion.initialize();
+      }
     };
 
     countlyDeviceDetails.getPlatforms = function () {
-        return _os;
+        return countlyDeviceDetails.getMeta("os");
     };
-
-    countlyDeviceDetails.getPlatformBars = function () {
-        return countlyCommon.extractBarData(_deviceDetailsDb, _os, countlyDeviceDetails.clearDeviceDetailsObject);
+    
+    countlyDeviceDetails.checkOS = function(os, data, osName){
+        return new RegExp("^"+osName+"([0-9]+|unknown)").test(data);
     };
 
     countlyDeviceDetails.getPlatformData = function () {
 
-        var chartData = countlyCommon.extractTwoLevelData(_deviceDetailsDb, _os, countlyDeviceDetails.clearDeviceDetailsObject, [
+        var chartData = countlyCommon.extractTwoLevelData(countlyDeviceDetails.getDb(), countlyDeviceDetails.getMeta("os"), countlyDeviceDetails.clearObject, [
             {
                 name:"os_",
                 func:function (rangeArr, dataObj) {
@@ -180,12 +96,8 @@
         return chartData;
     };
 
-    countlyDeviceDetails.getResolutionBars = function () {
-        return countlyCommon.extractBarData(_deviceDetailsDb, _resolutions, countlyDeviceDetails.clearDeviceDetailsObject);
-    };
-
     countlyDeviceDetails.getResolutionData = function () {
-        var chartData = countlyCommon.extractTwoLevelData(_deviceDetailsDb, _resolutions, countlyDeviceDetails.clearDeviceDetailsObject, [
+        var chartData = countlyCommon.extractTwoLevelData(countlyDeviceDetails.getDb(), countlyDeviceDetails.getMeta("resolutions"), countlyDeviceDetails.clearObject, [
             {
                 name:"resolution",
                 func:function (rangeArr, dataObj) {
@@ -246,86 +158,17 @@
         return chartData;
     };
 
-    countlyDeviceDetails.getOSVersionBars = function () {
-        var osVersions = countlyCommon.extractBarData(_deviceDetailsDb, _os_versions, countlyDeviceDetails.clearDeviceDetailsObject);
+    countlyDeviceDetails.__getBars = countlyDeviceDetails.getBars
+    countlyDeviceDetails.getBars = function (metric) {
+        var data = countlyDeviceDetails.__getBars(metric);
 
-        for (var i = 0; i < osVersions.length; i++) {
-            osVersions[i].name = countlyDeviceDetails.fixOSVersion(osVersions[i].name);
-        }
-
-        return osVersions;
-    };
-
-    countlyDeviceDetails.getOSVersionData = function (os) {
-        var oSVersionData = countlyCommon.extractTwoLevelData(_deviceDetailsDb, _os_versions, countlyDeviceDetails.clearDeviceDetailsObject, [
-            {
-                name:"os_version",
-                func:function (rangeArr, dataObj) {
-                    return rangeArr;
-                }
-            },
-            { "name":"t" },
-            { "name":"u" },
-            { "name":"n" }
-        ], "platform_versions");
-
-        var osSegmentation = ((os) ? os : ((_os) ? _os[0] : null)),
-            platformVersionTotal = _.pluck(oSVersionData.chartData, 'u'),
-            chartData2 = [];
-        var osName = osSegmentation;
-        if(osSegmentation){
-            if(countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()])
-                osName = countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()].short;
-            else
-                osName = osSegmentation.toLowerCase()[0];
-        }
-
-        if (oSVersionData.chartData) {
-            for (var i = 0; i < oSVersionData.chartData.length; i++) {
-                if (!new RegExp("^"+osName+"([0-9]+|unknown)").test(oSVersionData.chartData[i].os_version)) {
-                    delete oSVersionData.chartData[i];
-                }
-                else{
-                    oSVersionData.chartData[i].os_version = countlyDeviceDetails.fixOSVersion(oSVersionData.chartData[i].os_version);
-                }
+        if(metric === "os_versions"){
+            for (var i = 0; i < data.length; i++) {
+                data[i].name = countlyDeviceDetails.fixOSVersion(data[i].name);
             }
         }
 
-        oSVersionData.chartData = _.compact(oSVersionData.chartData);
-
-        var platformVersionNames = _.pluck(oSVersionData.chartData, 'os_version'),
-            platformNames = [];
-
-        var sum = _.reduce(platformVersionTotal, function (memo, num) {
-            return memo + num;
-        }, 0);
-
-        for (var i = 0; i < platformVersionNames.length; i++) {
-            var percent = (platformVersionTotal[i] / sum) * 100;
-
-            chartData2[chartData2.length] = {data:[
-                [0, platformVersionTotal[i]]
-            ], label:platformVersionNames[i].replace(((countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()]) ? countlyDeviceDetails.os_mapping[osSegmentation.toLowerCase()].name : osSegmentation) + " ", "")};
-        }
-
-        oSVersionData.chartDP = {};
-        oSVersionData.chartDP.dp = chartData2;
-        oSVersionData.os = [];
-
-        if (_os && _os.length > 1) {
-            for (var i = 0; i < _os.length; i++) {
-                //if (_os[i] != osSegmentation) {
-                //    continue;
-                //}
-
-                oSVersionData.os.push({
-                    "name":_os[i],
-                    "class":_os[i].toLowerCase()
-                });
-            }
-        }
-
-        return oSVersionData;
+        return data;
     };
 
     countlyDeviceDetails.fixOSVersion = function(osName) {
@@ -336,37 +179,4 @@
         }
         return osName;
     };
-
-    countlyDeviceDetails.getDbObj = function() {
-        return _deviceDetailsDb;
-    };
-
-    function setMeta() {
-        if (_deviceDetailsDb['meta']) {
-            _os = (_deviceDetailsDb['meta']['os']) ? _deviceDetailsDb['meta']['os'] : [];
-            _resolutions = (_deviceDetailsDb['meta']['resolutions']) ? _deviceDetailsDb['meta']['resolutions'] : [];
-            _os_versions = (_deviceDetailsDb['meta']['os_versions']) ? _deviceDetailsDb['meta']['os_versions'] : [];
-        } else {
-            _os = [];
-            _resolutions = [];
-            _os_versions = [];
-        }
-
-        if (_os_versions.length) {
-            _os_versions = _os_versions.join(",").replace(/\./g, ":").split(",");
-        }
-    }
-
-    function extendMeta() {
-        if (_deviceDetailsDb['meta']) {
-            _os = countlyCommon.union(_os, _deviceDetailsDb['meta']['os']);
-            _resolutions = countlyCommon.union(_resolutions, _deviceDetailsDb['meta']['resolutions']);
-            _os_versions = countlyCommon.union(_os_versions, _deviceDetailsDb['meta']['os_versions']);
-        }
-
-        if (_os_versions.length) {
-            _os_versions = _os_versions.join(",").replace(/\./g, ":").split(",");
-        }
-    }
-
-}(window.countlyDeviceDetails = window.countlyDeviceDetails || {}, jQuery));
+}());

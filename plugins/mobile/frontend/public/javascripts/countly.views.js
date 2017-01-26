@@ -133,12 +133,12 @@ window.MobileDashboardView = countlyView.extend({
         sessionData["bars"] = [
             {
                 "title":jQuery.i18n.map["common.bar.top-platform"],
-                "data":countlyDeviceDetails.getPlatformBars(),
+                "data":countlyDeviceDetails.getBars("os"),
                 "help":"dashboard.top-platforms"
             },
             {
                 "title":jQuery.i18n.map["common.bar.top-resolution"],
-                "data":countlyDeviceDetails.getResolutionBars(),
+                "data":countlyDeviceDetails.getBars("resolutions"),
                 "help":"dashboard.top-resolutions"
             },
             {
