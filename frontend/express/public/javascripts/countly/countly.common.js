@@ -890,7 +890,7 @@
     * @returns {array} array containing extracted ranged data as [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
     * @example <caption>Extracting session frequency from users collection</caption>
     *    //outputs [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
-    *    countlyCommon.extractRangeData(_userDb, "f", _frequencies, countlyUser.explainFrequencyRange);
+    *    countlyCommon.extractRangeData(_userDb, "f", _frequencies, countlySession.explainFrequencyRange);
     */
     countlyCommon.extractRangeData = function (db, propertyName, rangeArray, explainRange) {
         countlyCommon.periodObj = getPeriodObj();
@@ -976,7 +976,7 @@
     * @param {object} dataProperties - describing which properties and how to extract
     * @returns {object} object to use in timeline graph with {"chartDP":chartData, "chartData":_.compact(tableData), "keyEvents":keyEvents}
     * @example <caption>Extracting total users data from users collection</caption>
-    * countlyCommon.extractChartData(_sessionDb, countlySession.clearSessionObject, [
+    * countlyCommon.extractChartData(_sessionDb, countlySession.clearObject, [
     *      { data:[], label:"Total Users" }
     *  ], [
     *      {

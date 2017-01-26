@@ -1287,7 +1287,7 @@
         * @param {boolean} clean - should retrieve clean data or preprocessed by fetchValue function
         * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
         * @param {string} estOverrideMetric - name of the total users estimation override, by default will use default _estOverrideMetric provided on initialization
-        * @returns os segmented metric object
+        * @returns {object} os segmented metric object
         * @example <caption>Example output</caption>
         * //call
         * //countlyMetric.getOSSegmentedData("wp")
@@ -1410,6 +1410,65 @@
             }
 
             return oSVersionData;
+        };
+        
+        /**
+        * Get range data which is usually stored in some time ranges/buckets. As example is loyalty, session duration and session frequency
+        * @param {string} metric - name of the property in the model to fetch
+        * @param {string} meta - name of the meta where property's ranges are stored
+        * @param {string} explain - function that receives index of the bucket and returns bucket name
+        * @returns {object} 
+        * @example <caption>Example output</caption>
+        * //call
+        * //countlyMetric.getRangeData("f", "f-ranges", countlySession.explainFrequencyRange);
+        * //returns
+        * {"chartData":[
+        *    {"f":"First session","t":271,"percent":"<div class='percent-bar' style='width:171px;'></div>85.5%"},
+        *    {"f":"2 days","t":46,"percent":"<div class='percent-bar' style='width:29px;'></div>14.5%"}
+        *  ],
+        *  "chartDP":{
+        *      "dp":[
+        *        {"data":[[-1,null],[0,271],[1,46],[2,null]]}
+        *      ],
+        *      "ticks":[
+        *        [-1,""],
+        *        [2,""],
+        *        [0,"First session"],
+        *        [1,"2 days"]
+        *      ]
+        *   }
+        *  }
+        **/
+        countlyMetric.getRangeData = function (metric, meta, explain) {
+
+            var chartData = {chartData:{}, chartDP:{dp:[], ticks:[]}};
+    
+            chartData.chartData = countlyCommon.extractRangeData(_Db, metric, this.getMeta(meta), explain);
+    
+            var frequencies = _.pluck(chartData.chartData, metric),
+                frequencyTotals = _.pluck(chartData.chartData, "t"),
+                chartDP = [
+                    {data:[]}
+                ];
+    
+            chartDP[0]["data"][0] = [-1, null];
+            chartDP[0]["data"][frequencies.length + 1] = [frequencies.length, null];
+    
+            chartData.chartDP.ticks.push([-1, ""]);
+            chartData.chartDP.ticks.push([frequencies.length, ""]);
+    
+            for (var i = 0; i < frequencies.length; i++) {
+                chartDP[0]["data"][i + 1] = [i, frequencyTotals[i]];
+                chartData.chartDP.ticks.push([i, frequencies[i]]);
+            }
+    
+            chartData.chartDP.dp = chartDP;
+    
+            for (var i = 0; i < chartData.chartData.length; i++) {
+                chartData.chartData[i]["percent"] = "<div class='percent-bar' style='width:" + (2 * chartData.chartData[i]["percent"]) + "px;'></div>" + chartData.chartData[i]["percent"] + "%";
+            }
+    
+            return chartData;
         };
 
         function setMeta() {

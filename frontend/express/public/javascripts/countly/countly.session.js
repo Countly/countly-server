@@ -1,24 +1,15 @@
-(function (countlySession, $, undefined) {
-
-    //Private Properties
-    var _periodObj = {},
-        _sessionDb = {},
-        _durations = [];
-
-    //Public Methods
-    countlySession.initialize = function () {
-        _sessionDb = countlyUser.getDbObj();
-        setMeta();
-    };
-
-    countlySession.refresh = function (newJSON) {
-        countlyCommon.extendDbObj(_sessionDb, newJSON);
-        extendMeta();
-    };
-
-    countlySession.reset = function () {
-        _sessionDb = {};
-        setMeta();
+(function () {
+    
+    window.countlySession = window.countlySession || {};
+    CountlyHelpers.createMetricModel(window.countlySession, {name: "users", estOverrideMetric:"users"}, jQuery);
+    
+    countlySession.callback = function(isRefresh, data){
+      if(isRefresh){
+          countlyLocation.refresh(data);
+      }
+      else{
+          countlyLocation.initialize();
+      }
     };
 
     countlySession.getSessionData = function () {
@@ -50,8 +41,8 @@
             isEstimate = true;
 
             for (var i = 0; i < (_periodObj.uniquePeriodArr.length); i++) {
-                tmp_x = countlyCommon.getDescendantProp(_sessionDb, _periodObj.uniquePeriodArr[i]);
-                tmp_x = countlySession.clearSessionObject(tmp_x);
+                tmp_x = countlyCommon.getDescendantProp(countlySession.getDb(), _periodObj.uniquePeriodArr[i]);
+                tmp_x = countlySession.clearObject(tmp_x);
                 currentUnique += tmp_x["u"];
                 currentPayingTotal += tmp_x["p"];
                 currentMsgEnabledTotal += tmp_x["m"];
@@ -63,8 +54,8 @@
                 tmpCurrentMsgEnabled = 0;
 
             for (var i = 0; i < (_periodObj.uniquePeriodCheckArr.length); i++) {
-                tmpUniqObj = countlyCommon.getDescendantProp(_sessionDb, _periodObj.uniquePeriodCheckArr[i]);
-                tmpUniqObj = countlySession.clearSessionObject(tmpUniqObj);
+                tmpUniqObj = countlyCommon.getDescendantProp(countlySession.getDb(), _periodObj.uniquePeriodCheckArr[i]);
+                tmpUniqObj = countlySession.clearObject(tmpUniqObj);
                 tmpCurrentUniq += tmpUniqObj["u"];
                 tmpCurrentPaying += tmpUniqObj["p"];
                 tmpCurrentMsgEnabled += tmpUniqObj["m"];
@@ -83,8 +74,8 @@
             }
 
             for (var i = 0; i < (_periodObj.previousUniquePeriodArr.length); i++) {
-                tmp_y = countlyCommon.getDescendantProp(_sessionDb, _periodObj.previousUniquePeriodArr[i]);
-                tmp_y = countlySession.clearSessionObject(tmp_y);
+                tmp_y = countlyCommon.getDescendantProp(countlySession.getDb(), _periodObj.previousUniquePeriodArr[i]);
+                tmp_y = countlySession.clearObject(tmp_y);
                 previousUnique += tmp_y["u"];
                 previousPayingTotal += tmp_y["p"];
                 previousMsgEnabledTotal += tmp_y["m"];
@@ -96,8 +87,8 @@
                 tmpPreviousMsgEnabled = 0;
 
             for (var i = 0; i < (_periodObj.previousUniquePeriodCheckArr.length); i++) {
-                tmpUniqObj2 = countlyCommon.getDescendantProp(_sessionDb, _periodObj.previousUniquePeriodCheckArr[i]);
-                tmpUniqObj2 = countlySession.clearSessionObject(tmpUniqObj2);
+                tmpUniqObj2 = countlyCommon.getDescendantProp(countlySession.getDb(), _periodObj.previousUniquePeriodCheckArr[i]);
+                tmpUniqObj2 = countlySession.clearObject(tmpUniqObj2);
                 tmpPreviousUniq += tmpUniqObj2["u"];
                 tmpPreviousPaying += tmpUniqObj2["p"];
                 tmpPreviousMsgEnabled += tmpUniqObj2["m"];
@@ -116,10 +107,10 @@
             }
 
             for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
-                tmp_x = countlyCommon.getDescendantProp(_sessionDb, _periodObj.currentPeriodArr[i]);
-                tmp_y = countlyCommon.getDescendantProp(_sessionDb, _periodObj.previousPeriodArr[i]);
-                tmp_x = countlySession.clearSessionObject(tmp_x);
-                tmp_y = countlySession.clearSessionObject(tmp_y);
+                tmp_x = countlyCommon.getDescendantProp(countlySession.getDb(), _periodObj.currentPeriodArr[i]);
+                tmp_y = countlyCommon.getDescendantProp(countlySession.getDb(), _periodObj.previousPeriodArr[i]);
+                tmp_x = countlySession.clearObject(tmp_x);
+                tmp_y = countlySession.clearObject(tmp_y);
 
                 currentTotal += tmp_x["t"];
                 previousTotal += tmp_y["t"];
@@ -132,10 +123,10 @@
             }
 
         } else {
-            tmp_x = countlyCommon.getDescendantProp(_sessionDb, _periodObj.activePeriod);
-            tmp_y = countlyCommon.getDescendantProp(_sessionDb, _periodObj.previousPeriod);
-            tmp_x = countlySession.clearSessionObject(tmp_x);
-            tmp_y = countlySession.clearSessionObject(tmp_y);
+            tmp_x = countlyCommon.getDescendantProp(countlySession.getDb(), _periodObj.activePeriod);
+            tmp_y = countlyCommon.getDescendantProp(countlySession.getDb(), _periodObj.previousPeriod);
+            tmp_x = countlySession.clearObject(tmp_x);
+            tmp_y = countlySession.clearObject(tmp_y);
 
             currentTotal = tmp_x["t"];
             previousTotal = tmp_y["t"];
@@ -264,37 +255,6 @@
         return dataArr;
     };
 
-    countlySession.getDurationData = function () {
-        var chartData = {chartData:{}, chartDP:{dp:[], ticks:[]}};
-
-        chartData.chartData = countlyCommon.extractRangeData(_sessionDb, "ds", _durations, countlySession.explainDurationRange);
-
-        var durations = _.pluck(chartData.chartData, "ds"),
-            durationTotals = _.pluck(chartData.chartData, "t"),
-            chartDP = [
-                {data:[]}
-            ];
-
-        chartDP[0]["data"][0] = [-1, null];
-        chartDP[0]["data"][durations.length + 1] = [durations.length, null];
-
-        chartData.chartDP.ticks.push([-1, ""]);
-        chartData.chartDP.ticks.push([durations.length, ""]);
-
-        for (var i = 0; i < durations.length; i++) {
-            chartDP[0]["data"][i + 1] = [i, durationTotals[i]];
-            chartData.chartDP.ticks.push([i, durations[i]]);
-        }
-
-        chartData.chartDP.dp = chartDP;
-
-        for (var i = 0; i < chartData.chartData.length; i++) {
-            chartData.chartData[i]["percent"] = "<div class='percent-bar' style='width:" + (2 * chartData.chartData[i]["percent"]) + "px;'></div>" + chartData.chartData[i]["percent"] + "%";
-        }
-
-        return chartData;
-    };
-
     countlySession.getSessionDP = function () {
 
         var chartData = [
@@ -308,7 +268,7 @@
                 { name:"u" }
             ];
 
-        return countlyCommon.extractChartData(_sessionDb, countlySession.clearSessionObject, chartData, dataProps);
+        return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
     countlySession.getSessionDPTotal = function () {
@@ -328,7 +288,7 @@
                 { name:"t" }
             ];
 
-        return countlyCommon.extractChartData(_sessionDb, countlySession.clearSessionObject, chartData, dataProps);
+        return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
     countlySession.getUserDP = function () {
@@ -349,7 +309,7 @@
                 }
             ];
 
-        return countlyCommon.extractChartData(_sessionDb, countlySession.clearSessionObject, chartData, dataProps);
+        return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
     countlySession.getUserDPActive = function () {
@@ -374,7 +334,7 @@
                 }
             ];
 
-        return countlyCommon.extractChartData(_sessionDb, countlySession.clearSessionObject, chartData, dataProps);
+        return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
     countlySession.getUserDPNew = function () {
@@ -394,7 +354,7 @@
                 { name:"n" }
             ];
 
-        return countlyCommon.extractChartData(_sessionDb, countlySession.clearSessionObject, chartData, dataProps);
+        return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
     countlySession.getMsgUserDPActive = function () {
@@ -412,7 +372,7 @@
                 }
             ];
 
-        return countlyCommon.extractChartData(_sessionDb, countlySession.clearSessionObject, chartData, dataProps);
+        return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
     countlySession.getDurationDP = function () {
@@ -437,7 +397,7 @@
                 }
             ];
 
-        return countlyCommon.extractChartData(_sessionDb, countlySession.clearSessionObject, chartData, dataProps);
+        return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
     countlySession.getDurationDPAvg = function () {
@@ -462,7 +422,7 @@
                 }
             ];
 
-        return countlyCommon.extractChartData(_sessionDb, countlySession.clearSessionObject, chartData, dataProps);
+        return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
     countlySession.getEventsDP = function () {
@@ -484,7 +444,7 @@
                 }
             ];
 
-        return countlyCommon.extractChartData(_sessionDb, countlySession.clearSessionObject, chartData, dataProps);
+        return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
     countlySession.getEventsDPAvg = function () {
@@ -509,24 +469,7 @@
                 }
             ];
 
-        return countlyCommon.extractChartData(_sessionDb, countlySession.clearSessionObject, chartData, dataProps);
-    };
-
-    countlySession.clearSessionObject = function (obj) {
-        if (obj) {
-            if (!obj["t"]) obj["t"] = 0;
-            if (!obj["n"]) obj["n"] = 0;
-            if (!obj["u"]) obj["u"] = 0;
-            if (!obj["d"]) obj["d"] = 0;
-            if (!obj["e"]) obj["e"] = 0;
-            if (!obj["p"]) obj["p"] = 0;
-            if (!obj["m"]) obj["m"] = 0;
-        }
-        else {
-            obj = {"t":0, "n":0, "u":0, "d":0, "e":0, "p":0, "m":0};
-        }
-
-        return obj;
+        return countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps);
     };
 
     countlySession.explainDurationRange = function (index) {
@@ -566,6 +509,84 @@
 
         return durationRange.indexOf(duration);
     };
+    
+    countlySession.explainFrequencyRange = function (index) {
+        var localHours = jQuery.i18n.map["user-loyalty.range.hours"],
+            localDay = jQuery.i18n.map["user-loyalty.range.day"],
+            localDays = jQuery.i18n.map["user-loyalty.range.days"];
+
+        var frequencyRange = [
+            jQuery.i18n.map["user-loyalty.range.first-session"],
+            "1-24 " + localHours,
+            "1 " + localDay,
+            "2 " + localDays,
+            "3 " + localDays,
+            "4 " + localDays,
+            "5 " + localDays,
+            "6 " + localDays,
+            "7 " + localDays,
+            "8-14 " + localDays,
+            "15-30 " + localDays,
+            "30+ " + localDays
+        ];
+
+        return frequencyRange[index];
+    };
+
+    countlySession.getFrequencyIndex = function (frequency) {
+        var localHours = jQuery.i18n.map["user-loyalty.range.hours"],
+            localDay = jQuery.i18n.map["user-loyalty.range.day"],
+            localDays = jQuery.i18n.map["user-loyalty.range.days"];
+
+        var frequencyRange = [
+            jQuery.i18n.map["user-loyalty.range.first-session"],
+            "1-24 " + localHours,
+            "1 " + localDay,
+            "2 " + localDays,
+            "3 " + localDays,
+            "4 " + localDays,
+            "5 " + localDays,
+            "6 " + localDays,
+            "7 " + localDays,
+            "8-14 " + localDays,
+            "15-30 " + localDays,
+            "30+ " + localDays
+        ];
+
+        return frequencyRange.indexOf(frequency);
+    };
+
+    countlySession.explainLoyaltyRange = function (index) {
+        var loyaltyRange = [
+            "1",
+            "2",
+            "3-5",
+            "6-9",
+            "10-19",
+            "20-49",
+            "50-99",
+            "100-499",
+            "> 500"
+        ];
+
+        return loyaltyRange[index];
+    };
+
+    countlySession.getLoyaltyIndex = function (loyalty) {
+        var loyaltyRange = [
+            "1",
+            "2",
+            "3-5",
+            "6-9",
+            "10-19",
+            "20-49",
+            "50-99",
+            "100-499",
+            "> 500"
+        ];
+
+        return loyaltyRange.indexOf(loyalty);
+    };
 
     countlySession.getTopUserBars = function () {
 
@@ -586,7 +607,7 @@
                 }
             ];
 
-        var totalUserData = countlyCommon.extractChartData(_sessionDb, countlySession.clearSessionObject, chartData, dataProps),
+        var totalUserData = countlyCommon.extractChartData(countlySession.getDb(), countlySession.clearObject, chartData, dataProps),
             topUsers = _.sortBy(_.reject(totalUserData.chartData, function (obj) {
                 return obj["t"] == 0;
             }), function (obj) {
@@ -615,10 +636,23 @@
         return barData;
     };
 
-    countlySession.getSessionDb = function () {
-        return _sessionDb;
-    };
+    countlySession.clearObject = function (obj) {
+        if (obj) {
+            if (!obj["t"]) obj["t"] = 0;
+            if (!obj["n"]) obj["n"] = 0;
+            if (!obj["u"]) obj["u"] = 0;
+            if (!obj["d"]) obj["d"] = 0;
+            if (!obj["e"]) obj["e"] = 0;
+            if (!obj["p"]) obj["p"] = 0;
+            if (!obj["m"]) obj["m"] = 0;
+        }
+        else {
+            obj = {"t":0, "n":0, "u":0, "d":0, "e":0, "p":0, "m":0};
+        }
 
+        return obj;
+    };
+    
     //Private Methods
     function calcSparklineData() {
 
@@ -626,8 +660,8 @@
 
         if (!_periodObj.isSpecialPeriod) {
             for (var i = _periodObj.periodMin; i < (_periodObj.periodMax + 1); i++) {
-                var tmp_x = countlyCommon.getDescendantProp(_sessionDb, _periodObj.activePeriod + "." + i);
-                tmp_x = countlySession.clearSessionObject(tmp_x);
+                var tmp_x = countlyCommon.getDescendantProp(countlySession.getDb(), _periodObj.activePeriod + "." + i);
+                tmp_x = countlySession.clearObject(tmp_x);
 
                 sparkLines["total"][sparkLines["total"].length] = tmp_x["t"];
                 sparkLines["nev"][sparkLines["nev"].length] = tmp_x["n"];
@@ -641,8 +675,8 @@
             }
         } else {
             for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
-                var tmp_x = countlyCommon.getDescendantProp(_sessionDb, _periodObj.currentPeriodArr[i]);
-                tmp_x = countlySession.clearSessionObject(tmp_x);
+                var tmp_x = countlyCommon.getDescendantProp(countlySession.getDb(), _periodObj.currentPeriodArr[i]);
+                tmp_x = countlySession.clearObject(tmp_x);
 
                 sparkLines["total"][sparkLines["total"].length] = tmp_x["t"];
                 sparkLines["nev"][sparkLines["nev"].length] = tmp_x["n"];
@@ -663,18 +697,4 @@
         return sparkLines;
     }
 
-    function setMeta() {
-        if (_sessionDb['meta']) {
-            _durations = (_sessionDb['meta']['d-ranges']) ? _sessionDb['meta']['d-ranges'] : [];
-        } else {
-            _durations = [];
-        }
-    }
-
-    function extendMeta() {
-        if (_sessionDb['meta']) {
-            _durations = countlyCommon.union(_durations, _sessionDb['meta']['d-ranges']);
-        }
-    }
-
-}(window.countlySession = window.countlySession || {}, jQuery));
+}());
