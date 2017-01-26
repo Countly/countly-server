@@ -1,6 +1,6 @@
 window.SessionView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyUser.initialize(), countlyTotalUsers.initialize("users")).then(function () {});
+        return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function () {});
     },
     renderCommon:function (isRefresh) {
 
@@ -73,7 +73,7 @@ window.SessionView = countlyView.extend({
 
 window.UserView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyUser.initialize(), countlyTotalUsers.initialize("users")).then(function () {});
+        return $.when(countlySession.initialize(), countlyTotalUsers.initialize("users")).then(function () {});
     },
     renderCommon:function (isRefresh) {
         var sessionData = countlySession.getSessionData(),
@@ -145,10 +145,10 @@ window.UserView = countlyView.extend({
 
 window.LoyaltyView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyUser.initialize()).then(function () {});
+        return $.when(countlySession.initialize()).then(function () {});
     },
     renderCommon:function (isRefresh) {
-        var loyaltyData = countlyUser.getLoyaltyData();
+        var loyaltyData = countlySession.getRangeData("l", "l-ranges", countlySession.explainLoyaltyRange);
 
         this.templateData = {
             "page-title":jQuery.i18n.map["user-loyalty.title"],
@@ -176,12 +176,12 @@ window.LoyaltyView = countlyView.extend({
     },
     refresh:function () {
         var self = this;
-        $.when(countlyUser.initialize()).then(function () {
+        $.when(countlySession.initialize()).then(function () {
             if (app.activeView != self) {
                 return false;
             }
 
-            var loyaltyData = countlyUser.getLoyaltyData();
+            var loyaltyData = countlySession.getRangeData("l", "l-ranges", countlySession.explainLoyaltyRange);
             countlyCommon.drawGraph(loyaltyData.chartDP, "#dashboard-graph", "bar");
             CountlyHelpers.refreshTable(self.dtable, loyaltyData.chartData);
         });
@@ -200,7 +200,7 @@ window.CountriesView = countlyView.extend({
             "map-list-users": {id:'total', label:jQuery.i18n.map["sidebar.analytics.users"], type:'number', metric:"u"},
             "map-list-new": {id:'total', label:jQuery.i18n.map["common.table.new-users"], type:'number', metric:"n"}
         };
-        return $.when(countlyUser.initialize(), countlyCity.initialize(), countlyTotalUsers.initialize("countries"), countlyTotalUsers.initialize("cities"), countlyTotalUsers.initialize("users")).then(function () {});
+        return $.when(countlySession.initialize(), countlyCity.initialize(), countlyTotalUsers.initialize("countries"), countlyTotalUsers.initialize("cities"), countlyTotalUsers.initialize("users")).then(function () {});
     },
     drawTable: function() {
         var tableFirstColTitle = (this.cityView) ? jQuery.i18n.map["countries.table.city"] : jQuery.i18n.map["countries.table.country"],
@@ -374,10 +374,10 @@ window.CountriesView = countlyView.extend({
 
 window.FrequencyView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyUser.initialize()).then(function () {});
+        return $.when(countlySession.initialize()).then(function () {});
     },
     renderCommon:function (isRefresh) {
-        var frequencyData = countlyUser.getFrequencyData();
+        var frequencyData = countlySession.getRangeData("f", "f-ranges", countlySession.explainFrequencyRange);
 
         this.templateData = {
             "page-title":jQuery.i18n.map["session-frequency.title"],
@@ -405,12 +405,12 @@ window.FrequencyView = countlyView.extend({
     },
     refresh:function () {
         var self = this;
-        $.when(countlyUser.initialize()).then(function () {
+        $.when(countlySession.initialize()).then(function () {
             if (app.activeView != self) {
                 return false;
             }
 
-            var frequencyData = countlyUser.getFrequencyData();
+            var frequencyData = countlySession.getRangeData("f", "f-ranges", countlySession.explainFrequencyRange);
             countlyCommon.drawGraph(frequencyData.chartDP, "#dashboard-graph", "bar");
             CountlyHelpers.refreshTable(self.dtable, frequencyData.chartData);
         });
@@ -781,10 +781,10 @@ window.ResolutionView = countlyView.extend({
 
 window.DurationView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyUser.initialize()).then(function () {});
+        return $.when(countlySession.initialize()).then(function () {});
     },
     renderCommon:function (isRefresh) {
-        var durationData = countlySession.getDurationData();
+        var durationData = countlySession.getRangeData("d", "d-ranges", countlySession.explainDurationRange);
 
         this.templateData = {
             "page-title":jQuery.i18n.map["session-duration.title"],
@@ -812,12 +812,12 @@ window.DurationView = countlyView.extend({
     },
     refresh:function () {
         var self = this;
-        $.when(countlyUser.initialize()).then(function () {
+        $.when(countlySession.initialize()).then(function () {
             if (app.activeView != self) {
                 return false;
             }
 
-            var durationData = countlySession.getDurationData();
+            var durationData = countlySession.getRangeData("d", "d-ranges", countlySession.explainDurationRange);
             countlyCommon.drawGraph(durationData.chartDP, "#dashboard-graph", "bar");
             CountlyHelpers.refreshTable(self.dtable, durationData.chartData);
         });
@@ -1227,7 +1227,6 @@ window.ManageAppsView = countlyView.extend({
                                 countlySession.reset();
                                 countlyLocation.reset();
                                 countlyCity.reset();
-                                countlyUser.reset();
                                 countlyDevice.reset();
                                 countlyCarrier.reset();
                                 countlyDeviceDetails.reset();

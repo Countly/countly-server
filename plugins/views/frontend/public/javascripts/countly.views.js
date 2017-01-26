@@ -171,7 +171,7 @@ window.ViewsView = countlyView.extend({
 
 window.ViewFrequencyView = countlyView.extend({
     beforeRender: function() {
-        return $.when(countlyUser.initialize()).then(function () {});
+        return $.when(countlySession.initialize()).then(function () {});
     },
     renderCommon:function (isRefresh) {
         var durationData = countlyViews.getViewFrequencyData();
@@ -201,7 +201,7 @@ window.ViewFrequencyView = countlyView.extend({
     },
     refresh:function () {
         var self = this;
-        $.when(countlyUser.initialize()).then(function () {
+        $.when(countlySession.initialize()).then(function () {
             if (app.activeView != self) {
                 return false;
             }

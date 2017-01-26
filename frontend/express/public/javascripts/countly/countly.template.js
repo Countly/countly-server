@@ -1463,29 +1463,29 @@ var AppRouter = Backbone.Router.extend({
         };
 
         jQuery.fn.dataTableExt.oSort['loyalty-asc']  = function(x, y) {
-            x = countlyUser.getLoyaltyIndex(x);
-            y = countlyUser.getLoyaltyIndex(y);
+            x = countlySession.getLoyaltyIndex(x);
+            y = countlySession.getLoyaltyIndex(y);
 
             return ((x < y) ? -1 : ((x > y) ?  1 : 0));
         };
 
         jQuery.fn.dataTableExt.oSort['loyalty-desc']  = function(x, y) {
-            x = countlyUser.getLoyaltyIndex(x);
-            y = countlyUser.getLoyaltyIndex(y);
+            x = countlySession.getLoyaltyIndex(x);
+            y = countlySession.getLoyaltyIndex(y);
 
             return ((x < y) ?  1 : ((x > y) ? -1 : 0));
         };
 
         jQuery.fn.dataTableExt.oSort['frequency-asc']  = function(x, y) {
-            x = countlyUser.getFrequencyIndex(x);
-            y = countlyUser.getFrequencyIndex(y);
+            x = countlySession.getFrequencyIndex(x);
+            y = countlySession.getFrequencyIndex(y);
 
             return ((x < y) ? -1 : ((x > y) ?  1 : 0));
         };
 
         jQuery.fn.dataTableExt.oSort['frequency-desc']  = function(x, y) {
-            x = countlyUser.getFrequencyIndex(x);
-            y = countlyUser.getFrequencyIndex(y);
+            x = countlySession.getFrequencyIndex(x);
+            y = countlySession.getFrequencyIndex(y);
 
             return ((x < y) ?  1 : ((x > y) ? -1 : 0));
         };

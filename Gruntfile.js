@@ -93,7 +93,6 @@ module.exports = function(grunt) {
 				'frontend/express/public/javascripts/countly/countly.session.js',
 				'frontend/express/public/javascripts/countly/countly.city.js',
 				'frontend/express/public/javascripts/countly/countly.location.js',
-				'frontend/express/public/javascripts/countly/countly.user.js',
 				'frontend/express/public/javascripts/countly/countly.device.list.js',
 				'frontend/express/public/javascripts/countly/countly.device.js',
 				'frontend/express/public/javascripts/countly/countly.device.detail.js',

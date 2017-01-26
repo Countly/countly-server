@@ -271,7 +271,7 @@
 	};
     
     countlyMetric.getViewFrequencyData = function () {
-        var _sessionDb = countlySession.getSessionDb();
+        var _sessionDb = countlySession.getDb();
         if(_frequency.length){
             if (_sessionDb['meta']) {
                 _frequency = countlyCommon.union(_frequency, _sessionDb['meta']['v-ranges']);

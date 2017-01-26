@@ -36,7 +36,7 @@
 
     // Public Methods
     countlyLocation.initialize = function () {
-        countlyLocation.setDb(countlyUser.getDbObj());
+        countlyLocation.setDb(countlySession.getDb());
     };
 
     countlyLocation.refresh = function (newJSON) {
