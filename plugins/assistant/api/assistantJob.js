@@ -5,7 +5,8 @@ const assistantJob = {},
     fetch = require('../../../api/parts/data/fetch.js'),
     async = require("async"),
     countlySession = require('../../../api/lib/countly.session.js'),
-    assistant = require("./assistant.js");
+    assistant = require("./assistant.js"),
+    parser = require('rss-parser');
 
 (function (assistantJob) {
     const PLUGIN_NAME = "assistant-base";
@@ -17,6 +18,8 @@ const assistantJob = {},
                 const dow = providedInfo.timeAndDate.dow;
                 const hour = providedInfo.timeAndDate.hour;
                 const assistantConfig = providedInfo.assistantConfiguration;
+                const flagIgnoreDAT = providedInfo.ignoreDayAndTime;
+                const flagForceGenerate = providedInfo.forceGenerateNotifications;
                 const NOTIFICATION_VERSION = 1;
 
                 //log.i('Assistant plugin stuffo: [%j] ', assistantConfig);
@@ -24,10 +27,9 @@ const assistantJob = {},
                 const params = {};
                 params.qstring = {};
 
-                //todo add the amount of times a notification has been shown
                 async.map(result_apps_data, function (ret_app_data, callback) {
                     const is_mobile = ret_app_data.type == "mobile";//check if app type is mobile or web
-                    const app_id = "" + ret_app_data._id;
+                    const app_id = "" + ret_app_data._id;//todo is this problematic?
 
                     db.collection('events').findOne({_id: app_id}, {}, function (events_err, events_result) {
                         params.app_id = app_id;
@@ -37,12 +39,12 @@ const assistantJob = {},
                             countlySession.setDb(fetchResultUsers);
                             const retSession = countlySession.getSessionData();
 
-                            log.i('Assistant plugin doing steps: [%j] [%j] [%j] [%j]', 0.1, retSession, params.app_id, app_id);
+                            log.i('Assistant plugin doing steps: [%j] [%j] [%j] [%j]', 0.1, params.app_id, app_id);//todo seems like params.app_id is not set
 
                             // (1) generate quick tip notifications
                             // (1.1) Crash integration
                             db.collection("app_crashgroups" + app_id).findOne({_id: "meta"}, function (err_crash, res_crash) {
-                                log.i('Assistant plugin doing steps: [%j][%j] ', 1, res_crash);
+                                //log.i('Assistant plugin doing steps: [%j][%j] ', 1, res_crash);
                                 if (res_crash) {
                                     {
                                         const valueSet = assistant.createNotificationValueSet("assistant.crash-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 1, PLUGIN_NAME, assistantConfig, app_id, NOTIFICATION_VERSION);
@@ -51,40 +53,43 @@ const assistantJob = {},
                                         const max_show_time_not_exceeded = valueSet.showAmount < 3;
                                         const data = [];
 
-                                        if (assistant.correct_day_and_time(2, 14, dow, hour) && crash_data_not_available && enough_users && is_mobile && max_show_time_not_exceeded) {
+                                        if ((flagIgnoreDAT || assistant.correct_day_and_time(2, 14, dow, hour)) && crash_data_not_available && enough_users && is_mobile && max_show_time_not_exceeded || flagForceGenerate) {
                                             assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
                                         }
                                     }
                                 }
                             });
 
-
                             { // (1.2) Push integration
                                 const valueSet = assistant.createNotificationValueSet("assistant.push-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 2, PLUGIN_NAME, assistantConfig, app_id, NOTIFICATION_VERSION);
                                 const no_certificate_uploaded = (typeof result_apps_data.gcm === "undefined") && (typeof result_apps_data.apn === "undefined");
                                 const max_show_time_not_exceeded = valueSet.showAmount < 3;
                                 const data = [];
-                                if (assistant.correct_day_and_time(3, 15, dow, hour) && no_certificate_uploaded && is_mobile && max_show_time_not_exceeded) {
+                                if ((flagIgnoreDAT || assistant.correct_day_and_time(3, 15, dow, hour)) && no_certificate_uploaded && is_mobile && max_show_time_not_exceeded || flagForceGenerate) {
                                     assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
                                 }
                             }
-
 
                             { // (1.4) Custom event integration
                                 const valueSet = assistant.createNotificationValueSet("assistant.custom-event-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 3, PLUGIN_NAME, assistantConfig, app_id, NOTIFICATION_VERSION);
                                 const no_custom_event_defined = (typeof events_result === "undefined") || (events_result === null);
                                 const max_show_time_not_exceeded = valueSet.showAmount < 3;
                                 const data = [];
-                                if (assistant.correct_day_and_time(5, 15, dow, hour) && no_custom_event_defined && is_mobile && max_show_time_not_exceeded) {
+                                if ((flagIgnoreDAT || assistant.correct_day_and_time(5, 15, dow, hour)) && no_custom_event_defined && is_mobile && max_show_time_not_exceeded || flagForceGenerate) {
                                     assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
                                 }
                             }
 
                             // (1.5) Share dashboard
-                            //todo implement this
-
-                            // (1.9) Use dashboard localization
-                            //todo implement this
+                            db.collection('members').find({user_of: app_id}, {}).count(function (err1, userCount) {
+                                const valueSet = assistant.createNotificationValueSet("assistant.share-dashboard", assistant.NOTIF_TYPE_QUICK_TIPS, 1, PLUGIN_NAME, assistantConfig, app_id, NOTIFICATION_VERSION);
+                                const not_enough_users = (userCount < 3);
+                                const max_show_time_not_exceeded = valueSet.showAmount < 1;
+                                const data = [];
+                                if ((flagIgnoreDAT || assistant.correct_day_and_time(5, 10, dow, hour)) && not_enough_users && max_show_time_not_exceeded || flagForceGenerate) {
+                                    assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
+                                }
+                            });
 
                             // (2) generate insight notifications
 
@@ -97,7 +102,7 @@ const assistantJob = {},
                                 const val_previous_period = val_current_period / (change_amount / 100 + 1);
                                 const data = [val_current_period, Math.round(val_previous_period)];
 
-                                if (assistant.correct_day_and_time(1, 10, dow, hour) && enough_active_users && enough_active_user_change) {
+                                if ((flagIgnoreDAT || assistant.correct_day_and_time(1, 10, dow, hour)) && enough_active_users && enough_active_user_change || flagForceGenerate) {
                                     assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
                                 }
                             }
@@ -111,11 +116,10 @@ const assistantJob = {},
                                 const val_previous_period = val_current_period / (change_amount / 100 + 1);
                                 const data = [val_current_period, Math.round(val_previous_period)];
 
-                                if (assistant.correct_day_and_time(1, 10, dow, hour) && enough_active_users && enough_active_user_change) {
+                                if ((flagIgnoreDAT || assistant.correct_day_and_time(1, 10, dow, hour)) && enough_active_users && enough_active_user_change || flagForceGenerate) {
                                     assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
                                 }
                             }
-
 
                             { // (2.3) active users eow positive
                                 const valueSet = assistant.createNotificationValueSet("assistant.active-users-eow-pos", assistant.NOTIF_TYPE_INSIGHTS, 3, PLUGIN_NAME, assistantConfig, app_id, NOTIFICATION_VERSION);
@@ -126,7 +130,7 @@ const assistantJob = {},
                                 const val_previous_period = val_current_period / (change_amount / 100 + 1);
                                 const data = [val_current_period, Math.round(val_previous_period)];
 
-                                if (assistant.correct_day_and_time(4, 16, dow, hour) && enough_active_users && enough_active_user_change) {
+                                if ((flagIgnoreDAT || assistant.correct_day_and_time(4, 16, dow, hour)) && enough_active_users && enough_active_user_change || flagForceGenerate) {
                                     assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
                                 }
                             }
@@ -139,7 +143,7 @@ const assistantJob = {},
                                 const enough_active_user_change = change_amount <= -10;
                                 const val_previous_period = val_current_period / (change_amount / 100 + 1);
                                 const data = [val_current_period, Math.round(val_previous_period)];
-                                if (assistant.correct_day_and_time(4, 16, dow, hour) && enough_active_users && enough_active_user_change) {
+                                if ((flagIgnoreDAT || assistant.correct_day_and_time(4, 16, dow, hour)) && enough_active_users && enough_active_user_change || flagForceGenerate) {
                                     assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
                                 }
                             }
@@ -153,11 +157,11 @@ const assistantJob = {},
                                 const val_previous_period = val_current_period / (change_amount / 100 + 1);
                                 const data = [Math.floor(val_current_period), Math.round((val_current_period - Math.floor(val_current_period)) * 60), Math.floor(val_previous_period), Math.round((val_previous_period - Math.floor(val_previous_period)) * 60)];
 
-                                if (assistant.correct_day_and_time(4, 16, dow, hour) && enough_active_users && enough_session_duration_change) {
+                                if ((flagIgnoreDAT || assistant.correct_day_and_time(4, 16, dow, hour)) && enough_active_users && enough_session_duration_change || flagForceGenerate) {
                                     assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
                                 }
                             }
-
+                            //todo iespējams gan pozitīvam, gan negatīvam variantam jāiedod tas pats id
                             { // (2.12) session duration bow negative
                                 const valueSet = assistant.createNotificationValueSet("assistant.avg-session-duration-bow-neg", assistant.NOTIF_TYPE_INSIGHTS, 6, PLUGIN_NAME, assistantConfig, app_id, NOTIFICATION_VERSION);
                                 const enough_active_users = retSession.total_sessions.total > 100;//active users > 20
@@ -165,17 +169,92 @@ const assistantJob = {},
                                 if (retSession.avg_time.change === "NA") retSession.avg_time.change = "0";
                                 const change_amount = parseFloat(retSession.avg_time.change);
                                 const enough_session_duration_change = change_amount <= -10;
-                                const val_previous_period = val_current_period / (change_amount / 100 + 1);
+                                const val_previous_period = val_current_period / (change_amount / 100 + 1);//todo check the math
                                 const data = [Math.floor(val_current_period), Math.round((val_current_period - Math.floor(val_current_period)) * 60), Math.floor(val_previous_period), Math.round((val_previous_period - Math.floor(val_previous_period)) * 60)];
 
-                                if (assistant.correct_day_and_time(4, 16, dow, hour) && enough_active_users && enough_session_duration_change) {
+                                if ((flagIgnoreDAT || assistant.correct_day_and_time(4, 16, dow, hour)) && enough_active_users && enough_session_duration_change || flagForceGenerate) {
                                     assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
                                 }
                             }
-                            log.i('Assistant plugin doing steps BIG: [%j] ', 20);
+                            //log.i('Assistant plugin doing steps BIG: [%j] ', 20);
                             // (3) generate announcment notifications
 
-                            // (3.1) blog page
+                            //todo improve feed period selection so that it is possible to show the event immediate and not once per day
+                             // (3.1) blog page
+
+                            const nowTimestamp = Date.now();//timestamp now ms
+                            const intervalMs = 24 * 60 * 60 * 1000;//the last 24 hours in ms
+
+                            parser.parseURL('https://medium.com/feed/countly', function(err, parsed) {
+                                //log.i(parsed.feed.title);
+                                parsed.feed.entries.forEach(function(entry) {
+                                    const eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
+
+                                    const valueSet = assistant.createNotificationValueSet("assistant.announcement-blog-post", assistant.NOTIF_TYPE_ANNOUNCEMENTS, 1, PLUGIN_NAME, assistantConfig, app_id, NOTIFICATION_VERSION);
+                                    const blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
+                                    const data = [entry.title, entry.link];
+                                    //log.i(entry.title + ':' + entry.link + ":" + entry.pubDate);
+                                    //log.i(eventTimestamp + " : " + nowTimestamp + " : " + (nowTimestamp - eventTimestamp) + " : " + intervalMs + " | " + blog_post_ready);
+                                    if ((flagIgnoreDAT || assistant.correct_time(15, hour)) && blog_post_ready || flagForceGenerate) {
+                                        assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
+                                    }
+                                });
+                            });
+
+
+                            // (3.2) New iOS SDK release
+                            parser.parseURL('https://github.com/countly/countly-sdk-ios/releases.atom', function(err, parsed) {
+                                //log.i(parsed.feed.title);
+                                parsed.feed.entries.forEach(function(entry) {
+                                    const eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
+
+                                    const valueSet = assistant.createNotificationValueSet("assistant.announcement-ios-release", assistant.NOTIF_TYPE_ANNOUNCEMENTS, 2, PLUGIN_NAME, assistantConfig, app_id, NOTIFICATION_VERSION);
+                                    const blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
+                                    const data = [entry.title, entry.link];
+                                    //log.i(entry.title + ':' + entry.link + ":" + entry.pubDate + ":" + entry.guid);
+                                    //log.i(eventTimestamp + " : " + nowTimestamp + " : " + (nowTimestamp - eventTimestamp) + " : " + intervalMs + " | " + blog_post_ready);
+                                    if ((flagIgnoreDAT || assistant.correct_time(15, hour)) && blog_post_ready || flagForceGenerate) {
+                                        assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
+                                    }
+                                });
+                            });
+
+                            // (3.3) New Android SDK release
+                            parser.parseURL('https://github.com/countly/countly-sdk-android/releases.atom', function(err, parsed) {
+                                //log.i(parsed.feed.title);
+                                parsed.feed.entries.forEach(function(entry) {
+                                    const eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
+
+                                    const valueSet = assistant.createNotificationValueSet("assistant.announcement-android-release", assistant.NOTIF_TYPE_ANNOUNCEMENTS, 3, PLUGIN_NAME, assistantConfig, app_id, NOTIFICATION_VERSION);
+                                    const blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
+                                    const data = [entry.title, entry.link];
+                                    //log.i(entry.title + ':' + entry.link + ":" + entry.pubDate + ":" + entry.guid);
+                                    //log.i(eventTimestamp + " : " + nowTimestamp + " : " + (nowTimestamp - eventTimestamp) + " : " + intervalMs + " | " + blog_post_ready);
+                                    if ((flagIgnoreDAT || assistant.correct_time(15, hour)) && blog_post_ready || flagForceGenerate) {
+                                        assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
+                                    }
+                                });
+                            });
+
+                            // (3.3) New community server release
+                            parser.parseURL('https://github.com/Countly/countly-server/releases.atom', function(err, parsed) {
+                                //log.i(parsed.feed.title);
+                                parsed.feed.entries.forEach(function(entry) {
+                                    const eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
+
+                                    const valueSet = assistant.createNotificationValueSet("assistant.announcement-community-server-release", assistant.NOTIF_TYPE_ANNOUNCEMENTS, 4, PLUGIN_NAME, assistantConfig, app_id, NOTIFICATION_VERSION);
+                                    const blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
+                                    const data = [entry.title, entry.link];
+                                    //log.i(entry.title + ':' + entry.link + ":" + entry.pubDate + ":" + entry.guid);
+                                    //log.i(eventTimestamp + " : " + nowTimestamp + " : " + (nowTimestamp - eventTimestamp) + " : " + intervalMs + " | " + blog_post_ready);
+                                    if ((flagIgnoreDAT || assistant.correct_time(15, hour)) && blog_post_ready || flagForceGenerate) {
+                                        assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
+                                    }
+                                });
+                            });
+
+
+
                             callback(null, null);
                         });
                     });

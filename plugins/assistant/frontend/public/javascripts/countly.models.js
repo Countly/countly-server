@@ -12,7 +12,7 @@
             },
             success:function (json) {
                 _data = json;
-                //CountlyHelpers.alert(3, "green");
+                //CountlyHelpers.alert(""+json, "green");
             }
         });
     };
@@ -66,6 +66,7 @@
         var the_notifs = [given_data.notifications, given_data.notifs_saved_private, given_data.notifs_saved_global];
 
         for(var b = 0 ; b < the_notifs.length ; b++) {
+            //todo not working
             //set the notification lists to be from newer to older
             the_notifs[b].sort(function (x, y) {
                 return x.created_date < y.created_date;
@@ -82,12 +83,16 @@
                     obj.msg = styling_info.msg;
                     obj.icon_styling_class = styling_info.icon_class;
                 } else {//use the default style
-                    var arr = obj.data.slice();
-                    arr.unshift(obj.i18n_id + ".message");
-                    var res = jQuery.i18n.prop.apply(null, arr);
+                    //prepare notification message
+                    var messageArr = obj.data.slice();//create copy of data
+                    messageArr.unshift(obj.i18n_id + ".message");//put the message in front of the data
+                    obj.msg = jQuery.i18n.prop.apply(null, messageArr);//insert fields where needed
 
-                    obj.title = jQuery.i18n.map[obj.i18n_id + ".title"];
-                    obj.msg = res;
+                    //prepare notification title
+                    var titleArr = obj.data.slice();//create copy of data
+                    titleArr.unshift(obj.i18n_id + ".title");//put the title in front of the data
+                    obj.title = jQuery.i18n.prop.apply(null, titleArr);//insert fields where needed
+
 
                     //set icon styling
                     if(obj.notif_type === "1") {//quick tips
@@ -98,6 +103,38 @@
                         obj.icon_styling_class = "assistant_icon_announcments";
                     } else {//default
                         obj.icon_styling_class = "assistant_icon_regular";
+                    }
+
+                    //set icon path
+
+                    if(obj.plugin_name === "assistant-base" && obj.notif_type === "1" && obj.notif_subtype === "2") {
+                        obj.icon_path = "./assistant/images/push.svg";
+                    } else if(obj.plugin_name === "assistant-base" && obj.notif_type === "2" && obj.notif_subtype === "1") {
+                        obj.icon_path = "./assistant/images/activity_increase.svg";
+                    } else if(obj.plugin_name === "assistant-base" && obj.notif_type === "2" && obj.notif_subtype === "2") {
+                        obj.icon_path = "./assistant/images/activity_decrease.svg";
+                    } else if(obj.plugin_name === "assistant-base" && obj.notif_type === "2" && obj.notif_subtype === "3") {
+                        obj.icon_path = "./assistant/images/activity_increase.svg";
+                    } else if(obj.plugin_name === "assistant-base" && obj.notif_type === "2" && obj.notif_subtype === "4") {
+                        obj.icon_path = "./assistant/images/activity_decrease.svg";
+                    } else if(obj.plugin_name === "assistant-base" && obj.notif_type === "2" && obj.notif_subtype === "5") {
+                        obj.icon_path = "./assistant/images/activity_increase.svg";
+                    } else if(obj.plugin_name === "assistant-base" && obj.notif_type === "2" && obj.notif_subtype === "6") {
+                        obj.icon_path = "./assistant/images/activity_decrease.svg";
+                    } else if(obj.plugin_name === "assistant-base" && obj.notif_type === "3" && obj.notif_subtype === "2") {
+                        obj.icon_path = "./assistant/images/ios.svg";
+                    } else if(obj.plugin_name === "assistant-base" && obj.notif_type === "3" && obj.notif_subtype === "3") {
+                        obj.icon_path = "./assistant/images/android.svg";
+                    } else if(obj.plugin_name === "star-rating" && obj.notif_type === "1" && obj.notif_subtype === "1") {
+                        obj.icon_path = "./assistant/images/star_rating.svg";
+                    } else if(obj.notif_type === "1") {//quick tips
+                        obj.icon_path = "./assistant/images/tip.svg";
+                    } else if(obj.notif_type === "2") {//insight
+                        obj.icon_path = "./assistant/images/generic_1.png";
+                    } else if(obj.notif_type === "3") {//announcments
+                        obj.icon_path = "./assistant/images/announcement.svg";
+                    } else {//default
+                        obj.icon_path = "./assistant/images/generic_2.png";
                     }
                 }
                 obj.timeSince = timeSince(new Date(obj.created_date));

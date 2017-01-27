@@ -15,6 +15,7 @@
 	"template"
   ],
   "dependencies": {
+    "rss-parser" : "2.5.2"
   },
   "private": true
 }

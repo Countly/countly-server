@@ -3,6 +3,9 @@ const assistant = {},
     plugins = require('../../pluginManager.js'),
     log = require('../../../api/utils/log.js')('assistant:module'),
     fetch = require('../../../api/parts/data/fetch.js'),
+    pluginManager = require('../../pluginManager.js'),
+    Promise = require("bluebird"),
+    time = require('time')(Date),
     async = require("async");
 
 (function (assistant) {
@@ -103,6 +106,7 @@ const assistant = {},
      this functions return true if:
      tt - hw <= ct < tt + hw
      */
+    //todo unit test this
     assistant.correct_day_and_time = function (target_day, target_hour, current_day, current_hour) {
         const halfWidthHours = (assistant.JOB_SCHEDULE_INTERVAL / 2) / 60;// half of the width/length in hours
         const hw = halfWidthHours / 24;//half of the width in days
@@ -116,8 +120,12 @@ const assistant = {},
             return true
         }
 
-        //return false;
-        return true;//override for testing
+        return false;
+    };
+
+    //todo unit test this
+    assistant.correct_time = function (target_hour, current_hour) {
+        return assistant.correct_day_and_time(3, target_hour, 3, current_hour);
     };
 
     assistant.changeNotificationSavedStatus = function (do_personal, do_save, notif_id, user_id, db) {
@@ -217,7 +225,57 @@ const assistant = {},
         log.i('Assistant creating notification for [%j] plugin with i18nID [%j] for App [%j]', valueSet.pluginName, valueSet.i18nID, app_id);
         assistant.createNotification(db, data, valueSet.pluginName, valueSet.type, valueSet.subtype, valueSet.i18nID, app_id);
         assistant.setNotificationShowAmount(db, valueSet, valueSet.showAmount + 1, app_id);
-    }
+    };
+
+
+    assistant.generateNotifications = function (countlyDb, callback, flagForceGenerateNotifications, flagIgnoreDayAndTime) {
+
+        log.i("Generate Notifications function");
+        //todo make sure that flagForceGenerateNotifications is a boolean
+        //todo make sure that flagIgnoreDayAndTime is a boolean
+
+        //get a list of all apps
+        countlyDb.collection('apps').find({}, {}).toArray(function (err_apps_data, result_apps_data) {
+            //load the assistant config
+            assistant.getAssistantConfig(countlyDb, function (returnedConfiguration) {
+
+                //log.i("Generate Notifications job, apps DB :" + JSON.stringify(result_apps_data));
+
+                //get current day and time
+                const date = new Date();
+
+                const providedInfo = {};
+                providedInfo.appsData = result_apps_data;
+                providedInfo.assistantConfiguration = returnedConfiguration;
+                //set the current time info
+                providedInfo.timeAndDate = {};
+                providedInfo.timeAndDate.date = date;
+                providedInfo.timeAndDate.hour = date.getHours();
+                providedInfo.timeAndDate.dow = date.getDay();
+                if (providedInfo.timeAndDate.dow === 0) providedInfo.timeAndDate.dow = 7;
+
+                //set if notifications should be generated regardless of their constraints
+                providedInfo.forceGenerateNotifications = flagForceGenerateNotifications;
+
+                //set if notifications should be generated ignoring their time and day
+                providedInfo.ignoreDayAndTime = flagIgnoreDayAndTime;
+
+                //go through all plugins and start generating notifications for those that support it
+                const plugins = pluginManager.getPlugins();
+                const promises = [];
+                for (let i = 0, l = plugins.length; i < l; i++) {
+                    try {
+                        //log.i('Preparing job: ' + plugins[i]);
+                        promises.push(require("../../" + plugins[i] + "/api/assistantJob").prepareNotifications(countlyDb, providedInfo));
+                    } catch (ex) {
+                        //log.i('Preparation FAILED [%j]', ex);
+                    }
+                }
+
+                Promise.all(promises).then(callback, callback);
+            });
+        });
+    };
 
 
 }(assistant));

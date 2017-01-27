@@ -98,17 +98,42 @@ const plugin = {},
         return true;
     });
 
-    plugins.register("/i/amagic", function (ob) {
+    plugins.register("/i/assistant_generate_all", function (ob) {
         const params = ob.params;
 
         if (typeof params.qstring.api_key === "undefined") {
             common.returnMessage(params, 400, 'Missing parameter "api_key"');
             return false;
         }
-        log.i('Assistant plugin request: /i/amagic');
+        log.i('Assistant plugin request: /i/assistant_generate_all');
+
+        const callback = function () {
+            log.i('Assistant plugin request: /i/assistant_generate_all finished');
+        };
+
+        assistant.generateNotifications(common.db, callback, true, true);
+
+        common.returnOutput(params, "assistant_generate_all was ! completed");
+        return true;
+    });
+
+    plugins.register("/i/assistant_generate_all_job", function (ob) {
+        const params = ob.params;
+
+        if (typeof params.qstring.api_key === "undefined") {
+            common.returnMessage(params, 400, 'Missing parameter "api_key"');
+            return false;
+        }
+        log.i('Assistant plugin request: /i/assistant_generate_all_job');
+
+        const callback = function () {
+            log.i('Assistant plugin request: /i/assistant_generate_all_job finished');
+        };
 
         require('../../../api/parts/jobs').job('assistant:generate').in(3);
-        common.returnOutput(params, "Magic was ! completed");
+
+
+        common.returnOutput(params, "assistant_generate_all_job was ! completed");
         return true;
     });
 
@@ -129,6 +154,43 @@ const plugin = {},
         common.db.collection(db_name_config).drop();
 
         common.returnOutput(params, "Delete was ! completed");
+        return true;
+    });
+
+    plugins.register("/i/rsstest", function (ob) {
+        const params = ob.params;
+
+        if (typeof params.qstring.api_key === "undefined") {
+            common.returnMessage(params, 400, 'Missing parameter "api_key"');
+            return false;
+        }
+        log.i('Assistant plugin request: /i/rsstest');
+
+        var parser = require('rss-parser');
+        var nowdate = Date.now();
+        var interMs = assistant.JOB_SCHEDULE_INTERVAL * 60 * 1000 * 1000;
+
+        //https://medium.com/feed/countly
+        //https://github.com/countly/countly-sdk-ios/tags.atom
+        //https://github.com/countly/countly-sdk-android/tags.atom
+
+        parser.parseURL('https://github.com/countly/countly-sdk-android/tags.atom', function(err, parsed) {
+            log.i(parsed.feed.title);
+            parsed.feed.entries.forEach(function(entry) {
+                log.i(entry.title + ':' + entry.link + ":" + entry.pubDate);
+                var dd = Date.parse(entry.pubDate);
+                var dif = nowdate - dd;
+                log.i(nowdate + " "  + dd + " " + dif + " : " + interMs);
+
+                if(dif <= interMs) {
+                    log.i("not long ago");
+                }
+
+            })
+        });
+
+
+        common.returnOutput(params, "rsstest was ! completed");
         return true;
     });
 
