@@ -2279,37 +2279,51 @@
         return Math.round(num * digits) / digits;
     };
 
-    countlyCommon.getDashboardData = function(data, properties, _periodObj){
-        function clearObject(obj){
-            if (obj) {
-                for(var i = 0; i < properties.length; i++){
-                    if (!obj[properties[i]]) obj[properties[i]] = 0;
-                }
-            }
-            else {
-                obj = {}
-                for(var i = 0; i < properties.length; i++){
-                    obj[properties[i]] = 0;
-                }
-            }
-
-            return obj;
-        };
-
-        var dataArr = {},
+    /**
+    * Get calculated totals for each property, usualy used as main dashboard data timeline data without metric segments
+    * @param {object} data - countly metric model data
+    * @param {array} properties - array of all properties to extract
+    * @param {array} unique - array of all properties that are unique from properties array. We need to apply estimation to them
+    * @param {object} estOverrideMetric - using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden
+    * @param {function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+    * @returns {object} dashboard data object
+    * @example
+    * countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u:"users"}, countlySession.clearObject);
+    * //outputs
+    * {
+    *      "t":{"total":980,"prev-total":332,"change":"195.2%","trend":"u"},
+    *      "n":{"total":402,"prev-total":255,"change":"57.6%","trend":"u"},
+    *      "u":{"total":423,"prev-total":255,"change":"75.7%","trend":"u","isEstimate":false},
+    *      "d":{"total":0,"prev-total":0,"change":"NA","trend":"u"},
+    *      "e":{"total":980,"prev-total":332,"change":"195.2%","trend":"u"},
+    *      "p":{"total":103,"prev-total":29,"change":"255.2%","trend":"u","isEstimate":true},
+    *      "m":{"total":86,"prev-total":0,"change":"NA","trend":"u","isEstimate":true}
+    * }
+    */
+    countlyCommon.getDashboardData = function(data, properties, unique, estOverrideMetric, clearObject){
+        var _periodObj = countlyCommon.periodObj,
+            dataArr = {},
             tmp_x,
             tmp_y,
+            tmpUniqObj,
+            tmpPrevUniqObj,
             current = {},
             previous = {},
-            change = {};
+            currentCheck = {},
+            previousCheck = {},
+            sparkLines = {},
+            change = {},
+            isEstimate = false;
 
             for(var i = 0; i < properties.length; i++){
                 current[properties[i]] = 0;
                 previous[properties[i]] = 0;
+                currentCheck[properties[i]] = 0;
+                previousCheck[properties[i]] = 0;
             }
 
         if (_periodObj.isSpecialPeriod) {
-
+            isEstimate = true;
             for (var j = 0; j < (_periodObj.currentPeriodArr.length); j++) {
                 tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[j]);
                 tmp_x = clearObject(tmp_x);
@@ -2325,6 +2339,34 @@
                     previous[properties[i]] += tmp_y[properties[i]];
                 }
             }
+            
+            //recheck unique values with larger buckets
+            for (var j = 0; j < (_periodObj.uniquePeriodCheckArr.length); j++) {
+                tmpUniqObj = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodCheckArr[j]);
+                tmpUniqObj = clearObject(tmpUniqObj);
+                for(var i = 0; i < unique.length; i++){
+                    currentCheck[unique[i]] += tmpUniqObj[unique[i]];
+                }
+            }
+            
+            for (var j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
+                tmpPrevUniqObj = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j]);
+                tmpPrevUniqObj = clearObject(tmpPrevUniqObj);
+                for(var i = 0; i < unique.length; i++){
+                    previousCheck[unique[i]] += tmpPrevUniqObj[unique[i]];
+                }
+            }
+            
+            for(var i = 0; i < unique.length; i++){
+                if (current[unique[i]] > currentCheck[unique[i]]) {
+                    current[unique[i]] = currentCheck[unique[i]];
+                }
+                
+                if (previous[unique[i]] > previousCheck[unique[i]]) {
+                    previous[unique[i]] = previousCheck[unique[i]];
+                }
+            }
+            
         } else {
             tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod);
             tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriod);
@@ -2341,12 +2383,95 @@
             change[properties[i]] = countlyCommon.getPercentChange(previous[properties[i]], current[properties[i]]);
             dataArr[properties[i]] = {
                 "total":current[properties[i]],
+                "prev-total":previous[properties[i]],
                 "change":change[properties[i]].percent,
-                "trend":change[properties[i]].trend,
+                "trend":change[properties[i]].trend
             };
+            if(unique.indexOf(properties[i]) !== -1){
+                dataArr[properties[i]].isEstimate = isEstimate;
+            }
+        }
+        
+        //check if we can correct data using total users correction
+        if (_periodObj.periodContainsToday && estOverrideMetric && countlyTotalUsers.isUsable()) {
+            for(var i = 0; i < unique.length; i++){
+                if(estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users){
+                    dataArr[unique[i]].total = countlyTotalUsers.get(estOverrideMetric[unique[i]]).users;
+                    dataArr[unique[i]].isEstimate = false;
+                }
+            }
         }
 
         return dataArr;
+    }
+    
+    /**
+    * Get total data for period's each time bucket as comma separated string to generate sparkle/small bar lines
+    * @param {object} data - countly metric model data
+    * @param {object} props - object where key is output property name and value could be string as key from data object or function to create new value based on existing ones
+    * @param {function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+    * @returns {object} object with sparkleline data for each property
+    * @example
+    * var sparkLines = countlyCommon.getSparklineData(countlySession.getDb(), {
+    *     "total-sessions": "t",
+    *     "new-users": "n",
+    *     "total-users": "u",
+    *     "total-duration": "d",
+    *     "events": "e",
+    *     "returning-users": function(tmp_x){return Math.max(tmp_x["u"] - tmp_x["n"], 0);},
+    *     "avg-duration-per-session": function(tmp_x){return (tmp_x["t"] == 0) ? 0 : (tmp_x["d"] / tmp_x["t"]);},
+    *     "avg-events": function(tmp_x){return (tmp_x["u"] == 0) ? 0 : (tmp_x["e"] / tmp_x["u"]);}
+    * }, countlySession.clearObject);
+    * //outputs
+    * {
+    *   "total-sessions":"73,84,80,72,61,18,11,7,17,27,66,39,41,36,39,36,6,11,6,16,22,30,33,34,32,41,29,9,2,2",
+    *   "new-users":"24,30,25,20,16,18,11,7,17,18,20,18,17,11,15,15,6,11,6,16,13,14,12,10,7,4,8,9,2,2",
+    *   "total-users":"45,54,50,44,37,18,11,7,17,27,36,39,41,36,39,36,6,11,6,16,22,30,33,34,32,29,29,9,2,2",
+    *   "total-duration":"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+    *   "events":"73,84,80,72,61,18,11,7,17,27,66,39,41,36,39,36,6,11,6,16,22,30,33,34,32,41,29,9,2,2",
+    *   "returning-users":"21,24,25,24,21,0,0,0,0,9,16,21,24,25,24,21,0,0,0,0,9,16,21,24,25,25,21,0,0,0",
+    *   "avg-duration-per-session":"0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+    *   "avg-events":"1.6222222222222222,1.5555555555555556,1.6,1.6363636363636365,1.6486486486486487,1,1,1,1,1,1.8333333333333333,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1.4137931034482758,1,1,1,1"
+    * }
+    */
+    countlyCommon.getSparklineData = function(data, props, clearObject) {
+        var _periodObj = countlyCommon.periodObj
+        var sparkLines = {};
+        for(var p in props){
+            sparkLines[p] = [];
+        }
+
+        if (!_periodObj.isSpecialPeriod) {
+            for (var i = _periodObj.periodMin; i < (_periodObj.periodMax + 1); i++) {
+                var tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod + "." + i);
+                tmp_x = clearObject(tmp_x);
+                
+                for(var p in props){
+                    if(typeof props[p] === "string")
+                        sparkLines[p].push(tmp_x[props[p]]);
+                    else if(typeof props[p] === "function")
+                        sparkLines[p].push(props[p](tmp_x));
+                }
+            }
+        } else {
+            for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
+                var tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[i]);
+                tmp_x = clearObject(tmp_x);
+
+                for(var p in props){
+                    if(typeof props[p] === "string")
+                        sparkLines[p].push(tmp_x[props[p]]);
+                    else if(typeof props[p] === "function")
+                        sparkLines[p].push(props[p](tmp_x));
+                }
+            }
+        }
+
+        for (var key in sparkLines) {
+            sparkLines[key] = sparkLines[key].join(",");
+        }
+
+        return sparkLines;
     }
 
     /**
