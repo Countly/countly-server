@@ -157,6 +157,30 @@ const plugin = {},
         return true;
     });
 
+    plugins.register("/i/assmagic", function (ob) {
+        var params = ob.params;
+
+        if (typeof params.qstring.api_key === "undefined") {
+            common.returnMessage(params, 400, 'Missing parameter "api_key"');
+            return false;
+        }
+        //http://kadikis.count.ly/o/analytics/metric?api_key=7c0ee53440a1d3ab7b2052fc078c6b9f&app_id=57cd5afb85e945640bc4eec9&metric=sources&period=30days
+        const hours_24 = 1000*60*60*24;
+        const nowTime = 1485547643000;
+
+        params.qstring.period = "hour";// JSON.stringify([nowTime - hours_24,nowTime]);
+        params.qstring.metric = "sources";
+        params.app_id = "57cd5afb85e945640bc4eec9";
+        params.appTimezone = params.appTimezone;
+
+        fetch.getMetric(params, "sources", null, function(data){
+            common.returnMessage(params, 200, "I've got the source! " + JSON.stringify(data));
+        });
+
+        return true;
+    });
+
+
     plugins.register("/i/rsstest", function (ob) {
         const params = ob.params;
 

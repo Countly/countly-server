@@ -44,6 +44,13 @@
     color: #7cFaa0;
 }
 
+.assistant_icon_image {
+    width: 30px;
+    height: 30px;
+    background-position: 50% 50%;
+    background-repeat: no-repeat
+}
+
 .assistant_space {
     height: 40px;
 }

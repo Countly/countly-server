@@ -227,7 +227,6 @@ const assistant = {},
         assistant.setNotificationShowAmount(db, valueSet, valueSet.showAmount + 1, app_id);
     };
 
-
     assistant.generateNotifications = function (countlyDb, callback, flagForceGenerateNotifications, flagIgnoreDayAndTime) {
 
         log.i("Generate Notifications function");
@@ -243,6 +242,7 @@ const assistant = {},
 
                 //get current day and time
                 const date = new Date();
+                //date.setTimezone(appTimezone);
 
                 const providedInfo = {};
                 providedInfo.appsData = result_apps_data;

@@ -24,16 +24,21 @@ const assistantJob = {},
 
                 //log.i('Assistant plugin stuffo: [%j] ', assistantConfig);
 
-                const params = {};
-                params.qstring = {};
-
                 async.map(result_apps_data, function (ret_app_data, callback) {
+                    const params = {};
+                    params.qstring = {};
+                    params.appTimezone = ret_app_data.timezone;//todo add this to other places
+
+                    //todo calculate hour and date here
+
                     const is_mobile = ret_app_data.type == "mobile";//check if app type is mobile or web
                     const app_id = "" + ret_app_data._id;//todo is this problematic?
 
                     db.collection('events').findOne({_id: app_id}, {}, function (events_err, events_result) {
                         params.app_id = app_id;
                         params.qstring.period = "7days";
+
+
                         fetch.getTimeObj('users', params, function (fetchResultUsers) {//collect user info
                             //log.i('Assistant plugin doing steps: [%j] [%j]', 0.01, fetchResultUsers);
                             countlySession.setDb(fetchResultUsers);
@@ -176,6 +181,58 @@ const assistantJob = {},
                                     assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
                                 }
                             }
+
+                            {
+                                const hours_24 = 1000*60*60*24;
+                                const nowTime = 1485547643000;
+
+                                const paramCopy = {};
+                                paramCopy.api_key = params.api_key;
+                                paramCopy.app_id = params.app_id;
+                                paramCopy.appTimezone = params.appTimezone;
+                                paramCopy.qstring = {};
+                                paramCopy.qstring.period = "7days";// JSON.stringify([nowTime - hours_24,nowTime]);
+
+                                fetch.getMetric(paramCopy, "sources", null, function(metricData){
+                                    log.i('Assistant plugin doing steps: [%j] [%j] [%j] [%j]', 12, params.app_id, app_id, metricData);
+
+                                    metricData = metricData.filter(function (x) {
+                                        return x.t > 0;
+                                    });
+
+                                    metricData.sort(function (x, y) {
+                                        return y.t - x.t;
+                                    });
+
+                                    log.i('Sorted Data [%j] [%j]', app_id, metricData);
+
+                                    const enough_sources = metricData.length >= 3;//at least 3 install sources with enough users
+
+                                    if ((flagIgnoreDAT || assistant.correct_day_and_time(2, 15, dow, hour)) && enough_sources && is_mobile || flagForceGenerate) {
+                                        let data;
+                                        if(metricData >= 3) {
+                                            data = [metricData[0]._id, metricData[0].t, metricData[1]._id, metricData[1].t, metricData[2]._id, metricData[2].t];
+                                        } else {
+                                            data = ["a", 1, "b", 2, "c", 3];
+                                        }
+
+                                        const valueSet = assistant.createNotificationValueSet("assistant.top-install-sources", assistant.NOTIF_TYPE_INSIGHTS, 7, PLUGIN_NAME, assistantConfig, app_id, NOTIFICATION_VERSION);
+                                        assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
+                                    }
+
+                                    if ((flagIgnoreDAT || assistant.correct_day_and_time(3, 15, dow, hour)) && enough_sources && !is_mobile || flagForceGenerate) {
+                                        let data;
+                                        if(metricData >= 3) {
+                                            data = [metricData[0]._id, metricData[0].t, metricData[0].u, metricData[1]._id, metricData[1].t, metricData[1].u, metricData[2]._id, metricData[2].t, metricData[2].u];
+                                        } else {
+                                            data = ["a", 1, 9, "b", 2, 8, "c", 3, 7];
+                                        }
+                                        const valueSet = assistant.createNotificationValueSet("assistant.top-referrals", assistant.NOTIF_TYPE_INSIGHTS, 8, PLUGIN_NAME, assistantConfig, app_id, NOTIFICATION_VERSION);
+                                        assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
+                                    }
+                                });
+                            }
+
                             //log.i('Assistant plugin doing steps BIG: [%j] ', 20);
                             // (3) generate announcment notifications
 

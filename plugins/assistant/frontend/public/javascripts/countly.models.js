@@ -66,10 +66,9 @@
         var the_notifs = [given_data.notifications, given_data.notifs_saved_private, given_data.notifs_saved_global];
 
         for(var b = 0 ; b < the_notifs.length ; b++) {
-            //todo not working
             //set the notification lists to be from newer to older
             the_notifs[b].sort(function (x, y) {
-                return x.created_date < y.created_date;
+                return x.created_date - y.created_date;
             });
 
             for (var a = 0; a < the_notifs[b].length; a++) {
