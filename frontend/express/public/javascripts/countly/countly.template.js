@@ -57,10 +57,10 @@ var countlyView = Backbone.View.extend({
     */
     dateChanged:function () {    //called when user changes the date selected
         if (Backbone.history.fragment == "/") {
-			this.refresh(true);
-		} else {
-			this.refresh();
-		}
+            this.refresh(true);
+        } else {
+            this.refresh();
+        }
     },
     /**
     * This method is called when app is changed, default behavior is to call render again
@@ -82,13 +82,13 @@ var countlyView = Backbone.View.extend({
     * @example
     *beforeRender: function() {
     *    if(this.template)
-	*		return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
-	*	else{
-	*		var self = this;
-	*		return $.when($.get(countlyGlobal["path"]+'/density/templates/density.html', function(src){
-	*			self.template = Handlebars.compile(src);
-	*		}), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
-	*	}
+    *       return $.when(countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
+    *   else{
+    *       var self = this;
+    *       return $.when($.get(countlyGlobal["path"]+'/density/templates/density.html', function(src){
+    *           self.template = Handlebars.compile(src);
+    *       }), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("densities"), countlyDensity.initialize()).then(function () {});
+    *   }
     *}
     */
     beforeRender: function () {
@@ -237,6 +237,7 @@ $.extend(Template.prototype, {
     }
 });
 
+//redefine contains selector for jquery to be case insensitive
 $.expr[":"].contains = $.expr.createPseudo(function(arg) {
     return function( elem ) {
         return $(elem).text().toUpperCase().indexOf(arg.toUpperCase()) >= 0;
@@ -451,19 +452,57 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     initialize:function () { //initialize the dashboard, register helpers etc.
-		this.appTypes = {};
-		this.pageScripts = {};
+        this.appTypes = {};
+        this.pageScripts = {};
         this.dataExports = {};
         this.appSwitchCallbacks = [];
         this.appManagementSwitchCallbacks = [];
         this.appObjectModificators = [];
         this.appAddTypeCallbacks = [];
         this.userEditCallbacks = [];
-		this.refreshScripts = {};
+        this.refreshScripts = {};
 
+        /**
+        * When rendering data from server using templates from frontend/express/views we are using ejs as templating engine. But when rendering templates on the browser side remotely loaded templates through ajax, we are using Handlebars templating engine. While in ejs everything is simple and your templating code is basically javascript code betwee <% %> tags. Then with Handlebars it is not that straightforward and we need helper functions to have some common templating logic 
+        * @name Handlebars
+        * @global
+        * @instance
+        * @namespace Handlebars
+        */
+ 
+        /**
+        * Display common date selecting UI elements
+        * @name date-selector
+        * @memberof Handlebars
+        * @example
+        * {{> date-selector }}
+        */
         Handlebars.registerPartial("date-selector", $("#template-date-selector").html());
+        /**
+        * Display common timezone selecting UI element
+        * @name timezones
+        * @memberof Handlebars
+        * @example
+        * {{> timezones }}
+        */
         Handlebars.registerPartial("timezones", $("#template-timezones").html());
+        /**
+        * Display common app category selecting UI element
+        * @name app-categories
+        * @memberof Handlebars
+        * @example
+        * {{> app-categories }}
+        */
         Handlebars.registerPartial("app-categories", $("#template-app-categories").html());
+        /**
+        * Iterate object with keys and values, creating variable "property" for object key and variable "value" for object value 
+        * @name eachOfObject
+        * @memberof Handlebars
+        * @example
+        * {{#eachOfObject app_types}}
+        *   <div data-value="{{property}}" class="item">{{value}}</div>
+        * {{/eachOfObject}}
+        */
         Handlebars.registerHelper('eachOfObject', function (context, options) {
             var ret = "";
             for (var prop in context) {
@@ -471,6 +510,19 @@ var AppRouter = Backbone.Router.extend({
             }
             return ret;
         });
+        /**
+        * Iterate only values of object, this will reference the value of current object
+        * @name eachOfObjectValue
+        * @memberof Handlebars
+        * @example
+        * {{#eachOfObjectValue apps}}
+		* <div class="app searchable">
+		* 	<div class="image" style="background-image: url('/appimages/{{this._id}}.png');"></div>
+		* 	<div class="name">{{this.name}}</div>
+		* 	<input class="app_id" type="hidden" value="{{this._id}}"/>
+		* </div>
+		* {{/eachOfObjectValue}}
+        */
         Handlebars.registerHelper('eachOfObjectValue', function (context, options) {
             var ret = "";
             for (var prop in context) {
@@ -478,6 +530,17 @@ var AppRouter = Backbone.Router.extend({
             }
             return ret;
         });
+        /**
+        * Iterate through array, creating variable "index" for element index and variable "value" for value at that index 
+        * @name eachOfArray
+        * @memberof Handlebars
+        * @example
+        * {{#eachOfArray events}}
+		* <div class="searchable event-container {{#if value.is_active}}active{{/if}}" data-key="{{value.key}}">
+		* 	<div class="name">{{value.name}}</div>
+		* </div>
+		* {{/eachOfArray}}
+        */
         Handlebars.registerHelper('eachOfArray', function (context, options) {
             var ret = "";
             for (var i = 0; i < context.length; i++) {
@@ -485,12 +548,33 @@ var AppRouter = Backbone.Router.extend({
             }
             return ret;
         });
-		Handlebars.registerHelper('prettyJSON', function (context, options) {
+        /**
+        * Print out json in pretty indented way
+        * @name prettyJSON
+        * @memberof Handlebars
+        * @example
+        * <td class="jh-value jh-object-value">{{prettyJSON value}}</td>
+        */
+        Handlebars.registerHelper('prettyJSON', function (context, options) {
             return JSON.stringify(context, undefined, 4);
         });
+        /**
+        * Shorten number, Handlebar binding to {@link countlyCommon.getShortNumber}
+        * @name getShortNumber
+        * @memberof Handlebars
+        * @example
+        * <span class="value">{{getShortNumber this.data.total}}</span>
+        */
         Handlebars.registerHelper('getShortNumber', function (context, options) {
             return countlyCommon.getShortNumber(context);
         });
+        /**
+        * Format float number up to 2 values after dot
+        * @name getFormattedNumber
+        * @memberof Handlebars
+        * @example
+        * <div class="number">{{getFormattedNumber this.total}}</div>
+        */
         Handlebars.registerHelper('getFormattedNumber', function (context, options) {
             if (isNaN(context)) {
                 return context;
@@ -499,12 +583,37 @@ var AppRouter = Backbone.Router.extend({
             ret = parseFloat((parseFloat(context).toFixed(2)).toString()).toString();
             return ret.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
         });
+        /**
+        * Convert text to upper case
+        * @name toUpperCase
+        * @memberof Handlebars
+        * @example
+        * <div class="title">{{toUpperCase page-title}}</div>
+        */
         Handlebars.registerHelper('toUpperCase', function (context, options) {
             return context.toUpperCase();
         });
+        /**
+        * Convert array of app ids to comma separate string of app names. Handlebar binding to {@link CountlyHelpers.appIdsToNames}
+        * @name appIdsToNames
+        * @memberof Handlebars
+        * @example
+        * <div class="apps">{{appIdsToNames appIds}}</div>
+        */
         Handlebars.registerHelper('appIdsToNames', function (context, options) {
             return CountlyHelpers.appIdsToNames(context);
         });
+        /**
+        * Loop for specified amount of times. Creating variable "count" as current index from 1 to provided value
+        * @name forNumberOfTimes
+        * @memberof Handlebars
+        * @example
+        * <ul>
+        * {{#forNumberOfTimes 10}}
+		*   <li>{{count}}</li>
+		* {{/forNumberOfTimes}}
+        * </ul>
+        */
         Handlebars.registerHelper('forNumberOfTimes', function (context, options) {
             var ret = "";
             for (var i = 0; i < context; i++) {
@@ -512,44 +621,84 @@ var AppRouter = Backbone.Router.extend({
             }
             return ret;
         });
+        
         Handlebars.registerHelper('include', function (templatename, options) {
             var partial = Handlebars.partials[templatename];
             var context = $.extend({}, this, options.hash);
             return partial(context);
         });
-		Handlebars.registerHelper('for', function(from, to, incr, block) {
-			var accum = '';
-			for(var i = from; i < to; i += incr)
-				accum += block.fn(i);
-			return accum;
-		});
-		Handlebars.registerHelper('ifCond', function (v1, operator, v2, options) {
-			switch (operator) {
-				case '==':
-					return (v1 == v2) ? options.fn(this) : options.inverse(this);
+        /**
+        * For loop in template providing start count, end count and increment
+        * @name for
+        * @memberof Handlebars
+        * @example
+        * {{#for start end 1}}
+		* 	{{#ifCond this "==" ../data.curPage}}
+		* 	<a href='#/manage/db/{{../../db}}/{{../../collection}}/page/{{this}}' class="current">{{this}}</a>
+		* 	{{else}}
+		* 	<a href='#/manage/db/{{../../db}}/{{../../collection}}/page/{{this}}'>{{this}}</a>
+		* 	{{/ifCond}}
+		* {{/for}}
+        */
+        Handlebars.registerHelper('for', function(from, to, incr, block) {
+            var accum = '';
+            for(var i = from; i < to; i += incr)
+                accum += block.fn(i);
+            return accum;
+        });
+        /**
+        * If condition with different operators, accepting first value, operator and second value. 
+        * Accepted operators are ==, !=, ===, <, <=, >, >=, &&, ||
+        * @name ifCond
+        * @memberof Handlebars
+        * @example
+        * {{#ifCond this.data.trend "==" "u"}}
+        *     <i class="material-icons">trending_up</i>
+        * {{else}}
+        *     <i class="material-icons">trending_down</i>
+        * {{/ifCond}}
+        */
+        Handlebars.registerHelper('ifCond', function (v1, operator, v2, options) {
+            switch (operator) {
+                case '==':
+                    return (v1 == v2) ? options.fn(this) : options.inverse(this);
                 case '!=':
-					return (v1 != v2) ? options.fn(this) : options.inverse(this);
-				case '===':
-					return (v1 === v2) ? options.fn(this) : options.inverse(this);
-				case '<':
-					return (v1 < v2) ? options.fn(this) : options.inverse(this);
-				case '<=':
-					return (v1 <= v2) ? options.fn(this) : options.inverse(this);
-				case '>':
-					return (v1 > v2) ? options.fn(this) : options.inverse(this);
-				case '>=':
-					return (v1 >= v2) ? options.fn(this) : options.inverse(this);
-				case '&&':
-					return (v1 && v2) ? options.fn(this) : options.inverse(this);
-				case '||':
-					return (v1 || v2) ? options.fn(this) : options.inverse(this);
-				default:
-					return options.inverse(this);
-			}
-		});
+                    return (v1 != v2) ? options.fn(this) : options.inverse(this);
+                case '===':
+                    return (v1 === v2) ? options.fn(this) : options.inverse(this);
+                case '<':
+                    return (v1 < v2) ? options.fn(this) : options.inverse(this);
+                case '<=':
+                    return (v1 <= v2) ? options.fn(this) : options.inverse(this);
+                case '>':
+                    return (v1 > v2) ? options.fn(this) : options.inverse(this);
+                case '>=':
+                    return (v1 >= v2) ? options.fn(this) : options.inverse(this);
+                case '&&':
+                    return (v1 && v2) ? options.fn(this) : options.inverse(this);
+                case '||':
+                    return (v1 || v2) ? options.fn(this) : options.inverse(this);
+                default:
+                    return options.inverse(this);
+            }
+        });
+        /**
+        * Format timestamp to twitter like time ago format, Handlebar binding to {@link countlyCommon.formatTimeAgo}
+        * @name formatTimeAgo
+        * @memberof Handlebars
+        * @example
+        * <div class="time">{{{formatTimeAgo value.time}}</div>
+        */
         Handlebars.registerHelper('formatTimeAgo', function (context, options) {
             return countlyCommon.formatTimeAgo(parseInt(context)/1000);
         });
+        /**
+        * Get value form object by specific key, this will reference value of the object
+        * @name withItem
+        * @memberof Handlebars
+        * @example
+        * <p>{{#withItem ../apps key=app_id}}{{this}}{{/withItem}}</p>
+        */
         Handlebars.registerHelper('withItem', function(object, options) {
             return options.fn(object[options.hash.key]);
         });
@@ -571,64 +720,64 @@ var AppRouter = Backbone.Router.extend({
             CountlyHelpers.initializeSelect();
             CountlyHelpers.initializeTextSelect();
             CountlyHelpers.initializeMultiSelect();
-			
-			if(parseInt(countlyGlobal.config["session_timeout"])){
-				var minTimeout, tenSecondTimeout, logoutTimeout, actionTimeout;
-				var shouldRecordAction = false;
-				var extendSession = function(){
-					$.ajax({
-						url:countlyGlobal["path"]+"/session",
-						success:function (result) {
-							if(result == "logout"){
-								$("#user-logout").click();
-								window.location = "/logout";
-							}
-							else if(result == "success"){
-								shouldRecordAction = false;
-								setTimeout(function(){
-									shouldRecordAction = true;
-								}, Math.round(countlyGlobal.config["session_timeout"]/2));
-								resetSessionTimeouts(countlyGlobal.config["session_timeout"]);
-							}
-						}
-					});
-				}
-				var resetSessionTimeouts = function(timeout){
-					var minute = timeout - 60*1000;
-					if(minTimeout){
-						clearTimeout(minTimeout);
-						minTimeout = null;
-					}
-					if(minute > 0){
-						minTimeout = setTimeout(function(){
-							CountlyHelpers.notify({title:jQuery.i18n.map["common.session-expiration"], message:jQuery.i18n.map["common.expire-minute"], info:jQuery.i18n.map["common.click-to-login"]})
-						}, minute);
-					}
-					var tenSeconds = timeout - 10*1000;
-					if(tenSecondTimeout){
-						clearTimeout(tenSecondTimeout);
-						tenSecondTimeout = null;
-					}
-					if(tenSeconds > 0){
-						tenSecondTimeout = setTimeout(function(){
-							CountlyHelpers.notify({title:jQuery.i18n.map["common.session-expiration"], message:jQuery.i18n.map["common.expire-seconds"], info:jQuery.i18n.map["common.click-to-login"]})
-						}, tenSeconds);
-					}
-					if(logoutTimeout){
-						clearTimeout(logoutTimeout);
-						logoutTimeout = null;
-					}
-					logoutTimeout = setTimeout(function(){
-						extendSession();
-					}, timeout+1000);
-				}
-				resetSessionTimeouts(countlyGlobal.config["session_timeout"]);
-				$(document).click(function (event) {
-					if(shouldRecordAction)
-						extendSession();
-				});
-				extendSession();
-			}
+            
+            if(parseInt(countlyGlobal.config["session_timeout"])){
+                var minTimeout, tenSecondTimeout, logoutTimeout, actionTimeout;
+                var shouldRecordAction = false;
+                var extendSession = function(){
+                    $.ajax({
+                        url:countlyGlobal["path"]+"/session",
+                        success:function (result) {
+                            if(result == "logout"){
+                                $("#user-logout").click();
+                                window.location = "/logout";
+                            }
+                            else if(result == "success"){
+                                shouldRecordAction = false;
+                                setTimeout(function(){
+                                    shouldRecordAction = true;
+                                }, Math.round(countlyGlobal.config["session_timeout"]/2));
+                                resetSessionTimeouts(countlyGlobal.config["session_timeout"]);
+                            }
+                        }
+                    });
+                }
+                var resetSessionTimeouts = function(timeout){
+                    var minute = timeout - 60*1000;
+                    if(minTimeout){
+                        clearTimeout(minTimeout);
+                        minTimeout = null;
+                    }
+                    if(minute > 0){
+                        minTimeout = setTimeout(function(){
+                            CountlyHelpers.notify({title:jQuery.i18n.map["common.session-expiration"], message:jQuery.i18n.map["common.expire-minute"], info:jQuery.i18n.map["common.click-to-login"]})
+                        }, minute);
+                    }
+                    var tenSeconds = timeout - 10*1000;
+                    if(tenSecondTimeout){
+                        clearTimeout(tenSecondTimeout);
+                        tenSecondTimeout = null;
+                    }
+                    if(tenSeconds > 0){
+                        tenSecondTimeout = setTimeout(function(){
+                            CountlyHelpers.notify({title:jQuery.i18n.map["common.session-expiration"], message:jQuery.i18n.map["common.expire-seconds"], info:jQuery.i18n.map["common.click-to-login"]})
+                        }, tenSeconds);
+                    }
+                    if(logoutTimeout){
+                        clearTimeout(logoutTimeout);
+                        logoutTimeout = null;
+                    }
+                    logoutTimeout = setTimeout(function(){
+                        extendSession();
+                    }, timeout+1000);
+                }
+                resetSessionTimeouts(countlyGlobal.config["session_timeout"]);
+                $(document).click(function (event) {
+                    if(shouldRecordAction)
+                        extendSession();
+                });
+                extendSession();
+            }
 
             // If date range is selected initialize the calendar with these
             var periodObj = countlyCommon.getPeriod();
@@ -808,19 +957,19 @@ var AppRouter = Backbone.Router.extend({
                 selector: ".sidebar-submenu:visible"
             });
 
-			$('#sidebar-menu').slimScroll({
-				height: ($(window).height()-123-96+28)+'px',
-				railVisible: true,
-				railColor : '#4CC04F',
-				railOpacity : .2,
-				color: '#4CC04F'
-			});
+            $('#sidebar-menu').slimScroll({
+                height: ($(window).height()-123-96+28)+'px',
+                railVisible: true,
+                railColor : '#4CC04F',
+                railOpacity : .2,
+                color: '#4CC04F'
+            });
 
-			$( window ).resize(function() {
-				$('#sidebar-menu').slimScroll({
-					height: ($(window).height()-123-96+28)+'px'
-				});
-			});
+            $( window ).resize(function() {
+                $('#sidebar-menu').slimScroll({
+                    height: ($(window).height()-123-96+28)+'px'
+                });
+            });
 
             $(".sidebar-submenu").on("click", ".item", function () {
 
@@ -1009,7 +1158,7 @@ var AppRouter = Backbone.Router.extend({
                 store.remove('countly_date');
                 store.remove('countly_location_city');
             });
-	    
+        
             $(".beta-button").click(function () {
                 CountlyHelpers.alert("This feature is currently in beta so the data you see in this view might change or disappear into thin air.<br/><br/>If you find any bugs or have suggestions please let us know!<br/><br/><a style='font-weight:500;'>Captain Obvious:</a> You can use the message box that appears when you click the question mark on the bottom right corner of this page.", "black");
             });
@@ -1529,14 +1678,14 @@ var AppRouter = Backbone.Router.extend({
             "bDestroy": true,
             "bDeferRender": true,
             "oLanguage": {
-				"sZeroRecords": jQuery.i18n.map["common.table.no-data"],
-				"sInfoEmpty": jQuery.i18n.map["common.table.no-data"],
-				"sEmptyTable": jQuery.i18n.map["common.table.no-data"],
-				"sInfo": jQuery.i18n.map["common.showing"],
-				"sInfoFiltered": jQuery.i18n.map["common.filtered"],
-				"sSearch": jQuery.i18n.map["common.search"],
+                "sZeroRecords": jQuery.i18n.map["common.table.no-data"],
+                "sInfoEmpty": jQuery.i18n.map["common.table.no-data"],
+                "sEmptyTable": jQuery.i18n.map["common.table.no-data"],
+                "sInfo": jQuery.i18n.map["common.showing"],
+                "sInfoFiltered": jQuery.i18n.map["common.filtered"],
+                "sSearch": jQuery.i18n.map["common.search"],
                 "sLengthMenu": jQuery.i18n.map["common.show-items"]+"<input type='number' id='dataTables_length_input'/>"
-			},
+            },
             "oTableTools": {
                 "sSwfPath": countlyGlobal["cdn"]+"javascripts/dom/dataTables/swf/copy_csv_xls.swf",
                 "aButtons": [
@@ -1941,11 +2090,11 @@ var AppRouter = Backbone.Router.extend({
     *   alert("I am an annoying popup appearing on each view");
     * });
     */
-	addPageScript:function(view, callback){
-		if(!this.pageScripts[view])
-			this.pageScripts[view] = [];
-		this.pageScripts[view].push(callback);
-	},
+    addPageScript:function(view, callback){
+        if(!this.pageScripts[view])
+            this.pageScripts[view] = [];
+        this.pageScripts[view].push(callback);
+    },
     /**
     * Add callback to be called everytime view is refreshed, because view may reset some html, and we may want to remodify it again. By default this happens every 10 seconds, so not cpu intensive tasks
     * @param {string} view - view url/hash or with possible # as wildcard or simply providing # for any view
@@ -1975,11 +2124,11 @@ var AppRouter = Backbone.Router.extend({
     *   alert("I am an annoying popup appearing on each refresh of any view");
     * });
     */
-	addRefreshScript:function(view, callback){
-		if(!this.refreshScripts[view])
-			this.refreshScripts[view] = [];
-		this.refreshScripts[view].push(callback);
-	},
+    addRefreshScript:function(view, callback){
+        if(!this.refreshScripts[view])
+            this.refreshScripts[view] = [];
+        this.refreshScripts[view].push(callback);
+    },
     onAppSwitch:function(appId, refresh){
         if(appId != 0){
             jQuery.i18n.map = JSON.parse(app.origLang);
@@ -2034,24 +2183,24 @@ var AppRouter = Backbone.Router.extend({
             if (Object.prototype.toString.call(selectedDateID) !== '[object Array]') {
                 $("#" + selectedDateID).addClass("active");
             }
-			
-			if (Backbone.history.fragment == "/manage/apps") {
+            
+            if (Backbone.history.fragment == "/manage/apps") {
                 $("#sidebar-app-select").addClass("disabled");
                 $("#sidebar-app-select").removeClass("active");
             } else {
                 $("#sidebar-app-select").removeClass("disabled");
             }
-			
-			if(self.pageScripts[Backbone.history.fragment])
-				for(var i = 0, l = self.pageScripts[Backbone.history.fragment].length; i < l; i++)
-					self.pageScripts[Backbone.history.fragment][i]();
+            
+            if(self.pageScripts[Backbone.history.fragment])
+                for(var i = 0, l = self.pageScripts[Backbone.history.fragment].length; i < l; i++)
+                    self.pageScripts[Backbone.history.fragment][i]();
             for(var k in self.pageScripts) 
                 if (k !== '#' && k.indexOf('#') !== -1 && Backbone.history.fragment.match(k.replace(/#/g, '.*')))
                     for(var i = 0, l = self.pageScripts[k].length; i < l; i++)
                         self.pageScripts[k][i]();
-			if(self.pageScripts["#"])
-				for(var i = 0, l = self.pageScripts["#"].length; i < l; i++)
-					self.pageScripts["#"][i]();
+            if(self.pageScripts["#"])
+                for(var i = 0, l = self.pageScripts["#"].length; i < l; i++)
+                    self.pageScripts["#"][i]();
 
             // Translate all elements with a data-help-localize or data-localize attribute
             self.localize();
