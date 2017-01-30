@@ -13,28 +13,22 @@ const assistantJob = {},
         return new Promise(function (resolve, reject) {
             try {
                 log.i('Creating assistant notifications from [%j]', PLUGIN_NAME);
-                const result_apps_data = providedInfo.appsData;
-                const dow = providedInfo.timeAndDate.dow;
-                const hour = providedInfo.timeAndDate.hour;
-                const assistantConfig = providedInfo.assistantConfiguration;
-                const flagIgnoreDAT = providedInfo.ignoreDayAndTime;
-                const flagForceGenerate = providedInfo.forceGenerateNotifications;
                 const NOTIFICATION_VERSION = 1;
-                async.map(result_apps_data, function (ret_app_data, callback) {
-                    const is_mobile = ret_app_data.type == "mobile";//check if app type is mobile or web
-                    const app_id = ret_app_data._id;
+
+                async.map(providedInfo.appsData, function (ret_app_data, callback) {
+                    //assistant plugin common fields
+                    const apc = assistant.preparePluginSpecificFields(providedInfo, ret_app_data, PLUGIN_NAME);
+
                     log.i('Creating assistant notifications from [%j] [%j]', PLUGIN_NAME, 1);
-                    db.collection('events').findOne({_id: app_id}, {}, function (events_err, events_result) {
+                    db.collection('events').findOne({_id: apc.app_id}, {}, function (events_err, events_result) {
                         { //(1.1) Star rating integration
-                            const valueSet = assistant.createNotificationValueSet("assistant.star-rating-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 1, PLUGIN_NAME, assistantConfig, app_id, NOTIFICATION_VERSION);
+                            const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.star-rating-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 1, NOTIFICATION_VERSION);
                             const no_star_rating = (typeof events_result === "undefined") || (events_result === null) || (typeof events_result.list === "undefined") || (typeof events_result.list !== "undefined" && events_result.list.indexOf("[CLY]_star") === -1);
                             const star_rating_not_enabled = !plugins.isPluginEnabled("star-rating");
-                            const max_show_time_not_exceeded = valueSet.showAmount < 3;
+                            const max_show_time_not_exceeded = anc.valueSet.showAmount < 3;
                             const data = [];
-                            if ((flagIgnoreDAT || assistant.correct_day_and_time(4, 15, dow, hour)) && (no_star_rating || star_rating_not_enabled) && is_mobile && max_show_time_not_exceeded || flagForceGenerate) {
-                                log.i('Creating assistant notifications from [%j] [%j]', PLUGIN_NAME, 2);
-                                assistant.createNotificationAndSetShowAmount(db, valueSet, app_id, data);
-                            }
+
+                            assistant.createNotificationIfRequirementsMet(4, 15, ((no_star_rating || star_rating_not_enabled) && apc.is_mobile && max_show_time_not_exceeded), data, anc);
                         }
 
                         callback(null, null);

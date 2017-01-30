@@ -244,21 +244,24 @@ const assistant = {},
                 const date = new Date();
                 //date.setTimezone(appTimezone);
 
-                const providedInfo = {};
-                providedInfo.appsData = result_apps_data;
-                providedInfo.assistantConfiguration = returnedConfiguration;
-                //set the current time info
-                providedInfo.timeAndDate = {};
-                providedInfo.timeAndDate.date = date;
-                providedInfo.timeAndDate.hour = date.getHours();
-                providedInfo.timeAndDate.dow = date.getDay();
-                if (providedInfo.timeAndDate.dow === 0) providedInfo.timeAndDate.dow = 7;
+                //assistantGlobalCommon (agc) contains values that are passed and used in all notification generators
+                const assistantGlobalCommon = {};
+                assistantGlobalCommon.appsData = result_apps_data;
+                assistantGlobalCommon.assistantConfiguration = returnedConfiguration;
+                //set the current time info based on the apps timezon todo move to a different place
+                assistantGlobalCommon.timeAndDate = {};
+                assistantGlobalCommon.timeAndDate.date = date;
+                assistantGlobalCommon.timeAndDate.hour = date.getHours();
+                assistantGlobalCommon.timeAndDate.dow = date.getDay();
+                if (assistantGlobalCommon.timeAndDate.dow === 0) assistantGlobalCommon.timeAndDate.dow = 7;
 
                 //set if notifications should be generated regardless of their constraints
-                providedInfo.forceGenerateNotifications = flagForceGenerateNotifications;
+                assistantGlobalCommon.forceGenerateNotifications = flagForceGenerateNotifications;
 
                 //set if notifications should be generated ignoring their time and day
-                providedInfo.ignoreDayAndTime = flagIgnoreDayAndTime;
+                assistantGlobalCommon.ignoreDayAndTime = flagIgnoreDayAndTime;
+
+                assistantGlobalCommon.db = countlyDb;
 
                 //go through all plugins and start generating notifications for those that support it
                 const plugins = pluginManager.getPlugins();
@@ -266,7 +269,7 @@ const assistant = {},
                 for (let i = 0, l = plugins.length; i < l; i++) {
                     try {
                         //log.i('Preparing job: ' + plugins[i]);
-                        promises.push(require("../../" + plugins[i] + "/api/assistantJob").prepareNotifications(countlyDb, providedInfo));
+                        promises.push(require("../../" + plugins[i] + "/api/assistantJob").prepareNotifications(countlyDb, assistantGlobalCommon));
                     } catch (ex) {
                         //log.i('Preparation FAILED [%j]', ex);
                     }
@@ -275,6 +278,61 @@ const assistant = {},
                 Promise.all(promises).then(callback, callback);
             });
         });
+    };
+
+    assistant.preparePluginSpecificFields = function(assistantGlobalCommon, appData, PLUGIN_NAME){
+        log.i('Assistant plugin preparePluginSpecificFields: [%j] ', 1);
+        const apc = {};//assistant plugin common
+        apc.agc = assistantGlobalCommon;
+
+        apc.result_apps_data = apc.agc.appsData;
+        apc.dow = apc.agc.timeAndDate.dow;
+        apc.hour = apc.agc.timeAndDate.hour;
+        apc.assistantConfig = apc.agc.assistantConfiguration;
+        apc.flagIgnoreDAT = apc.agc.ignoreDayAndTime;
+        apc.flagForceGenerate = apc.agc.forceGenerateNotifications;
+
+        apc.db = apc.agc.db;
+        apc.appTimezone = appData.timezone;
+
+        apc.app_id = appData._id;
+
+        apc.is_mobile = appData.type == "mobile";//check if app type is mobile or web
+        //todo calculate date and time here
+
+
+        apc.PLUGIN_NAME = PLUGIN_NAME;
+        log.i('Assistant plugin preparePluginSpecificFields: [%j] ', 4);
+        return apc;
+    };
+
+    assistant.prepareNotificationSpecificFields = function(assistantPluginCommon, notificationI18nID, notificationType, notificationSubtype, notificationVersion){
+        const anc = {};//assistant notification common
+        anc.apc = assistantPluginCommon;
+
+        anc.notificationI18nID = notificationI18nID;
+        anc.notificationType = notificationType;
+        anc.notificationSubtype = notificationSubtype;
+        anc.notificationVersion = notificationVersion;
+
+        //todo get rid of this
+        anc.valueSet = assistant.createNotificationValueSet(anc.notificationI18nID, anc.notificationType, anc.notificationSubtype, anc.apc.PLUGIN_NAME, anc.apc.assistantConfig, anc.apc.app_id, anc.notificationVersion);
+
+        return anc;
+    };
+
+    assistant.createNotificationIfRequirementsMet = function (targetDow, targetHour, requirements, data, anc) {
+        var correctTimeAndDate = false;
+
+        if(targetDow >= 0) {
+            correctTimeAndDate = assistant.correct_day_and_time(targetDow, targetHour, anc.apc.dow, anc.apc.hour);
+        } else {
+            correctTimeAndDate = assistant.correct_time(targetHour, anc.apc.hour);
+        }
+
+        if ((anc.apc.flagIgnoreDAT || correctTimeAndDate) && requirements || anc.apc.flagForceGenerate) {
+            assistant.createNotificationAndSetShowAmount(anc.apc.db, anc.valueSet, anc.apc.app_id, data);
+        }
     };
 
 
