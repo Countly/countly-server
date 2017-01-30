@@ -15,6 +15,22 @@ Click on the below image for a 1 minute video introduction to Countly (opens You
 
 [![Countly Community Edition - Video](https://count.ly/wp-content/uploads/2017/01/countly-ce-1min-video.png)](https://youtu.be/htKeh9bsZwA)
 
+
+##What is included? 
+
+This repository includes server-side package of analytics, with following features: 
+
+* Complete dashboard user interface
+* User, application and permission management
+* Read / write APIs
+* Plugin based system
+* Analytics features for mobile, web and desktop
+* Crash reporting for iOS & Android
+* Error reporting for Javascript
+* Push notifications for iOS & Android
+* Email reporting
+
+
 ##What can Countly track? 
 
 [Countly](http://count.ly) supports top-notch devices, including iOS, Android, Windows Phone and web apps. You can find a list of [official and community supported Countly SDK libraries here](https://count.ly/resources/source/download-sdk). Each SDK has its own installation instructions.
