@@ -18,7 +18,7 @@ Click on the below image for a 1 minute video introduction to Countly (opens You
 
 ##What is included? 
 
-This repository includes server-side package of analytics, with following features: 
+This repository includes server-side part of Countly, with following features: 
 
 * Complete dashboard user interface
 * User, application and permission management
