@@ -66,7 +66,7 @@ There are several ways to install Countly:
 
 1. The following command will download and install Countly on your **Ubuntu** or **CentOS** server. 
 
-    wget -qO- http://c.ly/install | bash
+    `wget -qO- http://c.ly/install | bash`
 
 2. If you have a Digital Ocean account, [click here and install on Digital Ocean](http://do.count.ly) with a single click.
 
@@ -107,8 +107,9 @@ And, if you liked Countly, [why not use one of our badges](https://count.ly/bran
 
 * [General product information](http://count.ly/product)
 * [Questions? Ask our forum](http://community.count.ly)
+* [Watch training videos on Youtube](https://www.youtube.com/user/GoCountly)
 * [Slack user? Come chat with us](http://slack.count.ly:3000)
 * [Documentation & API reference guide](http://resources.count.ly)
 * [Comparison of Countly editions](https://count.ly/compare)
 * [White labeling & rebranding options](https://count.ly/whitelabel-analytics/)
-* [Extended list of Enterprise Edition features](https://count.ly/enterprise-edition-features), including crash reports, referral analytics, user profiles, geolocations with push, detailed segmentation, funnels, real-time dashboard and more.
+* [Extended list of Enterprise Edition features](https://count.ly/enterprise-edition-features), including referral analytics, user profiles, geolocations with push, detailed segmentation, funnels, real-time dashboard and more.
