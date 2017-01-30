@@ -24,10 +24,9 @@ This repository includes server-side part of Countly, with following features:
 * User, application and permission management
 * Read / write APIs
 * Plugin based system
-* Analytics features for mobile, web and desktop
-* Crash reporting for iOS & Android
-* Error reporting for Javascript
-* Push notifications for iOS & Android
+* Analytics features for [mobile](http://count.ly/features), [web](http://count.ly/web-analytics) and desktop
+* [Crash reporting](http://count.ly/crash-reports) for iOS & Android and error reporting for Javascript
+* [Push notifications](http://count.ly/push-notifications) for iOS & Android
 * Email reporting
 
 
