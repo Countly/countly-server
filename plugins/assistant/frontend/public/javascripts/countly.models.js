@@ -66,9 +66,14 @@
         var the_notifs = [given_data.notifications, given_data.notifs_saved_private, given_data.notifs_saved_global];
 
         for(var b = 0 ; b < the_notifs.length ; b++) {
+            //pre parse all dates for performance
+            for(var c = 0 ; c < the_notifs[b].length ; c++) {
+                the_notifs[b][c].createdDateUTC = Date.parse(the_notifs[b][c].created_date) / 1000;
+            }
+
             //set the notification lists to be from newer to older
             the_notifs[b].sort(function (x, y) {
-                return x.created_date - y.created_date;
+                return y.createdDateUTC - x.createdDateUTC;
             });
 
             for (var a = 0; a < the_notifs[b].length; a++) {

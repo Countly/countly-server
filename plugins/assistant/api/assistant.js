@@ -4,7 +4,7 @@ const assistant = {},
     log = require('../../../api/utils/log.js')('assistant:module'),
     fetch = require('../../../api/parts/data/fetch.js'),
     pluginManager = require('../../pluginManager.js'),
-    Promise = require("bluebird"),
+    PromiseB = require("bluebird"),
     time = require('time')(Date),
     async = require("async");
 
@@ -275,7 +275,7 @@ const assistant = {},
                     }
                 }
 
-                Promise.all(promises).then(callback, callback);
+                PromiseB.all(promises).then(callback, callback);
             });
         });
     };

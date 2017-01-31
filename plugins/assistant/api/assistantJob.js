@@ -5,8 +5,10 @@ const assistantJob = {},
     fetch = require('../../../api/parts/data/fetch.js'),
     async = require("async"),
     countlySession = require('../../../api/lib/countly.session.js'),
+    countlyCommon = require('../../../api/lib/countly.common.js'),
     assistant = require("./assistant.js"),
-    parser = require('rss-parser');
+    parser = require('rss-parser'),
+    underscore = require('underscore');;
 
 (function (assistantJob) {
     const PLUGIN_NAME = "assistant-base";
@@ -129,7 +131,7 @@ const assistantJob = {},
                                 assistant.createNotificationIfRequirementsMet(4, 16, (enough_active_users && enough_active_user_change), data, anc);
                             }
 
-                            { // (2.11) session duration bow positive
+                            { // (2.5) session duration bow positive
                                 const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.avg-session-duration-bow-pos", assistant.NOTIF_TYPE_INSIGHTS, 5, NOTIFICATION_VERSION);
                                 const enough_active_users = retSession.total_sessions.total > 100;//active users > 20
                                 const val_current_period = retSession.avg_time.total;
@@ -141,7 +143,7 @@ const assistantJob = {},
                                 assistant.createNotificationIfRequirementsMet(4, 16, (enough_active_users && enough_session_duration_change), data, anc);
                             }
                             //todo iespējams gan pozitīvam, gan negatīvam variantam jāiedod tas pats id
-                            { // (2.12) session duration bow negative
+                            { // (2.6) session duration bow negative
                                 const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.avg-session-duration-bow-neg", assistant.NOTIF_TYPE_INSIGHTS, 6, NOTIFICATION_VERSION);
                                 const enough_active_users = retSession.total_sessions.total > 100;//active users > 20
                                 const val_current_period = parseFloat(retSession.avg_time.total);
@@ -154,8 +156,7 @@ const assistantJob = {},
                                 assistant.createNotificationIfRequirementsMet(4, 16, (enough_active_users && enough_session_duration_change), data, anc);
                             }
 
-                            {
-                                const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.custom-event-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 3, NOTIFICATION_VERSION);
+                            { // (2.7) top install sources, (2.8) top referrals
                                 const hours_24 = 1000*60*60*24;
                                 const nowTime = 1485547643000;
 
@@ -170,7 +171,7 @@ const assistantJob = {},
                                     //log.i('Assistant plugin doing steps: [%j] [%j] [%j] [%j]', 12, params.app_id, app_id, metricData);
 
                                     metricData = metricData.filter(function (x) {
-                                        return x.t > 0;
+                                        return x.t >= 50;
                                     });
                                     metricData.sort(function (x, y) {
                                         return y.t - x.t;
@@ -203,10 +204,86 @@ const assistantJob = {},
                                 });
                             }
 
+                            { // (2.9) session duration bow negative
+                                const paramCopy = {};
+                                paramCopy.api_key = params.api_key;
+                                paramCopy.app_id = params.app_id;
+                                paramCopy.appTimezone = params.appTimezone;
+                                paramCopy.qstring = {};
+                                paramCopy.qstring.period = "7days";
+                                const queryMetric = "views";
+                                paramCopy.qstring.method = queryMetric;
+
+                                countlyCommon.setPeriod(params.qstring.period);
+                                fetch.getTimeObjForEvents("app_viewdata"+paramCopy.app_id, paramCopy, function(doc){
+                                    var clearMetricObject = function (obj) {
+                                        if (obj) {
+                                            if (!obj["u"]) obj["u"] = 0;
+                                            if (!obj["t"]) obj["t"] = 0;
+                                            if (!obj["s"]) obj["s"] = 0;
+                                            if (!obj["e"]) obj["e"] = 0;
+                                            if (!obj["b"]) obj["b"] = 0;
+                                            if (!obj["d"]) obj["d"] = 0;
+                                            if (!obj["n"]) obj["n"] = 0;
+                                        }
+                                        else {
+                                            obj = {"u":0, "t":0, "s":0, "e":0, "b":0, "d":0, "n":0};
+                                        }
+                                        return obj;
+                                    };
+
+                                    if(!underscore.isEmpty(doc)) {
+                                        var metricData = countlyCommon.extractMetric(doc, doc['meta'][queryMetric], clearMetricObject, [
+                                            {
+                                                name: queryMetric,
+                                                func: function (rangeArr, dataObj) {
+                                                    return rangeArr;
+                                                }
+                                            },
+                                            {"name": "u"},//total users
+                                            {"name": "t"},//total visits
+                                            {"name": "s"},//landings (page entries)
+                                            {"name": "e"},//exits (page exits)
+                                            {"name": "b"},//bounce
+                                            {"name": "d"},//duration spent seconds
+                                            {"name": "n"} //new users
+                                        ]);
+
+                                        const enough_pages = metricData.length >= 5;
+                                        if (enough_pages) {
+                                            metricData.sort(function (x, y) {
+                                                return y.t - x.t;
+                                            });
+
+                                            //set install source
+                                            const data = [metricData[0]._id, metricData[0].t, metricData[1]._id, metricData[1].t, metricData[2]._id, metricData[2].t, {}, {}, {}];
+
+                                            metricData.sort(function (x, y) {
+                                                return y.e - x.e;
+                                            });
+
+                                            //set exit sources
+                                            data[6] = metricData[0]._id;
+                                            data[7] = metricData[0].e;
+                                            data[8] = metricData[1]._id;
+                                            data[9] = metricData[1].e;
+                                            data[10] = metricData[2]._id;
+                                            data[11] = metricData[2].e;
+
+                                            const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.view-metrics", assistant.NOTIF_TYPE_INSIGHTS, 9, NOTIFICATION_VERSION);
+                                            assistant.createNotificationIfRequirementsMet(2, 15, (enough_pages && !apc.is_mobile), data, anc);
+                                        }
+
+                                        log.i('Assistant plugin YAAY data');
+                                    }
+                                });
+                            }
+
                             //log.i('Assistant plugin doing steps BIG: [%j] ', 20);
                             // (3) generate announcment notifications
 
                             //todo combine all feed readers
+                            //todo do feed reading once for all apps to get rid of timeouts
                             //todo improve feed period selection so that it is possible to show the event immediate and not once per day
                              // (3.1) blog page
 
@@ -215,58 +292,74 @@ const assistantJob = {},
 
                             parser.parseURL('https://medium.com/feed/countly', function(err, parsed) {
                                 //log.i(parsed.feed.title);
-                                parsed.feed.entries.forEach(function(entry) {
-                                    const eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
+                                if(!underscore.isUndefined(parsed)) {
+                                    parsed.feed.entries.forEach(function (entry) {
+                                        const eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
 
-                                    const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.announcement-blog-post", assistant.NOTIF_TYPE_ANNOUNCEMENTS, 1, NOTIFICATION_VERSION);
-                                    const blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
-                                    const data = [entry.title, entry.link];
+                                        const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.announcement-blog-post", assistant.NOTIF_TYPE_ANNOUNCEMENTS, 1, NOTIFICATION_VERSION);
+                                        const blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
+                                        const data = [entry.title, entry.link];
 
-                                    assistant.createNotificationIfRequirementsMet(-1, 15, (blog_post_ready), data, anc);
-                                });
+                                        assistant.createNotificationIfRequirementsMet(-1, 15, (blog_post_ready), data, anc);
+                                    });
+                                } else {
+                                    log.i('Assistant plugin, feer reader returned undegined!!!!! url: [%j] error: [%j] ', 'https://medium.com/feed/countly', err);
+                                }
                             });
 
                             log.i('Assistant plugin stuffo: [%j] ', 8);
                             // (3.2) New iOS SDK release
                             parser.parseURL('https://github.com/countly/countly-sdk-ios/releases.atom', function(err, parsed) {
                                 //log.i(parsed.feed.title);
-                                parsed.feed.entries.forEach(function(entry) {
-                                    const eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
+                                if(!underscore.isUndefined(parsed)) {
+                                    parsed.feed.entries.forEach(function (entry) {
+                                        const eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
 
-                                    const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.announcement-ios-release", assistant.NOTIF_TYPE_ANNOUNCEMENTS, 2, NOTIFICATION_VERSION);
-                                    const blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
-                                    const data = [entry.title, entry.link];
+                                        const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.announcement-ios-release", assistant.NOTIF_TYPE_ANNOUNCEMENTS, 2, NOTIFICATION_VERSION);
+                                        const blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
+                                        const data = [entry.title, entry.link];
 
-                                    assistant.createNotificationIfRequirementsMet(-1, 15, (blog_post_ready), data, anc);
-                                });
+                                        assistant.createNotificationIfRequirementsMet(-1, 15, (blog_post_ready), data, anc);
+                                    });
+                                } else {
+                                    log.i('Assistant plugin, feer reader returned undegined!!!!! url: [%j] error: [%j] ', 'https://github.com/countly/countly-sdk-ios/releases.atom', err);
+                                }
                             });
 
                             // (3.3) New Android SDK release
                             parser.parseURL('https://github.com/countly/countly-sdk-android/releases.atom', function(err, parsed) {
                                 //log.i(parsed.feed.title);
-                                parsed.feed.entries.forEach(function(entry) {
-                                    const eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
+                                if(!underscore.isUndefined(parsed)) {
+                                    parsed.feed.entries.forEach(function (entry) {
+                                        const eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
 
-                                    const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.announcement-android-release", assistant.NOTIF_TYPE_ANNOUNCEMENTS, 3, NOTIFICATION_VERSION);
-                                    const blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
-                                    const data = [entry.title, entry.link];
+                                        const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.announcement-android-release", assistant.NOTIF_TYPE_ANNOUNCEMENTS, 3, NOTIFICATION_VERSION);
+                                        const blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
+                                        const data = [entry.title, entry.link];
 
-                                    assistant.createNotificationIfRequirementsMet(-1, 15, (blog_post_ready), data, anc);
-                                });
+                                        assistant.createNotificationIfRequirementsMet(-1, 15, (blog_post_ready), data, anc);
+                                    });
+                                } else {
+                                    log.i('Assistant plugin, feer reader returned undegined!!!!! url: [%j] error: [%j] ', 'https://github.com/countly/countly-sdk-android/releases.atom', err);
+                                }
                             });
 
                             // (3.3) New community server release
                             parser.parseURL('https://github.com/Countly/countly-server/releases.atom', function(err, parsed) {
                                 //log.i(parsed.feed.title);
-                                parsed.feed.entries.forEach(function(entry) {
-                                    const eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
+                                if(!underscore.isUndefined(parsed)) {
+                                    parsed.feed.entries.forEach(function (entry) {
+                                        const eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
 
-                                    const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.announcement-community-server-release", assistant.NOTIF_TYPE_ANNOUNCEMENTS, 4, NOTIFICATION_VERSION);
-                                    const blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
-                                    const data = [entry.title, entry.link];
+                                        const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.announcement-community-server-release", assistant.NOTIF_TYPE_ANNOUNCEMENTS, 4, NOTIFICATION_VERSION);
+                                        const blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
+                                        const data = [entry.title, entry.link];
 
-                                    assistant.createNotificationIfRequirementsMet(-1, 15, (blog_post_ready), data, anc);
-                                });
+                                        assistant.createNotificationIfRequirementsMet(-1, 15, (blog_post_ready), data, anc);
+                                    });
+                                } else {
+                                    log.i('Assistant plugin, feer reader returned undegined!!!!! url: [%j] error: [%j] ', 'https://github.com/Countly/countly-server/releases.atom', err);
+                                }
                             });
                             log.i('Assistant plugin stuffo: [%j] ', 9);
                             callback(null, null);
