@@ -77,7 +77,7 @@
             "avg-duration-per-session": function(tmp_x){return (tmp_x["t"] == 0) ? 0 : (tmp_x["d"] / tmp_x["t"]);},
             "avg-events": function(tmp_x){return (tmp_x["u"] == 0) ? 0 : (tmp_x["e"] / tmp_x["u"]);}
         }, countlySession.clearObject);
-        console.log(JSON.stringify(sparkLines));
+        
         for(var i in sparkLines){
             ret[i].sparkline = sparkLines[i];
         }
