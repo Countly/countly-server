@@ -1,3 +1,9 @@
+/**
+* Module for some common utility functions and references
+* @module api/utils/common
+*/
+
+/** @lends module:api/utils/common */
 var common = {},
     moment = require('moment'),
     time = require('time')(Date),
@@ -40,9 +46,19 @@ var common = {},
         }		
         return value;		
     }
-
+    /**
+    * Logger object for creating module specific logging
+    * @type {object} 
+    * @example
+    * var log = common.log('myplugin:api');
+    * log.i('myPlugin got a request: %j', params.qstring);
+    */
     common.log = logger;
 
+    /**
+    * Mapping some common property names from longer understandable to shorter representation stored in database
+    * @type {object} 
+    */
     common.dbMap = {
         'events': 'e',
         'total': 't',
@@ -57,6 +73,10 @@ var common = {},
         'count': 'c'
     };
 
+    /**
+    * Mapping some common user property names from longer understandable to shorter representation stored in database
+    * @type {object} 
+    */
     common.dbUserMap = {
         'device_id': 'did',
         'user_id' : 'uid',
@@ -80,6 +100,10 @@ var common = {},
         'resolution': 'r'
     };
 
+    /**
+    * Mapping some common event property names from longer understandable to shorter representation stored in database
+    * @type {object} 
+    */
     common.dbEventMap = {
         'user_properties':'up',
         'timestamp':'ts',
@@ -90,14 +114,35 @@ var common = {},
         'previous_events': 'pe'
     };
 
+    /**
+    * Default {@link countlyConfig} object for API server
+    * @type {object} 
+    */
     common.config = countlyConfig;
 
+    /**
+    * Reference to time module
+    * @type {object} 
+    */
     common.time = time;
 
+    /**
+    * Reference to momentjs
+    * @type {object} 
+    */
     common.moment = moment;
 
+    /**
+    * Reference to crypto module
+    * @type {object} 
+    */
     common.crypto = crypto;
     
+    /**
+    * Operating syste/platform mappings from what can be passed in metrics to shorter representations 
+    * stored in db as prefix to OS segmented values
+    * @type {object} 
+    */
     common.os_mapping = {
         "unknown":"unk",
         "undefined":"unk",
@@ -119,6 +164,10 @@ var common = {},
         "brew":"brew"
     };
     
+    /**
+    * Whole base64 alphabet for fetching splitted documents
+    * @type {object} 
+    */
     common.base64 = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","+","/"];
 
     common.dbPromise = function() {
@@ -142,6 +191,15 @@ var common = {},
         });
     };
 
+    /**
+    * Fetches nested property values from an obj.
+    * @param {object} obj - standard countly metric object
+    * @param {string} desc - dot separate path to fetch from object
+    * @returns {object} fetched object from provided path
+    * @example
+    * //outputs {"u":20,"t":20,"n":5}
+    * common.getDescendantProp({"2017":{"1":{"2":{"u":20,"t":20,"n":5}}}}, "2017.1.2");
+    */
     common.getDescendantProp = function (obj, desc) {
         desc = String(desc);
 
@@ -155,10 +213,31 @@ var common = {},
         return obj;
     };
 
+    /**
+    * Checks if provided value could be converted to a number, 
+    * even if current type is other, as string, as example value "42"
+    * @param {any} n - value to check if it can be converted to number
+    * @returns {boolean} true if can be a number, false if can't be a number
+    * @example
+    * common.isNumber(1) //outputs true
+    * common.isNumber("2") //outputs true
+    * common.isNumber("test") //outputs false
+    */
     common.isNumber = function (n) {
         return !isNaN(parseFloat(n)) && isFinite(n);
     };
     
+    /**
+    * This default Countly behavior of type conversion for storing proeprties accepted through API requests
+    * dealing with numbers as strings and too long numbers
+    * @param {any} value - value to convert to usable type
+    * @returns {varies} converted value
+    * @example
+    * common.convertToType(1) //outputs 1
+    * common.convertToType("2") //outputs 2
+    * common.convertToType("test") //outputs "test"
+    * common.convertToType("12345678901234567890") //outputs "12345678901234567890"
+    */
     common.convertToType = function(value){
         //handle array values
         if(Array.isArray(value)){
@@ -186,6 +265,15 @@ var common = {},
         }
     }
 
+    /**
+    * Safe division between numbers providing 0 as result in cases when dividing by 0
+    * @param {number} dividend - number which to divide
+    * @param {number} divisor - number by which to divide
+    * @returns {number} result of division
+    * @example
+    * //outputs 0
+    * common.safeDivision(100, 0);
+    */
     common.safeDivision = function(dividend, divisor) {
         var tmpAvgVal;
         tmpAvgVal = dividend / divisor;
@@ -195,6 +283,15 @@ var common = {},
         return tmpAvgVal;
     }
 
+    /**
+    * Pad number with specified character from left to specified length
+    * @param {number} number - number to pad
+    * @param {number} width - pad to what length in symbols
+    * @returns {string} padded number
+    * @example
+    * //outputs 0012
+    * common.zeroFill(12, 4, "0");
+    */
     common.zeroFill = function(number, width) {
         width -= number.toString().length;
 
@@ -205,6 +302,12 @@ var common = {},
         return number + ""; // always return a string
     };
 
+    /**
+    * Add item or array to existing array only if values are not already in original array
+    * @param {array} arr - original array where to add unique elements
+    * @param {string|number|array} item - item to add or array to merge
+    * @returns {array} array with unique values
+    */
     common.arrayAddUniq = function (arr, item) {
         if (!arr) {
             arr = [];
@@ -223,16 +326,36 @@ var common = {},
         }
     };
 
+    /**
+    * Create HMAC sha1 hash from provided value and optional salt
+    * @param {string} str - value to hash
+    * @param {string=} addSalt - optional salt, uses ms timestamp by default
+    * @returns {string} HMAC sha1 hash
+    */
     common.sha1Hash = function (str, addSalt) {
         var salt = (addSalt) ? new Date().getTime() : '';
         return crypto.createHmac('sha1', salt + '').update(str + '').digest('hex');
     };
 
+    /**
+    * Create MD5 hash from provided value
+    * @param {string} str - value to hash
+    * @returns {string} MD5 hash
+    */
     common.md5Hash = function (str) {
         return crypto.createHash('md5').update(str + '').digest('hex');
     };
 
-    // Creates a time object in the format object["2012.7.20.property"] = increment.
+    /**
+    * Creates a time object in the format object["2012.7.20.property"] = increment. 
+    * Usualy used when filling up Countly metric model data
+    * @param {object} params - {@link params} object
+    * @param {object} object - object to fill
+    * @param {string} property - meric value or segment or property to fill/increment
+    * @param {number=} increment - by how much to increments, default is 1
+    * @example
+    * neds example
+    */
     common.fillTimeObject = function (params, object, property, increment) {
         var increment = (increment) ? increment : 1,
             timeObj = params.time;
