@@ -45,51 +45,6 @@
     * @type {string} 
     */
     countlyCommon.BROWSER_LANG_SHORT = countlyCommon.BROWSER_LANG.split("-")[0];
-    /**
-    * Currently selected period
-    * @property {array=} currentPeriodArr - array with ticks for current period (available only for special periods), example ["2016.12.22","2016.12.23","2016.12.24", ...]
-    * @property {array=} previousPeriodArr - array with ticks for previous period (available only for special periods), example ["2016.12.22","2016.12.23","2016.12.24", ...]
-    * @property {string} dateString - date format to use when outputting date in graphs, example D MMM, YYYY
-    * @property {boolean} isSpecialPeriod - true if current period is special period, false if it is not
-    * @property {number} daysInPeriod - amount of full days in selected period, example 30
-    * @property {number} numberOfDays - number of days selected period consists of, example hour period has 1 day
-    * @property {boolean} periodContainsToday - true if period contains today, false if not
-    * @property {array} uniquePeriodArr - array with ticks for current period which contains data for unique values, like unique users, example ["2016.12.22","2016.w52","2016.12.30", ...]
-    * @property {array} uniquePeriodCheckArr - array with ticks for higher buckets to current period unique value estimation, example ["2016.w51","2016.w52","2016.w53","2017.1",...]
-    * @property {array} previousUniquePeriodArr - array with ticks for previous period which contains data for unique values, like unique users, example ["2016.12.22","2016.w52","2016.12.30"]
-    * @property {array} previousUniquePeriodCheckArr - array with ticks for higher buckets to previous period unique value estimation, example ["2016.w47","2016.w48","2016.12"]
-    * @example <caption>Special period object (7days)</caption>
-    *    {
-    *        "currentPeriodArr":["2017.1.14","2017.1.15","2017.1.16","2017.1.17","2017.1.18","2017.1.19","2017.1.20"],
-    *        "previousPeriodArr":["2017.1.7","2017.1.8","2017.1.9","2017.1.10","2017.1.11","2017.1.12","2017.1.13"],
-    *        "isSpecialPeriod":true,
-    *        "dateString":"D MMM",
-    *        "daysInPeriod":7,
-    *        "numberOfDays":7,
-    *        "uniquePeriodArr":["2017.1.14","2017.w3"],
-    *        "uniquePeriodCheckArr":["2017.w2","2017.w3"],
-    *        "previousUniquePeriodArr":["2017.1.7","2017.1.8","2017.1.9","2017.1.10","2017.1.11","2017.1.12","2017.1.13"],
-    *        "previousUniquePeriodCheckArr":["2017.w1","2017.w2"],
-    *        "periodContainsToday":true
-    *    }
-    * @example <caption>Simple period object (today period - hour)</caption>
-    *    {
-    *        "activePeriod":"2017.1.20",
-    *        "periodMax":23,
-    *        "periodMin":0,
-    *        "previousPeriod":"2017.1.19",
-    *        "isSpecialPeriod":false,
-    *        "dateString":"HH:mm",
-    *        "daysInPeriod":0,
-    *        "numberOfDays":1,
-    *        "uniquePeriodArr":[],
-    *        "uniquePeriodCheckArr":[],
-    *        "previousUniquePeriodArr":[],
-    *        "previousUniquePeriodCheckArr":[],
-    *        "periodContainsToday":true
-    *    }
-    */
-    countlyCommon.periodObj = calculatePeriodObj();
 
     if (store.get("countly_active_app")) {
         if (countlyGlobal['apps'][store.get("countly_active_app")]) {
@@ -2617,7 +2572,7 @@
             tmpDate.setHours(0,0,0,0);
 
             _period[1] = tmpDate.getTime();
-            _period[1] -= getOffsetCorrectionForTimestamp(_period[1]);
+            _period[1] -= countlyCommon.getOffsetCorrectionForTimestamp(_period[1]);
 
             // One day is selected from the datepicker
             if (_period[0] == _period[1]) {
@@ -3064,5 +3019,51 @@
         }
         return __months;
     };
+    
+    /**
+    * Currently selected period
+    * @property {array=} currentPeriodArr - array with ticks for current period (available only for special periods), example ["2016.12.22","2016.12.23","2016.12.24", ...]
+    * @property {array=} previousPeriodArr - array with ticks for previous period (available only for special periods), example ["2016.12.22","2016.12.23","2016.12.24", ...]
+    * @property {string} dateString - date format to use when outputting date in graphs, example D MMM, YYYY
+    * @property {boolean} isSpecialPeriod - true if current period is special period, false if it is not
+    * @property {number} daysInPeriod - amount of full days in selected period, example 30
+    * @property {number} numberOfDays - number of days selected period consists of, example hour period has 1 day
+    * @property {boolean} periodContainsToday - true if period contains today, false if not
+    * @property {array} uniquePeriodArr - array with ticks for current period which contains data for unique values, like unique users, example ["2016.12.22","2016.w52","2016.12.30", ...]
+    * @property {array} uniquePeriodCheckArr - array with ticks for higher buckets to current period unique value estimation, example ["2016.w51","2016.w52","2016.w53","2017.1",...]
+    * @property {array} previousUniquePeriodArr - array with ticks for previous period which contains data for unique values, like unique users, example ["2016.12.22","2016.w52","2016.12.30"]
+    * @property {array} previousUniquePeriodCheckArr - array with ticks for higher buckets to previous period unique value estimation, example ["2016.w47","2016.w48","2016.12"]
+    * @example <caption>Special period object (7days)</caption>
+    *    {
+    *        "currentPeriodArr":["2017.1.14","2017.1.15","2017.1.16","2017.1.17","2017.1.18","2017.1.19","2017.1.20"],
+    *        "previousPeriodArr":["2017.1.7","2017.1.8","2017.1.9","2017.1.10","2017.1.11","2017.1.12","2017.1.13"],
+    *        "isSpecialPeriod":true,
+    *        "dateString":"D MMM",
+    *        "daysInPeriod":7,
+    *        "numberOfDays":7,
+    *        "uniquePeriodArr":["2017.1.14","2017.w3"],
+    *        "uniquePeriodCheckArr":["2017.w2","2017.w3"],
+    *        "previousUniquePeriodArr":["2017.1.7","2017.1.8","2017.1.9","2017.1.10","2017.1.11","2017.1.12","2017.1.13"],
+    *        "previousUniquePeriodCheckArr":["2017.w1","2017.w2"],
+    *        "periodContainsToday":true
+    *    }
+    * @example <caption>Simple period object (today period - hour)</caption>
+    *    {
+    *        "activePeriod":"2017.1.20",
+    *        "periodMax":23,
+    *        "periodMin":0,
+    *        "previousPeriod":"2017.1.19",
+    *        "isSpecialPeriod":false,
+    *        "dateString":"HH:mm",
+    *        "daysInPeriod":0,
+    *        "numberOfDays":1,
+    *        "uniquePeriodArr":[],
+    *        "uniquePeriodCheckArr":[],
+    *        "previousUniquePeriodArr":[],
+    *        "previousUniquePeriodCheckArr":[],
+    *        "periodContainsToday":true
+    *    }
+    */
+    countlyCommon.periodObj = calculatePeriodObj();
 
 }(window.countlyCommon = window.countlyCommon || {}, jQuery));
