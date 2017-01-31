@@ -2,7 +2,6 @@ var plugins = require('./plugins.json', 'dont-enclose'),
     pluginsApis = {}, 
     mongo = require('mongoskin'),
     countlyConfig = require('../frontend/express/config', 'dont-enclose'),
-    utils = require('../api/utils/utils.js'),
     fs = require('fs'),
     path = require('path'),
     cp = require('child_process'),
@@ -11,6 +10,7 @@ var plugins = require('./plugins.json', 'dont-enclose'),
     cluster = require('cluster'),
     Promise = require("bluebird"),
     log = require('../api/utils/log.js'),
+    common = require('../api/utils/common.js'),
     logDbRead = log('db:read'),
     logDbWrite = log('db:write'),
     exec = cp.exec;
@@ -582,7 +582,7 @@ var pluginManager = function pluginManager(){
         }
         
         if(config.mongodb.username && config.mongodb.password){
-            dbName = config.mongodb.username + ":" + utils.decrypt(config.mongodb.password) +"@" + dbName;
+            dbName = config.mongodb.username + ":" + common.decrypt(config.mongodb.password) +"@" + dbName;
         }
         
         if(dbName.indexOf('mongodb://') !== 0){
