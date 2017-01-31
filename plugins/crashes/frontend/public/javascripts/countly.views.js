@@ -30,31 +30,31 @@ window.CrashesView = countlyView.extend({
             "usage":[
 				{
 					"title":jQuery.i18n.map["crashes.total"],
-					"data":dashboard.usage['total'],
+					"data":dashboard.usage['cr'],
 					"id":"crash-cr",
                     "help":"crashes.help-total"
 				},
 				{
 					"title":jQuery.i18n.map["crashes.unique"],
-					"data":dashboard.usage['unique'],
+					"data":dashboard.usage['cru'],
 					"id":"crash-cru",
                     "help":"crashes.help-unique"
 				},
 				{
 					"title":jQuery.i18n.map["crashes.nonfatal"]+" "+jQuery.i18n.map["crashes.title"],
-					"data":dashboard.usage['nonfatal'],
+					"data":dashboard.usage['crnf'],
 					"id":"crash-crnf",
                     "help":"crashes.help-nonfatal"
 				},
 				{
 					"title":jQuery.i18n.map["crashes.fatal"]+" "+jQuery.i18n.map["crashes.title"],
-					"data":dashboard.usage['fatal'],
+					"data":dashboard.usage['crf'],
 					"id":"crash-crf",
                     "help":"crashes.help-fatal"
 				}/*,
 				{
 					"title":jQuery.i18n.map["crashes.resolved-users"],
-					"data":dashboard.usage['resolved'],
+					"data":dashboard.usage['crru'],
 					"id":"crash-crru",
                     "help":"crashes.help-resolved-users"
 				}*/
@@ -118,6 +118,9 @@ window.CrashesView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
+            $("#total-user-estimate-ind").on("click", function() {
+                CountlyHelpers.alert(jQuery.i18n.map["common.estimation"], "black");
+            });
 			$("#"+this.filter).addClass("selected").addClass("active");
 			countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
 			this.dtable = $('#crash-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
