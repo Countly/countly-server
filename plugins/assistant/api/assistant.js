@@ -276,6 +276,7 @@ const assistant = {},
         apc.agc = assistantGlobalCommon;
 
         apc.result_apps_data = apc.agc.appsData;
+
         apc.assistantConfig = apc.agc.assistantConfiguration;
         apc.flagIgnoreDAT = apc.agc.ignoreDayAndTime;
         apc.flagForceGenerate = apc.agc.forceGenerateNotifications;

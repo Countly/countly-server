@@ -38,7 +38,7 @@ const assistantJob = {},
                     resolve();
                 });
             } catch (ex) {
-                log.i('Assistant plugin [%j] FAILED!!!!! [%j]', PLUGIN_NAME, ex);
+                log.i('Assistant plugin [%j] FAILED!!!!! [%j]', PLUGIN_NAME, { message: ex.message, stack: ex.stack });
                 resolve();
             }
         });
