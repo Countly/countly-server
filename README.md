@@ -52,7 +52,9 @@ We take security very seriously at Countly. Community Edition code is 100% open 
 
 ##What makes Countly unique? 
 
-Countly is a unique, security-focused and 360-degree analytics approach with several, unique values:
+![header2](http://count.ly/wp-content/uploads/2017/02/github_v4.png)
+
+Countly is a privacy-focused and 360-degree analytics approach with several, unique values:
 
 * Real-time mobile analytics, web analytics and push notifications.
 * Your data, your rules - since you can install Countly on your own server, or let us do the private cloud installations for you.
