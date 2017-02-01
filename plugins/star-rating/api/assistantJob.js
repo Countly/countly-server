@@ -19,7 +19,7 @@ const assistantJob = {},
                     //assistant plugin common fields
                     const apc = assistant.preparePluginSpecificFields(providedInfo, ret_app_data, PLUGIN_NAME);
 
-                    log.i('Creating assistant notifications from [%j] [%j]', PLUGIN_NAME, 1);
+                    //log.i('Creating assistant notifications from [%j] [%j]', PLUGIN_NAME, 1);
                     db.collection('events').findOne({_id: apc.app_id}, {}, function (events_err, events_result) {
                         { //(1.1) Star rating integration
                             const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.star-rating-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 1, NOTIFICATION_VERSION);

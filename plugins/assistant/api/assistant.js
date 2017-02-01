@@ -240,20 +240,10 @@ const assistant = {},
 
                 //log.i("Generate Notifications job, apps DB :" + JSON.stringify(result_apps_data));
 
-                //get current day and time
-                const date = new Date();
-                //date.setTimezone(appTimezone);
-
                 //assistantGlobalCommon (agc) contains values that are passed and used in all notification generators
                 const assistantGlobalCommon = {};
                 assistantGlobalCommon.appsData = result_apps_data;
                 assistantGlobalCommon.assistantConfiguration = returnedConfiguration;
-                //set the current time info based on the apps timezon todo move to a different place
-                assistantGlobalCommon.timeAndDate = {};
-                assistantGlobalCommon.timeAndDate.date = date;
-                assistantGlobalCommon.timeAndDate.hour = date.getHours();
-                assistantGlobalCommon.timeAndDate.dow = date.getDay();
-                if (assistantGlobalCommon.timeAndDate.dow === 0) assistantGlobalCommon.timeAndDate.dow = 7;
 
                 //set if notifications should be generated regardless of their constraints
                 assistantGlobalCommon.forceGenerateNotifications = flagForceGenerateNotifications;
@@ -286,8 +276,6 @@ const assistant = {},
         apc.agc = assistantGlobalCommon;
 
         apc.result_apps_data = apc.agc.appsData;
-        apc.dow = apc.agc.timeAndDate.dow;
-        apc.hour = apc.agc.timeAndDate.hour;
         apc.assistantConfig = apc.agc.assistantConfiguration;
         apc.flagIgnoreDAT = apc.agc.ignoreDayAndTime;
         apc.flagForceGenerate = apc.agc.forceGenerateNotifications;
@@ -298,8 +286,13 @@ const assistant = {},
         apc.app_id = appData._id;
 
         apc.is_mobile = appData.type == "mobile";//check if app type is mobile or web
-        //todo calculate date and time here
 
+        //set the current time info based on the apps timezone
+        apc.dateNow = new Date();//get current day and time
+        apc.dateNow.setTimezone(apc.appTimezone);//todo is this fine?
+        apc.hour = apc.dateNow.getHours();
+        apc.dow = apc.dateNow.getDay();
+        if (apc.dow === 0) apc.dow = 7;
 
         apc.PLUGIN_NAME = PLUGIN_NAME;
         log.i('Assistant plugin preparePluginSpecificFields: [%j] ', 4);
