@@ -254,36 +254,27 @@ const assistantJob = {},
                                             { // (2.9) Page entry and page exit summary
                                                 const data = [];
 
+                                                const sortAndExtract = function (dataHolder, fieldName, metricInfo) {
+                                                    metricInfo.sort(function (x, y) {
+                                                        return y[fieldName] - x[fieldName];
+                                                    });
+                                                    dataHolder.push(metricInfo[0]._id, metricInfo[0][fieldName], metricInfo[1]._id, metricInfo[1][fieldName], metricInfo[2]._id, metricInfo[2][fieldName]);
+                                                };
+
                                                 //set total visits
-                                                metricData.sort(function (x, y) {
-                                                    return y.t - x.t;
-                                                });
-                                                data.push(metricData[0]._id, metricData[0].t, metricData[1]._id, metricData[1].t, metricData[2]._id, metricData[2].t);
+                                                sortAndExtract(data, "t", metricData);
 
                                                 //set entry source
-                                                metricData.sort(function (x, y) {
-                                                    return y.s - x.s;
-                                                });
-                                                data.push(metricData[0]._id, metricData[0].s, metricData[1]._id, metricData[1].s, metricData[2]._id, metricData[2].s);
+                                                sortAndExtract(data, "s", metricData);
 
                                                 //set exit sources
-                                                metricData.sort(function (x, y) {
-                                                    return y.e - x.e;
-                                                });
-                                                data.push(metricData[0]._id, metricData[0].e, metricData[1]._id, metricData[1].e, metricData[2]._id, metricData[2].e);
+                                                sortAndExtract(data, "e", metricData);
 
                                                 //set bounces
-                                                metricData.sort(function (x, y) {
-                                                    return y.b - x.b;
-                                                });
-                                                data.push(metricData[0]._id, metricData[0].b, metricData[1]._id, metricData[1].b, metricData[2]._id, metricData[2].b);
+                                                sortAndExtract(data, "b", metricData);
 
                                                 //set duration
-                                                metricData.sort(function (x, y) {
-                                                    return y.d - x.d;
-                                                });
-                                                data.push(metricData[0]._id, metricData[0].d, metricData[1]._id, metricData[1].d, metricData[2]._id, metricData[2].d);
-
+                                                sortAndExtract(data, "d", metricData);
 
                                                 const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.view-metrics", assistant.NOTIF_TYPE_INSIGHTS, 9, NOTIFICATION_VERSION);
                                                 assistant.createNotificationIfRequirementsMet(2, 15, (enough_pages && !apc.is_mobile), data, anc);

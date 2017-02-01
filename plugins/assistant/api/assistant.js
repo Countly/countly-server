@@ -271,7 +271,7 @@ const assistant = {},
     };
 
     assistant.preparePluginSpecificFields = function(assistantGlobalCommon, appData, PLUGIN_NAME){
-        log.i('Assistant plugin preparePluginSpecificFields: [%j] ', 1);
+        //log.i('Assistant plugin preparePluginSpecificFields: [%j] ', 1);
         const apc = {};//assistant plugin common
         apc.agc = assistantGlobalCommon;
 
@@ -295,7 +295,7 @@ const assistant = {},
         if (apc.dow === 0) apc.dow = 7;
 
         apc.PLUGIN_NAME = PLUGIN_NAME;
-        log.i('Assistant plugin preparePluginSpecificFields: [%j] ', 4);
+        //log.i('Assistant plugin preparePluginSpecificFields: [%j] ', 4);
         return apc;
     };
 
