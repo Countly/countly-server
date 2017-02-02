@@ -109,7 +109,7 @@ countlyModel.create = function (metric, fetchValue) {
     * @returns {object} object with total user data from {@link module:api/parts/data/fetch.getTotalUsersObj}
     */
     countlyMetric.getTotalUsersObj = function(totalUsersObj) {
-        _totalUsersObj = totalUsersObj;
+        return _totalUsersObj;
     };
     
     /**
