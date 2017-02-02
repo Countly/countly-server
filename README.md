@@ -1,10 +1,17 @@
-#Countly [![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Install Countly on DigitalOcean](http://do.count.ly/button.svg?v2)](http://do.count.ly)
 
-* **We're hiring:** Countly is looking for Android SDK developers, full stack devs, devops and growth hackers (remote work). [Click this link for job description](https://count.ly/full-stack-node-js-developer)
+# Countly Analytics [![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Install Countly on DigitalOcean](http://do.count.ly/button.svg?v2)](http://do.count.ly)
+
+<br/>
+
+![header2](http://count.ly/wp-content/uploads/2017/02/github_v4.png)
+
+<br/>
+
+* **We're hiring:** Countly is looking for full stack devs (remote work). [Click this link for job description](https://count.ly/full-stack-node-js-developer)
 * **Slack user?** [Join our Slack community](http://slack.count.ly:3000/)
 * **Questions?** [Ask in our Community forum](http://community.count.ly)
 
-##What's Countly?
+## What's Countly?
 [Countly](http://count.ly) is an innovative, real-time, open source mobile & [web analytics](http://count.ly/web-analytics), [push notifications](http://count.ly/push-notifications) and [crash reporting](http://count.ly/crash-reports) platform powering more than 2500 web sites and 12000 mobile applications. It collects data from mobile phones, tablets, Apple Watch and other internet-connected devices, and visualizes this information to analyze mobile application usage and end-user behavior. 
 
 With the help of [Javascript SDK](http://github.com/countly/countly-sdk-web), Countly is a web analytics platform with features on par with mobile SDKs. For more information about web analytics capabilities, [see this link](http://count.ly/web-analytics).
@@ -15,11 +22,26 @@ Click on the below image for a 1 minute video introduction to Countly (opens You
 
 [![Countly Community Edition - Video](https://count.ly/wp-content/uploads/2017/01/countly-ce-1min-video.png)](https://youtu.be/htKeh9bsZwA)
 
-##What can Countly track? 
+
+## What is included? 
+
+This repository includes server-side part of Countly, with following features: 
+
+* Complete dashboard user interface
+* User, application and permission management
+* Read / write APIs
+* Plugin based system
+* Analytics features for [mobile](http://count.ly/features), [web](http://count.ly/web-analytics) and desktop
+* [Crash reporting](http://count.ly/crash-reports) for iOS & Android and error reporting for Javascript
+* [Push notifications](http://count.ly/push-notifications) for iOS & Android
+* Email reporting
+
+
+## What can Countly track? 
 
 [Countly](http://count.ly) supports top-notch devices, including iOS, Android, Windows Phone and web apps. You can find a list of [official and community supported Countly SDK libraries here](https://count.ly/resources/source/download-sdk). Each SDK has its own installation instructions.
 
-##Built with 
+## Built with 
 
 * **MongoDB** One of the most popular NoSQL databases
 * **Node.js** An open-source, cross-platform JavaScript runtime environment for developing a diverse variety of tools and applications.
@@ -28,13 +50,13 @@ Click on the below image for a 1 minute video introduction to Countly (opens You
 
 Plus lots of [open source libraries](http://resources.count.ly/docs/list-of-open-source-components-in-countly)!
 
-##Security
+## Security
 
 We take security very seriously at Countly. Community Edition code is 100% open source and peer reviewed, to ensure nobody's Countly instance is ever compromised or hacked. If you wish to report a security issue, please email security@count.ly
 
-##What makes Countly unique? 
+## What makes Countly unique? 
 
-Countly is a unique, security-focused and 360-degree analytics approach with several, unique values:
+Countly is a privacy-focused and 360-degree analytics approach with several, unique values:
 
 * Real-time mobile analytics, web analytics and push notifications.
 * Your data, your rules - since you can install Countly on your own server, or let us do the private cloud installations for you.
@@ -43,7 +65,7 @@ Countly is a unique, security-focused and 360-degree analytics approach with sev
 * Tracking more than 2500 web sites and 12000 mobile applications.
 * Collecting more than 60 billion datapoints worlwide.
 
-##Installing & upgrading Countly server
+## Installing & upgrading Countly server
 
 We develop and test Countly on MongoDB, Node.js and Nginx. Installation script only needs a clean, decent Ubuntu/CentOS/RHEL Linux without any services listening to port 80 or 443 (which should also be not blocked), and takes care of every library and software required to be installed on Linux. 
 
@@ -51,7 +73,7 @@ There are several ways to install Countly:
 
 1. The following command will download and install Countly on your **Ubuntu** or **CentOS** server. 
 
-    wget -qO- http://c.ly/install | bash
+    `wget -qO- http://c.ly/install | bash`
 
 2. If you have a Digital Ocean account, [click here and install on Digital Ocean](http://do.count.ly) with a single click.
 
@@ -61,7 +83,7 @@ There are several ways to install Countly:
 
 If you want to upgrade Countly from a previous version, please take a look at [upgrading documentation](resources.count.ly/v1.0/docs/upgrading-countly-server).
 
-##API & Frontend
+## API & Frontend
 
 Countly has a [well defined API](http://resources.count.ly), that reads from or writes to Node.js. Dashboard is built using this API, so it's possible to fetch any kind of information from Node process directly using Countly API. For those who are interested with building their own dashboard; important files are:
 
@@ -70,11 +92,11 @@ Countly has a [well defined API](http://resources.count.ly), that reads from or 
 - `countly.session.js`, responsible for calculating session related metrics and 
 - `api/api.js`, which is Countly write and read API. 
 
-##Extensibility & plugins 
+## Extensibility & plugins 
 
 Countly is extensible with [plugins](http://count.ly/plugins). We suggest [you read this document](http://resources.count.ly/docs/plugins-development-introduction) and start writing your plugin. We support companies with know-how in need to write their own plugins.
 
-##How can I help you with your efforts?
+## How can I help you with your efforts?
 
 1. Fork this repo
 2. Create your feature branch (`git checkout -b my-new-super-feature`)
@@ -88,12 +110,13 @@ And, if you liked Countly, [why not use one of our badges](https://count.ly/bran
 
 ![Light badge](https://count.ly/wp-content/uploads/2014/10/countly_badge_5.png)  ![Dark badge](https://count.ly/wp-content/uploads/2014/10/countly_badge_6.png)
 
-##Links
+## Links
 
 * [General product information](http://count.ly/product)
 * [Questions? Ask our forum](http://community.count.ly)
+* [Watch training videos on Youtube](https://www.youtube.com/user/GoCountly)
 * [Slack user? Come chat with us](http://slack.count.ly:3000)
 * [Documentation & API reference guide](http://resources.count.ly)
 * [Comparison of Countly editions](https://count.ly/compare)
 * [White labeling & rebranding options](https://count.ly/whitelabel-analytics/)
-* [Extended list of Enterprise Edition features](https://count.ly/enterprise-edition-features), including crash reports, referral analytics, user profiles, geolocations with push, detailed segmentation, funnels, real-time dashboard and more.
+* [Extended list of Enterprise Edition features](https://count.ly/enterprise-edition-features), including referral analytics, user profiles, geolocations with push, detailed segmentation, funnels, real-time dashboard and more.
