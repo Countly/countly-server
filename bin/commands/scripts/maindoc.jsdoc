@@ -1,0 +1,13 @@
+/**
+* Browser side related documentation as all common objects and utilities related to browser side development of Countly Frontend can be viewed [here](./browser/index.html)
+* @name Browser Docs
+* @namespace Browser Docs
+* @see [Browser side documentation](./browser/index.html)
+*/
+
+/**
+* API side related documentation as API modules and classes related to API development of Countly server side API can be viewed [here](./api/index.html)
+* @name API Docs
+* @namespace API Docs
+* @see [API side documentation](./api/index.html)
+*/

@@ -4,7 +4,7 @@
         "dictionaries": ["jsdoc","closure"]
     },
     "source": {
-        "includePattern": ".+\\.js$",
+        "includePattern": ".+\\.js(doc|x)?$",
         "excludePattern": "(node_modules/|docs)"
     },
     "plugins": [
@@ -16,16 +16,18 @@
     "opts": {
         "template": "node_modules/docdash",
         "encoding": "utf8",
-        "destination": "docs/",
         "recurse": true,
         "verbose": true
     },
     "templates": {
-        "cleverLinks": false,
-        "monospaceLinks": false
+        "cleverLinks": true,
+        "monospaceLinks": true
     },
     "docdash": {
         "static": true,
-        "sort": false
+        "sort": true,
+        "search": true,
+        "collapse": true,
+        "disqus": ""
     }
 }
