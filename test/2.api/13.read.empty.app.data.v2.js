@@ -57,7 +57,7 @@ describe('Empty app analytics data reading', function(){
 				period.should.have.property("dashboard");
 				var dashboard = period["dashboard"];
 				dashboard.should.have.property("total_sessions", { total: 0, change: 'NA', trend: 'u' });
-				dashboard.should.have.property("total_users", { total: 0, change: 'NA', trend: 'u', is_estimate: true });
+				dashboard.should.have.property("total_users", { total: 0, change: 'NA', trend: 'u', is_estimate: false });
 				dashboard.should.have.property("new_users", { total: 0, change: 'NA', trend: 'u' });
 				dashboard.should.have.property("total_time", { total: '0.0 min', change: 'NA', trend: 'u' });
 				dashboard.should.have.property("avg_time", { total: '0.0 min', change: 'NA', trend: 'u' });
@@ -75,7 +75,7 @@ describe('Empty app analytics data reading', function(){
 				period.should.have.property("dashboard");
 				var dashboard = period["dashboard"];
 				dashboard.should.have.property("total_sessions", { total: 0, change: 'NA', trend: 'u' });
-				dashboard.should.have.property("total_users", { total: 0, change: 'NA', trend: 'u', is_estimate: true });
+				dashboard.should.have.property("total_users", { total: 0, change: 'NA', trend: 'u', is_estimate: false });
 				dashboard.should.have.property("new_users", { total: 0, change: 'NA', trend: 'u' });
 				dashboard.should.have.property("total_time", { total: '0.0 min', change: 'NA', trend: 'u' });
 				dashboard.should.have.property("avg_time", { total: '0.0 min', change: 'NA', trend: 'u' });
