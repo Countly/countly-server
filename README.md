@@ -1,7 +1,7 @@
-![header](http://count.ly/wp-content/uploads/2017/01/1500x500.jpg)
-
 
 #Countly Analytics [![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Install Countly on DigitalOcean](http://do.count.ly/button.svg?v2)](http://do.count.ly)
+
+![header2](http://count.ly/wp-content/uploads/2017/02/github_v4.png)
 
 * **We're hiring:** Countly is looking for full stack devs (remote work). [Click this link for job description](https://count.ly/full-stack-node-js-developer)
 * **Slack user?** [Join our Slack community](http://slack.count.ly:3000/)
@@ -51,8 +51,6 @@ Plus lots of [open source libraries](http://resources.count.ly/docs/list-of-open
 We take security very seriously at Countly. Community Edition code is 100% open source and peer reviewed, to ensure nobody's Countly instance is ever compromised or hacked. If you wish to report a security issue, please email security@count.ly
 
 ##What makes Countly unique? 
-
-![header2](http://count.ly/wp-content/uploads/2017/02/github_v4.png)
 
 Countly is a privacy-focused and 360-degree analytics approach with several, unique values:
 
