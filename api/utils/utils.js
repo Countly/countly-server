@@ -1,3 +1,7 @@
+/**
+* Module for some common utility functions that needs to be separated from {@link module:api/utils/common} either due to circular references or other reasons
+* @module api/utils/utils
+*/
 var crypto = require('crypto'),
     countlyConfig = require('./../config', 'dont-enclose');
     
@@ -5,6 +9,16 @@ if(!countlyConfig.encryption){
     countlyConfig.encryption = {};
 }
 
+/**
+* Encrypt provided value
+* @param {string} text - value to encrypt
+* @param {string=} key - key used for encryption and decryption
+* @param {string=} iv - initialization vector to make encryption more secure
+* @param {string=} algorithm - name of the algorithm to use for encryption. The algorithm is dependent on OpenSSL, examples are 'aes192', etc. On recent OpenSSL releases, openssl list-cipher-algorithms will display the available cipher algorithms. Default value is aes-256-cbc
+* @param {string=} input_encoding - how encryption input is encoded. Used as output for decrypting. Default utf-8.
+* @param {string=} output_encoding - how encryption output is encoded. Used as input for decrypting. Default hex.
+* @returns {string} encrypted value
+*/
 exports.encrypt = function(text, key, iv, algorithm, input_encoding, output_encoding) {
     var cipher, crypted;
     if(typeof key === "undefined"){
@@ -33,6 +47,16 @@ exports.encrypt = function(text, key, iv, algorithm, input_encoding, output_enco
     return crypted+"[CLY]_true";
 };
 
+/**
+* Decrypt provided value
+* @param {string} crypted - value to decrypt
+* @param {string=} key - key used for encryption and decryption
+* @param {string=} iv - initialization vector used in encryption
+* @param {string=} algorithm - name of the algorithm used in encryption. The algorithm is dependent on OpenSSL, examples are 'aes192', etc. On recent OpenSSL releases, openssl list-cipher-algorithms will display the available cipher algorithms. Default value is aes-256-cbc
+* @param {string=} input_encoding - how decryption input is encoded. Default hex.
+* @param {string=} output_encoding - how decryption output is encoded. Default utf-8.
+* @returns {string} decrypted value
+*/
 exports.decrypt = function(crypted, key, iv, algorithm, input_encoding, output_encoding) {
     if(crypted.lastIndexOf("[CLY]_true") === -1 || crypted.lastIndexOf("[CLY]_true") !== crypted.length - 10){
         return crypted;

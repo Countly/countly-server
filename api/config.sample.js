@@ -103,7 +103,7 @@ var countlyConfig = {
     ignoreProxies:[/*"127.0.0.1"*/],
     
     /**
-    * Default settings to be used for {@link module:api/utils/common.encrypt} and {@link module:api/utils/common.decrypt} functions and for commandline
+    * Default settings to be used for {@link module:api/utils/utils.encrypt} and {@link module:api/utils/utils.decrypt} functions and for commandline
     * @type {object}
     * @property {string} key - key used for encryption and decryption
     * @property {string|Buffer} iv - initialization vector to make encryption more secure
