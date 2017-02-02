@@ -83,77 +83,70 @@ const assistantJob = {},
                             });
 
                             // (2) generate insight notifications
-                            { // (2.1) active users bow positive
-                                const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.active-users-bow-pos", assistant.NOTIF_TYPE_INSIGHTS, 1, NOTIFICATION_VERSION);
-                                const enough_active_users = retSession.total_users.total > 100;//active users > 20
+                            //todo maybe both the positive and negative events should have the same id
+                            { // active users bow
+                                const enough_active_users = retSession.total_users.total > 100;//active users > 100
                                 const val_current_period = retSession.total_users.total;
                                 const change_amount = parseFloat(retSession.total_users.change);
-                                const enough_active_user_change = change_amount >= 10;
                                 const val_previous_period = val_current_period / (change_amount / 100 + 1);
                                 const data = [val_current_period, Math.round(val_previous_period)];
 
-                                assistant.createNotificationIfRequirementsMet(1, 10, (enough_active_users && enough_active_user_change), data, anc);
+                                {// (2.1) active users bow positive
+                                    const enough_active_user_change_positive = change_amount >= 10;
+                                    const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.active-users-bow-pos", assistant.NOTIF_TYPE_INSIGHTS, 1, NOTIFICATION_VERSION);
+                                    assistant.createNotificationIfRequirementsMet(1, 10, (enough_active_users && enough_active_user_change_positive), data, anc);
+                                }
+
+                                {// (2.2) active users bow negative
+                                    const enough_active_user_change_negative = change_amount <= -10;
+                                    const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.active-users-bow-neg", assistant.NOTIF_TYPE_INSIGHTS, 2, NOTIFICATION_VERSION);
+                                    assistant.createNotificationIfRequirementsMet(1, 10, (enough_active_users && enough_active_user_change_negative), data, anc);
+                                }
                             }
 
-                            { // (2.2) active users bow negative
-                                const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.active-users-bow-neg", assistant.NOTIF_TYPE_INSIGHTS, 2, NOTIFICATION_VERSION);
-                                const enough_active_users = retSession.total_users.total > 100;//active users > 20
+                            { // active users eow
+                                const enough_active_users = retSession.total_users.total > 100;//active users > 100
                                 const val_current_period = retSession.total_users.total;
                                 const change_amount = parseFloat(retSession.total_users.change);
-                                const enough_active_user_change = change_amount <= -10;
                                 const val_previous_period = val_current_period / (change_amount / 100 + 1);
                                 const data = [val_current_period, Math.round(val_previous_period)];
 
-                                assistant.createNotificationIfRequirementsMet(1, 10, (enough_active_users && enough_active_user_change), data, anc);
-                            }
-
-                            { // (2.3) active users eow positive
-                                const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.active-users-eow-pos", assistant.NOTIF_TYPE_INSIGHTS, 3, NOTIFICATION_VERSION);
-                                const enough_active_users = retSession.total_users.total > 100;//active users > 20
-                                const val_current_period = retSession.total_users.total;
-                                const change_amount = parseFloat(retSession.total_users.change);
                                 const enough_active_user_change = change_amount >= 10;
-                                const val_previous_period = val_current_period / (change_amount / 100 + 1);
-                                const data = [val_current_period, Math.round(val_previous_period)];
 
                                 assistant.createNotificationIfRequirementsMet(4, 16, (enough_active_users && enough_active_user_change), data, anc);
+
+                                { // (2.3) active users eow positive
+                                    const enough_active_user_change_positive = change_amount >= 10;
+                                    const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.active-users-eow-pos", assistant.NOTIF_TYPE_INSIGHTS, 3, NOTIFICATION_VERSION);
+                                    assistant.createNotificationIfRequirementsMet(4, 16, (enough_active_users && enough_active_user_change_positive), data, anc);
+                                }
+
+                                { // (2.4) active users eow positive
+                                    const enough_active_user_change_negative = change_amount <= -10;
+                                    const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.active-users-eow-neg", assistant.NOTIF_TYPE_INSIGHTS, 4, NOTIFICATION_VERSION);
+                                    assistant.createNotificationIfRequirementsMet(4, 16, (enough_active_users && enough_active_user_change_negative), data, anc);
+                                }
                             }
 
-                            {// (2.4) active users eow positive
-                                const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.active-users-eow-neg", assistant.NOTIF_TYPE_INSIGHTS, 4, NOTIFICATION_VERSION);
-                                const enough_active_users = retSession.total_users.total > 100;//active users > 20
-                                const val_current_period = retSession.total_users.total;
-                                const change_amount = parseFloat(retSession.total_users.change);
-                                const enough_active_user_change = change_amount <= -10;
-                                const val_previous_period = val_current_period / (change_amount / 100 + 1);
-                                const data = [val_current_period, Math.round(val_previous_period)];
-
-                                assistant.createNotificationIfRequirementsMet(4, 16, (enough_active_users && enough_active_user_change), data, anc);
-                            }
-
-                            { // (2.5) session duration bow positive
-                                const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.avg-session-duration-bow-pos", assistant.NOTIF_TYPE_INSIGHTS, 5, NOTIFICATION_VERSION);
+                            { // session duration bow
                                 const enough_active_users = retSession.total_sessions.total > 100;//active users > 20
                                 const val_current_period = retSession.avg_time.total;
+                                if (retSession.avg_time.change === "NA") retSession.avg_time.change = "0";
                                 const change_amount = parseFloat(retSession.avg_time.change);
-                                const enough_session_duration_change = change_amount >= 10;
                                 const val_previous_period = val_current_period / (change_amount / 100 + 1);
                                 const data = [Math.floor(val_current_period), Math.round((val_current_period - Math.floor(val_current_period)) * 60), Math.floor(val_previous_period), Math.round((val_previous_period - Math.floor(val_previous_period)) * 60)];
 
-                                assistant.createNotificationIfRequirementsMet(4, 16, (enough_active_users && enough_session_duration_change), data, anc);
-                            }
-                            //todo iespējams gan pozitīvam, gan negatīvam variantam jāiedod tas pats id
-                            { // (2.6) session duration bow negative
-                                const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.avg-session-duration-bow-neg", assistant.NOTIF_TYPE_INSIGHTS, 6, NOTIFICATION_VERSION);
-                                const enough_active_users = retSession.total_sessions.total > 100;//active users > 20
-                                const val_current_period = parseFloat(retSession.avg_time.total);
-                                if (retSession.avg_time.change === "NA") retSession.avg_time.change = "0";
-                                const change_amount = parseFloat(retSession.avg_time.change);
-                                const enough_session_duration_change = change_amount <= -10;
-                                const val_previous_period = val_current_period / (change_amount / 100 + 1);//todo check the math
-                                const data = [Math.floor(val_current_period), Math.round((val_current_period - Math.floor(val_current_period)) * 60), Math.floor(val_previous_period), Math.round((val_previous_period - Math.floor(val_previous_period)) * 60)];
+                                { // (2.5) session duration bow positive
+                                    const enough_session_duration_change_positive = change_amount >= 10;
+                                    const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.avg-session-duration-bow-pos", assistant.NOTIF_TYPE_INSIGHTS, 5, NOTIFICATION_VERSION);
+                                    assistant.createNotificationIfRequirementsMet(4, 16, (enough_active_users && enough_session_duration_change_positive), data, anc);
+                                }
 
-                                assistant.createNotificationIfRequirementsMet(4, 16, (enough_active_users && enough_session_duration_change), data, anc);
+                                { // (2.6) session duration bow negative
+                                    const enough_session_duration_change_negative = change_amount <= -10;
+                                    const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.avg-session-duration-bow-neg", assistant.NOTIF_TYPE_INSIGHTS, 6, NOTIFICATION_VERSION);
+                                    assistant.createNotificationIfRequirementsMet(4, 16, (enough_active_users && enough_session_duration_change_negative), data, anc);
+                                }
                             }
 
                             { // (2.7) top install sources, (2.8) top referrals
