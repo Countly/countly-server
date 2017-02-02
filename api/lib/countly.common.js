@@ -428,14 +428,12 @@ var countlyCommon = {},
     };
 
     // Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
-    countlyCommon.extractBarData = function (db, rangeArray, clearFunction) {
-
+    countlyCommon.extractBarData = function (db, rangeArray, clearFunction, fetchFunction) {
+        fetchFunction = fetchFunction || function (rangeArr, dataObj) {return rangeArr;};
         var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, [
             {
                 name:"range",
-                func:function (rangeArr, dataObj) {
-                    return rangeArr;
-                }
+                func:fetchFunction
             },
             { "name":"t" }
         ]);
@@ -562,19 +560,19 @@ var countlyCommon = {},
 
                     if (countlyCommon.periodObj.periodMin == 0) {
 						dateString = "YYYY-M-D H:00";
-                        formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"));
+                        formattedDate = moment((activeDate + " " + i + ":00:00").replace(/\./g, "/"), "YYYY/MM/DD HH:mm:ss");
                     } else if (("" + activeDate).indexOf(".") == -1) {
 						dateString = "YYYY-M";
-                        formattedDate = moment((activeDate + "/" + i + "/1").replace(/\./g, "/"));
+                        formattedDate = moment((activeDate + "/" + i + "/1").replace(/\./g, "/"), "YYYY/MM/DD");
                     } else {
 						dateString = "YYYY-M-D";
-                        formattedDate = moment((activeDate + "/" + i).replace(/\./g, "/"));
+                        formattedDate = moment((activeDate + "/" + i).replace(/\./g, "/"), "YYYY/MM/DD");
                     }
 
                     dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i);
                 } else {
 					dateString = "YYYY-M-D";
-                    formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"));
+                    formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"), "YYYY/MM/DD");
                     dataObj = countlyCommon.getDescendantProp(db, activeDateArr[i]);
                 }
 
@@ -794,6 +792,8 @@ var countlyCommon = {},
     };
     
     countlyCommon.timeString = function(timespent){
+        if(timespent.toString().length === 13)
+            timespent = Math.round(timespent/1000);
         var timeSpentString = (timespent.toFixed(1)) + " min";
 
         if (timespent >= 142560) {
@@ -806,7 +806,7 @@ var countlyCommon = {},
         return timeSpentString;
     };
     
-    countlyCommon.getDashboardData = function(data, properties, _periodObj){
+    countlyCommon.getDashboardData = function(data, properties, unique, totalUserOverrideObj){
         function clearObject(obj){
             if (obj) {
                 for(var i = 0; i < properties.length; i++){
@@ -823,20 +823,29 @@ var countlyCommon = {},
             return obj;
         };
 
-        var dataArr = {},
+        var _periodObj = countlyCommon.periodObj,
+            dataArr = {},
             tmp_x,
             tmp_y,
+            tmpUniqObj,
+            tmpPrevUniqObj,
             current = {},
             previous = {},
-            change = {};
-            
+            currentCheck = {},
+            previousCheck = {},
+            sparkLines = {},
+            change = {},
+            isEstimate = false;
+
             for(var i = 0; i < properties.length; i++){
                 current[properties[i]] = 0;
                 previous[properties[i]] = 0;
+                currentCheck[properties[i]] = 0;
+                previousCheck[properties[i]] = 0;
             }
 
         if (_periodObj.isSpecialPeriod) {
-
+            isEstimate = true;
             for (var j = 0; j < (_periodObj.currentPeriodArr.length); j++) {
                 tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[j]);
                 tmp_x = clearObject(tmp_x);
@@ -852,12 +861,40 @@ var countlyCommon = {},
                     previous[properties[i]] += tmp_y[properties[i]];
                 }
             }
+            
+            //recheck unique values with larger buckets
+            for (var j = 0; j < (_periodObj.uniquePeriodCheckArr.length); j++) {
+                tmpUniqObj = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodCheckArr[j]);
+                tmpUniqObj = clearObject(tmpUniqObj);
+                for(var i = 0; i < unique.length; i++){
+                    currentCheck[unique[i]] += tmpUniqObj[unique[i]];
+                }
+            }
+            
+            for (var j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
+                tmpPrevUniqObj = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j]);
+                tmpPrevUniqObj = clearObject(tmpPrevUniqObj);
+                for(var i = 0; i < unique.length; i++){
+                    previousCheck[unique[i]] += tmpPrevUniqObj[unique[i]];
+                }
+            }
+            
+            for(var i = 0; i < unique.length; i++){
+                if (current[unique[i]] > currentCheck[unique[i]]) {
+                    current[unique[i]] = currentCheck[unique[i]];
+                }
+                
+                if (previous[unique[i]] > previousCheck[unique[i]]) {
+                    previous[unique[i]] = previousCheck[unique[i]];
+                }
+            }
+            
         } else {
             tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod);
             tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriod);
             tmp_x = clearObject(tmp_x);
             tmp_y = clearObject(tmp_y);
-            
+
             for(var i = 0; i < properties.length; i++){
                 current[properties[i]] = tmp_x[properties[i]];
                 previous[properties[i]] = tmp_y[properties[i]];
@@ -868,9 +905,23 @@ var countlyCommon = {},
             change[properties[i]] = countlyCommon.getPercentChange(previous[properties[i]], current[properties[i]]);
             dataArr[properties[i]] = {
                 "total":current[properties[i]],
+                "prev-total":previous[properties[i]],
                 "change":change[properties[i]].percent,
-                "trend":change[properties[i]].trend,
+                "trend":change[properties[i]].trend
             };
+            if(unique.indexOf(properties[i]) !== -1){
+                dataArr[properties[i]].isEstimate = isEstimate;
+            }
+        }
+        
+        //check if we can correct data using total users correction
+        if (_periodObj.periodContainsToday && totalUserOverrideObj) {
+            for(var i = 0; i < unique.length; i++){
+                if(totalUserOverrideObj[unique[i]]){
+                    dataArr[unique[i]].total = totalUserOverrideObj[unique[i]].users;
+                    dataArr[unique[i]].isEstimate = false;
+                }
+            }
         }
 
         return dataArr;
@@ -918,7 +969,7 @@ var countlyCommon = {},
                 periodMin = 1;
                 dateString = "MMM";
                 daysInPeriod = parseInt(_currMoment.format("DDD"),10);
-                startTimestamp = moment(_currMoment).utc().month(0).date(1).hours(0).minutes(0).seconds(0).unix();
+                startTimestamp = moment(_currMoment).utc().month(1).date(1).hours(0).minutes(0).seconds(0).unix();
 
                 _currMoment.subtract(daysInPeriod, 'days');
                 for (var i = 0; i < daysInPeriod; i++) {
@@ -1213,6 +1264,81 @@ var countlyCommon = {},
         else
             ts.$lt = ts.$lt.getTime() + ts.$lt.getTimezoneOffset()*60000;
         return ts;
+    };
+    
+    /**
+    * Merge metric data in chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }, just in case if after data transformation of countly standard metric data model, resulting chartData contains duplicated values, as for example converting null, undefined and unknown values to unknown
+    * @param {object} chartData - chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }
+    * @param {string} metric - metric name to merge
+    * @returns {object} chartData object with same metrics summed up
+    * @example <caption>Sample input</caption>
+    *    {"chartData":[
+    *        {"metric":"Test","t":71,"u":62,"n":36},
+    *        {"metric":"Test1","t":66,"u":60,"n":30},
+    *        {"metric":"Test","t":2,"u":3,"n":4}
+    *    ]}
+    * @example <caption>Sample output</caption>
+    *    {"chartData":[
+    *        {"metric":"Test","t":73,"u":65,"n":40},
+    *        {"metric":"Test1","t":66,"u":60,"n":30}
+    *    ]}
+    */
+    countlyCommon.mergeMetricsByName = function(chartData, metric){
+        var uniqueNames = {},
+            data;
+        for(var i = 0; i < chartData.length; i++){
+            data = chartData[i];
+            if(data[metric] && !uniqueNames[data[metric]]){
+                uniqueNames[data[metric]] = data
+            }
+            else{
+                for(var key in data){
+                    if(typeof data[key] == "string")
+                       uniqueNames[data[metric]][key] = data[key];
+                    else if(typeof data[key] == "number"){
+                        if(!uniqueNames[data[metric]][key])
+                            uniqueNames[data[metric]][key] = 0;
+                        uniqueNames[data[metric]][key] += data[key];
+                    }
+                }
+            }
+        }
+
+        return _.values(uniqueNames);
+    };
+    
+    /**
+    * Joined 2 arrays into one removing all duplicated values
+    * @param {array} x - first array
+    * @param {array} y - second array
+    * @returns {array} new array with only unique values from x and y
+    * @example
+    * //outputs [1,2,3]
+    * countlyCommon.union([1,2],[2,3]);
+    */
+    countlyCommon.union = function(x, y) {
+        if (!x) {
+            return y;
+        } else if (!y) {
+            return x;
+        }
+
+        var obj = {};
+        for (var i = x.length-1; i >= 0; -- i) {
+            obj[x[i]] = true;
+        }
+
+        for (var i = y.length-1; i >= 0; -- i) {
+            obj[y[i]] = true;
+        }
+
+        var res = [];
+
+        for (var k in obj) {
+            res.push(k);
+        }
+
+        return res;
     };
 
     function getUniqArray(weeksArray, weekCounts, monthsArray, monthCounts, periodArr) {

@@ -1,10 +1,11 @@
 var fetch = {},
     common = require('./../../utils/common.js'),
     async = require('async'),
-    countlySession = require('../../lib/countly.session.js'),
-    countlyCarrier = require('../../lib/countly.carrier.js'),
-    countlyDeviceDetails = require('../../lib/countly.device.detail.js'),
-    countlyLocation = require('../../lib/countly.location.js'),
+    countlyModel = require('../../lib/countly.model.js'),
+    countlySession = countlyModel.load("session"),
+    countlyCarrier = countlyModel.load("carriers"),
+    countlyDeviceDetails = countlyModel.load("device_details"),
+    countlyLocation = countlyModel.load("countries"),
     countlyCommon = require('../../lib/countly.common.js'),
     moment = require('moment'),
     _ = require('underscore'),
@@ -239,9 +240,9 @@ var fetch = {},
                                     data: {
                                         dashboard: countlySession.getSessionData(),
                                         top: {
-                                            platforms: countlyDeviceDetails.getPlatformBars(),
-                                            resolutions: countlyDeviceDetails.getResolutionBars(),
-                                            carriers: countlyCarrier.getCarrierBars(),
+                                            platforms: countlyDeviceDetails.getBars("os"),
+                                            resolutions: countlyDeviceDetails.getBars("resolutions"),
+                                            carriers: countlyCarrier.getBars(),
                                             users: countlySession.getTopUserBars()
                                         },
                                         period: countlyCommon.getDateRange()
@@ -306,7 +307,7 @@ var fetch = {},
                 ],
                 dataProps = [];
                 dataProps.push(props);
-                return countlyCommon.extractChartData(db, countlySession.clearSessionObject, chartData, dataProps).chartDP[0].data;
+                return countlyCommon.extractChartData(db, countlySession.clearObject, chartData, dataProps).chartDP[0].data;
             }
 
             function setAppId(inAppId) {
@@ -361,10 +362,10 @@ var fetch = {},
 					countlyLocation.setDb(usersDoc || {});
 
                     var output = {
-						platforms: countlyDeviceDetails.getPlatformBars(),
-						resolutions: countlyDeviceDetails.getResolutionBars(),
-						carriers: countlyCarrier.getCarrierBars(),
-						countries: countlyLocation.getLocationBars()
+						platforms: countlyDeviceDetails.getBars("os"),
+						resolutions: countlyDeviceDetails.getBars("resolutions"),
+						carriers: countlyCarrier.getBars(),
+						countries: countlyLocation.getBars()
                     };
 
                     common.returnOutput(params, output);
