@@ -48,6 +48,10 @@ countlySession.getSessionData = function () {
     
     delete ret["events"];
         
+    //delete previous period data
+    for(var i in ret){
+        delete ret[i]["prev-total"];
+    }
     return ret;
 };
 
