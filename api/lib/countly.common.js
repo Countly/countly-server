@@ -910,7 +910,7 @@ var countlyCommon = {},
                 "trend":change[properties[i]].trend
             };
             if(unique.indexOf(properties[i]) !== -1){
-                dataArr[properties[i]].isEstimate = isEstimate;
+                dataArr[properties[i]].is_estimate = isEstimate;
             }
         }
         
@@ -919,7 +919,7 @@ var countlyCommon = {},
             for(var i = 0; i < unique.length; i++){
                 if(totalUserOverrideObj[unique[i]]){
                     dataArr[unique[i]].total = totalUserOverrideObj[unique[i]].users;
-                    dataArr[unique[i]].isEstimate = false;
+                    dataArr[unique[i]].is_estimate = false;
                 }
             }
         }
