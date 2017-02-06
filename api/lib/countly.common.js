@@ -428,7 +428,8 @@ var countlyCommon = {},
     };
 
     // Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
-    countlyCommon.extractBarData = function (db, rangeArray, clearFunction, fetchFunction) {
+    countlyCommon.extractBarData = function (db, rangeArray, clearFunction, fetchFunction, maxItems) {
+        maxItems = maxItems || 3;
         fetchFunction = fetchFunction || function (rangeArr, dataObj) {return rangeArr;};
         var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, [
             {
@@ -442,7 +443,6 @@ var countlyCommon = {},
             rangeTotal = underscore.pluck(rangeData.chartData, 't'),
             barData = [],
             sum = 0,
-            maxItems = 3,
             totalPercent = 0;
 
         rangeTotal.sort(function (a, b) {
@@ -1304,7 +1304,7 @@ var countlyCommon = {},
             }
         }
 
-        return _.values(uniqueNames);
+        return underscore.values(uniqueNames);
     };
     
     /**
@@ -1339,6 +1339,35 @@ var countlyCommon = {},
         }
 
         return res;
+    };
+    
+    /**
+    * Encode value to be passed to db as key, encoding $ symbol to &#36; if it is first and all . (dot) symbols to &#46; in the string
+    * @param {string} str - value to encode
+    * @returns {string} encoded string
+    */
+    countlyCommon.encode = function(str){
+        return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;');
+    };
+    
+    /**
+    * Decode value from db, decoding first &#36; to $ and all &#46; to . (dots). Decodes also url encoded values as &amp;#36;.
+    * @param {string} str - value to decode
+    * @returns {string} decoded string
+    */
+    countlyCommon.decode = function(str){
+        return str.replace(/^&#36;/g, "$").replace(/^&amp;#36;/g, '$').replace(/&#46;/g, '.').replace(/&amp;#46;/g, '.');
+    };
+
+    /**
+    * Decode escaped HTML from db
+    * @param {string} str - value to decode
+    * @returns {string} decoded string
+    */
+    countlyCommon.decodeHtml = function(html) {
+        var txt = document.createElement("textarea");
+        txt.innerHTML = html;
+        return txt.value;
     };
 
     function getUniqArray(weeksArray, weekCounts, monthsArray, monthCounts, periodArr) {

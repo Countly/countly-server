@@ -1,5 +1,5 @@
 var countlyCommon = require('./countly.common.js'),
-    underscore = require('underscore');
+    _ = require('underscore');
 /**
 * This module loads existing model or create one from default module if it does not exist
 * @module api/lib/countly_model
@@ -286,8 +286,8 @@ countlyModel.create = function (metric, fetchValue) {
     * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
     * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
     */
-    countlyMetric.getBars = function (metric) {
-        return countlyCommon.extractBarData(_Db, this.getMeta(metric), this.clearObject, fetchValue);
+    countlyMetric.getBars = function (metric, maxItems) {
+        return countlyCommon.extractBarData(_Db, this.getMeta(metric), this.clearObject, fetchValue, maxItems);
     };
     
     /**
