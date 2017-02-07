@@ -948,6 +948,18 @@ app.post(countlyConfig.path+'/apps/icon', function (req, res, next) {
     });
 });
 
+function validatePassword(password){
+    if(password.length < plugins.getConfig("security").password_min)
+        return "management-users.password.length";
+    if(plugins.getConfig("security").password_char && !/[A-Z]/.test(password))
+        return "management-users.password.has-char";
+    if(plugins.getConfig("security").password_number && !/\d/.test(password))
+        return "management-users.password.has-number";
+    if(plugins.getConfig("security").password_symbol && !/[^A-Za-z\d]/.test(password))
+        return "management-users.password.has-special";
+    return false;
+};
+
 app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
     if (!req.session.uid) {
         res.end();
@@ -978,16 +990,22 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
                             newPassword = sha1Hash(req.body.new_pwd);
     
                         if(newPassword != password){
-                            updatedUser.password = newPassword;
-                            updatedUser.password_changed = Math.round(new Date().getTime()/1000);
-                            countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid), "password":password}, {'$set':updatedUser}, {safe:true}, function (err, result) {
-                                if ( result &&  result.result &&  result.result.ok &&  result.result.nModified > 0 && !err) {
-                                    plugins.callMethod("userSettings", {req:req, res:res, next:next, data:member});
-                                    res.send(updatedUser.password_changed+"");
-                                } else {
-                                    res.send("user-settings.old-password-not-match");
-                                }
-                            });
+                            var result = validatePassword(req.body.new_pwd);
+                            if(result === false){
+                                updatedUser.password = newPassword;
+                                updatedUser.password_changed = Math.round(new Date().getTime()/1000);
+                                countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid), "password":password}, {'$set':updatedUser}, {safe:true}, function (err, result) {
+                                    if ( result &&  result.result &&  result.result.ok &&  result.result.nModified > 0 && !err) {
+                                        plugins.callMethod("userSettings", {req:req, res:res, next:next, data:member});
+                                        res.send(updatedUser.password_changed+"");
+                                    } else {
+                                        res.send("user-settings.old-password-not-match");
+                                    }
+                                });
+                            }
+                            else{
+                                res.send(result);
+                            }
                         }
                         else{
                             res.send("user-settings.password-not-old");
