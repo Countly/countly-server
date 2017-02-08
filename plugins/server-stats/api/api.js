@@ -53,7 +53,7 @@ var plugin = {},
 
             // If the last end_session is received less than 15 seconds ago we will ignore
             // current begin_session request and mark this user as having an ongoing session
-            var lastEndSession = params.app_user[common.dbUserMap['last_end_session_timestamp']];
+            var lastEndSession = params.app_user && params.app_user[common.dbUserMap['last_end_session_timestamp']] || 0;
 
             if (params.qstring.begin_session && !params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < plugins.getConfig("api").session_cooldown) {
                 sessionCount++;
