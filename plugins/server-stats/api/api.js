@@ -160,11 +160,13 @@ var plugin = {},
                     for (var j = 0; j < periodsToFetch.length; j++) {
                         var formattedDate = periodsToFetch[j].replace(":", "-");
 
-                        toReturn[dataPerApp[i]["a"]][formattedDate] = {
-                            "sessions": 0,
-                            "events": 0,
-                            "data-points": 0
-                        };
+                        if (!toReturn[dataPerApp[i]["a"]][formattedDate]) {
+                            toReturn[dataPerApp[i]["a"]][formattedDate] = {
+                                "sessions": 0,
+                                "events": 0,
+                                "data-points": 0
+                            };
+                        }
 
                         if (dataPerApp[i]["m"] == periodsToFetch[j]) {
                             toReturn[dataPerApp[i]["a"]][formattedDate] = {
