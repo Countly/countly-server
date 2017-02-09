@@ -35,7 +35,7 @@ const assistant = {},
         };
 
         db.collection(db_name_notifs).insert(new_notif, function (err_insert, result_insert) {
-            log.i('Assistant module createNotification error: [%j], result: [%j] ', err_insert, result_insert);
+            log.d('Assistant module createNotification error: [%j], result: [%j] ', err_insert, result_insert);
         });
     };
 
@@ -43,7 +43,7 @@ const assistant = {},
         //prepare the function to use in both cases
         const getAppData = function (appList) {
             async.map(appList, function (app_id, callback) {
-                log.i('App id: %s', app_id);
+                log.d('App id: %s', app_id);
 
                 db.collection('apps').findOne({_id: db.ObjectID(app_id)}, {type: 1}, function (err, document) {
                     //todo handle null case
@@ -99,6 +99,8 @@ const assistant = {},
     };
 
     /*
+    transform current and target moment to a minute timestamp and then compare if it's within half of the job schedule interval
+
      th - target time
      ch - current time
      hw - half width
@@ -107,25 +109,30 @@ const assistant = {},
      tt - hw <= ct < tt + hw
      */
     //todo unit test this
-    assistant.correct_day_and_time = function (target_day, target_hour, current_day, current_hour) {
-        const halfWidthHours = (assistant.JOB_SCHEDULE_INTERVAL / 2) / 60;// half of the width/length in hours
-        const hw = halfWidthHours / 24;//half of the width in days
+    assistant.correct_day_and_time = function (target_day, target_hour, current_day, current_hour, current_minutes) {
+        const halfWidthMinutes = assistant.JOB_SCHEDULE_INTERVAL / 2;// half of the width/length in minutes
 
-        const ct = current_day + (current_hour / 24);//current time
-        const tt = target_day + (target_hour / 24);//target time
+        const oneDayInMinutes = 1440;//24 hours in day * 60 minutes in hour 24 * 60 = 1440
 
-        if ((tt - hw <= ct && ct < tt + hw    ) ||
-            (tt - hw - 7 <= ct && ct < tt + hw - 7) ||
-            (tt - hw + 7 <= ct && ct < tt + hw + 7)) {
+        //express current time and target day in minutes
+        const ct = current_day * oneDayInMinutes + current_hour * 60 + current_minutes;//current time
+        const tt = target_day * oneDayInMinutes + target_hour * 60;//target time
+
+        const lowerLimit = tt - halfWidthMinutes;
+        const upperLimit = tt + halfWidthMinutes;
+        const correctionOffset = 10080;//7 days * 1440 minutes in a day, 7 * 1440 = 10080
+
+        if ((lowerLimit <= ct && ct < upperLimit    ) ||
+            (lowerLimit - correctionOffset <= ct && ct < upperLimit - correctionOffset) ||
+            (lowerLimit + correctionOffset <= ct && ct < upperLimit + correctionOffset)) {
             return true
         }
 
         return false;
     };
 
-    //todo unit test this
-    assistant.correct_time = function (target_hour, current_hour) {
-        return assistant.correct_day_and_time(3, target_hour, 3, current_hour);
+    assistant.correct_time = function (target_hour, current_hour, current_minutes) {
+        return assistant.correct_day_and_time(3, target_hour, 3, current_hour, current_minutes);
     };
 
     assistant.changeNotificationSavedStatus = function (do_personal, do_save, notif_id, user_id, db) {
@@ -222,7 +229,7 @@ const assistant = {},
     };
 
     assistant.createNotificationAndSetShowAmount = function (db, valueSet, app_id, data) {
-        log.i('Assistant creating notification for [%j] plugin with i18nID [%j] for App [%j]', valueSet.pluginName, valueSet.i18nID, app_id);
+        log.d('Assistant creating notification for [%j] plugin with i18nID [%j] for App [%j]', valueSet.pluginName, valueSet.i18nID, app_id);
         assistant.createNotification(db, data, valueSet.pluginName, valueSet.type, valueSet.subtype, valueSet.i18nID, app_id);
         assistant.setNotificationShowAmount(db, valueSet, valueSet.showAmount + 1, app_id);
     };
@@ -292,8 +299,10 @@ const assistant = {},
         apc.dateNow = new Date();//get current day and time
         apc.dateNow.setTimezone(apc.appTimezone);//todo is this fine?
         apc.hour = apc.dateNow.getHours();
+        apc.minutes = apc.dateNow.getMinutes();
         apc.dow = apc.dateNow.getDay();
         if (apc.dow === 0) apc.dow = 7;
+        //1 - monday, 2 - tuesday, 3 - wednesday, 4 - thursday, 5 - friday, 6 - saturday, 7 - sunday
 
         apc.PLUGIN_NAME = PLUGIN_NAME;
         //log.i('Assistant plugin preparePluginSpecificFields: [%j] ', 4);
@@ -319,9 +328,9 @@ const assistant = {},
         var correctTimeAndDate = false;
 
         if(targetDow >= 0) {
-            correctTimeAndDate = assistant.correct_day_and_time(targetDow, targetHour, anc.apc.dow, anc.apc.hour);
+            correctTimeAndDate = assistant.correct_day_and_time(targetDow, targetHour, anc.apc.dow, anc.apc.hour, anc.apc.minutes);
         } else {
-            correctTimeAndDate = assistant.correct_time(targetHour, anc.apc.hour);
+            correctTimeAndDate = assistant.correct_time(targetHour, anc.apc.hour, anc.apc.minutes);
         }
 
         if ((anc.apc.flagIgnoreDAT || correctTimeAndDate) && requirements || anc.apc.flagForceGenerate) {

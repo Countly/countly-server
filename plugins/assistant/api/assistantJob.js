@@ -111,10 +111,6 @@ const assistantJob = {},
                                 const val_previous_period = val_current_period / (change_amount / 100 + 1);
                                 const data = [val_current_period, Math.round(val_previous_period)];
 
-                                const enough_active_user_change = change_amount >= 10;
-
-                                assistant.createNotificationIfRequirementsMet(4, 16, (enough_active_users && enough_active_user_change), data, anc);
-
                                 { // (2.3) active users eow positive
                                     const enough_active_user_change_positive = change_amount >= 10;
                                     const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.active-users-eow-pos", assistant.NOTIF_TYPE_INSIGHTS, 3, NOTIFICATION_VERSION);
@@ -296,7 +292,7 @@ const assistantJob = {},
                                             assistant.createNotificationIfRequirementsMet(-1, targetHour, (blog_post_ready), data, anc);
                                         });
                                     } else {
-                                        log.i('Assistant plugin, feed reader returned undefined!!!!! url: [%j] error: [%j] ', feedUrl, err);
+                                        log.w('Assistant plugin, feed reader returned undefined!!!!! url: [%j] error: [%j] ', feedUrl, err);
                                     }
                                 });
                             };
@@ -333,7 +329,7 @@ const assistantJob = {},
                     resolve();
                 });
             } catch (ex) {
-                log.i('Assistant plugin [%j] FAILED!!!!! [%j]', PLUGIN_NAME, { message: ex.message, stack: ex.stack });
+                log.e('Assistant plugin [%j] FAILED!!!!! [%j]', PLUGIN_NAME, { message: ex.message, stack: ex.stack });
                 resolve();
             }
         });

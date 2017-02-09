@@ -30,14 +30,11 @@ const plugin = {},
         log.i('Assistant plugin request: Get All Notifications');
         const validate = ob.validateUserForMgmtReadAPI;
         validate(function (params) {
-            log.i('Assistant plugin request: Get All Notifications ' + 1);
             const member = params.member;
 
             assistant.getNotificationsForUser(common.db, member, api_key, function (err, results) {
-                log.i('Assistant plugin request: Get All Notifications ' + 10);
                 common.returnOutput(params, results);
             });
-            log.i('Assistant plugin request: Get All Notifications ' + 3);
 
         }, params);
         return true;
@@ -169,64 +166,10 @@ const plugin = {},
         //const hours_24 = 1000*60*60*24;
         //const nowTime = 1485547643000;
 
-        //params.qstring.period = "hour";// JSON.stringify([nowTime - hours_24,nowTime]);
-        params.qstring.period = "7days";
-        params.qstring.method = "views";
-        params.app_id = "57cd5afb85e945640bc4eec9";
-        const zeQueryMetric = "views";
-
-        countlyCommon.setPeriod(params.qstring.period);
-        fetch.getTimeObjForEvents("app_viewdata"+params.app_id, params, function(doc){
-            //doc.meta.views.length;//cik daudz periodi trackoti
-
-            var clearMetricObject = function (obj) {
-                if (obj) {
-                    if (!obj["u"]) obj["u"] = 0;
-                    if (!obj["t"]) obj["t"] = 0;
-                    if (!obj["s"]) obj["s"] = 0;
-                    if (!obj["e"]) obj["e"] = 0;
-                    if (!obj["b"]) obj["b"] = 0;
-                    if (!obj["d"]) obj["d"] = 0;
-                    if (!obj["n"]) obj["n"] = 0;
-                }
-                else {
-                    obj = {"u":0, "t":0, "s":0, "e":0, "b":0, "d":0, "n":0};
-                }
-
-                return obj;
-            };
-
-            var data = countlyCommon.extractMetric(doc, doc['meta'][zeQueryMetric], clearMetricObject, [
-                {
-                    name:zeQueryMetric,
-                    func:function (rangeArr, dataObj) {
-                        return rangeArr;
-                    }
-                },
-                { "name":"u" },//total users
-                { "name":"t" },//total visits
-                { "name":"s" },//landings (page entries)
-                { "name":"e" },//exits (page exits)
-                { "name":"b" },//bounce
-                { "name":"d" },//duration spent seconds
-                { "name":"n" } //new users
-            ]);
-
-            log.i('Assistant plugin YAAY data');
-        });
-
-        /*
-        params.qstring.metric = "sources";
-        params.app_id = "57cd5afb85e945640bc4eec9";
-        params.appTimezone = params.appTimezone;
-
-        fetch.getMetric(params, "sources", null, function(data){
-            common.returnMessage(params, 200, "I've got the source! " + JSON.stringify(data));
-        });*/
+        common.returnMessage(params, 200, 'assmagic completed');
 
         return true;
     });
-
 
     plugins.register("/i/rsstest", function (ob) {
         const params = ob.params;
