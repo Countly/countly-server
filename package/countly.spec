@@ -1,19 +1,21 @@
 Name:       countly
 Version:    16.12.2
-Release:    1%{?dist}
-Summary:    countly
-# License text is included in README.md
-License:    MIT
-Group:      System Environment/Libraries
+Release:    2%{?dist}
+
+License:    Modified AGPLv3
+Group:	    Applications/Internet
 URL:        https://github.com/countly/countly-server
+Vendor:     Countly
 Source0:    countly.tar.gz
 Source1:    countly.init
+Packager:   Sergey Alembekov (sa@count.ly)
+Summary:    Countly mobile, web and desktop analytics & marketing platform.
+
 Requires:   nodejs >= 6
 Requires(post): /sbin/chkconfig, /usr/sbin/useradd
 Requires(preun): /sbin/chkconfig, /sbin/service
 Requires(postun): /sbin/service
 Provides: countly
-
 #BuildRequires:  nodejs
 
 #%if 0%{?fedora} >= 19
@@ -23,7 +25,12 @@ ExclusiveArch: %{ix86} x86_64 %{arm}
 #%endif
 
 %description
-countly
+Countly is an open source, enterprise-grade mobile analytics platform.
+It has analytics, marketing, crash & error reporting (web+mobile) and
+other features. Countly collects data from mobile phones, tablets,
+Apple Watch and other internet-connected devices, and visualizes this
+information to analyze mobile application usage and end-user behavior.
+This package includes complete Countly Community Edition.
 
 %prep
 %setup -q -c countly
@@ -54,8 +61,15 @@ cp %{SOURCE1} %{buildroot}%{_initddir}/countly
 %files
 %attr(755, root, root) %{_initddir}/countly
 /opt/countly
+%config /opt/countly/frontend/express/config.js
+%config /opt/countly/api/config.js
+%config /opt/countly/frontend/express/public/javascripts/countly/countly.config.js
+%config /opt/countly/plugins/plugins.json
 
 %changelog
+* Mon Feb 13 2017 Sergey Alembekov <rt@aspirinka.net> - 16.12.2-2
+- cosmetic fixes
+
 * Fri Jan 20 2017 Sergey Alembekov <rt@aspirinka.net> - 16.12.2
 - new release
 
