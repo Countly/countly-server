@@ -8,6 +8,7 @@ URL:        https://github.com/countly/countly-server
 Vendor:     Countly
 Source0:    countly.tar.gz
 Source1:    countly.init
+Patch0:	    centos6.patch
 Packager:   Sergey Alembekov (sa@count.ly)
 Summary:    Countly mobile, web and desktop analytics & marketing platform.
 
@@ -34,6 +35,7 @@ This package includes complete Countly Community Edition.
 
 %prep
 %setup -q -c countly
+%patch0 -p1
 
 %build
 export CXXFLAGS="%{optflags}"
@@ -57,6 +59,7 @@ cp %{SOURCE1} %{buildroot}%{_initddir}/countly
 
 %post
 /sbin/chkconfig --add countly
+bash /opt/countly/bin/scripts/detect.init.sh
 
 %files
 %attr(755, root, root) %{_initddir}/countly
