@@ -97,9 +97,9 @@ var plugin = {},
                     else
                         result.domains = [];
                     common.drillDb.collection(collectionName).findOne( {"_id": "meta"},{_id:0, "sg.type":1, "sg.domain":1} ,function(err,meta2){
-                        if(meta && meta.sg && meta.sg.type)
+                        if(meta2 && meta2.sg && meta2.sg.type)
                             common.arrayAddUniq(result.types, meta2.sg.type.values);
-                        if(meta && meta.sg && meta.sg.domain)
+                        if(meta2 && meta2.sg && meta2.sg.domain)
                             common.arrayAddUniq(result.domains, meta2.sg.domain.values);
                         if (params.qstring.period) {
                             //check if period comes from datapicker
