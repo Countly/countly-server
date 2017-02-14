@@ -48,3 +48,20 @@ index 864db7e..ccb4487 100644
 \ No newline at end of file
 +    service countly status;
 +} 
+diff --git a/bin/config/nginx.conf b/bin/config/nginx.conf
+index 8582207..13a01ce 100644
+--- a/bin/config/nginx.conf
++++ b/bin/config/nginx.conf
+@@ -1,4 +1,4 @@
+-user www-data;
++user nginx;
+ worker_processes 4;
+ worker_rlimit_nofile 30000;
+ pid /var/run/nginx.pid;
+@@ -54,4 +54,4 @@ http {
+ 
+         include /etc/nginx/conf.d/*.conf;
+         include /etc/nginx/sites-enabled/*;
+-}
+\ No newline at end of file
++}
