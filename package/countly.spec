@@ -1,6 +1,6 @@
 Name:       countly
 Version:    16.12.2
-Release:    2%{?dist}
+Release:    3%{?dist}
 
 License:    Modified AGPLv3
 Group:	    Applications/Internet
@@ -18,6 +18,8 @@ Requires(preun): /sbin/chkconfig, /sbin/service
 Requires(postun): /sbin/service
 Provides: countly
 #BuildRequires:  nodejs
+
+AutoReqProv: no
 
 #%if 0%{?fedora} >= 19
 #ExclusiveArch: %{nodejs_arches}
@@ -52,8 +54,10 @@ node bin/scripts/install_plugins
 node_modules/grunt-cli/bin/grunt dist-all
 
 %install
-mkdir -p %{buildroot}/opt/countly
+mkdir -p %{buildroot}/opt/countly %{buildroot}/usr/bin
 cp -r * %{buildroot}/opt/countly/
+ln -s ../../opt/countly/bin/commands/countly.sh  %{buildroot}/usr/bin/countly
+ln -s ../../usr/bin/node  %{buildroot}/usr/bin/nodejs
 mkdir -p %{buildroot}%{_initddir}
 cp %{SOURCE1} %{buildroot}%{_initddir}/countly
 
@@ -61,15 +65,27 @@ cp %{SOURCE1} %{buildroot}%{_initddir}/countly
 /sbin/chkconfig --add countly
 bash /opt/countly/bin/scripts/detect.init.sh
 
+
+%preun
+/etc/init.d/countly stop
+
 %files
 %attr(755, root, root) %{_initddir}/countly
 /opt/countly
+/usr/bin/countly
+/usr/bin/nodejs
 %config /opt/countly/frontend/express/config.js
 %config /opt/countly/api/config.js
 %config /opt/countly/frontend/express/public/javascripts/countly/countly.config.js
 %config /opt/countly/plugins/plugins.json
 
 %changelog
+* Mon Feb 17 2017 Sergey Alembekov <rt@aspirinka.net> - 16.12.2-3
+- add postun section
+- include symlink to files section 
+- nginx config fixed
+- remove unneded zsh dependency
+
 * Mon Feb 13 2017 Sergey Alembekov <rt@aspirinka.net> - 16.12.2-2
 - cosmetic fixes
 
