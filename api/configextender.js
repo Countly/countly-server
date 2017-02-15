@@ -22,12 +22,9 @@ var read = function(config, parser){
     // make paths case-insensitive. Useful while converting from uppercase env
     // vars to camelCase variables.
     tc.paths().forEach(function(path) {
-        var newPath = path.map(function(node) {
-            return node.toLowerCase();
-        });
         // store paths as lowercase with their corresponding actual paths. will be
         // used while updating the value
-        tcKeyMap[newPath.join('_')] = path;
+        tcKeyMap[path.join('_').toLowerCase()] = path;
     });
 
     var ref = process.env;
