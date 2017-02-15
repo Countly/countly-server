@@ -33,10 +33,10 @@ var read = function(config, parser){
         var val = ref[env];
 
         // we only care about env vars starting with "countly"
-        if (!env.startsWith("COUNTLY_")) {
+        if (!env.startsWith('COUNTLY_')) {
             continue;
         }
-        var path = env.split("_");
+        var path = env.split('_');
         if (path.length < 2) {
             continue;
         }
