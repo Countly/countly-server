@@ -108,7 +108,7 @@ countlyModel.create = function (metric, fetchValue) {
     * Get total user object for this metric to use for unique user correction
     * @returns {object} object with total user data from {@link module:api/parts/data/fetch.getTotalUsersObj}
     */
-    countlyMetric.getTotalUsersObj = function(totalUsersObj) {
+    countlyMetric.getTotalUsersObj = function() {
         return _totalUsersObj;
     };
     
@@ -283,11 +283,80 @@ countlyModel.create = function (metric, fetchValue) {
 
     /**
     * Get bar data for metric
-    * @param {string} metric - name of the segment/metric to get data for, by default will use default _name provided on initialization
+    * @param {string} segment - name of the segment to get data for, by default will use default _name provided on initialization
+    * @param {number} maxItems - amount of top items to return
+    * @param {string} metric - name of the to use for ordering and returning
     * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
     */
-    countlyMetric.getBars = function (metric, maxItems) {
-        return countlyCommon.extractBarData(_Db, this.getMeta(metric), this.clearObject, fetchValue, maxItems);
+    countlyMetric.getBars = function (segment, maxItems, metric) {
+        return countlyCommon.extractBarData(_Db, this.getMeta(segment), this.clearObject, fetchValue, maxItems, metric);
+    };
+    
+    /**
+    * Get data for dynamic tables
+    * @param {string} segment - name of the segment to get data for, by default will use default _name provided on initialization
+    * @param {number} maxItems - amount of top items to return
+    * @param {array} metrics - array of metrics to return, will order and cut by first metric
+    * @returns {array} object to use when displaying table 
+    * @example 
+    *{
+    *    cols: [ segment1, count, sum, duration ] 
+    *    rows: [
+    *    [segmentValue1, 15, 10, 10],
+    *    [segmentValue2, 14, 10, 10],
+    *    [segmentValue3, 12, 10, 10]          
+    *    ]
+    *}
+    */
+    countlyMetric.getTableData = function (segment, maxItems, metrics) {
+        metrics = metrics || ["u"];
+        var cols = metrics.slice();
+        cols.unshift(segment || "date");
+        var ret = {
+            cols: cols,
+            rows:[]
+        };
+        var data = this.getData(false, true, segment).chartData;
+        data.sort(function(a, b){
+            return b[cols[1]] - a[cols[1]];
+        });
+        if (data.length < maxItems) {
+            maxItems = data.length;
+        }
+        for(var i = 0; i < maxItems; i++){
+            var ob = [];
+            for(var j = 0; j < cols.length; j++){
+                ob.push(data[i][cols[j]]);
+            }
+            ret.rows.push(ob);
+        }
+        return ret;
+    };
+    
+    /**
+    * Get value of single metric with changes and sparkle lines
+    * @param {string} metric - name of the to use for ordering and returning
+    * @returns {array} object to use when displaying number {value: 123, change: 12, sparkline: [1,2,3,4,5,6,7]}
+    */
+    countlyMetric.getNumber = function (metric) {
+         var data = countlyCommon.getDashboardData(this.getDb(), [metric], [], {}, this.clearObject);
+         var ob = {};
+         ob[metric] = metric;
+         var sparkLines = countlyCommon.getSparklineData(this.getDb(), ob, function(obj){
+            if (obj) {
+                if (!obj[metric]) obj[metric] = 0;
+            }
+            else {
+                obj = {};
+                obj[metric] = 0;
+            }
+    
+            return obj;
+         });
+        for(var i in data){
+            data[i].sparkline = sparkLines[i].split(",").map(function(item){return parseInt(item);});
+        }
+         return data[metric];
     };
     
     /**
