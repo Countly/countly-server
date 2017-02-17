@@ -335,7 +335,7 @@ countlyModel.create = function (metric, fetchValue) {
     
     /**
     * Get value of single metric with changes and sparkle lines
-    * @param {string} metric - name of the to use for ordering and returning
+    * @param {array} metrics - array of metrics to display
     * @returns {array} object to use when displaying number {value: 123, change: 12, sparkline: [1,2,3,4,5,6,7]}
     */
     countlyMetric.getNumber = function (metric) {
@@ -357,6 +357,39 @@ countlyModel.create = function (metric, fetchValue) {
             data[i].sparkline = sparkLines[i].split(",").map(function(item){return parseInt(item);});
         }
          return data[metric];
+    };
+    
+    /**
+    * Get timeline data for higher metrics without segments
+    * @param {string} metric - name of the to use for ordering and returning
+    * @returns {array} object to use when displaying number {value: 123, change: 12, sparkline: [1,2,3,4,5,6,7]}
+    */
+    countlyMetric.getTimelineData = function (metrics) {
+        var dataProps = [];
+        for(var i = 0; i <  metrics.length; i++){
+            dataProps.push({name:metrics[i]});
+        }
+        var data = countlyCommon.extractData(this.getDb(), function(obj){
+            if (obj) {
+                for(var i = 0; i < metrics.length; i++)
+                    if (!obj[metrics[i]]) obj[metrics[i]] = 0;
+            }
+            else {
+                obj = {};
+                for(var i = 0; i < metrics.length; i++)
+                    obj[metrics[i]] = 0;
+            }
+    
+            return obj;
+         }, dataProps);
+        var ret = {};
+        for(var i = 0; i <  data.length; i++){
+            ret[data[i]._id] = {};
+            for(var j = 0; j < metrics.length; j++){
+                ret[data[i]._id][metrics[j]] = data[i][metrics[j]];
+            }
+        }
+        return ret;
     };
     
     /**
