@@ -65,6 +65,14 @@ Countly is a privacy-focused and 360-degree analytics approach with several, uni
 * Tracking more than 2500 web sites and 12000 mobile applications.
 * Collecting more than 60 billion datapoints worlwide.
 
+## Differences between Community Edition & Enterprise Edition
+
+* **Audience:** Community Edition is for product managers, developers and analytics enthusiasts, whereas banks, operators, hospitals and businesses that run the world's leading websites choose Enterprise Edition.
+* **Deployment:** Community Edition deployments are for environments where the information stored is not critical since it does not include professional assistance. You must have a qualified technician. Enterprise Edition is for corporate environments that require availability and reliability where intellectual capital is critical.
+* **Technology:** Community Edition has a number of limitations, including no corporate support for sharding, replica sets or installation.
+* **Guarantee:** Community Edition is on the bleeding edge regarding version upgrades and with no bugfix guarantee. Enterprise Edition has bugfix guarantee, immediate resolution, verified builds, on-site and automatic version upgrades.
+* **Features:** Enterprise Edition has more features compared to Countly, with a focus on end-to-end analytics and marketing platform.
+
 ## Installing & upgrading Countly server
 
 We develop and test Countly on MongoDB, Node.js and Nginx. Installation script only needs a clean, decent Ubuntu/CentOS/RHEL Linux without any services listening to port 80 or 443 (which should also be not blocked), and takes care of every library and software required to be installed on Linux. 
