@@ -497,7 +497,7 @@ var countlyCommon = {},
     };
 
     // Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
-    countlyCommon.extractBarData = function (db, rangeArray, clearFunction, fetchFunction, maxItems, metric) {
+    countlyCommon.extractBarData = function (db, rangeArray, clearFunction, fetchFunction, maxItems, metric, totalUserOverrideObj) {
         metric =  metric || "t";
         maxItems = maxItems || 3;
         fetchFunction = fetchFunction || function (rangeArr, dataObj) {return rangeArr;};
@@ -507,7 +507,7 @@ var countlyCommon = {},
                 func:fetchFunction
             },
             { "name":metric }
-        ]);
+        ], totalUserOverrideObj);
 
         var rangeNames = underscore.pluck(rangeData.chartData, 'range'),
             rangeTotal = underscore.pluck(rangeData.chartData, metric),
@@ -987,8 +987,8 @@ var countlyCommon = {},
         //check if we can correct data using total users correction
         if (_periodObj.periodContainsToday && totalUserOverrideObj) {
             for(var i = 0; i < unique.length; i++){
-                if(totalUserOverrideObj[unique[i]] && typeof totalUserOverrideObj[unique[i]].users !== "undefined"){
-                    dataArr[unique[i]].total = totalUserOverrideObj[unique[i]].users;
+                if(typeof totalUserOverrideObj[unique[i]] !== "undefined" && totalUserOverrideObj[unique[i]]){
+                    dataArr[unique[i]].total = totalUserOverrideObj[unique[i]];
                     dataArr[unique[i]].is_estimate = false;
                 }
             }

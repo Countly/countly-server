@@ -28,7 +28,7 @@ countlySession.getData = function (clean, join, metric) {
 countlySession.getSessionData = function () {
     var map = {t:"total_sessions", n:"new_users", u:"total_users", d:"total_time", e:"events"};
     var ret = {};
-    var data = countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e"], ["u"], {u:countlySession.getTotalUsersObj()}, countlySession.clearObject);
+    var data = countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e"], ["u"], {u:countlySession.getTotalUsersObj().users}, countlySession.clearObject);
     for(var i in data){
         ret[map[i]] = data[i];
     }

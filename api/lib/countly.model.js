@@ -289,7 +289,7 @@ countlyModel.create = function (metric, fetchValue) {
     * @returns {array} object to use when displaying bars as [{"name":"English","percent":44},{"name":"Italian","percent":29},{"name":"German","percent":27}]
     */
     countlyMetric.getBars = function (segment, maxItems, metric) {
-        return countlyCommon.extractBarData(_Db, this.getMeta(segment), this.clearObject, fetchValue, maxItems, metric);
+        return countlyCommon.extractBarData(_Db, this.getMeta(segment), this.clearObject, fetchValue, maxItems, metric, this.getTotalUsersObj());
     };
     
     /**
@@ -338,8 +338,8 @@ countlyModel.create = function (metric, fetchValue) {
     * @param {array} metrics - array of metrics to display
     * @returns {array} object to use when displaying number {value: 123, change: 12, sparkline: [1,2,3,4,5,6,7]}
     */
-    countlyMetric.getNumber = function (metric) {
-         var data = countlyCommon.getDashboardData(this.getDb(), [metric], [], {}, this.clearObject);
+    countlyMetric.getNumber = function (metric, segment) {
+         var data = countlyCommon.getDashboardData(this.getDb(), [metric], ["u"], {u:this.getTotalUsersObj().users}, this.clearObject);
          var ob = {};
          ob[metric] = metric;
          var sparkLines = countlyCommon.getSparklineData(this.getDb(), ob, function(obj){
