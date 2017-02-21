@@ -9,31 +9,38 @@ var countlyCommon = require('./countly.common.js'),
 var countlyModel = {};
 
 /**
-* Loads countly model for provided metric if it already exists in api/lib folder or creates new one from default model if it does not exist
-* @param {string} metric - metric name to retrieve from server
+* Loads countly model for provided data if it already exists in api/lib folder or in plugins, or creates new one from default model if it does not exist
+* @param {string} segment - data segment name to process
 * @example
 * var countlyModel = require("api/lib/countly.mode.js");
-* var countlyDensity = countlyModel.load("density");
+* var countlyDensity = countlyModel.load("densities");
 */
-countlyModel.load = function(metric){
-    var _name = (metric.name)? metric.name : metric;
+countlyModel.load = function(segment){
+    var _name = (segment.name)? segment.name : segment;
     var model;
     try{
+        //try loading model from core
         model = require("./countly."+_name+".js");
     }
     catch(ex){
-        model = this.create(metric);
+         try{
+            //try loading model from plugin
+            model = require("../../plugins/"+_name+"/api/lib/countly.model.js");
+        }
+        catch(ex){
+            //just create standard model
+            model = this.create();
+        }
     }
     return model;
 };
 
 /**
-* Create Countly metric model to fetch metric data from server and provide it to views
-* @param {string} metric - metric name to retrieve from server
-* @param {function=} fetchValue - default function to fetch and transform if needed value from standard metric model
+* Create Countly data model to process data segment from fetched from server
+* @param {function=} fetchValue - default function to fetch and transform if needed value from standard data model
 * @example
 * var countlyModel = require("api/lib/countly.mode.js");
-* var countlyDensity = countlyModel.create("density", function(val, data, separate){
+* var countlyDensity = countlyModel.create(function(val, data, separate){
 *      if(separate){
 *          //request separated/unprocessed data
 *          return val;
