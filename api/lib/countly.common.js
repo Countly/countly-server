@@ -986,7 +986,7 @@ var countlyCommon = {},
         //check if we can correct data using total users correction
         if (_periodObj.periodContainsToday && totalUserOverrideObj) {
             for(var i = 0; i < unique.length; i++){
-                if(typeof totalUserOverrideObj[unique[i]] !== "undefined" && totalUserOverrideObj[unique[i]]){
+                if(dataArr[unique[i]] && typeof totalUserOverrideObj[unique[i]] !== "undefined" && totalUserOverrideObj[unique[i]]){
                     dataArr[unique[i]].total = totalUserOverrideObj[unique[i]];
                     dataArr[unique[i]].is_estimate = false;
                 }
