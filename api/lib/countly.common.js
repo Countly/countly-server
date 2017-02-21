@@ -514,12 +514,6 @@ var countlyCommon = {},
             sum = 0,
             totalPercent = 0;
 
-        rangeTotal.sort(function (a, b) {
-            if (Math.floor(a) <  Math.floor(b)) return 1;
-            if (Math.floor(b) <  Math.floor(a)) return -1;
-            return 0;
-        });
-
         if (rangeNames.length < maxItems) {
             maxItems = rangeNames.length;
         }
