@@ -384,7 +384,7 @@ countlyModel.create = function (fetchValue) {
                 barData[i] = { "name":topUsers[i]["date"], value:topUsers[i][metric], "percent":percent };
             }
         
-            return _.sortBy(barData, function(obj) { return -obj.percent; });
+            return _.sortBy(barData, function(obj) { return -obj.value; });
         }
     };
     
