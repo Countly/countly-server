@@ -2,7 +2,7 @@ var fetch = {},
     common = require('./../../utils/common.js'),
     async = require('async'),
     countlyModel = require('../../lib/countly.model.js'),
-    countlySession = countlyModel.load("session"),
+    countlySession = countlyModel.load("users"),
     countlyCarrier = countlyModel.load("carriers"),
     countlyDeviceDetails = countlyModel.load("device_details"),
     countlyLocation = countlyModel.load("countries"),
@@ -242,8 +242,8 @@ var fetch = {},
                                         top: {
                                             platforms: countlyDeviceDetails.getBars("os"),
                                             resolutions: countlyDeviceDetails.getBars("resolutions"),
-                                            carriers: countlyCarrier.getBars(),
-                                            users: countlySession.getTopUserBars()
+                                            carriers: countlyCarrier.getBars("carriers"),
+                                            users: countlySession.getBars()
                                         },
                                         period: countlyCommon.getDateRange()
                                     }
@@ -364,8 +364,8 @@ var fetch = {},
                     var output = {
 						platforms: countlyDeviceDetails.getBars("os"),
 						resolutions: countlyDeviceDetails.getBars("resolutions"),
-						carriers: countlyCarrier.getBars(),
-						countries: countlyLocation.getBars()
+						carriers: countlyCarrier.getBars("carriers"),
+						countries: countlyLocation.getBars("countries")
                     };
 
                     common.returnOutput(params, output);
