@@ -411,8 +411,10 @@ countlyModel.create = function (fetchValue) {
             rows:[]
         };
         var data = this.getData(segment, false, true).chartData;
-        data.sort(function(a, b){
-            return b[cols[1]] - a[cols[1]];
+        data = _.sortBy(_.reject(data, function (obj) {
+            return obj[cols[1]] == 0;
+        }), function (obj) {
+            return -obj[cols[1]];
         });
         if (data.length < maxItems) {
             maxItems = data.length;
