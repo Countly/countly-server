@@ -500,14 +500,19 @@ var countlyCommon = {},
         metric =  metric || "t";
         maxItems = maxItems || 3;
         fetchFunction = fetchFunction || function (rangeArr, dataObj) {return rangeArr;};
-        var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, [
+        var dataProps = [
             {
                 name:"range",
                 func:fetchFunction
             },
             { "name":metric }
-        ], totalUserOverrideObj);
-
+        ];
+        //include other default metrics for data correction
+        if(metric === "u"){
+            dataProps.push({name:"n"});
+            dataProps.push({name:"t"});
+        }
+        var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, dataProps, totalUserOverrideObj);
         var rangeNames = underscore.pluck(rangeData.chartData, 'range'),
             rangeTotal = underscore.pluck(rangeData.chartData, metric),
             barData = [],
