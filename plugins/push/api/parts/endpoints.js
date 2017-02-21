@@ -38,7 +38,7 @@ var common          = require('../../../../api/utils/common.js'),
             wks = [...new Set([...Array(common.getDaysInYear(agy)).keys()].map((k, i) => ago.clone().add(i * 24 * 3600 * 1000).isoWeek()))],
 
             // month titles for mts
-            mtt = mts.map((m, i) => (i === 0 || m > mts[0] ? agy : noy) + ' ' + moment.monthsShort(moment([0, m - 1]), "")),
+            mtt = mts.map((m, i) => (i === 0 || m > mts[0] ? agy : noy) + ' ' + moment.localeData().monthsShort(moment([0, m - 1]), "")),
             // week titles for wks
             wkt = wks.map(w => 'W' + w),
             // wkt = wks.map((w, i) => (i === 0 || w > wks[0] ? agy : noy) + '-w' + w),
