@@ -917,7 +917,8 @@ var countlyCommon = {},
                 tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[j]);
                 tmp_x = clearObject(tmp_x);
                 for(var i = 0; i < properties.length; i++){
-                    current[properties[i]] += tmp_x[properties[i]];
+                    if(unique.indexOf(properties[i]) === -1)
+                        current[properties[i]] += tmp_x[properties[i]];
                 }
             }
 
@@ -925,7 +926,25 @@ var countlyCommon = {},
                 tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriodArr[j]);
                 tmp_y = clearObject(tmp_y);
                 for(var i = 0; i < properties.length; i++){
-                    previous[properties[i]] += tmp_y[properties[i]];
+                    if(unique.indexOf(properties[i]) === -1)
+                        previous[properties[i]] += tmp_y[properties[i]];
+                }
+            }
+            
+            //deal with unique values separately
+            for (var j = 0; j < (_periodObj.uniquePeriodArr.length); j++) {
+                tmp_x = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodArr[j]);
+                tmp_x = clearObject(tmp_x);
+                for(var i = 0; i < unique.length; i++){
+                    current[unique[i]] += tmp_x[unique[i]];
+                }
+            }
+
+            for (var j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
+                tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j]);
+                tmp_y = clearObject(tmp_y);
+                for(var i = 0; i < unique.length; i++){
+                    previous[unique[i]] += tmp_y[unique[i]];
                 }
             }
             
@@ -938,14 +957,15 @@ var countlyCommon = {},
                 }
             }
             
-            for (var j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
-                tmpPrevUniqObj = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j]);
+            for (var j = 0; j < (_periodObj.previousUniquePeriodCheckArr.length); j++) {
+                tmpPrevUniqObj = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodCheckArr[j]);
                 tmpPrevUniqObj = clearObject(tmpPrevUniqObj);
                 for(var i = 0; i < unique.length; i++){
                     previousCheck[unique[i]] += tmpPrevUniqObj[unique[i]];
                 }
             }
             
+            //check if we should overwrite uniques
             for(var i = 0; i < unique.length; i++){
                 if (current[unique[i]] > currentCheck[unique[i]]) {
                     current[unique[i]] = currentCheck[unique[i]];
