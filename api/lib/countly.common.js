@@ -810,7 +810,6 @@ var countlyCommon = {},
                             if (typeof tmpCheckVal !== 'string') {
                                 propertySum += tmpCheckVal;
                                 tmpUniqValCheck += tmpCheckVal;
-                                tmpPropertyObj["u"] += tmpCheckVal;
                             }
                         }
 
