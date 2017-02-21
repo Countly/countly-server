@@ -14,7 +14,7 @@ function getCountryName(cc){
     }
 }
 
-var countlyLocation = countlyModel.create("countries", getCountryName);
+var countlyLocation = countlyModel.create(getCountryName);
 
 countlyLocation.getLocationData = function (options) {
     var locationData = countlyCommon.extractTwoLevelData(countlyLocation.getDb(), countlyLocation.getMeta(), countlyLocation.clearObject, [
