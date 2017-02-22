@@ -5,7 +5,7 @@ var countlyModel = require('./countly.model.js'),
 var countlySession = countlyModel.create();
 countlySession.setMetrics(["t", "n", "u", "d", "e", "m", "p"]);
 countlySession.setUniqueMetrics(["u", "m", "p"]);
-
+    
 countlySession.getSessionData = function () {
     var map = {t:"total_sessions", n:"new_users", u:"total_users", d:"total_time", e:"events"};
     var ret = {};
@@ -23,8 +23,8 @@ countlySession.getSessionData = function () {
         (ret["total_sessions"]["prev-total"] === 0) ? 0 : ret["total_time"]["prev-total"] / ret["total_sessions"]["prev-total"], 
         (ret["total_sessions"]["total"] === 0 ) ? 0 : ret["total_time"]["total"] / ret["total_sessions"]["total"]);
     ret["avg_time"] = {
-        "total":(ret["total_sessions"]["prev-total"] === 0) ? 0 : ret["total_time"]["prev-total"] / ret["total_sessions"]["prev-total"],
-        "prev-total":(ret["total_sessions"]["total"] === 0 ) ? 0 : ret["total_time"]["total"] / ret["total_sessions"]["total"],
+        "prev-total":(ret["total_sessions"]["prev-total"] === 0) ? 0 : ret["total_time"]["prev-total"] / ret["total_sessions"]["prev-total"],
+        "total":(ret["total_sessions"]["total"] === 0 ) ? 0 : ret["total_time"]["total"] / ret["total_sessions"]["total"],
         "change":changeAvgDuration.percent,
         "trend":changeAvgDuration.trend
     };
@@ -39,8 +39,8 @@ countlySession.getSessionData = function () {
         (ret["total_users"]["prev-total"] === 0) ? 0 : ret["events"]["prev-total"] / ret["total_users"]["prev-total"], 
         (ret["total_users"]["total"] === 0 ) ? 0 : ret["events"]["total"] / ret["total_users"]["total"]);
     ret["avg_requests"] = {
-        "total":(ret["total_users"]["prev-total"] === 0) ? 0 : ret["events"]["prev-total"] / ret["total_users"]["prev-total"],
-        "prev-total":(ret["total_users"]["total"] === 0 ) ? 0 : ret["events"]["total"] / ret["total_users"]["total"],
+        "prev-total":(ret["total_users"]["prev-total"] === 0) ? 0 : ret["events"]["prev-total"] / ret["total_users"]["prev-total"],
+        "total":(ret["total_users"]["total"] === 0 ) ? 0 : ret["events"]["total"] / ret["total_users"]["total"],
         "change":changeAvgEvents.percent,
         "trend":changeAvgEvents.trend
     };

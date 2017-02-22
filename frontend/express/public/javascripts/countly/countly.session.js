@@ -41,8 +41,8 @@
             (ret["total-sessions"]["prev-total"] === 0) ? 0 : ret["total-duration"]["prev-total"] / ret["total-sessions"]["prev-total"], 
             (ret["total-sessions"]["total"] === 0 ) ? 0 : ret["total-duration"]["total"] / ret["total-sessions"]["total"]);
         ret["avg-duration-per-session"] = {
-            "total":(ret["total-sessions"]["prev-total"] === 0) ? 0 : ret["total-duration"]["prev-total"] / ret["total-sessions"]["prev-total"],
-            "prev-total":(ret["total-sessions"]["total"] === 0 ) ? 0 : ret["total-duration"]["total"] / ret["total-sessions"]["total"],
+            "prev-total":(ret["total-sessions"]["prev-total"] === 0) ? 0 : ret["total-duration"]["prev-total"] / ret["total-sessions"]["prev-total"],
+            "total":(ret["total-sessions"]["total"] === 0 ) ? 0 : ret["total-duration"]["total"] / ret["total-sessions"]["total"],
             "change":changeAvgDuration.percent,
             "trend":changeAvgDuration.trend
         };
@@ -57,8 +57,8 @@
             (ret["total-users"]["prev-total"] === 0) ? 0 : ret["events"]["prev-total"] / ret["total-users"]["prev-total"], 
             (ret["total-users"]["total"] === 0 ) ? 0 : ret["events"]["total"] / ret["total-users"]["total"]);
         ret["avg-events"] = {
-            "total":(ret["total-users"]["prev-total"] === 0) ? 0 : ret["events"]["prev-total"] / ret["total-users"]["prev-total"],
-            "prev-total":(ret["total-users"]["total"] === 0 ) ? 0 : ret["events"]["total"] / ret["total-users"]["total"],
+            "prev-total":(ret["total-users"]["prev-total"] === 0) ? 0 : ret["events"]["prev-total"] / ret["total-users"]["prev-total"],
+            "total":(ret["total-users"]["total"] === 0 ) ? 0 : ret["events"]["total"] / ret["total-users"]["total"],
             "change":changeAvgEvents.percent,
             "trend":changeAvgEvents.trend
         };
