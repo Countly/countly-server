@@ -185,7 +185,7 @@ describe('Bulk writing', function(){
 				.get('/o/analytics/dashboard?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateDashboard(err, res, done, {total_sessions:9,total_users:9,new_users:9,total_time:"0.0 min",avg_time:"0.0 min",avg_requests:"1.0",platforms:[{"name":"Android","percent":50},{"name":"IOS","percent":50}],resolutions:[{"name":"2048x1536","percent":66},{"name":"1200x800","percent":34}],carriers:[{"name":"Telecom","percent":66},{"name":"Vodafone","percent":34}]});
+					testUtils.validateDashboard(err, res, done, {total_sessions:9,total_users:9,new_users:9,total_time:"0.0 min",avg_time:"0.0 min",avg_requests:"1.0",platforms:[{"name":"Android","value":2,"percent":50},{"name":"IOS","value":2,"percent":50}],resolutions:[{"name":"2048x1536","value":2,"percent":66},{"name":"1200x800","value":1,"percent":34}],carriers:[{"name":"Telecom","value":2,"percent":66},{"name":"Vodafone","value":1,"percent":34}]});
 				});
 			});
 		});

@@ -104,7 +104,7 @@ describe('Writing app metrics', function(){
 				.get('/o/analytics/dashboard?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateDashboard(err, res, done, {total_sessions:1,total_users:1,new_users:1,total_time:"0.0 min",avg_time:"0.0 min",avg_requests:"1.0",platforms:[{"name":"Android","percent":100}],resolutions:[],carriers:[]});
+					testUtils.validateDashboard(err, res, done, {total_sessions:1,total_users:1,new_users:1,total_time:"0.0 min",avg_time:"0.0 min",avg_requests:"1.0",platforms:[{"name":"Android","value":1,"percent":100}],resolutions:[],carriers:[]});
 				});
 			});
 		});
@@ -168,7 +168,7 @@ describe('Writing app metrics', function(){
 				.get('/o/analytics/dashboard?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateDashboard(err, res, done, {total_sessions:3,total_users:3,new_users:3,total_time:"0.0 min",avg_time:"0.0 min",avg_requests:"1.0",platforms:[{"name":"Android","percent":100}],resolutions:[{"name":"1200x800","percent":100}],carriers:[]});
+					testUtils.validateDashboard(err, res, done, {total_sessions:3,total_users:3,new_users:3,total_time:"0.0 min",avg_time:"0.0 min",avg_requests:"1.0",platforms:[{"name":"Android","value":1,"percent":100}],resolutions:[{"name":"1200x800","value":1,"percent":100}],carriers:[]});
 				});
 			});
 		});
@@ -205,7 +205,7 @@ describe('Writing app metrics', function(){
 				.get('/o/analytics/dashboard?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateDashboard(err, res, done, {total_sessions:4,total_users:4,new_users:4,total_time:"0.0 min",avg_time:"0.0 min",avg_requests:"1.0",platforms:[{"name":"Android","percent":100}],resolutions:[{"name":"1200x800","percent":100}],carriers:[]});
+					testUtils.validateDashboard(err, res, done, {total_sessions:4,total_users:4,new_users:4,total_time:"0.0 min",avg_time:"0.0 min",avg_requests:"1.0",platforms:[{"name":"Android","value":2,"percent":100}],resolutions:[{"name":"1200x800","value":1,"percent":100}],carriers:[]});
 				});
 			});
 		});
@@ -269,7 +269,7 @@ describe('Writing app metrics', function(){
 				.get('/o/analytics/dashboard?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateDashboard(err, res, done, {total_sessions:6,total_users:6,new_users:6,total_time:"0.0 min",avg_time:"0.0 min",avg_requests:"1.0",platforms:[{"name":"Android","percent":100}],resolutions:[{"name":"1200x800","percent":100}],carriers:[{"name":"Vodafone","percent":100}]});
+					testUtils.validateDashboard(err, res, done, {total_sessions:6,total_users:6,new_users:6,total_time:"0.0 min",avg_time:"0.0 min",avg_requests:"1.0",platforms:[{"name":"Android","value":2,"percent":100}],resolutions:[{"name":"1200x800","value":1,"percent":100}],carriers:[{"name":"Vodafone","value":1,"percent":100}]});
 				});
 			});
 		});
@@ -362,7 +362,7 @@ describe('Writing app metrics', function(){
 				.get('/o/analytics/dashboard?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateDashboard(err, res, done, {total_sessions:8,total_users:8,new_users:8,total_time:"0.0 min",avg_time:"0.0 min",avg_requests:"1.0",platforms:[{"name":"Android","percent":66},{"name":"IOS","percent":34}],resolutions:[{"name":"1200x800","percent":50}, {"name":"2048x1536","percent":50}],carriers:[{"name":"Telecom","percent":50},{"name":"Vodafone","percent":50}]});
+					testUtils.validateDashboard(err, res, done, {total_sessions:8,total_users:8,new_users:8,total_time:"0.0 min",avg_time:"0.0 min",avg_requests:"1.0",platforms:[{"name":"Android","value":2,"percent":66},{"name":"IOS","value":1,"percent":34}],resolutions:[{"name":"1200x800","value":1,"percent":50}, {"name":"2048x1536","value":1,"percent":50}],carriers:[{"name":"Telecom","value":1,"percent":50},{"name":"Vodafone","value":1,"percent":50}]});
 				});
 			});
 		});
@@ -428,7 +428,7 @@ describe('Writing app metrics', function(){
 				.get('/o/analytics/dashboard?api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
 				.expect(200)
 				.end(function(err, res){
-					testUtils.validateDashboard(err, res, done, {total_sessions:9,total_users:9,new_users:9,total_time:"0.0 min",avg_time:"0.0 min",avg_requests:"1.0",platforms:[{"name":"Android","percent":50},{"name":"IOS","percent":50}],resolutions:[{"name":"2048x1536","percent":66},{"name":"1200x800","percent":34}],carriers:[{"name":"Telecom","percent":66},{"name":"Vodafone","percent":34}]});
+					testUtils.validateDashboard(err, res, done, {total_sessions:9,total_users:9,new_users:9,total_time:"0.0 min",avg_time:"0.0 min",avg_requests:"1.0",platforms:[{"name":"Android","value":2,"percent":50},{"name":"IOS","value":2,"percent":50}],resolutions:[{"name":"2048x1536","value":2,"percent":66},{"name":"1200x800","value":1,"percent":34}],carriers:[{"name":"Telecom","value":2,"percent":66},{"name":"Vodafone","value":1,"percent":34}]});
 				});
 			});
 		});
