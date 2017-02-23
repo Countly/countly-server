@@ -1,3 +1,9 @@
+/**
+* This module defines default model to handle users collection data
+* @module api/lib/countly_common
+*/
+
+/** @lends module:api/lib/countly_common */
 var countlyCommon = {},
     time = require('time')(Date),
     moment = require('moment'),
@@ -27,13 +33,24 @@ var countlyCommon = {},
         countlyCommon.periodObj = getPeriodObj();
     };
 
+    /**
+    * Change currently selected period
+    * @param {string|array} period - new period, supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])
+    */
     countlyCommon.setPeriod = function(period) {
         _period = period;
         countlyCommon.periodObj = getPeriodObj();
     };
 
-    // Calculates the percent change between previous and current values.
-    // Returns an object in the following format {"percent": "20%", "trend": "u"}
+    /**
+    * Calculates the percent change between previous and current values.
+    * @param {number} previous - data for previous period
+    * @param {number} current - data for current period
+    * @returns {object} in the following format {"percent": "20%", "trend": "u"}
+    * @example
+    *   //outputs {"percent":"100%","trend":"u"}
+    *   countlyCommon.getPercentChange(100, 200);
+    */
     countlyCommon.getPercentChange = function (previous, current) {
         var pChange = 0,
             trend = "";
@@ -58,7 +75,19 @@ var countlyCommon = {},
         return {"percent":pChange, "trend":trend};
     };
 
-    // Fetches nested property values from an obj.
+    /**
+    * Fetches nested property values from an obj.
+    * @param {object} obj - standard countly metric object
+    * @param {string} path - dot separate path to fetch from object
+    * @param {object} def - stub object to return if nothing is found on provided path
+    * @returns {object} fetched object from provided path
+    * @example <caption>Path found</caption>
+    * //outputs {"u":20,"t":20,"n":5}
+    * countlyCommon.getDescendantProp({"2017":{"1":{"2":{"u":20,"t":20,"n":5}}}}, "2017.1.2", {"u":0,"t":0,"n":0});
+    * @example <caption>Path not found</caption>
+    * //outputs {"u":0,"t":0,"n":0}
+    * countlyCommon.getDescendantProp({"2016":{"1":{"2":{"u":20,"t":20,"n":5}}}}, "2017.1.2", {"u":0,"t":0,"n":0});
+    */
     countlyCommon.getDescendantProp = function (obj, desc) {
         desc = String(desc);
 
@@ -72,6 +101,16 @@ var countlyCommon = {},
         return obj;
     };
 
+    /**
+    * Extract range data from standard countly metric data model
+    * @param {string} propertyName - name of the property to extract
+    * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
+    * @param {function} explainRange - function to convert range/bucket index to meaningful label
+    * @returns {array} array containing extracted ranged data as [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
+    * @example <caption>Extracting session frequency from users collection</caption>
+    *    //outputs [{"f":"First session","t":352,"percent":"88.4"},{"f":"2 days","t":46,"percent":"11.6"}]
+    *    countlyCommon.extractRangeData(_userDb, "f", _frequencies, countlySession.explainFrequencyRange);
+    */
     countlyCommon.extractRangeData = function (db, propertyName, rangeArray, explainRange) {
 
         countlyCommon.periodObj = getPeriodObj();
@@ -149,6 +188,59 @@ var countlyCommon = {},
         return dataArr;
     };
 
+    /**
+    * Extract single level data without metrics/segments, like total user data from users collection
+    * @param {object} db - countly standard metric data object
+    * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+    * @param {object} chartData - prefill chart data with labels, colors, etc
+    * @param {object} dataProperties - describing which properties and how to extract
+    * @returns {object} object to use in timeline graph with {"chartDP":chartData, "chartData":_.compact(tableData), "keyEvents":keyEvents}
+    * @example <caption>Extracting total users data from users collection</caption>
+    * countlyCommon.extractChartData(_sessionDb, countlySession.clearObject, [
+    *      { data:[], label:"Total Users" }
+    *  ], [
+    *      {
+    *          name:"t",
+    *          func:function (dataObj) {
+    *              return dataObj["u"]
+    *          }
+    *      }
+    *  ]);
+    *  @example <caption>Returned data</caption>
+    * {"chartDP":[
+    *    {
+    *        "data":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[12,0],[13,0],[14,0],[15,12]],
+    *        "label":"Total Sessions",
+    *        "color":"#DDDDDD",
+    *        "mode":"ghost"
+    *    },
+    *    {
+    *        "data":[[0,6],[1,14],[2,11],[3,18],[4,10],[5,32],[6,53],[7,55],[8,71],[9,82],[10,74],[11,69],[12,60],[13,17],[14,6],[15,3]],
+    *        "label":"Total Sessions",
+    *        "color":"#333933"
+    *    }
+    *  ],
+    *  "chartData":[
+    *    {"date":"22 Dec, 2016","pt":0,"t":6},
+    *    {"date":"23 Dec, 2016","pt":0,"t":14},
+    *    {"date":"24 Dec, 2016","pt":0,"t":11},
+    *    {"date":"25 Dec, 2016","pt":0,"t":18},
+    *    {"date":"26 Dec, 2016","pt":0,"t":10},
+    *    {"date":"27 Dec, 2016","pt":0,"t":32},
+    *    {"date":"28 Dec, 2016","pt":0,"t":53},
+    *    {"date":"29 Dec, 2016","pt":0,"t":55},
+    *    {"date":"30 Dec, 2016","pt":0,"t":71},
+    *    {"date":"31 Dec, 2016","pt":0,"t":82},
+    *    {"date":"1 Jan, 2017","pt":0,"t":74},
+    *    {"date":"2 Jan, 2017","pt":0,"t":69},
+    *    {"date":"3 Jan, 2017","pt":0,"t":60},
+    *    {"date":"4 Jan, 2017","pt":0,"t":17},
+    *    {"date":"5 Jan, 2017","pt":0,"t":6},
+    *    {"date":"6 Jan, 2017","pt":12,"t":3}
+    *  ],
+    *  "keyEvents":[{"min":0,"max":12},{"min":0,"max":82}]
+    * }
+    */
     countlyCommon.extractChartData = function (db, clearFunction, chartData, dataProperties) {
 
         countlyCommon.periodObj = getPeriodObj();
@@ -308,6 +400,32 @@ var countlyCommon = {},
         return sparkLines;
     }
 
+    /**
+    * Extract two level data with metrics/segments, like total user data from carriers collection
+    * @param {object} db - countly standard metric data object
+    * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
+    * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+    * @param {object} dataProperties - describing which properties and how to extract
+    * @param {object=} estOverrideMetric - data from total users api request to correct unique user values
+    * @returns {object} object to use in bar and pie charts with {"chartData":_.compact(tableData)}
+    * @example <caption>Extracting carriers data from carriers collection</caption>
+    * var chartData = countlyCommon.extractTwoLevelData(_carrierDb, ["At&t", "Verizon"], countlyCarrier.clearObject, [
+    *      {
+    *          name:"carrier",
+    *          func:function (rangeArr, dataObj) {
+    *              return rangeArr;
+    *          }
+    *      },
+    *      { "name":"t" },
+    *      { "name":"u" },
+    *      { "name":"n" }
+    * ]);
+    * @example <caption>Return data</caption>
+    * {"chartData":['
+    *    {"carrier":"At&t","t":71,"u":62,"n":36},
+    *    {"carrier":"Verizon","t":66,"u":60,"n":30}
+    * ]}
+    */
     countlyCommon.extractTwoLevelData = function (db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj) {
 
         countlyCommon.periodObj = getPeriodObj();
@@ -495,7 +613,20 @@ var countlyCommon = {},
         return {"chartData":underscore.compact(tableData)};
     };
 
-    // Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
+    /**
+    * Extracts top three items (from rangeArray) that have the biggest total session counts from the db object.
+    * @param {object} db - countly standard metric data object
+    * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
+    * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+    * @param {function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
+    * @returns {array} array with top 3 values
+    * @example <caption>Return data</caption>
+    * [
+    *    {"name":"iOS","percent":35},
+    *    {"name":"Android","percent":33},
+    *    {"name":"Windows Phone","percent":32}
+    * ]
+    */
     countlyCommon.extractBarData = function (db, rangeArray, clearFunction, fetchFunction, maxItems, metric, totalUserOverrideObj) {
         metric =  metric || "t";
         maxItems = maxItems || 3;
@@ -541,8 +672,14 @@ var countlyCommon = {},
         return underscore.sortBy(barData, function(obj) { return -obj.value; });
     };
 
-    // Shortens the given number by adding K (thousand) or M (million) postfix.
-    // K is added only if the number is bigger than 10000.
+    /**
+    * Shortens the given number by adding K (thousand) or M (million) postfix. K is added only if the number is bigger than 10000, etc.
+    * @param {number} number - number to shorten
+    * @returns {string} shorter representation of number
+    * @example
+    * //outputs 10K
+    * countlyCommon.getShortNumber(10000);
+    */
     countlyCommon.getShortNumber = function (number) {
 
         var tmpNumber = "";
@@ -559,8 +696,10 @@ var countlyCommon = {},
         return tmpNumber;
     };
 
-    // Function for getting the date range shown on the dashboard like 1 Aug - 30 Aug.
-    // countlyCommon.periodObj holds a dateString property which holds the date format.
+    /**
+    * Getting the date range shown on the dashboard like 1 Aug - 30 Aug, using {@link countlyCommon.periodObj) dateString property which holds the date format.
+    * @returns {string} string with  formatted date range as 1 Aug - 30 Aug
+    */
     countlyCommon.getDateRange = function () {
 
         countlyCommon.periodObj = getPeriodObj();
@@ -858,6 +997,14 @@ var countlyCommon = {},
         return underscore.compact(tableData);
     };
     
+    /**
+    * Format duration into highest unit of how much time have passed. Used in big numbers
+    * @param {number} timestamp - amount in seconds or miliseconds passed since some reference point
+    * @returns {string} formated time with how much highest units passed
+    * @example
+    * //outputs 2824.7 yrs
+    * countlyCommon.timeString(1484654066);
+    */
     countlyCommon.timeString = function(timespent){
         if(timespent.toString().length === 13)
             timespent = Math.round(timespent/1000);
@@ -873,6 +1020,27 @@ var countlyCommon = {},
         return timeSpentString;
     };
     
+    /**
+    * Get calculated totals for each property, usualy used as main dashboard data timeline data without metric segments
+    * @param {object} data - countly metric model data
+    * @param {array} properties - array of all properties to extract
+    * @param {array} unique - array of all properties that are unique from properties array. We need to apply estimation to them
+    * @param {object} estOverrideMetric - using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden
+    * @param {function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+    * @returns {object} dashboard data object
+    * @example
+    * countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u:"users"}, countlySession.clearObject);
+    * //outputs
+    * {
+    *      "t":{"total":980,"prev-total":332,"change":"195.2%","trend":"u"},
+    *      "n":{"total":402,"prev-total":255,"change":"57.6%","trend":"u"},
+    *      "u":{"total":423,"prev-total":255,"change":"75.7%","trend":"u","isEstimate":false},
+    *      "d":{"total":0,"prev-total":0,"change":"NA","trend":"u"},
+    *      "e":{"total":980,"prev-total":332,"change":"195.2%","trend":"u"},
+    *      "p":{"total":103,"prev-total":29,"change":"255.2%","trend":"u","isEstimate":true},
+    *      "m":{"total":86,"prev-total":0,"change":"NA","trend":"u","isEstimate":true}
+    * }
+    */
     countlyCommon.getDashboardData = function(data, properties, unique, totalUserOverrideObj){
         function clearObject(obj){
             if (obj) {
@@ -1014,6 +1182,164 @@ var countlyCommon = {},
         return dataArr;
     }
 
+    countlyCommon.getTimestampRangeQuery = function(params, inSeconds){
+        var periodObj = countlyCommon.periodObj;
+        //create current period array if it does not exist
+        if (!periodObj.currentPeriodArr || periodObj.currentPeriodArr.length == 0) {
+            periodObj.currentPeriodArr = [];
+
+            //create a period array that starts from the beginning of the current year until today
+            if (params.qstring.period == "month") {
+                for (var i = 0; i < (now.getMonth() + 1); i++) {
+                    var daysInMonth = moment().month(i).daysInMonth();
+
+                    for (var j = 0; j < daysInMonth; j++) {
+                        periodObj.currentPeriodArr.push(periodObj.activePeriod + "." + (i + 1) + "." + (j + 1));
+
+                        // If current day of current month, just break
+                        if ((i == now.getMonth()) && (j == (now.getDate() - 1))) {
+                            break;
+                        }
+                    }
+                }
+            }
+            //create a period array that starts from the beginning of the current month until today
+            else if(params.qstring.period == "day") {
+                for(var i = 0; i < now.getDate(); i++) {
+                    periodObj.currentPeriodArr.push(periodObj.activePeriod + "." + (i + 1));
+                }
+            }
+            //create one day period array
+            else{
+                periodObj.currentPeriodArr.push(periodObj.activePeriod);
+            }
+        }
+        var tmpArr;
+        var ts = {};
+
+        tmpArr = periodObj.currentPeriodArr[0].split(".");
+        ts.$gte = new Date(Date.UTC(parseInt( tmpArr[0]),parseInt(tmpArr[1])-1,parseInt(tmpArr[2]) ));
+        ts.$gte.setTimezone(params.appTimezone);
+        if(inSeconds)
+            ts.$gte = ts.$gte.getTime() / 1000 + ts.$gte.getTimezoneOffset()*60;
+        else
+            ts.$gte = ts.$gte.getTime() + ts.$gte.getTimezoneOffset()*60000;
+
+        tmpArr = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
+        ts.$lt = new Date(Date.UTC(parseInt( tmpArr[0]),parseInt(tmpArr[1])-1,parseInt(tmpArr[2]) ));
+        ts.$lt.setDate(ts.$lt.getDate() + 1);
+        ts.$lt.setTimezone(params.appTimezone);
+        if(inSeconds)
+            ts.$lt = ts.$lt.getTime() / 1000 + ts.$lt.getTimezoneOffset()*60;
+        else
+            ts.$lt = ts.$lt.getTime() + ts.$lt.getTimezoneOffset()*60000;
+        return ts;
+    };
+    
+    /**
+    * Merge metric data in chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }, just in case if after data transformation of countly standard metric data model, resulting chartData contains duplicated values, as for example converting null, undefined and unknown values to unknown
+    * @param {object} chartData - chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }
+    * @param {string} metric - metric name to merge
+    * @returns {object} chartData object with same metrics summed up
+    * @example <caption>Sample input</caption>
+    *    {"chartData":[
+    *        {"metric":"Test","t":71,"u":62,"n":36},
+    *        {"metric":"Test1","t":66,"u":60,"n":30},
+    *        {"metric":"Test","t":2,"u":3,"n":4}
+    *    ]}
+    * @example <caption>Sample output</caption>
+    *    {"chartData":[
+    *        {"metric":"Test","t":73,"u":65,"n":40},
+    *        {"metric":"Test1","t":66,"u":60,"n":30}
+    *    ]}
+    */
+    countlyCommon.mergeMetricsByName = function(chartData, metric){
+        var uniqueNames = {},
+            data;
+        for(var i = 0; i < chartData.length; i++){
+            data = chartData[i];
+            if(data[metric] && !uniqueNames[data[metric]]){
+                uniqueNames[data[metric]] = data
+            }
+            else{
+                for(var key in data){
+                    if(typeof data[key] == "string")
+                       uniqueNames[data[metric]][key] = data[key];
+                    else if(typeof data[key] == "number"){
+                        if(!uniqueNames[data[metric]][key])
+                            uniqueNames[data[metric]][key] = 0;
+                        uniqueNames[data[metric]][key] += data[key];
+                    }
+                }
+            }
+        }
+
+        return underscore.values(uniqueNames);
+    };
+    
+    /**
+    * Joined 2 arrays into one removing all duplicated values
+    * @param {array} x - first array
+    * @param {array} y - second array
+    * @returns {array} new array with only unique values from x and y
+    * @example
+    * //outputs [1,2,3]
+    * countlyCommon.union([1,2],[2,3]);
+    */
+    countlyCommon.union = function(x, y) {
+        if (!x) {
+            return y;
+        } else if (!y) {
+            return x;
+        }
+
+        var obj = {};
+        for (var i = x.length-1; i >= 0; -- i) {
+            obj[x[i]] = true;
+        }
+
+        for (var i = y.length-1; i >= 0; -- i) {
+            obj[y[i]] = true;
+        }
+
+        var res = [];
+
+        for (var k in obj) {
+            res.push(k);
+        }
+
+        return res;
+    };
+    
+    /**
+    * Encode value to be passed to db as key, encoding $ symbol to &#36; if it is first and all . (dot) symbols to &#46; in the string
+    * @param {string} str - value to encode
+    * @returns {string} encoded string
+    */
+    countlyCommon.encode = function(str){
+        return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;');
+    };
+    
+    /**
+    * Decode value from db, decoding first &#36; to $ and all &#46; to . (dots). Decodes also url encoded values as &amp;#36;.
+    * @param {string} str - value to decode
+    * @returns {string} decoded string
+    */
+    countlyCommon.decode = function(str){
+        return str.replace(/^&#36;/g, "$").replace(/^&amp;#36;/g, '$').replace(/&#46;/g, '.').replace(/&amp;#46;/g, '.');
+    };
+
+    /**
+    * Decode escaped HTML from db
+    * @param {string} str - value to decode
+    * @returns {string} decoded string
+    */
+    countlyCommon.decodeHtml = function(html) {
+        var txt = document.createElement("textarea");
+        txt.innerHTML = html;
+        return txt.value;
+    };
+    
     // Private Methods
 
     function getDaysInMonth(year, month) {
@@ -1298,164 +1624,6 @@ var countlyCommon = {},
             "periodContainsToday": periodContainsToday
         };
     }
-    
-    countlyCommon.getTimestampRangeQuery = function(params, inSeconds){
-        var periodObj = countlyCommon.periodObj;
-        //create current period array if it does not exist
-        if (!periodObj.currentPeriodArr || periodObj.currentPeriodArr.length == 0) {
-            periodObj.currentPeriodArr = [];
-
-            //create a period array that starts from the beginning of the current year until today
-            if (params.qstring.period == "month") {
-                for (var i = 0; i < (now.getMonth() + 1); i++) {
-                    var daysInMonth = moment().month(i).daysInMonth();
-
-                    for (var j = 0; j < daysInMonth; j++) {
-                        periodObj.currentPeriodArr.push(periodObj.activePeriod + "." + (i + 1) + "." + (j + 1));
-
-                        // If current day of current month, just break
-                        if ((i == now.getMonth()) && (j == (now.getDate() - 1))) {
-                            break;
-                        }
-                    }
-                }
-            }
-            //create a period array that starts from the beginning of the current month until today
-            else if(params.qstring.period == "day") {
-                for(var i = 0; i < now.getDate(); i++) {
-                    periodObj.currentPeriodArr.push(periodObj.activePeriod + "." + (i + 1));
-                }
-            }
-            //create one day period array
-            else{
-                periodObj.currentPeriodArr.push(periodObj.activePeriod);
-            }
-        }
-        var tmpArr;
-        var ts = {};
-
-        tmpArr = periodObj.currentPeriodArr[0].split(".");
-        ts.$gte = new Date(Date.UTC(parseInt( tmpArr[0]),parseInt(tmpArr[1])-1,parseInt(tmpArr[2]) ));
-        ts.$gte.setTimezone(params.appTimezone);
-        if(inSeconds)
-            ts.$gte = ts.$gte.getTime() / 1000 + ts.$gte.getTimezoneOffset()*60;
-        else
-            ts.$gte = ts.$gte.getTime() + ts.$gte.getTimezoneOffset()*60000;
-
-        tmpArr = periodObj.currentPeriodArr[periodObj.currentPeriodArr.length - 1].split(".");
-        ts.$lt = new Date(Date.UTC(parseInt( tmpArr[0]),parseInt(tmpArr[1])-1,parseInt(tmpArr[2]) ));
-        ts.$lt.setDate(ts.$lt.getDate() + 1);
-        ts.$lt.setTimezone(params.appTimezone);
-        if(inSeconds)
-            ts.$lt = ts.$lt.getTime() / 1000 + ts.$lt.getTimezoneOffset()*60;
-        else
-            ts.$lt = ts.$lt.getTime() + ts.$lt.getTimezoneOffset()*60000;
-        return ts;
-    };
-    
-    /**
-    * Merge metric data in chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }, just in case if after data transformation of countly standard metric data model, resulting chartData contains duplicated values, as for example converting null, undefined and unknown values to unknown
-    * @param {object} chartData - chartData returned by @{link countlyCommon.extractChartData} or @{link countlyCommon.extractTwoLevelData }
-    * @param {string} metric - metric name to merge
-    * @returns {object} chartData object with same metrics summed up
-    * @example <caption>Sample input</caption>
-    *    {"chartData":[
-    *        {"metric":"Test","t":71,"u":62,"n":36},
-    *        {"metric":"Test1","t":66,"u":60,"n":30},
-    *        {"metric":"Test","t":2,"u":3,"n":4}
-    *    ]}
-    * @example <caption>Sample output</caption>
-    *    {"chartData":[
-    *        {"metric":"Test","t":73,"u":65,"n":40},
-    *        {"metric":"Test1","t":66,"u":60,"n":30}
-    *    ]}
-    */
-    countlyCommon.mergeMetricsByName = function(chartData, metric){
-        var uniqueNames = {},
-            data;
-        for(var i = 0; i < chartData.length; i++){
-            data = chartData[i];
-            if(data[metric] && !uniqueNames[data[metric]]){
-                uniqueNames[data[metric]] = data
-            }
-            else{
-                for(var key in data){
-                    if(typeof data[key] == "string")
-                       uniqueNames[data[metric]][key] = data[key];
-                    else if(typeof data[key] == "number"){
-                        if(!uniqueNames[data[metric]][key])
-                            uniqueNames[data[metric]][key] = 0;
-                        uniqueNames[data[metric]][key] += data[key];
-                    }
-                }
-            }
-        }
-
-        return underscore.values(uniqueNames);
-    };
-    
-    /**
-    * Joined 2 arrays into one removing all duplicated values
-    * @param {array} x - first array
-    * @param {array} y - second array
-    * @returns {array} new array with only unique values from x and y
-    * @example
-    * //outputs [1,2,3]
-    * countlyCommon.union([1,2],[2,3]);
-    */
-    countlyCommon.union = function(x, y) {
-        if (!x) {
-            return y;
-        } else if (!y) {
-            return x;
-        }
-
-        var obj = {};
-        for (var i = x.length-1; i >= 0; -- i) {
-            obj[x[i]] = true;
-        }
-
-        for (var i = y.length-1; i >= 0; -- i) {
-            obj[y[i]] = true;
-        }
-
-        var res = [];
-
-        for (var k in obj) {
-            res.push(k);
-        }
-
-        return res;
-    };
-    
-    /**
-    * Encode value to be passed to db as key, encoding $ symbol to &#36; if it is first and all . (dot) symbols to &#46; in the string
-    * @param {string} str - value to encode
-    * @returns {string} encoded string
-    */
-    countlyCommon.encode = function(str){
-        return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;');
-    };
-    
-    /**
-    * Decode value from db, decoding first &#36; to $ and all &#46; to . (dots). Decodes also url encoded values as &amp;#36;.
-    * @param {string} str - value to decode
-    * @returns {string} decoded string
-    */
-    countlyCommon.decode = function(str){
-        return str.replace(/^&#36;/g, "$").replace(/^&amp;#36;/g, '$').replace(/&#46;/g, '.').replace(/&amp;#46;/g, '.');
-    };
-
-    /**
-    * Decode escaped HTML from db
-    * @param {string} str - value to decode
-    * @returns {string} decoded string
-    */
-    countlyCommon.decodeHtml = function(html) {
-        var txt = document.createElement("textarea");
-        txt.innerHTML = html;
-        return txt.value;
-    };
 
     function getUniqArray(weeksArray, weekCounts, monthsArray, monthCounts, periodArr) {
         if (_period == "month" || _period == "day" || _period == "hour" || _period == "yesterday") {

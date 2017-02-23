@@ -14,8 +14,22 @@ function getCountryName(cc){
     }
 }
 
+/**
+* This module defines default model to handle event data
+* @module api/lib/countly_countries
+* @extends module:api/lib/countly_model
+*/
+
+/** @lends module:api/lib/countly_countries */
 var countlyLocation = countlyModel.create(getCountryName);
 
+/**
+* Get location data for the map
+* @param {object} options - additional options
+* @param {number} options.maxCountries - maximum of results to output
+* @param {string} options.sort - by which property to sort
+* @returns {array} array with retrieved data about countries
+*/
 countlyLocation.getLocationData = function (options) {
     var locationData = countlyCommon.extractTwoLevelData(countlyLocation.getDb(), countlyLocation.getMeta(), countlyLocation.clearObject, [
         {

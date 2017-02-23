@@ -607,6 +607,31 @@ if (cluster.isMaster) {
                 queryString = urlParts.query,
                 paths = urlParts.pathname.split("/"),
                 apiPath = "",
+                /**
+                * Main request processing object containing all informashed shared through all the parts of the same request
+                * @typedef params
+                * @type {object}
+                * @property {string} href - full URL href
+                * @property {res} res - nodejs response object
+                * @property {req} req - nodejs request object
+                * @property {object} qstring - all the passed fields either through query string in GET requests or body and query string for POST requests
+                * @property {string} apiPath - two top level url path, for example /i/analytics
+                * @property {string} fullPath - full url path, for example /i/analytics/dashboards
+                * @property {object} files - object with uploaded files, available in POST requests which upload files
+                * @property {boolean} cancelRequest - Used for skipping SDK requests, if contains true, then request should be ignored and not processed. Can be set at any time by any plugin, but API only checks for it in beggining after / and /sdk events, so that is when plugins should set it if needed
+                * @property {boolean} bulk - True if this SDK request is processed from the bulk method
+                * @property {array} promises - Array of the promises by different events. When all promises are fulfilled, request counts as processed
+                * @property {string} ip_address - IP address of the device submitted request, exists in all SDK requests
+                * @property {object} user - Data with some user info, like country geolocation, etc from the request, exists in all SDK requests
+                * @property {object} app_user - Document from the app_users collection for current user, exists in all SDK requests after validation
+                * @property {object} app_user_id - ID of app_users document for the user, exists in all SDK requests after validation
+                * @property {object} app - Document for the app sending request, exists in all SDK requests after validation and after validateUserForDataReadAPI validation
+                * @property {ObjectID} app_id - ObjectID of the app document, available after validation
+                * @property {string} app_cc - Selected app country, available after validation
+                * @property {string} appTimezone - Selected app timezone, available after validation
+                * @property {object} member - All data about dashboard user sending the request, exists on all requests containing api_key, after validation through validation methods
+                * @property {timeObject} time - Time object for the request
+                */
                 params = {
                     'href':urlParts.href,
                     'qstring':queryString,

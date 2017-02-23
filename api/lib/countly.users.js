@@ -2,10 +2,21 @@ var countlyModel = require('./countly.model.js'),
     countlyCommon = require('./countly.common.js'),
     underscore = require('underscore');
 
+/**
+* This module defines default model to handle users collection data
+* @module api/lib/countly_users
+* @extends module:api/lib/countly_model
+*/
+
+/** @lends module:api/lib/countly_users */
 var countlySession = countlyModel.create();
 countlySession.setMetrics(["t", "n", "u", "d", "e", "m", "p"]);
 countlySession.setUniqueMetrics(["u", "m", "p"]);
-    
+
+/**
+* Get main dashboard data, which is displayed on main dashboard
+* @returns {object} dashboard data about users and sessions
+*/
 countlySession.getSessionData = function () {
     var map = {t:"total_sessions", n:"new_users", u:"total_users", d:"total_time", e:"events"};
     var ret = {};
@@ -57,6 +68,10 @@ countlySession.getSessionData = function () {
     return ret;
 };
 
+/**
+* Get metric data by periods
+* @returns {array} with metric data objects
+*/
 countlySession.getSubperiodData = function () {
 
    var dataProps = [
