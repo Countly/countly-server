@@ -28,6 +28,8 @@
         "sort": true,
         "search": true,
         "collapse": true,
+        "typedefs": true,
+        "removeQuotes": "all",
         "disqus": ""
     }
 }
