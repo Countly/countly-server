@@ -1,9 +1,9 @@
 /**
 * This module defines default model to handle users collection data
-* @module api/lib/countly_common
+* @module "api/lib/countly.common"
 */
 
-/** @lends module:api/lib/countly_common */
+/** @lends module:api/lib/countly.common */
 var countlyCommon = {},
     time = require('time')(Date),
     moment = require('moment'),

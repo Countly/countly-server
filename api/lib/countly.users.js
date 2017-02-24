@@ -4,11 +4,11 @@ var countlyModel = require('./countly.model.js'),
 
 /**
 * This module defines default model to handle users collection data
-* @module api/lib/countly_users
-* @extends module:api/lib/countly_model
+* @module "api/lib/countly.users"
+* @extends module:api/lib/countly.model~countlyMetric
 */
 
-/** @lends module:api/lib/countly_users */
+/** @lends module:api/lib/countly.users */
 var countlySession = countlyModel.create();
 countlySession.setMetrics(["t", "n", "u", "d", "e", "m", "p"]);
 countlySession.setUniqueMetrics(["u", "m", "p"]);

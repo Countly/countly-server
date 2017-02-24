@@ -4,8 +4,8 @@ var countlyModel = require('./countly.model.js'),
 
 /**
 * This module defines default model to handle event data
-* @module api/lib/countly_event
-* @extends module:api/lib/countly_model
+* @module "api/lib/countly.event"
+* @extends module:api/lib/countly.model~countlyMetric
 */
 var countlyEvent = countlyModel.create();
 countlyEvent.setMetrics(["c","s","dur"]);

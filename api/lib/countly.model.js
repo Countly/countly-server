@@ -2,16 +2,16 @@ var countlyCommon = require('./countly.common.js'),
     _ = require('underscore');
 /**
 * This module loads existing model or create one from default module if it does not exist
-* @module api/lib/countly_model
+* @module "api/lib/countly.model"
 */
 
-/** @lends module:api/lib/countly_model */
+/** @lends module:api/lib/countly.model */
 var countlyModel = {};
 
 /**
 * Loads countly model for provided data if it already exists in api/lib folder or in plugins, or creates new one from default model if it does not exist
 * @param {string} segment - data segment name to process
-* @returns {module:api/lib/countly_model~countlyMetric} countly metric model for provided name
+* @returns {module:api/lib/countly.model~countlyMetric} countly metric model for provided name
 * @example
 * var countlyModel = require("api/lib/countly.mode.js");
 * var countlyDensity = countlyModel.load("densities");
@@ -39,7 +39,7 @@ countlyModel.load = function(segment){
 /**
 * Create Countly data model to process data segment from fetched from server
 * @param {function=} fetchValue - default function to fetch and transform if needed value from standard data model
-* @returns {module:api/lib/countly_model~countlyMetric} new countly metric model
+* @returns {module:api/lib/countly.model~countlyMetric} new countly metric model
 * @example
 * var countlyModel = require("api/lib/countly.mode.js");
 * var countlyDensity = countlyModel.create(function(val, data, separate){
@@ -62,7 +62,7 @@ countlyModel.create = function (fetchValue) {
     
     /**
     * Fetching method to modify segment values, like changing name or grouping them
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     */
     countlyMetric.fetchValue = fetchValue || function(val){ return val;};
     //Private Properties
@@ -78,7 +78,7 @@ countlyModel.create = function (fetchValue) {
 
     /**
     * Reset/delete all retrieved metric data, like when changing app or selected time period
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     */
     countlyMetric.reset = function () {
         _Db = {};
@@ -87,7 +87,7 @@ countlyModel.create = function (fetchValue) {
     
     /**
     * Get current data, if some view or model requires access to raw data
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     * @return {object} raw data returned from server either in standard metric model or preprocessed data, based on what model uses
     */
     countlyMetric.getDb = function () {
@@ -96,7 +96,7 @@ countlyModel.create = function (fetchValue) {
     
     /**
     * Set current data for model, if you need to provide data for model from another resource (as loaded in different model)
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     * @param {object} db - set new data to be used by model
     */
     countlyMetric.setDb = function (db) {
@@ -106,7 +106,7 @@ countlyModel.create = function (fetchValue) {
     
     /**
     * Extend current data for model with some additional information about latest period (like data from action=refresh request)
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     * @param {object} db - set new data to be used by model
     */
     countlyMetric.extendDb = function (data) {
@@ -116,7 +116,7 @@ countlyModel.create = function (fetchValue) {
     
     /**
     * Set total user object for this metric to use for unique user correction
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     * @param {object} totalUsersObj - object with total user data from {@link module:api/parts/data/fetch.getTotalUsersObj}
     */
     countlyMetric.setTotalUsersObj = function(totalUsersObj) {
@@ -125,7 +125,7 @@ countlyModel.create = function (fetchValue) {
     
     /**
     * Get total user object for this metric to use for unique user correction
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     * @returns {object} object with total user data from {@link module:api/parts/data/fetch.getTotalUsersObj}
     */
     countlyMetric.getTotalUsersObj = function() {
@@ -134,7 +134,7 @@ countlyModel.create = function (fetchValue) {
     
     /**
     * Sets array of metric names that are unique and estimation should be applied to them
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     * @param {array} uniques - array of strings with unique metrics for current data, default: ["u"]
     */
     countlyMetric.setUniqueMetrics = function(uniques) {
@@ -143,7 +143,7 @@ countlyModel.create = function (fetchValue) {
     
     /**
     * Get array of unique metric names, for which user estimation should be applied
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     * @returns {array} uniques - array of strings with unique metrics for current data, for example: ["u"]
     */
     countlyMetric.getUniqueMetrics = function() {
@@ -152,7 +152,7 @@ countlyModel.create = function (fetchValue) {
     
     /**
     * Sets array of metric names that is used by this model
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     * @param {array} metrics - array of strings with metric names for current data, return will be sorted by first metric, default: ["t", "u", "n"]
     */
     countlyMetric.setMetrics = function(metrics) {
@@ -161,7 +161,7 @@ countlyModel.create = function (fetchValue) {
     
     /**
     * Get array of metric names, for this data
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     * @returns {array} uniques - array of strings with metrics for current data, for example: ["t", "u", "n"]
     */
     countlyMetric.getMetrics = function() {
@@ -170,7 +170,7 @@ countlyModel.create = function (fetchValue) {
     
     /**
     * Get array of unique segment values available for provided segment data
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     * @param {string} segment - name of the segment/metric to get meta for, by default will use default _name provided on initialization
     * @returns {array} array of unique segment values
     */
@@ -180,7 +180,7 @@ countlyModel.create = function (fetchValue) {
 
     /**
     * Get data after initialize finished and data was retrieved
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     * @param {string} segment - name of the segment to get data for, or will try to get higher level data, like from users collection, without segments
     * @param {boolean} clean - should retrieve clean data or preprocessed by fetchValue function
     * @param {boolean} join - join none unique metrics into single graph, for example to dispaly in bars on the same graph and not 2 separate pie charts
@@ -327,7 +327,7 @@ countlyModel.create = function (fetchValue) {
 
     /**
     * Prefill all expected metrics as u, t, n with 0 if they don't exist, to avoid null values in the result, which won't work when drawing graphs
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     * @param {object} obj - oject to prefill with  values if they don't exist
     * @returns prefilled object
     */
@@ -349,7 +349,7 @@ countlyModel.create = function (fetchValue) {
 
     /**
     * Get bar data for metric
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     * @param {string} segment - name of the segment to get data for, or use date, for higher level metric without segments
     * @param {number} maxItems - amount of top items to return
     * @param {string} metric - name of the to use for ordering and returning
@@ -409,7 +409,7 @@ countlyModel.create = function (fetchValue) {
     
     /**
     * Get data for dynamic tables
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     * @param {string} segment - name of the segment to get data for, by default will use default _name provided on initialization
     * @param {number} maxItems - amount of top items to return
     * @returns {array} object to use when displaying table 
@@ -451,7 +451,7 @@ countlyModel.create = function (fetchValue) {
     
     /**
     * Get value of single metric with changes and sparkle lines
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     * @param {string} metric - metric name to return value for
     * @returns {array} object to use when displaying number {value: 123, change: 12, sparkline: [1,2,3,4,5,6,7]}
     */
@@ -479,7 +479,7 @@ countlyModel.create = function (fetchValue) {
     
     /**
     * Get timeline data for higher metrics without segments
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     * @returns {array} object to use when displaying number {value: 123, change: 12, sparkline: [1,2,3,4,5,6,7]}
     */
     countlyMetric.getTimelineData = function () {
@@ -500,7 +500,7 @@ countlyModel.create = function (fetchValue) {
     
     /**
     * Get range data which is usually stored in some time ranges/buckets. As example is loyalty, session duration and session frequency
-    * @memberof module:api/lib/countly_model~countlyMetric
+    * @memberof module:api/lib/countly.model~countlyMetric
     * @param {string} metric - name of the property in the model to fetch
     * @param {string} meta - name of the meta where property's ranges are stored
     * @param {string} explain - function that receives index of the bucket and returns bucket name

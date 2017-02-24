@@ -16,11 +16,11 @@ function getCountryName(cc){
 
 /**
 * This module defines default model to handle event data
-* @module api/lib/countly_countries
-* @extends module:api/lib/countly_model
+* @module "api/lib/countly.countries"
+* @extends module:api/lib/countly.model~countlyMetric
 */
 
-/** @lends module:api/lib/countly_countries */
+/** @lends module:api/lib/countly.countries */
 var countlyLocation = countlyModel.create(getCountryName);
 
 /**
