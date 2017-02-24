@@ -68,7 +68,7 @@
     "mcc-mnc-list":"1.0.60",
     "yamljs":"0.2.8",
     "jsdoc":"3.4.3",
-    "docdash":"0.4.0"
+    "docdash":"ar2rsawseen/docdash"
   },
   "jshintConfig": {
     "esversion": 6,
