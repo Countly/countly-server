@@ -17,10 +17,6 @@ var countlyCommon = {},
         _currMoment = moment();
 
     // Public Properties
-    
-            "reqMonthDbDateIds":requiredDbDateIds,
-            "reqZeroDbDateIds":requiredZeroDbDateIds
-
     /**
     * Currently selected period
     * @property {number} start - period start timestamp in miliseconds
