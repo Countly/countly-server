@@ -1,3 +1,9 @@
+/**
+* This module is meant from fetching data from db and processing and outputting
+* @module api/parts/data/fetch
+*/
+
+/** @lends module:api/parts/data/fetch */
 var fetch = {},
     common = require('./../../utils/common.js'),
     async = require('async'),
@@ -455,6 +461,30 @@ var fetch = {},
 		});
     };
 	
+    /**
+    * Get metric segment data from database, merging year and month and splitted docments together and breaking down data by segment
+    * @param {params} params - params object with app_id and date
+    * @param {string} metric - name of the collection where to get data from
+    * @param {object} totalUsersMetric - data from total users api request to correct unique user values
+    * @param {function} callback - callback to retrieve the data, receiving only one param which is output
+    * @example <caption>Retrieved data</caption>
+    * [
+    *    {"_id":"Cricket Communications","t":37,"n":21,"u":34},
+    *    {"_id":"Tele2","t":32,"n":19,"u":31},
+    *    {"_id":"\tAt&amp;t","t":32,"n":20,"u":31},
+    *    {"_id":"O2","t":26,"n":19,"u":26},
+    *    {"_id":"Metro Pcs","t":28,"n":13,"u":26},
+    *    {"_id":"Turkcell","t":23,"n":11,"u":23},
+    *    {"_id":"Telus","t":22,"n":15,"u":22},
+    *    {"_id":"Rogers Wireless","t":21,"n":13,"u":21},
+    *    {"_id":"Verizon","t":21,"n":11,"u":21},
+    *    {"_id":"Sprint","t":21,"n":11,"u":20},
+    *    {"_id":"Vodafone","t":22,"n":12,"u":19},
+    *    {"_id":"Orange","t":18,"n":12,"u":18},
+    *    {"_id":"T-mobile","t":17,"n":9,"u":17},
+    *    {"_id":"Bell Canada","t":12,"n":6,"u":12}
+    * ]
+    */
 	fetch.getMetric = function(params, metric, totalUsersMetric, callback){
         var queryMetric = params.qstring.metric || metric;
         countlyCommon.setTimezone(params.appTimezone);
@@ -550,10 +580,36 @@ var fetch = {},
         });
     };
     
+    /**
+    * Get Countly standard data model from database for segments or single level data as users, merging year and month and splitted docments together
+    * @param {string} collection - name of the collection where to get data from
+    * @param {params} params - params object with app_id and date
+    * @param {object=} options - additional optional settings
+    * @param {object=} options.db - database connection to use, by default will try to use common.db
+    * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
+    * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
+    * @param {object=} options.levels - describes which metrics to expect on which levels
+    * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+    * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+    * @param {function} callback - callback to retrieve the data, receiving only one param which is output
+    */
     fetch.getTimeObj = function (collection, params, options, callback) {
         fetchTimeObj(collection, params, null, options, callback);
     };
 
+    /**
+    * Get Countly standard data model from database for events, merging year and month and splitted docments together
+    * @param {string} collection - name of the collection where to get data from
+    * @param {params} params - params object with app_id and date
+    * @param {object=} options - additional optional settings
+    * @param {object=} options.db - database connection to use, by default will try to use common.db
+    * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
+    * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
+    * @param {object=} options.levels - describes which metrics to expect on which levels
+    * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+    * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+    * @param {function} callback - callback to retrieve the data, receiving only one param which is output
+    */
     fetch.getTimeObjForEvents = function (collection, params, options, callback) {
         fetchTimeObj(collection, params, true, options, callback);
     };
@@ -564,6 +620,12 @@ var fetch = {},
         });
     };
 
+    /**
+    * Get data for estimating total users count if period contains today
+    * @param {string} metric - name of the collection where to get data from
+    * @param {params} params - params object with app_id and date
+    * @param {function} callback - callback to retrieve the data, receiving only one param which is output
+    */
     fetch.getTotalUsersObj = getTotalUsersObj;
 
     function getTotalUsersObj(metric, params, callback) {

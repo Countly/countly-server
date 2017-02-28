@@ -839,6 +839,7 @@
     
     /**
     * Extract range data from standard countly metric data model
+    * @param {object} db - countly standard metric data object
     * @param {string} propertyName - name of the property to extract
     * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
     * @param {function} explainRange - function to convert range/bucket index to meaningful label
@@ -3052,6 +3053,10 @@
     * @property {array} uniquePeriodCheckArr - array with ticks for higher buckets to current period unique value estimation, example ["2016.w51","2016.w52","2016.w53","2017.1",...]
     * @property {array} previousUniquePeriodArr - array with ticks for previous period which contains data for unique values, like unique users, example ["2016.12.22","2016.w52","2016.12.30"]
     * @property {array} previousUniquePeriodCheckArr - array with ticks for higher buckets to previous period unique value estimation, example ["2016.w47","2016.w48","2016.12"]
+    * @property {string} activePeriod - period name formatted in dateString
+    * @property {string} previousPeriod - previous period name formatted in dateString
+    * @property {number} periodMax - max value of current period tick
+    * @property {number} periodMin - min value of current period tick
     * @example <caption>Special period object (7days)</caption>
     *    {
     *        "currentPeriodArr":["2017.1.14","2017.1.15","2017.1.16","2017.1.17","2017.1.18","2017.1.19","2017.1.20"],

@@ -17,11 +17,81 @@ var countlyCommon = {},
         _currMoment = moment();
 
     // Public Properties
+    
+            "reqMonthDbDateIds":requiredDbDateIds,
+            "reqZeroDbDateIds":requiredZeroDbDateIds
 
+    /**
+    * Currently selected period
+    * @property {number} start - period start timestamp in miliseconds
+    * @property {number} end - period end timestamp in miliseconds
+    * @property {array} currentPeriodArr - array with ticks for current period (available only for special periods), example ["2016.12.22","2016.12.23","2016.12.24", ...]
+    * @property {array} previousPeriodArr - array with ticks for previous period (available only for special periods), example ["2016.12.22","2016.12.23","2016.12.24", ...]
+    * @property {string} dateString - date format to use when outputting date in graphs, example D MMM, YYYY
+    * @property {boolean} isSpecialPeriod - true if current period is special period, false if it is not
+    * @property {number} daysInPeriod - amount of full days in selected period, example 30
+    * @property {boolean} periodContainsToday - true if period contains today, false if not
+    * @property {array} uniquePeriodArr - array with ticks for current period which contains data for unique values, like unique users, example ["2016.12.22","2016.w52","2016.12.30", ...]
+    * @property {array} uniquePeriodCheckArr - array with ticks for higher buckets to current period unique value estimation, example ["2016.w51","2016.w52","2016.w53","2017.1",...]
+    * @property {array} previousUniquePeriodArr - array with ticks for previous period which contains data for unique values, like unique users, example ["2016.12.22","2016.w52","2016.12.30"]
+    * @property {array} previousUniquePeriodCheckArr - array with ticks for higher buckets to previous period unique value estimation, example ["2016.w47","2016.w48","2016.12"]
+    * @property {string} activePeriod - period name formatted in dateString (available in non-special periods)
+    * @property {string} previousPeriod - previous period name formatted in dateString (available in non-special periods)
+    * @property {number} periodMax - max value of current period tick (available in non-special periods)
+    * @property {number} periodMin - min value of current period tick (available in non-special periods)
+    * @property {array} reqMonthDbDateIds - metric model month document ids to query for this period
+    * @property {array} reqZeroDbDateIds - metric model year document ids to query for this period
+    * @example <caption>Special period object (7days)</caption>
+    * {
+    *    "start":1487721600000,
+    *    "end":1488326399000,
+    *    "activePeriod":"NA",
+    *    "periodMax":"NA",
+    *    "periodMin":"NA",
+    *    "previousPeriod":"NA",
+    *    "currentPeriodArr":["2017.2.22","2017.2.23","2017.2.24","2017.2.25","2017.2.26","2017.2.27","2017.2.28"],
+    *    "previousPeriodArr":["2017.2.15","2017.2.16","2017.2.17","2017.2.18","2017.2.19","2017.2.20","2017.2.21"],
+    *    "uniquePeriodArr":["2017.2.22","2017.2.23","2017.2.24","2017.2.25","2017.w9"],
+    *    "uniquePeriodCheckArr":["2017.w8","2017.w9"],
+    *    "previousUniquePeriodArr":["2017.2.15","2017.2.16","2017.2.17","2017.2.18","2017.2.19","2017.2.20","2017.2.21"],
+    *    "previousUniquePeriodCheckArr":["2017.w7","2017.w8"],
+    *    "dateString":"D MMM",
+    *    "daysInPeriod":7,
+    *    "isSpecialPeriod":true,
+    *    "reqMonthDbDateIds":["2017:2"],
+    *    "reqZeroDbDateIds":["2017:0"],
+    *    "periodContainsToday":true
+    * }
+    * @example <caption>Simple period object (today period - hour)</caption>
+    * {
+    *    "start":1488240000000,
+    *    "end":1488326399000,
+    *    "activePeriod":"2017.2.28",
+    *    "periodMax":11,
+    *    "periodMin":0,
+    *    "previousPeriod":"2017.2.27",
+    *    "currentPeriodArr":["2017.2.28"],
+    *    "previousPeriodArr":["2017.2.27"],
+    *    "uniquePeriodArr":[],
+    *    "uniquePeriodCheckArr":[],
+    *    "previousUniquePeriodArr":[],
+    *    "previousUniquePeriodCheckArr":[],
+    *    "dateString":"HH:mm",
+    *    "daysInPeriod":1,
+    *    "isSpecialPeriod":false,
+    *    "reqMonthDbDateIds":["2017:2"],
+    *    "reqZeroDbDateIds":["2017:0"],
+    *    "periodContainsToday":true
+    * }
+    */
     countlyCommon.periodObj = getPeriodObj();
 
     // Public Methods
 
+    /**
+    * Change timezone of internal Date object
+    * @param {string} appTimezone - name of the timezone
+    */
     countlyCommon.setTimezone = function(appTimezone) {
         _appTimezone = appTimezone;
 
@@ -78,15 +148,11 @@ var countlyCommon = {},
     /**
     * Fetches nested property values from an obj.
     * @param {object} obj - standard countly metric object
-    * @param {string} path - dot separate path to fetch from object
-    * @param {object} def - stub object to return if nothing is found on provided path
+    * @param {string} desc - dot separate path to fetch from object
     * @returns {object} fetched object from provided path
     * @example <caption>Path found</caption>
     * //outputs {"u":20,"t":20,"n":5}
-    * countlyCommon.getDescendantProp({"2017":{"1":{"2":{"u":20,"t":20,"n":5}}}}, "2017.1.2", {"u":0,"t":0,"n":0});
-    * @example <caption>Path not found</caption>
-    * //outputs {"u":0,"t":0,"n":0}
-    * countlyCommon.getDescendantProp({"2016":{"1":{"2":{"u":20,"t":20,"n":5}}}}, "2017.1.2", {"u":0,"t":0,"n":0});
+    * countlyCommon.getDescendantProp({"2017":{"1":{"2":{"u":20,"t":20,"n":5}}}}, "2017.1.2");
     */
     countlyCommon.getDescendantProp = function (obj, desc) {
         desc = String(desc);
@@ -103,6 +169,7 @@ var countlyCommon = {},
 
     /**
     * Extract range data from standard countly metric data model
+    * @param {object} db - countly standard metric data object
     * @param {string} propertyName - name of the property to extract
     * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
     * @param {function} explainRange - function to convert range/bucket index to meaningful label
@@ -406,7 +473,7 @@ var countlyCommon = {},
     * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
     * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
     * @param {object} dataProperties - describing which properties and how to extract
-    * @param {object=} estOverrideMetric - data from total users api request to correct unique user values
+    * @param {object=} totalUserOverrideObj - data from total users api request to correct unique user values
     * @returns {object} object to use in bar and pie charts with {"chartData":_.compact(tableData)}
     * @example <caption>Extracting carriers data from carriers collection</caption>
     * var chartData = countlyCommon.extractTwoLevelData(_carrierDb, ["At&t", "Verizon"], countlyCarrier.clearObject, [
@@ -619,6 +686,9 @@ var countlyCommon = {},
     * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
     * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
     * @param {function} fetchFunction - function to fetch property, default used is function (rangeArr, dataObj) {return rangeArr;}
+    * @param {number} maxItems - amount of items to return, default 3
+    * @param {string=} metric - metric to output and use in sorting, default "t"
+    * @param {object=} totalUserOverrideObj - data from total users api request to correct unique user values
     * @returns {array} array with top 3 values
     * @example <caption>Return data</caption>
     * [
@@ -727,6 +797,54 @@ var countlyCommon = {},
         return formattedDateStart.format(countlyCommon.periodObj.dateString) + " - " + formattedDateEnd.format(countlyCommon.periodObj.dateString);
     };
 	
+    /**
+    * Extract single level data without metrics/segments, like total user data from users collection
+    * @param {object} db - countly standard metric data object
+    * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+    * @param {object} dataProperties - describing which properties and how to extract
+    * @returns {array} object to use in timeline graph
+    * @example <caption>Extracting total users data from users collection</caption>
+    * countlyCommon.extractData(_sessionDb, countlySession.clearObject, [
+    *     { name:"t" },
+    *     { name:"n" },
+    *     { name:"u" },
+    *     { name:"d" },
+    *     { name:"e" }
+    * ]);
+    * @example <caption>Returned data</caption>
+    * [
+    *    {"_id":"2017-1-30","t":6,"n":6,"u":6,"d":0,"e":6},
+    *    {"_id":"2017-1-31","t":2,"n":2,"u":2,"d":0,"e":2},
+    *    {"_id":"2017-2-1","t":5,"n":5,"u":5,"d":0,"e":5},
+    *    {"_id":"2017-2-2","t":5,"n":5,"u":5,"d":0,"e":5},
+    *    {"_id":"2017-2-3","t":8,"n":8,"u":8,"d":0,"e":8},
+    *    {"_id":"2017-2-4","t":7,"n":7,"u":7,"d":0,"e":7},
+    *    {"_id":"2017-2-5","t":6,"n":6,"u":6,"d":0,"e":6},
+    *    {"_id":"2017-2-6","t":5,"n":5,"u":5,"d":0,"e":5},
+    *    {"_id":"2017-2-7","t":6,"n":6,"u":6,"d":0,"e":6},
+    *    {"_id":"2017-2-8","t":5,"n":5,"u":5,"d":0,"e":5},
+    *    {"_id":"2017-2-9","t":4,"n":4,"u":4,"d":0,"e":4},
+    *    {"_id":"2017-2-10","t":6,"n":6,"u":6,"d":0,"e":6},
+    *    {"_id":"2017-2-11","t":8,"n":8,"u":8,"d":0,"e":8},
+    *    {"_id":"2017-2-12","t":3,"n":3,"u":3,"d":0,"e":3},
+    *    {"_id":"2017-2-13","t":8,"n":6,"u":7,"d":0,"e":8},
+    *    {"_id":"2017-2-14","t":7,"n":7,"u":7,"d":0,"e":7},
+    *    {"_id":"2017-2-15","t":4,"n":4,"u":4,"d":0,"e":4},
+    *    {"_id":"2017-2-16","t":2,"n":2,"u":2,"d":0,"e":2},
+    *    {"_id":"2017-2-17","t":4,"n":4,"u":4,"d":0,"e":4},
+    *    {"_id":"2017-2-18","t":14,"n":14,"u":14,"d":0,"e":14},
+    *    {"_id":"2017-2-19","t":20,"n":11,"u":20,"d":0,"e":20},
+    *    {"_id":"2017-2-20","t":25,"n":9,"u":25,"d":0,"e":25},
+    *    {"_id":"2017-2-21","t":33,"n":12,"u":33,"d":0,"e":33},
+    *    {"_id":"2017-2-22","t":36,"n":12,"u":36,"d":0,"e":36},
+    *    {"_id":"2017-2-23","t":37,"n":12,"u":37,"d":0,"e":37},
+    *    {"_id":"2017-2-24","t":29,"n":5,"u":29,"d":0,"e":29},
+    *    {"_id":"2017-2-25","t":28,"n":7,"u":28,"d":0,"e":28},
+    *    {"_id":"2017-2-26","t":3,"n":3,"u":3,"d":0,"e":3},
+    *    {"_id":"2017-2-27","t":3,"n":3,"u":3,"d":0,"e":3},
+    *    {"_id":"2017-2-28","t":7,"n":7,"u":7,"d":0,"e":7}
+    * ]
+    */
 	countlyCommon.extractData = function (db, clearFunction, dataProperties) {
 
         countlyCommon.periodObj = getPeriodObj();
@@ -803,6 +921,44 @@ var countlyCommon = {},
         return underscore.compact(tableData);
     };
 	
+    /**
+    * Extract metrics data break down by segments, like total user by carriers
+    * @param {object} db - countly standard metric data object
+    * @param {object} rangeArray - array of all metrics/segments to extract (usually what is contained in meta)
+    * @param {function} clearFunction - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+    * @param {object} dataProperties - describing which properties and how to extract
+    * @param {object=} totalUserOverrideObj - data from total users api request to correct unique user values
+    * @returns {array} object to use in timeline graph
+    * @example <caption>Extracting total users data from users collection</caption>
+    * countlyCommon.extractData(countlyCarriers.getDb(), countlyCarriers.getMeta(), countlyCarriers.clearObject, [
+    *     {
+    *         name:"carriers",
+    *         func:function (rangeArr, dataObj) {
+    *             return rangeArr;
+    *         }
+    *     },
+    *     { "name":"t" },
+    *     { "name":"n" },
+    *     { "name":"u" }
+    * ]);
+    * @example <caption>Returned data</caption>
+    * [
+    *    {"_id":"Cricket Communications","t":37,"n":21,"u":34},
+    *    {"_id":"Tele2","t":32,"n":19,"u":31},
+    *    {"_id":"\tAt&amp;t","t":32,"n":20,"u":31},
+    *    {"_id":"O2","t":26,"n":19,"u":26},
+    *    {"_id":"Metro Pcs","t":28,"n":13,"u":26},
+    *    {"_id":"Turkcell","t":23,"n":11,"u":23},
+    *    {"_id":"Telus","t":22,"n":15,"u":22},
+    *    {"_id":"Rogers Wireless","t":21,"n":13,"u":21},
+    *    {"_id":"Verizon","t":21,"n":11,"u":21},
+    *    {"_id":"Sprint","t":21,"n":11,"u":20},
+    *    {"_id":"Vodafone","t":22,"n":12,"u":19},
+    *    {"_id":"Orange","t":18,"n":12,"u":18},
+    *    {"_id":"T-mobile","t":17,"n":9,"u":17},
+    *    {"_id":"Bell Canada","t":12,"n":6,"u":12}
+    * ]
+    */
 	countlyCommon.extractMetric = function (db, rangeArray, clearFunction, dataProperties, totalUserOverrideObj) {
 
         countlyCommon.periodObj = getPeriodObj();
@@ -1025,11 +1181,10 @@ var countlyCommon = {},
     * @param {object} data - countly metric model data
     * @param {array} properties - array of all properties to extract
     * @param {array} unique - array of all properties that are unique from properties array. We need to apply estimation to them
-    * @param {object} estOverrideMetric - using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden
-    * @param {function} clearObject - function to prefill all expected properties as u, t, n, etc with 0, so you would not have null in the result which won't work when drawing graphs
+    * @param {object} totalUserOverrideObj - using unique property as key and total_users estimation property as value for all unique metrics that we want to have total user estimation overridden
     * @returns {object} dashboard data object
     * @example
-    * countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u:"users"}, countlySession.clearObject);
+    * countlyCommon.getDashboardData(countlySession.getDb(), ["t", "n", "u", "d", "e", "p", "m"], ["u", "p", "m"], {u:"users"});
     * //outputs
     * {
     *      "t":{"total":980,"prev-total":332,"change":"195.2%","trend":"u"},
@@ -1182,6 +1337,18 @@ var countlyCommon = {},
         return dataArr;
     }
 
+    /**
+    * Get timestamp query range based on request data using period and app's timezone
+    * @param {params} params - params object
+    * @param {boolean} inSeconds - if true will output result in seconds, else in miliseconds
+    * @returns {object} mongodb query object with preset ts field to be queried
+    * @example
+    * countlyCommon.getTimestampRangeQuery(params, true)
+    * //outputs
+    * {
+    *      ts:{$gte:1488259482, $lte:1488279482},
+    * }
+    */
     countlyCommon.getTimestampRangeQuery = function(params, inSeconds){
         var periodObj = countlyCommon.periodObj;
         //create current period array if it does not exist
