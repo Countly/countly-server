@@ -1,3 +1,23 @@
+## Version 16.12.3
+
+* Fix: Estimated data for full buckets
+* Fix: Changing password validation on server side
+* Fix: Push - Audience calculation when sending to multiple platforms
+* Fix: Push - Error for API originated messages
+* Fix: Server Stats - incorrect data output
+* Fix: Server Stats - counting extend sessions as new sessions
+* Fix: Populator - fixing typos in generated data
+* Fix: timestamp data range starting from January for period year
+* Do not record old property for device_id changes with merges
+* Do google services check upon installation and disable them if not usable
+* Fix: Enterprise User profiles: accept 0 and false as valid custom property values
+* Fix: Enterprise User profiles: internal events as crashes or views were not displayed if there are no custom events
+* Fix: Enterprise User profiles: do not reload userprofiles table if previous request is not yet finished
+* Fix: Enterprise Attribution: do not reattribute if user is older than 5 minutes and have a session
+* Fix: Enterprise Drill: do not count session extends as separate sessions
+* Fix: Enterprise Drill: bug in displaying Monthly data in beginning of the year
+* Fix: Enterprise Push: skip approve for API-originated messages
+
 ## Version 16.12.2
 
 * Fix: Push - send badge data to Android
