@@ -250,7 +250,7 @@ const assistantJob = {},
 
                                         const enough_pages = metricData.length >= 5;
                                         if (enough_pages) {
-                                            { // (2.9) Page entry and page exit summary
+                                            { // (2.9) View Metrics (Page entry and page exit summary)
                                                 const data = [];
 
                                                 const sortAndExtract = function (dataHolder, fieldName, metricInfo) {

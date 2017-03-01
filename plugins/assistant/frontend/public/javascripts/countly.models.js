@@ -154,13 +154,35 @@
                             obj.notif_type === "2" && obj.notif_subtype === "4") ){
 
                             var tableContent_1234 = tableStart + rowStart +
-                                cellStart + 'this week' + cellEnd +
-                                cellStart + obj.data[0] + ' users' + cellEnd +
+                                    cellStart + 'this week' + cellEnd +
+                                    cellStart + obj.data[0] + ' users' + cellEnd +
                                 rowEnd + rowStart +
-                                cellStart + 'previous week' + cellEnd +
-                                cellStart + obj.data[1] + ' users' + cellEnd +
+                                    cellStart + 'previous week' + cellEnd +
+                                    cellStart + obj.data[1] + ' users' + cellEnd +
                                 rowEnd + tableEnd;
                             obj.msg = tableContent_1234 + obj.msg;
+                        }
+
+                        //page view metrics
+                        if(obj.plugin_name === "assistant-base" && (obj.notif_type === "2" && obj.notif_subtype === "9") ){
+
+                            var tableContent_9 = tableStart + rowStart +
+                                    cellStart + obj.data[0] + cellEnd +
+                                    cellStart + obj.data[1] + ' visits' + cellEnd +
+                                rowEnd + rowStart +
+                                    cellStart + obj.data[2] + cellEnd +
+                                    cellStart + obj.data[3] + ' entries' + cellEnd +
+                                rowEnd + rowStart +
+                                    cellStart + obj.data[4] + cellEnd +
+                                    cellStart + obj.data[5] + ' exits' + cellEnd +
+                                rowEnd + rowStart +
+                                    cellStart + obj.data[6] + cellEnd +
+                                    cellStart + obj.data[7] + ' bounces' + cellEnd +
+                                rowEnd + rowStart +
+                                    cellStart + obj.data[8] + cellEnd +
+                                    cellStart + obj.data[9] + ' minutes' + cellEnd +
+                                rowEnd + tableEnd;
+                            obj.msg = tableContent_9 + obj.msg;
                         }
                     }
 
