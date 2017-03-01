@@ -92,6 +92,81 @@
                     messageArr.unshift(obj.i18n_id + ".message");//put the message in front of the data
                     obj.msg = jQuery.i18n.prop.apply(null, messageArr);//insert fields where needed
 
+                    //create a table for a few specific tickets
+                    {
+                        var tableStart = '<div style="width: 100%; display: table;">';
+                        var tableEnd = '</div><br>';
+                        var rowStart = '<div style="display: table-row">';
+                        var rowEnd = '</div>';
+                        var cellStart = '<div style="border-style: solid; border-width: 2px; width: 50%; display: table-cell;">';
+                        var cellEnd = '</div>';
+
+                        //web referrals
+                        if(obj.plugin_name === "assistant-base" && (obj.notif_type === "2" && obj.notif_subtype === "8") ){
+
+                            var tableContent_8 = tableStart + rowStart +
+                                    cellStart + obj.data[0] + cellEnd +
+                                    cellStart + obj.data[1] + ' visitors, ' + obj.data[2] + ' visits' + cellEnd +
+                                rowEnd + rowStart +
+                                cellStart + obj.data[3] + cellEnd +
+                                cellStart + obj.data[4] + ' visitors, ' + obj.data[5] + ' visits' + cellEnd +
+                                rowEnd + rowStart +
+                                cellStart + obj.data[6] + cellEnd +
+                                cellStart + obj.data[7] + ' visitors, ' + obj.data[8] + ' visits' + cellEnd +
+                                rowEnd + tableEnd;
+                            obj.msg = tableContent_8 + obj.msg;
+                        }
+
+                        //app sources
+                        if(obj.plugin_name === "assistant-base" && (obj.notif_type === "2" && obj.notif_subtype === "7") ){
+
+                            var tableContent_7 = tableStart + rowStart +
+                                cellStart + obj.data[0] + cellEnd +
+                                cellStart + obj.data[1] + ' installs' + cellEnd +
+                                rowEnd + rowStart +
+                                cellStart + obj.data[2] + cellEnd +
+                                cellStart + obj.data[3] + ' installs' + cellEnd +
+                                rowEnd + rowStart +
+                                cellStart + obj.data[4] + cellEnd +
+                                cellStart + obj.data[5] + ' installs' + cellEnd +
+                                rowEnd + tableEnd;
+                            obj.msg = tableContent_7 + obj.msg;
+                        }
+
+                        //session duration
+                        if(obj.plugin_name === "assistant-base" && (obj.notif_type === "2" && obj.notif_subtype === "5" ||
+                            obj.notif_type === "2" && obj.notif_subtype === "6") ){
+
+                            var tableContent_56 = tableStart + rowStart +
+                                    cellStart + 'this week' + cellEnd +
+                                    cellStart + obj.data[0] + ' minutes ' + obj.data[1] + ' seconds' + cellEnd +
+                                rowEnd + rowStart +
+                                    cellStart + 'previous week' + cellEnd +
+                                    cellStart + obj.data[2] + ' minutes ' + obj.data[3] + ' seconds' + cellEnd +
+                                rowEnd + tableEnd;
+                            obj.msg = tableContent_56 + obj.msg;
+                        }
+
+                        //active users
+                        if(obj.plugin_name === "assistant-base" && (obj.notif_type === "2" && obj.notif_subtype === "1" ||
+                            obj.notif_type === "2" && obj.notif_subtype === "2" ||
+                            obj.notif_type === "2" && obj.notif_subtype === "3" ||
+                            obj.notif_type === "2" && obj.notif_subtype === "4") ){
+
+                            var tableContent_1234 = tableStart + rowStart +
+                                cellStart + 'this week' + cellEnd +
+                                cellStart + obj.data[0] + ' users' + cellEnd +
+                                rowEnd + rowStart +
+                                cellStart + 'previous week' + cellEnd +
+                                cellStart + obj.data[1] + ' users' + cellEnd +
+                                rowEnd + tableEnd;
+                            obj.msg = tableContent_1234 + obj.msg;
+                        }
+                    }
+
+                    //todo is this a security risk?
+                    obj.msg = countlyCommon.decode(obj.msg);//decode given urls
+
                     //prepare notification title
                     var titleArr = obj.data.slice();//create copy of data
                     titleArr.unshift(obj.i18n_id + ".title");//put the title in front of the data

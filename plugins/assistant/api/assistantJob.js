@@ -34,6 +34,7 @@ const assistantJob = {},
                             //log.i('Assistant plugin doing steps: [%j] [%j]', 0.01, fetchResultUsers);
                             countlySession.setDb(fetchResultUsers);
                             const retSession = countlySession.getSessionData();
+                            log.i('Assistant plugin session data: [%j] [%j]', 0.02, retSession);
 
                             //log.i('Assistant plugin doing steps: [%j] [%j] [%j] [%j]', 0.1, params.app_id, apc.app_id);
 
@@ -85,8 +86,10 @@ const assistantJob = {},
                             // (2) generate insight notifications
                             //todo maybe both the positive and negative events should have the same id
                             { // active users bow
+                                //sample input data: "total_users":{"total":185,"change":"-36%","trend":"d","is_estimate":true}
                                 const enough_active_users = retSession.total_users.total > 100;//active users > 100
                                 const val_current_period = retSession.total_users.total;
+                                if (retSession.avg_time.change === "NA") retSession.total_users.change = "0";
                                 const change_amount = parseFloat(retSession.total_users.change);
                                 const val_previous_period = val_current_period / (change_amount / 100 + 1);
                                 const data = [val_current_period, Math.round(val_previous_period)];
@@ -105,8 +108,10 @@ const assistantJob = {},
                             }
 
                             { // active users eow
+                                //sample input data: "total_users":{"total":185,"change":"-36%","trend":"d","is_estimate":true}
                                 const enough_active_users = retSession.total_users.total > 100;//active users > 100
                                 const val_current_period = retSession.total_users.total;
+                                if (retSession.avg_time.change === "NA") retSession.total_users.change = "0";
                                 const change_amount = parseFloat(retSession.total_users.change);
                                 const val_previous_period = val_current_period / (change_amount / 100 + 1);
                                 const data = [val_current_period, Math.round(val_previous_period)];
@@ -125,12 +130,17 @@ const assistantJob = {},
                             }
 
                             { // session duration bow
-                                const enough_active_users = retSession.total_sessions.total > 100;//active users > 20
-                                const val_current_period = retSession.avg_time.total;
+                                //sample input data: "avg_time":{"total":"0.0 min","change":"NA","trend":"u"}
+                                const enough_active_users = retSession.total_sessions.total > 100;//active users > 100
+                                const val_current_period = parseFloat(retSession.avg_time.total.split(" ")[0]);//should handle "0.0 min"
                                 if (retSession.avg_time.change === "NA") retSession.avg_time.change = "0";
+                                //if (parseFloat(retSession.avg_time.change) === null) retSession.avg_time.change = "0";
                                 const change_amount = parseFloat(retSession.avg_time.change);
                                 const val_previous_period = val_current_period / (change_amount / 100 + 1);
                                 const data = [Math.floor(val_current_period), Math.round((val_current_period - Math.floor(val_current_period)) * 60), Math.floor(val_previous_period), Math.round((val_previous_period - Math.floor(val_previous_period)) * 60)];
+
+                                //log.i('Assistant Session Duration, total_time_string: [%j], split_v: [%j], parsedVal: [%j] appID: [%j]', retSession.avg_time.total, split_v, val_current_period, apc.app_id);
+                                //log.i('Assistant Session Duration, changeText: [%j], changeAm: [%j], valCurrent: [%j], valPrevious: [%j], data: [%j], appID: [%j]', retSession.avg_time.change, change_amount, val_current_period, val_previous_period, data, apc.app_id);
 
                                 { // (2.5) session duration bow positive
                                     const enough_session_duration_change_positive = change_amount >= 10;
@@ -174,7 +184,7 @@ const assistantJob = {},
                                         if(enough_sources) {
                                             data = [metricData[0]._id, metricData[0].t, metricData[1]._id, metricData[1].t, metricData[2]._id, metricData[2].t];
                                         } else {
-                                            data = ["a", 1, "b", 2, "c", 3];
+                                            data = ["store_a", 1, "store_b", 2, "store_c", 3];
                                         }
 
                                         const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.top-install-sources", assistant.NOTIF_TYPE_INSIGHTS, 7, NOTIFICATION_VERSION);
@@ -184,7 +194,7 @@ const assistantJob = {},
                                         if(enough_sources) {
                                             data = [metricData[0]._id, metricData[0].t, metricData[0].u, metricData[1]._id, metricData[1].t, metricData[1].u, metricData[2]._id, metricData[2].t, metricData[2].u];
                                         } else {
-                                            data = ["a", 1, 9, "b", 2, 8, "c", 3, 7];
+                                            data = ["page_a", 1, 9, "page_b", 2, 8, "page_c", 3, 7];
                                         }
 
                                         const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.top-referrals", assistant.NOTIF_TYPE_INSIGHTS, 8, NOTIFICATION_VERSION);
