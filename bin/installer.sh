@@ -2,7 +2,7 @@
 
 #   use this to get latest stable release
 #       wget -qO- https://raw.githubusercontent.com/Countly/countly-server/master/bin/installer.sh | bash
-#   
+#
 #   use this to get latest development version from repo
 #       wget -qO- https://raw.githubusercontent.com/Countly/countly-server/master/bin/installer.sh | bash -s dev
 
@@ -13,7 +13,16 @@ if [ "$1" = "dev" ]; then
     mv countly-server-master countly
 else
     LATEST=$(wget -qO- https://api.github.com/repos/countly/countly-server/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4) ;
-    wget -nv $LATEST -O ./countly.zip ;
+
+    if ping -c 1 google.com >> /dev/null 2>&1; then
+        echo "Download from Github."
+        wget -nv $LATEST -O ./countly.zip ;
+    else
+        echo "Download from CDN."
+        PACKAGE_NAME=$(awk -F/ '{print $9}' <<< $LATEST)
+        CDN_HOST=http://om65qc2mm.bkt.clouddn.com/
+        wget -nv $CDN_HOST$PACKAGE_NAME -O ./countly.zip ;
+    fi
     unzip countly.zip ;
 fi
 
