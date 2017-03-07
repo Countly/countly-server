@@ -242,8 +242,8 @@ app.use(function(req, res, next) {
     req.template.js = "";
     req.template.form = "";
     plugins.loadConfigs(countlyDb, function(){
-        bruteforce.fails = plugins.getConfig("frontend").login_tries;
-        bruteforce.wait = plugins.getConfig("frontend").login_wait;
+        bruteforce.fails = plugins.getConfig("security").login_tries;
+        bruteforce.wait = plugins.getConfig("security").login_wait;
         
         //set provided in configuration headers
         var headers = {};
