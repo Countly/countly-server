@@ -73,6 +73,7 @@ plugins.setConfigs("security", {
     password_number: true,
     password_symbol: true,
     password_expiration: 0,
+    password_rotation: 3,
     dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
     api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block"
 });
@@ -248,8 +249,8 @@ app.use(function(req, res, next) {
         title:COUNTLY_NAME
     };
     plugins.loadConfigs(countlyDb, function(){
-        bruteforce.fails = plugins.getConfig("frontend").login_tries;
-        bruteforce.wait = plugins.getConfig("frontend").login_wait;
+        bruteforce.fails = plugins.getConfig("security").login_tries;
+        bruteforce.wait = plugins.getConfig("security").login_wait;
         
         //set provided in configuration headers
         var headers = {};
@@ -989,12 +990,12 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
                         var password = sha1Hash(req.body.old_pwd),
                             newPassword = sha1Hash(req.body.new_pwd);
     
-                        if(newPassword != password){
+                        if(newPassword != password && (!member.password_history || member.password_history.indexOf(newPassword) === -1)){
                             var result = validatePassword(req.body.new_pwd);
                             if(result === false){
                                 updatedUser.password = newPassword;
                                 updatedUser.password_changed = Math.round(new Date().getTime()/1000);
-                                countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid), "password":password}, {'$set':updatedUser}, {safe:true}, function (err, result) {
+                                countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid), "password":password}, {'$set':updatedUser, $push:{password_history:{$each:[newPassword], $slice:-parseInt(plugins.getConfig('security').password_rotation)}}}, {safe:true}, function (err, result) {
                                     if ( result &&  result.result &&  result.result.ok &&  result.result.nModified > 0 && !err) {
                                         plugins.callMethod("userSettings", {req:req, res:res, next:next, data:member});
                                         res.send(updatedUser.password_changed+"");
