@@ -4,7 +4,7 @@
 
 .assistant_notif {
     border-bottom: 1px solid #eee;
-    padding: 20px 10px;
+    padding: 20px 0;
 }
 
 .ui-widget-content a.assistant-link {
@@ -77,7 +77,7 @@
 .assistant_notif .action-buttons .more { font-size: 20px; color:#a2a2a2; }
 .assistant_notif .action-buttons .more:hover { color:#6b6b6b; }
 .assistant_notif .action-buttons .delete { font-size: 20px; color:#D63E40; cursor: pointer; }
-.assistant_notif .action-buttons .list { display:none; position:absolute; top:24px; right: -5px; padding:5px 0; border-radius: 2px; background-color: #FFF; border:1px solid #D0D0D0; }
+.assistant_notif .action-buttons .list { display:none; position:absolute; top:0px; right: -5px; padding:5px 0; border-radius: 2px; background-color: #FFF; border:1px solid #D0D0D0; }
 .assistant_notif .action-buttons:hover .list { display: block; }
 .assistant_notif .action-buttons .list .item { font-size: 11px; white-space: nowrap; display: block; padding: 5px 10px; cursor: pointer; }
 .assistant_notif .action-buttons .list .item:hover { background-color: #eaeaea; }
@@ -88,25 +88,34 @@
 .rTable {
     display: table;
     width: 100%;
-    border: 1px solid #999999;
+    border: 1px solid #eaeaea;
+    border-radius: 2px;
+    margin-bottom: 10px;
 }
 .rTableRow {
     display: table-row;
-    border-left: 1px solid #999999;
-    border-right: 1px solid #999999;
+    border-left: 1px solid #eaeaea;
+    border-right: 1px solid #eaeaea;
 }
 
 .rTableHead {
-    border-bottom: 1px solid #999999;
+    border-bottom: 1px solid #eaeaea;
 }
-.rTableCell, .rTableHead {
+.rTableHead {
     display: table-cell;
     padding: 3px 10px;
 }
+.rTableRow:last-child .rTableCell {
+    padding-bottom: 7px;
+}
+.rTableCell {
+    padding: 7px 10px 0 10px;
+}
 .rTableHeading {
     display: table-header-group;
-    background-color: #ddd;
-    font-weight: bold;
+    background-color: #fbfbfb;
+    font-size: 11px;
+    olor: #8c8c8c;
 }
 .rTableBody {
     display: table-row-group;
@@ -118,6 +127,8 @@
 }
 .rMetricName {
     display: inline;
+    font-size: 11px;
+    padding-left: 2px;
 }
 
 .rUppercase {
@@ -130,26 +141,40 @@
 .sTable {
     display: table;
     width: 100%;
-    border: 1px solid #999999;
+    border: 1px solid #eaeaea;
     table-layout: fixed;
-    border-spacing: 10px;
-    background-color: #F9F9F9;
+    background-color: #fbfbfb;
+    border-radius: 2px;
 }
 .sTableRow {
     width: 100%;
     display: table-row;
-    border-left: 1px solid #999999;
-    border-right: 1px solid #999999;
 }
 .sTableRowTopBorder {
     border-top: 1px solid #999999;
 }
 
+.sTableRow:first-child .sTableCell {
+    border-top:none;
+}
 
 .sTableCell {
     display: table-cell;
-    padding: 3px 10px;
+    padding: 5px;
+    border-top:1px solid #eaeaea;
 }
+
+.sTableCell.left-align {
+    text-align: left;
+    padding-left:15px;
+}
+
+.sTableCell .inner {
+    padding:1px;
+    margin: 4px 0;
+    border-right: 1px solid #eaeaea;
+}
+
 .sTableBody {
     display: table-row-group;
 }
