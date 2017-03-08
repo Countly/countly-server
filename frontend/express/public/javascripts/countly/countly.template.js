@@ -2920,10 +2920,21 @@ window.ManageUsersView = countlyView.extend({
                             elem[jQuery.i18n.map["management-users.user-of"]] = "";
                         
                         if(typeof pathsToSectionNames !== "undefined"){
-                            if(tableData[i].restrict && tableData[i].restrict.length)
+                            var allUrls = getUrls();
+                            if(tableData[i].restrict && tableData[i].restrict.length){
+                                var allowed = [];
+                                for(var j = 0; j < allUrls.length; j++){
+                                    if(tableData[i].restrict.indexOf(allUrls[j]) === -1){
+                                        allowed.push(allUrls[j]);
+                                    }
+                                }
                                 elem[jQuery.i18n.map["restrict.restricted-sections"]] = pathsToSectionNames(tableData[i].restrict);
-                            else
+                                elem[jQuery.i18n.map["restrict.sections-allowed"]] = pathsToSectionNames(allowed);
+                            }
+                            else{
                                 elem[jQuery.i18n.map["restrict.restricted-sections"]] = "";
+                                elem[jQuery.i18n.map["restrict.sections-allowed"]] = pathsToSectionNames(allUrls);
+                            }
                         }
                         
                         ret.push(elem);
