@@ -246,6 +246,8 @@ var pluginManager = function pluginManager(){
             else if(callback){
                 Promise.all(promises).then(callback, callback);
             }
+        } else if (callback) {
+            callback();
         }
         return used;
     }
@@ -550,9 +552,13 @@ var pluginManager = function pluginManager(){
 
         var dbName;
         var dbOptions = {
-            server:{poolSize: config.mongodb.max_pool_size, reconnectInterval: 100, socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 1, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
-            replSet:{poolSize: config.mongodb.max_pool_size, reconnectInterval: 100, socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 1, connectTimeoutMS: 0, socketTimeoutMS: 0 }},
-            mongos:{poolSize: config.mongodb.max_pool_size, reconnectInterval: 100, socketOptions: { autoReconnect:true, noDelay:true, keepAlive: 1, connectTimeoutMS: 0, socketTimeoutMS: 0 }}
+            poolSize: config.mongodb.max_pool_size, 
+            reconnectInterval: 100, 
+            autoReconnect:true, 
+            noDelay:true, 
+            keepAlive: 0, 
+            connectTimeoutMS: 999999999, 
+            socketTimeoutMS: 999999999
         };
         if (typeof config.mongodb === 'string') {
             dbName = db ? config.mongodb.replace(new RegExp('countly$'), db) : config.mongodb;
@@ -562,7 +568,7 @@ var pluginManager = function pluginManager(){
                 //mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test
                 dbName = config.mongodb.replSetServers.join(',')+'/'+config.mongodb.db;
                 if(config.mongodb.replicaName){
-                    dbOptions.replSet.replicaSet = config.mongodb.replicaName;
+                    dbOptions.replicaSet = config.mongodb.replicaName;
                 }
             } else {
                 dbName = (config.mongodb.host + ':' + config.mongodb.port + '/' + config.mongodb.db);
@@ -570,13 +576,11 @@ var pluginManager = function pluginManager(){
         }
         
         if(config.mongodb.dbOptions){
-            dbOptions.db = config.mongodb.dbOptions;
+            _.extend(dbOptions, config.mongodb.dbOptions);  
         }
         
         if(config.mongodb.serverOptions){
-            _.extend(dbOptions.server, config.mongodb.serverOptions);
-            _.extend(dbOptions.replSet, config.mongodb.serverOptions);
-            _.extend(dbOptions.mongos, config.mongodb.serverOptions);   
+            _.extend(dbOptions, config.mongodb.serverOptions);  
         }
         
         if(config.mongodb.username && config.mongodb.password){

@@ -253,12 +253,10 @@ if (cluster.isMaster) {
                         
                         function mergeUserData(newAppUser, oldAppUser){
                             //merge user data
-                            if(!newAppUser.old)
-                                newAppUser.old = {};
                             for(var i in oldAppUser){
                                 // sum up session count and total session duration
                                 if(i == "sc" || i == "tsd"){
-                                    if(!newAppUser[i])
+                                    if(typeof newAppUser[i] === "undefined")
                                         newAppUser[i] = 0;
                                     newAppUser[i] += oldAppUser[i];
                                 }
@@ -279,27 +277,18 @@ if (cluster.isMaster) {
                                     }
                                 }
                                 //merge custom user data
-                                else if(i == "custom" || i === "tk"){
-                                    if(!newAppUser[i])
+                                else if(typeof oldAppUser[i] === "object" && oldAppUser[i]){
+                                    if(typeof newAppUser[i] === "undefined")
                                         newAppUser[i] = {};
-                                    if(!newAppUser.old[i])
-                                        newAppUser.old[i] = {};
                                     for(var j in oldAppUser[i]){
                                         //set properties that new user does not have
-                                        if(!newAppUser[i][j])
+                                        if(typeof newAppUser[i][j] === "undefined")
                                             newAppUser[i][j] = oldAppUser[i][j];
-                                        //preserve old property values
-                                        else
-                                            newAppUser.old[i][j] = oldAppUser[i][j];
                                     }
                                 }
                                 //set other properties that new user does not have
-                                else if(i != "_id" && i != "did" && !newAppUser[i]){
+                                else if(i != "_id" && i != "did" && typeof newAppUser[i] === "undefined"){
                                     newAppUser[i] = oldAppUser[i];
-                                }
-                                //else preserve the old properties
-                                else{
-                                    newAppUser.old[i] = oldAppUser[i];
                                 }
                             }
                             //update new user

@@ -2416,10 +2416,10 @@ window.ManageAppsView = countlyView.extend({
         
         if(countlyGlobal["config"] && countlyGlobal["config"].code && $("#code-countly").length){
             $("#code-countly").show();
-            var url = (location.protocol || "http:")+"//countly.github.io/countly-code-generator/"; 
+            var url = (location.protocol || "http:")+"//"+location.hostname + "/" + countlyGlobal["path"]; 
                 
-            $.getScript( url+"js/sdks.js", function( data, textStatus, jqxhr ) {
-                var server = (location.protocol || "http:")+"//"+location.hostname;
+            $.getScript( url+"sdks.js", function( data, textStatus, jqxhr ) {
+                var server = (location.protocol || "http:")+"//"+location.hostname + "/" + countlyGlobal["path"];
                 if(sdks && server){
                     function initCountlyCode(appId, type){
                         var app_id = $("#app-edit-id").val();
@@ -2940,6 +2940,7 @@ window.ManageUsersView = countlyView.extend({
                          $(".create-user-row").slideUp();
                     }
                     else{
+                        app.onUserEdit({}, $(".create-user-row"));
                         $(".create-user-row").slideDown();
                         self.initTable();
                     }
@@ -3053,6 +3054,9 @@ window.ManageUsersView = countlyView.extend({
                         data.admin_of = currUserDetails.find(".admin-apps .app-list").val().split(",");
                         data.user_of = currUserDetails.find(".user-apps .app-list").val().split(",");
                     }
+
+                    app.onUserEdit(data, false);
+
                     $.ajax({
                         type: "GET",
                         url: countlyCommon.API_PARTS.users.w + '/create',
@@ -3308,6 +3312,7 @@ window.ManageUsersView = countlyView.extend({
             }
             
             function saveUser() {
+                app.onUserEdit(data, true);
                 $.ajax({
                     type: "GET",
                     url: countlyCommon.API_PARTS.users.w + '/update',
@@ -3590,6 +3595,8 @@ window.ManageUsersView = countlyView.extend({
             str += '</div>';
 			str += '</div>';
 		}
+
+        str = app.onUserEdit(d, str);
 
         setTimeout(function(){self.initTable(d);}, 1);
 		return str;
@@ -4286,6 +4293,7 @@ var AppRouter = Backbone.Router.extend({
         this.appManagementSwitchCallbacks = [];
         this.appObjectModificators = [];
         this.appAddTypeCallbacks = [];
+        this.userEditCallbacks = [];
 		this.refreshScripts = {};
         this.dashboardView = new DashboardView();
         this.sessionView = new SessionView();
@@ -5653,6 +5661,9 @@ var AppRouter = Backbone.Router.extend({
     addAppAddTypeCallback:function(callback){
         this.appAddTypeCallbacks.push(callback);
     },
+    addUserEditCallback:function(callback){
+        this.userEditCallbacks.push(callback);
+    },
     addDataExport:function(name, callback){
         this.dataExports[name] = callback;
     },
@@ -5700,6 +5711,12 @@ var AppRouter = Backbone.Router.extend({
         for(var i = 0; i < this.appAddTypeCallbacks.length; i++){
             this.appAddTypeCallbacks[i](type);
         }
+    },
+    onUserEdit: function(user, param) {
+        for (var i = 0; i < this.userEditCallbacks.length; i++){
+            param = this.userEditCallbacks[i](user, param);
+        }
+        return param;
     },
     pageScript:function () { //scripts to be executed on each view change
         $("#month").text(moment().year());

@@ -381,16 +381,21 @@
         
 		var ret = {dp:[{data:[[-1,null]], "label":label}],ticks:[[-1,""]]};
 		if(data){
-			var i = 0;
+            var vals = [];
 			for(var key in data){
-				ret.dp[0].data.push([i,data[key]]);
-                var l = key.replace(/:/g, '.');
+                vals.push({key:key, val:data[key]});
+            }
+            vals.sort(function(a,b){
+                return b.val - a.val;
+            });
+            for(var i = 0; i < vals.length; i++){
+				ret.dp[0].data.push([i,vals[i].val]);
+                var l = vals[i].key.replace(/:/g, '.');
                 if(metric == "device" && countlyDeviceList && countlyDeviceList[l])
                     l = countlyDeviceList[l];
 				ret.ticks.push([i,l]);
-				i++;
 			}
-			ret.dp[0].data.push([i,null]);
+			ret.dp[0].data.push([vals.length,null]);
 		}
 		return ret;
     };

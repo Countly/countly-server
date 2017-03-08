@@ -18,7 +18,7 @@ echo "
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 #install nginx
-yum -y install wget openssl-devel gcc-c++ make
+yum -y install wget openssl-devel gcc-c++-4.8.5 make
 if grep -q -i "release 6" /etc/redhat-release ; then
 	echo "[nginx]
 name=nginx repo
@@ -131,6 +131,15 @@ cd $DIR/.. && grunt dist-all
 
 #finally start countly api and dashboard
 countly start
+
+# close google services for China area
+if ping -c 1 google.com >> /dev/null 2>&1; then
+    echo "Pinging Google successful. Enabling Google services."
+else
+    echo "Cannot reach Google. Disabling Google services. You can enable this from Configurations later."
+    countly config "frontend.use_google" false
+fi
+
 
 ENABLED=`getenforce`
 if [ "$ENABLED" == "Enforcing" ]; then
