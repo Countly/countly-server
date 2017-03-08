@@ -16,11 +16,7 @@ window.AssistantView = countlyView.extend({
         }
     },
     renderCommon:function (isRefresh) {
-        //CountlyHelpers.alert("boop", "green");
         var data = countlyAssistant.getDataForApp(countlyCommon.ACTIVE_APP_ID);
-
-
-        //CountlyHelpers.alert(4, "green");
 
         this.templateData = {
             "page-title":jQuery.i18n.map["assistant.title"],
@@ -29,7 +25,7 @@ window.AssistantView = countlyView.extend({
             saved_global: data.notifs_saved_global,
             icon_styling_class: 'assistant_icon_regular',
         };
-        //CountlyHelpers.alert(JSON.stringify(data.created_date), "green");
+
         var changeNotification = function (id, is_private, is_save, parent) {
 
             if(typeof Countly !== "undefined") {
@@ -45,7 +41,7 @@ window.AssistantView = countlyView.extend({
                 Countly.q.push(sendObj);
             }
 
-            //CountlyHelpers.alert(5, "green");
+
             $.when(countlyAssistant.changeNotification(id, is_private, is_save)).then(function (data) {
                // CountlyHelpers.alert(6, "green");
                 if(true || data.result == "Success"){//todo finish this
@@ -77,7 +73,7 @@ window.AssistantView = countlyView.extend({
                 CountlyHelpers.alert(data, "red");
             });
         };
-        //CountlyHelpers.alert(6, "green");
+
         var self = this;
         if (!isRefresh) {
             //CountlyHelpers.alert("tab: " + store.get("assistant_tab"), "green");
@@ -138,10 +134,6 @@ window.AssistantView = countlyView.extend({
 
             $("#assistant_container").css("height", $( window ).height() - $("#content-footer").height());
         }
-        //CountlyHelpers.alert(7, "green");
-        //"all": "1",
-        //"saved-private": "1",
-
     }
 });
 
@@ -153,37 +145,10 @@ app.route("/analytics/assistant", 'assistant', function () {
 });
 
 $( document ).ready(function() {
-
-    //CountlyHelpers.alert(1, "green");
     var menu = '<a href="#/analytics/assistant" class="item">'+
         '<div class="logo densities"></div>'+
         '<div class="text" data-localize="sidebar.analytics.assistant">fsdfs</div>'+
         '</a>';
     $('#mobile-type #analytics-submenu').append(menu);
     $('#web-type #analytics-submenu').append(menu);
-
-
-    //CountlyHelpers.alert(parseFloat("12.4%") + 2, "red");
-    /*
-    var storeValID = "countly_sll_last_login";
-
-    var sVal = store.get(storeValID);//stored value
-
-    if(sVal == null) {
-        sVal = 0;
-        store.set(storeValID, sVal);
-    }
-
-    var cVal = countlyGlobal.member.last_login;//current value
-*/
-
-
-    // /jQuery.i18n.prop("assistant.test", val1, val2, valn)
-
-    //var arr = [233423, "dsfsdf", "2322asdas"];
-    //arr.unshift("assistant.test");
-    //var res = jQuery.i18n.prop.apply(null, arr);
-    //var res = jQuery.i18n.prop("assistant.test", arr[0], arr[1], arr[2])
-
-    //CountlyHelpers.alert(res, "red");
 });

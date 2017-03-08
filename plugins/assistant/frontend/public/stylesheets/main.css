@@ -23,7 +23,7 @@
 }
 .assistant_notif_message {
     font-size: 13px;
-    color: #949494;
+    color: #5f5f5f;
     margin-top: 15px;
     line-height: 17px;
 }
@@ -81,3 +81,79 @@
 .assistant_notif .action-buttons:hover .list { display: block; }
 .assistant_notif .action-buttons .list .item { font-size: 11px; white-space: nowrap; display: block; padding: 5px 10px; cursor: pointer; }
 .assistant_notif .action-buttons .list .item:hover { background-color: #eaeaea; }
+
+
+/* page view table styling */
+
+.rTable {
+    display: table;
+    width: 100%;
+    border: 1px solid #999999;
+}
+.rTableRow {
+    display: table-row;
+    border-left: 1px solid #999999;
+    border-right: 1px solid #999999;
+}
+
+.rTableHead {
+    border-bottom: 1px solid #999999;
+}
+.rTableCell, .rTableHead {
+    display: table-cell;
+    padding: 3px 10px;
+}
+.rTableHeading {
+    display: table-header-group;
+    background-color: #ddd;
+    font-weight: bold;
+}
+.rTableBody {
+    display: table-row-group;
+}
+
+.rMetricCount {
+    display: inline;
+    font-size: large;
+}
+.rMetricName {
+    display: inline;
+}
+
+.rUppercase {
+    text-transform: uppercase;
+}
+
+
+/* page view table styling */
+
+.sTable {
+    display: table;
+    width: 100%;
+    border: 1px solid #999999;
+    table-layout: fixed;
+    border-spacing: 10px;
+    background-color: #F9F9F9;
+}
+.sTableRow {
+    width: 100%;
+    display: table-row;
+    border-left: 1px solid #999999;
+    border-right: 1px solid #999999;
+}
+.sTableRowTopBorder {
+    border-top: 1px solid #999999;
+}
+
+
+.sTableCell {
+    display: table-cell;
+    padding: 3px 10px;
+}
+.sTableBody {
+    display: table-row-group;
+}
+
+.center-children {
+    text-align: center;
+}

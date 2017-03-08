@@ -101,35 +101,43 @@
                         var cellStart = '<div style="border-style: solid; border-width: 2px; width: 50%; display: table-cell;">';
                         var cellEnd = '</div>';
 
+                        var twoColumnTable = function (data, ratioLeft, ratioRight) {
+                            ratioLeft = ratioLeft || "30%";
+                            ratioRight = ratioRight || "70%";
+
+                            var ret = '<div class="sTable">';
+
+                            for(var index = 0 ; index < data.length ; index++){
+                                ret += '<div class="sTableRow'+ ((index > 0) ? ' sTableRowTopBorder':'') + '">' +
+                                            '<div style="width:' + ratioLeft + '; border-right:1px solid #999999;" class="sTableCell center-children"><strong>' + data[index].l + '</strong></div>' +
+                                            '<div style="width:' + ratioRight + ';" class="sTableCell center-children">' + data[index].r + '</div>' +
+                                        '</div>';
+                            }
+
+                            ret += '</div><br>';
+                            return ret;
+                        };
+
                         //web referrals
                         if(obj.plugin_name === "assistant-base" && (obj.notif_type === "2" && obj.notif_subtype === "8") ){
+                            var dataToPass = [];
+                            dataToPass.push({l: obj.data[0], r:obj.data[1] + ' visitors, ' + obj.data[2] + ' visits'});
+                            dataToPass.push({l: obj.data[3], r:obj.data[4] + ' visitors, ' + obj.data[5] + ' visits'});
+                            dataToPass.push({l: obj.data[6], r:obj.data[7] + ' visitors, ' + obj.data[8] + ' visits'});
+                            var tableContent_8 = twoColumnTable(dataToPass);
 
-                            var tableContent_8 = tableStart + rowStart +
-                                    cellStart + obj.data[0] + cellEnd +
-                                    cellStart + obj.data[1] + ' visitors, ' + obj.data[2] + ' visits' + cellEnd +
-                                rowEnd + rowStart +
-                                cellStart + obj.data[3] + cellEnd +
-                                cellStart + obj.data[4] + ' visitors, ' + obj.data[5] + ' visits' + cellEnd +
-                                rowEnd + rowStart +
-                                cellStart + obj.data[6] + cellEnd +
-                                cellStart + obj.data[7] + ' visitors, ' + obj.data[8] + ' visits' + cellEnd +
-                                rowEnd + tableEnd;
                             obj.msg = tableContent_8 + obj.msg;
                         }
 
                         //app sources
                         if(obj.plugin_name === "assistant-base" && (obj.notif_type === "2" && obj.notif_subtype === "7") ){
 
-                            var tableContent_7 = tableStart + rowStart +
-                                cellStart + obj.data[0] + cellEnd +
-                                cellStart + obj.data[1] + ' installs' + cellEnd +
-                                rowEnd + rowStart +
-                                cellStart + obj.data[2] + cellEnd +
-                                cellStart + obj.data[3] + ' installs' + cellEnd +
-                                rowEnd + rowStart +
-                                cellStart + obj.data[4] + cellEnd +
-                                cellStart + obj.data[5] + ' installs' + cellEnd +
-                                rowEnd + tableEnd;
+                            var dataToPass = [];
+                            dataToPass.push({l: obj.data[0], r:obj.data[1] + " installs"});
+                            dataToPass.push({l: obj.data[2], r:obj.data[3] + " installs"});
+                            dataToPass.push({l: obj.data[4], r:obj.data[5] + " installs"});
+                            var tableContent_7 = twoColumnTable(dataToPass);
+
                             obj.msg = tableContent_7 + obj.msg;
                         }
 
@@ -137,13 +145,11 @@
                         if(obj.plugin_name === "assistant-base" && (obj.notif_type === "2" && obj.notif_subtype === "5" ||
                             obj.notif_type === "2" && obj.notif_subtype === "6") ){
 
-                            var tableContent_56 = tableStart + rowStart +
-                                    cellStart + 'this week' + cellEnd +
-                                    cellStart + obj.data[0] + ' minutes ' + obj.data[1] + ' seconds' + cellEnd +
-                                rowEnd + rowStart +
-                                    cellStart + 'previous week' + cellEnd +
-                                    cellStart + obj.data[2] + ' minutes ' + obj.data[3] + ' seconds' + cellEnd +
-                                rowEnd + tableEnd;
+                            var dataToPass = [];
+                            dataToPass.push({l: obj.data[0] + ' minutes ' + obj.data[1] + ' seconds', r:'this week'});
+                            dataToPass.push({l: obj.data[2] + ' minutes ' + obj.data[3] + ' seconds', r:'previous week'});
+                            var tableContent_56 = twoColumnTable(dataToPass, "40%", "60%");
+
                             obj.msg = tableContent_56 + obj.msg;
                         }
 
@@ -153,36 +159,40 @@
                             obj.notif_type === "2" && obj.notif_subtype === "3" ||
                             obj.notif_type === "2" && obj.notif_subtype === "4") ){
 
-                            var tableContent_1234 = tableStart + rowStart +
-                                    cellStart + 'this week' + cellEnd +
-                                    cellStart + obj.data[0] + ' users' + cellEnd +
-                                rowEnd + rowStart +
-                                    cellStart + 'previous week' + cellEnd +
-                                    cellStart + obj.data[1] + ' users' + cellEnd +
-                                rowEnd + tableEnd;
+                            var dataToPass = [];
+                            dataToPass.push({l: obj.data[0], r:"users this week"});
+                            dataToPass.push({l: obj.data[1], r:"users previous week"});
+                            var tableContent_1234 = twoColumnTable(dataToPass);
+
                             obj.msg = tableContent_1234 + obj.msg;
                         }
 
                         //page view metrics
                         if(obj.plugin_name === "assistant-base" && (obj.notif_type === "2" && obj.notif_subtype === "9") ){
+                            var createSingleTable = function (headerText, metricURL, metricCount, metricNames){
+                                return '' +
+                                    '<div class="rTable">' +
+                                        '<div class="rTableHeading">' +
+                                            '<div class="rTableHead rUppercase"><strong>' + headerText + '</strong></div>' +
+                                        '</div>' +
+                                        '<div class="rTableRow">' +
+                                            '<div class="rTableCell">' + metricURL + '</div>' +
+                                        '</div>' +
+                                        '<div class="rTableRow">' +
+                                            '<div class="rTableCell">' + '<div class="rMetricCount"><strong>' + metricCount +'</strong></div>' + '<div class="rMetricName rUppercase"> ' + metricNames + '</div>' +'</div>' +
+                                        '</div>' +
+                                    '</div><br>';
+                            };
 
-                            var tableContent_9 = tableStart + rowStart +
-                                    cellStart + obj.data[0] + cellEnd +
-                                    cellStart + obj.data[1] + ' visits' + cellEnd +
-                                rowEnd + rowStart +
-                                    cellStart + obj.data[2] + cellEnd +
-                                    cellStart + obj.data[3] + ' entries' + cellEnd +
-                                rowEnd + rowStart +
-                                    cellStart + obj.data[4] + cellEnd +
-                                    cellStart + obj.data[5] + ' exits' + cellEnd +
-                                rowEnd + rowStart +
-                                    cellStart + obj.data[6] + cellEnd +
-                                    cellStart + obj.data[7] + ' bounces' + cellEnd +
-                                rowEnd + rowStart +
-                                    cellStart + obj.data[8] + cellEnd +
-                                    cellStart + obj.data[9] + ' minutes' + cellEnd +
-                                rowEnd + tableEnd;
-                            obj.msg = tableContent_9 + obj.msg;
+                            var tableContent_9 = "";
+
+                            tableContent_9 += createSingleTable("Most visited page", obj.data[0], obj.data[1], "visits");
+                            tableContent_9 += createSingleTable("Most popular page entry", obj.data[2], obj.data[3], "entries");
+                            tableContent_9 += createSingleTable("People exited most from", obj.data[4], obj.data[5], "exits");
+                            tableContent_9 += createSingleTable("Most bounces in", obj.data[6], obj.data[7], "bounces");
+                            tableContent_9 += createSingleTable("Most time spent in", obj.data[8], obj.data[9], "minutes");
+
+                            obj.msg = tableContent_9;// + obj.msg;
                         }
                     }
 
