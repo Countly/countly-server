@@ -314,7 +314,7 @@
     * CountlyHelpers.initializeSelect($("#my-dynamic-div"));
     */
     CountlyHelpers.initializeSelect = function (element) {
-        element = element || $("#content-container");
+        element = element || $("body");
 
         element.off("click", ".cly-select").on("click", ".cly-select", function (e) {
             if ($(this).hasClass("disabled")) {
@@ -404,6 +404,8 @@
             var selectedItem = $(this).parents(".cly-select").find(".text");
             selectedItem.text($(this).text());
             selectedItem.data("value", $(this).data("value"));
+
+            $(this).parents(".cly-select").trigger("cly-select-change", [$(this).data("value")]);
         });
 
         element.off("keyup", ".cly-select .search input").on("keyup", ".cly-select .search input", function(event) {
@@ -445,6 +447,28 @@
             $clySelect.find(".search").remove();
             $clySelect.removeClass("active");
         });
+
+        $.fn.clySelectSetItems = function(items) {
+            var $selectItems = $(this).find(".select-items");
+
+            if ($selectItems) {
+                $selectItems.html("");
+
+                for (var i = 0; i < items.length; i++) {
+                    $selectItems.append('<div data-value="' + items[i].value + '" class="item">' + items[i].name + '</div>');
+                }
+            }
+        };
+
+        $.fn.clySelectGetSelection = function() {
+            return $(this).find(".select-inner .text").data("value") || null;
+        };
+
+        $.fn.clySelectSetSelection = function(value, name) {
+            $(this).find(".select-inner .text").data("value", value);
+            $(this).find(".select-inner .text").text(name);
+            $(this).trigger("cly-select-change", [value]);
+        };
     };
 
     /**
@@ -454,7 +478,7 @@
     * CountlyHelpers.initializeMultiSelect($("#my-dynamic-div"));
     */
     CountlyHelpers.initializeMultiSelect = function (element) {
-        element = element || $("#content-container");
+        element = element || $("body");
 
         element.off("click", ".cly-multi-select").on("click", ".cly-multi-select", function (e) {
             if ($(this).hasClass("disabled")) {
@@ -555,7 +579,7 @@
             }
 
             $multiSelect.data("value", getSelected($multiSelect));
-            $multiSelect.trigger("cly-multi-select-change");
+            $multiSelect.trigger("cly-multi-select-change", [getSelected($multiSelect)]);
             e.stopPropagation();
         });
 
@@ -619,7 +643,7 @@
             }
 
             $multiSelect.data("value", getSelected($multiSelect));
-            $multiSelect.trigger("cly-multi-select-change");
+            $multiSelect.trigger("cly-multi-select-change", [getSelected($multiSelect)])
 
             e.stopPropagation();
         });
@@ -641,6 +665,29 @@
 
             return selected;
         }
+
+        $.fn.clyMultiSelectSetItems = function(items) {
+            var $selectItems = $(this).find(".select-items");
+
+            if ($selectItems) {
+                $selectItems.html("");
+
+                for (var i = 0; i < items.length; i++) {
+                    $selectItems.append('<div data-value="' + items[i].value + '" class="item">' + items[i].name + '</div>');
+                }
+            }
+        };
+
+        $.fn.clyMultiSelectGetSelection = function() {
+            return getSelected($(this));
+        };
+
+        $.fn.clyMultiSelectSetSelection = function(value, name) {
+            $(this).find(".selection").remove();
+            $(this).data("value", getSelected($(this)));
+            $(this).removeClass("selection-exists");
+            $(this).trigger("cly-multi-select-change", [getSelected($(this))]);
+        };
     };
 
     /**
