@@ -490,7 +490,8 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                         req.session.email = member["email"];
                         req.session.settings = member.settings;
                         res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
-    
+
+                        member._id += "";
                         delete member["password"];
                         
                         adminOfApps = sortBy(adminOfApps, member.appSortList || []);
