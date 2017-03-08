@@ -16,7 +16,7 @@
 [[ -z $COUNTLY_WITH_DEFAULT_DATA ]] && exit 0
 
 #  make relative paths work.
-cd $(dirname $0)/..
+cd $(dirname $0)
 
 function check_connectivity_mongo() {
 	local MONGO_OK=$(mongo \
