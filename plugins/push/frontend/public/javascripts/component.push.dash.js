@@ -4,7 +4,8 @@
 /* globals m, components, $, countlyView, countlyGlobal, countlyCommon, CountlyHelpers */
 
 window.component('push.dash', function(dash) {
-	var t = window.components.t;
+	var t = window.components.t,
+		PUSH = window.components.push;
 	
 	dash.controller = function() {
 		this.app_id = countlyCommon.ACTIVE_APP_ID;
@@ -129,8 +130,17 @@ window.component('push.dash', function(dash) {
 						{ mData: unprop.bind(null, 'messagePerLocale.default', ''), sName: 'message', mRender: CountlyHelpers.clip(null, t('push.no-message')), sTitle: t('pu.t.message') },
 						{ mData: function(x){ return x.appNames().join(', '); }, sName: 'apps', sType: 'string', mRender: CountlyHelpers.clip(), sTitle: t('pu.t.apps'), bSearchable: false },
 						{ mData: unprop.bind(null, 'result'), sName: 'status', sType: 'string', mRender:function(d, type, result) { 
-							result = result.result;
-							return '<span>' + t('push.message.status.' + result.status()) + '</span>';
+							var s = result.result.status(),
+							 	override;
+							if (PUSH.statusers) {
+								PUSH.statusers.forEach(function(statuser){
+									var o = statuser(result.___data);
+									if (o) {
+										override = o;
+									}
+								});
+							}
+							return '<span>' + (override || t('push.message.status.' + s)) + '</span>';
 						}, sTitle: t('pu.t.status'), bSearchable: false },
 						{ mData: unprop.bind(null, 'dates.createdSeconds'), bVisible: false, sType: 'numeric', bSearchable: false },
 						{ mData: unprop.bind(null, 'dates.created'), sName: 'created', sType: 'date', iDataSort: 3, sTitle: t('pu.t.created'), mRender: function(x){ return x.dates().created; }, bSearchable: false},
@@ -181,7 +191,9 @@ window.component('push.dash', function(dash) {
 			m.component(components.widget, {
 				header: {
 					title: 'pu.dash.users', 
-					view: m('a.icon-button.btn-header.green[href=#]', {onclick: ctrl.message}, t('pu.dash.create'))
+					view: (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) ? 
+						m('a.icon-button.btn-header.green[href=#]', {onclick: ctrl.message}, t('pu.dash.create'))
+						: ''
 				},
 				footer: {
 					config: {class: 'condensed'},

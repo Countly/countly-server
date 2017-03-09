@@ -66,34 +66,38 @@ app.addAppObjectModificator(function(args){
 
 app.addPageScript("/drill#", function(){
     if(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].type == "mobile"){
-        $("#drill-actions").append('<a class="link icon-button light btn-create-message"><i class="ion-chatbox-working"></i><span data-localize="push.create"></span></a>');
-        app.localize();
-        $('.btn-create-message').off('click').on('click', function(){
-            var message = {
-                apps: [countlyCommon.ACTIVE_APP_ID],
-                drillConditions: countlySegmentation.getRequestData()
-            };
-    
-            // for (var k in filterData.dbFilter) {
-            //     if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filterData.dbFilter[k];
-            // }
-    
-            components.push.popup.show(message);
-        });
-        $("#bookmark-view").on("click", ".bookmark-action.send", function() {
-            var filter = $(this).data("query");
-    
-            var message = {
-                apps: [countlyCommon.ACTIVE_APP_ID],
-                drillConditions: filter
-            };
-    
-            // for (var k in filter) {
-            //     if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filter[k];
-            // }
-    
-            components.push.popup.show(message);
-        });
+        if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) {
+            $("#drill-actions").append('<a class="link icon-button light btn-create-message"><i class="ion-chatbox-working"></i><span data-localize="push.create"></span></a>');
+            app.localize();
+            $('.btn-create-message').off('click').on('click', function(){
+                var message = {
+                    apps: [countlyCommon.ACTIVE_APP_ID],
+                    drillConditions: countlySegmentation.getRequestData()
+                };
+            
+                // for (var k in filterData.dbFilter) {
+                //     if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filterData.dbFilter[k];
+                // }
+            
+                components.push.popup.show(message);
+            });
+            $("#bookmark-view").on("click", ".bookmark-action.send", function() {
+                var filter = $(this).data("query");
+            
+                var message = {
+                    apps: [countlyCommon.ACTIVE_APP_ID],
+                    drillConditions: filter
+                };
+            
+                // for (var k in filter) {
+                //     if (k.indexOf('up.') === 0) message.conditions[k.substr(3).replace("cmp_","cmp.")] = filter[k];
+                // }
+            
+                components.push.popup.show(message);
+            });
+        } else {
+            $('#drill-actions').remove('.btn-create-message');
+        }
     }
 });
 
@@ -112,7 +116,7 @@ function modifyUserDetailsForPush () {
                 test = !!userDetails.tk.id || !!userDetails.tk.ia || !!userDetails.tk.at;
                 prod = !!userDetails.tk.ip || !!userDetails.tk.ap;
             }
-            if (tokens.length) {
+            if (tokens.length && (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1))) {
                 if (!$('.btn-create-message').length) {
                     $('#user-profile-detail-buttons').append($('<a class="icon-button green left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
                 }
@@ -138,28 +142,32 @@ function modifyUserDetailsForPush () {
             }
         } else {
             //list view
-            if (!$('.btn-create-message').length) {
-                $('.widget-header .left').append($('<a class="icon-button green btn-header left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
-            }
-            $('.btn-create-message').off('click').on('click', function(){
-                //drill filter
-                var filterData = app.userdataView._query || {};
-                
-                //known/anonymous filter
-                if(app.userdataView.filter == "user-known")
-                    filterData.hasInfo = true;
-                else if(app.userdataView.filter == "user-anonymous")
-                    filterData.hasInfo = {"$ne": true};
-                
-                //text search filter
-                if($('.dataTables_filter input').val().length)
-                    filterData.$text = { "$search": "\""+$('.dataTables_filter input').val()+"\"" };
-                
-                components.push.popup.show({
-                    apps: [countlyCommon.ACTIVE_APP_ID],
-                    userConditions: filterData
+            if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) {
+                if (!$('.btn-create-message').length) {
+                    $('.widget-header .left').append($('<a class="icon-button green btn-header left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
+                }
+                $('.btn-create-message').off('click').on('click', function(){
+                    //drill filter
+                    var filterData = app.userdataView._query || {};
+                    
+                    //known/anonymous filter
+                    if(app.userdataView.filter == "user-known")
+                        filterData.hasInfo = true;
+                    else if(app.userdataView.filter == "user-anonymous")
+                        filterData.hasInfo = {"$ne": true};
+                    
+                    //text search filter
+                    if($('.dataTables_filter input').val().length)
+                        filterData.$text = { "$search": "\""+$('.dataTables_filter input').val()+"\"" };
+                    
+                    components.push.popup.show({
+                        apps: [countlyCommon.ACTIVE_APP_ID],
+                        userConditions: filterData
+                    });
                 });
-            });
+            } else {
+                $('.btn-create-message').remove();
+            }
         }
     }
 }

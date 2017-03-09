@@ -84,6 +84,7 @@
 .comp-slider .btns > a { margin: 18px; border-radius: 2px; }
 .comp-slider .btns > a:first-child { margin-left: 36px; }
 .comp-slider .btns > a:last-child { margin-right: 36px; }
+.comp-slider .btns a.btn-next + a.btn-next:last-child { margin-right: 0; }
 .comp-slider .btns { transition: 0.4s ease-in-out; border-top: 1px solid #ECECED; }
 .comp-slider.comp-slider-closed .btns { visibility: hidden; opacity: 0; }
 

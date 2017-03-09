@@ -954,6 +954,14 @@ var fetch = {},
                         }
                     }
                 }
+                
+                //truncate large meta on refresh
+                if (isRefresh) {
+                    for(var i in mergedDataObj['meta']){
+                        if(mergedDataObj['meta'][i].length > plugins.getConfig("api").metric_limit && plugins.getConfig("api").metric_limit != 0)
+                            delete mergedDataObj['meta'][i];
+                    }
+                }
             }
         
             return mergedDataObj;
@@ -987,17 +995,17 @@ var fetch = {},
     function union(x, y) {
         var obj = {};
         for (var i = x.length-1; i >= 0; -- i) {
-            obj[x[i]] = x[i];
+            obj[x[i]] = true;
         }
 
         for (var i = y.length-1; i >= 0; -- i) {
-            obj[y[i]] = y[i];
+            obj[y[i]] = true;
         }
 
         var res = [];
 
         for (var k in obj) {
-            res.push(obj[k]);
+            res.push(k);
         }
 
         return res;

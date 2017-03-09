@@ -73,6 +73,7 @@ plugins.setConfigs("security", {
     password_number: true,
     password_symbol: true,
     password_expiration: 0,
+    password_rotation: 3,
     dashboard_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block\nStrict-Transport-Security:max-age=31536000 ; includeSubDomains",
     api_additional_headers: "X-Frame-Options:deny\nX-XSS-Protection:1; mode=block"
 });
@@ -242,8 +243,8 @@ app.use(function(req, res, next) {
     req.template.js = "";
     req.template.form = "";
     plugins.loadConfigs(countlyDb, function(){
-        bruteforce.fails = plugins.getConfig("frontend").login_tries;
-        bruteforce.wait = plugins.getConfig("frontend").login_wait;
+        bruteforce.fails = plugins.getConfig("security").login_tries;
+        bruteforce.wait = plugins.getConfig("security").login_wait;
         
         //set provided in configuration headers
         var headers = {};
@@ -860,6 +861,13 @@ app.get(countlyConfig.path+'/api-key', function (req, res, next) {
     };
 });
 
+app.get(countlyConfig.path+'/sdks.js', function (req, res, next) {
+    var options = {uri:"http://code.count.ly/js/sdks.js", method:"GET", timeout:4E3};
+    request(options, function(a, c, b) {
+        res.set('Content-type', 'application/javascript').status(200).send(b);
+    });
+});
+
 app.post(countlyConfig.path+'/mobile/login', function (req, res, next) {
     if (req.body.username && req.body.password) {
         var password = sha1Hash(req.body.password);
@@ -935,6 +943,18 @@ app.post(countlyConfig.path+'/apps/icon', function (req, res, next) {
     });
 });
 
+function validatePassword(password){
+    if(password.length < plugins.getConfig("security").password_min)
+        return "management-users.password.length";
+    if(plugins.getConfig("security").password_char && !/[A-Z]/.test(password))
+        return "management-users.password.has-char";
+    if(plugins.getConfig("security").password_number && !/\d/.test(password))
+        return "management-users.password.has-number";
+    if(plugins.getConfig("security").password_symbol && !/[^A-Za-z\d]/.test(password))
+        return "management-users.password.has-special";
+    return false;
+};
+
 app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
     if (!req.session.uid) {
         res.end();
@@ -964,17 +984,23 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
                         var password = sha1Hash(req.body.old_pwd),
                             newPassword = sha1Hash(req.body.new_pwd);
     
-                        if(newPassword != password){
-                            updatedUser.password = newPassword;
-                            updatedUser.password_changed = Math.round(new Date().getTime()/1000);
-                            countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid), "password":password}, {'$set':updatedUser}, {safe:true}, function (err, result) {
-                                if ( result &&  result.result &&  result.result.ok &&  result.result.nModified > 0 && !err) {
-                                    plugins.callMethod("userSettings", {req:req, res:res, next:next, data:member});
-                                    res.send(updatedUser.password_changed+"");
-                                } else {
-                                    res.send("user-settings.old-password-not-match");
-                                }
-                            });
+                        if(newPassword != password && (!member.password_history || member.password_history.indexOf(newPassword) === -1)){
+                            var result = validatePassword(req.body.new_pwd);
+                            if(result === false){
+                                updatedUser.password = newPassword;
+                                updatedUser.password_changed = Math.round(new Date().getTime()/1000);
+                                countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid), "password":password}, {'$set':updatedUser, $push:{password_history:{$each:[newPassword], $slice:-parseInt(plugins.getConfig('security').password_rotation)}}}, {safe:true}, function (err, result) {
+                                    if ( result &&  result.result &&  result.result.ok &&  result.result.nModified > 0 && !err) {
+                                        plugins.callMethod("userSettings", {req:req, res:res, next:next, data:member});
+                                        res.send(updatedUser.password_changed+"");
+                                    } else {
+                                        res.send("user-settings.old-password-not-match");
+                                    }
+                                });
+                            }
+                            else{
+                                res.send(result);
+                            }
                         }
                         else{
                             res.send("user-settings.password-not-old");

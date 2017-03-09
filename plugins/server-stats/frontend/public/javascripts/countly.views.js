@@ -21,9 +21,9 @@ window.DataPointsView = countlyView.extend({
                 "aaData": countlyDataPoints.getTableData(),
                 "aoColumns": [
                     { "mData": "app-name", "sType":"string", "sTitle": jQuery.i18n.map["compare.apps.app-name"] || "App Name", "sClass": "break" },
-                    { "mData": "sessions", "sType":"numeric", "sTitle": jQuery.i18n.map["sidebar.analytics.sessions"] },
-                    { "mData": "events", "sType":"numeric", "sTitle": jQuery.i18n.map["sidebar.events"] },
-                    { "mData": "data-points", "sType":"numeric", "sTitle": jQuery.i18n.map["server-stats.data-points"] }
+                    { "mData": "sessions", "sType":"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["sidebar.analytics.sessions"] },
+                    { "mData": "events", "sType":"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["sidebar.events"] },
+                    { "mData": "data-points", "sType":"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["server-stats.data-points"] }
                 ]
             }));
 

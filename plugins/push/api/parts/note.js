@@ -212,7 +212,7 @@ class Note {
 					compiled.data.sound = this.sound;
 				}
 				if (this.badge !== undefined && this.badge !== null) {
-					compiled.aps.badge = this.badge;
+					compiled.data.badge = this.badge;
 				}
 
 				if (!message && (this.sound === undefined || this.sound === null)) {

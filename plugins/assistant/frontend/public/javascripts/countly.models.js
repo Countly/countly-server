@@ -128,8 +128,8 @@
 
                             for(var index = 0 ; index < data.length ; index++){
                                 ret += '<div class="sTableRow'+ ((index > 0) ? ' sTableRowTopBorder':'') + '">' +
-                                            '<div style="width:' + ratioLeft + '; border-right:1px solid #999999;" class="sTableCell center-children"><strong>' + data[index].l + '</strong></div>' +
-                                            '<div style="width:' + ratioRight + ';" class="sTableCell center-children">' + data[index].r + '</div>' +
+                                            '<div style="width:' + ratioLeft + ';" class="sTableCell center-children"><div class="inner"><strong>' + data[index].l + '</strong></div></div>' +
+                                            '<div style="width:' + ratioRight + ';" class="sTableCell left-align">' + data[index].r + '</div>' +
                                         '</div>';
                             }
 
@@ -192,7 +192,7 @@
                                 return '' +
                                     '<div class="rTable">' +
                                         '<div class="rTableHeading">' +
-                                            '<div class="rTableHead rUppercase"><strong>' + headerText + '</strong></div>' +
+                                            '<div class="rTableHead rUppercase">' + headerText + '</div>' +
                                         '</div>' +
                                         '<div class="rTableRow">' +
                                             '<div class="rTableCell">' + metricURL + '</div>' +
@@ -200,7 +200,7 @@
                                         '<div class="rTableRow">' +
                                             '<div class="rTableCell">' + '<div class="rMetricCount"><strong>' + metricCount +'</strong></div>' + '<div class="rMetricName rUppercase"> ' + metricNames + '</div>' +'</div>' +
                                         '</div>' +
-                                    '</div><br>';
+                                    '</div>';
                             };
 
                             var tableContent_9 = "";

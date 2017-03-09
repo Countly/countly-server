@@ -20,9 +20,9 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
-#define H2_QUEUE_SIZE 10000
-#define H2_SENDING_BATCH_SIZE 500
-#define H2_STATUSES_BATCH_SIZE 500
+#define H2_QUEUE_SIZE 30000
+#define H2_SENDING_BATCH_SIZE 1000
+#define H2_STATUSES_BATCH_SIZE 3000
 #define H2_TIMEOUT 30000
 #define H2_PING_TIMEOUT 3000
 #define H2_MAX_EOFS 3
@@ -160,6 +160,7 @@ namespace apns {
 		SSL_CTX* ssl_ctx;
 
 		nghttp2_data_provider global_data;
+		uint32_t max_data_size;
 		std::queue <h2_stream *> queue;							// stream_id = 0 until request is sent (it's not in queue at that time)					
 		std::unordered_map <int32_t, h2_stream *> requests;		// requests in socket, key is stream_id
 		std::vector<std::tuple<std::string, int, std::string>> statuses;		// buffer for statuses
