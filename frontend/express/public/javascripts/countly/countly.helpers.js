@@ -936,6 +936,8 @@
     *   });
     */
     CountlyHelpers.createMetricModel = function (countlyMetric, metric, $, fetchValue) {
+        countlyMetric = countlyMetric || {};
+        countlyMetric.fetchValue = fetchValue;
         //Private Properties
         var _periodObj = {},
             _Db = {},
