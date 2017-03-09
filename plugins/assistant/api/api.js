@@ -105,14 +105,20 @@ const plugin = {},
         }
         log.i('Assistant plugin request: /i/assistant_generate_all');
 
-        const callback = function () {
-            log.i('Assistant plugin request: /i/assistant_generate_all finished');
-        };
+        const validate = ob.validateUserForMgmtReadAPI;//todo make this stronger
+        validate(function (params) {
+            const callback = function () {
+                log.i('Assistant plugin request: /i/assistant_generate_all finished');
+            };
 
-        assistant.generateNotifications(common.db, callback, true, true);
+            assistant.generateNotifications(common.db, callback, true, true);
 
-        common.returnOutput(params, "assistant_generate_all was ! completed");
-        return true;
+            common.returnOutput(params, "assistant_generate_all was ! completed");
+            return true;
+        });
+
+        common.returnMessage(params, 401, 'Unauthorized, use a valid user');
+        return false;
     });
 
     plugins.register("/i/assistant_generate_all_job", function (ob) {
@@ -124,15 +130,21 @@ const plugin = {},
         }
         log.i('Assistant plugin request: /i/assistant_generate_all_job');
 
-        const callback = function () {
-            log.i('Assistant plugin request: /i/assistant_generate_all_job finished');
-        };
+        const validate = ob.validateUserForMgmtReadAPI;//todo make this stronger
+        validate(function (params) {
+            const callback = function () {
+                log.i('Assistant plugin request: /i/assistant_generate_all_job finished');
+            };
 
-        require('../../../api/parts/jobs').job('assistant:generate').in(3);
+            require('../../../api/parts/jobs').job('assistant:generate').in(3);
 
 
-        common.returnOutput(params, "assistant_generate_all_job was ! completed");
-        return true;
+            common.returnOutput(params, "assistant_generate_all_job was ! completed");
+            return true;
+        });
+
+        common.returnMessage(params, 401, 'Unauthorized, use a valid user');
+        return false;
     });
 
     //for debugging
@@ -148,13 +160,21 @@ const plugin = {},
         }
         log.i('Assistant plugin request: /i/asistdelete');
 
-        common.db.collection(db_name_notifs).drop();
-        common.db.collection(db_name_config).drop();
+        const validate = ob.validateUserForMgmtReadAPI;//todo make this stronger
+        validate(function (params) {
 
-        common.returnOutput(params, "Delete was ! completed");
-        return true;
+            common.db.collection(db_name_notifs).drop();
+            common.db.collection(db_name_config).drop();
+
+            common.returnOutput(params, "Delete was ! completed");
+            return true;
+        });
+
+        common.returnMessage(params, 401, 'Unauthorized, use a valid user');
+        return false;
     });
 
+    /*
     plugins.register("/i/assmagic", function (ob) {
         var params = ob.params;
 
@@ -206,7 +226,7 @@ const plugin = {},
 
         common.returnOutput(params, "rsstest was ! completed");
         return true;
-    });
+    });*/
 
 }(plugin));
 

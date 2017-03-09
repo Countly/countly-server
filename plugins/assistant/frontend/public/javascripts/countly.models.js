@@ -60,7 +60,24 @@
         //return Math.floor(seconds) + " seconds";
     };
 
-
+    /**
+     * Sanatizes the given notification data array. Replaces "null" and "undefined" with "0"
+     * Returns the amount of fields replaced
+     * todo test this
+     */
+    var sanitizeDataArray = function (givenData) {
+        var changes = 0;
+        for(var a = 0 ; a < givenData.length; a++){
+            if(givenData[a] === null) {
+                givenData[a] = 0;
+                changes++;
+            }else if(givenData[a] === undefined) {
+                givenData[a] = 0;
+                changes++;
+            }
+        }
+        return changes;
+    };
 
     var fixData = function (given_data) {
         var the_notifs = [given_data.notifications, given_data.notifs_saved_private, given_data.notifs_saved_global];
@@ -89,18 +106,20 @@
                 } else {//use the default style
                     //prepare notification message
                     var messageArr = obj.data.slice();//create copy of data
+                    var replacedAmount = sanitizeDataArray(messageArr);
+                    if(replacedAmount > (messageArr.length / 2)) {
+                        //more than half of data fields are not valid
+                        //todo should output log warning
+                        the_notifs[b].splice(a, 1);
+                        a--;
+                        continue;
+                    }
+
                     messageArr.unshift(obj.i18n_id + ".message");//put the message in front of the data
                     obj.msg = jQuery.i18n.prop.apply(null, messageArr);//insert fields where needed
 
                     //create a table for a few specific tickets
                     {
-                        var tableStart = '<div style="width: 100%; display: table;">';
-                        var tableEnd = '</div><br>';
-                        var rowStart = '<div style="display: table-row">';
-                        var rowEnd = '</div>';
-                        var cellStart = '<div style="border-style: solid; border-width: 2px; width: 50%; display: table-cell;">';
-                        var cellEnd = '</div>';
-
                         var twoColumnTable = function (data, ratioLeft, ratioRight) {
                             ratioLeft = ratioLeft || "30%";
                             ratioRight = ratioRight || "70%";
