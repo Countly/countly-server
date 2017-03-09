@@ -1726,7 +1726,7 @@ var AppRouter = Backbone.Router.extend({
                             }
 
                             for (var i = 0;  i < tableData.length; i++) {
-                                tableData[i] = tableData[i].replace(/^"/, "");
+                                tableData[i] = tableData[i].replace(/^"|"$/g, "");
 
                                 if (i >= tableCols.length) {
                                     var colIndex = i % tableCols.length;
