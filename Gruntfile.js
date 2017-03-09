@@ -89,6 +89,7 @@ module.exports = function(grunt) {
 		lib: {
 			src: [
 				'frontend/express/public/javascripts/countly/countly.map.helper.js',
+                'frontend/express/public/javascripts/countly/countly.helpers.js',
 				'frontend/express/public/javascripts/countly/countly.event.js',
 				'frontend/express/public/javascripts/countly/countly.session.js',
 				'frontend/express/public/javascripts/countly/countly.city.js',
@@ -99,7 +100,6 @@ module.exports = function(grunt) {
 				'frontend/express/public/javascripts/countly/countly.app.version.js',
 				'frontend/express/public/javascripts/countly/countly.carrier.js',
                 'frontend/express/public/javascripts/countly/countly.total.users.js',
-                'frontend/express/public/javascripts/countly/countly.helpers.js',
 				'frontend/express/public/javascripts/countly/countly.template.js',
 				'frontend/express/public/javascripts/countly/countly.views.js'
 			],
