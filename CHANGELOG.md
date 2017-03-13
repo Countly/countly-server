@@ -9,6 +9,8 @@
 * Fix: Populator - fixing typos in generated data
 * Fix: timestamp data range starting from January for period year
 * Fix: setting amount of failed logins from configs ui
+* Fix: stripping surrounding quotes in csv exports
+* Fix: Optimized event summary generation with lots of segment values
 * Do not record old property for device_id changes with merges
 * Do google services check upon installation and disable them if not usable
 * Added password rotation amount to prevent reusing same passwords
@@ -19,6 +21,7 @@
 * Fix: Enterprise Drill: do not count session extends as separate sessions
 * Fix: Enterprise Drill: bug in displaying Monthly data in beginning of the year
 * Fix: Enterprise Push: allow some users to skip approve for push messages
+* Fix: Restrict: export also allowed sections for user management exports
 
 ## Version 16.12.2
 
