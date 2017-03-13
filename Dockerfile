@@ -32,6 +32,7 @@ ADD ./bin/commands/docker/countly-dashboard.sh /etc/service/countly-dashboard/ru
 RUN chown mongodb /etc/service/mongodb/run && \
 	chown root /etc/service/nginx/run && \
 	chown -R countly:countly /opt/countly
+RUN bash ./bin/scripts/countly.install.plugins.sh
 
 EXPOSE 80
 
