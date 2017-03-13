@@ -91,10 +91,8 @@ fi
 bash $DIR/scripts/install.nghttp2.sh
 
 #install plugins
-if [ "$INSIDE_DOCKER" != "1" ]
-then
-    bash $DIR/scripts/countly.install.plugins.sh
-fi
+bash $DIR/scripts/countly.install.plugins.sh
+
 
 #get web sdk
 countly update sdk-web
