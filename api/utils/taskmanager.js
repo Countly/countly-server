@@ -23,7 +23,7 @@ var request = require("request");
     * @param {function} options.outputData - function to which to feed post processed data, if task did not exceed threshold
     * @returns {function} standard nodejs callback function accepting error as first parameter and result as second one. This result is passed to processData function, if such is available.
     * @example
-    * common.db.collection("data").findOne({_id:"test"}, taskManager.longtask({
+    * common.db.collection("data").findOne({_id:"test"}, taskmanager.longtask({
     *   db:common.db, 
     *   threshold:30, 
     *   params: params,
@@ -190,15 +190,25 @@ var request = require("request");
     */
     taskmanager.rerunTask = function(options, callback){
         options.db = options.db || common.db;
-        options.db.collection("long_tasks").findAndModify({_id:id}, {}, {$set:{status:"running"}},function(err, res){
+        options.db.collection("long_tasks").findAndModify({_id:options.id}, {}, {$set:{status:"running"}},function(err, res){
             res = res && res.ok ? res.value : null;
             if(!err && res && res.request){
-                request(options, function (error, response, body) {
+                try{
+                    res.request = JSON.parse(res.request);
+                }
+                catch(ex){
+                    res.request = {};
+                }
+                if(res.request.uri){
+                    request(res.request, function (error, response, body) {});
                     callback(null, "Success");
-                });
+                }
+                else{
+                    callback(null, "This task cannot be run again");
+                }
             }
             else{
-                callback("This task cannot be run again", null);
+                callback(null, "This task cannot be run again");
             }
         });
     };

@@ -125,6 +125,7 @@ if (cluster.isMaster) {
     }, 10000);
 } else {
     var common = require('./utils/common.js');
+    var taskmanager = require('./utils/taskmanager.js');
     common.db = plugins.dbConnection(countlyConfig);
     var url = require('url'),
     querystring = require('querystring'),
@@ -807,6 +808,41 @@ if (cluster.isMaster) {
             
                             break;
                         }
+                        case '/i/tasks':
+                        {
+                            if (!params.qstring.api_key) {
+                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
+                                return false;
+                            }
+                            
+                            if (!params.qstring.task_id) {
+                                common.returnMessage(params, 400, 'Missing parameter "task_id"');
+                                return false;
+                            }
+            
+                            switch (paths[3]) {
+                                case 'update':
+                                    validateUserForWriteAPI(function(){
+                                        taskmanager.rerunTask({db:common.db, id:params.qstring.task_id}, function(err, res){
+                                            common.returnMessage(params, 200, res);
+                                        });
+                                    }, params);
+                                    break;
+                                case 'delete':
+                                    validateUserForWriteAPI(function(){
+                                        taskmanager.deleteResult({db:common.db, id:params.qstring.task_id}, function(err, res){
+                                            common.returnMessage(params, 200, "Success");
+                                        });
+                                    }, params);
+                                    break;
+                                default:
+                                    if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
+                                        common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update, /delete or /reset');
+                                    break;
+                            }
+            
+                            break;
+                        }
                         case '/i':
                         {
                             params.ip_address =  params.qstring.ip_address || common.getIpAddress(req);
@@ -883,6 +919,48 @@ if (cluster.isMaster) {
                                     break;
                                 case 'details':
                                     validateUserForDataReadAPI(params, countlyApi.mgmt.apps.getAppsDetails);
+                                    break;
+                                default:
+                                    if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
+                                        common.returnMessage(params, 400, 'Invalid path, must be one of /all , /mine or /details');
+                                    break;
+                            }
+            
+                            break;
+                        }
+                        case '/o/tasks':
+                        {
+                            if (!params.qstring.api_key) {
+                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
+                                return false;
+                            }
+            
+                            switch (paths[3]) {
+                                case 'all':
+                                    validateUserForMgmtReadAPI(function(){
+                                        taskmanager.getResults({db:common.db, query:params.qstring.query}, function(err, res){
+                                            common.returnOutput(params, res || []);
+                                        });
+                                    }, params);
+                                    break;
+                                case 'task':
+                                    validateUserForMgmtReadAPI(function(){
+                                        if (!params.qstring.task_id) {
+                                            common.returnMessage(params, 400, 'Missing parameter "task_id"');
+                                            return false;
+                                        }
+                                        taskmanager.getResult({db:common.db, id:params.qstring.task_id}, function(err, res){
+                                            if(res){
+                                                if(res.data)
+                                                    common.returnOutput(params, res);
+                                                else
+                                                    common.returnMessage(params, 400, 'Task is still running');
+                                            }
+                                            else{
+                                                common.returnMessage(params, 400, 'Task does not exist');
+                                            }
+                                        });
+                                    }, params);
                                     break;
                                 default:
                                     if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
