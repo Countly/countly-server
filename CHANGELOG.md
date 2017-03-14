@@ -1,5 +1,7 @@
 ## Version 16.12.3
 
+This is a bugfix release.
+
 * Fix: Estimated data for full buckets
 * Fix: Changing password validation on server side
 * Fix: Push - Audience calculation when sending to multiple platforms
@@ -25,6 +27,8 @@
 
 ## Version 16.12.2
 
+This is a bugfix release.
+
 * Fix: Push - send badge data to Android
 * Fix: Loading code.count.ly for https servers
 * Fix: using unencrypted password for MongoDB
@@ -41,6 +45,8 @@
 * Fix: Enterprise Push Maker Aproover plugin
 
 ## Version 16.12.1
+
+This is a bugfix release.
 
 * Fix: Getting email report data correctly
 * Fix: Bug with recording custom metric functionality
