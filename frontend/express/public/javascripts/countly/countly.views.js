@@ -2802,6 +2802,48 @@ window.DashboardView = countlyView.extend({
     }
 });
 
+window.LongTaskView = countlyView.extend({
+	initialize:function () {
+		this.template = Handlebars.compile($("#table-template").html());
+    },
+    beforeRender: function() {
+        return $.when(countlyTaskManager.initialize()).then(function () {});
+    },
+    renderCommon:function (isRefresh) {
+        this.templateData = {
+            "page-title":"LongTaskResults"
+        };
+
+		var self = this;
+        if (!isRefresh) {
+            $(this.el).html(this.template(this.templateData));
+
+			this.dtable = $('#data-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+                "aaData": countlyTaskManager.getResults(),
+                "aoColumns": [
+                    { "mData": function(row, type){
+						if(type == "display"){
+							return moment(new Date(row.ts)).format("ddd, D MMM YYYY HH:mm:ss");
+						}else return row.ts;}, "sType":"string", "sTitle": jQuery.i18n.map["common.time"] },
+                    { "mData": "type", "sType":"string", "sTitle": jQuery.i18n.map["common.type"] },
+                    { "mData": "meta", "sType":"string", "sTitle": jQuery.i18n.map["common.info"] },
+                    { "mData": "status", "sType":"string", "sTitle": jQuery.i18n.map["common.status"] },
+                    { "mData": function(row, type){
+						if(type == "display"){
+							return countlyCommon.formatTime(Math.round(row.time/1000) || 0);
+						}else return row.time || 0;}, "sType":"number", "sTitle": jQuery.i18n.map["common.graph.time-spent"] }
+                ]
+            }));
+
+			this.dtable.stickyTableHeaders();
+			this.dtable.fnSort( [ [0,'desc'] ] );
+        }
+    },
+    refresh:function () {
+		this.dtable.fnDraw(false);
+    }
+});
+
 //register views
 app.sessionView = new SessionView();
 app.userView = new UserView();
@@ -2818,6 +2860,7 @@ app.manageAppsView = new ManageAppsView();
 app.manageUsersView = new ManageUsersView();
 app.eventsView = new EventsView();
 app.dashboardView = new DashboardView();
+app.longTaskView = new LongTaskView();
 
 app.route("/analytics/sessions","sessions", function () {
 	this.renderWhenReady(this.sessionView);
@@ -2857,6 +2900,9 @@ app.route("/manage/apps","manageApps", function () {
 });
 app.route("/manage/users","manageUsers", function () {
 	this.renderWhenReady(this.manageUsersView);
+});
+app.route("/manage/tasks","longTasks", function () {
+	this.renderWhenReady(this.longTaskView);
 });
 app.route("/analytics/events","events", function () {
 	this.renderWhenReady(this.eventsView);
