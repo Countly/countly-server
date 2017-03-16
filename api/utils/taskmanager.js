@@ -19,6 +19,7 @@ var request = require("request");
     * @param {string} options.type - type of data, as which module or plugin uses this data
     * @param {string} options.meta - any information about the tast
     * @param {string} options.view - browser side view hash prepended with job id to display result
+    * @param {string} options.app_id - id of the app for which data is meant for
     * @param {function} options.processData - function to which to feed fetched data to post process it if needed, should accept err, data and callback to which to feed processed data
     * @param {function} options.outputData - function to which to feed post processed data, if task did not exceed threshold
     * @returns {function} standard nodejs callback function accepting error as first parameter and result as second one. This result is passed to processData function, if such is available.
@@ -26,6 +27,7 @@ var request = require("request");
     * common.db.collection("data").findOne({_id:"test"}, taskmanager.longtask({
     *   db:common.db, 
     *   threshold:30, 
+    *   app_id:"58b6d13bf1de9562e5a8029f",
     *   params: params,
     *   type:"funnels", 
     *   meta:"FunnelName",
@@ -53,6 +55,11 @@ var request = require("request");
                 }
                 else{
                     options.id = taskmanager.getId();
+                }
+                if(!options.app_id){
+                    if(options.params){
+                        options.app_id = (options.params.app_id || options.params.app._id || options.params.qstring.app_id)+"";
+                    }
                 }
                 taskmanager.createTask(options);
             }
@@ -112,6 +119,7 @@ var request = require("request");
     * @param {string} options.type - type of data, as which module or plugin uses this data
     * @param {string} options.meta - any information about the taskManager
     * @param {string} options.view - browser side view hash prepended with job id to display result
+    * @param {string} options.app_id - id of the app for which data is for
     * @param {function=} callback - callback when data is stored
     */
     taskmanager.createTask = function(options, callback){
@@ -122,6 +130,7 @@ var request = require("request");
         update.type = options.type || "";
         update.meta = options.meta || "";
         update.view = options.view || "";
+        update.app_id = options.app_id || "";
         options.db.collection("long_tasks").update({_id:options.id}, {$set:update}, {'upsert': true}, callback);
     };
     
@@ -148,7 +157,7 @@ var request = require("request");
     * Get specific task result
     * @param {object} options - options for the task
     * @param {object} options.db - database connection
-    * @param {string} options.id - id of the task
+    * @param {string} options.id - id of the task result
     * @param {funciton} callback - callback for the result
     */
     taskmanager.getResult = function(options, callback){
@@ -161,36 +170,38 @@ var request = require("request");
     * @param {object} options - options for the task
     * @param {object} options.db - database connection
     * @param {object} options.query - mongodb query
+    * @param {object} options.projection - mongodb projection
     * @param {funciton} callback - callback for the result
     */
     taskmanager.getResults = function(options, callback){
         options.db = options.db || common.db;
         options.query = options.query || {};
-        options.db.collection("long_tasks").find(options.query).toArray(callback);
+        options.projection = options.projection || {data:0};
+        options.db.collection("long_tasks").find(options.query, options.projection).toArray(callback);
     };
     
     /**
     * Delete specific task result
     * @param {object} options - options for the task
     * @param {object} options.db - database connection
-    * @param {string} options.id - mongodb query
+    * @param {string} options.id - id of the task result
     * @param {funciton} callback - callback for the result
     */
     taskmanager.deleteResult = function(options, callback){
         options.db = options.db || common.db;
-        db.collection("long_tasks").remove({_id:options.id}, callback);
+        options.db.collection("long_tasks").remove({_id:options.id}, callback);
     };
     
     /**
     * Rerun specific task
     * @param {object} options - options for the task
     * @param {object} options.db - database connection
-    * @param {string} options.id - mongodb query
+    * @param {string} options.id - id of the task result
     * @param {funciton} callback - callback for the result
     */
     taskmanager.rerunTask = function(options, callback){
         options.db = options.db || common.db;
-        options.db.collection("long_tasks").findAndModify({_id:options.id}, {}, {$set:{status:"running"}},function(err, res){
+        options.db.collection("long_tasks").findAndModify({_id:options.id}, {}, {$set:{status:"rerunning"}},function(err, res){
             res = res && res.ok ? res.value : null;
             if(!err && res && res.request){
                 try{
@@ -200,6 +211,7 @@ var request = require("request");
                     res.request = {};
                 }
                 if(res.request.uri){
+                    res.request.json.task_id = options.id;
                     request(res.request, function (error, response, body) {});
                     callback(null, "Success");
                 }
