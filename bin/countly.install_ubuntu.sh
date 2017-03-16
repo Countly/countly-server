@@ -86,6 +86,7 @@ bash $DIR/scripts/install.nghttp2.sh
 #install plugins
 bash $DIR/scripts/countly.install.plugins.sh
 
+
 #get web sdk
 countly update sdk-web
 
