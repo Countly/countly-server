@@ -2082,7 +2082,7 @@
     * countlyCommon.formatTimeAgo(1484654066);
     */
 	countlyCommon.formatTimeAgo = function(timestamp) {
-        if(timestamp.toString().length === 10)
+        if(Math.round(timestamp).toString().length === 10)
             timestamp *= 1000;
         var target = new Date(timestamp);
         var tooltip = moment(target).format("ddd, D MMM YYYY HH:mm:ss");
@@ -2108,15 +2108,13 @@
 
     /**
     * Format duration to units of how much time have passed
-    * @param {number} timestamp - amount in seconds or miliseconds passed since some reference point
+    * @param {number} timestamp - amount in seconds passed since some reference point
     * @returns {string} formated time with how much units passed
     * @example
     * //outputs 47 year(s) 28 day(s) 11:54:26
     * countlyCommon.formatTime(1484654066);
     */
 	countlyCommon.formatTime = function(timestamp) {
-        if(timestamp.toString().length === 13)
-            timestamp = Math.round(timestamp/1000);
 		var str = "";
 		var seconds = timestamp % 60;
 		str = str+leadingZero(seconds);
@@ -2140,15 +2138,13 @@
 
     /**
     * Format duration into highest unit of how much time have passed. Used in big numbers
-    * @param {number} timestamp - amount in seconds or miliseconds passed since some reference point
+    * @param {number} timestamp - amount in seconds passed since some reference point
     * @returns {string} formated time with how much highest units passed
     * @example
     * //outputs 2824.7 yrs
     * countlyCommon.timeString(1484654066);
     */
     countlyCommon.timeString = function(timespent){
-        if(timespent.toString().length === 13)
-            timespent = Math.round(timespent/1000);
         var timeSpentString = (timespent.toFixed(1)) + " " + jQuery.i18n.map["common.minute.abrv"];
 
         if (timespent >= 142560) {
@@ -2199,7 +2195,7 @@
     * countlyCommon.getDate(1484654066);
     */
 	countlyCommon.getDate = function(timestamp) {
-        if(timestamp.toString().length === 10)
+        if(Math.round(timestamp).toString().length === 10)
             timestamp *= 1000;
 		var d = new Date(timestamp);
 		return leadingZero(d.getDate())+"."+leadingZero(d.getMonth()+1)+"."+d.getFullYear();
@@ -2214,7 +2210,7 @@
     * countlyCommon.getTime(1484654066);
     */
 	countlyCommon.getTime = function(timestamp) {
-        if(timestamp.toString().length === 10)
+        if(Math.round(timestamp).toString().length === 10)
             timestamp *= 1000;
 		var d = new Date(timestamp);
 		return leadingZero(d.getHours())+":"+leadingZero(d.getMinutes());
@@ -3001,7 +2997,7 @@
     */
     countlyCommon.getOffsetCorrectionForTimestamp = function(inTS) {
         var timeZoneOffset = new Date().getTimezoneOffset(),
-            intLength = inTS.toString().length,
+            intLength = Math.round(inTS).toString().length,
             tzAdjustment = 0;
 
         if (timeZoneOffset < 0) {
