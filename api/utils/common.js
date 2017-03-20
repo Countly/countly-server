@@ -414,7 +414,7 @@ var common = {},
             currTimestamp = ( parseInt(reqTimestamp, 10) > time.time()) ? time.time() : parseInt(reqTimestamp, 10);
             curMsTimestamp = ( parseInt(reqTimestamp, 10) > time.time()) ? time.time()*1000 : parseFloat(reqTimestamp, 10)*1000;
             currDate = new Date(currTimestamp * 1000);
-        } else if (reqTimestamp && (reqTimestamp + "").length === 13 && common.isNumber(reqTimestamp)) {
+        } else if (reqTimestamp && (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 13 && common.isNumber(reqTimestamp)) {
             var tmpTimestamp = Math.round(parseInt(reqTimestamp, 10) / 1000);
             curMsTimestamp = ( tmpTimestamp > time.time()) ? time.time() * 1000 :  parseInt(reqTimestamp, 10);
             currTimestamp = (tmpTimestamp > time.time()) ? time.time() : tmpTimestamp;
