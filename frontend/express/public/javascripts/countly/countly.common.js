@@ -1036,29 +1036,33 @@
                 tableCounter++;
             }
         }
-
-        if (propertyNames.indexOf("u") !== -1) {
-            tableData.sort(function(a,b){
-                return b.u - a.u;
-            });
-        } else if (propertyNames.indexOf("t") !== -1) {
-            tableData.sort(function(a,b){
-                return b.t - a.t;
-            });
-        } else if (propertyNames.indexOf("c") !== -1) {
-            tableData.sort(function(a,b){
-                return b.c - a.c;
-            });
-        }
-
+        
         for (var i = 0; i < tableData.length; i++) {
             if (_.isEmpty(tableData[i])) {
                 tableData[i] = null;
             }
         }
 
-        return {"chartData":_.compact(tableData)};
+        tableData = _.compact(tableData);
+        
+        if (propertyNames.indexOf("u") !== -1) {
+            countlyCommon.sortByProperty(tableData, "u");
+        } else if (propertyNames.indexOf("t") !== -1) {
+            countlyCommon.sortByProperty(tableData, "t");
+        } else if (propertyNames.indexOf("c") !== -1) {
+            countlyCommon.sortByProperty(tableData, "c");
+        }
+
+        return {"chartData":tableData};
     };
+    
+    countlyCommon.sortByProperty = function(tableData, prop){
+        tableData.sort(function(a,b){
+            a = (a && a[prop]) ? a[prop] : 0;
+            b = (b && b[prop]) ? b[prop] : 0;
+            return b - a;
+        });
+    }
 
     countlyCommon.mergeMetricsByName = function(chartData, metric){
         var uniqueNames = {},
