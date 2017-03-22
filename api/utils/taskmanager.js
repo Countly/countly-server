@@ -76,7 +76,6 @@ var request = require("request");
             options.outputData(null, {task_id:options.id});
         }, options.threshold*1000);
         return function(err, res){
-            options.time = new Date().getTime() - start;
             if(timeout){
                 clearTimeout(timeout);
                 timeout = null;
@@ -126,6 +125,7 @@ var request = require("request");
         options.db = options.db || common.db;
         var update = {};
         update.ts = new Date().getTime();
+        update.start = new Date().getTime();
         update.status = "running";
         update.type = options.type || "";
         update.meta = options.meta || "";
@@ -139,7 +139,6 @@ var request = require("request");
     * @param {object} options - options for the task
     * @param {object} options.db - database connection
     * @param {string} options.id - id to use for this task
-    * @param {string} options.time - amount of miliseconds it took for task to run
     * @param {string} options.request - api request to be able to rerun this task
     * @param {object} data - result data of the task
     * @param {function=} callback - callback when data is stored
@@ -147,8 +146,7 @@ var request = require("request");
     taskmanager.saveResult = function(options, data, callback){
         options.db = options.db || common.db;
         options.db.collection("long_tasks").update({_id:options.id}, {$set:{
-            time: options.time || 0,
-            request:JSON.stringify(options.request || {}), 
+            end: new Date().getTime(),
             status:"completed",
             data:JSON.stringify(data || {})}}, {'upsert': true}, callback);
     };
