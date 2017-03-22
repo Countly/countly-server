@@ -698,6 +698,7 @@ var pluginManager = function pluginManager(){
                         this["_"+name](selector, doc, retryifNeeded(options, null, e, copyArguments(arguments, name)));
                     }
                     else{
+                        options = options || {};
                         //we have options
                         logDbWrite.d(name+" "+collection+" %j %j %j"+at, selector, doc, options);
                         if(options.upsert){
