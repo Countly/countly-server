@@ -1,7 +1,10 @@
 (function (countlyTaskManager, $, undefined) {
 
     //Private Properties
-    var _resultData = [];
+    var _resultData = [],
+        _resultObj = {},
+        _data = {},
+        curTask = 0;
 
     //Public Methods
     countlyTaskManager.initialize = function (isRefresh) {
@@ -16,11 +19,18 @@
             dataType:"json",
             success:function (json) {
                 _resultData = json;
+                for(var i = 0; i < json.length; i++){
+                    if(json[i].meta)
+                        json[i].meta = countlyCommon.decodeHtml(json[i].meta);
+                    if(json[i].request)
+                        json[i].request = JSON.parse(countlyCommon.decodeHtml(json[i].request));
+                    _resultObj[json[i]._id] = json[i];
+                }
             }
         });
     };
     
-    countlyTaskManager.getResult = function (id, callback) {
+    countlyTaskManager.fetchResult = function (id, callback) {
         return $.ajax({
             type:"GET",
             url:countlyCommon.API_PARTS.data.r+"/tasks/task",
@@ -32,6 +42,13 @@
             },
             dataType:"json",
             success:function (json) {
+                if(json.data)
+                    json.data = JSON.parse(countlyCommon.decodeHtml(json.data));
+                if(json.meta)
+                    json.meta = countlyCommon.decodeHtml(json.meta);
+                if(json.request)
+                    json.request = JSON.parse(countlyCommon.decodeHtml(json.request));
+                _data[id] = json;
                 if(callback)
                     callback(json);
 			},
