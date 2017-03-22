@@ -2811,7 +2811,7 @@ window.LongTaskView = countlyView.extend({
     },
     renderCommon:function (isRefresh) {
         this.templateData = {
-            "page-title":"LongTaskResults"
+            "page-title":jQuery.i18n.map["sidebar.management.longtasks"]
         };
 
 		var self = this;
@@ -2826,21 +2826,87 @@ window.LongTaskView = countlyView.extend({
 							return moment(new Date(row.ts)).format("ddd, D MMM YYYY HH:mm:ss");
 						}else return row.ts;}, "sType":"string", "sTitle": jQuery.i18n.map["common.time"] },
                     { "mData": "type", "sType":"string", "sTitle": jQuery.i18n.map["common.type"] },
-                    { "mData": "meta", "sType":"string", "sTitle": jQuery.i18n.map["common.info"] },
+                    { "mData": function(row, type){return row.name || row.meta || ""}, "sType":"string", "sTitle": jQuery.i18n.map["common.info"] },
                     { "mData": "status", "sType":"string", "sTitle": jQuery.i18n.map["common.status"] },
                     { "mData": function(row, type){
+                        var time = 0;
+                        if(row.status === "running" || row.status === "rerunning"){
+                            time = Math.max(new Date().getTime() - row.start, 0);
+                        }
+                        else if(row.end){
+                            time = row.end - row.start;
+                        }
 						if(type == "display"){
-							return countlyCommon.formatTime(Math.round(row.time/1000) || 0);
-						}else return row.time || 0;}, "sType":"number", "sTitle": jQuery.i18n.map["common.graph.time-spent"] }
+							return countlyCommon.formatTime(Math.round(time/1000));
+						}else return time;}, "sType":"number", "sTitle": jQuery.i18n.map["common.graph.time-spent"] },
+                    { "mData": function(row, type){
+                        var str = "<a data-localize='common.delete' class='table-link red delete-task' data-id='"+row._id+"'></a>";
+                        if(row.status !== "running" && row.status !== "rerunning"){
+                            if(row.view && row.hasData){
+                                str += "<p><a href='"+row.view+row._id+"' data-localize='common.view' class='table-link green'></a></p>";
+                            }
+                            if(row.request){
+                                str += "<p><a data-localize='taskmanager.rerun' class='table-link green rerun-task' data-id='"+row._id+"'></a></p>";
+                            }
+                        }
+                        else{
+                            if(row.view && row.hasData){
+                                str += "<p><a href='"+row.view+row._id+"' data-localize='taskmanager.view-old' class='table-link green'></a></p>";
+                            }
+                        }
+                        return str;
+                    }, "sType":"string", "sTitle": jQuery.i18n.map["common.action"] },
                 ]
             }));
 
 			this.dtable.stickyTableHeaders();
 			this.dtable.fnSort( [ [0,'desc'] ] );
+            
+            this.dtable.find("delete-task").click()
+            this.dtable.find('tbody').on("click", ".delete-task", function (){
+                var id = $(this).data("id");
+                if(id){
+                    CountlyHelpers.confirm(jQuery.i18n.map["taskmanager.confirm-delete"], "red", function (result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyTaskManager.del(id, function(){
+                            self.refresh();
+                        });
+                    });
+                }
+            });
+            
+            this.dtable.find('tbody').on("click", ".rerun-task", function (){
+                var id = $(this).data("id");
+                if(id){
+                    CountlyHelpers.confirm(jQuery.i18n.map["taskmanager.confirm-rerun"], "red", function (result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyTaskManager.update(id, function(res){
+                            if(res.result === "Success")
+                                self.refresh();
+                            else{
+                                CountlyHelpers.alert(res.result, "red");
+                            }
+                        });
+                    });
+                }
+            });
         }
     },
     refresh:function () {
-		this.dtable.fnDraw(false);
+		var self = this;
+        $.when(countlyTaskManager.initialize(true)).then(function () {
+            if (app.activeView != self) {
+                return false;
+            }
+            self.renderCommon(true);
+            var data = countlyTaskManager.getResults();
+            CountlyHelpers.refreshTable(self.dtable, data);
+            app.localize();
+        });
     }
 });
 
