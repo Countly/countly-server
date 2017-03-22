@@ -1273,6 +1273,7 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 
 .table-link { color:#2FA732; text-decoration: underline; cursor: pointer; text-transform: lowercase; }
 .table-link.green { color:#2FA732; }
+.table-link.red { color:#D63E40; }
 
 .grouped-numbers .inner { padding:0; margin-left:8px; margin-right:8px; }
 .grouped-numbers .item:first-child .inner { margin-right:8px; margin-left:0; }
