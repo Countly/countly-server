@@ -152,7 +152,23 @@ var request = require("request");
         options.db.collection("long_tasks").update({_id:options.id}, {$set:{
             end: new Date().getTime(),
             status:"completed",
-            data:JSON.stringify(data || {})}}, {'upsert': true}, callback);
+            hasData: true,
+            data:JSON.stringify(data || {})}}, {'upsert': false}, callback);
+    };
+    
+    /**
+    * Give a name to task result or rename it
+    * @param {object} options - options for the task
+    * @param {object} options.db - database connection
+    * @param {string} options.id - id to use for this task
+    * @param {string} options.name - name of the task result, for later reference
+    * @param {function=} callback - callback when data is stored
+    */
+    taskmanager.nameResult = function(options, data, callback){
+        options.db = options.db || common.db;
+        options.db.collection("long_tasks").update({_id:options.id}, {$set:{
+            name:options.name
+        }}, {'upsert': false}, callback);
     };
     
     /**
@@ -165,6 +181,18 @@ var request = require("request");
     taskmanager.getResult = function(options, callback){
         options.db = options.db || common.db;
         options.db.collection("long_tasks").findOne({_id:options.id}, callback);
+    };
+    
+    /**
+    * Check task's status
+    * @param {object} options - options for the task
+    * @param {object} options.db - database connection
+    * @param {string} options.id - id of the task result
+    * @param {funciton} callback - callback for the result
+    */
+    taskmanager.checkResult = function(options, callback){
+        options.db = options.db || common.db;
+        options.db.collection("long_tasks").findOne({_id:options.id}, {_id:0, status:1}, callback);
     };
     
     /**
@@ -192,6 +220,19 @@ var request = require("request");
     taskmanager.deleteResult = function(options, callback){
         options.db = options.db || common.db;
         options.db.collection("long_tasks").remove({_id:options.id}, callback);
+    };
+    
+    /**
+    * Mark all running or rerunning tasks as errored
+    * @param {object} options - options for the task
+    * @param {object} options.db - database connection
+    * @param {funciton} callback - callback for the result
+    */
+    taskmanager.errorResults = function(options, callback){
+        options.db = options.db || common.db;
+        options.db.collection("long_tasks").update({status:"running"}, {$set:{status:"errored"}}, function(){
+            options.db.collection("long_tasks").update({status:"rerunning"}, {$set:{status:"errored"}}, callback);
+        });
     };
     
     /**

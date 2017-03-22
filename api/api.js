@@ -849,9 +849,16 @@ if (cluster.isMaster) {
                                         });
                                     }, params);
                                     break;
+                                case 'name':
+                                    validateUserForWriteAPI(function(){
+                                        taskmanager.deleteResult({db:common.db, id:params.qstring.task_id, name:params.qstring.name}, function(err, res){
+                                            common.returnMessage(params, 200, "Success");
+                                        });
+                                    }, params);
+                                    break;
                                 default:
                                     if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
-                                        common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update, /delete or /reset');
+                                        common.returnMessage(params, 400, 'Invalid path');
                                     break;
                             }
             
@@ -967,10 +974,23 @@ if (cluster.isMaster) {
                                         }
                                         taskmanager.getResult({db:common.db, id:params.qstring.task_id}, function(err, res){
                                             if(res){
-                                                if(res.data)
-                                                    common.returnOutput(params, res);
-                                                else
-                                                    common.returnMessage(params, 400, 'Task is still running');
+                                                common.returnOutput(params, res);
+                                            }
+                                            else{
+                                                common.returnMessage(params, 400, 'Task does not exist');
+                                            }
+                                        });
+                                    }, params);
+                                    break;
+                                case 'check':
+                                    validateUserForMgmtReadAPI(function(){
+                                        if (!params.qstring.task_id) {
+                                            common.returnMessage(params, 400, 'Missing parameter "task_id"');
+                                            return false;
+                                        }
+                                        taskmanager.checkResult({db:common.db, id:params.qstring.task_id}, function(err, res){
+                                            if(res){
+                                                common.returnMessage(params, 200, res.status);
                                             }
                                             else{
                                                 common.returnMessage(params, 400, 'Task does not exist');
@@ -980,7 +1000,7 @@ if (cluster.isMaster) {
                                     break;
                                 default:
                                     if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
-                                        common.returnMessage(params, 400, 'Invalid path, must be one of /all , /mine or /details');
+                                        common.returnMessage(params, 400, 'Invalid path');
                                     break;
                             }
             
