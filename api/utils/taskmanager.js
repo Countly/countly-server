@@ -203,19 +203,37 @@ var request = require("request");
     */
     taskmanager.rerunTask = function(options, callback){
         options.db = options.db || common.db;
-        options.db.collection("long_tasks").findAndModify({_id:options.id}, {}, {$set:{status:"rerunning"}},function(err, res){
-            res = res && res.ok ? res.value : null;
+        options.db.collection("long_tasks").findOne({_id:options.id},function(err, res){
             if(!err && res && res.request){
+                var reqData = {};
                 try{
-                    res.request = JSON.parse(res.request);
+                    reqData = JSON.parse(res.request);
                 }
                 catch(ex){
-                    res.request = {};
+                    reqData = {};
                 }
-                if(res.request.uri){
-                    res.request.json.task_id = options.id;
-                    request(res.request, function (error, response, body) {});
-                    callback(null, "Success");
+                if(reqData.uri){
+                    reqData.json.task_id = options.id;
+                    options.db.collection("long_tasks").update({_id:options.id},{$set:{status:"rerunning", start: new Date().getTime()}}, function(){
+                        request(reqData, function (error, response, body) {
+                            try{
+                                body = JSON.parse(body);
+                            }
+                            catch(ex){
+                                body = null;
+                            }
+                            //we got response, if it contains task_id, then task is rerunning
+                            //if it does not, then possibly task completed faster this time and we can get new result
+                            if(body && !body.task_id){
+                                taskmanager.saveResult({
+                                    db:options.db,
+                                    id:options.id,
+                                    request:res.request
+                                }, body);
+                            }
+                        });
+                        callback(null, "Success");                                      
+                    });
                 }
                 else{
                     callback(null, "This task cannot be run again");
