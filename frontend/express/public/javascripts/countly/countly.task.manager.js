@@ -214,9 +214,13 @@
     
     $( document ).ready(function() {
         countlyTaskManager.tick();
+        var initial = true;
         //listen for UI app change
         app.addAppSwitchCallback(function(appId){
-            countlyTaskManager.reset();
+            if(initial)
+                initial = false;
+            else
+                countlyTaskManager.reset();
         });
     });
 	
