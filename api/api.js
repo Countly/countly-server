@@ -127,6 +127,8 @@ if (cluster.isMaster) {
     var common = require('./utils/common.js');
     var taskmanager = require('./utils/taskmanager.js');
     common.db = plugins.dbConnection(countlyConfig);
+    //since process restarted mark running tasks as errored
+    taskmanager.errorResults({db:common.db});
     var url = require('url'),
     querystring = require('querystring'),
     log = common.log('api'),
