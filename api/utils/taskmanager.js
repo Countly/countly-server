@@ -49,28 +49,31 @@ var request = require("request");
         var timeout = setTimeout(function(){
             timeout = null;
             exceeds = true;
+            if(!options.request && options.params && options.params.qstring){
+                var json = options.params.qstring || {};
+                json = JSON.parse(JSON.stringify(json));
+                //we don't need to have task_id, it will be automatically applied
+                delete json.task_id;
+                //we want to get raw json data without jsonp
+                delete json.callback;
+                options.request = {
+                    uri: "http://localhost"+options.params.fullPath,
+                    method: 'POST',
+                    json:json
+                }
+            }
             if(!options.id){
-                if(options.params && options.params.qstring && options.params.qstring.task_id){
-                    options.id = options.params.qstring.task_id;
-                }
-                else{
-                    options.id = taskmanager.getId();
-                }
                 if(!options.app_id){
                     if(options.params){
                         options.app_id = (options.params.app_id || options.params.app._id || options.params.qstring.app_id)+"";
                     }
                 }
-                taskmanager.createTask(options);
-            }
-            if(!options.request && options.params){
-                var json = options.params.qstring || {};
-                json = JSON.parse(JSON.stringify(json));
-                delete json.task_id;
-                options.request = {
-                    uri: "http://localhost"+options.params.fullPath,
-                    method: 'POST',
-                    json:json
+                if(options.params && options.params.qstring && options.params.qstring.task_id){
+                    options.id = options.params.qstring.task_id;
+                }
+                else{
+                    options.id = taskmanager.getId();
+                    taskmanager.createTask(options);
                 }
             }
             options.outputData(null, {task_id:options.id});
@@ -118,6 +121,7 @@ var request = require("request");
     * @param {string} options.type - type of data, as which module or plugin uses this data
     * @param {string} options.meta - any information about the taskManager
     * @param {string} options.view - browser side view hash prepended with job id to display result
+    * @param {object} options.request - api request to be able to rerun this task
     * @param {string} options.app_id - id of the app for which data is for
     * @param {function=} callback - callback when data is stored
     */
@@ -130,6 +134,7 @@ var request = require("request");
         update.type = options.type || "";
         update.meta = options.meta || "";
         update.view = options.view || "";
+        update.request = JSON.stringify(options.request || {});
         update.app_id = options.app_id || "";
         options.db.collection("long_tasks").update({_id:options.id}, {$set:update}, {'upsert': true}, callback);
     };
@@ -139,7 +144,6 @@ var request = require("request");
     * @param {object} options - options for the task
     * @param {object} options.db - database connection
     * @param {string} options.id - id to use for this task
-    * @param {string} options.request - api request to be able to rerun this task
     * @param {object} data - result data of the task
     * @param {function=} callback - callback when data is stored
     */
