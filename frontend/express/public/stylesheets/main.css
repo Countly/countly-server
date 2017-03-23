@@ -546,6 +546,8 @@ div.datatablesubrow {display: none;}
 .d-table textarea { max-width: 274px; }
 .d-table input[type=password] { border-radius:2px; margin:0; font:14px Ubuntu,Helvetica,sans-serif; line-height:111%; padding:5px; border:1px solid #D0D0D0; width:274px; }
 
+.table-template {margin-top: -16px;}
+
 .dataTable { border-radius:0 !important; margin-bottom:0 !important; }
 .dataTable th { border-radius:0 !important; outline:none; cursor:pointer; }
 .dataTable td { border-radius:0 !important; }
