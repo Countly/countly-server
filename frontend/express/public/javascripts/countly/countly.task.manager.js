@@ -188,7 +188,10 @@
                             message: "you can try rerunning it",
                             info: "Under Management -> Task Manager",
                             type: "error",
-                            sticky: true
+                            sticky: true,
+                            onClick: function(){
+                                app.navigate("#/manage/tasks", true);
+                            }
                         });
                     }
                 }
