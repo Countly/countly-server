@@ -4,12 +4,12 @@ window.LoggerView = countlyView.extend({
     },
     beforeRender: function() {
 		if(this.template)
-			return $.when(countlyLogger.initialize()).then(function () {});
+			return $.when(countlyLogger.initialize(this.filterToQuery())).then(function () {});
 		else{
 			var self = this;
 			return $.when($.get(countlyGlobal["path"]+'/logger/templates/logger.html', function(src){
 				self.template = Handlebars.compile(src);
-			}), countlyLogger.initialize()).then(function () {});
+			}), countlyLogger.initialize(this.filterToQuery())).then(function () {});
 		}
     },
     renderCommon:function (isRefresh) {
@@ -21,18 +21,11 @@ window.LoggerView = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
 			$("#"+this.filter).addClass("selected").addClass("active");
-			$.fn.dataTableExt.afnFiltering.push(function( oSettings, aData, iDataIndex ) {
-				if(!$(oSettings.nTable).hasClass("logger-filter"))
-					return true;
-				if((self.filter == "logger-event" && aData[0] != "Event") || (self.filter == "logger-session" && aData[0] != "Session") || (self.filter == "logger-metric" && aData[0] != "Metrics") || (self.filter == "logger-user" && aData[0] != "User details") || (self.filter == "logger-crash" && aData[0] != "Crash")){
-					return false
-				}
-				return true;
-			});
 
 			this.dtable = $('#logger-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": data,
                 "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+                    $(nRow).attr("id", aData._id);
                     $(nRow).find("pre").each(function(i, block) {
                         if(typeof hljs != "undefined"){
                             hljs.highlightBlock(block);
@@ -40,7 +33,17 @@ window.LoggerView = countlyView.extend({
                     });
                 },
                 "aoColumns": [
-                    { "mData": function(row, type){return row.t.charAt(0).toUpperCase() + row.t.slice(1).replace(/_/g, " ");}, "sType":"string", "sTitle": jQuery.i18n.map["logger.type"]},
+                    { "mData": function(row, type){
+                        var ret = "";
+                        if(row.m)
+                            ret += row.m+"<br/>";
+                        else
+                            ret += "GET<br/>";
+                        if(row.b === true)
+                            ret += "Bulk";
+                        
+                        return ret;
+                    }, "sType":"string", "sTitle": jQuery.i18n.map["logger.type"]},
                     { "mData": function(row, type){
 						if(type == "display"){
                             if((Math.round(parseFloat(row.ts, 10)) + "").length === 10)
@@ -67,9 +70,28 @@ window.LoggerView = countlyView.extend({
 						}
 						return ret;}, "sType":"string", "sTitle": jQuery.i18n.map["logger.device"]},
                     { "mData": function(row, type){
-                        if(typeof row.i == "object") {
+                        if(typeof row.t == "object") {
+                            var ob = {};
+                            if(self.filter && self.filter != "logger-all"){
+                                if(typeof row.t[self.filterToQuery()] === "string"){
+                                    ob = JSON.parse(countlyCommon.decodeHtml(row.t[self.filterToQuery()]));
+                                }
+                                else{
+                                    ob = row.t[self.filterToQuery()];
+                                }
+                            }
+                            else{
+                                ob = [];
+                                for(var i in row.t){
+                                    ob.push(i);
+                                }
+                            }
+                            return "<pre>" + JSON.stringify(ob, null, 2) + "</pre>";
+                        }
+                        else if(typeof row.i == "object") {
                             return "<pre>" + JSON.stringify(row.i, null, 2) + "</pre>";
-                        } else {
+                        }                        
+                        else {
                             var infoVal = "";
                             try {
                                 infoVal = JSON.parse(countlyCommon.decodeHtml(row.i));
@@ -125,16 +147,18 @@ window.LoggerView = countlyView.extend({
             }));
 			this.dtable.stickyTableHeaders();
 			this.dtable.fnSort( [ [1,'desc'] ] );
+            CountlyHelpers.expandRows(this.dtable, this.requestInfo);
         }
     },
     refresh:function () {
         var self = this;
-        $.when(countlyLogger.initialize()).then(function () {
+        $.when(countlyLogger.initialize(this.filterToQuery())).then(function () {
             if (app.activeView != self) {
                 return false;
             }
              var data = countlyLogger.getData();
 			CountlyHelpers.refreshTable(self.dtable, data);
+            CountlyHelpers.reopenRows(self.dtable, self.requestInfo);
             app.localize();
         });
     },
@@ -142,8 +166,40 @@ window.LoggerView = countlyView.extend({
 		this.filter = filter;
 		store.set("countly_loggerfilter", filter);
 		$("#"+this.filter).addClass("selected").addClass("active");
-		this.dtable.fnDraw();
-	}
+		this.refresh();
+	},
+    filterToQuery : function(){
+        if(this.filter){
+            if(this.filter == "logger-event")
+                return "events";
+            if(this.filter == "logger-session")
+                return "session";
+            if(this.filter == "logger-metric")
+                return "metrics";
+            if(this.filter == "logger-user")
+                return "user_details";
+            if(this.filter == "logger-crash")
+                return "crash";
+        }
+    },
+    requestInfo: function( d ) {
+		// `d` is the original data object for the row
+		var str = '';
+		if(d && (d.h || d.q)){
+            console.log("data", d);
+			str += '<div class="datatablesubrow">'+
+			'<table cellpadding="5" cellspacing="0" border="0" style="width: 100%;">';
+			if(d.h){
+				str += '<tr><td>'+"<b>Headers:</b><pre>" + JSON.stringify(d.h, null, 2) + "</pre>"+'</td></tr>';
+			}
+			if(d.q){
+				str += '<tr><td>'+"<b>Data:</b><pre>" + JSON.stringify(JSON.parse(countlyCommon.decodeHtml(d.q)), null, 2) + "</pre>"+'</td></tr>';
+			}
+			str += '</table>';
+			str += '</div>';
+		}
+		return str;
+	},
 });
 
 //register views

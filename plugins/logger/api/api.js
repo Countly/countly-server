@@ -31,77 +31,48 @@ var plugin = {},
 				location.cty = result.cty;
 			version = result.av || version;
 		}
-		var known = false;
+		var types = {};
 		if (params.qstring.begin_session) {
-			known = true;
-			var type = "session";
-			var info = {"begin_session":params.qstring.begin_session};
-			common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
+			if(!types["session"])
+                types["session"] = {};
+			types["session"]["begin_session"] = params.qstring.begin_session;
 		}
 		if (params.qstring.session_duration) {
-			known = true;
-			var type = "session";
-			var info = {"session_duration":params.qstring.session_duration};
-			common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
+			if(!types["session"])
+                types["session"] = {};
+			types["session"]["session_duration"] = params.qstring.session_duration;
 		}
 		if (params.qstring.end_session) {
-			known = true;
-			var type = "session";
-			var info = {"end_session":params.qstring.end_session};
-			common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
+			if(!types["session"])
+                types["session"] = {};
+			types["session"]["end_session"] = params.qstring.end_session;
 		}
 		if (params.qstring.metrics) {
-			known = true;
-			var type = "metrics";
-			var info = params.qstring.metrics;
-            if(info && typeof info == "object"){
-                info = JSON.stringify(info);
+			types["metrics"] = params.qstring.metrics;
+            if(types["metrics"] && typeof types["metrics"] == "object"){
+                types["metrics"] = JSON.stringify(types["metrics"]);
             }
-			common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
 		}
 		if (params.qstring.events) {
-			known = true;
-			var events = params.qstring.events;
-			if(events.constructor === Array)
-				for (var i=0; i < events.length; i++) {
-					var type = "event";
-					var info = events[i];
-					common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
-				}
-			else{
-				var type = "event";
-				var info = events;
-				common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
-			}
+			types["events"] = params.qstring.events;
+            if(types["events"] && typeof types["events"] == "object"){
+                types["events"] = JSON.stringify(types["events"]);
+            }
 				
 		}
         if (params.qstring.user_details) {
-			known = true;
-			var type = "user_details";
-			var info = params.qstring.user_details;
-            if(info && typeof info == "object"){
-                info = JSON.stringify(info);
+			types["user_details"] = params.qstring.user_details;
+            if(types["user_details"] && typeof types["user_details"] == "object"){
+                types["user_details"] = JSON.stringify(types["user_details"]);
             }
-			common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
 		}
         if (params.qstring.crash) {
-			known = true;
-			var type = "crash";
-			var info = params.qstring.crash;
-            if(info && typeof info == "object"){
-                info = JSON.stringify(info);
+			types["crash"] = params.qstring.crash;
+            if(types["crash"] && typeof types["crash"] == "object"){
+                types["crash"] = JSON.stringify(types["crash"]);
             }
-			common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
 		}
-		if(!known){
-			var type = "unknown";
-			var info = {};
-			for(var i in params.qstring){
-				if(i != "app_key" && i != "device_id" && i != "ip_address" && i != "timestamp")
-					info[i] = params.qstring[i];
-			}
-			common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:type, i:info, s:sdk}, function () {});
-		}
+        common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:types, q:JSON.stringify(params.qstring), s:sdk, h:params.req.headers, m:params.req.method, b:params.bulk || false}, function () {});
 	});
 	
 	//read api call
@@ -109,8 +80,15 @@ var plugin = {},
 		var params = ob.params
 		var validate = ob.validateUserForDataReadAPI;
 		if(params.qstring.method == 'logs'){
+            var filter = {};
+            if(typeof params.qstring.filter !== "undefined"){
+                try{
+                    filter = JSON.parse(params.qstring.filter);
+                }
+                catch(ex){filter = {}}
+            }
             validate(params, function(params){
-				common.db.collection('logs' + params.app_id).find().toArray(function(err, items) {
+				common.db.collection('logs' + params.app_id).find(filter).toArray(function(err, items) {
 					if(err)
 						console.log(err);
 					common.returnOutput(params, items);
