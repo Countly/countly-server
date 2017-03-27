@@ -10,7 +10,6 @@ var common = {},
     crypto = require('crypto'),
     mongo = require('mongoskin'),
     logger = require('./log.js'),
-    escape_html = require('escape-html'),
     mcc_mnc_list = require('mcc-mnc-list'),
     plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./../config', 'dont-enclose');
@@ -18,6 +17,52 @@ var common = {},
 (function (common) {
 
     var log = logger('common');
+    
+    /**
+    * Escape special characters in the given string of html.
+    *
+    * @param  {string} string The string to escape for inserting into HTML
+    * @return {string}
+    * @public
+    */
+    var matchHtmlRegExp = /[<>]/;
+    function escape_html(string) {
+        var str = '' + string;
+        var match = matchHtmlRegExp.exec(str);
+        
+        if (!match) {
+            return str;
+        }
+        
+        var escape;
+        var html = '';
+        var index = 0;
+        var lastIndex = 0;
+        
+        for (index = match.index; index < str.length; index++) {
+            switch (str.charCodeAt(index)) {
+            case 60: // <
+                escape = '&lt;';
+                break;
+            case 62: // >
+                escape = '&gt;';
+                break;
+            default:
+                continue;
+            }
+        
+            if (lastIndex !== index) {
+            html += str.substring(lastIndex, index);
+            }
+        
+            lastIndex = index + 1;
+            html += escape;
+        }
+        
+        return lastIndex !== index
+            ? html + str.substring(lastIndex, index)
+            : html;
+    }
     
     function escape_html_entities(key, value) {		
         if(typeof value === 'object' && value){		
