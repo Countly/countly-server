@@ -63,7 +63,6 @@
     "kerberos": "~0.0",
     "properties-parser":"0.3.1",
     "external-ip":"0.2.4",
-    "escape-html":"1.0.3",
     "bluebird":"3.4.7",
     "mcc-mnc-list":"1.0.65",
     "yamljs":"0.2.8",
