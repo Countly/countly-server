@@ -82,6 +82,8 @@
 				dataType:"jsonp",
 				success:function (json) {
 					_groupData = json;
+                    _groupData.name = countlyCommon.decode(_groupData.name);
+                    _groupData.error = countlyCommon.decode(_groupData.error);
                     _list[_groupData._id] = _groupData.name;
 					_groupData.dp = {};
 					for(var i in _metrics){
