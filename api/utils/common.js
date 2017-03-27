@@ -52,16 +52,14 @@ var common = {},
             }
         
             if (lastIndex !== index) {
-            html += str.substring(lastIndex, index);
+                html += str.substring(lastIndex, index);
             }
         
             lastIndex = index + 1;
             html += escape;
         }
         
-        return lastIndex !== index
-            ? html + str.substring(lastIndex, index)
-            : html;
+        return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
     }
     
     function escape_html_entities(key, value) {		

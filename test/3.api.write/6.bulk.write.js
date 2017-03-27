@@ -20,7 +20,7 @@ describe('Bulk writing', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'Missing parameter &quot;requests&quot;');
+				ob.should.have.property('result', 'Missing parameter "requests"');
 				setTimeout(done, 1000)
 			});
 		});
