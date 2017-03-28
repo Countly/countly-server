@@ -13,10 +13,7 @@ if [ -n "$(command -v apt-get)" ]; then
     if [ ! -f /etc/systemd/system/mongod.service ]; then
         #create mongodb service script
         (cat $DIR/mongod.service ; 
-            echo "ExecStartPre=-$( which mkdir ) -p /var/lib/mongodb/" ;
-            echo "ExecStartPre=-$( which mkdir ) -p /var/log/mongodb/" ;
-            echo "ExecStartPre=-$( which mkdir ) -p /data/db/" ;
-            echo "ExecStart=/bin/bash $BINDIR/commands/systemd/mongodb.sh") > /etc/systemd/system/mongod.service
+            echo "ExecStart=$( which mongod ) --quiet --config /etc/mongod.conf") > /etc/systemd/system/mongod.service
         
         #reload services
         systemctl daemon-reload
