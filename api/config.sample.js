@@ -120,4 +120,4 @@ var countlyConfig = {
 // Set your host IP or domain to be used in the emails sent
 // countlyConfig.host = "YOUR_IP_OR_DOMAIN";
 
-module.exports = countlyConfig;
+module.exports = require('./configextender')(countlyConfig);
