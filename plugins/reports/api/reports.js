@@ -242,6 +242,8 @@ var metrics = {
                                                     callback(err, {report:report});
                                             }
                                             else{
+                                                props["reports.report"] = localize.format(props["reports.report"], versionInfo.title);
+                                                props["reports.your"] = localize.format(props["reports.your"], props["reports."+report.frequency], report.date);
                                                 report.properties = props;
                                                 var allowedMetrics = {};
                                                 for(var i in report.metrics){
