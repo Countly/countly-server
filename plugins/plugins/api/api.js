@@ -3,6 +3,7 @@ var plugin = {},
 	path = require('path'),
 	common = require('../../../api/utils/common.js'),
 	async = require('async'),
+    parser = require('properties-parser'),
     plugins = require('../../pluginManager.js');
 
 (function (plugin) {
@@ -70,6 +71,11 @@ var plugin = {},
 									data = require(fullpath+'/package.json');
 								} catch(ex){}
 								var ob = {};
+                                if(pluginList.indexOf(file) > -1)
+									ob.enabled = true;
+								else
+									ob.enabled = false;
+								ob.code = file;
 								if (data){
 									ob.title = data.title || file;
 									ob.name = data.name || file;
@@ -77,14 +83,22 @@ var plugin = {},
 									ob.version = data.version || "unknown";
 									ob.author = data.author || "unknown";
 									ob.homepage = data.homepage || "";
+                                    
+                                    //we need to get localization only if plugin is disabled
+                                    if(!ob.enabled){
+                                        var local_path = fullpath+"/frontend/public/localization/"+ob.code+".properties";
+                                        if(params.member.lang && params.member.lang != "en")
+                                            local_path = fullpath+"/frontend/public/localization/"+ob.code+"_"+params.member.lang+".properties";
+                                        if (fs.existsSync(local_path)) {
+                                            var local_properties = fs.readFileSync(local_path);
+                                            local_properties = parser.parse(local_properties);
+                                            ob.title = local_properties[ob.code+".plugin-title"] ||local_properties[ob.code+".title"] || ob.title;
+                                            ob.description = local_properties[ob.code+".plugin-description"] ||local_properties[ob.code+".description"] || ob.description;
+                                        }
+                                    }
 								}
 								else
 									ob = {name:file, title:file, description:file, version:"unknown", author:"unknown", homepage:""};
-								if(pluginList.indexOf(file) > -1)
-									ob.enabled = true;
-								else
-									ob.enabled = false;
-								ob.code = file;
 								if (global.enclose) {
 									var eplugin = global.enclose.plugins[file];
 									ob.prepackaged = eplugin && eplugin.prepackaged;
