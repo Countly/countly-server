@@ -27,7 +27,8 @@ var metrics = {
     },
     "revenue":{
         "paying_users":true,
-        "purchases":true,
+        "purchases_c":true,
+        "purchases_s":true,
     },
     "push":{
         "messaging_users":true,
@@ -109,10 +110,17 @@ var metrics = {
                                     event = parts[1];
                                 }
                                 if(event){
-                                    var collectionName = "events" + crypto.createHash('sha1').update(event + app_id).digest('hex');
-                                    fetch.getTimeObjForEvents(collectionName, params, {db:db}, function(output){
-                                        done(null, {metric:parts[1], data:output});
-                                    });
+                                    if(Array.isArray(event)){
+                                        fetch.getMergedEventData(params, event, function(output){
+                                            done(null, {metric:parts[1], data:output});
+                                        });
+                                    }
+                                    else{
+                                        var collectionName = "events" + crypto.createHash('sha1').update(event + app_id).digest('hex');
+                                        fetch.getTimeObjForEvents(collectionName, params, {db:db}, function(output){
+                                            done(null, {metric:parts[1], data:output});
+                                        });
+                                    }
                                 }
                                 else{
                                     done(null, null);
@@ -208,7 +216,9 @@ var metrics = {
                                     if(!results[i].results["revenue"]){
                                         results[i].results["revenue"] = {};
                                     }
-                                    results[i].results["revenue"][j] = getEventData(results[i].results[j] || {});
+                                    var data = getRevenueData(results[i].results[j] || {});
+                                    results[i].results["revenue"][j+"_c"] = data.c;
+                                    results[i].results["revenue"][j+"_s"] = data.s;
                                     delete results[i].results[j];
                                 }
                                 else{
@@ -696,6 +706,66 @@ var metrics = {
             "total":currentTotal,
             "change":changeTotal.percent,
             "trend":changeTotal.trend
+        };
+    };
+    
+    function getRevenueData(eventDb) {
+        _periodObj = countlyCommon.periodObj;
+
+        if (!eventDb) {
+            return {c:{
+                total: 0,
+                change: 'NA',
+                trend: 'u',
+                sparkline: '0,0'
+            },
+            s:{
+                total: 0,
+                change: 'NA',
+                trend: 'u',
+                sparkline: '0,0'
+            }};
+        }
+
+        var total = {
+            c:0,
+            pc:0,
+            s:0,
+            ps:0
+        };
+
+        if (_periodObj.isSpecialPeriod) {
+            for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
+                var tmpObj = countlyCommon.getDescendantProp(eventDb, _periodObj.currentPeriodArr[i]);
+                total.c += (tmpObj && tmpObj.c) ? tmpObj.c : 0;
+                total.s += (tmpObj && tmpObj.s) ? tmpObj.s : 0;
+                var tmpObj2 = countlyCommon.getDescendantProp(eventDb, _periodObj.previousPeriodArr[i]);
+                total.pc += (tmpObj2 && tmpObj2.c) ? tmpObj2.c : 0;
+                total.ps += (tmpObj2 && tmpObj2.s) ? tmpObj2.s : 0;
+            }
+        } else {
+            var tmpObj = countlyCommon.getDescendantProp(eventDb, _periodObj.activePeriod);
+            total.c = (tmpObj && tmpObj.c) ? tmpObj.c : 0;
+            total.s = (tmpObj && tmpObj.s) ? tmpObj.s : 0;
+            var tmpObj2 = countlyCommon.getDescendantProp(eventDb, _periodObj.previousPeriod);
+            total.pc = (tmpObj2 && tmpObj2.c) ? tmpObj2.c : 0;
+            total.ps = (tmpObj2 && tmpObj2.s) ? tmpObj2.s : 0;
+        }
+
+        var changeTotalCount = countlyCommon.getPercentChange(total.pc, total.c);
+        var changeTotalSum = countlyCommon.getPercentChange(total.ps, total.s);
+
+        return {
+            c:{
+                "total":total.c,
+                "change":changeTotalCount.percent,
+                "trend":changeTotalCount.trend
+            },
+            s:{
+                "total":total.s.toFixed(2),
+                "change":changeTotalSum.percent,
+                "trend":changeTotalSum.trend
+            }
         };
     };
     
