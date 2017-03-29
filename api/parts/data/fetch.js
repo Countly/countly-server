@@ -79,16 +79,22 @@ var fetch = {},
             common.returnOutput(params, result);
         });
     };
-
+    
     fetch.fetchMergedEventData = function (params) {
+        fetch.getMergedEventData(params, params.qstring.events, function(result){
+            common.returnOutput(params, result);
+        });
+    };
+
+    fetch.getMergedEventData = function (params, events, callback) {
         var eventKeysArr = [];
 
-        for (var i = 0; i < params.qstring.events.length; i++) {
-            eventKeysArr.push(params.qstring.events[i] + params.app_id);
+        for (var i = 0; i < events.length; i++) {
+            eventKeysArr.push(events[i] + params.app_id);
         }
 
         if (!eventKeysArr.length) {
-            common.returnOutput(params, {});
+            callback({});
         } else {
             async.map(eventKeysArr, getEventData, function (err, allEventData) {
                 var mergedEventOutput = {};
@@ -161,7 +167,7 @@ var fetch = {},
                     }
                 }
 
-                common.returnOutput(params, mergedEventOutput);
+                callback(mergedEventOutput);
             });
         }
 
