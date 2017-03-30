@@ -149,9 +149,9 @@ var exports = {},
         if(options.sort)
             cursor.sort(options.sort);
         if(options.limit)
-            cursor.limit(options.limit);
+            cursor.limit(parseInt(options.limit));
         if(options.skip)
-            cursor.skip(options.skip);
+            cursor.skip(parseInt(options.skip));
 
         if(options.type === "stream"){
             options.output = options.output || function(stream){ exports.stream(options.params, stream, options.filename, "json"); };
