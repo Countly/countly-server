@@ -11,7 +11,6 @@ var plugin = {},
 		var device = {};
 		device.id = params.qstring.device_id || "";
 		var location = {};
-		location.ip = params.ip_address;
         var sdk = {};
         sdk.version = params.qstring.sdk_version;
         sdk.name = params.qstring.sdk_name;

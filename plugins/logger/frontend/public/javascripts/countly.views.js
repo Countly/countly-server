@@ -137,10 +137,6 @@ window.LoggerView = countlyView.extend({
                             }
                         }
 
-                        if (row.l.ip) {
-                            ret += "<br/>"+row.l.ip;
-                        }
-
                         return ret;
                     }, "sType":"string", "bSortable": false }
                 ]
