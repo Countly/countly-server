@@ -50,6 +50,8 @@
     "geoip-lite": "1.1.9",
     "jimp": "0.2.27",
     "jsdoc": "3.4.3",
+    "json2csv": "^3.7.3",
+    "json2xls": "^0.1.2",
     "kerberos": "~0.0",
     "later": "^1.1.6",
     "mcc-mnc-list": "1.0.65",
