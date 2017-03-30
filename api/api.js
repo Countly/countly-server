@@ -1047,6 +1047,7 @@ if (cluster.isMaster) {
                                             projection: params.qstring.projection,
                                             sort: params.qstring.sort,
                                             limit: params.qstring.limit,
+                                            skip: params.qstring.skip,
                                             type: params.qstring.type,
                                             filename: params.qstring.filename
                                         });

@@ -135,6 +135,7 @@ var exports = {},
     * @param {object} [options.projection={}] - database projections which fields to return
     * @param {object} [options.sort=natural] - sort object for cursor
     * @param {number} [options.limit=unlimited] - amount of items to output
+    * @param {number} [options.skip=unlimited] - amount of items to skip from start
     * @param {string} [options.type=json] - type of data to output
     * @param {string} [options.filename] - name of the file to output, by default auto generated
     * @param {function} options.output - callback function where to pass data, by default outputs as file based on type
@@ -149,6 +150,9 @@ var exports = {},
             cursor.sort(options.sort);
         if(options.limit)
             cursor.limit(options.limit);
+        if(options.skip)
+            cursor.skip(options.skip);
+
         if(options.type === "stream"){
             options.output = options.output || function(stream){ exports.stream(options.params, stream, options.filename, "json"); };
             cursor.stream({
