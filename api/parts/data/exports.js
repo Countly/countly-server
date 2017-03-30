@@ -97,6 +97,35 @@ var exports = {},
     };
     
     /**
+    * Stream data as response
+    * @param {params} params - params object
+    * @param {string} data - data to output
+    * @param {string} type - type to be used in content type
+    */
+    exports.stream = function(params, stream, filename, type){
+        var headers = {};
+        if(type && contents[type])
+            headers["Content-Type"] = contents[type];
+        headers["Content-Disposition"] = "attachment;filename="+filename+"."+type;
+        params.res.writeHead(200, headers);
+        params.res.write("[");
+        var first = false;
+        stream.on('data', function(doc) {
+            if(!first){
+                first = true;
+                params.res.write(doc);
+            }
+            else
+                params.res.write(","+doc);
+        });
+
+        stream.once('end', function() {
+            params.res.write("]");
+            params.res.end();
+        });
+    };
+    
+    /**
     * Export data from database
     * @param {object} options - options for the export
     * @param {object} options.db - database connection
@@ -120,9 +149,18 @@ var exports = {},
             cursor.sort(options.sort);
         if(options.limit)
             cursor.limit(options.limit);
-        cursor.toArray(function(err, data){
-            exports.fromData(data, options);
-        });
+        if(options.type === "stream"){
+            options.output = options.output || function(stream){ exports.stream(options.params, stream, options.filename, "json"); };
+            cursor.stream({
+                transform: function(doc){return JSON.stringify(doc);}
+            });
+            options.output(cursor);
+        }
+        else{
+            cursor.toArray(function(err, data){
+                exports.fromData(data, options);
+            });
+        }
     };
     
     /**
