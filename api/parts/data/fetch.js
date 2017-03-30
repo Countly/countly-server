@@ -86,6 +86,12 @@ var fetch = {},
         });
     };
 
+    /**
+    * Get merged data from multiple events in standard data model
+    * @param {params} params - params object with app_id and date
+    * @param {array} events - array with event keys
+    * @param {function} callback - callback to retrieve the data, receiving only one param which is output
+    */
     fetch.getMergedEventData = function (params, events, callback) {
         var eventKeysArr = [];
 
