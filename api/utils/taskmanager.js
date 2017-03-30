@@ -257,12 +257,6 @@ var request = require("request");
                     reqData.json.task_id = options.id;
                     options.db.collection("long_tasks").update({_id:options.id},{$set:{status:"rerunning", start: new Date().getTime()}}, function(){
                         request(reqData, function (error, response, body) {
-                            try{
-                                body = JSON.parse(body);
-                            }
-                            catch(ex){
-                                body = null;
-                            }
                             //we got response, if it contains task_id, then task is rerunning
                             //if it does not, then possibly task completed faster this time and we can get new result
                             if(body && !body.task_id){
