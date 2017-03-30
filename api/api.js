@@ -137,7 +137,8 @@ if (cluster.isMaster) {
         data:{
             usage:require('./parts/data/usage.js'),
             fetch:require('./parts/data/fetch.js'),
-            events:require('./parts/data/events.js')
+            events:require('./parts/data/events.js'),
+            exports:require('./parts/data/exports.js')
         },
         mgmt:{
             users:require('./parts/mgmt/users.js'),
@@ -995,6 +996,107 @@ if (cluster.isMaster) {
                                             else{
                                                 common.returnMessage(params, 400, 'Task does not exist');
                                             }
+                                        });
+                                    }, params);
+                                    break;
+                                default:
+                                    if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
+                                        common.returnMessage(params, 400, 'Invalid path');
+                                    break;
+                            }
+            
+                            break;
+                        }
+                        case '/o/export':
+                        {
+                            if (!params.qstring.api_key) {
+                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
+                                return false;
+                            }
+            
+                            switch (paths[3]) {
+                                case 'db':
+                                    validateUserForMgmtReadAPI(function(){
+                                        if (!params.qstring.collection) {
+                                            common.returnMessage(params, 400, 'Missing parameter "collection"');
+                                            return false;
+                                        }
+                                        if(typeof params.qstring.query === "string"){
+                                            try{
+                                                params.qstring.query = JSON.parse(params.qstring.query);
+                                            }
+                                            catch(ex){params.qstring.query = null;}
+                                        }
+                                        if(typeof params.qstring.projection === "string"){
+                                            try{
+                                                params.qstring.projection = JSON.parse(params.qstring.projection);
+                                            }
+                                            catch(ex){params.qstring.projection = null;}
+                                        }
+                                        if(typeof params.qstring.sort === "string"){
+                                            try{
+                                                params.qstring.sort = JSON.parse(params.qstring.sort);
+                                            }
+                                            catch(ex){params.qstring.sort = null;}
+                                        }
+                                        countlyApi.data.exports.fromDatabase({
+                                            db: (params.qstring.db === "countly_drill") ? common.drillDb : common.db,
+                                            params: params,
+                                            collection: params.qstring.collection,
+                                            query: params.qstring.query,
+                                            projection: params.qstring.projection,
+                                            sort: params.qstring.sort,
+                                            limit: params.qstring.limit,
+                                            type: params.qstring.type,
+                                            filename: params.qstring.filename
+                                        });
+                                    }, params);
+                                    break;
+                                case 'request':
+                                    validateUserForMgmtReadAPI(function(){
+                                        if (!params.qstring.path) {
+                                            common.returnMessage(params, 400, 'Missing parameter "path"');
+                                            return false;
+                                        }
+                                        if(typeof params.qstring.data === "string"){
+                                            try{
+                                                params.qstring.data = JSON.parse(params.qstring.data);
+                                            }
+                                            catch(ex){
+                                                params.qstring.data = {};
+                                            }
+                                        }
+                                        countlyApi.data.exports.fromRequest({
+                                            params: params,
+                                            path:params.qstring.path,
+                                            data:params.qstring.data,
+                                            method:params.qstring.method,
+                                            post:params.qstring.post,
+                                            prop:params.qstring.prop,
+                                            type: params.qstring.type,
+                                            filename: params.qstring.filename
+                                        });
+                                    }, params);
+                                    break;
+                                case 'data':
+                                    validateUserForMgmtReadAPI(function(){
+                                        if (!params.qstring.data) {
+                                            common.returnMessage(params, 400, 'Missing parameter "data"');
+                                            return false;
+                                        }
+                                        if(typeof params.qstring.data === "string"){
+                                            try{
+                                                params.qstring.data = JSON.parse(params.qstring.data);
+                                            }
+                                            catch(ex){
+                                                common.returnMessage(params, 400, 'Incorrect parameter "data"');
+                                                return false;
+                                            }
+                                        }
+                                        countlyApi.data.exports.fromData(params.qstring.data, {
+                                            params: params,
+                                            type: params.qstring.type,
+                                            filename: params.qstring.filename
                                         });
                                     }, params);
                                     break;
