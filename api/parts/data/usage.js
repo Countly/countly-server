@@ -402,8 +402,9 @@ var usage = {},
 
             common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.zero + "_" + postfix}, updateObjZero, {'upsert': true}, function(){});
         }
-
-        common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true}, function(){});
+        if (Object.keys(updateUsersMonth).length) {
+            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true}, function(){});
+        }
 
         plugins.dispatch("/session/user", {params:params, dbAppUser:dbAppUser});
         processMetrics(dbAppUser, uniqueLevelsZero, uniqueLevelsMonth, params, done);
