@@ -670,11 +670,16 @@ if (cluster.isMaster) {
                                 common.returnMessage(params, 400, 'Missing parameter "requests"');
                                 return false;
                             }
+                            if (!plugins.getConfig("api").safe && !params.res.finished) {
+                                common.returnMessage(params, 200, 'Success');
+                            }
                             common.blockResponses(params);
                             function processBulkRequest(i) {
                                 if(i == requests.length) {
                                     common.unblockResponses(params);
-                                    common.returnMessage(params, 200, 'Success');
+                                    if (plugins.getConfig("api").safe && !params.res.finished) {
+                                        common.returnMessage(params, 200, 'Success');
+                                    }
                                     return;
                                 }
                                 
