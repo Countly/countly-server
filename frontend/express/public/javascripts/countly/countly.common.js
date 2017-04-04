@@ -2353,6 +2353,16 @@
                 previous[properties[i]] = tmp_y[properties[i]];
             }
         }
+        
+        // Total users can't be less than new users
+        if (typeof current.u !== "undefined" && typeof current.n !== "undefined" && current.u < current.n) {
+            current.u = current.n;
+        }
+
+        // Total users can't be more than total sessions
+        if (typeof current.u !== "undefined" && typeof current.t !== "undefined" && current.u > current.t) {
+            current.u = current.t;
+        }
 
         for(var i = 0; i < properties.length; i++){
             change[properties[i]] = countlyCommon.getPercentChange(previous[properties[i]], current[properties[i]]);
