@@ -423,11 +423,6 @@ $( document ).ready(function() {
             jQuery.i18n.map["crashes.fatality"] = jQuery.i18n.map["web.crashes.fatality"];
             jQuery.i18n.map["crashes.nonfatal-crashes"] = jQuery.i18n.map["web.crashes.nonfatal-crashes"];
             jQuery.i18n.map["crashes.confirm-delete"] = jQuery.i18n.map["web.crashes.confirm-delete"];
-            jQuery.i18n.map["revenue.iap"] = jQuery.i18n.map["web.revenue.iap"];
-            jQuery.i18n.map["revenue.tooltip"] = jQuery.i18n.map["web.revenue.tooltip"];
-            jQuery.i18n.map["placeholder.iap-event-key"] = jQuery.i18n.map["web.placeholder.iap-event-key"];
-            jQuery.i18n.map["placeholder.iap-help"] = jQuery.i18n.map["web.placeholder.iap-help"];
-            jQuery.i18n.map["management-applications.iap-event"] = jQuery.i18n.map["web.management-applications.iap-event"];
             jQuery.i18n.map["drill.crash"] = jQuery.i18n.map["web.drill.crash"];
             jQuery.i18n.map["drill.crash-segments"] = jQuery.i18n.map["web.drill.crash-segments"];
             jQuery.i18n.map["userdata.crashes"] = jQuery.i18n.map["web.userdata.crashes"];
