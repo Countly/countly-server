@@ -422,6 +422,9 @@ if (cluster.isMaster) {
                                 return done ? done() : false;
                             });
                         } else {
+                            //update lac, all other requests do updates to app_users and update lac automatically
+                            common.updateAppUser(params, {$set:{lac:params.time.timestamp}});
+                            
                             // begin_session, session_duration and end_session handle incrementing request count in usage.js
                             var dbDateIds = common.getDateIds(params),
                                 updateUsers = {};
@@ -750,7 +753,6 @@ if (cluster.isMaster) {
                             }
                             
                             processBulkRequest(0);
-                            
                             break;
                         }
                         case '/i/users':
