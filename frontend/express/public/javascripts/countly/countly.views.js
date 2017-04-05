@@ -2530,8 +2530,19 @@ window.EventsView = countlyView.extend({
         };
 
         if (countlyEvent.getEvents().length == 0) {
-            window.location = "dashboard#/";
-            CountlyHelpers.alert(jQuery.i18n.map["events.no-event"], "black");
+            //recheck events
+            $.when(countlyEvent.refreshEvents()).then(function () {
+                //if still 0, display error
+                if (countlyEvent.getEvents().length == 0) {
+                    window.location = "dashboard#/";
+                    CountlyHelpers.alert(jQuery.i18n.map["events.no-event"], "black");
+                }
+                else{
+                    //reload the view
+                    app.renderWhenReady(app.eventsView);
+                    self.refresh(true);
+                }
+            });
             return true;
         }
 
