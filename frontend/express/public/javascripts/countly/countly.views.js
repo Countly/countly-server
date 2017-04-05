@@ -984,6 +984,7 @@ window.ManageAppsView = countlyView.extend({
                     }
                 });
             });
+            app.localize($("#content"));
         }
 
         function initCountrySelect(parent, countryCode, timezoneText, timezone) {
