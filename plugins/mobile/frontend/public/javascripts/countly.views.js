@@ -1,5 +1,6 @@
 window.MobileDashboardView = countlyView.extend({
     selectedView:"#draw-total-sessions",
+    origLangs : {},
     initialize:function () {
         this.curMap = "map-list-sessions";
         this.template = Handlebars.compile($("#dashboard-template").html());
@@ -293,6 +294,21 @@ window.MobileDashboardView = countlyView.extend({
 
 app.addAppType("mobile", MobileDashboardView);
 
+app.addAppManagementSwitchCallback(function(appId, type){
+    if(type == "mobile"){
+        jQuery.i18n.map["revenue.tooltip"] = jQuery.i18n.map["mobile.revenue.tooltip"];
+        jQuery.i18n.map["placeholder.iap-event-key"] = jQuery.i18n.map["mobile.placeholder.iap-event-key"];
+        jQuery.i18n.map["placeholder.iap-help"] = jQuery.i18n.map["mobile.placeholder.iap-help"];
+        jQuery.i18n.map["management-applications.iap-event"] = jQuery.i18n.map["mobile.management-applications.iap-event"];
+    }
+    else if(app.appTypes.mobile.origLangs["revenue.tooltip"]){
+        jQuery.i18n.map["revenue.tooltip"] = app.appTypes.mobile.origLangs["revenue.tooltip"];
+        jQuery.i18n.map["placeholder.iap-event-key"] = app.appTypes.mobile.origLangs["placeholder.iap-event-key"];
+        jQuery.i18n.map["placeholder.iap-help"] = app.appTypes.mobile.origLangs["placeholder.iap-help"];
+        jQuery.i18n.map["management-applications.iap-event"] = app.appTypes.mobile.origLangs["management-applications.iap-event"];
+    }
+});
+
 $( document ).ready(function() {
     var menu = '<a href="#/analytics/platforms" class="item">'+
 		'<div class="logo platforms"></div>'+
@@ -358,5 +374,17 @@ $( document ).ready(function() {
                 '</a>';
 	$('#mobile-type #engagement-submenu').append(menu);
     
-    
+    app.addAppSwitchCallback(function(appId){
+        if(countlyGlobal["apps"][appId].type == "mobile"){
+            //revenue = IAP
+            jQuery.i18n.map["revenue.iap"] = jQuery.i18n.map["mobile.revenue.iap"];
+            jQuery.i18n.map["systemlogs.action.iap_updated"] = jQuery.i18n.map["mobile.systemlogs.action.iap_updated"];
+        }
+        app.appTypes.mobile.origLangs = {
+            "revenue.tooltip" : jQuery.i18n.map["revenue.tooltip"],
+            "placeholder.iap-event-key" : jQuery.i18n.map["placeholder.iap-event-key"],
+            "placeholder.iap-help" : jQuery.i18n.map["placeholder.iap-help"],
+            "management-applications.iap-event": jQuery.i18n.map["management-applications.iap-event"]
+        };
+    });
 });
