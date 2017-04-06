@@ -111,7 +111,7 @@ var metrics = {
                                 }
                                 if(event){
                                     if(Array.isArray(event)){
-                                        fetch.getMergedEventData(params, event, function(output){
+                                        fetch.getMergedEventData(params, event, {db:db}, function(output){
                                             done(null, {metric:parts[1], data:output});
                                         });
                                     }
