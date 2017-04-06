@@ -159,6 +159,102 @@ var usage = {},
         }
     };
 
+    usage.getPredefinedMetrics = function(params, userProps){
+        var predefinedMetrics = [
+            {
+                db: "carriers",
+                metrics: [{ name: "_carrier", set: "carriers", short_code: common.dbUserMap['carrier'] }]
+            },
+            {
+                db: "devices",
+                metrics: [{ name: "_device", set: "devices", short_code: common.dbUserMap['device'] }]
+            },
+            {
+                db: "device_details",
+                metrics: [
+                    { name: "_app_version", set: "app_versions", short_code: common.dbUserMap['app_version'] },
+                    { name: "_os", set: "os", short_code: common.dbUserMap['platform'] },
+                    { name: "_os_version", set: "os_versions", short_code: common.dbUserMap['platform_version'] },
+                    { name: "_resolution", set: "resolutions", short_code: common.dbUserMap['resolution'] }
+                ]
+            },
+            {
+                db: "cities",
+                metrics: [{ is_user_prop:true, name: "city", set: "cities", short_code: common.dbUserMap['city'] }]
+            }
+        ];
+        var isNewUser = (params.app_user && params.app_user[common.dbUserMap['first_seen']])? false : true;
+        plugins.dispatch("/session/metrics", {params:params, predefinedMetrics:predefinedMetrics, userProps:userProps, user:params.app_user, isNewUser:isNewUser});
+        
+        return predefinedMetrics;
+    };
+    
+    usage.processMetrics = function(params){
+        var userProps = {};
+        var predefinedMetrics = usage.getPredefinedMetrics(params, userProps);
+        var isNewUser = (params.app_user && params.app_user[common.dbUserMap['first_seen']])? false : true;
+        // Location of the user is retrieved using geoip-lite module from her IP address.
+        var locationData = geoip.lookup(params.ip_address);
+
+        if (locationData) {
+            if (params.user.country == "Unknown" && locationData.country) {
+                params.user.country = locationData.country;
+            }
+
+            if (params.user.city == "Unknown" && locationData.city) {
+                params.user.city = locationData.city;
+            }
+
+            // Coordinate values of the user location has no use for now
+            if (locationData.ll && (!params.user.lat || !params.user.lng)) {
+                params.user.lat = locationData.ll[0];
+                params.user.lng = locationData.ll[1];
+            }
+        }
+        
+        if(params.user.lat && params.user.lng){
+            userProps.lat = params.user.lat;
+            userProps.lng = params.user.lng;
+        }
+
+        if (params.user.tz) {
+            userProps.tz = params.user.tz;
+        }
+        
+        userProps[common.dbUserMap['country_code']] = params.user.country;
+        
+        for (var i=0; i < predefinedMetrics.length; i++) {
+            for (var j=0; j < predefinedMetrics[i].metrics.length; j++) {
+                var tmpMetric = predefinedMetrics[i].metrics[j],
+                    recvMetricValue = null;
+                if (tmpMetric.is_user_prop) {
+                    recvMetricValue = params.user[tmpMetric.name];
+                } else if (params.qstring.metrics && params.qstring.metrics[tmpMetric.name]) {
+                    recvMetricValue = params.qstring.metrics[tmpMetric.name];
+                }
+
+                // We check if city data logging is on and user's country is the configured country of the app
+                if (tmpMetric.name == "city" && (plugins.getConfig("api").city_data === false || params.app_cc != params.user.country)) {
+                    continue;
+                }
+                
+                if (recvMetricValue) {
+                    var escapedMetricVal = (recvMetricValue+"").replace(/^\$/, "").replace(/\./g, ":");
+                    
+                    // Assign properties to app_users document of the current user
+                    if (isNewUser || (!isNewUser && user[tmpMetric.short_code] != escapedMetricVal)) {
+                        userProps[tmpMetric.short_code] = escapedMetricVal;
+                    }
+                }
+            }
+        }
+        
+        if(Object.keys(userProps).length){
+            userProps.mt = true;
+            common.updateAppUser(params, {"$set" : userProps});
+        }
+    };
+    
     function processSessionDurationRange(totalSessionDuration, params, done) {
         var durationRanges = [
                 [0,10],
@@ -451,31 +547,7 @@ var usage = {},
             }
         }
 
-        var predefinedMetrics = [
-            {
-                db: "carriers",
-                metrics: [{ name: "_carrier", set: "carriers", short_code: common.dbUserMap['carrier'] }]
-            },
-            {
-                db: "devices",
-                metrics: [{ name: "_device", set: "devices", short_code: common.dbUserMap['device'] }]
-            },
-            {
-                db: "device_details",
-                metrics: [
-                    { name: "_app_version", set: "app_versions", short_code: common.dbUserMap['app_version'] },
-                    { name: "_os", set: "os", short_code: common.dbUserMap['platform'] },
-                    { name: "_os_version", set: "os_versions", short_code: common.dbUserMap['platform_version'] },
-                    { name: "_resolution", set: "resolutions", short_code: common.dbUserMap['resolution'] }
-                ]
-            },
-            {
-                db: "cities",
-                metrics: [{ is_user_prop:true, name: "city", set: "cities", short_code: common.dbUserMap['city'] }]
-            }
-        ];
-        
-        plugins.dispatch("/session/metrics", {params:params, predefinedMetrics:predefinedMetrics, userProps:userProps, user:user, isNewUser:isNewUser});
+        var predefinedMetrics = usage.getPredefinedMetrics(params, userProps);
         
         var dateIds = common.getDateIds(params);
         var metaToFetch = {};
