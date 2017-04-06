@@ -279,12 +279,12 @@ window.ActionMapView = countlyView.extend({
     loadIframe: function(){
         var self = this;
         var segments = countlyViews.getActionsData().domains;
-        var url = location.protocol+"//"+segments[self.curSegment]+self.view;
+        var url = "http://"+segments[self.curSegment]+self.view;
         if($("#view_loaded_url").val().length == 0)
             $("#view_loaded_url").val(url);
         countlyViews.testUrl(url, function(result){
             if(result){
-                $("#view-map iframe").attr("src", "/o/urlredir?url="+encodeURIComponent(url));
+                $("#view-map iframe").attr("src", "/o/urlload?url="+encodeURIComponent(url));
                 $("#view_loaded_url").val(url);
             }
             else{
@@ -327,7 +327,7 @@ window.ActionMapView = countlyView.extend({
             app.localize();
 
             $("#view_reload_url").on("click", function () {
-				$("#view-map iframe").attr("src", "/o/urlredir?url="+encodeURIComponent($("#view_loaded_url").val()));
+				$("#view-map iframe").attr("src", "/o/urlload?url="+encodeURIComponent($("#view_loaded_url").val()));
 			});
             
             $("#view_loaded_url").keyup(function(event){
