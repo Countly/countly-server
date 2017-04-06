@@ -81,7 +81,7 @@ var fetch = {},
     };
     
     fetch.fetchMergedEventData = function (params) {
-        fetch.getMergedEventData(params, params.qstring.events, function(result){
+        fetch.getMergedEventData(params, params.qstring.events, {}, function(result){
             common.returnOutput(params, result);
         });
     };
@@ -90,9 +90,16 @@ var fetch = {},
     * Get merged data from multiple events in standard data model
     * @param {params} params - params object with app_id and date
     * @param {array} events - array with event keys
+    * @param {object=} options - additional optional settings
+    * @param {object=} options.db - database connection to use, by default will try to use common.db
+    * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
+    * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
+    * @param {object=} options.levels - describes which metrics to expect on which levels
+    * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+    * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
     * @param {function} callback - callback to retrieve the data, receiving only one param which is output
     */
-    fetch.getMergedEventData = function (params, events, callback) {
+    fetch.getMergedEventData = function (params, events, options, callback) {
         var eventKeysArr = [];
 
         for (var i = 0; i < events.length; i++) {
@@ -179,7 +186,7 @@ var fetch = {},
 
         function getEventData(eventKey, callback) {
             var collectionName = "events" + crypto.createHash('sha1').update(eventKey).digest('hex');
-			fetchTimeObj(collectionName, params, true, function(output) {
+			fetchTimeObj(collectionName, params, true, options, function(output) {
 				callback(null, output || {});
 			});
         }
