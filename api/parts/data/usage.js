@@ -26,15 +26,18 @@ var usage = {},
                 params.user.lng = locationData.ll[1];
             }
         }       
+        var update = {"$set":{}};  
         if(params.user.lat && params.user.lng){
-            var update = {};  
-            update["$set"] = {lat:params.user.lat, lng:params.user.lng};
-            common.updateAppUser(params, update);
+            update["$set"].lat = params.user.lat;
+            update["$set"].lng = params.user.lng;
         }
 
         if (params.user.tz) {
-            common.updateAppUser(params, {$set: {tz: params.user.tz}});
+            update["$set"].tz = params.user.tz;
         }
+        
+        if(Object.keys(update["$set"]).length)
+            common.updateAppUser(params, update);
 
         dbAppUser = params.app_user
         if(dbAppUser){
