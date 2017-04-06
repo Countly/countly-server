@@ -182,14 +182,13 @@ window.LoggerView = countlyView.extend({
 		// `d` is the original data object for the row
 		var str = '';
 		if(d && (d.h || d.q)){
-            console.log("data", d);
 			str += '<div class="datatablesubrow">'+
 			'<table cellpadding="5" cellspacing="0" border="0" style="width: 100%;">';
 			if(d.h){
-				str += '<tr><td>'+"<b>Headers:</b><pre>" + JSON.stringify(d.h, null, 2) + "</pre>"+'</td></tr>';
+				str += '<tr><td style="text-transform:none;">'+"<b>"+jQuery.i18n.map["logger.request-header"]+":</b><pre>" + JSON.stringify(d.h, null, 2) + "</pre>"+'</td></tr>';
 			}
 			if(d.q){
-				str += '<tr><td>'+"<b>Data:</b><pre>" + JSON.stringify(JSON.parse(countlyCommon.decodeHtml(d.q)), null, 2) + "</pre>"+'</td></tr>';
+				str += '<tr><td>'+"<b>"+jQuery.i18n.map["logger.request-payload"]+":</b><pre>" + JSON.stringify(JSON.parse(countlyCommon.decodeHtml(d.q)), null, 2) + "</pre>"+'</td></tr>';
 			}
 			str += '</table>';
 			str += '</div>';
