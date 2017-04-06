@@ -2,6 +2,7 @@ var plugin = {},
     crypto = require('crypto'),
     request = require('request'),
     Promise = require("bluebird"),
+    cheerio = require('cheerio'),
 	common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
@@ -77,9 +78,10 @@ var plugin = {},
             };
             request(options, function (error, response, body) {
                 if (!error && response.statusCode >= 200 && response.statusCode < 400) {
-                    body = body.replace(/<head>/i, "<head>\n<base href='"+params.qstring.url+"' />")
+                    $ = cheerio.load(body);
+                    $("head").prepend("<base href='"+params.qstring.url+"' />");
                     params.res.writeHead(200);
-                    params.res.write(body);
+                    params.res.write($.html());
                     params.res.end();
                 }
                 else{
