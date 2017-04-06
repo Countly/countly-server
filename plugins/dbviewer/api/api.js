@@ -111,14 +111,29 @@ var plugin = {},
                     if(dbs[name]){
                         dbs[name].collections(function (err, results) {
                             var db = {name:name, collections:{}};
-                            for (var i = 0; i < results.length; i++) {
-                                
-                                if(results[i].s.name.indexOf("system.indexes") == -1 && results[i].s.name.indexOf("sessions_") == -1){
-                                    var col = parseCollectionName(results[i].s.name, lookup, eventList);
-                                    db.collections[col.pretty] = col.name;
+                            async.map(results, function(col, done){
+                                if(col.s.name.indexOf("system.indexes") == -1 && col.s.name.indexOf("sessions_") == -1){
+                                    if (params.member.global_admin) {
+                                        var ob = parseCollectionName(col.s.name, lookup, eventList);
+                                        db.collections[ob.pretty] = ob.name;
+                                        done(false, true);
+                                    }
+                                    else{
+                                        dbUserHassAccessToCollection(col.s.name, function(hasAccess){
+                                            if(hasAccess){
+                                                var ob = parseCollectionName(col.s.name, lookup, eventList);
+                                                db.collections[ob.pretty] = ob.name;
+                                            }
+                                            done(false, true);
+                                        });
+                                    }
                                 }
-                            }
-                            callback(err, db);
+                                else{
+                                    done(false, true);
+                                }
+                            }, function (err, results) {
+                                callback(err, db);
+                            });
                         });
                     }
                     else
@@ -127,10 +142,10 @@ var plugin = {},
             });
         }
         
-        function dbUserHassAccessToCollection(callback){
+        function dbUserHassAccessToCollection(collection, callback){
             var hasAccess = false;
             var apps = params.member.user_of || [];
-            if(params.qstring.collection.indexOf("events") === 0 || params.qstring.collection.indexOf("drill_events") === 0 ){
+            if(collection.indexOf("events") === 0 || collection.indexOf("drill_events") === 0 ){
                 var appList = [];
                 for(var i = 0; i < apps.length; i++){
                     if(apps[i].length){
@@ -139,7 +154,7 @@ var plugin = {},
                 }
                 dbLoadEventsData(appList, function(err, eventList){
                     for(var i in eventList){
-                        if(params.qstring.collection.indexOf(i, params.qstring.collection.length - i.length) !== -1){
+                        if(collection.indexOf(i, collection.length - i.length) !== -1){
                             return callback(true);
                         }
                     }
@@ -148,7 +163,7 @@ var plugin = {},
             }
             else{
                 for(var i = 0; i < apps.length; i++){
-                    if(params.qstring.collection.indexOf(apps[i], params.qstring.collection.length - apps[i].length) !== -1){
+                    if(collection.indexOf(apps[i], collection.length - apps[i].length) !== -1){
                         return callback(true);
                     }
                 }
@@ -163,7 +178,7 @@ var plugin = {},
                     dbGetDocument();
                 }
                 else{
-                    dbUserHassAccessToCollection(function(hasAccess){
+                    dbUserHassAccessToCollection(params.qstring.collection, function(hasAccess){
                         if(hasAccess)
                             dbGetDocument();
                         else
@@ -176,7 +191,7 @@ var plugin = {},
                     dbGetCollection();
                 }
                 else{
-                    dbUserHassAccessToCollection(function(hasAccess){
+                    dbUserHassAccessToCollection(params.qstring.collection, function(hasAccess){
                         if(hasAccess)
                             dbGetCollection();
                         else
@@ -195,7 +210,17 @@ var plugin = {},
                     });
                 }
                 else{
-                    common.returnMessage(params, 401, 'User does not have global admin right');
+                    var apps = [];
+                    params.member.user_of = params.member.user_of || [];
+                    for(var i = 0; i < params.member.user_of.length; i++){
+                        apps.push(common.db.ObjectID(params.member.user_of[i]));
+                    }
+                    common.db.collection('apps').find({_id:{$in:apps}}).toArray(function (err, apps) {
+                        if(err) {
+                            console.error(err);
+                        }
+                        dbGetDb(apps || []);
+                    });
                 }
 			}
 		},params);		
