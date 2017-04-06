@@ -409,31 +409,36 @@ if (cluster.isMaster) {
                 
                         if (params.qstring.begin_session) {
                             countlyApi.data.usage.beginUserSession(params, done);
-                        } else if (params.qstring.end_session) {
-                            if (params.qstring.session_duration) {
-                                countlyApi.data.usage.processSessionDuration(params, function () {
+                        } else {
+                            if(params.qstring.metrics){
+                                countlyApi.data.usage.processMetrics(params);
+                            }
+                            if (params.qstring.end_session) {
+                                if (params.qstring.session_duration) {
+                                    countlyApi.data.usage.processSessionDuration(params, function () {
+                                        countlyApi.data.usage.endUserSession(params, done);
+                                    });
+                                } else {
                                     countlyApi.data.usage.endUserSession(params, done);
+                                }
+                            } else if (params.qstring.session_duration) {
+                                countlyApi.data.usage.processSessionDuration(params, function () {
+                                    return done ? done() : false;
                                 });
                             } else {
-                                countlyApi.data.usage.endUserSession(params, done);
-                            }
-                        } else if (params.qstring.session_duration) {
-                            countlyApi.data.usage.processSessionDuration(params, function () {
+                                //update lac, all other requests do updates to app_users and update lac automatically
+                                common.updateAppUser(params, {$set:{lac:params.time.timestamp}});
+                                
+                                // begin_session, session_duration and end_session handle incrementing request count in usage.js
+                                var dbDateIds = common.getDateIds(params),
+                                    updateUsers = {};
+                    
+                                common.fillTimeObjectMonth(params, updateUsers, common.dbMap['events']);
+                                var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
+                                common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, {'upsert':true}, function(err, res){});
+                                
                                 return done ? done() : false;
-                            });
-                        } else {
-                            //update lac, all other requests do updates to app_users and update lac automatically
-                            common.updateAppUser(params, {$set:{lac:params.time.timestamp}});
-                            
-                            // begin_session, session_duration and end_session handle incrementing request count in usage.js
-                            var dbDateIds = common.getDateIds(params),
-                                updateUsers = {};
-                
-                            common.fillTimeObjectMonth(params, updateUsers, common.dbMap['events']);
-                            var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
-                            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, {'upsert':true}, function(err, res){});
-                            
-                            return done ? done() : false;
+                            }
                         }
                     }
                 } else {
