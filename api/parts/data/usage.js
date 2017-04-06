@@ -724,16 +724,13 @@ var usage = {},
             }
             
             // sc: session count. common.dbUserMap is not used here for readability purposes.
+            // mt: metric type - provided by session
             var update = {'$inc': {'sc': 1}};
             if(Object.keys(userProps).length){
+                userProps.mt = false;
                 update["$set"] = userProps;
             }
-            common.updateAppUser(params, update, function(){
-                //Perform user retention analysis
-                plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
-                if (done) { done(); }
-            });
-
+            
             if (!isNewUser){
                 /*
                 If metricChanges object contains a uid this means we have at least one metric that has changed
@@ -742,10 +739,16 @@ var usage = {},
         
                 { "uid" : "1", "ts" : 1463778143, "d" : { "o" : "iPhone1", "n" : "iPhone2" }, "av" : { "o" : "1:0", "n" : "1:1" } }
                 */
-                if (metricChanges.uid) {
+                if (metricChanges.uid && !params.app_user.mt) {
                     common.db.collection('metric_changes' + params.app_id).insert(metricChanges);
                 }
             }
+            
+            common.updateAppUser(params, update, function(){
+                //Perform user retention analysis
+                plugins.dispatch("/session/retention", {params:params, user:user, isNewUser:isNewUser});
+                if (done) { done(); }
+            });
         });
         
         return true;
