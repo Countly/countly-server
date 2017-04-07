@@ -15,7 +15,6 @@
 	"template"
   ],
   "dependencies": {
-    "cheerio": "0.22.0"
   },
   "private": true
 }

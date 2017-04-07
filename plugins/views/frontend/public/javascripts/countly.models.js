@@ -185,21 +185,6 @@
         });
     };
     
-    countlyViews.testUrl = function(url, callback){
-        $.ajax({
-            type:"GET",
-            url:countlyCommon.API_PARTS.data.r+"/urltest",
-            data:{
-                "url":url
-            },
-            dataType:"json",
-            success:function (json) {
-                if(callback)
-                    callback(json.result);
-            }
-        });
-    };
-    
     countlyViews.getToken = function(callback){
         $.ajax({
             type:"GET",

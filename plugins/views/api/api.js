@@ -2,7 +2,6 @@ var plugin = {},
     crypto = require('crypto'),
     request = require('request'),
     Promise = require("bluebird"),
-    cheerio = require('cheerio'),
 	common = require('../../../api/utils/common.js'),
 	authorize = require('../../../api/utils/authorizer.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
@@ -43,62 +42,6 @@ var plugin = {},
 		}
 		return false;
 	});
-    
-    plugins.register("/o/urltest", function(ob){
-        var params = ob.params;
-        if(params.qstring.url){
-            var options = {
-                url: params.qstring.url,
-                headers: {
-                    'User-Agent': 'CountlySiteBot'
-                }
-            };
-            request(options, function (error, response, body) {
-                if (!error && response.statusCode >= 200 && response.statusCode < 400) {
-                    common.returnOutput(params,{result:true});
-                }
-                else{
-                    common.returnOutput(params,{result:false});
-                }
-            });
-        }
-        else{
-            common.returnOutput(params,{result:false});
-        }
-        return true;
-    });
-    
-    plugins.register("/o/urlload", function(ob){
-        var params = ob.params;
-        if(params.qstring.url){
-            authorize.save({db:common.db, callback:function(err, token){
-                var options = {
-                    url: params.qstring.url,
-                    headers: {
-                        'User-Agent': 'CountlySiteBot'
-                    }
-                };
-                request(options, function (error, response, body) {
-                    if (!error && response.statusCode >= 200 && response.statusCode < 400) {
-                        $ = cheerio.load(body);
-                        $("head").prepend("<base href='"+params.qstring.url+"' />");
-                        $("head").append("<script src='http://arturs.count.ly/views/heatmap.js'></script>");
-                        $("head").append("<script>var cly_token = '"+token+"';</script>");
-                        params.res.writeHead(200);
-                        params.res.write($.html());
-                        params.res.end();
-                    }
-                    else{
-                        common.returnOutput(params,{result:false});
-                    }
-                });
-            }});
-        }
-        else{
-            common.returnOutput(params,{result:false});
-        }
-        return true;
-    });
     
     function getHeatmap(params){
         var result = {types:[], data:[]};
