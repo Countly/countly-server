@@ -1283,6 +1283,14 @@ if (cluster.isMaster) {
                     processRequest();
                 });
             }
+            else if (req.method === 'OPTIONS') {
+                var headers = {};
+                headers["Access-Control-Allow-Origin"] = "*";
+                headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
+                headers["Access-Control-Allow-Headers"] = "countly-token";
+                res.writeHead(200, headers);
+                res.end();
+            }
             else
                 //attempt process GET request
                 processRequest();
