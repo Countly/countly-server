@@ -125,6 +125,7 @@ if (cluster.isMaster) {
     }, 10000);
 } else {
     var common = require('./utils/common.js');
+    var authorize = require('./utils/authorizer.js');
     var taskmanager = require('./utils/taskmanager.js');
     common.db = plugins.dbConnection(countlyConfig);
     //since process restarted mark running tasks as errored
@@ -1128,6 +1129,20 @@ if (cluster.isMaster) {
                                     common.returnMessage(params, 404, 'DB Error');
                                 else
                                     common.returnMessage(params, 200, 'Success');
+                            });
+                            break;
+                        }
+                        case '/o/token':
+                        {
+                            validateUserForDataReadAPI(params, function(){
+                                authorize.save({db:common.db, callback:function(err, token){
+                                    if(err){
+                                        common.returnMessage(params, 404, 'DB Error');
+                                    }
+                                    else{
+                                        common.returnMessage(params, 200, token);
+                                    }
+                                }});
                             });
                             break;
                         }
