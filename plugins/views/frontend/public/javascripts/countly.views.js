@@ -228,6 +228,10 @@ window.ViewFrequencyView = countlyView.extend({
 window.ActionMapView = countlyView.extend({
     actionType: "",
     curSegment: 0,
+    curRadius: 1,
+    curBlur: 1,
+    baseRadius: 1,
+    baseBlur: 1.6,
     beforeRender: function() {
         var self = this;
         return $.when($.get(countlyGlobal["path"]+'/views/templates/actionmap.html', function(src){
@@ -272,14 +276,7 @@ window.ActionMapView = countlyView.extend({
         return highest.h;
     },
     getResolutions: function(data){
-        var res = ["Normal"];
-        var exist = {};
-        for(var i = 0; i < data.length; i++){
-            if(!exist[data[i].sg.width+" x "+data[i].sg.height]){
-                exist[data[i].sg.width+" x "+data[i].sg.height] = true;
-                res.push(data[i].sg.width+" x "+data[i].sg.height);
-            }
-        }
+        var res = ["Normal", "Fullscreen", "320x480","480x800"];
         return res;
     },
     resize: function(){
@@ -322,6 +319,7 @@ window.ActionMapView = countlyView.extend({
             "first-type":this.actionType,
             "active-segmentation": jQuery.i18n.map["views.all-segments"],
             "segmentations": segments,
+            "resolutions": this.getResolutions(),
             "data":data
         };
 
@@ -332,9 +330,8 @@ window.ActionMapView = countlyView.extend({
             this.loadIframe();
             this.map = simpleheat("view-canvas-map");
             this.map.data(this.getData(data.data));
-            var r = Math.max((48500-35*data.data.length)/900, 5);
-            this.map.radius(r, r*1.6);
-            this.map.draw();
+            this.baseRadius = Math.max((48500-35*data.data.length)/900, 5);
+            this.drawMap();
 
             app.localize();
 
@@ -348,6 +345,16 @@ window.ActionMapView = countlyView.extend({
                 }
             });
             
+            $("#radius").on("change", function(){
+                self.curRadius = parseInt($("#radius").val())/10;
+                self.drawMap();
+            });
+            
+            $("#blur").on("change", function(){
+                self.curBlur = parseInt($("#blur").val())/10;
+                self.drawMap();
+            });
+            
             $("#action-map-type .segmentation-option").on("click", function () {
 				self.actionType = $(this).data("value");
                 self.refresh();
@@ -357,18 +364,15 @@ window.ActionMapView = countlyView.extend({
                 switch ($(this).data("value")) {
                     case "Normal":
                         $("#view-map").width("100%");
-                        $("#view-map").height(4500);
                         $("#view-map").prependTo("#view-map-container");
                         break;
                     case "Fullscreen":
                         $("#view-map").width("100%");
-                        $("#view-map").height(4500);
                         $("#view-map").prependTo(document.body);
                         break;
                     default:
-                        var parts = $(this).data("value").split(" x ");
-                        $("#view-map").width(parts[0]);
-                        $("#view-map").height(parts[1]);
+                        var parts = $(this).data("value").split("x");
+                        $("#view-map").width(parts[0]+"px");
                         $("#view-map").prependTo("#view-map-container");
                 }
 				self.resize();
@@ -382,6 +386,10 @@ window.ActionMapView = countlyView.extend({
 			});
         }
     },
+    drawMap:function(){
+        this.map.radius(this.baseRadius*this.curRadius, this.baseRadius*this.baseBlur*this.curBlur);
+        this.map.draw();
+    },
     refresh:function () {
         var self = this;
         $.when(countlyViews.loadActionsData(this.view)).then(function () {
@@ -393,9 +401,8 @@ window.ActionMapView = countlyView.extend({
             if(self.map){
                 self.map.clear();
                 self.map.data(self.getData(data.data));
-                var r = Math.max((48500-35*data.data.length)/900, 5);
-                self.map.radius(r, r*1.6);
-                self.map.draw();
+                self.baseRadius = Math.max((48500-35*data.data.length)/900, 5);
+                self.drawMap();
             }
         });
     }
