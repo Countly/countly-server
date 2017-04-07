@@ -6,8 +6,10 @@ window.ViewsView = countlyView.extend({
 	selectedCount: 0,
     ids:{},
     lastId:0,
+    token: false,
     beforeRender: function() {
 			var self = this;
+            countlyViews.getToken(function(token){self.token = token;});
 			return $.when($.get(countlyGlobal["path"]+'/views/templates/views.html', function(src){
 				self.template = Handlebars.compile(src);
 			}), countlyViews.initialize()).then(function () {});
@@ -102,6 +104,16 @@ window.ViewsView = countlyView.extend({
                 else
                     $("#empty-graph").hide();
                 self.drawGraph();
+            });
+            
+            $('.views-table tbody').on("click", "a.table-link", function (event){
+                event.preventDefault();
+                event.stopPropagation();
+                if(self.token !== false){
+                    var path = event.target.hash.replace("#/analytics/views/action-map/", "");
+                    window.open("http://appcodingeasy.com", "cly:" + JSON.stringify({"token":self.token,"purpose":"heatmap"}));
+                }
+                countlyViews.getToken(function(token){self.token = token});
             });
             
             $("#view-metric-"+this.selectedMetric).parents(".big-numbers").addClass("active");
