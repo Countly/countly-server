@@ -200,6 +200,26 @@
         });
     };
     
+    countlyViews.getToken = function(callback){
+        $.ajax({
+            type:"GET",
+            url:countlyCommon.API_PARTS.data.r+"/token",
+            data:{
+                "api_key":countlyGlobal.member.api_key,
+                "app_id":countlyCommon.ACTIVE_APP_ID
+            },
+            dataType:"json",
+            success:function (json) {
+                if(callback)
+                    callback(json.result);
+            },
+            error: function(){
+                if(callback)
+                    callback(false);
+            }
+        });
+    };
+    
     countlyViews.getActionsData = function (view) {
         return _actionData;
     };
