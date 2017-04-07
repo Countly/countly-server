@@ -214,12 +214,11 @@ var plugin = {},
 		var params = ob.params;
 		var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
 		if (common.drillDb && params.qstring.view) {
-            console.log("headers", params.req.headers);
             if(params.req.headers["countly-token"]){
                 authorize.verify({db:common.db, token:params.req.headers["countly-token"], callback:function(valid){
                     if(valid){
                         authorize.save({db:common.db, callback:function(err, token){
-                            params.token_headers = {"countly-token": token};
+                            params.token_headers = {"countly-token": token, "content-language":token, "Access-Control-Expose-Headers":"countly-token"};
                             common.db.collection('apps').findOne({'key':params.qstring.app_key}, function (err, app) {
                                 if (!app) {
                                     common.returnMessage(params, 401, 'App does not exist');
