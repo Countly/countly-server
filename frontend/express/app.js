@@ -991,7 +991,7 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
                         var password = sha1Hash(req.body.old_pwd),
                             newPassword = sha1Hash(req.body.new_pwd);
     
-                        if(newPassword != password && (!member.password_history || member.password_history.indexOf(newPassword) === -1)){
+                        if(newPassword != password && (plugins.getConfig('security').password_rotation == 0 || !member.password_history || member.password_history.indexOf(newPassword) === -1)){
                             var result = validatePassword(req.body.new_pwd);
                             if(result === false){
                                 updatedUser.password = newPassword;
