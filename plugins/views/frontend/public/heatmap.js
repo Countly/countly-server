@@ -1,6 +1,6 @@
 (function(){
     var map,
-        data,
+        gdata,
         curRadius = 1,
         curBlur = 1,
         baseRadius = 1,
@@ -14,43 +14,55 @@
     Countly._internals.loadJS(Countly.url+"/views/javascripts/simpleheat.js", function(){
         //make canvas on whole screen
 		var canvas = document.createElement("canvas");
-		canvas.setAttribute("width", Countly._internals.getDocWidth() + "px");
-		canvas.setAttribute("height", Countly._internals.getDocHeight() + "px");
 		canvas.style.position = "absolute";
 		canvas.style.top = "0px";
 		canvas.style.left = "0px";
 		canvas.style.zIndex = 1000000;
 		canvas.style.opacity = 0.5;
         canvas.style.pointerEvents = "none";
+        canvas.setAttribute("width", Countly._internals.getDocWidth() + "px");
+        canvas.setAttribute("height", Countly._internals.getDocHeight() + "px");
 		canvas.id = "cly-canvas-map";
 		document.body.appendChild(canvas);
         map = simpleheat("cly-canvas-map");
         loadData();
+        Countly._internals.add_event(window, "resize", function(){
+            console.log("resize");
+            Countly.stop_time();
+            canvas.setAttribute("width", "0px");
+            canvas.setAttribute("height", "0px");
+            setTimeout(function(){
+                canvas.setAttribute("width", Countly._internals.getDocWidth() + "px");
+                canvas.setAttribute("height", Countly._internals.getDocHeight() + "px");
+                map.resize();
+                drawData(); 
+            },1);
+        });
     });
     
     function loadData(){
         console.log("loading data");
-        sendXmlHttpRequest({app_key:Countly.app_key, view:window.location.pathname, period:period}, function(err, data){
-            console.log("loaded", err, data);
+        sendXmlHttpRequest({app_key:Countly.app_key, view:window.location.pathname, period:period}, function(err, clicks){
+            console.log("loaded", err, clicks);
             if(!err){
-                drawData(data.data);
+                data = clicks.data;
+                drawData();
             }
         });
     }
     
-    function drawData(data){
+    function drawData(){
         var heat = [];
         var point;
-        var width = parseInt(get("cly-canvas-map").getAttribute('width'));
-        var height = parseInt(get("cly-canvas-map").getAttribute('height'));
-        console.log(width+"x"+height);
+        var width = Countly._internals.getDocWidth();
+        var height = Countly._internals.getDocHeight();
         for(var i = 0; i < data.length; i++){
             point = data[i].sg;
             if(point.type == actionType)
                 heat.push([parseInt((point.x/point.width)*width), parseInt((point.y/point.height)*height), data[i].c])
         }
-        //map.clear();
-        console.log("heat", heat);
+        map.clear();
+        console.log("heat", width+"x"+height);
         map.data(heat);
         baseRadius = Math.max((48500-35*data.length)/900, 5);
         drawMap(); 
