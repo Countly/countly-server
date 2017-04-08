@@ -43,6 +43,30 @@ var plugin = {},
 		return false;
 	});
     
+    plugins.register("/o/urltest", function(ob){
+        var params = ob.params;
+        if(params.qstring.url){
+            var options = {
+                url: params.qstring.url,
+                headers: {
+                    'User-Agent': 'CountlySiteBot'
+                }
+            };
+            request(options, function (error, response, body) {
+                if (!error && response.statusCode >= 200 && response.statusCode < 400) {
+                    common.returnOutput(params,{result:true});
+                }
+                else{
+                    common.returnOutput(params,{result:false});
+                }
+            });
+        }
+        else{
+            common.returnOutput(params,{result:false});
+        }
+        return true;
+    });
+    
     function getHeatmap(params){
         var result = {types:[], data:[]};
         var collectionName = "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex');
