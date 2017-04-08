@@ -158,7 +158,7 @@ var appsApi = {},
         }
         
         for(var i in params.qstring.args){
-            if(typeof updatedApp[i] === "undefined")
+            if(typeof updatedApp[i] === "undefined" && i != "app_id")
                 updatedApp[i] = params.qstring.args[i];
         }
 
