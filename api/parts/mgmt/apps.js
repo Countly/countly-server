@@ -111,6 +111,11 @@ var appsApi = {},
             common.returnMessage(params, 400, 'Not enough args');
             return false;
         }
+        
+        for(var i in params.qstring.args){
+            if(typeof newApp[i] === "undefined")
+                newApp[i] = params.qstring.args[i];
+        }
 
         processAppProps(newApp);
         
@@ -150,6 +155,11 @@ var appsApi = {},
         if (!(updatedApp = common.validateArgs(params.qstring.args, argProps))) {
             common.returnMessage(params, 400, 'Not enough args');
             return false;
+        }
+        
+        for(var i in params.qstring.args){
+            if(typeof updatedApp[i] === "undefined")
+                updatedApp[i] = params.qstring.args[i];
         }
 
         if (Object.keys(updatedApp).length === 0) {

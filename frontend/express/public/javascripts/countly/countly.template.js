@@ -461,6 +461,7 @@ var AppRouter = Backbone.Router.extend({
         this.appAddTypeCallbacks = [];
         this.userEditCallbacks = [];
         this.refreshScripts = {};
+        this.appSettings = {};
 
         /**
         * When rendering data from server using templates from frontend/express/views we are using ejs as templating engine. But when rendering templates on the browser side remotely loaded templates through ajax, we are using Handlebars templating engine. While in ejs everything is simple and your templating code is basically javascript code betwee <% %> tags. Then with Handlebars it is not that straightforward and we need helper functions to have some common templating logic 
@@ -2002,8 +2003,68 @@ var AppRouter = Backbone.Router.extend({
     addAppManagementSwitchCallback:function(callback){
         this.appManagementSwitchCallbacks.push(callback);
     },
+    /**
+    * Modify app object on app create/update before submitting it to server
+    * @param {function} callback - function args object with all data that will be submitted to server on app create/update
+    * @memberof app
+    * @instance
+    * @example
+    * app.addAppObjectModificatorfunction(args){
+    *   if (args.type === "mobile") {
+    *       //do something for mobile
+    *   }
+    * });
+    */
     addAppObjectModificator:function(callback){
         this.appObjectModificators.push(callback);
+    },
+    /**
+    * Add additional settings to app management. Allows you to inject html with css classes app-read-settings, app-write-settings and using data-id attribute for the key to store in app collection. And if your value or input needs additional processing, you may add the callbacks here
+    * @param {string} id - the same value on your input data-id attributes
+    * @param {object} options - different callbacks for data modification
+    * @param {function} options.toDisplay - function to be called when data is prepared for displaying, pases reference to html element with app-read-settings css class in which value should be displayed
+    * @param {function} options.toInput - function to be called when data is prepared for input, pases reference to html input element with app-write-settings css class in which value should be placed for editing
+    * @param {function} options.toSave - function to be called when data is prepared for saving, pases reference to object args that will be sent to server ad html input element with app-write-settings css class from which value should be taken and placed in args
+     * @param {function} options.toInject - function to be called when to inject HTML into app management view
+    * @memberof app
+    * @instance
+    * @example
+    * app.addAppSetting("my_setting", {
+    *     toDisplay: function(appId, elem){$(elem).text(process(countlyGlobal['apps'][appId]["my_setting"]));},
+    *     toInput: function(appId, elem){$(elem).val(process(countlyGlobal['apps'][appId]["my_setting"]));},
+    *     toSave: function(appId, args, elem){
+    *         args.my_setting = process($(elem).val());
+    *     },
+    *     toInject: function(){
+    *         var addApp = '<tr class="help-zone-vs" data-help-localize="manage-apps.app-my_setting">'+
+    *             '<td>'+
+    *                 '<span data-localize="management-applications.my_setting"></span>'+
+    *             '</td>'+
+    *             '<td>'+
+    *                 '<input type="text" value="" class="app-write-settings" data-localize="placeholder.my_setting" data-id="my_setting">'+
+    *             '</td>'+
+    *         '</tr>';
+    *         
+    *         $("#add-new-app table .table-add").before(addApp);
+    *     
+    *         var editApp = '<tr class="help-zone-vs" data-help-localize="manage-apps.app-my_settingt">'+
+    *             '<td>'+
+    *                 '<span data-localize="management-applications.my_setting"></span>'+
+    *             '</td>'+
+    *             '<td>'+
+    *                 '<div class="read app-read-settings" data-id="my_setting"></div>'+
+    *                 '<div class="edit">'+
+    *                     '<input type="text" value="" class="app-write-settings" data-id="my_setting" data-localize="placeholder.my_setting">'+
+    *                 '</div>'+
+    *             '</td>'+
+    *         '</tr>';
+    *         
+    *         $(".app-details table .table-edit").before(editApp);
+    *     }
+    * });
+    */
+    addAppSetting:function(id, options){
+        this.appSettings[id] = options;
     },
     /**
     * Add callback to be called when user changes app type in UI in Managment -> Applications section (even without saving app type, just chaning in UI), useful when providing custom input additions to app editing for different app types

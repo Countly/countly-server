@@ -863,6 +863,11 @@ window.ManageAppsView = countlyView.extend({
                 app.onAppAddTypeSwitch($(this).data('value'));
             }
         });
+        
+        for(var i in app.appSettings){
+            if(app.appSettings[i] && app.appSettings[i].toInject)
+                app.appSettings[i].toInject();
+        }
 
         function initAppManagement(appId) {
             if (jQuery.isEmptyObject(countlyGlobal['apps'])) {
@@ -915,6 +920,20 @@ window.ManageAppsView = countlyView.extend({
             $("#app-edit-timezone").find(".cly-select .text").data("value", countlyGlobal['apps'][appId].timezone);
             $("#app-edit-category").find(".read").text(appCategories[countlyGlobal['apps'][appId].category]);
             $("#app-edit-image").find(".read .logo").css({"background-image":'url("'+countlyGlobal["cdn"]+'appimages/' + appId + '.png")'});
+            $("#view-app .app-read-settings").each(function(){
+                var id = $(this).data('id');
+                if(app.appSettings[id] && app.appSettings[id].toDisplay)
+                    app.appSettings[id].toDisplay(appId, this);
+                else if(typeof countlyGlobal['apps'][appId][id] !== "undefined")
+                    $(this).text(countlyGlobal['apps'][appId][id]);
+            });
+            $("#view-app .app-write-settings").each(function(){
+                var id = $(this).data('id');
+                if(app.appSettings[id] && app.appSettings[id].toInput)
+                    app.appSettings[id].toInput(appId, this);
+                else if(typeof countlyGlobal['apps'][appId][id] !== "undefined")
+                    $(this).val(countlyGlobal['apps'][appId][id]);
+            });
             var appTimezone = timezones[countlyGlobal['apps'][appId].country];
 
             for (var i = 0; i < appTimezone.z.length; i++) {
@@ -1163,7 +1182,7 @@ window.ManageAppsView = countlyView.extend({
                 
             $.getScript( url+"sdks.js", function( data, textStatus, jqxhr ) {
                 var server = (location.protocol || "http:")+"//"+location.hostname + "/" + countlyGlobal["path"];
-                if(sdks && server){
+                if(typeof sdks !== "undefined" && server){
                     function initCountlyCode(appId, type){
                         var app_id = $("#app-edit-id").val();
                         if(appId && appId != "" && countlyGlobal["apps"][appId]){
@@ -1345,6 +1364,14 @@ window.ManageAppsView = countlyView.extend({
                 country:$("#app-edit-timezone #app-country").val(),
                 checksum_salt:$("#app-edit-salt .edit input").val()
             };
+            
+            $(".app-details .app-write-settings").each(function(){
+                var id = $(this).data('id');
+                if(app.appSettings[id] && app.appSettings[id].toSave)
+                    app.appSettings[id].toSave(appId, args, this);
+                else if(typeof args !== "undefined")
+                    args[id] = $(this).val();
+            });
 
             app.appObjectModificators.forEach(function(mode){
                 mode(args);
@@ -1500,6 +1527,14 @@ window.ManageAppsView = countlyView.extend({
                 timezone:timezone,
                 country:country
             };
+            
+            $("#add-new-app .app-write-settings").each(function(){
+                var id = $(this).data('id');
+                if(app.appSettings[id] && app.appSettings[id].toSave)
+                    app.appSettings[id].toSave(appId, args, this);
+                else if(typeof args !== "undefined")
+                    args[id] = $(this).val();
+            });
 
             app.appObjectModificators.forEach(function(mode){
                 mode(args);
