@@ -85,6 +85,7 @@ window.ViewsView = countlyView.extend({
             }));
 
             $(".d-table").stickyTableHeaders();
+            this.dtable.fnSort( [ [1,'desc'] ] );
             $(".dataTable-bottom").append("<div class='dataTables_info' style='float: right;'>"+jQuery.i18n.map["views.maximum-items"]+" ("+countlyCommon.GRAPH_COLORS.length+")</div>")
             
             $('.views-table tbody').on("click", "tr", function (event){
