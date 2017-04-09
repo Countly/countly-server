@@ -108,11 +108,14 @@ window.ViewsView = countlyView.extend({
             });
             
             $('.views-table tbody').on("click", "a.table-link", function (event){
-                event.preventDefault();
                 event.stopPropagation();
+                if(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].sdk_version && parseInt((countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].sdk_version+"").split(".")[0]) <= 16){
+                    return;
+                }
+                event.preventDefault();
                 if(self.token !== false){
                     var path = event.target.hash.replace("#/analytics/views/action-map/", "");
-                    window.open("http://appcodingeasy.com", "cly:" + JSON.stringify({"token":self.token,"purpose":"heatmap"}));
+                    window.open("http://appcodingeasy.com"+path, "cly:" + JSON.stringify({"token":self.token,"purpose":"heatmap"}));
                 }
                 countlyViews.getToken(function(token){self.token = token});
             });
@@ -294,7 +297,7 @@ window.ActionMapView = countlyView.extend({
             $("#view_loaded_url").val(url);
         countlyViews.testUrl(url, function(result){
             if(result){
-                $("#view-map iframe").attr("src", "/o/urlload?url="+encodeURIComponent(url));
+                $("#view-map iframe").attr("src", url);
                 $("#view_loaded_url").val(url);
             }
             else{
