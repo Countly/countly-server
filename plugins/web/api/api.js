@@ -8,7 +8,7 @@ var plugin = {},
     plugins.register("/sdk", function(ob){
         var params = ob.params;
         if(params.app.type == "web"){
-            if(params.qstring.sdk_version && (!params.app.sdk_version || common.versionCompare(params.qstring.sdk_version, params.app.sdk_version) === 1)){
+            if(params.qstring.sdk_version && (!params.app.sdk_version || common.versionCompare(params.qstring.sdk_version, params.app.sdk_version,{delimiter:"."}) === 1)){
                 common.db.collection("apps").update({_id:params.app._id}, {$set:{sdk_version:params.qstring.sdk_version}});
             }
             var agent = useragent.parse(params.req.headers['user-agent'], (params.qstring.metrics) ? params.qstring.metrics._ua : undefined);
