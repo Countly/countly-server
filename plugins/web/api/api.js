@@ -51,10 +51,10 @@ var plugin = {},
                    params.qstring.crash._os = data.os;
                
                 if(!params.qstring.crash._os_version)
-                   params.qstring.crash._os_version = data.os_version;
+                   params.qstring.crash._os_version = data.os + " " + data.os_version;
                
                 if(!params.qstring.crash._browser)
-                   params.qstring.crash._browser = agent.family;
+                   params.qstring.crash._browser = agent.toAgent();
                
                if(!params.qstring.crash._device)
                    params.qstring.crash._device = (agent.device.family == "Other") ? "Unknown" : agent.device.family;
