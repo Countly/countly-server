@@ -243,7 +243,7 @@ window.CrashesView = countlyView.extend({
             }));
 
 			this.dtable.stickyTableHeaders();
-			this.dtable.fnSort( [ [2,'desc'] ] );
+			this.dtable.fnSort( [ [4,'desc'] ] );
 
             //dataTables_filter
             $('.dataTables_filter input').unbind();
