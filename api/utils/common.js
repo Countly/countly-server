@@ -1117,13 +1117,18 @@ var common = {},
     * Compares two version strings with : as delimiter (which we used to escape dots in app versions)
     * @param {string} v1 - first version
     * @param {string} v2 - second version
+    * @param {object} options - providing additional options
+    * @param {string} options.delimiter - delimiter between version, subversion, etc, defaults :
+    * @param {string} options.zeroExtend - changes the result if one version string has less parts than the other. In this case the shorter string will be padded with "zero" parts instead of being considered smaller.
+    * @param {string} options.lexicographical - compares each part of the version strings lexicographically instead of naturally; this allows suffixes such as "b" or "dev" but will cause "1.10" to be considered smaller than "1.2".
     * @returns {number} 0 if they are both the same, 1 if first one is higher and -1 is second one is highet
     */
 	common.versionCompare = function(v1, v2, options) {
 		var lexicographical = options && options.lexicographical,
 			zeroExtend = options && options.zeroExtend,
-			v1parts = v1.split(':'),
-			v2parts = v2.split(':');
+            delimiter = options && options.delimiter || ":",
+			v1parts = v1.split(delimiter),
+			v2parts = v2.split(delimiter);
 	
 		function isValidPart(x) {
 			return (lexicographical ? /^\d+[A-Za-z]*$/ : /^\d+$/).test(x);
