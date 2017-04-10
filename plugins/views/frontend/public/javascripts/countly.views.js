@@ -7,6 +7,7 @@ window.ViewsView = countlyView.extend({
     ids:{},
     lastId:0,
     token: false,
+    useView: null,
     beforeRender: function() {
 			var self = this;
 			return $.when($.get(countlyGlobal["path"]+'/views/templates/views.html', function(src){
@@ -130,7 +131,8 @@ window.ViewsView = countlyView.extend({
                 });
                 if(list.css("display") == "none"){
                     countlyViews.getToken(function(token){
-                        list.show().data("hash", event.target.hash);
+                        list.show();
+                        self.useView = event.target.hash;
                         self.token = token;
                     });
                 }
@@ -147,7 +149,7 @@ window.ViewsView = countlyView.extend({
                     url = url.substr(0, url.length - 1);
                 }
                 if(self.token !== false){
-                    var path = $(event.target).parent(".options").data("hash").replace("#/analytics/views/action-map/", "");
+                    var path = self.useView.replace("#/analytics/views/action-map/", "");
                     window.open(url+path, "cly:" + JSON.stringify({"token":self.token,"purpose":"heatmap"}));
                 }
                 $(event.target).parent(".options").hide();
