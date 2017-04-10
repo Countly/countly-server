@@ -1135,13 +1135,17 @@ if (cluster.isMaster) {
                         }
                         case '/o/token':
                         {
-                            var ttl;
+                            var ttl, multi;
                             if(params.qstring.ttl)
                                ttl = parseInt(params.qstring.ttl);
                             else
                                 ttl = 1800;
+                            if(params.qstring.multi)
+                               multi = true;
+                            else
+                                multi = false;
                             validateUserForDataReadAPI(params, function(){
-                                authorize.save({db:common.db, ttl:ttl, callback:function(err, token){
+                                authorize.save({db:common.db, ttl:ttl, multi:multi, callback:function(err, token){
                                     if(err){
                                         common.returnMessage(params, 404, 'DB Error');
                                     }
