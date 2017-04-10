@@ -22,6 +22,13 @@
  */
 var countlyView = Backbone.View.extend({
     /**
+    * Checking state of view, if it is loaded
+    * @type {boolean}
+    * @instance
+    * @memberof countlyView
+    */
+    isLoaded:false,
+    /**
     * Handlebar template
     * @type {object}
     * @instance
@@ -112,11 +119,13 @@ var countlyView = Backbone.View.extend({
         if (countlyCommon.ACTIVE_APP_ID) {
             var self = this;
             $.when(this.beforeRender(), initializeOnce()).then(function() {
+                self.isLoaded = true;
                 self.renderCommon();
                 self.afterRender();
                 app.pageScript();
             });
         } else {
+            this.isLoaded = true;
             this.renderCommon();
             this.afterRender();
             app.pageScript();
@@ -334,7 +343,7 @@ var AppRouter = Backbone.Router.extend({
     },
     performRefresh: function (self) {
         //refresh only if we are on current period
-        if(countlyCommon.periodObj.periodContainsToday){
+        if(countlyCommon.periodObj.periodContainsToday && self.activeView.isLoaded){
             self.activeView.refresh();
             self.runRefreshScripts();
         }
