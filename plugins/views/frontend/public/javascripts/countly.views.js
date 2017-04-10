@@ -9,7 +9,6 @@ window.ViewsView = countlyView.extend({
     token: false,
     beforeRender: function() {
 			var self = this;
-            countlyViews.getToken(function(token){self.token = token;});
 			return $.when($.get(countlyGlobal["path"]+'/views/templates/views.html', function(src){
 				self.template = Handlebars.compile(src);
 			}), countlyViews.initialize()).then(function () {});
@@ -37,13 +36,19 @@ window.ViewsView = countlyView.extend({
                     "id":"view-metric-"+i
                 });
         }
+        
+        var domains = countlyViews.getDomains();
+        for(var i = 0; i < domains.length; i++){
+            domains[i] = countlyCommon.decode(domains[i]);
+        }
 
         this.templateData = {
             "page-title":jQuery.i18n.map["views.title"],
             "font-logo-class":"fa-eye",
             "active-segmentation": jQuery.i18n.map["views.all-segments"],
             "segmentations": countlyViews.getSegments(),
-            "usage":usage
+            "usage":usage,
+            "domains":domains
         };
 
         if (!isRefresh) {
@@ -63,7 +68,9 @@ window.ViewsView = countlyView.extend({
             if(typeof addDrill != "undefined"){
                 $(".widget-header .left .title").after(addDrill("up.lv"));
                 if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web"){
-                    columns.push({ "mData": function(row, type){return '<a href="#/analytics/views/action-map/'+row.views+'" class="table-link green" data-localize="views.table.view" style="margin:0px; padding:2px;">View</a>';}, sType:"string", "sTitle": jQuery.i18n.map["views.action-map"], "sClass":"shrink center", bSortable: false });
+                    columns.push({ "mData": function(row, type){
+                        return '<a href="#/analytics/views/action-map/'+row.views+'" class="table-link green" data-localize="views.table.view" style="margin:0px; padding:2px;">View</a>';
+                        }, sType:"string", "sTitle": jQuery.i18n.map["views.action-map"], "sClass":"shrink center", bSortable: false });
                 }
             }
 
@@ -112,12 +119,38 @@ window.ViewsView = countlyView.extend({
                 if(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].sdk_version && parseInt((countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].sdk_version+"").split(".")[0]) <= 16){
                     return;
                 }
-                event.preventDefault();
-                if(self.token !== false){
-                    var path = event.target.hash.replace("#/analytics/views/action-map/", "");
-                    window.open("http://appcodingeasy.com"+path, "cly:" + JSON.stringify({"token":self.token,"purpose":"heatmap"}));
+                var pos = $(event.target).offset();
+                var list = $(".widget-content .options");
+                list.css({
+                    position: "absolute",
+                    zIndex: 1000,
+                    top: (pos.top+30) + "px",
+                    left: (pos.left-200) + "px",
+                    right: 15 + "px"
+                });
+                if(list.css("display") == "none"){
+                    countlyViews.getToken(function(token){
+                        list.show().data("hash", event.target.hash);
+                        self.token = token;
+                    });
                 }
-                countlyViews.getToken(function(token){self.token = token});
+                else
+                    list.hide();
+                event.preventDefault();
+            });
+            
+            $(".widget-content .options").click(function(event){
+                var url = $(event.target).text();
+                if(url.indexOf("http") !== 0)
+                    url = "http://"+url;
+                if(url.substr(url.length - 1) == '/') {
+                    url = url.substr(0, url.length - 1);
+                }
+                if(self.token !== false){
+                    var path = $(event.target).parent(".options").data("hash").replace("#/analytics/views/action-map/", "");
+                    window.open(url+path, "cly:" + JSON.stringify({"token":self.token,"purpose":"heatmap"}));
+                }
+                $(event.target).parent(".options").hide();
             });
             
             $("#view-metric-"+this.selectedMetric).parents(".big-numbers").addClass("active");

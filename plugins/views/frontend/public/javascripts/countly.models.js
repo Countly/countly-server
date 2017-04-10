@@ -8,6 +8,7 @@
         _initialized = false,
         _segment = null,
         _segments = [],
+        _domains = [],
         _name = "views",
         _period = null;
 
@@ -40,6 +41,7 @@
                                 json.segments[i] = countlyCommon.decode(json.segments[i]);
                             }
                             _segments = json.segments;
+                            _domains = json.domains;
                         }
                     }
                 }),
@@ -98,6 +100,7 @@
                                 json.segments[i] = countlyCommon.decode(json.segments[i]);
                             }
                             _segments = json.segments;
+                            _domains = json.domains;
                         }
                     }
                 }),
@@ -129,8 +132,10 @@
     countlyViews._reset = countlyViews.reset;
     countlyViews.reset = function () {
         _actionData = {};
-        _segment - null;
+        _segment = null;
         _initialized = false;
+        _segments = [];
+        _domains = [];
         countlyViews._reset();
     };
     
@@ -140,6 +145,10 @@
     
     countlyViews.getSegments = function(){
         return _segments;
+    };
+    
+    countlyViews.getDomains = function(){
+        return _domains;
     };
     
     countlyViews.loadActionsData = function (view) {

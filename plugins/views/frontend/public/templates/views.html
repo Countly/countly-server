@@ -30,6 +30,11 @@
 		{{> date-selector }}
 	</div>
     <div class="widget-content" style="border:none;">
+        <ul class="options">
+            {{#eachOfArray domains}}
+            <li><a class='domain-option'>{{value}}</a></li>
+            {{/eachOfArray}}
+        </ul>
 		<div id="big-numbers-container" class="dashboard">
 			{{#each usage}}
 			<div class="big-numbers top seven-column help-zone-vs" data-help-localize="help.{{this.help}}">

@@ -27,14 +27,29 @@ var plugin = {},
 		}
         else if (params.qstring.method == "get_view_segments") {
 			validateUserForDataReadAPI(params, function(){
-                var res = {segments:[]};
+                var res = {segments:[], domains:[]};
                 common.db.collection("app_viewdata"+params.app_id).findOne({'_id': "meta"}, function(err, res1){
                     if(res1 && res1.segments)
                         res.segments = res1.segments;
                     common.db.collection("app_viewdata"+params.app_id).findOne({'_id': "meta_v2"}, function(err, res2){
                         if(res2 && res2.segments)
                             common.arrayAddUniq(res.segments,Object.keys(res.segments));
-                        common.returnOutput(params,res);
+                        if(common.drillDb){
+                            var collectionName = "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex');
+                            common.drillDb.collection(collectionName).findOne( {"_id": "meta_v2"},{_id:0, "sg.domain":1} ,function(err,meta){
+                                if(meta && meta.sg && meta.sg.domain.values)
+                                    res.domains = Object.keys(meta.sg.domain.values);
+                                common.drillDb.collection(collectionName).findOne( {"_id": "meta"},{_id:0, "sg.domain":1} ,function(err,meta2){
+                                    if(meta2 && meta2.sg && meta2.sg.domain)
+                                        common.arrayAddUniq(res.domains, meta2.sg.domain.values);
+                                    common.returnOutput(params,res);
+                                });
+                                    
+                            });
+                        }
+                        else{
+                            common.returnOutput(params,res);
+                        }
                     });
                 });
             });
@@ -184,7 +199,7 @@ var plugin = {},
             if(params.req.headers["countly-token"]){
                 authorize.verify({db:common.db, token:params.req.headers["countly-token"], callback:function(valid){
                     if(valid){
-                        authorize.save({db:common.db, callback:function(err, token){
+                        authorize.save({db:common.db, ttl:1800 ,callback:function(err, token){
                             params.token_headers = {"countly-token": token, "content-language":token, "Access-Control-Expose-Headers":"countly-token"};
                             common.db.collection('apps').findOne({'key':params.qstring.app_key}, function (err, app) {
                                 if (!app) {
