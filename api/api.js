@@ -122,6 +122,7 @@ if (cluster.isMaster) {
     setTimeout(() => {
         jobs.job('api:ping').replace().schedule('every 1 day');
         jobs.job('api:clear').replace().schedule('every 1 day');
+        jobs.job('api:clearTokens').replace().schedule('every 1 day');
     }, 10000);
 } else {
     var common = require('./utils/common.js');
