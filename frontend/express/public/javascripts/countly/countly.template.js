@@ -344,8 +344,11 @@ var AppRouter = Backbone.Router.extend({
     performRefresh: function (self) {
         //refresh only if we are on current period
         if(countlyCommon.periodObj.periodContainsToday && self.activeView.isLoaded){
-            self.activeView.refresh();
-            self.runRefreshScripts();
+            self.activeView.isLoaded = false;
+            $.when(self.activeView.refresh()).then(function() {
+                self.activeView.isLoaded = true;
+                self.runRefreshScripts();
+            });
         }
     },
     renderWhenReady:function (viewName) { //all view renders end up here
