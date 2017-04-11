@@ -33,6 +33,19 @@ var crypto = require("crypto");
     };
     
     /**
+    * Get whole token information from database
+    * @param {object} options - options for the task
+    * @param {object} options.db - database connection
+    * @param {string} options.token - token to store, if not provided, will be generated
+    * @param {function} options.callback - function called when reading was completed or errored, providing error object as first param and token object from database as second
+    */
+    authorizer.read = function (options) {
+        options.db = options.db || common.db;
+        options.token = options.token || authorizer.getToken();
+        options.db.collection("auth_tokens").findOn({_id:options.token}, options.callback);
+    };
+    
+    /**
     * Verify token and expire it
     * @param {object} options - options for the task
     * @param {object} options.db - database connection
