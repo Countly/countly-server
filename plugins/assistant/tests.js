@@ -1,8 +1,9 @@
 var request = require('supertest');
 var should = require('should');
 var testUtils = require("../../test/testUtils");
-request = request(testUtils.url);
+var request = request(testUtils.url);
 const assert = require('assert');
+const assistant = require("./assistant.js");
 
 var APP_KEY = "";
 var API_KEY_ADMIN = "";
