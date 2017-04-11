@@ -73,6 +73,7 @@ var request = require("request");
                 }
                 else{
                     options.id = taskmanager.getId();
+                    options.start = new Date().getTime() - options.threshold*1000;
                     taskmanager.createTask(options);
                 }
             }
@@ -123,13 +124,14 @@ var request = require("request");
     * @param {string} options.view - browser side view hash prepended with job id to display result
     * @param {object} options.request - api request to be able to rerun this task
     * @param {string} options.app_id - id of the app for which data is for
+    * @param {number} options.start - start time of the task in miliseconds (by default now)
     * @param {function=} callback - callback when data is stored
     */
     taskmanager.createTask = function(options, callback){
         options.db = options.db || common.db;
         var update = {};
         update.ts = new Date().getTime();
-        update.start = new Date().getTime();
+        update.start = options.start || new Date().getTime();
         update.status = "running";
         update.type = options.type || "";
         update.meta = options.meta || "";
