@@ -144,13 +144,20 @@
         if(monitor[countlyCommon.ACTIVE_APP_ID].indexOf(id) === -1){
             monitor[countlyCommon.ACTIVE_APP_ID].push(id);
             store.set("countly_task_monitor", monitor);
-            if(!silent){
+            if(!silent)
                 CountlyHelpers.notify({
                     title: "This request is running for too long",
                     message: "We have switched to long running task and will notify you when it is finished",
                     info: "Or check its status under Management -> Task Manager"
                 });
-            }
+        }
+        else{
+            if(!silent)
+                CountlyHelpers.notify({
+                    title: "Similar task already running",
+                    message: "Looks like task with same parameters already running",
+                    info: "Check its status under Management -> Task Manager"
+                });
         }
     };
     

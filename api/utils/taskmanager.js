@@ -236,6 +236,8 @@ var request = require("request");
                 json:json
             }
         }
+        if(query.request)
+            query.request = JSON.stringify(query.request);
         options.db.collection("long_tasks").findOne(query, {status:1}, function(err, res){
             if(res && res.status && (res.status === "running" || res.status === "rerunning")){
                 callback(res._id);
