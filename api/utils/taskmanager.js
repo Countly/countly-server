@@ -18,6 +18,7 @@ var request = require("request");
     * @param {number} options.threshold - amount of seconds to wait before switching to long running task
     * @param {string} options.type - type of data, as which module or plugin uses this data
     * @param {string} options.meta - any information about the tast
+    * @param {string} options.name - provide user friendly task name
     * @param {string} options.view - browser side view hash prepended with job id to display result
     * @param {string} options.app_id - id of the app for which data is meant for
     * @param {function} options.processData - function to which to feed fetched data to post process it if needed, should accept err, data and callback to which to feed processed data
@@ -123,6 +124,7 @@ var request = require("request");
     * @param {string} options.id - id to use for this task
     * @param {string} options.type - type of data, as which module or plugin uses this data
     * @param {string} options.meta - any information about the taskManager
+    * @param {string} options.name - provide user friendly task name
     * @param {string} options.view - browser side view hash prepended with job id to display result
     * @param {object} options.request - api request to be able to rerun this task
     * @param {string} options.app_id - id of the app for which data is for
@@ -137,6 +139,7 @@ var request = require("request");
         update.status = "running";
         update.type = options.type || "";
         update.meta = options.meta || "";
+        update.name = options.name || null;
         update.view = options.view || "";
         update.request = JSON.stringify(options.request || {});
         update.app_id = options.app_id || "";
