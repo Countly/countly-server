@@ -2932,8 +2932,10 @@ window.LongTaskView = countlyView.extend({
                             return true;
                         }
                         countlyTaskManager.update(id, function(res){
-                            if(res.result === "Success")
+                            if(res.result === "Success"){
+                                countlyTaskManager.monitor(id, true);
                                 self.refresh();
+                            }
                             else{
                                 CountlyHelpers.alert(res.result, "red");
                             }
