@@ -137,17 +137,21 @@
 		return _resultData;
     };
     
-    countlyTaskManager.monitor = function (id, callback) {
+    countlyTaskManager.monitor = function (id, silent) {
 		var monitor = store.get("countly_task_monitor") || {};
         if(!monitor[countlyCommon.ACTIVE_APP_ID])
             monitor[countlyCommon.ACTIVE_APP_ID] = [];
-        monitor[countlyCommon.ACTIVE_APP_ID].push(id);
-        store.set("countly_task_monitor", monitor);
-        CountlyHelpers.notify({
-            title: "This request is running for too long",
-            message: "We have switched to long running task and will notify you when it is finished",
-            info: "Or check its status under Management -> Task Manager"
-        });
+        if(monitor[countlyCommon.ACTIVE_APP_ID].indexOf(id) === -1){
+            monitor[countlyCommon.ACTIVE_APP_ID].push(id);
+            store.set("countly_task_monitor", monitor);
+            if(!silent){
+                CountlyHelpers.notify({
+                    title: "This request is running for too long",
+                    message: "We have switched to long running task and will notify you when it is finished",
+                    info: "Or check its status under Management -> Task Manager"
+                });
+            }
+        }
     };
     
     countlyTaskManager.tick = function(){
