@@ -286,8 +286,8 @@ var request = require("request");
     */
     taskmanager.errorResults = function(options, callback){
         options.db = options.db || common.db;
-        options.db.collection("long_tasks").update({status:"running"}, {$set:{status:"errored"}}, function(){
-            options.db.collection("long_tasks").update({status:"rerunning"}, {$set:{status:"errored"}}, callback);
+        options.db.collection("long_tasks").update({status:"running"}, {$set:{status:"errored"}}, {multi:true}, function(){
+            options.db.collection("long_tasks").update({status:"rerunning"}, {$set:{status:"errored"}}, {multi:true}, callback);
         });
     };
     
