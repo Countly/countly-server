@@ -51,4 +51,4 @@ var countlyConfig = {
 	cdn: ""
 };
 
-module.exports = countlyConfig;
+module.exports = require('../../api/configextender')(countlyConfig);

@@ -186,13 +186,25 @@ if (cluster.isMaster) {
                 else{
                     payload = params.href.substr(3);
                 }
-                payload = payload.replace("&checksum="+params.qstring.checksum, "").replace("checksum="+params.qstring.checksum, "");
-                if((params.qstring.checksum + "").toUpperCase() != common.crypto.createHash('sha1').update(payload + params.app.checksum_salt).digest('hex').toUpperCase()){
-                    console.log("Checksum did not match", params.href, params.req.body);
-                    if (plugins.getConfig("api").safe) {
-                        common.returnMessage(params, 400, 'Request does not match checksum');
+                if(typeof params.qstring.checksum !== "undefined"){
+                    payload = payload.replace("&checksum="+params.qstring.checksum, "").replace("checksum="+params.qstring.checksum, "");
+                    if((params.qstring.checksum + "").toUpperCase() != common.crypto.createHash('sha1').update(payload + params.app.checksum_salt).digest('hex').toUpperCase()){
+                        console.log("Checksum did not match", params.href, params.req.body);
+                        if (plugins.getConfig("api").safe) {
+                            common.returnMessage(params, 400, 'Request does not match checksum');
+                        }
+                        return done ? done() : false;
                     }
-                    return done ? done() : false;
+                }
+                if(typeof params.qstring.checksum256 !== "undefined"){
+                    payload = payload.replace("&checksum256="+params.qstring.checksum256, "").replace("checksum256="+params.qstring.checksum256, "");
+                    if((params.qstring.checksum256 + "").toUpperCase() != common.crypto.createHash('sha256').update(payload + params.app.checksum_salt).digest('hex').toUpperCase()){
+                        console.log("Checksum did not match", params.href, params.req.body);
+                        if (plugins.getConfig("api").safe) {
+                            common.returnMessage(params, 400, 'Request does not match checksum');
+                        }
+                        return done ? done() : false;
+                    }
                 }
             }
             
@@ -658,11 +670,16 @@ if (cluster.isMaster) {
                                 common.returnMessage(params, 400, 'Missing parameter "requests"');
                                 return false;
                             }
+                            if (!plugins.getConfig("api").safe && !params.res.finished) {
+                                common.returnMessage(params, 200, 'Success');
+                            }
                             common.blockResponses(params);
                             function processBulkRequest(i) {
                                 if(i == requests.length) {
                                     common.unblockResponses(params);
-                                    common.returnMessage(params, 200, 'Success');
+                                    if (plugins.getConfig("api").safe && !params.res.finished) {
+                                        common.returnMessage(params, 200, 'Success');
+                                    }
                                     return;
                                 }
                                 

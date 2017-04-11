@@ -450,12 +450,23 @@
                 tmp_y = countlyEvent.clearEventsObject(tmp_y);
 
                 if (_activeSegmentation) {
-                    var tmpCurrCount = _.reduce(_.map(_.filter(tmp_x, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.c || 0; }), function(memo, num){ return memo + num; }, 0),
-                        tmpCurrSum = _.reduce(_.map(_.filter(tmp_x, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.s || 0; }), function(memo, num){ return memo + num; }, 0),
-                        tmpCurrDur = _.reduce(_.map(_.filter(tmp_x, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.dur || 0; }), function(memo, num){ return memo + num; }, 0),
-                        tmpPrevCount = _.reduce(_.map(_.filter(tmp_y, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.c || 0; }), function(memo, num){ return memo + num; }, 0),
-                        tmpPrevSum = _.reduce(_.map(_.filter(tmp_y, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.s || 0; }), function(memo, num){ return memo + num; }, 0),
-                        tmpPrevDur = _.reduce(_.map(_.filter(tmp_y, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.dur || 0; }), function(memo, num){ return memo + num; }, 0);
+                    var tmpCurrCount = 0,
+                        tmpCurrSum = 0,
+                        tmpCurrDur = 0,
+                        tmpPrevCount = 0,
+                        tmpPrevSum = 0,
+                        tmpPrevDur = 0;
+                    for(var segment in tmp_x){
+                        tmpCurrCount += tmp_x[segment].c || 0;
+                        tmpCurrSum += tmp_x[segment].s || 0;
+                        tmpCurrDur += tmp_x[segment].dur || 0;
+                        
+                        if(tmp_y[segment]){
+                            tmpPrevCount += tmp_y[segment].c || 0;
+                            tmpPrevSum += tmp_y[segment].s || 0;
+                            tmpPrevDur += tmp_y[segment].dur || 0;
+                        }
+                    }
 
                     tmp_x = {
                         "c": tmpCurrCount,
@@ -484,12 +495,23 @@
             tmp_y = countlyEvent.clearEventsObject(tmp_y);
 
             if (_activeSegmentation) {
-                var tmpCurrCount = _.reduce(_.map(_.filter(tmp_x, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.c || 0; }), function(memo, num){ return memo + num; }, 0),
-                    tmpCurrSum = _.reduce(_.map(_.filter(tmp_x, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.s || 0; }), function(memo, num){ return memo + num; }, 0),
-                    tmpCurrDur = _.reduce(_.map(_.filter(tmp_x, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.dur || 0; }), function(memo, num){ return memo + num; }, 0),
-                    tmpPrevCount = _.reduce(_.map(_.filter(tmp_y, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.c || 0; }), function(memo, num){ return memo + num; }, 0),
-                    tmpPrevSum = _.reduce(_.map(_.filter(tmp_y, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.s || 0; }), function(memo, num){ return memo + num; }, 0),
-                    tmpPrevDur = _.reduce(_.map(_.filter(tmp_y, function(num, key){ return _activeSegmentationValues.indexOf(key) != -1; }), function(num, key){ return num.dur || 0; }), function(memo, num){ return memo + num; }, 0);
+                var tmpCurrCount = 0,
+                    tmpCurrSum = 0,
+                    tmpCurrDur = 0,
+                    tmpPrevCount = 0,
+                    tmpPrevSum = 0,
+                    tmpPrevDur = 0;
+                for(var segment in tmp_x){
+                    tmpCurrCount += tmp_x[segment].c || 0;
+                    tmpCurrSum += tmp_x[segment].s || 0;
+                    tmpCurrDur += tmp_x[segment].dur || 0;
+                    
+                    if(tmp_y[segment]){
+                        tmpPrevCount += tmp_y[segment].c || 0;
+                        tmpPrevSum += tmp_y[segment].s || 0;
+                        tmpPrevDur += tmp_y[segment].dur || 0;
+                    }
+                }
 
                 tmp_x = {
                     "c": tmpCurrCount,
