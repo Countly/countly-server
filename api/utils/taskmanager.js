@@ -56,6 +56,8 @@ var request = require("request");
                 delete json.task_id;
                 //we want to get raw json data without jsonp
                 delete json.callback;
+                //delete jquery param to prevent caching
+                delete json._;
                 options.request = {
                     uri: "http://localhost"+options.params.fullPath,
                     method: 'POST',
@@ -195,6 +197,53 @@ var request = require("request");
     taskmanager.checkResult = function(options, callback){
         options.db = options.db || common.db;
         options.db.collection("long_tasks").findOne({_id:options.id}, {_id:0, status:1}, callback);
+    };
+    
+    /**
+    * Check if task like that is arleady running or not
+    * @param {object} options - options for the task
+    * @param {object} options.db - database connection
+    * @param {string=} options.id - id of the task result
+    * @param {string=} options.type - type of data, as which module or plugin uses this data
+    * @param {string=} options.meta - any information about the taskManager
+    * @param {params=} options.params - params object
+    * @param {object=} options.request - api request to be able to rerun this task
+    * @param {funciton} callback - callback for the result
+    */
+    taskmanager.checkIfRunning = function(options, callback){
+        options.db = options.db || common.db;
+        var query = {};
+        if(options.id)
+            query._id = options.id;
+        if(options.type)
+            query.type = options.type;
+        if(options.meta)
+            query.meta = options.meta;
+        if(options.request)
+            query.request = options.request;
+        if(!query.request && options.params && options.params.qstring){
+            var json = options.params.qstring || {};
+            json = JSON.parse(JSON.stringify(json));
+            //we don't need to have task_id, it will be automatically applied
+            delete json.task_id;
+            //we want to get raw json data without jsonp
+            delete json.callback;
+            //delete jquery param to prevent caching
+            delete json._;
+            query.request = {
+                uri: "http://localhost"+options.params.fullPath,
+                method: 'POST',
+                json:json
+            }
+        }
+        options.db.collection("long_tasks").findOne(query, {status:1}, function(err, res){
+            if(res && res.status && (res.status === "running" || res.status === "rerunning")){
+                callback(res._id);
+            }
+            else{
+                callback(false);
+            }
+        });
     };
     
     /**
