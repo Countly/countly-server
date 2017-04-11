@@ -2887,7 +2887,10 @@ window.LongTaskView = countlyView.extend({
 							return countlyCommon.formatTime(Math.round(time/1000));
 						}else return time;}, "sType":"number", "sTitle": jQuery.i18n.map["common.graph.time-spent"] },
                     { "mData": function(row, type){
-                        var str = "<a data-localize='common.delete' class='table-link red delete-task' data-id='"+row._id+"'></a>";
+                        var str = "";
+                        if(countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]){
+                            str = "<a data-localize='common.delete' class='table-link red delete-task' data-id='"+row._id+"'></a>";
+                        }
                         if(row.status !== "running" && row.status !== "rerunning"){
                             if(row.view && row.hasData){
                                 str += "<p><a href='"+row.view+row._id+"' data-localize='common.view' class='table-link green'></a></p>";
