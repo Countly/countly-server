@@ -56,7 +56,7 @@
 				</table>
 				{{else}}
 					{{#if collection}}
-					<p>Filter: <a id="collection-filter">Apply Filter</a></p>
+					<p>Filter: <a id="collection-filter">Apply Filter</a>&nbsp;<a id="export-button">Export</a></p>
 					<p><textarea class="collection-filter" placeholder='{{prettyJSON placeholder}}'></textarea></p>
 					<p>Showing {{data.start}} - {{data.end}} from {{data.total}} documents</p>
 					<p class='pagination'>
@@ -83,7 +83,8 @@
 						<a href='#/manage/db/{{db}}/{{collection}}/page/{{next}}'>Next</a>
 						<a href='#/manage/db/{{db}}/{{collection}}/page/{{data.pages}}'>Last</a>
 					{{/ifCond}}
-					&nbsp;Show results: <select class='result-limit'>
+                    </p>
+					<p class='pagination'>Show results: <select class='result-limit'>
 							<option value='10'>10</option>
 							<option value='20'>20</option>
 							<option value='30'>30</option>
