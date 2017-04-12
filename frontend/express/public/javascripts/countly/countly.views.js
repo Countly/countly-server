@@ -1178,10 +1178,10 @@ window.ManageAppsView = countlyView.extend({
         
         if(countlyGlobal["config"] && countlyGlobal["config"].code && $("#code-countly").length){
             $("#code-countly").show();
-            var url = (location.protocol || "http:")+"//"+location.hostname + "/" + countlyGlobal["path"]; 
+            var url = (location.protocol || "http:")+"//"+location.hostname + (location.port ? ":" + location.port : "") + "/" + countlyGlobal["path"]; 
                 
             $.getScript( url+"sdks.js", function( data, textStatus, jqxhr ) {
-                var server = (location.protocol || "http:")+"//"+location.hostname + "/" + countlyGlobal["path"];
+                var server = (location.protocol || "http:")+"//"+location.hostname + (location.port ? ":" + location.port : "") + "/" + countlyGlobal["path"];
                 if(typeof sdks !== "undefined" && server){
                     function initCountlyCode(appId, type){
                         var app_id = $("#app-edit-id").val();
