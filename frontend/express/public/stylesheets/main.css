@@ -1105,6 +1105,15 @@ table.events-table { width:100%; padding:0; margin:0; }
 .export-checkbox { width:14%; float:left; margin-bottom:8px; font:16px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#444; }
 .export-description { font:15px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#999; padding:10px; padding-bottom:5px; }
 .stretch {}
+#export-button { border: 1px solid #ccc; background-color: #f5f5f5; padding: 4px 10px; cursor: pointer; font-size: 11px; border-radius: 2px; }
+.export-dialog {padding: 15px; width: 200px; }
+.export-dialog .cly-select {width: 100%; margin:0px auto; box-sizing:border-box; margin-bottom: 10px; height:30px;}
+.export-dialog .cly-select .select-items {width: 100%;}
+.export-dialog p {margin:0px; font:14px Ubuntu,Helvetica,sans-serif; font-weight: bold; line-height:111%; margin-bottom: 10px;}
+.export-dialog p.details {margin:0px; font:11px Ubuntu,Helvetica,sans-serif; color:#B7B6B6; margin-bottom: 10px;}
+.export-dialog .export-data {width: 100%; margin:0px auto; padding-left:0px; padding-right:0px; text-align: center; height:16px;}
+#export-type-selector {width: 100%; float: none; margin:0px auto;  margin-bottom: 10px; height:30px;}
+#export-type-selector .button {width: 26%; text-align: center;}
 /* EXPORT END */
 
 .cly-button-group .icon-button { border-radius:0; margin:0; border-left:none; }
@@ -1126,6 +1135,15 @@ table.events-table { width:100%; padding:0; margin:0; }
 .button-selector .button.icon i.material-icons { font-size: 16px; }
 .button-selector .button.icon span.ion-icons { font-size: 17px; }
 .button-selector .button.icon i.fa { font-size: 18px; line-height: 14px; padding-bottom: 3px; }
+.button-selector.light .button { cursor:pointer; user-select:none; background-color:#fbfbfb; float:left; padding:7px; padding-top:6px; border:1px solid #D0D0D0; margin-left:-1px; }
+.button-selector.light .button:nth-child(1),
+.button-selector.light .button.first { margin-left:0; border-top-left-radius:2px; border-bottom-left-radius:2px; }
+.button-selector.light .button:last-child,
+.button-selector.light .button.last { border-top-right-radius:2px; border-bottom-right-radius:2px; }
+.button-selector.light .button:hover { background-color:#FFF; }
+.button-selector.light .button:active  { background-color:#FFF; }
+.button-selector.light .button.active { background-color:#FFF; border:1px solid #2EB52B; position: relative; z-index:10;}
+.button-selector.light .button.disabled { opacity:0.3; cursor:default; }
 
 /* GRAPH NOTES */
 .widget-footer:hover #graph-note { opacity:0.7; transition:opacity .5s; }

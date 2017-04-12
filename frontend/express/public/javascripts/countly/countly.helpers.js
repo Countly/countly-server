@@ -193,7 +193,64 @@
         return dialog;
     };
     
-        /**
+    /**
+    * Displays export dialog
+    * @param {number} count - total count of documents to export
+    * @returns {object} jQuery object reference to dialog
+    * @example
+    * var dialog = CountlyHelpers.export(300000);
+    * //later when done
+    * CountlyHelpers.removeDialog(dialog);
+    */
+    CountlyHelpers.export = function (count, data) {
+        var hardLimit = 100000;
+        var pages = Math.ceil(count/hardLimit);
+        var dialog = $("#cly-export").clone();
+        var type = "csv";
+        var page = 0;
+        dialog.removeAttr("id");
+        dialog.find(".details").text(jQuery.i18n.prop("export.export-number", count, pages));
+        if(count <= hardLimit){
+            dialog.find(".cly-select").hide();
+        }
+        else{
+            for(var i = 0; i < pages; i++){
+                dialog.find(".select-items > div").append('<div data-value="'+i+'" class="segmentation-option item">'+(i*hardLimit+1)+' - '+Math.min((i+1)*hardLimit, count)+ " " + jQuery.i18n.map["export.documents"]+'</div>');
+            }
+            dialog.find(".export-data").addClass("disabled");
+        }
+        dialog.find(".button").click(function(){
+            dialog.find(".button-selector .button").removeClass("selected");
+            dialog.find(".button-selector .button").removeClass("active");
+            $(this).addClass("selected");
+            $(this).addClass("active");
+            type = $(this).attr("id").replace("export-", "");
+        });
+        dialog.find(".segmentation-option").on("click", function () {
+            page = $(this).data("value");
+            dialog.find(".export-data").removeClass("disabled")
+        });
+        dialog.find(".export-data").click(function(){
+            if($(this).hasClass("disabled"))
+                return;
+            data.type = type;
+            data.limit = hardLimit;
+            data.skip = page*hardLimit;
+            var qstring = [];
+            for(var i in data){
+                qstring.push(i+"="+data[i]);
+            }
+            var url = "/o/export/db";
+            if(qstring.length){
+                url += "?"+qstring.join("&");
+            }
+            window.location = url;
+        });
+        revealDialog(dialog);
+        return dialog;
+    };
+    
+    /**
     * Instead of creating dialog object you can use this method and directly pass jquery element to be used as dialog content, which means complete customization
     * @param {jquery_object} dialog - jQuery object unnattached, like cloned existing object
     * @example

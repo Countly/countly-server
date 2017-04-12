@@ -242,6 +242,27 @@
 				<a id="dialog-cancel" class="icon-button light" data-localize="common.cancel"></a>
 		</div>
 	</div>
+    <div id="cly-export" class="dialog export-dialog">
+		<p data-localize="export.export-as"></p>
+        <div id="export-type-selector" class="button-selector light">
+            <div class="button selected active" id="export-csv">.CSV</div>
+			<div class="button" id="export-xls">.XLS</div>
+			<div class="button" id="export-json">.JSON</div>
+        </div>
+        <p class="details" data-localize="export.export-number"></p>
+        <div class="cly-select">
+            <div class="select-inner">
+                <div class="text-container">
+                    <div class="text" data-localize="export.select"></div>
+                </div>
+                <div class="right combo"></div>
+            </div>
+            <div class="select-items square">
+                <div></div>
+            </div>
+        </div>
+        <div class="icon-button green export-data" data-localize="export.export"></div>
+	</div>
 	<div id="edit-account-details">
 		<div class="message">
 			<div>
