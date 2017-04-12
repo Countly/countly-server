@@ -3,7 +3,7 @@ var should = require('should');
 var testUtils = require("../../test/testUtils");
 var request = request(testUtils.url);
 const assert = require('assert');
-const assistant = require("./assistant.js");
+const assistant = require("./api/assistant.js");
 
 var APP_KEY = "";
 var API_KEY_ADMIN = "";
