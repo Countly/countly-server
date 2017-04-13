@@ -196,26 +196,28 @@
     /**
     * Displays export dialog
     * @param {number} count - total count of documents to export
+    * @param {object} data - data for export query to use when constructing url
+    * @param {boolean} asDialog - open it as dialog
     * @returns {object} jQuery object reference to dialog
     * @example
     * var dialog = CountlyHelpers.export(300000);
     * //later when done
     * CountlyHelpers.removeDialog(dialog);
     */
-    CountlyHelpers.export = function (count, data) {
+    CountlyHelpers.export = function (count, data, asDialog) {
         var hardLimit = 100000;
         var pages = Math.ceil(count/hardLimit);
         var dialog = $("#cly-export").clone();
         var type = "csv";
         var page = 0;
         dialog.removeAttr("id");
-        dialog.find(".details").text(jQuery.i18n.prop("export.export-number", count, pages));
+        dialog.find(".details").text(jQuery.i18n.prop("export.export-number", (count+"").replace(/(\d)(?=(\d{3})+$)/g, '$1 '), pages));
         if(count <= hardLimit){
             dialog.find(".cly-select").hide();
         }
         else{
             for(var i = 0; i < pages; i++){
-                dialog.find(".select-items > div").append('<div data-value="'+i+'" class="segmentation-option item">'+(i*hardLimit+1)+' - '+Math.min((i+1)*hardLimit, count)+ " " + jQuery.i18n.map["export.documents"]+'</div>');
+                dialog.find(".select-items > div").append('<div data-value="'+i+'" class="segmentation-option item">'+((i*hardLimit+1)+"").replace(/(\d)(?=(\d{3})+$)/g, '$1 ')+' - '+(Math.min((i+1)*hardLimit, count)+"").replace(/(\d)(?=(\d{3})+$)/g, '$1 ')+ " " + jQuery.i18n.map["export.documents"]+'</div>');
             }
             dialog.find(".export-data").addClass("disabled");
         }
@@ -246,7 +248,8 @@
             }
             window.location = url;
         });
-        revealDialog(dialog);
+        if(asDialog)
+            revealDialog(dialog);
         return dialog;
     };
     
@@ -259,7 +262,6 @@
     */
     CountlyHelpers.revealDialog = function (dialog) {
         $("body").append(dialog);
-
         var dialogHeight = dialog.height(),
             dialogWidth = dialog.outerWidth() + 2;
 
