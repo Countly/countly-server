@@ -43,7 +43,9 @@ module.exports = function(grunt) {
 				'frontend/express/public/javascripts/dom/dataTables/js/jquery.dataTables.js',
 				'frontend/express/public/javascripts/dom/dataTables/js/ZeroClipboard.js',
 				'frontend/express/public/javascripts/dom/dataTables/js/TableTools.js',
-                'frontend/express/public/javascripts/dom/pace/pace.min.js'
+                'frontend/express/public/javascripts/dom/pace/pace.min.js',
+                'frontend/express/public/javascripts/dom/drop/tether.min.js',
+                'frontend/express/public/javascripts/dom/drop/drop.min.js'
 			],
 			dest: 'frontend/express/public/javascripts/min/countly.dom.concat.js'
 		},
@@ -133,6 +135,7 @@ module.exports = function(grunt) {
 	    			'frontend/express/public/javascripts/dom/tipsy/tipsy.css',
 	    		    'frontend/express/public/javascripts/visualization/rickshaw/rickshaw.min.css',
                     'frontend/express/public/javascripts/dom/pace/pace-theme-flash.css',
+                    'frontend/express/public/javascripts/dom/drop/drop-theme-countly.min.css',
                     'frontend/express/public/javascripts/utils/tooltipster/tooltipster.bundle.min.css'
 	    		]
     		}
