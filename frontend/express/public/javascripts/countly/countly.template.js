@@ -749,8 +749,8 @@ var AppRouter = Backbone.Router.extend({
                                 shouldRecordAction = false;
                                 setTimeout(function(){
                                     shouldRecordAction = true;
-                                }, Math.round(countlyGlobal.config["session_timeout"]/2));
-                                resetSessionTimeouts(countlyGlobal.config["session_timeout"]);
+                                }, Math.round(parseInt(countlyGlobal.config["session_timeout"])/2));
+                                resetSessionTimeouts(parseInt(countlyGlobal.config["session_timeout"]));
                             }
                         }
                     });
@@ -784,7 +784,7 @@ var AppRouter = Backbone.Router.extend({
                         extendSession();
                     }, timeout+1000);
                 }
-                resetSessionTimeouts(countlyGlobal.config["session_timeout"]);
+                resetSessionTimeouts(parseInt(countlyGlobal.config["session_timeout"]));
                 $(document).click(function (event) {
                     if(shouldRecordAction)
                         extendSession();
