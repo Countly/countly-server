@@ -196,6 +196,15 @@ var countlyView = Backbone.View.extend({
     destroy:function () {}
 });
 
+/**
+* Drop class with embeded countly theme, use as any Drop class/instance
+* @name CountlyDrop
+* @global
+*/
+var CountlyDrop = Drop.createContext({
+  classPrefix: 'countly-drop',
+});
+
 var initializeOnce = _.once(function() {
     return $.when(countlyEvent.initialize()).then(function() {});
 });

@@ -71,10 +71,9 @@ window.DBViewerView = countlyView.extend({
                     collection: self.collection,
                     query:self.filter
                 };
-            new Drop({
+            new CountlyDrop({
                 target: document.querySelector('#export-button'),
                 content: CountlyHelpers.export(data.total, qstring).removeClass("dialog")[0],
-                classes: 'drop-theme-countly',
                 position: 'right middle',
                 openOn: 'click'
             });
