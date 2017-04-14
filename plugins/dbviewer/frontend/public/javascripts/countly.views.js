@@ -75,6 +75,7 @@ window.DBViewerView = countlyView.extend({
                 target: document.querySelector('#export-button'),
                 content: CountlyHelpers.export(data.total, qstring).removeClass("dialog")[0],
                 position: 'right middle',
+                remove:true,
                 openOn: 'click'
             });
 			$("#collection-filter").on('click', function() {
