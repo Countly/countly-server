@@ -1858,13 +1858,40 @@ var AppRouter = Backbone.Router.extend({
                 });
                 
                 if(oSettings.oFeatures.bServerSide){
-                    tableWrapper.find(".save-table-data").tipsy({gravity:$.fn.tipsy.autoNS, title:function () {
-                        return ($(this).data("help")) ? jQuery.i18n.map[$(this).data("help")] : "";
-                    }, fade:true, offset:5, cssClass:'yellow', opacity:1, html:true});
                     tableWrapper.find(".dataTables_length").show();
                     tableWrapper.find('#dataTables_length_input').bind( 'change.DT', function(e) {
                         //store.set("iDisplayLength", $(this).val());
                     });
+                    //slowdown serverside filtering
+                    tableWrapper.find('.dataTables_filter input').unbind();
+                    var timeout = null;
+                    tableWrapper.find('.dataTables_filter input').bind('keyup', function(e) {
+                        $this = this;
+                        if(timeout)
+                        {
+                            clearTimeout(timeout);
+                            timeout = null;
+                        }
+                        timeout = setTimeout(function(){
+                            oSettings.oInstance.fnFilter($this.value);   
+                        }, 1000);
+                    });
+                    if(app.activeView.getExportQuery){
+                        //create export dialog
+                        var exportDrop = new CountlyDrop({
+                            target: tableWrapper.find('.save-table-data')[0],
+                            content: "",
+                            position: 'right middle',
+                            classes: "server-export",
+                            constrainToScrollParent: false,
+                            remove:true,
+                            openOn: "click"
+                        });
+                        tableWrapper.find(".save-table-data").off().on("click", function(){
+                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.export(oSettings._iRecordsDisplay, app.activeView.getExportQuery()).removeClass("dialog"));
+                            exportDrop.position();
+                        });
+                    }
                 }
                 else{
                     tableWrapper.find(".dataTables_length").hide();
