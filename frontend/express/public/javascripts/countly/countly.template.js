@@ -74,12 +74,15 @@ var countlyView = Backbone.View.extend({
     * @memberof countlyView
     * @instance
     */
-    appChanged:function () {    //called when user changes selected app from the sidebar
+    appChanged:function (callback) {    //called when user changes selected app from the sidebar
         countlyEvent.reset();
 
         var self = this;
         $.when(countlyEvent.initialize()).then(function() {
-            self.render();
+            if(callback)
+                callback();
+            else
+                self.render();
         });
     },
     /**
@@ -305,7 +308,30 @@ var AppRouter = Backbone.Router.extend({
     main:function (forced) {
         var change = true,
             redirect = false;
-        if(location.hash != "#/" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID]){
+        if(location.hash.indexOf("#/app/") === 0){
+            var app_id = location.hash.replace("#/app/", "");
+            redirect = "#/";
+            if(app_id && app_id.length){
+                if(app_id.indexOf("/") !== -1){
+                    var parts = app_id.split("/");
+                    app_id = parts.shift();
+                    redirect = "#/"+parts.join("/");
+                }
+                if(app_id != countlyCommon.ACTIVE_APP_ID && countlyGlobal["apps"][app_id]){
+                    countlyCommon.setActiveApp(app_id);
+                    var sidebarApp = $("#sidebar-app-select");
+                    sidebarApp.find(".text").text(countlyGlobal["apps"][app_id].name);
+                    sidebarApp.find(".logo").css("background-image", "url('"+countlyGlobal["path"]+"appimages/"+app_id+".png')");
+                    sidebarApp.removeClass("active");
+                    app.onAppSwitch(app_id);
+                    app.activeView.appChanged(function(){
+                        app.navigate(redirect, true);
+                    });
+                    return;
+                }
+            }
+        }
+        else if(location.hash != "#/" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID]){
             $("#"+countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type+"-type a").each(function(){
                 if(this.hash != "#/" && this.hash != ""){
                     if(location.hash == this.hash && $(this).css('display') != 'none' ){
