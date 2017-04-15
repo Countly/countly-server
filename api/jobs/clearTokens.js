@@ -5,7 +5,7 @@ const job = require('../parts/jobs/job.js'),
 
 class CleanTokensJob extends job.Job {
     run (db, done) {
-        authorize.clean({db:db, function(){
+        authorize.clean({db:db, callback:function(){
             done();
         }});
     }
