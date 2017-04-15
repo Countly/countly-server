@@ -239,32 +239,17 @@ window.CrashesView = countlyView.extend({
                         "sTitle": jQuery.i18n.map["crashes.latest_app"],
                         "sWidth": "90px"
                     }
-                ]
+                ],
+                "fnInitComplete": function(oSettings, json) {
+                    $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
+                    var tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
+                    tableWrapper.find(".dataTables_filter input").attr("placeholder",jQuery.i18n.map["crashes.search"]);
+                }
             }));
 
 			this.dtable.stickyTableHeaders();
 			this.dtable.fnSort( [ [4,'desc'] ] );
 
-            //dataTables_filter
-            $('.dataTables_filter input').unbind();
-            var timeout = null,
-                that = this;
-
-            $('.dataTables_filter input').bind('keyup', function(e) {
-                $this = this;
-
-                if (timeout) {
-                    clearTimeout(timeout);
-                    timeout = null;
-                }
-
-                timeout = setTimeout(function(){
-                    that.dtable.fnFilter($this.value);   
-                }, 500);
-            });
-            
-            setTimeout(function(){$(".dataTables_filter input").attr("placeholder",jQuery.i18n.map["crashes.search"]);},1000);
-            
             $("#crash-"+this.curMetric).parents(".big-numbers").addClass("active");
 
             $(".widget-content .inner").click(function () {
@@ -333,7 +318,58 @@ window.CrashesView = countlyView.extend({
             });
         }
     },
-	filterCrashes: function(filter){
+	getExportQuery: function(){
+        function replacer(key, value) {
+            if (value instanceof RegExp)
+                return ("__REGEXP " + value.toString());
+            else
+                return value;
+        }
+        var qstring = {
+            api_key: countlyGlobal["member"].api_key,
+            db: "countly",
+            collection: "app_crashgroups"+countlyCommon.ACTIVE_APP_ID,
+            query:this._query || {}
+        };
+        if($('.dataTables_filter input').val().length){
+            qstring.query["name"] = {"$regex": new RegExp(".*"+$('.dataTables_filter input').val()+".*", 'i')};
+        }
+        if(this.filter && this.filter != ""){
+            switch (this.filter) {
+                case "crash-resolved":
+                    qstring.query["is_resolved"] = true;
+                    break;
+                case "crash-hidden":
+                    qstring.query["is_hidden"] = true;
+                    break;
+                case "crash-unresolved":
+                    qstring.query["is_resolved"] = false;
+                    break;
+                case "crash-nonfatal":
+                    qstring.query["nonfatal"] = true;
+                    break;
+                case "crash-fatal":
+                    qstring.query["nonfatal"] = false;
+                    break;
+                case "crash-new":
+                    qstring.query["is_new"] = true;
+                    break;
+                case "crash-viewed":
+                    qstring.query["is_new"] = false;
+                    break;
+                case "crash-reoccurred":
+                    qstring.query["is_renewed"] = true;
+                    break;
+            }
+        }
+        if(this.filter !== "crash-hidden"){
+            qstring.query["is_hidden"] = {$ne: true};
+        }
+        qstring.query["_id"] = {$ne:"meta"};
+        qstring.query = JSON.stringify(qstring.query, replacer);
+        return qstring;
+    },
+    filterCrashes: function(filter){
 		this.filter = filter;
 		store.set("countly_crashfilter", filter);
 		$("#"+this.filter).addClass("selected").addClass("active");
