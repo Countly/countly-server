@@ -1027,6 +1027,14 @@ if (cluster.isMaster) {
                                 common.returnMessage(params, 400, 'Missing parameter "api_key"');
                                 return false;
                             }
+                            
+                            function reviver(key, value) {
+                                if (value.toString().indexOf("__REGEXP ") == 0) {
+                                    var m = value.split("__REGEXP ")[1].match(/\/(.*)\/(.*)?/);
+                                    return new RegExp(m[1], m[2] || "");
+                                } else
+                                    return value;
+                            }
             
                             switch (paths[3]) {
                                 case 'db':
@@ -1037,7 +1045,7 @@ if (cluster.isMaster) {
                                         }
                                         if(typeof params.qstring.query === "string"){
                                             try{
-                                                params.qstring.query = JSON.parse(params.qstring.query);
+                                                params.qstring.query = JSON.parse(params.qstring.query, reviver);
                                             }
                                             catch(ex){params.qstring.query = null;}
                                         }
