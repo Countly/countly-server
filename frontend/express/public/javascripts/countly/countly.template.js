@@ -308,6 +308,8 @@ var AppRouter = Backbone.Router.extend({
     main:function (forced) {
         var change = true,
             redirect = false;
+        // detect app switch like
+        //#/app/586e32ddc32cb30a01558cc1/analytics/events
         if(location.hash.indexOf("#/app/") === 0){
             var app_id = location.hash.replace("#/app/", "");
             redirect = "#/";
