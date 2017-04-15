@@ -2857,8 +2857,24 @@ window.LongTaskView = countlyView.extend({
         return $.when(countlyTaskManager.initialize()).then(function () {});
     },
     renderCommon:function (isRefresh) {
+        var types = {
+            "all": jQuery.i18n.map["common.all"],
+            "funnels": jQuery.i18n.map["sidebar.funnels"] || "Funnels",
+            "drill": jQuery.i18n.map["drill.drill"] || "Drill"
+        };
+        var states = {
+            "all": jQuery.i18n.map["common.all"],
+            "running":jQuery.i18n.map["taskmanager.running"],
+            "rerunning":jQuery.i18n.map["taskmanager.rerunning"],
+            "completed":jQuery.i18n.map["taskmanager.completed"],
+            "errored":jQuery.i18n.map["taskmanager.errored"]
+        };
         this.templateData = {
-            "page-title":jQuery.i18n.map["sidebar.management.longtasks"]
+            "page-title":jQuery.i18n.map["sidebar.management.longtasks"],
+            "filter1": types,
+            "active-filter1": jQuery.i18n.map["common.select-type"],
+            "filter2": states,
+            "active-filter2": jQuery.i18n.map["common.select-status"]
         };
 
 		var self = this;
@@ -2872,9 +2888,9 @@ window.LongTaskView = countlyView.extend({
 						if(type == "display"){
 							return moment(new Date(row.ts)).format("ddd, D MMM YYYY HH:mm:ss");
 						}else return row.ts;}, "sType":"string", "sTitle": jQuery.i18n.map["common.time"] },
-                    { "mData": "type", "sType":"string", "sTitle": jQuery.i18n.map["common.type"] },
-                    { "mData": function(row, type){return row.name || row.meta || ""}, "sType":"string", "sTitle": jQuery.i18n.map["common.info"] },
-                    { "mData": "status", "sType":"string", "sTitle": jQuery.i18n.map["common.status"] },
+                    { "mData": function(row, type){return types[row.type] || row.type;}, "sType":"string", "sTitle": jQuery.i18n.map["common.type"] },
+                    { "mData": function(row, type){return row.name || row.meta || "";}, "sType":"string", "sTitle": jQuery.i18n.map["common.info"] },
+                    { "mData":  function(row, type){return states[row.status] || row.status;}, "sType":"string", "sTitle": jQuery.i18n.map["common.status"] },
                     { "mData": function(row, type){
                         var time = 0;
                         if(row.status === "running" || row.status === "rerunning"){
@@ -2946,11 +2962,29 @@ window.LongTaskView = countlyView.extend({
                     });
                 }
             });
+            
+            $(".filter1-segmentation .segmentation-option").on("click", function () {
+                if(!self._query)
+                    self._query = {};
+                self._query.type = $(this).data("value");
+                if(self._query.type === "all")
+                    delete self._query.type;
+                self.refresh();
+			});
+            
+            $(".filter2-segmentation .segmentation-option").on("click", function () {
+                if(!self._query)
+                    self._query = {};
+                self._query.status = $(this).data("value");
+                if(self._query.status === "all")
+                    delete self._query.status;
+                self.refresh();
+			});
         }
     },
     refresh:function () {
 		var self = this;
-        $.when(countlyTaskManager.initialize(true)).then(function () {
+        $.when(countlyTaskManager.initialize(true, self._query)).then(function () {
             if (app.activeView != self) {
                 return false;
             }

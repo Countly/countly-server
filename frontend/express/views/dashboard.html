@@ -1206,8 +1206,48 @@
             <div class="widget-header">
                 <div class="left">
                     <div style="overflow: auto">
+                        {{#if filter1}}
+                        <div class="title small">{{page-title}}</div>
+                        {{else}}
                         <div class="title">{{page-title}}</div>
+                        {{/if}}
                     </div>
+                    {{#if filter1}}
+                    <div style="width:300px; display: block;">
+                    <div class="cly-select float filter1-segmentation">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">{{active-filter1}}</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:220px;">
+                            <div>
+                                {{#eachOfObject filter1}}
+                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
+                                {{/eachOfObject}}
+                            </div>
+                        </div>
+                    </div>
+                    {{#if filter2}}
+                    <div class="cly-select float filter2-segmentation">
+                        <div class="select-inner">
+                            <div class="text-container">
+                                <div class="text">{{active-filter2}}</div>
+                            </div>
+                            <div class="right combo"></div>
+                        </div>
+                        <div class="select-items square" style="width:220px;">
+                            <div>
+                                {{#eachOfObject filter2}}
+                                <div data-value="{{property}}" class="segmentation-option item">{{value}}</div>
+                                {{/eachOfObject}}
+                            </div>
+                        </div>
+                    </div>
+                    {{/if}}
+                    </div>
+                    {{/if}}
                 </div>
                 {{> date-selector }}
             </div>
