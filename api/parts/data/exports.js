@@ -19,6 +19,19 @@ var exports = {},
         "xls": "application/vnd.ms-excel"
     };
     var delimiter = "_";
+    function typeCheck(value){
+        if (common.isNumber(value)) {
+            //this is a seconds timestamp
+            if((Math.round(parseFloat(value, 10)) + "").length === 10){
+                value = moment(new Date(parseInt(value, 10)*1000)).format("ddd, D MMM YYYY HH:mm:ss");
+            }
+            //this is a miliseconds timestamp
+            else if((Math.round(parseFloat(value, 10)) + "").length === 13){
+                value = moment(new Date(parseInt(value, 10))).format("ddd, D MMM YYYY HH:mm:ss");
+            }
+        }
+        return value;
+    }
     function flattenArray(arr){
         if(Array.isArray(arr)){
             var fields = {};
@@ -52,7 +65,7 @@ var exports = {},
             } else {
                 if(fields)
                     fields[i] = true;
-                toReturn[i] = ob[i];
+                toReturn[i] = typeCheck(ob[i]);
             }
         }
         return toReturn;
