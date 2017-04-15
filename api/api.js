@@ -974,7 +974,12 @@ if (cluster.isMaster) {
                             switch (paths[3]) {
                                 case 'all':
                                     validateUserForMgmtReadAPI(function(){
-                                        params.qstring.query = params.qstring.query || {};
+                                        if(typeof params.qstring.query === "string"){
+                                            try{
+                                                params.qstring.query = JSON.parse(params.qstring.query);
+                                            }
+                                            catch(ex){params.qstring.query = {};}
+                                        }
                                         params.qstring.query.app_id = params.qstring.app_id;
                                         taskmanager.getResults({db:common.db, query:params.qstring.query}, function(err, res){
                                             common.returnOutput(params, res || []);
