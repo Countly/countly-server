@@ -1,0 +1,22 @@
+[Unit]
+Description=countly-api
+Documentation=http://count.ly
+Wants=nginx.service
+After=mongod.service
+Requires=mongod.service
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+WorkingDirectory=/opt/countly
+#ExecStart=/usr/bin/node /opt/countly/api/api.js
+ExecStart=/bin/sh -c '/usr/bin/node /opt/countly/api/api.js 2>&1 > /opt/countly/log/countly-api.log'
+LimitNOFILE=10000
+Restart=on-failure
+OOMScoreAdjust=-100
+KillMode=control-group
+#Restart=always
+#User=myunit
+#Group=myunit
+

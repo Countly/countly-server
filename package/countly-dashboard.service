@@ -1,0 +1,18 @@
+[Unit]
+Description=countly-dashboard
+Documentation=http://count.ly
+Wants=nginx.service
+After=nginx.service
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+#ExecStart=/usr/bin/node /opt/countly/frontend/express/app.js
+ExecStart=/bin/sh -c '/usr/bin/node /opt/countly/frontend/express/app.js 2>&1 >/opt/countly/log/countly-dashboard.log'
+LimitNOFILE=10000
+Restart=on-failure
+OOMScoreAdjust=-100
+#Restart=always
+#User=myunit
+#Group=myunit
