@@ -76,7 +76,7 @@ class Streamer {
 						log.i('[%s]: Drilling: %j', process.pid, this.anote.id, params);
 
 						this.drill().drill.fetchUsers(params, (err, uids) => {
-							query = this.anote.query.user || {};
+							query = Object.assign({}, this.anote.query.user || {});
 							query[common.dbUserMap.tokens + this.field] = true;
 
 							log.i('[%s]: Counting with drill of %d users: %j', process.pid, this.anote.id, uids.length, query);
@@ -114,7 +114,7 @@ class Streamer {
 							});
 						});
 					} else {
-						query = this.anote.query ? this.anote.query.user || {} : {};
+						query = this.anote.query ? Object.assign({}, this.anote.query.user || {}) : {};
 						query[common.dbUserMap.tokens + this.field] = true;
 
 						log.d('[%d:%s]: Not drilling %j to %s', process.pid, this.anote.id, {$match: query}, this.collection());

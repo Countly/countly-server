@@ -51,7 +51,11 @@ var plugin = {},
                 }
             }
 
-            if (params.qstring.begin_session) {
+            // If the last end_session is received less than 15 seconds ago we will ignore
+            // current begin_session request and mark this user as having an ongoing session
+            var lastEndSession = params.app_user && params.app_user[common.dbUserMap['last_end_session_timestamp']] || 0;
+
+            if (params.qstring.begin_session && !params.qstring.ignore_cooldown && lastEndSession && (params.time.timestamp - lastEndSession) < plugins.getConfig("api").session_cooldown) {
                 sessionCount++;
             }
 
@@ -156,11 +160,13 @@ var plugin = {},
                     for (var j = 0; j < periodsToFetch.length; j++) {
                         var formattedDate = periodsToFetch[j].replace(":", "-");
 
-                        toReturn[dataPerApp[i]["a"]][formattedDate] = {
-                            "sessions": 0,
-                            "events": 0,
-                            "data-points": 0
-                        };
+                        if (!toReturn[dataPerApp[i]["a"]][formattedDate]) {
+                            toReturn[dataPerApp[i]["a"]][formattedDate] = {
+                                "sessions": 0,
+                                "events": 0,
+                                "data-points": 0
+                            };
+                        }
 
                         if (dataPerApp[i]["m"] == periodsToFetch[j]) {
                             toReturn[dataPerApp[i]["a"]][formattedDate] = {

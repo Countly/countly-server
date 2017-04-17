@@ -601,7 +601,7 @@ var common          = require('../../../../api/utils/common.js'),
                         if (params.res.finished) {
                             return;
                         }
-                        common.db.collection('messages').save(note, (err) => {
+                        common.db.collection('messages').save(note.toJSON(), (err) => {
                             if (err) {
                                 log.e('Error while saving message: %j', err);
                                 common.returnMessage(params, 500, 'DB error');

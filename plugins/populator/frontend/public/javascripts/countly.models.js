@@ -19,7 +19,7 @@
 		_manufacture_android: ["Samsung", "Sony Ericsson", "LG", "Google", "HTC", "Huaiwei", "Lenovo", "Acer"],
 		_manufacture_ios: ["Apple"],
 		_manufacture_windows_phone: ["Nokia", "Microsoft"],
-		_carrier: ["Telus", "Rogers Wireless", "T-Mobile", "Bell Canada", "	AT&T", "Verizon", "Vodafone", "Cricket Communications", "O2", "Tele2", "Turkcell", "Orange", "Sprint", "Metro PCS"],
+		_carrier: ["Telus", "Rogers Wireless", "T-Mobile", "Bell Canada", "AT&T", "Verizon", "Vodafone", "Cricket Communications", "O2", "Tele2", "Turkcell", "Orange", "Sprint", "Metro PCS"],
 		_app_version: ["1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "2.0", "2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8", "2.9", "3.0", "3.1", "3.2"],
 		_cpu: ["armv6", "armv7", "x86"],
 		_opengl: ["opengl_es1", "opengl_es2"],
@@ -94,7 +94,7 @@
 		var alphaChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 		var generatedString = '';
 		for(var i = 0; i < size; i++) {
-			generatedString += alphaChars[getRandomInt(0,alphaChars.length)];
+			generatedString += alphaChars[getRandomInt(0,alphaChars.length-1)];
 		}
 
 		return generatedString;
