@@ -1,6 +1,6 @@
 Name:       countly
-Version:    16.12.3
-Release:    7%{?dist}
+Version:    17.04
+Release:    1%{?dist}
 
 License:    Modified AGPLv3
 Group:	    Applications/Internet
@@ -139,6 +139,9 @@ nodejs /opt/countly/bin/scripts/add_indexes.js
 %config /opt/countly/plugins/plugins.json
 
 %changelog
+* Wed Apr 26 2017 Sergey Alembekov <sa@count.ly> - 17.04-1
+- prerelease 17.04
+
 * Mon Apr 25 2017 Sergey Alembekov <sa@count.ly> - 16.12.3-7
 - release 16.12.3
 
