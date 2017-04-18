@@ -8,7 +8,7 @@ const assistantJob = {},
     countlyCommon = require('../../../api/lib/countly.common.js'),
     assistant = require("./assistant.js"),
     parser = require('rss-parser'),
-    underscore = require('underscore');;
+    underscore = require('underscore');
 
 (function (assistantJob) {
     const PLUGIN_NAME = "assistant-base";
@@ -34,7 +34,7 @@ const assistantJob = {},
                             //log.i('Assistant plugin doing steps: [%j] [%j]', 0.01, fetchResultUsers);
                             countlySession.setDb(fetchResultUsers);
                             const retSession = countlySession.getSessionData();
-                            log.i('Assistant plugin session data: [%j] [%j]', 0.02, retSession);
+                            //log.i('Assistant plugin session data: [%j] [%j]', 0.02, retSession);
 
                             //log.i('Assistant plugin doing steps: [%j] [%j] [%j] [%j]', 0.1, params.app_id, apc.app_id);
 

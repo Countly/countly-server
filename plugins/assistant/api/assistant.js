@@ -108,7 +108,6 @@ const assistant = {},
      this functions return true if:
      tt - hw <= ct < tt + hw
      */
-    //todo unit test this
     assistant.correct_day_and_time = function (target_day, target_hour, current_day, current_hour, current_minutes) {
         const halfWidthMinutes = assistant.JOB_SCHEDULE_INTERVAL / 2;// half of the width/length in minutes
 

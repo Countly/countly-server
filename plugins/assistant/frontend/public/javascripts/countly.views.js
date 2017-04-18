@@ -147,7 +147,7 @@ app.route("/analytics/assistant", 'assistant', function () {
 $( document ).ready(function() {
     var menu = '<a href="#/analytics/assistant" class="item">'+
         '<div class="logo densities"></div>'+
-        '<div class="text" data-localize="sidebar.analytics.assistant">fsdfs</div>'+
+        '<div class="text" data-localize="sidebar.analytics.assistant">Assistant</div>'+
         '</a>';
     $('#mobile-type #analytics-submenu').append(menu);
     $('#web-type #analytics-submenu').append(menu);

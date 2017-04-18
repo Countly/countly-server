@@ -105,8 +105,7 @@ const plugin = {},
         }
         log.i('Assistant plugin request: /i/assistant_generate_all');
 
-        const validate = ob.validateUserForMgmtReadAPI;//todo make this stronger
-        validate(function (params) {
+        ob.validateUserForGlobalAdmin(params, function (params) {
             const callback = function () {
                 log.i('Assistant plugin request: /i/assistant_generate_all finished');
             };
@@ -114,13 +113,14 @@ const plugin = {},
             assistant.generateNotifications(common.db, callback, true, true);
 
             common.returnOutput(params, "assistant_generate_all was ! completed");
-            return true;
+            return;
         });
 
-        common.returnMessage(params, 401, 'Unauthorized, use a valid user');
-        return false;
+        return true;
     });
 
+  /*
+//todo not functional
     plugins.register("/i/assistant_generate_all_job", function (ob) {
         const params = ob.params;
 
@@ -130,23 +130,20 @@ const plugin = {},
         }
         log.i('Assistant plugin request: /i/assistant_generate_all_job');
 
-        const validate = ob.validateUserForMgmtReadAPI;//todo make this stronger
-        validate(function (params) {
+        ob.validateUserForGlobalAdmin(params, function (params) {
             const callback = function () {
                 log.i('Assistant plugin request: /i/assistant_generate_all_job finished');
             };
 
             require('../../../api/parts/jobs').job('assistant:generate').in(3);
 
-
             common.returnOutput(params, "assistant_generate_all_job was ! completed");
             return true;
         });
 
-        common.returnMessage(params, 401, 'Unauthorized, use a valid user');
-        return false;
+        return true;
     });
-
+*/
     //for debugging
     var db_name_notifs = "assistant_notifs";
     var db_name_config = "assistant_config";
@@ -160,73 +157,17 @@ const plugin = {},
         }
         log.i('Assistant plugin request: /i/asistdelete');
 
-        const validate = ob.validateUserForMgmtReadAPI;//todo make this stronger
-        validate(function (params) {
+        ob.validateUserForGlobalAdmin(params, function (params) {
 
             common.db.collection(db_name_notifs).drop();
             common.db.collection(db_name_config).drop();
 
             common.returnOutput(params, "Delete was ! completed");
-            return true;
+            return;
         });
-
-        common.returnMessage(params, 401, 'Unauthorized, use a valid user');
-        return false;
-    });
-
-    /*
-    plugins.register("/i/assmagic", function (ob) {
-        var params = ob.params;
-
-        if (typeof params.qstring.api_key === "undefined") {
-            common.returnMessage(params, 400, 'Missing parameter "api_key"');
-            return false;
-        }
-        //http://kadikis.count.ly/o/analytics/metric?api_key=7c0ee53440a1d3ab7b2052fc078c6b9f&app_id=57cd5afb85e945640bc4eec9&metric=sources&period=30days
-        //const hours_24 = 1000*60*60*24;
-        //const nowTime = 1485547643000;
-
-        common.returnMessage(params, 200, 'assmagic completed');
 
         return true;
     });
-
-    plugins.register("/i/rsstest", function (ob) {
-        const params = ob.params;
-
-        if (typeof params.qstring.api_key === "undefined") {
-            common.returnMessage(params, 400, 'Missing parameter "api_key"');
-            return false;
-        }
-        log.i('Assistant plugin request: /i/rsstest');
-
-        var parser = require('rss-parser');
-        var nowdate = Date.now();
-        var interMs = assistant.JOB_SCHEDULE_INTERVAL * 60 * 1000 * 1000;
-
-        //https://medium.com/feed/countly
-        //https://github.com/countly/countly-sdk-ios/tags.atom
-        //https://github.com/countly/countly-sdk-android/tags.atom
-
-        parser.parseURL('https://github.com/countly/countly-sdk-android/tags.atom', function(err, parsed) {
-            log.i(parsed.feed.title);
-            parsed.feed.entries.forEach(function(entry) {
-                log.i(entry.title + ':' + entry.link + ":" + entry.pubDate);
-                var dd = Date.parse(entry.pubDate);
-                var dif = nowdate - dd;
-                log.i(nowdate + " "  + dd + " " + dif + " : " + interMs);
-
-                if(dif <= interMs) {
-                    log.i("not long ago");
-                }
-
-            })
-        });
-
-
-        common.returnOutput(params, "rsstest was ! completed");
-        return true;
-    });*/
 
 }(plugin));
 
