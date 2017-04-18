@@ -1182,6 +1182,9 @@ window.ManageAppsView = countlyView.extend({
                 
             $.getScript( url+"sdks.js", function( data, textStatus, jqxhr ) {
                 var server = (location.protocol || "http:")+"//"+location.hostname + (location.port ? ":" + location.port : "") + "/" + countlyGlobal["path"];
+                if(server.substr(server.length - 1) == '/') {
+                    server = server.substr(0, server.length - 1);
+                }
                 if(typeof sdks !== "undefined" && server){
                     function initCountlyCode(appId, type){
                         var app_id = $("#app-edit-id").val();
