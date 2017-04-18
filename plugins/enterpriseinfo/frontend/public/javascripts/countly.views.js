@@ -57,5 +57,5 @@ $( document ).ready(function() {
     }
 
     var badge = '<a id="enterprise-badge" href="#/enterprise"><div data-localize="enterpriseinfo.badge">Get Enterprise</div></a>';
-    $("#content-footer").find("span").append(badge);
+    $("#top-bar").find(".right-menu").prepend(badge);
 });

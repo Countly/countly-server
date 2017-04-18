@@ -82,12 +82,19 @@ window.PluginsView = countlyView.extend({
             var tableHeaderTop = $("#plugins-table").find("thead").offset().top;
 
             $(window).on("scroll", function(e) {
+                var topBarHeight = $("#top-bar").outerHeight();
                 var $fixedHeader = $("#sticky-plugin-header");
 
-                if ($(this).scrollTop() > navigationTop) {
+                if ($(this).scrollTop() > navigationTop - topBarHeight) {
                     var width = $("#content-container").width();
                     $fixedHeader.addClass("fixed");
                     $fixedHeader.css({width: width});
+
+                    if (topBarHeight) {
+                        $fixedHeader.css({top: topBarHeight});
+                    } else {
+                        $fixedHeader.css({top: 0});
+                    }
                 } else {
                     $fixedHeader.removeClass("fixed");
                     $fixedHeader.css({width: ""});
@@ -621,12 +628,19 @@ window.ConfigurationsView = countlyView.extend({
             var navigationTop = $("#sticky-config-header").offset().top;
 
             $(window).on("scroll", function(e) {
+                var topBarHeight = $("#top-bar").outerHeight();
                 var $fixedHeader = $("#sticky-config-header");
 
-                if ($(this).scrollTop() > navigationTop) {
+                if ($(this).scrollTop() > navigationTop - topBarHeight) {
                     var width = $("#content-container").width();
                     $fixedHeader.addClass("fixed");
                     $fixedHeader.css({width: width});
+
+                    if (topBarHeight) {
+                        $fixedHeader.css({top: topBarHeight});
+                    } else {
+                        $fixedHeader.css({top: 0});
+                    }
                 } else {
                     $fixedHeader.removeClass("fixed");
                     $fixedHeader.css({width: ""});

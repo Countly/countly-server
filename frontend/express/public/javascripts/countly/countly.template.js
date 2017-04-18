@@ -321,10 +321,10 @@ var AppRouter = Backbone.Router.extend({
                 }
                 if(app_id != countlyCommon.ACTIVE_APP_ID && countlyGlobal["apps"][app_id]){
                     countlyCommon.setActiveApp(app_id);
-                    var sidebarApp = $("#sidebar-app-select");
-                    sidebarApp.find(".text").text(countlyGlobal["apps"][app_id].name);
-                    sidebarApp.find(".logo").css("background-image", "url('"+countlyGlobal["path"]+"appimages/"+app_id+".png')");
-                    sidebarApp.removeClass("active");
+
+                    $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
+                    $("#active-app-icon").css("background-image", "url('"+countlyGlobal["path"]+"appimages/"+app_id+".png')");
+
                     app.onAppSwitch(app_id);
                     app.activeView.appChanged(function(){
                         app.navigate(redirect, true);
@@ -774,7 +774,7 @@ var AppRouter = Backbone.Router.extend({
             if(parseInt(countlyGlobal.config["session_timeout"])){
                 var minTimeout, tenSecondTimeout, logoutTimeout, actionTimeout;
                 var shouldRecordAction = false;
-                var extendSession = function(){
+                var extendSession = function() {
                     $.ajax({
                         url:countlyGlobal["path"]+"/session",
                         success:function (result) {
@@ -791,8 +791,9 @@ var AppRouter = Backbone.Router.extend({
                             }
                         }
                     });
-                }
-                var resetSessionTimeouts = function(timeout){
+                };
+
+                var resetSessionTimeouts = function(timeout) {
                     var minute = timeout - 60*1000;
                     if(minTimeout){
                         clearTimeout(minTimeout);
@@ -820,7 +821,8 @@ var AppRouter = Backbone.Router.extend({
                     logoutTimeout = setTimeout(function(){
                         extendSession();
                     }, timeout+1000);
-                }
+                };
+
                 resetSessionTimeouts(parseInt(countlyGlobal.config["session_timeout"]));
                 $(document).click(function (event) {
                     if(shouldRecordAction)
@@ -852,72 +854,6 @@ var AppRouter = Backbone.Router.extend({
             }
 
             $(".reveal-language-menu").text(countlyCommon.BROWSER_LANG_SHORT.toUpperCase());
-
-            $(".apps-scrollable").sortable({
-                items:".app-container.app-navigate",
-                revert:true,
-                forcePlaceholderSize:true,
-                handle:".drag",
-                containment:"parent",
-                tolerance:"pointer",
-                stop:function () {
-                    var orderArr = $(".apps-scrollable").sortable( "toArray", {attribute:"data-id"} );
-
-                    $.ajax({
-                        type:"POST",
-                        url:countlyGlobal["path"]+"/dashboard/settings",
-                        data:{
-                            "app_sort_list":orderArr,
-                            _csrf:countlyGlobal['csrf_token']
-                        },
-                        success:function (result) {
-                        }
-                    });
-                }
-            });
-
-            $("#sort-app-button").click(function () {
-                $(".app-container.app-navigate .drag").fadeToggle();
-            });
-
-            $(".app-navigate").live("click", function () {
-                var appKey = $(this).data("key"),
-                    appId = $(this).data("id"),
-                    appName = $(this).find(".name").text(),
-                    appImage = $(this).find(".logo").css("background-image"),
-                    sidebarApp = $("#sidebar-app-select");
-
-                if (self.activeAppKey == appKey) {
-                    sidebarApp.removeClass("active");
-                    $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack'});
-                    sidebarApp.find(".text").text(appName);
-                    sidebarApp.find(".logo").css("background-image", appImage);
-                    return false;
-                }
-
-                self.activeAppName = appName;
-                self.activeAppKey = appKey;
-                
-                $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack', complete:function () {
-                    countlyCommon.setActiveApp(appId);
-                    sidebarApp.find(".text").text(appName);
-                    sidebarApp.find(".logo").css("background-image", appImage);
-                    sidebarApp.removeClass("active");
-                    app.onAppSwitch(appId);
-                    self.activeView.appChanged();
-                }});
-            });
-            
-            $(document).on("mouseenter", ".app-container", function(){
-                if(!$(this).find(".drag").is(":visible")){
-                    var elem = $(this);
-                    var name = elem.find(".name");
-
-                    if(name[0].scrollWidth >  name.innerWidth()) {
-                        elem.attr("title", name.text());
-                    }
-                }
-            });
 
             $("#sidebar-events").click(function (e) {
                 $.when(countlyEvent.refreshEvents()).then(function () {
@@ -959,11 +895,6 @@ var AppRouter = Backbone.Router.extend({
                         mainMenuItem.addClass("active menu-active");
                     } else {
                         self.sidebar.submenu.toggle();
-                    }
-
-                    if ($("#app-nav").offset().left == 201) {
-                        $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack'});
-                        $("#sidebar-app-select").removeClass("active");
                     }
                 }
             });
@@ -1008,7 +939,7 @@ var AppRouter = Backbone.Router.extend({
             });
 
             $('#sidebar-menu').slimScroll({
-                height: ($(window).height()-123-96+28)+'px',
+                height: ($(window).height())+'px',
                 railVisible: true,
                 railColor : '#4CC04F',
                 railOpacity : .2,
@@ -1017,7 +948,7 @@ var AppRouter = Backbone.Router.extend({
 
             $( window ).resize(function() {
                 $('#sidebar-menu').slimScroll({
-                    height: ($(window).height()-123-96+28)+'px'
+                    height: ($(window).height())+'px'
                 });
             });
 
@@ -1027,52 +958,9 @@ var AppRouter = Backbone.Router.extend({
                     return true;
                 }
 
-                if ($("#app-nav").offset().left == 201) {
-                    $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack'});
-                    $("#sidebar-app-select").removeClass("active");
-                }
-
                 $(".sidebar-submenu .item").removeClass("active");
                 $(this).addClass("active");
                 $(this).parent().prev(".item").addClass("active");
-            });
-
-            $("#sidebar-app-select").click(function () {
-
-                if ($(this).hasClass("disabled")) {
-                    return true;
-                }
-
-                if ($(this).hasClass("active")) {
-                    $(this).removeClass("active");
-                } else {
-                    $(this).addClass("active");
-                }
-
-                $("#app-nav").show();
-                var left = $("#app-nav").offset().left;
-
-                if (left == 201) {
-                    $("#app-nav").animate({left:'31px'}, {duration:500, easing:'easeInBack'});
-                } else {
-                    $("#app-nav").animate({left:'201px'}, {duration:500, easing:'easeOutBack'});
-                }
-
-            });
-
-            $("#sidebar-bottom-container .reveal-menu").click(function () {
-                $("#language-menu").hide();
-                $("#sidebar-bottom-container .menu").toggle();
-            });
-
-            $("#sidebar-bottom-container .reveal-language-menu").click(function () {
-                $("#sidebar-bottom-container .menu").hide();
-                $("#language-menu").toggle();
-            });
-
-            $("#sidebar-bottom-container .item").click(function () {
-                $("#sidebar-bottom-container .menu").hide();
-                $("#language-menu").hide();
             });
 
             $("#language-menu .item").click(function () {
@@ -1122,12 +1010,6 @@ var AppRouter = Backbone.Router.extend({
                 });
             });
 
-            /*$("#account-settings").click(function () {
-                CountlyHelpers.popup("#edit-account-details");
-                $(".dialog #username").val($("#menu-username").text());
-                $(".dialog #api-key").val($("#user-api-key").val());
-            });*/
-
             $("#save-account-details:not(.disabled)").live('click', function () {
                 var username = $(".dialog #username").val(),
                     old_pwd = $(".dialog #old_pwd").val(),
@@ -1175,17 +1057,10 @@ var AppRouter = Backbone.Router.extend({
                 });
             });
 
-            $('.apps-scrollable').slimScroll({
-                height:'100%',
-                start:'top',
-                wheelStep:10,
-                position:'right',
-                disableFadeOut:true
-            });
-
             var help = _.once(function () {
                 CountlyHelpers.alert(jQuery.i18n.map["help.help-mode-welcome"], "black");
             });
+
             $(".help-toggle, #help-toggle").click(function (e) {
 
                 e.stopPropagation();
@@ -1395,6 +1270,87 @@ var AppRouter = Backbone.Router.extend({
                     }
                 }
             });
+
+            // TOPBAR
+            var $topbarDropdown = $("#top-bar").find(".dropdown"),
+                $appNavigation = $("#app-navigation");
+
+            $topbarDropdown.on("click", function(e) {
+                var wasActive = $(this).hasClass("clicked");
+
+                $topbarDropdown.removeClass("clicked");
+
+                if (wasActive) {
+                    $(this).removeClass("clicked");
+                } else {
+                    $(this).find(".nav-search input").val("");
+                    $(this).addClass("clicked");
+                }
+
+                e.stopPropagation();
+            });
+
+            $topbarDropdown.on("click", ".nav-search", function(e) {
+                e.stopPropagation();
+            });
+
+            $topbarDropdown.on("click", ".item", function(e) {
+                $topbarDropdown.removeClass("clicked");
+                e.stopPropagation();
+            });
+
+            $("body").on("click", function() {
+                $topbarDropdown.removeClass("clicked");
+            });
+
+            $appNavigation.on("click", ".item", function () {
+                var appKey = $(this).data("key"),
+                    appId = $(this).data("id"),
+                    appName = $(this).find(".name").text(),
+                    appImage = $(this).find(".app-icon").css("background-image");
+
+                $("#active-app-icon").css("background-image", appImage);
+                $("#active-app-name").text(appName);
+
+                if (self.activeAppKey != appKey) {
+                    self.activeAppName = appName;
+                    self.activeAppKey = appKey;
+
+                    countlyCommon.setActiveApp(appId);
+                    app.onAppSwitch(appId);
+                    self.activeView.appChanged();
+                }
+            });
+
+            $appNavigation.on("click", function() {
+                var appList = $(this).find(".list"),
+                    apps = _.sortBy(countlyGlobal.apps, function(app){ return app.name.toLowerCase(); });
+
+                appList.html("");
+
+                for (var i = 0; i < apps.length; i++) {
+                    var currApp = apps[i];
+
+                    var app = $("<div></div>");
+                    app.addClass("item searchable");
+                    app.data("key", currApp.key);
+                    app.data("id", currApp._id);
+
+                    var appIcon = $("<div></div>");
+                    appIcon.addClass("app-icon");
+                    appIcon.css("background-image", "url(" + countlyGlobal["cdn"] + "appimages/" + currApp._id + ".png");
+
+                    var appName = $("<div></div>");
+                    appName.addClass("name");
+                    appName.attr("title", currApp.name);
+                    appName.text(currApp.name);
+
+                    app.append(appIcon);
+                    app.append(appName);
+
+                    appList.append(app);
+                }
+            });
         });
 
         if (!_.isEmpty(countlyGlobal['apps'])) {
@@ -1402,8 +1358,8 @@ var AppRouter = Backbone.Router.extend({
                 countlyCommon.setActiveApp(countlyGlobal["defaultApp"]._id);
                 self.activeAppName = countlyGlobal["defaultApp"].name;
             } else {
-                $("#sidebar-app-select").find(".logo").css("background-image", "url('"+countlyGlobal["cdn"]+"appimages/" + countlyCommon.ACTIVE_APP_ID + ".png')");
-                $("#sidebar-app-select .text").text(countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].name);
+                $("#active-app-icon").css("background-image", "url('"+countlyGlobal["cdn"]+"appimages/" + countlyCommon.ACTIVE_APP_ID + ".png')");
+                $("#active-app-name").text(countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].name);
                 self.activeAppName = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].name;
             }
         } else {
@@ -2319,13 +2275,6 @@ var AppRouter = Backbone.Router.extend({
 
             if (Object.prototype.toString.call(selectedDateID) !== '[object Array]') {
                 $("#" + selectedDateID).addClass("active");
-            }
-            
-            if (Backbone.history.fragment == "/manage/apps") {
-                $("#sidebar-app-select").addClass("disabled");
-                $("#sidebar-app-select").removeClass("active");
-            } else {
-                $("#sidebar-app-select").removeClass("disabled");
             }
             
             if(self.pageScripts[Backbone.history.fragment])

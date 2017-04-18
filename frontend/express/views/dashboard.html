@@ -85,18 +85,103 @@
     </script>
 </head>
 <body>
+	<div id="top-bar">
+		<div class="logo-container">
+			<div class="logo"></div>
+		</div>
+		<div class="left-menu">
+			<div id="app-navigation" class="dropdown bordered large active">
+				<div class="selected">
+					<div id="active-app-icon" <% if (defaultApp){ %>style="background-image:url('<%- cdn %>appimages/<%= defaultApp._id %>.png')"<% } %>></div>
+					<div id="active-app-name"><% if (defaultApp){ %><%= defaultApp.name %><% } %></div>
+				</div>
+				<div class="empty-state">Apps</div>
+				<div class="menu">
+					<div class="search nav-search">
+						<input type="text" autofocus>
+					</div>
+					<div class="list"></div>
+				</div>
+			</div>
+		</div>
+		<div class="right-menu">
+			<div class="dropdown icon">
+				<div id="notification-icon" class="empty-state unread">
+					<i class="ion-android-notifications"></i>
+				</div>
+				<div class="menu" style="width: 150px;"></div>
+			</div>
+			<div class="dropdown icon">
+				<div class="empty-state">
+					<i class="ion-person"></i>
+				</div>
+				<div class="menu right" style="width: 150px;">
+					<div class="list">
+						<a class="item" href='#/manage/user-settings'>
+							<i class="ion-gear-a icon"></i>
+							<span data-localize="sidebar.settings"></span>
+						</a>
+						<% if (!countlyType) { %>
+							<% if(intercom && member['global_admin'] || config.autonomous) { %>
+							<a class="item activate_intercom">
+								<i class="ion-android-textsms icon"></i>
+								<span data-localize="common.feedback-and-support"></span>
+							</a>
+							<% } %>
+							<a class="item" href="http://resources.count.ly/" target="_blank" data-localize="common.documentation"></a>
+						<% } else { %>
+							<% if(intercom && member['global_admin'] || config.autonomous) { %>
+							<a class="item activate_intercom">
+								<i class="ion-android-textsms icon"></i>
+								<span data-localize="common.provide-feedback"></span>
+							</a>
+							<% } %>
+							<a class="item" href="http://community.count.ly/" target="_blank">
+								<i class="ion-help-buoy icon"></i>
+								<span data-localize="common.support"></span>
+							</a>
+							<a class="item" href="http://resources.count.ly/" target="_blank">
+								<i class="ion-android-document icon"></i>
+								<span data-localize="common.documentation"></span>
+							</a>
+						<% } %>
+						<a id="user-logout" class="item" href="<%= path %>/logout">
+							<i class="ion-android-exit icon"></i>
+							<span data-localize="sidebar.logout"></span>
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="dropdown icon">
+				<div class="empty-state reveal-language-menu">EN</div>
+				<div class="menu right" style="width: 150px;">
+					<div id="language-menu" class="list">
+						<a data-language-code="de" class="item">Deutsch</a>
+						<a data-language-code="et" class="item">Eesti</a>
+						<a data-language-code="en" class="item">English</a>
+						<a data-language-code="es" class="item">Español</a>
+						<a data-language-code="el" class="item">Ελληνικά</a>
+						<a data-language-code="fr" class="item">Français</a>
+						<a data-language-code="it" class="item">Italiano</a>
+						<a data-language-code="lv" class="item">Latviski</a>
+						<a data-language-code="hu" class="item">Magyar</a>
+						<a data-language-code="nl" class="item">Nederlands</a>
+						<a data-language-code="pt" class="item">Português</a>
+						<a data-language-code="ru" class="item">Русский язык</a>
+						<a data-language-code="vi" class="item">Tiếng Việt</a>
+						<a data-language-code="tr" class="item">Türkçe</a>
+						<a data-language-code="zh" class="item">中文</a>
+						<a data-language-code="ja" class="item">日本語</a>
+						<a data-language-code="ko" class="item">한국어</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div style="clear: both"></div>
+	</div>
 	<div id="custom-dashboard"></div>
 	<div id="sidebar">
 		<div id="new-install-overlay"></div>
-		<div id="sidebar-top">
-			<a href="#/"><div id="sidebar-logo"></div></a>
-			<div id="sidebar-app-select">
-				<div class="logo" <% if (defaultApp){ %>style="background-image:url('<%- cdn %>appimages/<%= defaultApp._id %>.png')"<% } %>></div>
-				<div class="text"><% if (defaultApp){ %><%= defaultApp.name %><% } %></div>
-                <i class="ion-chevron-right"></i>
-                <i class="ion-chevron-left"></i>
-			</div>
-		</div>
 		<div id="sidebar-menu">
             <div id="default-type" class="sidebar-menu" style="display: none;">
                 <a href="#/" class="item analytics">
@@ -148,71 +233,7 @@
                 <% } %>
             </div>
 		</div>
-		<div id="sidebar-bottom-container">
-			<div class="menu">
-				<a class="item" id="account-settings" href='#/manage/user-settings' data-localize="sidebar.settings"></a>
-				<a class="item" id="user-logout" href="<%= path %>/logout" data-localize="sidebar.logout"></a>
-			</div>
-			<div id="language-menu">
-				<div class="group">
-					<a data-language-code="de" class="item">Deutsch</a>
-					<a data-language-code="en" class="item">English</a>
-					<a data-language-code="es" class="item">Español</a>
-					<a data-language-code="fr" class="item">Français</a>
-					<a data-language-code="it" class="item">Italiano</a>
-                    <a data-language-code="nl" class="item">Nederlands</a>
-					<a data-language-code="lv" class="item">Latviski</a>
-					<a data-language-code="hu" class="item">Magyar</a>
-					<a data-language-code="el" class="item">Ελληνικά</a>
-				</div>
-				<div class="group">
-					<a data-language-code="et" class="item">Eesti</a>
-                    <a data-language-code="pt" class="item">Português</a>
-                    <a data-language-code="ru" class="item">Русский язык</a>
-					<a data-language-code="tr" class="item">Türkçe</a>
-					<a data-language-code="zh" class="item">中文</a>
-					<a data-language-code="ja" class="item">日本語</a>
-                    <a data-language-code="ko" class="item">한국어</a>
-                    <a data-language-code="vi" class="item">Tiếng Việt</a>
-				</div>
-			</div>
-			<div class="username" id="menu-username"><%= member['username'] %></div>
-			<input id="user-api-key" type="hidden" value="<%= member['api_key'] %>" />
-			<div class="reveal-language-menu">EN</div>
-			<div class="reveal-menu"><i class="ion-gear-a"></i></div>
-		</div>
-	</div>
-	<div id="app-nav">
-		<div id="app-nav-head">
-			<div id="app-nav-title" style="max-width: 105px;" data-localize="management-applications.title"></div>
-			<div class="button-container">
-				<div class="icon-button dark help-zone-vs" id="sort-app-button">
-                    <i class="fa fa-bars"></i>
-				</div>
-			</div>
-		</div>
-        <div class="nav-search">
-            <i class="fa fa-search"></i>
-            <input type="text" />
-        </div>
-		<div class="apps-scrollable">
-			<% for (var i = 0; i < userOfApps.length; i++) { %>
-				<div class="searchable app-container app-navigate" data-key="<%= userOfApps[i].key %>" data-id="<%= userOfApps[i]['_id'] %>">
-					<div class="logo" style="background-image: url('<%- cdn %>appimages/<%= userOfApps[i]['_id'] %>.png');"></div>
-					<div class="name" title="<%= userOfApps[i].name %>"><%= userOfApps[i].name %></div>
-					<div class="drag">
-                        <i class="fa fa-bars"></i>
-					</div>
-				</div>
-			<% } %>
-		</div>
-		<div id="sidebar-new-app">
-			<div class="app-container app-navigate" id="">
-				<div class="logo"></div>
-				<div class="name"></div>
-				<div class="drag"></div>
-			</div>
-		</div>
+		<div id="version-info"><%= countlyTypeName %></div>
 	</div>
 	<div></div>
 	<div id="overlay"></div>
@@ -357,32 +378,9 @@
     </div>
     <div id="content-container">
         <div id="content-top"></div>
-        <div id="content">
-
-        </div>
-		<div id="content-footer">
+        <div id="content"></div>
+		<div id="content-footer" style="display: none">
             <span><%= countlyTypeName %></span>
-		 <% if (!countlyType) { %>
-			<ul>
-            <% if(intercom && member['global_admin'] || config.autonomous) { %>
-				<li><a href="#" id="Intercom" data-localize="common.feedback-and-support">Feedback & Support</a></li>
-				<li>|</li>
-            <% } %>
-				<li><a href="http://resources.count.ly/" target="_blank" data-localize="common.documentation">Documentation</a></li>
-			</ul>
-		 <% }else { %>
-			<ul>
-            <% if(intercom && member['global_admin'] || config.autonomous) { %>
-				<li><a href="#" id="Intercom" data-localize="common.provide-feedback">Provide feedback</a></li>
-				<li>|</li>
-            <% } %>
-				<li><a href="http://community.count.ly/" target="_blank" data-localize="common.support">Support</a></li>
-				<li>|</li>
-				<li><a href="http://count.ly/product" target="_blank" data-localize="common.enterprise-edition">Enterprise Edition (supported)</a></li>
-				<li>|</li>
-				<li><a href="http://resources.count.ly/" target="_blank" data-localize="common.documentation">Documentation</a></li>
-			</ul>
-		 <% } %>
 		</div>
     </div>
 
@@ -605,8 +603,8 @@
 			<div id="app-nav-head">
 				<div id="app-nav-title" data-localize="management-applications.title"></div>
 				<% if(member['global_admin'] || config.autonomous) { %>
-				<div style="overflow:hidden; position:absolute; top:22px; right:10px;">
-                    <div class="icon-button dark help-zone-vs" data-help-localize="help.manage-apps.app-add-button" id="add-app-button">
+				<div style="overflow:hidden; position:absolute; top:14px; right:10px;">
+                    <div class="icon-button help-zone-vs" data-help-localize="help.manage-apps.app-add-button" id="add-app-button">
                         <i class="fa fa-plus-circle"></i>
                     </div>
 				</div>
@@ -631,7 +629,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="widget" style="margin-left:187px;">
+		<div class="widget" style="margin-left:199px;">
 			<div id="add-new-app">
 				<div class="widget-header">
 					<div class="left">
@@ -933,8 +931,8 @@
 		<div id="event-nav">
 			<div id="event-nav-head">
 				<div id="event-nav-title" style="max-width: 120px;" data-localize="events.title"></div>
-				<div style="overflow:hidden; position:absolute; top:22px; right:10px;">
-					<div class="icon-button dark help-zone-vs" id="edit-events-button" style="<% if(!member['global_admin']) { %> display:none; <% } %>">
+				<div style="overflow:hidden; position:absolute; top:14px; right:10px;">
+					<div class="icon-button help-zone-vs" id="edit-events-button" style="<% if(!member['global_admin']) { %> display:none; <% } %>">
                         <i class="ion-gear-a"></i>
 					</div>
 				</div>
@@ -988,7 +986,7 @@
 				<a id="dialog-cancel" class="icon-button light" data-localize="common.close"></a>
 			</div>
 		</div>
-		<div id="event-main" style="margin-left:187px;">
+		<div id="event-main" style="margin-left:199px;">
 		<div class="widget">
 			<div class="widget-header">
 				<div class="left">
@@ -1201,6 +1199,7 @@
             <div id="map-list-right"></div>
 		</div>
 	</script>
+
     <script id="table-template" type="text/x-handlebars-template">
         <div class="widget">
             <div class="widget-header">
@@ -1256,9 +1255,11 @@
             <table id="data-table" class="d-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>
         </div>
     </script>
+
     <% if (use_google) { %>
 	<script language="javascript" type="text/javascript" src="https://www.google.com/jsapi"></script>
     <% } %>
+
     <% if (production) { %>
 	    <!-- PRODUCTION -->
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
@@ -1297,79 +1298,88 @@
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.task.manager.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.template.js?<%= countlyVersion %>"></script>
 		<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.views.js?<%= countlyVersion %>"></script>
-			<% if (javascripts) { %>
-				<% for(var i=0, l=javascripts.length; i<l; i++) {%>
-					<script language="javascript" type="text/javascript" src="<%- cdn %><%= javascripts[i] %>?<%= countlyVersion %>"></script>
-				<% } %>
+		<% if (javascripts) { %>
+			<% for(var i=0, l=javascripts.length; i<l; i++) {%>
+				<script language="javascript" type="text/javascript" src="<%- cdn %><%= javascripts[i] %>?<%= countlyVersion %>"></script>
 			<% } %>
+		<% } %>
 	<% } %>
+
     <% if (themeFiles && themeFiles.js) { %>
         <% for(var i=0, l=themeFiles.js.length; i<l; i++) {%>
-    <script language="javascript" type="text/javascript" src="<%=themeFiles.js[i]%>"></script>
+    		<script language="javascript" type="text/javascript" src="<%=themeFiles.js[i]%>"></script>
         <% } %>
     <% } %>
+
+	<script>Backbone.history.start();</script>
+
+	<% if (!track || track == "GA" && member['global_admin'] || track == "noneGA" && !member['global_admin']) { %>
+		<!--Countly script-->
+		<script type='text/javascript' src='<%- cdn %>sdk/web/countly.min.js'></script>
+		<script type='text/javascript'>
+
+		//initializing countly with params
+		Countly.init({
+			app_key: "386012020c7bf7fcb2f1edf215f1801d6146913f",
+			url: "https://stats.count.ly/",
+			device_id: countlyGlobal["member"]["email"],
+			app_version: "<%= countlyVersion %>",
+			interval:1000
+		});
+
+		//track sessions automatically
+		Countly.track_sessions();
+
+		//track pageviews automatically
+		Countly.track_pageview(window.location.pathname+window.location.hash);
+
+		$(window).on('hashchange', function() {
+			Countly.track_pageview(window.location.pathname+window.location.hash);
+		});
+
+		//track any clicks to webpages automatically
+		Countly.track_clicks();
+
+		//track javascript errors
+		Countly.track_errors();
+
+		Countly.user_details({
+			"name": countlyGlobal["member"]["full_name"] || "",
+			"username": countlyGlobal["member"]["username"] || "",
+			"email": countlyGlobal["member"]["email"]
+		 });
+
+		 Countly.userData.set("lastServer", window.location.hostname);
+		 Countly.userData.set("lastVersion", "<%= countlyVersion %>");
+		 Countly.userData.set("lastEdition", "<%= countlyTypeTrack %>");
+		 Countly.userData.set("isTrial", <%= countlyTrial %>);
+		 Countly.userData.set("cpus", <%= cpus %>);
+		 Countly.userData.push_unique("servers", window.location.hostname);
+		 Countly.userData.push_unique("versions", "<%= countlyVersion %>");
+		 Countly.userData.push_unique("editions", "<%= countlyTypeTrack %>");
+		 Countly.userData.save();
+
+		 <% if (installed) { %>
+		 Countly.add_event({
+			key:"INSTALL"
+		  });
+		 <% } %>
+		</script>
+	<% } %>
+
+	<% if(intercom && member['global_admin'] || config.autonomous) { %>
 	<script>
-	Backbone.history.start();
+		$(document).ready(function() {
+			$(".activate_intercom").on("click", function() {
+                Intercom('show');
+        	});
+        });
 	</script>
-<% if (!track || track == "GA" && member['global_admin'] || track == "noneGA" && !member['global_admin']) { %>
-<!--Countly script-->
-<script type='text/javascript' src='<%- cdn %>sdk/web/countly.min.js'></script>
-<script type='text/javascript'>
-
-//initializing countly with params
-Countly.init({
-	app_key: "386012020c7bf7fcb2f1edf215f1801d6146913f",
-	url: "https://stats.count.ly/",
-    device_id: countlyGlobal["member"]["email"],
-    app_version: "<%= countlyVersion %>",
-	interval:1000
-});
-
-//track sessions automatically
-Countly.track_sessions();
-
-//track pageviews automatically
-Countly.track_pageview(window.location.pathname+window.location.hash);
-
-$(window).on('hashchange', function() {
-    Countly.track_pageview(window.location.pathname+window.location.hash);
-});
-
-//track any clicks to webpages automatically
-Countly.track_clicks();
-
-//track javascript errors
-Countly.track_errors();
-
-Countly.user_details({
-    "name": countlyGlobal["member"]["full_name"] || "",
-    "username": countlyGlobal["member"]["username"] || "",
-    "email": countlyGlobal["member"]["email"]
- });
- 
- Countly.userData.set("lastServer", window.location.hostname);
- Countly.userData.set("lastVersion", "<%= countlyVersion %>");
- Countly.userData.set("lastEdition", "<%= countlyTypeTrack %>");
- Countly.userData.set("isTrial", <%= countlyTrial %>);
- Countly.userData.set("cpus", <%= cpus %>);
- Countly.userData.push_unique("servers", window.location.hostname);
- Countly.userData.push_unique("versions", "<%= countlyVersion %>");
- Countly.userData.push_unique("editions", "<%= countlyTypeTrack %>");
- Countly.userData.save();
- 
- <% if(installed) { %>
- Countly.add_event({
-    key:"INSTALL"
-  });
- <% } %>
-</script>
-<% } %>
-<% if(intercom && member['global_admin'] || config.autonomous) { %>
     <script id="IntercomSettingsScriptTag">
         var intercomSettings = {
             app_id: 'pt60eheo',
             widget: {
-                activator: '#Intercom'
+                activator: '.activate_intercom'
             },
             email: "<%= member.email %>",
             created_at: parseInt("<%= member.created_at %>") || 1349863810,
@@ -1397,7 +1407,6 @@ Countly.user_details({
             }
         })();
     </script>
-    <% } %>
-    <!---->
+	<% } %>
 </body>
 </html>

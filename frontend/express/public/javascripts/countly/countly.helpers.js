@@ -741,7 +741,31 @@
             return getSelected($(this));
         };
 
-        $.fn.clyMultiSelectSetSelection = function(value, name) {
+        $.fn.clyMultiSelectSetSelection = function(valNameArr) {
+            var $multiSelect = $(this),
+                $selectionContainer = $multiSelect.find(".text");
+
+            $(this).find(".selection").remove();
+
+            for (var i = 0; i < valNameArr.length; i++) {
+                var name = valNameArr[i].name,
+                    value = valNameArr[i].value;
+
+                var $selection = $("<div class='selection'></div>");
+
+                $selection.text(name);
+                $selection.attr("data-value", value);
+                $selection.append("<div class='remove'><i class='ion-android-close'></i></div>");
+
+                $selectionContainer.append($selection);
+            }
+
+            $(this).addClass("selection-exists");
+            $(this).data("value", getSelected($(this)));
+            $(this).trigger("cly-multi-select-change", [getSelected($(this))]);
+        };
+
+        $.fn.clyMultiSelectClearSelection = function() {
             $(this).find(".selection").remove();
             $(this).data("value", getSelected($(this)));
             $(this).removeClass("selection-exists");

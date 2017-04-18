@@ -270,11 +270,11 @@ app.route("/analytics/events/compare", 'views', function () {
 
 /* Compare applications */
 $(document).ready(function() {
-    $("#app-nav-head").after(
+    $("#app-navigation").find(".menu").prepend(
         "<a href='#/compare'>" +
-            "<div id='compare-apps' class='app-container'>" +
+            "<div id='compare-apps' class='action'>" +
                 "<div class='icon'></div>" +
-                "<div class='name'>" + jQuery.i18n.map["compare.button"] + "</div>" +
+                "<span>" + jQuery.i18n.map["compare.button"] + "</span>" +
             "</div>" +
         "</a>"
     );
@@ -358,45 +358,22 @@ var compareAppsViewHelper = {
         return toReturn;
     },
     onRender: function() {
-        $("#sidebar-menu").css({visibility: "hidden"});
-        $("#app-nav").addClass("compare-active");
-        $("#sidebar").append(
-            "<div id='compare-apps-pointer'>" +
-                "<div>" + jQuery.i18n.map["compare.apps.tip"] + "</div>" +
-            "</div>"
-        );
+        $("#sidebar").hide();
+        $("#content-container").css({"margin-left": 0});
+        $("#app-navigation").removeClass("active");
 
-        if ($("#app-nav").offset().left == 201) {
-            $("#sidebar-app-select").trigger("click");
-        }
-
-        $("#app-nav.compare-active").find(".app-navigate").on("click", function (e) {
-            $("#sidebar-app-select").data("before-compare", '');
-
+        $(".app-navigate").on("click", function (e) {
             var appId = $(this).data("id");
 
             if (countlyCommon.ACTIVE_APP_ID == appId) {
-                $("#sidebar-app-select").trigger("click");
                 app.navigate("/", true);
             }
         });
-
-        var sidebarApp = $("#sidebar-app-select");
-        sidebarApp.addClass("compare-active");
-        sidebarApp.data("before-compare", sidebarApp.find(".text").text());
-        sidebarApp.find(".text").text(jQuery.i18n.map["compare.apps.app-select"]);
     },
     onDestroy: function() {
-        $("#sidebar-menu").css({visibility: "visible"});
-        $("#app-nav").removeClass("compare-active");
-        $("#sidebar").find("#compare-apps-pointer").remove();
-
-        var sidebarApp = $("#sidebar-app-select");
-        if (sidebarApp.data("before-compare")) {
-            sidebarApp.find(".text").text(sidebarApp.data("before-compare"));
-            sidebarApp.data("before-compare", '');
-        }
-        sidebarApp.removeClass("compare-active");
+        $("#sidebar").show();
+        $("#content-container").css({"margin-left": "224px"});
+        $("#app-navigation").addClass("active");
     }
 };
 

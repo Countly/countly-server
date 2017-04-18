@@ -43,8 +43,18 @@
             if (base.table.length == 0) {
 				return false;
 			}
-		
-			var	cutoffTop = base.table.offset().top,
+
+			var topBarHeight = $("#top-bar").outerHeight(),
+				cutOffAdd = 0;
+
+            if (topBarHeight) {
+                cutOffAdd = topBarHeight;
+                base.stickyHeader.css({top: topBarHeight});
+			} else {
+                base.stickyHeader.css({top: 0});
+			}
+
+			var	cutoffTop = base.table.offset().top - cutOffAdd,
 				cutoffBottom = base.table.height() + cutoffTop - base.headerCellHeight,
 				currentPosition = $(window).scrollTop();
 

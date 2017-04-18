@@ -892,8 +892,8 @@ window.ManageAppsView = countlyView.extend({
                 //$("#first-app-success").show();
                 $("#new-install-overlay").fadeOut();
                 countlyCommon.setActiveApp(appId);
-                $("#sidebar-app-select").find(".logo").css("background-image", "url('"+countlyGlobal["cdn"]+"appimages/" + appId + ".png')");
-                $("#sidebar-app-select").find(".text").text(countlyGlobal['apps'][appId].name);
+                $("#active-app-icon").css("background-image", "url('"+countlyGlobal["cdn"]+"appimages/" + appId + ".png')");
+                $("#active-app-name").text(countlyGlobal['apps'][appId].name);
                 app.onAppSwitch(appId, true);
                 app.sidebar.init();
             }
@@ -1294,13 +1294,13 @@ window.ManageAppsView = countlyView.extend({
 
                         if (_.isEmpty(countlyGlobal['apps'])) {
                             $("#new-install-overlay").show();
-                            $("#sidebar-app-select .logo").css("background-image", "");
-                            $("#sidebar-app-select .text").text("");
+                            $("#active-app-icon").css("background-image", "");
+                            $("#active-app-name").text("");
                         }
                         else if(countlyCommon.ACTIVE_APP_ID == appId){
                             countlyCommon.setActiveApp(changeApp.data("id"));
-                            $("#sidebar-app-select .logo").css("background-image", "url(appimages/"+changeApp.data("id")+".png)");
-                            $("#sidebar-app-select .text").text(countlyGlobal['apps'][changeApp.data("id")].name);
+                            $("#active-app-icon").css("background-image", "url(appimages/"+changeApp.data("id")+".png)");
+                            $("#active-app-name").text(countlyGlobal['apps'][changeApp.data("id")].name);
                         }
                     },
                     error:function () {
@@ -1399,9 +1399,9 @@ window.ManageAppsView = countlyView.extend({
                             return $(this).data("id") && $(this).data("id") == appId;
                         }).find(".name").text(appName);
 
-                        var sidebarLogo = $("#sidebar-app-select .logo").attr("style");
+                        var sidebarLogo = $("#active-app-icon").attr("style");
                         if (sidebarLogo.indexOf(appId) !== -1) {
-                            $("#sidebar-app-select .text").text(appName);
+                            $("#active-app-name").text(appName);
                         }
                         return true;
                     }
@@ -1424,7 +1424,7 @@ window.ManageAppsView = countlyView.extend({
                                 updatedApp.find(".logo").css({
                                     "background-image":"url(" + file + "?v" + (new Date().getTime()) + ")"
                                 });
-                                $("#sidebar-app-select .logo").css("background-image", $("#sidebar-app-select .logo").css("background-image").replace(")","") + "?v" + (new Date().getTime()) + ")");
+                                $("#active-app-icon").css("background-image", $("#active-app-icon").css("background-image").replace(")","") + "?v" + (new Date().getTime()) + ")");
                             }
 
                             initAppManagement(appId);

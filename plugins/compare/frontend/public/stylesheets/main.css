@@ -14,12 +14,11 @@
 /* For compare events view */
 #compare-events { margin-bottom: 0; padding: 3px 12px; text-align: center; }
 #compare-events .icon { background-image: url("/compare/images/compare-events.svg"); width:20px; height: 20px; float:none; margin:4px 0 0 0; display: inline-block; }
-#compare-events .name { float: none; width: auto; display: inline-block; vertical-align: top; }
+#compare-events .name { float: none; width: auto; display: inline-block; vertical-align: top; margin-left: 8px; }
 
 /* For compare apps view */
-#compare-apps { margin-bottom: 0; padding: 2px 12px 2px 37px; text-align: center; }
-#compare-apps .icon { background-image: url("/compare/images/compare-apps.svg"); width:20px; height: 20px; float:none; margin:5px 0 0 0; display: inline-block; }
-#compare-apps .name { float: none; width: auto; display: inline-block; vertical-align: top; }
+#top-bar .dropdown .menu #compare-apps .icon { background-image: url("/compare/images/compare-apps.svg"); background-size: contain; width:16px; height: 16px; margin:1px 6px 0 0; display: inline-block; }
+#top-bar .dropdown .menu #compare-apps span { vertical-align: top; margin-top: 2px; display: inline-block; }
 #compare-apps-pointer { background-image: url("/compare/images/compare-apps-pointer.svg"); width:224px; height:200px; top:130px; background-repeat: no-repeat; position: absolute; }
 #compare-apps-pointer > div { margin-top: 120px; padding: 0 40px; font-size: 12px; text-align: center; color: #6d6d6d; margin-bottom: 10px; line-height: 17px; }
 #sidebar-app-select.compare-active .logo { border: none; border-radius: 0; background-image: url("/compare/images/compare-apps.svg") !important; }
