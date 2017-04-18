@@ -115,7 +115,7 @@
 				<div class="empty-state">
 					<i class="ion-person"></i>
 				</div>
-				<div class="menu right" style="width: 150px;">
+				<div class="menu right" style="width: 170px;">
 					<div class="list">
 						<a class="item" href='#/manage/user-settings'>
 							<i class="ion-gear-a icon"></i>
@@ -128,7 +128,10 @@
 								<span data-localize="common.feedback-and-support"></span>
 							</a>
 							<% } %>
-							<a class="item" href="http://resources.count.ly/" target="_blank" data-localize="common.documentation"></a>
+							<a class="item" href="http://resources.count.ly/" target="_blank">
+								<i class="ion-android-document icon"></i>
+								<span data-localize="common.documentation"></span>
+							</a>
 						<% } else { %>
 							<% if(intercom && member['global_admin'] || config.autonomous) { %>
 							<a class="item activate_intercom">
