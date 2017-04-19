@@ -147,7 +147,7 @@ plugins.setConfigs("crashes", {
                 try {
                     params.qstring.crash = JSON.parse(params.qstring.crash);
                 } catch (SyntaxError) {
-                    console.log('Parse crash JSON failed');
+                    console.log('Parse crash JSON failed', params.qstring.crash, params.req.url, params.req.body);
                     resolve();
                     return false;
                 }
