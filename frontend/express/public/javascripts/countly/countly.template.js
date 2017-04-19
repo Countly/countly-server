@@ -70,7 +70,7 @@ var countlyView = Backbone.View.extend({
         }
     },
     /**
-    * This method is called when app is changed, default behavior is to call render again
+    * This method is called when app is changed, default behavior is to reset preloaded data as events
     * @memberof countlyView
     * @instance
     */
@@ -81,8 +81,6 @@ var countlyView = Backbone.View.extend({
         $.when(countlyEvent.initialize()).then(function() {
             if(callback)
                 callback();
-            else
-                self.render();
         });
     },
     /**
@@ -351,10 +349,13 @@ var AppRouter = Backbone.Router.extend({
             app.navigate(redirect, true);
         }
         else if(change){
-            this.navigate("/", true);
-            if(forced && this.activeView != this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type]){
+            if(location.hash != "#/")
+                this.navigate("#/", true);
+            else
                 this.dashboard();
-            }
+        }
+        else{
+            this.activeView.render();
         }
     },
     dashboard:function () {
@@ -1317,11 +1318,7 @@ var AppRouter = Backbone.Router.extend({
                     self.activeAppKey = appKey;
                     var old_id = countlyCommon.ACTIVE_APP_ID;
                     countlyCommon.setActiveApp(appId);
-                    app.onAppSwitch(appId);
-                    if(countlyGlobal["apps"][appId] && countlyGlobal["apps"][old_id] && countlyGlobal["apps"][appId].type !== countlyGlobal["apps"][old_id].type)
-                        self.activeView.appChanged(function(){});
-                    else
-                        self.activeView.appChanged();
+                    self.activeView.appChanged(function(){app.onAppSwitch(appId);});
                 }
             });
 
