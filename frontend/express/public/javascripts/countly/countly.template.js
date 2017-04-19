@@ -1315,10 +1315,13 @@ var AppRouter = Backbone.Router.extend({
                 if (self.activeAppKey != appKey) {
                     self.activeAppName = appName;
                     self.activeAppKey = appKey;
-
+                    var old_id = countlyCommon.ACTIVE_APP_ID;
                     countlyCommon.setActiveApp(appId);
                     app.onAppSwitch(appId);
-                    self.activeView.appChanged();
+                    if(countlyGlobal["apps"][appId] && countlyGlobal["apps"][old_id] && countlyGlobal["apps"][appId].type !== countlyGlobal["apps"][old_id].type)
+                        self.activeView.appChanged(function(){});
+                    else
+                        self.activeView.appChanged();
                 }
             });
 
