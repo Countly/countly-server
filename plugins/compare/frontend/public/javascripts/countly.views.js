@@ -21,9 +21,13 @@ window.CompareView = countlyView.extend({
     beforeRender: function() {
         var self = this;
 
-        return $.when($.get(countlyGlobal["path"]+'/compare/templates/compare.html', function(src){
-            self.template = Handlebars.compile(src);
-        }), self.viewHelper.model.initialize()).then(function () {});
+        return $.when(
+            $.get(countlyGlobal["path"]+'/compare/templates/compare.html', function(src){
+                self.template = Handlebars.compile(src);
+             }),
+            self.viewHelper.model.initialize(),
+            self.viewHelper.beforeRender()
+        ).then(function () {});
     },
     renderCommon:function (isRefresh) {
         var self = this;
@@ -231,6 +235,9 @@ var compareEventsViewHelper = {
     },
     compareText: jQuery.i18n.map["compare.events.limit"],
     maxAlternatives: 10,
+    beforeRender: function() {
+
+    },
     getTableColumns: function() {
         return [
             { "mData": function(row, type){
@@ -357,10 +364,13 @@ var compareAppsViewHelper = {
 
         return toReturn;
     },
-    onRender: function() {
-        $("#sidebar").hide();
-        $("#content-container").css({"margin-left": 0});
+    beforeRender: function() {
+        $("body").addClass("compare-apps-view");
+        $("#sidebar").addClass("hidden");
         $("#app-navigation").removeClass("active");
+    },
+    onRender: function() {
+        $("#content-container").addClass("cover-left");
 
         $(".app-navigate").on("click", function (e) {
             var appId = $(this).data("id");
@@ -369,10 +379,17 @@ var compareAppsViewHelper = {
                 app.navigate("/", true);
             }
         });
+
+        $("#app-navigation").on("click", ".item", function () {
+            if ($("body").hasClass("compare-apps-view")) {
+                app.navigate("#/", true);
+            }
+        });
     },
     onDestroy: function() {
-        $("#sidebar").show();
-        $("#content-container").css({"margin-left": "224px"});
+        $("body").removeClass("compare-apps-view");
+        $("#sidebar").removeClass("hidden");
+        $("#content-container").removeClass("cover-left");
         $("#app-navigation").addClass("active");
     }
 };
