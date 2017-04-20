@@ -784,7 +784,7 @@ window.DurationView = countlyView.extend({
         return $.when(countlySession.initialize()).then(function () {});
     },
     renderCommon:function (isRefresh) {
-        var durationData = countlySession.getRangeData("d", "d-ranges", countlySession.explainDurationRange);
+        var durationData = countlySession.getRangeData("ds", "d-ranges", countlySession.explainDurationRange);
 
         this.templateData = {
             "page-title":jQuery.i18n.map["session-duration.title"],
@@ -817,7 +817,7 @@ window.DurationView = countlyView.extend({
                 return false;
             }
 
-            var durationData = countlySession.getRangeData("d", "d-ranges", countlySession.explainDurationRange);
+            var durationData = countlySession.getRangeData("ds", "d-ranges", countlySession.explainDurationRange);
             countlyCommon.drawGraph(durationData.chartDP, "#dashboard-graph", "bar");
             CountlyHelpers.refreshTable(self.dtable, durationData.chartData);
         });
