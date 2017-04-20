@@ -183,19 +183,19 @@ if (cluster.isMaster) {
             params.appTimezone = app['timezone'];
             params.app = app;
             params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-            
-            if(params.app.checksum_salt && params.app.checksum_salt.length && !params.files){ //ignore multipart data requests
-                var payload;
+            if(params.app.checksum_salt && params.app.checksum_salt.length){
+                var payloads = [];
+                payloads.push(params.href.substr(3));
                 if(params.req.method.toLowerCase() == 'post'){
-                    payload = params.req.body;
-                }
-                else{
-                    payload = params.href.substr(3);
+                    payloads.push(params.req.body);
                 }
                 if(typeof params.qstring.checksum !== "undefined"){
-                    payload = payload.replace("&checksum="+params.qstring.checksum, "").replace("checksum="+params.qstring.checksum, "");
-                    if((params.qstring.checksum + "").toUpperCase() != common.crypto.createHash('sha1').update(payload + params.app.checksum_salt).digest('hex').toUpperCase()){
-                        console.log("Checksum did not match", params.href, params.req.body);
+                    for(var i = 0; i < payloads.length; i++){
+                        payloads[i] = payloads[i].replace("&checksum="+params.qstring.checksum, "").replace("checksum="+params.qstring.checksum, "");
+                        payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
+                    }
+                    if(payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1){
+                        console.log("Checksum did not match", params.href, params.req.body, payloads);
                         if (plugins.getConfig("api").safe) {
                             common.returnMessage(params, 400, 'Request does not match checksum');
                         }
@@ -203,9 +203,12 @@ if (cluster.isMaster) {
                     }
                 }
                 else if(typeof params.qstring.checksum256 !== "undefined"){
-                    payload = payload.replace("&checksum256="+params.qstring.checksum256, "").replace("checksum256="+params.qstring.checksum256, "");
-                    if((params.qstring.checksum256 + "").toUpperCase() != common.crypto.createHash('sha256').update(payload + params.app.checksum_salt).digest('hex').toUpperCase()){
-                        console.log("Checksum did not match", params.href, params.req.body);
+                    for(var i = 0; i < payloads.length; i++){
+                        payloads[i] = payloads[i].replace("&checksum256="+params.qstring.checksum256, "").replace("checksum256="+params.qstring.checksum256, "");
+                        payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
+                    }
+                    if(payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1){
+                        console.log("Checksum did not match", params.href, params.req.body, payloads);
                         if (plugins.getConfig("api").safe) {
                             common.returnMessage(params, 400, 'Request does not match checksum');
                         }
