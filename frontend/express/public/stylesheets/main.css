@@ -98,6 +98,7 @@
 
 body { margin:0; padding:0; overflow:auto; background-color:#F9F9F9; user-select:text; font-family: Ubuntu,Helvetica,sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 #content-container { margin-left:224px; min-width:768px; min-height: 400px; padding:78px 16px 35px 16px; }
+#content-container.cover-left { margin-left:0; }
 #content {padding-bottom:15px; }
 a { color:inherit; text-decoration:none; }
 a:visited { color:inherit; }
@@ -138,7 +139,7 @@ table { border-collapse: collapse; }
         #sidebar-menu .sidebar-menu>.item:last-child { box-shadow: 0 1px 0 0 #2D2D2D; }
         #sidebar-menu .sidebar-menu>.item.hide { display: none; }
         #sidebar-menu .sidebar-menu .item:hover { background-position:446px; }
-		#sidebar-menu .sidebar-menu>.item.active { background-color: #2FA732; border-color: #46C54A; }
+		#sidebar-menu .sidebar-menu>.item.active { background-color: #2FA732; border-color: #2FA732; }
         #sidebar-menu .sidebar-menu .item.menu-active { background-color: #212121; border-color: #212121; }
 		#sidebar-menu .sidebar-menu .item .logo { color:#888; width:25px; height:22px; float:left; margin-left:16px; margin-top:4px; font-size: 19px; text-align: center; }
             /* Fix for old .fa icons, this can be removed once all enterprise plugins have updated icons */
@@ -155,9 +156,9 @@ table { border-collapse: collapse; }
             #sidebar-menu .sidebar-menu .item.active:hover .logo { color: #f6f6f6; }
             #sidebar-menu .sidebar-menu .item.menu-active:hover .logo,
             #sidebar-menu .sidebar-menu .item.menu-active .logo { color: #f6f6f6; }
-            #sidebar-menu .sidebar-menu .item:hover .logo { color: #ebebeb; }
-            #sidebar-menu .sidebar-menu .item:hover .text { color: #ebebeb; }
-            #sidebar-menu .sidebar-menu .item.active .text { color:#ebebeb; }
+            #sidebar-menu .sidebar-menu .item:hover .logo { color: #FFF; }
+            #sidebar-menu .sidebar-menu .item:hover .text { color: #FFF; }
+            #sidebar-menu .sidebar-menu .item.active .text { color:#FFF; }
         #sidebar-menu .sidebar-menu .item .ion-chevron-right { position: absolute; right: 15px; font-size: 10px; color: #505050; padding-top: 11px; }
             #sidebar-menu .sidebar-menu .item.active .ion-chevron-right { color:#f6f6f6; }
 
@@ -1342,14 +1343,14 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 .cly-grid-7:last-child { width: 15%; }
 .cly-grid-8 { width: 12.5%; }
 
-#top-bar { background-color: #FFF; user-select: none; position: fixed; width:100%; z-index: 9999; box-shadow: inset 0 -1px 0 0 #E7E7E7; }
+#top-bar { min-height: 59px; min-width:1024px; background-color: #FFF; user-select: none; position: fixed; width:100%; z-index: 9999; box-shadow: inset 0 -1px 0 0 #E7E7E7; }
 #top-bar .logo-container { padding: 12px 19px; float:left; }
-#top-bar .logo { background-image: url("/images/dashboard/countly_logo.svg"); width: 185px; height: 35px; background-position: center; background-repeat: no-repeat; background-size: contain; }
+#top-bar .logo { background-image: url("/images/dashboard/countly_logo.svg"); width: 185px; height: 32px; margin-top:1px; background-position: center; background-repeat: no-repeat; background-size: contain; }
 
 #top-bar .right-menu { float:left; font-size: 18px; margin-right: 15px; }
 #top-bar .right-menu { float:right; font-size: 18px; margin-right: 15px; }
 
-#top-bar .dropdown { width: 25px; text-align: center; position: relative; cursor: pointer; float:left; padding: 21px 10px; }
+#top-bar .dropdown { display: none; width: 25px; text-align: center; position: relative; cursor: pointer; float:left; padding: 21px 10px; }
 #top-bar .dropdown.bordered { border-left:1px solid #E7E7E7; border-right:1px solid #E7E7E7; }
 #top-bar .dropdown.large { width: 180px; padding: 21px 25px; }
 #top-bar .dropdown.active { box-shadow: inset 0 1px 0 0 #2fa732; }
@@ -1371,7 +1372,7 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 #top-bar .dropdown.large .empty-state:after { font-family: 'Ionicons';  content: "\f3d0"; margin-left: 10px; font-size: 10px; line-height: 16px; vertical-align: top; }
 #top-bar .dropdown.large.clicked .selected:after,
 #top-bar .dropdown.large.clicked .empty-state:after { content: "\f3d8"; color:#2fa732; }
-#top-bar .dropdown .menu { box-shadow: 0 3px 7px rgba(0,0,0,.08); border: 1px solid #d0d0d0; color:#474747; opacity: 0; cursor:default; position: absolute; top:71px; transform: translateX(-50%); left: 50%; width: 90%; background-color: #FFF; border-radius: 2px; visibility: hidden; }
+#top-bar .dropdown .menu { box-shadow: 0 3px 7px rgba(0,0,0,.08); border: 1px solid #d0d0d0; color:#474747; opacity: 0; cursor:default; position: absolute; top:67px; transform: translateX(-50%); left: 50%; width: 90%; background-color: #FFF; border-radius: 2px; visibility: hidden; }
 #top-bar .dropdown.clicked .menu { opacity: 1; transition:opacity 0.3s, visibility 0.3s; visibility: visible; }
 #top-bar .dropdown .menu:before { border: 6px solid rgba(194, 225, 245, 0); border-bottom-color: #FFF; left: 50%; margin-left: -6px; top: -12px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; z-index: 2; }
 #top-bar .dropdown .menu:after { border: 7px solid rgba(194, 225, 245, 0); border-bottom-color: #D0D0D0; left: 50%; margin-left: -7px; top: -15px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; z-index: 1; }
@@ -1411,3 +1412,9 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 
 #notification-icon { position: relative; }
 #notification-icon.unread:after { content: " "; width: 4px; height: 4px; position: absolute; top: 0; right: 0; border-radius: 4px; background-color: #FF8700; }
+
+#main-views-container .main-view {  }
+#main-views-container .main-view.active { display: block; }
+#sidebar,
+#main-views-container #analytics-main-view.active #sidebar.hidden { transform:translate(-230px); opacity:0.8; transition: opacity 0.1s 0.2s, transform 0.55s; }
+#main-views-container #analytics-main-view.active #sidebar { transform:translate(0); opacity:1; transition: opacity 0.1s 0.2s, transform 0.55s; }

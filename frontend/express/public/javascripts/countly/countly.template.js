@@ -114,6 +114,21 @@ var countlyView = Backbone.View.extend({
     * @instance
     */
     render:function () {    //backbone.js view render function
+        var currLink = Backbone.history.fragment;
+
+        // Reset any active views and dropdowns
+        $("#main-views-container").find(".main-view").removeClass("active");
+        $("#top-bar").find(".dropdown.active").removeClass("active");
+
+        // Activate the main view and dropdown based on the active view
+        if (/^\/custom/.test(currLink) === true) {
+            $("#dashboards-main-view").addClass("active");
+            $("#dashboard-selection").addClass("active");
+        } else {
+            $("#analytics-main-view").addClass("active");
+            $("#app-navigation").addClass("active");
+        }
+
         $("#content-top").html("");
         this.el.html('');
 
@@ -131,6 +146,9 @@ var countlyView = Backbone.View.extend({
             this.afterRender();
             app.pageScript();
         }
+
+        // Top bar dropdowns are hidden by default, fade them in when view render is complete
+        $("#top-bar").find(".dropdown").fadeIn(2000);
 
         return this;
     },
@@ -345,6 +363,7 @@ var AppRouter = Backbone.Router.extend({
                 }
             });
         }
+
         if(redirect){
             app.navigate(redirect, true);
         }
@@ -1273,35 +1292,47 @@ var AppRouter = Backbone.Router.extend({
             });
 
             // TOPBAR
-            var $topbarDropdown = $("#top-bar").find(".dropdown"),
+            var $topbar = $("#top-bar"),
                 $appNavigation = $("#app-navigation");
 
-            $topbarDropdown.on("click", function(e) {
+            $topbar.on("click", ".dropdown", function(e) {
                 var wasActive = $(this).hasClass("clicked");
 
-                $topbarDropdown.removeClass("clicked");
+                $topbar.find(".dropdown").removeClass("clicked");
 
                 if (wasActive) {
                     $(this).removeClass("clicked");
                 } else {
                     $(this).find(".nav-search input").val("");
+                    $(this).find(".list").scrollTop(0);
                     $(this).addClass("clicked");
                 }
 
                 e.stopPropagation();
             });
 
-            $topbarDropdown.on("click", ".nav-search", function(e) {
+            $topbar.on("click", ".dropdown .nav-search", function(e) {
                 e.stopPropagation();
             });
 
-            $topbarDropdown.on("click", ".item", function(e) {
-                $topbarDropdown.removeClass("clicked");
+            $topbar.on("click", ".dropdown .item", function(e) {
+                $topbar.find(".dropdown").removeClass("clicked");
                 e.stopPropagation();
             });
 
             $("body").on("click", function() {
-                $topbarDropdown.removeClass("clicked");
+                $topbar.find(".dropdown").removeClass("clicked");
+            });
+
+            var tmpBodyOverflow = "";
+
+            $topbar.on("mouseover", ".dropdown .menu", function(e) {
+                tmpBodyOverflow = $("body").css("overflow");
+                $("body").css("overflow", "hidden");
+            });
+
+            $topbar.on("mouseout", ".dropdown .menu", function(e) {
+                $("body").css("overflow", tmpBodyOverflow);
             });
 
             $appNavigation.on("click", ".item", function () {
