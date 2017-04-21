@@ -16,6 +16,7 @@ var request = require("request");
     * @param {object} options.db - database connection
     * @param {params} options.params - params object
     * @param {number} options.threshold - amount of seconds to wait before switching to long running task
+    * @param {number} options.force - force to use taskmanager, ignoring threshold
     * @param {string} options.type - type of data, as which module or plugin uses this data
     * @param {string} options.meta - any information about the tast
     * @param {string} options.name - provide user friendly task name
@@ -28,6 +29,7 @@ var request = require("request");
     * common.db.collection("data").findOne({_id:"test"}, taskmanager.longtask({
     *   db:common.db, 
     *   threshold:30, 
+    *   force:false,
     *   app_id:"58b6d13bf1de9562e5a8029f",
     *   params: params,
     *   type:"funnels", 
@@ -47,7 +49,8 @@ var request = require("request");
         options.db = options.db || common.db;
         var exceeds = false;
         var start = new Date().getTime();
-        var timeout = setTimeout(function(){
+        var timeout;
+        function switchToLongTask(){
             timeout = null;
             exceeds = true;
             if(!options.request && options.params && options.params.qstring){
@@ -76,12 +79,16 @@ var request = require("request");
                 }
                 else{
                     options.id = taskmanager.getId();
-                    options.start = new Date().getTime() - options.threshold*1000;
+                    options.start = start;
                     taskmanager.createTask(options);
                 }
             }
             options.outputData(null, {task_id:options.id});
-        }, options.threshold*1000);
+        }
+        if(options.force)
+            switchToLongTask();
+        else
+            timeout = setTimeout(switchToLongTask, options.threshold*1000);
         return function(err, res){
             if(timeout){
                 clearTimeout(timeout);
