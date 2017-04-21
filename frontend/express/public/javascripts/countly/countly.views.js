@@ -2894,13 +2894,13 @@ window.LongTaskView = countlyView.extend({
 			this.dtable = $('#data-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": countlyTaskManager.getResults(),
                 "aoColumns": [
-                    { "mData": function(row, type){return row.name || row.meta || "";}, "sType":"string", "sTitle": jQuery.i18n.map["common.info"], "bSortable": false },
+                    { "mData": function(row, type){return row.name || row.meta || "";}, "sType":"string", "sTitle": jQuery.i18n.map["common.info"], "bSortable": false, "sClass":"break" },
                     { "mData":  function(row, type){return '<span class="status-color" style="color:'+self.getStatusColor(row.status)+';"><i class="fa fa-circle" aria-hidden="true"></i>' + (states[row.status] || row.status)+"</span>";}, "sType":"string", "sTitle": jQuery.i18n.map["common.status"] },
                     { "mData": function(row, type){return types[row.type] || row.type;}, "sType":"string", "sTitle": jQuery.i18n.map["common.type"] },
                     { "mData": function(row, type){
 						if(type == "display"){
 							return countlyCommon.formatTimeAgo(row.ts);
-						}else return row.ts;}, "sType":"string", "sTitle": jQuery.i18n.map["common.time"] },
+						}else return row.ts;}, "sType":"string", "sTitle": jQuery.i18n.map["common.started"] },
                     { "mData": function(row, type){
                         var time = 0;
                         if(row.status === "running" || row.status === "rerunning"){
@@ -2911,7 +2911,7 @@ window.LongTaskView = countlyView.extend({
                         }
 						if(type == "display"){
 							return countlyCommon.formatTime(Math.round(time/1000));
-						}else return time;}, "sType":"numeric", "sTitle": jQuery.i18n.map["common.graph.time-spent"] },
+						}else return time;}, "sType":"numeric", "sTitle": jQuery.i18n.map["events.table.dur"] },
                     { "mData": function(row, type){
                         var str = "";
                         if(countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]){
