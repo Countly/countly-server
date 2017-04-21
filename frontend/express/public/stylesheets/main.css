@@ -1257,6 +1257,7 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 #clear-app-data.active .up { display: inline-block; }
 #clear-app-data.active .down { display: none; }
 
+.status-color i{margin-right:10px;}
 /* Syntax highlighting - Highlight.js GoogleCode theme */
 .hljs{display:block;overflow-x:auto;background:#fff;color:#000}
 .hljs-comment,.hljs-quote{color:#800}
