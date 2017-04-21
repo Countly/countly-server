@@ -2894,7 +2894,7 @@ window.LongTaskView = countlyView.extend({
 			this.dtable = $('#data-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": countlyTaskManager.getResults(),
                 "aoColumns": [
-                    { "mData": function(row, type){return row.name || row.meta || "";}, "sType":"string", "sTitle": jQuery.i18n.map["common.info"] },
+                    { "mData": function(row, type){return row.name || row.meta || "";}, "sType":"string", "sTitle": jQuery.i18n.map["common.info"], "bSortable": false },
                     { "mData":  function(row, type){return '<span class="status-color" style="color:'+self.getStatusColor(row.status)+';"><i class="fa fa-circle" aria-hidden="true"></i>' + (states[row.status] || row.status)+"</span>";}, "sType":"string", "sTitle": jQuery.i18n.map["common.status"] },
                     { "mData": function(row, type){return types[row.type] || row.type;}, "sType":"string", "sTitle": jQuery.i18n.map["common.type"] },
                     { "mData": function(row, type){
@@ -2931,7 +2931,7 @@ window.LongTaskView = countlyView.extend({
                             }
                         }
                         return str;
-                    }, "sType":"string", "sTitle": jQuery.i18n.map["common.action"] },
+                    }, "sType":"string", "sTitle": jQuery.i18n.map["common.action"], "bSortable": false },
                 ]
             }));
 
