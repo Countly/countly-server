@@ -153,12 +153,23 @@ window.component('push.view', function(view) {
 							m.component(view.metric, {
 								count: r.actioned(),
 								total: r.sent(),
+								subco: [r.actioned0(), r.actioned1(), r.actioned2()].filter(function(c){ return c > 0; }),
 								color: '#FE8827',
 								title: t('pu.po.metrics.actions'),
 								helpr: t('pu.po.metrics.actions.desc'),
-								descr: r.actioned() === r.sent() ? 
-									t('pu.po.metrics.actions.all') 
-									: t.n('pu.po.metrics.actions', r.actioned())
+								descr: [r.actioned() === r.sent() ? 
+											t('pu.po.metrics.actions.all') 
+											: t.n('pu.po.users', r.actioned()) + ' ' + t('pu.po.metrics.actions.performed'),
+										r.actioned0() > 0 ? 
+											t.n('pu.po.users', r.actioned0()) + ' ' + t('pu.po.metrics.actions0.performed')
+											: '',
+										r.actioned1() > 0 ? 
+											t.n('pu.po.users', r.actioned1()) + ' ' + t('pu.po.metrics.actions1.performed')
+											: '',
+										r.actioned2() > 0 ? 
+											t.n('pu.po.users', r.actioned2()) + ' ' + t('pu.po.metrics.actions2.performed')
+											: '',
+										].join(' ').replace(/\s+$/, ' ')
 							})
 							: ''
 
@@ -243,8 +254,22 @@ window.component('push.view', function(view) {
 				m('.col-right', [
 					m('.comp-bar', [
 						m('.percent', {style: {color: opts.color}}, opts.total === 0 ? 0 : opts.prc),
-						m('.bar', m('.color', {style: {'background-color': opts.color, width: opts.prc}})),
-						opts.descr ? m('.desc', m.trust(opts.descr)) : ''
+						m('.bar', [
+							m('.color', {style: {'background-color': opts.color, width: opts.prc}}),
+							opts.subco && opts.subco.length ? 
+								m('.tick-holder', {style: {width: (opts.count / opts.total * 100) + '%'}}, opts.subco.map(function(sub, i){
+									var prev = opts.subco.slice(0, i).reduce(function(a, b){ return a + b; }, 0);
+									return m('.tick', {style: {left: (prev / opts.count * 100) + '%', width: (sub / opts.count * 100) + '%'}, config: function(element){
+										if (element.clientWidth < 20) { element.textContent = ' '; }
+									}}, Math.ceil(sub / opts.count * 100) + '%');
+								}))
+							: ''
+						]),
+						opts.descr ? m('.desc', {config: function(element){
+							if (element.scrollHeight > 15) {
+								element.parentElement.parentElement.previousSibling.style['padding-bottom'] = '23px';
+							}
+						}}, m.trust(opts.descr)) : ''
 					])
 				])
 			]);
@@ -334,6 +359,12 @@ window.component('push.view', function(view) {
 							m('.col-right', m.trust(ctrl.message.url()))
 						])
 						: '',
+					ctrl.message.media() ?
+						m('.comp-push-view-row', [
+							m('.col-left', t('pu.po.tab3.extras.media')),
+							m('.col-right', m.trust(ctrl.message.media()))
+						])
+						: '',
 					ctrl.message.data() ?
 						m('.comp-push-view-row', [
 							m('.col-left', t('pu.po.tab3.extras.data')),
@@ -353,6 +384,23 @@ window.component('push.view', function(view) {
 					ctrl.message.geo() ? m('.comp-push-view-row', [
 						m('.col-left', t('pu.po.tab3.location')),
 						m('.col-right', geo ? geo.title : t('pu.po.tab3.location.unknown'))
+					]) : '',
+					ctrl.message.messagePerLocale() && ctrl.message.messagePerLocale()['default' + push.C.S + 't'] ? m('.comp-push-view-row', [
+						m('.col-left', t('pu.po.tab3.title')),
+						m('.col-right', m.trust(ctrl.message.messagePerLocale()['default' + push.C.S + 't']))
+					]) : '',
+					ctrl.message.buttons() > 0 ? m('.comp-push-view-row', [
+						m('.col-left', t('pu.po.tab3.btns')),
+						m('.col-right', [
+							m('.comp-push-view-row', [
+								m('.col-left', ctrl.message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 't']),
+								m('.col-right', m.trust(ctrl.message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 'l']))
+							]),
+							ctrl.message.buttons() > 1 ? m('.comp-push-view-row', [
+								m('.col-left', ctrl.message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 't']),
+								m('.col-right', m.trust(ctrl.message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 'l']))
+							]) : ''
+						])
 					]) : '',
 				]),
 

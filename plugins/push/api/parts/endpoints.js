@@ -11,7 +11,8 @@ var common          = require('../../../../api/utils/common.js'),
     N               = require('./note.js'),
     jobs            = require('../../../../api/parts/jobs'),
     plugins         = require('../../../pluginManager.js'),
-    geoip           = require('geoip-lite');
+    geoip           = require('geoip-lite'),
+    S               = '|';
 
 (function (api) {
 
@@ -386,6 +387,8 @@ var common          = require('../../../../api/utils/common.js'),
                 'sound':                { 'required': false, 'type': 'String'  },
                 'badge':                { 'required': false, 'type': 'Number'  },
                 'url':                  { 'required': false, 'type': 'URL'     },
+                'buttons':              { 'required': false, 'type': 'Number'  },
+                'media':                { 'required': false, 'type': 'URL'     },
                 'contentAvailable':     { 'required': false, 'type': 'Boolean' },
                 'newsstandAvailable':   { 'required': false, 'type': 'Boolean' },
                 'collapseKey':          { 'required': false, 'type': 'String'  },
@@ -414,6 +417,15 @@ var common          = require('../../../../api/utils/common.js'),
 
         if (msg.type !== 'data' && (!msg.messagePerLocale || !msg.messagePerLocale.default)) {
             common.returnOutput(params, {error: 'Messages of type other than "data" must have "messagePerLocale" object with at least "default" key set'});
+            return false;
+        } else if (msg.type !== 'data' && msg.buttons > 0 && (!msg.messagePerLocale['default' + S + '0' + S + 't'] || !msg.messagePerLocale['default' + S + '0' + S + 'l'])) {
+            common.returnOutput(params, {error: 'Messages of type other than "data" with 1 button must have "messagePerLocale" object with at least "default|0|t" & "default|0|l" keys set'});
+            return false;
+        } else if (msg.type !== 'data' && msg.buttons > 1 && (!msg.messagePerLocale['default' + S + '1' + S + 't'] || !msg.messagePerLocale['default' + S + '1' + S + 'l'])) {
+            common.returnOutput(params, {error: 'Messages of type other than "data" with 2 buttons must have "messagePerLocale" object with at least "default|1|t" & "default|1|l" keys set'});
+            return false;
+        } else if (msg.type !== 'data' && msg.buttons > 2) {
+            common.returnOutput(params, {error: 'Maximum 2 buttons supported'});
             return false;
         } else if (msg.type !== 'data') {
             var mpl = {};
@@ -523,6 +535,8 @@ var common          = require('../../../../api/utils/common.js'),
                 url: msg.url,
                 sound: msg.sound,
                 badge: msg.badge,
+                buttons: msg.buttons,
+                media: msg.media,
                 contentAvailable: msg.contentAvailable,
                 collapseKey: msg.collapseKey,
                 delayWhileIdle: msg.delayWhileIdle,
@@ -899,6 +913,27 @@ var common          = require('../../../../api/utils/common.js'),
             // common.db.collection('apps').updateOne({_id: common.db.ObjectID(args.app_id)}, update, log.logdb('updating app with credentials'));
         }
         return false;
+    };
+
+    api.mimeInfo = function(params) {
+        var url = params.qstring.url;
+        if (url) {
+            log.d('Retrieving URL', url);
+            var parsed = require('url').parse(url);
+            
+            parsed.method = 'HEAD';
+            log.d('Parsed', parsed);
+
+            let req = require(parsed.protocol === 'http:' ? 'http' : 'https').request(parsed, (res) => {
+                common.returnOutput(params, {status: res.statusCode, headers: res.headers});
+            });
+            req.on('error', log.e.bind(log, 'error when HEADing ' + url));
+            req.end();
+
+        } else {
+            common.returnMessage(params, 400, 'no url');
+        }
+        return true;
     };
 
     api.processTokenSession = function(dbAppUser, params) {

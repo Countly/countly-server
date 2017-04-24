@@ -31,8 +31,8 @@ if (!window.component) {
 		}
 	};
 
-	window.vprop = function(val, validator, errorText) {
-		var prop = m.prop(), 
+	window.vprop = function(val, validator, errorText, property) {
+		var prop = property || m.prop(), 
 			f = function() {
 				if (arguments.length) {
 					f.valid = validator(arguments[0]);

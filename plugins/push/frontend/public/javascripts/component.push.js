@@ -20,7 +20,9 @@ window.component('push', function(push) {
 		PLATFORMS: {
 			IOS: 'i',
 			ANDROID: 'a'
-		}
+		},
+
+		S: '|'
 	};
 
 	push.ICON = {
@@ -31,7 +33,11 @@ window.component('push', function(push) {
 	};
 
 	var t = window.components.t,
-		URL_REGEXP = new RegExp( "([A-Za-z][A-Za-z0-9+\\-.]*):(?:(//)(?:((?:[A-Za-z0-9\\-._~!$&'()*+,;=:]|%[0-9A-Fa-f]{2})*)@)?((?:\\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\\.[A-Za-z0-9\\-._~!$&'()*+,;=:]+)\\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\\-._~!$&'()*+,;=]|%[0-9A-Fa-f]{2})*))(?::([0-9]*))?((?:/(?:[A-Za-z0-9\\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|/((?:(?:[A-Za-z0-9\\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?)|((?:[A-Za-z0-9\\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|)(?:\\?((?:[A-Za-z0-9\\-._~!$&'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?(?:\\#((?:[A-Za-z0-9\\-._~!$&'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?");
+		URL_REGEXP = push.URL_REGEXP = new RegExp("([A-Za-z][A-Za-z0-9+\\-.]*):(?:(//)(?:((?:[A-Za-z0-9\\-._~!$&'()*+,;=:]|%[0-9A-Fa-f]{2})*)@)?((?:\\[(?:(?:(?:(?:[0-9A-Fa-f]{1,4}:){6}|::(?:[0-9A-Fa-f]{1,4}:){5}|(?:[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,1}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){3}|(?:(?:[0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})?::(?:[0-9A-Fa-f]{1,4}:){2}|(?:(?:[0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}:|(?:(?:[0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})?::)(?:[0-9A-Fa-f]{1,4}:[0-9A-Fa-f]{1,4}|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))|(?:(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})?::[0-9A-Fa-f]{1,4}|(?:(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})?::)|[Vv][0-9A-Fa-f]+\\.[A-Za-z0-9\\-._~!$&'()*+,;=:]+)\\]|(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|(?:[A-Za-z0-9\\-._~!$&'()*+,;=]|%[0-9A-Fa-f]{2})*))(?::([0-9]*))?((?:/(?:[A-Za-z0-9\\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|/((?:(?:[A-Za-z0-9\\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)?)|((?:[A-Za-z0-9\\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})+(?:/(?:[A-Za-z0-9\\-._~!$&'()*+,;=:@]|%[0-9A-Fa-f]{2})*)*)|)(?:\\?((?:[A-Za-z0-9\\-._~!$&'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?(?:\\#((?:[A-Za-z0-9\\-._~!$&'()*+,;=:@/?]|%[0-9A-Fa-f]{2})*))?"),
+		IMAGE_REGEXP = push.IMAGE_REGEXP = new RegExp(".*\\.(jpg|jpeg|png)$"),
+		ANIMA_REGEXP = push.ANIMA_REGEXP = new RegExp(".*\\.gif$"),
+		VIDEO_REGEXP = push.VIDEO_REGEXP = new RegExp(".*\\.mp4$"),
+		AUDIO_REGEXP = push.AUDIO_REGEXP = new RegExp(".*\\.mp3$");
 
 	if (!push.statusers) { push.statusers = []; }
 	if (!push.actions) { push.actions = []; }
@@ -89,6 +95,73 @@ window.component('push', function(push) {
 		this.appNames = m.prop(data.appNames || []);
 		this.created = m.prop(data.created);
 		this.saved = m.prop(false);
+		this.buttons = m.prop(data.buttons || 0);
+		this.media = (function(val){
+			var prop = m.prop(val),
+				f = function(){
+					if (arguments.length) {
+						f.valid = false;
+						prop(arguments[0]);
+						
+						if (IMAGE_REGEXP.test(prop()) || ANIMA_REGEXP.test(prop()) || VIDEO_REGEXP.test(prop()) || AUDIO_REGEXP.test(prop())) {
+							f.errorText = undefined;
+
+							push.remoteMimeInfo(prop()).then(function(resp){
+								if (resp.status >= 200 && resp.status < 300 && resp.headers && resp.headers['content-type']) {
+									f.mime = resp.headers['content-type'];
+									
+									var bytes = parseInt(resp.headers['content-length']);
+									if (isNaN(bytes)) {
+										f.mimeSize = 'n/a';
+										f.errorText = 'Unknown size';
+									} else if (bytes <= 1024) {
+										f.mimeSize = '< 1Kb';
+										f.valid = true;
+									} else if (bytes <= 1024 * 1024) {
+										f.mimeSize = Math.round(bytes / 1024) + 'Kb';
+										f.valid = true;
+									} else if (bytes >= 10 * 1024 * 1024) {
+										f.mimeSize = Math.round(bytes / 1024 / 1024) + 'Mb';
+										f.valid = false;
+										f.errorText = t('pu.po.tab2.extras.media.toobig');
+									} else {
+										f.mimeSize = Math.round(bytes / 1024 / 1024) + 'Mb';
+										f.valid = true;
+									}
+								} else {
+									f.mime = undefined;
+									f.mimeSize = undefined;
+									f.errorText = 'Status: ' + resp.status;
+								}
+							}, function(err){
+								f.mime = undefined;
+								f.mimeSize = undefined;
+								f.errorText = typeof err === 'object' ? JSON.stringify(err) : err;
+							});
+						} else if (prop() === undefined) {
+							f.valid = true;
+							f.mime = undefined;
+							f.mimeSize = undefined;
+							f.errorText = undefined;
+						} else {
+							f.mime = undefined;
+							f.mimeSize = undefined;
+							f.errorText = t('pu.po.tab2.extras.media.invalid');
+						}
+					}
+					return prop();
+				};
+
+			f.view = function(){
+				if (!prop() || !f.valid) { return ''; }
+				
+				if (f.mime && f.mime.indexOf('image/') === 0) {
+					return m('img.preview-message-media', {src: prop()});
+				}
+				return m('span', 'not supported media type');
+			};
+			return f;
+		})(data.media);
 
 		if (this.apps().length && !this.appNames().length) {
 			this.appNames(this.apps().map(function(id){ return window.countlyGlobal.apps[id].name; }));
@@ -161,6 +234,8 @@ window.component('push', function(push) {
 				obj.url = this.url();
 				obj.source = 'dash';
 				obj.date = this.date();
+				obj.buttons = parseInt(this.buttons());
+				obj.media = this.media();
 
 				if (this.data()) {
 					obj.data = typeof this.data() === 'string' ? JSON.parse(this.data()) : this.data();
@@ -295,6 +370,9 @@ window.component('push', function(push) {
 		this.sent = m.prop(data.sent || 0);
 		this.errors = m.prop(data.errors || 0);
 		this.actioned = m.prop(data.actioned || 0);
+		this.actioned0 = m.prop(data['actioned' + push.C.S + '0'] || 0);
+		this.actioned1 = m.prop(data['actioned' + push.C.S + '1'] || 0);
+		this.actioned2 = m.prop(data['actioned' + push.C.S + '2'] || 0);
 		this.error = m.prop(data.error);
 		this.errorCodes = m.prop(data.errorCodes);
 		this.nextbatch = m.prop(data.nextbatch);
@@ -363,6 +441,17 @@ window.component('push', function(push) {
 		}).then(function(data){
 			if (data.error) { throw data.error; }
 			return data;
+		});
+	};
+
+	push.remoteMimeInfo = function(url) {
+		return m.request({
+			method: 'GET',
+			url: window.countlyCommon.API_URL + '/i/pushes/mime',
+			data: {
+				api_key: window.countlyGlobal.member.api_key,
+				url: url
+			}
 		});
 	};
 
