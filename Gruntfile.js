@@ -184,7 +184,7 @@ module.exports = function(grunt) {
 
 	  			files.forEach(function(name){
 	  				var file = path.join(javascripts, name);
-	  				if (fs.statSync(file).isFile()) {
+	  				if (fs.statSync(file).isFile() && name.indexOf('.') !== 0) {
 	  					js.push('plugins/' + plugin + '/frontend/public/javascripts/' + name);
 	  				}
 	  			});
