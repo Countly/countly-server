@@ -35,6 +35,13 @@
         "firefox":{short: "f", name: "Firefox OS"},
         "tizen":{short: "t", name: "Tizen"}
     };
+    
+    countlyDeviceDetails.getCleanVersion = function(version){
+        for(var i in countlyDeviceDetails.os_mapping){
+            version = version.replace(new RegExp("^"+countlyDeviceDetails.os_mapping[i].short,"g"), "");
+        }
+        return version;
+    };
 
     countlyDeviceDetails.callback = function(isRefresh, data){
       if(isRefresh){
