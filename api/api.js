@@ -248,6 +248,12 @@ if (cluster.isMaster) {
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, user){
                 params.app_user = user || {};
                 
+                //check unique milisecond timestamp, if it is the same as the last request had, 
+                //then we are having duplicate request, due to sudden connection termination
+                if(params.time.mstimestamp === params.app_user.lac){
+                    params.cancelRequest = true;
+                }
+                
                 if (params.qstring.metrics && typeof params.qstring.metrics === "string") {		
                     try {		
                         params.qstring.metrics = JSON.parse(params.qstring.metrics);		
@@ -454,6 +460,9 @@ if (cluster.isMaster) {
                         }
                     }
                 } else {
+                    if (plugins.getConfig("api").safe && !params.res.finished) {
+                        common.returnMessage(params, 200, 'Request ignored');
+                    }
                     return done ? done() : false;
                 }
             });
