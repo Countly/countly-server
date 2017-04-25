@@ -1303,12 +1303,12 @@ var common = {},
             if(!update["$setOnInsert"])
                 update["$setOnInsert"] = {};
             if(!update["$setOnInsert"].fac)
-                update["$setOnInsert"].fac = params.time.timestamp;
+                update["$setOnInsert"].fac = params.time.mstimestamp;
             
             if(!update["$set"])
                 update["$set"] = {};
             if(!update["$set"].lac)
-                update["$set"].lac = params.time.timestamp;
+                update["$set"].lac = params.time.mstimestamp;
             common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id},{}, update, {new:true, upsert:true}, function(err, res) {
                 if(!err && res && res.value)
                     params.app_user = res.value;
