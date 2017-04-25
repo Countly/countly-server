@@ -570,7 +570,7 @@ div.datatablesubrow {display: none;}
 .widget-header .left .btn-header { margin-top: 4px; }
 #segmentation .btn-header { margin-top: 0; margin-left: 5px; }
 
-#date-selector { float:right; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#6B6B6B; padding:6px; padding-right:0; overflow:auto; user-select:none; }
+#date-selector { float:right; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#6B6B6B; padding:6px; padding-right:0; user-select:none; position: relative; }
 	#date-selector .button { visibility: visible; cursor:pointer; user-select:none; background-color:#ececec; float:left; padding:7px 5px; padding-top:6px; border:1px solid #D0D0D0; margin-right:-1px; }
     .widget-header:hover #date-selector .button { visibility: visible; }
     #date-selector .date-buttons-container { float: left; }
@@ -581,11 +581,11 @@ div.datatablesubrow {display: none;}
 	#date-selector .button.active { background-color:#F9F9F9; }
 	#date-selector>.calendar { background-color:#ececec; border:1px solid #D0D0D0; cursor:pointer; float:right; border-radius:2px; margin:0 5px 0 13px; width:27px; height:27px; text-align: center; }
     #date-selector>.calendar:hover { background-color:#F9F9F9; }
-    #date-selector>.calendar i { margin-top:2px; }
+    #date-selector>.calendar i { margin-top:4px; font-size: 18px; }
 
-#date-picker, .date-picker { display:none; position:absolute; z-index:1000; padding:2px 3px 6px 3px; background-color:#292929; border-radius:2px; right: 13px; top: 54px; }
+#date-picker, .date-picker { white-space:nowrap; display:none; position:absolute; z-index:1000; padding:2px 3px 6px 3px; background-color:#292929; border-radius:2px; right: 5px; top: 43px; }
 	#date-picker .calendar-container, .date-picker .calendar-container { overflow:auto; padding:0 5px; }
-	#date-picker .calendar-container .calendar, .date-picker .calendar-container .calendar { float:left; }
+	#date-picker .calendar-container .calendar, .date-picker .calendar-container .calendar { display:inline-block; vertical-align: top; }
     	#date-picker .calendar-container .calendar:nth-child(2) { margin-right:0; }
 	#date-picker .button-container { overflow:auto; margin-top:6px; padding: 0 15px 8px; }
         #date-picker .button-container .icon-button { float: right; padding: 7px 20px; }
@@ -651,7 +651,7 @@ div.datatablesubrow {display: none;}
 #date-picker .ui-datepicker .ui-datepicker-next { height:23px; }
 .ui-datepicker-inline .ui-datepicker-prev,
 .ui-datepicker-inline .ui-datepicker-next { height:21px; }
-.ui-datepicker .ui-widget-header .ui-icon { background-image: none; text-indent: 0; }
+.ui-datepicker .ui-widget-header .ui-icon { background-image: none; text-indent: 3px; }
 .ui-icon-circle-triangle-w,
 .ui-icon-circle-triangle-e { font-family: 'FontAwesome'; text-align:right; width:11px; overflow: hidden; color:#bfbfbf; font-size:10px; }
 .ui-icon-circle-triangle-w:before { content: "\f053  "; }
