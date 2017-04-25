@@ -4,7 +4,7 @@ var plugin = {},
 
 (function (plugin) {
 	//write api call
-	plugins.register("/i", function(ob){
+	plugins.register("/sdk", function(ob){
 		var params = ob.params;
 		var now = Math.round(new Date().getTime()/1000);
 		var ts = common.initTimeObj(null, params.qstring.timestamp || now).timestamp;
