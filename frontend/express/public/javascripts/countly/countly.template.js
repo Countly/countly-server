@@ -844,7 +844,7 @@ var AppRouter = Backbone.Router.extend({
                 };
 
                 resetSessionTimeouts(parseInt(countlyGlobal.config["session_timeout"]));
-                $(document).click(function (event) {
+                $(document).on("click mousemove extend-dashboard-user-session", function (event) {
                     if(shouldRecordAction)
                         extendSession();
                 });
