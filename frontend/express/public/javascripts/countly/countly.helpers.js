@@ -238,15 +238,13 @@
             data.type = type;
             data.limit = hardLimit;
             data.skip = page*hardLimit;
-            var qstring = [];
-            for(var i in data){
-                qstring.push(i+"="+data[i]);
-            }
             var url = "/o/export/db";
-            if(qstring.length){
-                url += "?"+qstring.join("&");
-            }
-            window.location = url;
+            var form = $('<form method="POST" action="' + url + '">');
+            $.each(data, function(k, v) {
+                form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
+            });
+            $('body').append(form);
+            form.submit();
         });
         if(asDialog)
             revealDialog(dialog);
