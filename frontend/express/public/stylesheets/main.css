@@ -95,7 +95,7 @@
        url('../fonts/Oswald-700/Oswald-700.svg#Oswald') format('svg');
 }
 
-
+html { height: 100%; }
 body { margin:0; padding:0; overflow:auto; background-color:#F9F9F9; user-select:text; font-family: Ubuntu,Helvetica,sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 #content-container { margin-left:224px; min-width:768px; min-height: 400px; padding:78px 16px 35px 16px; }
 #content-container.cover-left { margin-left:0; }
@@ -1361,6 +1361,8 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 #top-bar .dropdown.active { box-shadow: inset 0 1px 0 0 #2fa732; }
 #top-bar .dropdown.active .selected { display: block; }
 #top-bar .dropdown.active .empty-state { display: none; }
+#top-bar .dropdown.active.no-selection .selected { display: none; }
+#top-bar .dropdown.active.no-selection .empty-state { display: block; }
 #top-bar .dropdown .selected,
 #top-bar .dropdown .empty-state { font-size: 14px; color:#474747; }
 #top-bar .dropdown.icon .selected,
