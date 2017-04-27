@@ -938,14 +938,18 @@ app.post(countlyConfig.path+'/apps/icon', function (req, res, next) {
         return true;
     }
     plugins.callMethod("iconUpload", {req:req, res:res, next:next, data:req.body});
-    fs.rename(tmp_path, target_path, function (err) {
-        fs.unlink(tmp_path, function () {});
+    var is = fs.createReadStream(tmp_path);
+    var os = fs.createWriteStream(target_path);
+    is.pipe(os);
+    is.on('end',function() {
+        fs.unlinkSync(tmp_path);
+    });
+    os.on('finish',function() {
         jimp.read(target_path, function (err, icon) {
             if (err) console.log(err, err.stack);
-            icon.cover(72, 72)            // resize                // set JPEG quality                 // set greyscale 
-                .write(target_path); // save 
+            icon.cover(72, 72).write(target_path); // save 
         });
-
+        
         res.send(countlyConfig.path+"/appimages/" + req.body.app_image_id + ".png");
     });
 });
