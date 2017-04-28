@@ -202,8 +202,8 @@ class Note {
 					if (typeof message === 'string') {
 						compiled.aps.alert = message;
 					} else {
-						compiled.aps = {
-							alert: message.message,
+						compiled.aps.alert = {
+							body: message.message,
 							title: message.title
 						};
 					}
@@ -240,6 +240,7 @@ class Note {
 
 				if (message && message.buttons) {
 					compiled.c.b = message.buttons;
+					compiled.aps['mutable-content'] = 1;
 				}
 
 				return JSON.stringify(compiled);
