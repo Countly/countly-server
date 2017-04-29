@@ -6,7 +6,8 @@ const assistant = {},
     pluginManager = require('../../pluginManager.js'),
     PromiseB = require("bluebird"),
     time = require('time')(Date),
-    async = require("async");
+    async = require("async"),
+    _ = require('underscore');
 
 (function (assistant) {
     const db_name_notifs = "assistant_notifs";
@@ -16,6 +17,7 @@ const assistant = {},
     assistant.NOTIF_TYPE_QUICK_TIPS = "1";
     assistant.NOTIF_TYPE_INSIGHTS = "2";
     assistant.NOTIF_TYPE_ANNOUNCEMENTS = "3";
+    assistant.NOTIF_TYPE_INFORMATIONAL = "4";//information about some local event, for example, a job that is running
 
     assistant.JOB_SCHEDULE_INTERVAL = 30;//in minutes
 
@@ -334,6 +336,16 @@ const assistant = {},
 
         if ((anc.apc.flagIgnoreDAT || correctTimeAndDate) && requirements || anc.apc.flagForceGenerate) {
             assistant.createNotificationAndSetShowAmount(anc.apc.db, anc.valueSet, anc.apc.app_id, data);
+        }
+    };
+    
+    
+    assistant.createNotificationExternal = function (db, data, pluginName, type, subtype, i18n, appId, notificationVersion, callback) {
+        try {
+            assistant.createNotification(db, data, pluginName, type, subtype, i18n, appId, notificationVersion);
+            callback(true, "");
+        } catch (err) {
+            callback(false, err);
         }
     };
 

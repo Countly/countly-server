@@ -299,4 +299,29 @@
         });
     };
 
+    /**
+     * This is used if another plugin other than the Assistant wants to create notificaitons from the frontend.
+     * Create a notification from another plugin
+     */
+    countlyAssistant.createNotificationOther = function (callback) {
+        CountlyHelpers.alert("12", "green");
+        return $.ajax({
+            type:"GET",
+            url:countlyCommon.API_URL + "/i/assistant/create_external",
+            data:{
+                api_key:countlyGlobal['member'].api_key
+            },
+            success:function (json) {
+                if(callback) {
+                    callback(true);
+                }
+            },
+            error:function (result) {
+                if(callback) {
+                    callback(false, result);
+                }
+            }
+        });
+    };
+
 }(window.countlyAssistant = window.countlyAssistant || {}, jQuery));

@@ -151,4 +151,8 @@ $( document ).ready(function() {
         '</a>';
     $('#mobile-type #analytics-submenu').append(menu);
     $('#web-type #analytics-submenu').append(menu);
+
+    CountlyHelpers.alert(10, "green");
+    countlyAssistant.createNotificationOther();
+    CountlyHelpers.alert(11, "green");
 });
