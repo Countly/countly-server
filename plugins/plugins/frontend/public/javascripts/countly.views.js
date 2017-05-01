@@ -342,6 +342,19 @@ window.ConfigurationsView = countlyView.extend({
             "reset": this.reset
         };
         var self = this;
+        if(this.success){
+            CountlyHelpers.notify({
+                title: jQuery.i18n.map["configs.changed"],
+                message: jQuery.i18n.map["configs.saved"]
+            });
+            this.success = false;
+            if(typeof history !== "undefined" && typeof history.replaceState !== "undefined"){
+                if(this.userConfig)
+                    history.replaceState(undefined, undefined, "#/manage/user-settings");
+                else
+                    history.replaceState(undefined, undefined, "#/manage/configurations");
+            }
+        }
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             this.changes = {};
@@ -609,13 +622,11 @@ window.ConfigurationsView = countlyView.extend({
                             });
                         }
                         else{
-                            CountlyHelpers.notify({
-                                title: jQuery.i18n.map["configs.changed"],
-                                message: jQuery.i18n.map["configs.saved"]
-                            });
                             self.configsData = JSON.parse(JSON.stringify(self.cache));
                             $("#configs-apply-changes").hide();
                             self.changes = {};
+                            location.hash = "#/manage/configurations/success";
+                            window.location.reload(true);
                         }
                     });
                 }
@@ -796,14 +807,32 @@ if(countlyGlobal["member"].global_admin){
         this.configurationsView.namespace = null;
         this.configurationsView.reset = false;
         this.configurationsView.userConfig = false;
+        this.configurationsView.success = false;
         this.renderWhenReady(this.configurationsView);
     });
     
     app.route('/manage/configurations/:namespace', 'configurations_namespace', function (namespace) {
-        this.configurationsView.namespace = namespace;
-        this.configurationsView.reset = false;
-        this.configurationsView.userConfig = false;
-        this.renderWhenReady(this.configurationsView);
+        if(namespace == "reset"){
+            this.configurationsView.namespace = null;
+            this.configurationsView.reset = true;
+            this.configurationsView.userConfig = false;
+            this.configurationsView.success = false;
+            this.renderWhenReady(this.configurationsView);
+        }
+        else if(namespace == "success"){
+            this.configurationsView.namespace = null;
+            this.configurationsView.reset = false;
+            this.configurationsView.userConfig = false;
+            this.configurationsView.success = true;
+            this.renderWhenReady(this.configurationsView);
+        }
+        else{
+            this.configurationsView.namespace = namespace;
+            this.configurationsView.reset = false;
+            this.configurationsView.userConfig = false;
+            this.configurationsView.success = false;
+            this.renderWhenReady(this.configurationsView);
+        }
     });
 } 
 
@@ -811,14 +840,21 @@ app.route('/manage/user-settings', 'user-settings', function () {
     this.configurationsView.namespace = null;
     this.configurationsView.reset = false;
     this.configurationsView.userConfig = true;
+    this.configurationsView.success = false;
     this.renderWhenReady(this.configurationsView);
 });
 
 app.route('/manage/user-settings/:namespace', 'user-settings_namespace', function (namespace) {
-    if(namespace == "reset")
+    if(namespace == "reset"){
         this.configurationsView.reset = true;
-    else
+        this.configurationsView.success = false;
+        this.configurationsView.namespace = null;
+    }
+    else{
+        this.configurationsView.reset = false;
+        this.configurationsView.success = false;
         this.configurationsView.namespace = namespace;
+    }
     this.configurationsView.userConfig = true;
     this.renderWhenReady(this.configurationsView);
 });
