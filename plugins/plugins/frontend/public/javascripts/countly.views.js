@@ -360,8 +360,8 @@ window.ConfigurationsView = countlyView.extend({
             this.changes = {};
             this.cache = JSON.parse(JSON.stringify(this.configsData));
             
-            $(".configs #username").val($("#menu-username").text());
-            $(".configs #api-key").val($("#user-api-key").val());
+            $(".configs #username").val(countlyGlobal["member"].username);
+            $(".configs #api-key").val(countlyGlobal["member"].api_key);
             
             $("#configs-back").click(function(){
                 window.history.back();
@@ -573,7 +573,6 @@ window.ConfigurationsView = countlyView.extend({
                                     return true;
                                 }
                                 $("#user-api-key").val(api_key);
-                                countlyGlobal["member"].api_key = api_key;
                                 $(".configs #old_pwd").val("");
                                 $(".configs #new_pwd").val("");
                                 $(".configs #re_new_pwd").val("");
