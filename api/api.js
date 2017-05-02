@@ -1177,7 +1177,7 @@ if (cluster.isMaster) {
                             else
                                 multi = false;
                             validateUserForDataReadAPI(params, function(){
-                                authorize.save({db:common.db, ttl:ttl, multi:multi, owner:params.member._id+"", callback:function(err, token){
+                                authorize.save({db:common.db, ttl:ttl, multi:multi, owner:params.member._id+"", app:params.app_id+"", callback:function(err, token){
                                     if(err){
                                         common.returnMessage(params, 404, 'DB Error');
                                     }

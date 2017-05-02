@@ -17,6 +17,7 @@ var crypto = require("crypto");
     * @param {bool} [options.multi=false] - if true, can be used many times until expired
     * @param {string} options.token - token to store, if not provided, will be generated
     * @param {string} options.owner - id of the user who created this token
+    * @param {string} options.app - id of the app for which token was created
     * @param {function} options.callback - function called when saving was completed or errored, providing error object as first param and token string as second
     */
     authorizer.save = function (options) {
@@ -25,7 +26,8 @@ var crypto = require("crypto");
         options.ttl = options.ttl || 0;
         options.multi = options.multi || false;
         options.owner = options.owner || "";
-        options.db.collection("auth_tokens").insert({_id:options.token, ttl:options.ttl, ends:options.ttl+Math.round(Date.now()/1000)}, function(err, res){
+        options.app = options.app || "";
+        options.db.collection("auth_tokens").insert({_id:options.token, ttl:options.ttl, ends:options.ttl+Math.round(Date.now()/1000), multi:options.multi, owner:options.owner, app:options.app}, function(err, res){
             if(typeof options.callback === "function"){
                 options.callback(err, options.token);
             }
