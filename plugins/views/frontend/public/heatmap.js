@@ -7,11 +7,49 @@
         baseBlur = 1.6,
         actionType = "click",
         apiPath = "/o/actions",
-        period = "30days";
-    function get(id) {
-        return document.getElementById(id);
-    }
+        period = Countly.passed_data.period || "30days";
     Countly._internals.loadJS(Countly.url+"/views/javascripts/simpleheat.js", function(){
+        //place the toolbar
+        document.body.style.position = "relative";
+        var origtop = document.body.style.top;
+        var toppx = 60;
+        if(origtop)
+            toppx += parseInt(origtop);
+        document.body.style.top = toppx+"px";
+        var topbar = document.createElement('div');
+        topbar.setAttribute("id", "cly-topbar");
+        topbar.style.position = "fixed";
+        topbar.style.top = "0px";
+        topbar.style.left = "0px";
+        topbar.style.width = "100%";
+        topbar.style.height = "45px";
+        topbar.style.paddingTop = "15px";
+        topbar.style.backgroundColor = "#F0F3F7";
+        topbar.style.boxSizing = "content-box";
+        topbar.style.zIndex = 1000001;
+        document.body.appendChild(topbar);
+        var img = document.createElement('img');
+        img.src = Countly.url+"/images/dashboard/countly_logo.svg";
+        img.setAttribute('style', 'height:30px !important; vertical-align:-7px;');
+        var childSpan = document.createElement('span');
+        childSpan.setAttribute('style', 'display: inline-block; margin-left: 14px; font-size: 16px; vertical-align: top; margin-top: 6px; border-left: 1px solid #ababab; padding-left: 14px;');
+        childSpan.innerHTML = "Heatmaps";
+        var span = document.createElement('span');
+        span.appendChild(img);
+        span.appendChild(childSpan);
+        span.setAttribute('style', 'font:20px "PT Sans", sans-serif;margin-left: 22px;color:#666;');
+        topbar.appendChild(span);
+        var closeX = document.createElement('a');
+        closeX.innerHTML = "&#10006;";
+        closeX.setAttribute('style', 'font: 22px "PT Sans", sans-serif;position: absolute;top: 17px;right: 22px;color:#666;');
+        closeX.href = "#";
+        topbar.appendChild(closeX);
+        Countly._internals.add_event(closeX, "click", function(){
+            topbar.style.display = "none";
+            canvas.style.display = "none";
+            document.body.style.top = origtop;
+            window.name = null;
+        });
         //make canvas on whole screen
 		var canvas = document.createElement("canvas");
 		canvas.style.position = "absolute";
@@ -27,7 +65,6 @@
         map = simpleheat("cly-canvas-map");
         loadData();
         Countly._internals.add_event(window, "resize", function(){
-            console.log("resize");
             Countly.stop_time();
             canvas.setAttribute("width", "0px");
             canvas.setAttribute("height", "0px");
@@ -41,9 +78,7 @@
     });
     
     function loadData(){
-        console.log("loading data");
-        sendXmlHttpRequest({app_key:Countly.app_key, view:window.location.pathname, period:period}, function(err, clicks){
-            console.log("loaded", err, clicks);
+        sendXmlHttpRequest({app_key:Countly.app_key, view:Countly._internals.getLastView() || window.location.pathname, period:period}, function(err, clicks){
             if(!err){
                 data = clicks.data;
                 drawData();
@@ -62,7 +97,6 @@
                 heat.push([parseInt((point.x/point.width)*width), parseInt((point.y/point.height)*height), data[i].c])
         }
         map.clear();
-        console.log("heat", width+"x"+height);
         map.data(heat);
         baseRadius = Math.max((48500-35*data.length)/900, 5);
         drawMap(); 
@@ -89,7 +123,7 @@
     //sending xml HTTP request
 	function sendXmlHttpRequest(params, callback) {
         try {
-			console.log("Sending XML HTTP request");
+			Countly._internals.log("Sending XML HTTP request");
             var xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : null;
             
             var data = Countly._internals.prepareParams(params);      
@@ -114,14 +148,14 @@
                         Countly._internals.setToken(xhr.getResponseHeader("content-language"));
                     }
                     catch(ex){
-                        console.log("failed, trying fallback header");
+                        Countly._internals.log("failed, trying fallback header");
                         Countly.token = xhr.getResponseHeader("content-language");
                     }
                 }
                 if (this.readyState === 4 && this.status >= 200 && this.status < 300) {
 					if (typeof callback === 'function') { callback(false, JSON.parse(readBody(xhr))); }
                 } else if (this.readyState === 4) {
-					console.log("Failed Server XML HTTP request", this.status);
+					Countly._internals.log("Failed Server XML HTTP request", this.status);
                     if (typeof callback === 'function') { callback(true, params); }
                 }
             };
@@ -131,7 +165,7 @@
                 xhr.send(data);
         } catch (e) {
             // fallback
-			console.log("Failed XML HTTP request", e);
+			Countly._internals.log("Failed XML HTTP request", e);
             if (typeof callback === 'function') { callback(true, params); }
         }
     }
