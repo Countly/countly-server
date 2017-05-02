@@ -10,7 +10,7 @@ if (!window.components) {
 if (!window.components.slider) {
 
 	var defaultWidth = function() {
-		return Math.min(document.body.clientWidth - document.getElementById('sidebar').clientWidth, 768);
+		return Math.min(document.body.clientWidth - document.getElementById('sidebar').clientWidth, 968);
 	}, CLS = 'comp-slider comp-tt-bounding';
 
 	var slider = window.components.slider = {
@@ -66,11 +66,16 @@ if (!window.components.slider) {
 				return this;
 			}.bind(this);
 
-			this.setWidth = function(width) {
+			this.setWidth = function(width, once) {
 				this.el.style.width = width + 'px';
 
 				var btns = this.el.querySelector('.btns');
 				if (btns) { btns.style.width = width + 'px'; }
+
+				if (!once) {
+					setTimeout(this.setWidth.bind(this, width, true), 10);
+					setTimeout(this.setWidth.bind(this, width, true), 200);
+				}
 			};
 			
 			var prev = document.body.onresize;

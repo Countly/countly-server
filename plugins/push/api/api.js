@@ -59,6 +59,9 @@ var plugin = {},
                         $inc['result.delivered'] = event.count;
                     } else if (event.key == '[CLY]_push_action') {
                         $inc['result.actioned'] = event.count;
+                        if (event.segmentation && event.segmentation.b !== undefined) {
+                            $inc['result.actioned|' + event.segmentation.b] = event.count;
+                        }
                     }
 
                     common.db.collection('messages').update({_id: common.db.ObjectID(event.segmentation.i)}, {$inc: $inc},function(){});
@@ -108,6 +111,9 @@ var plugin = {},
                 break;
             case 'update':
                 validateUserForWriteAPI(push.updateApp, params);
+                break;
+            case 'mime':
+                validateUserForWriteAPI(push.mimeInfo, params);
                 break;
             default:
                 common.returnMessage(params, 404, 'Invalid endpoint');

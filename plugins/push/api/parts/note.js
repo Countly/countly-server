@@ -25,6 +25,8 @@ const Platform = {
 
 const DEFAULT_EXPIRY = 1000 * 60 * 60 * 24 * 7;
 
+const S = '|';
+
 /** 
  * Main notification class, stored in messages
  */
@@ -49,6 +51,8 @@ class Note {
 		this.data = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;  // Custom data
 		this.sound = data.sound;                 					// Sound
 		this.badge = data.badge;                					// Badge
+		this.buttons = data.buttons;                				// Number of buttons
+		this.media = data.media;                					// Media URL
 		this.test = data.test;                						// Test
 		this.date = data.date;                						// Date to be sent on
 		this.tz = data.tz;                							// Send in user timezones
@@ -87,6 +91,8 @@ class Note {
 			data: this.data ? JSON.stringify(this.data) : undefined,
 			sound: this.sound,
 			badge: this.badge,
+			buttons: this.buttons,
+			media: this.media,
 			result: this.result,
 			expiryDate: this.expiryDate,
 			date: this.date,
@@ -149,8 +155,38 @@ class Note {
 
 		if (typeof message === 'undefined') {
 			if (this.messagePerLocale) {
-				var content = {};
-				Object.keys(this.messagePerLocale).forEach(k => content[k] = this.compile(platform, this.messagePerLocale[k]));
+				var content = {},
+					hasTitle = !!this.messagePerLocale['default' + S + 't'],
+					hasButtons = this.buttons > 0,
+					buttons = function(){
+						var btns = [];
+						for (var i = 0; i < this.buttons; i++) {
+							btns.push({t: this.messagePerLocale['default' + S + i + S + 't'], l: this.messagePerLocale['default' + S + i + S + 'l']});
+						}
+						return btns;
+					}.bind(this);
+
+				Object.keys(this.messagePerLocale).filter(k => k.indexOf(S) === -1).forEach(locale => {
+					if (!hasButtons && !hasTitle) {
+						content[locale] = this.compile(platform, this.messagePerLocale[locale])
+					} else {
+						var cnt = {
+							message: this.messagePerLocale[locale] || this.messagePerLocale['default'],
+						};
+
+						if (hasTitle) {
+							cnt.title = this.messagePerLocale[locale + S + 't'] || this.messagePerLocale['default' + S + 't'];
+						}
+						if (hasButtons) {
+							cnt.buttons = buttons();
+							cnt.buttons.forEach((b, i) => {
+								b.t = this.messagePerLocale[locale + S + i + S + 't'] || b.t;
+								b.l = this.messagePerLocale[locale + S + i + S + 'l'] || b.l;
+							});
+						}
+						content[locale] = this.compile(platform, cnt)
+					}
+				});
 				return content;
 			} else {
 				return {
@@ -163,7 +199,14 @@ class Note {
 					aps: {},
 				};
 				if (message) {
-					compiled.aps.alert = message;
+					if (typeof message === 'string') {
+						compiled.aps.alert = message;
+					} else {
+						compiled.aps.alert = {
+							body: message.message,
+							title: message.title
+						};
+					}
 				}
 				if (this.sound !== undefined && this.sound !== null) {
 					compiled.aps.sound = this.sound;
@@ -191,6 +234,15 @@ class Note {
 					compiled.c.l = this.url;
 				}
 
+				if (this.media) {
+					compiled.c.a = this.media;
+				}
+
+				if (message && message.buttons) {
+					compiled.c.b = message.buttons;
+					compiled.aps['mutable-content'] = 1;
+				}
+
 				return JSON.stringify(compiled);
 			} else {
 				compiled = {};
@@ -205,7 +257,12 @@ class Note {
 
 				compiled.data = {};
 				if (message) {
-					compiled.data.message = message;
+					if (typeof message === 'string') {
+						compiled.data.message = message;
+					} else {
+						compiled.data.message = message.message;
+						compiled.data.title = message.title;
+					}
 				}
 
 				if (this.sound !== undefined && this.sound !== null) {
@@ -213,6 +270,9 @@ class Note {
 				}
 				if (this.badge !== undefined && this.badge !== null) {
 					compiled.data.badge = this.badge;
+				}
+				if (this.media) {
+					compiled.data.media = this.media;
 				}
 
 				if (!message && (this.sound === undefined || this.sound === null)) {
@@ -227,6 +287,14 @@ class Note {
 				
 				if (this.url) {
 					compiled.data['c.l'] = this.url;
+				}
+				
+				if (this.media) {
+					compiled.data['c.m'] = this.media;
+				}
+				
+				if (message && message.buttons) {
+					compiled.data['c.b'] = message.buttons;
 				}
 				
 				return compiled;

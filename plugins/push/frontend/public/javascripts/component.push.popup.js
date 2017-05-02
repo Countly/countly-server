@@ -1,7 +1,7 @@
 'use strict';
 
 /* jshint undef: true, unused: true */
-/* globals m, moment */
+/* globals m, moment, vprop, countlyCommon */
 
 window.component('push.popup', function(popup) {
 	var t = window.components.t,
@@ -112,6 +112,9 @@ window.component('push.popup', function(popup) {
 					if ((message.sound() !== undefined && !message.sound.valid) || 
 						(message.badge() !== undefined && !message.badge.valid) || 
 						(message.url() !== undefined && !message.url.valid) || 
+						(message.media() !== undefined && !message.media.valid) || 
+						(message.buttons() > 0 && (!message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 't'] || !message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 'l'] || !push.URL_REGEXP.test(message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 'l']))) || 
+						(message.buttons() > 1 && (!message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 't'] || !message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 'l'] || !push.URL_REGEXP.test(message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 'l']))) || 
 						(message.data() !== undefined && !message.data.valid)) {
 						enabled = false;
 					}
@@ -194,6 +197,8 @@ window.component('push.popup', function(popup) {
 					this.warnNoUsers(false);
 					popup.tabs.set(tab);
 				}
+
+				window.components.slider.instance.onresize();
 			}
 		}.bind(this);
 
@@ -201,6 +206,7 @@ window.component('push.popup', function(popup) {
 			ev.preventDefault();
 			if (this.tabs.tab() > 0) {
 				this.tabs.set(popup.tabs.tab() - 1);
+				window.components.slider.instance.onresize();
 			}
 		}.bind(this);
 
@@ -238,7 +244,24 @@ window.component('push.popup', function(popup) {
 
 		}.bind(this);
 
-		var activeLocale = m.prop(), localesController;
+		var activeLocale = m.prop('default'), localesController;
+	
+		function buttonTitle(index, key, locale) {
+			var k = (locale || activeLocale()) + (index === undefined ? (push.C.S + key) : (push.C.S + index + push.C.S + key));
+	
+			return vprop(message.messagePerLocale()[k] || (index === undefined ? undefined : key === 't' && (locale || activeLocale()) === 'default' ? t('pu.po.tab2.mbtn.' + (index + 1)) : undefined), function(v){
+				return !!v;
+			}, t('pu.po.tab2.mbtn.req'), function(v){
+				k = (locale || activeLocale()) + (index === undefined ? (push.C.S + key) : (push.C.S + index + push.C.S + key));
+
+				if (arguments.length) {
+					message.messagePerLocale()[k] = v;
+				}
+
+				return message.messagePerLocale()[k];
+			});
+		}
+
 		var locales = {
 			controller: function(){
 				var self = this;
@@ -260,20 +283,116 @@ window.component('push.popup', function(popup) {
 				this.relocale = function() {
 					this.locales = message.locales().map(function(l, i){
 						l = Object.assign({}, l);
+						l.messageTitle = buttonTitle(undefined, 't', l.value);
+						l.messageMessage = function(){
+							if (arguments.length) {
+								if (arguments[0]) {
+									message.messagePerLocale()[l.value] = arguments[0];
+								} else {
+									delete message.messagePerLocale()[l.value];
+								}
+							}
+							return message.messagePerLocale()[l.value];
+						};
+						l.buttonTitle0 = buttonTitle(0, 't', l.value);
+						l.buttonTitle1 = buttonTitle(1, 't', l.value);
+						l.buttonUrl0 = buttonTitle(0, 'l', l.value);
+						l.buttonUrl1 = buttonTitle(1, 'l', l.value);
+
+						l.titleCtrl = new window.components.emoji.controller({key: 't' + l.value, value: l.messageTitle, placeholder: function(){ return l.value === 'default' ? t('pu.po.tab2.mtitle.placeholder') : message.messagePerLocale()['default' + push.C.S + 't'] || t('pu.po.tab2.mtitle.placeholder'); }});
+						l.messageCtrl = new window.components.emoji.controller({key: 'm' + l.value, value: l.messageMessage, textarea: true, placeholder: function(){ return l.value === 'default' ? t('pu.po.tab2.placeholder') : message.messagePerLocale().default || t('pu.po.tab2.placeholder'); }});
+
+						l.btn0t = new window.components.input.controller({value: l.buttonTitle0, placeholder: function(){ return l.value === 'default' ? t('pu.po.tab2.btntext') : message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 't']; }});
+						l.btn1t = new window.components.input.controller({value: l.buttonTitle1, placeholder: function(){ return l.value === 'default' ? t('pu.po.tab2.btntext') : message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 't']; }});
+
+						l.btn0l = new window.components.input.controller({value: l.buttonUrl0, placeholder: function(){ return l.value === 'default' ? t('pu.po.tab2.urlordeep') : message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 'l']; }});
+						l.btn1l = new window.components.input.controller({value: l.buttonUrl1, placeholder: function(){ return l.value === 'default' ? t('pu.po.tab2.urlordeep') : message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 'l']; }});
+
 						l.tab = function() {
+							var checkmark;
+							if (l.value === 'default') {
+								var error = '';
+								if (!l.messageMessage()) { 
+									error = 'pu.po.tab2.default-message.invalid'; 
+								} else if (message.buttons() > 0 && !message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 't']) { 
+									error = 'pu.po.tab2.default-button-title.invalid';
+								} else if (message.buttons() > 0 && (!message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 'l'] || !push.URL_REGEXP.test(message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 'l']))) { 
+									error = 'pu.po.tab2.default-button-link.invalid';
+								} else if (message.buttons() > 1 && !message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 't']) { 
+									error = 'pu.po.tab2.default-button-title.invalid';
+								} else if (message.buttons() > 1 && (!message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 'l'] || !push.URL_REGEXP.test(message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 'l']))) { 
+									error = 'pu.po.tab2.default-button-link.invalid';
+								}
+								var config = window.components.tooltip.config(t(error));
+								config.key = error;
+								checkmark = !error ? m('span.ion-checkmark') : m('.error', config, push.ICON.WARN());
+							} else {
+								var found = false, mpl = message.messagePerLocale();
+								[l.value, l.value + push.C.S + 't', l.value + push.C.S + '0' + push.C.S + 't', l.value + push.C.S + '0' + push.C.S + 'l', l.value + push.C.S + '1' + push.C.S + 't', l.value + push.C.S + '1' + push.C.S + 'l'].forEach(function(k){
+									if (mpl[k]) { found = true; }
+								});
+								checkmark = found ? m('span.ion-checkmark') : '';
+							}
 							return m('div', {class: self.tabs.tab() === i ? 'active' : ''}, [
 								// message.locales()[l] ? m('.comp-push-tab-num.ion-checkmark') : 
-								m('span.comp-push-locale-count', l.percent + '%'),
+								m('span.comp-push-locale-count', 
+									l.value === 'default' ? 
+										m('.help-tt', window.components.tooltip.config(t('pu.po.tab2.default-message.help')), m('span.ion-information-circled'))
+										: (l.percent + '%')
+								),
 								m('span.comp-push-locale-title', l.title),
-								message.messagePerLocale()[l.value] ? m('span.ion-checkmark') : ''
+								checkmark
 							]);
 						};
 						l.view = function() {
-							return m('div', [
-								m('textarea', {placeholder: t('pu.po.tab2.placeholder'), 'data-locale': l.value, value: message.messagePerLocale()[l.value] || '', onkeyup: m.withAttr('value', self.ontext)}),
-								!message.messagePerLocale().default ? 
-									m('.error', window.components.tooltip.config(t('pu.po.tab2.default-message.invalid')), push.ICON.WARN())
-									: ''
+							return m('div', {key: 'locale-' + l.value}, [
+								m('.emoji', [
+									m('h6', t('pu.po.tab2.mtitle')),
+									window.components.emoji.view(l.titleCtrl)
+								]),
+								m('.emoji', [
+									m('h6', t('pu.po.tab2.mtext')),
+									window.components.emoji.view(l.messageCtrl)
+								]),
+								message.buttons() > 0 ? 
+									m('div', [
+										m('h6', t('pu.po.tab2.mbtn')),
+										message.buttons() > 0 ? 
+											m('.custom-button', [
+												m('h6', '#1'), 
+												m('div', [
+													window.components.input.view(l.btn0t),
+													l.buttonTitle0() && !l.buttonTitle0.valid ? 
+														m('.error', window.components.tooltip.config(t('pu.po.tab2.mbtn.req')), push.ICON.WARN())
+														: '',
+												]),
+												m('div', [
+													window.components.input.view(l.btn0l),
+													l.buttonUrl0() && !l.buttonUrl0.valid ? 
+														m('.error', window.components.tooltip.config(t('pu.po.tab2.mbtn.url')), push.ICON.WARN())
+														: ''
+												])
+											])
+											: '',
+										message.buttons() > 1 ? 
+											m('.custom-button', [
+												m('h6', '#2'), 
+												m('div', [
+													window.components.input.view(l.btn1t),
+													l.buttonTitle1() && !l.buttonTitle1.valid ? 
+														m('.error', window.components.tooltip.config(t('pu.po.tab2.mbtn.req')), push.ICON.WARN())
+														: '',
+												]),
+												m('div', [
+													window.components.input.view(l.btn1l),
+													l.buttonUrl1() && !l.buttonUrl1.valid ? 
+														m('.error', window.components.tooltip.config(t('pu.po.tab2.mbtn.url')), push.ICON.WARN())
+														: ''
+												])
+											])
+											: '',
+									])
+									: '',
 							]);
 						};
 						return l;
@@ -284,7 +403,7 @@ window.component('push.popup', function(popup) {
 				this.ontab(0);
 			},
 			view: function(ctrl){
-				return m('.comp-push-locales', [
+				return m('.comp-push-locales', {class: 'buttons-' + message.buttons()}, [
 					window.components.tabs.view(ctrl.tabs),
 				]);
 			},
@@ -293,8 +412,12 @@ window.component('push.popup', function(popup) {
 		var extra = {
 			controller: function(opts) {
 				this.title = opts.title;
+				this.titlePlaceholder = opts.titlePlaceholder;
 				this.value = opts.value;
+				this.valuePlaceholder = opts.valuePlaceholder;
 				this.typ = opts.typ || 'text';
+				this.help = opts.help;
+				this.textarea = opts.textarea;
 				this.oncheck = function(ev) {
 					if (ev && ev instanceof MouseEvent && ev.target.tagName.toLowerCase() === 'input') {
 						return true;
@@ -323,19 +446,29 @@ window.component('push.popup', function(popup) {
 				var inp = {
 					value: ctrl.value() === undefined ? '' : ctrl.value(),
 					oninput: m.withAttr('value', ctrl.value),
-					onchange: m.withAttr('value', ctrl.onchange)
+					onchange: m.withAttr('value', ctrl.onchange),
+					placeholder: ctrl.value() !== undefined ? ctrl.valuePlaceholder || '' : ''
 				};
 				if (ctrl.value() === undefined) { inp.disabled = 'disabled'; }
 
-				return m('.comp-push-extra', [
+				return m('.comp-push-extra', {class: !ctrl.textarea || ctrl.value() === undefined ? '' : 'expanded'}, [
 					m('.comp-push-extra-check', {onclick: ctrl.oncheck}, [
 						m('input[type=checkbox]', check),
-						m('label', ctrl.title)
+						m('label', typeof ctrl.title === 'string' ? 
+							ctrl.title : 
+							[
+								m('input', {onclick: function(){ ctrl.value(ctrl.value() || ''); }, oninput: m.withAttr('value', ctrl.title), placeholder: ctrl.titlePlaceholder}, ctrl.title() || ''),
+								ctrl.title() !== undefined && !ctrl.title.valid ? 
+									m('.error', window.components.tooltip.config(ctrl.title.errorText), push.ICON.WARN())
+									: ''
+							]
+						),
+						ctrl.help ? m('.help-tt', window.components.tooltip.config(ctrl.help), m('span.ion-information-circled')) : ''
 					]),
 					m('.comp-push-extra-value', {class: ctrl.value() === undefined ? '' : 'active', onclick: function(){
 						if (ctrl.value() === undefined) { ctrl.oncheck(); }
 					}}, [
-						m('input[type=' + ctrl.typ + ']', inp),
+						m(ctrl.textarea ? 'textarea' : 'input[type=' + ctrl.typ + ']', inp),
 						ctrl.value() !== undefined && !ctrl.value.valid ? 
 							m('.error', window.components.tooltip.config(ctrl.value.errorText), push.ICON.WARN())
 							: ''
@@ -496,73 +629,112 @@ window.component('push.popup', function(popup) {
 				tab: this.renderTab.bind(this, 2), 
 				controller: function() {
 					localesController = new locales.controller();
+
+// http://n-v-gogol.ru/books/item/f00/s00/z0000003/pic/000018.jpg
 				},
-				view: function(ctrl){ 
+				view: function(){ 
 					var d = moment();
 					return m('.comp-push-tab-content', [
 						m('.comp-push-panels', [
 							m('.comp-push-panel.comp-push-panel-compose-left.comp-push-compose', [
-								m('h4', t('pu.po.tab2.message')),
-								m('h6', t('pu.po.tab2.type')),
-								m.component(window.components.segmented, {options: [
-									{value: push.C.TYPE.MESSAGE, title: t('pu.type.message')},
-									{value: push.C.TYPE.DATA, title: t('pu.type.data')},
-								], value: message.type, class: 'comp-push-message-type', onchange: function(type){
-									if (type === 'data' && !message.data()) { message.data(''); }
-									if (type === 'message' && message.data() === '') { message.data(undefined); }
-									if (type === 'data' && message.sound()) { message.sound(undefined); }
-									if (type === 'message' && !message.sound()) { message.sound('default'); }
-								}}),
+								m('.comp-push-panel-half', [
+									m('div', [
+										m('h4', t('pu.po.tab2.message.type')),
+										m.component(window.components.segmented, {options: [
+											{value: push.C.TYPE.MESSAGE, title: t('pu.type.message')},
+											{value: push.C.TYPE.DATA, title: t('pu.type.data')},
+										], value: message.type, class: 'comp-push-message-type', onchange: function(type){
+											if (type === 'data' && !message.data()) { message.data(''); }
+											if (type === 'message' && message.data() === '') { message.data(undefined); }
+											if (type === 'data' && message.sound()) { message.sound(undefined); }
+											if (type === 'message' && !message.sound()) { message.sound('default'); }
+										}}),
+									]),
+									message.type() !== 'data' ? m('div', [
+										m('h4', t('pu.po.tab2.mbtns')),
+										m.component(window.components.segmented, {options: [
+											{value: 0, title: '0'},
+											{value: 1, title: '1'},
+											{value: 2, title: '2'},
+										], value: message.buttons}),
+									]) : ''
+								]),
 								message.type() === push.C.TYPE.MESSAGE ? 
 									m('.comp-push-message.comp-push-space-top', [
 										locales.view(localesController) 
 									]) : '',
+								message.type() !== 'data' ? 
+									m('div', [
+										m('h4', t('pu.po.tab2.mmedia')),
+										m('.comp-push-extras', m(extra, {title: t('pu.po.tab2.extras.media'), value: message.media, typ: 'url', valuePlaceholder: t('pu.po.tab2.extras.media.placeholder'), help: t('pu.po.tab2.extras.media.help')})),
+										// !message.media.valid ? 
+										// 	m('.mime', [
+										// 		m('.mime-type', message.media.errorText || message.media.mime),
+										// 		m('.mime-size', message.media.mimeSize || ''),
+										// 	])
+										// 	: '',
+									])
+									: '',
+								m('h4', t('pu.po.tab2.extras')),
+								m('.comp-push-extras', [
+									message.type() === 'message' ?
+										m(extra, {title: t('pu.po.tab2.extras.sound'), value: message.sound, def: 'default'})
+										: '',
+									m(extra, {title: t('pu.po.tab2.extras.badge'), value: message.badge, def: 0, typ: 'number', converter: function(val){ 
+										if (val === '') { return 0; }
+										else if (isNaN(parseInt(val))) { return null; }
+										return parseInt(val);
+									}, help: t('pu.po.tab2.extras.badge.help')}),
+									m(extra, {title: t('pu.po.tab2.extras.url'), value: message.url, typ: 'url', valuePlaceholder: t('pu.po.tab2.urlordeep'), help: t('pu.po.tab2.extras.url.help')}),
+									m(extra, {title: t('pu.po.tab2.extras.data'), value: message.data, textarea: true, converter: function(val){ 
+										try {
+											var o = window.jsonlite.parse(val);
+											return typeof o === 'object' ? JSON.stringify(o) : null;
+										} catch(e){
+											return null;
+										}
+									}, valuePlaceholder: t('pu.po.tab2.extras.data.placeholder'), help: t('pu.po.tab2.extras.data.help')}),
+								]),
 							]),
 							message.type() === push.C.TYPE.MESSAGE ? 
 								m('.comp-push-panel.comp-push-panel-compose-right.comp-push-preview', [
-									m('h4', t('pu.po.tab2.preview')),
-									m('h6', t('pu.po.tab2.preview-desc')),
-									// message.platforms().length > 1 ? 
-										m.component(window.components.segmented, {options: [
-											{value: push.C.PLATFORMS.IOS, title: t('pu.platform.i')},
-											{value: push.C.PLATFORMS.ANDROID, title: t('pu.platform.a')},
-										].filter(function(o){ return message.platforms().indexOf(o.value) !== -1; }), value: popup.previewPlatform}),
-										// : '',
+									m('h4', m.trust('&nbsp;')),
 									m('.preview.preview-' + popup.previewPlatform(), [
 										m('img', {src: '/images/push/preview.' + popup.previewPlatform() + '.png'}),
-										m('.preview-time', d.format('H:mm')),
-										m('.preview-date', d.format("dddd, MMMM DD")),
+										// m('.preview-time', d.format('H:mm')),
+										// m('.preview-date', d.format("dddd, MMMM DD")),
 										m('.preview-message', [
 											m('img', {src: 'appimages/' + message.apps()[0] + '.png'}),
 											m('.preview-message-title', [
 												m('span.preview-message-app', window.countlyGlobal.apps[message.apps()[0]].name),
-												m('span.preview-message-date', popup.previewPlatform() === push.C.PLATFORMS.IOS ? 'now' : d.format('LT')),
+												m('span.preview-message-date', popup.previewPlatform() === push.C.PLATFORMS.IOS ? 'X' : d.format('LT')),
 											]),
-											m('.preview-message-message', message.messagePerLocale()[activeLocale()] || t('pu.po.tab2.default-message'))
-										])
-									])
+											popup.previewPlatform() === 'i' && message.media() && message.media.valid ? 
+												message.media.view()
+												: '',
+											message.messagePerLocale()[activeLocale() + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + 't'] ? 
+												m('.preview-message-message-title', message.messagePerLocale()[activeLocale() + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + 't'])
+												: '',
+											m('.preview-message-message', message.messagePerLocale()[activeLocale()] || message.messagePerLocale().default || t('pu.po.tab2.default-message')),
+											message.buttons() > 0 ? 
+												m('.preview-buttons', [
+													message.buttons() > 0 ? m('.preview-button', message.messagePerLocale()[activeLocale() + push.C.S + '0' + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 't']) : '',
+													message.buttons() > 1 ? m('.preview-button', message.messagePerLocale()[activeLocale() + push.C.S + '1' + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 't']) : '',
+												])
+												: '',
+											popup.previewPlatform() === 'a' && message.media() && message.media.valid ? 
+												message.media.view()
+												: '',
+										]),
+									]),
+									// message.platforms().length > 1 ? 
+										m.component(window.components.segmented, {class: 'platforms', options: [
+											{value: push.C.PLATFORMS.IOS, view: m.bind(m, 'span.ion-social-apple')},
+											{value: push.C.PLATFORMS.ANDROID, view: m.bind(m, 'span.ion-social-android')},
+										].filter(function(o){ return message.platforms().indexOf(o.value) !== -1; }), value: popup.previewPlatform}),
+										// : '',
 								]) : 
 								''
-						]),
-						m('h6.comp-push-space-top', t('pu.po.tab2.extras')),
-						m('.comp-push-extras', [
-							message.type() === 'message' ?
-								m(extra, {title: t('pu.po.tab2.extras.sound'), value: message.sound, def: 'default'})
-								: '',
-							m(extra, {title: t('pu.po.tab2.extras.badge'), value: message.badge, def: 0, typ: 'number', converter: function(val){ 
-								if (val === '') { return 0; }
-								else if (isNaN(parseInt(val))) { return null; }
-								return parseInt(val);
-							}}),
-							m(extra, {title: t('pu.po.tab2.extras.url'), value: message.url}),
-							m(extra, {title: t('pu.po.tab2.extras.data'), value: message.data, converter: function(val){ 
-								try {
-									var o = window.jsonlite.parse(val);
-									return typeof o === 'object' ? JSON.stringify(o) : null;
-								} catch(e){
-									return null;
-								}
-							}}),
 						]),
 						m('.btns', [
 							popup.tabs.tab() > 0 ? m('a.btn-prev', {href: '#', onclick: popup.prev}, t('pu.po.prev')) : '',

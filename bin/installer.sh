@@ -15,10 +15,10 @@ else
     LATEST=$(wget -qO- https://api.github.com/repos/countly/countly-server/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4) ;
 
     if ping -c 1 google.com >> /dev/null 2>&1; then
-        echo "Download from Github."
+        echo "Downloading from Github..."
         wget -nv $LATEST -O ./countly.zip ;
     else
-        echo "Download from CDN."
+        echo "Downloading from CDN..."
         PACKAGE_NAME=$(awk -F/ '{print $9}' <<< $LATEST)
         CDN_HOST=http://om65qc2mm.bkt.clouddn.com/
         wget -nv $CDN_HOST$PACKAGE_NAME -O ./countly.zip ;
