@@ -142,6 +142,7 @@ table { border-collapse: collapse; }
 		#sidebar-menu .sidebar-menu>.item.active { background-color: #2FA732; border-color: #2FA732; }
         #sidebar-menu .sidebar-menu .item.menu-active { background-color: #212121; border-color: #212121; }
 		#sidebar-menu .sidebar-menu .item .logo { color:#888; width:25px; height:22px; float:left; margin-left:16px; margin-top:4px; font-size: 19px; text-align: center; }
+        #sidebar-menu .sidebar-menu .item .logo .material-icons { font-size:20px; margin-top:1px; }
             /* Fix for old .fa icons, this can be removed once all enterprise plugins have updated icons */
             #sidebar-menu .sidebar-menu .item .logo.fa {
                 width: 24px !important;
