@@ -87,7 +87,8 @@
 #expandable { max-height: none; overflow: auto; }
 #expandable.collapsed { max-height: 200px; overflow: hidden; }
 #expand-crash { font-size:12px; padding-bottom:10px; cursor:pointer; text-align: center; position:absolute; bottom:0; width:300px; left:50%; margin-left: -150px; }
-    #expand-crash .expand { display: block; }
-    #expand-crash .collapse { display: none; }
-    #expand-crash.active .collapse { display: block; }
-    #expand-crash.active .expand { display: none; }
+#expand-crash .expand { display: block; }
+#expand-crash .collapse { display: none; }
+#expand-crash.active .collapse { display: block; }
+#expand-crash.active .expand { display: none; }
+#view-filter.crash-filter .filter-view-container.centered #segmentation .query > .and-or [data-value="OR"] {display: none !important;}
