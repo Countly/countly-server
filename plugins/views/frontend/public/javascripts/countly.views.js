@@ -70,7 +70,7 @@ window.ViewsView = countlyView.extend({
                 $(".widget-header .left .title").after(addDrill("up.lv"));
                 if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web" && domains.length){
                     columns.push({ "mData": function(row, type){
-                        return '<a href="#/analytics/views/action-map/'+row.views+'" class="table-link green" data-localize="views.table.view" style="margin:0px; padding:2px;">View</a>';
+                        return '<a href="#/analytics/views/action-map/'+row.views+'" class="table-link green" data-localize="views.table.view" style="margin:0px; padding:2px;">'+jQuery.i18n.map["views.table.view"]+'</a>';
                         }, sType:"string", "sTitle": jQuery.i18n.map["views.action-map"], "sClass":"shrink center", bSortable: false });
                 }
             }
@@ -120,28 +120,31 @@ window.ViewsView = countlyView.extend({
                 if(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].sdk_version && parseInt((countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].sdk_version+"").split(".")[0]) <= 16){
                     return;
                 }
-                var pos = $(event.target).offset();
-                var list = $(".widget-content .options");
-                list.css({
-                    position: "absolute",
-                    zIndex: 1000,
-                    top: (pos.top+30) + "px",
-                    left: (pos.left-200) + "px",
-                    right: 15 + "px"
-                });
-                if(list.css("display") == "none"){
+                $(event.target).toggleClass("active");
+                if($(event.target).hasClass("active")){
+                    $(".views-table a.table-link").removeClass("active");
+                    $(event.target).addClass("active");
+                    var pos = $(event.target).offset();
+                    $('.widget-content .cly-button-menu').css({
+                        top: (pos.top+25) + "px",
+                        left: (pos.left-250) + "px",
+                        right: 35 + "px"
+                    });
+                    $('.widget-content > .cly-button-menu-trigger').addClass("active");
+                    $('.widget-content > .cly-button-menu').focus();
                     countlyViews.getToken(function(token){
-                        list.show();
                         self.useView = event.target.hash;
                         self.token = token;
                     });
                 }
-                else
-                    list.hide();
+                else{
+                    $(event.target).removeClass("active");
+                    $('.widget-content > .cly-button-menu-trigger').removeClass("active");
+                }
                 event.preventDefault();
             });
             
-            $(".widget-content .options").click(function(event){
+            $('.widget-content .cly-button-menu .item').click(function(event){
                 var url = $(event.target).text();
                 if(url.indexOf("http") !== 0)
                     url = "http://"+url;
@@ -150,9 +153,13 @@ window.ViewsView = countlyView.extend({
                 }
                 if(self.token !== false){
                     var path = self.useView.replace("#/analytics/views/action-map/", "");
-                    window.open(url+path, "cly:" + JSON.stringify({"token":self.token,"purpose":"heatmap"}));
+                    window.open(url+path, "cly:" + JSON.stringify({"token":self.token,"purpose":"heatmap",period:countlyCommon.getPeriodForAjax()}));
                 }
-                $(event.target).parent(".options").hide();
+                $('.widget-content > .cly-button-menu-trigger').removeClass("active");
+            });
+            
+            $('.widget-content .cly-button-menu').blur(function() {
+                $('.widget-content > .cly-button-menu-trigger').removeClass("active");
             });
             
             $("#view-metric-"+this.selectedMetric).parents(".big-numbers").addClass("active");
