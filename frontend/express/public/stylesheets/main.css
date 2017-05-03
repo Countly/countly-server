@@ -514,7 +514,7 @@ div.datatablesubrow {display: none;}
 .FixedHeader_Cloned .dataTable { border-bottom:none; }
 .dataTable-bottom .dataTables_info { float:left; padding:5px 10px; }
 .dataTables_paginate { float:right; }
-.dataTables_paginate span { display:inline-block; padding:4px 7px; padding-bottom: 5px; font-size:25px; cursor:pointer; border-left:1px solid #CCC; }
+.dataTables_paginate span { display:inline-block; padding:4px 7px; font-size:25px; cursor:pointer; border-left:1px solid #CCC; }
 .dataTable-bottom .dataTables_paginate span { font-size:18px; padding-right:5px; }
 .dataTables_paginate .paginate_disabled_previous { opacity:0.2; }
 .dataTables_paginate .paginate_disabled_next { opacity:0.2; }
