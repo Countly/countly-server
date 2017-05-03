@@ -191,14 +191,10 @@ window.CrashesView = countlyView.extend({
 			if(id)
 				window.location.hash = window.location.hash.toString()+"/"+id;
 		});
-        $("#crash-selector").find(">.button").click(function () {
-            if ($(this).hasClass("selected")) {
-                return true;
-            }
-    
-            $(".crash-selector").removeClass("selected").removeClass("active");
-            var filter = $(this).attr("id");
-            self.filterCrashes(filter);
+        
+        $(".action-segmentation .segmentation-option").on("click", function () {
+
+            self.filterCrashes($(this).data("value"));
         });
     },
     renderCommon:function (isRefresh) {
@@ -285,7 +281,8 @@ window.CrashesView = countlyView.extend({
                     "help":"crashes.help-fatals"
                 }
             ],
-            hasDrill: typeof this.initDrill !== "undefined"
+            hasDrill: typeof this.initDrill !== "undefined",
+            "active-action": jQuery.i18n.map["crashes.all"]
         };
         if(crashData.loss){
             this.templateData["loss"] = true;
