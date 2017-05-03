@@ -284,7 +284,8 @@ window.CrashesView = countlyView.extend({
                     "data": countlyCrashes.getFatalBars(),
                     "help":"crashes.help-fatals"
                 }
-            ]
+            ],
+            hasDrill: typeof this.initDrill !== "undefined"
         };
         if(crashData.loss){
             this.templateData["loss"] = true;
