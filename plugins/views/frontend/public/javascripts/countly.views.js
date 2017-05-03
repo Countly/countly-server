@@ -471,6 +471,52 @@ app.route("/analytics/views/action-map/*view", 'views', function (view) {
 	this.renderWhenReady(this.actionMapView);
 });
 
+app.addPageScript("/drill#", function(){
+    var drillClone;
+    var self = app.drillView;
+    if(countlyGlobal["record_views"]){
+        $("#drill-types").append('<div id="drill-type-views" class="item">'+jQuery.i18n.map["views.title"]+'</div>');
+        $("#drill-type-views").on("click", function() {
+            if ($(this).hasClass("active")) {
+                return true;
+            }
+    
+            $("#drill-types").find(".item").removeClass("active");
+            $(this).addClass("active");
+            $("#event-selector").hide();
+    
+            $("#drill-no-event").fadeOut();
+            $("#segmentation-start").fadeOut().remove();
+            $(this).parents(".cly-select").removeClass("dark");
+    
+            $(".event-select.cly-select").find(".text").text(jQuery.i18n.map["drill.select-event"]);
+            $(".event-select.cly-select").find(".text").data("value","");
+    
+            currEvent = "[CLY]_view";
+    
+            self.graphType = "line";
+            self.graphVal = "times";
+            self.filterObj = {};
+            self.byVal = "";
+            self.drillChartDP = {};
+            self.drillChartData = {};
+            self.activeSegmentForTable = "";
+            countlySegmentation.reset();
+    
+            $("#drill-navigation").find(".menu[data-open=table-view]").hide();
+    
+            $.when(countlySegmentation.initialize(currEvent)).then(function () {
+                $("#drill").replaceWith(drillClone.clone(true));
+                self.adjustFilters();
+                self.draw(true, false);
+            });
+        });
+        setTimeout(function() {
+            drillClone = $("#drill").clone(true);
+        }, 0);
+    }
+});
+
 $( document ).ready(function() {
     if(!production){
         CountlyHelpers.loadJS("views/javascripts/simpleheat.js");
