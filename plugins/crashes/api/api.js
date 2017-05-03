@@ -770,7 +770,7 @@ plugins.setConfigs("crashes", {
                                     done();
                                 }
                             }, function(){
-                                if(Object.keys(inc))
+                                if(Object.keys(inc).length)
                                     common.db.collection('app_crashgroups' + params.qstring.app_id).update({_id:"meta"},{$inc:inc}, function(err,result){});
                                 common.returnOutput(params, ret);
                             });
@@ -802,7 +802,7 @@ plugins.setConfigs("crashes", {
                                     done();
                                 }
                             }, function(){
-                                if(Object.keys(inc))
+                                if(Object.keys(inc).length)
                                     common.db.collection('app_crashgroups' + params.qstring.app_id).update({_id:"meta"},{$inc:inc}, function(err,result){});
                                 common.returnMessage(params, 200, 'Success');
                             });
@@ -833,7 +833,7 @@ plugins.setConfigs("crashes", {
                                     done();
                                 }
                             }, function(){
-                                if(Object.keys(inc))
+                                if(Object.keys(inc).length)
                                     common.db.collection('app_crashgroups' + params.qstring.app_id).update({_id:"meta"},{$inc:inc}, function(err,result){});
                                 common.returnMessage(params, 200, 'Success');
                             });
