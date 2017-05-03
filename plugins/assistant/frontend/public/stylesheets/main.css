@@ -65,10 +65,11 @@
     top: 0;
     right: 0;
     width: 400px;
-    height: 300px;
+    height: 100%;
     overflow: auto;
     background-color: #fff;
     border-left: 1px solid #eaeaea;
+    text-align: left;
 }
 
 .assistant_notif { position: relative; }

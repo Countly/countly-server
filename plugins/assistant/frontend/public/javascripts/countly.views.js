@@ -1,18 +1,17 @@
+window.AssistantView = {
 
-window.AssistantView = countlyView.extend({
-
-    initialize: function () {
-
-    },
-    beforeRender: function() {
-
-        if(this.template)
-            return $.when(countlyAssistant.initialize()).then(function () {});
-        else{
-            var self = this;
+    initialize: function() {
+        var self = this;
+        if(this.template) {
+            return $.when(countlyAssistant.initialize()).then(function () {
+                self.renderCommon(false);
+            });
+        } else {
             return $.when($.get(countlyGlobal["path"]+'/assistant/templates/panel.html', function(src){
                 self.template = Handlebars.compile(src);
-            }), countlyAssistant.initialize()).then(function () {});
+            }), countlyAssistant.initialize()).then(function () {
+                self.renderCommon(false);
+            });
         }
     },
     renderCommon:function (isRefresh) {
@@ -41,9 +40,7 @@ window.AssistantView = countlyView.extend({
                 Countly.q.push(sendObj);
             }
 
-
             $.when(countlyAssistant.changeNotification(id, is_private, is_save)).then(function (data) {
-               // CountlyHelpers.alert(6, "green");
                 if(true || data.result == "Success"){//todo finish this
                     
                     var refresh_stuff = function () {
@@ -76,8 +73,10 @@ window.AssistantView = countlyView.extend({
 
         var self = this;
         if (!isRefresh) {
-            //CountlyHelpers.alert("tab: " + store.get("assistant_tab"), "green");
-            $(this.el).html(this.template(this.templateData));
+
+            var topBarElem = $("#top-bar > div.right-menu > div:nth-child(1) > div.menu");
+            topBarElem.html(this.template(this.templateData));
+            topBarElem.css("height", $( window ).height() * 0.7);
 
             $( "#tabs" ).tabs({
                 selected: store.get("assistant_tab") || 0,
@@ -131,24 +130,18 @@ window.AssistantView = countlyView.extend({
                     changeNotification(id, true, false, parent);
                 });
             });
-
-            $("#assistant_container").css("height", $( window ).height() - $("#content-footer").height());
         }
     }
-});
+};
 
 //register views
-app.assistantView = new AssistantView();
-
-app.route("/analytics/assistant", 'assistant', function () {
-    this.renderWhenReady(this.assistantView);
-});
 
 $( document ).ready(function() {
-    var menu = '<a href="#/analytics/assistant" class="item">'+
-        '<div class="logo densities"></div>'+
-        '<div class="text" data-localize="sidebar.analytics.assistant">Assistant</div>'+
-        '</a>';
-    $('#mobile-type #analytics-submenu').append(menu);
-    $('#web-type #analytics-submenu').append(menu);
+    app.localize($("#assistant_container"));
+    AssistantView.initialize();
+    setInterval(function(){
+        app.localize($("#assistant_container"));
+        AssistantView.initialize();
+        }, 10000);
+
 });
