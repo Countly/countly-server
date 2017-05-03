@@ -302,21 +302,55 @@
     /**
      * This is used if another plugin other than the Assistant wants to create notificaitons from the frontend.
      * Create a notification from another plugin
+     *
+     * @param contentData - the data that is to be inserted into the internationalized string. Data is given as an array.
+     *
+     * @param ownerName - the name of this notifications creator/owner. Used when deciding how to render notification.
+     *
+     * @param notifType - used for grouping and filtering notifications
+     *
+     * @param notifSubType - used for specifying the id of a notification for a specific owner
+     *
+     * @param i18nId - the internationalization id for the localization entries
+     *
+     * @param notifAppId - the app ID for which application this notification will be assigned
+     *
+     * @param notificationVersion - notification version in case of data format changes
+     *
+     * @example
+     *
+     *  countlyAssistant.createNotificationOther([12,34,56,78], "frontTest", 4, 2, "assistant.test-notification", "57cd5afb85e945640bc4eec9", 1, function (callbackResult, errorMessage) {
+            if(callbackResult){
+                //notification creation succeeded
+            } else {
+                //notification creation failed, check errorMessage
+            }
+        });
+     *
      */
-    countlyAssistant.createNotificationOther = function (callback) {
+    countlyAssistant.createNotificationOther = function (contentData, ownerName, notifType, notifSubType, i18nId, notifAppId, notificationVersion, callback) {
         CountlyHelpers.alert("12", "green");
         return $.ajax({
             type:"GET",
             url:countlyCommon.API_URL + "/i/assistant/create_external",
-            data:{
-                api_key:countlyGlobal['member'].api_key
+            data: {
+                api_key:countlyGlobal['member'].api_key,
+                notif_data: JSON.stringify(contentData),
+                owner_name: ownerName,
+                notif_type: notifType,
+                notif_subtype: notifSubType,
+                i18n_id: i18nId,
+                notif_app_id: notifAppId,
+                notif_version: notificationVersion
             },
             success:function (json) {
+                //call succeeded
                 if(callback) {
                     callback(true);
                 }
             },
             error:function (result) {
+                //call failed
                 if(callback) {
                     callback(false, result);
                 }

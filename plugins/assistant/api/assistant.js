@@ -21,19 +21,30 @@ const assistant = {},
 
     assistant.JOB_SCHEDULE_INTERVAL = 30;//in minutes
 
+    /**
+     * Main function used for creating notifications
+     * @param db - link to the db object
+     * @param data - names and numbers that are relevant for customizing assitant notifications
+     * @param pluginName - the name of the plugin that created this notification
+     * @param type - the type of this plugin, used for filtering
+     * @param subtype - together with type it identifies the specific the specific notification that is created by a plugin
+     * @param i18n - the ID that will be used for internationalization on the frontend
+     * @param appId - the ID of the application for which it was created
+     * @param notificationVersion - notification version ID of when it was created, should be increased when the data format changes
+     */
     assistant.createNotification = function (db, data, pluginName, type, subtype, i18n, appId, notificationVersion) {
         const new_notif = {
-            data: data, //names and numbers that are relevant for customizing assitant notifications
-            plugin_name: pluginName, //the name of the plugin that created this notification
-            notif_type: "" + type, //the type of this plugin, used for filtering
-            notif_subtype: "" + subtype, //together with type it identifies the specific the specific notification that is created by a plugin
+            data: data,
+            plugin_name: pluginName,
+            notif_type: "" + type,
+            notif_subtype: "" + subtype,
             created_date: new Date(), //contains the original creation date
-            version: notificationVersion, //notification version ID of when it was created, should be increased when the data format changes
-            app_id: "" + appId, //the ID of the application for which it was created
+            version: notificationVersion,
+            app_id: "" + appId,
             cd: new Date(), //used for TTL, it's set null if it should not be deleted
             saved_global: false, //if this notification is saved globally
             saved_private: [], // a list of user ID's for which this notification is saved privately
-            i18n_id: i18n //the ID that will be used for internationalization on the frontend
+            i18n_id: i18n
         };
 
         db.collection(db_name_notifs).insert(new_notif, function (err_insert, result_insert) {
@@ -41,6 +52,13 @@ const assistant = {},
         });
     };
 
+    /**
+     * Get all notifications for specific user
+     * @param db - link to database
+     * @param member - member object
+     * @param api_key
+     * @param givenCallback
+     */
     assistant.getNotificationsForUser = function (db, member, api_key, givenCallback) {
         //prepare the function to use in both cases
         const getAppData = function (appList) {
@@ -100,8 +118,8 @@ const assistant = {},
         }
     };
 
-    /*
-    transform current and target moment to a minute timestamp and then compare if it's within half of the job schedule interval
+    /**
+     * transform current and target moment to a minute timestamp and then compare if it's within half of the job schedule interval
 
      th - target time
      ch - current time
@@ -109,6 +127,13 @@ const assistant = {},
 
      this functions return true if:
      tt - hw <= ct < tt + hw
+     *
+     * @param target_day
+     * @param target_hour
+     * @param current_day
+     * @param current_hour
+     * @param current_minutes
+     * @returns {boolean}
      */
     assistant.correct_day_and_time = function (target_day, target_hour, current_day, current_hour, current_minutes) {
         const halfWidthMinutes = assistant.JOB_SCHEDULE_INTERVAL / 2;// half of the width/length in minutes
@@ -132,10 +157,25 @@ const assistant = {},
         return false;
     };
 
+    /**
+     *
+     * @param target_hour
+     * @param current_hour
+     * @param current_minutes
+     * @returns {boolean}
+     */
     assistant.correct_time = function (target_hour, current_hour, current_minutes) {
         return assistant.correct_day_and_time(3, target_hour, 3, current_hour, current_minutes);
     };
 
+    /**
+     *
+     * @param do_personal
+     * @param do_save
+     * @param notif_id
+     * @param user_id
+     * @param db
+     */
     assistant.changeNotificationSavedStatus = function (do_personal, do_save, notif_id, user_id, db) {
         if (do_save) {
             //we need to save it
@@ -188,6 +228,11 @@ const assistant = {},
         }
     };
 
+    /**
+     *
+     * @param db
+     * @param callback
+     */
     assistant.getAssistantConfig = function (db, callback) {
         db.collection(db_name_config).find({}, {}).toArray(function (err, result) {
             //log.i('Assistant plugin getAssistantConfig: [%j][%j][%j][%j]', 18, err, result, typeof result);
@@ -195,6 +240,15 @@ const assistant = {},
         });
     };
 
+    /**
+     *
+     * @param assistantConfig
+     * @param pluginName
+     * @param type
+     * @param subtype
+     * @param appID
+     * @returns {*}
+     */
     assistant.getNotificationShowAmount = function (assistantConfig, pluginName, type, subtype, appID) {
         if (typeof assistantConfig === "undefined") return 0;
         for (let a = 0; a < assistantConfig.length; a++) {
@@ -209,6 +263,13 @@ const assistant = {},
         return 0;
     };
 
+    /**
+     *
+     * @param db
+     * @param notifValueSet
+     * @param newShowAmount
+     * @param appID
+     */
     assistant.setNotificationShowAmount = function (db, notifValueSet, newShowAmount, appID) {
         const updateQuery = {};
         updateQuery["notifShowAmount." + notifValueSet.pluginName + "." + notifValueSet.type + "." + notifValueSet.subtype] = newShowAmount;
@@ -217,6 +278,17 @@ const assistant = {},
         });
     };
 
+    /**
+     *
+     * @param notificationI18nID
+     * @param notificationType
+     * @param notificationSubtype
+     * @param pluginName
+     * @param assistantConfig
+     * @param appID
+     * @param notificationVersion
+     * @returns {{}}
+     */
     assistant.createNotificationValueSet = function (notificationI18nID, notificationType, notificationSubtype, pluginName, assistantConfig, appID, notificationVersion) {
         //put in notification values for quick access
         const valueSet = {};
@@ -229,12 +301,26 @@ const assistant = {},
         return valueSet;
     };
 
+    /**
+     *
+     * @param db
+     * @param valueSet
+     * @param app_id
+     * @param data
+     */
     assistant.createNotificationAndSetShowAmount = function (db, valueSet, app_id, data) {
         log.d('Assistant creating notification for [%j] plugin with i18nID [%j] for App [%j]', valueSet.pluginName, valueSet.i18nID, app_id);
         assistant.createNotification(db, data, valueSet.pluginName, valueSet.type, valueSet.subtype, valueSet.i18nID, app_id);
         assistant.setNotificationShowAmount(db, valueSet, valueSet.showAmount + 1, app_id);
     };
 
+    /**
+     *
+     * @param countlyDb
+     * @param callback
+     * @param flagForceGenerateNotifications
+     * @param flagIgnoreDayAndTime
+     */
     assistant.generateNotifications = function (countlyDb, callback, flagForceGenerateNotifications, flagIgnoreDayAndTime) {
 
         log.i("Generate Notifications function");
@@ -278,6 +364,13 @@ const assistant = {},
         });
     };
 
+    /**
+     *
+     * @param assistantGlobalCommon
+     * @param appData
+     * @param PLUGIN_NAME
+     * @returns {{}}
+     */
     assistant.preparePluginSpecificFields = function(assistantGlobalCommon, appData, PLUGIN_NAME){
         //log.i('Assistant plugin preparePluginSpecificFields: [%j] ', 1);
         const apc = {};//assistant plugin common
@@ -310,6 +403,15 @@ const assistant = {},
         return apc;
     };
 
+    /**
+     *
+     * @param assistantPluginCommon
+     * @param notificationI18nID
+     * @param notificationType
+     * @param notificationSubtype
+     * @param notificationVersion
+     * @returns {{}}
+     */
     assistant.prepareNotificationSpecificFields = function(assistantPluginCommon, notificationI18nID, notificationType, notificationSubtype, notificationVersion){
         const anc = {};//assistant notification common
         anc.apc = assistantPluginCommon;
@@ -325,6 +427,14 @@ const assistant = {},
         return anc;
     };
 
+    /**
+     *
+     * @param targetDow
+     * @param targetHour
+     * @param requirements
+     * @param data
+     * @param anc
+     */
     assistant.createNotificationIfRequirementsMet = function (targetDow, targetHour, requirements, data, anc) {
         var correctTimeAndDate = false;
 
@@ -338,8 +448,19 @@ const assistant = {},
             assistant.createNotificationAndSetShowAmount(anc.apc.db, anc.valueSet, anc.apc.app_id, data);
         }
     };
-    
-    
+
+    /**
+     *
+     * @param db
+     * @param data
+     * @param pluginName
+     * @param type
+     * @param subtype
+     * @param i18n
+     * @param appId
+     * @param notificationVersion
+     * @param callback
+     */
     assistant.createNotificationExternal = function (db, data, pluginName, type, subtype, i18n, appId, notificationVersion, callback) {
         try {
             assistant.createNotification(db, data, pluginName, type, subtype, i18n, appId, notificationVersion);

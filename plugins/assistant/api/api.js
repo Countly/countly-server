@@ -97,24 +97,67 @@ const plugin = {},
                     //this is called when another plugin other than the assistant wants to create a notification from the frontend
                     log.d('Assistant plugin request: Change personal notification status');
 
-                    const notifData = params.qstring.notif_data;
-                    const pluginName = params.qstring.owner_name;
-                    const notifType = params.qstring.notif_type;
-                    const notifSubType = params.qstring.notif_subtype;
-                    const i18nId = params.qstring.i18n_id;
-                    const notifAppId = params.qstring.notif_app_id;
-                    const notificationVersion = params.qstring.notif_version;
+                    try {
+                        //read provided fields
+                        const notifData = JSON.parse(params.qstring.notif_data);
+                        const pluginName = params.qstring.owner_name;
+                        const notifType = params.qstring.notif_type;
+                        const notifSubType = params.qstring.notif_subtype;
+                        const i18nId = params.qstring.i18n_id;
+                        const notifAppId = params.qstring.notif_app_id;
+                        const notificationVersion = params.qstring.notif_version;
 
-                    assistant.createNotificationExternal(common.db, notifData, pluginName, notifType, notifSubType, i18nId, notifAppId, notificationVersion, function (succeeded, err) {
-                        if(succeeded){
-                            common.returnOutput(params, prepareMessage("Succeded in creating notification", null, null));
-                        } else {
-                            if(_.isUndefined(err) || err === null) {
-                                err = "N/A";
-                            }
-                            common.returnMessage(params, 500, prepareMessage('Failed to create notification', err, null));
+                        //check if they are set
+                        if (_.isUndefined(notifData)) {
+                            common.returnMessage(params, 400, 'Missing parameter "notif_data"');
+                            return false;
                         }
-                    });
+
+                        if (_.isUndefined(pluginName)) {
+                            common.returnMessage(params, 400, 'Missing parameter "owner_name"');
+                            return false;
+                        }
+
+                        if (_.isUndefined(notifType)) {
+                            common.returnMessage(params, 400, 'Missing parameter "notif_type"');
+                            return false;
+                        }
+
+                        if (_.isUndefined(notifSubType)) {
+                            common.returnMessage(params, 400, 'Missing parameter "notif_subtype"');
+                            return false;
+                        }
+
+                        if (_.isUndefined(i18nId)) {
+                            common.returnMessage(params, 400, 'Missing parameter "i18n_id"');
+                            return false;
+                        }
+
+                        if (_.isUndefined(notifAppId)) {
+                            common.returnMessage(params, 400, 'Missing parameter "notif_app_id"');
+                            return false;
+                        }
+
+                        if (_.isUndefined(notificationVersion)) {
+                            common.returnMessage(params, 400, 'Missing parameter "notif_version"');
+                            return false;
+                        }
+
+                        assistant.createNotificationExternal(common.db, notifData, pluginName, notifType, notifSubType, i18nId, notifAppId, notificationVersion, function (succeeded, err) {
+                            if (succeeded) {
+                                common.returnOutput(params, prepareMessage("Succeded in creating notification", null, null));
+                            } else {
+                                if (_.isUndefined(err) || err === null) {
+                                    err = "N/A";
+                                }
+                                common.returnMessage(params, 500, prepareMessage('Failed to create notification', err, null));
+                            }
+                        });
+                    }catch (ex)
+                    {
+                        common.returnMessage(params, 500, prepareMessage('Problem while trying to create notification', ex, null));
+                        return false;
+                    }
                     break;
                 default:
                     common.returnMessage(params, 400, 'Invalid path');
