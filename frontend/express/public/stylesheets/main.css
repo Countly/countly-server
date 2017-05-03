@@ -762,6 +762,8 @@ div.datatablesubrow {display: none;}
 .cly-select.float .select-items,
 .cly-select.float .search  { width:220px; }
 
+.cly-select.float-right { float:right; width: 150px; background-color: #fff; margin-right: 5px; margin-top:6px;}
+
 .cly-multi-select { position:relative; background-color:#FDFDFD; user-select:none; display:inline-block; width:135px; height:auto; min-height: 32px; border:1px solid #D0D0D0; border-radius:2px; cursor:pointer; }
 .cly-multi-select .select-inner { position:relative; width:100%; height:100%; }
 .cly-multi-select.active { border-bottom-left-radius:0; border-bottom-right-radius:0; }
