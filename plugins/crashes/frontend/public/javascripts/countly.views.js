@@ -45,6 +45,8 @@ window.CrashesView = countlyView.extend({
 		};
     },
     beforeRender: function() {
+        this.selectedCrashes = {};
+        this.selectedCrashesIds = [];
 		if(this.template)
 			return $.when(countlyCrashes.initialize()).then(function () {});
 		else{
@@ -95,8 +97,16 @@ window.CrashesView = countlyView.extend({
                 $(nRow).find(".tag").tipsy({gravity: 'w'});
 			},
             "aoColumns": [
+                { "mData": function(row, type){
+                    if(self.selectedCrashes[row._id])
+                        return "<a class='fa fa-check-square check-green'></a>";
+                    else
+                        return "<a class='fa fa-square-o check-green'></a>";
+                }, "sType":"numeric", "sClass":"center", "sWidth": "30px", "bSortable": false},
                 {
                     "mData": function(row, type) {
+                        if(type !== "display")
+                            return row.name;
                         var tagDivs = "";
 
                         // This separator is not visible in the UI but | is visible in exported data
@@ -126,8 +136,7 @@ window.CrashesView = countlyView.extend({
                         return "<div class='truncated'>" + row.name + "</div>" + tagDivs;
                     },
                     "sType": "string",
-                    "sTitle": jQuery.i18n.map["crashes.error"],
-                    "bSortable": false
+                    "sTitle": jQuery.i18n.map["crashes.error"]
                 },
                 {
                     "mData": function(row, type) {
@@ -186,16 +195,104 @@ window.CrashesView = countlyView.extend({
         }));
 
 		this.dtable.stickyTableHeaders();
-		this.dtable.fnSort( [ [4,'desc'] ] );
+		this.dtable.fnSort( [ [5,'desc'] ] );
         $('.crashes tbody').on("click", "tr", function (){
 			var id = $(this).attr("id");
-			if(id)
-				window.location.hash = window.location.hash.toString()+"/"+id;
+			if(self.selectedCrashes[id]){
+                $(this).find(".check-green").removeClass("fa-check-square").addClass("fa-square-o");
+                self.selectedCrashes[id] = null;
+                var index = self.selectedCrashesIds.indexOf(id);
+                if(index !== -1)
+                    self.selectedCrashesIds.splice(index, 1);
+            }
+            else{
+                self.selectedCrashes[id] = true;
+                self.selectedCrashesIds.push(id);
+                $(this).find(".check-green").removeClass("fa-square-o").addClass("fa-check-square");
+            }
+            
+            if(self.selectedCrashesIds.length)
+                $(".action-segmentation").removeClass("disabled");
+            else
+                $(".action-segmentation").addClass("disabled");
 		});
         
-        $(".action-segmentation .segmentation-option").on("click", function () {
-
-            self.filterCrashes($(this).data("value"));
+        $(".filter-segmentation").on("cly-select-change", function (e, val) {
+            self.filterCrashes(val);
+        });
+        $(".action-segmentation").on("cly-select-change", function (e, val) {
+            if(val != ""){
+                $(".action-segmentation").clySelectSetSelection("",jQuery.i18n.map["crashes.make-action"]);
+                if(val === "crash-resolve"){
+                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-resolved", self.selectedCrashesIds.length), "red", function (result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyCrashes.markResolve(self.selectedCrashesIds, function(){
+                            self.refresh();
+                        });
+                    });
+                }
+                else if(val === "crash-unresolve"){
+                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-unresolved", self.selectedCrashesIds.length), "red", function (result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyCrashes.markUnresolve(self.selectedCrashesIds, function(){
+                            self.refresh();
+                        });
+                    });
+                }
+                else if(val === "crash-view"){
+                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-view", self.selectedCrashesIds.length), "red", function (result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyCrashes.markSeen(self.selectedCrashesIds, function(){
+                            self.refresh();
+                        });
+                    });
+                }
+                else if(val === "crash-hide"){
+                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-hide", self.selectedCrashesIds.length), "red", function (result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyCrashes.hide(self.selectedCrashesIds, function(){
+                            self.refresh();
+                        });
+                    });
+                }
+                else if(val === "crash-show"){
+                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-show", self.selectedCrashesIds.length), "red", function (result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyCrashes.show(self.selectedCrashesIds, function(){
+                            self.refresh();
+                        });
+                    });
+                }
+                else if(val === "crash-deselect"){
+                    self.selectedCrashesIds = [];
+                    self.selectedCrashes = {};
+                    self.dtable.find(".check-green").removeClass("fa-check-square").addClass("fa-square-o");
+                    $(".action-segmentation").addClass("disabled");
+                }
+                else if(val === "crash-delete"){
+                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-delete", self.selectedCrashesIds.length), "red", function (result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyCrashes.del(self.selectedCrashesIds, function(){
+                            self.selectedCrashesIds = [];
+                            self.selectedCrashes = {};
+                            self.refresh();
+                            $(".action-segmentation").addClass("disabled");
+                        });
+                    });
+                }
+            }
         });
     },
     renderCommon:function (isRefresh) {
@@ -283,7 +380,8 @@ window.CrashesView = countlyView.extend({
                 }
             ],
             hasDrill: typeof this.initDrill !== "undefined",
-            "active-action": jQuery.i18n.map["crashes.all"]
+            "active-filter": jQuery.i18n.map["crashes.all"],
+            "active-action": jQuery.i18n.map["crashes.make-action"]
         };
         if(crashData.loss){
             this.templateData["loss"] = true;
@@ -300,7 +398,8 @@ window.CrashesView = countlyView.extend({
             $("#total-user-estimate-ind").on("click", function() {
                 CountlyHelpers.alert(jQuery.i18n.map["common.estimation"], "black");
             });
-			$("#"+this.filter).addClass("selected").addClass("active");
+
+            $(".filter-segmentation").clySelectSetSelection(this.filter, jQuery.i18n.map["crashes."+this.filter.split("-").pop()]);
 			countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
 
             $("#crash-"+this.curMetric).parents(".big-numbers").addClass("active");
@@ -452,7 +551,7 @@ window.CrashesView = countlyView.extend({
                 self.renderCommon(true);
                 var newPage = $("<div>" + self.template(self.templateData) + "</div>");
                 $(".crashoveral .dashboard").replaceWith(newPage.find(".dashboard"));
-                $("#crash-big-numbers").replaceWith(newPage.find("#crash-big-numbers"));
+                $(".crash-big-numbers").replaceWith(newPage.find(".crash-big-numbers"));
                 $(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
                 
                 $("#crash-"+self.curMetric).parents(".big-numbers").addClass("active");

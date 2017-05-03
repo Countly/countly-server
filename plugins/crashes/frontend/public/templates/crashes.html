@@ -52,7 +52,7 @@
 
     <div class="widget-group">
         {{#if big-numbers}}
-        <div id="big-numbers-container" class='crash-style crash-widgets'>
+        <div id="big-numbers-container" class='crash-big-numbers crash-style crash-widgets'>
             {{#each big-numbers.items}}
                 {{#if ../loss}}
             <div class="big-numbers top widgets five-column help-zone-vs" data-help-localize="{{this.help}}">
@@ -98,10 +98,29 @@
 			<div class="left">
 				<div class="title">{{page-title}}</div>
 			</div>
-            <div class="cly-select float-right action-segmentation">
+            <div class="cly-select float-right green action-segmentation disabled">
                 <div class="select-inner">
                     <div class="text-container">
                         <div class="text">{{active-action}}</div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width:150px;">
+                    <div>
+                        <div class="segmentation-option item" data-value="crash-resolve" data-localize="crashes.action-resolved"></div>
+                        <div class="segmentation-option item" data-value="crash-unresolve" data-localize="crashes.action-unresolved"></div>
+                        <div class="segmentation-option item" data-value="crash-view" data-localize="crashes.action-view"></div>
+                        <div class="segmentation-option item" data-value="crash-hide" data-localize="crashes.action-hide"></div>
+                        <div class="segmentation-option item" data-value="crash-show" data-localize="crashes.action-show"></div>
+                        <div class="segmentation-option item" data-value="crash-deselect" data-localize="crashes.action-deselect"></div>
+                        <div class="segmentation-option item" data-value="crash-delete" data-localize="crashes.action-delete"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="cly-select float-right filter-segmentation">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">{{active-filter}}</div>
                     </div>
                     <div class="right combo"></div>
                 </div>

@@ -155,13 +155,16 @@
     }
     
     countlyCrashes.common = function (id, path, callback) {
+        var data = {};
+        if(typeof id === "string")
+            data.crash_id = id;
+        else
+            data.crashes = id;
 		$.ajax({
 			type:"GET",
             url:countlyCommon.API_PARTS.data.w + '/crashes/'+path,
             data:{
-                args:JSON.stringify({
-                    crash_id:id
-                }),
+                args:JSON.stringify(data),
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 api_key:countlyGlobal['member'].api_key
             },
@@ -179,8 +182,8 @@
 	
 	countlyCrashes.markResolve = function (id, callback) {
         countlyCrashes.common(id, "resolve", function(json){
-            if(json && json.version)
-                callback(json.version.replace(/:/g, '.'));
+            if(json && json[id])
+                callback(json[id].replace(/:/g, '.'));
             else
                 callback();
         });
@@ -188,6 +191,10 @@
 	
 	countlyCrashes.markUnresolve = function (id, callback) {
         countlyCrashes.common(id, "unresolve", callback);
+    };
+    
+    countlyCrashes.markSeen = function (id, callback) {
+        countlyCrashes.common(id, "view", callback);
     };
     
     countlyCrashes.share = function (id, callback) {
