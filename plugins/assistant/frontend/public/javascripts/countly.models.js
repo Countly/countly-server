@@ -319,7 +319,7 @@
      *
      * @example
      *
-     *  countlyAssistant.createNotificationOther([12,34,56,78], "frontTest", 4, 2, "assistant.test-notification", "57cd5afb85e945640bc4eec9", 1, function (callbackResult, errorMessage) {
+     *  countlyAssistant.createNotification([12,34,56,78], "frontTest", 4, 2, "assistant.test-notification", "57cd5afb85e945640bc4eec9", 1, function (callbackResult, errorMessage) {
             if(callbackResult){
                 //notification creation succeeded
             } else {
@@ -328,7 +328,7 @@
         });
      *
      */
-    countlyAssistant.createNotificationOther = function (contentData, ownerName, notifType, notifSubType, i18nId, notifAppId, notificationVersion, callback) {
+    countlyAssistant.createNotification = function (contentData, ownerName, notifType, notifSubType, i18nId, notifAppId, notificationVersion, callback) {
         CountlyHelpers.alert("12", "green");
         return $.ajax({
             type:"GET",
