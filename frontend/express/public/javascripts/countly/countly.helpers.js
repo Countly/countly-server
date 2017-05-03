@@ -45,8 +45,7 @@
     * @param {string=} msg.message - main notification text
     * @param {string=} msg.info - some additional information to display in notification
     * @param {number=} [msg.delay=10000] - delay time in miliseconds before displaying notification
-    * @param {string=} [msg.icon=fa fa-info] - css class for font icond to be used as notification icon
-    * @param {string=} [msg.type=ok] - message type, accepted values ok and error
+    * @param {string=} [msg.type=ok] - message type, accepted values ok, error and warning
     * @param {string=} [msg.position=top right] - message position
     * @param {string=} [msg.sticky=false] - should message stick until closed
     * @param {string=} [msg.clearAll=false] - clear all previous notifications upon showing this one
@@ -60,6 +59,23 @@
     * });
     */
     CountlyHelpers.notify = function (msg) {
+        var iconToUse;
+
+        switch (msg.type) {
+            case "error":
+                iconToUse = "ion-close-circled";
+                break;
+            case "warning":
+            case "yellow":
+            case "blue":
+            case "purple":
+                iconToUse = "ion-record";
+                break;
+            default:
+                iconToUse = "ion-checkmark-circled";
+                break;
+        }
+
         $.titleAlert((msg.title || msg.message || msg.info || "Notification"), {
             requireBlur:true,
             stopOnFocus:true,
@@ -71,7 +87,7 @@
                 title: msg.title || "Notification",
                 message:msg.message || "",
                 info:msg.info || "",
-                icon:msg.icon || 'fa fa-info'
+                icon: iconToUse
             },
             theme:'awesome '+ (msg.type || "ok"),
             position: msg.position || 'top right',
