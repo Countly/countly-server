@@ -22,7 +22,7 @@ var plugin = {},
 				catch(err){
 					console.log('Error parsing plugins');
 				}
-				
+
 				if (params.qstring.plugin && typeof params.qstring.plugin === 'object') {
                     var before = {};
                     var arr = plugins.getPlugins();
@@ -83,7 +83,7 @@ var plugin = {},
 									ob.version = data.version || "unknown";
 									ob.author = data.author || "unknown";
 									ob.homepage = data.homepage || "";
-                                    
+
                                     //we need to get localization only if plugin is disabled
                                     if(!ob.enabled){
                                         var local_path = fullpath+"/frontend/public/localization/"+ob.code+".properties";
@@ -98,7 +98,7 @@ var plugin = {},
                                     }
 								}
 								else
-									ob = {name:file, title:file, description:file, version:"unknown", author:"unknown", homepage:""};
+									ob = {name:file, title:file, description:file, version:"unknown", author:"unknown", homepage:"",code:file, enabled:false};
 								if (global.enclose) {
 									var eplugin = global.enclose.plugins[file];
 									ob.prepackaged = eplugin && eplugin.prepackaged;
@@ -130,7 +130,7 @@ var plugin = {},
 		}, params);
 		return true;
 	});
-    
+
     plugins.register("/i/configs", function(ob){
 		var params = ob.params;
         var validateUserForWriteAPI = ob.validateUserForWriteAPI;
@@ -162,7 +162,7 @@ var plugin = {},
         }, params);
         return true;
     });
-    
+
     plugins.register("/o/configs", function(ob){
 		var params = ob.params;
         var validateUserForMgmtReadAPI = ob.validateUserForMgmtReadAPI;
@@ -179,7 +179,7 @@ var plugin = {},
         }, params);
         return true;
     });
-    
+
     plugins.register("/i/userconfigs", function(ob){
 		var params = ob.params;
         var validateUserForWriteAPI = ob.validateUserForWriteAPI;
@@ -204,7 +204,7 @@ var plugin = {},
         }, params);
         return true;
     });
-    
+
     plugins.register("/o/userconfigs", function(ob){
 		var params = ob.params;
         var validateUserForMgmtReadAPI = ob.validateUserForMgmtReadAPI;
@@ -214,7 +214,7 @@ var plugin = {},
         }, params);
         return true;
     });
-    
+
     plugins.register("/o/themes", function(ob){
 		var params = ob.params;
         var themeDir = path.resolve(__dirname, "../../../frontend/express/public/themes/");
