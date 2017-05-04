@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>utils/common.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Channel.html">Channel</a></li><li><a href="DefaultRetryPolicy.html">DefaultRetryPolicy</a></li><li><a href="IPCJob.html">IPCJob</a></li><li><a href="IPCRetryPolicy.html">IPCRetryPolicy</a></li><li><a href="Job.html">Job</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Job.html#cancel">cancel</a></li><li data-type='method' style='display: none;'><a href="Job.html#divide">divide</a></li><li data-type='method' style='display: none;'><a href="Job.html#getConcurrency">getConcurrency</a></li><li data-type='method' style='display: none;'><a href="Job.html#prepare">prepare</a></li><li data-type='method' style='display: none;'><a href="Job.html#retryPolicy">retryPolicy</a></li><li data-type='method' style='display: none;'><a href="Job.html#run">run</a></li></ul></li><li><a href="Manager.html">Manager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="Manager.html#run">run</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runIPC">runIPC</a></li><li data-type='method' style='display: none;'><a href="Manager.html#runLocally">runLocally</a></li></ul></li><li><a href="module-api_lib_countly.model-countlyMetric.html">countlyMetric</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.fetchValue">countlyMetric.fetchValue</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.clearObject">countlyMetric.clearObject</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.extendDb">countlyMetric.extendDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getBars">countlyMetric.getBars</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getData">countlyMetric.getData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getDb">countlyMetric.getDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMeta">countlyMetric.getMeta</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getMetrics">countlyMetric.getMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getNumber">countlyMetric.getNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getRangeData">countlyMetric.getRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTableData">countlyMetric.getTableData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTimelineData">countlyMetric.getTimelineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getTotalUsersObj">countlyMetric.getTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.getUniqueMetrics">countlyMetric.getUniqueMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.reset">countlyMetric.reset</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setDb">countlyMetric.setDb</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setMetrics">countlyMetric.setMetrics</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setTotalUsersObj">countlyMetric.setTotalUsersObj</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model-countlyMetric.html#.countlyMetric.setUniqueMetrics">countlyMetric.setUniqueMetrics</a></li></ul></li><li><a href="module-api_utils_log-Logger.html">Logger</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.d">d</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.e">e</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.i">i</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_log-Logger.html#.w">w</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_log-Logger.html#.callback">callback</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log-Logger.html#.logdb">logdb</a></li></ul></li><li><a href="NoRetryPolicy.html">NoRetryPolicy</a></li><li><a href="Resource.html">Resource</a></li><li><a href="ResourceFa%25C3%25A7ade.html">ResourceFaçade</a></li><li><a href="ResourcefulJob.html">ResourcefulJob</a></li><li><a href="ResourceInterface.html">ResourceInterface</a></li></ul><h3>Modules</h3><ul><li><a href="module-api_lib_countly.common.html">api/lib/countly.common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_lib_countly.common.html#.periodObj">periodObj</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.decode">decode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.decodeHtml">decodeHtml</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.encode">encode</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractBarData">extractBarData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractChartData">extractChartData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractData">extractData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractMetric">extractMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractRangeData">extractRangeData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.extractTwoLevelData">extractTwoLevelData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDashboardData">getDashboardData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDateRange">getDateRange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getPercentChange">getPercentChange</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getShortNumber">getShortNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getSparklineData">getSparklineData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.getTimestampRangeQuery">getTimestampRangeQuery</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.mergeMetricsByName">mergeMetricsByName</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setPeriod">setPeriod</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.setTimezone">setTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.timeString">timeString</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.common.html#.union">union</a></li></ul></li><li><a href="module-api_lib_countly.countries.html">api/lib/countly.countries</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.countries.html#.getLocationData">getLocationData</a></li></ul></li><li><a href="module-api_lib_countly.device_details.html">api/lib/countly.device_details</a></li><li><a href="module-api_lib_countly.devices.html">api/lib/countly.devices</a></li><li><a href="module-api_lib_countly.event.html">api/lib/countly.event</a></li><li><a href="module-api_lib_countly.model.html">api/lib/countly.model</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.create">create</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.model.html#.load">load</a></li></ul></li><li><a href="module-api_lib_countly.users.html">api/lib/countly.users</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSessionData">getSessionData</a></li><li data-type='method' style='display: none;'><a href="module-api_lib_countly.users.html#.getSubperiodData">getSubperiodData</a></li></ul></li><li><a href="module-api_config.html">api/config</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_config.html#.api">api</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.api">api</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.encryption">encryption</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.encryption">encryption</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.ignoreProxies">ignoreProxies</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.ignoreProxies">ignoreProxies</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.logging">logging</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.logging">logging</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.mongodb">mongodb</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.mongodb">mongodb</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.path">path</a></li><li data-type='member' style='display: none;'><a href="module-api_config.html#.path">path</a></li></ul></li><li><a href="module-api_parts_data_exports.html">api/parts/data/exports</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.convertData">convertData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromData">fromData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromDatabase">fromDatabase</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.fromRequest">fromRequest</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.output">output</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_exports.html#.stream">stream</a></li></ul></li><li><a href="module-api_parts_data_fetch.html">api/parts/data/fetch</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTotalUsersObj">getTotalUsersObj</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMergedEventData">getMergedEventData</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getMetric">getMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObj">getTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_parts_data_fetch.html#.getTimeObjForEvents">getTimeObjForEvents</a></li></ul></li><li><a href="module-api_utils_authorizer.html">api/utils/authorizer</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.clean">clean</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.getToken">getToken</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.read">read</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.save">save</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_authorizer.html#.verify">verify</a></li></ul></li><li><a href="module-api_utils_common.html">api/utils/common</a><ul class='members'><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.base64">base64</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.config">config</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.crypto">crypto</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbEventMap">dbEventMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbMap">dbMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.dbUserMap">dbUserMap</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.log">log</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.moment">moment</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.os_mapping">os_mapping</a></li><li data-type='member' style='display: none;'><a href="module-api_utils_common.html#.time">time</a></li></ul><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.adjustTimestampByTimezone">adjustTimestampByTimezone</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.arrayAddUniq">arrayAddUniq</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.blockResponses">blockResponses</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.checkPromise">checkPromise</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.convertToType">convertToType</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.dot">dot</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObject">fillTimeObject</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObjectMonth">fillTimeObjectMonth</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fillTimeObjectZero">fillTimeObjectZero</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.fixEventKey">fixEventKey</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDate">getDate</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDateIds">getDateIds</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDaysInYear">getDaysInYear</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDescendantProp">getDescendantProp</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDiff">getDiff</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getDOY">getDOY</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getIpAddress">getIpAddress</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.getISOWeeksInYear">getISOWeeksInYear</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.indexOf">indexOf</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.initTimeObj">initTimeObj</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.isNumber">isNumber</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.md5Hash">md5Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.o">o</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.optional">optional</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.processCarrier">processCarrier</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.recordCustomMetric">recordCustomMetric</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnMessage">returnMessage</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.returnOutput">returnOutput</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.safeDivision">safeDivision</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.sha1Hash">sha1Hash</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.unblockResponses">unblockResponses</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.updateAppUser">updateAppUser</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.validateArgs">validateArgs</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.versionCompare">versionCompare</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_common.html#.zeroFill">zeroFill</a></li></ul></li><li><a href="module-api_utils_localization.html">api/utils/localization</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.format">format</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.getProperties">getProperties</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_localization.html#.getProperty">getProperty</a></li></ul></li><li><a href="module-api_utils_log.html">api/utils/log</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.getLevel">getLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.ipcHandler">ipcHandler</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.setDefault">setDefault</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#.setLevel">setLevel</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~log">log</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_log.html#~logLevel">logLevel</a></li></ul></li><li><a href="module-api_utils_taskmanager.html">api/utils/taskmanager</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkIfRunning">checkIfRunning</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.checkResult">checkResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.createTask">createTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.deleteResult">deleteResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.errorResults">errorResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getId">getId</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResult">getResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.getResults">getResults</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.longtask">longtask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.nameResult">nameResult</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.rerunTask">rerunTask</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_taskmanager.html#.saveResult">saveResult</a></li></ul></li><li><a href="module-api_utils_utils.html">api/utils/utils</a><ul class='methods'><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.decrypt">decrypt</a></li><li data-type='method' style='display: none;'><a href="module-api_utils_utils.html#.encrypt">encrypt</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#debounce">debounce</a></li><li><a href="global.html#IPC">IPC</a></li><li><a href="global.html#params">params</a></li><li><a href="global.html#timeObject">timeObject</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">utils/common.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* Module for some common utility functions and references
+* @module api/utils/common
+*/
+
+/** @lends module:api/utils/common */
+var common = {},
+    moment = require('moment'),
+    time = require('time')(Date),
+    crypto = require('crypto'),
+    mongo = require('mongoskin'),
+    logger = require('./log.js'),
+    mcc_mnc_list = require('mcc-mnc-list'),
+    plugins = require('../../plugins/pluginManager.js'),
+    countlyConfig = require('./../config', 'dont-enclose');
+
+(function (common) {
+
+    var log = logger('common');
+    
+    /**
+    * Escape special characters in the given string of html.
+    *
+    * @param  {string} string The string to escape for inserting into HTML
+    * @return {string}
+    * @public
+    */
+    var matchHtmlRegExp = /[&lt;>]/;
+    function escape_html(string) {
+        var str = '' + string;
+        var match = matchHtmlRegExp.exec(str);
+        
+        if (!match) {
+            return str;
+        }
+        
+        var escape;
+        var html = '';
+        var index = 0;
+        var lastIndex = 0;
+        
+        for (index = match.index; index &lt; str.length; index++) {
+            switch (str.charCodeAt(index)) {
+            case 60: // &lt;
+                escape = '&amp;lt;';
+                break;
+            case 62: // >
+                escape = '&amp;gt;';
+                break;
+            default:
+                continue;
+            }
+        
+            if (lastIndex !== index) {
+                html += str.substring(lastIndex, index);
+            }
+        
+            lastIndex = index + 1;
+            html += escape;
+        }
+        
+        return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
+    }
+    
+    function escape_html_entities(key, value) {		
+        if(typeof value === 'object' &amp;&amp; value){		
+            if(Array.isArray(value)){		
+                var replacement = [];		
+                for (var k = 0; k &lt; value.length; k++) {		
+                    if(typeof value[k] === "string")		
+                    replacement[k] = escape_html(value[k]);		
+                    else		
+                    replacement[k] = value[k];		
+                }		
+                return replacement;		
+            }		
+            else{		
+                var replacement = {};		
+                for (var k in value) {		
+                    if (Object.hasOwnProperty.call(value, k)) {		
+                        if(typeof value[k] === "string")		
+                            replacement[escape_html(k)] = escape_html(value[k]);		
+                        else		
+                            replacement[escape_html(k)] = value[k];		
+                    }		
+                }		
+                return replacement;		
+            }		
+        }		
+        return value;		
+    }
+    /**
+    * Logger object for creating module specific logging
+    * @type {module:api/utils/log~Logger} 
+    * @example
+    * var log = common.log('myplugin:api');
+    * log.i('myPlugin got a request: %j', params.qstring);
+    */
+    common.log = logger;
+
+    /**
+    * Mapping some common property names from longer understandable to shorter representation stored in database
+    * @type {object} 
+    */
+    common.dbMap = {
+        'events': 'e',
+        'total': 't',
+        'new': 'n',
+        'unique': 'u',
+        'duration': 'd',
+        'durations': 'ds',
+        'frequency': 'f',
+        'loyalty': 'l',
+        'sum': 's',
+        'dur': 'dur',
+        'count': 'c'
+    };
+
+    /**
+    * Mapping some common user property names from longer understandable to shorter representation stored in database
+    * @type {object} 
+    */
+    common.dbUserMap = {
+        'device_id': 'did',
+        'user_id' : 'uid',
+        'first_seen': 'fs',
+        'last_seen': 'ls',
+        'last_payment': 'lp',
+        'session_duration': 'sd',
+        'total_session_duration': 'tsd',
+        'session_count': 'sc',
+        'device': 'd',
+        'carrier': 'c',
+        'city': 'cty',
+        'country_code': 'cc',
+        'platform': 'p',
+        'platform_version': 'pv',
+        'app_version': 'av',
+        'last_begin_session_timestamp': 'lbst',
+        'last_end_session_timestamp': 'lest',
+        'has_ongoing_session': 'hos',
+        'previous_events': 'pe',
+        'resolution': 'r'
+    };
+
+    /**
+    * Mapping some common event property names from longer understandable to shorter representation stored in database
+    * @type {object} 
+    */
+    common.dbEventMap = {
+        'user_properties':'up',
+        'timestamp':'ts',
+        'segmentations':'sg',
+        'count':'c',
+        'sum':'s',
+        'duration': 'dur',
+        'previous_events': 'pe'
+    };
+
+    /**
+    * Default {@link countlyConfig} object for API server
+    * @type {object} 
+    */
+    common.config = countlyConfig;
+
+    /**
+    * Reference to time module
+    * @type {object} 
+    */
+    common.time = time;
+
+    /**
+    * Reference to momentjs
+    * @type {object} 
+    */
+    common.moment = moment;
+
+    /**
+    * Reference to crypto module
+    * @type {object} 
+    */
+    common.crypto = crypto;
+    
+    /**
+    * Operating syste/platform mappings from what can be passed in metrics to shorter representations 
+    * stored in db as prefix to OS segmented values
+    * @type {object} 
+    */
+    common.os_mapping = {
+        "unknown":"unk",
+        "undefined":"unk",
+        "tvos":"atv",
+        "watchos":"wos",
+        "unity editor":"uty",
+        "qnx":"qnx",
+        "os/2":"os2",
+        "windows":"mw",
+        "open bsd":"ob",
+        "searchbot":"sb",
+        "sun os":"so",
+        "solaris":"so",		
+        "beos":"bo",
+        "mac osx":"o",
+        "macos":"o",
+        "mac":"o",
+        "webos":"web",		
+        "brew":"brew"
+    };
+    
+    /**
+    * Whole base64 alphabet for fetching splitted documents
+    * @type {object} 
+    */
+    common.base64 = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","+","/"];
+
+    common.dbPromise = function() {
+        var args = Array.prototype.slice.call(arguments);
+        return new Promise(function(resolve, reject) {
+            var collection = common.db.collection(args[0]),
+                method = args[1];
+
+            if (method === 'find') {
+                collection[method].apply(collection, args.slice(2)).toArray(function(err, result){
+                    if (err) { reject(err); }
+                    else { resolve(result); }
+                });
+            } else {
+                collection[method].apply(collection, args.slice(2).concat([function(err, result){
+                    if (err) { reject(err); }
+                    else { resolve(result); }
+                }]));
+            }
+
+        });
+    };
+
+    /**
+    * Fetches nested property values from an obj.
+    * @param {object} obj - standard countly metric object
+    * @param {string} desc - dot separate path to fetch from object
+    * @returns {object} fetched object from provided path
+    * @example
+    * //outputs {"u":20,"t":20,"n":5}
+    * common.getDescendantProp({"2017":{"1":{"2":{"u":20,"t":20,"n":5}}}}, "2017.1.2");
+    */
+    common.getDescendantProp = function (obj, desc) {
+        desc = String(desc);
+
+        if (desc.indexOf(".") === -1) {
+            return obj[desc];
+        }
+
+        var arr = desc.split(".");
+        while (arr.length &amp;&amp; (obj = obj[arr.shift()]));
+
+        return obj;
+    };
+
+    /**
+    * Checks if provided value could be converted to a number, 
+    * even if current type is other, as string, as example value "42"
+    * @param {any} n - value to check if it can be converted to number
+    * @returns {boolean} true if can be a number, false if can't be a number
+    * @example
+    * common.isNumber(1) //outputs true
+    * common.isNumber("2") //outputs true
+    * common.isNumber("test") //outputs false
+    */
+    common.isNumber = function (n) {
+        return !isNaN(parseFloat(n)) &amp;&amp; isFinite(n);
+    };
+    
+    /**
+    * This default Countly behavior of type conversion for storing proeprties accepted through API requests
+    * dealing with numbers as strings and too long numbers
+    * @param {any} value - value to convert to usable type
+    * @returns {varies} converted value
+    * @example
+    * common.convertToType(1) //outputs 1
+    * common.convertToType("2") //outputs 2
+    * common.convertToType("test") //outputs "test"
+    * common.convertToType("12345678901234567890") //outputs "12345678901234567890"
+    */
+    common.convertToType = function(value){
+        //handle array values
+        if(Array.isArray(value)){
+            for(var i = 0; i &lt;  value.length; i++){
+                value[i] = common.convertToType(value[i]);
+            }
+            return value;
+        }
+        //if value can be a number
+        else if (common.isNumber(value)) {
+            //check if it is string but is less than 16 length
+            if(value.length &amp;&amp; value.length &lt;= 16)
+                //convert to number
+                return parseFloat(value);
+            //check if it is number, but longer than 16 digits (max limit)
+            else if((value+"").length > 16)
+                //convert to string
+                return value+"";
+            else
+                //return number as is
+                return value;
+        } else{
+            //return as string
+            return value+"";
+        }
+    }
+
+    /**
+    * Safe division between numbers providing 0 as result in cases when dividing by 0
+    * @param {number} dividend - number which to divide
+    * @param {number} divisor - number by which to divide
+    * @returns {number} result of division
+    * @example
+    * //outputs 0
+    * common.safeDivision(100, 0);
+    */
+    common.safeDivision = function(dividend, divisor) {
+        var tmpAvgVal;
+        tmpAvgVal = dividend / divisor;
+        if(!tmpAvgVal || tmpAvgVal == Number.POSITIVE_INFINITY){
+            tmpAvgVal = 0;
+        }
+        return tmpAvgVal;
+    }
+
+    /**
+    * Pad number with specified character from left to specified length
+    * @param {number} number - number to pad
+    * @param {number} width - pad to what length in symbols
+    * @returns {string} padded number
+    * @example
+    * //outputs 0012
+    * common.zeroFill(12, 4, "0");
+    */
+    common.zeroFill = function(number, width) {
+        width -= number.toString().length;
+
+        if (width > 0) {
+            return new Array(width + (/\./.test(number) ? 2 : 1)).join('0') + number;
+        }
+
+        return number + ""; // always return a string
+    };
+
+    /**
+    * Add item or array to existing array only if values are not already in original array
+    * @param {array} arr - original array where to add unique elements
+    * @param {string|number|array} item - item to add or array to merge
+    * @returns {array} array with unique values
+    */
+    common.arrayAddUniq = function (arr, item) {
+        if (!arr) {
+            arr = [];
+        }
+
+        if (toString.call(item) === "[object Array]") {
+            for (var i = 0; i &lt; item.length; i++) {
+                if (arr.indexOf(item[i]) === -1) {
+                    arr[arr.length] = item[i];
+                }
+            }
+        } else {
+            if (arr.indexOf(item) === -1) {
+                arr[arr.length] = item;
+            }
+        }
+    };
+
+    /**
+    * Create HMAC sha1 hash from provided value and optional salt
+    * @param {string} str - value to hash
+    * @param {string=} addSalt - optional salt, uses ms timestamp by default
+    * @returns {string} HMAC sha1 hash
+    */
+    common.sha1Hash = function (str, addSalt) {
+        var salt = (addSalt) ? new Date().getTime() : '';
+        return crypto.createHmac('sha1', salt + '').update(str + '').digest('hex');
+    };
+
+    /**
+    * Create MD5 hash from provided value
+    * @param {string} str - value to hash
+    * @returns {string} MD5 hash
+    */
+    common.md5Hash = function (str) {
+        return crypto.createHash('md5').update(str + '').digest('hex');
+    };
+
+    /**
+    * Modifies provided object in the format object["2012.7.20.property"] = increment. 
+    * Usualy used when filling up Countly metric model data
+    * @param {params} params - {@link params} object
+    * @param {object} object - object to fill
+    * @param {string} property - meric value or segment or property to fill/increment
+    * @param {number=} increment - by how much to increments, default is 1
+    * @example
+    * var obj = {};
+    * common.fillTimeObject(params, obj, "u", 1);
+    * console.log(obj);
+    * //outputs
+    * { '2017.u': 1,
+    *   '2017.2.u': 1,
+    *   '2017.2.23.u': 1,
+    *   '2017.2.23.8.u': 1,
+    *   '2017.w8.u': 1 }
+    */
+    common.fillTimeObject = function (params, object, property, increment) {
+        var increment = (increment) ? increment : 1,
+            timeObj = params.time;
+
+        if (!timeObj || !timeObj.yearly || !timeObj.monthly || !timeObj.weekly || !timeObj.daily || !timeObj.hourly) {
+            return false;
+        }
+
+        object[timeObj.yearly + '.' + property] = increment;
+        object[timeObj.monthly + '.' + property] = increment;
+        object[timeObj.daily + '.' + property] = increment;
+
+        // If the property parameter contains a dot, hourly data is not saved in
+        // order to prevent two level data (such as 2012.7.20.TR.u) to get out of control.
+        if (property.indexOf('.') === -1) {
+            object[timeObj.hourly + '.' + property] = increment;
+        }
+
+        // For properties that hold the unique visitor count we store weekly data as well.
+        if (property.substr(-2) == ("." + common.dbMap["unique"]) ||
+            property == common.dbMap["unique"] ||
+            property.substr(0,2) == (common.dbMap["frequency"] + ".") ||
+            property.substr(0,2) == (common.dbMap["loyalty"] + ".") ||
+            property.substr(0,3) == (common.dbMap["durations"] + ".") ||
+            property == common.dbMap["paying"])
+        {
+            object[timeObj.yearly + ".w" + timeObj.weekly + '.' + property] = increment;
+        }
+    };
+
+    /**
+    * Creates a time object from request's milisecond or second timestamp in provided app's timezone
+    * @param {object} params - {@link params} object
+    * @param {object} object - object to fill
+    * @param {string} property - meric value or segment or property to fill/increment
+    * @param {number=} increment - by how much to increments, default is 1
+    * @returns {timeObject} Time object for current request
+    */
+    common.initTimeObj = function (appTimezone, reqTimestamp) {
+        var currTimestamp,
+            curMsTimestamp,
+            currDate,
+            currDateWithoutTimestamp = new Date();
+        
+        // Check if the timestamp parameter exists in the request and is a 10 or 13 digit integer, handling also float timestamps with ms after dot
+        if (reqTimestamp &amp;&amp; (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 10 &amp;&amp; common.isNumber(reqTimestamp)) {
+            // If the received timestamp is greater than current time use the current time as timestamp
+            currTimestamp = ( parseInt(reqTimestamp, 10) > time.time()) ? time.time() : parseInt(reqTimestamp, 10);
+            curMsTimestamp = ( parseInt(reqTimestamp, 10) > time.time()) ? time.time()*1000 : parseFloat(reqTimestamp, 10)*1000;
+            currDate = new Date(currTimestamp * 1000);
+        } else if (reqTimestamp &amp;&amp; (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 13 &amp;&amp; common.isNumber(reqTimestamp)) {
+            var tmpTimestamp = Math.round(parseInt(reqTimestamp, 10) / 1000);
+            curMsTimestamp = ( tmpTimestamp > time.time()) ? time.time() * 1000 :  parseInt(reqTimestamp, 10);
+            currTimestamp = (tmpTimestamp > time.time()) ? time.time() : tmpTimestamp;
+            currDate = new Date(currTimestamp * 1000);
+        } else {
+            currTimestamp = time.time(); // UTC
+            currDate = new Date();
+            curMsTimestamp = currDate.getTime();
+        }
+		
+		currDate.setTimezone(appTimezone);
+		currDateWithoutTimestamp.setTimezone(appTimezone);
+
+        var tmpMoment = moment(currDate);
+
+        /**
+        * @typedef timeObject
+        * @type {object} 
+        * @global
+        * @property {momentjs} now - momentjs instance for request's time in app's timezone
+        * @property {momentjs} nowUTC - momentjs instance for request's time in UTC
+        * @property {momentjs} nowWithoutTimestamp - momentjs instance for current time in app's timezone
+        * @property {number} timestamp -  request's seconds timestamp
+        * @property {number} mstimestamp -  request's miliseconds timestamp
+        * @property {string} yearly -  year of request time in app's timezone in YYYY format
+        * @property {string} monthly -  month of request time in app's timezone in YYYY.M format
+        * @property {string} daily -  date of request time in app's timezone in YYYY.M.D format
+        * @property {string} hourly -  hour of request time in app's timezone in YYYY.M.D.H format
+        * @property {number} weekly -  week of request time in app's timezone as result day of the year, divided by 7
+        * @property {string} month -  month of request time in app's timezone in format M
+        * @property {string} day -  day of request time in app's timezone in format D
+        * @property {string} hour -  hour of request time in app's timezone in format H
+        */
+        return {
+            now: tmpMoment,
+            nowUTC: moment.utc(currDate),
+            nowWithoutTimestamp: moment(currDateWithoutTimestamp),
+            timestamp: currTimestamp,
+            mstimestamp: curMsTimestamp,
+            yearly: tmpMoment.format("YYYY"),
+            monthly: tmpMoment.format("YYYY.M"),
+            daily: tmpMoment.format("YYYY.M.D"),
+            hourly: tmpMoment.format("YYYY.M.D.H"),
+            weekly: Math.ceil(tmpMoment.format("DDD") / 7),
+            month: tmpMoment.format("M"),
+            day: tmpMoment.format("D"),
+            hour: tmpMoment.format("H")
+        };
+    };
+
+    /**
+    * Creates a Date object from provided seconds timestamp in provided timezone
+    * @param {number} timestamp - unix timestamp in seconds
+    * @param {string} timezone - name of the timezone
+    * @returns {Date} Date object for provided time
+    */
+    common.getDate = function (timestamp, timezone) {
+        var tmpDate = (timestamp)? new Date(timestamp * 1000) : new Date();
+
+        if (timezone) {
+			tmpDate.setTimezone(timezone);
+        }
+
+        return tmpDate;
+    };
+
+    /**
+    * Returns day of the year from provided seconds timestamp in provided timezone
+    * @param {number} timestamp - unix timestamp in seconds
+    * @param {string} timezone - name of the timezone
+    * @returns {number} current day of the year
+    */
+    common.getDOY = function (timestamp, timezone) {
+        var endDate = (timestamp)? new Date(timestamp * 1000) : new Date();
+
+        if (timezone) {
+			endDate.setTimezone(timezone);
+        }
+
+        var startDate = (timestamp)? new Date(timestamp * 1000) : new Date();
+
+        if (timezone) {
+			startDate.setTimezone(timezone);
+        }
+
+        startDate.setMonth(0);
+        startDate.setDate(1);
+        startDate.setHours(0);
+        startDate.setMinutes(0);
+        startDate.setSeconds(0);
+        startDate.setMilliseconds(0);
+
+        var diff = endDate - startDate;
+        var oneDay = 1000 * 60 * 60 * 24;
+        var currDay = Math.ceil(diff / oneDay);
+
+        return currDay;
+    };
+
+    /**
+    * Returns amount of days in provided year
+    * @param {number} year - year to check for days
+    * @returns {number} number of days in provided year
+    */
+    common.getDaysInYear = function (year) {
+        if(new Date(year, 1, 29).getMonth() === 1) {
+            return 366;
+        } else {
+            return 365;
+        }
+    };
+
+    /**
+    * Returns amount of iso weeks in provided year
+    * @param {number} year - year to check for days
+    * @returns {number} number of iso weeks in provided year
+    */
+    common.getISOWeeksInYear = function (year) {
+        var d = new Date(year, 0, 1),
+            isLeap = new Date(year, 1, 29).getMonth() === 1;
+
+        //Check for a Jan 1 that's a Thursday or a leap year that has a
+        //Wednesday Jan 1. Otherwise it's 52
+        return d.getDay() === 4 || isLeap &amp;&amp; d.getDay() === 3 ? 53 : 52
+    };
+
+    /**
+    * Validates provided arguments
+    * @param {object} args - arguments to validate
+    * @param {object} argProperties - rules for validating each argument
+    * @param {boolean} argProperties.required - should property be present in args
+    * @param {string} argProperties.type - what type should property be, possible values: String, Array, Number, URL, Boolean, Object
+    * @param {string} argProperties.max-length - property should not be longer than provided value
+    * @param {string} argProperties.min-length - property should not be shorter than provided value
+    * @param {string} argProperties.exclude-from-ret-obj - should property be present in returned validated args object
+    * @param {string} argProperties.has-number - should string property has any number in it
+    * @param {string} argProperties.has-char - should string property has any latin character in it
+    * @param {string} argProperties.has-upchar - should string property has any upper cased latin character in it
+    * @param {string} argProperties.has-special - should string property has any none latin character in it
+    * @returns {object|false} validated args or false if args do not pass validation
+    */
+    common.validateArgs = function (args, argProperties) {
+
+        var returnObj = {};
+
+        if (!args) {
+            return false;
+        }
+
+        for (var arg in argProperties) {
+            if (argProperties[arg].required) {
+                if (args[arg] === void 0) {
+                    return false;
+                }
+            }
+
+            if (args[arg] !== void 0) {
+                if (argProperties[arg].type) {
+                    if (argProperties[arg].type === 'Number' || argProperties[arg].type === 'String') {
+                        if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']') {
+                            return false;
+                        }
+                    } else if (argProperties[arg].type === 'URL') {
+                        if (toString.call(args[arg]) !== '[object String]') {
+                            return false;
+                        } else if (args[arg] &amp;&amp; !/^([a-z]([a-z]|\d|\+|-|\.)*):(\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&amp;'\(\)\*\+,;=]|:)*@)?((\[(|(v[\da-f]{1,}\.(([a-z]|\d|-|\.|_|~)|[!\$&amp;'\(\)\*\+,;=]|:)+))\])|((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&amp;'\(\)\*\+,;=])*)(:\d*)?)(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&amp;'\(\)\*\+,;=]|:|@)*)*|(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&amp;'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&amp;'\(\)\*\+,;=]|:|@)*)*)?)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&amp;'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&amp;'\(\)\*\+,;=]|:|@)*)*)|((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&amp;'\(\)\*\+,;=]|:|@)){0})(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&amp;'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&amp;'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i.test(args[arg])) {
+                            return false;
+                        }
+                    } else if (argProperties[arg].type === 'Boolean') {
+                        if (!(args[arg] !== true || args[arg] !== false || toString.call(args[arg]) !== '[object Boolean]')) {
+                            return false;
+                        }
+                    } else if (argProperties[arg].type === 'Array') {
+                        if (!Array.isArray(args[arg])) {
+                            return false;
+                        }
+                    } else if (argProperties[arg].type === 'Object') {
+                        if (toString.call(args[arg]) !== '[object ' + argProperties[arg].type + ']' &amp;&amp; !(!argProperties[arg].required &amp;&amp; args[arg] === null)) {
+                            return false;
+                        }
+                    } 
+					else {
+                        return false;
+                    }
+                } else {
+                    if (toString.call(args[arg]) !== '[object String]') {
+                        return false;
+                    }
+                }
+
+                /*
+                if (toString.call(args[arg]) === '[object String]') {
+                    args[arg] = args[arg].replace(/([.$])/mg, '');
+                }
+                */
+
+                if (argProperties[arg]['max-length']) {
+                    if (args[arg].length > argProperties[arg]['max-length']) {
+                        return false;
+                    }
+                }
+
+                if (argProperties[arg]['min-length']) {
+                    if (args[arg].length &lt; argProperties[arg]['min-length']) {
+                        return false;
+                    }
+                }
+                
+                if (argProperties[arg]['has-number']) {
+                    if (!/\d/.test(args[arg])) {
+                        return false;
+                    }
+                }
+                
+                if (argProperties[arg]['has-char']) {
+                    if (!/[A-Za-z]/.test(args[arg])) {
+                        return false;
+                    }
+                }
+                
+                if (argProperties[arg]['has-upchar']) {
+                    if (!/[A-Z]/.test(args[arg])) {
+                        return false;
+                    }
+                }
+                
+                if (argProperties[arg]['has-special']) {
+                    if (!/[^A-Za-z\d]/.test(args[arg])) {
+                        return false;
+                    }
+                }
+
+                if (!argProperties[arg]['exclude-from-ret-obj']) {
+                    returnObj[arg] = args[arg];
+                }
+            }
+        }
+
+        return returnObj;
+    };
+
+    /**
+    * Fix event keys before storing in database by removing dots and $ from the string, removing other prefixes and limiting length
+    * @param {string} eventKey - key value to fix
+    * @returns {string|false} escaped key or false if not possible to use key at all
+    */
+    common.fixEventKey = function (eventKey) {
+        var shortEventName = eventKey.replace(/system\.|\.\.|\$/g, "");
+
+        if (shortEventName.length >= 128) {
+            return false;
+        } else {
+            return shortEventName;
+        }
+    };
+
+    /**
+    * Block {@link module:api/utils/common.returnMessage} and {@link module:api/utils/common.returnOutput} from ouputting anything
+    * @param {params} params - params object
+    */
+    common.blockResponses = function(params) {
+        params.blockResponses = true;
+    };
+
+    /**
+    * Unblock/allow {@link module:api/utils/common.returnMessage} and {@link module:api/utils/common.returnOutput} ouputting anything
+    * @param {params} params - params object
+    */
+    common.unblockResponses = function(params) {
+        params.blockResponses = false;
+    };
+
+    /**
+    * Output message as request response with provided http code
+    * @param {params} params - params object
+    * @param {number} returnCode - http code to use
+    * @param {string} message - Message to output, will be encapsulated in JSON object under result property
+    * @param {object} headers - headers to add to the output
+    */
+    common.returnMessage = function (params, returnCode, message, heads) {
+        //set provided in configuration headers
+        var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
+        var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
+        var parts;
+        for(var i = 0; i &lt; add_headers.length; i++){
+            if(add_headers[i] &amp;&amp; add_headers[i].length){
+                parts = add_headers[i].split(/:(.+)?/);
+                if(parts.length == 3){
+                    headers[parts[0]] = parts[1];
+                }
+            }
+        }
+        if(heads){
+            for(var i in heads){
+                headers[i] = heads[i];
+            }
+        }
+        if (params &amp;&amp; params.res &amp;&amp; !params.blockResponses) {
+            params.res.writeHead(returnCode, headers);
+            if (params.qstring.callback) {
+                params.res.write(params.qstring.callback + '(' + JSON.stringify({result: message}, escape_html_entities) + ')');
+            } else {
+                params.res.write(JSON.stringify({result: message}, escape_html_entities));
+            }
+
+            params.res.end();
+        }
+    };
+
+    /**
+    * Output message as request response with provided http code
+    * @param {params} params - params object
+    * @param {output} output - object to stringify and output
+    * @param {string} noescape - prevent escaping HTML entities
+    * @param {object} headers - headers to add to the output
+    */
+    common.returnOutput = function (params, output, noescape, heads) {
+        //set provided in configuration headers
+        var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
+        var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
+        var parts;
+        var escape = noescape ? undefined : escape_html_entities;
+        for(var i = 0; i &lt; add_headers.length; i++){
+            if(add_headers[i] &amp;&amp; add_headers[i].length){
+                parts = add_headers[i].split(/:(.+)?/);
+                if(parts.length == 3){
+                    headers[parts[0]] = parts[1];
+                }
+            }
+        }
+        if(heads){
+            for(var i in heads){
+                headers[i] = heads[i];
+            }
+        }
+        if (params &amp;&amp; params.res &amp;&amp; !params.blockResponses) {
+            params.res.writeHead(200, headers);
+            if (params.qstring.callback) {
+                params.res.write(params.qstring.callback + '(' + JSON.stringify(output, escape) + ')');
+            } else {
+                params.res.write(JSON.stringify(output, escape));
+            }
+
+            params.res.end();
+        }
+    };
+    var ipLogger = common.log('ip:api');
+    
+    /**
+    * Get IP address from request object
+    * @param {req} req - nodejs request object
+    * @returns {string} ip address
+    */
+    common.getIpAddress = function(req) {
+        var ipAddress = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : '');
+        /* Since x-forwarded-for: client, proxy1, proxy2, proxy3 */
+        var ips = ipAddress.split(',');
+        
+        //if ignoreProxies not setup, use outmost left ip address
+        if(!countlyConfig.ignoreProxies || !countlyConfig.ignoreProxies.length){
+            ipLogger.d("From %s found ip %s", ipAddress, ips[0]);
+            return ips[0];
+        }
+        //search for the outmost right ip address ignoring provided proxies
+        var ip = "";
+        for(var i = ips.length-1; i >= 0; i--){
+            if(ips[i].trim() != "127.0.0.1" &amp;&amp; (!countlyConfig.ignoreProxies || countlyConfig.ignoreProxies.indexOf(ips[i].trim()) === -1)){
+                ip = ips[i].trim();
+                break;
+            }
+        }
+        ipLogger.d("From %s found ip %s", ipAddress, ip);
+        return ip;
+    };
+
+    /**
+    * Modifies provided object filling properties used in zero documents in the format object["2012.7.20.property"] = increment. 
+    * Usualy used when filling up Countly metric model zero document
+    * @param {params} params - {@link params} object
+    * @param {object} object - object to fill
+    * @param {string} property - meric value or segment or property to fill/increment
+    * @param {number=} increment - by how much to increments, default is 1
+    * @example
+    * var obj = {};
+    * common.fillTimeObjectZero(params, obj, "u", 1);
+    * console.log(obj);
+    * //outputs
+    * { 'd.u': 1, 'd.2.u': 1, 'd.w8.u': 1 }
+    */
+    common.fillTimeObjectZero = function (params, object, property, increment) {
+        var tmpIncrement = (increment) ? increment : 1,
+            timeObj = params.time;
+
+        if (!timeObj || !timeObj.yearly || !timeObj.month) {
+            return false;
+        }
+
+        if (property instanceof Array) {
+            for (var i = 0; i &lt; property.length; i ++) {
+                object['d.' + property[i]] = tmpIncrement;
+                object['d.' + timeObj.month + '.' + property[i]] = tmpIncrement;
+
+                // For properties that hold the unique visitor count we store weekly data as well.
+                if (property[i].substr(-2) == ("." + common.dbMap["unique"]) ||
+                    property[i] == common.dbMap["unique"] ||
+                    property[i].substr(0,2) == (common.dbMap["frequency"] + ".") ||
+                    property[i].substr(0,2) == (common.dbMap["loyalty"] + ".") ||
+                    property[i].substr(0,3) == (common.dbMap["durations"] + ".") ||
+                    property[i] == common.dbMap["paying"])
+                {
+                    object['d.' + "w" + timeObj.weekly + '.' + property[i]] = tmpIncrement;
+                }
+            }
+        } else {
+            object['d.' + property] = tmpIncrement;
+            object['d.' + timeObj.month + '.' + property] = tmpIncrement;
+
+            if (property.substr(-2) == ("." + common.dbMap["unique"]) ||
+                property == common.dbMap["unique"] ||
+                property.substr(0,2) == (common.dbMap["frequency"] + ".") ||
+                property.substr(0,2) == (common.dbMap["loyalty"] + ".") ||
+                property.substr(0,3) == (common.dbMap["durations"] + ".") ||
+                property == common.dbMap["paying"])
+            {
+                object['d.' + "w" + timeObj.weekly + '.' + property] = tmpIncrement;
+            }
+        }
+
+        return true;
+    };
+
+    /**
+    * Modifies provided object filling properties used in monthly documents in the format object["2012.7.20.property"] = increment. 
+    * Usualy used when filling up Countly metric model monthly document
+    * @param {params} params - {@link params} object
+    * @param {object} object - object to fill
+    * @param {string} property - meric value or segment or property to fill/increment
+    * @param {number=} increment - by how much to increments, default is 1
+    * @param {boolean=} forceHour - force recording hour information too, dfault is false
+    * @example
+    * var obj = {};
+    * common.fillTimeObjectMonth(params, obj, "u", 1);
+    * console.log(obj);
+    * //outputs
+    * { 'd.23.u': 1, 'd.23.12.u': 1 }
+    */
+    common.fillTimeObjectMonth = function (params, object, property, increment, forceHour) {
+        var tmpIncrement = (increment) ? increment : 1,
+            timeObj = params.time;
+
+        if (!timeObj || !timeObj.yearly || !timeObj.month || !timeObj.weekly || !timeObj.day || !timeObj.hour) {
+            return false;
+        }
+
+        if (property instanceof Array) {
+            for (var i = 0; i &lt; property.length; i ++) {
+                object['d.' + timeObj.day + '.' + property[i]] = tmpIncrement;
+
+                // If the property parameter contains a dot, hourly data is not saved in
+                // order to prevent two level data (such as 2012.7.20.TR.u) to get out of control.
+                if (forceHour || property[i].indexOf('.') === -1) {
+                    object['d.' + timeObj.day + '.' + timeObj.hour + '.' + property[i]] = tmpIncrement;
+                }
+            }
+        } else {
+            object['d.' + timeObj.day + '.' + property] = tmpIncrement;
+
+            if (forceHour || property.indexOf('.') === -1) {
+                object['d.' + timeObj.day + '.' + timeObj.hour + '.' + property] = tmpIncrement;
+            }
+        }
+
+        return true;
+    };
+    
+    /**
+    * Record data in Countly standard metric model
+    * Can be used by plugins to record data, similar to sessions and users, with optional segments
+    * @param {params} params - {@link params} object
+    * @param {string} collection - name of the collections where to store data
+    * @param {id} string - id to prefix document ids, like app_id or segment id, etc
+    * @param {array} metrics - array of metrics to record, as ["u","t", "n"]
+    * @param {number=} value - value to increment all metrics for, default 1
+    * @param {object} segments - object with segments to record data, key segment name and value segment value
+    * @param {array} uniques - names of the metrics, which should be treated as unique, and stored in 0 docs and be estimated on output
+    * @param {number} lastTimestamp - timestamp in seconds to be used to determine if unique metrics it unique for specific period
+    * @example
+    * //recording attribution
+    * common.recordCustomMetric(params, "campaigndata", campaignId, ["clk", "aclk"], 1, {pl:"Android", brw:"Chrome"}, ["clk"], user["last_click"]);
+    */
+    common.recordCustomMetric = function(params, collection, id, metrics, value, segments, uniques, lastTimestamp){
+		value = value || 1;
+		var updateUsersZero = {},
+		updateUsersMonth = {},
+		tmpSet = {};
+		var dbDateIds = common.getDateIds(params);
+	
+		for(var i = 0; i &lt; metrics.length; i++){
+			var metric = metrics[i],
+				zeroObjUpdate = [],
+				monthObjUpdate = [],
+				escapedMetricVal, escapedMetricKey;
+            
+            if(uniques &amp;&amp; uniques.indexOf(metric) !== -1){
+                if (lastTimestamp) {
+                    var currDate = common.getDate(params.time.timestamp, params.appTimezone),
+                        lastDate = common.getDate(lastTimestamp, params.appTimezone),
+                        secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
+                        secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
+                        secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
+                        secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
+                        
+                    if (lastTimestamp &lt; (params.time.timestamp - secInMin)) {
+                        updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + metric] = 1;
+                    }
+            
+                    if (lastTimestamp &lt; (params.time.timestamp - secInHour)) {
+                        updateUsersMonth['d.' + params.time.day + '.' + metric] = 1;
+                    }
+            
+                    if (lastDate.getFullYear() == params.time.yearly &amp;&amp;
+                        Math.ceil(common.moment(lastDate).format("DDD") / 7) &lt; params.time.weekly) {
+                        updateUsersZero["d.w" + params.time.weekly + '.' + metric] = 1;
+                    }
+            
+                    if (lastTimestamp &lt; (params.time.timestamp - secInMonth)) {
+                        updateUsersZero['d.' + params.time.month + '.' + metric] = 1;
+                    }
+            
+                    if (lastTimestamp &lt; (params.time.timestamp - secInYear)) {
+                        updateUsersZero['d.' + metric] = 1;
+                    }
+                }
+                else{
+                    common.fillTimeObjectZero(params, updateUsersZero, metric);
+                    common.fillTimeObjectMonth(params, updateUsersMonth, metric, 1, true);
+                }
+            }
+            else{
+                zeroObjUpdate.push(metric);
+                monthObjUpdate.push(metric);
+            }
+            if(segments){
+                for(var j in segments){
+                    if(segments[j]){
+                        escapedMetricKey = j.replace(/^\$/, "").replace(/\./g, ":");
+                        escapedMetricVal = (segments[j]+"").replace(/^\$/, "").replace(/\./g, ":");
+                        tmpSet["meta." + escapedMetricKey] = escapedMetricVal;
+                        if(uniques &amp;&amp; uniques.indexOf(metric) !== -1){
+                            if (lastTimestamp) {
+                                var currDate = common.getDate(params.time.timestamp, params.appTimezone),
+                                    lastDate = common.getDate(lastTimestamp, params.appTimezone),
+                                    secInMin = (60 * (currDate.getMinutes())) + currDate.getSeconds(),
+                                    secInHour = (60 * 60 * (currDate.getHours())) + secInMin,
+                                    secInMonth = (60 * 60 * 24 * (currDate.getDate() - 1)) + secInHour,
+                                    secInYear = (60 * 60 * 24 * (common.getDOY(params.time.timestamp, params.appTimezone) - 1)) + secInHour;
+                                    
+                                if (lastTimestamp &lt; (params.time.timestamp - secInMin)) {
+                                    updateUsersMonth['d.' + params.time.day + '.' + params.time.hour + '.' + escapedMetricVal + '.' + metric] = 1;
+                                }
+                        
+                                if (lastTimestamp &lt; (params.time.timestamp - secInHour)) {
+                                    updateUsersMonth['d.' + params.time.day + '.' + escapedMetricVal + '.' + metric] = 1;
+                                }
+                        
+                                if (lastDate.getFullYear() == params.time.yearly &amp;&amp;
+                                    Math.ceil(common.moment(lastDate).format("DDD") / 7) &lt; params.time.weekly) {
+                                    updateUsersZero["d.w" + params.time.weekly + '.' + escapedMetricVal + '.' + metric] = 1;
+                                }
+                        
+                                if (lastTimestamp &lt; (params.time.timestamp - secInMonth)) {
+                                    updateUsersZero['d.' + params.time.month + '.' + escapedMetricVal + '.' + metric] = 1;
+                                }
+                        
+                                if (lastTimestamp &lt; (params.time.timestamp - secInYear)) {
+                                    updateUsersZero['d.' + escapedMetricVal + '.' + metric] = 1;
+                                }
+                            }
+                            else{
+                                common.fillTimeObjectZero(params, updateUsersZero, escapedMetricVal + '.' + metric);
+                                common.fillTimeObjectMonth(params, updateUsersMonth, escapedMetricVal + '.' + metric, 1, true);
+                            }
+                        }
+                        else{
+                            zeroObjUpdate.push(escapedMetricVal+"."+metric);
+                            monthObjUpdate.push(escapedMetricVal+"."+metric);
+                        }
+                    }
+                }
+            }
+
+			common.fillTimeObjectZero(params, updateUsersZero, zeroObjUpdate, value);
+			common.fillTimeObjectMonth(params, updateUsersMonth, monthObjUpdate, value);
+		}
+        
+        if (Object.keys(updateUsersZero).length || Object.keys(tmpSet).length) {
+            var update = {$set: {m: dbDateIds.zero, a: params.app_id + ""}};
+            if (Object.keys(updateUsersZero).length) {
+                update["$inc"] = updateUsersZero;
+            }
+            if (Object.keys(tmpSet).length) {
+                update["$addToSet"] = tmpSet;
+            }
+			common.db.collection(collection).update({'_id': id + "_" + dbDateIds.zero}, update, {'upsert': true},function(){});
+		}
+		if (Object.keys(updateUsersMonth).length){
+            common.db.collection(collection).update({'_id': id + "_" + dbDateIds.month}, {$set: {m: dbDateIds.month, a: params.app_id + ""}, '$inc': updateUsersMonth}, {'upsert': true},function(err, res){});
+        }
+	};
+
+    /**
+    * Get object of date ids that should be used in fetching standard metric model documents
+    * @param {params} params - {@link params} object
+    * return {object} with date ids, as {zero:"2017:0", month:"2017:2"}
+    */
+    common.getDateIds = function(params) {
+        if (!params || !params.time) {
+            return {
+                zero: "0000:0",
+                month: "0000:1"
+            };
+        }
+
+        return {
+            zero: params.time.yearly + ":0",
+            month: params.time.yearly + ":" + params.time.month
+        };
+    };
+    
+    /**
+    * Get diference between 2 momentjs instances in specific measurement
+    * @param {moment} moment1 - momentjs with start date
+    * @param {moment} moment2 - momentjs with end date
+    * @param {string} measure - units of difference, can be minutes, hours, days, weeks
+    * return {number} difference in provided units
+    */
+    common.getDiff = function(moment1, moment2, measure){
+        var divider = 1;
+        switch (measure) {
+            case "minutes":
+                divider = 60;
+                break;
+            case "hours":
+                divider = 60*60;
+                break;
+            case "days":
+                divider = 60*60*24;
+                break;
+            case "weeks":
+                divider = 60*60*24*7;
+                break;
+        }
+        return Math.floor((moment1.unix() - moment2.unix())/divider);
+    };
+	
+    /**
+    * Compares two version strings with : as delimiter (which we used to escape dots in app versions)
+    * @param {string} v1 - first version
+    * @param {string} v2 - second version
+    * @param {object} options - providing additional options
+    * @param {string} options.delimiter - delimiter between version, subversion, etc, defaults :
+    * @param {string} options.zeroExtend - changes the result if one version string has less parts than the other. In this case the shorter string will be padded with "zero" parts instead of being considered smaller.
+    * @param {string} options.lexicographical - compares each part of the version strings lexicographically instead of naturally; this allows suffixes such as "b" or "dev" but will cause "1.10" to be considered smaller than "1.2".
+    * @returns {number} 0 if they are both the same, 1 if first one is higher and -1 is second one is highet
+    */
+	common.versionCompare = function(v1, v2, options) {
+		var lexicographical = options &amp;&amp; options.lexicographical,
+			zeroExtend = options &amp;&amp; options.zeroExtend,
+            delimiter = options &amp;&amp; options.delimiter || ":",
+			v1parts = v1.split(delimiter),
+			v2parts = v2.split(delimiter);
+	
+		function isValidPart(x) {
+			return (lexicographical ? /^\d+[A-Za-z]*$/ : /^\d+$/).test(x);
+		}
+	
+		if (!v1parts.every(isValidPart) || !v2parts.every(isValidPart)) {
+			return NaN;
+		}
+	
+		if (zeroExtend) {
+			while (v1parts.length &lt; v2parts.length) v1parts.push("0");
+			while (v2parts.length &lt; v1parts.length) v2parts.push("0");
+		}
+	
+		if (!lexicographical) {
+			v1parts = v1parts.map(Number);
+			v2parts = v2parts.map(Number);
+		}
+	
+		for (var i = 0; i &lt; v1parts.length; ++i) {
+			if (v2parts.length == i) {
+				return 1;
+			}
+	
+			if (v1parts[i] == v2parts[i]) {
+				continue;
+			}
+			else if (v1parts[i] > v2parts[i]) {
+				return 1;
+			}
+			else {
+				return -1;
+			}
+		}
+	
+		if (v1parts.length != v2parts.length) {
+			return -1;
+		}
+	
+		return 0;
+	};
+    
+    /**
+    * Adjust timestamp with app's timezone for timestamp queries that should equal bucket results
+    * @param {number} ts - miliseconds timestamp
+    * @param {string} tz - timezone
+    * @returns {number} adjusted timestamp for timezone
+    */
+    common.adjustTimestampByTimezone = function(ts, tz){
+        var d = new Date();
+        d.setTimezone(tz);
+        return ts - (d.getTimezoneOffset()*60);
+    };
+	
+
+    /**
+    * Getter/setter for dot notatons:
+    * @param {object} obj - object to use
+    * @param {string} is - path of properties to get
+    * @param {varies} value - value to set
+    * @returns {varies} value at provided path
+    * @example
+    * common.dot({a: {b: {c: 'string'}}}, 'a.b.c') === 'string'
+    * common.dot({a: {b: {c: 'string'}}}, ['a', 'b', 'c']) === 'string'
+    * common.dot({a: {b: {c: 'string'}}}, 'a.b.c', 5) === 5
+    * common.dot({a: {b: {c: 'string'}}}, 'a.b.c') === 5
+    */
+    common.dot = function(obj, is, value) {
+        if (typeof is == 'string') {
+            return common.dot(obj,is.split('.'), value);
+        } else if (is.length==1 &amp;&amp; value!==undefined) {
+            obj[is[0]] = value;
+            return value;
+        } else if (is.length==0) {
+            return obj;
+        } else if (!obj) {
+            return obj;
+        } else {
+            return common.dot(obj[is[0]],is.slice(1), value);
+        }
+    };
+
+    /**
+    * Returns plain object with key set to value
+    * @param {varies} arguments - every odd value will be used as key and every event value as value for odd key
+    * @returns {object} new object with set key/value properties
+    */
+    common.o = function() {
+        var o = {};
+        for (var i = 0; i &lt; arguments.length; i += 2) {
+            o[arguments[i]] = arguments[i + 1];
+        }
+        return o;
+    };
+    
+    /**
+    * Return index of array with objects where property = value
+    * @param {array} array - array where to search value
+    * @param {string} property - property where to look for value
+    * @param {varies} value - value you are searching for
+    * @returns {number} index of the array
+    */
+    common.indexOf = function(array, property, value) {
+        for (var i = 0; i &lt; array.length; i += 1) {
+            if (array[i][property] === value) { return i; }
+        }
+        return -1;
+    };
+
+    /**
+    * Optionally load module if it exists
+    * @param {string} module - module name
+    * @param {object} options - additional opeitons
+    * @param {boolean} options.rethrow - throw exception if there is some other error
+    * @param {varies} value - value you are searching for
+    * @returns {number} index of the array
+    */
+    common.optional = function(module, options){
+        try {
+            if (module[0] in {'.': 1}) {
+                module = process.cwd() + module.substr(1);
+            }
+            return require(module);
+        } catch(err) { 
+            if (err.code !== 'MODULE_NOT_FOUND' &amp;&amp; options &amp;&amp; options.rethrow) {
+                throw err;
+            }
+        }
+        return null;
+    };
+
+    /**
+    * Create promise for function which result should be checked periodically
+    * @param {function} func - function to run when verifying result, should return true if success
+    * @param {number} count - how many times to run the func before giving up, if result is always negative
+    * @param {number} interval - how often to retest function on negative result in miliseconds
+    * @returns {Promise} promise for checking task
+    */
+    common.checkPromise = function(func, count, interval) {
+        return new Promise((resolve, reject) => {
+            function check() {
+                if (func()) {
+                    resolve();
+                } else if (count &lt;= 0) {
+                    reject('Timed out');
+                } else {
+                    count--;
+                    setTimeout(check, interval);
+                }
+            }
+            check();
+        });
+    };
+    
+    /**
+    * Single method to update app_users document for specific user for SDK requests
+    * @param {params} params - params object
+    * @param {object} update - update query for mongodb, should contain operators on highest level, as $set or $unset
+    * @param {function} callback - function to run when update is done or failes, passing error and result as arguments
+    */
+    common.updateAppUser = function(params, update, callback){
+        if(Object.keys(update).length){
+            for(var i in update){
+                if(i.indexOf("$") !== 0){
+                    var err = "Unkown modifier " + i + " in " + update + " for " + params.href
+                    console.log(err);
+                    if(callback)
+                        callback(err);
+                    return;
+                }
+            }
+            if(!update["$setOnInsert"])
+                update["$setOnInsert"] = {};
+            if(!update["$setOnInsert"].fac)
+                update["$setOnInsert"].fac = params.time.mstimestamp;
+            
+            if(!update["$set"])
+                update["$set"] = {};
+            if(!update["$set"].lac)
+                update["$set"].lac = params.time.mstimestamp;
+            common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id},{}, update, {new:true, upsert:true}, function(err, res) {
+                if(!err &amp;&amp; res &amp;&amp; res.value)
+                    params.app_user = res.value;
+                if(callback)
+                    callback(err, res);
+            });
+        }
+        else if(callback)
+            callback();
+    };
+    
+    /**
+    * Update carrier from metrics to convert mnc/mcc code to carrier name
+    * @param {object} metrics - metrics object from SDK request
+    */
+    common.processCarrier = function(metrics){
+        if(metrics &amp;&amp; metrics._carrier){
+            var carrier = metrics._carrier+"";
+            
+            //random hash without spaces
+            if(carrier.length === 16 &amp;&amp; carrier.indexOf(" ") === -1){
+                delete metrics._carrier;
+                return;
+            }
+            
+            //random code
+            if((carrier.length === 5 || carrier.length === 6) &amp;&amp; /^[0-9]+$/.test(carrier)){
+                //check if mcc and mnc match some operator
+                var arr = mcc_mnc_list.filter({ mccmnc: carrier });
+                if(arr &amp;&amp; arr.length &amp;&amp; (arr[0].brand || arr[0].operator)){
+                    carrier = arr[0].brand || arr[0].operator;
+                }
+                else{
+                    delete metrics._carrier
+                    return;
+                }
+            }
+            
+            carrier = carrier.replace(/\w\S*/g, function (txt) {
+                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+            });
+            metrics._carrier = carrier;
+        }
+    };
+}(common));
+
+module.exports = common;</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Thu May 04 2017 08:36:02 GMT+0000 (UTC) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/jquery-3.1.1.min.js"></script>
+
+<script src="scripts/search.js"></script>
+
+
+<script src="scripts/collapse.js"></script>
+
+
+
+</body>
+</html>
