@@ -4,6 +4,12 @@ services:
   - mongodb
 env:
   - CXX=g++-4.8
+branches:
+  except:
+    - gh-pages
+env:
+  global:
+    - secure: ZXdUMP+8Nk9Kd5nX31D/DIB1t2xlJd+T4W7umWjwpy+KPA9d1W1OhUG6V2Gpv3PsJf+UtMosgZsywcLFVG4l/WcjAhs3c9pegW5ZRYAEfVjkk7aHhWQGvj5DID8iAAxs91Mm8LwJ43o68x+XN6746zArPqcVzQltDunJ0G3gfh8=
 addons:
   apt:
     sources:
@@ -22,6 +28,10 @@ after_script:
   - cat log/countly-api.log
   - cat log/countly-dashboard.log
   - cat /var/log/mongodb/mongod.log
+after_success:
+  - cd $TRAVIS_BUILD_DIR
+  - chmod +x bin/scripts/generateDocs.sh
+  - bash bin/scripts/generateDocs.sh
 notifications:
   email: hello@count.ly
   slack:
