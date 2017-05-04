@@ -182,8 +182,12 @@
 	
 	countlyCrashes.markResolve = function (id, callback) {
         countlyCrashes.common(id, "resolve", function(json){
-            if(json && json[id])
-                callback(json[id].replace(/:/g, '.'));
+            if(json){
+                if(typeof id === "string")
+                    callback(json[id].replace(/:/g, '.'));
+                else
+                    callback(json);
+            }
             else
                 callback();
         });

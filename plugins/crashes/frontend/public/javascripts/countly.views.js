@@ -102,7 +102,7 @@ window.CrashesView = countlyView.extend({
                         return "<a class='fa fa-check-square check-green'></a>";
                     else
                         return "<a class='fa fa-square-o check-green'></a>";
-                }, "sType":"numeric", "sClass":"center", "sWidth": "30px", "bSortable": false},
+                }, "sType":"numeric", "sClass":"center", "sWidth": "30px", "bSortable": false, "sTitle": "<a class='fa fa-square-o check-green check-header'></a>"},
                 {
                     "mData": function(row, type) {
                         if(type !== "display")
@@ -196,25 +196,48 @@ window.CrashesView = countlyView.extend({
 
 		this.dtable.stickyTableHeaders();
 		this.dtable.fnSort( [ [5,'desc'] ] );
-        $('.crashes tbody').on("click", "tr", function (){
-			var id = $(this).attr("id");
-			if(self.selectedCrashes[id]){
-                $(this).find(".check-green").removeClass("fa-check-square").addClass("fa-square-o");
-                self.selectedCrashes[id] = null;
-                var index = self.selectedCrashesIds.indexOf(id);
-                if(index !== -1)
-                    self.selectedCrashesIds.splice(index, 1);
+        this.dtable.find("thead .check-green").click(function(){
+            if($(this).hasClass("fa-check-square")){
+                self.dtable.find(".check-green").removeClass("fa-check-square").addClass("fa-square-o");
+                self.selectedCrashesIds = [];
+                self.selectedCrashes = {};
+                $(".action-segmentation").addClass("disabled");
             }
             else{
-                self.selectedCrashes[id] = true;
-                self.selectedCrashesIds.push(id);
-                $(this).find(".check-green").removeClass("fa-square-o").addClass("fa-check-square");
+                self.dtable.find(".check-green").removeClass("fa-square-o").addClass("fa-check-square");
+                self.dtable.find(".check-green").parents("tr").each(function(){
+                    var id = $(this).attr("id");
+                    if(id){
+                        if(!self.selectedCrashes[id]){
+                            self.selectedCrashesIds.push(id);
+                        }
+                        self.selectedCrashes[id] = true;
+                        $(".action-segmentation").removeClass("disabled");
+                    }
+                });
             }
-            
-            if(self.selectedCrashesIds.length)
-                $(".action-segmentation").removeClass("disabled");
-            else
-                $(".action-segmentation").addClass("disabled");
+        });
+        $('.crashes tbody').on("click", "tr", function (){
+			var id = $(this).attr("id");
+            if(id){
+                if(self.selectedCrashes[id]){
+                    $(this).find(".check-green").removeClass("fa-check-square").addClass("fa-square-o");
+                    self.selectedCrashes[id] = null;
+                    var index = self.selectedCrashesIds.indexOf(id);
+                    if(index !== -1)
+                        self.selectedCrashesIds.splice(index, 1);
+                }
+                else{
+                    self.selectedCrashes[id] = true;
+                    self.selectedCrashesIds.push(id);
+                    $(this).find(".check-green").removeClass("fa-square-o").addClass("fa-check-square");
+                }
+                
+                if(self.selectedCrashesIds.length)
+                    $(".action-segmentation").removeClass("disabled");
+                else
+                    $(".action-segmentation").addClass("disabled");
+            }
 		});
         
         $(".filter-segmentation").on("cly-select-change", function (e, val) {
@@ -228,8 +251,13 @@ window.CrashesView = countlyView.extend({
                         if (!result) {
                             return true;
                         }
-                        countlyCrashes.markResolve(self.selectedCrashesIds, function(){
-                            self.refresh();
+                        countlyCrashes.markResolve(self.selectedCrashesIds, function(data){
+                            if(!data){
+                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                            }
+                            else{
+                                self.resetSelection(true);
+                            }
                         });
                     });
                 }
@@ -238,8 +266,13 @@ window.CrashesView = countlyView.extend({
                         if (!result) {
                             return true;
                         }
-                        countlyCrashes.markUnresolve(self.selectedCrashesIds, function(){
-                            self.refresh();
+                        countlyCrashes.markUnresolve(self.selectedCrashesIds, function(data){
+                            if(!data){
+                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                            }
+                            else{
+                                self.resetSelection(true);
+                            }
                         });
                     });
                 }
@@ -248,8 +281,13 @@ window.CrashesView = countlyView.extend({
                         if (!result) {
                             return true;
                         }
-                        countlyCrashes.markSeen(self.selectedCrashesIds, function(){
-                            self.refresh();
+                        countlyCrashes.markSeen(self.selectedCrashesIds, function(data){
+                            if(!data){
+                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                            }
+                            else{
+                                self.resetSelection(true);
+                            }
                         });
                     });
                 }
@@ -258,8 +296,13 @@ window.CrashesView = countlyView.extend({
                         if (!result) {
                             return true;
                         }
-                        countlyCrashes.hide(self.selectedCrashesIds, function(){
-                            self.refresh();
+                        countlyCrashes.hide(self.selectedCrashesIds, function(data){
+                            if(!data){
+                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                            }
+                            else{
+                                self.resetSelection(true);
+                            }
                         });
                     });
                 }
@@ -268,32 +311,43 @@ window.CrashesView = countlyView.extend({
                         if (!result) {
                             return true;
                         }
-                        countlyCrashes.show(self.selectedCrashesIds, function(){
-                            self.refresh();
+                        countlyCrashes.show(self.selectedCrashesIds, function(data){
+                            if(!data){
+                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                            }
+                            else{
+                                self.resetSelection(true);
+                            }
                         });
                     });
-                }
-                else if(val === "crash-deselect"){
-                    self.selectedCrashesIds = [];
-                    self.selectedCrashes = {};
-                    self.dtable.find(".check-green").removeClass("fa-check-square").addClass("fa-square-o");
-                    $(".action-segmentation").addClass("disabled");
                 }
                 else if(val === "crash-delete"){
                     CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-delete", self.selectedCrashesIds.length), "red", function (result) {
                         if (!result) {
                             return true;
                         }
-                        countlyCrashes.del(self.selectedCrashesIds, function(){
-                            self.selectedCrashesIds = [];
-                            self.selectedCrashes = {};
-                            self.refresh();
-                            $(".action-segmentation").addClass("disabled");
+                        countlyCrashes.del(self.selectedCrashesIds, function(data){
+                            if(!data){
+                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                            }
+                            else{
+                                self.resetSelection(true);
+                            }
                         });
                     });
                 }
             }
         });
+    },
+    resetSelection: function(flash){
+        if(flash){
+            this.dtable.find(".fa-check-square.check-green").parents("tr").addClass("flash");
+        }
+        this.selectedCrashesIds = [];
+        this.selectedCrashes = {};
+        this.dtable.find(".check-green").removeClass("fa-check-square").addClass("fa-square-o");
+        $(".action-segmentation").addClass("disabled");
+        this.refresh();
     },
     renderCommon:function (isRefresh) {
         var crashData = countlyCrashes.getData();

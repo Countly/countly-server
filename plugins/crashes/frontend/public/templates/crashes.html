@@ -96,7 +96,30 @@
 	<div class="widget" style="margin-bottom: 0">
 		<div class="widget-header">
 			<div class="left">
-				<div class="title">{{page-title}}</div>
+				<div style="overflow: auto">
+                    <div class="title small">{{page-title}}</div>
+                </div>
+                <div class="cly-select float filter-segmentation">
+                    <div class="select-inner">
+                        <div class="text-container">
+                            <div class="text">{{active-filter}}</div>
+                        </div>
+                        <div class="right combo"></div>
+                    </div>
+                    <div class="select-items square" style="width:150px;">
+                        <div>
+                            <div class="segmentation-option item" data-value="crash-all" data-localize="crashes.all"></div>
+                            <div class="segmentation-option item" data-value="crash-resolved" data-localize="crashes.resolved"></div>
+                            <div class="segmentation-option item" data-value="crash-unresolved" data-localize="crashes.unresolved"></div>
+                            <div class="segmentation-option item" data-value="crash-new" data-localize="crashes.new"></div>
+                            <div class="segmentation-option item" data-value="crash-viewed" data-localize="crashes.viewed"></div>
+                            <div class="segmentation-option item" data-value="crash-reoccurred" data-localize="crashes.renew-crashes"></div>
+                            <div class="segmentation-option item" data-value="crash-fatal" data-localize="crashes.fatal"></div>
+                            <div class="segmentation-option item" data-value="crash-nonfatal" data-localize="crashes.nonfatal"></div>
+                            <div class="segmentation-option item" data-value="crash-hidden" data-localize="crashes.hidden"></div>
+                        </div>
+                    </div>
+                </div>
 			</div>
             <div class="cly-select float-right green action-segmentation disabled">
                 <div class="select-inner">
@@ -112,29 +135,7 @@
                         <div class="segmentation-option item" data-value="crash-view" data-localize="crashes.action-view"></div>
                         <div class="segmentation-option item" data-value="crash-hide" data-localize="crashes.action-hide"></div>
                         <div class="segmentation-option item" data-value="crash-show" data-localize="crashes.action-show"></div>
-                        <div class="segmentation-option item" data-value="crash-deselect" data-localize="crashes.action-deselect"></div>
                         <div class="segmentation-option item" data-value="crash-delete" data-localize="crashes.action-delete"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="cly-select float-right filter-segmentation">
-                <div class="select-inner">
-                    <div class="text-container">
-                        <div class="text">{{active-filter}}</div>
-                    </div>
-                    <div class="right combo"></div>
-                </div>
-                <div class="select-items square" style="width:150px;">
-                    <div>
-                        <div class="segmentation-option item" data-value="crash-all" data-localize="crashes.all"></div>
-                        <div class="segmentation-option item" data-value="crash-resolved" data-localize="crashes.resolved"></div>
-                        <div class="segmentation-option item" data-value="crash-unresolved" data-localize="crashes.unresolved"></div>
-                        <div class="segmentation-option item" data-value="crash-new" data-localize="crashes.new"></div>
-                        <div class="segmentation-option item" data-value="crash-viewed" data-localize="crashes.viewed"></div>
-                        <div class="segmentation-option item" data-value="crash-reoccurred" data-localize="crashes.renew-crashes"></div>
-                        <div class="segmentation-option item" data-value="crash-fatal" data-localize="crashes.fatal"></div>
-                        <div class="segmentation-option item" data-value="crash-nonfatal" data-localize="crashes.nonfatal"></div>
-                        <div class="segmentation-option item" data-value="crash-hidden" data-localize="crashes.hidden"></div>
                     </div>
                 </div>
             </div>
