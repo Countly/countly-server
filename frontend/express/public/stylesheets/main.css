@@ -113,6 +113,12 @@ a:active { color:inherit; }
 #no-app-type a{color:#72AE4B; text-decoration: underline;}
 table { border-collapse: collapse; }
 
+/* FLASH */
+.flash{ -moz-animation: flash 1s ease-out; -moz-animation-iteration-count: 1; -webkit-animation: flash 1s ease-out; -webkit-animation-iteration-count: 1; -ms-animation: flash 1s ease-out; -ms-animation-iteration-count: 1; }
+@-webkit-keyframes flash { 0% { background-color:none;} 50% { background-color:#2FA732;} 100% {background-color:none;} }
+@-moz-keyframes flash { 0% { background-color:none;} 50% { background-color:#2FA732;} 100% {background-color:none;} }
+@-ms-keyframes flash { 0% { background-color:none;} 50% { background-color:#2FA732;} 100% {background-color:none;} }
+
 /* FOOTER */
 #content-footer{position: fixed; bottom:0; left:0px; width: 100%; background-color: #292929; font: 11px Ubuntu,Helvetica,sans-serif; color: #585858; height: 35px; z-index:999;}
 #content-footer span{float: left; line-height: 35px; margin-left:10px; text-align:left; }
@@ -1253,7 +1259,7 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 .table-link.green { color:#2FA732; }
 .table-link.red { color:#D63E40; }
 
-.check-green { color:#2FA732; }
+.check-green { color:#2FA732; font-size:16px;}
 
 .grouped-numbers .inner { padding:0; margin-left:8px; margin-right:8px; }
 .grouped-numbers .item:first-child .inner { margin-right:8px; margin-left:0; }
