@@ -40,7 +40,7 @@ echo "" > .nojekyll
 ##### Generate JSDOC documents.          #####
 echo 'Generating JSDoc code documentation...'
 countly docs generate ;
-mv $DIR/../../frontend/express/public/docs/ ./
+mv $DIR/../../frontend/express/public/docs/* ./
 
 ################################################################################
 ##### Upload the documentation to the gh-pages branch of the repository.   #####
