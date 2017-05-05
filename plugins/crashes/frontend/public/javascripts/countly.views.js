@@ -191,10 +191,13 @@ window.CrashesView = countlyView.extend({
                 $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
                 var tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
                 tableWrapper.find(".dataTables_filter input").attr("placeholder",jQuery.i18n.map["crashes.search"]);
+
+                // init sticky headers here in order to wait for correct
+                // table width (for multi select checkboxes to render)
+                self.dtable.stickyTableHeaders();
             }
         }));
 
-		this.dtable.stickyTableHeaders();
 		this.dtable.fnSort( [ [5,'desc'] ] );
         this.dtable.find("thead .check-green").click(function(){
             if($(this).hasClass("fa-check-square")){

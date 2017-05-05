@@ -620,7 +620,7 @@ div.datatablesubrow {display: none;}
 .sticky-header.hide { display:none; }
 .sticky-header { top:0; position:fixed; }
 .sticky-header table { border:none; border-radius:0; }
-.sticky-header table th { box-shadow: inset 0 -1px 0 0 #d0d0d0; border-bottom: none; }
+.sticky-header table th { box-shadow: inset 0 -1px 0 0 #d0d0d0; border-bottom: none; outline: none; cursor: default; }
 .sticky-header table th:first-child { box-shadow: inset 0 -1px 0 0 #d0d0d0, inset 1px 0 0 0 #d0d0d0; }
 .sticky-header table th:last-child { box-shadow: inset 0 -1px 0 0 #d0d0d0, inset -1px 0 0 0 #d0d0d0; }
 
