@@ -92,3 +92,5 @@
 #expand-crash.active .collapse { display: block; }
 #expand-crash.active .expand { display: none; }
 #view-filter.crash-filter .filter-view-container.centered #segmentation .query > .and-or [data-value="OR"] {display: none !important;}
+
+#action-segmentation-tooltip { font-size:12px; max-width:300px; text-align: center; }

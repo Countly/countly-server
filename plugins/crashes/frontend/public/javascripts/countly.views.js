@@ -591,6 +591,22 @@ window.CrashesView = countlyView.extend({
                 $("#view-filter").hide();
                 self.processData();
             }
+
+            $('.action-segmentation').attr('data-tooltip-content', "#action-segmentation-tooltip");
+
+            $('.action-segmentation').tooltipster({
+                theme: ['tooltipster-borderless'],
+                contentCloning: false,
+                interactive: false,
+                trigger: 'hover',
+                side: 'left',
+                zIndex: 2,
+                functionBefore: function() {
+                    if (!$('.action-segmentation').hasClass("disabled")) {
+                        return false;
+                    }
+                }
+            });
         }
     },
     refresh:function () {
