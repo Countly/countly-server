@@ -14,6 +14,8 @@ bash $DIR/scripts/logo.sh;
 #make swap file
 bash $DIR/scripts/make.swap.sh
 
+apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
+
 #update package index
 apt-get update
 
