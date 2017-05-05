@@ -92,7 +92,7 @@ window.AssistantView = {
                 $("#top-bar").find("#assistant-menu .menu").css("height", $( window ).height() * 0.8);
             });
 
-            $( "#tabs" ).tabs({
+            $("#assistant-tabs").tabs({
                 selected: store.get("assistant_tab") || 0,
                 show: function( event, ui ) {
                     store.set("assistant_tab", ui.index);
