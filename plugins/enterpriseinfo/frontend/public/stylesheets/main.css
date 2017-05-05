@@ -1,5 +1,5 @@
 .enterprise-content { padding:20px; display: none; }
 .enterprise-content .image { float:left; }
 .enterprise-content .text { font-family: Ubuntu; font-size:15px; color:#555; line-height: 22px; }
-#enterprise-badge { transition:background-color 0.3s, color 0.3s; padding: 3px 12px; color: #2fa732; border: 1px solid #2fa732; border-radius: 2px; display: inline-block; line-height: 15px; float: left; font-size: 12px; margin-top: 18px; margin-right: 22px; }
+#enterprise-badge { transition:background-color 0.3s, color 0.3s; padding: 3px 12px; color: #2fa732; border: 1px solid #2fa732; border-radius: 2px; display: inline-block; line-height: 15px; float: right; font-size: 12px; margin-top: 18px; margin-right: 22px; }
 #enterprise-badge:hover { transition:background-color 0.5s, color 0.3s; background-color: #2fa732; color:#FFF; }
