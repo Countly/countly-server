@@ -6,7 +6,7 @@ window.AssistantView = {
                     '<div id="notification-icon" class="empty-state">' +
                         '<i class="ion-android-notifications"></i>' +
                     '</div>' +
-                    '<div class="menu right" style="width: 400px;"></div>' +
+                    '<div class="menu right" style="width: 400px; min-height:500px;"></div>' +
                 '</div>';
 
             $("#top-bar").find(".right-menu").prepend(assistantMenu);
@@ -86,7 +86,11 @@ window.AssistantView = {
         if (!isRefresh) {
             var topBarElem = $("#top-bar").find("#assistant-menu .menu");
             topBarElem.html(this.template(this.templateData));
-            topBarElem.css("height", $( window ).height() * 0.7);
+            topBarElem.css("height", $( window ).height() * 0.8);
+
+            $(window).on("resize", function() {
+                $("#top-bar").find("#assistant-menu .menu").css("height", $( window ).height() * 0.8);
+            });
 
             $( "#tabs" ).tabs({
                 selected: store.get("assistant_tab") || 0,

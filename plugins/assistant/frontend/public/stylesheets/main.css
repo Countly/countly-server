@@ -22,11 +22,12 @@
 #assistant_container .assistant_end_image_container { display: table; margin: 15px auto; }
 
 #assistant_container .assistant_notif { position: relative; }
-#assistant_container .assistant_notif .action-buttons { display:none; position: absolute; right:10px; top:21px; width: 20px; text-align: center; background-color: #fff; }
+#assistant_container .assistant_notif .action-buttons { display:none; position: absolute; right:0; top:21px; width: 20px; text-align: center; background-color: #fff; }
 #assistant_container .assistant_notif:hover .action-buttons { display: block; }
 #assistant_container .assistant_notif .action-buttons .more { font-size: 20px; color:#a2a2a2; }
 #assistant_container .assistant_notif .action-buttons .more:hover { color:#6b6b6b; }
-#assistant_container .assistant_notif .action-buttons .delete { font-size: 20px; color:#D63E40; cursor: pointer; }
+#assistant_container .assistant_notif .action-buttons .delete { font-size: 15px; line-height:26px; color:#a2a2a2; cursor: pointer; }
+#assistant_container .assistant_notif .action-buttons .delete:hover { color:#D63E40; }
 #assistant_container .assistant_notif .action-buttons .list { display:none; position:absolute; top:0px; right: -5px; padding:5px 0; border-radius: 2px; background-color: #FFF; border:1px solid #D0D0D0; }
 #assistant_container .assistant_notif .action-buttons:hover .list { display: block; }
 #assistant_container .assistant_notif .action-buttons .list .item { font-size: 11px; white-space: nowrap; display: block; padding: 5px 10px; cursor: pointer; }
