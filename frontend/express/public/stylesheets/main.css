@@ -1224,6 +1224,7 @@ table.events-table { width:100%; padding:0; margin:0; }
 .ui-tabs .ui-tabs-nav li a { display: block; float:none; padding:12px 0 15px 0; font-size:13px; font-family: Ubuntu; text-transform: uppercase; color:#636363; }
 .ui-tabs.ui-widget-content .ui-state-default { border:none; background-image: none; padding:0; border-top: 3px solid #f8f8f8; }
 .ui-tabs .ui-tabs-nav li.ui-tabs-selected { background-color: white; border-top: 3px solid #19cc63; border-bottom:1px solid #FFF !important; }
+.ui-tabs .ui-tabs-nav li.ui-tabs-selected a { cursor:default; }
 .ui-tabs .ui-tabs-nav { height: auto; background-image: none; background-color: transparent; border: none; padding: 0; margin: 0; border-radius: 0; margin-top:-1px; }
 .ui-tabs { border-radius:0; border:none; }
 .ui-tabs .ui-tabs-nav li { border-bottom:1px solid #eaeaea !important; }
@@ -1395,7 +1396,9 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 #top-bar .dropdown.icon:hover .selected,
 #top-bar .dropdown.icon:hover .empty-state { color:#616161; }
 #top-bar .dropdown.icon.clicked .selected,
-#top-bar .dropdown.icon.clicked .empty-state { color:#2fa732; }
+#top-bar .dropdown.icon.clicked .empty-state,
+#top-bar .dropdown.icon.force-clicked .selected,
+#top-bar .dropdown.icon.force-clicked .empty-state { color:#2fa732; }
 #top-bar .dropdown .selected { display: none; }
 #top-bar .dropdown .empty-state { display: block; }
 #top-bar .dropdown .selected i,
@@ -1403,9 +1406,12 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 #top-bar .dropdown.large .selected:after,
 #top-bar .dropdown.large .empty-state:after { font-family: 'Ionicons';  content: "\f3d0"; margin-left: 10px; font-size: 10px; line-height: 16px; vertical-align: top; }
 #top-bar .dropdown.large.clicked .selected:after,
-#top-bar .dropdown.large.clicked .empty-state:after { content: "\f3d8"; color:#2fa732; }
+#top-bar .dropdown.large.clicked .empty-state:after,
+#top-bar .dropdown.large.force-clicked .selected:after,
+#top-bar .dropdown.large.force-clicked .empty-state:after { content: "\f3d8"; color:#2fa732; }
 #top-bar .dropdown .menu { box-shadow: 0 3px 7px rgba(0,0,0,.08); border: 1px solid #d0d0d0; color:#474747; opacity: 0; cursor:default; position: absolute; top:67px; left: 50%; width: 210px; margin-left:-105px; background-color: #FFF; border-radius: 2px; visibility: hidden; }
-#top-bar .dropdown.clicked .menu { opacity: 1; transition:opacity 0.3s, visibility 0.3s; visibility: visible; }
+#top-bar .dropdown.clicked .menu,
+#top-bar .dropdown.force-clicked .menu { opacity: 1; transition:opacity 0.3s, visibility 0.3s; visibility: visible; }
 #top-bar .dropdown .menu:before { border: 6px solid rgba(194, 225, 245, 0); border-bottom-color: #FFF; left: 50%; margin-left: -6px; top: -12px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; z-index: 2; }
 #top-bar .dropdown .menu:after { border: 7px solid rgba(194, 225, 245, 0); border-bottom-color: #D0D0D0; left: 50%; margin-left: -7px; top: -15px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; z-index: 1; }
 #top-bar .dropdown .menu .action { cursor: pointer; padding: 10px; padding-bottom: 13px; border-bottom: 1px solid #d0d0d0; font-size: 13px; text-align: center; }
