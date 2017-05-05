@@ -1,5 +1,5 @@
 window.AssistantView = {
-    initialize: function() {
+    initialize: function(isRefresh) {
         if ($("#top-bar").find("#assistant-menu").length == 0) {
             var assistantMenu =
                 '<div id="assistant-menu" class="dropdown icon" style="display: block">' +
@@ -14,7 +14,7 @@ window.AssistantView = {
 
         var self = this;
         if(this.template) {
-            return $.when(countlyAssistant.initialize()).then(function () {
+            return $.when(countlyAssistant.initialize(isRefresh)).then(function () {
                 self.renderCommon(false);
             });
         } else {
@@ -189,7 +189,7 @@ $(document).ready(function() {
     setInterval(function(){
         // Don't refresh if the assistant popup is open
         if (!$("#assistant-menu").hasClass("clicked")) {
-            AssistantView.initialize();
+            AssistantView.initialize(true);
         }
     }, 10000);
 });

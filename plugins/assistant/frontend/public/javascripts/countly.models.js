@@ -2,17 +2,16 @@
 
     //Private Properties
     var _data = {};
-    countlyAssistant.initialize = function () {
-        //CountlyHelpers.alert("2", "green");
+    countlyAssistant.initialize = function (isRefresh) {
         return $.ajax({
             type:"GET",
             url:countlyCommon.API_URL + "/o/assistant",
             data:{
-                api_key:countlyGlobal['member'].api_key
+                api_key:countlyGlobal['member'].api_key,
+                display_loader: !isRefresh
             },
             success:function (json) {
                 _data = json;
-                //CountlyHelpers.alert(""+json, "green");
             }
         });
     };
