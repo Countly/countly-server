@@ -1,6 +1,17 @@
 window.AssistantView = {
-
     initialize: function() {
+        if ($("#top-bar").find("#assistant-menu").length == 0) {
+            var assistantMenu =
+                '<div id="assistant-menu" class="dropdown icon" style="display: block">' +
+                    '<div id="notification-icon" class="empty-state">' +
+                        '<i class="ion-android-notifications"></i>' +
+                    '</div>' +
+                    '<div class="menu right" style="width: 400px;"></div>' +
+                '</div>';
+
+            $("#top-bar").find(".right-menu").prepend(assistantMenu);
+        }
+
         var self = this;
         if(this.template) {
             return $.when(countlyAssistant.initialize()).then(function () {
@@ -22,7 +33,7 @@ window.AssistantView = {
             all_notifs: data.notifications,
             saved_private: data.notifs_saved_private,
             saved_global: data.notifs_saved_global,
-            icon_styling_class: 'assistant_icon_regular',
+            icon_styling_class: 'assistant_icon_regular'
         };
 
         var changeNotification = function (id, is_private, is_save, parent) {
@@ -73,8 +84,7 @@ window.AssistantView = {
 
         var self = this;
         if (!isRefresh) {
-
-            var topBarElem = $("#top-bar > div.right-menu > div:nth-child(1) > div.menu");
+            var topBarElem = $("#top-bar").find("#assistant-menu .menu");
             topBarElem.html(this.template(this.templateData));
             topBarElem.css("height", $( window ).height() * 0.7);
 
@@ -112,7 +122,20 @@ window.AssistantView = {
             $(".btn-unsave-global").on("click", function(){
                 var id = $(this).data("id");//notification id
                 var parent = $(this).parents(".assistant_notif");
+
+                // Add force-clicked class to the menu to keep it open
+                // until confirmation dialog closes
+                $("#assistant-menu").addClass("force-clicked");
+
                 CountlyHelpers.confirm(jQuery.i18n.map["assistant.confirm-unsave-global"], "red", function (result) {
+                    setTimeout(function () {
+                        var $asstMenu = $("#assistant-menu");
+
+                        // Remove force-clicked class and add regular clicked class
+                        $asstMenu.removeClass("force-clicked");
+                        $asstMenu.addClass("clicked");
+                    }, 1000);
+
                     if (!result) {
                         return true;
                     }
@@ -123,7 +146,20 @@ window.AssistantView = {
             $(".btn-unsave-private").on("click", function(){
                 var id = $(this).data("id");//notification id
                 var parent = $(this).parents(".assistant_notif");
+
+                // Add force-clicked class to the menu to keep it open
+                // until confirmation dialog closes
+                $("#assistant-menu").addClass("force-clicked");
+
                 CountlyHelpers.confirm(jQuery.i18n.map["assistant.confirm-unsave-private"], "red", function (result) {
+                    setTimeout(function () {
+                        var $asstMenu = $("#assistant-menu");
+
+                        // Remove force-clicked class and add regular clicked class
+                        $asstMenu.removeClass("force-clicked");
+                        $asstMenu.addClass("clicked");
+                    }, 1000);
+
                     if (!result) {
                         return true;
                     }
@@ -131,17 +167,25 @@ window.AssistantView = {
                 });
             });
         }
+
+        app.localize($("#assistant_container"));
+
+        // Prevent clicks inside the container from closing the popup
+        $("#assistant_container").on("click", function (e) {
+            e.stopPropagation();
+        });
     }
 };
 
 //register views
 
-$( document ).ready(function() {
+$(document).ready(function() {
     app.localize($("#assistant_container"));
     AssistantView.initialize();
     setInterval(function(){
-        app.localize($("#assistant_container"));
-        AssistantView.initialize();
-        }, 10000);
-
+        // Don't refresh if the assistant popup is open
+        if (!$("#assistant-menu").hasClass("clicked")) {
+            AssistantView.initialize();
+        }
+    }, 10000);
 });
