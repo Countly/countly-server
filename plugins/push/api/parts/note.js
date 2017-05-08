@@ -53,6 +53,7 @@ class Note {
 		this.badge = data.badge;                					// Badge
 		this.buttons = data.buttons;                				// Number of buttons
 		this.media = data.media;                					// Media URL
+		this.mediaMime = data.mediaMime;           					// Media MIME-type
 		this.test = data.test;                						// Test
 		this.date = data.date;                						// Date to be sent on
 		this.tz = data.tz;                							// Send in user timezones
@@ -93,6 +94,7 @@ class Note {
 			badge: this.badge,
 			buttons: this.buttons,
 			media: this.media,
+			mediaMime: this.mediaMime,
 			result: this.result,
 			expiryDate: this.expiryDate,
 			date: this.date,
@@ -271,9 +273,6 @@ class Note {
 				if (this.badge !== undefined && this.badge !== null) {
 					compiled.data.badge = this.badge;
 				}
-				if (this.media) {
-					compiled.data.media = this.media;
-				}
 
 				if (!message && (this.sound === undefined || this.sound === null)) {
 					compiled.data['c.s'] = 'true';
@@ -289,7 +288,7 @@ class Note {
 					compiled.data['c.l'] = this.url;
 				}
 				
-				if (this.media) {
+				if (this.media && this.mediaMime && ['image/jpeg', 'image/png'].indexOf(this.mediaMime) !== -1) {
 					compiled.data['c.m'] = this.media;
 				}
 				

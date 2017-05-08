@@ -167,7 +167,6 @@
 
 .loader h3, .loader h6 { margin: 9px 0;}
 
-// 94, 59
 .comp-push-compose select { width: 160px; }
 .comp-push-compose .comp-segmented { width: 160px; }
 .comp-push-locales { background-color: #EEEFEF; }
@@ -213,8 +212,6 @@
 .comp-push .custom-button > div { width: 20%; left: 8%; }
 .comp-push .custom-button > div:last-child { width: 64%; left: 36%; }
 .comp-push .custom-button > div > .error { position: absolute; top: 7px; right: -9px; opacity: 1; z-index: 10 }
-// .comp-push .comp-push-locales .comp-tabs-content .custom-button > input { width: 20%; left: 8%; height: 30px; font-size: 13px; padding: 0 6px 0 10px; outline: none; color: #354052; font-size: 13px; border: 1px solid #DFE3E9; border-radius: 2px;}
-// .comp-push .comp-push-locales .comp-tabs-content .custom-button > input:last-child { width: 64%; left: 36%;}
 .comp-push-locales .ion-checkmark { position: absolute; top: 50%; right: 6px; margin-top: -10px; }
 .comp-push-locale-count { display: block; float: left; width: 40px; text-align: right; padding-right: 9px; padding-top: 2px; }
 .comp-push-locale-count, .comp-push-locale-title { font-size: 14px; }
@@ -409,6 +406,7 @@ input:disabled + label {
 
 .preview-i .preview-message img { width: 13px; margin: 8px 3px 8px 8px; border-radius: 4px; float: left; }
 .preview-a .preview-message img { width: 13px; margin: 4px 3px 8px 4px; border-radius: 4px; float: left; }
+.preview-message audio, .preview-message video { width: 100%; margin-bottom: -3px; }
 
 .preview-message-title {
     position: absolute;
@@ -465,15 +463,6 @@ input:disabled + label {
     background-color: white;
     border-radius: 0 0 6px 6px;
 }
-
-// .preview-i .preview-message-message::after {
-//     content: "Press for more";
-//     position: absolute;
-//     bottom: 4px;
-//     left: 8px;
-//     font-size: 8px;
-//     opacity: .9;
-// }
 
 .preview-a .preview-message-message {
     position: relative;
@@ -585,6 +574,7 @@ input:disabled + label {
 	from { opacity: 1; }
 	to { opacity: 0.5; }
 }
+/*
 // ::-webkit-scrollbar {
 //     -webkit-appearance: none;
 //     width: 7px;
@@ -595,6 +585,7 @@ input:disabled + label {
 //     background-color: rgba(0,0,0,.5);
 //     -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
 // }
+*/
 
 .comp-datepicker { background-color: white; width: 200px; position: relative; border: 1px solid #C2C2C2; border-radius: 2px; color: #354052; font-size: 12px; line-height: 18px; transition: .3s ease-in; }
 .comp-datepicker img, .comp-datepicker svg, .comp-datepicker span.formatted { margin-right: 7px; margin-bottom: -3px; text-transform: uppercase; }
@@ -985,6 +976,8 @@ table.d-table .nothing { opacity: 0.3; }
 .comp-push .mime { display: table; color: #333; opacity: .6; font-size: 13px; margin: 4px 0 18px; }
 .comp-push .mime > * { display: table-cell; width: 1%; }
 .comp-push .mime-size { text-align: right; }
+.comp-push .mime-type svg { float: right; margin-bottom: -4px; }
+.comp-push .mime +.mime { margin-top: -18px; }
 
 #emoji-picker {
     margin-left: 2px;

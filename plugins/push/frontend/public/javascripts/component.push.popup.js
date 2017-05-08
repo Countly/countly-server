@@ -631,6 +631,9 @@ window.component('push.popup', function(popup) {
 					localesController = new locales.controller();
 
 // http://n-v-gogol.ru/books/item/f00/s00/z0000003/pic/000018.jpg
+// http://www.html5videoplayer.net/videos/toystory.mp4
+// http://trump-mp3.ru/music/e3acf946df41af45d537fb3b9d0f8606.mp3
+// http://trump-mp3.ru/music/33847e55e09374d07af038609c5f4ebb.mp3
 				},
 				view: function(){ 
 					var d = moment();
@@ -667,12 +670,21 @@ window.component('push.popup', function(popup) {
 									m('div', [
 										m('h4', t('pu.po.tab2.mmedia')),
 										m('.comp-push-extras', m(extra, {title: t('pu.po.tab2.extras.media'), value: message.media, typ: 'url', valuePlaceholder: t('pu.po.tab2.extras.media.placeholder'), help: t('pu.po.tab2.extras.media.help')})),
-										// !message.media.valid ? 
-										// 	m('.mime', [
-										// 		m('.mime-type', message.media.errorText || message.media.mime),
-										// 		m('.mime-size', message.media.mimeSize || ''),
-										// 	])
-										// 	: '',
+										message.media.valid ? 
+											m('.mime', [
+												m('.mime-type', message.media.mime || ''),
+												m('.mime-size', message.media.mimeSize || ''),
+											])
+											: m('.mime', [
+												m('.mime-type', message.media.mime || ''),
+												m('.mime-size', message.media.mimeSize || ''),
+											]),
+										message.media.typeWarn ? 
+											m('.mime', [
+												m('.mime-type', push.ICON.WARN()),
+												m('.mime-size', message.media.typeWarn)
+											])
+											: ''
 									])
 									: '',
 								m('h4', t('pu.po.tab2.extras')),
