@@ -14,7 +14,7 @@ bash $DIR/scripts/logo.sh;
 #update package index
 apt-get update
 
-apt-get -y install python-software-properties wget build-essential libkrb5-dev
+apt-get -y install python-software-properties wget build-essential libkrb5-dev git
 
 if !(command -v apt-add-repository >/dev/null) then
     apt-get -y install software-properties-common

@@ -19,7 +19,7 @@ apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
 #update package index
 apt-get update
 
-apt-get -y install python-software-properties build-essential
+apt-get -y install python-software-properties build-essential git
 
 if !(command -v apt-add-repository >/dev/null) then
     apt-get -y install software-properties-common
@@ -47,7 +47,7 @@ apt-get -y install nginx || (echo "Failed to install nginx." ; exit)
 
 #install node.js
 #bash $DIR/scripts/install.nodejs.deb.sh || (echo "Failed to install nodejs." ; exit)
-apt-get -y --force-yes install nodejs || (echo "Failed to install nodejs." ; exit)
+apt-get -y install nodejs || (echo "Failed to install nodejs." ; exit)
 
 #install supervisor
 apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)

@@ -11,7 +11,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 bash $DIR/scripts/logo.sh;
 
 #install nginx
-yum -y install wget openssl-devel gcc-c++-4.8.5 make
+yum -y install wget openssl-devel gcc-c++-4.8.5 make git
 if grep -q -i "release 6" /etc/redhat-release ; then
 	echo "[nginx]
 name=nginx repo
