@@ -1,4 +1,3 @@
-'use strict';
 const assistant = {},
     plugins = require('../../pluginManager.js'),
     log = require('../../../api/utils/log.js')('assistant:module'),
@@ -31,8 +30,11 @@ const assistant = {},
      * @param i18n - the ID that will be used for internationalization on the frontend
      * @param appId - the ID of the application for which it was created
      * @param notificationVersion - notification version ID of when it was created, should be increased when the data format changes
+     * @param targetUserApiKey - if this notifications is used to target a specific user, this contains it's api key
      */
-    assistant.createNotification = function (db, data, pluginName, type, subtype, i18n, appId, notificationVersion) {
+    assistant.createNotification = function (db, data, pluginName, type, subtype, i18n, appId, notificationVersion, targetUserApiKey) {
+        const targetUserArray = (_.isUndefined(targetUserApiKey) || targetUserApiKey == null) ? [] : [targetUserApiKey];
+
         const new_notif = {
             data: data,
             plugin_name: pluginName,
@@ -44,7 +46,8 @@ const assistant = {},
             cd: new Date(), //used for TTL, it's set null if it should not be deleted
             saved_global: false, //if this notification is saved globally
             saved_private: [], // a list of user ID's for which this notification is saved privately
-            i18n_id: i18n
+            i18n_id: i18n,
+            target_user_array: targetUserArray
         };
 
         db.collection(db_name_notifs).insert(new_notif, function (err_insert, result_insert) {
@@ -56,12 +59,13 @@ const assistant = {},
      * Get all notifications for specific user
      * @param db - link to database
      * @param member - member object
-     * @param api_key
-     * @param givenCallback
+     * @param api_key - api key of user trying to access notifications
+     * @param givenCallback - callback returns collected notifications
      */
     assistant.getNotificationsForUser = function (db, member, api_key, givenCallback) {
         //prepare the function to use in both cases
         const getAppData = function (appList) {
+            //map the collection function to all apps
             async.map(appList, function (app_id, callback) {
                 log.d('App id: %s', app_id);
 
@@ -69,7 +73,7 @@ const assistant = {},
                     //todo handle null case
                     const isMobile = document.type == "mobile";//check if app type is mobile or web
 
-                    //get global notifications for this app
+                    //get global unsaved notifications for this app
                     db.collection(db_name_notifs).find({app_id: app_id}, {}).toArray(function (err1, notifs) {
                         //todo handle null case
                         //log.i('Doing stuff at step: %s, ALL, error: [%j], data: [%j]', 3, err1, notifs);
@@ -87,6 +91,26 @@ const assistant = {},
                             }, {}).toArray(function (err3, notifs_saved) {
                                 //todo handle null case
                                 //log.i('Doing stuff at step: %s, SAVED PRIVATE, error: [%j], data: [%j]', 5, err3, notifs_saved);
+
+                                //go through all notifications and remove those that are assigned to a different specific user
+                                const elemFilterTargetUser = function (userElem) {
+                                    let targetElemArray = userElem.target_user_array;
+
+                                    if(_.isUndefined(targetElemArray) || targetElemArray == null) {
+                                        return true;
+                                    }
+
+                                    if(_.isEmpty(targetElemArray)) {
+                                        return true;
+                                    }
+
+                                    const arrayContainsTarget = targetElemArray.includes(api_key);
+                                    return arrayContainsTarget;
+                                };
+
+                                notifs = notifs.filter(elemFilterTargetUser);
+                                notifs_global = notifs_global.filter(elemFilterTargetUser);
+                                notifs_saved = notifs_saved.filter(elemFilterTargetUser);
 
                                 callback(null, {
                                     id: app_id,
@@ -158,7 +182,7 @@ const assistant = {},
     };
 
     /**
-     *
+     * Returns of the given time is inside the allowed moment
      * @param target_hour
      * @param current_hour
      * @param current_minutes
@@ -169,12 +193,12 @@ const assistant = {},
     };
 
     /**
-     *
-     * @param do_personal
-     * @param do_save
-     * @param notif_id
-     * @param user_id
-     * @param db
+     * Changes whether a notification is saved or unsaved. Depending or paramters, change is done to global or private save.
+     * @param do_personal - true - change is done to privately saved notifications, false - change is done to globally saved notifications
+     * @param do_save - true - save notification, false - unsave notifications
+     * @param notif_id - id of notification whose state is modiffied
+     * @param user_id - id of user from who'm change is done
+     * @param db - link to database
      */
     assistant.changeNotificationSavedStatus = function (do_personal, do_save, notif_id, user_id, db) {
         if (do_save) {
@@ -310,7 +334,7 @@ const assistant = {},
      */
     assistant.createNotificationAndSetShowAmount = function (db, valueSet, app_id, data) {
         log.d('Assistant creating notification for [%j] plugin with i18nID [%j] for App [%j]', valueSet.pluginName, valueSet.i18nID, app_id);
-        assistant.createNotification(db, data, valueSet.pluginName, valueSet.type, valueSet.subtype, valueSet.i18nID, app_id);
+        assistant.createNotification(db, data, valueSet.pluginName, valueSet.type, valueSet.subtype, valueSet.i18nID, app_id, valueSet.nVersion, null);
         assistant.setNotificationShowAmount(db, valueSet, valueSet.showAmount + 1, app_id);
     };
 
@@ -450,20 +474,21 @@ const assistant = {},
     };
 
     /**
-     *
-     * @param db
-     * @param data
-     * @param pluginName
-     * @param type
-     * @param subtype
-     * @param i18n
-     * @param appId
-     * @param notificationVersion
-     * @param callback
+     * Called when creating notifications from external sources like the frontend.
+     * @param db - link to the db object
+     * @param data - names and numbers that are relevant for customizing assitant notifications
+     * @param pluginName - the name of the plugin that created this notification
+     * @param type - the type of this plugin, used for filtering
+     * @param subtype - together with type it identifies the specific the specific notification that is created by a plugin
+     * @param i18n - the ID that will be used for internationalization on the frontend
+     * @param appId - the ID of the application for which it was created
+     * @param notificationVersion - notification version ID of when it was created, should be increased when the data format changes
+     * @param targetUserApiKey - if this notifications is used to target a specific user, this contains it's api key
+     * @param callback - is called after trying to create notification in case of success returns (true, ""), in case of failure returns (false, errorMessage)
      */
-    assistant.createNotificationExternal = function (db, data, pluginName, type, subtype, i18n, appId, notificationVersion, callback) {
+    assistant.createNotificationExternal = function (db, data, pluginName, type, subtype, i18n, appId, notificationVersion, targetUserApiKey, callback) {
         try {
-            assistant.createNotification(db, data, pluginName, type, subtype, i18n, appId, notificationVersion);
+            assistant.createNotification(db, data, pluginName, type, subtype, i18n, appId, notificationVersion, targetUserApiKey);
             callback(true, "");
         } catch (err) {
             callback(false, err);

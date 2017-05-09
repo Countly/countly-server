@@ -316,6 +316,10 @@
      *
      * @param notificationVersion - notification version in case of data format changes
      *
+     * @param targetUserApiKey - it notification should target a specific user, set this field to it's api key
+     *
+     * @param callback - returns "true"/"false" in case request succeeds or fails. In case of failure, it return received message.
+     *
      * @example
      *
      *  countlyAssistant.createNotification([12,34,56,78], "frontTest", 4, 2, "assistant.test-notification", "57cd5afb85e945640bc4eec9", 1, function (callbackResult, errorMessage) {
@@ -327,8 +331,7 @@
         });
      *
      */
-    countlyAssistant.createNotification = function (contentData, ownerName, notifType, notifSubType, i18nId, notifAppId, notificationVersion, callback) {
-        CountlyHelpers.alert("12", "green");
+    countlyAssistant.createNotification = function (contentData, ownerName, notifType, notifSubType, i18nId, notifAppId, notificationVersion, targetUserApiKey, callback) {
         return $.ajax({
             type:"GET",
             url:countlyCommon.API_URL + "/i/assistant/create_external",
@@ -340,7 +343,8 @@
                 notif_subtype: notifSubType,
                 i18n_id: i18nId,
                 notif_app_id: notifAppId,
-                notif_version: notificationVersion
+                notif_version: notificationVersion,
+                target_user_api_key: targetUserApiKey
             },
             success:function (json) {
                 //call succeeded

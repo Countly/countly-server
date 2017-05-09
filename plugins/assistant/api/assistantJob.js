@@ -1,4 +1,3 @@
-'use strict';
 const assistantJob = {},
     plugins = require('../../pluginManager.js'),
     log = require('../../../api/utils/log.js')('assistantJob:module'),

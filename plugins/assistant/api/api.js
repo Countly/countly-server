@@ -1,4 +1,3 @@
-'use strict';
 const plugin = {},
     common = require('../../../api/utils/common.js'),
     countlyCommon = require('../../../api/lib/countly.common.js'),
@@ -106,6 +105,7 @@ const plugin = {},
                         const i18nId = params.qstring.i18n_id;
                         const notifAppId = params.qstring.notif_app_id;
                         const notificationVersion = params.qstring.notif_version;
+                        const targetUserApiKey = params.qstring.target_user_api_key;
 
                         //check if they are set
                         if (_.isUndefined(notifData)) {
@@ -143,7 +143,7 @@ const plugin = {},
                             return false;
                         }
 
-                        assistant.createNotificationExternal(common.db, notifData, pluginName, notifType, notifSubType, i18nId, notifAppId, notificationVersion, function (succeeded, err) {
+                        assistant.createNotificationExternal(common.db, notifData, pluginName, notifType, notifSubType, i18nId, notifAppId, notificationVersion, targetUserApiKey, function (succeeded, err) {
                             if (succeeded) {
                                 common.returnOutput(params, prepareMessage("Succeded in creating notification", null, null));
                             } else {
