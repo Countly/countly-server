@@ -19,7 +19,7 @@
 #assistant_container .assistant_icon_regular { color: #7cFaa0; }
 
 #assistant_container .assistant_icon_image { width: 30px; height: 30px; background-position: 50% 50%; background-repeat: no-repeat }
-#assistant_container .assistant_end_image_container { display: table; margin: 15px auto; }
+#assistant_container .assistant_end_image_container { display:none; margin: 15px auto; }
 
 #assistant_container .assistant_notif { position: relative; }
 #assistant_container .assistant_notif .action-buttons { display:none; position: absolute; right:0; top:21px; width: 20px; text-align: center; background-color: #fff; }
@@ -55,3 +55,7 @@
 #assistant_container .sTableCell .inner { padding:1px; margin: 4px 0; border-right: 1px solid #eaeaea; }
 #assistant_container .sTableBody { display: table-row-group; }
 #assistant_container .center-children { text-align: center; }
+
+#assistant_container .assistant_no_data { display: block; font-size: 14px; text-align: center; margin-top: 60px; color: #b9b9b9; }
+#assistant_container .assistant_notif + .assistant_no_data { display: none; }
+#assistant_container .assistant_notif + .assistant_no_data + .assistant_end_image_container { display: table; }
