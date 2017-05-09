@@ -47,7 +47,7 @@
     "express-session": "1.15.2",
     "external-ip": "0.2.4",
     "formidable": "1.1.1",
-    "geoip-lite": "1.2.0",
+    "geoip-lite": "1.2.1",
     "jimp": "0.2.27",
     "jsdoc": "3.4.3",
     "json2csv": "^3.7.3",
