@@ -139,6 +139,27 @@
     };
     
     countlyTaskManager.monitor = function (id, silent) {
+        var assistantAvailable = true;
+        if(typeof countlyAssistant === "undefined") {
+            assistantAvailable = false;
+        }
+        
+        var makeTaskNotification = function (title, message, info, notifSubType, i18nId, notificationVersion) {
+            var contentData = [];
+            var ownerName = "ReportManager";
+            var notifType = 4;//informational notification, check assistant.js for additional types
+
+            countlyAssistant.createNotification(contentData, ownerName, notifType, notifSubType, i18nId, countlyCommon.ACTIVE_APP_ID, notificationVersion, countlyGlobal.member.api_key, function (res, msg) {
+                if(!res) {
+                    CountlyHelpers.notify({
+                        title: title,
+                        message: message,
+                        info: info
+                    });
+                }
+            })
+        };
+
 		var monitor = store.get("countly_task_monitor") || {};
         if(!monitor[countlyCommon.ACTIVE_APP_ID])
             monitor[countlyCommon.ACTIVE_APP_ID] = [];
@@ -146,19 +167,27 @@
             monitor[countlyCommon.ACTIVE_APP_ID].push(id);
             store.set("countly_task_monitor", monitor);
             if(!silent)
-                CountlyHelpers.notify({
-                    title: "This request is running for too long",
-                    message: "We have switched to long running task and will notify you when it is finished",
-                    info: "Or check its status under Management -> Task Manager"
-                });
+                if(!assistantAvailable) {
+                    CountlyHelpers.notify({
+                        title: "This request is running for too long",
+                        message: "We have switched to long running task and will notify you when it is finished",
+                        info: "Or check its status under Management -> Task Manager"
+                    });
+                } else {
+                    makeTaskNotification("This request is running for too long", "We have switched to long running task and will notify you when it is finished", "Or check its status under Management -> Task Manager", 1, "assistant.taskmanager.longTaskTooLong", 1);
+                }
         }
         else{
             if(!silent)
-                CountlyHelpers.notify({
-                    title: "Similar task already running",
-                    message: "Looks like task with same parameters already running",
-                    info: "Check its status under Management -> Task Manager"
-                });
+                if(!assistantAvailable) {
+                    CountlyHelpers.notify({
+                        title: "Similar task already running",
+                        message: "Looks like task with same parameters already running",
+                        info: "Check its status under Management -> Task Manager"
+                    });
+                } else {
+                    makeTaskNotification("Similar task already running", "Looks like task with same parameters already running", "Check its status under Management -> Task Manager", 2, "assistant.taskmanager.longTaskAlreadyRunning", 1);
+                }
         }
     };
     
