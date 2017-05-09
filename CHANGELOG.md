@@ -1,3 +1,40 @@
+## Version 17.05
+
+**Features**
+
+* Documentation through comments
+* Validate sha256 checksums
+* Logger - record whole request data
+* DBViewer - server side export
+* Record metrics and some default values even without sessions
+* Views - new heatmaps injected in website (requires SDK update too)
+* Improved view loading and reloading
+* Assistant - new plugin to assist users
+* New UI topbar
+* Push - rich push support
+* Push - android badge support
+* Crash Analytics - multi crash selection for actions like resolve, unresolve, hide, show, delete, etc
+* Crash Analytics - server side export
+* Crash Analytics - server side export
+ 
+**Fixes**
+
+* Server stats - collecting sessions
+* Api - accept milisecond float timestamps
+* Email reports - fix fetching event data
+
+**Enterprise Features**
+
+* Report manager - saving reports for long running queries
+* Revenue - multiple iap keys
+* Crashes - drill filtering of crashes
+* Views - views are now drillable
+* Users - serverside export
+* Dashboards - new custom dashboards
+* Flows - recording event flows
+* Fix: Live plugin - resume online user after inactivity
+
+
 ## Version 16.12.3
 
 This is a bugfix release.
