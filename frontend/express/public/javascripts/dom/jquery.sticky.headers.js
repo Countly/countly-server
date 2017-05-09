@@ -12,7 +12,7 @@
 			base.table = $(el);
 			var theadClone = base.table.find('thead').clone(true);
 		
-			base.stickyHeader.append($('<table class="d-table" cellpadding="0" cellspacing="0"></table>')).find('table').append(theadClone);
+			base.stickyHeader.append($('<table class="d-table dataTable" cellpadding="0" cellspacing="0"></table>')).find('table').append(theadClone);
 			base.table.after(base.stickyHeader);
 		
 			base.setWidths();
