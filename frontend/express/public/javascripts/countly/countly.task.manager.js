@@ -138,27 +138,27 @@
 		return _resultData;
     };
     
+    countlyTaskManager.makeTaskNotification = function (title, message, info, data, notifSubType, i18nId, notificationVersion) {
+        var contentData = data;
+        var ownerName = "ReportManager";
+        var notifType = 4;//informational notification, check assistant.js for additional types
+
+        countlyAssistant.createNotification(contentData, ownerName, notifType, notifSubType, i18nId, countlyCommon.ACTIVE_APP_ID, notificationVersion, countlyGlobal.member.api_key, function (res, msg) {
+            if(!res) {
+                CountlyHelpers.notify({
+                    title: title,
+                    message: message,
+                    info: info
+                });
+            }
+        })
+    };
+    
     countlyTaskManager.monitor = function (id, silent) {
         var assistantAvailable = true;
         if(typeof countlyAssistant === "undefined") {
             assistantAvailable = false;
         }
-        
-        var makeTaskNotification = function (title, message, info, notifSubType, i18nId, notificationVersion) {
-            var contentData = [];
-            var ownerName = "ReportManager";
-            var notifType = 4;//informational notification, check assistant.js for additional types
-
-            countlyAssistant.createNotification(contentData, ownerName, notifType, notifSubType, i18nId, countlyCommon.ACTIVE_APP_ID, notificationVersion, countlyGlobal.member.api_key, function (res, msg) {
-                if(!res) {
-                    CountlyHelpers.notify({
-                        title: title,
-                        message: message,
-                        info: info
-                    });
-                }
-            })
-        };
 
 		var monitor = store.get("countly_task_monitor") || {};
         if(!monitor[countlyCommon.ACTIVE_APP_ID])
@@ -169,29 +169,33 @@
             if(!silent)
                 if(!assistantAvailable) {
                     CountlyHelpers.notify({
-                        title: "This request is running for too long",
-                        message: "We have switched to long running task and will notify you when it is finished",
-                        info: "Or check its status under Management -> Task Manager"
+                        title: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.title"],
+                        message: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.message"],
+                        info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"]
                     });
                 } else {
-                    makeTaskNotification("This request is running for too long", "We have switched to long running task and will notify you when it is finished", "Or check its status under Management -> Task Manager", 1, "assistant.taskmanager.longTaskTooLong", 1);
+                    countlyTaskManager.makeTaskNotification(jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.title"], jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.message"], jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"], [], 1, "assistant.taskmanager.longTaskTooLong", 1);
                 }
         }
         else{
             if(!silent)
                 if(!assistantAvailable) {
                     CountlyHelpers.notify({
-                        title: "Similar task already running",
-                        message: "Looks like task with same parameters already running",
-                        info: "Check its status under Management -> Task Manager"
+                        title: jQuery.i18n.map["assistant.taskmanager.longTaskAlreadyRunning.title"],
+                        message: jQuery.i18n.map["assistant.taskmanager.longTaskAlreadyRunning.message"],
+                        info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"]
                     });
                 } else {
-                    makeTaskNotification("Similar task already running", "Looks like task with same parameters already running", "Check its status under Management -> Task Manager", 2, "assistant.taskmanager.longTaskAlreadyRunning", 1);
+                    countlyTaskManager.makeTaskNotification(jQuery.i18n.map["assistant.taskmanager.longTaskAlreadyRunning.title"], jQuery.i18n.map["assistant.taskmanager.longTaskAlreadyRunning.message"], jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"], [], 2, "assistant.taskmanager.longTaskAlreadyRunning", 1);
                 }
         }
     };
     
     countlyTaskManager.tick = function(){
+        var assistantAvailable = true;
+        if(typeof countlyAssistant === "undefined") {
+            assistantAvailable = false;
+        }
         var monitor = store.get("countly_task_monitor") || {};
         if(monitor[countlyCommon.ACTIVE_APP_ID] && monitor[countlyCommon.ACTIVE_APP_ID][curTask]){
             var id = monitor[countlyCommon.ACTIVE_APP_ID][curTask];
@@ -211,29 +215,39 @@
                     if(res && res.result === "completed"){
                         countlyTaskManager.fetchResult(id, function(res){
                             if(res && res.view){
-                                CountlyHelpers.notify({
-                                    title: "One of long running tasks completed",
-                                    message: "Click here to view the result",
-                                    info: "Or check it under Management -> Task Manager",
-                                    sticky: true,
-                                    onClick: function(){
-                                        app.navigate(res.view+id, true);
-                                    }
-                                });
+                                if(!assistantAvailable) {
+                                    CountlyHelpers.notify({
+                                        title: jQuery.i18n.map["assistant.taskmanager.completed.title"],
+                                        message: jQuery.i18n.map["assistant.taskmanager.completed.message"],
+                                        info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"],
+                                        sticky: true,
+                                        onClick: function(){
+                                            app.navigate(res.view+id, true);
+                                        }
+                                    });
+                                }
+                                else{
+                                    countlyTaskManager.makeTaskNotification(jQuery.i18n.map["assistant.taskmanager.completed.title"], jQuery.i18n.map["assistant.taskmanager.completed.message"], jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"], [res.view+id], 3, "assistant.taskmanager.completed", 1);
+                                }
                             }
                         });
                     }
                     else if(res && res.result === "errored"){
-                        CountlyHelpers.notify({
-                            title: "Could not complete the task",
-                            message: "you can try rerunning it",
-                            info: "Under Management -> Task Manager",
-                            type: "error",
-                            sticky: true,
-                            onClick: function(){
-                                app.navigate("#/manage/tasks", true);
-                            }
-                        });
+                        if(!assistantAvailable) {
+                            CountlyHelpers.notify({
+                                title: jQuery.i18n.map["assistant.taskmanager.errored.title"],
+                                message: jQuery.i18n.map["assistant.taskmanager.errored.message"],
+                                info: jQuery.i18n.map["assistant.taskmanager.errored.info"],
+                                type: "error",
+                                sticky: true,
+                                onClick: function(){
+                                    app.navigate("#/manage/tasks", true);
+                                }
+                            });
+                        }
+                        else{
+                            countlyTaskManager.makeTaskNotification(jQuery.i18n.map["assistant.taskmanager.errored.title"], jQuery.i18n.map["assistant.taskmanager.errored.message"], jQuery.i18n.map["assistant.taskmanager.errored.info"], [], 4, "assistant.taskmanager.errored", 1);
+                        }
                     }
                 }
                 else{
