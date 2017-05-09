@@ -15,10 +15,10 @@ window.component('emoji', function(emoji) {
 			if (!this._picker) {
 				this._picker = new window.EmojiPicker({
 					sheets: {
-						apple   : '/sheets/sheet_apple_64_indexed_128.png',
-						google  : '/sheets/sheet_google_64_indexed_128.png',
-						twitter : '/sheets/sheet_twitter_64_indexed_128.png',
-						emojione: '/sheets/sheet_emojione_64_indexed_128.png'
+						apple   : '/images/push/sheet_apple_64_indexed_128.png',
+						google  : '/images/push/sheet_google_64_indexed_128.png',
+						twitter : '/images/push/sheet_twitter_64_indexed_128.png',
+						emojione: '/images/push/sheet_emojione_64_indexed_128.png'
 					},
 					show_icon_tooltips: false,
 					default_footer_message: null,
