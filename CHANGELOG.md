@@ -15,7 +15,6 @@
 * Push - android badge support
 * Crash Analytics - multi crash selection for actions like resolve, unresolve, hide, show, delete, etc
 * Crash Analytics - server side export
-* Crash Analytics - server side export
  
 **Fixes**
 
