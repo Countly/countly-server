@@ -201,12 +201,14 @@ window.CrashesView = countlyView.extend({
 		this.dtable.fnSort( [ [5,'desc'] ] );
         this.dtable.find("thead .check-green").click(function(){
             if($(this).hasClass("fa-check-square")){
+                $(".sticky-header .check-green").removeClass("fa-check-square").addClass("fa-square-o");
                 self.dtable.find(".check-green").removeClass("fa-check-square").addClass("fa-square-o");
                 self.selectedCrashesIds = [];
                 self.selectedCrashes = {};
                 $(".action-segmentation").addClass("disabled");
             }
             else{
+                $(".sticky-header .check-green").removeClass("fa-square-o").addClass("fa-check-square");
                 self.dtable.find(".check-green").removeClass("fa-square-o").addClass("fa-check-square");
                 self.dtable.find(".check-green").parents("tr").each(function(){
                     var id = $(this).attr("id");

@@ -67,7 +67,6 @@
 .crash-stack pre .line-number span { display:block; padding:0 .5em 0 1em; }
 .crash-stack pre .cl { display:block; clear:both; }
 #crash-table_wrapper { margin-top:0; }
-#crash-table_wrapper .sticky-header .check-header { visibility: hidden; }
 
 #notes { overflow: auto; }
 #notes .btn-header { margin-top:0; margin-right: 0; }
