@@ -61,6 +61,10 @@ window.component('emoji', function(emoji) {
 					ctrl.valueHTML(this.innerHTML);
 					ctrl.value(ctrl.picker().getText());
 				},
+				onkeyup: function(){
+					ctrl.valueHTML(this.innerHTML);
+					ctrl.value(ctrl.picker().getText());
+				},
 				onfocus: function(){
 					ctrl.forcefocus(true);
 				},

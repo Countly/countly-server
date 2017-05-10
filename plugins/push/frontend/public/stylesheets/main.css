@@ -169,6 +169,7 @@
 
 .comp-push-compose select { width: 160px; }
 .comp-push-compose .comp-segmented { width: 160px; }
+.comp-segmented.comp-push-message-type { width: 170px; }
 .comp-push-locales { background-color: #EEEFEF; }
 .comp-push-locales > div { position: relative; max-height: 178px; height: 315px; transition: .3s ease-in-out; border: 1px solid #C2C2C2; }
 .comp-push-locales.buttons-0 > div { max-height: 178px; }
