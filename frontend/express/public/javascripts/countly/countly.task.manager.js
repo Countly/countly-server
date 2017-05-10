@@ -155,11 +155,6 @@
     };
     
     countlyTaskManager.monitor = function (id, silent) {
-        var assistantAvailable = true;
-        if(typeof countlyAssistant === "undefined") {
-            assistantAvailable = false;
-        }
-
 		var monitor = store.get("countly_task_monitor") || {};
         if(!monitor[countlyCommon.ACTIVE_APP_ID])
             monitor[countlyCommon.ACTIVE_APP_ID] = [];
@@ -167,27 +162,19 @@
             monitor[countlyCommon.ACTIVE_APP_ID].push(id);
             store.set("countly_task_monitor", monitor);
             if(!silent)
-                if(!assistantAvailable) {
-                    CountlyHelpers.notify({
-                        title: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.title"],
-                        message: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.message"],
-                        info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"]
-                    });
-                } else {
-                    countlyTaskManager.makeTaskNotification(jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.title"], jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.message"], jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"], [], 1, "assistant.taskmanager.longTaskTooLong", 1);
-                }
+                CountlyHelpers.notify({
+                    title: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.title"],
+                    message: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.message"],
+                    info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"]
+                });
         }
         else{
             if(!silent)
-                if(!assistantAvailable) {
-                    CountlyHelpers.notify({
-                        title: jQuery.i18n.map["assistant.taskmanager.longTaskAlreadyRunning.title"],
-                        message: jQuery.i18n.map["assistant.taskmanager.longTaskAlreadyRunning.message"],
-                        info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"]
-                    });
-                } else {
-                    countlyTaskManager.makeTaskNotification(jQuery.i18n.map["assistant.taskmanager.longTaskAlreadyRunning.title"], jQuery.i18n.map["assistant.taskmanager.longTaskAlreadyRunning.message"], jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"], [], 2, "assistant.taskmanager.longTaskAlreadyRunning", 1);
-                }
+                CountlyHelpers.notify({
+                    title: jQuery.i18n.map["assistant.taskmanager.longTaskAlreadyRunning.title"],
+                    message: jQuery.i18n.map["assistant.taskmanager.longTaskAlreadyRunning.message"],
+                    info: jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"]
+                });
         }
     };
     
