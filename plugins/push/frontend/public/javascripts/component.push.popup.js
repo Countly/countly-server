@@ -244,8 +244,28 @@ window.component('push.popup', function(popup) {
 
 		}.bind(this);
 
-		var activeLocale = m.prop('default'), localesController;
-	
+		var activeLocale = m.prop('default'), localesController, mtitle, mmessage, defMtitle, defMmessage,
+			messageTitleHTML = function(locale){
+				if (arguments.length > 1) {
+					if (locale === 'default') {
+						defMtitle = arguments[1];
+					} else {
+						mtitle = arguments[1];
+					}
+				}
+				return locale === 'default' ? defMtitle : mtitle;
+			},
+			messageMessageHTML = function(locale){
+				if (arguments.length > 1) {
+					if (locale === 'default') {
+						defMmessage = arguments[1];
+					} else {
+						mmessage = arguments[1];
+					}
+				}
+				return locale === 'default' ? defMmessage : mmessage;
+			};
+
 		function buttonTitle(index, key, locale) {
 			var k = (locale || activeLocale()) + (index === undefined ? (push.C.S + key) : (push.C.S + index + push.C.S + key));
 	
@@ -299,8 +319,8 @@ window.component('push.popup', function(popup) {
 						l.buttonUrl0 = buttonTitle(0, 'l', l.value);
 						l.buttonUrl1 = buttonTitle(1, 'l', l.value);
 
-						l.titleCtrl = new window.components.emoji.controller({key: 't' + l.value, value: l.messageTitle, placeholder: function(){ return l.value === 'default' ? t('pu.po.tab2.mtitle.placeholder') : message.messagePerLocale()['default' + push.C.S + 't'] || t('pu.po.tab2.mtitle.placeholder'); }});
-						l.messageCtrl = new window.components.emoji.controller({key: 'm' + l.value, value: l.messageMessage, textarea: true, placeholder: function(){ return l.value === 'default' ? t('pu.po.tab2.placeholder') : message.messagePerLocale().default || t('pu.po.tab2.placeholder'); }});
+						l.titleCtrl = new window.components.emoji.controller({key: 't' + l.value, value: l.messageTitle, valueHTML: messageTitleHTML.bind(null, l.value), placeholder: function(){ return l.value === 'default' ? t('pu.po.tab2.mtitle.placeholder') : messageTitleHTML('default') || t('pu.po.tab2.mtitle.placeholder'); }});
+						l.messageCtrl = new window.components.emoji.controller({key: 'm' + l.value, value: l.messageMessage, valueHTML: messageMessageHTML.bind(null, l.value), textarea: true, placeholder: function(){ return l.value === 'default' ? t('pu.po.tab2.placeholder') : messageMessageHTML('default') || t('pu.po.tab2.placeholder'); }});
 
 						l.btn0t = new window.components.input.controller({value: l.buttonTitle0, placeholder: function(){ return l.value === 'default' ? t('pu.po.tab2.btntext') : message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 't']; }});
 						l.btn1t = new window.components.input.controller({value: l.buttonTitle1, placeholder: function(){ return l.value === 'default' ? t('pu.po.tab2.btntext') : message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 't']; }});
@@ -725,9 +745,11 @@ window.component('push.popup', function(popup) {
 												message.media.view()
 												: '',
 											message.messagePerLocale()[activeLocale() + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + 't'] ? 
-												m('.preview-message-message-title', message.messagePerLocale()[activeLocale() + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + 't'])
+												m('.preview-message-message-title', {config: function(el){ el.innerHTML = messageTitleHTML(activeLocale()) || messageTitleHTML('default'); }})
+												// m('.preview-message-message-title', message.messagePerLocale()[activeLocale() + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + 't'])
 												: '',
-											m('.preview-message-message', message.messagePerLocale()[activeLocale()] || message.messagePerLocale().default || t('pu.po.tab2.default-message')),
+											m('.preview-message-message', {config: function(el){ el.innerHTML = messageMessageHTML(activeLocale()) || messageMessageHTML('default') || t('pu.po.tab2.default-message'); }}),
+											// m('.preview-message-message', message.messagePerLocale()[activeLocale()] || message.messagePerLocale().default || t('pu.po.tab2.default-message')),
 											message.buttons() > 0 ? 
 												m('.preview-buttons', [
 													message.buttons() > 0 ? m('.preview-button', message.messagePerLocale()[activeLocale() + push.C.S + '0' + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 't']) : '',

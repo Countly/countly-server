@@ -191,6 +191,7 @@
 .comp-push-locales .comp-tabs-content > div > div { padding-right: 18px; }
 .comp-push .emoji { position: relative; }
 .comp-push .emoji [contenteditable=true]:empty:before { content: attr(placeholder); display: block; font-family: 'Ubuntu', 'Helvetica Neue', sans-serif; font-size: 13px; font-weight: normal; opacity: 0.3; }
+.comp-push .emoji [contenteditable=true] .placeholder { font-family: 'Ubuntu', 'Helvetica Neue', sans-serif; font-size: 13px; font-weight: normal; opacity: 0.3; }
 .comp-push .emoji .input[contenteditable=true]:empty:before { line-height: 30px; }
 .comp-push .emoji > .textarea { height: 57px; font-family: 'Ubuntu', 'Helvetica Neue', sans-serif; width: 100%; margin: 0 0 0 0; padding: 6px 6px 6px 10px; font-size: 13px; font-weight: normal; color: #324351; outline: none; resize: none; border: 1px solid #DFE3E9; border-radius: 2px; }
 .comp-push .emoji > .input { height: 30px; line-height: 30px; font-size: 13px; padding: 0 6px 0 10px; outline: none; width: 100%; color: #354052; border: 1px solid #DFE3E9; border-radius: 2px; }
@@ -222,6 +223,7 @@
 .comp-push .help-tt .comp-tt { text-align: left; background-color: #ccc; color: #333; z-index: 11; }
 .comp-push .help-tt > span, .comp-push .help-tt > svg { z-index: 10; }
 .comp-push .help-tt { position: absolute; top: 8px; right: 3px; z-index: 10; }
+.comp-push .help-tt:hover { z-index: 11; }
 .comp-push .comp-push-locale-count .help-tt { position: relative; top: auto; right: auto; }
 .comp-push .ion-information-circled { color: #ccc; font-size: 16px; color: #ccc; }
 .comp-push .comp-push-extra-check .help-tt { right: 8px; }
@@ -760,8 +762,8 @@ input:disabled + label {
     color: rgba(68, 82, 101, .5);
 }
 
-.comp-push-view-row i {
-	position: relative;
+.comp-push-view-row span {
+	display: relative;
 }
 
 .comp-push-view-row > .col-mid {
@@ -883,6 +885,7 @@ table.d-table .nothing { opacity: 0.3; }
 .comp-push-metrics h5 { font-size: 14px; font-weight: normal; text-align: center; margin: 2px 0 4px; }
 .comp-push-metrics i { margin-left: 9px; color: rgba(68, 82, 101, .5); /* font-weight: 100; */ }
 .comp-push-metrics span { text-align: center; display: block; }
+.comp-push-metrics h5 span { display: inline-block; position: relative; margin-left: 5px; }
 .comp-push-metrics span > b { margin: 0 4px; font-size: 18px; color: rgb(68, 82, 101); }
 .comp-bar { position: relative; height: 100%; }
 .comp-bar .percent { position: absolute; top: 10px; left: 0; width: 50px; height: 100%; font-size: 20px; text-align: center; }

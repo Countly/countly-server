@@ -11,6 +11,7 @@ window.component('emoji', function(emoji) {
 
 		this.opts = opts;
 		this.value = typeof opts.value === 'function' ? opts.value : m.prop(opts.value);
+		this.valueHTML = typeof opts.valueHTML === 'function' ? opts.valueHTML : m.prop(opts.valueHTML);
 		this.picker = function(){
 			if (!this._picker) {
 				this._picker = new window.EmojiPicker({
@@ -27,6 +28,7 @@ window.component('emoji', function(emoji) {
 			}
 			return this._picker;
 		};
+		this.forcefocus = m.prop(false);
 	};
 	emoji.view = function(ctrl){
 		return m('.emoji' + (ctrl.opts.class ? '.' + ctrl.opts.class : ''), {key: ctrl.opts.key ? 'emoji-' + ctrl.opts.key : undefined}, [
@@ -34,15 +36,46 @@ window.component('emoji', function(emoji) {
 				key: ctrl.opts.key ? 'emoji-ce-' + ctrl.opts.key : undefined,
 				config: function(element, isInitialized){
 					if (!isInitialized) {
-						element.textContent = ctrl.value();
+						if (ctrl.value()) {
+							element.innerHTML = ctrl.valueHTML();
+						}
 						ctrl.picker().listenOn(element.parentElement.querySelector('a'), element.parentElement, element);
+					} else if (ctrl.forcefocus()) {
+						element.focus();
+						if (typeof window.getSelection != 'undefined' && typeof document.createRange != 'undefined') {
+							var range = document.createRange();
+							range.selectNodeContents(element);
+							range.collapse(false);
+							var sel = window.getSelection();
+							sel.removeAllRanges();
+							sel.addRange(range);
+						} else if (typeof document.body.createTextRange != 'undefined') {
+							var textRange = document.body.createTextRange();
+							textRange.moveToElementText(element);
+							textRange.collapse(false);
+							textRange.select();
+						}					
 					}
 				}, 
 				oninput: function(){
+					ctrl.valueHTML(this.innerHTML);
 					ctrl.value(ctrl.picker().getText());
 				},
-				placeholder: typeof ctrl.opts.placeholder === 'function' ? ctrl.opts.placeholder() : ctrl.opts.placeholder || ''
-			}),
+				onfocus: function(){
+					ctrl.forcefocus(true);
+				},
+				onblur: function(){
+					ctrl.forcefocus(false);
+				},
+				// onfocus: ctrl.focus.bind(ctrl, true),
+				// onblur: ctrl.focus.bind(ctrl, false),
+			}, !ctrl.value() && !ctrl.forcefocus() ? 
+				m('div.placeholder', {
+					config: function(el) {
+						el.innerHTML = typeof ctrl.opts.placeholder === 'function' ? ctrl.opts.placeholder() : ctrl.opts.placeholder || '';
+					}
+				}) 
+				: undefined),
 			m('a.fa.fa-smile-o')
 		]);
 	};
