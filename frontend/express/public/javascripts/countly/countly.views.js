@@ -2899,8 +2899,8 @@ window.LongTaskView = countlyView.extend({
                     { "mData": function(row, type){return types[row.type] || row.type;}, "sType":"string", "sTitle": jQuery.i18n.map["common.type"] },
                     { "mData": function(row, type){
 						if(type == "display"){
-							return countlyCommon.formatTimeAgo(row.ts);
-						}else return row.ts;}, "sType":"string", "sTitle": jQuery.i18n.map["common.started"] },
+							return countlyCommon.formatTimeAgo(row.start);
+						}else return row.start;}, "sType":"string", "sTitle": jQuery.i18n.map["common.started"] },
                     { "mData": function(row, type){
                         var time = 0;
                         if(row.status === "running" || row.status === "rerunning"){
