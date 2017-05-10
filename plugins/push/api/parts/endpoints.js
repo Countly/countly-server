@@ -468,6 +468,14 @@ var common          = require('../../../../api/utils/common.js'),
         }
         msg.tz = params.qstring.args.tz;
 
+        if (msg.type === 'data') {
+            delete msg.media;
+            delete msg.url;
+            delete msg.sound;
+            delete msg.messagePerLocale;
+            msg.buttons = 0;
+        }
+
         log.d('Entering message creation with %j', msg);
 
         Promise.all([

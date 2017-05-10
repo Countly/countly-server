@@ -717,7 +717,9 @@ window.component('push.popup', function(popup) {
 										else if (isNaN(parseInt(val))) { return null; }
 										return parseInt(val);
 									}, help: t('pu.po.tab2.extras.badge.help')}),
-									m(extra, {title: t('pu.po.tab2.extras.url'), value: message.url, typ: 'url', valuePlaceholder: t('pu.po.tab2.urlordeep'), help: t('pu.po.tab2.extras.url.help')}),
+									message.type() === 'message' ? 
+										m(extra, {title: t('pu.po.tab2.extras.url'), value: message.url, typ: 'url', valuePlaceholder: t('pu.po.tab2.urlordeep'), help: t('pu.po.tab2.extras.url.help')})
+										: '',
 									m(extra, {title: t('pu.po.tab2.extras.data'), value: message.data, textarea: true, converter: function(val){ 
 										try {
 											var o = window.jsonlite.parse(val);
