@@ -2906,7 +2906,7 @@ window.LongTaskView = countlyView.extend({
                         if(row.status === "running" || row.status === "rerunning"){
                             time = Math.max(new Date().getTime() - row.start, 0);
                         }
-                        else if(row.end){
+                        else if(row.end && row.end > row.start){
                             time = row.end - row.start;
                         }
 						if(type == "display"){
