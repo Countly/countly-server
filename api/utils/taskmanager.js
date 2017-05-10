@@ -234,8 +234,11 @@ var request = require("request");
         if(!query.request && options.params && options.params.qstring){
             var json = options.params.qstring || {};
             json = JSON.parse(JSON.stringify(json));
-            //we don't need to have task_id, it will be automatically applied
-            delete json.task_id;
+            //make sure not to have same task already running
+            if(json.task_id){
+                query._id = {$ne:json.task_id};
+                delete json.task_id;
+            }
             //we want to get raw json data without jsonp
             delete json.callback;
             //delete jquery param to prevent caching
@@ -320,7 +323,7 @@ var request = require("request");
                 }
                 if(reqData.uri){
                     reqData.json.task_id = options.id;
-                    options.db.collection("long_tasks").update({_id:options.id},{$set:{status:"rerunning", start: new Date().getTime()}}, function(){
+                    options.db.collection("long_tasks").update({_id:options.id},{$set:{status:"rerunning", start: new Date().getTime()}}, function(err, res){
                         request(reqData, function (error, response, body) {
                             //we got response, if it contains task_id, then task is rerunning
                             //if it does not, then possibly task completed faster this time and we can get new result
