@@ -60,7 +60,10 @@ window.ViewsView = countlyView.extend({
                 { "mData": "u", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-users"] },
                 { "mData": "n", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.new-users"] },
                 { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["views.total-visits"] },
-                { "mData": function(row, type){if(row.d == 0 || row.t == 0) return 0; else return row.d/row.t;}, sType:"formatted-num", "mRender":function(d) { return countlyCommon.timeString(d/60); }, "sTitle": jQuery.i18n.map["views.avg-duration"] },
+                { "mData": function(row, type){
+                    var time = (row.d == 0 || row.t == 0) ? 0 : row.d/row.t;
+                    if(type === "display") return countlyCommon.timeString(time/60);
+                    else return time}, sType:"numeric", "sTitle": jQuery.i18n.map["views.avg-duration"] },
                 { "mData": "s", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["views.starts"] },
                 { "mData": "e", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["views.exits"] },
                 { "mData": "b", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["views.bounces"] }
