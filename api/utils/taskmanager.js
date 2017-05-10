@@ -248,6 +248,8 @@ var request = require("request");
         }
         if(query.request)
             query.request = JSON.stringify(query.request);
+        
+        query.$or = [ { status: "running" }, { status: "rerunning" } ];
         options.db.collection("long_tasks").findOne(query, {status:1}, function(err, res){
             if(res && res.status && (res.status === "running" || res.status === "rerunning")){
                 callback(res._id);
