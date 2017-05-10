@@ -118,10 +118,6 @@ window.AssistantView = {
             topBarElem.html(this.template(this.templateData));
             topBarElem.css("height", $( window ).height() * 0.8);
 
-            $(window).on("resize", function() {
-                $("#top-bar").find("#assistant-menu .menu").css("height", $( window ).height() * 0.8);
-            });
-
             $("#assistant-tabs").tabs({
                 selected: store.get("assistant_tab") || 0,
                 show: function( event, ui ) {
@@ -225,5 +221,9 @@ $(document).ready(function() {
 
     app.addAppSwitchCallback(function(appId){
         AssistantView.initialize();
+    });
+
+    $(window).on("resize", function() {
+        $("#top-bar").find("#assistant-menu .menu").css("height", $(window).height() * 0.8);
     });
 });
