@@ -1,6 +1,6 @@
 #assistant_container { top: 0; right: 0; width: 100%; height: 100%; overflow: auto; background-color: #fff; text-align: left; }
 
-#assistant_container .assistant-tab { height:100%; height: calc(100% - 47px); overflow: auto; box-sizing: border-box; padding-top:0; }
+#assistant_container .assistant-tab { height:100%; height: calc(100% - 47px); overflow: auto; box-sizing: border-box; padding-top:0; margin-top: 1px;}
 #assistant_container .ui-tabs { height: 100%; overflow: hidden; }
 #assistant_container .ui-tabs .ui-tabs-nav { height: 48px; }
 #assistant_container .ui-tabs .ui-tabs-nav li { width: 33.33%; }
