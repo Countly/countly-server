@@ -109,6 +109,7 @@ window.component('push', function(push) {
 							f.mimeSize = undefined;
 							f.errorText = undefined;
 							f.typeWarn = undefined;
+							f.platforms = undefined;
 
 							push.remoteMimeInfo(prop()).then(function(resp){
 								if (resp.status >= 200 && resp.status < 300 && resp.headers && resp.headers['content-type']) {
@@ -119,12 +120,15 @@ window.component('push', function(push) {
 									} else if (ANIMA_MIMES.indexOf(f.mime) !== -1) {
 										f.type = t('pu.po.tab2.mmedia.type.anima');
 										f.typeWarn = t('pu.po.tab2.mmedia.type.warn.android');
+										f.platforms = [push.C.PLATFORMS.IOS];
 									} else if (VIDEO_MIMES.indexOf(f.mime) !== -1) {
 										f.type = t('pu.po.tab2.mmedia.type.video');
 										f.typeWarn = t('pu.po.tab2.mmedia.type.warn.android');
+										f.platforms = [push.C.PLATFORMS.IOS];
 									} else if (AUDIO_MIMES.indexOf(f.mime) !== -1) {
 										f.type = t('pu.po.tab2.mmedia.type.audio');
 										f.typeWarn = t('pu.po.tab2.mmedia.type.warn.android');
+										f.platforms = [push.C.PLATFORMS.IOS];
 									} else {
 										f.errorText = t('pu.po.tab2.extras.media.invalid');
 										f.valid = false;

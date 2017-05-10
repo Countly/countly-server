@@ -395,7 +395,6 @@ input:disabled + label {
     border-radius: 0;
     object-position: center;
     object-fit: cover;
-    margin-bottom: 5px;
 }
 
 .preview-a .preview-message img.preview-message-media {

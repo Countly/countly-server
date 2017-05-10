@@ -756,7 +756,7 @@ window.component('push.popup', function(popup) {
 													message.buttons() > 1 ? m('.preview-button', message.messagePerLocale()[activeLocale() + push.C.S + '1' + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 't']) : '',
 												])
 												: '',
-											popup.previewPlatform() === 'a' && message.media() && message.media.valid ? 
+											popup.previewPlatform() === 'a' && message.media() && message.media.valid && (!message.media.platforms || message.media.platforms.indexOf(popup.previewPlatform()) !== -1) ? 
 												message.media.view()
 												: '',
 										]),
