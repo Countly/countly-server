@@ -1,7 +1,12 @@
 ## Version 17.05
 
-**Features**
+**New features**
 
+* New topbar that holds many action buttons. This replaces bottom bar and adds app selector, dashboard selector and configuration options (e.g password change, settings, language switcher etc).
+* Rich push support for iOS and Android, which includes ability to send images and videos to devices.
+* Interactive push support for both platforms, with ability to add up to 3 buttons in a push notification.
+* New Assistant plugin can be used to get more insights from devices and keeps you up to date with data. 
+* Inside Crash Analytics, now it's possible to make multi crash selection for actions like resolve, unresolve, hide, show, delete, etc
 * Documentation through comments
 * Validate sha256 checksums
 * Logger - record whole request data
@@ -9,11 +14,7 @@
 * Record metrics and some default values even without sessions
 * Views - new heatmaps injected in website (requires SDK update too)
 * Improved view loading and reloading
-* Assistant - new plugin to assist users
-* New UI topbar
-* Push - rich push support
 * Push - android badge support
-* Crash Analytics - multi crash selection for actions like resolve, unresolve, hide, show, delete, etc
 * Crash Analytics - server side export
  
 **Fixes**
@@ -22,7 +23,7 @@
 * Api - accept milisecond float timestamps
 * Email reports - fix fetching event data
 
-**Enterprise Features**
+**Enterprise Edition Features**
 
 * Report manager - saving reports for long running queries
 * Revenue - multiple iap keys
