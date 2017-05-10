@@ -214,7 +214,7 @@
                                     });
                                 }
                                 else{
-                                    countlyTaskManager.makeTaskNotification(jQuery.i18n.map["assistant.taskmanager.completed.title"], jQuery.i18n.map["assistant.taskmanager.completed.message"], jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"], [res.view+id], 3, "assistant.taskmanager.completed", 1);
+                                    countlyTaskManager.makeTaskNotification(jQuery.i18n.map["assistant.taskmanager.completed.title"], jQuery.i18n.map["assistant.taskmanager.completed.message"], jQuery.i18n.map["assistant.taskmanager.longTaskTooLong.info"], [res.view+id, res.name || ""], 3, "assistant.taskmanager.completed", 1);
                                 }
                             }
                         });
@@ -233,7 +233,9 @@
                             });
                         }
                         else{
-                            countlyTaskManager.makeTaskNotification(jQuery.i18n.map["assistant.taskmanager.errored.title"], jQuery.i18n.map["assistant.taskmanager.errored.message"], jQuery.i18n.map["assistant.taskmanager.errored.info"], [], 4, "assistant.taskmanager.errored", 1);
+                            countlyTaskManager.fetchResult(id, function(res){
+                                countlyTaskManager.makeTaskNotification(jQuery.i18n.map["assistant.taskmanager.errored.title"], jQuery.i18n.map["assistant.taskmanager.errored.message"], jQuery.i18n.map["assistant.taskmanager.errored.info"], [res.name || ""], 4, "assistant.taskmanager.errored", 1);
+                            });
                         }
                     }
                 }
