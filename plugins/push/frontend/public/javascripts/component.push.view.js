@@ -245,7 +245,7 @@ window.component('push.view', function(view) {
 				m('.col-left', [
 					m('h5', [
 						opts.title, 
-						opts.helpr ? m('i.fa.fa-info', components.tooltip.config(opts.helpr)) : ''
+						opts.helpr ? m('span.ion-information-circled', components.tooltip.config(opts.helpr)) : ''
 					]),
 					opts.count === opts.total ? 
 						m('span', m('b', opts.count))

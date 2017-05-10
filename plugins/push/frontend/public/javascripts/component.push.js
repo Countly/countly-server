@@ -189,7 +189,9 @@ window.component('push', function(push) {
 				}
 				return m('span', 'not supported media type');
 			};
-			f(val);
+			if (!data._id) {
+				f(val);
+			}
 			return f;
 		})(data.media);
 
