@@ -60,7 +60,7 @@ window.AssistantView = {
 
         var self = this;
 
-        $(notificationButtonID).on("click", function(){
+        $("#assistant-menu").on("click", function(){
             $(notificationButtonID).removeClass("unread");
             store.set("earliestViewedNotificationTimestamp", self.earliestDataTimestamp);
         });
