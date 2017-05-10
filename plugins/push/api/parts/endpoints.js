@@ -496,7 +496,7 @@ var common          = require('../../../../api/utils/common.js'),
             }
 
             if (msg.media && msg.type === 'message' && (!mime || !mime.headers['content-type'])) {
-                return common.returnMessage(params, 400, 'Cannot determine MIME type of media attachement');
+                return common.returnMessage(params, 400, 'Cannot determine MIME type of media attachment');
             }
 
             if (msg._id && !prepared) {
