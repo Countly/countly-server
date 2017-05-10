@@ -67,7 +67,7 @@ window.ViewsView = countlyView.extend({
             ];
             
             if(typeof addDrill != "undefined"){
-                $(".widget-header .left .title").after(addDrill("up.lv"));
+                $(".widget-header .left .title").after(addDrill("sg.name", null, "[CLY]_view"));
                 if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web" && domains.length){
                     columns.push({ "mData": function(row, type){
                         return '<a href="#/analytics/views/action-map/'+row.views+'" class="table-link green" data-localize="views.table.view" style="margin:0px; padding:2px;">'+jQuery.i18n.map["views.table.view"]+'</a>';
