@@ -7,7 +7,7 @@
 
 #assistant_container .assistant_notif { border-bottom: 1px solid #eee; padding: 20px 0; }
 
-#assistant_container .ui-widget-content a.assistant-link { color: #03BD4A; }
+#assistant_container .ui-widget-content a { color: #03BD4A; }
 
 #assistant_container .assistant_notif_title { font-size: 14px; margin-top: 5px; color: #636363; }
 #assistant_container .assistant_notif_timesince { font-size: 10px; color: #C9C9C9; margin-top: 5px; }
