@@ -26,6 +26,7 @@ window.AssistantView = {
         }
     },
     renderCommon:function (isRefresh) {
+        var notificationButtonID = "#notification-icon";
         var data = countlyAssistant.getDataForApp(countlyCommon.ACTIVE_APP_ID);
 
         this.templateData = {
@@ -35,6 +36,35 @@ window.AssistantView = {
             saved_global: data.notifs_saved_global,
             icon_styling_class: 'assistant_icon_regular'
         };
+
+        //check if notification notification should be shown
+        var arrLen = data.notifications.length;
+        this.earliestDataTimestamp = 0;
+        for(var i = 0; i < arrLen; i++){
+            var cd = data.notifications[i].createdDateUTC;
+            if(this.earliestDataTimestamp < cd) {
+                this.earliestDataTimestamp = cd;
+            }
+        }
+
+        var earliestViewedTimestamp = store.get("earliestViewedNotificationTimestamp") || 0.0;
+
+        //change assistant icon
+        if(earliestViewedTimestamp < this.earliestDataTimestamp) {
+            //add alerting icon
+            $(notificationButtonID).addClass("unread")
+        } else {
+            //remove alerting icon
+            $(notificationButtonID).removeClass("unread")
+        }
+
+        var self = this;
+
+        $(notificationButtonID).on("click", function(){
+            $(notificationButtonID).removeClass("unread");
+            store.set("earliestViewedNotificationTimestamp", self.earliestDataTimestamp);
+        });
+
 
         var changeNotification = function (id, is_private, is_save, parent) {
 
