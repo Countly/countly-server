@@ -104,13 +104,24 @@ const assistant = {},
                                         return true;
                                     }
 
-                                    const arrayContainsTarget = targetElemArray.includes(api_key);
-                                    return arrayContainsTarget;
+                                    return targetElemArray.includes(api_key);
                                 };
 
                                 notifs = notifs.filter(elemFilterTargetUser);
                                 notifs_global = notifs_global.filter(elemFilterTargetUser);
                                 notifs_saved = notifs_saved.filter(elemFilterTargetUser);
+
+                                const sanitizeNotificationData = function (elem) {
+                                    delete elem.saved_private;
+                                    delete elem.saved_global;
+                                    delete elem.target_user_array;
+
+                                    return true;
+                                };
+
+                                notifs.filter(sanitizeNotificationData);
+                                notifs_global.filter(sanitizeNotificationData);
+                                notifs_saved.filter(sanitizeNotificationData);
 
                                 callback(null, {
                                     id: app_id,
