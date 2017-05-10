@@ -1605,7 +1605,7 @@ var countlyCommon = {},
                 previousPeriod = _currMoment.format("YYYY.M.D");
                 _currMoment.add(1, 'days');
 
-                periodMax = hour;
+                periodMax = 23;
                 periodMin = 0;
                 dateString = "HH:mm";
                 daysInPeriod = 1;
