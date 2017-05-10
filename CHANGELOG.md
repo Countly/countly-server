@@ -7,33 +7,31 @@
 * Interactive push support for both platforms, with ability to add up to 3 buttons in a push notification.
 * New Assistant plugin can be used to get more insights from devices and keeps you up to date with data. 
 * Inside Crash Analytics, now it's possible to make multi crash selection for actions like resolve, unresolve, hide, show, delete, etc
+* Event logs plugin can record whole request data
+* Record metrics and some default values even without sessions
+* Views now has new heatmaps injected in website (requires latest SDK update)
+* Improved view loading and reloading
+* Android badge support for push notifications
+* Server side data export for Crash Analytics
 * Documentation through comments
 * Validate sha256 checksums
-* Logger - record whole request data
-* DBViewer - server side export
-* Record metrics and some default values even without sessions
-* Views - new heatmaps injected in website (requires SDK update too)
-* Improved view loading and reloading
-* Push - android badge support
-* Crash Analytics - server side export
- 
-**Fixes**
-
-* Server stats - collecting sessions
-* Api - accept milisecond float timestamps
-* Email reports - fix fetching event data
 
 **Enterprise Edition Features**
 
-* Report manager - saving reports for long running queries
-* Revenue - multiple iap keys
-* Crashes - drill filtering of crashes
-* Views - views are now drillable
-* Users - serverside export
-* Dashboards - new custom dashboards
-* Flows - recording event flows
-* Fix: Live plugin - resume online user after inactivity
+* New Dashboard plugin: Provides ability to add as many custom dashboards as you want, and share with your colleagues
+* New Flows plugin: Shows step by step movement of event flows
+* New Report Manager plugin can save, show and run long-running drill and funnel queries
+* Revenue plugin can accept multiple in-app purchase keys
+* DBViewer and User Profiles now has server side export
+* Crashes plugin gets the ability to be filtered
+* Analytics > Views data is now drillable
+* Fix: Live users plugin - resume online user after inactivity for web SDK
 
+**Fixes**
+
+* Server stats - fix collecting sessions
+* Api - accept milisecond float timestamps
+* Email reports - fix fetching event data
 
 ## Version 16.12.3
 
