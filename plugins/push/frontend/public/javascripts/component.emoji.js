@@ -37,7 +37,7 @@ window.component('emoji', function(emoji) {
 				config: function(element, isInitialized){
 					if (!isInitialized) {
 						if (ctrl.value()) {
-							element.innerHTML = ctrl.valueHTML();
+							element.innerHTML = ctrl.valueHTML() || ctrl.value();
 						}
 						ctrl.picker().listenOn(element.parentElement.querySelector('a'), element.parentElement, element);
 					} else if (ctrl.forcefocus() && ctrl.value() !== ctrl.picker().getText()) {

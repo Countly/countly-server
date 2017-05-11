@@ -108,6 +108,7 @@ window.component('push', function(push) {
 							f.mime = undefined;
 							f.mimeSize = undefined;
 							f.errorText = undefined;
+							f.statusErrorText = undefined;
 							f.typeWarn = undefined;
 							f.platforms = undefined;
 
@@ -158,7 +159,7 @@ window.component('push', function(push) {
 								} else {
 									f.mime = undefined;
 									f.mimeSize = undefined;
-									f.errorText = t('pu.po.tab2.mmedia.status') + ' ' + resp.status;
+									f.statusErrorText = t('pu.po.tab2.mmedia.status') + ' ' + resp.status;
 								}
 							}, function(err){
 								f.mime = undefined;

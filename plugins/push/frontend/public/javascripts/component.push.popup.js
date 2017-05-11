@@ -696,7 +696,7 @@ window.component('push.popup', function(popup) {
 												m('.mime-size', message.media.mimeSize || ''),
 											])
 											: m('.mime', [
-												m('.mime-type', message.media.mime || ''),
+												m('.mime-type', message.media.mime || message.media.statusErrorText || ''),
 												m('.mime-size', message.media.mimeSize || ''),
 											]),
 										message.media.typeWarn ? 
@@ -747,10 +747,10 @@ window.component('push.popup', function(popup) {
 												message.media.view()
 												: '',
 											message.messagePerLocale()[activeLocale() + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + 't'] ? 
-												m('.preview-message-message-title', {config: function(el){ el.innerHTML = messageTitleHTML(activeLocale()) || messageTitleHTML('default'); }})
+												m('.preview-message-message-title', {config: function(el){ el.innerHTML = (messageTitleHTML(activeLocale()) || message.messagePerLocale()[activeLocale() + push.C.S + 't']) || (messageTitleHTML('default') || message.messagePerLocale()['default' + push.C.S + 't']); }})
 												// m('.preview-message-message-title', message.messagePerLocale()[activeLocale() + push.C.S + 't'] || message.messagePerLocale()['default' + push.C.S + 't'])
 												: '',
-											m('.preview-message-message', {config: function(el){ el.innerHTML = messageMessageHTML(activeLocale()) || messageMessageHTML('default') || t('pu.po.tab2.default-message'); }}),
+											m('.preview-message-message', {config: function(el){ el.innerHTML = (messageMessageHTML(activeLocale()) || message.messagePerLocale()[activeLocale()]) || (messageMessageHTML('default') || message.messagePerLocale().default) || t('pu.po.tab2.default-message'); }}),
 											// m('.preview-message-message', message.messagePerLocale()[activeLocale()] || message.messagePerLocale().default || t('pu.po.tab2.default-message')),
 											message.buttons() > 0 ? 
 												m('.preview-buttons', [
