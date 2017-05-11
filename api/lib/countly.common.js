@@ -6,7 +6,7 @@
 /** @lends module:api/lib/countly.common */
 var countlyCommon = {},
     time = require('time')(Date),
-    moment = require('moment'),
+    moment = require('moment-timezone'),
     underscore = require('underscore');
 
 (function (countlyCommon) {
@@ -93,9 +93,9 @@ var countlyCommon = {},
 
         var currTime = new Date();
         currTime.setTimezone(appTimezone);
-
+        
         _currMoment = moment(currTime);
-
+        _currMoment.tz(appTimezone);
         countlyCommon.periodObj = getPeriodObj();
     };
 
@@ -1678,6 +1678,7 @@ var countlyCommon = {},
             // One day is selected from the datepicker
             if (_period[0] == _period[1]) {
                 var selectedDate = moment(fromDate);
+                selectedDate.tz(_appTimezone);
 
                 activePeriod = selectedDate.format("YYYY.M.D");
                 selectedDate.subtract(1, 'days');
@@ -1693,6 +1694,8 @@ var countlyCommon = {},
             } else {
                 var a = moment(fromDate),
                     b = moment(toDate);
+                a.tz(_appTimezone);
+                b.tz(_appTimezone);
 
                 daysInPeriod = b.diff(a, 'days') + 1;
                 isSpecialPeriod = true;
@@ -1715,6 +1718,8 @@ var countlyCommon = {},
 
                 var momentOne = moment(currTime),
                     momentTwo = moment(currTime2);
+                momentOne.tz(_appTimezone);
+                momentTwo.tz(_appTimezone);
 
                 var currRangeEndDate = new Date(rangeEndDay);
                 currRangeEndDate.setTimezone(_appTimezone);
@@ -1722,9 +1727,9 @@ var countlyCommon = {},
                 var prevRangeEndDate = new Date(rangeEndDay);
                 prevRangeEndDate.setTimezone(_appTimezone);
 
-                var currIndex = (!rangeEndDay) ? momentOne.subtract(i, 'days') : moment(currRangeEndDate).subtract(i, 'days'),
+                var currIndex = (!rangeEndDay) ? momentOne.subtract(i, 'days') : moment(currRangeEndDate).tz(_appTimezone).subtract(i, 'days'),
                     currIndexYear = currIndex.year(),
-                    prevIndex = (!rangeEndDay) ? momentTwo.subtract((daysInPeriod + i), 'days') : moment(prevRangeEndDate).subtract((daysInPeriod + i), 'days'),
+                    prevIndex = (!rangeEndDay) ? momentTwo.subtract((daysInPeriod + i), 'days') : moment(prevRangeEndDate).tz(_appTimezone).subtract((daysInPeriod + i), 'days'),
                     prevYear = prevIndex.year();
 
                 if (i != (daysInPeriod - 1) && currentYear != currIndexYear) {

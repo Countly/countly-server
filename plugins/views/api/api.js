@@ -392,7 +392,7 @@ var plugin = {},
                     }
             
                     if (lastViewDate.getFullYear() == params.time.yearly &&
-                        Math.ceil(common.moment(lastViewDate).format("DDD") / 7) < params.time.weekly) {
+                        Math.ceil(common.moment(lastViewDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
                         tmpTimeObjZero["d.w" + params.time.weekly + '.' + escapedMetricVal + '.' + common.dbMap['unique']] = 1;
                     }
             

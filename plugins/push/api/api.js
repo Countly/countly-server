@@ -163,7 +163,7 @@ var plugin = {},
             }
 
             if (userLastSeenDate.getFullYear() == params.time.yearly &&
-                Math.ceil(common.moment(userLastSeenDate).format("DDD") / 7) < params.time.weekly && messagingTokenKeys(dbAppUser).length) {
+                Math.ceil(common.moment(userLastSeenDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly && messagingTokenKeys(dbAppUser).length) {
                 updateUsersZero["d.w" + params.time.weekly + '.' + common.dbMap['messaging-enabled']] = 1;
             }
 

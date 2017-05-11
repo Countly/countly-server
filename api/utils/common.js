@@ -5,7 +5,7 @@
 
 /** @lends module:api/utils/common */
 var common = {},
-    moment = require('moment'),
+    moment = require('moment-timezone'),
     time = require('time')(Date),
     crypto = require('crypto'),
     mongo = require('mongoskin'),
@@ -472,6 +472,7 @@ var common = {},
 		currDateWithoutTimestamp.setTimezone(appTimezone);
 
         var tmpMoment = moment(currDate);
+        tmpMoment.tz(appTimezone);
 
         /**
         * @typedef timeObject
@@ -494,7 +495,7 @@ var common = {},
         return {
             now: tmpMoment,
             nowUTC: moment.utc(currDate),
-            nowWithoutTimestamp: moment(currDateWithoutTimestamp),
+            nowWithoutTimestamp: moment(currDateWithoutTimestamp).tz(appTimezone),
             timestamp: currTimestamp,
             mstimestamp: curMsTimestamp,
             yearly: tmpMoment.format("YYYY"),
@@ -979,7 +980,7 @@ var common = {},
                     }
             
                     if (lastDate.getFullYear() == params.time.yearly &&
-                        Math.ceil(common.moment(lastDate).format("DDD") / 7) < params.time.weekly) {
+                        Math.ceil(common.moment(lastDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
                         updateUsersZero["d.w" + params.time.weekly + '.' + metric] = 1;
                     }
             
@@ -1024,7 +1025,7 @@ var common = {},
                                 }
                         
                                 if (lastDate.getFullYear() == params.time.yearly &&
-                                    Math.ceil(common.moment(lastDate).format("DDD") / 7) < params.time.weekly) {
+                                    Math.ceil(common.moment(lastDate).tz(params.appTimezone).format("DDD") / 7) < params.time.weekly) {
                                     updateUsersZero["d.w" + params.time.weekly + '.' + escapedMetricVal + '.' + metric] = 1;
                                 }
                         
