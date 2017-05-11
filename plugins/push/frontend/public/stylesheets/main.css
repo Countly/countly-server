@@ -981,6 +981,8 @@ table.d-table .nothing { opacity: 0.3; }
 .comp-push .mime-size { text-align: right; }
 .comp-push .mime-type svg { float: right; margin-bottom: -4px; }
 .comp-push .mime +.mime { margin-top: -18px; }
+.android-warn { float: right; color: #333; opacity: .6; font-size: 13px; }
+.android-warn svg { margin-bottom: -3px; margin-right: 4px; }
 
 #emoji-picker {
     margin-left: 2px;

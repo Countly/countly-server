@@ -688,7 +688,15 @@ window.component('push.popup', function(popup) {
 									]) : '',
 								message.type() !== 'data' ? 
 									m('div', [
-										m('h4', t('pu.po.tab2.mmedia')),
+										m('h4', [
+											t('pu.po.tab2.mmedia'),
+											message.media.typeWarn ? 
+												m('.android-warn', [
+													push.ICON.WARN(),
+													message.media.typeWarn
+												])
+												: ''
+										]),
 										m('.comp-push-extras', m(extra, {title: t('pu.po.tab2.extras.media'), value: message.media, typ: 'url', valuePlaceholder: t('pu.po.tab2.extras.media.placeholder'), help: t('pu.po.tab2.extras.media.help')})),
 										message.media.valid ? 
 											m('.mime', [
@@ -698,13 +706,7 @@ window.component('push.popup', function(popup) {
 											: m('.mime', [
 												m('.mime-type', message.media.mime || message.media.statusErrorText || ''),
 												m('.mime-size', message.media.mimeSize || ''),
-											]),
-										message.media.typeWarn ? 
-											m('.mime', [
-												m('.mime-type', push.ICON.WARN()),
-												m('.mime-size', message.media.typeWarn)
 											])
-											: ''
 									])
 									: '',
 								m('h4', t('pu.po.tab2.extras')),
