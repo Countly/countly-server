@@ -196,6 +196,9 @@ window.component('push', function(push) {
 			};
 			if (!data._id) {
 				f(val);
+			} else {
+				prop(val);
+				f.valid = true;
 			}
 			return f;
 		})(data.media);

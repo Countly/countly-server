@@ -842,7 +842,8 @@ input:disabled + label {
 	background: rgba(255,160,70,.9);
     border-radius: 2px;
 	color: white;
-	font-size: 12px;
+	font-size: 13px;
+    line-height: 17px;
     overflow-x: hidden;
     overflow-y: visible;
     white-space: pre-wrap;
