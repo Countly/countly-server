@@ -242,6 +242,9 @@ class Note {
 
 				if (message && message.buttons) {
 					compiled.c.b = message.buttons;
+				}
+
+				if ((message && message.buttons) || this.media) {
 					compiled.aps['mutable-content'] = 1;
 				}
 
