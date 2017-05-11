@@ -27,7 +27,7 @@ const plugin = {},
 
         const api_key = params.qstring.api_key;
 
-        log.i('Assistant plugin request: Get All Notifications');
+        //log.i('Assistant plugin request: Get All Notifications');
         const validate = ob.validateUserForMgmtReadAPI;
         validate(function (params) {
             const member = params.member;

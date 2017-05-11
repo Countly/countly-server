@@ -393,6 +393,7 @@ const assistant = {},
                         //log.i('Preparation FAILED [%j]', ex);
                     }
                 }
+                promises.push(require("./assistantJobGeneral").prepareNotifications(countlyDb, assistantGlobalCommon));
 
                 PromiseB.all(promises).then(callback, callback);
             });
@@ -449,7 +450,7 @@ const assistant = {},
      */
     assistant.prepareNotificationSpecificFields = function(assistantPluginCommon, notificationI18nID, notificationType, notificationSubtype, notificationVersion){
         const anc = {};//assistant notification common
-        anc.apc = assistantPluginCommon;
+        anc.apc = assistantPluginCommon;//in some places this might be null
 
         anc.notificationI18nID = notificationI18nID;
         anc.notificationType = notificationType;

@@ -284,52 +284,6 @@ const assistantJob = {},
 
                             // (3) generate announcment notifications
 
-                            //todo do feed reading once for all apps to get rid of timeouts
-                            //todo improve feed period selection so that it is possible to show the event immediate and not once per day
-
-                            const nowTimestamp = Date.now();//timestamp now ms
-                            const intervalMs = 24 * 60 * 60 * 1000;//the last 24 hours in ms
-
-                            const generatNotificationFromFeed = function (feedUrl, anc, targetHour) {
-                                parser.parseURL(feedUrl, function(err, parsed) {
-                                    if(!underscore.isUndefined(parsed)) {
-                                        parsed.feed.entries.forEach(function (entry) {
-                                            const eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
-                                            const blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
-                                            const data = [entry.title, entry.link];
-
-                                            assistant.createNotificationIfRequirementsMet(-1, targetHour, (blog_post_ready), data, anc);
-                                        });
-                                    } else {
-                                        log.w('Assistant plugin, feed reader returned undefined!!!!! url: [%j] error: [%j] ', feedUrl, err);
-                                    }
-                                });
-                            };
-
-                            // (3.1) blog page
-                            {
-                                const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.announcement-blog-post", assistant.NOTIF_TYPE_ANNOUNCEMENTS, 1, NOTIFICATION_VERSION);
-                                generatNotificationFromFeed('https://medium.com/feed/countly', anc, 15);
-                            }
-
-                            // (3.2) New iOS SDK release
-                            {
-                                const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.announcement-ios-release", assistant.NOTIF_TYPE_ANNOUNCEMENTS, 2, NOTIFICATION_VERSION);
-                                generatNotificationFromFeed('https://github.com/countly/countly-sdk-ios/releases.atom', anc, 15);
-                            }
-
-                            // (3.3) New Android SDK release
-                            {
-                                const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.announcement-android-release", assistant.NOTIF_TYPE_ANNOUNCEMENTS, 3, NOTIFICATION_VERSION);
-                                generatNotificationFromFeed('https://github.com/countly/countly-sdk-android/releases.atom', anc, 15);
-                            }
-
-                            // (3.3) New community server release
-                            {
-                                const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.announcement-community-server-release", assistant.NOTIF_TYPE_ANNOUNCEMENTS, 4, NOTIFICATION_VERSION);
-                                generatNotificationFromFeed('https://github.com/Countly/countly-server/releases.atom', anc, 15);
-                            }
-
                             callback(null, null);
                         });
                     });
