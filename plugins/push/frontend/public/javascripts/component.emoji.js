@@ -40,7 +40,7 @@ window.component('emoji', function(emoji) {
 							element.innerHTML = ctrl.valueHTML();
 						}
 						ctrl.picker().listenOn(element.parentElement.querySelector('a'), element.parentElement, element);
-					} else if (ctrl.forcefocus()) {
+					} else if (ctrl.forcefocus() && ctrl.value() !== ctrl.picker().getText()) {
 						element.focus();
 						if (typeof window.getSelection != 'undefined' && typeof document.createRange != 'undefined') {
 							var range = document.createRange();
@@ -62,8 +62,10 @@ window.component('emoji', function(emoji) {
 					ctrl.value(ctrl.picker().getText());
 				},
 				onkeyup: function(){
-					ctrl.valueHTML(this.innerHTML);
-					ctrl.value(ctrl.picker().getText());
+					if (ctrl.value() !== ctrl.picker().getText()) {
+						ctrl.valueHTML(this.innerHTML);
+						ctrl.value(ctrl.picker().getText());
+					}
 				},
 				onfocus: function(){
 					ctrl.forcefocus(true);
