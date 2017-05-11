@@ -37,6 +37,7 @@ window.AssistantView = {
             icon_styling_class: 'assistant_icon_regular'
         };
 
+        //-- related to assistant notification button
         //check if notification notification should be shown
         var arrLen = data.notifications.length;
         this.earliestDataTimestamp = 0;
@@ -59,15 +60,13 @@ window.AssistantView = {
         }
 
         var self = this;
-
         $("#assistant-menu").on("click", function(){
             $(notificationButtonID).removeClass("unread");
             store.set("earliestViewedNotificationTimestamp", self.earliestDataTimestamp);
         });
-
+        //----
 
         var changeNotification = function (id, is_private, is_save, parent) {
-
             if(typeof Countly !== "undefined") {
                 var nAction = is_save ? "save" : "unsave";
                 var nKey = is_private ? "assistant-change-status-private" : "assistant-change-status-global";
@@ -121,17 +120,21 @@ window.AssistantView = {
             $("#assistant-tabs").tabs({
                 selected: store.get("assistant_tab") || 0,
                 show: function( event, ui ) {
+                    var lastTabIndex = store.get("assistant_tab");
                     store.set("assistant_tab", ui.index);
 
                     var tabName = ["all", "saved-private", "saved-global"][ui.index];
-                    if(typeof Countly !== "undefined") {
-                        Countly.q.push(['add_event', {
-                            "key": "assistant-click-tab",
-                            "count": 1,
-                            "segmentation": {
-                                "tab_name" : tabName
-                            }
-                        }]);
+                    if(lastTabIndex != ui.index) {
+                        //if the user has clicked on a different tab and this is not just from a refresh
+                        if (typeof Countly !== "undefined") {
+                            Countly.q.push(['add_event', {
+                                "key": "assistant-click-tab",
+                                "count": 1,
+                                "segmentation": {
+                                    "tab_name": tabName
+                                }
+                            }]);
+                        }
                     }
                 }
             });
