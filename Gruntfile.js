@@ -167,6 +167,17 @@ module.exports = function(grunt) {
   	var plugins = require('./plugins/plugins.json'), js = [], css = [], img = [], fs = require('fs'), path = require('path');
   	console.log('Preparing production files for following plugins: %j', plugins);
 
+  	if (plugins.indexOf('push') !== -1) {
+  		if (plugins.indexOf('geo') !== -1) {
+  			plugins.splice(plugins.indexOf('geo'), 1);
+  			plugins.push('geo');
+  		}
+  		if (plugins.indexOf('push_approver') !== -1) {
+  			plugins.splice(plugins.indexOf('push_approver'), 1);
+  			plugins.push('push_approver');
+  		}
+  	}
+
   	plugins.forEach(function(plugin){
   		var files, pluginPath = path.join(__dirname, 'plugins', plugin),
   			javascripts = path.join(pluginPath, 'frontend/public/javascripts'),
