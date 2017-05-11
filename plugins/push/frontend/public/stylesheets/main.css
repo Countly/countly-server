@@ -1298,8 +1298,10 @@ table.d-table .nothing { opacity: 0.3; }
   font-size: 14px; }
 
 .default-content > span {
-  color: #000000 !important;
-  line-height: 30px; }
+  color: #777 !important;
+  line-height: 30px; 
+  font-weight: normal;
+}
 
 .emoji-preview {
   position: absolute;

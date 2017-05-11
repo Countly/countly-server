@@ -652,6 +652,7 @@ window.component('push.popup', function(popup) {
 
 // http://n-v-gogol.ru/books/item/f00/s00/z0000003/pic/000018.jpg
 // http://www.html5videoplayer.net/videos/toystory.mp4
+// http://hubblesource.stsci.edu/sources/video/clips/details/images/sn1987a_2.mpg
 // http://trump-mp3.ru/music/e3acf946df41af45d537fb3b9d0f8606.mp3
 // http://trump-mp3.ru/music/33847e55e09374d07af038609c5f4ebb.mp3
 				},
