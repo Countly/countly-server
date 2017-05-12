@@ -1,0 +1,51 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+#export CXX="g++-4.8"
+#export CC="gcc-4.8"
+
+override_dh_auto_build:
+        cp frontend/express/public/javascripts/countly/countly.config.sample.js frontend/express/public/javascripts/countly/countly.config.js
+        cp api/config.sample.js api/config.js
+        cp frontend/express/config.sample.js frontend/express/config.js
+        cp plugins/plugins.default.json plugins/plugins.json
+        npm install
+        /usr/lib/node_modules/npm/bin/node-gyp-bin/node-gyp rebuild -C plugins/push/api/parts/apn
+        node bin/scripts/install_plugins
+        node_modules/grunt-cli/bin/grunt dist-all
+
+override_dh_auto_install: DIR=$(CURDIR)/debian/countly/opt/countly
+override_dh_auto_install:
+        mkdir -p $(DIR)
+        cp AGPLv3 $(DIR)
+        cp CHANGELOG.md $(DIR)
+        cp CONTRIBUTING.md $(DIR)
+        cp Dockerfile $(DIR)
+        cp Gruntfile.js $(DIR)
+        cp LICENSE $(DIR)
+        cp README.md $(DIR)
+        cp -r api $(DIR)
+        cp -r bin $(DIR)
+        cp -r extend $(DIR)
+        cp -r frontend $(DIR)
+        cp -r log $(DIR)
+        cp -r node_modules $(DIR)
+        cp package.json $(DIR)
+        cp -r plugins $(DIR)
+        cp -r test $(DIR)
+
+#override_dh_auto_installinfo:
+
+#override_dh_usrlocal:
+
+#override_dh_auto_installdocs:
+
+#override_dh_installdocs:
+
+%:
+        dh $@ 
+
+
+
