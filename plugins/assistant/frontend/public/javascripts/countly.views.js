@@ -220,7 +220,7 @@ $(document).ready(function() {
         if (!$("#assistant-menu").hasClass("clicked")) {
             AssistantView.initialize(true);
         }
-    }, 10000);
+    }, 60000);
 
     app.addAppSwitchCallback(function(appId){
         AssistantView.initialize();
