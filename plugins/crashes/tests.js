@@ -1222,7 +1222,7 @@ describe('Testing Crashes', function(){
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
-                var parts = res.text.split("var data = ");
+                var parts = res.text.split("var crash_data = ");
                 parts.should.have.lengthOf(2);
                 var data = parts[1].split(";\nwindow.CrashgroupView")[0];
 				var ob = JSON.parse(data);
@@ -1263,7 +1263,7 @@ describe('Testing Crashes', function(){
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
-                var parts = res.text.split("var data = ");
+                var parts = res.text.split("var crash_data = ");
                 parts.should.have.lengthOf(2);
                 var data = parts[1].split(";\nwindow.CrashgroupView")[0];
 				var ob = JSON.parse(data);
@@ -1528,7 +1528,7 @@ describe('Testing Crashes', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('version','1.2');
+				ob.should.have.property(CRASHES[0],'1.2');
 				setTimeout(done, 3000);
 			});
 		});
@@ -1901,7 +1901,7 @@ describe('Testing Crashes', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('version','1.3');
+				ob.should.have.property(CRASHES[0],'1.3');
 				setTimeout(done, 3000);
 			});
 		});

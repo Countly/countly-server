@@ -12,7 +12,7 @@ describe('Empty Api test', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'Missing parameter &quot;app_key&quot; or &quot;device_id&quot;');
+				ob.should.have.property('result', 'Missing parameter "app_key" or "device_id"');
 				done()
 			});
 		});
@@ -25,7 +25,7 @@ describe('Empty Api test', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'Missing parameter &quot;api_key&quot;');
+				ob.should.have.property('result', 'Missing parameter "api_key"');
 				done()
 			});
 		});

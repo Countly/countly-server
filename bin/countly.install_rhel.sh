@@ -6,19 +6,12 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-echo "
-   ______                  __  __         ______      __                       _
-  / ____/___  __  ______  / /_/ /_  __   / ____/___  / /____  _________  _____(_)_______
- / /   / __ \/ / / / __ \/ __/ / / / /  / __/ / __ \/ __/ _ \/ ___/ __ \/ ___/ / ___/ _ \\
-/ /___/ /_/ / /_/ / / / / /_/ / /_/ /  / /___/ / / / /_/  __/ /  / /_/ / /  / (__  )  __/
-\____/\____/\__,_/_/ /_/\__/_/\__, /  /_____/_/ /_/\__/\___/_/  / .___/_/  /_/____/\___/
-              http://count.ly/____/                            /_/
-
-"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+bash $DIR/scripts/logo.sh;
+
 #install nginx
-yum -y install wget openssl-devel gcc-c++-4.8.5 make
+yum -y install wget openssl-devel gcc-c++-4.8.5 make git
 if grep -q -i "release 6" /etc/redhat-release ; then
 	echo "[nginx]
 name=nginx repo
@@ -74,7 +67,7 @@ service sendmail start
 #install new gcc
 if grep -q -i "release 6" /etc/redhat-release ; then
     echo "updating gcc to devtoolset-2..."
-    sudo rpm --import http://ftp.scientificlinux.org/linux/scientific/5x/x86_64/RPM-GPG-KEYs/RPM-GPG-KEY-cern
+    sudo rpm --import http://ftp.riken.jp/Linux/cern/centos/7.1/os/x86_64/RPM-GPG-KEY-cern
     yum install -y wget 
     wget -O /etc/yum.repos.d/slc6-devtoolset.repo http://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo
     yum install -y devtoolset-2-gcc devtoolset-2-gcc-c++ devtoolset-2-binutils

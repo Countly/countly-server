@@ -28,7 +28,7 @@ class StatsJob extends job.Job {
                             var months = {};
                             for(var i = 0; i < 3; i++){
                                 months[utcMoment.format("YYYY:M")] = true;
-                                utcMoment.subtract('months',1);
+                                utcMoment.subtract(1, 'months');
                             }
                             for(var i = 0; i < allData.length; i++){
                                 data.all += allData[i].e + allData[i].s;

@@ -127,7 +127,7 @@
 
     countlyEvent.refreshEvents = function () {
         if (!countlyCommon.DEBUG) {
-            $.ajax({
+            return $.ajax({
                 type:"GET",
                 url:countlyCommon.API_PARTS.data.r,
                 data:{

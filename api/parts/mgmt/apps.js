@@ -111,6 +111,11 @@ var appsApi = {},
             common.returnMessage(params, 400, 'Not enough args');
             return false;
         }
+        
+        for(var i in params.qstring.args){
+            if(typeof newApp[i] === "undefined")
+                newApp[i] = params.qstring.args[i];
+        }
 
         processAppProps(newApp);
         
@@ -150,6 +155,11 @@ var appsApi = {},
         if (!(updatedApp = common.validateArgs(params.qstring.args, argProps))) {
             common.returnMessage(params, 400, 'Not enough args');
             return false;
+        }
+        
+        for(var i in params.qstring.args){
+            if(typeof updatedApp[i] === "undefined" && i != "app_id")
+                updatedApp[i] = params.qstring.args[i];
         }
 
         if (Object.keys(updatedApp).length === 0) {
@@ -343,7 +353,7 @@ var appsApi = {},
             dates[now.format('YYYY')+":0"+"_"+common.base64[i]] = true;
         }
         for(var i = 0; i < back; i++){
-            skip[appId+"_"+now.subtract("months", 1).format('YYYY:M')] = true;
+            skip[appId+"_"+now.subtract(1, "months").format('YYYY:M')] = true;
             skip[appId+"_"+now.format('YYYY')+":0"] = true;
             dates[now.format('YYYY:M')] = true;
             dates[now.format('YYYY')+":0"] = true;

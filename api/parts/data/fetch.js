@@ -1,10 +1,17 @@
+/**
+* This module is meant from fetching data from db and processing and outputting
+* @module api/parts/data/fetch
+*/
+
+/** @lends module:api/parts/data/fetch */
 var fetch = {},
     common = require('./../../utils/common.js'),
     async = require('async'),
-    countlySession = require('../../lib/countly.session.js'),
-    countlyCarrier = require('../../lib/countly.carrier.js'),
-    countlyDeviceDetails = require('../../lib/countly.device.detail.js'),
-    countlyLocation = require('../../lib/countly.location.js'),
+    countlyModel = require('../../lib/countly.model.js'),
+    countlySession = countlyModel.load("users"),
+    countlyCarrier = countlyModel.load("carriers"),
+    countlyDeviceDetails = countlyModel.load("device_details"),
+    countlyLocation = countlyModel.load("countries"),
     countlyCommon = require('../../lib/countly.common.js'),
     moment = require('moment'),
     _ = require('underscore'),
@@ -72,16 +79,35 @@ var fetch = {},
             common.returnOutput(params, result);
         });
     };
-
+    
     fetch.fetchMergedEventData = function (params) {
+        fetch.getMergedEventData(params, params.qstring.events, {}, function(result){
+            common.returnOutput(params, result);
+        });
+    };
+
+    /**
+    * Get merged data from multiple events in standard data model
+    * @param {params} params - params object with app_id and date
+    * @param {array} events - array with event keys
+    * @param {object=} options - additional optional settings
+    * @param {object=} options.db - database connection to use, by default will try to use common.db
+    * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
+    * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
+    * @param {object=} options.levels - describes which metrics to expect on which levels
+    * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+    * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+    * @param {function} callback - callback to retrieve the data, receiving only one param which is output
+    */
+    fetch.getMergedEventData = function (params, events, options, callback) {
         var eventKeysArr = [];
 
-        for (var i = 0; i < params.qstring.events.length; i++) {
-            eventKeysArr.push(params.qstring.events[i] + params.app_id);
+        for (var i = 0; i < events.length; i++) {
+            eventKeysArr.push(events[i] + params.app_id);
         }
 
         if (!eventKeysArr.length) {
-            common.returnOutput(params, {});
+            callback({});
         } else {
             async.map(eventKeysArr, getEventData, function (err, allEventData) {
                 var mergedEventOutput = {};
@@ -154,13 +180,13 @@ var fetch = {},
                     }
                 }
 
-                common.returnOutput(params, mergedEventOutput);
+                callback(mergedEventOutput);
             });
         }
 
         function getEventData(eventKey, callback) {
             var collectionName = "events" + crypto.createHash('sha1').update(eventKey).digest('hex');
-			fetchTimeObj(collectionName, params, true, function(output) {
+			fetchTimeObj(collectionName, params, true, options, function(output) {
 				callback(null, output || {});
 			});
         }
@@ -239,10 +265,10 @@ var fetch = {},
                                     data: {
                                         dashboard: countlySession.getSessionData(),
                                         top: {
-                                            platforms: countlyDeviceDetails.getPlatformBars(),
-                                            resolutions: countlyDeviceDetails.getResolutionBars(),
-                                            carriers: countlyCarrier.getCarrierBars(),
-                                            users: countlySession.getTopUserBars()
+                                            platforms: countlyDeviceDetails.getBars("os"),
+                                            resolutions: countlyDeviceDetails.getBars("resolutions"),
+                                            carriers: countlyCarrier.getBars("carriers"),
+                                            users: countlySession.getBars()
                                         },
                                         period: countlyCommon.getDateRange()
                                     }
@@ -306,7 +332,7 @@ var fetch = {},
                 ],
                 dataProps = [];
                 dataProps.push(props);
-                return countlyCommon.extractChartData(db, countlySession.clearSessionObject, chartData, dataProps).chartDP[0].data;
+                return countlyCommon.extractChartData(db, countlySession.clearObject, chartData, dataProps).chartDP[0].data;
             }
 
             function setAppId(inAppId) {
@@ -361,10 +387,10 @@ var fetch = {},
 					countlyLocation.setDb(usersDoc || {});
 
                     var output = {
-						platforms: countlyDeviceDetails.getPlatformBars(),
-						resolutions: countlyDeviceDetails.getResolutionBars(),
-						carriers: countlyCarrier.getCarrierBars(),
-						countries: countlyLocation.getLocationBars()
+						platforms: countlyDeviceDetails.getBars("os"),
+						resolutions: countlyDeviceDetails.getBars("resolutions"),
+						carriers: countlyCarrier.getBars("carriers"),
+						countries: countlyLocation.getBars("countries")
                     };
 
                     common.returnOutput(params, output);
@@ -454,6 +480,30 @@ var fetch = {},
 		});
     };
 	
+    /**
+    * Get metric segment data from database, merging year and month and splitted docments together and breaking down data by segment
+    * @param {params} params - params object with app_id and date
+    * @param {string} metric - name of the collection where to get data from
+    * @param {object} totalUsersMetric - data from total users api request to correct unique user values
+    * @param {function} callback - callback to retrieve the data, receiving only one param which is output
+    * @example <caption>Retrieved data</caption>
+    * [
+    *    {"_id":"Cricket Communications","t":37,"n":21,"u":34},
+    *    {"_id":"Tele2","t":32,"n":19,"u":31},
+    *    {"_id":"\tAt&amp;t","t":32,"n":20,"u":31},
+    *    {"_id":"O2","t":26,"n":19,"u":26},
+    *    {"_id":"Metro Pcs","t":28,"n":13,"u":26},
+    *    {"_id":"Turkcell","t":23,"n":11,"u":23},
+    *    {"_id":"Telus","t":22,"n":15,"u":22},
+    *    {"_id":"Rogers Wireless","t":21,"n":13,"u":21},
+    *    {"_id":"Verizon","t":21,"n":11,"u":21},
+    *    {"_id":"Sprint","t":21,"n":11,"u":20},
+    *    {"_id":"Vodafone","t":22,"n":12,"u":19},
+    *    {"_id":"Orange","t":18,"n":12,"u":18},
+    *    {"_id":"T-mobile","t":17,"n":9,"u":17},
+    *    {"_id":"Bell Canada","t":12,"n":6,"u":12}
+    * ]
+    */
 	fetch.getMetric = function(params, metric, totalUsersMetric, callback){
         var queryMetric = params.qstring.metric || metric;
         countlyCommon.setTimezone(params.appTimezone);
@@ -549,10 +599,36 @@ var fetch = {},
         });
     };
     
+    /**
+    * Get Countly standard data model from database for segments or single level data as users, merging year and month and splitted docments together
+    * @param {string} collection - name of the collection where to get data from
+    * @param {params} params - params object with app_id and date
+    * @param {object=} options - additional optional settings
+    * @param {object=} options.db - database connection to use, by default will try to use common.db
+    * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
+    * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
+    * @param {object=} options.levels - describes which metrics to expect on which levels
+    * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+    * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+    * @param {function} callback - callback to retrieve the data, receiving only one param which is output
+    */
     fetch.getTimeObj = function (collection, params, options, callback) {
         fetchTimeObj(collection, params, null, options, callback);
     };
 
+    /**
+    * Get Countly standard data model from database for events, merging year and month and splitted docments together
+    * @param {string} collection - name of the collection where to get data from
+    * @param {params} params - params object with app_id and date
+    * @param {object=} options - additional optional settings
+    * @param {object=} options.db - database connection to use, by default will try to use common.db
+    * @param {string=} options.unique - name of the metric to treat as unique, default "u" from common.dbMap.unique
+    * @param {string=} options.id - id to use as prefix from documents, by default will use params.app_id
+    * @param {object=} options.levels - describes which metrics to expect on which levels
+    * @param {array=} options.levels.daily - which metrics to expect on daily level, default ["t", "n", "c", "s", "dur"]
+    * @param {array=} options.levels.monthly - which metrics to expect on monthly level, default ["t", "n", "d", "e", "c", "s", "dur"]
+    * @param {function} callback - callback to retrieve the data, receiving only one param which is output
+    */
     fetch.getTimeObjForEvents = function (collection, params, options, callback) {
         fetchTimeObj(collection, params, true, options, callback);
     };
@@ -563,6 +639,12 @@ var fetch = {},
         });
     };
 
+    /**
+    * Get data for estimating total users count if period contains today
+    * @param {string} metric - name of the collection where to get data from
+    * @param {params} params - params object with app_id and date
+    * @param {function} callback - callback to retrieve the data, receiving only one param which is output
+    */
     fetch.getTotalUsersObj = getTotalUsersObj;
 
     function getTotalUsersObj(metric, params, callback) {
@@ -721,6 +803,9 @@ var fetch = {},
             options = {};
         }
         
+        if(typeof options.db === "undefined")
+            options.db = common.db;
+        
         if(typeof options.unique === "undefined")
             options.unique = common.dbMap.unique;
         
@@ -789,8 +874,8 @@ var fetch = {},
                 monthDocs.push(monthIdToFetch+"_"+common.base64[i]);
             }
 
-            common.db.collection(collection).find({'_id': {$in: zeroDocs}}, fetchFromZero).toArray(function(err, zeroObject) {
-                common.db.collection(collection).find({'_id': {$in: monthDocs}}, fetchFromMonth).toArray(function(err, monthObject) {
+            options.db.collection(collection).find({'_id': {$in: zeroDocs}}, fetchFromZero).toArray(function(err, zeroObject) {
+                options.db.collection(collection).find({'_id': {$in: monthDocs}}, fetchFromMonth).toArray(function(err, monthObject) {
                     callback(getMergedObj(zeroObject.concat(monthObject), true, options.levels));
                 });
             });
@@ -830,7 +915,7 @@ var fetch = {},
                 }
             }
 
-            common.db.collection(collection).find({'_id': {$in: documents}}, {}).toArray(function(err, dataObjects) {
+            options.db.collection(collection).find({'_id': {$in: documents}}, {}).toArray(function(err, dataObjects) {
                 callback(getMergedObj(dataObjects, false, options.levels));
             });
         }
@@ -979,7 +1064,7 @@ var fetch = {},
                 dateName = date.year() + "." + (date.month() + 1) + "." + date.format("D");
                 break;
             case"weekly":
-                dateName = date.isoyear() + ".w" + date.isoweek();
+                dateName = date.isoWeekYear() + ".w" + date.isoWeek();
                 break;
             case "monthly":
                 dateName = date.year() + ".m" +  (date.month() + 1);

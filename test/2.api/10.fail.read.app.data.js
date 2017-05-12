@@ -19,7 +19,7 @@ describe('Failing app data reading', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'Missing parameter &quot;api_key&quot;');
+				ob.should.have.property('result', 'Missing parameter "api_key"');
 				done()
 			});
 		});
@@ -32,7 +32,7 @@ describe('Failing app data reading', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'Missing parameter &quot;app_id&quot;');
+				ob.should.have.property('result', 'Missing parameter "app_id"');
 				done()
 			});
 		});

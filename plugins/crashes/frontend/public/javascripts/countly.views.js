@@ -1,4 +1,37 @@
 window.CrashesView = countlyView.extend({
+    convertFilter: {
+        "sg.crash":{prop:"_id", type:"string"},
+        "sg.cpu":{prop:"cpu", type:"segment"},
+        "sg.opengl":{prop:"opengl", type:"segment"},
+        "sg.os":{prop:"os", type:"string"},
+        "sg.orientation":{prop:"orientation", type:"segment"},
+        "sg.nonfatal":{prop:"nonfatal", type:"booltype"},
+        "sg.root":{prop:"root", type:"boolsegment"},
+        "sg.online":{prop:"online", type:"boolsegment"},
+        "sg.signal":{prop:"signal", type:"boolsegment"},
+        "sg.muted":{prop:"muted", type:"boolsegment"},
+        "sg.background":{prop:"background", type:"boolsegment"},
+        "up.d":{prop:"device", type:"segment"},
+        "up.pv":{prop:"os_version", type:"segment"},
+        "up.av":{prop:"app_version", type:"segment"},
+        "up.r":{prop:"resolution", type:"segment"},
+        "up.ls":{prop:"lastTs", type:"date"},
+        "up.fs":{prop:"startTs", type:"date"},
+        "is_new":{prop:"is_new", type:"booltype"},
+        "is_resolved":{prop:"is_resolved", type:"booltype"},
+        "is_hidden":{prop:"is_hidden", type:"booltype"},
+        "is_renewed":{prop:"is_renewed", type:"booltype"},
+        "reports":{prop:"reports", type:"number"},
+        "users":{prop:"reports", type:"number"},
+        "ram_min":{prop:"ram.min", type:"number"},
+        "ram_max":{prop:"ram.max", type:"number"},
+        "bat_min":{prop:"bat.min", type:"number"},
+        "bat_max":{prop:"bat.max", type:"number"},
+        "disk_min":{prop:"disk.min", type:"number"},
+        "disk_max":{prop:"disk.max", type:"number"},
+        "run_min":{prop:"run.min", type:"number"},
+        "run_max":{prop:"run.max", type:"number"}
+    },
 	initialize:function () {
         this.loaded = true;
 		this.filter = (store.get("countly_crashfilter")) ? store.get("countly_crashfilter") : "crash-all";
@@ -12,6 +45,8 @@ window.CrashesView = countlyView.extend({
 		};
     },
     beforeRender: function() {
+        this.selectedCrashes = {};
+        this.selectedCrashesIds = [];
 		if(this.template)
 			return $.when(countlyCrashes.initialize()).then(function () {});
 		else{
@@ -20,6 +55,304 @@ window.CrashesView = countlyView.extend({
 				self.template = Handlebars.compile(src);
 			}), countlyCrashes.initialize()).then(function () {});
 		}
+    },
+    processData:function(){
+        var self = this;
+        var crashData = countlyCrashes.getData();
+        this.dtable = $('#crash-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            "bServerSide": true,
+            "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key="+countlyGlobal.member.api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID+"&method=crashes",
+            "fnServerData": function ( sSource, aoData, fnCallback ) {
+                $.ajax({
+                    "dataType": 'jsonp',
+                    "type": "POST",
+                    "url": sSource,
+                    "data": aoData,
+                    "success": function(data){
+                        fnCallback(data);
+                        $("#view-filter .bar-values").text(jQuery.i18n.prop('crashes.of-users', data.iTotalDisplayRecords, data.iTotalRecords));
+                        $("#view-filter .bar span").text(Math.floor((data.iTotalDisplayRecords/data.iTotalRecords)*100)+"%");
+                        $("#view-filter .bar .bar-inner").animate({width: Math.floor((data.iTotalDisplayRecords/data.iTotalRecords)*100)+"%"}, 1000);
+                    }
+                });
+            },
+            "fnServerParams": function ( aoData ) {
+                if(self.filter){
+                    aoData.push( { "name": "filter", "value": self.filter } );
+                }
+                if(self._query){
+                    aoData.push({ "name": "query", "value": JSON.stringify(self._query) });
+                }
+            },
+			"fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+				$(nRow).attr("id", aData._id);
+
+                if(aData.is_resolved)
+                    $(nRow).addClass("resolvedcrash");
+				else if(aData.is_new)
+					$(nRow).addClass("newcrash");
+                else if(aData.is_renewed)
+                    $(nRow).addClass("renewedcrash");
+
+                $(nRow).find(".tag").tipsy({gravity: 'w'});
+			},
+            "aoColumns": [
+                { "mData": function(row, type){
+                    if(self.selectedCrashes[row._id])
+                        return "<a class='fa fa-check-square check-green'></a>";
+                    else
+                        return "<a class='fa fa-square-o check-green'></a>";
+                }, "sType":"numeric", "sClass":"center", "sWidth": "30px", "bSortable": false, "sTitle": "<a class='fa fa-square-o check-green check-header'></a>"},
+                {
+                    "mData": function(row, type) {
+                        if(type !== "display")
+                            return row.name;
+                        var tagDivs = "";
+
+                        // This separator is not visible in the UI but | is visible in exported data
+                        var separator = "<span class='separator'>|</span>";
+
+                        if (row.is_resolved) {
+                            tagDivs += separator + "<div class='tag'>" + "<span style='color:green;'>" + jQuery.i18n.map["crashes.resolved"] + " (" + row.latest_version.replace(/:/g, '.') + ")</span>" + "</div>";
+                        } else {
+                            tagDivs += separator + "<div class='tag'>" + "<span style='color:red;'>" + jQuery.i18n.map["crashes.unresolved"] + "</span>" + "</div>";
+                        }
+
+                        if (row.nonfatal) {
+                            tagDivs += separator + "<div class='tag'>" + jQuery.i18n.map["crashes.nonfatal"] + "</div>";
+                        } else {
+                            tagDivs += separator + "<div class='tag'>" + jQuery.i18n.map["crashes.fatal"] + "</div>";
+                        }
+
+                        if (row.session) {
+                            tagDivs += separator + "<div class='tag'>" + ((Math.round(row.session.total / row.session.count) * 100) / 100) + " " + jQuery.i18n.map["crashes.sessions"] + "</div>";
+                        } else {
+                            tagDivs += separator + "<div class='tag'>" + jQuery.i18n.map["crashes.first-crash"] + "</div>";
+                        }
+
+                        tagDivs += "<div class='tag not-viewed' title='" + jQuery.i18n.map["crashes.not-viewed"] + "'><i class='fa fa-eye-slash'></i></div>";
+                        tagDivs += "<div class='tag re-occurred' title='" + jQuery.i18n.map["crashes.re-occurred"] + "'><i class='fa fa-refresh'></i></div>";
+
+                        return "<div class='truncated'>" + row.name + "</div>" + tagDivs;
+                    },
+                    "sType": "string",
+                    "sTitle": jQuery.i18n.map["crashes.error"]
+                },
+                {
+                    "mData": function(row, type) {
+                        return (row.not_os_specific) ? jQuery.i18n.map["crashes.varies"] : row.os;
+                    },
+                    "sType": "string",
+                    "sTitle": jQuery.i18n.map["crashes.platform"],
+                    "sWidth": "90px"
+                },
+                {
+                    "mData": "reports",
+                    "sType": "numeric",
+                    "sTitle": jQuery.i18n.map["crashes.reports"],
+                    "sWidth": "90px"
+                },
+                {
+                    "mData": function(row, type) {
+                        row.users = row.users || 1;
+                        if (type == "display") {
+                            return row.users + " (" + ((row.users / crashData.users.total) * 100).toFixed(2) + "%)";
+                        } else {
+                            return row.users;
+                        }
+                    },
+                    "sType": "string",
+                    "sTitle": jQuery.i18n.map["crashes.users"],
+                    "sWidth": "90px"
+                },
+                {
+                    "mData": function(row, type) {
+                        if (type == "display") {
+                            return countlyCommon.formatTimeAgo(row.lastTs);
+                        } else {
+                            return row.lastTs;
+                        }
+                    },
+                    "sType": "format-ago",
+                    "sTitle": jQuery.i18n.map["crashes.last_time"],
+                    "sWidth": "150px"
+                },
+                {
+                    "mData": function(row, type) {
+                        return row.latest_version.replace(/:/g, '.');
+                    },
+                    "sType": "string",
+                    "sTitle": jQuery.i18n.map["crashes.latest_app"],
+                    "sWidth": "90px"
+                },
+                { "mData": function(row, type){return "<a class='table-link green' href='" + window.location.hash.toString() + "/" + row._id + "'>" + jQuery.i18n.map["common.view"] + "</a>"; }, "sType":"numeric", "sClass":"center", "sWidth": "90px", "bSortable": false}
+            ],
+            "fnInitComplete": function(oSettings, json) {
+                $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
+                var tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
+                tableWrapper.find(".dataTables_filter input").attr("placeholder",jQuery.i18n.map["crashes.search"]);
+
+                // init sticky headers here in order to wait for correct
+                // table width (for multi select checkboxes to render)
+                self.dtable.stickyTableHeaders();
+            }
+        }));
+
+		this.dtable.fnSort( [ [5,'desc'] ] );
+        this.dtable.find("thead .check-green").click(function(){
+            if($(this).hasClass("fa-check-square")){
+                $(".sticky-header .check-green").removeClass("fa-check-square").addClass("fa-square-o");
+                self.dtable.find(".check-green").removeClass("fa-check-square").addClass("fa-square-o");
+                self.selectedCrashesIds = [];
+                self.selectedCrashes = {};
+                $(".action-segmentation").addClass("disabled");
+            }
+            else{
+                $(".sticky-header .check-green").removeClass("fa-square-o").addClass("fa-check-square");
+                self.dtable.find(".check-green").removeClass("fa-square-o").addClass("fa-check-square");
+                self.dtable.find(".check-green").parents("tr").each(function(){
+                    var id = $(this).attr("id");
+                    if(id){
+                        if(!self.selectedCrashes[id]){
+                            self.selectedCrashesIds.push(id);
+                        }
+                        self.selectedCrashes[id] = true;
+                        $(".action-segmentation").removeClass("disabled");
+                    }
+                });
+            }
+        });
+        $('.crashes tbody').on("click", "tr", function (){
+			var id = $(this).attr("id");
+            if(id){
+                if(self.selectedCrashes[id]){
+                    $(this).find(".check-green").removeClass("fa-check-square").addClass("fa-square-o");
+                    self.selectedCrashes[id] = null;
+                    var index = self.selectedCrashesIds.indexOf(id);
+                    if(index !== -1)
+                        self.selectedCrashesIds.splice(index, 1);
+                }
+                else{
+                    self.selectedCrashes[id] = true;
+                    self.selectedCrashesIds.push(id);
+                    $(this).find(".check-green").removeClass("fa-square-o").addClass("fa-check-square");
+                }
+                
+                if(self.selectedCrashesIds.length)
+                    $(".action-segmentation").removeClass("disabled");
+                else
+                    $(".action-segmentation").addClass("disabled");
+            }
+		});
+        
+        $(".filter-segmentation").on("cly-select-change", function (e, val) {
+            self.filterCrashes(val);
+        });
+        $(".action-segmentation").on("cly-select-change", function (e, val) {
+            if(val != ""){
+                $(".action-segmentation").clySelectSetSelection("",jQuery.i18n.map["crashes.make-action"]);
+                if(val === "crash-resolve"){
+                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-resolved", self.selectedCrashesIds.length), "red", function (result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyCrashes.markResolve(self.selectedCrashesIds, function(data){
+                            if(!data){
+                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                            }
+                            else{
+                                self.resetSelection(true);
+                            }
+                        });
+                    });
+                }
+                else if(val === "crash-unresolve"){
+                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-unresolved", self.selectedCrashesIds.length), "red", function (result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyCrashes.markUnresolve(self.selectedCrashesIds, function(data){
+                            if(!data){
+                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                            }
+                            else{
+                                self.resetSelection(true);
+                            }
+                        });
+                    });
+                }
+                else if(val === "crash-view"){
+                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-view", self.selectedCrashesIds.length), "red", function (result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyCrashes.markSeen(self.selectedCrashesIds, function(data){
+                            if(!data){
+                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                            }
+                            else{
+                                self.resetSelection(true);
+                            }
+                        });
+                    });
+                }
+                else if(val === "crash-hide"){
+                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-hide", self.selectedCrashesIds.length), "red", function (result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyCrashes.hide(self.selectedCrashesIds, function(data){
+                            if(!data){
+                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                            }
+                            else{
+                                self.resetSelection(true);
+                            }
+                        });
+                    });
+                }
+                else if(val === "crash-show"){
+                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-show", self.selectedCrashesIds.length), "red", function (result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyCrashes.show(self.selectedCrashesIds, function(data){
+                            if(!data){
+                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                            }
+                            else{
+                                self.resetSelection(true);
+                            }
+                        });
+                    });
+                }
+                else if(val === "crash-delete"){
+                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-delete", self.selectedCrashesIds.length), "red", function (result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyCrashes.del(self.selectedCrashesIds, function(data){
+                            if(!data){
+                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                            }
+                            else{
+                                self.resetSelection(true);
+                            }
+                        });
+                    });
+                }
+            }
+        });
+    },
+    resetSelection: function(flash){
+        if(flash){
+            this.dtable.find(".fa-check-square.check-green").parents("tr").addClass("flash");
+        }
+        this.selectedCrashesIds = [];
+        this.selectedCrashes = {};
+        this.dtable.find(".check-green").removeClass("fa-check-square").addClass("fa-square-o");
+        $(".action-segmentation").addClass("disabled");
+        this.refresh();
     },
     renderCommon:function (isRefresh) {
         var crashData = countlyCrashes.getData();
@@ -30,31 +363,31 @@ window.CrashesView = countlyView.extend({
             "usage":[
 				{
 					"title":jQuery.i18n.map["crashes.total"],
-					"data":dashboard.usage['total'],
+					"data":dashboard.usage['cr'],
 					"id":"crash-cr",
                     "help":"crashes.help-total"
 				},
 				{
 					"title":jQuery.i18n.map["crashes.unique"],
-					"data":dashboard.usage['unique'],
+					"data":dashboard.usage['cru'],
 					"id":"crash-cru",
                     "help":"crashes.help-unique"
 				},
 				{
 					"title":jQuery.i18n.map["crashes.nonfatal"]+" "+jQuery.i18n.map["crashes.title"],
-					"data":dashboard.usage['nonfatal'],
+					"data":dashboard.usage['crnf'],
 					"id":"crash-crnf",
                     "help":"crashes.help-nonfatal"
 				},
 				{
 					"title":jQuery.i18n.map["crashes.fatal"]+" "+jQuery.i18n.map["crashes.title"],
-					"data":dashboard.usage['fatal'],
+					"data":dashboard.usage['crf'],
 					"id":"crash-crf",
                     "help":"crashes.help-fatal"
 				}/*,
 				{
 					"title":jQuery.i18n.map["crashes.resolved-users"],
-					"data":dashboard.usage['resolved'],
+					"data":dashboard.usage['crru'],
 					"id":"crash-crru",
                     "help":"crashes.help-resolved-users"
 				}*/
@@ -104,7 +437,10 @@ window.CrashesView = countlyView.extend({
                     "data": countlyCrashes.getFatalBars(),
                     "help":"crashes.help-fatals"
                 }
-            ]
+            ],
+            hasDrill: typeof this.initDrill !== "undefined",
+            "active-filter": jQuery.i18n.map["crashes.all"],
+            "active-action": jQuery.i18n.map["crashes.make-action"]
         };
         if(crashData.loss){
             this.templateData["loss"] = true;
@@ -118,150 +454,13 @@ window.CrashesView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
-			$("#"+this.filter).addClass("selected").addClass("active");
-			countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
-			this.dtable = $('#crash-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
-                "bServerSide": true,
-                "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key="+countlyGlobal.member.api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID+"&method=crashes",
-                "fnServerData": function ( sSource, aoData, fnCallback ) {
-                    $.ajax({
-                        "dataType": 'jsonp',
-                        "type": "POST",
-                        "url": sSource,
-                        "data": aoData,
-                        "success": function(data){
-                                fnCallback(data);
-                        }
-                    });
-                },
-                "fnServerParams": function ( aoData ) {
-                    if(self.filter){
-                        aoData.push( { "name": "filter", "value": self.filter } );
-                    }
-                    if(self._query){
-                        aoData.push({ "name": "query", "value": JSON.stringify(self._query) });
-                    }
-                },
-				"fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
-					$(nRow).attr("id", aData._id);
-
-                    if(aData.is_resolved)
-                        $(nRow).addClass("resolvedcrash");
-					else if(aData.is_new)
-						$(nRow).addClass("newcrash");
-                    else if(aData.is_renewed)
-                        $(nRow).addClass("renewedcrash");
-
-                    $(nRow).find(".tag").tipsy({gravity: 'w'});
-				},
-                "aoColumns": [
-                    {
-                        "mData": function(row, type) {
-                            var tagDivs = "";
-
-                            // This separator is not visible in the UI but | is visible in exported data
-                            var separator = "<span class='separator'>|</span>";
-
-                            if (row.is_resolved) {
-                                tagDivs += separator + "<div class='tag'>" + "<span style='color:green;'>" + jQuery.i18n.map["crashes.resolved"] + " (" + row.latest_version.replace(/:/g, '.') + ")</span>" + "</div>";
-                            } else {
-                                tagDivs += separator + "<div class='tag'>" + "<span style='color:red;'>" + jQuery.i18n.map["crashes.unresolved"] + "</span>" + "</div>";
-                            }
-
-                            if (row.nonfatal) {
-                                tagDivs += separator + "<div class='tag'>" + jQuery.i18n.map["crashes.nonfatal"] + "</div>";
-                            } else {
-                                tagDivs += separator + "<div class='tag'>" + jQuery.i18n.map["crashes.fatal"] + "</div>";
-                            }
-
-                            if (row.session) {
-                                tagDivs += separator + "<div class='tag'>" + ((Math.round(row.session.total / row.session.count) * 100) / 100) + " " + jQuery.i18n.map["crashes.sessions"] + "</div>";
-                            } else {
-                                tagDivs += separator + "<div class='tag'>" + jQuery.i18n.map["crashes.first-crash"] + "</div>";
-                            }
-
-                            tagDivs += "<div class='tag not-viewed' title='" + jQuery.i18n.map["crashes.not-viewed"] + "'><i class='fa fa-eye-slash'></i></div>";
-                            tagDivs += "<div class='tag re-occurred' title='" + jQuery.i18n.map["crashes.re-occurred"] + "'><i class='fa fa-refresh'></i></div>";
-
-                            return "<div class='truncated'>" + row.name + "</div>" + tagDivs;
-                        },
-                        "sType": "string",
-                        "sTitle": jQuery.i18n.map["crashes.error"],
-                        "bSortable": false
-                    },
-                    {
-                        "mData": function(row, type) {
-                            return (row.not_os_specific) ? jQuery.i18n.map["crashes.varies"] : row.os;
-                        },
-                        "sType": "string",
-                        "sTitle": jQuery.i18n.map["crashes.platform"],
-                        "sWidth": "90px"
-                    },
-                    {
-                        "mData": "reports",
-                        "sType": "numeric",
-                        "sTitle": jQuery.i18n.map["crashes.reports"],
-                        "sWidth": "90px"
-                    },
-                    {
-                        "mData": function(row, type) {
-                            row.users = row.users || 1;
-                            if (type == "display") {
-                                return row.users + " (" + ((row.users / crashData.users.total) * 100).toFixed(2) + "%)";
-                            } else {
-                                return row.users;
-                            }
-                        },
-                        "sType": "string",
-                        "sTitle": jQuery.i18n.map["crashes.users"],
-                        "sWidth": "90px"
-                    },
-                    {
-                        "mData": function(row, type) {
-                            if (type == "display") {
-                                return countlyCommon.formatTimeAgo(row.lastTs);
-                            } else {
-                                return row.lastTs;
-                            }
-                        },
-                        "sType": "format-ago",
-                        "sTitle": jQuery.i18n.map["crashes.last_time"],
-                        "sWidth": "150px"
-                    },
-                    {
-                        "mData": function(row, type) {
-                            return row.latest_version.replace(/:/g, '.');
-                        },
-                        "sType": "string",
-                        "sTitle": jQuery.i18n.map["crashes.latest_app"],
-                        "sWidth": "90px"
-                    }
-                ]
-            }));
-
-			this.dtable.stickyTableHeaders();
-			this.dtable.fnSort( [ [2,'desc'] ] );
-
-            //dataTables_filter
-            $('.dataTables_filter input').unbind();
-            var timeout = null,
-                that = this;
-
-            $('.dataTables_filter input').bind('keyup', function(e) {
-                $this = this;
-
-                if (timeout) {
-                    clearTimeout(timeout);
-                    timeout = null;
-                }
-
-                timeout = setTimeout(function(){
-                    that.dtable.fnFilter($this.value);   
-                }, 500);
+            $("#total-user-estimate-ind").on("click", function() {
+                CountlyHelpers.alert(jQuery.i18n.map["common.estimation"], "black");
             });
-            
-            setTimeout(function(){$(".dataTables_filter input").attr("placeholder",jQuery.i18n.map["crashes.search"]);},1000);
-            
+
+            $(".filter-segmentation").clySelectSetSelection(this.filter, jQuery.i18n.map["crashes."+this.filter.split("-").pop()]);
+			countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
+
             $("#crash-"+this.curMetric).parents(".big-numbers").addClass("active");
 
             $(".widget-content .inner").click(function () {
@@ -282,12 +481,137 @@ window.CrashesView = countlyView.extend({
                     self.switchMetric();
                 }
 			});
+            if(typeof self.initDrill !== "undefined"){
+                self.byDisabled = true;
+                $.when(countlySegmentation.initialize("[CLY]_crash")).then(function () {
+                    self.initDrill();
+                    var lookup = {};
+                    setTimeout(function() {
+                        self.filterBlockClone = $("#filter-view").clone(true);
+                        if(self._filter){
+                            $("#filter-view").show();
+                            $(".filter-view-container").show();
+                            self.adjustFilters();
+                            var lookup = {};
+                            for(var i in self.convertFilter){
+                                lookup[self.convertFilter[i].prop] = i;
+                            }
+                            var filter = self._query;
+                            var inputs = [];
+                            var subs = {};
+                            for(var i in filter){
+                                inputs.push(i);
+                                subs[i] = [];
+                                for(var j in filter[i]){
+                                    if(filter[i][j].length){
+                                        for(var k = 0; k < filter[i][j].length; k++){
+                                            subs[i].push([j, filter[i][j][k]]);
+                                        }
+                                    }
+                                    else{
+                                        subs[i].push([j, filter[i][j]]);
+                                    }
+                                }
+                            }
+                            function setInput(cur, sub, total){
+                                sub = sub || 0;
+                                if(inputs[cur]){
+                                    var filterType = subs[inputs[cur]][sub][0];
+                                    if(filterType == "$in" || filterType == "$eq")
+                                        filterType = "=";
+                                    else if(filterType == "$nin" || filterType == "$ne")
+                                        filterType = "!=";
+                                    else if(filterType == "$exists"){
+                                        if(subs[inputs[cur]][sub][0])
+                                            filterType = "=";
+                                        else
+                                            filterType = "!=";
+                                    }
+                
+                                    var val = subs[inputs[cur]][sub][1];
+                                    var el = $(".query:nth-child("+(total)+")");
+                                    el.find(".filter-name").trigger("click");
+                                    el.find(".filter-type").trigger("click");
+                                    var name = inputs[cur];
+                                    if(lookup[name])
+                                        name = lookup[name]
+                                    else if(name.indexOf(".") !== -1){
+                                        var parts = name.split(".");
+                                        if(lookup[parts[0]]){
+                                            name = lookup[parts[0]];
+                                            val = parts[1];
+                                        }
+                                    }
+                                    el.find(".filter-name").find(".select-items .item[data-value='" + name + "']").trigger("click");
+                                    el.find(".filter-type").find(".select-items .item[data-value='" + filterType + "']").trigger("click");
+                                    setTimeout(function() {
+                                        el.find(".filter-value").not(".hidden").trigger("click");
+                                        if(el.find(".filter-value").not(".hidden").find(".select-items .item[data-value='" + val + "']").length)
+                                            el.find(".filter-value").not(".hidden").find(".select-items .item[data-value='" + val + "']").trigger("click");
+                                        else if(_.isNumber(val) && (val + "").length == 10){
+                                            el.find(".filter-value.date").find("input").val(countlyCommon.formatDate(moment(val*1000),"DD MMMM, YYYY"));
+                                            el.find(".filter-value.date").find("input").data("timestamp", val);
+                                        }
+                                        else
+                                            el.find(".filter-value").not(".hidden").find("input").val(val);
+                                        
+                                        if(subs[inputs[cur]].length == sub+1){
+                                            cur++;
+                                            sub = 0;
+                                        }
+                                        else
+                                            sub++;
+                                        total++;
+                                        if(inputs[cur]){
+                                            $("#filter-add-container").trigger("click");
+                                            if(sub > 0)
+                                                setTimeout(function() {
+                                                    var el = $(".query:nth-child("+(total)+")");
+                                                    el.find(".and-or").find(".select-items .item[data-value='OR']").trigger("click");
+                                                    setInput(cur, sub, total);
+                                                }, 500);
+                                            else
+                                                setInput(cur, sub, total);
+                                        }
+                                        else{
+                                            setTimeout(function(){
+                                                $("#apply-filter").removeClass("disabled");
+                                                $("#no-filter").hide();
+                                                var filterData = self.getFilterObjAndByVal();
+                                                $("#current-filter").show().find(".text").text(filterData.bookmarkText);
+                                                $("#connector-container").show();
+                                            }, 500);
+                                        }
+                                    }, 500);
+                            }
+                            }
+                            setInput(0, 0, 1);
+                        }
+                    }, 0);
+                    
+                    self.processData();
+                });
+            }
+            else{
+                $("#view-filter").hide();
+                self.processData();
+            }
 
-            $('.crashes tbody').on("click", "tr", function (){
-				var id = $(this).attr("id");
-				if(id)
-					window.location.hash = window.location.hash.toString()+"/"+id;
-			});
+            $('.action-segmentation').attr('data-tooltip-content', "#action-segmentation-tooltip");
+
+            $('.action-segmentation').tooltipster({
+                theme: ['tooltipster-borderless'],
+                contentCloning: false,
+                interactive: false,
+                trigger: 'hover',
+                side: 'left',
+                zIndex: 2,
+                functionBefore: function() {
+                    if (!$('.action-segmentation').hasClass("disabled")) {
+                        return false;
+                    }
+                }
+            });
         }
     },
     refresh:function () {
@@ -302,7 +626,7 @@ window.CrashesView = countlyView.extend({
                 self.renderCommon(true);
                 var newPage = $("<div>" + self.template(self.templateData) + "</div>");
                 $(".crashoveral .dashboard").replaceWith(newPage.find(".dashboard"));
-                $("#crash-big-numbers").replaceWith(newPage.find("#crash-big-numbers"));
+                $(".crash-big-numbers").replaceWith(newPage.find(".crash-big-numbers"));
                 $(".dashboard-summary").replaceWith(newPage.find(".dashboard-summary"));
                 
                 $("#crash-"+self.curMetric).parents(".big-numbers").addClass("active");
@@ -326,11 +650,62 @@ window.CrashesView = countlyView.extend({
                 self.dtable.fnDraw(false);
                 var chartData = countlyCrashes.getChartData(self.curMetric, self.metrics[self.curMetric]);
                 countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
-                app.localize();
+                //app.localize();
             });
         }
     },
-	filterCrashes: function(filter){
+	getExportQuery: function(){
+        function replacer(key, value) {
+            if (value instanceof RegExp)
+                return ("__REGEXP " + value.toString());
+            else
+                return value;
+        }
+        var qstring = {
+            api_key: countlyGlobal["member"].api_key,
+            db: "countly",
+            collection: "app_crashgroups"+countlyCommon.ACTIVE_APP_ID,
+            query:this._query || {}
+        };
+        if($('.dataTables_filter input').val().length){
+            qstring.query["name"] = {"$regex": new RegExp(".*"+$('.dataTables_filter input').val()+".*", 'i')};
+        }
+        if(this.filter && this.filter != ""){
+            switch (this.filter) {
+                case "crash-resolved":
+                    qstring.query["is_resolved"] = true;
+                    break;
+                case "crash-hidden":
+                    qstring.query["is_hidden"] = true;
+                    break;
+                case "crash-unresolved":
+                    qstring.query["is_resolved"] = false;
+                    break;
+                case "crash-nonfatal":
+                    qstring.query["nonfatal"] = true;
+                    break;
+                case "crash-fatal":
+                    qstring.query["nonfatal"] = false;
+                    break;
+                case "crash-new":
+                    qstring.query["is_new"] = true;
+                    break;
+                case "crash-viewed":
+                    qstring.query["is_new"] = false;
+                    break;
+                case "crash-reoccurred":
+                    qstring.query["is_renewed"] = true;
+                    break;
+            }
+        }
+        if(this.filter !== "crash-hidden"){
+            qstring.query["is_hidden"] = {$ne: true};
+        }
+        qstring.query["_id"] = {$ne:"meta"};
+        qstring.query = JSON.stringify(qstring.query, replacer);
+        return qstring;
+    },
+    filterCrashes: function(filter){
 		this.filter = filter;
 		store.set("countly_crashfilter", filter);
 		$("#"+this.filter).addClass("selected").addClass("active");
@@ -339,7 +714,156 @@ window.CrashesView = countlyView.extend({
     switchMetric:function(){
 		var chartData = countlyCrashes.getChartData(this.curMetric, this.metrics[this.curMetric]);
 		countlyCommon.drawTimeGraph(chartData.chartDP, "#dashboard-graph");
-	}
+	},
+    getFilters: function(currEvent) {
+        var self = this;
+        var usedFilters = {};
+
+        $(".query:visible").each(function (index) {
+            var filterType = $(this).find(".filter-name .text").data("type");
+
+            // number and date types can be used multiple times for range queries
+            if (filterType != "n" && filterType != "d") {
+                usedFilters[$(this).find(".filter-name .text").data("value")] = true;
+            }
+        });
+
+        var defaultFilters = countlySegmentation.getFilters(currEvent),
+            allFilters = "";
+        var filters = [];
+        for(var i = 0; i < defaultFilters.length; i++){
+            if(defaultFilters[i].id){
+                if(self.convertFilter[defaultFilters[i].id])
+                    filters.push(defaultFilters[i]);
+            }
+        }
+        var add = {
+            "is_new": jQuery.i18n.map["crashes.new-crashes"],
+            "is_resolved": jQuery.i18n.map["crashes.resolved"],
+            "is_hidden": jQuery.i18n.map["crashes.hidden"],
+            "is_renewed": jQuery.i18n.map["crashes.renew-crashes"],
+            "reports": jQuery.i18n.map["crashes.reports"],
+            "users": jQuery.i18n.map["crashes.affected-users"],
+            "ram_min": jQuery.i18n.map["crashes.ram"] + " " + jQuery.i18n.map["crashes.min"].toLowerCase(),
+            "ram_max": jQuery.i18n.map["crashes.ram"] + " " + jQuery.i18n.map["crashes.max"].toLowerCase(),
+            "bat_min": jQuery.i18n.map["crashes.battery"] + " " + jQuery.i18n.map["crashes.min"].toLowerCase(),
+            "bat_max": jQuery.i18n.map["crashes.battery"] + " " + jQuery.i18n.map["crashes.max"].toLowerCase(),
+            "disk_min": jQuery.i18n.map["crashes.disk"] + " " + jQuery.i18n.map["crashes.min"].toLowerCase(),
+            "disk_max": jQuery.i18n.map["crashes.disk"] + " " + jQuery.i18n.map["crashes.max"].toLowerCase(),
+            "run_min": jQuery.i18n.map["crashes.run"] + " " + jQuery.i18n.map["crashes.min"].toLowerCase(),
+            "run_max": jQuery.i18n.map["crashes.run"] + " " + jQuery.i18n.map["crashes.max"].toLowerCase()
+        };
+        
+        for(var i in add){
+            filters.push({id:i, name:add[i], type:(i.indexOf("is_") === 0) ? "l" : "n"});
+        }
+
+        if (filters.length == 0) {
+            CountlyHelpers.alert(jQuery.i18n.map["drill.no-filters"], "black");
+        }
+
+        for (var i = 0; i < filters.length; i++) {
+            if(typeof filters[i].id != "undefined"){
+                if (usedFilters[filters[i].id] == true) {
+                    continue;
+                }
+    
+                var tmpItem = $("<div>");
+    
+                tmpItem.addClass("item");
+                tmpItem.attr("data-type", filters[i].type);
+                tmpItem.attr("data-value", filters[i].id);
+                tmpItem.text(filters[i].name);
+    
+                allFilters += tmpItem.prop('outerHTML');
+            }
+            else{
+                var tmpItem = $("<div>");
+    
+                tmpItem.addClass("group");
+                tmpItem.text(filters[i].name);
+    
+                allFilters += tmpItem.prop('outerHTML');
+            }
+        }
+
+        return allFilters;
+    },
+    setUpFilters: function(elem){
+        var rootHTML = $(elem).parents(".query").find(".filter-value .select-items>div");
+        if(this.convertFilter[$(elem).data("value")] && this.convertFilter[$(elem).data("value")].type === "boolsegment")
+            this.setUpFilterValues(rootHTML, ["yes", "no"], ["yes", "no"]);
+        else if(this.convertFilter[$(elem).data("value")] && this.convertFilter[$(elem).data("value")].type === "booltype")
+            this.setUpFilterValues(rootHTML, [true, false], ["yes", "no"]);
+        else
+            this.setUpFilterValues(rootHTML, countlySegmentation.getFilterValues($(elem).data("value")), countlySegmentation.getFilterNames($(elem).data("value")));
+    },
+    generateFilter: function(filterObj, filterObjTypes) {
+        var self = this;
+        var dbFilter = {};
+        for (var prop in filterObj) {
+            var filter = (self.convertFilter[prop]) ? self.convertFilter[prop].prop : prop.replace("sg.","");
+            for (var i = 0; i < filterObj[prop].length; i++) {
+                if(_.isObject(filterObj[prop][i])) {
+                    dbFilter[filter] = {};
+                    for (var tmpFilter in filterObj[prop][i]) {
+                        dbFilter[filter][tmpFilter] = filterObj[prop][i][tmpFilter];
+                    }
+                } else if (filterObjTypes[prop][i] == "!=") {
+                    if(!self.convertFilter[prop] || self.convertFilter[prop].type === "segment" || self.convertFilter[prop].type === "boolsegment"){
+                        if(filter === "os_version"){
+                            filterObj[prop][i] = countlyDeviceDetails.getCleanVersion(filterObj[prop][i]);
+                        }
+                        dbFilter[filter+"."+filterObj[prop][i]] = {$exists:false};
+                    }else if(self.convertFilter[prop].type === "booltype"){
+                        if(filterObj[prop][i]==="true"){
+                            dbFilter[filter] = {$ne: true};
+                        }
+                        else{
+                            dbFilter[filter] = {$eq: true};
+                        }
+                    }else{
+                        dbFilter[filter] = {};
+                        if (!dbFilter[filter]["$nin"]) {
+                            dbFilter[filter]["$nin"] = [];
+                        }
+                        dbFilter[filter]["$nin"].push(filterObj[prop][i]);
+                    }
+                } else {
+                    if(!self.convertFilter[prop] || self.convertFilter[prop].type === "segment" || self.convertFilter[prop].type === "boolsegment"){
+                        if(filter === "os_version"){
+                            filterObj[prop][i] = countlyDeviceDetails.getCleanVersion(filterObj[prop][i]);
+                        }
+                        dbFilter[filter+"."+filterObj[prop][i]] = {$exists:true};
+                    }else if(self.convertFilter[prop].type === "booltype"){
+                        if(filterObj[prop][i]==="true"){
+                            dbFilter[filter] = {$eq: true};
+                        }
+                        else{
+                            dbFilter[filter] = {$ne: true};
+                        }
+                    }else{
+                        dbFilter[filter] = {};
+                        if (!dbFilter[filter]["$in"]) {
+                            dbFilter[filter]["$in"] = [];
+                        }
+                        dbFilter[filter]["$in"].push(filterObj[prop][i]);
+                    }
+                }
+            }
+        }
+        return dbFilter;
+    },
+    loadAndRefresh: function() {
+        var filter = {};
+        for(var i in this.filterObj){
+            filter[i.replace("up.", "")] = this.filterObj[i];
+        }
+        this._query = filter;
+        app.navigate("/crashes/filter/"+JSON.stringify(filter), false);
+        this.dtable.fnPageChange(0);
+        this.refresh(true);
+    }
 });
 
 window.CrashgroupView = countlyView.extend({
@@ -941,22 +1465,26 @@ app.crashesView = new CrashesView();
 app.crashgroupView = new CrashgroupView();
 
 app.route('/crashes', 'crashes', function () {
+    this.crashesView._filter = false;
+    this.crashesView._query = null;
 	this.renderWhenReady(this.crashesView);
 });
+
+app.route('/crashes/filter/*query', 'userdata', function (query) {
+    try{
+        query = JSON.parse(query);
+    }
+    catch(ex){
+        query = null;
+    }
+    this.crashesView._query = query;
+    this.crashesView._filter = true;
+	this.renderWhenReady(this.crashesView);
+});
+
 app.route('/crashes/:group', 'crashgroup', function (group) {
 	this.crashgroupView.id = group;
     this.renderWhenReady(this.crashgroupView);
-});
-app.addPageScript("/crashes", function(){
-   $("#crash-selector").find(">.button").click(function () {
-        if ($(this).hasClass("selected")) {
-            return true;
-        }
-
-        $(".crash-selector").removeClass("selected").removeClass("active");
-		var filter = $(this).attr("id");
-		app.activeView.filterCrashes(filter);
-    });
 });
 
 app.addPageScript("/drill#", function(){
@@ -977,7 +1505,7 @@ app.addPageScript("/drill#", function(){
             $("#segmentation-start").fadeOut().remove();
             $(this).parents(".cly-select").removeClass("dark");
     
-            $(".event-select.cly-select").find(".text").text("Select an Event");
+            $(".event-select.cly-select").find(".text").text(jQuery.i18n.map["drill.select-event"]);
             $(".event-select.cly-select").find(".text").data("value","");
     
             currEvent = "[CLY]_crash";
@@ -1006,6 +1534,8 @@ app.addPageScript("/drill#", function(){
 });
 
 $( document ).ready(function() {
+    if(typeof extendViewWithFilter === "function")
+        extendViewWithFilter(app.crashesView);
     app.addAppSwitchCallback(function(appId){
         countlyCrashes.loadList(appId);
     });

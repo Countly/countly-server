@@ -21,9 +21,13 @@ window.CompareView = countlyView.extend({
     beforeRender: function() {
         var self = this;
 
-        return $.when($.get(countlyGlobal["path"]+'/compare/templates/compare.html', function(src){
-            self.template = Handlebars.compile(src);
-        }), self.viewHelper.model.initialize()).then(function () {});
+        return $.when(
+            $.get(countlyGlobal["path"]+'/compare/templates/compare.html', function(src){
+                self.template = Handlebars.compile(src);
+             }),
+            self.viewHelper.model.initialize(),
+            self.viewHelper.beforeRender()
+        ).then(function () {});
     },
     renderCommon:function (isRefresh) {
         var self = this;
@@ -231,6 +235,9 @@ var compareEventsViewHelper = {
     },
     compareText: jQuery.i18n.map["compare.events.limit"],
     maxAlternatives: 10,
+    beforeRender: function() {
+
+    },
     getTableColumns: function() {
         return [
             { "mData": function(row, type){
@@ -270,11 +277,11 @@ app.route("/analytics/events/compare", 'views', function () {
 
 /* Compare applications */
 $(document).ready(function() {
-    $("#app-nav-head").after(
+    $("#app-navigation").find(".menu").prepend(
         "<a href='#/compare'>" +
-            "<div id='compare-apps' class='app-container'>" +
+            "<div id='compare-apps' class='action'>" +
                 "<div class='icon'></div>" +
-                "<div class='name'>" + jQuery.i18n.map["compare.button"] + "</div>" +
+                "<span>" + jQuery.i18n.map["compare.button"] + "</span>" +
             "</div>" +
         "</a>"
     );
@@ -357,46 +364,33 @@ var compareAppsViewHelper = {
 
         return toReturn;
     },
+    beforeRender: function() {
+        $("body").addClass("compare-apps-view");
+        $("#sidebar").addClass("hidden");
+        $("#app-navigation").removeClass("active");
+    },
     onRender: function() {
-        $("#sidebar-menu").css({visibility: "hidden"});
-        $("#app-nav").addClass("compare-active");
-        $("#sidebar").append(
-            "<div id='compare-apps-pointer'>" +
-                "<div>" + jQuery.i18n.map["compare.apps.tip"] + "</div>" +
-            "</div>"
-        );
+        $("#content-container").addClass("cover-left");
 
-        if ($("#app-nav").offset().left == 201) {
-            $("#sidebar-app-select").trigger("click");
-        }
-
-        $("#app-nav.compare-active").find(".app-navigate").on("click", function (e) {
-            $("#sidebar-app-select").data("before-compare", '');
-
+        $(".app-navigate").on("click", function (e) {
             var appId = $(this).data("id");
 
             if (countlyCommon.ACTIVE_APP_ID == appId) {
-                $("#sidebar-app-select").trigger("click");
                 app.navigate("/", true);
             }
         });
 
-        var sidebarApp = $("#sidebar-app-select");
-        sidebarApp.addClass("compare-active");
-        sidebarApp.data("before-compare", sidebarApp.find(".text").text());
-        sidebarApp.find(".text").text(jQuery.i18n.map["compare.apps.app-select"]);
+        $("#app-navigation").on("click", ".item", function () {
+            if ($("body").hasClass("compare-apps-view")) {
+                app.navigate("#/", true);
+            }
+        });
     },
     onDestroy: function() {
-        $("#sidebar-menu").css({visibility: "visible"});
-        $("#app-nav").removeClass("compare-active");
-        $("#sidebar").find("#compare-apps-pointer").remove();
-
-        var sidebarApp = $("#sidebar-app-select");
-        if (sidebarApp.data("before-compare")) {
-            sidebarApp.find(".text").text(sidebarApp.data("before-compare"));
-            sidebarApp.data("before-compare", '');
-        }
-        sidebarApp.removeClass("compare-active");
+        $("body").removeClass("compare-apps-view");
+        $("#sidebar").removeClass("hidden");
+        $("#content-container").removeClass("cover-left");
+        $("#app-navigation").addClass("active");
     }
 };
 

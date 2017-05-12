@@ -1,4 +1,3 @@
-'use strict';
 const job = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('job:generate_notif'),
     async = require("async"),

@@ -2,17 +2,16 @@
 
     //Private Properties
     var _data = {};
-    countlyAssistant.initialize = function () {
-        //CountlyHelpers.alert("2", "green");
+    countlyAssistant.initialize = function (isRefresh) {
         return $.ajax({
             type:"GET",
             url:countlyCommon.API_URL + "/o/assistant",
             data:{
-                api_key:countlyGlobal['member'].api_key
+                api_key:countlyGlobal['member'].api_key,
+                display_loader: !isRefresh
             },
             success:function (json) {
                 _data = json;
-                //CountlyHelpers.alert(""+json, "green");
             }
         });
     };
@@ -85,7 +84,7 @@
         for(var b = 0 ; b < the_notifs.length ; b++) {
             //pre parse all dates for performance
             for(var c = 0 ; c < the_notifs[b].length ; c++) {
-                the_notifs[b][c].createdDateUTC = Date.parse(the_notifs[b][c].created_date) / 1000;
+                the_notifs[b][c].createdDateUTC = Math.round(Date.parse(the_notifs[b][c].created_date) / 1000);
             }
 
             //set the notification lists to be from newer to older
@@ -295,6 +294,69 @@
             },
             success:function (json) {
 
+            }
+        });
+    };
+
+    /**
+     * This is used if another plugin other than the Assistant wants to create notificaitons from the frontend.
+     * Create a notification from another plugin
+     *
+     * @param contentData - the data that is to be inserted into the internationalized string. Data is given as an array.
+     *
+     * @param ownerName - the name of this notifications creator/owner. Used when deciding how to render notification.
+     *
+     * @param notifType - used for grouping and filtering notifications
+     *
+     * @param notifSubType - used for specifying the id of a notification for a specific owner
+     *
+     * @param i18nId - the internationalization id for the localization entries
+     *
+     * @param notifAppId - the app ID for which application this notification will be assigned
+     *
+     * @param notificationVersion - notification version in case of data format changes
+     *
+     * @param targetUserApiKey - it notification should target a specific user, set this field to it's api key
+     *
+     * @param callback - returns "true"/"false" in case request succeeds or fails. In case of failure, it return received message.
+     *
+     * @example
+     *
+     *  countlyAssistant.createNotification([12,34,56,78], "frontTest", 4, 2, "assistant.test-notification", "57cd5afb85e945640bc4eec9", 1, function (callbackResult, errorMessage) {
+            if(callbackResult){
+                //notification creation succeeded
+            } else {
+                //notification creation failed, check errorMessage
+            }
+        });
+     *
+     */
+    countlyAssistant.createNotification = function (contentData, ownerName, notifType, notifSubType, i18nId, notifAppId, notificationVersion, targetUserApiKey, callback) {
+        return $.ajax({
+            type:"GET",
+            url:countlyCommon.API_URL + "/i/assistant/create_external",
+            data: {
+                api_key:countlyGlobal['member'].api_key,
+                notif_data: JSON.stringify(contentData),
+                owner_name: ownerName,
+                notif_type: notifType,
+                notif_subtype: notifSubType,
+                i18n_id: i18nId,
+                notif_app_id: notifAppId,
+                notif_version: notificationVersion,
+                target_user_api_key: targetUserApiKey
+            },
+            success:function (json) {
+                //call succeeded
+                if(callback) {
+                    callback(true);
+                }
+            },
+            error:function (result) {
+                //call failed
+                if(callback) {
+                    callback(false, result);
+                }
             }
         });
     };

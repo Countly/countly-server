@@ -19,10 +19,10 @@ public:
 #define LOG_WARNING(M) do { if (Log::IsLevelActive(Log::Warning)) (Log::GetStream() << "WRN: " << M << "\n"); } while (false)
 #define LOG_DEBUG(M)   do { if (Log::IsLevelActive(Log::Debug))   (Log::GetStream() << "DBG: " << M << "\n"); } while (false)
 #else
-#define LOG_ERROR(M)
-#define LOG_INFO(M)
-#define LOG_WARNING(M)
-#define LOG_DEBUG(M)
+#define LOG_ERROR(M) do { } while(0)
+#define LOG_INFO(M) do { } while(0)
+#define LOG_WARNING(M) do { } while(0)
+#define LOG_DEBUG(M) do { } while(0)
 #endif
 
 #endif

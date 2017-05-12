@@ -4,14 +4,19 @@
     var _data = {};
 
     //Public Methods
-    countlyLogger.initialize = function (id) {
+    countlyLogger.initialize = function (filter) {
+        var query = {};
+        if(filter){
+            query["t."+filter] = {$exists:true};
+        }
 		return $.ajax({
             type:"GET",
             url:countlyCommon.API_PARTS.data.r,
             data:{
                 "api_key":countlyGlobal.member.api_key,
                 "app_id":countlyCommon.ACTIVE_APP_ID,
-                "method":"logs"
+                "method":"logs",
+                "filter":JSON.stringify(query)
             },
             success:function (json) {
                 _data = json;

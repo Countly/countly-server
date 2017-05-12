@@ -242,6 +242,12 @@ app.use(function(req, res, next) {
     req.template.html = "";
     req.template.js = "";
     req.template.form = "";
+    req.countly = {
+        version:COUNTLY_VERSION,
+        type:COUNTLY_TYPE,
+        page:COUNTLY_PAGE,
+        title:COUNTLY_NAME
+    };
     plugins.loadConfigs(countlyDb, function(){
         bruteforce.fails = plugins.getConfig("security").login_tries;
         bruteforce.wait = plugins.getConfig("security").login_wait;
@@ -484,7 +490,8 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                         req.session.email = member["email"];
                         req.session.settings = member.settings;
                         res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
-    
+
+                        member._id += "";
                         delete member["password"];
                         
                         adminOfApps = sortBy(adminOfApps, member.appSortList || []);
@@ -931,14 +938,18 @@ app.post(countlyConfig.path+'/apps/icon', function (req, res, next) {
         return true;
     }
     plugins.callMethod("iconUpload", {req:req, res:res, next:next, data:req.body});
-    fs.rename(tmp_path, target_path, function (err) {
-        fs.unlink(tmp_path, function () {});
+    var is = fs.createReadStream(tmp_path);
+    var os = fs.createWriteStream(target_path);
+    is.pipe(os);
+    is.on('end',function() {
+        fs.unlinkSync(tmp_path);
+    });
+    os.on('finish',function() {
         jimp.read(target_path, function (err, icon) {
             if (err) console.log(err, err.stack);
-            icon.cover(72, 72)            // resize                // set JPEG quality                 // set greyscale 
-                .write(target_path); // save 
+            icon.cover(72, 72).write(target_path); // save 
         });
-
+        
         res.send(countlyConfig.path+"/appimages/" + req.body.app_image_id + ".png");
     });
 });
@@ -984,7 +995,7 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
                         var password = sha1Hash(req.body.old_pwd),
                             newPassword = sha1Hash(req.body.new_pwd);
     
-                        if(newPassword != password && (!member.password_history || member.password_history.indexOf(newPassword) === -1)){
+                        if(newPassword != password && (plugins.getConfig('security').password_rotation == 0 || !member.password_history || member.password_history.indexOf(newPassword) === -1)){
                             var result = validatePassword(req.body.new_pwd);
                             if(result === false){
                                 updatedUser.password = newPassword;

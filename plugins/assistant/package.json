@@ -1,8 +1,8 @@
 {
   "name": "assistant",
   "title": "assistant",
-  "version": "0.0.1",
-  "description": "Not Empty plugin",
+  "version": "0.1.0",
+  "description": "Receive tips, insight and announcements for your applications",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/",
   "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
@@ -12,7 +12,8 @@
     "analytics",
     "mobile",
     "plugins",
-	"template"
+	"template",
+    "assistant"
   ],
   "dependencies": {
     "rss-parser" : "2.5.2"

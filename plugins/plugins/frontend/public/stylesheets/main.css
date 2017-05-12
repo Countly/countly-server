@@ -36,11 +36,11 @@
 .configs .button-selector .button:nth-child(1).active { background-color:#F9F9F9; color:#6B6B6B; border-color:#D0D0D0; cursor:default; }
 .configs .button-selector .button:nth-child(2).active { background-color:#F9F9F9; color:#6B6B6B; border-color:#D0D0D0; cursor:default; }
 
-#sticky-config-header.fixed { position: fixed; top:0; z-index: 2; border-bottom: 1px solid #d0d0d0; }
+#sticky-config-header.fixed { position: fixed; top:0; z-index: 2; border-bottom: 1px solid #d0d0d0; border-top: 1px solid #d0d0d0; }
 #sticky-config-header.fixed .widget-header { border-top:none; }
 #sticky-config-header.fixed + .configs { margin-top: 58px; }
 
-#sticky-plugin-header.fixed { position: fixed; top:0; z-index: 2; }
+#sticky-plugin-header.fixed { position: fixed; top:0; z-index: 2; border-bottom: 1px solid #d0d0d0; border-top: 1px solid #d0d0d0; }
 #sticky-plugin-header.fixed .widget-header { border-top:none; }
 #sticky-plugin-header.fixed + .plugins { margin-top: 57px; }
 #sticky-plugin-header.fixed + .plugins .sticky-header { top: 57px; }

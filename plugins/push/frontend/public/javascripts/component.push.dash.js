@@ -148,6 +148,10 @@ window.component('push.dash', function(dash) {
 						{ mData: unprop.bind(null, 'dates'), sName: 'sent', sType: 'string', iDataSort: 5, sTitle: t('pu.t.sent-scheduled'), mRender: function(local){
 							var dates = local.dates();
 							return dates.sent || dates.date || '';
+						}, bSearchable: false },
+						{ mData: unprop.bind(null, 'result'), sName: 'result', sType: 'string', iDataSort: 5, sTitle: t('pu.t.result'), mRender: function(local){
+							var result = local.result;
+							return (result.sent() || 0) + ' / ' + (result.actioned() || 0);
 						}, bSearchable: false }
 					],
 					aaSorting: [[4, 'asc']]

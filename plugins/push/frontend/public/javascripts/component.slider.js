@@ -10,8 +10,8 @@ if (!window.components) {
 if (!window.components.slider) {
 
 	var defaultWidth = function() {
-		return Math.min(document.body.clientWidth - document.getElementById('sidebar').clientWidth, 768);
-	}, CLS = 'comp-slider comp-tt-bounding';
+		return Math.min(document.body.clientWidth - document.getElementById('sidebar').clientWidth, 968);
+	}, CLS = 'comp-slider comp-tt-bounding prevent-body-scroll';
 
 	var slider = window.components.slider = {
 		Slider: function(data) {
@@ -31,13 +31,13 @@ if (!window.components.slider) {
 			this.config = function(el, isInitialized) {
 				if (!isInitialized) {
 					this.el = document.body.querySelector('.comp-slider');
-					this.overflow = document.body.style.overflow || 'auto';
-					this.el.onmouseover = function() {
-						document.body.style.overflow = 'hidden';
-					};
-					this.el.onmouseout = function() {
-						document.body.style.overflow = this.overflow;
-					}.bind(this);
+					// this.overflow = document.body.style.overflow || 'auto';
+					// this.el.onmouseover = function() {
+					// 	document.body.style.overflow = 'hidden';
+					// };
+					// this.el.onmouseout = function() {
+					// 	document.body.style.overflow = this.overflow;
+					// }.bind(this);
 					// this.el.onmousewheel = function(ev) {
 					// 	if (ev.target === el) {
 					// 		ev.stopPropagation();
@@ -66,11 +66,16 @@ if (!window.components.slider) {
 				return this;
 			}.bind(this);
 
-			this.setWidth = function(width) {
+			this.setWidth = function(width, once) {
 				this.el.style.width = width + 'px';
 
 				var btns = this.el.querySelector('.btns');
 				if (btns) { btns.style.width = width + 'px'; }
+
+				if (!once) {
+					setTimeout(this.setWidth.bind(this, width, true), 10);
+					setTimeout(this.setWidth.bind(this, width, true), 200);
+				}
 			};
 			
 			var prev = document.body.onresize;

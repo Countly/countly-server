@@ -10,7 +10,7 @@ window.WebDashboardView = countlyView.extend({
             "map-list-users": {id:'total', label:jQuery.i18n.map["sidebar.analytics.users"], type:'number', metric:"u"},
             "map-list-new": {id:'total', label:jQuery.i18n.map["common.table.new-users"], type:'number', metric:"n"}
         };
-        var defs = [countlyUser.initialize(), countlyDeviceDetails.initialize(), countlyWebDashboard.initialize(isRefresh), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
+        var defs = [countlySession.initialize(), countlyDeviceDetails.initialize(), countlyWebDashboard.initialize(isRefresh), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
         if(typeof window.countlyBrowser != "undefined")
             defs.push(countlyBrowser.initialize());
         if(typeof window.countlySources != "undefined")
@@ -139,7 +139,7 @@ window.WebDashboardView = countlyView.extend({
         sessionData["bars"] = [
             {
                 "title":jQuery.i18n.map["common.bar.top-platform"],
-                "data":countlyDeviceDetails.getPlatformBars(),
+                "data":countlyDeviceDetails.getBars("os"),
                 "help":"dashboard.top-platforms"
             },
             {
@@ -423,11 +423,6 @@ $( document ).ready(function() {
             jQuery.i18n.map["crashes.fatality"] = jQuery.i18n.map["web.crashes.fatality"];
             jQuery.i18n.map["crashes.nonfatal-crashes"] = jQuery.i18n.map["web.crashes.nonfatal-crashes"];
             jQuery.i18n.map["crashes.confirm-delete"] = jQuery.i18n.map["web.crashes.confirm-delete"];
-            jQuery.i18n.map["revenue.iap"] = jQuery.i18n.map["web.revenue.iap"];
-            jQuery.i18n.map["revenue.tooltip"] = jQuery.i18n.map["web.revenue.tooltip"];
-            jQuery.i18n.map["placeholder.iap-event-key"] = jQuery.i18n.map["web.placeholder.iap-event-key"];
-            jQuery.i18n.map["placeholder.iap-help"] = jQuery.i18n.map["web.placeholder.iap-help"];
-            jQuery.i18n.map["management-applications.iap-event"] = jQuery.i18n.map["web.management-applications.iap-event"];
             jQuery.i18n.map["drill.crash"] = jQuery.i18n.map["web.drill.crash"];
             jQuery.i18n.map["drill.crash-segments"] = jQuery.i18n.map["web.drill.crash-segments"];
             jQuery.i18n.map["userdata.crashes"] = jQuery.i18n.map["web.userdata.crashes"];

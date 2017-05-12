@@ -338,6 +338,10 @@ class PushJob extends job.IPCJob {
 			if (sent.length) {
 				db.collection('app_users' + this.anote.creds.app_id).update({_id: {$in: sent}}, {$push: {msgs: this.aoid}}, {multi: true}, log.logdb('adding message to app_users'));
 				
+	  			var common = require('../../../../api/utils/common.js');
+
+	  			common.db = db;
+
 				plugins.internalEvents.push('[CLY]_push_sent');
 				plugins.internalEvents.push('[CLY]_push_action');
 				plugins.internalDrillEvents.push('[CLY]_push_action');

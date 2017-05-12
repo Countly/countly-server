@@ -82,6 +82,8 @@
 				dataType:"jsonp",
 				success:function (json) {
 					_groupData = json;
+                    _groupData.name = countlyCommon.decode(_groupData.name);
+                    _groupData.error = countlyCommon.decode(_groupData.error);
                     _list[_groupData._id] = _groupData.name;
 					_groupData.dp = {};
 					for(var i in _metrics){
@@ -153,13 +155,16 @@
     }
     
     countlyCrashes.common = function (id, path, callback) {
+        var data = {};
+        if(typeof id === "string")
+            data.crash_id = id;
+        else
+            data.crashes = id;
 		$.ajax({
 			type:"GET",
             url:countlyCommon.API_PARTS.data.w + '/crashes/'+path,
             data:{
-                args:JSON.stringify({
-                    crash_id:id
-                }),
+                args:JSON.stringify(data),
                 app_id: countlyCommon.ACTIVE_APP_ID,
                 api_key:countlyGlobal['member'].api_key
             },
@@ -177,8 +182,12 @@
 	
 	countlyCrashes.markResolve = function (id, callback) {
         countlyCrashes.common(id, "resolve", function(json){
-            if(json && json.version)
-                callback(json.version.replace(/:/g, '.'));
+            if(json){
+                if(typeof id === "string")
+                    callback(json[id].replace(/:/g, '.'));
+                else
+                    callback(json);
+            }
             else
                 callback();
         });
@@ -186,6 +195,10 @@
 	
 	countlyCrashes.markUnresolve = function (id, callback) {
         countlyCrashes.common(id, "unresolve", callback);
+    };
+    
+    countlyCrashes.markSeen = function (id, callback) {
+        countlyCrashes.common(id, "view", callback);
     };
     
     countlyCrashes.share = function (id, callback) {
@@ -580,144 +593,8 @@
     };
     
     countlyCrashes.getDashboardData = function () {
-
-        //Update the current period object in case selected date is changed
-        _periodObj = countlyCommon.periodObj;
-
-        var dataArr = {},
-            tmp_x,
-            tmp_y,
-            currentTotal = 0,
-            previousTotal = 0,
-            currentUnique = 0,
-            previousUnique = 0,
-            currentNonfatal = 0,
-            previousNonfatal = 0,
-            currentFatal = 0,
-            previousFatal = 0,
-            currentResolved = 0,
-            previousResolved = 0;
-
-        if (_periodObj.isSpecialPeriod) {
-            
-             for (var i = 0; i < (_periodObj.uniquePeriodArr.length); i++) {
-                tmp_x = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.uniquePeriodArr[i]);
-                tmp_x = countlyCrashes.clearObject(tmp_x);
-                currentUnique += tmp_x["cru"];
-            }
-
-            var tmpUniqObj,
-                tmpCurrentUniq = 0;
-
-            for (var i = 0; i < (_periodObj.uniquePeriodCheckArr.length); i++) {
-                tmpUniqObj = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.uniquePeriodCheckArr[i]);
-                tmpUniqObj = countlyCrashes.clearObject(tmpUniqObj);
-                tmpCurrentUniq += tmpUniqObj["cru"];
-            }
-
-            if (currentUnique > tmpCurrentUniq) {
-                currentUnique = tmpCurrentUniq;
-            }
-
-            for (var i = 0; i < (_periodObj.previousUniquePeriodArr.length); i++) {
-                tmp_y = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.previousUniquePeriodArr[i]);
-                tmp_y = countlyCrashes.clearObject(tmp_y);
-                previousUnique += tmp_y["cru"];
-            }
-
-            var tmpUniqObj2,
-                tmpPreviousUniq = 0;
-
-            for (var i = 0; i < (_periodObj.previousUniquePeriodCheckArr.length); i++) {
-                tmpUniqObj2 = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.previousUniquePeriodCheckArr[i]);
-                tmpUniqObj2 = countlyCrashes.clearObject(tmpUniqObj2);
-                tmpPreviousUniq += tmpUniqObj2["cru"];
-            }
-
-            if (previousUnique > tmpPreviousUniq) {
-                previousUnique = tmpPreviousUniq;
-            }
-
-            for (var i = 0; i < (_periodObj.currentPeriodArr.length); i++) {
-                tmp_x = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.currentPeriodArr[i]);
-                tmp_x = countlyCrashes.clearObject(tmp_x);
-                currentTotal += tmp_x["cr"];
-                currentNonfatal += tmp_x["crnf"];
-                currentFatal += tmp_x["crf"];
-                currentResolved += tmp_x["crru"];
-            }
-
-            for (var i = 0; i < (_periodObj.previousPeriodArr.length); i++) {
-                tmp_y = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.previousPeriodArr[i]);
-                tmp_y = countlyCrashes.clearObject(tmp_y);
-                previousTotal += tmp_y["cr"];
-                previousNonfatal += tmp_y["crnf"];
-                previousFatal += tmp_y["crf"];
-                previousResolved += tmp_y["crru"];
-            }
-        } else {
-            tmp_x = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.activePeriod);
-            tmp_y = countlyCommon.getDescendantProp(_crashTimeline, _periodObj.previousPeriod);
-            tmp_x = countlyCrashes.clearObject(tmp_x);
-            tmp_y = countlyCrashes.clearObject(tmp_y);
-
-            currentTotal = tmp_x["cr"];
-            previousTotal = tmp_y["cr"];
-            currentNonfatal = tmp_x["crnf"];
-            previousNonfatal = tmp_y["crnf"];
-            currentUnique = tmp_x["cru"];
-            previousUnique = tmp_y["cru"];
-            currentFatal = tmp_x["crf"];
-            previousFatal = tmp_y["crf"];
-            currentResolved = tmp_x["crru"];
-            previousResolved = tmp_y["crru"];
-        }
-
-        var changeTotal = countlyCommon.getPercentChange(previousTotal, currentTotal),
-            changeNonfatal = countlyCommon.getPercentChange(previousNonfatal, currentNonfatal),
-            changeUnique = countlyCommon.getPercentChange(previousUnique, currentUnique),
-            changeFatal = countlyCommon.getPercentChange(previousFatal, currentFatal);
-            changeResolved = countlyCommon.getPercentChange(previousResolved, currentResolved);
-
-        dataArr =
-        {
-            usage:{
-                "total":{
-                    "total":currentTotal,
-                    "change":changeTotal.percent,
-                    "trend":changeTotal.trend,
-                    "isEstimate":false
-                },
-                "unique":{
-                    "total":currentUnique,
-                    "prev-total":previousUnique,
-                    "change":changeUnique.percent,
-                    "trend":changeUnique.trend,
-                    "isEstimate":false
-                },
-                "nonfatal":{
-                    "total":currentNonfatal,
-                    "prev-total":previousNonfatal,
-                    "change":changeNonfatal.percent,
-                    "trend":changeNonfatal.trend,
-                    "isEstimate":false
-                },
-                "fatal":{
-                    "total":currentFatal,
-                    "change":changeFatal.percent,
-                    "trend":changeFatal.trend,
-                    "isEstimate":false
-                },
-                "resolved":{
-                    "total":currentResolved,
-                    "change":changeResolved.percent,
-                    "trend":changeResolved.trend,
-                    "isEstimate":false
-                }
-            }
-        };
-
-        return dataArr;
+        var data = countlyCommon.getDashboardData(_crashTimeline, ["cr", "crnf", "crf", "cru", "crru"], ["cru"], null, countlyCrashes.clearObject);
+        return {usage:data};
     };
     
     countlyCrashes.clearObject = function (obj) {

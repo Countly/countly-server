@@ -17,7 +17,7 @@ plugins.setConfigs("api", {
     event_limit: 500,
     event_segmentation_limit: 100,
     event_segmentation_value_limit:1000,
-    metric_limit: 5000,
+    metric_limit: 1000,
     sync_plugins: false,
     session_cooldown: 15,
     total_users: true
@@ -122,19 +122,25 @@ if (cluster.isMaster) {
     setTimeout(() => {
         jobs.job('api:ping').replace().schedule('every 1 day');
         jobs.job('api:clear').replace().schedule('every 1 day');
+        jobs.job('api:clearTokens').replace().schedule('every 1 day');
     }, 10000);
 } else {
-
+    var common = require('./utils/common.js');
+    var authorize = require('./utils/authorizer.js');
+    var taskmanager = require('./utils/taskmanager.js');
+    common.db = plugins.dbConnection(countlyConfig);
+    //since process restarted mark running tasks as errored
+    taskmanager.errorResults({db:common.db});
     var url = require('url'),
     querystring = require('querystring'),
-    common = require('./utils/common.js'),
     log = common.log('api'),
     crypto = require('crypto'),
     countlyApi = {
         data:{
             usage:require('./parts/data/usage.js'),
             fetch:require('./parts/data/fetch.js'),
-            events:require('./parts/data/events.js')
+            events:require('./parts/data/events.js'),
+            exports:require('./parts/data/exports.js')
         },
         mgmt:{
             users:require('./parts/mgmt/users.js'),
@@ -177,34 +183,44 @@ if (cluster.isMaster) {
             params.appTimezone = app['timezone'];
             params.app = app;
             params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-            
-            if(params.app.checksum_salt && params.app.checksum_salt.length && !params.files){ //ignore multipart data requests
-                var payload;
+            if(params.app.checksum_salt && params.app.checksum_salt.length){
+                var payloads = [];
+                payloads.push(params.href.substr(3));
                 if(params.req.method.toLowerCase() == 'post'){
-                    payload = params.req.body;
-                }
-                else{
-                    payload = params.href.substr(3);
+                    payloads.push(params.req.body);
                 }
                 if(typeof params.qstring.checksum !== "undefined"){
-                    payload = payload.replace("&checksum="+params.qstring.checksum, "").replace("checksum="+params.qstring.checksum, "");
-                    if((params.qstring.checksum + "").toUpperCase() != common.crypto.createHash('sha1').update(payload + params.app.checksum_salt).digest('hex').toUpperCase()){
-                        console.log("Checksum did not match", params.href, params.req.body);
+                    for(var i = 0; i < payloads.length; i++){
+                        payloads[i] = payloads[i].replace("&checksum="+params.qstring.checksum, "").replace("checksum="+params.qstring.checksum, "");
+                        payloads[i] = common.crypto.createHash('sha1').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
+                    }
+                    if(payloads.indexOf((params.qstring.checksum + "").toUpperCase()) === -1){
+                        console.log("Checksum did not match", params.href, params.req.body, payloads);
                         if (plugins.getConfig("api").safe) {
                             common.returnMessage(params, 400, 'Request does not match checksum');
                         }
                         return done ? done() : false;
                     }
                 }
-                if(typeof params.qstring.checksum256 !== "undefined"){
-                    payload = payload.replace("&checksum256="+params.qstring.checksum256, "").replace("checksum256="+params.qstring.checksum256, "");
-                    if((params.qstring.checksum256 + "").toUpperCase() != common.crypto.createHash('sha256').update(payload + params.app.checksum_salt).digest('hex').toUpperCase()){
-                        console.log("Checksum did not match", params.href, params.req.body);
+                else if(typeof params.qstring.checksum256 !== "undefined"){
+                    for(var i = 0; i < payloads.length; i++){
+                        payloads[i] = payloads[i].replace("&checksum256="+params.qstring.checksum256, "").replace("checksum256="+params.qstring.checksum256, "");
+                        payloads[i] = common.crypto.createHash('sha256').update(payloads[i] + params.app.checksum_salt).digest('hex').toUpperCase();
+                    }
+                    if(payloads.indexOf((params.qstring.checksum256 + "").toUpperCase()) === -1){
+                        console.log("Checksum did not match", params.href, params.req.body, payloads);
                         if (plugins.getConfig("api").safe) {
                             common.returnMessage(params, 400, 'Request does not match checksum');
                         }
                         return done ? done() : false;
                     }
+                }
+                else{
+                    console.log("Request does not have checksum", params.href, params.req.body);
+                    if (plugins.getConfig("api").safe) {
+                        common.returnMessage(params, 400, 'Request does not have checksum');
+                    }
+                    return done ? done() : false;
                 }
             }
             
@@ -231,6 +247,12 @@ if (cluster.isMaster) {
             
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, user){
                 params.app_user = user || {};
+                
+                //check unique milisecond timestamp, if it is the same as the last request had, 
+                //then we are having duplicate request, due to sudden connection termination
+                if(params.time.mstimestamp === params.app_user.lac){
+                    params.cancelRequest = true;
+                }
                 
                 if (params.qstring.metrics && typeof params.qstring.metrics === "string") {		
                     try {		
@@ -405,31 +427,42 @@ if (cluster.isMaster) {
                 
                         if (params.qstring.begin_session) {
                             countlyApi.data.usage.beginUserSession(params, done);
-                        } else if (params.qstring.end_session) {
-                            if (params.qstring.session_duration) {
-                                countlyApi.data.usage.processSessionDuration(params, function () {
+                        } else {
+                            if(params.qstring.metrics){
+                                countlyApi.data.usage.processMetrics(params);
+                            }
+                            if (params.qstring.end_session) {
+                                if (params.qstring.session_duration) {
+                                    countlyApi.data.usage.processSessionDuration(params, function () {
+                                        countlyApi.data.usage.endUserSession(params, done);
+                                    });
+                                } else {
                                     countlyApi.data.usage.endUserSession(params, done);
+                                }
+                            } else if (params.qstring.session_duration) {
+                                countlyApi.data.usage.processSessionDuration(params, function () {
+                                    return done ? done() : false;
                                 });
                             } else {
-                                countlyApi.data.usage.endUserSession(params, done);
-                            }
-                        } else if (params.qstring.session_duration) {
-                            countlyApi.data.usage.processSessionDuration(params, function () {
+                                //update lac, all other requests do updates to app_users and update lac automatically
+                                common.updateAppUser(params, {$set:{lac:params.time.mstimestamp}});
+                                
+                                // begin_session, session_duration and end_session handle incrementing request count in usage.js
+                                var dbDateIds = common.getDateIds(params),
+                                    updateUsers = {};
+                    
+                                common.fillTimeObjectMonth(params, updateUsers, common.dbMap['events']);
+                                var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
+                                common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, {'upsert':true}, function(err, res){});
+                                
                                 return done ? done() : false;
-                            });
-                        } else {
-                            // begin_session, session_duration and end_session handle incrementing request count in usage.js
-                            var dbDateIds = common.getDateIds(params),
-                                updateUsers = {};
-                
-                            common.fillTimeObjectMonth(params, updateUsers, common.dbMap['events']);
-                            var postfix = common.crypto.createHash("md5").update(params.qstring.device_id).digest('base64')[0];
-                            common.db.collection('users').update({'_id': params.app_id + "_" + dbDateIds.month + "_" + postfix}, {'$inc': updateUsers}, {'upsert':true}, function(err, res){});
-                            
-                            return done ? done() : false;
+                            }
                         }
                     }
                 } else {
+                    if (plugins.getConfig("api").safe && !params.res.finished) {
+                        common.returnMessage(params, 200, 'Request ignored');
+                    }
                     return done ? done() : false;
                 }
             });
@@ -619,6 +652,31 @@ if (cluster.isMaster) {
                 queryString = urlParts.query,
                 paths = urlParts.pathname.split("/"),
                 apiPath = "",
+                /**
+                * Main request processing object containing all informashed shared through all the parts of the same request
+                * @typedef params
+                * @type {object}
+                * @property {string} href - full URL href
+                * @property {res} res - nodejs response object
+                * @property {req} req - nodejs request object
+                * @property {object} qstring - all the passed fields either through query string in GET requests or body and query string for POST requests
+                * @property {string} apiPath - two top level url path, for example /i/analytics
+                * @property {string} fullPath - full url path, for example /i/analytics/dashboards
+                * @property {object} files - object with uploaded files, available in POST requests which upload files
+                * @property {boolean} cancelRequest - Used for skipping SDK requests, if contains true, then request should be ignored and not processed. Can be set at any time by any plugin, but API only checks for it in beggining after / and /sdk events, so that is when plugins should set it if needed
+                * @property {boolean} bulk - True if this SDK request is processed from the bulk method
+                * @property {array} promises - Array of the promises by different events. When all promises are fulfilled, request counts as processed
+                * @property {string} ip_address - IP address of the device submitted request, exists in all SDK requests
+                * @property {object} user - Data with some user info, like country geolocation, etc from the request, exists in all SDK requests
+                * @property {object} app_user - Document from the app_users collection for current user, exists in all SDK requests after validation
+                * @property {object} app_user_id - ID of app_users document for the user, exists in all SDK requests after validation
+                * @property {object} app - Document for the app sending request, exists in all SDK requests after validation and after validateUserForDataReadAPI validation
+                * @property {ObjectID} app_id - ObjectID of the app document, available after validation
+                * @property {string} app_cc - Selected app country, available after validation
+                * @property {string} appTimezone - Selected app timezone, available after validation
+                * @property {object} member - All data about dashboard user sending the request, exists on all requests containing api_key, after validation through validation methods
+                * @property {timeObject} time - Time object for the request
+                */
                 params = {
                     'href':urlParts.href,
                     'qstring':queryString,
@@ -721,7 +779,6 @@ if (cluster.isMaster) {
                             }
                             
                             processBulkRequest(0);
-                            
                             break;
                         }
                         case '/i/users':
@@ -794,6 +851,48 @@ if (cluster.isMaster) {
                                 default:
                                     if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
                                         common.returnMessage(params, 400, 'Invalid path, must be one of /create, /update, /delete or /reset');
+                                    break;
+                            }
+            
+                            break;
+                        }
+                        case '/i/tasks':
+                        {
+                            if (!params.qstring.api_key) {
+                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
+                                return false;
+                            }
+                            
+                            if (!params.qstring.task_id) {
+                                common.returnMessage(params, 400, 'Missing parameter "task_id"');
+                                return false;
+                            }
+            
+                            switch (paths[3]) {
+                                case 'update':
+                                    validateUserForWriteAPI(function(){
+                                        taskmanager.rerunTask({db:common.db, id:params.qstring.task_id}, function(err, res){
+                                            common.returnMessage(params, 200, res);
+                                        });
+                                    }, params);
+                                    break;
+                                case 'delete':
+                                    validateUserForWriteAPI(function(){
+                                        taskmanager.deleteResult({db:common.db, id:params.qstring.task_id}, function(err, res){
+                                            common.returnMessage(params, 200, "Success");
+                                        });
+                                    }, params);
+                                    break;
+                                case 'name':
+                                    validateUserForWriteAPI(function(){
+                                        taskmanager.deleteResult({db:common.db, id:params.qstring.task_id, name:params.qstring.name}, function(err, res){
+                                            common.returnMessage(params, 200, "Success");
+                                        });
+                                    }, params);
+                                    break;
+                                default:
+                                    if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
+                                        common.returnMessage(params, 400, 'Invalid path');
                                     break;
                             }
             
@@ -884,6 +983,178 @@ if (cluster.isMaster) {
             
                             break;
                         }
+                        case '/o/tasks':
+                        {
+                            if (!params.qstring.api_key) {
+                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
+                                return false;
+                            }
+            
+                            switch (paths[3]) {
+                                case 'all':
+                                    validateUserForMgmtReadAPI(function(){
+                                        if(typeof params.qstring.query === "string"){
+                                            try{
+                                                params.qstring.query = JSON.parse(params.qstring.query);
+                                            }
+                                            catch(ex){params.qstring.query = {};}
+                                        }
+                                        params.qstring.query.app_id = params.qstring.app_id;
+                                        taskmanager.getResults({db:common.db, query:params.qstring.query}, function(err, res){
+                                            common.returnOutput(params, res || []);
+                                        });
+                                    }, params);
+                                    break;
+                                case 'task':
+                                    validateUserForMgmtReadAPI(function(){
+                                        if (!params.qstring.task_id) {
+                                            common.returnMessage(params, 400, 'Missing parameter "task_id"');
+                                            return false;
+                                        }
+                                        taskmanager.getResult({db:common.db, id:params.qstring.task_id}, function(err, res){
+                                            if(res){
+                                                common.returnOutput(params, res);
+                                            }
+                                            else{
+                                                common.returnMessage(params, 400, 'Task does not exist');
+                                            }
+                                        });
+                                    }, params);
+                                    break;
+                                case 'check':
+                                    validateUserForMgmtReadAPI(function(){
+                                        if (!params.qstring.task_id) {
+                                            common.returnMessage(params, 400, 'Missing parameter "task_id"');
+                                            return false;
+                                        }
+                                        taskmanager.checkResult({db:common.db, id:params.qstring.task_id}, function(err, res){
+                                            if(res){
+                                                common.returnMessage(params, 200, res.status);
+                                            }
+                                            else{
+                                                common.returnMessage(params, 400, 'Task does not exist');
+                                            }
+                                        });
+                                    }, params);
+                                    break;
+                                default:
+                                    if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
+                                        common.returnMessage(params, 400, 'Invalid path');
+                                    break;
+                            }
+            
+                            break;
+                        }
+                        case '/o/export':
+                        {
+                            if (!params.qstring.api_key) {
+                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
+                                return false;
+                            }
+                            
+                            function reviver(key, value) {
+                                if (value.toString().indexOf("__REGEXP ") == 0) {
+                                    var m = value.split("__REGEXP ")[1].match(/\/(.*)\/(.*)?/);
+                                    return new RegExp(m[1], m[2] || "");
+                                } else
+                                    return value;
+                            }
+            
+                            switch (paths[3]) {
+                                case 'db':
+                                    validateUserForMgmtReadAPI(function(){
+                                        if (!params.qstring.collection) {
+                                            common.returnMessage(params, 400, 'Missing parameter "collection"');
+                                            return false;
+                                        }
+                                        if(typeof params.qstring.query === "string"){
+                                            try{
+                                                params.qstring.query = JSON.parse(params.qstring.query, reviver);
+                                            }
+                                            catch(ex){params.qstring.query = null;}
+                                        }
+                                        if(typeof params.qstring.projection === "string"){
+                                            try{
+                                                params.qstring.projection = JSON.parse(params.qstring.projection);
+                                            }
+                                            catch(ex){params.qstring.projection = null;}
+                                        }
+                                        if(typeof params.qstring.sort === "string"){
+                                            try{
+                                                params.qstring.sort = JSON.parse(params.qstring.sort);
+                                            }
+                                            catch(ex){params.qstring.sort = null;}
+                                        }
+                                        countlyApi.data.exports.fromDatabase({
+                                            db: (params.qstring.db === "countly_drill") ? common.drillDb : common.db,
+                                            params: params,
+                                            collection: params.qstring.collection,
+                                            query: params.qstring.query,
+                                            projection: params.qstring.projection,
+                                            sort: params.qstring.sort,
+                                            limit: params.qstring.limit,
+                                            skip: params.qstring.skip,
+                                            type: params.qstring.type,
+                                            filename: params.qstring.filename
+                                        });
+                                    }, params);
+                                    break;
+                                case 'request':
+                                    validateUserForMgmtReadAPI(function(){
+                                        if (!params.qstring.path) {
+                                            common.returnMessage(params, 400, 'Missing parameter "path"');
+                                            return false;
+                                        }
+                                        if(typeof params.qstring.data === "string"){
+                                            try{
+                                                params.qstring.data = JSON.parse(params.qstring.data);
+                                            }
+                                            catch(ex){
+                                                params.qstring.data = {};
+                                            }
+                                        }
+                                        countlyApi.data.exports.fromRequest({
+                                            params: params,
+                                            path:params.qstring.path,
+                                            data:params.qstring.data,
+                                            method:params.qstring.method,
+                                            post:params.qstring.post,
+                                            prop:params.qstring.prop,
+                                            type: params.qstring.type,
+                                            filename: params.qstring.filename
+                                        });
+                                    }, params);
+                                    break;
+                                case 'data':
+                                    validateUserForMgmtReadAPI(function(){
+                                        if (!params.qstring.data) {
+                                            common.returnMessage(params, 400, 'Missing parameter "data"');
+                                            return false;
+                                        }
+                                        if(typeof params.qstring.data === "string"){
+                                            try{
+                                                params.qstring.data = JSON.parse(params.qstring.data);
+                                            }
+                                            catch(ex){
+                                                common.returnMessage(params, 400, 'Incorrect parameter "data"');
+                                                return false;
+                                            }
+                                        }
+                                        countlyApi.data.exports.fromData(params.qstring.data, {
+                                            params: params,
+                                            type: params.qstring.type,
+                                            filename: params.qstring.filename
+                                        });
+                                    }, params);
+                                    break;
+                                default:
+                                    if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
+                                        common.returnMessage(params, 400, 'Invalid path');
+                                    break;
+                            }
+            
+                            break;
+                        }
                         case '/o/ping':
                         {
                             common.db.collection("plugins").findOne({_id:"plugins"}, {_id:1}, function(err, result){
@@ -891,6 +1162,29 @@ if (cluster.isMaster) {
                                     common.returnMessage(params, 404, 'DB Error');
                                 else
                                     common.returnMessage(params, 200, 'Success');
+                            });
+                            break;
+                        }
+                        case '/o/token':
+                        {
+                            var ttl, multi;
+                            if(params.qstring.ttl)
+                               ttl = parseInt(params.qstring.ttl);
+                            else
+                                ttl = 1800;
+                            if(params.qstring.multi)
+                               multi = true;
+                            else
+                                multi = false;
+                            validateUserForDataReadAPI(params, function(){
+                                authorize.save({db:common.db, ttl:ttl, multi:multi, owner:params.member._id+"", app:params.app_id+"", callback:function(err, token){
+                                    if(err){
+                                        common.returnMessage(params, 404, 'DB Error');
+                                    }
+                                    else{
+                                        common.returnMessage(params, 200, token);
+                                    }
+                                }});
                             });
                             break;
                         }
@@ -1031,12 +1325,20 @@ if (cluster.isMaster) {
                     processRequest();
                 });
             }
+            else if (req.method === 'OPTIONS') {
+                var headers = {};
+                headers["Access-Control-Allow-Origin"] = "*";
+                headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
+                headers["Access-Control-Allow-Headers"] = "countly-token";
+                res.writeHead(200, headers);
+                res.end();
+            }
             else
                 //attempt process GET request
                 processRequest();
         }, true);
 
-    }).listen(common.config.api.port, common.config.api.host || '');
+    }).listen(common.config.api.port, common.config.api.host || '').timeout = common.config.api.timeout || 120000;
 
     plugins.loadConfigs(common.db);
 }

@@ -65,9 +65,21 @@ window.DBViewerView = countlyView.extend({
 			if(self.filter != "{}"){
 				$(".collection-filter").val(self.filter);
 			}
+            var qstring = {
+                    api_key: countlyGlobal["member"].api_key,
+                    db: self.db,
+                    collection: self.collection,
+                    query:self.filter
+                };
+            new CountlyDrop({
+                target: document.querySelector('#export-button'),
+                content: CountlyHelpers.export(data.total, qstring).removeClass("dialog")[0],
+                position: 'right middle',
+                remove:true,
+                openOn: 'click'
+            });
 			$("#collection-filter").on('click', function() {
 				var filter = $(".collection-filter").val();
-				//if()
 				self.filter = filter;
 				store.set("countly_collectionfilter", self.filter);
 				window.location.reload(true);

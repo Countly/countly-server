@@ -25,6 +25,7 @@
  * - if error didn't happen, function is called
  * - if error happened, it will be logged, but function won't be called
  * - if error happened, arg1 is a first argument AFTER error, it's not an error
+ * @module api/utils/log
  */
 
 var prefs = require('../config.js', 'dont-enclose').logging || {};
@@ -58,11 +59,13 @@ var styles = {
 
 /**
  * Returns logger function for given preferences
- * @param prefix add prefix to message
- * @param enabled whether function should log anything
- * @param outer this for @out
- * @param out output function (console or debug)
- * @api private
+ * @param {string} level - log level
+ * @param {string} prefix - add prefix to message
+ * @param {boolean} enabled - whether function should log anything
+ * @param {object} outer - this for @out
+ * @param {function} out - output function (console or debug)
+ * @param {function} styler - function to apply styles
+ * @returns {function} logger function
  */
 var log = function(level, prefix, enabled, outer, out, styler) {
 	return function() {
@@ -93,8 +96,7 @@ var log = function(level, prefix, enabled, outer, out, styler) {
 
 /**
  * Looks for logging level in config for a particular module
- * @param name module name
- * @api private
+ * @param {string} name - module name
  */
 var logLevel = function(name) {
 	if (typeof prefs === 'undefined') { return 'error'; }
@@ -122,15 +124,28 @@ var logLevel = function(name) {
 var levels = {
 	// mongo: 'info'
 };
-
+/**
+* Sets current logging level
+* @static
+* @param {string} module - name of the module for logging
+* @param {string} level -  level of logging, possible values are: debug, info, warn, error
+**/
 var setLevel = function(module, level) {
 	levels[module] = level;
 };
-
+/**
+* Sets default logging level for all modules, that do not have specific level set
+* @static
+* @param {string} level -  level of logging, possible values are: debug, info, warn, error
+**/
 var setDefault = function(level) {
 	deflt = level;
 };
-
+/**
+* Get currently set logging level for module
+* @static
+* @returns {string} level of logging, possible values are: debug, info, warn, error
+**/
 var getLevel = function(module) {
 	return levels[module] || deflt;
 };
@@ -143,7 +158,11 @@ var getEnabledWithLevel = function(acceptable, module) {
 		return acceptable.indexOf(levels[module] || deflt) !== -1;
 	};
 };
-
+/**
+* Handle messages from ipc
+* @static
+* @param {string} msg - message received from other processes
+**/
 var ipcHandler = function(msg){
 	var m, l, modules, i;
 
@@ -211,14 +230,48 @@ var ipcHandler = function(msg){
 	// console.log('%d: Set logging config to %j (now %j)', process.pid, msg.config, levels);
 };
 
+/**
+* Creates new logger object for provided module
+* @param {string} name - name of the module
+* @returns {module:api/utils/log~Logger} logger object
+**/
 module.exports = function(name) {
 	setLevel(name, logLevel(name));
 	// console.log('Got level for ' + name + ': ' + levels[name] + ' ( prefs ', prefs);
+    /**
+    * @class Logger
+    **/
 	return {
+        /**
+        * Logging debug level messages
+        * @memberof module:api/utils/log~Logger
+        * @param {...*} var_args - string and values to format string with
+        **/
 		d: log('DEBUG', name, getEnabledWithLevel(['debug'], name), this, console.log),
+        /**
+        * Logging information level messages
+        * @memberof module:api/utils/log~Logger
+        * @param {...*} var_args - string and values to format string with
+        **/
 		i: log('INFO', name, getEnabledWithLevel(['debug', 'info'], name), this, console.info),
+        /**
+        * Logging warning level messages
+        * @memberof module:api/utils/log~Logger
+        * @param {...*} var_args - string and values to format string with
+        **/
 		w: log('WARN', name, getEnabledWithLevel(['debug', 'info', 'warn'], name), this, console.warn, styles.stylers.warn),
+        /**
+        * Logging error level messages
+        * @memberof module:api/utils/log~Logger
+        * @param {...*} var_args - string and values to format string with
+        **/
 		e: log('ERROR', name, getEnabledWithLevel(['debug', 'info', 'warn', 'error'], name), this, console.error, styles.stylers.error),
+        /**
+        * Logging inside callbacks
+        * @memberof module:api/utils/log~Logger
+        * @param {function=} next - next function to call, after callback executed
+        * @returns function to pass as callback
+        **/
 		callback: function(next){
 			var self = this;
 			return function(err) {
@@ -229,6 +282,13 @@ module.exports = function(name) {
 				}
 			};
 		},
+        /**
+        * Logging database callbacks
+        * @memberof module:api/utils/log~Logger
+        * @param {string} name - name of the performed operation
+        * @param {function=} next - next function to call, after callback executed
+        * @returns function to pass as callback
+        **/
 		logdb: function(name, next, nextError) {
 			var self = this;
 			return function(err) {

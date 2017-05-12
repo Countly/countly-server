@@ -119,9 +119,18 @@
         this.stats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
 		this.id = this.getId();
 		this.isRegistered = false;
-		this.iap = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].iap_event || "";
+		this.iap = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].iap_event || [];
 		if(this.iap != ""){
-            eventsMap[this.iap] = segments.Buy;
+            if(typeof this.iap === "string"){
+                eventsMap[this.iap] = segments.Buy;
+                this.iap = [this.iap];
+            }
+            else if(jQuery.isArray(this.iap)){
+                for(var i = 0; i <  this.iap.length; i++){
+                    eventsMap[this.iap[i]] = segments.Buy;
+                }
+
+            }
 		}
 
 		this.hasSession = false;
@@ -314,7 +323,7 @@
                 "dow": getRandomInt(0, 6)
 			};
 			this.ts += 1000;
-			if(id == this.iap){
+			if(this.iap.indexOf(id) !== -1){
 				this.stats.b++;
 				event.sum = getRandomInt(100, 500)/100;
 				var segment;
@@ -402,8 +411,8 @@
                 var events = this.getEvent("Login").concat(this.getEvent("[CLY]_view")).concat(this.getEvents(4));
 				req = {timestamp:this.ts, begin_session:1, events:events};
 			}
-            if(this.iap != "" && Math.random() > 0.5){
-                req.events = req.events.concat(this.getEvent(this.iap));
+            if(this.iap.length && Math.random() > 0.5){
+                req.events = req.events.concat(this.getEvent(this.iap[getRandomInt(0,this.iap.length-1)]));
             }
             if(Math.random() > 0.5){
                 this.stats.c++;

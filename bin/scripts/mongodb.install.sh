@@ -40,7 +40,7 @@ if [ -f /etc/lsb-release ]; then
     fi
     apt-get update
     #install mongodb
-    apt-get -y --force-yes install mongodb-org || (echo "Failed to install mongodb." ; exit)
+    apt-get -y install mongodb-org || (echo "Failed to install mongodb." ; exit)
     
     #disable transparent-hugepages (requires reboot)
     cp -f $DIR/disable-transparent-hugepages /etc/init.d/disable-transparent-hugepages
@@ -55,16 +55,16 @@ nodejs $DIR/configure_mongodb.js /etc/mongod.conf
 if [ -f /etc/redhat-release ]; then
     #mongodb might need to be started
     if grep -q -i "release 6" /etc/redhat-release ; then
-        service mongod restart
+        service mongod restart || echo "mongodb service does not exist"
     else
-        systemctl restart mongod
+        systemctl restart mongod || echo "mongodb systemctl job does not exist"
     fi
 fi
 
 if [ -f /etc/lsb-release ]; then
     if [[ `/sbin/init --version` =~ upstart ]]; then
-        restart mongod
+        restart mongod || echo "mongodb upstart job does not exist"
     else
-        systemctl restart mongod
-    fi 2> /dev/null
+        systemctl restart mongod || echo "mongodb systemctl job does not exist"
+    fi
 fi

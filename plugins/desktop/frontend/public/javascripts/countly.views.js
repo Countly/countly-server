@@ -10,7 +10,7 @@ window.DesktopDashboardView = countlyView.extend({
             "map-list-users": {id:'total', label:jQuery.i18n.map["sidebar.analytics.users"], type:'number', metric:"u"},
             "map-list-new": {id:'total', label:jQuery.i18n.map["common.table.new-users"], type:'number', metric:"n"}
         };
-        var defs = [countlyUser.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
+        var defs = [countlySession.initialize(), countlyDeviceDetails.initialize(), countlyTotalUsers.initialize("users"), countlyTotalUsers.initialize("countries")];
         if(typeof window.countlyLanguage != "undefined")
             defs.push(countlyLanguage.initialize());
         
@@ -137,12 +137,12 @@ window.DesktopDashboardView = countlyView.extend({
         sessionData["bars"] = [
             {
                 "title":jQuery.i18n.map["common.bar.top-platform"],
-                "data":countlyDeviceDetails.getPlatformBars(),
+                "data":countlyDeviceDetails.getBars("os"),
                 "help":"dashboard.top-platforms"
             },
             {
                 "title":jQuery.i18n.map["common.bar.top-resolution"],
-                "data":countlyDeviceDetails.getResolutionBars(),
+                "data":countlyDeviceDetails.getBars("resolutions"),
                 "help":"dashboard.top-resolutions"
             },
             {

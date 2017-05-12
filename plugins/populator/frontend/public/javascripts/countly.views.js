@@ -153,8 +153,10 @@ app.addAppManagementSwitchCallback(function(appId, type){
         setTimeout(function(){
             var appId = $("#view-app-id").text();
             countlyCommon.setActiveApp(appId);
-            $("#sidebar-app-select").find(".logo").css("background-image", "url('"+countlyGlobal["cdn"]+"appimages/" + appId + ".png')");
-            $("#sidebar-app-select").find(".text").text(countlyGlobal['apps'][appId].name);
+
+            $("#active-app-icon").find(".logo").css("background-image", "url('"+countlyGlobal["cdn"]+"appimages/" + appId + ".png')");
+            $("#active-app-name").find(".text").text(countlyGlobal['apps'][appId].name);
+
             app.onAppSwitch(appId, true);
             app.navigate("/manage/populate/autostart", true);
         }, 1000);

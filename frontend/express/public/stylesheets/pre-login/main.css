@@ -53,7 +53,7 @@
        url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.ttf') format('truetype'),
        url('../../fonts/Ubuntu-500italic/Ubuntu-500italic.svg#Ubuntu') format('svg');
 }
-body { padding:20px; background-color:#222; font-family:Ubuntu,Helvetica,sans-serif; }
+body { padding:20px; background-color:#222; font-family:Ubuntu,Helvetica,sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 input { outline:none; }
 input[type=text], input[type=password] { font:15px Ubuntu,Helvetica,sans-serif; border-radius:3px; border:none; padding:10px; background-color:#FFF; color:#CCC; width:206px; margin:0 0 8px 0; }
 input[type=text]:active, input[type=text]:focus, input[type=password]:active, input[type=password]:focus { outline:none; color:#666; }

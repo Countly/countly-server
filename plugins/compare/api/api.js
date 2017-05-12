@@ -1,6 +1,7 @@
 var plugin = {},
     plugins = require('../../pluginManager.js'),
-    countlySession = require('../../../api/lib/countly.session.js'),
+    countlyModel = require('../../../api/lib/countly.model.js'),
+    countlySession = countlyModel.load("users"),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     common = require('../../../api/utils/common.js'),
     fetch = require('../../../api/parts/data/fetch.js'),
@@ -113,7 +114,7 @@ var plugin = {},
                         ],
                         dataProps = [];
                     dataProps.push(props);
-                    return countlyCommon.extractChartData(db, countlySession.clearSessionObject, chartData, dataProps).chartDP[0].data;
+                    return countlyCommon.extractChartData(db, countlySession.clearObject, chartData, dataProps).chartDP[0].data;
                 }
 
                 function setAppId(inAppId) {

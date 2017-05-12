@@ -1,3 +1,38 @@
+## Version 17.05
+
+**New features**
+
+* New topbar that holds many action buttons. This replaces bottom bar and adds app selector, dashboard selector and configuration options (e.g password change, settings, language switcher etc).
+* Rich push support for iOS and Android, which includes ability to send images and videos to devices.
+* Interactive push support for both platforms, with ability to add up to 3 buttons in a push notification.
+* New Assistant plugin can be used to get more insights from devices and keeps you up to date with data. 
+* Inside Crash Analytics, now it's possible to make multi crash selection for actions like resolve, unresolve, hide, show, delete, etc
+* Event logs plugin can record whole request data
+* Record metrics and some default values even without sessions
+* Views now has new heatmaps injected in website (requires latest SDK update)
+* Improved view loading and reloading
+* Android badge support for push notifications
+* Server side data export for Crash Analytics
+* Documentation through comments
+* Validate sha256 checksums
+
+**Enterprise Edition Features**
+
+* New Dashboard plugin: Provides ability to add as many custom dashboards as you want, and share with your colleagues
+* New Flows plugin: Shows step by step movement of event flows
+* New Report Manager plugin can save, show and run long-running drill and funnel queries
+* Revenue plugin can accept multiple in-app purchase keys
+* DBViewer and User Profiles now has server side export
+* Crashes plugin gets the ability to be filtered
+* Analytics > Views data is now drillable
+* Fix: Live users plugin - resume online user after inactivity for web SDK
+
+**Fixes**
+
+* Server stats - fix collecting sessions
+* Api - accept milisecond float timestamps
+* Email reports - fix fetching event data
+
 ## Version 16.12.3
 
 This is a bugfix release.

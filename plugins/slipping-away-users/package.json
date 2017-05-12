@@ -19,8 +19,6 @@
     "slipping-away"
   ],
   "dependencies": {
-    "bluebird": "^3.4.1",
-    "moment": "^2.14.1"
   },
   "private": true
 }

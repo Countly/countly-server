@@ -178,9 +178,11 @@ class SubCredentials extends Credentials {
 		this.test = test || credentials.test;
 
 		if (this.platform === Platform.APNS) {
-			if (this.field === DB_USER_MAP.apn_dev || 
-				(this.test && this.field === DB_USER_MAP.apn_adhoc)) {
+			if (this.field === DB_USER_MAP.apn_dev) {
 				this.host = 'api.development.push.apple.com';
+				this.port = 443;
+			} else if (this.field === DB_USER_MAP.apn_adhoc) {
+				this.host = 'api.push.apple.com';
 				this.port = 443;
 			} else if (this.field === DB_USER_MAP.apn_prod) {
 				this.host = 'api.push.apple.com';
