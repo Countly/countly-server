@@ -691,7 +691,7 @@ window.component('push.popup', function(popup) {
 									m('div', [
 										m('h4', [
 											t('pu.po.tab2.mmedia'),
-											message.media.typeWarn ? 
+											message.media.typeWarn && message.platforms().indexOf(push.C.PLATFORMS.ANDROID) !== -1 ? 
 												m('.android-warn', [
 													push.ICON.WARN(),
 													message.media.typeWarn
