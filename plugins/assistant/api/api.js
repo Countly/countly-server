@@ -258,6 +258,32 @@ const plugin = {},
         return true;
     });
 
+    plugins.register("/i/apps/delete", function(ob){
+        //delete all notifications for specific app
+        var appId = ob.appId;
+        common.db.collection(db_name_notifs).remove({app_id:appId}, function(){});
+        common.db.collection(db_name_config).remove({_id: db.ObjectID(appId)}, function(){});
+    });
+
+    plugins.register("/i/apps/clear_all", function(ob){
+        //delete all unsaved notifications for specific app
+        var appId = ob.appId;
+        common.db.collection(db_name_notifs).remove({app_id:appId, saved_global:false, saved_private:[]}, function(){});
+    });
+
+    plugins.register("/i/apps/clear", function(ob){
+        //delete all unsaved notifications for specific app in specific time period
+        var appId = ob.appId;
+        common.db.collection(db_name_notifs).remove({app_id:appId, saved_global:false, saved_private:[], created_date:{$lt:new Date(ob.moment)}}, function(){});
+    });
+
+    plugins.register("/i/apps/reset", function(ob){
+        //delete all notifications for specific app
+        var appId = ob.appId;
+        common.db.collection(db_name_notifs).remove({app_id:appId}, function(){});
+        common.db.collection(db_name_config).remove({_id: db.ObjectID(appId)}, function(){});
+    });
+
 }(plugin));
 
 module.exports = plugin;

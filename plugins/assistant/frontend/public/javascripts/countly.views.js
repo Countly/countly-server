@@ -226,6 +226,10 @@ $(document).ready(function() {
         AssistantView.initialize();
     });
 
+    $(document).on("/i/apps/reset", function() {
+        AssistantView.initialize();
+    });
+
     $(window).on("resize", function() {
         $("#top-bar").find("#assistant-menu .menu").css("height", $(window).height() * 0.8);
     });
