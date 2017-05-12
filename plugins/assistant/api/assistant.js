@@ -77,60 +77,45 @@ const assistant = {},
                     db.collection(db_name_notifs).find({app_id: app_id}, {}).toArray(function (err1, notifs) {
                         //todo handle null case
                         //log.i('Doing stuff at step: %s, ALL, error: [%j], data: [%j]', 3, err1, notifs);
+
+                        //go through all notifications and remove those that are assigned to a different specific user
+                        //while doing this, also filter out sensitive information
+                        const sanitizeDataAndFilterTargetUser = function (userElem) {
+                            let targetElemArray = userElem.target_user_array;
+
+                            delete userElem.saved_private;
+                            delete userElem.saved_global;
+                            delete userElem.target_user_array;
+
+                            if(_.isUndefined(targetElemArray) || targetElemArray == null || _.isEmpty(targetElemArray)) {
+                                return true;
+                            }
+
+                            return targetElemArray.includes(api_key);
+
+                        };
+
+                        notifs = notifs.filter(sanitizeDataAndFilterTargetUser);
+
                         //get global saved notifications for this app
-                        db.collection(db_name_notifs).find({
-                            app_id: app_id,
-                            saved_global: true
-                        }, {}).toArray(function (err2, notifs_global) {
-                            //todo handle null case
-                            //log.i('Doing stuff at step: %s, SAVED GLOBAL, error: [%j], data: [%j]', 4, err2, notifs_global);
-                            //get privatly saved notifications for this app
-                            db.collection(db_name_notifs).find({
-                                app_id: app_id,
-                                saved_private: api_key
-                            }, {}).toArray(function (err3, notifs_saved) {
-                                //todo handle null case
-                                //log.i('Doing stuff at step: %s, SAVED PRIVATE, error: [%j], data: [%j]', 5, err3, notifs_saved);
+                        const notifs_global = notifs.filter(function (elem) {
+                            return elem.saved_global;
+                        });
 
-                                //go through all notifications and remove those that are assigned to a different specific user
-                                const elemFilterTargetUser = function (userElem) {
-                                    let targetElemArray = userElem.target_user_array;
+                        //get privately saved notifications for this app
+                        const notifs_saved = notifs.filter(function (elem) {
+                            if(_.isUndefined(elem.saved_private) || elem.saved_private == null) {
+                                return false;
+                            }
+                            return elem.saved_private.includes(api_key);
+                        });
 
-                                    if(_.isUndefined(targetElemArray) || targetElemArray == null) {
-                                        return true;
-                                    }
-
-                                    if(_.isEmpty(targetElemArray)) {
-                                        return true;
-                                    }
-
-                                    return targetElemArray.includes(api_key);
-                                };
-
-                                notifs = notifs.filter(elemFilterTargetUser);
-                                notifs_global = notifs_global.filter(elemFilterTargetUser);
-                                notifs_saved = notifs_saved.filter(elemFilterTargetUser);
-
-                                const sanitizeNotificationData = function (elem) {
-                                    delete elem.saved_private;
-                                    delete elem.saved_global;
-                                    delete elem.target_user_array;
-
-                                    return true;
-                                };
-
-                                notifs.filter(sanitizeNotificationData);
-                                notifs_global.filter(sanitizeNotificationData);
-                                notifs_saved.filter(sanitizeNotificationData);
-
-                                callback(null, {
-                                    id: app_id,
-                                    isMobile: isMobile,
-                                    notifications: notifs,
-                                    notifs_saved_global: notifs_global,
-                                    notifs_saved_private: notifs_saved
-                                });
-                            });
+                        callback(null, {
+                            id: app_id,
+                            isMobile: isMobile,
+                            notifications: notifs,
+                            notifs_saved_global: notifs_global,
+                            notifs_saved_private: notifs_saved
                         });
                     });
                 });

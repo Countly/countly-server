@@ -274,16 +274,13 @@
     };
 
     countlyAssistant.getDataForApp = function (app_id) {
-        //CountlyHelpers.alert(10, "green");
         for(var a = 0 ; a < _data.length ; a++){
             if(_data[a].id === app_id) return fixData(_data[a]);
         }
-        CountlyHelpers.alert(11, "green");
         return [];//todo fix this
     };
 
     countlyAssistant.changeNotification = function (notif_id, is_private, save_it) {
-        //CountlyHelpers.alert("1.1", "green");
         return $.ajax({
             type:"GET",
             url:countlyCommon.API_URL + "/i/assistant/" + (is_private?"private":"global"),
