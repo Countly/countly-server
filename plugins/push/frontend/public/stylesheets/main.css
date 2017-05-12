@@ -736,7 +736,7 @@ input:disabled + label {
     table-layout: fixed;
     width: 100%;
     border-bottom: 1px solid #DFE3E9;
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 
 .comp-push-view-row:first-child {
