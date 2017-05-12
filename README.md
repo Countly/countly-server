@@ -12,7 +12,7 @@
 * **Questions?** [Ask in our Community forum](http://community.count.ly)
 
 ## What's Countly?
-[Countly](http://count.ly) is an innovative, real-time, open source mobile & [web analytics](http://count.ly/web-analytics), [push notifications](http://count.ly/push-notifications) and [crash reporting](http://count.ly/crash-reports) platform powering more than 2500 web sites and 12000 mobile applications. It collects data from mobile phones, tablets, Apple Watch and other internet-connected devices, and visualizes this information to analyze mobile application usage and end-user behavior. 
+[Countly](http://count.ly) is an innovative, real-time, open source mobile & [web analytics](http://count.ly/web-analytics), [rich push notifications](http://count.ly/push-notifications) and [crash reporting](http://count.ly/crash-reports) platform powering more than 2500 web sites and 12000 mobile applications. It collects data from mobile phones, tablets, Apple Watch and other internet-connected devices, and visualizes this information to analyze mobile application usage and end-user behavior. 
 
 With the help of [Javascript SDK](http://github.com/countly/countly-sdk-web), Countly is a web analytics platform with features on par with mobile SDKs. For more information about web analytics capabilities, [see this link](http://count.ly/web-analytics).
 
@@ -33,7 +33,7 @@ This repository includes server-side part of Countly, with following features:
 * Plugin based system
 * Analytics features for [mobile](http://count.ly/features), [web](http://count.ly/web-analytics) and desktop
 * [Crash reporting](http://count.ly/crash-reports) for iOS & Android and error reporting for Javascript
-* [Push notifications](http://count.ly/push-notifications) for iOS & Android
+* [Rich and interactive push notifications](http://count.ly/push-notifications) for iOS & Android
 * Email reporting
 
 
