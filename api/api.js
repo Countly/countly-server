@@ -1131,7 +1131,7 @@ if (cluster.isMaster) {
                                             common.returnMessage(params, 400, 'Missing parameter "data"');
                                             return false;
                                         }
-                                        if(typeof params.qstring.data === "string"){
+                                        if(typeof params.qstring.data === "string" && !params.qstring.raw){
                                             try{
                                                 params.qstring.data = JSON.parse(params.qstring.data);
                                             }

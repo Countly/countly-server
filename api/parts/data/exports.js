@@ -46,7 +46,7 @@ var exports = {},
     function flattenObject(ob, fields) {
         var toReturn = {};   
         for (var i in ob) {
-            if(ob[i]._bsontype) {
+            if(ob[i] && ob[i]._bsontype) {
                 //this is ObjectID
                 ob[i] = ob[i]+"";
             }
@@ -244,7 +244,10 @@ var exports = {},
         options.output = options.output || function(data){ exports.output(options.params, data, options.filename, options.type); };
         if(!data)
             data = [];
-        options.output(exports.convertData(data, options.type));
+        if(typeof data === "string")
+            options.output(data);
+        else    
+            options.output(exports.convertData(data, options.type));
     }
 }(exports));
 

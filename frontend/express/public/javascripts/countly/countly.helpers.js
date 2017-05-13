@@ -210,7 +210,7 @@
     };
     
     /**
-    * Displays export dialog
+    * Displays database export dialog
     * @param {number} count - total count of documents to export
     * @param {object} data - data for export query to use when constructing url
     * @param {boolean} asDialog - open it as dialog
@@ -258,6 +258,92 @@
             var form = $('<form method="POST" action="' + url + '">');
             $.each(data, function(k, v) {
                 form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
+            });
+            $('body').append(form);
+            form.submit();
+        });
+        if(asDialog)
+            revealDialog(dialog);
+        return dialog;
+    };
+    
+    /**
+    * Displays raw data table export dialog
+    * @param {object} data - data for export query to use when constructing url
+    * @param {boolean} asDialog - open it as dialog
+    * @returns {object} jQuery object reference to dialog
+    * @example
+    * var dialog = CountlyHelpers.export(300000);
+    * //later when done
+    * CountlyHelpers.removeDialog(dialog);
+    */
+    CountlyHelpers.tableExport = function (dtable, data, asDialog) {
+        function getFileName(){
+            var name = "countly";
+            if($(".widget-header .title").length)
+                name = $(".widget-header .title").first().text();
+            return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase())+"-"+moment().format("DD-MMM-YYYY");
+        }
+        function getExportData(dtable, type){
+            var tableCols = dtable.fnSettings().aoColumns,
+                retStr = "",
+                tableData = [];
+            if(tableCols[0].sExport && app.dataExports[tableCols[0].sExport]){
+                tableData = app.dataExports[tableCols[0].sExport]();
+            }
+            else{
+                tableData = TableTools.fnGetInstance(dtable[0]).fnGetTableData({"sAction":"flash_save","sTag":"default","sLinerTag":"default","sButtonClass":"DTTT_button_xls","sButtonText":"Save for Excel","sTitle":"","sToolTip":"","sCharSet":"utf16le","bBomInc":true,"sFileName":"*.csv","sFieldBoundary":"","sFieldSeperator":"\t","sNewLine":"auto","mColumns":"all","bHeader":true,"bFooter":true,"bOpenRows":false,"bSelectedOnly":false,"fnMouseover":null,"fnMouseout":null,"fnSelect":null,"fnComplete":null,"fnInit":null,"fnCellRender":null,"sExtends":"xls"});
+                tableData = tableData.split(/\r\n|\r|\n/g);
+                tableData.shift();
+                for(var i = 0; i < tableData.length; i++){
+                    tableData[i] = tableData[i].split('\t');   
+                }
+                var retData = [];
+                for (var i = 0;  i < tableData.length; i++) {
+                    var ob = {};
+                    for (var colIndex = 0;  colIndex < tableCols.length; colIndex++) {
+                        if (tableCols[colIndex].sType == "formatted-num") {
+                            ob[tableCols[colIndex].sTitle] = tableData[i][colIndex].replace(/,/g, "");
+                        } else if (tableCols[colIndex].sType == "percent") {
+                            ob[tableCols[colIndex].sTitle] = tableData[i][colIndex].replace("%", "");
+                        } else if (tableCols[colIndex].sType == "format-ago" || tableCols[colIndex].sType == "event-timeline") {
+                            ob[tableCols[colIndex].sTitle] = tableData[i][colIndex].split("|").pop();
+                        }
+                        else{
+                            ob[tableCols[colIndex].sTitle] = tableData[i][colIndex];
+                        }
+                    }
+                    retData.push(ob);
+                }
+                tableData = retData;
+            }               
+            return tableData;
+        }
+        var dialog = $("#cly-export").clone();
+        var type = "csv";
+        dialog.removeAttr("id");
+        dialog.find(".details").text("");
+        dialog.find(".cly-select").hide();
+        dialog.find(".button").click(function(){
+            dialog.find(".button-selector .button").removeClass("selected");
+            dialog.find(".button-selector .button").removeClass("active");
+            $(this).addClass("selected");
+            $(this).addClass("active");
+            type = $(this).attr("id").replace("export-", "");
+        });
+        dialog.find(".export-data").click(function(){
+            if($(this).hasClass("disabled"))
+                return;
+            data.type = type;
+            data.data = JSON.stringify(getExportData(dtable, type));
+            data.filename = getFileName(type);
+            var url = "/o/export/data";
+            var form = $('<form method="POST" action="' + url + '">');
+            $.each(data, function(k, v) {
+                if(k === "data")
+                    form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="'+k+'">'+v+'</textarea>'));
+                else
+                    form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
             });
             $('body').append(form);
             form.submit();

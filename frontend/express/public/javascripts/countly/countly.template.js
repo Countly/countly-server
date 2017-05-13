@@ -1714,13 +1714,6 @@ var AppRouter = Backbone.Router.extend({
         jQuery.fn.dataTableExt.oSort['format-ago-desc']  = function(x, y) {
             return y-x;
         };
-        
-        function getFileName(ext){
-            var name = "countly";
-            if($(".widget-header .title").length)
-                name = $(".widget-header .title").first().text();
-            return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase())+"-"+moment().format("DD-MMM-YYYY")+"."+ext;
-        }
 
         $.extend(true, $.fn.dataTable.defaults, {
             "sDom": '<"dataTable-top"lfpT>t<"dataTable-bottom"i>',
@@ -1740,134 +1733,8 @@ var AppRouter = Backbone.Router.extend({
                 "sSearch": jQuery.i18n.map["common.search"],
                 "sLengthMenu": jQuery.i18n.map["common.show-items"]+"<input type='number' id='dataTables_length_input'/>"
             },
-            "oTableTools": {
-                "sSwfPath": countlyGlobal["cdn"]+"javascripts/dom/dataTables/swf/copy_csv_xls.swf",
-                "aButtons": [
-                    {
-                        "sExtends": "csv",
-                        "sButtonText": jQuery.i18n.map["common.save-to-csv"],
-                        "fnClick": function (nButton, oConfig, flash) {
-                            var tableCols = $(nButton).parents(".dataTables_wrapper").find(".dataTable").dataTable().fnSettings().aoColumns,
-                                tableData = this.fnGetTableData(oConfig).split(/\r\n|\r|\n/g).join('","').split('","'),
-                                retStr = "";
-                                
-                            //check if exported data needs to be processed by some other lib    
-                            if(tableCols[0].sExport && app.dataExports[tableCols[0].sExport]){
-                                
-                                //get data to export
-                                var data = app.dataExports[tableCols[0].sExport]();
-                                
-                                //get all columns
-                                var cols = [];
-                                for(var i = 0; i < data.length; i++){
-                                    for(var col in data[i]){
-                                         if(cols.indexOf(col) === -1)
-                                             cols.push(col);
-                                        
-                                     }
-                                }
-                                
-                                //generate data in the needed format
-                                var tdata = JSON.parse(JSON.stringify(cols));
-                                for(var i = 0; i < data.length; i++){
-                                    for(var j = 0; j < cols.length; j++){
-                                        tdata.push('"'+(data[i][cols[j]] || ""));
-                                    }
-                                }
-                                
-                                tableCols = cols;
-                                tableData = tdata;
-                            }
-
-                            for (var i = 0;  i < tableData.length; i++) {
-                                tableData[i] = tableData[i].replace(/^"|"$/g, "");
-
-                                if (i >= tableCols.length) {
-                                    var colIndex = i % tableCols.length;
-                                     
-                                    if (tableCols[colIndex].sType == "formatted-num") {
-                                        tableData[i] = tableData[i].replace(/,/g, "");
-                                    } else if (tableCols[colIndex].sType == "percent") {
-                                        tableData[i] = tableData[i].replace("%", "");
-                                    } else if (tableCols[colIndex].sType == "format-ago" || tableCols[colIndex].sType == "event-timeline") {
-                                        tableData[i] = tableData[i].split("|").pop();
-                                    }
-                                }
-
-                                if ((i + 1) % tableCols.length == 0) {
-                                    retStr += "\"" + tableData[i] + "\"\r\n";
-                                } else {
-                                    retStr += "\"" + tableData[i] + "\", ";
-                                }
-                            }
-                            flash.setFileName( getFileName("csv") );
-                            this.fnSetText(flash, retStr);
-                        }
-                    },
-                    {
-                        "sExtends": "xls",
-                        "sButtonText": jQuery.i18n.map["common.save-to-excel"],
-                        "fnClick": function (nButton, oConfig, flash) {
-                            var tableCols = $(nButton).parents(".dataTables_wrapper").find(".dataTable").dataTable().fnSettings().aoColumns,
-                                tableData = this.fnGetTableData(oConfig).split(/\r\n|\r|\n/g).join('\t').split('\t'),
-                                retStr = "";
-                                
-                            //check if exported data needs to be processed by some other lib    
-                            if(tableCols[0].sExport && app.dataExports[tableCols[0].sExport]){
-                                
-                                //get data to export
-                                var data = app.dataExports[tableCols[0].sExport]();
-                                
-                                //get all columns
-                                var cols = [];
-                                for(var i = 0; i < data.length; i++){
-                                    for(var col in data[i]){
-                                         if(cols.indexOf(col) === -1)
-                                             cols.push(col);
-                                        
-                                     }
-                                }
-                                
-                                //generate data in the needed format
-                                var tdata = JSON.parse(JSON.stringify(cols));
-                                for(var i = 0; i < data.length; i++){
-                                    for(var j = 0; j < cols.length; j++){
-                                        tdata.push(data[i][cols[j]] || "");
-                                    }
-                                }
-                                
-                                tableCols = cols;
-                                tableData = tdata;
-                            }
-
-                            for (var i = 0;  i < tableData.length; i++) {
-                                if (i >= tableCols.length) {
-                                    var colIndex = i % tableCols.length;
-
-                                    if (tableCols[colIndex].sType == "formatted-num") {
-                                        tableData[i] = parseFloat(tableData[i].replace(/,/g, "")).toLocaleString();
-                                    } else if (tableCols[colIndex].sType == "percent") {
-                                        tableData[i] = parseFloat(tableData[i].replace("%", "")).toLocaleString();
-                                    } else if (tableCols[colIndex].sType == "numeric") {
-                                        tableData[i] = parseFloat(tableData[i]).toLocaleString();
-                                    } else if (tableCols[colIndex].sType == "format-ago" || tableCols[colIndex].sType == "event-timeline") {
-                                        tableData[i] = tableData[i].split("|").pop();
-                                    }
-                                }
-
-                                if ((i + 1) % tableCols.length == 0) {
-                                    retStr += tableData[i] + "\r\n";
-                                } else {
-                                    retStr += tableData[i] + "\t";
-                                }
-                            }
-                            flash.setFileName( getFileName("xls") );
-                            this.fnSetText(flash, retStr);
-                        }
-                    }
-                ]
-            },
             "fnInitComplete": function(oSettings, json) {
+                var dtable = this;
                 var saveHTML = "<div class='save-table-data' data-help='help.datatables-export'><i class='fa fa-download'></i></div>",
                     searchHTML = "<div class='search-table-data'><i class='fa fa-search'></i></div>",
                     tableWrapper = $("#" + oSettings.sTableId + "_wrapper");
@@ -1875,14 +1742,6 @@ var AppRouter = Backbone.Router.extend({
                 $(saveHTML).insertBefore(tableWrapper.find(".DTTT_container"));
                 $(searchHTML).insertBefore(tableWrapper.find(".dataTables_filter"));
                 tableWrapper.find(".dataTables_filter").html(tableWrapper.find(".dataTables_filter").find("input").attr("Placeholder",jQuery.i18n.map["common.search"]).clone(true));
-
-                tableWrapper.find(".save-table-data").on("click", function() {
-                    if ($(this).next(".DTTT_container").css('visibility') == 'hidden') {
-                        $(this).next(".DTTT_container").css("visibility", 'visible');
-                    } else {
-                        $(this).next(".DTTT_container").css("visibility", 'hidden');
-                    }
-                });
 
                 tableWrapper.find(".search-table-data").on("click", function() {
                     $(this).next(".dataTables_filter").toggle();
@@ -1924,9 +1783,40 @@ var AppRouter = Backbone.Router.extend({
                             exportDrop.position();
                         });
                     }
+                    else{
+                        tableWrapper.find(".dataTables_length").hide();
+                        //create export dialog
+                        var exportDrop = new CountlyDrop({
+                            target: tableWrapper.find('.save-table-data')[0],
+                            content: "",
+                            position: 'right middle',
+                            classes: "server-export",
+                            constrainToScrollParent: false,
+                            remove:true,
+                            openOn: "click"
+                        });
+                        tableWrapper.find(".save-table-data").off().on("click", function(){
+                            $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, {api_key: countlyGlobal["member"].api_key}).removeClass("dialog"));
+                            exportDrop.position();
+                        });
+                    }
                 }
                 else{
                     tableWrapper.find(".dataTables_length").hide();
+                    //create export dialog
+                    var exportDrop = new CountlyDrop({
+                        target: tableWrapper.find('.save-table-data')[0],
+                        content: "",
+                        position: 'right middle',
+                        classes: "server-export",
+                        constrainToScrollParent: false,
+                        remove:true,
+                        openOn: "click"
+                    });
+                    tableWrapper.find(".save-table-data").off().on("click", function(){
+                        $(".server-export .countly-drop-content").empty().append(CountlyHelpers.tableExport(dtable, {api_key: countlyGlobal["member"].api_key}).removeClass("dialog"));
+                        exportDrop.position();
+                    });
                 }
 
                 //tableWrapper.css({"min-height": tableWrapper.height()});
