@@ -67,7 +67,7 @@ Countly is a privacy-focused and 360-degree analytics approach with several, uni
 
 ## Differences between Community Edition & Enterprise Edition
 
-* **Audience:** Community Edition is for product managers, developers and analytics enthusiasts, whereas banks, operators, hospitals and businesses that run the world's leading websites choose Enterprise Edition.
+* **Audience:** Community Edition is for product managers, developers and analytics enthusiasts, whereas banks, operators, healthcare companies and businesses that run the world's leading websites choose Enterprise Edition.
 * **Deployment:** Community Edition deployments are for environments where the information stored is not critical since it does not include professional assistance. You must have a qualified technician. Enterprise Edition is for corporate environments that require availability and reliability where intellectual capital is critical.
 * **Technology:** Community Edition has a number of limitations, including no corporate support for sharding, replica sets or installation.
 * **Guarantee:** Community Edition is on the bleeding edge regarding version upgrades and with no bugfix guarantee. Enterprise Edition has bugfix guarantee, immediate resolution, verified builds, on-site and automatic version upgrades.
