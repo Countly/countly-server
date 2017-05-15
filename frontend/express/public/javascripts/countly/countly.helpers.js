@@ -322,7 +322,7 @@
         var dialog = $("#cly-export").clone();
         var type = "csv";
         dialog.removeAttr("id");
-        dialog.find(".details").text("");
+        dialog.find(".details").hide();
         dialog.find(".cly-select").hide();
         dialog.find(".button").click(function(){
             dialog.find(".button-selector .button").removeClass("selected");
