@@ -985,6 +985,12 @@ table.d-table .nothing { opacity: 0.3; }
 .android-warn { float: right; color: #333; opacity: .6; font-size: 13px; }
 .android-warn svg { margin-bottom: -3px; margin-right: 4px; }
 
+.comp-push input[type="number"]::-webkit-inner-spin-button,
+.comp-push input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance:none;
+    margin:0;
+}
+
 #emoji-picker {
     margin-left: 2px;
 }
