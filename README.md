@@ -36,6 +36,7 @@ This repository includes server-side part of Countly, with following features:
 * [Rich and interactive push notifications](http://count.ly/push-notifications) for iOS & Android
 * Email reporting
 
+![content](http://count.ly/wp-content/uploads/2017/05/all-grey.png)
 
 ## What can Countly track? 
 
