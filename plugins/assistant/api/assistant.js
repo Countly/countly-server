@@ -79,36 +79,42 @@ const assistant = {},
                         //log.i('Doing stuff at step: %s, ALL, error: [%j], data: [%j]', 3, err1, notifs);
 
                         //go through all notifications and remove those that are assigned to a different specific user
-                        //while doing this, also filter out sensitive information
-                        const sanitizeDataAndFilterTargetUser = function (userElem) {
+                        const filterTargetUser = function (userElem) {
                             let targetElemArray = userElem.target_user_array;
-
-                            delete userElem.saved_private;
-                            delete userElem.saved_global;
-                            delete userElem.target_user_array;
 
                             if(_.isUndefined(targetElemArray) || targetElemArray == null || _.isEmpty(targetElemArray)) {
                                 return true;
                             }
 
                             return targetElemArray.includes(api_key);
-
                         };
 
-                        notifs = notifs.filter(sanitizeDataAndFilterTargetUser);
+                        notifs = notifs.filter(filterTargetUser);
 
                         //get global saved notifications for this app
-                        const notifs_global = notifs.filter(function (elem) {
+                        let notifs_global = notifs.filter(function (elem) {
                             return elem.saved_global;
                         });
 
                         //get privately saved notifications for this app
-                        const notifs_saved = notifs.filter(function (elem) {
+                        let notifs_saved = notifs.filter(function (elem) {
                             if(_.isUndefined(elem.saved_private) || elem.saved_private == null) {
                                 return false;
                             }
                             return elem.saved_private.includes(api_key);
                         });
+
+
+                        //filter out sensitive information
+                        const sanitizeSensitiveInformation = function (elem) {
+                            delete elem.saved_private;
+                            delete elem.saved_global;
+                            delete elem.target_user_array;
+                        };
+
+                        notifs.forEach(sanitizeSensitiveInformation);
+                        notifs_global.forEach(sanitizeSensitiveInformation);
+                        notifs_saved.forEach(sanitizeSensitiveInformation);
 
                         callback(null, {
                             id: app_id,

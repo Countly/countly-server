@@ -49,7 +49,7 @@ const plugin = {},
             return false;
         }
 
-        log.i('Assistant plugin request: /i/assistant');
+        log.d('Assistant plugin request: /i/assistant');
         const validate = ob.validateUserForMgmtReadAPI;
         validate(function (params) {
 
@@ -57,7 +57,7 @@ const plugin = {},
             const api_key = params.qstring.api_key;
 
             const subAction = paths[3];
-            log.i('Assistant plugin request: 1, ' + subAction);
+            log.d('Assistant plugin request: 1, ' + subAction);
             switch (subAction) {
                 case 'global':
                 case 'private':
@@ -192,7 +192,7 @@ const plugin = {},
             common.returnMessage(params, 400, 'Missing parameter "api_key"');
             return false;
         }
-        log.i('Assistant plugin request: /i/assistant_generate_all');
+        log.d('Assistant plugin request: /i/assistant_generate_all');
 
         ob.validateUserForGlobalAdmin(params, function (params) {
             const callback = function () {
@@ -244,7 +244,7 @@ const plugin = {},
             common.returnMessage(params, 400, 'Missing parameter "api_key"');
             return false;
         }
-        log.i('Assistant plugin request: /i/asistdelete');
+        log.d('Assistant plugin request: /i/asistdelete');
 
         ob.validateUserForGlobalAdmin(params, function (params) {
 
