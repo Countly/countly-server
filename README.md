@@ -12,7 +12,7 @@
 * **Questions?** [Ask in our Community forum](http://community.count.ly)
 
 ## What's Countly?
-[Countly](http://count.ly) is an innovative, real-time, open source mobile & [web analytics](http://count.ly/web-analytics), [rich push notifications](http://count.ly/push-notifications) and [crash reporting](http://count.ly/crash-reports) platform powering more than 2500 web sites and 12000 mobile applications. It collects data from mobile phones, tablets, Apple Watch and other internet-connected devices, and visualizes this information to analyze mobile application usage and end-user behavior. 
+[Countly](http://count.ly) is an innovative, real-time, open source mobile & [web analytics](http://count.ly/web-analytics), [rich push notifications](http://count.ly/push-notifications) and [crash reporting](http://count.ly/crash-reports) platform powering more than 2500 web sites and 12000 mobile applications. It collects data from mobile phones, tablets, Apple Watch and other internet-connected devices, and visualizes this information to analyze application usage and end-user behavior. 
 
 With the help of [Javascript SDK](http://github.com/countly/countly-sdk-web), Countly is a web analytics platform with features on par with mobile SDKs. For more information about web analytics capabilities, [see this link](http://count.ly/web-analytics).
 
@@ -60,7 +60,7 @@ We take security very seriously at Countly. Community Edition code is 100% open 
 Countly is a privacy-focused and 360-degree analytics approach with several, unique values:
 
 * Real-time mobile analytics, web analytics and push notifications.
-* Your data, your rules - since you can install Countly on your own server, or let us do the private cloud installations for you.
+* Your data, your rules - since you can install Countly on your own server, or let us do a private cloud deployment for you.
 * Configurable and extensible via open source [plugins](http://count.ly/plugins).
 * Modern and easy to use web dashboard with a focus on user experience, helping to get complex insights easily.
 * Tracking more than 2500 web sites and 12000 mobile applications.
@@ -76,7 +76,7 @@ Countly is a privacy-focused and 360-degree analytics approach with several, uni
 
 ## Installing & upgrading Countly server
 
-We develop and test Countly on MongoDB, Node.js and Nginx. Installation script only needs a clean, decent Ubuntu/CentOS/RHEL Linux without any services listening to port 80 or 443 (which should also be not blocked), and takes care of every library and software required to be installed on Linux. 
+Countly installation script assumes it is running on a fresh, decent Ubuntu/CentOS/RHEL Linux without any services listening on port 80 or 443 (which should also be open to incoming traffic), and takes care of every library and software required to be installed for Countly to run. 
 
 There are several ways to install Countly: 
 
@@ -94,16 +94,11 @@ If you want to upgrade Countly from a previous version, please take a look at [u
 
 ## API & Frontend
 
-Countly has a [well defined API](http://resources.count.ly), that reads from or writes to Node.js. Dashboard is built using this API, so it's possible to fetch any kind of information from Node process directly using Countly API. For those who are interested with building their own dashboard; important files are:
-
-- `frontend/express/app.js`, Countly dashboard that runs on Express server 
-- `frontend/express/public/javascripts/countly`, that contains seperate helper js files for each data visualization
-- `countly.session.js`, responsible for calculating session related metrics and 
-- `api/api.js`, which is Countly write and read API. 
+Countly has a [well defined API](http://resources.count.ly), that reads and writes data from/to the Countly backend. Dashboard is built using the read API, so it's possible to fetch any information you see on the dashboard using the Countly API. If you are interested in creating new reports or visualisations in the UI, we recommend checking out the next section for creating plugins.
 
 ## Extensibility & plugins 
 
-Countly is extensible with [plugins](http://count.ly/plugins). We suggest [you read this document](http://resources.count.ly/docs/plugins-development-introduction) and start writing your plugin. We support companies with know-how in need to write their own plugins.
+Countly is extensible using the [plugin architecture](http://count.ly/plugins). We suggest [you read this document](http://resources.count.ly/docs/plugins-development-introduction) before creating your plugin. We provide support to companies with know-how in need to create their own plugins.
 
 ## How can I help you with your efforts?
 
