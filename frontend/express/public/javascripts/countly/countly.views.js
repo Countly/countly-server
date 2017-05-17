@@ -1534,7 +1534,7 @@ window.ManageAppsView = countlyView.extend({
             $("#add-new-app .app-write-settings").each(function(){
                 var id = $(this).data('id');
                 if(app.appSettings[id] && app.appSettings[id].toSave)
-                    app.appSettings[id].toSave(appId, args, this);
+                    app.appSettings[id].toSave(null, args, this);
                 else if(typeof args !== "undefined")
                     args[id] = $(this).val();
             });
