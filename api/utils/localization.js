@@ -89,7 +89,7 @@ var locale = {},
     */
     locale.getProperties = function(lang, callback){
         if(lang == default_lang){
-            callback(null, orig || {});
+            callback(null, JSON.parse(JSON.stringify(orig || {})));
         }
         else if(!localized[lang]){
             localized[lang] = JSON.parse(JSON.stringify(orig));
@@ -99,11 +99,11 @@ var locale = {},
                     for(var i in local_properties)
                         localized[lang][i] = local_properties[i];
                 }
-                callback(null, localized[lang] || {});
+                callback(null, JSON.parse(JSON.stringify(localized[lang] || {})));
             });
         }
         else{
-            callback(null, localized[lang] || {});
+            callback(null, JSON.parse(JSON.stringify(localized[lang] || {})));
         }
     };
     
