@@ -101,7 +101,7 @@ var exports = {},
         var headers = {};
         if(type && contents[type])
             headers["Content-Type"] = contents[type];
-        headers["Content-Disposition"] = "attachment;filename="+filename+"."+type;
+        headers["Content-Disposition"] = "attachment;filename="+encodeURIComponent(filename)+"."+type;
         params.res.writeHead(200, headers);
         if(type === "xls")
             params.res.write(new Buffer(data, 'binary'));
