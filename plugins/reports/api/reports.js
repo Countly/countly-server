@@ -314,11 +314,12 @@ var metrics = {
                     html: message
                 };
                 if(mail.sendPoolMail)
-                    mail.sendPoolMail(msg, callback);
+                    mail.sendPoolMail(msg);
                 else
-                    mail.sendMail(msg, callback);
+                    mail.sendMail(msg);
             }
         }
+        callback();
     };
     
     function metricsToCollections(metrics, events){

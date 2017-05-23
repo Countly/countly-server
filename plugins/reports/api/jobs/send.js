@@ -41,12 +41,12 @@ class ReportsJob extends job.Job {
                         reports.getReport(countlyDb, report, function(err, ob){
                             if(!err){
                                 reports.send(ob.report, ob.message, function(){
-                                    log.d("sent to", ob.report.emails[0]);
+                                    log.d("sent to", ob.report.emails);
                                     done(null, null);
                                 });
                             }
                             else{
-                                log.d(err, ob.report.emails[0]);
+                                log.d(err, ob.report.emails);
                                 done(null, null);
                             }
                         }, cache);
