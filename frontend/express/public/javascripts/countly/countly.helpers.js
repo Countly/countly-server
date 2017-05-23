@@ -281,7 +281,7 @@
         function getFileName(){
             var name = "countly";
             if($(".widget-header .title").length)
-                name = jQuery.trim($(".widget-header .title").first().text()).split(" ")[0];
+                name = jQuery.trim($(".widget-header .title").first().text()).replace(/[\r\n]+/g," ").split(" ")[0];
             return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase())+"-"+moment().format("DD-MMM-YYYY");
         }
         function getExportData(dtable, type){
