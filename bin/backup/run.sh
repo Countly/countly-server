@@ -59,6 +59,7 @@ check_connectivity mongo
 # /usr/bin/mongoexport --db countly  --collection  jobs                                     --out jobs.json
 # /usr/bin/mongoexport --db countly  --collection  members                                  --out members.json
 # /usr/bin/mongoexport --db countly  --collection  sessions_                                --out sessions_.json
+# /usr/bin/mongoexport --db countly  --collection  plugins                                  --out plugins.json
 
 /usr/bin/mongoimport --db countly --collection app_crashgroups58bf06bd6cba850047ac9f19 --file app_crashgroups58bf06bd6cba850047ac9f19.json --upsert
 /usr/bin/mongoimport --db countly --collection app_users58bf06bd6cba850047ac9f19 --file app_users58bf06bd6cba850047ac9f19.json --upsert
@@ -67,3 +68,4 @@ check_connectivity mongo
 /usr/bin/mongoimport --db countly --collection jobs --file jobs.json --upsert
 /usr/bin/mongoimport --db countly --collection members --file members.json --upsert
 /usr/bin/mongoimport --db countly --collection sessions_ --file sessions_.json --upsert
+/usr/bin/mongoimport --db countly --collection plugins --file plugins.json --upsert
