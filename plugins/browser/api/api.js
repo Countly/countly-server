@@ -15,7 +15,8 @@ var plugin = {},
 		predefinedMetrics.push({
             db: "browser",
             metrics: [
-                { name: "_browser", set: "browser", short_code: common.dbUserMap['browser'] }
+                { name: "_browser", set: "browser", short_code: common.dbUserMap['browser'] },
+                { name: "_browser_version", set: "browser_version", short_code: "brwv" }
             ]
         });
 	});

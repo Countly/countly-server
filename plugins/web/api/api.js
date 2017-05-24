@@ -22,6 +22,12 @@ var plugin = {},
                 if(!params.qstring.metrics._browser)
                     params.qstring.metrics._browser = agent.family;
                 
+                if(!params.qstring.metrics._browser_version)
+                    params.qstring.metrics._browser_version = agent.toVersion();
+                
+                if(params.qstring.metrics._browser && params.qstring.metrics._browser_version)
+                    params.qstring.metrics._browser_version = "["+params.qstring.metrics._browser.toLowerCase()+"]_" + params.qstring.metrics._browser_version;
+                
                 if(!params.qstring.metrics._os)
                     params.qstring.metrics._os = data.os;
                 
