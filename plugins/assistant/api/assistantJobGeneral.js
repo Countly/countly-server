@@ -5,7 +5,8 @@ const assistantJobGeneral = {},
     async = require("async"),
     assistant = require("./assistant.js"),
     parser = require('rss-parser'),
-    underscore = require('underscore');
+    underscore = require('underscore'),
+    versionInfo = require('../../../frontend/express/version.info');
 
 (function (assistantJobGeneral) {
     const PLUGIN_NAME = "assistant-base";
@@ -15,7 +16,11 @@ const assistantJobGeneral = {},
                 log.i('Creating assistant notifications from [%j]', PLUGIN_NAME);
                 const NOTIFICATION_VERSION = 1;
 
+                //check if current server is try server
+                const serverIsTry = versionInfo.trial === true;
 
+                //check if current server is community edition
+                const serverIsCE = versionInfo.type === "777a2bf527a18e0fffe22fb5b3e322e68d9c07a6";
 
                 // (3) generate announcment notifications
                 //todo improve feed period selection so that it is possible to show the event immediate and not once per day
@@ -60,16 +65,32 @@ const assistantJobGeneral = {},
                     dataForFeedMap.push(feedDataAndroid);
                 }
 
-                // (3.3) New community server release
-                {
-                    let feedDataCommunity = {};
-                    feedDataCommunity.anc_i18n = "assistant.announcement-community-server-release";
-                    feedDataCommunity.anc_type = assistant.NOTIF_TYPE_ANNOUNCEMENTS;
-                    feedDataCommunity.anc_subtype = 4;
-                    feedDataCommunity.anc_version = NOTIFICATION_VERSION;
-                    feedDataCommunity.url = 'https://github.com/Countly/countly-server/releases.atom';
-                    feedDataCommunity.targetHour = 15;
-                    dataForFeedMap.push(feedDataCommunity);
+                if(serverIsCE) {
+                    // (3.4) New community server release
+                    {
+                        let feedDataCommunity = {};
+                        feedDataCommunity.anc_i18n = "assistant.announcement-community-server-release";
+                        feedDataCommunity.anc_type = assistant.NOTIF_TYPE_ANNOUNCEMENTS;
+                        feedDataCommunity.anc_subtype = 4;
+                        feedDataCommunity.anc_version = NOTIFICATION_VERSION;
+                        feedDataCommunity.url = 'https://github.com/Countly/countly-server/releases.atom';
+                        feedDataCommunity.targetHour = 15;
+                        dataForFeedMap.push(feedDataCommunity);
+                    }
+                }
+
+                if(!serverIsCE) {
+                    // (3.5) New server code release for EE
+                    {
+                        let feedDataEE = {};
+                        feedDataEE.anc_i18n = "assistant.announcement-server-release-enterprise";
+                        feedDataEE.anc_type = assistant.NOTIF_TYPE_ANNOUNCEMENTS;
+                        feedDataEE.anc_subtype = 5;
+                        feedDataEE.anc_version = NOTIFICATION_VERSION;
+                        feedDataEE.url = 'https://github.com/Countly/countly-server/releases.atom';
+                        feedDataEE.targetHour = 15;
+                        dataForFeedMap.push(feedDataEE);
+                    }
                 }
 
                 //go through all feeds
