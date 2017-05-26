@@ -250,7 +250,9 @@ if (cluster.isMaster) {
                 
                 //check unique milisecond timestamp, if it is the same as the last request had, 
                 //then we are having duplicate request, due to sudden connection termination
-                if(params.time.mstimestamp === params.app_user.lac){
+                //except very old sdks with seconds timestamp
+                var ts = Math.round(parseFloat(params.qstring.timestamp || 0)) + "";
+                if(ts.length === 13 && params.time.mstimestamp === params.app_user.lac){
                     params.cancelRequest = true;
                 }
                 
