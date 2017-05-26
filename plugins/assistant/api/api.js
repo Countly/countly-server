@@ -262,7 +262,7 @@ const plugin = {},
         //delete all notifications for specific app
         var appId = ob.appId;
         common.db.collection(db_name_notifs).remove({app_id:appId}, function(){});
-        common.db.collection(db_name_config).remove({_id: db.ObjectID(appId)}, function(){});
+        common.db.collection(db_name_config).remove({_id: common.db.ObjectID(appId)}, function(){});
     });
 
     plugins.register("/i/apps/clear_all", function(ob){
@@ -281,7 +281,7 @@ const plugin = {},
         //delete all notifications for specific app
         var appId = ob.appId;
         common.db.collection(db_name_notifs).remove({app_id:appId}, function(){});
-        common.db.collection(db_name_config).remove({_id: db.ObjectID(appId)}, function(){});
+        common.db.collection(db_name_config).remove({_id: common.db.ObjectID(appId)}, function(){});
     });
 
 }(plugin));
