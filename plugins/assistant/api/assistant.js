@@ -56,6 +56,73 @@ const assistant = {},
     };
 
     /**
+     * Get all notifications for specific user for a specific app
+     * @param db - link to database
+     * @param api_key - api key for target user
+     * @param app_id - app id for target app
+     * @param givenCallback - callback for returned notifications
+     */
+    assistant.getNotificationsForUserForSingleApp = function(db, api_key, app_id, givenCallback){
+
+        db.collection('apps').findOne({_id: db.ObjectID(app_id)}, {type: 1}, function (err, document) {
+            //todo handle null case
+            const isMobile = document.type == "mobile";//check if app type is mobile or web
+
+            //get global unsaved notifications for this app
+            db.collection(db_name_notifs).find({app_id: app_id}, {}).toArray(function (err1, notifs) {
+                //todo handle null case
+                //log.i('Doing stuff at step: %s, ALL, error: [%j], data: [%j]', 3, err1, notifs);
+
+                //go through all notifications and remove those that are assigned to a different specific user
+                const filterTargetUser = function (userElem) {
+                    let targetElemArray = userElem.target_user_array;
+
+                    if(_.isUndefined(targetElemArray) || targetElemArray == null || _.isEmpty(targetElemArray)) {
+                        return true;
+                    }
+
+                    return targetElemArray.includes(api_key);
+                };
+
+                notifs = notifs.filter(filterTargetUser);
+
+                //get global saved notifications for this app
+                let notifs_global = notifs.filter(function (elem) {
+                    return elem.saved_global;
+                });
+
+                //get privately saved notifications for this app
+                let notifs_saved = notifs.filter(function (elem) {
+                    if(_.isUndefined(elem.saved_private) || elem.saved_private == null) {
+                        return false;
+                    }
+                    return elem.saved_private.includes(api_key);
+                });
+
+
+                //filter out sensitive information
+                const sanitizeSensitiveInformation = function (elem) {
+                    delete elem.saved_private;
+                    delete elem.saved_global;
+                    delete elem.target_user_array;
+                };
+
+                notifs.forEach(sanitizeSensitiveInformation);
+                notifs_global.forEach(sanitizeSensitiveInformation);
+                notifs_saved.forEach(sanitizeSensitiveInformation);
+
+                givenCallback(null, {
+                    id: app_id,
+                    isMobile: isMobile,
+                    notifications: notifs,
+                    notifs_saved_global: notifs_global,
+                    notifs_saved_private: notifs_saved
+                });
+            });
+        });
+    };
+
+    /**
      * Get all notifications for specific user
      * @param db - link to database
      * @param member - member object
@@ -69,63 +136,7 @@ const assistant = {},
             async.map(appList, function (app_id, callback) {
                 log.d('App id: %s', app_id);
 
-                db.collection('apps').findOne({_id: db.ObjectID(app_id)}, {type: 1}, function (err, document) {
-                    //todo handle null case
-                    const isMobile = document.type == "mobile";//check if app type is mobile or web
-
-                    //get global unsaved notifications for this app
-                    db.collection(db_name_notifs).find({app_id: app_id}, {}).toArray(function (err1, notifs) {
-                        //todo handle null case
-                        //log.i('Doing stuff at step: %s, ALL, error: [%j], data: [%j]', 3, err1, notifs);
-
-                        //go through all notifications and remove those that are assigned to a different specific user
-                        const filterTargetUser = function (userElem) {
-                            let targetElemArray = userElem.target_user_array;
-
-                            if(_.isUndefined(targetElemArray) || targetElemArray == null || _.isEmpty(targetElemArray)) {
-                                return true;
-                            }
-
-                            return targetElemArray.includes(api_key);
-                        };
-
-                        notifs = notifs.filter(filterTargetUser);
-
-                        //get global saved notifications for this app
-                        let notifs_global = notifs.filter(function (elem) {
-                            return elem.saved_global;
-                        });
-
-                        //get privately saved notifications for this app
-                        let notifs_saved = notifs.filter(function (elem) {
-                            if(_.isUndefined(elem.saved_private) || elem.saved_private == null) {
-                                return false;
-                            }
-                            return elem.saved_private.includes(api_key);
-                        });
-
-
-                        //filter out sensitive information
-                        const sanitizeSensitiveInformation = function (elem) {
-                            delete elem.saved_private;
-                            delete elem.saved_global;
-                            delete elem.target_user_array;
-                        };
-
-                        notifs.forEach(sanitizeSensitiveInformation);
-                        notifs_global.forEach(sanitizeSensitiveInformation);
-                        notifs_saved.forEach(sanitizeSensitiveInformation);
-
-                        callback(null, {
-                            id: app_id,
-                            isMobile: isMobile,
-                            notifications: notifs,
-                            notifs_saved_global: notifs_global,
-                            notifs_saved_private: notifs_saved
-                        });
-                    });
-                });
-
+                assistant.getNotificationsForUserForSingleApp(db, api_key, app_id, callback);
             }, givenCallback);
         };
 

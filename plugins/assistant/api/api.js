@@ -25,16 +25,31 @@ const plugin = {},
             return false;
         }
 
-        const api_key = params.qstring.api_key;
+        const api_key = params.qstring.api_key;//get target users api key
+        const app_id = params.qstring.app_id;//get target apps id
 
         //log.i('Assistant plugin request: Get All Notifications');
         const validate = ob.validateUserForMgmtReadAPI;
         validate(function (params) {
             const member = params.member;
 
-            assistant.getNotificationsForUser(common.db, member, api_key, function (err, results) {
-                common.returnOutput(params, results);
-            });
+            if(_.isUndefined(app_id) || app_id === null) {
+                //app id not provided, not app targeted
+
+                //for a single user return all of his notifications for all of his apps
+                assistant.getNotificationsForUser(common.db, member, api_key, function (err, results) {
+                    common.returnOutput(params, results);
+                });
+            } else {
+                //app id provided, a single app targeted
+
+                //for a single user return all of his notifications for a specific app
+                assistant.getNotificationsForUserForSingleApp(common.db, api_key, app_id, function (err, singleAppNotifications) {
+                    common.returnOutput(params, [singleAppNotifications]);
+                })
+            }
+
+
 
         }, params);
         return true;
