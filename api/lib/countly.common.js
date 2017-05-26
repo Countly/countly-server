@@ -89,14 +89,16 @@ var countlyCommon = {},
     * @param {string} appTimezone - name of the timezone
     */
     countlyCommon.setTimezone = function(appTimezone) {
-        _appTimezone = appTimezone;
-
-        var currTime = new Date();
-        currTime.setTimezone(appTimezone);
+        if(appTimezone && appTimezone.length){
+            _appTimezone = appTimezone;
         
-        _currMoment = moment(currTime);
-        _currMoment.tz(appTimezone);
-        countlyCommon.periodObj = getPeriodObj();
+            var currTime = new Date();
+            currTime.setTimezone(appTimezone);
+            
+            _currMoment = moment(currTime);
+            _currMoment.tz(appTimezone);
+            countlyCommon.periodObj = getPeriodObj();
+        }
     };
 
     /**

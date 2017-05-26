@@ -1123,8 +1123,8 @@ var fetch = {},
             }
         }
 
-        countlyCommon.setPeriod(params.qstring.period);
         countlyCommon.setTimezone(params.appTimezone);
+        countlyCommon.setPeriod(params.qstring.period);
 
         return countlyCommon.periodObj;
     }

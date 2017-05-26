@@ -132,8 +132,8 @@ var plugin = {},
                     common.returnMessage(params, 400, 'Missing request parameter: period');
                     return false;
                 }
-                countlyCommon.setPeriod(params.qstring.period);
                 countlyCommon.setTimezone(params.appTimezone);
+                countlyCommon.setPeriod(params.qstring.period);
                 var periodObj = countlyCommon.periodObj,
                     queryObject = {"up.lv":params.qstring.view},
                     now = params.time.now.toDate();
