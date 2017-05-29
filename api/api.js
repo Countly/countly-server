@@ -20,6 +20,7 @@ plugins.setConfigs("api", {
     metric_limit: 1000,
     sync_plugins: false,
     session_cooldown: 15,
+    request_threshold: 30,
     total_users: true
 });
 
