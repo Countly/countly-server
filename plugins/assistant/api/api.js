@@ -216,7 +216,6 @@ const plugin = {},
             assistant.generateNotifications(common.db, callback, true, true);
 
             common.returnOutput(params, prepareMessage("Calling assistant_generate_all was ! completed", null, null));
-            return;
         });
 
         return true;

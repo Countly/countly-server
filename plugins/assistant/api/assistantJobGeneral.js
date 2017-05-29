@@ -10,7 +10,7 @@ const assistantJobGeneral = {},
 
 (function (assistantJobGeneral) {
     const PLUGIN_NAME = "assistant-base-general";
-    assistantJobGeneral.prepareNotifications = function (db, providedInfo, responseBatchData) {
+    assistantJobGeneral.prepareNotifications = function (db, providedInfo) {
         return new Promise(function (resolve, reject) {
             try {
                 log.i('Creating assistant notifications from [%j]', PLUGIN_NAME);

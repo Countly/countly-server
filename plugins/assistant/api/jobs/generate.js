@@ -6,7 +6,7 @@ const job = require('../../../../api/parts/jobs/job.js'),
 
 class GenerateNotifJob extends job.Job {
     run(countlyDb, doneJob, progressJob) {
-        log.i("starting Generate Notifications job");
+        log.i("Starting Generate Notifications job");
 
         function ping() {
             log.i('Pinging job');
@@ -20,7 +20,7 @@ class GenerateNotifJob extends job.Job {
 
         //this shall be called when all notifications are generated
         const finishItCallback = function () {
-            log.i("Notifications generated");
+            log.i("Notifications generated, finishing job");
             clearTimeout(timeout);
             timeout = 0;
             doneJob();

@@ -325,23 +325,21 @@ const assistant = {},
     /**
      *
      * @param db
-     * @param notifValueSet
+     * @param anc
      * @param appID
      * @param batchInfoHolder
      */
-    assistant.increaseNotificationShowAmount = function (db, notifValueSet, appID, batchInfoHolder) {
-
-        if(_.isUndefined(notifValueSet.pluginName)) {
+    assistant.increaseNotificationShowAmount = function (db, anc, appID, batchInfoHolder) {
+        if(_.isUndefined(anc.apc.PLUGIN_NAME) || _.isUndefined(appID)) {
             log.d("This is undefined: ")
         }
-
 
         if(_.isUndefined(batchInfoHolder)) {
             batchInfoHolder = null;
         }
 
         const updateQuery = {};
-        updateQuery["notifShowAmount." + notifValueSet.pluginName + "." + notifValueSet.type + "." + notifValueSet.subtype] = 1;
+        updateQuery["notifShowAmount." + anc.apc.PLUGIN_NAME + "." + anc.notificationType + "." + anc.notificationSubtype] = 1;
 
 
         if(batchInfoHolder === null) {
@@ -355,7 +353,7 @@ const assistant = {},
 
         dataBatch.forEach(function (batchElem) {
             db.collection(db_name_config).update({_id: db.ObjectID(batchElem.appID)}, {$inc: batchElem.updateQuery}, {upsert: true}, function (err, res) {
-                //log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', err, res);
+                log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', err, res);
             });
         });
 
@@ -383,38 +381,15 @@ const assistant = {},
 
     /**
      *
-     * @param notificationI18nID
-     * @param notificationType
-     * @param notificationSubtype
-     * @param pluginName
-     * @param assistantConfig
-     * @param appID
-     * @param notificationVersion
-     * @returns {{}}
-     */
-    assistant.createNotificationValueSet = function (notificationI18nID, notificationType, notificationSubtype, pluginName, assistantConfig, appID, notificationVersion) {
-        //put in notification values for quick access
-        const valueSet = {};
-        valueSet.pluginName = pluginName;
-        valueSet.type = "" + notificationType;
-        valueSet.subtype = "" + notificationSubtype;
-        valueSet.i18nID = notificationI18nID;
-        valueSet.showAmount = assistant.getNotificationShowAmount(assistantConfig, pluginName, valueSet.type, valueSet.subtype, appID);
-        valueSet.nVersion = notificationVersion;
-        return valueSet;
-    };
-
-    /**
-     *
      * @param db
-     * @param valueSet
+     * @param anc
      * @param app_id
      * @param data
+     * @param notificationBatchHolder
      */
-    assistant.createNotificationAndSetShowAmount = function (db, valueSet, app_id, data, notificationBatchHolder) {
-        //log.d('Assistant creating notification for [%j] plugin with i18nID [%j] for App [%j]', valueSet.pluginName, valueSet.i18nID, app_id);
-        assistant.createNotification(db, data, valueSet.pluginName, valueSet.type, valueSet.subtype, valueSet.i18nID, app_id, valueSet.nVersion, null, notificationBatchHolder.newNotifications);
-        assistant.increaseNotificationShowAmount(db, valueSet, app_id, notificationBatchHolder.updatedShowAmount);
+    assistant.createNotificationAndSetShowAmount = function (db, anc, app_id, data, notificationBatchHolder) {
+        assistant.createNotification(db, data, anc.apc.PLUGIN_NAME, anc.notificationType, anc.notificationSubtype, anc.notificationI18nID, anc.apc.app_id, anc.notificationVersion, null, notificationBatchHolder.newNotifications);
+        assistant.increaseNotificationShowAmount(db, anc, app_id, notificationBatchHolder.updatedShowAmount);
     };
 
     /**
@@ -446,12 +421,12 @@ const assistant = {},
                 //set if notifications should be generated ignoring their time and day
                 assistantGlobalCommon.ignoreDayAndTime = flagIgnoreDayAndTime;
 
+                //link to the db object that has to be used
                 assistantGlobalCommon.db = countlyDb;
 
-                const responseBatchData = {};//a place where to collect db requests
+                const responseBatchData = {};//a place where to collect db requests for batched calls
                 responseBatchData.newNotifications = [];//contains new notifications that will have to be created
                 responseBatchData.updatedShowAmount = [];//contains info for updated show amount of notifications, should be called after notification creation
-
                 assistantGlobalCommon.responseBatchData = responseBatchData;
 
                 //go through all plugins and start generating notifications for those that support it
@@ -481,14 +456,22 @@ const assistant = {},
 
                     log.d('Ending db call batches');
 
-                    callback();
-                }, callback);
+                    if(callback !== null) {
+                        callback();
+                    }
+                }, function () {
+
+                    log.e("Notification generation Promise umbrella encountered rejection");
+                    if(callback !== null) {
+                        callback();
+                    }
+                });
             });
         });
     };
 
     /**
-     *
+     * Prepare fields that are common and relevant for this specific plugin
      * @param assistantGlobalCommon
      * @param appData
      * @param PLUGIN_NAME
@@ -527,7 +510,7 @@ const assistant = {},
     };
 
     /**
-     *
+     * Prepare fields that are relevant for this specific notification
      * @param assistantPluginCommon
      * @param notificationI18nID
      * @param notificationType
@@ -544,8 +527,10 @@ const assistant = {},
         anc.notificationSubtype = notificationSubtype;
         anc.notificationVersion = notificationVersion;
 
+        anc.showAmount = assistant.getNotificationShowAmount(anc.apc.assistantConfig, anc.apc.PLUGIN_NAME, notificationType, notificationSubtype, anc.apc.app_id);
+
         //todo get rid of this
-        anc.valueSet = assistant.createNotificationValueSet(anc.notificationI18nID, anc.notificationType, anc.notificationSubtype, anc.apc.PLUGIN_NAME, anc.apc.assistantConfig, anc.apc.app_id, anc.notificationVersion);
+        //anc.valueSet = assistant.createNotificationValueSet(anc.notificationI18nID, anc.notificationType, anc.notificationSubtype, anc.apc.PLUGIN_NAME, , anc.apc.app_id, anc.notificationVersion);
 
         return anc;
     };
@@ -568,7 +553,7 @@ const assistant = {},
         }
 
         if ((anc.apc.flagIgnoreDAT || correctTimeAndDate) && requirements || anc.apc.flagForceGenerate) {
-            assistant.createNotificationAndSetShowAmount(anc.apc.db, anc.valueSet, anc.apc.app_id, data, anc.apc.agc.responseBatchData);
+            assistant.createNotificationAndSetShowAmount(anc.apc.db, anc, anc.apc.app_id, data, anc.apc.agc.responseBatchData);
         }
     };
 

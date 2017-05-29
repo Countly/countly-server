@@ -12,7 +12,7 @@ const assistantJob = {},
 
 (function (assistantJob) {
     const PLUGIN_NAME = "assistant-base";
-    assistantJob.prepareNotifications = function (db, providedInfo, responseBatchData) {
+    assistantJob.prepareNotifications = function (db, providedInfo) {
         return new Promise(function (resolve, reject) {
             try {
                 log.i('Creating assistant notifications from [%j]', PLUGIN_NAME);
@@ -53,7 +53,7 @@ const assistantJob = {},
                                         const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.crash-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 1, NOTIFICATION_VERSION);
                                         const crash_data_not_available = res_crash.crashes === 0;
                                         const enough_users = res_crash.users > 20;//total users > 20
-                                        const max_show_time_not_exceeded = anc.valueSet.showAmount < 3;
+                                        const max_show_time_not_exceeded = anc.showAmount < 3;
                                         const data = [];
 
                                         assistant.createNotificationIfRequirementsMet(2, 14, (crash_data_not_available && enough_users && apc.is_mobile && max_show_time_not_exceeded), data, anc);
@@ -64,7 +64,7 @@ const assistantJob = {},
                             { // (1.2) Push integration
                                 const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.push-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 2, NOTIFICATION_VERSION);
                                 const no_certificate_uploaded = (typeof ret_app_data.gcm === "undefined") && (typeof ret_app_data.apn === "undefined");
-                                const max_show_time_not_exceeded = anc.valueSet.showAmount < 3;
+                                const max_show_time_not_exceeded = anc.showAmount < 3;
                                 const data = [];
 
                                 assistant.createNotificationIfRequirementsMet(3, 15, (no_certificate_uploaded && apc.is_mobile && max_show_time_not_exceeded), data, anc);
@@ -73,7 +73,7 @@ const assistantJob = {},
                             { // (1.4) Custom event integration
                                 const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.custom-event-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 3, NOTIFICATION_VERSION);
                                 const no_custom_event_defined = (typeof events_result === "undefined") || (events_result === null);
-                                const max_show_time_not_exceeded = anc.valueSet.showAmount < 3;
+                                const max_show_time_not_exceeded = anc.showAmount < 3;
                                 const data = [];
 
                                 assistant.createNotificationIfRequirementsMet(5, 15, (no_custom_event_defined && apc.is_mobile && max_show_time_not_exceeded), data, anc);
@@ -83,7 +83,7 @@ const assistantJob = {},
                             db.collection('members').find({user_of: apc.app_id}, {}).count(function (err1, userCount) {
                                 const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.share-dashboard", assistant.NOTIF_TYPE_QUICK_TIPS, 3, NOTIFICATION_VERSION);
                                 const not_enough_users = (userCount < 3);
-                                const max_show_time_not_exceeded = anc.valueSet.showAmount < 1;
+                                const max_show_time_not_exceeded = anc.showAmount < 1;
                                 const data = [];
 
                                 assistant.createNotificationIfRequirementsMet(5, 10, (not_enough_users && max_show_time_not_exceeded), data, anc);
