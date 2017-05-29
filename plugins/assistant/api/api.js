@@ -1,6 +1,5 @@
 const plugin = {},
     common = require('../../../api/utils/common.js'),
-    countlyCommon = require('../../../api/lib/countly.common.js'),
     plugins = require('../../pluginManager.js'),
     log = common.log('assistant:api'),
     fetch = require('../../../api/parts/data/fetch.js'),
@@ -216,15 +215,13 @@ const plugin = {},
 
             assistant.generateNotifications(common.db, callback, true, true);
 
-            common.returnOutput(params, prepareMessage("assistant_generate_all was ! completed", null, null));
+            common.returnOutput(params, prepareMessage("Calling assistant_generate_all was ! completed", null, null));
             return;
         });
 
         return true;
     });
 
-  /*
-//todo not functional
     plugins.register("/i/assistant_generate_all_job", function (ob) {
         const params = ob.params;
 
@@ -239,15 +236,15 @@ const plugin = {},
                 log.i('Assistant plugin request: /i/assistant_generate_all_job finished');
             };
 
-            require('../../../api/parts/jobs').job('assistant:generate').in(3);
+            require('../../../api/parts/jobs').job('assistant:generate').in(1);
 
-            common.returnOutput(params, "assistant_generate_all_job was ! completed");
+            common.returnOutput(params, "Calling assistant_generate_all_job was ! completed");
             return true;
         });
 
         return true;
     });
-*/
+
     //for debugging
     var db_name_notifs = "assistant_notifs";
     var db_name_config = "assistant_config";

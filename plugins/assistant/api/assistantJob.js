@@ -3,7 +3,8 @@ const assistantJob = {},
     log = require('../../../api/utils/log.js')('assistantJob:module'),
     fetch = require('../../../api/parts/data/fetch.js'),
     async = require("async"),
-    countlySession = require('../../../api/lib/countly.session.js'),
+    countlyModel = require('../../../api/lib/countly.model.js'),
+    countlySession = countlyModel.load("users"),
     countlyCommon = require('../../../api/lib/countly.common.js'),
     assistant = require("./assistant.js"),
     parser = require('rss-parser'),
@@ -11,7 +12,7 @@ const assistantJob = {},
 
 (function (assistantJob) {
     const PLUGIN_NAME = "assistant-base";
-    assistantJob.prepareNotifications = function (db, providedInfo) {
+    assistantJob.prepareNotifications = function (db, providedInfo, responseBatchData) {
         return new Promise(function (resolve, reject) {
             try {
                 log.i('Creating assistant notifications from [%j]', PLUGIN_NAME);
@@ -25,11 +26,11 @@ const assistantJob = {},
                     params.qstring = {};
                     params.appTimezone = ret_app_data.timezone;//todo add this to other places
 
-                    apc.db.collection('events').findOne({_id: apc.app_id}, {}, function (events_err, events_result) {
+                    db.collection('events').findOne({_id: apc.app_id}, {}, function (events_err, events_result) {
                         params.app_id = apc.app_id;
                         params.qstring.period = "7days";
 
-                        fetch.getTimeObj('users', params, function (fetchResultUsers) {//collect user info
+                        fetch.getTimeObj('users', params, {db: db}, function (fetchResultUsers) {//collect user info
                             //log.i('Assistant plugin doing steps: [%j] [%j]', 0.01, fetchResultUsers);
                             countlySession.setDb(fetchResultUsers);
                             const retSession = countlySession.getSessionData();
@@ -39,10 +40,16 @@ const assistantJob = {},
 
                             // (1) generate quick tip notifications
                             // (1.1) Crash integration
-                            apc.db.collection("app_crashgroups" + apc.app_id).findOne({_id: "meta"}, function (err_crash, res_crash) {
+                            db.collection("app_crashgroups" + apc.app_id).findOne({_id: "meta"}, function (err_crash, res_crash) {
+
                                 //log.i('Assistant plugin doing steps: [%j][%j] ', 1, res_crash);
                                 if (res_crash || apc.flagForceGenerate) {
                                     {
+                                        if (res_crash === null) {
+                                            res_crash = {};
+                                            res_crash.crashes = 0;
+                                            res_crash.users = 0;
+                                        }
                                         const anc = assistant.prepareNotificationSpecificFields(apc, "assistant.crash-integration", assistant.NOTIF_TYPE_QUICK_TIPS, 1, NOTIFICATION_VERSION);
                                         const crash_data_not_available = res_crash.crashes === 0;
                                         const enough_users = res_crash.users > 20;//total users > 20
@@ -165,7 +172,7 @@ const assistantJob = {},
                                 paramCopy.qstring = {};
                                 paramCopy.qstring.period = "7days";// JSON.stringify([nowTime - hours_24,nowTime]);
 
-                                fetch.getMetric(paramCopy, "sources", null, function(metricData){
+                                fetch.getMetricWithOptions(paramCopy, "sources", null, {db: db}, function(metricData){
                                     //log.i('Assistant plugin doing steps: [%j] [%j] [%j] [%j]', 12, params.app_id, app_id, metricData);
 
                                     metricData = metricData.filter(function (x) {
@@ -213,7 +220,7 @@ const assistantJob = {},
                                 paramCopy.qstring.method = queryMetric;
 
                                 countlyCommon.setPeriod(params.qstring.period);
-                                fetch.getTimeObjForEvents("app_viewdata"+paramCopy.app_id, paramCopy, function(doc){
+                                fetch.getTimeObjForEvents("app_viewdata"+paramCopy.app_id, paramCopy, {db: db}, function(doc){
                                     var clearMetricObject = function (obj) {
                                         if (obj) {
                                             if (!obj["u"]) obj["u"] = 0;

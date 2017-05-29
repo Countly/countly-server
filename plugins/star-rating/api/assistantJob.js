@@ -8,7 +8,7 @@ const assistantJob = {},
 
 (function (assistantJob) {
     const PLUGIN_NAME = "star-rating";
-    assistantJob.prepareNotifications = function (db, providedInfo) {
+    assistantJob.prepareNotifications = function (db, providedInfo, responseBatchData) {
         return new Promise(function (resolve, reject) {
             try {
                 log.i('Creating assistant notifications from [%j]', PLUGIN_NAME);

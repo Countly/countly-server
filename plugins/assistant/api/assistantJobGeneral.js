@@ -9,8 +9,8 @@ const assistantJobGeneral = {},
     versionInfo = require('../../../frontend/express/version.info');
 
 (function (assistantJobGeneral) {
-    const PLUGIN_NAME = "assistant-base";
-    assistantJobGeneral.prepareNotifications = function (db, providedInfo) {
+    const PLUGIN_NAME = "assistant-base-general";
+    assistantJobGeneral.prepareNotifications = function (db, providedInfo, responseBatchData) {
         return new Promise(function (resolve, reject) {
             try {
                 log.i('Creating assistant notifications from [%j]', PLUGIN_NAME);
