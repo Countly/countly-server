@@ -255,10 +255,10 @@ var fetch = {},
                     async.map(periods, function(period, callback) {
                             params.qstring.period = period.period;
 
-                            getTotalUsersObj("users", params, function(dbTotalUsersObj) {
+                            fetch.getTotalUsersObj("users", params, function(dbTotalUsersObj) {
                                 countlyCommon.setPeriod(period.period);
 
-                                countlySession.setTotalUsersObj(formatTotalUsersObj(dbTotalUsersObj));
+                                countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj));
 
                                 var data = {
                                     out: period.out,
@@ -350,9 +350,9 @@ var fetch = {},
                     // it is reset to it's original value
                     setAppId(app._id);
 
-                    getTotalUsersObj("users", params, function(dbTotalUsersObj) {
+                    fetch.getTotalUsersObj("users", params, function(dbTotalUsersObj) {
                         countlySession.setDb(usersDoc || {});
-                        countlySession.setTotalUsersObj(formatTotalUsersObj(dbTotalUsersObj));
+                        countlySession.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj));
 
                         var sessionData = countlySession.getSessionData();
                         var charts = {
@@ -415,10 +415,10 @@ var fetch = {},
             async.map(periods, function(period, callback) {
                     params.qstring.period = period.period;
 
-                    getTotalUsersObj("countries", params, function(dbTotalUsersObj) {
+                    fetch.getTotalUsersObj("countries", params, function(dbTotalUsersObj) {
                         countlyCommon.setPeriod(period.period);
 
-                        countlyLocation.setTotalUsersObj(formatTotalUsersObj(dbTotalUsersObj));
+                        countlyLocation.setTotalUsersObj(fetch.formatTotalUsersObj(dbTotalUsersObj));
 
                         var data = {out: period.out, data: countlyLocation.getLocationData({maxCountries: 10, sort: "new"})};
 
@@ -504,12 +504,16 @@ var fetch = {},
     *    {"_id":"Bell Canada","t":12,"n":6,"u":12}
     * ]
     */
-	fetch.getMetric = function(params, metric, totalUsersMetric, callback){
+    fetch.getMetric = function(params, metric, totalUsersMetric, callback) {
+        fetch.getMetricWithOptions(params, metric, totalUsersMetric, {}, callback);
+    };
+
+	fetch.getMetricWithOptions = function(params, metric, totalUsersMetric, fetchTimeOptions, callback){
         var queryMetric = params.qstring.metric || metric;
         countlyCommon.setTimezone(params.appTimezone);
         if(params.qstring.period)
             countlyCommon.setPeriod(params.qstring.period);
-		fetchTimeObj(metric, params, false, function(doc) {
+		fetchTimeObj(metric, params, false, fetchTimeOptions ,function(doc) {
 			var clearMetricObject = function (obj) {
 				if (obj) {
 					if (!obj["t"]) obj["t"] = 0;
@@ -524,7 +528,7 @@ var fetch = {},
 			};
 
 			if (doc['meta'] && doc['meta'][queryMetric]) {
-                getTotalUsersObj(totalUsersMetric, params, function(dbTotalUsersObj) {
+                fetch.getTotalUsersObjWithOptions(totalUsersMetric, params, {db: fetchTimeOptions.db}, function(dbTotalUsersObj) {
                     var data = countlyCommon.extractMetric(doc, doc['meta'][queryMetric], clearMetricObject, [
                         {
                             name:queryMetric,
@@ -535,7 +539,7 @@ var fetch = {},
                         { "name":"t" },
                         { "name":"n" },
                         { "name":"u" }
-                    ], formatTotalUsersObj(dbTotalUsersObj));
+                    ], fetch.formatTotalUsersObj(dbTotalUsersObj));
                     
                     if(callback){
                         callback(data);
@@ -634,7 +638,7 @@ var fetch = {},
     };
 
     fetch.fetchTotalUsersObj = function (metric, params) {
-        getTotalUsersObj(metric, params, function(output) {
+        fetch.getTotalUsersObj(metric, params, function(output) {
             common.returnOutput(params, output);
         });
     };
@@ -645,9 +649,19 @@ var fetch = {},
     * @param {params} params - params object with app_id and date
     * @param {function} callback - callback to retrieve the data, receiving only one param which is output
     */
-    fetch.getTotalUsersObj = getTotalUsersObj;
+    fetch.getTotalUsersObj = function (metric, params, callback) {
+        fetch.getTotalUsersObjWithOptions(metric, params, {}, callback);
+    };
 
-    function getTotalUsersObj(metric, params, callback) {
+    fetch.getTotalUsersObjWithOptions = function (metric, params, options, callback) {
+        if(typeof options === "undefined"){
+            options = {};
+        }
+
+        if(typeof options.db === "undefined") {
+            options.db = common.db;
+        }
+
         if(!plugins.getConfig("api").total_users){
             return callback([]);
         }
@@ -702,7 +716,7 @@ var fetch = {},
                 match["cc"] = params.app_cc;
             }
 
-            common.db.collection("app_users" + params.app_id).aggregate([
+            options.db.collection("app_users" + params.app_id).aggregate([
                 {
                     $match: match
                 },
@@ -729,7 +743,7 @@ var fetch = {},
                      While returning a total user result for any metric, we check metric_changes to see
                      if any metric change happened in the selected period and include this in the result
                      */
-                    common.db.collection("metric_changes" + params.app_id).aggregate([
+                    options.db.collection("metric_changes" + params.app_id).aggregate([
                         {
                             $match: metricChangesMatch
                         },
@@ -767,11 +781,9 @@ var fetch = {},
         } else {
             callback([]);
         }
-    }
+    };
 
-    fetch.formatTotalUsersObj = formatTotalUsersObj;
-
-    function formatTotalUsersObj(obj, forMetric) {
+    fetch.formatTotalUsersObj = function (obj, forMetric) {
         var tmpObj = {},
             processingFunction;
 
@@ -791,7 +803,7 @@ var fetch = {},
         }
 
         return tmpObj;
-    }
+    };
 
     function fetchTimeObj(collection, params, isCustomEvent, options, callback) {
         if(typeof options === "function"){
@@ -803,23 +815,29 @@ var fetch = {},
             options = {};
         }
         
-        if(typeof options.db === "undefined")
+        if(typeof options.db === "undefined") {
             options.db = common.db;
+        }
         
-        if(typeof options.unique === "undefined")
+        if(typeof options.unique === "undefined") {
             options.unique = common.dbMap.unique;
+        }
         
-        if(typeof options.id === "undefined")
+        if(typeof options.id === "undefined") {
             options.id = params.app_id;
+        }
         
-        if(typeof options.levels === "undefined")
+        if(typeof options.levels === "undefined") {
             options.levels = {};
+        }
         
-        if(typeof options.levels.daily === "undefined")
+        if(typeof options.levels.daily === "undefined") {
             options.levels.daily = [common.dbMap.total, common.dbMap.new, common.dbEventMap.count, common.dbEventMap.sum, common.dbEventMap.duration];
+        }
         
-        if(typeof options.levels.monthly === "undefined")
+        if(typeof options.levels.monthly === "undefined") {
             options.levels.monthly = [common.dbMap.total, common.dbMap.new, common.dbMap.duration, common.dbMap.events, common.dbEventMap.count, common.dbEventMap.sum, common.dbEventMap.duration];
+        }
             
         if (params.qstring.action == "refresh") {
             var dbDateIds = common.getDateIds(params),
