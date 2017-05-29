@@ -2398,7 +2398,7 @@ TableTools.classes_themeroller = {
  * @namespace TableTools default settings for initialisation
  */
 TableTools.DEFAULTS = {
-	"sSwfPath":	"javascripts/dom/dataTables/swf/copy_csv_xls.swf",
+	"sSwfPath":        "",
 	"sRowSelect":      "none",
 	"sSelectedClass":  null,
 	"fnPreRowSelect":  null,
