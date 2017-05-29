@@ -292,7 +292,7 @@
                 tableData = app.dataExports[tableCols[0].sExport]();
             }
             else{
-                tableData = TableTools.fnGetInstance(dtable[0]).fnGetTableData({"sAction":"flash_save","sTag":"default","sLinerTag":"default","sButtonClass":"DTTT_button_xls","sButtonText":"Save for Excel","sTitle":"","sToolTip":"","sCharSet":"utf16le","bBomInc":true,"sFileName":"*.csv","sFieldBoundary":"","sFieldSeperator":"\t","sNewLine":"auto","mColumns":"all","bHeader":true,"bFooter":true,"bOpenRows":false,"bSelectedOnly":false,"fnMouseover":null,"fnMouseout":null,"fnSelect":null,"fnComplete":null,"fnInit":null,"fnCellRender":null,"sExtends":"xls"});
+                tableData = TableTools.fnGetInstance(dtable[0]).fnGetTableData({"sAction":"data","sTag":"default","sLinerTag":"default","sButtonClass":"DTTT_button_xls","sButtonText":"Save for Excel","sTitle":"","sToolTip":"","sCharSet":"utf16le","bBomInc":true,"sFileName":"*.csv","sFieldBoundary":"","sFieldSeperator":"\t","sNewLine":"auto","mColumns":"all","bHeader":true,"bFooter":true,"bOpenRows":false,"bSelectedOnly":false,"fnMouseover":null,"fnMouseout":null,"fnSelect":null,"fnComplete":null,"fnInit":null,"fnCellRender":null,"sExtends":"xls"});
                 tableData = tableData.split(/\r\n|\r|\n/g);
                 tableData.shift();
                 for(var i = 0; i < tableData.length; i++){
