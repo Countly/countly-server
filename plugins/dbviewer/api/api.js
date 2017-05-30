@@ -235,17 +235,31 @@ var plugin = {},
 		}
 		var name = coll_parts.join('.');
         var pretty = name;
-        
-        for(var i in apps){
-            if(name.indexOf(i, name.length - i.length) !== -1){
-                pretty = name.replace(i, "("+apps[i]+")");
-            }
+
+        let isEvent = false;
+        let eventHash = null;
+        if(name.indexOf("events") === 0) {
+            eventHash = name.substring(6);
+            isEvent = true;
         }
-        
-        for(var i in events){
-            if(name.indexOf(i, name.length - i.length) !== -1){
-                pretty = name.replace(i, events[i]);
+
+        if(name.indexOf("drill_events") === 0) {
+            eventHash = name.substring(12);
+            isEvent = true;
+        }
+
+        if(!isEvent) {
+            let finished = false;
+            for (var i in apps) {
+                if (name.indexOf(i, name.length - i.length) !== -1) {
+                    pretty = name.replace(i, "(" + apps[i] + ")");
+                    finished = true;
+                    break;
+                }
             }
+        } else {
+            const targetEntry = events[eventHash];
+            pretty = name.replace(eventHash, targetEntry)
         }
            
 		return { name: name, pretty: pretty, database: database.toString() };
