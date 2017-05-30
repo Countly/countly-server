@@ -262,7 +262,7 @@ var plugin = {},
                 pretty = name;
             } else {
                 const targetEntry = events[eventHash];
-                if(!_.isUndefined(pretty)) {
+                if(!_.isUndefined(targetEntry)) {
                     pretty = name.replace(eventHash, targetEntry)
                 }
             }
