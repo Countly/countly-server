@@ -3,7 +3,8 @@ var plugin = {},
 	async = require('async'),
 	crypto = require('crypto'),
     plugins = require('../../pluginManager.js'),
-	connections = {};
+	connections = {},
+    _ = require('underscore');
 
 (function (plugin) {
 	plugins.register("/o/db", function(ob){
@@ -241,9 +242,7 @@ var plugin = {},
         if(name.indexOf("events") === 0) {
             eventHash = name.substring(6);
             isEvent = true;
-        }
-
-        if(name.indexOf("drill_events") === 0) {
+        } else if(name.indexOf("drill_events") === 0) {
             eventHash = name.substring(12);
             isEvent = true;
         }
@@ -258,8 +257,15 @@ var plugin = {},
                 }
             }
         } else {
-            const targetEntry = events[eventHash];
-            pretty = name.replace(eventHash, targetEntry)
+            if(eventHash.length === 0) {
+                //this is the "events" collection
+                pretty = name;
+            } else {
+                const targetEntry = events[eventHash];
+                if(!_.isUndefined(pretty)) {
+                    pretty = name.replace(eventHash, targetEntry)
+                }
+            }
         }
            
 		return { name: name, pretty: pretty, database: database.toString() };
