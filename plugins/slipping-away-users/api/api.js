@@ -4,7 +4,7 @@ const plugin = {},
   plugins = require('../../pluginManager'),
 	common = require('../../../api/utils/common.js'),
   BPromise = require('bluebird'),
-  moment = require('moment'),
+  moment = require('moment-timezone'),
   periods = [7, 14, 30, 60, 90];
 
 (function (plugin) {

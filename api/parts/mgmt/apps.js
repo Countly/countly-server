@@ -1,6 +1,6 @@
 var appsApi = {},
     common = require('./../../utils/common.js'),
-    moment = require('moment'),
+    moment = require('moment-timezone'),
     crypto = require('crypto'),
 	plugins = require('../../../plugins/pluginManager.js'),
     fs = require('fs');
