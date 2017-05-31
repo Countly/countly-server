@@ -350,33 +350,21 @@ const assistant = {},
     };
 
     doNotificationShowAmountUpdateBulk = function(db, dataBatch, callback){
+        const nativeDb = db._native;
+        nativeDb.collection(db_name_config, {}, function(err, collection) {
+            const bulk = collection.initializeUnorderedBulkOp();
 
-        dataBatch.forEach(function (batchElem) {
-            db.collection(db_name_config).update({_id: db.ObjectID(batchElem.appID)}, {$inc: batchElem.updateQuery}, {upsert: true}, function (err, res) {
+            dataBatch.forEach(function (batchElem) {
+                bulk.find({_id: db.ObjectID(batchElem.appID)}).upsert().update({$inc: batchElem.updateQuery});
+            });
+
+            bulk.execute(function (err, res) {
                 log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', err, res);
+                if(callback !== null) {
+                    callback(err, res);
+                }
             });
         });
-
-        if(callback !== null) {
-            callback();
-        }
-
-        /*
-        //todo do this after batch mode is supported
-
-        const batch = db.collection(db_name_config).initializeUnorderedBulkOp();
-
-        dataBatch.forEach(function (batchElem) {
-            batch.update({_id: db.ObjectID(batchElem.appID)}, {$inc: batchElem.updateQuery}, {upsert: true});
-        });
-
-        batch.execute(function (err, res) {
-            log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', err, res);
-            if(callback !== null) {
-                callback(err, res);
-            }
-        });
-        */
     };
 
     /**
@@ -528,9 +516,6 @@ const assistant = {},
         anc.notificationVersion = notificationVersion;
 
         anc.showAmount = assistant.getNotificationShowAmount(anc.apc.assistantConfig, anc.apc.PLUGIN_NAME, notificationType, notificationSubtype, anc.apc.app_id);
-
-        //todo get rid of this
-        //anc.valueSet = assistant.createNotificationValueSet(anc.notificationI18nID, anc.notificationType, anc.notificationSubtype, anc.apc.PLUGIN_NAME, , anc.apc.app_id, anc.notificationVersion);
 
         return anc;
     };
