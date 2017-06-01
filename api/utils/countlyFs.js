@@ -1,5 +1,5 @@
 /**
-* Module to abstract storing files in a shared system between multiple countly instances
+* Module to abstract storing files in a shared system between multiple countly instances, currently based on GridFS
 * @module api/utils/countlyFs
 */
 
@@ -23,6 +23,77 @@ var fs = require("fs");
         }
     }
     
+    function save(category, filename, readStream, options, callback){
+        var bucket = new GridFSBucket(db._native, { bucketName: category });
+        var uploadStream;
+        var id = options.id;
+        delete options.id;
+        delete options.writeMode;
+        if(typeof id === "string")
+            uploadStream = bucket.openUploadStreamWithId(id, filename, options);
+        else
+            uploadStream = bucket.openUploadStream(filename, options);
+        uploadStream.once('finish', function() {
+            if(callback)
+                callback(null)
+        });
+        uploadStream.on('error', function(error) {
+            if(callback)
+                callback(error);
+        });
+        readStream.pipe(uploadStream);
+    }
+    
+    function beforeSave(category, filename, options, callback, done){
+        countlyFs.getId(category, filename, function(err, res){
+            if(!err){
+                if(!res || options.writeMode === "version"){
+                    checkIfOpened(function(){
+                        done();
+                    });
+                }
+                else if(options.writeMode === "overwrite"){
+                    checkIfOpened(function(){
+                        var bucket = new GridFSBucket(db._native, { bucketName: category });
+                        bucket.delete(res, function(error) {
+                            if(!error){
+                                setTimeout(done, 1);
+                            }
+                            else if(callback)
+                                callback(error);
+                        });
+                    });
+                }
+                else{
+                    if(callback)
+                        callback(new Error("File already exists"), res);
+                }
+            }
+            else{
+                if(callback)
+                    callback(err, res);
+            }
+        });
+    }
+    
+    /**
+    * Get file's id
+    * @param {string} category - collection where to store data
+    * @param {string} filename - filename
+    * @param {function} callback - function called when we have result, providing error object as first param and id as second
+    * @example
+    * countlyFs.getId("test", "./CHANGELOG.md", function(err, exists){
+    *   if(exists)
+    *       console.log("File exists");
+    * });
+    */
+    countlyFs.getId = function(category, filename, callback){
+        db.collection(category+".files").findOne({ filename: filename }, {_id:1}, function(err, res){
+            if(callback)
+                callback(err, (res && res._id) ? res._id : false);
+        });
+    };
+    
     /**
     * Check if file exists
     * @param {string} category - collection where to store data
@@ -45,47 +116,34 @@ var fs = require("fs");
     * Save file in shared system
     * @param {string} category - collection where to store data
     * @param {string} path - path to file
-    * @param {string=} filename - filename, can be used to rename file, if not provided will be used from path
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {string} options.filename- filename, can be used to rename file, if not provided will be used from path
+    * @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
+    * @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
+    * @param {object} options.metadata - Optional object to store in the file document's metadata field
+    * @param {string} options.contentType - Optional string to store in the file document's contentType field
+    * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
     * @param {function} callback - function called when saving was completed or errored, providing error object as first param
     * @example
     * countlyFs.saveFile("test", "./CHANGELOG.md", function(err){
     *   console.log("Storing file finished", err);
     * });
     */
-    countlyFs.saveFile = function(category, path, filename, callback){
-        if(typeof filename === "function"){
-            callback = filename;
-            filename = null;
+    countlyFs.saveFile = function(category, path, options, callback){
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
         }
+        if(!options){
+            options = {};
+        }
+        var filename = options.filename;
+        delete options.filename;
         if(!filename)
             filename = path.split("/").pop();
-        countlyFs.exists(category, filename, function(err, res){
-            if(!err){
-                if(!res){
-                    checkIfOpened(function(){
-                        var bucket = new GridFSBucket(db._native, { bucketName: category });
-                        var readStream = fs.createReadStream(path);
-                        var uploadStream = bucket.openUploadStream(filename);
-                        uploadStream.once('finish', function() {
-                            if(callback)
-                                callback(null)
-                        });
-                        uploadStream.on('error', function(error) {
-                            if(callback)
-                                callback(error);
-                        });
-                        readStream.pipe(uploadStream);
-                    });
-                }
-                else{
-                    if(callback)
-                        callback(new Error("File already exists"), res);
-                }
-            }
-            else{
-                if(callback)
-                    callback(err, res);
-            }
+        beforeSave(category, filename, options, callback, function(){
+            save(category, filename, fs.createReadStream(path), options, callback);
         });
     };
     
@@ -94,42 +152,32 @@ var fs = require("fs");
     * @param {string} category - collection where to store data
     * @param {string} filename - filename
     * @param {string} data - data to save
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
+    * @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
+    * @param {object} options.metadata - Optional object to store in the file document's metadata field
+    * @param {string} options.contentType - Optional string to store in the file document's contentType field
+    * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
     * @param {function} callback - function called when saving was completed or errored, providing error object as first param
     * @example
     * countlyFs.saveData("test", "test.text", "some\nmultiline\ntest", function(err){
     *   console.log("Storing data finished", err);
     * });
     */
-    countlyFs.saveData = function(category, filename, data, callback){
-        countlyFs.exists(category, filename, function(err, res){
-            if(!err){
-                if(!res){
-                    checkIfOpened(function(){
-                        var bucket = new GridFSBucket(db._native, { bucketName: category });
-                        var readStream = new Readable;
-                        readStream.push(data);
-                        readStream.push(null);
-                        var uploadStream = bucket.openUploadStream(filename);
-                        uploadStream.once('finish', function() {
-                            if(callback)
-                                callback(null)
-                        });
-                        uploadStream.on('error', function(error) {
-                            if(callback)
-                                callback(error);
-                        });
-                        readStream.pipe(uploadStream);
-                    });
-                }
-                else{
-                    if(callback)
-                        callback(new Error("File already exists"), res);
-                }
-            }
-            else{
-                if(callback)
-                    callback(err, res);
-            }
+    countlyFs.saveData = function(category, filename, data, options, callback){
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        beforeSave(category, filename, options, callback, function(){
+            var readStream = new Readable;
+            readStream.push(data);
+            readStream.push(null);
+            save(category, filename, readStream, options, callback);
         });
     };
     
@@ -137,40 +185,30 @@ var fs = require("fs");
     * Save file from stream in shared system
     * @param {string} category - collection where to store data
     * @param {string} filename - filename
-    * @param {stream} stream - stream where to get file content
+    * @param {stream} readStream - stream where to get file content
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
+    * @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
+    * @param {object} options.metadata - Optional object to store in the file document's metadata field
+    * @param {string} options.contentType - Optional string to store in the file document's contentType field
+    * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
     * @param {function} callback - function called when saving was completed or errored, providing error object as first param
     * @example
     * countlyFs.saveStream("test", "AGPLv3", fs.createReadStream("AGPLv3"), function(err){
     *   console.log("Storing stream finished", err);
     * });
     */
-    countlyFs.saveStream = function(category, filename, stream, callback){
-        countlyFs.exists(category, filename, function(err, res){
-            if(!err){
-                if(!res){
-                    checkIfOpened(function(){
-                        var bucket = new GridFSBucket(db._native, { bucketName: category });
-                        var uploadStream = bucket.openUploadStream(filename);
-                        uploadStream.once('finish', function() {
-                            if(callback)
-                                callback(null)
-                        });
-                        uploadStream.on('error', function(error) {
-                            if(callback)
-                                callback(error);
-                        });
-                        stream.pipe(uploadStream);
-                    });
-                }
-                else{
-                    if(callback)
-                        callback(new Error("File already exists"), res);
-                }
-            }
-            else{
-                if(callback)
-                    callback(err, res);
-            }
+    countlyFs.saveStream = function(category, filename, readStream, options, callback){
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        beforeSave(category, filename, options, callback, function(){
+            save(category, filename, readStream, options, callback);
         });
     };
     
@@ -296,6 +334,37 @@ var fs = require("fs");
         checkIfOpened(function(){
             var bucket = new GridFSBucket(db._native, { bucketName: category });
             var downloadStream = bucket.openDownloadStreamByName(filename);
+            downloadStream.on('error', function(error) {
+                if(callback)
+                    callback(error, null);
+            });
+            
+            var str = '';
+            downloadStream.on('data', function(data) {
+                str += data.toString('utf8');
+            });
+    
+            downloadStream.on('end', function() {
+                if(callback)
+                    callback(null, str);
+            });
+        });
+    };
+    
+    /**
+    * Get file data by file id
+    * @param {string} category - collection from where to read data
+    * @param {string} id - file id provided upon creation
+    * @param {function} callback - function called when retrieving stream was completed or errored, providing error object as first param and filedata as second
+    * @example
+    * countlyFs.getDataById("test", "AGPLv3", function(err, data){
+    *   console.log("Retrieved", err, data); 
+    * });
+    */
+    countlyFs.getDataById = function(category, id, callback){
+        checkIfOpened(function(){
+            var bucket = new GridFSBucket(db._native, { bucketName: category });
+            var downloadStream = bucket.openDownloadStream(id);
             downloadStream.on('error', function(error) {
                 if(callback)
                     callback(error, null);
