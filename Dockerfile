@@ -19,7 +19,6 @@ RUN chown -R mongodb:mongodb /var/lib/mongodb && \
     mkdir /etc/service/nginx && \
     mkdir /etc/service/countly-api && \
     mkdir /etc/service/countly-dashboard && \
-    mkdir /etc/service/countly-migrations && \
     echo "" >> /etc/nginx/nginx.conf && \
     echo "daemon off;" >> /etc/nginx/nginx.conf
 
@@ -28,8 +27,6 @@ ADD ./bin/commands/docker/mongodb.sh /etc/service/mongodb/run
 ADD ./bin/commands/docker/nginx.sh /etc/service/nginx/run
 ADD ./bin/commands/docker/countly-api.sh /etc/service/countly-api/run
 ADD ./bin/commands/docker/countly-dashboard.sh /etc/service/countly-dashboard/run
-ADD ./bin/commands/docker/countly-migrations.sh /etc/service/countly-migrations/run
-
 
 # Only root can change run scripts
 RUN chown mongodb /etc/service/mongodb/run && \

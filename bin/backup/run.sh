@@ -12,8 +12,6 @@
 #   app_owner":"58bf0614a68a980015486d03"
 #   app_key":"b41e02136be60a58b9b7459ad89030537a58e099"
 
-# if env var is not set, no need to continue with trying to update mongo with def data.
-[[ -z $COUNTLY_WITH_DEFAULT_DATA ]] && exit 0
 
 #  make relative paths work.
 cd $(dirname $0)
