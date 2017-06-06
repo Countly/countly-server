@@ -307,6 +307,7 @@ const assistant = {},
      * @param appID
      * @returns {*}
      */
+    //todo test this
     assistant.getNotificationShowAmount = function (assistantConfig, pluginName, type, subtype, appID) {
         const targetAppId = "" + appID;
         if (typeof assistantConfig === "undefined") return 0;
@@ -329,6 +330,7 @@ const assistant = {},
      * @param appID
      * @param batchInfoHolder
      */
+    //todo test this
     assistant.increaseNotificationShowAmount = function (db, anc, appID, batchInfoHolder) {
         if(_.isUndefined(anc.apc.PLUGIN_NAME) || _.isUndefined(appID)) {
             log.d("This is undefined: ")
@@ -349,20 +351,33 @@ const assistant = {},
         }
     };
 
-    doNotificationShowAmountUpdateBulk = function(db, dataBatch, callback){
-        const nativeDb = db._native;
-        nativeDb.collection(db_name_config, {}, function(err, collection) {
-            const bulk = collection.initializeUnorderedBulkOp();
-
-            dataBatch.forEach(function (batchElem) {
-                bulk.find({_id: db.ObjectID(batchElem.appID)}).upsert().update({$inc: batchElem.updateQuery});
+    function checkIfDbOpened(givenDb, callback){
+        if(givenDb.isOpen())
+            callback();
+        else{
+            givenDb._emitter.once('open', function (err, db) {
+                callback();
             });
+        }
+    }
 
-            bulk.execute(function (err, res) {
-                log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', err, res);
-                if(callback !== null) {
-                    callback(err, res);
-                }
+    doNotificationShowAmountUpdateBulk = function(db, dataBatch, callback){
+
+        checkIfDbOpened(db, function () {
+            const nativeDb = db._native;
+            nativeDb.collection(db_name_config, {}, function(err, collection) {
+                const bulk = collection.initializeUnorderedBulkOp();
+
+                dataBatch.forEach(function (batchElem) {
+                    bulk.find({_id: batchElem.appID}).upsert().update({$inc: batchElem.updateQuery});
+                });
+
+                bulk.execute(function (err, res) {
+                    log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', err, res);
+                    if(callback !== null) {
+                        callback(err, res);
+                    }
+                });
             });
         });
     };
