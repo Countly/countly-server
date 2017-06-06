@@ -7,7 +7,10 @@ var countlyModel = require('./countly.model.js'),
 * @module "api/lib/countly.device_details"
 * @extends module:api/lib/countly.model~countlyMetric
 */
-var countlyDeviceDetails = countlyModel.create(function(rangeArr, dataObj){
-    return rangeArr.replace(/:/g, ".");
-});
-module.exports = countlyDeviceDetails;
+function create(){
+    var countlyDeviceDetails = countlyModel.create(function(rangeArr, dataObj){
+        return rangeArr.replace(/:/g, ".");
+    });
+    return countlyDeviceDetails;
+}
+module.exports = create;

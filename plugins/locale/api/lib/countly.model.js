@@ -10,12 +10,14 @@ var countlyModel = require('../../../../api/lib/countly.model.js'),
 * @module "plugins/locale/api/lib/countly.model"
 * @extends module:api/lib/countly.model~countlyMetric
 */
-
-var countlyLocales = countlyModel.create(function(code){
+function create(){
+    var countlyLocales = countlyModel.create(function(code){
         if(langmap && langmap[code]){
             return langmap[code].englishName
         }
         else
             return code;
     });
-module.exports = countlyLocales;
+    return countlyLocales;
+}
+module.exports = create;

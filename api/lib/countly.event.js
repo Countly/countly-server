@@ -7,9 +7,12 @@ var countlyModel = require('./countly.model.js'),
 * @module "api/lib/countly.event"
 * @extends module:api/lib/countly.model~countlyMetric
 */
-var countlyEvent = countlyModel.create(function(val){
-    return val.replace(/:/g, ".").replace(/\[CLY\]/g,"").replace(/.\/\//g, "://");
-});
-countlyEvent.setMetrics(["c","s","dur"]);
-countlyEvent.setUniqueMetrics([]);
-module.exports = countlyEvent;
+function create(){
+    var countlyEvent = countlyModel.create(function(val){
+        return val.replace(/:/g, ".").replace(/\[CLY\]/g,"").replace(/.\/\//g, "://");
+    });
+    countlyEvent.setMetrics(["c","s","dur"]);
+    countlyEvent.setUniqueMetrics([]);
+    return countlyEvent;
+}
+module.exports = create;
