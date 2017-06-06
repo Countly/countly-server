@@ -21,12 +21,12 @@ countlyModel.load = function(segment){
     var model;
     try{
         //try loading model from core
-        model = require("./countly."+_name+".js");
+        model = require("./countly."+_name+".js")();
     }
     catch(ex){
          try{
             //try loading model from plugin
-            model = require("../../plugins/"+_name+"/api/lib/countly.model.js");
+            model = require("../../plugins/"+_name+"/api/lib/countly.model.js")();
         }
         catch(ex){
             //just create standard model

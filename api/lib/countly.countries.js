@@ -19,49 +19,50 @@ function getCountryName(cc){
 * @module "api/lib/countly.countries"
 * @extends module:api/lib/countly.model~countlyMetric
 */
-
-/** @lends module:api/lib/countly.countries */
-var countlyLocation = countlyModel.create(getCountryName);
-
-/**
-* Get location data for the map
-* @param {object} options - additional options
-* @param {number} options.maxCountries - maximum of results to output
-* @param {string} options.sort - by which property to sort
-* @returns {array} array with retrieved data about countries
-*/
-countlyLocation.getLocationData = function (options) {
-    var locationData = countlyCommon.extractTwoLevelData(countlyLocation.getDb(), countlyLocation.getMeta(), countlyLocation.clearObject, [
-        {
-            "name":"country",
-            "func":function (rangeArr, dataObj) {
-                return getCountryName(rangeArr);
+function create(){
+    /** @lends module:api/lib/countly.countries */
+    var countlyLocation = countlyModel.create(getCountryName);
+    
+    /**
+    * Get location data for the map
+    * @param {object} options - additional options
+    * @param {number} options.maxCountries - maximum of results to output
+    * @param {string} options.sort - by which property to sort
+    * @returns {array} array with retrieved data about countries
+    */
+    countlyLocation.getLocationData = function (options) {
+        var locationData = countlyCommon.extractTwoLevelData(countlyLocation.getDb(), countlyLocation.getMeta(), countlyLocation.clearObject, [
+            {
+                "name":"country",
+                "func":function (rangeArr, dataObj) {
+                    return getCountryName(rangeArr);
+                }
+            },
+            {
+                "name":"code",
+                "func":function (rangeArr, dataObj) {
+                    return rangeArr.toLowerCase();
+                }
+            },
+            { "name":"t" },
+            { "name":"u" },
+            { "name":"n" }
+        ], countlyLocation.getTotalUsersObj());
+    
+        if (options && options.maxCountries && locationData.chartData) {
+            if (locationData.chartData.length > options.maxCountries) {
+                locationData.chartData = locationData.chartData.splice(0, options.maxCountries);
             }
-        },
-        {
-            "name":"code",
-            "func":function (rangeArr, dataObj) {
-                return rangeArr.toLowerCase();
+        }
+    
+        if (options && options.sort) {
+            if (options.sort == "new") {
+                locationData.chartData = underscore.sortBy(locationData.chartData, function(obj) { return -obj.n; });
             }
-        },
-        { "name":"t" },
-        { "name":"u" },
-        { "name":"n" }
-    ], countlyLocation.getTotalUsersObj());
-
-    if (options && options.maxCountries && locationData.chartData) {
-        if (locationData.chartData.length > options.maxCountries) {
-            locationData.chartData = locationData.chartData.splice(0, options.maxCountries);
         }
-    }
-
-    if (options && options.sort) {
-        if (options.sort == "new") {
-            locationData.chartData = underscore.sortBy(locationData.chartData, function(obj) { return -obj.n; });
-        }
-    }
-
-    return locationData.chartData;
-};
-
-module.exports = countlyLocation;
+    
+        return locationData.chartData;
+    };
+    return countlyLocation;
+}
+module.exports = create;

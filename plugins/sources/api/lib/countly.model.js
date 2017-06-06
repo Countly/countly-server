@@ -8,8 +8,8 @@ var countlyModel = require('../../../../api/lib/countly.model.js'),
 * @module "plugins/sources/api/lib/countly.model"
 * @extends module:api/lib/countly.model~countlyMetric
 */
-
-var countlySources = countlyModel.create(function(code, data, separate){
+function create(){
+    var countlySources = countlyModel.create(function(code, data, separate){
         code = countlyCommon.decode(code+"");
         if(!code.startsWith("http") && code.indexOf("://") === -1){
             //ignore incorrect Android values, which are numbers
@@ -43,4 +43,6 @@ var countlySources = countlyModel.create(function(code, data, separate){
             return domain;
         }
     });
-module.exports = countlySources;
+    return countlySources;
+}
+module.exports = create;
