@@ -208,7 +208,7 @@
         revealDialog(dialog);
         return dialog;
     };
-    
+
     /**
     * Displays database export dialog
     * @param {number} count - total count of documents to export
@@ -266,7 +266,7 @@
             revealDialog(dialog);
         return dialog;
     };
-    
+
     /**
     * Displays raw data table export dialog
     * @param {object} data - data for export query to use when constructing url
@@ -296,27 +296,34 @@
                 tableData = tableData.split(/\r\n|\r|\n/g);
                 tableData.shift();
                 for(var i = 0; i < tableData.length; i++){
-                    tableData[i] = tableData[i].split('\t');   
+                    tableData[i] = tableData[i].split('\t');
                 }
                 var retData = [];
                 for (var i = 0;  i < tableData.length; i++) {
                     var ob = {};
                     for (var colIndex = 0;  colIndex < tableCols.length; colIndex++) {
-                        if (tableCols[colIndex].sType == "formatted-num") {
-                            ob[tableCols[colIndex].sTitle] = tableData[i][colIndex].replace(/,/g, "");
-                        } else if (tableCols[colIndex].sType == "percent") {
-                            ob[tableCols[colIndex].sTitle] = tableData[i][colIndex].replace("%", "");
-                        } else if (tableCols[colIndex].sType == "format-ago" || tableCols[colIndex].sType == "event-timeline") {
-                            ob[tableCols[colIndex].sTitle] = tableData[i][colIndex].split("|").pop();
-                        }
-                        else{
-                            ob[tableCols[colIndex].sTitle] = tableData[i][colIndex];
+                        try{
+                            if(!(tableData[i] && tableData[i][colIndex])){
+                                continue;
+                            }
+                            if (tableCols[colIndex].sType == "formatted-num") {
+                                ob[tableCols[colIndex].sTitle] = tableData[i][colIndex].replace(/,/g, "");
+                            } else if (tableCols[colIndex].sType == "percent") {
+                                ob[tableCols[colIndex].sTitle] = tableData[i][colIndex].replace("%", "");
+                            } else if (tableCols[colIndex].sType == "format-ago" || tableCols[colIndex].sType == "event-timeline") {
+                                ob[tableCols[colIndex].sTitle] = tableData[i][colIndex].split("|").pop();
+                            }
+                            else{
+                                ob[tableCols[colIndex].sTitle] = tableData[i][colIndex];
+                            }
+                        }catch(e){
+                            console.log(e);
                         }
                     }
                     retData.push(ob);
                 }
                 tableData = retData;
-            }               
+            }
             return tableData;
         }
         var dialog = $("#cly-export").clone();
@@ -352,7 +359,7 @@
             revealDialog(dialog);
         return dialog;
     };
-    
+
     /**
     * Instead of creating dialog object you can use this method and directly pass jquery element to be used as dialog content, which means complete customization
     * @param {jquery_object} dialog - jQuery object unnattached, like cloned existing object
@@ -1138,7 +1145,7 @@
         * @global
         * @namespace countlyMetric
         */
- 
+
         //Public Methods
         /**
         * Initialize metric model to fetch initial data from server
@@ -1251,7 +1258,7 @@
                 return true;
             }
         };
-        
+
         /**
         * Callback that each metric model can define, to be called when data is loaded or refreshed
         * @example
@@ -1278,7 +1285,7 @@
                 setMeta();
             }
         };
-        
+
         /**
         * Get current data, if some view or model requires access to raw data
         * @return {object} raw data returned from server either in standard metric model or preprocessed data, based on what model uses
@@ -1286,7 +1293,7 @@
         countlyMetric.getDb = function () {
             return _Db;
         };
-        
+
         /**
         * Set current data for model, if you need to provide data for model from another resource (as loaded in different model)
         * @param {object} db - set new data to be used by model
@@ -1295,7 +1302,7 @@
             _Db = db;
             setMeta();
         };
-        
+
         /**
         * Extend current data for model with some additional information about latest period (like data from action=refresh request)
         * @param {object} db - set new data to be used by model
@@ -1304,7 +1311,7 @@
             countlyCommon.extendDbObj(_Db, data);
             extendMeta();
         };
-        
+
         /**
         * Get array of unique segments available for metric data
         * @param {string} metric - name of the segment/metric to get meta for, by default will use default _name provided on initialization
@@ -1412,28 +1419,28 @@
             var namesData = _.pluck(chartData.chartData, metric || _name),
                 totalData = _.pluck(chartData.chartData, 't'),
                 newData = _.pluck(chartData.chartData, 'n');
-                
+
             if(join){
                 chartData.chartDP = {ticks:[]};
                 var chartDP = [
                     {data:[], label:jQuery.i18n.map["common.table.total-sessions"]},
                     {data:[], label:jQuery.i18n.map["common.table.new-users"]}
                 ];
-    
+
                 chartDP[0]["data"][0] = [-1, null];
                 chartDP[0]["data"][namesData.length + 1] = [namesData.length, null];
                 chartDP[1]["data"][0] = [-1, null];
                 chartDP[1]["data"][namesData.length + 1] = [namesData.length, null];
-        
+
                 chartData.chartDP.ticks.push([-1, ""]);
                 chartData.chartDP.ticks.push([namesData.length, ""]);
-        
+
                 for (var i = 0; i < namesData.length; i++) {
                     chartDP[0]["data"][i + 1] = [i, totalData[i]];
                     chartDP[1]["data"][i + 1] = [i, newData[i]];
                     chartData.chartDP.ticks.push([i, namesData[i]]);
                 }
-        
+
                 chartData.chartDP.dp = chartDP;
             }
             else{
@@ -1443,28 +1450,28 @@
                 var sum = _.reduce(totalData, function (memo, num) {
                     return memo + num;
                 }, 0);
-    
+
                 for (var i = 0; i < namesData.length; i++) {
                     var percent = (totalData[i] / sum) * 100;
                     chartData2[i] = {data:[
                         [0, totalData[i]]
                     ], label:namesData[i]};
                 }
-    
+
                 var sum2 = _.reduce(newData, function (memo, num) {
                     return memo + num;
                 }, 0);
-    
+
                 for (var i = 0; i < namesData.length; i++) {
                     var percent = (newData[i] / sum) * 100;
                     chartData3[i] = {data:[
                         [0, newData[i]]
                     ], label:namesData[i]};
                 }
-    
+
                 chartData.chartDPTotal = {};
                 chartData.chartDPTotal.dp = chartData2;
-    
+
                 chartData.chartDPNew = {};
                 chartData.chartDPNew.dp = chartData3;
             }
@@ -1643,13 +1650,13 @@
 
             return oSVersionData;
         };
-        
+
         /**
         * Get range data which is usually stored in some time ranges/buckets. As example is loyalty, session duration and session frequency
         * @param {string} metric - name of the property in the model to fetch
         * @param {string} meta - name of the meta where property's ranges are stored
         * @param {string} explain - function that receives index of the bucket and returns bucket name
-        * @returns {object} 
+        * @returns {object}
         * @example <caption>Example output</caption>
         * //call
         * //countlyMetric.getRangeData("f", "f-ranges", countlySession.explainFrequencyRange);
@@ -1674,32 +1681,32 @@
         countlyMetric.getRangeData = function (metric, meta, explain) {
 
             var chartData = {chartData:{}, chartDP:{dp:[], ticks:[]}};
-    
+
             chartData.chartData = countlyCommon.extractRangeData(_Db, metric, this.getMeta(meta), explain);
-    
+
             var frequencies = _.pluck(chartData.chartData, metric),
                 frequencyTotals = _.pluck(chartData.chartData, "t"),
                 chartDP = [
                     {data:[]}
                 ];
-    
+
             chartDP[0]["data"][0] = [-1, null];
             chartDP[0]["data"][frequencies.length + 1] = [frequencies.length, null];
-    
+
             chartData.chartDP.ticks.push([-1, ""]);
             chartData.chartDP.ticks.push([frequencies.length, ""]);
-    
+
             for (var i = 0; i < frequencies.length; i++) {
                 chartDP[0]["data"][i + 1] = [i, frequencyTotals[i]];
                 chartData.chartDP.ticks.push([i, frequencies[i]]);
             }
-    
+
             chartData.chartDP.dp = chartDP;
-    
+
             for (var i = 0; i < chartData.chartData.length; i++) {
                 chartData.chartData[i]["percent"] = "<div class='percent-bar' style='width:" + (2 * chartData.chartData[i]["percent"]) + "px;'></div>" + chartData.chartData[i]["percent"] + "%";
             }
-    
+
             return chartData;
         };
 
@@ -1851,7 +1858,7 @@
         var re = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
         return re.test(email);
     };
-    
+
     /**
     * Validate password based on settings provided via security configuration
     * @param {string} password - password to validate
