@@ -589,7 +589,7 @@ plugins.setConfigs("crashes", {
                                 res[i].name = (res[i].name+"").split("\n")[0].trim();
                             }
                         }
-                        common.returnOutput(params, res);
+                        common.returnOutput(params, res || []);
                     });
                 }
 				else if (params.qstring.graph){
