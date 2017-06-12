@@ -16,14 +16,27 @@ else
 
     if ping -c 1 google.com >> /dev/null 2>&1; then
         echo "Downloading from Github..."
-        wget -nv $LATEST -O ./countly.zip ;
+        if [[ "$LATEST" == *zip ]]
+        then
+            wget -nv $LATEST -O ./countly.zip ;
+            unzip countly.zip
+        else
+            wget -nv $LATEST -O ./countly.tar.gz ;
+            tar zxfv countly.tar.gz ;
+        fi
     else
         echo "Downloading from CDN..."
         PACKAGE_NAME=$(awk -F/ '{print $9}' <<< $LATEST)
         CDN_HOST=http://om65qc2mm.bkt.clouddn.com/
-        wget -nv $CDN_HOST$PACKAGE_NAME -O ./countly.zip ;
+        if [[ "$LATEST" == *zip ]]
+        then
+            wget -nv $CDN_HOST$PACKAGE_NAME -O ./countly.zip ;
+            unzip countly.zip
+        else
+            wget -nv $CDN_HOST$PACKAGE_NAME -O ./countly.tar.gz ;
+            tar zxfv countly.tar.gz ;
+        fi
     fi
-    unzip countly.zip ;
 fi
 
 YUM_CMD=$(which yum)
