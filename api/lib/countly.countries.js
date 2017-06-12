@@ -31,7 +31,7 @@ function create(){
     * @returns {array} array with retrieved data about countries
     */
     countlyLocation.getLocationData = function (options) {
-        var locationData = countlyCommon.extractTwoLevelData(countlyLocation.getDb(), countlyLocation.getMeta(), countlyLocation.clearObject, [
+        var locationData = countlyCommon.extractTwoLevelData(countlyLocation.getDb(), countlyLocation.getMeta("countries"), countlyLocation.clearObject, [
             {
                 "name":"country",
                 "func":function (rangeArr, dataObj) {
