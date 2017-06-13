@@ -1,0 +1,21 @@
+{
+  "name": "countly-notifier",
+  "title": "Notifier",
+  "version": "0.0.0",
+  "description": "Notify the listener when a condition is met",
+  "author": "Count.ly",
+  "homepage": "https://count.ly/plugins/notifier",
+  "repository" :{ "type" : "git", "url" : "http://github.com/Countly/countly-server.git"},
+  "bugs":{ "url" : "http://github.com/Countly/countly-server/issues"},
+  "keywords": [
+    "countly",
+    "analytics",
+    "mobile",
+    "plugins",
+  	"template",
+    "notify"
+  ],
+  "dependencies": {
+  },
+  "private": true
+}
