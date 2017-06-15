@@ -2938,7 +2938,6 @@ window.LongTaskView = countlyView.extend({
 			this.dtable.stickyTableHeaders();
 			this.dtable.fnSort( [ [3,'desc'] ] );
             
-            this.dtable.find("delete-task").click()
             this.dtable.find('tbody').on("click", ".delete-task", function (){
                 var id = $(this).data("id");
                 if(id){

@@ -1448,6 +1448,13 @@ window.CrashgroupView = countlyView.extend({
                                 '</td>';
                             }
 						str += '</tr>'+
+                        '<tr>'+
+                        '<td colspan="5">';
+                        if(typeof countlyCrashSymbols && countlyCrashes.canSymbolicate((data.os + "").toLowerCase(), data.build || data.app_version)){
+                            str += '<a class="icon-button light btn-symbolicate" data-id="'+countlyCrashes.canSymbolicate((data.os + "").toLowerCase(), data.build || data.app_version)+'" data-localize="crash_symbolication.symbolicate" style="float: right; margin-top: 6px;">Symbolicate</a>';
+                        }
+                        str += '<pre>' + data.error + '</pre></td>'+
+						'</tr>'+
 						'</table>'+
 			'</div>';
 		}
