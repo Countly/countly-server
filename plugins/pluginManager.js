@@ -67,7 +67,7 @@ var pluginManager = function pluginManager(){
             defaultConfigs[namespace] = conf;
         else{
             for(var i in conf){
-                defaultConfigs[i] = conf[i];
+                defaultConfigs[namespace][i] = conf[i];
             }
         }
         if(exclude)
@@ -603,7 +603,7 @@ var pluginManager = function pluginManager(){
             return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.');
         };
         countlyDb.on('error', console.log);
-        
+        countlyDb.s = {};
         //overwrite some methods
         countlyDb._collection = countlyDb.collection;
         countlyDb.collection = function(collection, options, callback){
