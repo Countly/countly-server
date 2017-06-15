@@ -1451,7 +1451,7 @@ window.CrashgroupView = countlyView.extend({
                         '<tr>'+
                         '<td colspan="5">';
                         if(typeof countlyCrashSymbols && countlyCrashes.canSymbolicate((data.os + "").toLowerCase(), data.build || data.app_version)){
-                            str += '<a class="icon-button light btn-symbolicate" data-id="'+countlyCrashes.canSymbolicate((data.os + "").toLowerCase(), data.build || data.app_version)+'" data-localize="crash_symbolication.symbolicate" style="float: right; margin-top: 6px;">Symbolicate</a>';
+                            str += '<a class="icon-button light btn-symbolicate" data-symbol_id="'+countlyCrashes.canSymbolicate((data.os + "").toLowerCase(), data.build || data.app_version)+'" data-id="'+data._id+'" data-localize="crash_symbolication.symbolicate" style="float: right; margin-top: 6px;">Symbolicate</a>';
                         }
                         str += '<pre>' + data.error + '</pre></td>'+
 						'</tr>'+
