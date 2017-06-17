@@ -3,7 +3,7 @@
 const job = require('../../../../api/parts/jobs/job.js'),
     log = require('../../../../api/utils/log.js')('job:stats'),
     config = require("../../../../frontend/express/config.js"),
-    moment = require('moment'),
+    moment = require('moment-timezone'),
     request = require('request');
 
 class StatsJob extends job.Job {

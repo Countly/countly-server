@@ -307,6 +307,7 @@ const assistant = {},
      * @param appID
      * @returns {*}
      */
+    //todo test this
     assistant.getNotificationShowAmount = function (assistantConfig, pluginName, type, subtype, appID) {
         const targetAppId = "" + appID;
         if (typeof assistantConfig === "undefined") return 0;
@@ -329,6 +330,7 @@ const assistant = {},
      * @param appID
      * @param batchInfoHolder
      */
+    //todo test this
     assistant.increaseNotificationShowAmount = function (db, anc, appID, batchInfoHolder) {
         if(_.isUndefined(anc.apc.PLUGIN_NAME) || _.isUndefined(appID)) {
             log.d("This is undefined: ")
@@ -349,34 +351,35 @@ const assistant = {},
         }
     };
 
+    function checkIfDbOpened(givenDb, callback){
+        if(givenDb.isOpen())
+            callback();
+        else{
+            givenDb._emitter.once('open', function (err, db) {
+                callback();
+            });
+        }
+    }
+
     doNotificationShowAmountUpdateBulk = function(db, dataBatch, callback){
 
-        dataBatch.forEach(function (batchElem) {
-            db.collection(db_name_config).update({_id: db.ObjectID(batchElem.appID)}, {$inc: batchElem.updateQuery}, {upsert: true}, function (err, res) {
-                log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', err, res);
+        checkIfDbOpened(db, function () {
+            const nativeDb = db._native;
+            nativeDb.collection(db_name_config, {}, function(err, collection) {
+                const bulk = collection.initializeUnorderedBulkOp();
+
+                dataBatch.forEach(function (batchElem) {
+                    bulk.find({_id: batchElem.appID}).upsert().update({$inc: batchElem.updateQuery});
+                });
+
+                bulk.execute(function (err, res) {
+                    log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', err, res);
+                    if(callback !== null) {
+                        callback(err, res);
+                    }
+                });
             });
         });
-
-        if(callback !== null) {
-            callback();
-        }
-
-        /*
-        //todo do this after batch mode is supported
-
-        const batch = db.collection(db_name_config).initializeUnorderedBulkOp();
-
-        dataBatch.forEach(function (batchElem) {
-            batch.update({_id: db.ObjectID(batchElem.appID)}, {$inc: batchElem.updateQuery}, {upsert: true});
-        });
-
-        batch.execute(function (err, res) {
-            log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', err, res);
-            if(callback !== null) {
-                callback(err, res);
-            }
-        });
-        */
     };
 
     /**
@@ -528,9 +531,6 @@ const assistant = {},
         anc.notificationVersion = notificationVersion;
 
         anc.showAmount = assistant.getNotificationShowAmount(anc.apc.assistantConfig, anc.apc.PLUGIN_NAME, notificationType, notificationSubtype, anc.apc.app_id);
-
-        //todo get rid of this
-        //anc.valueSet = assistant.createNotificationValueSet(anc.notificationI18nID, anc.notificationType, anc.notificationSubtype, anc.apc.PLUGIN_NAME, , anc.apc.app_id, anc.notificationVersion);
 
         return anc;
     };

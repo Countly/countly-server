@@ -6,7 +6,7 @@
 /** @lends module:api/parts/data/exports */
 var exports = {},
     common = require('./../../utils/common.js'),
-    moment = require("moment"),
+    moment = require('moment-timezone'),
     json2csv = require('json2csv'),
     json2xls = require('json2xls'),
     request = require("request");
