@@ -139,6 +139,7 @@ const assistantJobGeneral = {},
                     
                 }, function (err) {
                     log.i('Assistant feed generation outer resolving, error:[%j]', err);
+                    log.i('Assistant for [%j] plugin resolving', PLUGIN_NAME);
                     resolve();
                 });
             } catch (ex) {
