@@ -1354,7 +1354,7 @@ window.CrashgroupView = countlyView.extend({
                 $(".crash-bars").replaceWith(newPage.find(".crash-bars"));
 
                 var crashData = countlyCrashes.getGroupData();
-                $("#error pre code").text(crashData.error);
+                $("#error pre code").html(crashData.error);
                 $(".crash-stack .line-number").remove();
                 $(".crash-stack .cl").remove();
                 var pre = $(".crash-stack pre")[0];
