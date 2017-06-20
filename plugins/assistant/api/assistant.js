@@ -34,41 +34,69 @@ const assistant = {},
      * @param batchInfoHolder - if this is null, the insert should be done immediately, if not, the new object should be added to the array for future batching
      */
     assistant.createNotification = function (db, data, pluginName, type, subtype, i18n, appId, notificationVersion, targetUserApiKey, batchInfoHolder) {
-        if(_.isUndefined(batchInfoHolder)) {
-            batchInfoHolder = null;
-        }
+        try {
+            if (_.isUndefined(batchInfoHolder)) {
+                batchInfoHolder = null;
+            }
 
-        const targetUserArray = (_.isUndefined(targetUserApiKey) || targetUserApiKey == null) ? [] : [targetUserApiKey];
+            const targetUserArray = (_.isUndefined(targetUserApiKey) || targetUserApiKey == null) ? [] : [targetUserApiKey];
 
-        const new_notif = {
-            data: data,
-            plugin_name: pluginName,
-            notif_type: "" + type,
-            notif_subtype: "" + subtype,
-            created_date: new Date(), //contains the original creation date
-            version: notificationVersion,
-            app_id: "" + appId,
-            cd: new Date(), //used for TTL, it's set null if it should not be deleted
-            saved_global: false, //if this notification is saved globally
-            saved_private: [], // a list of user ID's for which this notification is saved privately
-            i18n_id: i18n,
-            target_user_array: targetUserArray
-        };
+            const new_notif = {
+                data: data,
+                plugin_name: pluginName,
+                notif_type: "" + type,
+                notif_subtype: "" + subtype,
+                created_date: new Date(), //contains the original creation date
+                version: notificationVersion,
+                app_id: "" + appId,
+                cd: new Date(), //used for TTL, it's set null if it should not be deleted
+                saved_global: false, //if this notification is saved globally
+                saved_private: [], // a list of user ID's for which this notification is saved privately
+                i18n_id: i18n,
+                target_user_array: targetUserArray
+            };
 
-        if(batchInfoHolder === null) {
-            insertNotificationBulk(db, [new_notif], null);
-        } else {
-            batchInfoHolder.push(new_notif);
+            if (batchInfoHolder === null) {
+                insertNotificationBulk(db, [new_notif], null);
+            } else {
+                batchInfoHolder.push(new_notif);
+            }
+        } catch (ex) {
+            log.e('assistant.createNotification error:[%j]', { message: ex.message, stack: ex.stack });
         }
     };
 
     insertNotificationBulk = function(db, notifData, callback){
-        db.collection(db_name_notifs).insert(notifData, function (err_insert, result_insert) {
-            log.d('Assistant module createNotification error: [%j], result: [%j] ', err_insert, result_insert.result);
-            if(callback !== null) {
-                callback(err_insert, result_insert);
+        try {
+            //log.d('About to do insertNotificationBulk [%j], [%j]', db, notifData);
+
+            if(_.isUndefined(notifData)) {
+                log.e('Trying to pass "undefined" notifData in insertNotificationBulk');
+                return;
             }
-        });
+
+            if(notifData == null) {
+                log.e('Trying to pass "null" notifData in insertNotificationBulk');
+                return;
+            }
+
+            if(notifData.length == 0){
+                log.d('Received empty notifData array for insertNotificationBulk, skipping db call');
+                if (callback !== null) {
+                    callback(null, {});
+                }
+                return;
+            }
+
+            db.collection(db_name_notifs).insert(notifData, function (err_insert, result_insert) {
+                //log.d('Assistant module createNotification error: [%j], result: [%j] ', err_insert, result_insert.result);
+                if (callback !== null) {
+                    callback(err_insert, result_insert);
+                }
+            });
+        } catch (ex) {
+            log.i('insertNotificationBulk error:[%j]', { message: ex.message, stack: ex.stack });
+        }
     };
 
     /**
@@ -200,7 +228,7 @@ const assistant = {},
         const upperLimit = tt + halfWidthMinutes;
         const correctionOffset = 10080;//7 days * 1440 minutes in a day, 7 * 1440 = 10080
 
-        if ((lowerLimit <= ct && ct < upperLimit    ) ||
+        if ((lowerLimit <= ct && ct < upperLimit) ||
             (lowerLimit - correctionOffset <= ct && ct < upperLimit - correctionOffset) ||
             (lowerLimit + correctionOffset <= ct && ct < upperLimit + correctionOffset)) {
             return true
@@ -333,7 +361,7 @@ const assistant = {},
     //todo test this
     assistant.increaseNotificationShowAmount = function (db, anc, appID, batchInfoHolder) {
         if(_.isUndefined(anc.apc.PLUGIN_NAME) || _.isUndefined(appID)) {
-            log.d("This is undefined: ")
+            log.d("increaseNotificationShowAmount, This is undefined: ")
         }
 
         if(_.isUndefined(batchInfoHolder)) {
@@ -362,6 +390,25 @@ const assistant = {},
     }
 
     doNotificationShowAmountUpdateBulk = function(db, dataBatch, callback){
+        //log.d('About to do doNotificationShowAmountUpdateBulk');
+
+        if(_.isUndefined(dataBatch)) {
+            log.e('Trying to pass "undefined" dataBatch in doNotificationShowAmountUpdateBulk');
+            return;
+        }
+
+        if(dataBatch == null) {
+            log.e('Trying to pass "null" dataBatch in doNotificationShowAmountUpdateBulk');
+            return;
+        }
+
+        if(dataBatch.length === 0){
+            log.d('Received empty dataBatch array for doNotificationShowAmountUpdateBulk, skipping db call');
+            if (callback !== null) {
+                callback(null, {});
+            }
+            return;
+        }
 
         checkIfDbOpened(db, function () {
             const nativeDb = db._native;
@@ -374,7 +421,7 @@ const assistant = {},
 
                 bulk.execute(function (err, res) {
                     log.i('Assistant plugin setNotificationShowAmount: [%j][%j]', err, res);
-                    if(callback !== null) {
+                    if (callback !== null) {
                         callback(err, res);
                     }
                 });
@@ -435,33 +482,41 @@ const assistant = {},
                 //go through all plugins and start generating notifications for those that support it
                 const plugins = pluginManager.getPlugins();
                 const promises = [];
+
                 for (let i = 0, l = plugins.length; i < l; i++) {
                     try {
                         //log.i('Preparing job: ' + plugins[i]);
-                        promises.push(require("../../" + plugins[i] + "/api/assistantJob").prepareNotifications(countlyDb, assistantGlobalCommon, responseBatchData));
+                        promises.push(require("../../" + plugins[i] + "/api/assistantJob").prepareNotifications(countlyDb, assistantGlobalCommon));
                     } catch (ex) {
                         //log.i('Preparation FAILED [%j]', ex);
                     }
                 }
-                promises.push(require("./assistantJobGeneral").prepareNotifications(countlyDb, assistantGlobalCommon, responseBatchData));
+                promises.push(require("./assistantJobGeneral").prepareNotifications(countlyDb, assistantGlobalCommon));
 
                 PromiseB.all(promises).then(function () {
 
-                    log.d('Performing db call batches');
+                    log.d('Waiting for db connection');
+                    checkIfDbOpened(countlyDb, function () {
+                        try {
+                            log.d('Performing db call batches');
 
-                    insertNotificationBulk(countlyDb, responseBatchData.newNotifications, function (err_insert, result_insert) {
+                            insertNotificationBulk(countlyDb, responseBatchData.newNotifications, function (err_insert, result_insert) {
+                                log.d('insertNotificationBulk finished');
+                            });
 
+                            doNotificationShowAmountUpdateBulk(countlyDb, responseBatchData.updatedShowAmount, function () {
+                                log.d('doNotificationShowAmountUpdateBulk finished');
+                            });
+
+                            log.d('Ending db call batches');
+
+                            if (callback !== null) {
+                                callback();
+                            }
+                        } catch (ex) {
+                            log.i('DB batch call error:[%j]', {message: ex.message, stack: ex.stack});
+                        }
                     });
-
-                    doNotificationShowAmountUpdateBulk(countlyDb, responseBatchData.updatedShowAmount, function () {
-
-                    });
-
-                    log.d('Ending db call batches');
-
-                    if(callback !== null) {
-                        callback();
-                    }
                 }, function () {
 
                     log.e("Notification generation Promise umbrella encountered rejection");

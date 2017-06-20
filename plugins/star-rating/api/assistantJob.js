@@ -29,7 +29,6 @@ const assistantJob = {},
 
                             assistant.createNotificationIfRequirementsMet(4, 15, ((no_star_rating || star_rating_not_enabled) && apc.is_mobile && max_show_time_not_exceeded), data, anc);
                         }
-
                         callback(null, null);
                     });
                 }, function (err, results) {
