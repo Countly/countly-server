@@ -372,7 +372,7 @@ plugins.setConfigs("crashes", {
                                         groupInsert.startTs = report.ts;
                                         groupInsert.latest_version = report.app_version;
                                         groupInsert.error = report.error;
-                                        groupInsert.lrid = report._id;
+                                        groupInsert.lrid = report._id+"";
                                         
                                         //process segments
                                         for(var i = 0, l = segments.length; i < l; i ++){
@@ -462,7 +462,7 @@ plugins.setConfigs("crashes", {
                                                 if(common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.latest_version.replace(/\./g, ":")) > 0){
                                                     group.latest_version = report.app_version;
                                                     group.error = report.error;
-                                                    group.lrid = report._id;
+                                                    group.lrid = report._id+"";
                                                 }
                                                 if(crashGroup.is_resolved && common.versionCompare(report.app_version.replace(/\./g, ":"), crashGroup.resolved_version.replace(/\./g, ":")) > 0){
                                                     group.is_resolved = false;
