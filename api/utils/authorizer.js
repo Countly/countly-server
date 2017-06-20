@@ -44,7 +44,7 @@ var crypto = require("crypto");
     authorizer.read = function (options) {
         options.db = options.db || common.db;
         options.token = options.token || authorizer.getToken();
-        options.db.collection("auth_tokens").findOn({_id:options.token}, options.callback);
+        options.db.collection("auth_tokens").findOne({_id:options.token}, options.callback);
     };
     
     /**
