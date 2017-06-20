@@ -1354,6 +1354,32 @@ window.CrashgroupView = countlyView.extend({
                 $(".crash-bars").replaceWith(newPage.find(".crash-bars"));
 
                 var crashData = countlyCrashes.getGroupData();
+                $("#error pre code").text(crashData.error);
+                $(".crash-stack .line-number").remove();
+                $(".crash-stack .cl").remove();
+                var pre = $(".crash-stack pre")[0];
+                pre.innerHTML = '<span class="line-number"></span>' + pre.innerHTML + '<span class="cl"></span>';
+                var num = pre.innerHTML.split(/\n/).length;
+                for (var i = 0; i < num; i++) {
+                    var line_num = pre.getElementsByTagName('span')[0];
+                    line_num.innerHTML += '<span>' + (i + 1) + '</span>';
+                }
+                var errorHeight = $("#expandable").find("code").outerHeight();
+
+                if (errorHeight < 200) {
+                    $("#expandable").removeClass("collapsed");
+                    $("#expand-crash").hide();
+                } else {
+                    $("#expandable").addClass("collapsed");
+                    $("#expand-crash").show();
+                }
+                
+                $('pre code').each(function(i, block) {
+                    if(typeof hljs != "undefined"){
+                        hljs.highlightBlock(block);
+                    }
+                });
+                
                 if(crashData.comments){
                     var container = $("#comments");
                     var comment, parent;
