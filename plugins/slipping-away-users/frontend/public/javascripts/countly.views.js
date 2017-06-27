@@ -40,7 +40,7 @@ window.slippingView = countlyView.extend({
 
         slippingChartData.chartDP.dp[0].data.push([index, item.count]);
         slippingChartData.chartDP.ticks.push([index,  item.period + ' days']);
-        item.percentage = "<div class='percent-bar' style='width:" + (2 * item.percentage) + "px;'></div>" + item.percentage + "%";
+        item.percentage = "<div style='width:100%; padding-right:40px; box-sizing:border-box;'><div class='percent-bar' style='width:" + (item.percentage) + "%;'></div><span style='margin-right:-40px;'>" + item.percentage + "%</span></div>";
         if(countlyGlobal.plugins.indexOf("users") >= 0) {
             if(item.count > 0){
                 item.userList = '<a class="table-link green" data-localize="userdata.list" onclick="slippingDataOnClick(' + item.timeStamp + ')">View User List</a> ';
