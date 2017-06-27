@@ -170,7 +170,7 @@ window.WebDashboardView = countlyView.extend({
             var users = countlyWebDashboard.getLatestUsers();
             var sort = 3;
             var columns = [
-				{ "mData": function(row){var c = (!row["cc"]) ? "Unknown" : row["cc"]; if(c != "Unknown") c = '<div class="flag" style="background-image: url(images/flags/'+ c.toLowerCase() + '.png);"></div>'+c; if(row["cty"] != "Unknown") c += " ("+row["cty"]+")"; return c;}, "sType":"string", "sTitle": jQuery.i18n.map["countries.table.country"], "bSortable":false },
+				{ "mData": function(row){var c = (!row["cc"]) ? "Unknown" : row["cc"]; if(c != "Unknown") c = '<div class="flag" style="background-image: url(images/flags/'+ c.toLowerCase() + '.png);"></div>'+c; if(row["cty"] != "Unknown") c += " ("+row["cty"]+")"; return c;}, "sType":"string", "sTitle": jQuery.i18n.map["countries.table.country"], "bSortable":false, "sClass": "break web-15" },
                 { "mData": function(row){return (!row["p"]) ? jQuery.i18n.map["common.unknown"] : row["p"]}, "sType":"string", "sTitle": jQuery.i18n.map["platforms.table.platform"] , "bSortable":false }
             ];
             
