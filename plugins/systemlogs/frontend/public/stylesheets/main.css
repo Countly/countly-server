@@ -4,9 +4,11 @@
 .systemlogs .dataTable-top {border-radius: 0;}
 .systemlogs table { table-layout: fixed; }
 .systemlogs table td,
-.systemlogs table th { width:14%; }
+.systemlogs table th { width:15%; }
 .systemlogs table th:last-child,
-.systemlogs table td:last-child { width:44%; }
+.systemlogs table td:last-child { width:50%; }
+.systemlogs table th:first-child,
+.systemlogs table td:first-child { width:20%; }
 .systemlogs table td { font-family: Ubuntu; }
 .systemlogs table td pre { background-color: transparent !important; line-height: 15px; white-space: pre-wrap; }
 .systemlogs .search-table-data {display: none;}
