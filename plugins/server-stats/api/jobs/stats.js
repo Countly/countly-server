@@ -7,6 +7,10 @@ const job = require('../../../../api/parts/jobs/job.js'),
     request = require('request');
 
 class StatsJob extends job.Job {
+    constructor(name, data) {
+        super(name, data);
+    }
+
     run (db, done) {
         if(config.web.track != "none"){
             db.collection("members").findOne({global_admin:true}, function(err, member){
