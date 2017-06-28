@@ -2354,9 +2354,23 @@
             }
         }
         
+        //check if we can correct data using total users correction
+        if (_periodObj.periodContainsToday && estOverrideMetric && countlyTotalUsers.isUsable()) {
+            for(var i = 0; i < unique.length; i++){
+                if(estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users){
+                    current[unique[i]] = countlyTotalUsers.get(estOverrideMetric[unique[i]]).users;
+                }
+            }
+        }
+        
         // Total users can't be less than new users
         if (typeof current.u !== "undefined" && typeof current.n !== "undefined" && current.u < current.n) {
-            current.u = current.n;
+            if(_periodObj.periodContainsToday && estOverrideMetric && countlyTotalUsers.isUsable() && estOverrideMetric.u && countlyTotalUsers.get(estOverrideMetric.u).users){
+                current.n = current.u;
+            }
+            else{
+                current.u = current.n;
+            }
         }
 
         // Total users can't be more than total sessions
@@ -2381,7 +2395,6 @@
         if (_periodObj.periodContainsToday && estOverrideMetric && countlyTotalUsers.isUsable()) {
             for(var i = 0; i < unique.length; i++){
                 if(estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users){
-                    dataArr[unique[i]].total = countlyTotalUsers.get(estOverrideMetric[unique[i]]).users;
                     dataArr[unique[i]].isEstimate = false;
                 }
             }
