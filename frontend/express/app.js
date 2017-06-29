@@ -943,7 +943,7 @@ app.post(countlyConfig.path+'/apps/icon', function (req, res, next) {
     var os = fs.createWriteStream(target_path);
     is.pipe(os);
     is.on('end',function() {
-        fs.unlinkSync(tmp_path);
+        fs.unlink(tmp_path, function(){});
     });
     os.on('finish',function() {
         jimp.read(target_path, function (err, icon) {
