@@ -14,7 +14,7 @@ class ReportsJob extends job.Job {
             log.d('Pinging job');
             if (timeout) {
                 progressJob();
-                setTimeout(ping, 10000);
+                timeout = setTimeout(ping, 10000);
             }
         }
         var timeout = setTimeout(ping, 10000);

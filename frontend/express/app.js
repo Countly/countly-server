@@ -483,6 +483,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 
                 function renderDashboard() {
                     var configs = plugins.getConfig("frontend", member.settings);
+                    configs.export_limit = plugins.getConfig("api").export_limit;
                     app.loadThemeFiles(configs.theme, function(theme){
                         res.cookie("theme", configs.theme);
                         req.session.uid = member["_id"];
@@ -942,7 +943,7 @@ app.post(countlyConfig.path+'/apps/icon', function (req, res, next) {
     var os = fs.createWriteStream(target_path);
     is.pipe(os);
     is.on('end',function() {
-        fs.unlinkSync(tmp_path);
+        fs.unlink(tmp_path, function(){});
     });
     os.on('finish',function() {
         jimp.read(target_path, function (err, icon) {

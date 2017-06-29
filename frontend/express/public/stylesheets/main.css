@@ -1239,7 +1239,7 @@ table.events-table { width:100%; padding:0; margin:0; }
 
 /* Styles for nested tables */
 td.details,
-td.details:hover { position:relative; border-bottom:1px solid #d0d0d0; padding:20px; background-color:#FFF; cursor:default; }
+td.details:hover { position:relative; border-bottom:1px solid #d0d0d0; padding:15px; background-color:#FFF; cursor:default; }
 td.details:hover,
 td.details tr:hover { }
 td.details table { border-spacing: 0; border: 1px solid #e8e8e8; width:100%; }

@@ -360,6 +360,7 @@ window.CrashesView = countlyView.extend({
         var dashboard = countlyCrashes.getDashboardData();
         this.templateData = {
             "page-title":jQuery.i18n.map["crashes.title"],
+            "no-data":jQuery.i18n.map["common.bar.no-data"],
             "usage":[
 				{
 					"title":jQuery.i18n.map["crashes.total"],

@@ -21,7 +21,8 @@ plugins.setConfigs("api", {
     sync_plugins: false,
     session_cooldown: 15,
     request_threshold: 30,
-    total_users: true
+    total_users: true,
+    export_limit: 10000
 });
 
 plugins.setConfigs("apps", {

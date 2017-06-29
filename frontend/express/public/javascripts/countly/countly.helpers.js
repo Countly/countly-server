@@ -221,7 +221,7 @@
     * CountlyHelpers.removeDialog(dialog);
     */
     CountlyHelpers.export = function (count, data, asDialog) {
-        var hardLimit = 100000;
+        var hardLimit = countlyGlobal["config"].export_limit;
         var pages = Math.ceil(count/hardLimit);
         var dialog = $("#cly-export").clone();
         var type = "csv";
@@ -257,7 +257,10 @@
             var url = "/o/export/db";
             var form = $('<form method="POST" action="' + url + '">');
             $.each(data, function(k, v) {
-                form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
+                if(k === "query")
+                    form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="'+k+'">'+v+'</textarea>'));
+                else
+                    form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
             });
             $('body').append(form);
             form.submit();

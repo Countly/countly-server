@@ -33,7 +33,7 @@ const assistant = {},
      * @param targetUserApiKey - if this notifications is used to target a specific user, this contains it's api key
      * @param batchInfoHolder - if this is null, the insert should be done immediately, if not, the new object should be added to the array for future batching
      */
-    assistant.createNotification = function (db, data, pluginName, type, subtype, i18n, appId, notificationVersion, targetUserApiKey, batchInfoHolder) {
+    assistant.createNotification = function (db, data, pluginName, type, subtype, i18n, appId, notificationVersion, targetUserApiKey, batchInfoHolder, callback) {
         try {
             if (_.isUndefined(batchInfoHolder)) {
                 batchInfoHolder = null;
@@ -57,18 +57,28 @@ const assistant = {},
             };
 
             if (batchInfoHolder === null) {
-                insertNotificationBulk(db, [new_notif], null);
+                insertNotificationBulk(db, [new_notif], function () {
+                    if(callback != null){
+                        callback();
+                    }
+                });
             } else {
                 batchInfoHolder.push(new_notif);
+                if(callback != null){
+                    callback();
+                }
             }
         } catch (ex) {
             log.e('assistant.createNotification error:[%j]', { message: ex.message, stack: ex.stack });
+            if(callback != null){
+                callback();
+            }
         }
     };
 
     insertNotificationBulk = function(db, notifData, callback){
         try {
-            //log.d('About to do insertNotificationBulk [%j], [%j]', db, notifData);
+            log.d('About to do insertNotificationBulk');
 
             if(_.isUndefined(notifData)) {
                 log.e('Trying to pass "undefined" notifData in insertNotificationBulk');
@@ -359,7 +369,7 @@ const assistant = {},
      * @param batchInfoHolder
      */
     //todo test this
-    assistant.increaseNotificationShowAmount = function (db, anc, appID, batchInfoHolder) {
+    assistant.increaseNotificationShowAmount = function (db, anc, appID, batchInfoHolder, callback) {
         if(_.isUndefined(anc.apc.PLUGIN_NAME) || _.isUndefined(appID)) {
             log.d("increaseNotificationShowAmount, This is undefined: ")
         }
@@ -373,9 +383,17 @@ const assistant = {},
 
 
         if(batchInfoHolder === null) {
-            doNotificationShowAmountUpdateBulk(db, [{appID: appID, updateQuery: updateQuery}], null);
+            doNotificationShowAmountUpdateBulk(db, [{appID: appID, updateQuery: updateQuery}], function (err, res) {
+                if(callback != null){
+                    callback();
+                }
+            });
         } else {
             batchInfoHolder.push({appID: appID, updateQuery: updateQuery});
+
+            if(callback != null){
+                callback();
+            }
         }
     };
 
@@ -436,20 +454,35 @@ const assistant = {},
      * @param app_id
      * @param data
      * @param notificationBatchHolder
+     * @param callback
      */
-    assistant.createNotificationAndSetShowAmount = function (db, anc, app_id, data, notificationBatchHolder) {
-        assistant.createNotification(db, data, anc.apc.PLUGIN_NAME, anc.notificationType, anc.notificationSubtype, anc.notificationI18nID, anc.apc.app_id, anc.notificationVersion, null, notificationBatchHolder.newNotifications);
-        assistant.increaseNotificationShowAmount(db, anc, app_id, notificationBatchHolder.updatedShowAmount);
+    assistant.createNotificationAndSetShowAmount = function (db, anc, app_id, data, notificationBatchHolder, callback) {
+        async.parallel([
+            function(parallelCallback) {
+                assistant.createNotification(db, data, anc.apc.PLUGIN_NAME, anc.notificationType, anc.notificationSubtype, anc.notificationI18nID, anc.apc.app_id, anc.notificationVersion, null, notificationBatchHolder.newNotifications, function () {
+                    parallelCallback();
+                });
+            },
+            function(parallelCallback) {
+                assistant.increaseNotificationShowAmount(db, anc, app_id, notificationBatchHolder.updatedShowAmount, function () {
+                    parallelCallback();
+                });
+            }
+        ], function (err) {
+            if(callback != null){
+                callback();
+            }
+        });
     };
 
     /**
      *
      * @param countlyDb
-     * @param callback
+     * @param generationFinishedCallback
      * @param flagForceGenerateNotifications
      * @param flagIgnoreDayAndTime
      */
-    assistant.generateNotifications = function (countlyDb, callback, flagForceGenerateNotifications, flagIgnoreDayAndTime) {
+    assistant.generateNotifications = function (countlyDb, generationFinishedCallback, flagForceGenerateNotifications, flagIgnoreDayAndTime) {
 
         log.i("Generate Notifications function");
         //todo make sure that flagForceGenerateNotifications is a boolean
@@ -457,6 +490,9 @@ const assistant = {},
 
         //get a list of all apps
         countlyDb.collection('apps').find({}, {}).toArray(function (err_apps_data, result_apps_data) {
+            const totalAppCount = result_apps_data.length;
+            log.i("Total count of apps here: [%j]", totalAppCount);
+
             //load the assistant config
             assistant.getAssistantConfig(countlyDb, function (returnedConfiguration) {
 
@@ -481,47 +517,86 @@ const assistant = {},
 
                 //go through all plugins and start generating notifications for those that support it
                 const plugins = pluginManager.getPlugins();
-                const promises = [];
 
+                //get a list plugins that have a assistantJob
+                const jobList = [];
                 for (let i = 0, l = plugins.length; i < l; i++) {
                     try {
                         //log.i('Preparing job: ' + plugins[i]);
-                        promises.push(require("../../" + plugins[i] + "/api/assistantJob").prepareNotifications(countlyDb, assistantGlobalCommon));
+                        jobList.push(require("../../" + plugins[i] + "/api/assistantJob"));
+                        //promises.push(require("../../" + plugins[i] + "/api/assistantJob").prepareNotifications(countlyDb, assistantGlobalCommon));
                     } catch (ex) {
                         //log.i('Preparation FAILED [%j]', ex);
                     }
                 }
-                promises.push(require("./assistantJobGeneral").prepareNotifications(countlyDb, assistantGlobalCommon));
 
-                PromiseB.all(promises).then(function () {
+                const maxSliceSize = 100;
+                const sliceAmount = totalAppCount / maxSliceSize;
+                const appRanges = [];
+                for(let a = 0 ; a < sliceAmount ; a++) {
+                    appRanges.push(result_apps_data.slice(a * 100, (a + 1) * 100));
+                }
 
-                    log.d('Waiting for db connection');
-                    checkIfDbOpened(countlyDb, function () {
-                        try {
-                            log.d('Performing db call batches');
+                log.d('Prepared app ranges', appRanges.length);
 
-                            insertNotificationBulk(countlyDb, responseBatchData.newNotifications, function (err_insert, result_insert) {
-                                log.d('insertNotificationBulk finished');
-                            });
+                async.series([
+                    function (seriesCallback) {
+                        async.eachSeries(appRanges, function (givenApps, eachSeriesCallback) {
+                            log.i('Doing [%j] apps now ', givenApps.length);//todo print also which iteration is the current one
+                            assistantGlobalCommon.appsData = givenApps;
 
-                            doNotificationShowAmountUpdateBulk(countlyDb, responseBatchData.updatedShowAmount, function () {
-                                log.d('doNotificationShowAmountUpdateBulk finished');
-                            });
-
-                            log.d('Ending db call batches');
-
-                            if (callback !== null) {
-                                callback();
+                            const promises = [];
+                            for (let i = 0, l = jobList.length; i < l; i++) {
+                                try {
+                                    //log.i('Preparing job: ' + plugins[i]);
+                                    promises.push(jobList[i].prepareNotifications(countlyDb, assistantGlobalCommon));
+                                } catch (ex) {
+                                    //log.i('Preparation FAILED [%j]', ex);
+                                }
                             }
-                        } catch (ex) {
-                            log.i('DB batch call error:[%j]', {message: ex.message, stack: ex.stack});
-                        }
-                    });
-                }, function () {
 
-                    log.e("Notification generation Promise umbrella encountered rejection");
-                    if(callback !== null) {
-                        callback();
+                            PromiseB.all(promises).then(function () {
+                                eachSeriesCallback();
+                            }, function () {
+                                eachSeriesCallback("Notification generation Promise umbrella encountered rejection");
+                            });
+                        }, function (err) {
+                            seriesCallback(err);
+                        });
+                    },
+                    function (seriesCallback) {
+                        assistantGlobalCommon.appsData = result_apps_data;
+                        require("./assistantJobGeneral").prepareNotifications(countlyDb, assistantGlobalCommon).then(function (err) {
+                            seriesCallback(err);
+                        });
+                    },
+                    function (seriesCallback) {
+                        log.d('Waiting for db connection');
+                        checkIfDbOpened(countlyDb, function () {
+                            seriesCallback();
+                        });
+                    },
+                    function (seriesCallback) {
+                        insertNotificationBulk(countlyDb, responseBatchData.newNotifications, function (err_insert, result_insert) {
+                            log.d('insertNotificationBulk finished');
+                            seriesCallback();
+                        });
+                    },
+                    function (seriesCallback) {
+                        doNotificationShowAmountUpdateBulk(countlyDb, responseBatchData.updatedShowAmount, function () {
+                            log.d('doNotificationShowAmountUpdateBulk finished');
+                            seriesCallback();
+                        });
+                    }
+                ], function (err, res) {
+                    if (err != null) {
+                        log.e("Failure while doing generateNotifications series, err:[%j]", err);
+                    }
+
+                    log.d('Ending generateNotifications umbrella series');
+
+                    if (generationFinishedCallback !== null) {
+                        generationFinishedCallback();
                     }
                 });
             });
@@ -597,8 +672,9 @@ const assistant = {},
      * @param requirements
      * @param data
      * @param anc
+     * @param callback
      */
-    assistant.createNotificationIfRequirementsMet = function (targetDow, targetHour, requirements, data, anc) {
+    assistant.createNotificationIfRequirementsMet = function (targetDow, targetHour, requirements, data, anc, callback) {
         var correctTimeAndDate = false;
 
         if(targetDow >= 0) {
@@ -608,7 +684,15 @@ const assistant = {},
         }
 
         if ((anc.apc.flagIgnoreDAT || correctTimeAndDate) && requirements || anc.apc.flagForceGenerate) {
-            assistant.createNotificationAndSetShowAmount(anc.apc.db, anc, anc.apc.app_id, data, anc.apc.agc.responseBatchData);
+            assistant.createNotificationAndSetShowAmount(anc.apc.db, anc, anc.apc.app_id, data, anc.apc.agc.responseBatchData, function () {
+                if(callback != null){
+                    callback();
+                }
+            });
+        } else {
+            if(callback != null){
+                callback();
+            }
         }
     };
 

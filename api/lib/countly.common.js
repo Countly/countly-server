@@ -1309,9 +1309,23 @@ var countlyCommon = {},
             }
         }
         
+        //check if we can correct data using total users correction
+        if (_periodObj.periodContainsToday && totalUserOverrideObj) {
+            for(var i = 0; i < unique.length; i++){
+                if(current[unique[i]] && typeof totalUserOverrideObj[unique[i]] !== "undefined" && totalUserOverrideObj[unique[i]]){
+                    current[unique[i]] = totalUserOverrideObj[unique[i]];
+                }
+            }
+        }
+        
         // Total users can't be less than new users
         if (typeof current.u !== "undefined" && typeof current.n !== "undefined" && current.u < current.n) {
-            current.u = current.n;
+            if(_periodObj.periodContainsToday && totalUserOverrideObj && typeof totalUserOverrideObj.u !== "undefined" && totalUserOverrideObj.u){
+                current.n = current.u;
+            }
+            else{
+                current.u = current.n;
+            }
         }
 
         // Total users can't be more than total sessions
@@ -1336,7 +1350,6 @@ var countlyCommon = {},
         if (_periodObj.periodContainsToday && totalUserOverrideObj) {
             for(var i = 0; i < unique.length; i++){
                 if(dataArr[unique[i]] && typeof totalUserOverrideObj[unique[i]] !== "undefined" && totalUserOverrideObj[unique[i]]){
-                    dataArr[unique[i]].total = totalUserOverrideObj[unique[i]];
                     dataArr[unique[i]].is_estimate = false;
                 }
             }
