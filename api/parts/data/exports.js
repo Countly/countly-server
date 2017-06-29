@@ -7,12 +7,12 @@
 var exports = {},
     common = require('./../../utils/common.js'),
     moment = require('moment-timezone'),
+    plugin = require('./../../../plugins/pluginManager.js'),
     json2csv = require('json2csv'),
     json2xls = require('json2xls'),
     request = require("request");
 
 (function (exports) {
-    var hardLimit = 100000;
     var contents = {
         "json": "application/json",
         "csv": "text/csv",
@@ -148,7 +148,7 @@ var exports = {},
     * @param {object} [options.query={}] - database query which data to filter
     * @param {object} [options.projection={}] - database projections which fields to return
     * @param {object} [options.sort=natural] - sort object for cursor
-    * @param {number} [options.limit=100000] - amount of items to output
+    * @param {number} [options.limit=10000] - amount of items to output
     * @param {number} [options.skip=0] - amount of items to skip from start
     * @param {string} [options.type=json] - type of data to output
     * @param {string} [options.filename] - name of the file to output, by default auto generated
@@ -158,8 +158,8 @@ var exports = {},
         options.db = options.db || common.db;
         options.query = options.query || {};
         options.projection = options.projection || {};
-        if(!options.limit || parseInt(options.limit) > hardLimit)
-            options.limit = hardLimit;
+        if(!options.limit || parseInt(options.limit) > plugin.getConfig("api").export_limit)
+            options.limit = plugin.getConfig("api").export_limit;
         var alternateName = (options.collection.charAt(0).toUpperCase() + options.collection.slice(1).toLowerCase());
         if(options.skip){
             alternateName += "_from_"+options.skip;

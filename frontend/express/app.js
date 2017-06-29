@@ -483,6 +483,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
 
                 function renderDashboard() {
                     var configs = plugins.getConfig("frontend", member.settings);
+                    configs.export_limit = plugins.getConfig("api").export_limit;
                     app.loadThemeFiles(configs.theme, function(theme){
                         res.cookie("theme", configs.theme);
                         req.session.uid = member["_id"];

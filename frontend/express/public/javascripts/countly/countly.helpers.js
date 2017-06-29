@@ -221,7 +221,7 @@
     * CountlyHelpers.removeDialog(dialog);
     */
     CountlyHelpers.export = function (count, data, asDialog) {
-        var hardLimit = 100000;
+        var hardLimit = countlyGlobal["config"].export_limit;
         var pages = Math.ceil(count/hardLimit);
         var dialog = $("#cly-export").clone();
         var type = "csv";
