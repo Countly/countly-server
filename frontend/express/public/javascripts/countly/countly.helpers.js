@@ -257,7 +257,10 @@
             var url = "/o/export/db";
             var form = $('<form method="POST" action="' + url + '">');
             $.each(data, function(k, v) {
-                form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
+                if(k === "query")
+                    form.append($('<textarea style="visibility:hidden;position:absolute;display:none;" name="'+k+'">'+v+'</textarea>'));
+                else
+                    form.append($('<input type="hidden" name="' + k + '" value="' + v + '">'));
             });
             $('body').append(form);
             form.submit();
