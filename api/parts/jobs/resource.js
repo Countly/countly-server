@@ -410,6 +410,9 @@ class Resource extends ResourceInterface {
 		this.channel.send(CMD.CLOSED);
 		this.channel.remove();
 		log.i('[%d]: Closed resource %j (%j), exiting', process.pid, this.name, this.id);
+		setTimeout(() => {
+			process.exit(0);
+		}, 1000);
 	}
 	
 	open () {
