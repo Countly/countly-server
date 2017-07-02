@@ -458,7 +458,14 @@ class Job extends EventEmitter {
 					}
 				}, job.timeout()),
 				// debounce save to once in 500 - 10000 ms
-				debouncedProgress = debounce(job._progress.bind(job), 500, 10000),
+				debouncedProgress = debounce(() => {
+					if (job._json.status === STATUS.RUNNING) {
+						log.d('progressing job %s: %j', job._id, job._json);
+						job._progress.apply(job, arguments);
+					} else {
+						log.d('won\'t progress job %s: %j', job._id, job._json);
+					}
+				}, 500, 10000),
 				progressSave = (size, done, bookmark) => {
 					if (size) { job._json.size = size; }
 					if (done) { job._json.done = done; }
