@@ -1,3 +1,29 @@
+## Version 17.05.1
+
+**Fixes**
+* Fixed loading swf file while not being used
+* Exclude old SDKs from duplicate request check
+* Fix in some cases displaying Event segment values, which are numbers with [CLY]_ prefix
+* Fixed API returning data for incorrect timezone in some cases
+* Fixed caching server model changes resulted in undefined output in some cases for models
+* Fixed countries endpoint
+* Fixed external installer to be compatible with tar.gz format
+* Minor UI fixes (jumping subrows, show no data after refresh, table formatting)
+* Correct new users count with estimation correction data in some cases
+* Export: Fixed broken export file names in some cases (like unicode chars, new lines, etc)
+* Export: Fixed applyng queries correctly to server side exports
+* Reports: Fixed caching title/text problem
+* Reports: Fixed erroring and resending report multiple times
+* Assistant: fixed some saved notifications not showing up
+* Assistant: improved performance
+* Jobs: Force close process if it did not close
+* Push: send data in smaller batches for APN
+
+**Features**
+* Display browser version in Analytics -> Browsers
+* Report Manager: make report threshold (time before switching to report manager) a configurable value
+* Export: added max export limit as configurable value
+
 ## Version 17.05
 
 **New features**
