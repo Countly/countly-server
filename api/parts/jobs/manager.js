@@ -86,7 +86,12 @@ class Manager {
 					channel.send(JOB.EVT.TRANSIENT_DONE, json);
 				}, (error) => {
 					log.d('[%d]: Error when running transient job %j: ', process.pid, json, error);
-					json.error = error || 'Unknown push error';
+					if (error && error.toString()) {
+						json.error = error.toString().replace('Error: ', '');
+					} else {
+						json.error = 'Unknown push error';
+					}
+					if (!json.error) { json.error = 'Unknown push error'; }
 					channel.send(JOB.EVT.TRANSIENT_DONE, json);
 				});
 			});
