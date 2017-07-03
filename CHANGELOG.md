@@ -24,6 +24,12 @@
 * Report Manager: make report threshold (time before switching to report manager) a configurable value
 * Export: added max export limit as configurable value
 
+**Enterprise**
+* Active Directory plugin to integrate AD authentication mechanism with Countly
+* Fixed: Attribution not recording segments in some cases
+* Fixed: List not switching to string type for drill segmenting, upon reaching limit
+* User profiles: display device ID and UID in profiles
+
 ## Version 17.05
 
 **New features**
