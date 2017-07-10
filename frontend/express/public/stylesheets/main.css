@@ -1444,6 +1444,13 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 #top-bar .dropdown .menu.right:before { left:auto; right: 15px; }
 #top-bar .dropdown .menu.right:after { left:auto; right:14px; }
 #top-bar .dropdown.large .menu.right:before { right:115px; }
+#top-bar .dropdown .item_info { color: #969696; display: block; cursor: pointer; border-bottom: 1px solid #d0d0d0; text-align: left; padding:10px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: default;}
+#top-bar .dropdown .sub_info { font-weight: normal; color: #808080;}
+#top-bar .dropdown .item_info .user_name div:first-child { color: #676464;font-weight: 500;font-size:14px;}
+#top-bar .dropdown .item_info .user_name div:last-child { font-size: 12px;}
+#top-bar .dropdown .item_info .api_key { margin-top: 10px;}
+#top-bar .dropdown .item_info .api_key div:first-child { color: #676464; font-size: 11px; text-transform: uppercase;font-weight: 500;}
+#top-bar .dropdown .item_info .api_key div:last-child { font-size: 10px; text-transform: none}
 
 #app-navigation.dropdown.large { padding:21px 25px 19px 25px; }
 #app-navigation #active-app-name { text-overflow:ellipsis; white-space:nowrap; overflow:hidden; display: inline-block; max-width: 125px; }
