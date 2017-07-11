@@ -436,8 +436,8 @@ var common          = require('../../../../api/utils/common.js'),
             msg.messagePerLocale = undefined;
         }
 
-        if (msg.type === 'data' && (!msg.data || !Object.keys(msg.data).length)) {
-            common.returnOutput(params, {error: 'Messages of type "data" must have "data" property'});
+        if (msg.type === 'data' && (!msg.data || !Object.keys(msg.data).length) && (typeof msg.badge === 'undefined' || msg.badge === null)) {
+            common.returnOutput(params, {error: 'Messages of type "data" must have at least "data" or "badge" property'});
             return false;
         }
 
