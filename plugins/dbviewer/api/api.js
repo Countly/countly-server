@@ -49,13 +49,25 @@ var plugin = {},
 			if(dbs[params.qstring.dbs]){
 				var cursor = dbs[params.qstring.dbs].collection(params.qstring.collection).find(filter, project);
 				cursor.count(function (err, total) {
-					cursor.skip(skip).limit(limit).toArray(function(err, results){
-						if(err) {
-							console.error(err);
-						}
-						results = results || [];
-						common.returnOutput(params, {limit:limit, start:skip+1, end:Math.min(skip+limit, total), collections:results, total:total, pages:Math.ceil(total/limit), curPage:Math.ceil((skip+1)/limit)});
-					});
+					var stream = cursor.skip(skip).limit(limit).stream({
+                        transform: function(doc){return JSON.stringify(doc);}
+                    });
+                    params.res.writeHead(200);
+                    params.res.write('{"limit":'+limit+', "start":'+(skip+1)+', "end":'+Math.min(skip+limit, total)+', "total":'+total+', "pages":'+Math.ceil(total/limit)+', "curPage":'+Math.ceil((skip+1)/limit)+', "collections":[');
+                    var first = false;
+                    stream.on('data', function(doc) {
+                        if(!first){
+                            first = true;
+                            params.res.write(doc);
+                        }
+                        else
+                            params.res.write(","+doc);
+                    });
+               
+                    stream.once('end', function() {
+                        params.res.write("]}");
+                        params.res.end();
+                    });
 				});
 			}
         }
