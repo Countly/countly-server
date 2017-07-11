@@ -1450,7 +1450,8 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 #top-bar .dropdown .item_info .user_name div:last-child { font-size: 12px;}
 #top-bar .dropdown .item_info .api_key { margin-top: 10px;}
 #top-bar .dropdown .item_info .api_key div:first-child { color: #676464; font-size: 11px; text-transform: uppercase;font-weight: 500;}
-#top-bar .dropdown .item_info .api_key div:last-child { font-size: 10px; text-transform: none}
+#top-bar .dropdown .item_info .api_key div:last-child { font-size: 10px; text-transform: none; user-select: all}
+#top-bar .dropdown .item_info .api_key div:last-child::selection { background-color: #2FA732; color: #ffffff}
 
 #app-navigation.dropdown.large { padding:21px 25px 19px 25px; }
 #app-navigation #active-app-name { text-overflow:ellipsis; white-space:nowrap; overflow:hidden; display: inline-block; max-width: 125px; }
