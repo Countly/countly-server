@@ -747,7 +747,7 @@ window.ResolutionView = countlyView.extend({
             this.dtable = $('.d-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": resolutionData.chartData,
                 "aoColumns": [
-                    { "mData": "resolution", "sTitle": jQuery.i18n.map["resolutions.table.resolution"] },
+                    { "mData": "resolution", "sTitle": jQuery.i18n.map["resolutions.table.resolution"], "bSortable": false },
                     { "mData": function(row){return parseInt(row.width.replace(/<(?:.|\n)*?>/gm, ''))}, sType:"numeric","sTitle": jQuery.i18n.map["resolutions.table.width"] },
                     { "mData": function(row){return parseInt(row.height.replace(/<(?:.|\n)*?>/gm, ''))}, sType:"numeric","sTitle": jQuery.i18n.map["resolutions.table.height"] },
                     { "mData": "t", sType:"formatted-num", "mRender":function(d) { return countlyCommon.formatNumber(d); }, "sTitle": jQuery.i18n.map["common.table.total-sessions"] },

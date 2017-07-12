@@ -209,7 +209,7 @@ module.exports = function(grunt) {
 	  		files = fs.readdirSync(stylesheets);
 	  		files.forEach(function(name){
 	  			var file = path.join(stylesheets, name);
-	  			if (fs.statSync(file).isFile() && name !== 'pre-login.css') {
+	  			if (fs.statSync(file).isFile() && name !== 'pre-login.css' && name.indexOf('.') !== 0) {
 	  				css.push('plugins/' + plugin + '/frontend/public/stylesheets/' + name);
 	  			}
 	  		});
@@ -265,7 +265,7 @@ module.exports = function(grunt) {
   		if (!fs.existsSync(dir)) return;
   		fs.readdirSync(dir).forEach(function(name){
   			var file = path.join(dir, name);
-  		  	if (fs.statSync(file).isFile()) {
+  		  	if (fs.statSync(file).isFile() && name.indexOf('.') !== 0) {
   		  		pushLocaleFile(name, dir + '/' + name);
   		  	}
   		});
@@ -278,7 +278,7 @@ module.exports = function(grunt) {
 	  		if (fs.statSync(localization).isDirectory()) {
 	  			fs.readdirSync(localization).forEach(function(name){
 	  				var file = path.join(localization, name);
-	  				if (fs.statSync(file).isFile()) {
+	  				if (fs.statSync(file).isFile() && name.indexOf('.') !== 0) {
 	  					pushLocaleFile(name, 'plugins/' + plugin + '/frontend/public/localization/' + name);
 	  				}
 	  			});

@@ -1020,7 +1020,7 @@ namespace apns {
 			int32_t left = nghttp2_session_get_remote_window_size(session) - bufsize;
 			if (queue.size() < count) { count = queue.size(); }
 			// LOG_INFO("CONN " << uv_thread_self() << ": transmiting " << ¨count << " notification(s)");
-			while (stats.sending < stats.sending_max && queue.size() > 0 && batch < H2_SENDING_BATCH_SIZE && left > max_data_size * 2 && batch < 30) {
+			while (stats.sending < stats.sending_max && queue.size() > 0 && batch < H2_SENDING_BATCH_SIZE && left > max_data_size * 2 && batch < 10) {
 				// if (stats.sending  + stats.sent > 200) {
 				// 	if (stats.sending == 0) {
 				// 		int a = 5;

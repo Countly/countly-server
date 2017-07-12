@@ -245,7 +245,7 @@ var usage = {},
                     var escapedMetricVal = (recvMetricValue+"").replace(/^\$/, "").replace(/\./g, ":");
                     
                     // Assign properties to app_users document of the current user
-                    if (isNewUser || (!isNewUser && user[tmpMetric.short_code] != escapedMetricVal)) {
+                    if (isNewUser || (!isNewUser && params.app_user[tmpMetric.short_code] != escapedMetricVal)) {
                         userProps[tmpMetric.short_code] = escapedMetricVal;
                     }
                 }

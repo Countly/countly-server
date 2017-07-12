@@ -108,8 +108,25 @@
 				<div class="empty-state">
 					<i class="ion-person"></i>
 				</div>
-				<div class="menu right" style="width: 170px;">
+				<div class="menu right" style="width: 200px;">
 					<div class="list">
+						<span class="item_info">
+							<div class="user_name">
+								<div>
+									<%= member.full_name %>
+								</div>
+								<div>
+									<%= member.email %>
+								</div>
+							</div>
+							<div class="api_key">
+								<div data-localize="sidebar.api_key">
+								</div>
+								<div id="user_api_key_item">
+									<%= member.api_key %>
+								</div>
+							</div>
+						</span>
 						<a class="item" href='#/manage/user-settings'>
 							<i class="ion-gear-a icon"></i>
 							<span data-localize="sidebar.settings"></span>
@@ -1375,6 +1392,10 @@
 			$(".activate_intercom").on("click", function() {
                 Intercom('show');
         	});
+			$('.list .item_info').on("click", function(e){
+				e.stopPropagation();
+			});
+			
         });
 	</script>
     <script id="IntercomSettingsScriptTag">

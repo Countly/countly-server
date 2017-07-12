@@ -12,6 +12,9 @@ var plugin = {},
     });
 	plugins.register("/session/metrics", function(ob){
         var params = ob.params;
+        if (params.qstring.metrics && params.qstring.metrics["_density"] && common.isNumber(params.qstring.metrics["_density"])) {		
+            params.qstring.metrics["_density"] = parseFloat(params.qstring.metrics["_density"]).toFixed(2);
+        }
         if (params.qstring.metrics && params.qstring.metrics["_os"] && params.qstring.metrics["_density"]) {		
             if(common.os_mapping[params.qstring.metrics["_os"].toLowerCase()])		
                 params.qstring.metrics["_density"] = common.os_mapping[params.qstring.metrics["_os"].toLowerCase()] + params.qstring.metrics["_density"];		
