@@ -52,7 +52,18 @@ var plugin = {},
 					var stream = cursor.skip(skip).limit(limit).stream({
                         transform: function(doc){return JSON.stringify(doc);}
                     });
-                    params.res.writeHead(200);
+                    var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
+                    var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
+                    var parts;
+                    for(var i = 0; i < add_headers.length; i++){
+                        if(add_headers[i] && add_headers[i].length){
+                            parts = add_headers[i].split(/:(.+)?/);
+                            if(parts.length == 3){
+                                headers[parts[0]] = parts[1];
+                            }
+                        }
+                    }
+                    params.res.writeHead(200, headers);
                     params.res.write('{"limit":'+limit+', "start":'+(skip+1)+', "end":'+Math.min(skip+limit, total)+', "total":'+total+', "pages":'+Math.ceil(total/limit)+', "curPage":'+Math.ceil((skip+1)/limit)+', "collections":[');
                     var first = false;
                     stream.on('data', function(doc) {

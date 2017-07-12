@@ -185,7 +185,7 @@ window.CrashesView = countlyView.extend({
                     "sTitle": jQuery.i18n.map["crashes.latest_app"],
                     "sWidth": "90px"
                 },
-                { "mData": function(row, type){return "<a class='table-link green' href='" + window.location.hash.toString() + "/" + row._id + "'>" + jQuery.i18n.map["common.view"] + "</a>"; }, "sType":"numeric", "sClass":"center", "sWidth": "90px", "bSortable": false}
+                { "mData": function(row, type){return "<a class='table-link green' href='#/crashes/" + row._id + "'>" + jQuery.i18n.map["common.view"] + "</a>"; }, "sType":"numeric", "sClass":"center", "sWidth": "90px", "bSortable": false}
             ],
             "fnInitComplete": function(oSettings, json) {
                 $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
