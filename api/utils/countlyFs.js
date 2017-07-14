@@ -13,16 +13,6 @@ var db = plugins.dbConnection("countly_fs");
 var fs = require("fs");
 
 (function (countlyFs) {
-    function checkIfOpened(callback){
-        if(db.isOpen())
-            callback();
-        else{
-            db._emitter.once('open', function (err, db) {
-                callback();
-            });
-        }
-    }
-    
     function save(category, filename, readStream, options, callback){
         var bucket = new GridFSBucket(db._native, { bucketName: category });
         var uploadStream;
@@ -48,12 +38,12 @@ var fs = require("fs");
         countlyFs.getId(category, filename, function(err, res){
             if(!err){
                 if(!res || options.writeMode === "version"){
-                    checkIfOpened(function(){
+                    db.onOpened(function(){
                         done();
                     });
                 }
                 else if(options.writeMode === "overwrite"){
-                    checkIfOpened(function(){
+                    db.onOpened(function(){
                         var bucket = new GridFSBucket(db._native, { bucketName: category });
                         bucket.delete(res, function(error) {
                             if(!error){
@@ -224,7 +214,7 @@ var fs = require("fs");
     * });
     */
     countlyFs.rename = function(category, oldname, newname, callback){
-        checkIfOpened(function(){
+        db.onOpened(function(){
             db.collection(category+".files").findOne({ filename: oldname }, {_id:1}, function(err, res){
                 if(!err){
                     if(res && res._id){
@@ -258,7 +248,7 @@ var fs = require("fs");
     * });
     */
     countlyFs.deleteFile = function(category, filename, callback){
-        checkIfOpened(function(){
+        db.onOpened(function(){
             db.collection(category+".files").findOne({ filename: filename }, {_id:1}, function(err, res){
                 if(!err){
                     if(res && res._id){
@@ -291,7 +281,7 @@ var fs = require("fs");
     * });
     */
     countlyFs.deleteAll = function(category, callback){
-        checkIfOpened(function(){
+        db.onOpened(function(){
             var bucket = new GridFSBucket(db._native, { bucketName: category });
             bucket.drop(function(error) {
                 if(callback)
@@ -312,7 +302,7 @@ var fs = require("fs");
     * });
     */
     countlyFs.getStream = function(category, filename, callback){
-        checkIfOpened(function(){
+        db.onOpened(function(){
             if(callback){
                 var bucket = new GridFSBucket(db._native, { bucketName: category });
                 callback(null, bucket.openDownloadStreamByName(filename));
@@ -331,7 +321,7 @@ var fs = require("fs");
     * });
     */
     countlyFs.getData = function(category, filename, callback){
-        checkIfOpened(function(){
+        db.onOpened(function(){
             var bucket = new GridFSBucket(db._native, { bucketName: category });
             var downloadStream = bucket.openDownloadStreamByName(filename);
             downloadStream.on('error', function(error) {
@@ -362,7 +352,7 @@ var fs = require("fs");
     * });
     */
     countlyFs.getDataById = function(category, id, callback){
-        checkIfOpened(function(){
+        db.onOpened(function(){
             var bucket = new GridFSBucket(db._native, { bucketName: category });
             var downloadStream = bucket.openDownloadStream(id);
             downloadStream.on('error', function(error) {
@@ -380,6 +370,17 @@ var fs = require("fs");
                     callback(null, str);
             });
         });
+    };
+    
+    /**
+    * Get handler for filesystem, which in case of GridFS is database connection
+    * @returns {object} databse connection
+    * @example
+    * var db = countlyFs.getHandler();
+    * db.close();
+    */
+    countlyFs.getHandler = function(){
+        return db;
     };
     
 }(countlyFs));

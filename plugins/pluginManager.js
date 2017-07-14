@@ -604,6 +604,16 @@ var pluginManager = function pluginManager(){
             return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.');
         };
         countlyDb.on('error', console.log);
+        countlyDb.onOpened = function(callback){
+            if(countlyDb.isOpen())
+                callback();
+            else{
+                countlyDb._emitter.once('open', function (err, countlyDb) {
+                    callback();
+                });
+            }
+        };
+        
         countlyDb.s = {};
         //overwrite some methods
         countlyDb._collection = countlyDb.collection;
