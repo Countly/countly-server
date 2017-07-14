@@ -939,10 +939,7 @@
         dTable.on("click", "tr", function (e){
             var nTr = this;
             var id = $(nTr).attr("id");
-            if(!id){
-                e.stopPropagation();
-            }
-            else{
+            if(id){
                 var i = $.inArray( id, dTable.aOpen );
 
                 if ( i === -1 ) {

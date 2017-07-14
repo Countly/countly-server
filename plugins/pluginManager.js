@@ -553,7 +553,8 @@ var pluginManager = function pluginManager(){
         var dbName;
         var dbOptions = {
             poolSize: config.mongodb.max_pool_size, 
-            reconnectInterval: 100, 
+            reconnectInterval: 1000,
+            reconnectTries:999999999,
             autoReconnect:true, 
             noDelay:true, 
             keepAlive: 0, 
