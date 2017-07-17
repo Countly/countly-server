@@ -296,12 +296,11 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
         props.r_minute = minute;
     }
     
-    function validateUserApp(params, apps) {
+     function validateUserApp(params, apps) {
 
         var isAppUser = apps.every(function (app) {
-            return params.member.user_of.indexOf(app) > -1
+            return params.member.user_of && params.member.user_of.indexOf(app) > -1
         });
-
 
         if (!params.member.global_admin && !isAppUser){
             common.returnMessage(params, 401, 'User does not have right to access this information');
