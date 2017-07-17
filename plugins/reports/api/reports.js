@@ -3,7 +3,7 @@ var reports = {},
     moment = require('moment-timezone'),
     ejs = require("ejs"),
     fs = require('fs'),
-    path = require('path'),
+    path = require('path'),    
     parser = require('properties-parser'),
     request = require('request'),
     crypto = require('crypto'),
@@ -16,7 +16,6 @@ var reports = {},
     
 versionInfo.page = (!versionInfo.title) ? "http://count.ly" : null;
 versionInfo.title = versionInfo.title || "Countly";
-var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 var metrics = {
     "analytics":{
         "total_sessions":true,
@@ -83,11 +82,20 @@ var metrics = {
                     report.start = report.end - 7*24*60*59*1000;
                 
                 var startDate = new Date(report.start);
-                report.date = startDate.getDate()+" "+months[startDate.getMonth()];
+                var lang = member.lang || 'en';
+
+                if(lang.toLowerCase() === "zh")
+                    moment.locale("zh-cn");
+                else
+                    moment.locale(lang.toLowerCase());
+
+                var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+
+                report.date = startDate.getDate()+" "+monthName;
                 report.period = "yesterday";
                 if(report.frequency == "weekly"){
                     report.period = "["+report.start+","+report.end+"]";
-                    report.date += " - "+endDate.getDate()+" "+months[endDate.getMonth()];
+                    report.date += " - "+endDate.getDate()+" "+monthName;
                 }
                 
                 function appIterator(app_id, done){
