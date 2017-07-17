@@ -17,7 +17,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
     
 	plugins.register("/o/reports", function(ob){
 		var params = ob.params;
-		var validate = validateAnyAdmin;
+		var validate = ob.validateUserForDataReadAPI;
 		var paths = ob.paths;
 		if (params.qstring.args) {
             try {
@@ -48,7 +48,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
     
 	plugins.register("/i/reports", function(ob){
 		var params = ob.params;
-		var validate = validateAnyAdmin;
+		var validate = ob.validateUserForWriteAPI;
 		var paths = ob.paths;
 		if (params.qstring.args) {
             try {
@@ -64,7 +64,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
         }
 		switch (paths[3]) {
             case 'create':
-                validate(params, function (params) {
+                validate(function (params) {
                     var argProps = {
                             'frequency':{ 'required': false, 'type': 'String'},
                             'apps':     { 'required': true, 'type': 'Array'},
@@ -88,36 +88,26 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                     props.timezone = props.timezone || "Etc/GMT";
                     props.user = params.member._id;
                     
-                    //add only allowed apps
-                    if(!params.member.global_admin){
-                        var apps = [];
-                        for(var i = 0; i < props.apps.length; i++){
-                            for(var j = 0; j < params.member.admin_of.length; j++){
-                                if(props.apps[i] == params.member.admin_of[j]){
-                                    apps.push(props.apps[i]);
-                                    break;
-                                }
-                            }
-                        }
-                        props.apps = apps;
-                    }
+                    
                     convertToTimezone(props);
                     
-                    common.db.collection('reports').insert(props, function(err, result) {
-                        result = result.ops;
-                        if(err){
-                            err = err.err;
-                            common.returnMessage(params, 200, err);
-                        }
-                        else{
-                            plugins.dispatch("/systemlogs", {params:params, action:"reports_create", data:result[0]});
-                            common.returnMessage(params, 200, "Success");
-                        }
-                    });
-				});
+                    if (validateUserApp(params, props.apps)) {
+                        common.db.collection('reports').insert(props, function(err, result) {
+                            result = result.ops;
+                            if(err){
+                                err = err.err;
+                                common.returnMessage(params, 200, err);
+                            }
+                            else{
+                                plugins.dispatch("/systemlogs", {params:params, action:"reports_create", data:result[0]});
+                                common.returnMessage(params, 200, "Success");
+                            }
+                        });
+                    }
+				}, params);
                 break;
             case 'update':
-                validate(params, function (params) {
+                validate(function (params) {
                     var argProps = {
                             '_id':      { 'required': true, 'type': 'String'},
                             'frequency':{ 'required': false, 'type': 'String'},
@@ -147,36 +137,26 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         props.day = parseInt(props.day);
                     props.timezone = props.timezone || "Etc/GMT";
                     
-                    //add only allowed apps
-                    if(!params.member.global_admin){
-                        var apps = [];
-                        for(var i = 0; i < props.apps.length; i++){
-                            for(var j = 0; j < params.member.admin_of.length; j++){
-                                if(props.apps[i] == params.member.admin_of[j]){
-                                    apps.push(props.apps[i]);
-                                    break;
-                                }
-                            }
-                        }
-                        props.apps = apps;
-                    }
                     convertToTimezone(props);
-                    common.db.collection('reports').findOne({_id:common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, function(err, report) {
-                        common.db.collection('reports').update({_id:common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, {$set:props}, function(err, app) {
-                            if(err){
-                                err = err.err;
-                                common.returnMessage(params, 200, err);
-                            }
-                            else{
-                                plugins.dispatch("/systemlogs", {params:params, action:"reports_edited", data:{_id:id, before:report, update:props}});
-                                common.returnMessage(params, 200, "Success");
-                            }
+
+                    if (validateUserApp(params, props.apps)) {
+                        common.db.collection('reports').findOne({_id:common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, function(err, report) {
+                            common.db.collection('reports').update({_id:common.db.ObjectID(id),user:common.db.ObjectID(params.member._id)}, {$set:props}, function(err, app) {
+                                if(err){
+                                    err = err.err;
+                                    common.returnMessage(params, 200, err);
+                                }
+                                else{
+                                    plugins.dispatch("/systemlogs", {params:params, action:"reports_edited", data:{_id:id, before:report, update:props}});
+                                    common.returnMessage(params, 200, "Success");
+                                }
+                            });
                         });
-                    });
-				});
+                    }
+				}, params);
                 break;
 			case 'delete':
-                validate(params, function (params) {
+                validate(function (params) {
                     var argProps = {
                             '_id': { 'required': true, 'type': 'String'}
                         },
@@ -198,10 +178,10 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                             }
                         });
                     });
-				});
+				}, params);
                 break;
             case 'send':
-                validate(params, function (params) {
+                validate(function (params) {
                     var argProps = {
                             '_id': { 'required': true, 'type': 'String'}
                         },
@@ -216,19 +196,22 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                             common.returnMessage(params, 200, 'Report not found');
                             return false;
                         }
-                        reports.sendReport(common.db, id, function(err, res){
-                            if(err){
-                                common.returnMessage(params, 200, err);
-                            }
-                            else{
-                                common.returnMessage(params, 200, "Success");
-                            }
-                        });
+
+                        if (validateUserApp(params, result.apps)) {
+                            reports.sendReport(common.db, id, function(err, res){
+                                if(err){
+                                    common.returnMessage(params, 200, err);
+                                }
+                                else{
+                                    common.returnMessage(params, 200, "Success");
+                                }
+                            });
+                        }
                     });
-				});
+				}, params);
                 break;
             case 'preview':
-                validate(params, function (params) {
+                validate(function (params) {
                     var argProps = {
                             '_id': { 'required': true, 'type': 'String'}
                         },
@@ -243,20 +226,22 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                             common.returnMessage(params, 200, 'Report not found');
                             return false;
                         }
-                        reports.getReport(common.db, result, function(err, res){
-                            if(err){
-                                common.returnMessage(params, 200, err);
-                            }
-                            else{
-                                if (params && params.res) {
-                                    params.res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
-                                    params.res.write(res.message);
-                                    params.res.end();
+                        if (validateUserApp(params, result.apps)) {
+                            reports.getReport(common.db, result, function(err, res){
+                                if(err){
+                                    common.returnMessage(params, 200, err);
                                 }
-                            }
-                        });
+                                else{
+                                    if (params && params.res) {
+                                        params.res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8', 'Access-Control-Allow-Origin':'*'});
+                                        params.res.write(res.message);
+                                        params.res.end();
+                                    }
+                                }
+                            });
+                        }
                     });
-				});
+				}, params);
                 break;
             default:
                 common.returnMessage(params, 400, 'Invalid path');
@@ -311,26 +296,21 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
         props.r_minute = minute;
     }
     
-    function validateAnyAdmin(params, callback, callbackParam) {
-        common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
-            if (!member || err) {
-                common.returnMessage(params, 401, 'User does not exist');
-                return false;
-            }
-    
-            if (!member.global_admin && !member.admin_of.length) {
-                common.returnMessage(params, 401, 'User does not have right to access this information');
-                return false;
-            }
-            params.member = member;
-    
-            if (callbackParam) {
-                callback(callbackParam, params);
-            } else {
-                callback(params);
-            }
+    function validateUserApp(params, apps) {
+
+        var isAppUser = apps.every(function (app) {
+            return params.member.user_of.indexOf(app) > -1
         });
-    };
+
+
+        if (!params.member.global_admin && !isAppUser){
+            common.returnMessage(params, 401, 'User does not have right to access this information');
+            return false;
+        }
+        else 
+            return true;
+
+    }
 }(plugin));
 
 module.exports = plugin;

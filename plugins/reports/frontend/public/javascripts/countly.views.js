@@ -91,7 +91,7 @@ window.ReportingView = countlyView.extend({
         this.templateData = {
             "page-title":jQuery.i18n.map["reports.title"],
             "data":data,
-            "apps":(countlyGlobal["member"].global_admin) ? countlyGlobal['apps'] : countlyGlobal['admin_apps'],
+            "apps":countlyGlobal['apps'],
             "zoneNames":zoneNames,
             "member":countlyGlobal["member"],
             "hasCrash":(typeof countlyCrashes != "undefined"),
@@ -202,6 +202,9 @@ window.ReportingView = countlyView.extend({
                     else{
                         CountlyHelpers.alert(data.result, "red");
                     }
+                }, function(err){
+                    var data = JSON.parse(err.responseText);
+                    CountlyHelpers.alert(data.result, "red");
                 });
             });
             $("#select-all").on('click', function() {
@@ -433,6 +436,9 @@ window.ReportingView = countlyView.extend({
                 else{
                     CountlyHelpers.alert(data.result, "red");
                 }
+            }, function(err){
+                var data = JSON.parse(err.responseText);
+                CountlyHelpers.alert(data.result, "red");
             });
         });
         
