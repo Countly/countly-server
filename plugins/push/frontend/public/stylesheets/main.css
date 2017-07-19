@@ -589,7 +589,7 @@ input:disabled + label {
 // }
 */
 
-.comp-datepicker { background-color: white; width: 200px; position: relative; border: 1px solid #C2C2C2; border-radius: 2px; color: #354052; font-size: 12px; line-height: 18px; transition: .3s ease-in; }
+.comp-datepicker { background-color: white; width: 223px; position: relative; border: 1px solid #C2C2C2; border-radius: 2px; color: #354052; font-size: 12px; line-height: 18px; transition: .3s ease-in; }
 .comp-datepicker img, .comp-datepicker svg, .comp-datepicker span.formatted { margin-right: 7px; margin-bottom: -3px; text-transform: uppercase; }
 .comp-datepicker img .comp-datepicker svg { width: 17px; }
 .comp-datepicker .ion-chevron-down { float: right; }
@@ -598,10 +598,13 @@ input:disabled + label {
 .comp-datepicker-head { padding: 7px; }
 .comp-datepicker-head:hover { cursor: pointer; }
 
-.comp-datepicker.active { background-color: #565655; border-color: #565655; border-radius: 2px 2px 0 0; color: white; }
+.comp-datepicker-head i {font-size: 18px;float: left;margin-right: 4px;line-height: 15px;}
+.comp-datepicker-head::after{clear:both}
+
+.comp-datepicker.active { }
 .comp-datepicker.active .ion-chevron-down:before { transform: rotate(-90deg); }
 
-.comp-datepicker .picker { position: absolute; top: 33px; left: -1px; right: -1px; opacity: 0; transition: .3s ease-in; background-color: #565655; border: none; border-radius: 0 0 4px 4px; color: white; visibility: hidden; }
+.comp-datepicker .picker { position: absolute; top: 43px; left: -1px; right: -1px; opacity: 0; transition: .3s ease-in; background-color: #292929; border: none; border-radius: 2px; color: white; visibility: hidden; padding: 10px }
 .comp-datepicker.active .picker { visibility: visible; opacity: 1; z-index: 2; }
 
 .comp-datepicker-ui-picker { overflow:hidden; margin:2px; border-radius:2px;  }
@@ -613,6 +616,27 @@ input:disabled + label {
 	border-radius: 2px;
 	width: 200px ! important;
 	/*background-color: #fff;*/
+}
+.comp-datepicker-apply {
+    text-align: right;
+    padding-right: 3px;
+}
+.comp-datepicker-apply .icon-button {
+    float: none;
+    display: inline-block;
+    margin:0px;
+    padding: 7px 20px;
+}
+.comp-datepicker.active .picker:before {
+        border: 6px solid rgba(194, 225, 245, 0);
+    border-bottom-color: #292929;
+    right: 9px;
+    top: -12px;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
 }
 
 
@@ -701,23 +725,27 @@ input:disabled + label {
 .comp-datepicker-ui-picker .ui-widget-content .ui-state-active {
 }
 
-.comp-datepicker-time, .comp-datepicker-tz { margin: 10px 0; padding: 0 21px; }
+.comp-datepicker-time, .comp-datepicker-tz { margin: 10px 0; padding-left:4px; text-align: right; margin-bottom: 15px }
 .comp-datepicker-tz { margin-bottom: 10px; }
 
 .comp-datepicker-time > * { display: inline-block; margin-right: 5px; }
 
 .comp-datepicker-time > input[type=number] {
-    width: 36px;
+    width: 46px;
     height: 24px;
-    background-color: rgba(255,255,255,.3);
+    background-color: rgb(61,61,61);
     border: none;
     outline: none;
     font-size: 13px;
     color: white;
     text-align: center;
-    padding-left: 14px;
     border-radius: 2px;
+    line-height: 2;
 }
+
+.comp-datepicker-time > *:first-child {float:left; margin-top:3px}
+.comp-datepicker-time > *:last-child {margin-right : 3px;}
+.comp-datepicker-time > *:last-child::after { clear: both}
 
 .comp-push-no-users { position: relative; }
 .comp-push-no-users-zero { position: absolute; top: 20%; left: 0; right: 0; bottom: 0; font-size: 200px; text-align: center; color: rgba(0, 0, 0, 0.04); }
@@ -987,7 +1015,7 @@ table.d-table .nothing { opacity: 0.3; }
 
 .comp-push input[type="number"]::-webkit-inner-spin-button,
 .comp-push input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance:none;
+    /*-webkit-appearance:none;*/
     margin:0;
 }
 
