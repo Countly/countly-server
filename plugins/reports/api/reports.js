@@ -100,7 +100,7 @@ var metrics = {
                 
                 function appIterator(app_id, done){
                     var params = {qstring:{period:report.period}};
-                    if(!cache[app_id]){
+                    if(!cache[app_id] || !cache[app_id][report.period]){
                         function metricIterator(metric, done){
                             if(metric.indexOf("events") == 0){
                                 var parts = metric.split(".");
@@ -163,7 +163,10 @@ var metrics = {
                                             if(results[i] && results[i].metric)
                                                 app.results[results[i].metric] = results[i].data;
                                         }
-                                        cache[app_id] = JSON.parse(JSON.stringify(app));
+                                        if(!cache[app_id]){
+                                            cache[app_id] = {};
+                                        }
+                                        cache[app_id][report.period] = JSON.parse(JSON.stringify(app));
                                         done(null, app);
                                     });
                                 });
@@ -173,7 +176,7 @@ var metrics = {
                         });
                     }
                     else{
-                        done(null, JSON.parse(JSON.stringify(cache[app_id])));
+                        done(null, JSON.parse(JSON.stringify(cache[app_id][report.period])));
                     }
                 };
     
