@@ -1528,6 +1528,30 @@ var countlyCommon = {},
         return txt.value;
     };
     
+    /**
+    * Get period object in atomic way from params, 
+    * getting params.qstring.period for period
+    * and params.appTimezone for timezone
+    * @param {params} params - parans object with app timezone and period
+    * @returns {module:api/lib/countly.common.periodObj} period object
+    */
+    countlyCommon.getPeriodObj = function(params) {
+		params.qstring.period = params.qstring.period || "month";
+        if (params.qstring.period && params.qstring.period.indexOf(",") !== -1) {
+            try {
+                params.qstring.period = JSON.parse(params.qstring.period);
+            } catch (SyntaxError) {
+				console.log('Parse period JSON failed');
+                return false;
+            }
+        }
+
+        countlyCommon.setPeriod(params.qstring.period);
+        countlyCommon.setTimezone(params.appTimezone || params.app.timezone);
+
+        return countlyCommon.periodObj;
+    }
+    
     // Private Methods
 
     function getDaysInMonth(year, month) {
