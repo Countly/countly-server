@@ -185,6 +185,8 @@ var metrics = {
                     var total = 0;
                     for(var i = 0; i < results.length; i++){
                         if(results[i] && results[i].results){
+                            countlyCommon.setPeriod(report.period);
+                            countlyCommon.setTimezone(results[i].timezone);
                             for(var j in results[i].results){
                                 if(j == "users"){
                                     results[i].results[j] = getSessionData(results[i].results[j] || {});
