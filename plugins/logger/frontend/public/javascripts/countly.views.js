@@ -47,9 +47,9 @@ window.LoggerView = countlyView.extend({
                     { "mData": function(row, type){
 						if(type == "display"){
                             if((Math.round(parseFloat(row.ts, 10)) + "").length === 10)
-                                return moment(row.ts*1000).format("MMMM Do YYYY<br/>hh:mm:ss");
+                                return moment(row.ts*1000).format("MMMM Do YYYY<br/>HH:mm:ss");
                             else
-                                return moment(row.ts).format("MMMM Do YYYY<br/>hh:mm:ss");
+                                return moment(row.ts).format("MMMM Do YYYY<br/>HH:mm:ss");
 						}else{
                             if((Math.round(parseFloat(row.ts, 10)) + "").length === 10)
                                 return row.ts*1000;
@@ -107,7 +107,7 @@ window.LoggerView = countlyView.extend({
                         ret += "<br/>";
 
                         if (type == "display"){
-                            ret += moment(row.reqts*1000).format("MMMM Do YYYY, hh:mm:ss");
+                            ret += moment(row.reqts*1000).format("MMMM Do YYYY, HH:mm:ss");
                         } else {
                             ret += row.reqts;
                         }
