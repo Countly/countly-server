@@ -596,6 +596,7 @@ const assistant = {},
                     log.d('Ending generateNotifications umbrella series');
 
                     if (generationFinishedCallback !== null) {
+                        log.d('Calling assistant.generateNotifications to end it all');
                         generationFinishedCallback();
                     }
                 });
