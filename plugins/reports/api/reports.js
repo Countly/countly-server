@@ -73,28 +73,39 @@ var metrics = {
             db.collection('members').findOne({_id:db.ObjectID(report.user)}, function (err, member) {
                 if(member)
                     report.apps = sortBy(report.apps, member.appSortList || []);
-                var endDate = new Date();
-                endDate.setDate(endDate.getDate()-1);
-                endDate.setHours(23, 59);
-                report.end = endDate.getTime();
-                report.start = report.end - 24*60*59*1000;
-                if(report.frequency == "weekly")
-                    report.start = report.end - 7*24*60*59*1000;
                 
-                var startDate = new Date(report.start);
                 var lang = member.lang || 'en';
-
                 if(lang.toLowerCase() === "zh")
                     moment.locale("zh-cn");
                 else
                     moment.locale(lang.toLowerCase());
+                
+                if(report.frequency == "daily"){
+                    var endDate = new Date();
+                    endDate.setDate(endDate.getDate()-1);
+                    endDate.setHours(23, 59);
+                    report.end = endDate.getTime();
+                    report.start = report.end - 24*60*59*1000;
+                    
+                    var startDate = new Date(report.start);
 
-                var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+                    var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
 
-                report.date = startDate.getDate()+" "+monthName;
-                report.period = "yesterday";
-                if(report.frequency == "weekly"){
-                    report.period = "["+report.start+","+report.end+"]";
+                    report.date = startDate.getDate()+" "+monthName;
+                    report.period = "yesterday";
+                }
+                else if(report.frequency == "weekly"){
+                    var endDate = new Date();
+                    endDate.setHours(23, 59);
+                    report.end = endDate.getTime();
+                    report.start = report.end - 7*24*60*59*1000;
+                    report.period = "7days";
+                    
+                    var startDate = new Date(report.start);
+                    var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+                    report.date = startDate.getDate()+" "+monthName;
+                    
+                    monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
                     report.date += " - "+endDate.getDate()+" "+monthName;
                 }
                 
