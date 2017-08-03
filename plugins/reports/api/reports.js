@@ -153,7 +153,10 @@ var metrics = {
                                 }
                                 else{
                                     fetch.getTimeObj(metric, params, {db:db}, function(output){
-                                        done(null, {metric:metric, data:output});
+                                        fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj){
+                                            output.correction = fetch.formatTotalUsersObj(dbTotalUsersObj);
+                                            done(null, {metric:metric, data:output});
+                                        });
                                     });
                                 }
                             }
@@ -200,7 +203,7 @@ var metrics = {
                             countlyCommon.setTimezone(results[i].timezone);
                             for(var j in results[i].results){
                                 if(j == "users"){
-                                    results[i].results[j] = getSessionData(results[i].results[j] || {});
+                                    results[i].results[j] = getSessionData(results[i].results[j] || {}, (results[i].results[j] && results[i].results[j].correction) ? results[i].results[j].correction : {});
                                     if(results[i].results[j].total_sessions.total > 0)
                                         results[i].display = true;
                                     total += results[i].results[j].total_sessions.total;
@@ -372,7 +375,7 @@ var metrics = {
         return Object.keys(collections);
     }
     
-    function getSessionData(_sessionDb) {
+    function getSessionData(_sessionDb, totalUserOverrideObj) {
 
         //Update the current period object in case selected date is changed
         _periodObj = countlyCommon.periodObj;
@@ -503,6 +506,21 @@ var metrics = {
             previousPayingTotal = tmp_y["p"];
             currentMsgEnabledTotal = tmp_x["m"];
             previousMsgEnabledTotal = tmp_y["m"];
+        }
+        
+        currentUnique = (totalUserOverrideObj && totalUserOverrideObj["users"]) ? totalUserOverrideObj["users"] : currentUnique;
+        
+        if(currentUnique < currentNew){
+            if(totalUserOverrideObj && totalUserOverrideObj["users"]){
+                currentNew = currentUnique;
+            }
+            else{
+                currentUnique = currentNew;
+            }
+        }
+        
+        if(currentUnique > currentTotal){
+            currentUnique = currentTotal;
         }
 
         var sessionDuration = (currentDuration / 60),
