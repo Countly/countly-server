@@ -1432,5 +1432,11 @@
         })();
     </script>
 	<% } %>
+    <% if (typeof html != "undefined") { %>
+    <%- html %>
+    <% } %>
+    <% if (typeof js != 'undefined') { %>
+	<script><%- js %></script>
+	<% } %>
 </body>
 </html>
