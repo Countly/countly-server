@@ -18,6 +18,9 @@
     <% } %>
 	<title><%- countlyTitle %></title>
 	<script>window.countlyGlobal = window.countlyGlobal || {}; countlyGlobal["cdn"] = "<%- cdn %>";</script>
+    <% if (typeof inject_template.css != 'undefined') { %>
+	<style><%- inject_template.css %></style>
+	<% } %>
 </head>
 <body>
 	<div id="message" style="width:550px; margin-left:-275px; font-size:14px; line-height:20px;" data-localize="setup.explanation"></div>
@@ -67,8 +70,8 @@
             <div>
                 <input name="password" type="password" autocomplete="off" placeholder="Password" data-localize="placeholder.password"/>
             </div>
-            <% if (typeof form != "undefined") { %>
-                <%- form %>
+            <% if (typeof inject_template.form != "undefined") { %>
+                <%- inject_template.form %>
             <% } %>
             <div>
                 <input type="hidden" value="<%= csrf %>" name="_csrf" />
@@ -76,8 +79,8 @@
                 <input id="login-button" value="Create account" type="submit" data-localize="setup.button"/>
             </div>
         </form>
-        <% if (typeof html != "undefined") { %>
-            <%- html %>
+        <% if (typeof inject_template.html != "undefined") { %>
+            <%- inject_template.html %>
         <% } %>
 	</div>
 	<script language="javascript" type="text/javascript" src="javascripts/dom/jquery/jquery-1.8.3.min.js"></script>
@@ -96,8 +99,8 @@
 			document.title = countlyTitle + " | " + jQuery.i18n.map["setup.title"];
 		});
 	</script>
-	<% if (typeof javascript != 'undefined') { %>
-	<script><%- javascript %></script>
+	<% if (typeof inject_template.js != 'undefined') { %>
+	<script><%- inject_template.js %></script>
 	<% } %>
      <% if (themeFiles && themeFiles.js) { %>
         <% for(var i=0, l=themeFiles.js.length; i<l; i++) {%>

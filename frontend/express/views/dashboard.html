@@ -82,6 +82,9 @@
     <script type="text/javascript">
     window.production = <%= production ? true : false %>;
     </script>
+    <% if (typeof inject_template.css != 'undefined') { %>
+	<style><%- inject_template.css %></style>
+	<% } %>
 </head>
 <body>
 	<div id="top-bar">
@@ -1432,11 +1435,11 @@
         })();
     </script>
 	<% } %>
-    <% if (typeof html != "undefined") { %>
-    <%- html %>
+    <% if (typeof inject_template.html != "undefined") { %>
+        <%- inject_template.html %>
     <% } %>
-    <% if (typeof js != 'undefined') { %>
-	<script><%- js %></script>
+    <% if (typeof inject_template.js != 'undefined') { %>
+	<script><%- inject_template.js %></script>
 	<% } %>
 </body>
 </html>
