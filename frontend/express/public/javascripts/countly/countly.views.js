@@ -1630,6 +1630,23 @@ window.ManageAppsView = countlyView.extend({
 });
 
 window.ManageUsersView = countlyView.extend({
+    /*
+        Listen for;
+            user-mgmt.user-created : On new user created. Param : new user form model.
+            user-mgmt.user-updated : On user updated. Param: user form model.
+            user-mgmt.user-deleted : On user deleted. Param: userid
+            user-mgmt.user-selected : On user selected. Param : user.
+            user-mgmt.new-user-button-clicked : On new user button clicked.
+
+            Ex:
+                $(app.manageUsersView).on('user-mgmt.user-selected', function(e, user) { console.log(user) });
+
+        Triggers for;
+            user-mgmt.render: To render usertable from outside.
+            
+            Ex: 
+                $(app.manageUsersView).trigger('user-mgmt.render');
+    */
     template:null,
     initialize:function () {
         var self = this;
@@ -1742,14 +1759,12 @@ window.ManageUsersView = countlyView.extend({
                     CountlyHelpers.closeRows(self.dtable);
                     $("#listof-apps").hide();
                     $(".row").removeClass("selected");
-                    if ($(".create-user-row").is(":visible")) { 
-                         $(".create-user-row").slideUp();
-                    }
-                    else{
-                        app.onUserEdit({}, $(".create-user-row"));
-                        $(".create-user-row").slideDown();
-                        self.initTable();
-                    }
+                    app.onUserEdit({}, $(".create-user-row"));
+                    $(".create-user-row").slideDown();
+                    self.initTable();
+                    $(this).hide();
+
+                    $(self).trigger('user-mgmt.new-user-button-clicked');
                 });
                 $("#listof-apps .app").on('click', function() {
                     if ($(this).hasClass("disabled")) {
@@ -1803,6 +1818,7 @@ window.ManageUsersView = countlyView.extend({
                     $("#listof-apps").hide();
                     $(".row").removeClass("selected");
                     $(".create-user-row").slideUp();
+                     $('#add-user-mgmt').show();
                 });
                 $(".create-user").on("click", function() {		
                     $("#listof-apps").hide();
@@ -1872,6 +1888,7 @@ window.ManageUsersView = countlyView.extend({
                         },
                         dataType: "jsonp",
                         success: function() {
+                            $(self).trigger('user-mgmt.user-created', data);
                             app.activeView.render();
                         }
                     });
@@ -1942,6 +1959,7 @@ window.ManageUsersView = countlyView.extend({
                 });	
             }
         });
+        $(this).off('user-mgmt.render').on('user-mgmt.render', function(){ app.activeView.render(); });
     },
     setSelectDeselect: function() {
         var searchInput = $("#listof-apps").find(".search input").val();
@@ -2131,6 +2149,7 @@ window.ManageUsersView = countlyView.extend({
                         if (currUserDetails.find(".delete-user").length == 0) {
                             $("#menu-username").text(data.username);
                         }
+                        $(self).trigger('user-mgmt.user-updated', data);
                         app.activeView.render();
                     }
                 });
@@ -2242,6 +2261,7 @@ window.ManageUsersView = countlyView.extend({
                     },
                     dataType: "jsonp",
                     success: function(result) {
+                        $(app.manageUsersView).trigger('user-mgmt.user-deleted', data.user_ids);
                         app.activeView.render();
                     }
                 });
@@ -2272,6 +2292,7 @@ window.ManageUsersView = countlyView.extend({
     },
     editUser: function( d, self ) {
         $(".create-user-row").slideUp();
+         $('#add-user-mgmt').show();
         $("#listof-apps").hide();
         $(".row").removeClass("selected");
         CountlyHelpers.closeRows(self.dtable);
@@ -2404,7 +2425,10 @@ window.ManageUsersView = countlyView.extend({
 
         str = app.onUserEdit(d, str);
 
-        setTimeout(function(){self.initTable(d);}, 1);
+        setTimeout(function(){
+            self.initTable(d);
+            $(self).trigger('user-mgmt.user-selected', d);
+        }, 1);
 		return str;
 	}
 });
