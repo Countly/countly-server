@@ -23,13 +23,16 @@ const assistantJob = {},
                     const apc = assistant.preparePluginSpecificFields(providedInfo, ret_app_data, PLUGIN_NAME);
                     //log.i('Doing next app [%j]', apc.app_id);
 
-                    const params = {};//todo make an easy way to create empty param
-                    params.qstring = {};
-                    params.appTimezone = ret_app_data.timezone;//todo add this to other places
+                    const globalParamsCopy = {};//todo make an easy way to create empty param
+                    globalParamsCopy.qstring = {};
+                    globalParamsCopy.appTimezone = ret_app_data.timezone;//todo add this to other places
                     db.collection('events').findOne({_id: apc.app_id}, {}, function (events_err, events_result) {
-                        params.app_id = apc.app_id;
-                        params.qstring.period = "7days";
-                        fetch.getTimeObj('users', params, {db: db}, function (fetchResultUsers) {//collect user info
+                        globalParamsCopy.app_id = apc.app_id;
+                        globalParamsCopy.qstring.period = "7days";
+
+                        countlyCommon.setTimezone(globalParamsCopy.appTimezone);
+                        countlyCommon.setPeriod(globalParamsCopy.qstring.period);
+                        fetch.getTimeObj('users', globalParamsCopy, {db: db}, function (fetchResultUsers) {//collect user info
                             //log.i('Assistant plugin doing steps: [%j] [%j]', 0.01, fetchResultUsers);
                             countlySession.setDb(fetchResultUsers);
                             const retSession = countlySession.getSessionData();
@@ -201,12 +204,14 @@ const assistantJob = {},
                                     const nowTime = 1485547643000;
 
                                     const paramCopy = {};
-                                    paramCopy.api_key = params.api_key;
-                                    paramCopy.app_id = params.app_id;
-                                    paramCopy.appTimezone = params.appTimezone;
+                                    paramCopy.api_key = globalParamsCopy.api_key;
+                                    paramCopy.app_id = globalParamsCopy.app_id;
+                                    paramCopy.appTimezone = globalParamsCopy.appTimezone;
                                     paramCopy.qstring = {};
                                     paramCopy.qstring.period = "7days";// JSON.stringify([nowTime - hours_24,nowTime]);
 
+                                    countlyCommon.setTimezone(paramCopy.appTimezone);
+                                    countlyCommon.setPeriod(paramCopy.qstring.period);
                                     fetch.getMetricWithOptions(paramCopy, "sources", null, {db: db}, function(metricData){
                                         //log.i('Assistant plugin doing steps: [%j] [%j] [%j] [%j]', 12, params.app_id, app_id, metricData);
                                         metricData = metricData.filter(function (x) {
@@ -248,15 +253,16 @@ const assistantJob = {},
                                 },
                                 function (parallelCallback) {
                                     const paramCopy = {};
-                                    paramCopy.api_key = params.api_key;
-                                    paramCopy.app_id = params.app_id;
-                                    paramCopy.appTimezone = params.appTimezone;
+                                    paramCopy.api_key = globalParamsCopy.api_key;
+                                    paramCopy.app_id = globalParamsCopy.app_id;
+                                    paramCopy.appTimezone = globalParamsCopy.appTimezone;
                                     paramCopy.qstring = {};
                                     paramCopy.qstring.period = "7days";
                                     const queryMetric = "views";
                                     paramCopy.qstring.method = queryMetric;
 
-                                    countlyCommon.setPeriod(params.qstring.period);
+                                    countlyCommon.setTimezone(paramCopy.appTimezone);
+                                    countlyCommon.setPeriod(paramCopy.qstring.period);
                                     fetch.getTimeObjForEvents("app_viewdata"+paramCopy.app_id, paramCopy, {db: db}, function(doc){
                                         var clearMetricObject = function (obj) {
                                             if (obj) {

@@ -12,7 +12,7 @@ class GenerateNotifJob extends job.Job {
             log.i('Pinging job');
             if (timeout) {
                 progressJob();
-                setTimeout(ping, 10000);
+                timeout = setTimeout(ping, 10000);
             }
         }
 

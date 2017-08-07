@@ -148,6 +148,33 @@ var usersApi = {},
                 updatedMember.password_changed = 0;
             }
         }
+        function killAllSessionForUser(userId) {
+            common.db.collection('sessions_').find({
+                "session": { $regex: userId }
+            }).toArray(function (err, sessions) {
+
+                sessions.map(function (currentSession) {
+                    if (currentSession.session && JSON.parse(currentSession.session) && JSON.parse(currentSession.session).uid === userId) {
+                        var sessionObject = JSON.parse(currentSession.session);
+
+                        delete sessionObject.fails;
+                        delete sessionObject.uid;
+                        delete sessionObject.gadm;
+                        delete sessionObject.email;
+                        delete sessionObject.expires;
+
+                        common.db.collection('sessions_').update({
+                            "_id": currentSession._id
+                        }, {
+                                "$set": {
+                                    session: JSON.stringify(sessionObject)
+                                }
+                            });
+                    }
+                })
+            })
+
+        }
         common.db.collection('members').findOne({'_id': common.db.ObjectID(params.qstring.args.user_id)}, function(err, memberBefore) {
             common.db.collection('members').update({'_id': common.db.ObjectID(params.qstring.args.user_id)}, {'$set': updatedMember}, {safe: true}, function(err, isOk) {
                 common.db.collection('members').findOne({'_id': common.db.ObjectID(params.qstring.args.user_id)}, function(err, member) {
@@ -157,6 +184,11 @@ var usersApi = {},
                         if (params.qstring.args.send_notification && passwordNoHash) {
                             mail.sendToUpdatedMember(member, passwordNoHash);
                         }
+
+                        if (updatedMember.password && params.member._id.toString() !== params.qstring.args.user_id.toString()) {
+                            killAllSessionForUser(updatedMember._id)
+                        }
+
                         common.returnMessage(params, 200, 'Success');
                     } else {
                         common.returnMessage(params, 500, 'Error updating user');

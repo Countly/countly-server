@@ -3,7 +3,7 @@ var reports = {},
     moment = require('moment-timezone'),
     ejs = require("ejs"),
     fs = require('fs'),
-    path = require('path'),
+    path = require('path'),    
     parser = require('properties-parser'),
     request = require('request'),
     crypto = require('crypto'),
@@ -16,7 +16,6 @@ var reports = {},
     
 versionInfo.page = (!versionInfo.title) ? "http://count.ly" : null;
 versionInfo.title = versionInfo.title || "Countly";
-var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 var metrics = {
     "analytics":{
         "total_sessions":true,
@@ -74,25 +73,45 @@ var metrics = {
             db.collection('members').findOne({_id:db.ObjectID(report.user)}, function (err, member) {
                 if(member)
                     report.apps = sortBy(report.apps, member.appSortList || []);
-                var endDate = new Date();
-                endDate.setDate(endDate.getDate()-1);
-                endDate.setHours(23, 59);
-                report.end = endDate.getTime();
-                report.start = report.end - 24*60*59*1000;
-                if(report.frequency == "weekly")
-                    report.start = report.end - 7*24*60*59*1000;
                 
-                var startDate = new Date(report.start);
-                report.date = startDate.getDate()+" "+months[startDate.getMonth()];
-                report.period = "yesterday";
-                if(report.frequency == "weekly"){
-                    report.period = "["+report.start+","+report.end+"]";
-                    report.date += " - "+endDate.getDate()+" "+months[endDate.getMonth()];
+                var lang = member.lang || 'en';
+                if(lang.toLowerCase() === "zh")
+                    moment.locale("zh-cn");
+                else
+                    moment.locale(lang.toLowerCase());
+                
+                if(report.frequency == "daily"){
+                    var endDate = new Date();
+                    endDate.setDate(endDate.getDate()-1);
+                    endDate.setHours(23, 59);
+                    report.end = endDate.getTime();
+                    report.start = report.end - 24*60*59*1000;
+                    
+                    var startDate = new Date(report.start);
+
+                    var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+
+                    report.date = startDate.getDate()+" "+monthName;
+                    report.period = "yesterday";
+                }
+                else if(report.frequency == "weekly"){
+                    var endDate = new Date();
+                    endDate.setHours(23, 59);
+                    report.end = endDate.getTime();
+                    report.start = report.end - 7*24*60*59*1000;
+                    report.period = "7days";
+                    
+                    var startDate = new Date(report.start);
+                    var monthName = moment.localeData().monthsShort(moment([0, startDate.getMonth()]), "");
+                    report.date = startDate.getDate()+" "+monthName;
+                    
+                    monthName = moment.localeData().monthsShort(moment([0, endDate.getMonth()]), "");
+                    report.date += " - "+endDate.getDate()+" "+monthName;
                 }
                 
                 function appIterator(app_id, done){
                     var params = {qstring:{period:report.period}};
-                    if(!cache[app_id]){
+                    if(!cache[app_id] || !cache[app_id][report.period]){
                         function metricIterator(metric, done){
                             if(metric.indexOf("events") == 0){
                                 var parts = metric.split(".");
@@ -134,7 +153,10 @@ var metrics = {
                                 }
                                 else{
                                     fetch.getTimeObj(metric, params, {db:db}, function(output){
-                                        done(null, {metric:metric, data:output});
+                                        fetch.getTotalUsersObj(metric, params, function(dbTotalUsersObj){
+                                            output.correction = fetch.formatTotalUsersObj(dbTotalUsersObj);
+                                            done(null, {metric:metric, data:output});
+                                        });
                                     });
                                 }
                             }
@@ -155,7 +177,10 @@ var metrics = {
                                             if(results[i] && results[i].metric)
                                                 app.results[results[i].metric] = results[i].data;
                                         }
-                                        cache[app_id] = JSON.parse(JSON.stringify(app));
+                                        if(!cache[app_id]){
+                                            cache[app_id] = {};
+                                        }
+                                        cache[app_id][report.period] = JSON.parse(JSON.stringify(app));
                                         done(null, app);
                                     });
                                 });
@@ -165,7 +190,7 @@ var metrics = {
                         });
                     }
                     else{
-                        done(null, JSON.parse(JSON.stringify(cache[app_id])));
+                        done(null, JSON.parse(JSON.stringify(cache[app_id][report.period])));
                     }
                 };
     
@@ -174,9 +199,11 @@ var metrics = {
                     var total = 0;
                     for(var i = 0; i < results.length; i++){
                         if(results[i] && results[i].results){
+                            countlyCommon.setPeriod(report.period);
+                            countlyCommon.setTimezone(results[i].timezone);
                             for(var j in results[i].results){
                                 if(j == "users"){
-                                    results[i].results[j] = getSessionData(results[i].results[j] || {});
+                                    results[i].results[j] = getSessionData(results[i].results[j] || {}, (results[i].results[j] && results[i].results[j].correction) ? results[i].results[j].correction : {});
                                     if(results[i].results[j].total_sessions.total > 0)
                                         results[i].display = true;
                                     total += results[i].results[j].total_sessions.total;
@@ -348,7 +375,7 @@ var metrics = {
         return Object.keys(collections);
     }
     
-    function getSessionData(_sessionDb) {
+    function getSessionData(_sessionDb, totalUserOverrideObj) {
 
         //Update the current period object in case selected date is changed
         _periodObj = countlyCommon.periodObj;
@@ -479,6 +506,21 @@ var metrics = {
             previousPayingTotal = tmp_y["p"];
             currentMsgEnabledTotal = tmp_x["m"];
             previousMsgEnabledTotal = tmp_y["m"];
+        }
+        
+        currentUnique = (totalUserOverrideObj && totalUserOverrideObj["users"]) ? totalUserOverrideObj["users"] : currentUnique;
+        
+        if(currentUnique < currentNew){
+            if(totalUserOverrideObj && totalUserOverrideObj["users"]){
+                currentNew = currentUnique;
+            }
+            else{
+                currentUnique = currentNew;
+            }
+        }
+        
+        if(currentUnique > currentTotal){
+            currentUnique = currentTotal;
         }
 
         var sessionDuration = (currentDuration / 60),

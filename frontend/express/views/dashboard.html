@@ -82,6 +82,9 @@
     <script type="text/javascript">
     window.production = <%= production ? true : false %>;
     </script>
+    <% if (typeof inject_template.css != 'undefined') { %>
+	<style><%- inject_template.css %></style>
+	<% } %>
 </head>
 <body>
 	<div id="top-bar">
@@ -92,7 +95,7 @@
 			<div id="app-navigation" class="dropdown bordered large">
 				<div class="selected">
 					<div id="active-app-icon" style="<% if (defaultApp){ %> background-image:url('<%- cdn %>appimages/<%= defaultApp._id %>.png'); <% } %>"></div>
-					<div id="active-app-name"><% if (defaultApp){ %><%= defaultApp.name %><% } %></div>
+					<div id="active-app-name" title="<% if (defaultApp){ %><%= defaultApp.name %><% } %>"><% if (defaultApp){ %><%= defaultApp.name %><% } %></div>
 				</div>
 				<div class="empty-state">Apps</div>
 				<div class="menu">
@@ -844,6 +847,7 @@
 									<div class="read"></div>
 									<div class="edit">
 										<input type="text" value="">
+										<input type="hidden" id="app_key_hidden" name="app_key_hidden" />
 									</div>
                                     <div class="hint" data-localize="management-applications.app-key.hint"></div>
                                 </td>
@@ -1430,6 +1434,12 @@
             }
         })();
     </script>
+	<% } %>
+    <% if (typeof inject_template.html != "undefined") { %>
+        <%- inject_template.html %>
+    <% } %>
+    <% if (typeof inject_template.js != 'undefined') { %>
+	<script><%- inject_template.js %></script>
 	<% } %>
 </body>
 </html>

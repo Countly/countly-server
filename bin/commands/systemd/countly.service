@@ -7,4 +7,5 @@ WantedBy=multi-user.target
 
 [Service]
 LimitNOFILE=10000
+LimitNPROC=10000
 Restart=on-failure

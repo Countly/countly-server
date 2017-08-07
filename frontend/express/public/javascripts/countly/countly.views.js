@@ -1331,6 +1331,7 @@ window.ManageAppsView = countlyView.extend({
 
             var appId = $("#app-edit-id").val(),
                 appName = $("#app-edit-name .edit input").val(),
+                current_app_key = $('#app_key_hidden').val(),
                 app_key = $("#app-edit-key .edit input").val();
 
             $(".required").fadeOut().remove();
@@ -1380,71 +1381,85 @@ window.ManageAppsView = countlyView.extend({
                 mode(args);
             });
 
-            $.ajax({
-                type:"GET",
-                url:countlyCommon.API_PARTS.apps.w + '/update',
-                data:{
-                    args:JSON.stringify(args),
-                    api_key:countlyGlobal['member'].api_key
-                },
-                dataType:"jsonp",
-                success:function (data) {
-                    for (var modAttr in data) {
-                        countlyGlobal['apps'][appId][modAttr] = data[modAttr];
-                        countlyGlobal['admin_apps'][appId][modAttr] = data[modAttr];
-                    }
-
-                    if (!ext) {
-                        $("#save-app-edit").removeClass("disabled");
-                        initAppManagement(appId);
-                        hideEdit();
-                        $(".app-container").filter(function () {
-                            return $(this).data("id") && $(this).data("id") == appId;
-                        }).find(".name").text(appName);
-
-                        var sidebarLogo = $("#active-app-icon").attr("style");
-                        if (sidebarLogo.indexOf(appId) !== -1) {
-                            $("#active-app-name").text(appName);
+            var updateApp = function(){
+                $.ajax({
+                    type:"GET",
+                    url:countlyCommon.API_PARTS.apps.w + '/update',
+                    data:{
+                        args:JSON.stringify(args),
+                        api_key:countlyGlobal['member'].api_key
+                    },
+                    dataType:"jsonp",
+                    success:function (data) {
+                        for (var modAttr in data) {
+                            countlyGlobal['apps'][appId][modAttr] = data[modAttr];
+                            countlyGlobal['admin_apps'][appId][modAttr] = data[modAttr];
                         }
-                        return true;
-                    }
 
-                    $('#add-edit-image-form').find("#app_image_id").val(appId);
-                    $('#add-edit-image-form').ajaxSubmit({
-                        resetForm:true,
-                        beforeSubmit:function (formData, jqForm, options) {
-                            formData.push({ name:'_csrf', value:countlyGlobal['csrf_token'] });
-                        },
-                        success:function (file) {
+                        if (!ext) {
                             $("#save-app-edit").removeClass("disabled");
-                            var updatedApp = $(".app-container").filter(function () {
+                            initAppManagement(appId);
+                            hideEdit();
+                            $(".app-container").filter(function () {
                                 return $(this).data("id") && $(this).data("id") == appId;
-                            });
+                            }).find(".name").text(appName);
 
-                            if (!file) {
-                                CountlyHelpers.alert(jQuery.i18n.map["management-applications.icon-error"], "red");
-                            } else {
-                                updatedApp.find(".logo").css({
+                            var sidebarLogo = $("#active-app-icon").attr("style");
+                            if (sidebarLogo.indexOf(appId) !== -1) {
+                                $("#active-app-name").text(appName);
+                            }
+                            return true;
+                        }
+
+                        $('#add-edit-image-form').find("#app_image_id").val(appId);
+                        $('#add-edit-image-form').ajaxSubmit({
+                            resetForm:true,
+                            beforeSubmit:function (formData, jqForm, options) {
+                                formData.push({ name:'_csrf', value:countlyGlobal['csrf_token'] });
+                            },
+                            success:function (file) {
+                                $("#save-app-edit").removeClass("disabled");
+                                var updatedApp = $(".app-container").filter(function () {
+                                    return $(this).data("id") && $(this).data("id") == appId;
+                                });
+
+                                if (!file) {
+                                    CountlyHelpers.alert(jQuery.i18n.map["management-applications.icon-error"], "red");
+                                } else {
+                                    updatedApp.find(".logo").css({
+                                        "background-image":"url(" + file + "?v" + (new Date().getTime()) + ")"
+                                    });
+                                    $("#active-app-icon").css("background-image", $("#active-app-icon").css("background-image").replace(")","") + "?v" + (new Date().getTime()) + ")");
+                                }
+
+                                initAppManagement(appId);
+                                hideEdit();
+                                updatedApp.find(".name").text(appName);
+                                $("#app-edit-image").find(".logo").css({
                                     "background-image":"url(" + file + "?v" + (new Date().getTime()) + ")"
                                 });
-                                $("#active-app-icon").css("background-image", $("#active-app-icon").css("background-image").replace(")","") + "?v" + (new Date().getTime()) + ")");
+                            },
+                            error: function(xhr, status, error){
+                                CountlyHelpers.alert(error, "red");
+                                initAppManagement(appId);
+                                hideEdit();
                             }
+                        });
+                    }
+                });
+            }
 
-                            initAppManagement(appId);
-                            hideEdit();
-                            updatedApp.find(".name").text(appName);
-                            $("#app-edit-image").find(".logo").css({
-                                "background-image":"url(" + file + "?v" + (new Date().getTime()) + ")"
-                            });
-                        },
-                        error: function(xhr, status, error){
-                            CountlyHelpers.alert(error, "red");
-                            initAppManagement(appId);
-                            hideEdit();
-                        }
-                    });
-                }
-            });
+            if (current_app_key !== app_key) {
+                CountlyHelpers.confirm(jQuery.i18n.map["management-applications.app-key-change-warning"], "red", function (result) {
+                    if(result)
+                        updateApp();
+                    else
+                        $("#save-app-edit").removeClass("disabled");
+                });
+            }else 
+                updateApp();
+
+            
         });
 
         $("#cancel-app-edit").click(function () {

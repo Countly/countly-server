@@ -113,7 +113,7 @@ module.exports = function(grunt) {
 		options: {
 			banner: '/*! Countly <%= grunt.template.today("dd-mm-yyyy") %> */\n',
             mangle: {
-                except: ["$super"]
+                reserved: ["$super"]
             }
 		},
 		dist: {
