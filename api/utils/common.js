@@ -776,6 +776,9 @@ var common = {},
     * @param {object} headers - headers to add to the output
     */
     common.returnOutput = function (params, output, noescape, heads) {
+        if(params && params.APICallback && typeof params.APICallback === 'function'){
+            return params.APICallback(output);
+        }
         //set provided in configuration headers
         var headers = {'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin':'*'};
         var add_headers = (plugins.getConfig("security").api_additional_headers || "").replace(/\r\n|\r|\n|\/n/g, "\n").split("\n");
