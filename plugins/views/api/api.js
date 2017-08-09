@@ -303,6 +303,13 @@ var plugin = {},
                 params.qstring.events = params.qstring.events.filter(function(currEvent){
                     if (currEvent.key == "[CLY]_view"){
                         if(currEvent.segmentation && currEvent.segmentation.name){
+                            
+                            //bug from SDK possibly reporting timestamp instead of duration
+                            if(currEvent.dur && (currEvent.dur+"").length >= 10)
+                                currEvent.dur = 0;
+                            if(currEvent.segmentation.dur && (currEvent.segmentation.dur+"").length >= 10)
+                                currEvent.segmentation.dur = 0;
+                            
                             processView(params, currEvent);
                             if(currEvent.segmentation.visit){
                                 var events = [currEvent];
