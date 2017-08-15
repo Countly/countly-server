@@ -1313,6 +1313,8 @@ var common = {},
                 update["$set"] = {};
             if(!update["$set"].lac)
                 update["$set"].lac = params.time.mstimestamp;
+            if(!update["$set"].did && params.qstring.device_id && params.app_user && !params.app_user.did)
+                update["$set"].did = params.qstring.device_id;
             common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id},{}, update, {new:true, upsert:true}, function(err, res) {
                 if(!err && res && res.value)
                     params.app_user = res.value;
