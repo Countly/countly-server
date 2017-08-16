@@ -227,16 +227,17 @@
 						</div>
 						<div class="text" data-localize="sidebar.events"></div>
 					</a>
-					<% if(member['global_admin'] || adminOfApps.length  || config.autonomous) { %>
 					<a class="item" id="management-menu">
 						<div class="logo management ion-gear-a"></div>
 						<div class="text" data-localize="sidebar.management"></div>
 					</a>
 					<div class="sidebar-submenu" id="management-submenu">
+                        <% if(member['global_admin'] || adminOfApps.length  || config.autonomous) { %>
 						<a href="#/manage/apps" class="item active">
 							<div class="logo applications"></div>
 							<div class="text" data-localize="sidebar.management.applications"></div>
 						</a>
+                        <% } %>
 						<% if(member['global_admin']) { %>
 						<a href="#/manage/users" class="item">
 							<div class="logo mgmt-users"></div>
@@ -253,7 +254,6 @@
 							<div id="help-toggle"></div>
 						</a>
 					</div>
-					<% } %>
 				</div>
 			</div>
 				<div id="version-info"><%= countlyTypeName %></div>
