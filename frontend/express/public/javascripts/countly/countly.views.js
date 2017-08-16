@@ -1689,10 +1689,10 @@ window.ManageUsersView = countlyView.extend({
                         $(nRow).attr("id", aData._id);
                     },
                     "aoColumns": [
-                        { "mData": function(row, type){return row.full_name;}, "sType":"string", "sExport":"userinfo", "sTitle": jQuery.i18n.map["management-users.full-name"]},
-                        { "mData": function(row, type){return row.username;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.username"]},
+                        { "mData": function(row, type){if(type == "display") return "<span title='"+row.full_name+"'>"+row.full_name+"</span>"; else return row.full_name;}, "sType":"string", "sExport":"userinfo", "sTitle": jQuery.i18n.map["management-users.full-name"], "sClass":"trim"},
+                        { "mData": function(row, type){if(type == "display") return "<span title='"+row.username+"'>"+row.username+"</span>"; else return row.username;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.username"], "sClass":"trim"},
                         { "mData": function(row, type){if(row.global_admin) return jQuery.i18n.map["management-users.global-admin"]; else if(row.admin_of && row.admin_of.length) return jQuery.i18n.map["management-users.admin"]; else if(row.user_of && row.user_of.length)  return jQuery.i18n.map["management-users.user"]; else return jQuery.i18n.map["management-users.no-role"]}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.role"]},
-                        { "mData": function(row, type){return row.email;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.email"]},
+                        { "mData": function(row, type){if(type == "display") return "<span title='"+row.email+"'>"+row.email+"</span>"; else return row.email;}, "sType":"string", "sTitle": jQuery.i18n.map["management-users.email"], "sClass":"trim"},
                         { "mData": function(row, type){if(type == "display") return (row["created_at"]) ? countlyCommon.formatTimeAgo(row["created_at"]) : ""; else return (row["created_at"]) ? row["created_at"] : 0;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["management-users.created"]},
                         { "mData": function(row, type){if(type == "display") return (row["last_login"]) ? countlyCommon.formatTimeAgo(row["last_login"]) : jQuery.i18n.map["common.never"]; else return (row["last_login"]) ? row["last_login"] : 0;}, "sType":"format-ago", "sTitle": jQuery.i18n.map["management-users.last_login"]}
                     ]
