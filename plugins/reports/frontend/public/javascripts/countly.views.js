@@ -681,19 +681,15 @@ window.ReportingView = countlyView.extend({
 //register views
 app.reportingView = new ReportingView();
 
-if(countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].length){
-    app.route('/manage/reports', 'reports', function () {
-        this.renderWhenReady(this.reportingView);
-    });
-}
+app.route('/manage/reports', 'reports', function () {
+    this.renderWhenReady(this.reportingView);
+});
 
 $( document ).ready(function() {
-	if(countlyGlobal["member"].global_admin || countlyGlobal["member"]["admin_of"].length){
-        var menu = '<a href="#/manage/reports" class="item">'+
-            '<div class="logo-icon fa fa-envelope"></div>'+
-            '<div class="text" data-localize="reports.title"></div>'+
-        '</a>';
-        if($('#management-submenu .help-toggle').length)
-            $('#management-submenu .help-toggle').before(menu);
-    }
+    var menu = '<a href="#/manage/reports" class="item">'+
+        '<div class="logo-icon fa fa-envelope"></div>'+
+        '<div class="text" data-localize="reports.title"></div>'+
+    '</a>';
+    if($('#management-submenu .help-toggle').length)
+        $('#management-submenu .help-toggle').before(menu);
 });
