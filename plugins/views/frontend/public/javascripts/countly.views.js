@@ -554,6 +554,6 @@ $( document ).ready(function() {
     //check if configuration view exists
     if(app.configurationsView){
         app.configurationsView.registerLabel("views", "views.title");
-        app.configurationsView.registerLabel("views-view_limit", "views.view-limit");
+        app.configurationsView.registerLabel("views.view_limit", "views.view-limit");
     }
 });

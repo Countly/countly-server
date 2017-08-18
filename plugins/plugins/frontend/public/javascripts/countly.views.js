@@ -178,10 +178,10 @@ window.ConfigurationsView = countlyView.extend({
         this.changes = {};
         
         //register some common system config inputs
-        this.registerInput("apps-category", function(value){
+        this.registerInput("apps.category", function(value){
             return null;
             var categories = app.manageAppsView.getAppCategories();
-            var select = '<div class="cly-select" id="apps-category">'+
+            var select = '<div class="cly-select" id="apps.category">'+
                 '<div class="select-inner">'+
                     '<div class="text-container">';
             if(!categories[value])
@@ -204,9 +204,9 @@ window.ConfigurationsView = countlyView.extend({
             return select;
         });
         
-        this.registerInput("apps-country", function(value){
+        this.registerInput("apps.country", function(value){
             var zones = app.manageAppsView.getTimeZones();
-            var select = '<div class="cly-select" id="apps-country">'+
+            var select = '<div class="cly-select" id="apps.country">'+
                 '<div class="select-inner">'+
                     '<div class="text-container">';
             if(!zones[value])
@@ -230,9 +230,9 @@ window.ConfigurationsView = countlyView.extend({
             return select;
         });
         
-        this.registerInput("frontend-theme", function(value){
+        this.registerInput("frontend.theme", function(value){
             var themes = countlyPlugins.getThemeList();
-            var select = '<div class="cly-select" id="frontend-theme">'+
+            var select = '<div class="cly-select" id="frontend.theme">'+
                 '<div class="select-inner">'+
                     '<div class="text-container">';
             if(value && value.length)
@@ -260,9 +260,9 @@ window.ConfigurationsView = countlyView.extend({
         });
         
         //register some common system config inputs
-        this.registerInput("logs-default", function(value){
+        this.registerInput("logs.default", function(value){
             var categories = ['debug', 'info', 'warn', 'error'];
-            var select = '<div class="cly-select" id="logs-default">'+
+            var select = '<div class="cly-select" id="logs.default">'+
                 '<div class="select-inner">'+
                     '<div class="text-container">';
             if(value && value.length)
@@ -285,15 +285,15 @@ window.ConfigurationsView = countlyView.extend({
             return select;
         });
 
-        this.registerInput("security-dashboard_additional_headers", function(value){
-            return '<textarea rows="5" style="width:100%" id="security-dashboard_additional_headers">'+(value || "")+'</textarea>';
+        this.registerInput("security.dashboard_additional_headers", function(value){
+            return '<textarea rows="5" style="width:100%" id="security.dashboard_additional_headers">'+(value || "")+'</textarea>';
         });
 
-        this.registerInput("security-api_additional_headers", function(value){
-            return '<textarea rows="5" style="width:100%" id="security-api_additional_headers">'+(value || "")+'</textarea>';
+        this.registerInput("security.api_additional_headers", function(value){
+            return '<textarea rows="5" style="width:100%" id="security.api_additional_headers">'+(value || "")+'</textarea>';
         });
 
-        this.registerInput("apps-timezone", function(value){
+        this.registerInput("apps.timezone", function(value){
             return null;
         });
     },
@@ -327,7 +327,7 @@ window.ConfigurationsView = countlyView.extend({
         if(this.userConfig)
             title = jQuery.i18n.map["plugins.user-configs"];
         if(this.namespace && this.configsData[this.namespace]){
-            configsHTML = this.generateConfigsTable(this.configsData[this.namespace], "-"+this.namespace);
+            configsHTML = this.generateConfigsTable(this.configsData[this.namespace], "."+this.namespace);
             title = this.getInputLabel(this.namespace, this.namespace) + " " + title;
         }
         else
@@ -668,7 +668,7 @@ window.ConfigurationsView = countlyView.extend({
         }
     },
     updateConfig: function(id, value){
-        var configs = id.split("-");
+        var configs = id.split(".");
                 
         //update cache
         var data = this.cache;
@@ -720,20 +720,20 @@ window.ConfigurationsView = countlyView.extend({
         for(var i in configsData){
             if(typeof configsData[i] == "object"){
                 if(configsData[i] != null){
-                    var label = this.getInputLabel((id+"-"+i).substring(1), i);
+                    var label = this.getInputLabel((id+"."+i).substring(1), i);
                     if(label)
-                        configsHTML += "<tr><td>"+label+"</td><td>"+this.generateConfigsTable(configsData[i], id+"-"+i)+"</td></tr>";
+                        configsHTML += "<tr><td>"+label+"</td><td>"+this.generateConfigsTable(configsData[i], id+"."+i)+"</td></tr>";
                 }
                 else{
-                    var input = this.getInputByType((id+"-"+i).substring(1), "");
-                    var label = this.getInputLabel((id+"-"+i).substring(1), i);
+                    var input = this.getInputByType((id+"."+i).substring(1), "");
+                    var label = this.getInputLabel((id+"."+i).substring(1), i);
                     if(input && label)
                         configsHTML += "<tr><td>"+label+"</td><td>"+input+"</td></tr>";
                 }
             }
             else{
-                var input = this.getInputByType((id+"-"+i).substring(1), configsData[i]);
-                var label = this.getInputLabel((id+"-"+i).substring(1), i);
+                var input = this.getInputByType((id+"."+i).substring(1), configsData[i]);
+                var label = this.getInputLabel((id+"."+i).substring(1), i);
                 if(input && label)
                     configsHTML += "<tr><td>"+label+"</td><td>"+input+"</td></tr>";
             }
@@ -743,19 +743,25 @@ window.ConfigurationsView = countlyView.extend({
         return configsHTML;
     },
     getInputLabel: function(id, value){
-        var ns = id.split("-")[0];
+        var ns = id.split(".")[0];
         if(ns != "frontend" && ns != "api" && ns != "apps" && ns != "logs" && ns != "security" && countlyGlobal["plugins"].indexOf(ns) == -1){
             return null;
         }
         var ret = "";
         if(jQuery.i18n.map["configs.help."+id])
             ret = "<span class='config-help' data-localize='configs.help."+id+"'>"+jQuery.i18n.map["configs.help."+id]+"</span>";
+        else if(jQuery.i18n.map["configs.help."+id.replace(".", "-")])
+            ret = "<span class='config-help' data-localize='configs.help."+id.replace(".", "-")+"'>"+jQuery.i18n.map["configs.help."+id.replace(".", "-")]+"</span>";
         if(typeof this.predefinedLabels[id] != "undefined")
             return "<div data-localize='"+this.predefinedLabels[id]+"'>"+jQuery.i18n.map[this.predefinedLabels[id]]+"</div>"+ret;
         else if(jQuery.i18n.map["configs."+id])
             return "<div data-localize='configs."+id+"'>"+jQuery.i18n.map["configs."+id]+"</div>"+ret;
-        else if(jQuery.i18n.map[id.replace("-", ".")])
-            return "<div data-localize='"+id.replace("-", ".")+"'>"+jQuery.i18n.map[id.replace("-", ".")]+"</div>"+ret;
+        else if(jQuery.i18n.map["configs."+id.replace(".", "-")])
+            return "<div data-localize='configs."+id.replace(".", "-")+"'>"+jQuery.i18n.map["configs."+id.replace(".", "-")]+"</div>"+ret;
+        else if(jQuery.i18n.map[id])
+            return "<div data-localize='"+id+"'>"+jQuery.i18n.map[id]+"</div>"+ret;
+        else if(jQuery.i18n.map[id.replace(".", "-")])
+            return "<div data-localize='"+id.replace(".", "-")+"'>"+jQuery.i18n.map[id.replace(".", "-")]+"</div>"+ret;
         else
             return "<div>"+value+"</div>"+ret;
     },
