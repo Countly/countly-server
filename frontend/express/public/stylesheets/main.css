@@ -483,6 +483,7 @@ table.d-table:not(.no-fix) { table-layout:fixed; }
 .dataTable td { font-family:Oswald; font-size:12px; }
 .d-table .shrink {width: 1%;}
 .d-table .center{text-align: center;}
+.d-table .right{text-align: right;}
 
 div.datatablesubrow {display: none;}
 
@@ -1101,10 +1102,11 @@ table.events-table { width:100%; padding:0; margin:0; }
 .button-selector.light .button.active { background-color:#FFF; border:1px solid #2EB52B; position: relative; z-index:10;}
 .button-selector.light .button.disabled { opacity:0.3; cursor:default; }
 
+.cly-list-options {cursor: pointer; font-size: 18px;}
 .cly-button-menu-trigger.active { opacity: 0.8; }
-.cly-button-menu-trigger.active + .cly-button-menu { opacity: 1; transition: opacity 0.2s; z-index: 2; }
+.cly-button-menu-trigger.active + .cly-button-menu, .cly-button-menu.active { opacity: 1; transition: opacity 0.2s; z-index: 2; }
 .cly-button-menu { padding:10px 0; opacity: 0; transition: opacity 0.3s, z-index 3s; z-index: -1; position: absolute; background-color: #FFF; right:0; top:37px; border-radius: 2px; outline:none;}
-.cly-button-menu .item { cursor:pointer; padding: 8px 20px; font-size: 13px; white-space: nowrap; color:#474747; }
+.cly-button-menu .item { cursor:pointer; padding: 8px 20px; font-size: 13px; white-space: nowrap; color:#474747; display: block;}
 .cly-button-menu .item:hover { background-color: #f3f3f3; }
 .cly-button-menu:before { border: 4px solid rgba(194, 225, 245, 0); border-bottom-color: #FFF; right: 7px; top:-8px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; }
 .cly-button-menu.dark { background-color: #202020; color:#FFF; }

@@ -882,6 +882,70 @@
             $(this).trigger("cly-multi-select-change", [getSelected($(this))]);
         };
     };
+    
+    /**
+    * Initialize dropdown options list usually used on datatables. Firstly you need to add list with class 'cly-button-menu' to your template or add it in the view. Additionally you can add class `dark` to use dark theme.
+    * After that datatables last column for options should return a element with `cly-list-options` class and should have cell classes shrink and right and should not be sortable
+    * Then call this method in your view and you can start listening to events like: 
+    * cly-list.click - when your cly-list-options element is clicked, passing click event as data
+    * cly-list.open - when list is opened, passing click event as data
+    * cly-list.close - when list is closed, passing click event as data
+    * cly-list.item - when item is clicked, passing click event as data
+    * @param {object} element - jQuery object reference for container
+    * @example <caption>Adding list to HTML template</caption>
+    * <div class="cly-button-menu dark cohorts-menu" tabindex="1">
+    *     <a class="item delete-cohort" data-localize='common.delete'></a>
+    *     <a class="item view-cohort" data-localize='cohorts.view-users'></a>
+    * </div>
+    * @example <caption>Creating last column in datatables</caption>
+    * { "mData": function(row, type){
+    *     return '<a class="cly-list-options">...</a>';
+    * }, "sType":"string", "sTitle": jQuery.i18n.map["common.action"], "sClass":"shrink right", bSortable: false  }
+    * @example <caption>Listening to events</caption>
+    * $(".cly-button-menu").on("cly-list.click", function(event, data){
+    *     var id = $(data.target).parents("tr").data("id");
+    * });
+    */
+    CountlyHelpers.initializeTableOptions = function (element) {
+        element = element || $('body');
+        element.off("click", ".cly-list-options").on("click", ".cly-list-options", function (event){
+            event.stopPropagation();
+            $(".cly-button-menu").trigger('cly-list.click', event);
+            $(event.target).toggleClass("active");
+            if($(event.target).hasClass("active")){
+                element.find(".cly-list-options").removeClass("active");
+                $(event.target).addClass("active");
+                var pos = $(event.target).offset();
+                element.find('.cly-button-menu').css({
+                    top: (pos.top+25) + "px",
+                    left: (pos.left-250) + "px",
+                    right: 20 + "px"
+                });
+                element.find('.cly-button-menu').addClass("active");
+                element.find('.cly-button-menu').focus();
+                $(".cly-button-menu").trigger('cly-list.open', event);
+            }
+            else{
+                $(event.target).removeClass("active");
+                element.find('.cly-button-menu').removeClass("active");
+                $(".cly-button-menu").trigger('cly-list.close', event);
+            }
+            event.preventDefault();
+        });
+        
+        element.find('.cly-button-menu .item').off("click").on("click", function(event){
+            $(".cly-button-menu").trigger('cly-list.item', event);
+            element.find('.cly-button-menu').removeClass("active");
+            element.find(".cly-list-options").removeClass("active");
+            $(".cly-button-menu").trigger('cly-list.close', event);
+        });
+        
+        element.find('.cly-button-menu').off("blur").on("blur", function() {
+            element.find('.cly-button-menu').removeClass("active");
+            element.find(".cly-list-options").removeClass("active");
+            $(".cly-button-menu").trigger('cly-list.close', event);
+        });
+    };
 
     /**
     * Refresh existing datatable instance on view refresh, providing new data
