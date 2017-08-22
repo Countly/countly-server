@@ -91,14 +91,14 @@ var plugin = {},
                         for (var i = 0; i < events.list.length; i++) {
                             result[crypto.createHash('sha1').update(events.list[i] + app._id + "").digest('hex')] = "("+app.name+": "+events.list[i]+")";
                         }
-                        result[crypto.createHash('sha1').update("[CLY]_session" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_session)";
-                        result[crypto.createHash('sha1').update("[CLY]_crash" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_crash)";
-                        result[crypto.createHash('sha1').update("[CLY]_view" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_view)";
-                        result[crypto.createHash('sha1').update("[CLY]_action" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_action)";
-                        result[crypto.createHash('sha1').update("[CLY]_push_action" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_push_action)";
-                        result[crypto.createHash('sha1').update("[CLY]_push_open" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_push_open)";
-                        result[crypto.createHash('sha1').update("[CLY]_push_sent" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_push_sent)";
                     }
+                    result[crypto.createHash('sha1').update("[CLY]_session" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_session)";
+                    result[crypto.createHash('sha1').update("[CLY]_crash" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_crash)";
+                    result[crypto.createHash('sha1').update("[CLY]_view" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_view)";
+                    result[crypto.createHash('sha1').update("[CLY]_action" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_action)";
+                    result[crypto.createHash('sha1').update("[CLY]_push_action" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_push_action)";
+                    result[crypto.createHash('sha1').update("[CLY]_push_open" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_push_open)";
+                    result[crypto.createHash('sha1').update("[CLY]_push_sent" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_push_sent)";
                     callback(null, result);
                 });
             }
