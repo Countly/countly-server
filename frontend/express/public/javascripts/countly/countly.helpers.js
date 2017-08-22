@@ -899,8 +899,8 @@
     * </div>
     * @example <caption>Creating last column in datatables</caption>
     * { "mData": function(row, type){
-    *     return '<a class="cly-list-options">...</a>';
-    * }, "sType":"string", "sTitle": jQuery.i18n.map["common.action"], "sClass":"shrink right", bSortable: false  }
+    *     return '<a class="cly-list-options"></a>';
+    * }, "sType":"string", "sTitle": "", "sClass":"shrink center", bSortable: false  }
     * @example <caption>Listening to events</caption>
     * $(".cly-button-menu").on("cly-list.click", function(event, data){
     *     var id = $(data.target).parents("tr").data("id");
@@ -918,8 +918,7 @@
                 var pos = $(event.target).offset();
                 element.find('.cly-button-menu').css({
                     top: (pos.top+25) + "px",
-                    left: (pos.left-250) + "px",
-                    right: 20 + "px"
+                    right: 22 + "px"
                 });
                 element.find('.cly-button-menu').addClass("active");
                 element.find('.cly-button-menu').focus();

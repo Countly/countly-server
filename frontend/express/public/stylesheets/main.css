@@ -1102,7 +1102,9 @@ table.events-table { width:100%; padding:0; margin:0; }
 .button-selector.light .button.active { background-color:#FFF; border:1px solid #2EB52B; position: relative; z-index:10;}
 .button-selector.light .button.disabled { opacity:0.3; cursor:default; }
 
-.cly-list-options {cursor: pointer; font-size: 18px;}
+.cly-list-options {cursor: pointer; color:#BBBBBB; font-size: 20px; vertical-align: middle;}
+.cly-list-options:hover {color:#6B6B6B;}
+.cly-list-options:before { font-family: 'Ionicons';  content: "\f396"; }
 .cly-button-menu-trigger.active { opacity: 0.8; }
 .cly-button-menu-trigger.active + .cly-button-menu, .cly-button-menu.active { opacity: 1; transition: opacity 0.2s; z-index: 2; }
 .cly-button-menu { padding:10px 0; opacity: 0; transition: opacity 0.3s, z-index 3s; z-index: -1; position: absolute; background-color: #FFF; right:0; top:37px; border-radius: 2px; outline:none;}
