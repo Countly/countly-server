@@ -1673,27 +1673,15 @@ var countlyCommon = {},
                 periodContainsToday = false;
                 break;
             }
-            case "7days": {
-                daysInPeriod = 7;
-                isSpecialPeriod = true;
-                break;
-            }
-            case "30days": {
-                daysInPeriod = 30;
-                isSpecialPeriod = true;
-                break;
-            }
-            case "60days": {
-                daysInPeriod = 60;
-                isSpecialPeriod = true;
-                break;
-            }
-            case "90days": {
-                daysInPeriod = 90;
-                isSpecialPeriod = true;
-                break;
-            }
             default: {
+                if(/([0-9]+)days/.test(_period)){
+                    var match = /([0-9]+)days/.exec(_period);
+                    if(match[1]){
+                        daysInPeriod = parseInt(match[1]);
+                        isSpecialPeriod = true;
+                    }
+                    console.log("custom period", match, daysInPeriod, isSpecialPeriod);
+                }
                 break;
             }
         }
