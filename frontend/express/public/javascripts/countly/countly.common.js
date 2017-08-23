@@ -2603,6 +2603,12 @@
                 numberOfDays = daysInPeriod = 90;
                 break;
             default:
+                if(/([0-9]+)days/.test(_period)){
+                    var match = /([0-9]+)days/.exec(_period);
+                    if(match[1]){
+                        numberOfDays = daysInPeriod = parseInt(match[1]);
+                    }
+                }
                 break;
         }
 

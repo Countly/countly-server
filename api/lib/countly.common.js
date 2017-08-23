@@ -1680,7 +1680,6 @@ var countlyCommon = {},
                         daysInPeriod = parseInt(match[1]);
                         isSpecialPeriod = true;
                     }
-                    console.log("custom period", match, daysInPeriod, isSpecialPeriod);
                 }
                 break;
             }
