@@ -2929,9 +2929,18 @@ window.LongTaskView = countlyView.extend({
 		var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
+            
+            $(this.el).append('<div class="cly-button-menu tasks-menu" tabindex="1">' +
+                '<a class="item delete-task" data-localize="common.delete"></a>' +
+                '<a class="item view-task" href="" data-localize="common.view"></a>' +
+                '<a class="item rerun-task" data-localize="taskmanager.rerun"></a>' +
+            '</div>');
 
 			this.dtable = $('#data-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": countlyTaskManager.getResults(),
+                "fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                    $(nRow).attr("data-id", aData._id);
+                },
                 "aoColumns": [
                     { "mData": function(row, type){return row.name || row.meta || "";}, "sType":"string", "sTitle": jQuery.i18n.map["common.info"], "bSortable": false, "sClass":"break" },
                     { "mData":  function(row, type){return '<span class="status-color" style="color:'+self.getStatusColor(row.status)+';"><i class="fa fa-circle" aria-hidden="true"></i>' + (states[row.status] || row.status)+"</span>";}, "sType":"string", "sTitle": jQuery.i18n.map["common.status"] },
@@ -2952,62 +2961,82 @@ window.LongTaskView = countlyView.extend({
 							return countlyCommon.formatTime(Math.round(time/1000));
 						}else return time;}, "sType":"numeric", "sTitle": jQuery.i18n.map["events.table.dur"] },
                     { "mData": function(row, type){
-                        var str = "";
-                        if(countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]){
-                            str = "<a data-localize='common.delete' class='table-link red delete-task' data-id='"+row._id+"'></a>";
-                        }
-                        if(row.status !== "running" && row.status !== "rerunning"){
-                            if(row.view && row.hasData){
-                                str += "<p><a href='"+row.view+row._id+"' data-localize='common.view' class='table-link green'></a></p>";
-                            }
-                            if(row.request){
-                                str += "<p><a data-localize='taskmanager.rerun' class='table-link green rerun-task' data-id='"+row._id+"'></a></p>";
-                            }
-                        }
-                        else{
-                            if(row.view && row.hasData){
-                                str += "<p><a href='"+row.view+row._id+"' data-localize='taskmanager.view-old' class='table-link green'></a></p>";
-                            }
-                        }
-                        return str;
-                    }, "sType":"string", "sTitle": jQuery.i18n.map["common.action"], "bSortable": false },
+                        return '<a class="cly-list-options"></a>';
+                    }, "sType":"string", "sTitle": "", "sClass":"shrink center", bSortable: false  }
                 ]
             }));
 
 			this.dtable.stickyTableHeaders();
 			this.dtable.fnSort( [ [3,'desc'] ] );
             
-            this.dtable.find('tbody').on("click", ".delete-task", function (){
-                var id = $(this).data("id");
-                if(id){
-                    CountlyHelpers.confirm(jQuery.i18n.map["taskmanager.confirm-delete"], "red", function (result) {
-                        if (!result) {
-                            return true;
+            CountlyHelpers.initializeTableOptions();
+            
+            $(".cly-button-menu").on("cly-list.click", function(event, data){
+                var id = $(data.target).parents("tr").data("id");
+                if (id) {
+                    var row = countlyTaskManager.getTask(id);
+                    if (countlyGlobal["member"].global_admin || countlyGlobal["admin_apps"][countlyCommon.ACTIVE_APP_ID]) {
+                        $(".tasks-menu").find(".delete-task").data("id", id);
+                    }
+                    else {
+                        $(".tasks-menu").find(".delete-task").hide();
+                    }
+                    
+                    if(row.status !== "running" && row.status !== "rerunning"){
+                        if(row.view && row.hasData){
+                            $(".tasks-menu").find(".view-task").attr("href", row.view+row._id).data("localize", "common.view").text(jQuery.i18n.map["common.view"]).show();
                         }
-                        countlyTaskManager.del(id, function(){
-                            self.refresh();
-                        });
-                    });
+                        else{
+                            $(".tasks-menu").find(".view-task").hide();
+                        }
+                        if(row.request){
+                            $(".tasks-menu").find(".rerun-task").data("id", id).show();
+                        }
+                        else{
+                            $(".tasks-menu").find(".rerun-task").hide();
+                        }
+                    }
+                    else{
+                        if(row.view && row.hasData){
+                            $(".tasks-menu").find(".view-task").attr("href", row.view+row._id).data("localize", "taskmanager.view-old").text(jQuery.i18n.map["taskmanager.view-old"]).show();
+                        }
+                        else{
+                            $(".tasks-menu").find(".view-task").hide();
+                        }
+                    }
                 }
             });
             
-            this.dtable.find('tbody').on("click", ".rerun-task", function (){
-                var id = $(this).data("id");
+            $(".cly-button-menu").on("cly-list.item", function (event, data) {
+                var el = $(data.target);
+                var id = el.data("id");
                 if(id){
-                    CountlyHelpers.confirm(jQuery.i18n.map["taskmanager.confirm-rerun"], "red", function (result) {
-                        if (!result) {
-                            return true;
-                        }
-                        countlyTaskManager.update(id, function(res){
-                            if(res.result === "Success"){
-                                countlyTaskManager.monitor(id, true);
+                    if(el.hasClass("delete-task")){
+                        CountlyHelpers.confirm(jQuery.i18n.map["taskmanager.confirm-delete"], "red", function (result) {
+                            if (!result) {
+                                return true;
+                            }
+                            countlyTaskManager.del(id, function(){
                                 self.refresh();
-                            }
-                            else{
-                                CountlyHelpers.alert(res.result, "red");
-                            }
+                            });
                         });
-                    });
+                    }
+                    else if(el.hasClass("rerun-task")){
+                        CountlyHelpers.confirm(jQuery.i18n.map["taskmanager.confirm-rerun"], "red", function (result) {
+                            if (!result) {
+                                return true;
+                            }
+                            countlyTaskManager.update(id, function(res){
+                                if(res.result === "Success"){
+                                    countlyTaskManager.monitor(id, true);
+                                    self.refresh();
+                                }
+                                else{
+                                    CountlyHelpers.alert(res.result, "red");
+                                }
+                            });
+                        });
+                    }
                 }
             });
             
