@@ -102,11 +102,10 @@
         _events = [];
     };
 
-    countlyEventCompare.getChartData = function(forEvent, metric) {
-        var props = countlyEventCompare.getProperties(),
-            chartData = [
-                { data:[], label:props[metric], color:'#DDDDDD', mode:"ghost" },
-                { data:[], label:props[metric], color:'#333933' }
+    countlyEventCompare.getChartData = function(forEvent, metric, name) {
+        var chartData = [
+                { data:[], label:forEvent, color:'#DDDDDD', mode:"ghost" },
+                { data:[], label:forEvent, color:'#333933' }
             ],
             dataProps = [
                 {
@@ -272,12 +271,10 @@
 
     countlyAppCompare.getChartData = function(forApp, metric) {
         if (_sessions[forApp] && _sessions[forApp][metric] && _sessions[forApp][metric].data) {
-            var props = countlyAppCompare.getProperties();
-
             return {
                 chartDP: [[], {
                     data: _sessions[forApp][metric].data,
-                    label: props[metric]
+                    label: countlyGlobal["apps"][forApp].name
                 }]
             };
         } else {
