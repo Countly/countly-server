@@ -81,7 +81,12 @@
 				},
 				dataType:"jsonp",
 				success:function (json) {
-					_groupData = json;
+                    _groupData = json;
+                    if(_groupData.data && _groupData.data.length){
+                        for(var i = 0; i < _groupData.data.length; i++){
+                            _reportData[_groupData.data[i]._id] = _groupData.data[i]; 
+                        }
+                    }
                     _groupData.name = countlyCommon.decode(_groupData.name);
                     _groupData.error = countlyCommon.decode(_groupData.error);
                     _list[_groupData._id] = _groupData.name;
@@ -331,6 +336,11 @@
 				dataType:"jsonp",
 				success:function (json) {
 					_groupData = json;
+                    if(_groupData.data && _groupData.data.length){
+                        for(var i = 0; i < _groupData.data.length; i++){
+                            _reportData[_groupData.data[i]._id] = _groupData.data[i]; 
+                        }
+                    }
                     _list[_groupData._id] = _groupData.name;
 					_groupData.dp = {};
 					for(var i in _metrics){
@@ -482,8 +492,8 @@
         }
     };
 	
-	countlyCrashes.getReportData = function () {
-		return _reportData;
+	countlyCrashes.getReportData = function (id) {
+		return _reportData[id];
     };
 	
 	countlyCrashes.getErrorName = function () {

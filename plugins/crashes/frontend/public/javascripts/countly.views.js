@@ -1494,16 +1494,7 @@ window.CrashgroupView = countlyView.extend({
                             }
 						str += '</tr>'+
                         '<tr>'+
-                        '<td colspan="5">';
-                        if(data.symbolicated){
-                            str += '<span class="icon-button green" data-localize="crash_symbolication.symbolicated" style="float: right; margin-top: 6px;">Symbolicated</span>';
-                        }
-                        else if(data.jobId){
-                            str += '<span class="icon-button light" data-localize="crash_symbolication.symbolication-process" style="float: right; margin-top: 6px;">Symbolication is in process</span>';
-                        }
-                        else if(typeof countlyCrashSymbols && countlyCrashes.canSymbolicate((data.os + "").toLowerCase(), data.build_uuid || data.app_version)){
-                            str += '<a class="icon-button light btn-symbolicate" data-symbol_id="'+countlyCrashes.canSymbolicate((data.os + "").toLowerCase(), data.build_uuid || data.app_version)+'" data-id="'+data._id+'" data-localize="crash_symbolication.symbolicate" style="float: right; margin-top: 6px;">Symbolicate</a>';
-                        }
+                        '<td colspan="5" class="stack-trace">';
                         str += '<pre>' + data.error + '</pre></td>'+
 						'</tr>'+
 						'</table>'+
