@@ -908,8 +908,9 @@
     */
     CountlyHelpers.initializeTableOptions = function (element) {
         element = element || $('body');
-        element.off("click", ".cly-list-options").on("click", ".cly-list-options", function (event){
+        element.find("tbody").off("click", ".cly-list-options").on("click", ".cly-list-options", function (event){
             event.stopPropagation();
+            event.preventDefault();
             $(".cly-button-menu").trigger('cly-list.click', event);
             $(event.target).toggleClass("active");
             if($(event.target).hasClass("active")){
@@ -929,7 +930,7 @@
                 element.find('.cly-button-menu').removeClass("active");
                 $(".cly-button-menu").trigger('cly-list.close', event);
             }
-            event.preventDefault();
+            return false;
         });
         
         element.find('.cly-button-menu .item').off("click").on("click", function(event){
@@ -1010,12 +1011,14 @@
                     var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr ), context), 'details' );
                     $('div.datatablesubrow', nDetailsRow).show();
                     dTable.aOpen.push( id );
+                    dTable.trigger("row.open", id);
                 }
                 else {
                     $(nTr).removeClass("selected");
                     $('div.datatablesubrow', $(nTr).next()[0]).hide();
                     dTable.fnClose( nTr );
                     dTable.aOpen.splice( i, 1 );
+                    dTable.trigger("row.close", id);
                 }
             }
         });
@@ -1039,6 +1042,7 @@
                 $(nTr).addClass("selected");
                 var nDetailsRow = dTable.fnOpen( nTr, getData(dTable.fnGetData( nTr ), context), 'details' );
                 $('div.datatablesubrow', nDetailsRow).show();
+                dTable.trigger("row.reopen", id);
             });
         }
     };
