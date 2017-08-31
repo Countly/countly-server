@@ -46,9 +46,9 @@ plugins.setConfigs("security", {
 plugins.setConfigs('logs', {
     debug:      (countlyConfig.logging && countlyConfig.logging.debug)     ?  countlyConfig.logging.debug.join(', ')    : '',
     info:       (countlyConfig.logging && countlyConfig.logging.info)      ?  countlyConfig.logging.info.join(', ')     : '',
-    warning:    (countlyConfig.logging && countlyConfig.logging.warning)   ?  countlyConfig.logging.warning.join(', ')  : '',
+    warn:       (countlyConfig.logging && countlyConfig.logging.warn)   ?  countlyConfig.logging.warn.join(', ')  : '',
     error:      (countlyConfig.logging && countlyConfig.logging.error)     ?  countlyConfig.logging.error.join(', ')    : '',
-    default:    (countlyConfig.logging && countlyConfig.logging.default)   ?  countlyConfig.logging.default : 'warning'
+    default:    (countlyConfig.logging && countlyConfig.logging.default)   ?  countlyConfig.logging.default : 'warn',
 }, undefined, function(config){ 
     var cfg = plugins.getConfig('logs'), msg = {cmd: 'log', config: cfg};
     if (process.send) { process.send(msg); }
