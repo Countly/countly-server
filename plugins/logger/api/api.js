@@ -90,7 +90,7 @@ var plugin = {},
 				common.db.collection('logs' + params.app_id).find(filter).toArray(function(err, items) {
 					if(err)
 						console.log(err);
-					common.returnOutput(params, items);
+					common.returnOutput(params, items || []);
 				});
 			});
 			return true;
