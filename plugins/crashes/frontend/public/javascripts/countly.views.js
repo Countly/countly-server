@@ -1380,10 +1380,12 @@ window.CrashgroupView = countlyView.extend({
                     $("#expandable").removeClass("collapsed");
                     $("#expand-crash").hide();
                 } else {
-                    $("#expandable").addClass("collapsed");
-                    $("#expand-crash").show();
+                    if($('#expand-crash:visible').length == 0){
+                        $("#expandable").addClass("collapsed");
+                        $("#expand-crash").show();
+                    }
                 }
-                
+
                 $('pre code').each(function(i, block) {
                     if(typeof Worker !== "undefined"){
                         var worker = new Worker(countlyGlobal["path"]+'/javascripts/utils/highlight/highlight.worker.js');
