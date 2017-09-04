@@ -965,6 +965,7 @@
 
         oSettings.aiDisplay = oSettings.aiDisplayMaster.slice();
         dTable.fnStandingRedraw();
+        dTable.trigger("table.refresh");
     };
 
     /**
@@ -1062,6 +1063,7 @@
                     dTable.fnClose( nTr );
                     dTable.aOpen.splice( i, 1 );
                 } );
+                dTable.trigger("row.close", id);
             });
         }
     };
