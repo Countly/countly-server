@@ -2376,7 +2376,7 @@ var AppRouter = Backbone.Router.extend({
             });
 
             $('.nav-search').on('input', "input", function(e){
-                var searchText = new RegExp($(this).val().toLowerCase()),
+                var searchText = new RegExp($(this).val().toLowerCase().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&')),
                     searchInside = $(this).parent().next().find(".searchable");
 
                 searchInside.filter(function () {
