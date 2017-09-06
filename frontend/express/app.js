@@ -852,7 +852,7 @@ app.get(countlyConfig.path+'/api-key', function (req, res, next) {
             }
             else{
                 var password = sha1Hash(user.pass);
-                var password_SHA5 = sha512Hash(req.body.password);
+                var password_SHA5 = sha512Hash(user.pass);
                 countlyDb.collection('members').findOne({$and : [{ $or: [ {"username":req.body.username}, {"email":req.body.username}]}, {$or: [{"password":password}, {"password" : password_SHA5}]}]}, function (err, member) {
                     if(member){
                         if(member.password === password) updateUserPasswordToSHA512(member._id, password_SHA5);
