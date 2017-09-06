@@ -381,6 +381,17 @@ var common = {},
     };
 
     /**
+    * Create HMAC sha512 hash from provided value and optional salt
+    * @param {string} str - value to hash
+    * @param {string=} addSalt - optional salt, uses ms timestamp by default
+    * @returns {string} HMAC sha1 hash
+    */
+    common.sha512Hash = function (str, addSalt) {
+        var salt = (addSalt) ? new Date().getTime() : '';
+        return crypto.createHmac('sha512', salt + '').update(str + '').digest('hex');
+    };
+
+    /**
     * Create MD5 hash from provided value
     * @param {string} str - value to hash
     * @returns {string} MD5 hash

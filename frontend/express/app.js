@@ -98,8 +98,17 @@ function sha1Hash(str, addSalt) {
     return crypto.createHmac('sha1', salt + "").update(str + "").digest('hex');
 }
 
+function sha512Hash(str, addSalt) {
+    var salt = (addSalt) ? new Date().getTime() : "";
+    return crypto.createHmac('sha512', salt + "").update(str + "").digest('hex');
+}
+
 function md5Hash(str) {
     return crypto.createHash('md5').update(str + "").digest('hex');
+}
+
+function updateUserPasswordToSHA512(id, password){
+    countlyDb.collection('members').update({ _id : id}, { $set : { password : password}});
 }
 
 function isGlobalAdmin(req) {
@@ -642,7 +651,7 @@ app.get(countlyConfig.path+'/reset/:prid', function (req, res, next) {
 
 app.post(countlyConfig.path+'/reset', function (req, res, next) {
     if (req.body.password && req.body.again && req.body.prid) {
-        var password = sha1Hash(req.body.password);
+        var password = sha512Hash(req.body.password);
 
         countlyDb.collection('password_reset').findOne({prid:req.body.prid}, function (err, passwordReset) {
             countlyDb.collection('members').findAndModify({_id:passwordReset.user_id}, {}, {'$set':{ "password":password }}, function (err, member) {
@@ -664,7 +673,7 @@ app.post(countlyConfig.path+'/forgot', function (req, res, next) {
         countlyDb.collection('members').findOne({"email":req.body.email}, function (err, member) {
             if (member) {
                 var timestamp = Math.round(new Date().getTime() / 1000),
-                    prid = sha1Hash(member.username + member.full_name, timestamp);
+                    prid = sha512Hash(member.username + member.full_name, timestamp);
                 member.lang = member.lang || req.body.lang || "en";
                 countlyDb.collection('password_reset').insert({"prid":prid, "user_id":member._id, "timestamp":timestamp}, {safe:true}, function (err, password_reset) {
                     countlyMail.sendPasswordResetInfo(member, prid);
@@ -686,7 +695,7 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
             res.redirect(countlyConfig.path+'/login');
         } else {
             if (req.body.full_name && req.body.username && req.body.password && req.body.email) {
-                var password = sha1Hash(req.body.password);
+                var password = sha512Hash(req.body.password);
                 
                 var doc = {"full_name":req.body.full_name, "username":req.body.username, "password":password, "email":req.body.email, "global_admin":true, created_at: Math.floor(((new Date()).getTime()) / 1000), password_changed: Math.floor(((new Date()).getTime()) / 1000)};
                 if(req.body.lang)
@@ -732,9 +741,13 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
 app.post(countlyConfig.path+'/login', function (req, res, next) {
     if (req.body.username && req.body.password) {
         var password = sha1Hash(req.body.password);
-
-        countlyDb.collection('members').findOne({$or: [ {"username":req.body.username}, {"email":req.body.username} ], "password":password}, function (err, member) {
+         var password_SHA5 = sha512Hash(req.body.password);
+        countlyDb.collection('members').findOne({$and : [{ $or: [ {"username":req.body.username}, {"email":req.body.username}]}, {$or: [{"password":password}, {"password" : password_SHA5}]}]}, function (err, member) {
             if (member) {
+                log.e("password", password);
+                log.e("member.password", member.password);
+                log.e("member.username", member.username);
+                if(member.password === password) updateUserPasswordToSHA512(member._id, password_SHA5);
                 if(member.locked)
                 {
                     plugins.callMethod("loginFailed", {req:req, res:res, next:next, data:req.body});
@@ -842,8 +855,10 @@ app.get(countlyConfig.path+'/api-key', function (req, res, next) {
             }
             else{
                 var password = sha1Hash(user.pass);
-                countlyDb.collection('members').findOne({$or: [ {"username":user.name}, {"email":user.name} ], "password":password}, function (err, member) {
+                var password_SHA5 = sha512Hash(req.body.password);
+                countlyDb.collection('members').findOne({$and : [{ $or: [ {"username":req.body.username}, {"email":req.body.username}]}, {$or: [{"password":password}, {"password" : password_SHA5}]}]}, function (err, member) {
                     if(member){
+                        if(member.password === password) updateUserPasswordToSHA512(member._id, password_SHA5);
                         if(member.locked)
                         {
                             plugins.callMethod("apikeyFailed", {req:req, res:res, next:next, data:{username:user.name}});
@@ -881,9 +896,11 @@ app.get(countlyConfig.path+'/sdks.js', function (req, res, next) {
 app.post(countlyConfig.path+'/mobile/login', function (req, res, next) {
     if (req.body.username && req.body.password) {
         var password = sha1Hash(req.body.password);
+        var password_SHA5 = sha512Hash(req.body.password);
 
-        countlyDb.collection('members').findOne({$or: [ {"username":req.body.username}, {"email":req.body.username} ], "password":password}, function (err, member) {
+        countlyDb.collection('members').findOne({$and : [{ $or: [ {"username":req.body.username}, {"email":req.body.username}]}, {$or: [{"password":password}, {"password" : password_SHA5}]}]}, function (err, member) {
             if (member) {
+                if(member.password === password) updateUserPasswordToSHA512(member._id, password_SHA5);
                 if(member.locked)
                 {
                     plugins.callMethod("mobileloginFailed", {req:req, res:res, next:next, data:req.body});
@@ -996,14 +1013,15 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
                     if (req.body.old_pwd && req.body.old_pwd.length) {
                         member.change.password = true;
                         var password = sha1Hash(req.body.old_pwd),
-                            newPassword = sha1Hash(req.body.new_pwd);
+                            password_SHA5 = sha512Hash(req.body.old_pwd),
+                            newPassword = sha512Hash(req.body.new_pwd);
     
                         if(newPassword != password && (plugins.getConfig('security').password_rotation == 0 || !member.password_history || member.password_history.indexOf(newPassword) === -1)){
                             var result = validatePassword(req.body.new_pwd);
                             if(result === false){
                                 updatedUser.password = newPassword;
                                 updatedUser.password_changed = Math.round(new Date().getTime()/1000);
-                                countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid), "password":password}, {'$set':updatedUser, $push:{password_history:{$each:[newPassword], $slice:-parseInt(plugins.getConfig('security').password_rotation)}}}, {safe:true}, function (err, result) {
+                                countlyDb.collection('members').update({"_id":countlyDb.ObjectID(req.session.uid), $or:[{"password":password}, {"password" : password_SHA5}]}, {'$set':updatedUser, $push:{password_history:{$each:[newPassword], $slice:-parseInt(plugins.getConfig('security').password_rotation)}}}, {safe:true}, function (err, result) {
                                     if ( result &&  result.result &&  result.result.ok &&  result.result.nModified > 0 && !err) {
                                         plugins.callMethod("userSettings", {req:req, res:res, next:next, data:member});
                                         res.send(updatedUser.password_changed+"");

@@ -86,7 +86,7 @@ var usersApi = {},
 
         function createUser() {
             var passwordNoHash = newMember.password;
-            newMember.password = common.sha1Hash(newMember.password);
+            newMember.password = common.sha512Hash(newMember.password);
             newMember.password_changed = 0;
             newMember.created_at = Math.floor(((new Date()).getTime()) / 1000); //TODO: Check if UTC
             newMember.admin_of = newMember.admin_of || [];
@@ -143,7 +143,7 @@ var usersApi = {},
 
         if (updatedMember.password) {
             passwordNoHash = updatedMember.password;
-            updatedMember.password = common.sha1Hash(updatedMember.password);
+            updatedMember.password = common.sha512Hash(updatedMember.password);
             if(params.member._id !== params.qstring.args.user_id){
                 updatedMember.password_changed = 0;
             }
