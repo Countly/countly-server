@@ -744,9 +744,6 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
          var password_SHA5 = sha512Hash(req.body.password);
         countlyDb.collection('members').findOne({$and : [{ $or: [ {"username":req.body.username}, {"email":req.body.username}]}, {$or: [{"password":password}, {"password" : password_SHA5}]}]}, function (err, member) {
             if (member) {
-                log.e("password", password);
-                log.e("member.password", member.password);
-                log.e("member.username", member.username);
                 if(member.password === password) updateUserPasswordToSHA512(member._id, password_SHA5);
                 if(member.locked)
                 {
