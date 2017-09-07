@@ -118,7 +118,19 @@ window.PluginsView = countlyView.extend({
             });
         }
     },
-    refresh:function () {},
+    refresh:function (Refreshme) {
+        if(Refreshme)
+        {
+            var self = this;
+            return $.when(this.beforeRender()).then(function () {
+                if (app.activeView != self) {
+                    return false;
+                }
+                CountlyHelpers.refreshTable(self.dtable, countlyPlugins.getData());
+                app.localize();  
+            });
+        }
+    },
     togglePlugin: function(plugins){
         var self = this;
         var overlay = $("#overlay").clone();
