@@ -463,6 +463,15 @@ var common          = require('../../../../api/utils/common.js'),
             msg.date = null;
         }
 
+        if (params.qstring.args.expiryDate) {
+            if ((params.qstring.args.expiryDate + '').length == 10) {
+                params.qstring.args.expiryDate *= 1000;
+            }
+            msg.expiryDate = moment.utc(params.qstring.args.expiryDate).toDate();
+        } else {
+            msg.expiryDate = null;
+        }
+
         if (typeof params.qstring.args.tz === 'undefined') {
             params.qstring.args.tz = false;
         }
@@ -559,6 +568,7 @@ var common          = require('../../../../api/utils/common.js'),
                 geo: geo ? msg.geo : undefined,
                 test: msg.test || false,
                 date: msg.date || new Date(),
+                expiryDate: msg.expiryDate,
                 tz: msg.tz
             });
 

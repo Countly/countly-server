@@ -66,7 +66,7 @@ class Note {
 			error: null,
 		};
 
-		this.expiryDate = parseDate(data.expiryDate) || new Date(Date.now() + DEFAULT_EXPIRY);     // one week by default
+		this.expiryDate = data.expiryDate ? parseDate(data.expiryDate) : data.date ? new Date(data.date.getTime() + DEFAULT_EXPIRY) : new Date(Date.now() + DEFAULT_EXPIRY);     // one week by default
 		this.created = parseDate(data.created) || new Date();
 		this.build = data.build;
 	}
@@ -409,6 +409,7 @@ module.exports = {
 	Platform: Platform,
 	Status: Status,
 	Note: Note,
-	AppSubNote: AppSubNote
+	AppSubNote: AppSubNote,
+	DEFAULT_EXPIRY: DEFAULT_EXPIRY
 };
 
