@@ -1,0 +1,151 @@
+#plugin-upload-drop
+{
+    width:100%;
+    height: 500px;
+    background-color:#ffffff;
+    border: 1px dashed #d5d5d5;
+    border-radius: 2px;
+    position:relative;
+    
+}
+#plugin-upload-drop.file-selected
+{
+    border: 1px solid #d5d5d5;
+}
+
+#plugin-upload-drop.file-hovered
+{
+    background-color: rgba(33,181,10,0.03);
+    border: 1px dashed #21B50A;
+}
+
+
+#plugin-upload-drop.file-selected .dz-message,#plugin-upload-drop.file-selected .fallback
+{
+    display:none;
+}
+.dz-message
+{
+    cursor:pointer;
+}
+.dz-message .arrow,.fallback .arrow
+{
+    width: 39px;
+    height: 46px;
+    margin: 0 auto;
+    background-image: url("../images/plugin-upload/arrow.svg");
+    background-repeat: no-repeat;
+}
+
+.dz-message,.fallback,.dz-filechosen
+{
+    height: 160px;
+    width: 100%;
+    margin-top: -80px;
+    position: absolute;
+    top: 50%;
+    padding: 5px 0;
+}
+
+.fallback
+{
+     background-color: #ffffff;
+}
+.dz-filechosen
+{
+    height: 126px;
+    margin-top: -63px;
+    background-color: transparent;
+}
+
+.dz-file-preview p
+{
+    font-size: 15px;
+    line-height: 15px;
+    text-align:center;
+    margin:0;
+    padding: 0;
+}
+
+.dz-file-preview .fa-archive
+{
+    font-size: 45px;
+    line-height: 45px;
+    color: #acacac;
+    margin-bottom: 25px;
+}
+p.remove
+{
+    color: #d67778;
+    margin-top: 20px;
+    cursor:pointer;
+    font-size:12px;
+}
+.fa-trash
+{
+    font-size: 15px;
+}
+
+.dz-message p,.fallback p
+{
+    text-align: center;  
+    font-size: 12px;
+    line-height:12px;
+}
+p.fline
+{
+    text-transform: uppercase;
+    color: #c6c6c6;
+    padding: 0;
+    margin: 15px 0;
+
+}
+p.sline
+{
+    font-size: 17px;
+    line-height: 17px;
+    color: #737373; 
+}
+p.sline .browse
+{
+   color: #2eb52c;
+   text-decoration:underline;
+}
+p.tline
+{
+        font-size: 12px;
+    line-height: 12px;
+}
+.pluginup-button
+{
+    background-color: #96d796;
+    height: 14px;
+    border-radius: 2px;
+    color: #f5faf5;
+    font: 12px Ubuntu,Helvetica,sans-serif;
+    padding: 13px 0px;
+    text-align: center;
+    margin: 33px 0 0 0;
+    line-height: 12px;
+    float:none;
+   
+}
+
+.browseme
+{
+    position: relative;
+    
+}
+.browseme input
+{
+     position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    font-size: 1;
+    width:0;
+    height: 100%;
+    opacity: 0;
+    cursor:ponter;
+}   
