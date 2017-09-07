@@ -104,6 +104,16 @@
         countlyCommon.ACTIVE_APP_KEY = countlyGlobal['apps'][appId].key;
         countlyCommon.ACTIVE_APP_ID = appId;
         store.set("countly_active_app", appId);
+        $.ajax({
+            type: "POST",
+            url: countlyGlobal["path"] + "/user/settings/active-app",
+            data: {
+                "username": countlyGlobal["member"].username,
+                "appId": appId,
+                 _csrf: countlyGlobal['csrf_token']
+            },
+            success: function (result) {}
+        });
     };
     
     /**
