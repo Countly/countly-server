@@ -147,7 +147,6 @@ for(var i=0; i<ext.length; i++)
         if(key=='existing_name')
         {
             var dir = path.resolve(__dirname + '/../../plugins.ee.json');
-            console.log(dir);
             if (fs.existsSync(dir))
                 addTest(key,ext[i],testnames[key],key);
         }

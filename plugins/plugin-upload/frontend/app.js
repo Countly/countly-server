@@ -357,76 +357,81 @@ function extract_files(ext,target_path)
 	plugin.init = function(app, countlyDb){
         validate_reset();//checks if we are not in neverending crashing-restarting loop
         app.post(countlyConfig.path+'/plugins/plugin-upload', function (req, res, next) {
-        
-            plugindata={};
-            package_name=''; 
-            console.log(log);
-            if(!req){res.end("nofile");return true;}
-            if(!req.files){res.end("nofile");return true;}
-            if(!req.files.new_plugin_input) {res.end("nofile");return true;}
-        
-            //upload folder
-            var mydir = path.resolve(__dirname,"");
-            var dir = path.resolve(__dirname + '/upload');
-            if (!fs.existsSync(dir)) {
-                try {fs.mkdirSync(dir, 0744);}catch(err){log.e(err.message);}
-            }
-            //folder for extracted data
-            var dir = path.resolve(__dirname + '/upload/unpacked');
-            if (!fs.existsSync(dir)) {
-               try {fs.mkdirSync(dir, 0744);}catch(err){log.e(err.message);}
-            }
-
-            var tmp_path = req.files.new_plugin_input.path;
-            var target_path = path.resolve(__dirname + '/upload/'+req.files.new_plugin_input.name);
-            var plain_name_array = req.files.new_plugin_input.name.split(".");
-
-            var ext="";
+            if(req.session && req.session.gadm)
+            {
+                plugindata={};
+                package_name=''; 
+                if(!req){res.end("nofile");return true;}
+                if(!req.files){res.end("nofile");return true;}
+                if(!req.files.new_plugin_input) {res.end("nofile");return true;}
             
-            if(plain_name_array.length<2)
-            {
-                fs.unlink(tmp_path, function () {});
-                res.send("badformat");
-                cleanup().then(function(){ return true;});
-            }
-            else
-            {
-                var ext=plain_name_array[1];//zip tar tar.gz tgz
-                if (ext != "zip" && ext != "tar" && ext != "tgz")
+                //upload folder
+                var mydir = path.resolve(__dirname,"");
+                var dir = path.resolve(__dirname + '/upload');
+                if (!fs.existsSync(dir)) {
+                    try {fs.mkdirSync(dir, 0744);}catch(err){log.e(err.message);}
+                }
+                //folder for extracted data
+                var dir = path.resolve(__dirname + '/upload/unpacked');
+                if (!fs.existsSync(dir)) {
+                   try {fs.mkdirSync(dir, 0744);}catch(err){log.e(err.message);}
+                }
+
+                var tmp_path = req.files.new_plugin_input.path;
+                var target_path = path.resolve(__dirname + '/upload/'+req.files.new_plugin_input.name);
+                var plain_name_array = req.files.new_plugin_input.name.split(".");
+
+                var ext="";
+                
+                if(plain_name_array.length<2)
                 {
                     fs.unlink(tmp_path, function () {});
                     res.send("badformat");
                     cleanup().then(function(){ return true;});
-                }   
-            }
-            
-            var is = fs.createReadStream(tmp_path);
-            var os = fs.createWriteStream(target_path);
-            is.pipe(os);
-            is.on('end',function() {
-                fs.unlink(tmp_path, function(){});
-            });
-            os.on('finish',function() {
-                
-                edir = path.resolve(__dirname + '/upload/unpacked/');
-                extract_files(ext,target_path)
-                .then(function(){ return validate_files(edir,app,countlyDb);})
-                .then(
-                    function(result)
+                }
+                else
+                {
+                    var ext=plain_name_array[1];//zip tar tar.gz tgz
+                    if (ext != "zip" && ext != "tar" && ext != "tgz")
                     {
-                        cleanup()
-                        .then( function(){
-                            plugins.callMethod("logAction", {req:req, user:{_id:req.session.uid, email:req.session.email}, action:"plugin_uploaded", data:plugindata});
-                            res.send('Success.'+package_name);
-                        });
-                    },
-                    function(err) {
-                        cleanup().then( function(){res.send(err.message)});
-                    }
-                );
-            });  
+                        fs.unlink(tmp_path, function () {});
+                        res.send("badformat");
+                        cleanup().then(function(){ return true;});
+                    }   
+                }
+                
+                var is = fs.createReadStream(tmp_path);
+                var os = fs.createWriteStream(target_path);
+                is.pipe(os);
+                is.on('end',function() {
+                    fs.unlink(tmp_path, function(){});
+                });
+                os.on('finish',function() {
+                    
+                    edir = path.resolve(__dirname + '/upload/unpacked/');
+                    extract_files(ext,target_path)
+                    .then(function(){ return validate_files(edir,app,countlyDb);})
+                    .then(
+                        function(result)
+                        {
+                            cleanup()
+                            .then( function(){
+                                plugins.callMethod("logAction", {req:req, user:{_id:req.session.uid, email:req.session.email}, action:"plugin_uploaded", data:plugindata});
+                                res.send('Success.'+package_name);
+                            });
+                        },
+                        function(err) {
+                            cleanup().then( function(){res.send(err.message)});
+                        }
+                    );
+                });
+            }
+            else
+            {
+                res.send(false);
+            }
         });
-	};
+    }
 }(plugin));
 
 module.exports = plugin;
