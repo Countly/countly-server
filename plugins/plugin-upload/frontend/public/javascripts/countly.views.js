@@ -21,6 +21,23 @@ if(!production)
     CountlyHelpers.loadJS("plugin-upload/javascripts/dropzone.js");
 }
 
+function check_ext(file)
+{
+    var ee = file.split('.');
+    if(ee.length==2)
+    {
+        if(ee[1]=='tar' || ee[1]=='zip' || ee[1]=='tgz')
+        {
+            return true;
+        }
+    }
+    else if(ee.length==3 && ee[1]=='tar' && ee[2] == 'gz')
+    {
+        return true;
+    }
+     CountlyHelpers.alert(jQuery.i18n.map["plugin-upload.badformat"], "red");
+    return false;
+}
 
 function show_me(myname)
 {//sometimes it gets called a litle bit too soon. 
@@ -50,10 +67,14 @@ if(countlyGlobal["member"].global_admin){
                 
                 myDropzone = new Dropzone("#plugin-upload-drop", {url:'/',autoQueue:false,param_name:"new_plugin_input",parallelUploads:0,maxFiles:1,
                     addedfile: function(file) {
-                        myDropzone.disable();
-                        $('#plugin-upload-drop').removeClass('file-hovered');
-                        $('#plugin-upload-drop').addClass('file-selected');
-                        $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">'+file.name+'</p><p class="remove" id="remove-files"><i class="fa fa-trash"  aria-hidden="true"></i> '+jQuery.i18n.map["plugin-upload.remove"]+'</p></div>');
+                        if(check_ext(file.name))
+                        {
+                            myDropzone.disable();
+                            $('#plugin-upload-drop').removeClass('file-hovered');
+                            $('#plugin-upload-drop').addClass('file-selected');
+                            $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">'+file.name+'</p><p class="remove" id="remove-files"><i class="fa fa-trash"  aria-hidden="true"></i> '+jQuery.i18n.map["plugin-upload.remove"]+'</p></div>');
+                            $('#upload-new-plugin').removeClass('mydisabled');
+                        }
                     },
                     dragover:function(e)
                     {
@@ -80,34 +101,42 @@ if(countlyGlobal["member"].global_admin){
                 });
                 //fallback(if drag&drop not available)
                 $("#new_plugin_input").change(function (){
-                     $('#plugin-upload-drop').addClass('file-selected');
-                     $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">'+$(this).val()+'</p></div>');
-                     var pp = $(this).val().split('\\');
+
+                    var pp = $(this).val().split('\\');
+                    if(check_ext(pp[pp.length-1]))
+                    {
+                        
+                        $('#plugin-upload-drop').addClass('file-selected');
+                        $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">'+$(this).val()+'</p></div>');
                      
-                      $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">'+ pp[pp.length-1]+'</p><p class="remove" id="remove-files"><i class="fa fa-trash"  aria-hidden="true"></i> '+jQuery.i18n.map["plugin-upload.remove"]+'</p></div>');
-                     
+                        $(".dz-filechosen").html('<div class="dz-file-preview"><p><i class="fa fa-archive" aria-hidden="true"></i></p><p class="sline">'+ pp[pp.length-1]+'</p><p class="remove" id="remove-files"><i class="fa fa-trash"  aria-hidden="true"></i> '+jQuery.i18n.map["plugin-upload.remove"]+'</p></div>');
+                        $('#upload-new-plugin').removeClass('mydisabled');
+                    }
                 });
                 
-                $('.dz-filechosen').on('click', function(e) {
-                   
-                       
-                     if(e.target.id== 'remove-files')
-                     {
-                         
-                    $('#plugin-upload-drop').removeClass('file-selected');
-                       $('.dz-filechosen').html('');
-                       
-                        
-                       if(typeof $("#new_plugin_input")!== 'undefined')
-                       {
+                $('.dz-filechosen').on('click', function(e) { 
+                    if(e.target.id== 'remove-files')
+                    { 
+                        $('#plugin-upload-drop').removeClass('file-selected');
+                        $('.dz-filechosen').html('');
+                        if(typeof $("#new_plugin_input")!== 'undefined')
+                        {
                            $("#new_plugin_input").replaceWith($("#new_plugin_input").val('').clone(true));
-                       }
-                       if(myDropzone){myDropzone.removeAllFiles(); myDropzone.enable();}
-                       }
+                        }
+                         $('#upload-new-plugin').addClass('mydisabled');
+                         
+                        if($('.fallback').length==0){myDropzone.removeAllFiles(); myDropzone.enable();}
+                       
+                    }
                 });
 
    
                 $("#upload-new-plugin").click(function () {
+                    if($("#upload-new-plugin").hasClass("mydisabled"))
+                    {
+                        return;
+                    }
+                    
                     $(".cly-drawer").removeClass("open editing");
                     $("#plugin-upload-api-key").val(countlyGlobal['member'].api_key);
                     $("#plugin-upload-app-id").val(countlyCommon.ACTIVE_APP_ID);
@@ -129,6 +158,7 @@ if(countlyGlobal["member"].global_admin){
                                 formData.push({ name:'new_plugin_input', value:myDropzone.files[myDropzone.files.length-1] });
                                 
                             }
+                            
                              
                     
                         },
@@ -141,13 +171,13 @@ if(countlyGlobal["member"].global_admin){
                                 {
                                     $("#new_plugin_input").replaceWith($("#new_plugin_input").val('').clone(true));
                                 }
-                                else
-                                {
-                                    if(myDropzone)(myDropzone.enable());
-                                }
+                                
+                                if($('.fallback').length==0)(myDropzone.enable());
+                                
+                                
                                 $('#plugin-upload-drop').removeClass('file-selected');
                                 $('.dz-filechosen').html('');
-                                
+                                $('#upload-new-plugin').addClass('mydisabled');
                                 
                                 
                     

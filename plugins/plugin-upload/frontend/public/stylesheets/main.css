@@ -118,7 +118,7 @@ p.tline
 }
 .pluginup-button
 {
-    background-color: #96d796;
+    
     height: 14px;
     border-radius: 2px;
     color: #f5faf5;
@@ -127,8 +127,14 @@ p.tline
     text-align: center;
     margin: 33px 0 0 0;
     line-height: 12px;
-    float:none;
-   
+    float:none;  
+    background-color: #2EB52B
+}
+
+#upload-new-plugin.mydisabled
+{
+    background-color: #96d796;
+    cursor: default;
 }
 
 .browseme
