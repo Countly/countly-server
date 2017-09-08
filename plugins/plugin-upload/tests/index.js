@@ -30,7 +30,7 @@ function addTest(name,ext,description,myvalue){
     
     describe("Cleanup:", function(){
         it("check if cleaned up -  "+name+" ("+ext+")", function(done){
-            var dir = path.resolve(__dirname + '/../../frontend/upload');
+            var dir = path.resolve(__dirname + '/../frontend/upload');
             if (!fs.existsSync(dir))
                 done();
             else
@@ -40,7 +40,7 @@ function addTest(name,ext,description,myvalue){
     
     describe("No new plugins", function(){
         it("check if plugin not created -  "+name+" ("+ext+")", function(done){
-            var dir = path.resolve(__dirname + '/../../../plugin_example');
+            var dir = path.resolve(__dirname + '/../../plugin_example');
             if (!fs.existsSync(dir))
                 done();
             else
@@ -67,7 +67,7 @@ function addOkTest(name,ext,description,pluginName){
     
     describe("Cleanup:", function(){
         it("check if cleaned up -  "+name+" ("+ext+")", function(done){
-            var dir = path.resolve(__dirname + '/../../frontend/upload');
+            var dir = path.resolve(__dirname + '/../frontend/upload');
             if (!fs.existsSync(dir))
                 done();
             else
@@ -144,7 +144,17 @@ for(var i=0; i<ext.length; i++)
 {
     for (var key in testnames) {
 
-        addTest(key,ext[i],testnames[key],key);
+        if(key=='existing_name')
+        {
+            var dir = path.resolve(__dirname + '/../../plugins.ee.json');
+            console.log(dir);
+            if (fs.existsSync(dir))
+                addTest(key,ext[i],testnames[key],key);
+        }
+        else
+        {
+            addTest(key,ext[i],testnames[key],key);
+        }
     }
     addTest("mistake",ext[i],"api.js systax error!","/frontend.app.js SyntaxError: Unexpected identifier");
 }
