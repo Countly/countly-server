@@ -1,0 +1,63 @@
+<div id="plugin-upload-widget-drawer" class="cly-drawer">
+    <div class="title">
+        <span data-localize="plugin-upload.upload-title">Add new plugin</span>
+        <div class="close"><i class="ion-ios-close-empty"></i></div>
+    </div>
+    <div class="details">
+    
+        <div class="settings section">
+        <form id="upload-plugin-form" action="/plugins/plugin-upload" enctype="multipart/form-data" method="post">
+            <div  id="plugin-upload-drop" action="/" enctype="multipart/form-data" method="post">
+                 
+                <div class='dz-filechosen'></div>
+                <div class='dz-message'>
+                    <div class='give-upload'>
+                    <div class='arrow'></div>
+                    <p class='fline' data-localize="plugin-upload.upload-title"></p>
+                    <p class='sline'>
+                        <span data-localize="plugin-upload.drag-drop"></span>
+                        <span data-localize="plugin-upload.browse" class="browse"></span></p>
+                    <p class='tline' data-localize="plugin-upload.upload-description"></p>
+                    </div>
+                </div>    
+                <div class="fallback">
+                    <div class='give-upload'>
+                    <div class='arrow'></div>
+                    <p class='fline' data-localize="plugin-upload.upload-title"></p>
+                    <p class='sline'>
+                        <span data-localize="plugin-upload.drag-drop-unable"></span></p>
+                        <p class='sline'>
+                        <span class='browseme'><span data-localize="plugin-upload.browse" class="browse" id="browseplugins"></span><input type="file" name="new_plugin_input" id="new_plugin_input" /><span></p>
+                    <p class='tline' data-localize="plugin-upload.upload-description"></p>
+                    </div>
+                </div>
+                
+            </div>
+            
+           
+        </form>
+        
+        
+           <!-- <div class="label" data-localize="common.select-type"></div>
+            <div id="single-app-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text"></div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width: 100%;">
+                    <div class='item' data-value="android">Android</div>
+                    <div class='item' data-value="ios">iOS</div>
+                </div>
+            </div>
+             <input type='hidden' name="platform" id="symbol-platform-id"/>
+             <input type='hidden' name="api_key" id="symbol-api-key"/>
+             <input type='hidden' name="app_id" id="symbol-app-id"/>-->
+        </div>
+       
+    </div>
+    <div class="buttons"><div id='upload-new-plugin' class='icon-button pluginup-button mydisabled' data-localize="plugin-upload.confirm" ></div></div>
+</div>
