@@ -66,6 +66,8 @@
                 iconToUse = "ion-close-circled";
                 break;
             case "warning":
+                iconToUse = "ion-alert-circled";
+                break;
             case "yellow":
             case "blue":
             case "purple":
