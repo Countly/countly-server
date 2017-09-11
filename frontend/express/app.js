@@ -541,6 +541,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             countlyTypeName: COUNTLY_NAMED_TYPE,
                             countlyTypeTrack: COUNTLY_TRACK_TYPE,
                             production: configs.production || false,
+                            pluginsSHA : sha1Hash(plugins.getPlugins()),
                             plugins:plugins.getPlugins(),
                             config: req.config,
                             path:countlyConfig.path || "",
