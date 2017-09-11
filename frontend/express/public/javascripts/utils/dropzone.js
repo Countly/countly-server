@@ -262,33 +262,26 @@
       and don't overwrite those options.
        */
       drop: function(e) {
-        this.removeClass("file-hovered");
         return this.element.classList.remove("dz-drag-hover");
       },
       dragstart: noop,
       dragend: function(e) {
-        this.addClass("file-hovered");
         return this.element.classList.remove("dz-drag-hover");
       },
       dragenter: function(e) {
-        this.addClass("file-hovered");
         return this.element.classList.add("dz-drag-hover");
       },
       dragover: function(e) {
-        this.addClass("file-hovered");
         return this.element.classList.add("dz-drag-hover");
       },
       dragleave: function(e) {
-        this.removeClass("file-hovered");
         return this.element.classList.remove("dz-drag-hover");
       },
       paste: noop,
       reset: function() {
-        this.removeClass("file-hovered");
         return this.element.classList.remove("dz-started");
       },
       addedfile: function(file) {
-        this.removeClass("file-hovered");
         var j, k, l, len, len1, len2, node, ref, ref1, ref2, removeFileEvent, removeLink, results;
         if (this.element === this.previewsContainer) {
           this.element.classList.add("dz-started");
