@@ -225,6 +225,7 @@ plugins.setConfigs("crashes", {
                     //build specific fields
                     "build_uuid",
                     "app_build",
+                    "binary_images",
                     
                     //custom key/values provided by developers
                     "custom"
