@@ -2437,6 +2437,9 @@ window.EventsView = countlyView.extend({
     showOnGraph: {"event-count":true, "event-sum":true, "event-dur":true},
     beforeRender: function() {},
     initialize:function () {
+        var previousEvent = countlyCommon.getPersistentSettings()["activeEvent_" + countlyCommon.ACTIVE_APP_ID];
+        if(previousEvent)
+            countlyEvent.setActiveEvent(previousEvent);
         this.template = Handlebars.compile($("#template-events").html());
     },
     pageScript:function () {

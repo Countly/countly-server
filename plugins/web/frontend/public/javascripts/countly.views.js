@@ -1,5 +1,6 @@
 window.WebDashboardView = countlyView.extend({
     selectedView:"#draw-total-sessions",
+    selectedMap : "#map-list-sessions",
     initialize:function () {
         this.curMap = "map-list-sessions";
         this.template = Handlebars.compile($("#dashboard-template").html());
@@ -50,6 +51,7 @@ window.WebDashboardView = countlyView.extend({
                 $(".map-list").find(".data-type-selector-group .selector").removeClass("active");
                 $(this).addClass("active");
                 self.curMap = $(this).attr("id");
+                self.selectedMap = "#" + self.curMap;
                 countlyLocation.refreshGeoChart(self.maps[self.curMap]);
                 self.countryList();
             });
@@ -163,6 +165,10 @@ window.WebDashboardView = countlyView.extend({
 
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
+
+            $('.data-type-selector-group').find('div').removeClass('active');
+            $(this.selectedMap).addClass('active');
+
             if(!countlyGlobal["config"].use_google){
                 $(".map-list.geo-switch").hide();
             }

@@ -150,6 +150,10 @@
     };
 
     countlyEvent.setActiveEvent = function (activeEvent, callback) {
+        var persistData = {};
+        persistData["activeEvent_" + countlyCommon.ACTIVE_APP_ID]  = activeEvent;
+        countlyCommon.setPersistentSettings(persistData);
+        
         _activeEventDb = {};
         _activeSegmentation = "";
         _activeSegmentations = [];
