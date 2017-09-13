@@ -223,9 +223,12 @@ plugins.setConfigs("crashes", {
                     "run", //running time since app start in seconds
                     
                     //build specific fields
-                    "build_uuid",
+                    "architecture",
                     "app_build",
                     "binary_images",
+                    "build_uuid",
+                    "executable_name",
+                    "load_address",
                     
                     //custom key/values provided by developers
                     "custom"
