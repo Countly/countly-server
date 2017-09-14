@@ -632,6 +632,7 @@ namespace apns {
 					stream->data = data;
 					// LOG_DEBUG("for " << stream->id << " data became " << stream->data << ", " << *stream->data);
 					stream->stream_id = 0;
+					stream->response = EMPTY_STR;
 					obj->queue.push(stream);
 
 					fed++;

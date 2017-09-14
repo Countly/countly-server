@@ -755,7 +755,9 @@ namespace apns {
 
 			uv_mutex_lock(stream->obj->main_mutex);
 			{
-				stream->obj->statuses.push_back(std::make_tuple(stream->id, stream->status, stream->response));
+				std::string cpid(stream->id);
+				std::string cpresp(stream->response);
+				stream->obj->statuses.push_back(std::make_tuple(cpid, stream->status, cpresp));
 			}
 			uv_mutex_unlock(stream->obj->main_mutex);
 

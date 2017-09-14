@@ -42,6 +42,7 @@ static std::string H2_APN_PATH("/3/device/");
 
 static std::string NGHTTP2_H2_ALPN = std::string("\x2h2");
 static std::string NGHTTP2_H2 = std::string("h2");
+static std::string EMPTY_STR = std::string("");
 
 #define BUFPOOL_CAPACITY 1000
 #define DUMMY_BUF_SIZE 100000
