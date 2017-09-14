@@ -29,17 +29,31 @@ class ConnectionResource extends EventEmitter {
 	}
 
 	init() {
-		this.options = {
-			hostname: 'android.googleapis.com',
-			port: 443,
-			path: '/gcm/send',
-			method: 'POST',
-			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json',
-				'Authorization': 'key=' + this._key,
-			},
-		};
+		if (this._key.length > 100) {
+			this.options = {
+				hostname: 'fcm.googleapis.com',
+				port: 443,
+				path: '/fcm/send',
+				method: 'POST',
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': 'application/json',
+					'Authorization': 'key=' + this._key,
+				},
+			};
+		} else {
+			this.options = {
+				hostname: 'android.googleapis.com',
+				port: 443,
+				path: '/gcm/send',
+				method: 'POST',
+				headers: {
+					'Accept': 'application/json',
+					'Content-Type': 'application/json',
+					'Authorization': 'key=' + this._key,
+				},
+			};
+		}
 
 		if (config.api.push_proxy) {
 			console.log('initializing special agent');
