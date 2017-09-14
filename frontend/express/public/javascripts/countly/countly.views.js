@@ -3136,13 +3136,3 @@ app.route("/manage/tasks","longTasks", function () {
 app.route("/analytics/events","events", function () {
 	this.renderWhenReady(this.eventsView);
 });
-
-app.addPageScript("#", function(){
-    $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
-        var last5char = options.url.substring(options.url.length - 5, options.url.length);
-        if(last5char === ".html"){
-            version = countlyGlobal.countlyVersion || "";
-            options.url = options.url + "?v=" + version;
-        }
-    });
-});
