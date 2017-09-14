@@ -512,6 +512,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                         _.extend(req.config, configs);
                         var countlyGlobal = {
                             countlyTitle:req.countly.title,
+                            countlyVersion:req.countly.version,
                             apps:countlyGlobalApps,
                             defaultApp:defaultApp,
                             admin_apps:countlyGlobalAdminApps,

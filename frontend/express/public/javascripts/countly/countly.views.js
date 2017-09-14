@@ -3141,7 +3141,7 @@ app.addPageScript("#", function(){
     $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
         var last5char = options.url.substring(options.url.length - 5, options.url.length);
         if(last5char === ".html"){
-            version = $('#version-info').length ? $('#version-info').attr('data-version') : "";
+            version = countlyGlobal.countlyVersion || "";
             options.url = options.url + "?v=" + version;
         }
     });
