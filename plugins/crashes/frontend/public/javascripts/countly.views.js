@@ -1471,7 +1471,7 @@ window.CrashgroupView = countlyView.extend({
                             }
 						str += '</tr>'+
                         '<tr>'+
-                        '<td colspan="5" class="stack-trace">';
+                        '<td colspan="4" class="stack-trace">';
                         str += '<pre>' + data.error + '</pre></td>'+
 						'</tr>';
                         if(data.logs){
@@ -1479,7 +1479,7 @@ window.CrashgroupView = countlyView.extend({
                                 '<td class="text-left">'+jQuery.i18n.map["crashes.logs"]+'</td>'+
                             '</tr>'+
                             '<tr>'+
-                            '<td colspan="5" class="stack-trace">'+
+                            '<td colspan="4">'+
                                 '<pre>' + data.logs + '</pre></td>'+
                             '</tr>';
                         }
