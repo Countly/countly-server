@@ -792,8 +792,16 @@ var AppRouter = Backbone.Router.extend({
             CountlyHelpers.initializeSelect();
             CountlyHelpers.initializeTextSelect();
             CountlyHelpers.initializeMultiSelect();
+            
+            $.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
+                var last5char = options.url.substring(options.url.length - 5, options.url.length);
+                if(last5char === ".html"){
+                    version = countlyGlobal.countlyVersion || "";
+                    options.url = options.url + "?v=" + version;
+                }
+            });
 
-            if (parseInt(countlyGlobal.config["session_timeout"])) {
+            if(parseInt(countlyGlobal.config["session_timeout"])){
                 var minTimeout, tenSecondTimeout, logoutTimeout, actionTimeout;
                 var shouldRecordAction = false;
                 var extendSession = function () {

@@ -151,6 +151,10 @@ class Credentials {
 
 								this.bundle = topics.length > 0 ? topics[0] : this.title.split(' ').pop();
 								this.topics = topics;
+
+								if (topics.length === 0) {
+									return reject('Not a universal (Sanbox & Production) certificate');
+								}
 								// this.certificate = buffer;
 
 								log.d('final topics %j, bundle %j', this.topics, this.bundle);

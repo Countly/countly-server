@@ -1427,8 +1427,6 @@ window.CrashgroupView = countlyView.extend({
 							'<td class="text-left">'+jQuery.i18n.map["crashes.state"]+'</td>';
                             if(data.custom)
                                 str += '<td class="text-left">'+jQuery.i18n.map["crashes.custom"]+'</td>';
-                            if(data.logs)
-                                str += '<td class="text-left">'+jQuery.i18n.map["crashes.logs"]+'</td>';
 						str += '</tr>'+
 						'<tr>'+
 							'<td class="text-left">'+data.app_version.replace(/:/g, '.')+'</td>'+
@@ -1471,17 +1469,21 @@ window.CrashgroupView = countlyView.extend({
                                 }
                                 str += '</td>';
                             }
-                            if(data.logs){
-                                str += '<td class="text-left">'+
-                                    '<pre>'+data.logs+'</pre>'+
-                                '</td>';
-                            }
 						str += '</tr>'+
                         '<tr>'+
-                        '<td colspan="5" class="stack-trace">';
+                        '<td colspan="4" class="stack-trace">';
                         str += '<pre>' + data.error + '</pre></td>'+
-						'</tr>'+
-						'</table>'+
+						'</tr>';
+                        if(data.logs){
+                            str += '<tr>'+
+                                '<td class="text-left">'+jQuery.i18n.map["crashes.logs"]+'</td>'+
+                            '</tr>'+
+                            '<tr>'+
+                            '<td colspan="4">'+
+                                '<pre>' + data.logs + '</pre></td>'+
+                            '</tr>';
+                        }
+						str += '</table>'+
 			'</div>';
 		}
 		return str;

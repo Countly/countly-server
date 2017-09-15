@@ -512,6 +512,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                         _.extend(req.config, configs);
                         var countlyGlobal = {
                             countlyTitle:req.countly.title,
+                            countlyVersion:req.countly.version,
                             apps:countlyGlobalApps,
                             defaultApp:defaultApp,
                             admin_apps:countlyGlobalAdminApps,
@@ -541,6 +542,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             countlyTypeName: COUNTLY_NAMED_TYPE,
                             countlyTypeTrack: COUNTLY_TRACK_TYPE,
                             production: configs.production || false,
+                            pluginsSHA : sha1Hash(plugins.getPlugins()),
                             plugins:plugins.getPlugins(),
                             config: req.config,
                             path:countlyConfig.path || "",
