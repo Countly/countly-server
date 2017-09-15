@@ -103,14 +103,24 @@ window.ViewsView = countlyView.extend({
                 var row = $(this);
                 
                 self.selectedView = row.find("td").first().text();
+
+                var persistentSettings = countlyCommon.getPersistentSettings()["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] || [];
+
                 if(_.contains(self.selectedViews, self.selectedView)){
                     var index = self.selectedViews.indexOf(self.selectedView);
                     self.selectedViews.splice(index, 1);
+                    persistentSettings.splice(persistentSettings.indexOf(self.selectedView), 1);
                     row.find(".color").css("background-color", "transparent");
                 }
                 else if(self.selectedViews.length < countlyCommon.GRAPH_COLORS.length){
                     self.selectedViews.push(self.selectedView);
+                    persistentSettings.push(self.selectedView);
                 }
+                
+                var persistData = {};
+                persistData["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] = persistentSettings;
+                countlyCommon.setPersistentSettings(persistData);
+
                 if(self.selectedViews.length == 0)
                     $("#empty-graph").show();
                 else
@@ -190,6 +200,28 @@ window.ViewsView = countlyView.extend({
                 self.selectedMetric = elID;
                 self.drawGraph();
             });
+            
+            var persistentSettings = countlyCommon.getPersistentSettings()['pageViewsItems_' + countlyCommon.ACTIVE_APP_ID] || [];
+            if(persistentSettings.length === 0){
+                for(var i in self.selectedViews){
+                    persistentSettings.push(self.selectedViews[i]);
+                }
+
+                var persistData = {};
+                persistData["pageViewsItems_" + countlyCommon.ACTIVE_APP_ID] = persistentSettings;
+                countlyCommon.setPersistentSettings(persistData);
+            }else{
+                self.selectedViews = [];
+                
+                for(var i in persistentSettings){
+                    var current = persistentSettings[i];
+
+                    if(self.selectedViews.indexOf(current) < 0)
+                        self.selectedViews.push(current)
+                }
+            }
+
+            $("#view-metric-"+this.selectedMetric).parents(".big-numbers").addClass("active");
             
             this.drawGraph();
         }
