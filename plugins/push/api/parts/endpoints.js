@@ -689,12 +689,19 @@ var common          = require('../../../../api/utils/common.js'),
             detected;
 
         log.d('mime', mime);
-        log.d('args.key', args.key);
+        log.d('args.key', args.key, args.key.indexOf(';base64,'));
         
         if (args.platform === N.Platform.APNS) {
             if (mime === 'data:application/x-pkcs12') {
-                detected = [creds.CRED_TYPE[N.Platform.APNS].UNIVERSAL, creds.CRED_TYPE[N.Platform.APNS].DEV, creds.CRED_TYPE[N.Platform.APNS].PROD];
+                detected = [creds.CRED_TYPE[N.Platform.APNS].UNIVERSAL];
             } else if (mime === 'data:application/x-pkcs8') {
+                detected = [creds.CRED_TYPE[N.Platform.APNS].TOKEN];
+            } else if (mime === 'data:') {
+                var error = creds.check_token(args.key.substring(args.key.indexOf(',') + 1), args.secret);
+                if (error) {
+                    common.returnMessage(params, 400, error);
+                    return false;
+                }
                 detected = [creds.CRED_TYPE[N.Platform.APNS].TOKEN];
             } else {
                 common.returnMessage(params, 400, 'Certificate must be in P12 or P8 formats');

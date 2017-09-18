@@ -906,6 +906,13 @@ table.d-table .nothing { opacity: 0.3; }
 .appmng-push .none { color: #B7B6B6; }
 .appmng-push .hint { padding-left: 12px; }
 
+.comp-push-box { display: block; position: relative; }
+.comp-push-box-cell { display: inline-block; width: 49%; }
+.d-table .comp-push-box-cell > input { width: 180px; }
+.d-table .comp-push-box-cell > label { margin: 0 0 5px 0; display: inline-block; width: 105px; }
+.d-table .comp-push-box-cell:nth-child(2n) > input { margin-left: 12px; }
+.d-table .comp-push-box-cell:nth-child(2n) > label { margin-left: 12px; }
+
 .comp-credentials input[type=file] {
     margin-bottom: 12px;
 }
@@ -921,15 +928,13 @@ table.d-table .nothing { opacity: 0.3; }
 .comp-credentials-edit a.icon-button.light {
     float: none;
     margin-top: -6px;
+    margin-left: 0;
     color: #2EB52B;
     box-shadow: inset 0 0 0 1px #2EB52B;
 }
 .comp-credentials-edit a.icon-button.light[disabled=true] {
     color: #D0D0D0;
     box-shadow: inset 0 0 0 1px #D0D0D0;
-}
-.comp-credentials-edit > div > .form {
-    margin-top: 12px;
 }
 
 .comp-enableable h4 {

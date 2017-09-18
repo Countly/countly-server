@@ -59,28 +59,48 @@ class ValidateJob extends job.TransientJob {
 
 			try {
 				var content = [{test: true}], 
-					status = {fed: 0};
+					status = {fed: 0, code: 0, error: ''};
 
 				this.resource.send(content, () => {
 					if (status.fed) {
 						this.resource.feed([]);
 					} else {
-						status.fed += this.resource.feed([[new db.ObjectID() + '', 'test_token_which_we_don\'t_care_about', 0]]);
+						status.fed += this.resource.feed([[new db.ObjectID() + '', 'c980bd69ea8c2e9e301ef0396c247290c2b8b5306b8686018c75d7dd2e7aa2de', 0]]);
 					}
 				}, (statuses) => {
-					var error = statuses.filter(s => s[1] < 0).length;
-					var unset = statuses.filter(s => s[1] === 0).map(s => s[0]);
-					var sent = statuses.length - error - unset.length;
+					var sent = statuses.filter(s => s[1] === 200  || (s[1] === -200 && s[3])).map(s => s[0]);
+					var reset = statuses.filter(s => s[1] === -200 && s[3]);
+					var unset = statuses.filter(s => s[1] === -200 && !s[3]).map(s => s[0]);
+					var errors = statuses.filter(s => !!s[2]);
 
-					log.d('Got %d statuses: %d sent, %d unset, %d error', statuses.length, sent, unset.length, error);
+					log.d('Got %d statuses: %d sent, %d unset, %d reset, %d errors', statuses.length, sent.length, unset.length, reset.length, errors.length);
+					log.d('statuses %j', statuses);
 
 					status.done += statuses.length;
 					status.sent += sent;
 
+					log.d('errors %j', errors);
+					if (errors.length === 1) {
+						status.code = errors[0][1];
+						status.error = errors[0][2];
+						try {
+							status.error = JSON.parse(status.error);
+							status.error = status.error.reason || status.error;
+						} catch (e) {
+							log.d(e);
+						}
+					}
+
 				}).then(() => {
-					log.d('[%d]: Send promise returned success in %s', process.pid, this._idIpc);
+					log.d('[%d]: Send promise returned success in %s with status %j', process.pid, this._idIpc, status);
 					if (!this.completed) {
-						done();
+						if (status.code === 400 && status.error === 'BadDeviceToken') {
+							done();
+						} else if (status.code >= 400 && status.code < 500) {
+							done(status.error ? this.credentials.platform + status.code + '+' + status.error : 'Error code ' + status.code);
+						} else {
+							done();
+						}
 					}
 				}, (err) => {
 					log.d('[%d]: Send promise returned error %j in %s', process.pid, err, this._idIpc);

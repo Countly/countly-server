@@ -26,9 +26,7 @@ const DB_USER_MAP = {
 const CRED_TYPE = {
 	[Platform.APNS]: {
 		UNIVERSAL: 'apn_universal',
-		TOKEN: 'apn_p8',
-		DEV: 'apn_dev',
-		PROD: 'apn_prod',
+		TOKEN: 'apn_token'
 	},
 
 	[Platform.GCM]: {
@@ -61,14 +59,12 @@ class Credentials {
 		var CT = CRED_TYPE[this.platform];
 		if (this.platform === Platform.APNS) {
 			if (test === false) {
-				return [CT.UNIVERSAL, CT.TOKEN, CT.PROD].indexOf(this.type) === -1 ? 
+				return [CT.UNIVERSAL, CT.TOKEN].indexOf(this.type) === -1 ? 
 					[] 
 					: [new SubCredentials(this, DB_USER_MAP.apn_prod, false)];
 			} else if (test === true) {
 				if ([CT.UNIVERSAL, CT.TOKEN].indexOf(this.type) !== -1) {
 					return [new SubCredentials(this, DB_USER_MAP.apn_dev, true), new SubCredentials(this, DB_USER_MAP.apn_adhoc, true)];
-				} else if (this.type === CT.DEV) {
-					return [new SubCredentials(this, DB_USER_MAP.apn_dev, true)];
 				} else {
 					return [];
 				}
@@ -100,7 +96,7 @@ class Credentials {
 					}
 
 					try {
-						if (this.platform === Platform.APNS && this.type !== CRED_TYPE[Platform.APNS].TOKEN) {
+						if (this.platform === Platform.APNS && this.type === CRED_TYPE[Platform.APNS].UNIVERSAL) {
 								var buffer = forge.util.decode64(this.key),
 									asn1 = forge.asn1.fromDer(buffer),
 									p12 = forge.pkcs12.pkcs12FromAsn1(asn1, false, this.secret || null),
@@ -158,6 +154,13 @@ class Credentials {
 								// this.certificate = buffer;
 
 								log.d('final topics %j, bundle %j', this.topics, this.bundle);
+						} else if (this.platform === Platform.APNS && this.type === CRED_TYPE[Platform.APNS].TOKEN) {
+							var ret = check_token(this.key, this.secret);
+							if (ret) {
+								return reject(ret);
+							} else {
+								this.key = forge.util.decode64(this.key);
+							}
 						}
 					} catch (e) {
 						log.e('Error while parsing certificate: %j', e);
@@ -237,11 +240,30 @@ class AppSubCredentials extends SubCredentials {
 	}
 }
 
+var check_token = function(base64, secret) {
+	var key = forge.util.decode64(base64);
+	if (!key) {
+		return 'Not a base64-encoded string';
+	}
+
+	if (key.indexOf('-----BEGIN PRIVATE KEY-----') === -1 || key.indexOf('-----END PRIVATE KEY-----') === -1) {
+		return 'Not a private key in P8 format in base64-encoded string';
+	}
+
+	var comps = secret.split('[CLY]');
+
+	if (comps.length !== 3) {
+		return 'Secret is not encoded correctly';
+	}
+
+};
+
 
 module.exports = {
 	Credentials: Credentials,
 	AppSubCredentials: AppSubCredentials,
 	CRED_TYPE: CRED_TYPE,
 	DB_MAP: DB_MAP,
-	DB_USER_MAP: DB_USER_MAP
+	DB_USER_MAP: DB_USER_MAP,
+	check_token: check_token
 };

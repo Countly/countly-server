@@ -66,7 +66,14 @@ namespace apns {
 		headers[4] = MAKE_NV("apns-expiration", expiration, NGHTTP2_NV_FLAG_NO_COPY_NAME | NGHTTP2_NV_FLAG_NO_COPY_VALUE);
 
 		// a bit hacky here, but easier...  NGHTTP2_NV_FLAG_NO_INDEX for this header means "do not send me", see h2::transmit in conn
-		headers[5] = MAKE_NV("apns-topic", topic, topic.empty() ? NGHTTP2_NV_FLAG_NO_INDEX : NGHTTP2_NV_FLAG_NONE);
+		headers[5] = MAKE_NV("apns-topic", topic, NGHTTP2_NV_FLAG_NONE);
+
+		if (certificate.empty()) {
+			LOG_DEBUG("no certificate, using " << passphrase);
+			headers[6] = MAKE_NV("authorization", passphrase, NGHTTP2_NV_FLAG_NONE);
+		} else {
+			headers[6] = MAKE_NV("authorization", passphrase, NGHTTP2_NV_FLAG_NO_INDEX);
+		}
 
 		global_data.source.fd = 0;
 		global_data.source.ptr = &hostname;
@@ -193,106 +200,6 @@ namespace apns {
 			auto persistentHandle = static_cast<PeristentHandle*>(handle->data);
 			auto obj = persistentHandle->conn;
 
-			// LOG_DEBUG("loading certificate from " << obj->certificate);
-
-			STACK_OF(X509) *ca = NULL;
-			PKCS12 *p12;
-			EVP_PKEY *key;
-			X509 *cert;
-			// FILE *fp = std::fopen(obj->certificate.c_str(), "r");
-			// if (!fp) {
-			// 	persistentHandle->error = "Certificate file doesn't exist";
-			// 	LOG_ERROR(persistentHandle->error);
-			// 	return;
-			// }
-			unsigned char *buffer;
-			size_t length;
-
-			base64_decode(obj->certificate.c_str(), &buffer, &length);
-
-			BIO *bio = BIO_new_mem_buf(buffer, length);
-			// BIO *b64 = BIO_new(BIO_f_base64());
-			// bio = BIO_push(b64, bio);
-			// BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL)
-
-			// bio = BIO_new(BIO_s_mem());
-			// BIO_puts(bio, obj->certificate.c_str());
-
-
-			SSL_load_error_strings();
-			SSL_library_init();
-			OpenSSL_add_all_algorithms();
-			ERR_load_crypto_strings();
-
-			p12 = d2i_PKCS12_bio(bio, NULL);
-			// p12 = d2i_PKCS12_fp(fp, NULL);
-			// std::fclose(fp);
-			
-			if (!p12) {
-				persistentHandle->error = "Error reading PKCS#12 file";
-				LOG_ERROR(persistentHandle->error);
-				return;
-			}
-
-			if (!PKCS12_parse(p12, obj->passphrase.c_str(), &key, &cert, &ca)) {
-				persistentHandle->error = "Invalid passphrase";
-				LOG_DEBUG(persistentHandle->error);
-				return;
-			}
-
-			PKCS12_free(p12);
-
-			// // int nid = OBJ_create("1.2.840.113635.100.6.3.6", "myObjectShortName", "myObjectLongName");
-			// // // int nid = OBJ_txt2nid("1.2.840.113635.100.6.3.6");
-
-			// // // int pos = X509v3_get_ext_by_NID(nid);
-			// // // LOG_DEBUG("stack: " << stack);
-
-			// // // find the extendedKeyUsage
-			// // int extIndex = X509_get_ext_by_NID(cert, nid, -1);
-			// // if (extIndex < 0) {
-			// //     std::cerr << "extendedKeyUsage is not present";
-			// // }
-			// // LOG_DEBUG("extIndex: " << extIndex);
-
-			// // // get the correct X.509 extension
-			// // X509_EXTENSION *ext = X509_get_ext(cert, extIndex);
-			// // if (!ext) {
-			// //     std::cerr << "'ext' is a nullptr";
-			// // 	return;
-			// // }
-			// // LOG_DEBUG("ext: " << ext);
-
-			// // ASN1_STRING *data =  X509_EXTENSION_get_data(ext);
-			// // unsigned char *utf = (unsigned char *)malloc(1000);
-			// // ASN1_STRING_to_UTF8(&utf, data);
-
-			// // LOG_DEBUG("get_data: " << data << ": " << utf);
-
-
-			// // // get the extendedKeyUsage
-			// // EXTENDED_KEY_USAGE *eku = static_cast<EXTENDED_KEY_USAGE*>(X509V3_EXT_d2i(ext));
-			// // if (!eku) {
-			// //     std::cerr << "'eku' is a nullptr";
-			// // 	return;
-			// // }
-
-			// // // print all OIDs
-			// // for (int i = 0; i < sk_ASN1_OBJECT_num(eku); i++) {
-			// //     char buffer[100];
-			// //     OBJ_obj2txt(buffer, sizeof(buffer), sk_ASN1_OBJECT_value(eku, i), 1); // get OID
-
-			// //     std::cout << "eku flag " << i << ": " << buffer << "\t - ";
-			// //     std::cout << OBJ_nid2ln(OBJ_obj2nid(sk_ASN1_OBJECT_value(eku, i))) << std::endl; // get OID name
-			// // }
-
-			// // return;
-
-			// // free used resource
-			// if (eku)
-			//     EXTENDED_KEY_USAGE_free(eku);
-
-
 			obj->ssl_ctx = SSL_CTX_new(SSLv23_client_method());
 			if (!obj->ssl_ctx) {
 				persistentHandle->error = ERR_error_string(ERR_get_error(), NULL);
@@ -306,15 +213,56 @@ namespace apns {
 			SSL_CTX_set_mode(obj->ssl_ctx, SSL_MODE_AUTO_RETRY);
 			SSL_CTX_set_mode(obj->ssl_ctx, SSL_MODE_RELEASE_BUFFERS);
 
-			if (SSL_CTX_use_certificate(obj->ssl_ctx, cert) != 1) {
-				persistentHandle->error = ERR_error_string(ERR_get_error(), NULL);
-				LOG_ERROR(persistentHandle->error);
-				return;
-			}
-			if (SSL_CTX_use_PrivateKey(obj->ssl_ctx, key) != 1) {
-				persistentHandle->error = ERR_error_string(ERR_get_error(), NULL);
-				LOG_ERROR(persistentHandle->error);
-				return;
+			LOG_DEBUG("loading certificate from " << obj->certificate);
+
+			if (obj->certificate.empty()) {
+				LOG_DEBUG("no certificate, using bearer " << obj->passphrase);
+			} else {
+				STACK_OF(X509) *ca = NULL;
+				PKCS12 *p12;
+				EVP_PKEY *key;
+				X509 *cert;
+				unsigned char *buffer;
+				size_t length;
+
+				base64_decode(obj->certificate.c_str(), &buffer, &length);
+
+				BIO *bio = BIO_new_mem_buf(buffer, length);
+
+
+				SSL_load_error_strings();
+				SSL_library_init();
+				OpenSSL_add_all_algorithms();
+				ERR_load_crypto_strings();
+
+				p12 = d2i_PKCS12_bio(bio, NULL);
+				// p12 = d2i_PKCS12_fp(fp, NULL);
+				// std::fclose(fp);
+				
+				if (!p12) {
+					persistentHandle->error = "Error reading PKCS#12 file";
+					LOG_ERROR(persistentHandle->error);
+					return;
+				}
+
+				if (!PKCS12_parse(p12, obj->passphrase.c_str(), &key, &cert, &ca)) {
+					persistentHandle->error = "Invalid passphrase";
+					LOG_DEBUG(persistentHandle->error);
+					return;
+				}
+
+				PKCS12_free(p12);
+
+				if (SSL_CTX_use_certificate(obj->ssl_ctx, cert) != 1) {
+					persistentHandle->error = ERR_error_string(ERR_get_error(), NULL);
+					LOG_ERROR(persistentHandle->error);
+					return;
+				}
+				if (SSL_CTX_use_PrivateKey(obj->ssl_ctx, key) != 1) {
+					persistentHandle->error = ERR_error_string(ERR_get_error(), NULL);
+					LOG_ERROR(persistentHandle->error);
+					return;
+				}
 			}
 
 			auto res = std::vector<unsigned char>(NGHTTP2_H2_ALPN.size());
@@ -638,6 +586,13 @@ namespace apns {
 					fed++;
 					// LOG_DEBUG("feed:pushed " << str.obj << " / "  << str.id << " / "  << str.path << " / "  << str.data_id << " / "  << str.stream_id);
 					// LOG_DEBUG(array->Get(0)->ToString() << " / "  << array->Get(1)->ToString() << " / "  << array->Get(2)->ToString());
+				}
+
+				if (obj->certificate.empty()) {
+					LOG_DEBUG("feed token was " << obj->passphrase);
+					obj->passphrase = std::string(*v8::String::Utf8Value(info[1]));
+					obj->headers[6] = MAKE_NV("authorization", obj->passphrase, NGHTTP2_NV_FLAG_NONE);
+					LOG_DEBUG("feed token now " << obj->passphrase);
 				}
 				// LOG_DEBUG("feed unblock " << obj->stats.feed_last);
 			}
