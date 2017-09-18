@@ -780,6 +780,7 @@ var AppRouter = Backbone.Router.extend({
             name: 'locale',
             cache: true,
             language: countlyCommon.BROWSER_LANG_SHORT,
+            countlyVersion : countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
             path: [countlyGlobal["cdn"] + 'localization/min/'],
             mode: 'map',
             callback: function () {
@@ -1031,6 +1032,7 @@ var AppRouter = Backbone.Router.extend({
                     name: 'locale',
                     cache: true,
                     language: countlyCommon.BROWSER_LANG_SHORT,
+                    countlyVersion : countlyGlobal.countlyVersion + "&" + countlyGlobal.pluginsSHA,
                     path: [countlyGlobal["cdn"] + 'localization/min/'],
                     mode: 'map',
                     callback: function () {
