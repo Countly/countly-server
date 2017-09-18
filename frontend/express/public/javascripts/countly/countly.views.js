@@ -2934,9 +2934,9 @@ window.LongTaskView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
             
             $(this.el).append('<div class="cly-button-menu tasks-menu" tabindex="1">' +
-                '<a class="item delete-task" data-localize="common.delete"></a>' +
                 '<a class="item view-task" href="" data-localize="common.view"></a>' +
                 '<a class="item rerun-task" data-localize="taskmanager.rerun"></a>' +
+                '<a class="item delete-task" data-localize="common.delete"></a>' +
             '</div>');
 
 			this.dtable = $('#data-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
