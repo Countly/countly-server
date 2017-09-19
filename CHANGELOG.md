@@ -1,3 +1,55 @@
+## Version 17.09
+
+**Fixes**
+* Serverside models caching data when not needed
+* Countries API endpoint was not returning data
+* Ignore Mac specific files when merging production files
+* Reconnect correctly to database if mongod process went down
+* Round up numbers in server side models if value is number
+* Density: round up values up to 2 decimal places
+* Crshes: Fixed link for crashes when segmenting
+* Reports: fix localization and period caches
+* Reports: fixed getting correct data when multiple jobs are running
+* Reports: added unique user estimation correction
+* Views: SDK might provide timestamp instead of duration fix
+* Configs: use dot as delimiter for config UI building, allowing plugins have - in the name
+* Configs: renamed warning to be consisted with internal setting
+* DBViewer: fix not unobfuscating internal events when there are no custom events
+
+**New Features**
+* Display API key in the top bar user dropdown
+* Users now have access to Management menu with read only accessible views
+* Invalidate sessions on password change
+* Add warning to changing app key
+* DBViewer: stream documents for larger outputs
+* Crashes: use worker to highlight stack traces
+* Increase upload size in nginx for larger files
+* API supports custom period of last days
+* Password hasing algorithm changed from sha1 to sha512
+* Show last used app even after logging out
+* Plugin upload: Allow uploading plugins from UI and attempt to recover on faulty plugin upload
+* Smart cache invalidation for more seemless upgrades and plugin state changes
+* UI changes: table dropdown options
+* Internal changes: more internal events, for management, datatables and subrows
+* Persistant settings for dashboard UI choices
+
+**Enterprise features**
+* Crash symbolication - allow symbolicating iOS and Android stack traces on separate remote server
+* White labeling - allowing you to change your logo and main colors from the UI
+* Alert - alerts you can set up being trigered by different conditions
+* Cohorts - grouping users in different groups and using that as segmentation option
+* Group permission management - allowing to setup permissions for multiple users simoultaniously
+* User Profiles: allow segmenting subsets of users from drill, funnels, etc
+* Attribution: add Universal Adword campaign support
+
+**Enterprise fixes**
+* Drill: fixed lists not switching to string input in some cases
+* User Profiles: improved meta exclusion from users table
+* User Profiles: round duration property in user profiles
+* User Profiles: hide longer id in the table
+* Attribution: correctly delete graph data on clear
+* Dashboards: round up number for number widget
+
 ## Version 17.05.1
 
 **Fixes**
