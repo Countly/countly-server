@@ -3,7 +3,7 @@
 
 <br/>
 
-![header2](http://count.ly/wp-content/uploads/2017/02/github_v4.png)
+![header2](http://count.ly/wp-content/uploads/2017/09/github-image-update.png)
 
 <br/>
 
