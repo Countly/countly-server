@@ -513,6 +513,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                         var countlyGlobal = {
                             countlyTitle:req.countly.title,
                             countlyVersion:req.countly.version,
+                            pluginsSHA : sha1Hash(plugins.getPlugins()),
                             apps:countlyGlobalApps,
                             defaultApp:defaultApp,
                             admin_apps:countlyGlobalAdminApps,
