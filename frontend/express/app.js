@@ -774,7 +774,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                                 }
                             }, function(a, c, b) {
                                 a = {};
-                                b && (b.in_user_id && !member.in_user_id && (a.in_user_id = b.in_user_id), b.in_user_hash && !member.in_user_hash && (a.in_user_hash = b.in_user_hash));
+                                b && (b.in_user_id && !member.in_user_id && (a.in_user_id = b.in_user_id), b.in_user_hash && (!member.in_user_hash || member.in_user_hash.length < 64) && (a.in_user_hash = b.in_user_hash));
                                 Object.keys(a).length && countlyDb.collection("members").update({_id:member._id}, {$set:a}, function() {})
                             });
                         });
