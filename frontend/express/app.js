@@ -705,7 +705,7 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
                 countlyDb.collection('members').insert(doc, {safe:true}, function (err, member) {
                     member = member.ops;
                     if (countlyConfig.web.use_intercom) {
-                        var options = {uri:"https://cloud.count.ly/s", method:"POST", timeout:4E3, json:{email:req.body.email, full_name:req.body.full_name, v:COUNTLY_VERSION, t:COUNTLY_TYPE}};
+                        var options = {uri:"https://try.count.ly/s", method:"POST", timeout:4E3, json:{email:req.body.email, full_name:req.body.full_name, v:COUNTLY_VERSION, t:COUNTLY_TYPE}};
                         request(options, function(a, c, b) {
                             a = {};
                             a.api_key = md5Hash(member[0]._id + (new Date).getTime());
@@ -757,7 +757,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                     if (countlyConfig.web.use_intercom && member['global_admin']) {
                         countlyStats.getOverall(countlyDb, function(statsObj){
                             request({
-                                uri:"https://cloud.count.ly/s",
+                                uri:"https://try.count.ly/s",
                                 method:"POST",
                                 timeout:4E3,
                                 json:{
