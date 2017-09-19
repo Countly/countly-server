@@ -17,6 +17,9 @@ cp /etc/nginx/nginx.conf $DIR/config/nginx.conf.backup.pre.17.09
 cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
 /etc/init.d/nginx restart
 
+#upgrade existing plugins
+countly upgrade plugin push
+
 #enable new plugins
 countly plugin enable cohorts
 countly plugin enable crash_symbolication
