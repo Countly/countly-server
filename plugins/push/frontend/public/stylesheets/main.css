@@ -916,6 +916,9 @@ table.d-table .nothing { opacity: 0.3; }
 .comp-credentials input[type=file] {
     margin-bottom: 12px;
 }
+.comp-credentials-edit .form > input {
+    margin-bottom: 18px;
+}
 .comp-credentials a.remove {
     margin-left: 12px;
     color: red;
