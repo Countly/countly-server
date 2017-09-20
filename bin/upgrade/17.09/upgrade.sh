@@ -18,7 +18,7 @@ cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
 sudo nginx -s reload
 
 #upgrade existing plugins
-countly upgrade plugin push
+countly plugin upgrade push
 
 #enable new plugins
 countly plugin enable cohorts
