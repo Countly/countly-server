@@ -33,6 +33,9 @@ window.component('credentials', function(credentials) {
 					ev.preventDefault();
 					this.app[this.platform] = [];
 					this.creds = new credentials.Credentials({type: this.creds.type()});
+					if (platform === 'apn') {
+						this.apn_type.value = this.creds.type;
+					}
 				}.bind(this);
 
 				this._cert = m.prop();
