@@ -1,8 +1,8 @@
 {
   "name": "plugin-upload",
   "title": "Plugin Upload",
-  "version": "0.0.1",
-  "description": "Plugin for uploading new plugins",
+  "version": "1.0.0",
+  "description": "Upload new plugins right from the user interface",
   "author": "Count.ly",
   "homepage": "https://count.ly/plugins/",
   "repository": {
