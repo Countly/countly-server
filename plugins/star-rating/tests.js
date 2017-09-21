@@ -42,5 +42,20 @@ describe('Testing Star rating plugin', function() {
             });
         });
     });
+    
+    describe('Reset app', function(){
+		it('should reset data', function(done){
+			var params = {app_id:APP_ID, period:"reset"};
+			request
+			.get('/i/apps/reset?api_key='+API_KEY_ADMIN+"&args="+JSON.stringify(params))
+			.expect(200)
+			.end(function(err, res){
+				if (err) return done(err);
+				var ob = JSON.parse(res.text);
+				ob.should.have.property('result', 'Success');
+				setTimeout(done, 5000)
+			});
+		});
+	});
 
 });
