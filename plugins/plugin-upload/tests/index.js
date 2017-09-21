@@ -150,6 +150,12 @@ for(var i=0; i<ext.length; i++)
             if (fs.existsSync(dir))
                 addTest(key,ext[i],testnames[key],key);
         }
+        else if(key=='enabled_plugin')
+        {
+            var dir = path.resolve(__dirname + '/../../plugins.ee.json');
+            if (!fs.existsSync(dir))
+                addTest(key,ext[i],testnames[key],key);
+        }
         else
         {
             addTest(key,ext[i],testnames[key],key);
