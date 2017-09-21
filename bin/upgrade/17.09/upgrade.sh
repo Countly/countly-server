@@ -21,6 +21,7 @@ sudo nginx -s reload
 countly plugin upgrade push
 
 #enable new plugins
+countly plugin enable alerts
 countly plugin enable cohorts
 countly plugin enable crash_symbolication
 countly plugin enable groups
