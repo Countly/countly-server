@@ -218,7 +218,7 @@ var usersApi = {},
 
         for (var i = 0; i < userIds.length; i++) {
             // Each user id should be 24 chars long and a user can't delete his own account
-            if (!userIds[i] || userIds[i] === params.member._id || userIds[i].length !== 24) {
+            if (!userIds[i] || userIds[i] === params.member._id + "" || userIds[i].length !== 24) {
                 continue;
             } else {
 				common.db.collection('members').findAndModify({'_id': common.db.ObjectID(userIds[i])},{},{},{remove:true},function(err, user){
