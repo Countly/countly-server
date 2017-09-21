@@ -115,6 +115,10 @@ countly_backupfiles (){
             mkdir -p files/plugins/$PLUGIN/extend ;
             cp -a $d/extend/. files/plugins/$PLUGIN/extend/ ;
         fi
+        if [ -d $d/crashsymbols ]; then
+            mkdir -p files/plugins/$PLUGIN/crashsymbols ;
+            cp -a $d/crashsymbols/. files/plugins/$PLUGIN/crashsymbols/ ;
+        fi
     done
     )
 }
@@ -193,6 +197,10 @@ countly_restorefiles (){
             if [ -d $d/extend ]; then
                 mkdir -p $DIR/../../plugins/$PLUGIN/extend ;
                 cp -a $d/extend/. $DIR/../../plugins/$PLUGIN/extend/ ;
+            fi
+            if [ -d $d/crashsymbols ]; then
+                mkdir -p $DIR/../../plugins/$PLUGIN/crashsymbols ;
+                cp -a $d/crashsymbols/. $DIR/../../plugins/$PLUGIN/crashsymbols/ ;
             fi
         done
         )
