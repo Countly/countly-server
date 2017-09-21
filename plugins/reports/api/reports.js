@@ -71,7 +71,10 @@ var metrics = {
         cache = cache || {};
         if(report && report.apps){
             db.collection('members').findOne({_id:db.ObjectID(report.user)}, function (err, member) {
-                member = member || {};
+                if(err || !member){
+                    callback("No data to report", {report:report});
+                    return;
+                }
                 report.apps = sortBy(report.apps, member.appSortList || []);
                 
                 var lang = member.lang || 'en';

@@ -255,6 +255,10 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
         common.db.collection("reports").update({}, {$pull:{apps:appId+""}}, { multi: true }, function(err, res){});
 	});
     
+    plugins.register("/i/users/delete", function(ob){
+        common.db.collection("reports").remove({user:common.db.ObjectID(ob.data._id)}, { multi: true }, function(err, res){});
+	});
+    
     function convertToTimezone(props){
         //convert time
         var date = new time.Date();
