@@ -86,6 +86,16 @@ countlyBrowser.getSegmentedData = function (browser) {
     return versionData;
 };
 
+countlyBrowser.fixBrowserVersion = function (val, data) {
+    var browsers = data || countlyBrowser.getMeta("browser");
+    for(var i = 0; i <  browsers.length; i++){
+        if(browsers[i] && val.indexOf("["+browsers[i].toLowerCase()+"]_") === 0){
+            return browsers[i]+" "+val.replace("["+browsers[i].toLowerCase()+"]_", "").replace(/:/g, ".");
+        }
+    }
+    return val;
+};
+
 countlyBrowser.getBrowserVersionData = function (browser) {
     browser = browser.toLowerCase();
     var data = countlyBrowser.getData(true, false, "browser_version").chartData;
