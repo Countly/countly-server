@@ -66,11 +66,11 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
                 
                 plugins.dispatch("/o/validate", {params:params, app:app});
                 
-                resolve();
+                resolve(callbackParam);
     
-                if (callbackParam) {
+                if (callback && callbackParam) {
                     callback(callbackParam, params);
-                } else {
+                } else if(callback){
                     callback(params);
                 }
             });
@@ -129,11 +129,11 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
                     return false;
                 }
   
-                resolve();
-                
-                if (callbackParam) {
+                resolve(callbackParam);
+    
+                if (callback && callbackParam) {
                     callback(callbackParam, params);
-                } else {
+                } else if(callback){
                     callback(params);
                 }
             });
@@ -182,11 +182,11 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
                 return false;
             }
             
-            resolve();
+            resolve(callbackParam);
     
-            if (callbackParam) {
+            if (callback && callbackParam) {
                 callback(callbackParam, params);
-            } else {
+            } else if(callback){
                 callback(params);
             }
         });
@@ -235,11 +235,11 @@ exports.validateUser = function (params, callback, callbackParam) {
                 return false;
             }
             
-            resolve();
-            
-            if (callbackParam) {
+            resolve(callbackParam);
+    
+            if (callback && callbackParam) {
                 callback(callbackParam, params);
-            } else {
+            } else if(callback){
                 callback(params);
             }
         });
