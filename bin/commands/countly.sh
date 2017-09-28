@@ -252,12 +252,17 @@ source $DIR/enabled/countly.sh
 
 #process command
 NAME=$1;
+SCRIPT=$2;
 if [ -n "$(type -t countly_$1)" ] && [ "$(type -t countly_$1)" = function ]; then
     shift;
     countly_${NAME} "$@";
 elif [ -f $DIR/scripts/$NAME.sh ]; then
     shift;
     bash $DIR/scripts/$NAME.sh "$@";
+elif [ -d $DIR/../../plugins/$NAME ] && [ -f $DIR/../../plugins/$NAME/scripts/$SCRIPT.sh ]; then
+    shift;
+    shift;
+    bash $DIR/../../plugins/$NAME/scripts/$SCRIPT.sh "$@";
 else
     echo "";
     echo "countly usage:";
