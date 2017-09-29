@@ -250,10 +250,10 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
 		return true;
 	});
     
-    plugins.register("/i/apps/delete", function(ob){
+    /*plugins.register("/i/apps/delete", function(ob){
 		var appId = ob.appId;
         common.db.collection("reports").update({}, {$pull:{apps:appId+""}}, { multi: true }, function(err, res){});
-	});
+	});*/
     
     plugins.register("/i/users/delete", function(ob){
         common.db.collection("reports").remove({user:common.db.ObjectID(ob.data._id)}, { multi: true }, function(err, res){});

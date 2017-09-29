@@ -67,18 +67,16 @@ window.ReportingView = countlyView.extend({
         
         var data = countlyReporting.getData();
         for(var i = 0; i < data.length; i++){
-            if(data[i].apps && data[i].apps.length){
-                data[i].appNames = CountlyHelpers.appIdsToNames(data[i].apps).split(", ");
-                if(data[i].hour < 10)
-                    data[i].hour = "0"+data[i].hour;
-                if(data[i].minute < 10)
-                    data[i].minute = "0"+data[i].minute;
-                
-                data[i].dayname = this.getDayName(data[i].day);
-                data[i].zoneName = zNames[data[i].timezone] || "(GMT+00:00) GMT (no daylight saving)";
-            }
+            data[i].appNames = CountlyHelpers.appIdsToNames(data[i].apps || []).split(", ");
+            if(data[i].hour < 10)
+                data[i].hour = "0"+data[i].hour;
+            if(data[i].minute < 10)
+                data[i].minute = "0"+data[i].minute;
+            
+            data[i].dayname = this.getDayName(data[i].day);
+            data[i].zoneName = zNames[data[i].timezone] || "(GMT+00:00) GMT (no daylight saving)";
         }
-        
+
         zoneNames.sort(function(a, b){
             a = parseFloat(a.split(")")[0].replace(":", ".").substring(4));
             b = parseFloat(b.split(")")[0].replace(":", ".").substring(4));
