@@ -2545,9 +2545,23 @@ var AppRouter = Backbone.Router.extend({
     }
 });
 
+Backbone.history || (Backbone.history = new Backbone.History);
+Backbone.history._checkUrl = Backbone.history.checkUrl;
+Backbone.history.urlChecks = [];
+Backbone.history.checkOthers = function(){
+    var proceed = true;
+    for(var i = 0; i < Backbone.history.urlChecks.length; i++){
+        if(!Backbone.history.urlChecks[i]())
+            proceed = false;
+    }
+    return proceed;
+};
+Backbone.history.checkUrl = function(){
+    if(Backbone.history.checkOthers())
+        Backbone.history._checkUrl();
+};
+
 if(countlyCommon.APP_NAMESPACE !== false){
-    Backbone.history || (Backbone.history = new Backbone.History);
-    Backbone.history._checkUrl = Backbone.history.checkUrl;
     Backbone.history._getFragment = Backbone.history.getFragment;
     Backbone.history.appIds = [];
     for(var i in countlyGlobal.apps){
@@ -2567,11 +2581,13 @@ if(countlyCommon.APP_NAMESPACE !== false){
         }
         else if(countlyCommon.ACTIVE_APP_ID !== app_id){
             app.switchApp(app_id, function(){
-                Backbone.history._checkUrl();
+                if(Backbone.history.checkOthers())
+                    Backbone.history._checkUrl();
             });
         }
         else{
-            Backbone.history._checkUrl();
+            if(Backbone.history.checkOthers())
+                Backbone.history._checkUrl();
         }
     };
     
