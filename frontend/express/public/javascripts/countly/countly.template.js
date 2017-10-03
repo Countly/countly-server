@@ -365,7 +365,7 @@ var AppRouter = Backbone.Router.extend({
                         change = false;
                         return false;
                     }
-                    else if ("#"+Backbone.history.fragment.indexOf(this.hash) == 0 && $(this).css('display') != 'none') {
+                    else if (("#"+Backbone.history.fragment).indexOf(this.hash) == 0 && $(this).css('display') != 'none') {
                         redirect = this.hash;
                         return false;
                     }
@@ -2301,6 +2301,7 @@ var AppRouter = Backbone.Router.extend({
             for (var i = 0; i < this.appSwitchCallbacks.length; i++) {
                 this.appSwitchCallbacks[i](appId);
             }
+            app.localize();
         }
     },
     onAppManagementSwitch: function (appId, type) {
