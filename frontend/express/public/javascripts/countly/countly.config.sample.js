@@ -54,3 +54,8 @@ countlyCommon.GRAPH_COLORS = ["#52A3EF", "#FF8700", "#0EC1B9", "#ed6262", "#edb7
 * @type {boolean} 
 */
 countlyCommon.CITY_DATA = true;
+/**
+* Append App Id to each internal dashboard hash URL, so each URL has its app context when being copied.
+* @type {boolean} 
+*/
+countlyCommon.APP_NAMESPACE = true;

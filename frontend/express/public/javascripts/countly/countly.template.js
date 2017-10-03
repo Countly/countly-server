@@ -321,6 +321,15 @@ var AppRouter = Backbone.Router.extend({
     * //you are at #/manage/systemlogs
     * app.navigate("#/crashes", true);
     */
+    switchApp:function(app_id, callback){
+      countlyCommon.setActiveApp(app_id);
+
+      $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
+      $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
+
+      app.onAppSwitch(app_id, true);
+      app.activeView.appChanged(callback);
+    },
     main: function (forced) {
         var change = true,
             redirect = false;
@@ -2536,4 +2545,52 @@ var AppRouter = Backbone.Router.extend({
     }
 });
 
+if(countlyCommon.APP_NAMESPACE !== false){
+    Backbone.history || (Backbone.history = new Backbone.History);
+    Backbone.history._checkUrl = Backbone.history.checkUrl;
+    Backbone.history._getFragment = Backbone.history.getFragment;
+    Backbone.history.appIds = [];
+    for(var i in countlyGlobal.apps){
+        Backbone.history.appIds.push(i);
+    }
+    Backbone.history.getFragment = function(){
+        var fragment = Backbone.history._getFragment();
+        if(fragment.indexOf("/"+countlyCommon.ACTIVE_APP_ID) === 0){
+            fragment = fragment.replace("/"+countlyCommon.ACTIVE_APP_ID, "");
+        }
+        return fragment;
+    };
+    Backbone.history.checkUrl = function(){
+        var app_id = Backbone.history._getFragment().split("/")[1] || "";
+        if(countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) === -1){
+            window.location.hash = "#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment();
+        }
+        else if(countlyCommon.ACTIVE_APP_ID !== app_id){
+            app.switchApp(app_id, function(){
+                Backbone.history._checkUrl();
+            });
+        }
+        else{
+            Backbone.history._checkUrl();
+        }
+    };
+    
+    //initial hash check
+    (function(){
+        var app_id = Backbone.history._getFragment().split("/")[1] || "";
+        if(countlyCommon.ACTIVE_APP_ID === app_id || Backbone.history.appIds.indexOf(app_id) !== -1){
+            //we have app id
+            if(app_id !== countlyCommon.ACTIVE_APP_ID){
+                // but it is not currently selected app, so let' switch
+                countlyCommon.setActiveApp(app_id);
+                $("#active-app-name").text(countlyGlobal["apps"][app_id].name);
+                $("#active-app-icon").css("background-image", "url('" + countlyGlobal["path"] + "appimages/" + app_id + ".png')");
+            }
+        }
+        else{
+            //add current app id
+            window.location.hash = "#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment();
+        }
+    })();
+}
 var app = new AppRouter();
