@@ -82,7 +82,7 @@ window.DBViewerView = countlyView.extend({
 				var filter = $(".collection-filter").val();
 				self.filter = filter;
 				store.set("countly_collectionfilter", self.filter);
-                if(window.location.hash === "#/manage/db/"+self.db+"/"+self.collection)
+                if(Backbone.history.fragment === "/manage/db/"+self.db+"/"+self.collection)
                     self.renderCollections();
                 else
                     app.navigate("#/manage/db/"+self.db+"/"+self.collection, true);

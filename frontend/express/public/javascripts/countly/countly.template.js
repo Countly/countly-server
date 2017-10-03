@@ -335,8 +335,8 @@ var AppRouter = Backbone.Router.extend({
             redirect = false;
         // detect app switch like
         //#/app/586e32ddc32cb30a01558cc1/analytics/events
-        if (location.hash.indexOf("#/app/") === 0) {
-            var app_id = location.hash.replace("#/app/", "");
+        if (Backbone.history.fragment.indexOf("/app/") === 0) {
+            var app_id = Backbone.history.fragment.replace("/app/", "");
             redirect = "#/";
             if (app_id && app_id.length) {
                 if (app_id.indexOf("/") !== -1) {
@@ -358,14 +358,14 @@ var AppRouter = Backbone.Router.extend({
                 }
             }
         }
-        else if (location.hash != "#/" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID]) {
+        else if (Backbone.history.fragment != "/" && countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID]) {
             $("#" + countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type + "-type a").each(function () {
                 if (this.hash != "#/" && this.hash != "") {
-                    if (location.hash == this.hash && $(this).css('display') != 'none') {
+                    if ("#"+Backbone.history.fragment == this.hash && $(this).css('display') != 'none') {
                         change = false;
                         return false;
                     }
-                    else if (location.hash.indexOf(this.hash) == 0 && $(this).css('display') != 'none') {
+                    else if ("#"+Backbone.history.fragment.indexOf(this.hash) == 0 && $(this).css('display') != 'none') {
                         redirect = this.hash;
                         return false;
                     }
@@ -377,7 +377,7 @@ var AppRouter = Backbone.Router.extend({
             app.navigate(redirect, true);
         }
         else if (change) {
-            if (location.hash != "#/")
+            if (Backbone.history.fragment != "/")
                 this.navigate("#/", true);
             else
                 this.dashboard();

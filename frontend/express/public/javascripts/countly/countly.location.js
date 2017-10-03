@@ -171,7 +171,7 @@
         }
 
         // This is how you handle regionClick and change zoom for only a specific country
-        if (countlyCommon.CITY_DATA !== false && location.hash === "#/analytics/countries") {
+        if (countlyCommon.CITY_DATA !== false && Backbone.history.fragment === "/analytics/countries") {
             google.visualization.events.addListener(_chart, 'regionClick', function (eventData) {
                 var activeAppCountry = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID].country;
                 if (activeAppCountry && eventData.region == activeAppCountry) {
