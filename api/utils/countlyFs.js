@@ -387,6 +387,25 @@ countlyFs.gridfs = {};
     };
     
     /**
+    * Get file stream by file id
+    * @param {string} category - collection from where to read data
+    * @param {string} id - file id provided upon creation
+    * @param {function} callback - function called when retrieving stream was completed or errored, providing error object as first param and filedata as second
+    * @example
+    * countlyFs.getStreamById("test", "AGPLv3", function(err, data){
+    *   console.log("Retrieved", err, data); 
+    * });
+    */
+    ob.getStreamById = function(category, id, callback){
+        db.onOpened(function(){
+            if(callback){
+                var bucket = new GridFSBucket(db._native, { bucketName: category });
+                callback(null, bucket.openDownloadStream(id));
+            }
+        });
+    };
+    
+    /**
     * Get handler for filesystem, which in case of GridFS is database connection
     * @returns {object} databse connection
     * @example
@@ -441,6 +460,14 @@ countlyFs.fs = {};
     * });
     */
     ob.saveFile = function(category, dest, source, options, callback){
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        
         var is = fs.createReadStream(source);
         var os = fs.createWriteStream(dest);
         is.pipe(os);
@@ -468,6 +495,14 @@ countlyFs.fs = {};
     * });
     */
     ob.saveData = function(category, dest, data, options, callback){
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        
         fs.writeFile(dest, data, function(err){
             if(callback)
                 callback(err);
@@ -493,10 +528,21 @@ countlyFs.fs = {};
     * });
     */
     ob.saveStream = function(category, dest, is, options, callback){
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        
         var os = fs.createWriteStream(dest);
         is.pipe(os);
-        if(callback)
-            os.on('finish', callback);
+        is.on('end',function() {});
+        os.on('finish',function() {
+            if(callback)
+                callback(); 
+        });
     };
     
     /**
