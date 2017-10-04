@@ -114,7 +114,13 @@ var countlyConfig = {
     * @property {string} input_encoding - how encryption input is encoded. Used as output for decrypting. Default utf-8.
     * @property {string} output_encoding - how encryption output is encoded. Used as input for decrypting. Default hex.
     */
-    encryption:{}
+    encryption:{},
+    
+    /**
+    * Specifies where to store files. Value "fs" means file system or basically storing files on hard drive. Another currently supported option is "gridfs" storing files in MongoDB database using GridFS. By default fallback to "fs";
+    * @type {string} [default=fs]
+    */
+    fileStorage:"fs"
 };
 
 // Set your host IP or domain to be used in the emails sent
