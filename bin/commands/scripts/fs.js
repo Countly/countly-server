@@ -21,7 +21,7 @@ function importFiles(pathToFolder, name, callback, prefix){
                         }, file+".");
                     }
                     else{
-                        countlyFs.gridfs.saveFile(name, prefix+file, cur_path, {id:file, writeMode:"overwrite"}, function(err){
+                        countlyFs.gridfs.saveFile(name, file, cur_path, {id:prefix+file, writeMode:"overwrite"}, function(err){
                             console.log("Storing file finished", prefix+file, err);
                             done();
                         });
@@ -46,8 +46,7 @@ function exportFiles(pathToFolder, name, callback){
                 countlyFs.gridfs.getStreamById(name, file._id, function(err, stream){
                     var dest = path.join(dir, file.filename);
                     if(name === "crash_symbols"){
-                        var id = file.filename.split(".").shift();
-                        file.filename = file.filename.replace(id+".", "");
+                        var id = file._id.split(".").shift();
                         dest = path.join(dir, id, file.filename);
                     }
                     countlyFs.fs.saveStream(name, dest, stream, function(err){
