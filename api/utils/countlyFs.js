@@ -95,6 +95,8 @@ countlyFs.gridfs = {};
     * Check if file exists
     * @param {string} category - collection where to store data
     * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
     * @param {function} callback - function called when we have result, providing error object as first param and boolean as second to indicate if file exists
     * @example
     * countlyFs.exists("test", "./CHANGELOG.md", function(err, exists){
@@ -102,9 +104,22 @@ countlyFs.gridfs = {};
     *       console.log("File exists");
     * });
     */
-    ob.exists = function(category, dest, callback){
-        var filename = dest.split(path.sep).pop();
-        db.collection(category+".files").findOne({ filename: filename }, {_id:1}, function(err, res){
+    ob.exists = function(category, dest, options, callback){
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        var query = {};
+        if(options.id){
+            query._id = options.id;
+        }
+        else{
+            query.filename = dest.split(path.sep).pop();
+        }
+        db.collection(category+".files").findOne(query, {_id:1}, function(err, res){
             if(callback)
                 callback(err, (res && res._id) ? true : false);
         });
@@ -215,35 +230,54 @@ countlyFs.gridfs = {};
     * @param {string} category - collection where to store data
     * @param {string} dest - file's destination
     * @param {string} source - source file
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
     * @param {function} callback - function called when renaming was completed or errored, providing error object as first param
     * @example
     * countlyFs.rename("test", "AGPLv3", "LICENSE.md", function(err){
     *   console.log("Finished", err);
     * });
     */
-    ob.rename = function(category, dest, source, callback){
+    ob.rename = function(category, dest, source, options, callback){
         var newname = dest.split(path.sep).pop();
         var oldname = source.split(path.sep).pop();
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        
         db.onOpened(function(){
-            db.collection(category+".files").findOne({ filename: oldname }, {_id:1}, function(err, res){
-                if(!err){
-                    if(res && res._id){
-                        var bucket = new GridFSBucket(db._native, { bucketName: category });
-                        bucket.rename(res._id, newname, function(error) {
+            if(options.id){
+                var bucket = new GridFSBucket(db._native, { bucketName: category });
+                bucket.rename(options.id, newname, function(error) {
+                    if(callback)
+                        callback(error);
+                });
+            }
+            else{
+                db.collection(category+".files").findOne({ filename: oldname }, {_id:1}, function(err, res){
+                    if(!err){
+                        if(res && res._id){
+                            var bucket = new GridFSBucket(db._native, { bucketName: category });
+                            bucket.rename(res._id, newname, function(error) {
+                                if(callback)
+                                    callback(error);
+                            });
+                        }
+                        else{
                             if(callback)
-                                callback(error);
-                        });
+                                callback(new Error("File does not exist"));
+                        }
                     }
                     else{
                         if(callback)
-                            callback(new Error("File does not exist"));
+                            callback(err);
                     }
-                }
-                else{
-                    if(callback)
-                        callback(err);
-                }
-            });
+                });
+            }
         });
     };
     
@@ -251,34 +285,45 @@ countlyFs.gridfs = {};
     * Delete file from shared system
     * @param {string} category - collection where to store data
     * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
     * @param {function} callback - function called when deleting was completed or errored, providing error object as first param
     * @example
     * countlyFs.deleteFile("test", "AGPLv3", function(err){
     *   console.log("Finished", err);
     * });
     */
-    ob.deleteFile = function(category, dest, callback){
+    ob.deleteFile = function(category, dest, options, callback){
         var filename = dest.split(path.sep).pop();
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        
         db.onOpened(function(){
-            db.collection(category+".files").findOne({ filename: filename }, {_id:1}, function(err, res){
-                if(!err){
-                    if(res && res._id){
-                        var bucket = new GridFSBucket(db._native, { bucketName: category });
-                        bucket.delete(res._id, function(error) {
+            if(options.id){
+                ob.deleteFileById(category, options.id, callback);
+            }
+            else{
+                db.collection(category+".files").findOne({ filename: filename }, {_id:1}, function(err, res){
+                    if(!err){
+                        if(res && res._id){
+                            ob.deleteFileById(category, res._id, callback);
+                        }
+                        else{
                             if(callback)
-                                callback(error);
-                        });
+                                callback(new Error("File does not exist"));
+                        }
                     }
                     else{
                         if(callback)
-                            callback(new Error("File does not exist"));
+                            callback(err);
                     }
-                }
-                else{
-                    if(callback)
-                        callback(err);
-                }
-            });
+                });
+            }
         });
     };
     
@@ -306,6 +351,8 @@ countlyFs.gridfs = {};
     * Get stream for file
     * @param {string} category - collection from where to read data
     * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
     * @param {function} callback - function called when establishing stream was completed or errored, providing error object as first param and stream as second
     * @example
     * countlyFs.getStream("test", "CHANGELOG.md", function(err, stream){
@@ -313,12 +360,25 @@ countlyFs.gridfs = {};
     *   stream.pipe(writeStream);
     * });
     */
-    ob.getStream = function(category, dest, callback){
+    ob.getStream = function(category, dest, options, callback){
         var filename = dest.split(path.sep).pop();
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        
         db.onOpened(function(){
             if(callback){
-                var bucket = new GridFSBucket(db._native, { bucketName: category });
-                callback(null, bucket.openDownloadStreamByName(filename));
+                if(options.id){
+                    ob.getStreamById(category, options.id, callback);
+                }
+                else{
+                    var bucket = new GridFSBucket(db._native, { bucketName: category });
+                    callback(null, bucket.openDownloadStreamByName(filename));
+                }
             }
         });
     };
@@ -327,31 +387,81 @@ countlyFs.gridfs = {};
     * Get file data
     * @param {string} category - collection from where to read data
     * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
     * @param {function} callback - function called when retrieving stream was completed or errored, providing error object as first param and filedata as second
     * @example
     * countlyFs.getData("test", "AGPLv3", function(err, data){
     *   console.log("Retrieved", err, data); 
     * });
     */
-    ob.getData = function(category, dest, callback){
+    ob.getData = function(category, dest, options, callback){
         var filename = dest.split(path.sep).pop();
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        
         db.onOpened(function(){
-            var bucket = new GridFSBucket(db._native, { bucketName: category });
-            var downloadStream = bucket.openDownloadStreamByName(filename);
-            downloadStream.on('error', function(error) {
-                if(callback)
-                    callback(error, null);
-            });
-            
-            var str = '';
-            downloadStream.on('data', function(data) {
-                str += data.toString('utf8');
-            });
+            if(options.id){
+                ob.getDataById(category, id, callback);
+            }
+            else{
+                var bucket = new GridFSBucket(db._native, { bucketName: category });
+                var downloadStream = bucket.openDownloadStreamByName(filename);
+                downloadStream.on('error', function(error) {
+                    if(callback)
+                        callback(error, null);
+                });
+                
+                var str = '';
+                downloadStream.on('data', function(data) {
+                    str += data.toString('utf8');
+                });
+        
+                downloadStream.on('end', function() {
+                    if(callback)
+                        callback(null, str);
+                });
+            }
+        });
+    };
     
-            downloadStream.on('end', function() {
-                if(callback)
-                    callback(null, str);
-            });
+    /**
+    * Get file size
+    * @param {string} category - collection from where to read data
+    * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+    * @example
+    * countlyFs.getSize("test", "AGPLv3", function(err, size){
+    *   console.log("Retrieved", err, size); 
+    * });
+    */
+    ob.getSize = function(category, dest, options, callback){
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        
+        var query = {};
+        if(options.id){
+            query._id = options.id;
+        }
+        else{
+            query.filename = dest.split(path.sep).pop();
+        }
+        db.collection(category+".files").findOne(query, {length:1}, function(err, res){
+            if(callback){
+                callback(err, (res && res.length) ? res.length : 0);
+            }
         });
     };
     
@@ -406,6 +516,26 @@ countlyFs.gridfs = {};
     };
     
     /**
+    * Delete file by id from shared system
+    * @param {string} category - collection where to store data
+    * @param {string} id - file id provided upon creation
+    * @param {function} callback - function called when deleting was completed or errored, providing error object as first param
+    * @example
+    * countlyFs.deleteFileById("test", "AGPLv3", function(err){
+    *   console.log("Finished", err);
+    * });
+    */
+    ob.deleteFileById = function(category, id, callback){
+        db.onOpened(function(){
+            var bucket = new GridFSBucket(db._native, { bucketName: category });
+            bucket.delete(id, function(error) {
+                if(callback)
+                    callback(error);
+            });
+        });
+    };
+    
+    /**
     * Get handler for filesystem, which in case of GridFS is database connection
     * @returns {object} databse connection
     * @example
@@ -427,6 +557,7 @@ countlyFs.fs = {};
     * Check if file exists
     * @param {string} category - collection where to store data
     * @param {string} filename - filename
+    * @param {object=} options - additional options for saving file
     * @param {function} callback - function called when we have result, providing error object as first param and boolean as second to indicate if file exists
     * @example
     * countlyFs.exists("test", "./CHANGELOG.md", function(err, exists){
@@ -435,6 +566,14 @@ countlyFs.fs = {};
     * });
     */
     ob.exists = function(category, dest, callback){
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        
         fs.exists(dest, function(exists){
             if(callback)
                 callback(null, exists);
@@ -447,12 +586,6 @@ countlyFs.fs = {};
     * @param {string} dest - file's destination
     * @param {string} source - source file
     * @param {object=} options - additional options for saving file
-    * @param {string} options.id - custom id for the file
-    * @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
-    * @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
-    * @param {object} options.metadata - Optional object to store in the file document's metadata field
-    * @param {string} options.contentType - Optional string to store in the file document's contentType field
-    * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
     * @param {function} callback - function called when saving was completed or errored, providing error object as first param
     * @example
     * countlyFs.saveFile("test", "./CHANGELOG.md", function(err){
@@ -482,12 +615,6 @@ countlyFs.fs = {};
     * @param {string} dest - file's destination
     * @param {string} data - data to save
     * @param {object=} options - additional options for saving file
-    * @param {string} options.id - custom id for the file
-    * @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
-    * @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
-    * @param {object} options.metadata - Optional object to store in the file document's metadata field
-    * @param {string} options.contentType - Optional string to store in the file document's contentType field
-    * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
     * @param {function} callback - function called when saving was completed or errored, providing error object as first param
     * @example
     * countlyFs.saveData("test", "test.text", "some\nmultiline\ntest", function(err){
@@ -515,12 +642,6 @@ countlyFs.fs = {};
     * @param {string} dest - file's destination
     * @param {stream} readStream - stream where to get file content
     * @param {object=} options - additional options for saving file
-    * @param {string} options.id - custom id for the file
-    * @param {string} options.writeMode - write mode, by default errors on existing file, possible values "overwrite" deleting previous file, or "version", will not work with provided custom id
-    * @param {number} options.chunkSizeBytes - Optional overwrite this bucket's chunkSizeBytes for this file
-    * @param {object} options.metadata - Optional object to store in the file document's metadata field
-    * @param {string} options.contentType - Optional string to store in the file document's contentType field
-    * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
     * @param {function} callback - function called when saving was completed or errored, providing error object as first param
     * @example
     * countlyFs.saveStream("test", "AGPLv3", fs.createReadStream("AGPLv3"), function(err){
@@ -550,13 +671,22 @@ countlyFs.fs = {};
     * @param {string} category - collection where to store data
     * @param {string} dest - file's destination
     * @param {string} source - source file
+    * @param {object=} options - additional options for saving file
     * @param {function} callback - function called when renaming was completed or errored, providing error object as first param
     * @example
     * countlyFs.rename("test", "AGPLv3", "LICENSE.md", function(err){
     *   console.log("Finished", err);
     * });
     */
-    ob.rename = function(category, dest, source, callback){
+    ob.rename = function(category, dest, source, options, callback){
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        
         fs.rename(source, dest, function(err){
             if(callback)
                 callback(err);
@@ -567,13 +697,22 @@ countlyFs.fs = {};
     * Delete file from shared system
     * @param {string} category - collection where to store data
     * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
     * @param {function} callback - function called when deleting was completed or errored, providing error object as first param
     * @example
     * countlyFs.deleteFile("test", "AGPLv3", function(err){
     *   console.log("Finished", err);
     * });
     */
-    ob.deleteFile = function(category, dest, callback){
+    ob.deleteFile = function(category, dest, options, callback){
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        
         fs.unlink(dest, function(err){
             if(callback)
                 callback(err);
@@ -585,6 +724,7 @@ countlyFs.fs = {};
     * Get stream for file
     * @param {string} category - collection from where to read data
     * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
     * @param {function} callback - function called when establishing stream was completed or errored, providing error object as first param and stream as second
     * @example
     * countlyFs.getStream("test", "CHANGELOG.md", function(err, stream){
@@ -592,7 +732,15 @@ countlyFs.fs = {};
     *   stream.pipe(writeStream);
     * });
     */
-    ob.getStream = function(category, dest, callback){
+    ob.getStream = function(category, dest, options, callback){
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        
         var rstream = fs.createReadStream(dest);
         if(callback)
             callback(null, rstream);
@@ -602,16 +750,52 @@ countlyFs.fs = {};
     * Get file data
     * @param {string} category - collection from where to read data
     * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
     * @param {function} callback - function called when retrieving stream was completed or errored, providing error object as first param and filedata as second
     * @example
     * countlyFs.getData("test", "AGPLv3", function(err, data){
     *   console.log("Retrieved", err, data); 
     * });
     */
-    ob.getData = function(category, dest, callback){
+    ob.getData = function(category, dest, options, callback){
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        
         fs.readFile(dest, 'utf8', function(err, data){
             if(callback)
                 callback(err, data);
+        });
+    };
+    
+    /**
+    * Get file size
+    * @param {string} category - collection from where to read data
+    * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+    * @example
+    * countlyFs.getSize("test", "AGPLv3", function(err, size){
+    *   console.log("Retrieved", err, size); 
+    * });
+    */
+    ob.getSize = function(category, dest, options, callback){
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        
+        fs.stat(dest, function(err, stats){
+            if(callback)
+                callback(err, stats.size);
         });
     };
     
@@ -632,6 +816,8 @@ countlyFs.fs = {};
 * Check if file exists
 * @param {string} category - collection where to store data for gridfs
 * @param {string} dest - file's destination
+* @param {object=} options - additional options for saving file
+* @param {string} options.id - custom id for the file
 * @param {function} callback - function called when we have result, providing error object as first param and boolean as second to indicate if file exists
 * @example
 * countlyFs.exists("test", "./CHANGELOG.md", function(err, exists){
@@ -639,7 +825,7 @@ countlyFs.fs = {};
 *       console.log("File exists");
 * });
 */
-countlyFs.exists = function(category, dest, callback){
+countlyFs.exists = function(category, dest, options, callback){
     var handler = this[config.fileStorage] || this.fs;
     handler.exists.apply(handler, arguments);
 };
@@ -658,7 +844,7 @@ countlyFs.exists = function(category, dest, callback){
 * @param {array} options.aliases - Optional array of strings to store in the file document's aliases field
 * @param {function} callback - function called when saving was completed or errored, providing error object as first param
 * @example
-* countlyFs.saveFile("test", "./CHANGELOG.md", function(err){
+* countlyFs.saveFile("test", "./CHANGELOG", "./CHANGELOG.md", function(err){
 *   console.log("Storing file finished", err);
 * });
 */
@@ -718,13 +904,15 @@ countlyFs.saveStream = function(category, filename, readStream, options, callbac
 * @param {string} category - collection where to store data
 * @param {string} dest - file's destination
 * @param {string} source - source file
+* @param {object=} options - additional options for saving file
+* @param {string} options.id - custom id for the file
 * @param {function} callback - function called when renaming was completed or errored, providing error object as first param
 * @example
 * countlyFs.rename("test", "AGPLv3", "LICENSE.md", function(err){
 *   console.log("Finished", err);
 * });
 */
-countlyFs.rename = function(category, oldname, newname, callback){
+countlyFs.rename = function(category, oldname, newname, options, callback){
     var handler = this[config.fileStorage] || this.fs;
     handler.rename.apply(handler, arguments);
 };
@@ -733,13 +921,15 @@ countlyFs.rename = function(category, oldname, newname, callback){
 * Delete file from shared system
 * @param {string} category - collection where to store data
 * @param {string} dest - file's destination
+* @param {object=} options - additional options for saving file
+* @param {string} options.id - custom id for the file
 * @param {function} callback - function called when deleting was completed or errored, providing error object as first param
 * @example
 * countlyFs.deleteFile("test", "AGPLv3", function(err){
 *   console.log("Finished", err);
 * });
 */
-countlyFs.deleteFile = function(category, filename, callback){
+countlyFs.deleteFile = function(category, filename, options, callback){
     var handler = this[config.fileStorage] || this.fs;
     handler.deleteFile.apply(handler, arguments);
 };
@@ -748,6 +938,8 @@ countlyFs.deleteFile = function(category, filename, callback){
 * Get stream for file
 * @param {string} category - collection from where to read data
 * @param {string} dest - file's destination
+* @param {object=} options - additional options for saving file
+* @param {string} options.id - custom id for the file
 * @param {function} callback - function called when establishing stream was completed or errored, providing error object as first param and stream as second
 * @example
 * countlyFs.getStream("test", "CHANGELOG.md", function(err, stream){
@@ -755,7 +947,7 @@ countlyFs.deleteFile = function(category, filename, callback){
 *   stream.pipe(writeStream);
 * });
 */
-countlyFs.getStream = function(category, dest, callback){
+countlyFs.getStream = function(category, dest, options, callback){
     var handler = this[config.fileStorage] || this.fs;
     handler.getStream.apply(handler, arguments);
 };
@@ -764,15 +956,34 @@ countlyFs.getStream = function(category, dest, callback){
 * Get file data
 * @param {string} category - collection from where to read data
 * @param {string} dest - file's destination
+* @param {object=} options - additional options for saving file
+* @param {string} options.id - custom id for the file
 * @param {function} callback - function called when retrieving file was completed or errored, providing error object as first param and filedata as second
 * @example
 * countlyFs.getData("test", "AGPLv3", function(err, data){
 *   console.log("Retrieved", err, data); 
 * });
 */
-countlyFs.getData = function(category, filename, callback){
+countlyFs.getData = function(category, filename, options, callback){
     var handler = this[config.fileStorage] || this.fs;
     handler.getData.apply(handler, arguments);
+};
+
+/**
+* Get file size
+* @param {string} category - collection from where to read data
+* @param {string} dest - file's destination
+* @param {object=} options - additional options for saving file
+* @param {string} options.id - custom id for the file
+* @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+* @example
+* countlyFs.getSize("test", "AGPLv3", function(err, size){
+*   console.log("Retrieved", err, size); 
+* });
+*/
+countlyFs.getSize = function(category, filename, options, callback){
+    var handler = this[config.fileStorage] || this.fs;
+    handler.getSize.apply(handler, arguments);
 };
 
 /**
@@ -786,5 +997,10 @@ countlyFs.getHandler = function(){
     var handler = this[config.fileStorage] || this.fs;
     return handler.getHandler();
 };
+
+/**
+* Currently used file storage type
+**/
+countlyFs.type = config.fileStorage || "fs";
 
 module.exports = countlyFs;
