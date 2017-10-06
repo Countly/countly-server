@@ -1016,6 +1016,8 @@ var common          = require('../../../../api/utils/common.js'),
                     common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$unset: $unset}, {upsert: false}, function(){});
                 }
             }
+        } else if (Object.keys($set).length) {
+            common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$set: $set}, {upsert: true}, function(){});
         }
 
     };
