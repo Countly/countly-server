@@ -2536,4 +2536,20 @@ var AppRouter = Backbone.Router.extend({
     }
 });
 
+Backbone.history || (Backbone.history = new Backbone.History);
+Backbone.history._checkUrl = Backbone.history.checkUrl;
+Backbone.history.urlChecks = [];
+Backbone.history.checkOthers = function(){
+    var proceed = true;
+    for(var i = 0; i < Backbone.history.urlChecks.length; i++){
+        if(!Backbone.history.urlChecks[i]())
+            proceed = false;
+    }
+    return proceed;
+};
+Backbone.history.checkUrl = function(){
+    if(Backbone.history.checkOthers())
+        Backbone.history._checkUrl();
+};
+
 var app = new AppRouter();
