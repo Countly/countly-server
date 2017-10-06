@@ -52,6 +52,7 @@ cp /etc/nginx/conf.d/default.conf $DIR/config/nginx.default.backup
 cp $DIR/config/nginx.server.conf /etc/nginx/conf.d/default.conf
 cp $DIR/config/nginx.conf /etc/nginx/nginx.conf
 service nginx restart
+systemctl enable nginx
 set -e
 
 #for easy_install
@@ -80,10 +81,6 @@ fi
 
 #install mongodb
 bash $DIR/scripts/mongodb.install.sh
-
-#configure and start nginx
-cp $DIR/config/nginx.server.conf /etc/nginx/conf.d/default.conf
-service nginx restart
 
 cp $DIR/../frontend/express/public/javascripts/countly/countly.config.sample.js $DIR/../frontend/express/public/javascripts/countly/countly.config.js
 
