@@ -119,7 +119,7 @@
         this.stats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
 		this.id = this.getId();
 		this.isRegistered = false;
-		this.iap = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].iap_event || [];
+		this.iap = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].iap_event || ["Buy"];
 		if(this.iap != ""){
             if(typeof this.iap === "string"){
                 eventsMap[this.iap] = segments.Buy;
@@ -132,6 +132,10 @@
 
             }
 		}
+        else{
+            this.iap = ["Buy"];
+            eventsMap["Buy"] = segments.Buy;
+        }
 
 		this.hasSession = false;
         if(ip_address.length > 0 && Math.random() >= 0.5){
@@ -787,61 +791,52 @@
 
     var ensuringJobs = false;
     countlyPopulator.ensureJobs = function() {
-        if(typeof countlyFlow === "undefined"){
-            if (stopCallback) { stopCallback(true); }
-            return;
+        if(typeof countlyCohorts !== "undefined"){
+            var iap = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].iap_event || ["Buy"];
+            countlyCohorts.add({cohort_name:"Buyed & Shared", steps: JSON.stringify([
+                {
+                    "type": "did",
+                    "event": iap[0],
+                    "period": "30days",
+                    "query": "{}",
+                    "byVal": ""
+                },
+                {
+                    "type": "did",
+                    "event": "Shared",
+                    "period": "14days",
+                    "query": "{}",
+                    "byVal": ""
+                }
+            ])});
+            countlyCohorts.add({cohort_name:"Facebook login", steps: JSON.stringify([
+                {
+                    "type": "did",
+                    "event": "[CLY]_session",
+                    "period": "30days",
+                    "query": "{\"up.fs\":{\"$lt\":"+countlyPopulator.getEndTime()+"},\"custom.Facebook Login\":{\"$in\":[\"true\"]}}",
+                    "byVal": ""
+                }
+            ])});
+            countlyCohorts.add({cohort_name:"Twitter Login", steps: JSON.stringify([
+                {
+                    "type": "did",
+                    "event": "[CLY]_session",
+                    "period": "30days",
+                    "query": "{\"custom.Twitter Login\":{\"$in\":[\"true\"]}}",
+                    "byVal": ""
+                }
+            ])});
+            countlyCohorts.add({cohort_name:"Purchased & Engaged", steps:JSON.stringify([
+                {
+                    "type": "did",
+                    "event": iap[0],
+                    "period": "30days",
+                    "query": "{\"up.ls\":{\"$gt\":"+countlyPopulator.getStartTime()+"}}",
+                    "byVal": ""
+                }
+            ])});
         }
-    	if (ensuringJobs) { return; }
-    	ensuringJobs = true;
-
-    	$.ajax({
-    		type: "GET",
-    		url: countlyCommon.API_URL + "/i/flows/lastJob",
-    		data: {
-    			app_key:countlyCommon.ACTIVE_APP_KEY
-    		},
-			success:function (json) {
-    			if (json && json.job) {
-    				function checkAgain() {
-    					$.ajax({
-    						type: "GET",
-    						url: countlyCommon.API_URL + "/i/flows/lastJob",
-    						data: {
-    							job: json.job,
-    							app_key:countlyCommon.ACTIVE_APP_KEY
-    						},
-    						success: function (obj) {
-    							if (obj && obj.done) {
-    								ensuringJobs = false;
-    								if (stopCallback) { stopCallback(true); }
-    							} else {
-    								if (stopCallback) { stopCallback(false); }
-    								setTimeout(checkAgain, 3000);
-    							}
-    						},
-    						error: function(xhr, e, t){
-								ensuringJobs = false;
-								if (stopCallback) { stopCallback(t); }
-    						}
-    					});
-    				}
-    				checkAgain();
-    			} else if (json && json.done) {
-					if (stopCallback) { stopCallback(true); }
-    			} else {
-					ensuringJobs = false;
-					if (stopCallback) { stopCallback(json); }
-    			}
-    		},
-    		error:function(xhr, e, t){
-				ensuringJobs = false;
-				if (xhr.responseText && xhr.responseText.indexOf('Invalid path') !== -1) {
-	    			if (stopCallback) { stopCallback(true); }
-				} else {
-	    			if (stopCallback) { stopCallback(t); }
-				}
-    		}
-    	});
-
+        if (stopCallback) { stopCallback(true); }
     };
 }(window.countlyPopulator = window.countlyPopulator || {}, jQuery));
