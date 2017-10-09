@@ -217,8 +217,8 @@ app.use(function(req, res, next) {
 });
 //serve app images
 app.get(countlyConfig.path+'/appimages/*', function(req, res) {
-    countlyFs.getSize("appimages", __dirname + '/public/'+req.path, {id:req.params[0]}, function(err, size){
-        if(err || !size){
+    countlyFs.getStats("appimages", __dirname + '/public/'+req.path, {id:req.params[0]}, function(err, stats){
+        if(err || !stats || !stats.size){
             res.sendFile(__dirname + '/public/images/default_app_icon.png');
         }
         else{
@@ -228,8 +228,16 @@ app.get(countlyConfig.path+'/appimages/*', function(req, res) {
                 }
                 else{
                     res.writeHead(200, {
+                        'Accept-Ranges':'bytes',
+                        'Cache-Control':'public, max-age=31536000',
+                        'Connection':'keep-alive',
+                        'Date':new Date().toUTCString(),
+                        'ETag':'W/"1c8d-15ea960df3b"',
+                        'Last-Modified':stats.mtime.toUTCString(),
+                        'Server':'nginx/1.10.3 (Ubuntu)',
+                        'X-Powered-By':'Express',
                         'Content-Type': 'image/png',
-                        'Content-Length': size
+                        'Content-Length': stats.size
                     });
                     stream.pipe(res);
                 }
