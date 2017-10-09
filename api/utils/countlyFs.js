@@ -407,7 +407,7 @@ countlyFs.gridfs = {};
         
         db.onOpened(function(){
             if(options.id){
-                ob.getDataById(category, id, callback);
+                ob.getDataById(category, options.id, callback);
             }
             else{
                 var bucket = new GridFSBucket(db._native, { bucketName: category });

@@ -26,6 +26,7 @@ var versionInfo = require('./version.info'),
     _ = require('underscore'),
     countlyMail = require('../../api/parts/mgmt/mail.js'),
     countlyStats = require('../../api/parts/data/stats.js'),
+    countlyFs = require('../../api/utils/countlyFs.js'),
     bruteforce = require('./libs/preventBruteforce.js'),
 	plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config', 'dont-enclose'),
@@ -214,6 +215,28 @@ app.use(function(req, res, next) {
         next();
     }
 });
+//serve app images
+app.get(countlyConfig.path+'/appimages/*', function(req, res) {
+    countlyFs.getSize("appimages", __dirname + '/public/'+req.path, {id:req.params[0]}, function(err, size){
+        if(err || !size){
+            res.sendFile(__dirname + '/public/images/default_app_icon.png');
+        }
+        else{
+            countlyFs.getStream("appimages", __dirname + '/public/'+req.path, {id:req.params[0]}, function(err, stream){
+                if(err || !stream){
+                    res.sendFile(__dirname + '/public/images/default_app_icon.png');
+                }
+                else{
+                    res.writeHead(200, {
+                        'Content-Type': 'image/png',
+                        'Content-Length': size
+                    });
+                    stream.pipe(res);
+                }
+            });
+        }
+    })
+});
 var oneYear = 31557600000;
 app.use(countlyConfig.path, express.static(__dirname + '/public', { maxAge:oneYear }));
 app.use(session({
@@ -323,11 +346,6 @@ if ('development' == env) {
 
 app.get(countlyConfig.path+'/', function (req, res, next) {
     res.redirect(countlyConfig.path+'/login');
-});
-
-//serve app images
-app.get(countlyConfig.path+'/appimages/*', function(req, res) {
-    res.sendFile(__dirname + '/public/images/default_app_icon.png');
 });
 
 
@@ -965,19 +983,14 @@ app.post(countlyConfig.path+'/apps/icon', function (req, res, next) {
         return true;
     }
     plugins.callMethod("iconUpload", {req:req, res:res, next:next, data:req.body});
-    var is = fs.createReadStream(tmp_path);
-    var os = fs.createWriteStream(target_path);
-    is.pipe(os);
-    is.on('end',function() {
-        fs.unlink(tmp_path, function(){});
-    });
-    os.on('finish',function() {
-        jimp.read(target_path, function (err, icon) {
-            if (err) console.log(err, err.stack);
-            icon.cover(72, 72).write(target_path); // save 
-        });
-        
-        res.send(countlyConfig.path+"/appimages/" + req.body.app_image_id + ".png");
+    jimp.read(tmp_path, function (err, icon) {
+        if (err) console.log(err, err.stack);
+        icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err, buffer){
+            countlyFs.saveData("appimages", target_path, buffer, {id:req.body.app_image_id+".png", writeMode:"overwrite"}, function(err){
+                fs.unlink(tmp_path, function(){});
+                res.send(countlyConfig.path+"/appimages/" + req.body.app_image_id + ".png");
+            });
+        }); // save
     });
 });
 
