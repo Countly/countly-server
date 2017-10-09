@@ -466,6 +466,52 @@ countlyFs.gridfs = {};
     };
     
     /**
+    * Get file stats
+    * @param {string} category - collection from where to read data
+    * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+    * @example
+    * countlyFs.getStats("test", "AGPLv3", function(err, stats){
+    *   console.log("Retrieved", err, stats); 
+    * });
+    */
+    ob.getStats = function(category, dest, options, callback){
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        
+        var query = {};
+        if(options.id){
+            query._id = options.id;
+        }
+        else{
+            query.filename = dest.split(path.sep).pop();
+        }
+        db.collection(category+".files").findOne(query, {}, function(err, res){
+            if(callback){
+                var stats = {};
+                stats.size = (res && res.length) ? res.length : 0;
+                stats.blksize = (res && res.chunkSize) ? res.chunkSize : 0;
+                stats.atimeMs = (res && res.uploadDate) ? res.uploadDate.getTime() : 0;
+                stats.mtimeMs = (res && res.uploadDate) ? res.uploadDate.getTime() : 0;
+                stats.ctimeMs = (res && res.uploadDate) ? res.uploadDate.getTime() : 0;
+                stats.birthtimeMs = (res && res.uploadDate) ? res.uploadDate.getTime() : 0;
+                stats.atime = (res && res.uploadDate) ? res.uploadDate : new Date();
+                stats.mtime = (res && res.uploadDate) ? res.uploadDate : new Date();
+                stats.ctime = (res && res.uploadDate) ? res.uploadDate : new Date();
+                stats.birthtime = (res && res.uploadDate) ? res.uploadDate : new Date();
+                callback(err, stats);
+            }
+        });
+    };
+    
+    /**
     * Get file data by file id
     * @param {string} category - collection from where to read data
     * @param {string} id - file id provided upon creation
@@ -800,6 +846,33 @@ countlyFs.fs = {};
     };
     
     /**
+    * Get file stats
+    * @param {string} category - collection from where to read data
+    * @param {string} dest - file's destination
+    * @param {object=} options - additional options for saving file
+    * @param {string} options.id - custom id for the file
+    * @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+    * @example
+    * countlyFs.getStats("test", "AGPLv3", function(err, stats){
+    *   console.log("Retrieved", err, stats); 
+    * });
+    */
+    ob.getStats = function(category, dest, options, callback){
+        if(typeof options === "function"){
+            callback = options;
+            options = null;
+        }
+        if(!options){
+            options = {};
+        }
+        
+        fs.stat(dest, function(err, stats){
+            if(callback)
+                callback(err, stats);
+        });
+    };
+    
+    /**
     * Get handler for filesystem, which in case of GridFS is database connection
     * @returns {object} databse connection
     * @example
@@ -984,6 +1057,24 @@ countlyFs.getData = function(category, filename, options, callback){
 countlyFs.getSize = function(category, filename, options, callback){
     var handler = this[config.fileStorage] || this.fs;
     handler.getSize.apply(handler, arguments);
+};
+
+/**
+* Get file stats
+* @param {string} category - collection from where to read data
+* @param {string} dest - file's destination
+* @param {object=} options - additional options for saving file
+* @param {string} options.id - custom id for the file
+* @param {function} callback - function called when retrieving file size was completed or errored, providing error object as first param and file size as second
+* @example
+* countlyFs.getStats("test", "AGPLv3", function(err, stats){
+*   //similar to fs.stat object
+*   console.log("Retrieved", err, stats); 
+* });
+*/
+countlyFs.getStats = function(category, filename, options, callback){
+    var handler = this[config.fileStorage] || this.fs;
+    handler.getStats.apply(handler, arguments);
 };
 
 /**
