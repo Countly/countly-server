@@ -2244,7 +2244,8 @@
         if (Math.round(timestamp).toString().length === 10)
             timestamp *= 1000;
         var d = new Date(timestamp);
-        return leadingZero(d.getDate()) + "." + leadingZero(d.getMonth() + 1) + "." + d.getFullYear();
+        return moment(d).format("ddd, D MMM YYYY");
+        //return leadingZero(d.getDate()) + "." + leadingZero(d.getMonth() + 1) + "." + d.getFullYear();
     }
 
     /**
