@@ -7,17 +7,19 @@ if [ -f /etc/redhat-release ]; then
     
     #select source based on release
 	if grep -q -i "release 6" /etc/redhat-release ; then
-        echo "[mongodb-org-3.2]
+        echo "[mongodb-org-3.4]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/6/mongodb-org/3.2/x86_64/
-gpgcheck=0
-enabled=1" > /etc/yum.repos.d/mongodb-org-3.2.repo
+baseurl=https://repo.mongodb.org/yum/redhat/6/mongodb-org/3.4/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-3.4.asc" > /etc/yum.repos.d/mongodb-org-3.4.repo
     elif grep -q -i "release 7" /etc/redhat-release ; then
-        echo "[mongodb-org-3.2]
+        echo "[mongodb-org-3.4]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/3.2/x86_64/
-gpgcheck=0
-enabled=1" > /etc/yum.repos.d/mongodb-org-3.2.repo
+baseurl=https://repo.mongodb.org/yum/redhat/7/mongodb-org/3.4/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-3.4.asc" > /etc/yum.repos.d/mongodb-org-3.4.repo
     fi
     yum install -y nodejs mongodb-org
     
@@ -29,14 +31,14 @@ fi
 
 if [ -f /etc/lsb-release ]; then
     #install latest mongodb 
-	apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
+	apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 0C49F3730359A14518585931BC711F9BA15703C6
     UBUNTU_YEAR="$(lsb_release -sr | cut -d '.' -f 1)";
 
     if [ "$UBUNTU_YEAR" != "16" ]
     then
-        echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list ;
+		echo "deb [ arch=amd64 ] http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.4.list ;
     else
-        echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.2.list ;
+        echo "deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-3.4.list ;
     fi
     apt-get update
     #install mongodb
