@@ -1157,7 +1157,8 @@ if (cluster.isMaster) {
                     for(var i in fields){
                         params.qstring[i] = fields[i];
                     }
-                    processRequest();
+                    if(!params.apiPath)
+                        processRequest();
                 });
             }
             else if (req.method === 'OPTIONS') {
