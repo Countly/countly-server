@@ -991,15 +991,19 @@ app.post(countlyConfig.path+'/apps/icon', function (req, res, next) {
         return true;
     }
     plugins.callMethod("iconUpload", {req:req, res:res, next:next, data:req.body});
-    jimp.read(tmp_path, function (err, icon) {
-        if (err) console.log(err, err.stack);
-        icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err, buffer){
-            countlyFs.saveData("appimages", target_path, buffer, {id:req.body.app_image_id+".png", writeMode:"overwrite"}, function(err){
-                fs.unlink(tmp_path, function(){});
-                res.send(countlyConfig.path+"/appimages/" + req.body.app_image_id + ".png");
-            });
-        }); // save
-    });
+    try{
+        jimp.read(tmp_path, function (err, icon) {
+            if (err) console.log(err, err.stack);
+            icon.cover(72, 72).getBuffer(jimp.MIME_PNG, function(err, buffer){
+                countlyFs.saveData("appimages", target_path, buffer, {id:req.body.app_image_id+".png", writeMode:"overwrite"}, function(err){
+                    fs.unlink(tmp_path, function(){});
+                    res.send(countlyConfig.path+"/appimages/" + req.body.app_image_id + ".png");
+                });
+            }); // save
+        });
+    } catch(e){
+        console.log(e.stack);
+    }
 });
 
 function validatePassword(password){
