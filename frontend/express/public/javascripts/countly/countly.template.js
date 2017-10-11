@@ -383,7 +383,12 @@ var AppRouter = Backbone.Router.extend({
                 this.dashboard();
         }
         else {
-            this.activeView.render();
+            if(countlyCommon.APP_NAMESPACE !== false){
+                this.navigate("#/"+countlyCommon.ACTIVE_APP_ID+Backbone.history.fragment, true);
+            }
+            else{
+                this.activeView.render();
+            }
         }
     },
     dashboard: function () {
@@ -2562,6 +2567,15 @@ Backbone.history.checkUrl = function(){
         Backbone.history._checkUrl();
 };
 
+Backbone.history.noHistory = function(hash){
+    if(history && history.replaceState){
+        history.replaceState(undefined, undefined, hash);
+    }
+    else{
+        location.replace(hash);
+    }
+};
+
 if(countlyCommon.APP_NAMESPACE !== false){
     Backbone.history._getFragment = Backbone.history.getFragment;
     Backbone.history.appIds = [];
@@ -2578,9 +2592,11 @@ if(countlyCommon.APP_NAMESPACE !== false){
     Backbone.history.checkUrl = function(){
         var app_id = Backbone.history._getFragment().split("/")[1] || "";
         if(countlyCommon.ACTIVE_APP_ID !== app_id && Backbone.history.appIds.indexOf(app_id) === -1){
-            window.location.hash = "#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment();
+            Backbone.history.noHistory("#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
+            app_id = countlyCommon.ACTIVE_APP_ID;
         }
-        else if(countlyCommon.ACTIVE_APP_ID !== app_id){
+        
+        if(countlyCommon.ACTIVE_APP_ID !== app_id){
             app.switchApp(app_id, function(){
                 if(Backbone.history.checkOthers())
                     Backbone.history._checkUrl();
@@ -2606,7 +2622,7 @@ if(countlyCommon.APP_NAMESPACE !== false){
         }
         else{
             //add current app id
-            window.location.hash = "#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment();
+            Backbone.history.noHistory("#/"+countlyCommon.ACTIVE_APP_ID + Backbone.history._getFragment());
         }
     })();
 }
