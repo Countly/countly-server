@@ -985,11 +985,11 @@ var common          = require('../../../../api/utils/common.js'),
         }
 
         var token, field, bool;
-        if (params.qstring.ios_token && typeof params.qstring.test_mode !== 'undefined') {
+        if (typeof params.qstring.ios_token !== 'undefined' && typeof params.qstring.test_mode !== 'undefined') {
             token = params.qstring.ios_token;
             field = common.dbUserMap.tokens + '.' + common.dbUserMap['apn_' + params.qstring.test_mode];
             bool  = common.dbUserMap.tokens + common.dbUserMap['apn_' + params.qstring.test_mode];
-        } else if (params.qstring.android_token && typeof params.qstring.test_mode !== 'undefined') {
+        } else if (typeof params.qstring.android_token !== 'undefined' && typeof params.qstring.test_mode !== 'undefined') {
             token = params.qstring.android_token;
             field = common.dbUserMap.tokens + '.' + common.dbUserMap['gcm_' + params.qstring.test_mode];
             bool  = common.dbUserMap.tokens + common.dbUserMap['gcm_' + params.qstring.test_mode];
