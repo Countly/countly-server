@@ -12,3 +12,4 @@ plugins/plugins.json
 frontend/express/public/sdk/
 **/.DS_Store
 **/node_modules
+bin/scripts/nghttp2
