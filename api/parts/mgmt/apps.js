@@ -304,8 +304,8 @@ var appsApi = {},
                         var collectionNameWoPrefix = crypto.createHash('sha1').update(events.list[i] + appId).digest('hex');
                         common.db.collection("events" + collectionNameWoPrefix).drop(function(){});
                     }
-    
-                    common.db.collection('events').remove({'_id': common.db.ObjectID(appId)},function(){});
+                    if(params.qstring.args.period == "reset")
+                        common.db.collection('events').remove({'_id': common.db.ObjectID(appId)},function(){});
                 }
             });
         }
