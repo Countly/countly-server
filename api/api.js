@@ -256,6 +256,7 @@ if (cluster.isMaster) {
                 //except very old sdks with seconds timestamp
                 var ts = Math.round(parseFloat(params.qstring.timestamp || 0)) + "";
                 if(ts.length === 13 && params.time.mstimestamp === params.app_user.lac){
+                    console.log("Possible duplicate skipping request");
                     params.cancelRequest = true;
                 }
                 
@@ -468,6 +469,7 @@ if (cluster.isMaster) {
                     if (plugins.getConfig("api").safe && !params.res.finished) {
                         common.returnMessage(params, 200, 'Request ignored');
                     }
+                    console.log("Request ignored", params.req.url, params.req.body);
                     return done ? done() : false;
                 }
             });
