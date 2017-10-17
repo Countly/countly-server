@@ -160,13 +160,10 @@ class ResourceFaçade extends ResourceInterface {
 		this.channel.on('exit', () => {
 			log.i('[façade]: Resource %j exited in %d: %j', this.name, this._worker.pid, this.id);
 			if (!this._crashed) {
+				this.emit(EVT.CLOSED);
 				if (this._job) {
 					log.i('[façade]: Resource %j exited in %d (%j) while running %s, will reject', this.name, this._worker.pid, this.id, this._job._idIpc);
 					this.reject('Process exited');
-				}
-				if (this._open) {
-					this._open = false;
-					this.emit(EVT.CLOSED);
 				}
 				this.emit(EVT.EXIT);
 			}

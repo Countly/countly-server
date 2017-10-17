@@ -86,7 +86,6 @@ class Manager {
 					log.e(e, e.stack);
 					this.checkAfterDelay(DELAY_BETWEEN_CHECKS * 5);
 				}
-
 			});
 		}, (e) => {
 			log.e('Error when loading jobs', e, e.stack);
@@ -324,6 +323,9 @@ class Manager {
 											});
 											running.push(sub);
 											next();
+										} else if (!rejected && running.length < workersCount && subs.length > 0 && !this.getPool(subs[0]).canRun()) {
+											log.d('%s: not ready to run yet', job._idIpc);
+											setTimeout(next, 5000);
 										} else if (running.length === 0 && subs.length === 0) {
 											try {
 												log.d('%s: all subs done, resolving', job._idIpc);
@@ -397,7 +399,7 @@ class Manager {
 		if (!this.resources[job.resourceName()]) {
 			this.resources[job.resourceName()] = new RES.ResourcePool(() => {
 				return new RES.ResourceFaçade(job, this.files[job.name]);
-			}, 50000);
+			}, 10);
 			this.resources[job.resourceName()].on(RES.EVT.CLOSED, () => {
 				log.w('all pool resources done');
 				delete this.resources[job.resourceName()];
