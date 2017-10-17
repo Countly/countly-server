@@ -71,7 +71,7 @@ var plugin = {},
                 types["crash"] = JSON.stringify(types["crash"]);
             }
 		}
-        common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:types, q:JSON.stringify(params.qstring), s:sdk, h:params.req.headers, m:params.req.method, b:params.bulk || false}, function () {});
+        common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:types, q:JSON.stringify(params.qstring), s:sdk, h:params.req.headers, m:params.req.method, b:params.bulk || false, c:(params.cancelRequest) ? true: false}, function () {});
 	});
 	
 	//read api call
