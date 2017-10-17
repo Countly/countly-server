@@ -34,7 +34,7 @@ class DefaultRetryPolicy {
 			try {
 				log.d('Running job %d time out of %d attempts', this._retried + 1, this._retries);
 				runFun().then(resolve, (error) => {
-					log.i('Error in retry: ', error, error.stack);
+					log.w('Error in retry: ', error, error.stack);
 					if (this.errorIsRetriable(error)) {
 						log.w('Retriable error in retry: spent %d, left %d attempts', this._retried, this._retries);
 						if (this._retries) {
@@ -45,7 +45,7 @@ class DefaultRetryPolicy {
 								this.run(runFun).then(resolve, reject);
 							});
 						} else {
-							reject(error[1]);
+							reject(typeof error === 'string' ? error : error[1]);
 						}
 					} else {
 						try {

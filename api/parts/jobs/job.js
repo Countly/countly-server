@@ -374,6 +374,12 @@ class Job extends EventEmitter {
 	_abort (err) {
 		log.d('%s: aborting', this._idIpc);
 		return this._finish(err || 'Aborted');
+		// if (this.retryPolicy().errorIsRetriable(err)) {
+		// 	log.d('%s: won\'t abort since error %j is retriable', this._idIpc, err);
+		// } else {
+		// 	log.d('%s: aborting', this._idIpc);
+		// 	return this._finish(err || 'Aborted');
+		// }
 	}
 
 	_pause () {
