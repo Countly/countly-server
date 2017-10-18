@@ -112,7 +112,7 @@ class Streamer {
 									resolve(this.built);
 								}
 							});
-						});
+						}, db);
 					} else {
 						query = this.anote.query ? Object.assign({}, this.anote.query.user || {}) : {};
 						query[common.dbUserMap.tokens + this.field] = true;
