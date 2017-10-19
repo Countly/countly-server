@@ -148,17 +148,7 @@ function modifyUserDetailsForPush () {
                 }
                 $('.btn-create-message').off('click').on('click', function(){
                     //drill filter
-                    var filterData = app.userdataView._query || {};
-                    
-                    //known/anonymous filter
-                    if(app.userdataView.filter == "user-known")
-                        filterData.hasInfo = true;
-                    else if(app.userdataView.filter == "user-anonymous")
-                        filterData.hasInfo = {"$ne": true};
-                    
-                    //text search filter
-                    if($('.dataTables_filter input').val().length)
-                        filterData.$text = { "$search": "\""+$('.dataTables_filter input').val()+"\"" };
+                    var filterData = JSON.parse(app.userdataView.getExportQuery().query);
                     
                     components.push.popup.show({
                         apps: [countlyCommon.ACTIVE_APP_ID],

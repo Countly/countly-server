@@ -631,7 +631,12 @@ const assistant = {},
 
         //set the current time info based on the apps timezone
         apc.dateNow = new Date();//get current day and time
-        apc.dateNow.setTimezone(apc.appTimezone);//todo is this fine?
+        try{
+            apc.dateNow.setTimezone(apc.appTimezone);
+        } catch (ex){
+            log.w('Assistant plugin got exception while trying to set timezone [%j]', { message: ex.message, stack: ex.stack });
+        }
+
         apc.hour = apc.dateNow.getHours();
         apc.minutes = apc.dateNow.getMinutes();
         apc.dow = apc.dateNow.getDay();
