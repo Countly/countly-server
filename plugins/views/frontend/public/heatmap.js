@@ -34,9 +34,54 @@
         var childSpan = document.createElement('span');
         childSpan.setAttribute('style', 'display: inline-block; margin-left: 14px; font-size: 16px; vertical-align: top; margin-top: 6px; border-left: 1px solid #ababab; padding-left: 14px;');
         childSpan.innerHTML = "Heatmaps";
+        var devices = [
+            {
+                type: "mobile",
+                displayText: "Mobile",
+                minWidth: 0,
+                maxWidth: 767
+            },
+            {
+                type: "tablet",
+                displayText: "Tablet",
+                minWidth: 767,
+                maxWidth: 1024
+            },
+            {
+                type: "desktop",
+                displayText: "Desktop",
+                minWidth: 1024,
+                maxWidth: 10240
+            },
+        ];
+
+        devices.forEach((device) => {
+            device.type = document.createElement('span');
+            device.type.setAttribute('style', 'display: inline-block; margin-left: 14px; font-size: 16px; vertical-align: top; margin-top: 6px; cursor: pointer; padding-left: 14px;');
+            device.type.innerHTML = device.displayText;
+        })
         var span = document.createElement('span');
         span.appendChild(img);
         span.appendChild(childSpan);
+
+        devices.forEach((device) => {
+            span.appendChild(device.type); 
+            Countly._internals.add_event(device.type, "click", function(){
+                var selectedDevice =  document.getElementsByClassName("selected-device");
+                if(selectedDevice.length){
+                    selectedDevice[0].style.color = "#666";
+                    selectedDevice[0].classList.remove("selected-device");  
+                }                                                                                                                           
+                var context = canvas.getContext('2d');    
+                context.clearRect(0, 0, canvas.width, canvas.height);                
+                document.body.style.width = Math.min(device.maxWidth, window.innerWidth) + "px";
+                document.body.style.marginLeft = "auto";
+                document.body.style.marginRight = "auto";
+                this.classList.add("selected-device");                                                                                                                             
+                this.style.color = "#00ff00";
+                loadData();
+            });    
+        });
         span.setAttribute('style', 'font:20px "PT Sans", sans-serif;margin-left: 22px;color:#666;');
         topbar.appendChild(span);
         var closeX = document.createElement('a');
@@ -69,8 +114,8 @@
             canvas.setAttribute("width", "0px");
             canvas.setAttribute("height", "0px");
             setTimeout(function(){
-                canvas.setAttribute("width", Countly._internals.getDocWidth() + "px");
-                canvas.setAttribute("height", Countly._internals.getDocHeight() + "px");
+                canvas.setAttribute("width", Math.min(document.body.offsetWidth, Countly._internals.getDocWidth()) + "px");
+                canvas.setAttribute("height", Math.min(document.body.offsetHeight, Countly._internals.getDocHeight()) + "px");
                 map.resize();
                 drawData(); 
             },1);
@@ -78,7 +123,8 @@
     });
     
     function loadData(){
-        sendXmlHttpRequest({app_key:Countly.app_key, view:Countly._internals.getLastView() || window.location.pathname, period:period}, function(err, clicks){
+        var width = document.body.offsetWidth;
+        sendXmlHttpRequest({app_key:Countly.app_key, view:Countly._internals.getLastView() || window.location.pathname, period:period, width:width}, function(err, clicks){
             if(!err){
                 data = clicks.data;
                 drawData();
@@ -89,8 +135,8 @@
     function drawData(){
         var heat = [];
         var point;
-        var width = Countly._internals.getDocWidth();
-        var height = Countly._internals.getDocHeight();
+        var width = document.body.offsetWidth;
+        var height = document.body.offsetHeight;
         for(var i = 0; i < data.length; i++){
             point = data[i].sg;
             if(point.type == actionType)
