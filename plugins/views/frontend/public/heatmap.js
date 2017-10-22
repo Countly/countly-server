@@ -7,12 +7,41 @@
         baseBlur = 1.6,
         actionType = "click",
         apiPath = "/o/actions",
-        period = Countly.passed_data.period || "30days";
+        period = Countly.passed_data.period || "30days",
+        pageWidth = 0,
+        pageHeight = 0;
     Countly._internals.loadJS(Countly.url+"/views/javascripts/simpleheat.js", function(){
         //place the toolbar
         document.body.style.position = "relative";
         var origtop = document.body.style.top;
         var toppx = 60;
+        pageWidth = Countly._internals.getDocWidth();
+        pageHeight = Countly._internals.getDocHeight();
+        var devices = [
+            {
+                type: "mobile",
+                displayText: "Mobile",
+                minWidth: 0,
+                maxWidth: 767
+            },
+            {
+                type: "tablet",
+                displayText: "Tablet",
+                minWidth: 767,
+                maxWidth: 1024
+            },
+            {
+                type: "desktop",
+                displayText: "Desktop",
+                minWidth: 1024,
+                maxWidth: 10240
+            },
+        ];
+        
+        var initialDevice = devices.filter((device) => {
+            return device.minWidth < pageWidth && device.maxWidth >= pageWidth;
+        });
+
         if(origtop)
             toppx += parseInt(origtop);
         document.body.style.top = toppx+"px";
@@ -34,51 +63,44 @@
         var childSpan = document.createElement('span');
         childSpan.setAttribute('style', 'display: inline-block; margin-left: 14px; font-size: 16px; vertical-align: top; margin-top: 6px; border-left: 1px solid #ababab; padding-left: 14px;');
         childSpan.innerHTML = "Heatmaps";
-        var devices = [
-            {
-                type: "mobile",
-                displayText: "Mobile",
-                minWidth: 0,
-                maxWidth: 767
-            },
-            {
-                type: "tablet",
-                displayText: "Tablet",
-                minWidth: 767,
-                maxWidth: 1024
-            },
-            {
-                type: "desktop",
-                displayText: "Desktop",
-                minWidth: 1024,
-                maxWidth: 10240
-            },
-        ];
 
         devices.forEach((device) => {
-            device.type = document.createElement('span');
-            device.type.setAttribute('style', 'display: inline-block; margin-left: 14px; font-size: 16px; vertical-align: top; margin-top: 6px; cursor: pointer; padding-left: 14px;');
-            device.type.innerHTML = device.displayText;
+            device.obj = document.createElement('span');
+            device.obj.setAttribute('style', 'display: inline-block; margin-left: 14px; font-size: 16px; vertical-align: top; margin-top: 6px; cursor: pointer; padding-left: 14px;');
+            device.obj.innerHTML = device.displayText;
+            device.obj.setAttribute("class", device.type);
+            if(device.type == initialDevice[0].type){
+                device.obj.setAttribute('style', 'color: #00ff00; display: inline-block; margin-left: 14px; font-size: 16px; vertical-align: top; margin-top: 6px; cursor: pointer; padding-left: 14px;');
+                device.obj.setAttribute('class', 'selected-device ' + device.type);
+            }
         })
         var span = document.createElement('span');
         span.appendChild(img);
         span.appendChild(childSpan);
 
         devices.forEach((device) => {
-            span.appendChild(device.type); 
-            Countly._internals.add_event(device.type, "click", function(){
-                var selectedDevice =  document.getElementsByClassName("selected-device");
+            span.appendChild(device.obj);
+            Countly._internals.add_event(device.obj, "click", function(){
+                selectedDevice =  document.getElementsByClassName("selected-device");
                 if(selectedDevice.length){
                     selectedDevice[0].style.color = "#666";
                     selectedDevice[0].classList.remove("selected-device");  
-                }                                                                                                                           
-                var context = canvas.getContext('2d');    
-                context.clearRect(0, 0, canvas.width, canvas.height);                
-                document.body.style.width = Math.min(device.maxWidth, window.innerWidth) + "px";
-                document.body.style.marginLeft = "auto";
-                document.body.style.marginRight = "auto";
+                }  
                 this.classList.add("selected-device");                                                                                                                             
                 this.style.color = "#00ff00";
+                initialDevice[0] = device;                                                                                               
+                document.body.style.width = "100%";
+                pageWidth = Countly._internals.getDocWidth();
+                canvas.setAttribute("width", "0px");
+                canvas.setAttribute("height", "0px");
+                pageWidth = Math.min(device.maxWidth, pageWidth);
+                document.body.style.width = pageWidth + "px";
+                document.body.style.marginLeft = "auto";
+                document.body.style.marginRight = "auto";
+                pageHeight = Countly._internals.getDocHeight();
+                canvas.setAttribute("width", pageWidth + "px");
+                canvas.setAttribute("height", pageHeight + "px");
+                map.resize();                
                 loadData();
             });    
         });
@@ -114,17 +136,37 @@
             canvas.setAttribute("width", "0px");
             canvas.setAttribute("height", "0px");
             setTimeout(function(){
-                canvas.setAttribute("width", Math.min(document.body.offsetWidth, Countly._internals.getDocWidth()) + "px");
-                canvas.setAttribute("height", Math.min(document.body.offsetHeight, Countly._internals.getDocHeight()) + "px");
+                document.body.style.width = "100%";
+                pageWidth = Countly._internals.getDocWidth();
+                pageHeight = Countly._internals.getDocHeight();
+                var updatedDevice = devices.filter((device) => {
+                    return device.minWidth < pageWidth && device.maxWidth >= pageWidth;
+                });
+                canvas.setAttribute("width", pageWidth + "px");
+                canvas.setAttribute("height", pageHeight + "px");
                 map.resize();
-                drawData(); 
+                if(initialDevice[0].type != updatedDevice[0].type){
+                    initialDevice[0] = updatedDevice[0];                    
+                    var selectedDevice =  document.getElementsByClassName("selected-device");
+                    if(selectedDevice.length){
+                        selectedDevice[0].style.color = "#666";
+                        selectedDevice[0].classList.remove("selected-device");  
+                    }  
+                    selectedDevice =  document.getElementsByClassName(initialDevice[0].type);
+                    if(selectedDevice.length){
+                        selectedDevice[0].classList.add("selected-device");                                                                                                                             
+                        selectedDevice[0].style.color = "#00ff00";
+                    }
+                    loadData();
+                }else{
+                    drawData(); 
+                }
             },1);
         });
     });
     
     function loadData(){
-        var width = document.body.offsetWidth;
-        sendXmlHttpRequest({app_key:Countly.app_key, view:Countly._internals.getLastView() || window.location.pathname, period:period, width:width}, function(err, clicks){
+        sendXmlHttpRequest({app_key:Countly.app_key, view:Countly._internals.getLastView() || window.location.pathname, period:period, width:pageWidth}, function(err, clicks){
             if(!err){
                 data = clicks.data;
                 drawData();
@@ -135,8 +177,8 @@
     function drawData(){
         var heat = [];
         var point;
-        var width = document.body.offsetWidth;
-        var height = document.body.offsetHeight;
+        var width = pageWidth;
+        var height = pageHeight;
         for(var i = 0; i < data.length; i++){
             point = data[i].sg;
             if(point.type == actionType)
