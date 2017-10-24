@@ -159,14 +159,10 @@ var countlyEvents = {},
             eventCollectionName = "events" + crypto.createHash('sha1').update(shortEventName + params.app_id).digest('hex');
 
             eventHashMap[eventCollectionName] = shortEventName;
-
+                
             // If present use timestamp inside each event while recording
             if (params.qstring.events[i].timestamp) {
                 params.time = common.initTimeObj(params.appTimezone, params.qstring.events[i].timestamp);
-            }
-            else{
-                //switch back to request time
-                params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
             }
 
             common.arrayAddUniq(events, shortEventName);
@@ -264,6 +260,9 @@ var countlyEvents = {},
             }
 
             mergeEvents(eventCollections[eventCollectionName], tmpEventColl);
+            
+            //switch back to request time
+            params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
         }
 
         if (!plugins.getConfig("api").safe) {
