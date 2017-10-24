@@ -135,15 +135,19 @@ window.LoggerView = countlyView.extend({
                             ret += (row.s.name || "")+" "+(row.s.version || "");
                         }
 
-                        ret += "<br/><br/>";
-                        ret += "<b>" + jQuery.i18n.map["logger.location"] + ":</b> ";
-                        ret += "<br/>";
-
                         if (row.l.cc) {
+                            ret += "<br/><br/>";
+                            ret += "<b>" + jQuery.i18n.map["logger.location"] + ":</b> ";
+                            ret += "<br/>";
                             ret += '<div class="flag" style="background-image: url(images/flags/'+ row.l.cc.toLowerCase() + '.png);"></div>'+row.l.cc;
                             if(row.l.cty){
                                 ret += " ("+row.l.cty+")";
                             }
+                        }
+                        
+                        if (row.c) {
+                            ret += "<br/><br/>";
+                            ret += "<b>" + jQuery.i18n.map["logger.request-canceled"]+ ": " + row.c + "</b>";
                         }
 
                         return ret;
