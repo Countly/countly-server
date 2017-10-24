@@ -22,7 +22,8 @@ plugins.setConfigs("api", {
     session_cooldown: 15,
     request_threshold: 30,
     total_users: true,
-    export_limit: 10000
+    export_limit: 10000,
+    prevent_duplicate_requests: true
 });
 
 plugins.setConfigs("apps", {
@@ -250,12 +251,17 @@ if (cluster.isMaster) {
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, user){
                 params.app_user = user || {};
                 
-                //check unique milisecond timestamp, if it is the same as the last request had, 
-                //then we are having duplicate request, due to sudden connection termination
-                //except very old sdks with seconds timestamp
-                var ts = Math.round(parseFloat(params.qstring.timestamp || 0)) + "";
-                if(ts.length === 13 && params.time.mstimestamp === params.app_user.lac){
-                    params.cancelRequest = true;
+                if(plugins.getConfig("api").prevent_duplicate_requests){
+                    //check unique milisecond timestamp, if it is the same as the last request had, 
+                    //then we are having duplicate request, due to sudden connection termination
+                    var payload = params.href.substr(3) || "";
+                    if(params.req.method.toLowerCase() == 'post'){
+                        payload += params.req.body;
+                    }
+                    params.request_hash = common.crypto.createHash('sha512').update(payload).digest('hex')+(params.qstring.timestamp || params.time.mstimestamp);
+                    if(params.app_user.last_req === params.request_hash){
+                        params.cancelRequest = "Duplicate request";
+                    }
                 }
                 
                 if (params.qstring.metrics && typeof params.qstring.metrics === "string") {		
@@ -465,8 +471,9 @@ if (cluster.isMaster) {
                     }
                 } else {
                     if (plugins.getConfig("api").safe && !params.res.finished) {
-                        common.returnMessage(params, 200, 'Request ignored');
+                        common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
                     }
+                    common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
                     return done ? done() : false;
                 }
             });
@@ -667,7 +674,7 @@ if (cluster.isMaster) {
                 * @property {string} apiPath - two top level url path, for example /i/analytics
                 * @property {string} fullPath - full url path, for example /i/analytics/dashboards
                 * @property {object} files - object with uploaded files, available in POST requests which upload files
-                * @property {boolean} cancelRequest - Used for skipping SDK requests, if contains true, then request should be ignored and not processed. Can be set at any time by any plugin, but API only checks for it in beggining after / and /sdk events, so that is when plugins should set it if needed
+                * @property {string} cancelRequest - Used for skipping SDK requests, if contains true, then request should be ignored and not processed. Can be set at any time by any plugin, but API only checks for it in beggining after / and /sdk events, so that is when plugins should set it if needed. Should contain reason for request cancelation
                 * @property {boolean} bulk - True if this SDK request is processed from the bulk method
                 * @property {array} promises - Array of the promises by different events. When all promises are fulfilled, request counts as processed
                 * @property {string} ip_address - IP address of the device submitted request, exists in all SDK requests
