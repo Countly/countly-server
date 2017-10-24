@@ -169,6 +169,7 @@ if (cluster.isMaster) {
         //ignore possible opted out users for ios 10
         if(params.qstring.device_id == "00000000-0000-0000-0000-000000000000"){
             common.returnMessage(params, 400, 'Ignoring device_id');
+            common.log("request").i('Request ignored: Ignoring zero IDFA device_id', params.req.url, params.req.body);
             return done ? done() : false;
         }
         common.db.collection('apps').findOne({'key':params.qstring.app_key}, function (err, app) {
@@ -1317,6 +1318,11 @@ if (cluster.isMaster) {
                                 }
                             }
                     }
+                } else {
+                    if (plugins.getConfig("api").safe && !params.res.finished) {
+                        common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                    }
+                    common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
                 }
             };
             
