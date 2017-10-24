@@ -9,7 +9,9 @@
         apiPath = "/o/actions",
         period = Countly.passed_data.period || "30days",
         pageWidth = 0,
-        pageHeight = 0;
+        pageHeight = 0,
+        currentDevice = [],
+        dataCache = {};
     Countly._internals.loadJS(Countly.url+"/views/javascripts/simpleheat.js", function(){
         //place the toolbar
         document.body.style.position = "relative";
@@ -37,8 +39,11 @@
                 maxWidth: 10240
             },
         ];
-        
-        var initialDevice = devices.filter((device) => {
+
+        var selectedClass = ".selected-device-cly { color: #000; font-weight: bold; }";
+        insertCss(selectedClass);
+
+        currentDevice = devices.filter((device) => {
             return device.minWidth < pageWidth && device.maxWidth >= pageWidth;
         });
 
@@ -63,32 +68,22 @@
         var childSpan = document.createElement('span');
         childSpan.setAttribute('style', 'display: inline-block; margin-left: 14px; font-size: 16px; vertical-align: top; margin-top: 6px; border-left: 1px solid #ababab; padding-left: 14px;');
         childSpan.innerHTML = "Heatmaps";
+        var span = document.createElement('span');
+        span.appendChild(img);
+        span.appendChild(childSpan);
 
         devices.forEach((device) => {
             device.obj = document.createElement('span');
             device.obj.setAttribute('style', 'display: inline-block; margin-left: 14px; font-size: 16px; vertical-align: top; margin-top: 6px; cursor: pointer; padding-left: 14px;');
             device.obj.innerHTML = device.displayText;
             device.obj.setAttribute("class", device.type);
-            if(device.type == initialDevice[0].type){
-                device.obj.setAttribute('style', 'color: #00ff00; display: inline-block; margin-left: 14px; font-size: 16px; vertical-align: top; margin-top: 6px; cursor: pointer; padding-left: 14px;');
-                device.obj.setAttribute('class', 'selected-device ' + device.type);
-            }
-        })
-        var span = document.createElement('span');
-        span.appendChild(img);
-        span.appendChild(childSpan);
 
-        devices.forEach((device) => {
+            if(device.type == currentDevice[0].type){
+                device.obj.setAttribute('class', 'selected-device-cly ' + device.type);
+            }
             span.appendChild(device.obj);
-            Countly._internals.add_event(device.obj, "click", function(){
-                selectedDevice =  document.getElementsByClassName("selected-device");
-                if(selectedDevice.length){
-                    selectedDevice[0].style.color = "#666";
-                    selectedDevice[0].classList.remove("selected-device");  
-                }  
-                this.classList.add("selected-device");                                                                                                                             
-                this.style.color = "#00ff00";
-                initialDevice[0] = device;                                                                                               
+
+            Countly._internals.add_event(device.obj, "click", function(){                                                                                          
                 document.body.style.width = "100%";
                 pageWidth = Countly._internals.getDocWidth();
                 canvas.setAttribute("width", "0px");
@@ -100,10 +95,43 @@
                 pageHeight = Countly._internals.getDocHeight();
                 canvas.setAttribute("width", pageWidth + "px");
                 canvas.setAttribute("height", pageHeight + "px");
-                map.resize();                
-                loadData();
+                map.resize();
+                
+                var updatedDevice = devices.filter((device) => {
+                    return device.minWidth < pageWidth && device.maxWidth >= pageWidth;
+                });
+
+                if(currentDevice[0].type != updatedDevice[0].type){
+                    currentDevice[0] = updatedDevice[0];           
+                    var selectedDevice = document.getElementsByClassName("selected-device-cly");
+                    if(selectedDevice.length){
+                        selectedDevice[0].classList.remove("selected-device-cly");  
+                    }  
+                    this.classList.add("selected-device-cly");  
+                }
+                                                                                                                                           
+                checkCache();
             });    
         });
+
+        var refresh = document.createElement('button');
+        refresh.setAttribute('style', 'display: inline-block; margin-left: 30px; background: #333; color: #fff; font-size: 16px; vertical-align: top; margin-top: 0px; padding:6px 10px 6px 10px; border: 1px solid #333; border-radius: 4px; cursor: pointer');
+        refresh.innerHTML = "Refresh";
+        refresh.setAttribute("class", 'refresh');
+        span.appendChild(refresh);
+
+        Countly._internals.add_event(refresh, "click", function(){
+            dataCache = {};
+            canvas.setAttribute("width", "0px");
+            canvas.setAttribute("height", "0px");
+            setTimeout(function(){
+                canvas.setAttribute("width", pageWidth + "px");
+                canvas.setAttribute("height", pageHeight + "px");
+                map.resize();
+                checkCache();            
+            },1);
+        });
+        
         span.setAttribute('style', 'font:20px "PT Sans", sans-serif;margin-left: 22px;color:#666;');
         topbar.appendChild(span);
         var closeX = document.createElement('a');
@@ -145,19 +173,17 @@
                 canvas.setAttribute("width", pageWidth + "px");
                 canvas.setAttribute("height", pageHeight + "px");
                 map.resize();
-                if(initialDevice[0].type != updatedDevice[0].type){
-                    initialDevice[0] = updatedDevice[0];                    
-                    var selectedDevice =  document.getElementsByClassName("selected-device");
+                if(currentDevice[0].type != updatedDevice[0].type){
+                    currentDevice[0] = updatedDevice[0];                    
+                    var selectedDevice = document.getElementsByClassName("selected-device-cly");
                     if(selectedDevice.length){
-                        selectedDevice[0].style.color = "#666";
-                        selectedDevice[0].classList.remove("selected-device");  
+                        selectedDevice[0].classList.remove("selected-device-cly");  
                     }  
-                    selectedDevice =  document.getElementsByClassName(initialDevice[0].type);
+                    selectedDevice = document.getElementsByClassName(currentDevice[0].type);
                     if(selectedDevice.length){
-                        selectedDevice[0].classList.add("selected-device");                                                                                                                             
-                        selectedDevice[0].style.color = "#00ff00";
+                        selectedDevice[0].classList.add("selected-device-cly");                                                                                                                             
                     }
-                    loadData();
+                    checkCache();
                 }else{
                     drawData(); 
                 }
@@ -165,10 +191,29 @@
         });
     });
     
+    function insertCss(code) {
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        document.getElementsByTagName("head")[0].appendChild( style );            
+        if (style.styleSheet) {
+            style.styleSheet.cssText = code;
+        } else {
+            style.innerHTML = code;
+        }
+    }
+
+    function checkCache(){
+        if(dataCache[currentDevice[0].type]){
+            drawData();
+        }else{
+            loadData();                    
+        }
+    }
+
     function loadData(){
         sendXmlHttpRequest({app_key:Countly.app_key, view:Countly._internals.getLastView() || window.location.pathname, period:period, width:pageWidth}, function(err, clicks){
             if(!err){
-                data = clicks.data;
+                dataCache[currentDevice[0].type] = clicks.data;
                 drawData();
             }
         });
@@ -179,6 +224,7 @@
         var point;
         var width = pageWidth;
         var height = pageHeight;
+        var data = dataCache[currentDevice[0].type];
         for(var i = 0; i < data.length; i++){
             point = data[i].sg;
             if(point.type == actionType)
@@ -206,7 +252,6 @@
         }
         return data;
     }
-
 
     //sending xml HTTP request
 	function sendXmlHttpRequest(params, callback) {
