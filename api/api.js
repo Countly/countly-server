@@ -310,6 +310,11 @@ if (cluster.isMaster) {
                                     if(!newAppUser.fs || oldAppUser.fs < newAppUser.fs)
                                         newAppUser.fs = oldAppUser.fs;
                                 }
+                               //check if old user has been seen before new one
+                                else if(i == "fac"){
+                                    if(!newAppUser.fac || oldAppUser.fac < newAppUser.fac)
+                                        newAppUser.fac = oldAppUser.fac;
+                                }
                                 //check if old user has been the last to be seen
                                 else if(i == "ls"){
                                     if(!newAppUser.ls || oldAppUser.ls > newAppUser.ls){
@@ -319,6 +324,12 @@ if (cluster.isMaster) {
                                             newAppUser.lsid = oldAppUser.lsid;
                                         if(oldAppUser.sd)
                                             newAppUser.sd = oldAppUser.sd;
+                                    }
+                                }
+                                //check if old user has been the last to be seen
+                                else if(i == "lac"){
+                                    if(!newAppUser.lac || oldAppUser.lac > newAppUser.lac){
+                                        newAppUser.lac = oldAppUser.lac;
                                     }
                                 }
                                 //merge custom user data
