@@ -147,7 +147,7 @@ window.LoggerView = countlyView.extend({
                         
                         if (row.c) {
                             ret += "<br/><br/>";
-                            ret += "<b>" + jQuery.i18n.map["logger.request-canceled"] + "</b>";
+                            ret += "<b>" + jQuery.i18n.map["logger.request-canceled"]+ ": " + row.c + "</b>";
                         }
 
                         return ret;

@@ -2581,6 +2581,7 @@ Backbone.history.noHistory = function(hash){
 };
 
 if(countlyCommon.APP_NAMESPACE !== false){
+    Backbone.history.__checkUrl = Backbone.history.checkUrl;
     Backbone.history._getFragment = Backbone.history.getFragment;
     Backbone.history.appIds = [];
     for(var i in countlyGlobal.apps){
@@ -2603,12 +2604,12 @@ if(countlyCommon.APP_NAMESPACE !== false){
         if(countlyCommon.ACTIVE_APP_ID !== app_id){
             app.switchApp(app_id, function(){
                 if(Backbone.history.checkOthers())
-                    Backbone.history._checkUrl();
+                    Backbone.history.__checkUrl();
             });
         }
         else{
             if(Backbone.history.checkOthers())
-                Backbone.history._checkUrl();
+                Backbone.history.__checkUrl();
         }
     };
     
