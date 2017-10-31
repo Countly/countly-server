@@ -589,7 +589,7 @@ var pluginManager = function pluginManager(){
             } else {
                 ob.host = (config.mongodb.host + ':' + config.mongodb.port);
             }
-            if(config.mongodb.serverOptions.ssl){
+            if(config.mongodb.serverOptions && config.mongodb.serverOptions.ssl){
                 ob.ssl = "";
                 ob.sslAllowInvalidCertificates = "";
                 ob.sslAllowInvalidHostnames = "";
