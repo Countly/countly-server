@@ -132,8 +132,8 @@ countly_backupdb (){
     (mkdir -p $1 ;
     cd $1 ;
     echo "Backing up mongodb...";
-    mongodump --db countly > /dev/null;
-    mongodump --db countly_drill > /dev/null;
+    mongodump $(node $DIR/scripts/db.conf.js countly) > /dev/null;
+    mongodump $(node $DIR/scripts/db.conf.js countly_drill) > /dev/null;
     )
 }
 
@@ -219,13 +219,13 @@ countly_restoredb (){
     fi
     if [ -d $1/dump/countly ]; then
         echo "Restoring countly database...";
-        mongorestore --db countly --batchSize=10 $1/dump/countly > /dev/null;
+        mongorestore $(node $DIR/scripts/db.conf.js countly) --batchSize=10 $1/dump/countly > /dev/null;
     else
         echo "No countly database dump to restore from";
     fi
     if [ -d $1/dump/countly_drill ]; then
         echo "Restoring countly_drill database...";
-        mongorestore --db countly_drill --batchSize=10 $1/dump/countly_drill > /dev/null;
+        mongorestore $(node $DIR/scripts/db.conf.js countly_drill) --batchSize=10 $1/dump/countly_drill > /dev/null;
     else
         echo "No countly_drill database dump to restore from";
     fi
