@@ -13,193 +13,311 @@
         currentDevice = [],
         dataCache = {};
     Countly._internals.loadJS(Countly.url+"/views/javascripts/simpleheat.js", function(){
-        //place the toolbar
-        document.body.style.position = "relative";
-        var origtop = document.body.style.top;
-        var toppx = 60;
-        pageWidth = Countly._internals.getDocWidth();
-        pageHeight = Countly._internals.getDocHeight();
-        var devices = [
-            {
-                type: "mobile",
-                displayText: "Mobile",
-                minWidth: 0,
-                maxWidth: 767
-            },
-            {
-                type: "tablet",
-                displayText: "Tablet",
-                minWidth: 767,
-                maxWidth: 1024
-            },
-            {
-                type: "desktop",
-                displayText: "Desktop",
-                minWidth: 1024,
-                maxWidth: 10240
-            },
-        ];
-
-        var selectedClass = ".selected-device-cly { color: #000; font-weight: bold; }";
-        insertCss(selectedClass);
-
-        currentDevice = devices.filter((device) => {
-            return device.minWidth < pageWidth && device.maxWidth >= pageWidth;
-        });
-
-        if(origtop)
-            toppx += parseInt(origtop);
-        document.body.style.top = toppx+"px";
-        var topbar = document.createElement('div');
-        topbar.setAttribute("id", "cly-topbar");
-        topbar.style.position = "fixed";
-        topbar.style.top = "0px";
-        topbar.style.left = "0px";
-        topbar.style.width = "100%";
-        topbar.style.height = "45px";
-        topbar.style.paddingTop = "15px";
-        topbar.style.backgroundColor = "#F0F3F7";
-        topbar.style.boxSizing = "content-box";
-        topbar.style.zIndex = 1000001;
-        document.body.appendChild(topbar);
-        var img = document.createElement('img');
-        img.src = Countly.url+"/images/dashboard/countly_logo.svg";
-        img.setAttribute('style', 'height:30px !important; vertical-align:-7px;');
-        var childSpan = document.createElement('span');
-        childSpan.setAttribute('style', 'display: inline-block; margin-left: 14px; font-size: 16px; vertical-align: top; margin-top: 6px; border-left: 1px solid #ababab; padding-left: 14px;');
-        childSpan.innerHTML = "Heatmaps";
-        var span = document.createElement('span');
-        span.appendChild(img);
-        span.appendChild(childSpan);
-
-        devices.forEach((device) => {
-            device.obj = document.createElement('span');
-            device.obj.setAttribute('style', 'display: inline-block; margin-left: 14px; font-size: 16px; vertical-align: top; margin-top: 6px; cursor: pointer; padding-left: 14px;');
-            device.obj.innerHTML = device.displayText;
-            device.obj.setAttribute("class", device.type);
-
-            if(device.type == currentDevice[0].type){
-                device.obj.setAttribute('class', 'selected-device-cly ' + device.type);
-            }
-            span.appendChild(device.obj);
-
-            Countly._internals.add_event(device.obj, "click", function(){                                                                                          
-                document.body.style.width = "100%";
+	    loadCSS("http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css", function () {
+            loadCSS(Countly.url + "/views/stylesheets/heatmap.css", function () {
+		        document.body.style.position = "relative";
+                var origtop = document.body.style.top;
+                var toppx = 59;
                 pageWidth = Countly._internals.getDocWidth();
-                canvas.setAttribute("width", "0px");
-                canvas.setAttribute("height", "0px");
-                pageWidth = Math.min(device.maxWidth, pageWidth);
-                document.body.style.width = pageWidth + "px";
-                document.body.style.marginLeft = "auto";
-                document.body.style.marginRight = "auto";
                 pageHeight = Countly._internals.getDocHeight();
-                canvas.setAttribute("width", pageWidth + "px");
-                canvas.setAttribute("height", pageHeight + "px");
-                map.resize();
-                
-                var updatedDevice = devices.filter((device) => {
+                var devices = [
+                    {
+                        type: "mobile",
+                        displayText: "Mobile",
+                        minWidth: 0,
+                        maxWidth: 767
+                    },
+                    {
+                        type: "tablet",
+                        displayText: "Tablet",
+                        minWidth: 767,
+                        maxWidth: 1024
+                    },
+                    {
+                        type: "desktop",
+                        displayText: "Desktop",
+                        minWidth: 1024,
+                        maxWidth: 10240
+                    },
+                ];
+
+                currentDevice = devices.filter((device) => {
                     return device.minWidth < pageWidth && device.maxWidth >= pageWidth;
                 });
 
-                if(currentDevice[0].type != updatedDevice[0].type){
-                    currentDevice[0] = updatedDevice[0];           
-                    var selectedDevice = document.getElementsByClassName("selected-device-cly");
-                    if(selectedDevice.length){
-                        selectedDevice[0].classList.remove("selected-device-cly");  
-                    }  
-                    this.classList.add("selected-device-cly");  
-                }
-                                                                                                                                           
-                checkCache();
-            });    
-        });
+                if (origtop)
+                    toppx += parseInt(origtop);
+                document.body.style.top = toppx + "px";
 
-        var refresh = document.createElement('button');
-        refresh.setAttribute('style', 'display: inline-block; margin-left: 30px; background: #333; color: #fff; font-size: 16px; vertical-align: top; margin-top: 0px; padding:6px 10px 6px 10px; border: 1px solid #333; border-radius: 4px; cursor: pointer');
-        refresh.innerHTML = "Refresh";
-        refresh.setAttribute("class", 'refresh');
-        span.appendChild(refresh);
+                //TOPBAR
+                var topbar = document.createElement('div');
+                topbar.setAttribute("id", "cly-topbar");
+                document.body.appendChild(topbar);
 
-        Countly._internals.add_event(refresh, "click", function(){
-            dataCache = {};
-            canvas.setAttribute("width", "0px");
-            canvas.setAttribute("height", "0px");
-            setTimeout(function(){
-                canvas.setAttribute("width", pageWidth + "px");
-                canvas.setAttribute("height", pageHeight + "px");
-                map.resize();
-                checkCache();            
-            },1);
-        });
-        
-        span.setAttribute('style', 'font:20px "PT Sans", sans-serif;margin-left: 22px;color:#666;');
-        topbar.appendChild(span);
-        var closeX = document.createElement('a');
-        closeX.innerHTML = "&#10006;";
-        closeX.setAttribute('style', 'font: 22px "PT Sans", sans-serif;position: absolute;top: 17px;right: 22px;color:#666;');
-        closeX.href = "#";
-        topbar.appendChild(closeX);
-        Countly._internals.add_event(closeX, "click", function(){
-            topbar.style.display = "none";
-            canvas.style.display = "none";
-            document.body.style.top = origtop;
-            window.name = null;
-        });
-        //make canvas on whole screen
-		var canvas = document.createElement("canvas");
-		canvas.style.position = "absolute";
-		canvas.style.top = "0px";
-		canvas.style.left = "0px";
-		canvas.style.zIndex = 1000000;
-		canvas.style.opacity = 0.5;
-        canvas.style.pointerEvents = "none";
-        canvas.setAttribute("width", Countly._internals.getDocWidth() + "px");
-        canvas.setAttribute("height", Countly._internals.getDocHeight() + "px");
-		canvas.id = "cly-canvas-map";
-		document.body.appendChild(canvas);
-        map = simpleheat("cly-canvas-map");
-        loadData();
-        Countly._internals.add_event(window, "resize", function(){
-            Countly.stop_time();
-            canvas.setAttribute("width", "0px");
-            canvas.setAttribute("height", "0px");
-            setTimeout(function(){
-                document.body.style.width = "100%";
-                pageWidth = Countly._internals.getDocWidth();
-                pageHeight = Countly._internals.getDocHeight();
-                var updatedDevice = devices.filter((device) => {
-                    return device.minWidth < pageWidth && device.maxWidth >= pageWidth;
-                });
-                canvas.setAttribute("width", pageWidth + "px");
-                canvas.setAttribute("height", pageHeight + "px");
-                map.resize();
-                if(currentDevice[0].type != updatedDevice[0].type){
-                    currentDevice[0] = updatedDevice[0];                    
-                    var selectedDevice = document.getElementsByClassName("selected-device-cly");
-                    if(selectedDevice.length){
-                        selectedDevice[0].classList.remove("selected-device-cly");  
-                    }  
-                    selectedDevice = document.getElementsByClassName(currentDevice[0].type);
-                    if(selectedDevice.length){
-                        selectedDevice[0].classList.add("selected-device-cly");                                                                                                                             
+                //TOPBAR IMAGE
+                var img = document.createElement('img');
+                img.src =  Countly.url+"/images/dashboard/countly_logo.svg";
+                img.setAttribute('class', 'cly-logo');
+		        topbar.appendChild(img);
+
+                //MAIN DROPDOWN CONTAINER DIV WITHIN TOPBAR
+                var mainDiv = document.createElement('div');
+                mainDiv.setAttribute('class', 'cly-center-menu');
+		        topbar.appendChild(mainDiv);
+
+                //DROPDOWN TO SELECT THE HEATMAP TYPE --- STARTS HERE ---
+                var mapsDropdown = document.createElement('div');
+                mapsDropdown.setAttribute('class', 'cly-dropdown cly-bordered cly-large cly-active');
+
+                var mapSpan = document.createElement('span');
+                mapSpan.innerHTML = "Heatmap Type";
+                mapSpan.setAttribute('class', 'cly-title');
+
+                var selectedMap = document.createElement('div');
+                selectedMap.innerHTML = "Click Map";
+                selectedMap.setAttribute('class', 'cly-selected cly-map');
+
+                var mapMenuDiv = document.createElement('div');
+                mapMenuDiv.setAttribute('class', 'cly-menu');
+
+                var mapListDiv = document.createElement('div');
+                mapListDiv.setAttribute('class', 'cly-list');
+                mapListDiv.setAttribute('id', 'cly-maps');
+
+                var mapTypes = ['click'];
+
+                mapTypes.forEach((map) => {
+                    var tag = document.createElement('a');
+                    tag.setAttribute('class', 'cly-item');
+                    tag.setAttribute('data-value', map);
+                    tag.innerHTML = capitalize(map) + " Map";
+                    tag.addEventListener("click", function (e) {
+                        var dropdowns = topbar.getElementsByClassName("cly-dropdown");
+
+                        if (dropdowns.length) {
+                            Object.keys(dropdowns).forEach((drop) => {
+                                dropdowns[drop].classList.remove("cly-clicked");
+                            })
+                        }
+
+                        selectedMap.innerHTML = capitalize(map) + " Map";
+                        e.stopPropagation();
+                    })
+
+                    mapListDiv.appendChild(tag);
+                })
+
+                mapMenuDiv.appendChild(mapListDiv);
+                mapsDropdown.appendChild(mapSpan);
+                mapsDropdown.appendChild(selectedMap);
+                mapsDropdown.appendChild(mapMenuDiv);
+
+                //DROPDOWN TO SELECT THE HEATMAP TYPE --- ENDS HERE ---
+
+                //DROPDOWN TO SELECT THE DEVICE TYPE --- STARTS HERE ---
+                var deviceDropdown = document.createElement('div');
+                deviceDropdown.setAttribute('class', 'cly-dropdown cly-bordered cly-large cly-active');
+
+                var deviceSpan = document.createElement('span');
+                deviceSpan.innerHTML = "Resolution";
+                deviceSpan.setAttribute('class', 'cly-title');
+
+                var selectedDevice = document.createElement('div');
+                selectedDevice.innerHTML = "Desktop";
+                selectedDevice.setAttribute('class', 'cly-selected cly-device');
+
+                var deviceMenuDiv = document.createElement('div');
+                deviceMenuDiv.setAttribute('class', 'cly-menu');
+
+                var deviceListDiv = document.createElement('div');
+                deviceListDiv.setAttribute('class', 'cly-list');
+                deviceListDiv.setAttribute('id', 'cly-devices');
+
+                devices.forEach((device) => {
+                    var tag = document.createElement('a');
+                    tag.setAttribute('class', 'cly-item ');
+                    tag.setAttribute('data-value', device.type);
+                    tag.innerHTML = device.displayText;
+                    tag.addEventListener("click", function (e) {
+                        var dropdowns = topbar.getElementsByClassName("cly-dropdown");
+
+                        if (dropdowns.length) {
+                            Object.keys(dropdowns).forEach((drop) => {
+                                dropdowns[drop].classList.remove("cly-clicked");
+                            })
+                        }
+
+                        selectedDevice.innerHTML = device.displayText;
+                        e.stopPropagation();
+                    })
+
+                    if (device.type == currentDevice[0].type) {
+                        selectedDevice.innerHTML = device.displayText;
                     }
-                    checkCache();
-                }else{
-                    drawData(); 
+
+                    deviceListDiv.appendChild(tag);
+
+                    Countly._internals.add_event(tag, "click", function () {
+                        document.body.style.width = "100%";
+                        pageWidth = Countly._internals.getDocWidth();
+                        canvas.setAttribute("width", "0px");
+                        canvas.setAttribute("height", "0px");
+                        pageWidth = Math.min(device.maxWidth, pageWidth);
+                        document.body.style.width = pageWidth + "px";
+                        document.body.style.marginLeft = "auto";
+                        document.body.style.marginRight = "auto";
+                        pageHeight = Countly._internals.getDocHeight();
+                        canvas.setAttribute("width", pageWidth + "px");
+                        canvas.setAttribute("height", pageHeight + "px");
+                        map.resize();
+
+                        var updatedDevice = devices.filter((device) => {
+                            return device.minWidth < pageWidth && device.maxWidth >= pageWidth;
+                        });
+
+                        currentDevice[0] = updatedDevice[0];
+                        checkCache();
+                    });
+                })
+
+                deviceMenuDiv.appendChild(deviceListDiv);
+                deviceDropdown.appendChild(deviceSpan);
+                deviceDropdown.appendChild(selectedDevice);
+                deviceDropdown.appendChild(deviceMenuDiv);
+                //DROPDOWN TO SELECT THE DEVICE TYPE --- ENDS HERE ---
+
+                listenDropdownEvent("click", mapsDropdown);
+                listenDropdownEvent("click", deviceDropdown);
+
+                //REFRESH 
+                var refresh = document.createElement('div');
+                refresh.setAttribute('class', 'cly-block');
+
+                var icon = document.createElement('i');
+                icon.setAttribute('class', 'ion-refresh');
+
+                var text = document.createElement('p');
+                text.innerHTML = 'Reload Data';
+
+                refresh.appendChild(icon);
+                refresh.appendChild(text);
+
+                mainDiv.appendChild(mapsDropdown);
+                mainDiv.appendChild(deviceDropdown);
+                mainDiv.appendChild(refresh);
+
+                Countly._internals.add_event(refresh, "click", function () {
+                    dataCache = {};
+                    canvas.setAttribute("width", "0px");
+                    canvas.setAttribute("height", "0px");
+                    setTimeout(function () {
+                        canvas.setAttribute("width", pageWidth + "px");
+                        canvas.setAttribute("height", pageHeight + "px");
+                        map.resize();
+                        checkCache();
+                    }, 1);
+                });
+
+                var closeX = document.createElement('a');
+                closeX.setAttribute('class', 'cly-close ion-android-close');
+                closeX.href = "#";
+                topbar.appendChild(closeX);
+                Countly._internals.add_event(closeX, "click", function () {
+                    topbar.style.display = "none";
+                    canvas.style.display = "none";
+                    document.body.style.top = origtop;
+                    window.name = null;
+                });
+
+                document.body.addEventListener("click", function (e) {
+                    var dropdowns = topbar.getElementsByClassName("cly-dropdown");
+                    if (dropdowns.length) {
+                        Object.keys(dropdowns).forEach((drop) => {
+                            dropdowns[drop].classList.remove("cly-clicked");
+                        })
+                    }
+
+                    e.stopPropagation();
+                })
+
+                //make canvas on whole screen
+                var canvas = document.createElement("canvas");
+                canvas.style.position = "absolute";
+                canvas.style.top = "0px";
+                canvas.style.left = "0px";
+                canvas.style.zIndex = 1000000;
+                canvas.style.opacity = 0.5;
+                canvas.style.pointerEvents = "none";
+                canvas.setAttribute("width", Countly._internals.getDocWidth() + "px");
+                canvas.setAttribute("height", Countly._internals.getDocHeight() + "px");
+                canvas.id = "cly-canvas-map";
+                document.body.appendChild(canvas);
+                map = simpleheat("cly-canvas-map");
+                checkCache();
+
+                Countly._internals.add_event(window, "resize", function () {
+                    Countly.stop_time();
+                    canvas.setAttribute("width", "0px");
+                    canvas.setAttribute("height", "0px");
+                    setTimeout(function () {
+                        document.body.style.width = "100%";
+                        pageWidth = Countly._internals.getDocWidth();
+                        pageHeight = Countly._internals.getDocHeight();
+                        var updatedDevice = devices.filter((device) => {
+                            return device.minWidth < pageWidth && device.maxWidth >= pageWidth;
+                        });
+                        canvas.setAttribute("width", pageWidth + "px");
+                        canvas.setAttribute("height", pageHeight + "px");
+                        map.resize();
+                        if (currentDevice[0].type != updatedDevice[0].type) {
+                            currentDevice[0] = updatedDevice[0];
+                            selectedDevice.innerHTML = currentDevice[0].displayText;
+                            checkCache();
+                        } else {
+                            drawData();
+                        }
+                    }, 1);
+                });
+
+                function listenDropdownEvent(event, element) {
+                    element.addEventListener(event, function (e) {
+                        var wasActive = element.classList.contains("cly-clicked");
+                        var dropdowns = topbar.getElementsByClassName("cly-dropdown");
+
+                        if (dropdowns.length) {
+                            Object.keys(dropdowns).forEach((drop) => {
+                                dropdowns[drop].classList.remove("cly-clicked");
+                            })
+                        }
+
+                        if (wasActive) {
+                            element.classList.remove("cly-clicked");
+                        } else {
+                            element.classList.add("cly-clicked");
+                        }
+
+                        e.stopPropagation();
+                    });
                 }
-            },1);
-        });
+           })
+        });   
     });
     
-    function insertCss(code) {
-        var style = document.createElement('style');
-        style.type = 'text/css';
-        document.getElementsByTagName("head")[0].appendChild( style );            
-        if (style.styleSheet) {
-            style.styleSheet.cssText = code;
-        } else {
-            style.innerHTML = code;
-        }
+    function loadCSS(css, callback) {
+        var fileref = document.createElement('link'), loaded;
+        fileref.setAttribute("rel", "stylesheet");
+        fileref.setAttribute("href", css);
+        fileref.onreadystatechange = fileref.onload = function () {
+            if (!loaded) {
+                callback();
+            }
+            loaded = true;
+        };
+        document.getElementsByTagName("head")[0].appendChild(fileref);
+    } 
+   
+    function capitalize(str) {
+        return str[0].toUpperCase() + str.slice(1);
     }
 
     function checkCache(){
