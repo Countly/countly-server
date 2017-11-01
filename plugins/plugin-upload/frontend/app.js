@@ -15,6 +15,7 @@ var log = common.log('plugin-upload:app');
     
 
 var package_name= '';
+var plugin_dir="";
 var plugindata = {};
 
 //Checking if provided plugin name is not in given file
@@ -85,9 +86,12 @@ function check_package_file(path)
             if(mydata.name.indexOf(".")>-1){
                 return  reject(Error('name_invalid'));//name shall not contain dot
             }
-
-            check_name_list(__dirname + '/../../plugins.ee.json',mydata.name,false)
-            .then(function () {return check_name_list(__dirname + '/../../plugins.json',mydata.name,true)})
+            if(!plugin_dir || plugin_dir=='' || plugin_dir=='unpacked')
+            {
+                plugin_dir = mydata.name;
+            }
+            check_name_list(__dirname + '/../../plugins.ee.json',plugin_dir,false)
+            .then(function () {return check_name_list(__dirname + '/../../plugins.json',plugin_dir,true)})
             .then(
                 function(result)
                 {
@@ -142,11 +146,11 @@ function check_structure(path,app,countlyDb)
 function reset_plugin_dir()
 {
     return new Promise(function(resolve, reject){
-        if(package_name!='')
+        if(plugin_dir!='')
         {
-            if(fs.existsSync(__dirname + '/../../'+package_name))
+            if(fs.existsSync(__dirname + '/../../'+plugin_dir))
             {
-                fse.remove(__dirname + '/../../'+package_name, err => {
+                fse.remove(__dirname + '/../../'+plugin_dir, err => {
                     if (err) {reject(Error('unable_copy_files')); } 
                     else
                         resolve();
@@ -197,18 +201,26 @@ function validate_files(path,app,countlyDb)
     return new Promise(function(resolve, reject){
         //sometimes there is created subfolder when extracted - fix it
         path = fix_my_path(path);
+        
+        
         //check
         if(path==false)
             return reject(Error("Folder missing"));
         else
         {
+            var foldername = path.split('/');
+            plugin_dir = foldername[foldername.length-1];
+            
+            //if(!(ff) || ff=='unpacked' || ff=='')
+
             check_package_file(path)
             .then(function(){ return check_structure(path,app,countlyDb);})
             .then(function(){ return reset_plugin_dir();})
             .then(
                 function(result) {
                     //copy files
-                    fse.move(path, __dirname + '/../../'+package_name ).then(() => { 
+
+                    fse.move(path, __dirname + '/../../'+plugin_dir ).then(() => { 
                       return resolve();
                     })
                     .catch(err => {reject(err);});
@@ -417,7 +429,7 @@ function extract_files(ext,target_path)
                             cleanup()
                             .then( function(){
                                 plugins.callMethod("logAction", {req:req, user:{_id:req.session.uid, email:req.session.email}, action:"plugin_uploaded", data:plugindata});
-                                res.send('Success.'+package_name);
+                                res.send('Success.'+plugin_dir);
                             });
                         },
                         function(err) {

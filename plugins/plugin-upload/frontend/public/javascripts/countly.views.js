@@ -41,11 +41,10 @@ function check_ext(file)
 
 function show_me(myname)
 {//sometimes it gets called a litle bit too soon. 
-    console.log(myname);
     if($(myname))
     {
         $(myname).parent().parent().parent().css('background-color','#baffac');
-        $('html,body').scrollTop($(myname).parent().offset().top - 50);
+        $('html,body').scrollTop($(myname).parent().offset().top - 200);
     }
     else
     {
