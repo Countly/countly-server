@@ -166,7 +166,7 @@ window.ViewsView = countlyView.extend({
                 }
                 if(self.token !== false){
                     var path = self.useView.replace("#/analytics/views/action-map/", "");
-                    window.open(url+path, "cly:" + JSON.stringify({"token":self.token,"purpose":"heatmap",period:countlyCommon.getPeriodForAjax()}));
+                    window.open(url+path, "cly:" + JSON.stringify({"token":self.token,"purpose":"heatmap",period:countlyCommon.getPeriodForAjax(),showHeatMap: true}));
                 }
                 $('.widget-content > .cly-button-menu-trigger').removeClass("active");
             });
