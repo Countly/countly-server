@@ -1227,6 +1227,7 @@ table.events-table { width:100%; padding:0; margin:0; }
 .options li { font:12px Ubuntu,Helvetica,sans-serif; color: #9c9c9c; padding: 2px 20px; cursor:pointer; border-bottom: 1px solid #313131; }
 .options li:hover{ background-color: #000; }
 .options li span { line-height:23px; }
+.options li span.li-explanation{ color:#4f4f4f; display:block; font-size: 11px;}
 
 /* ALL APPS */
 .allapps .dataTable-top {border-radius: 0;}

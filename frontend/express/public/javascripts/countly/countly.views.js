@@ -1220,7 +1220,9 @@ window.ManageAppsView = countlyView.extend({
             $("#clear-app-data").removeClass('active');
             $(".options").hide();
             var period = $(this).attr("id").replace("clear-", "");
-            CountlyHelpers.confirm(jQuery.i18n.map["management-applications.clear-confirm"], "red", function (result) {
+            
+            var helper_msg =jQuery.i18n.map["management-applications.clear-confirm-"+period] || jQuery.i18n.map["management-applications.clear-confirm-period"];
+            CountlyHelpers.confirm(helper_msg, "red", function (result) {
                 if (!result) {
                     return true;
                 }
@@ -1246,7 +1248,7 @@ window.ManageAppsView = countlyView.extend({
                         } else {
                             $(document).trigger("/i/apps/reset", { app_id: appId, period: period });
 
-                            if(period == "all"){
+                            if(period == "all" || period=="reset"){
                                 countlySession.reset();
                                 countlyLocation.reset();
                                 countlyCity.reset();
