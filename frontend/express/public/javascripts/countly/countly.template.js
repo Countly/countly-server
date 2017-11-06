@@ -879,6 +879,28 @@ var AppRouter = Backbone.Router.extend({
                 });
                 extendSession();
             }
+            else{
+                //session should not timeout, extend cookie twice a year
+                var extendSession = function () {
+                    $.ajax({
+                        url: countlyGlobal["path"] + "/session",
+                        success: function (result) {
+                            if (result == "logout") {
+                                $("#user-logout").click();
+                                window.location = "/logout";
+                            }
+                            else{
+                                setTimeout(function () {
+                                    extendSession();
+                                }, 1000 * 60 * 60 * 24 * 182);
+                            }
+                        }
+                    });
+                };
+                setTimeout(function () {
+                    extendSession();
+                }, 1000 * 60 * 60 * 24 * 182);
+            }
 
             // If date range is selected initialize the calendar with these
             var periodObj = countlyCommon.getPeriod();

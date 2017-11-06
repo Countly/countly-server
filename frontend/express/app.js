@@ -249,9 +249,12 @@ var oneYear = 31557600000;
 app.use(countlyConfig.path, express.static(__dirname + '/public', { maxAge:oneYear }));
 app.use(session({
     secret:'countlyss',
+    cookie: { maxAge: 1000 * 60 * 60 * 24 * 365 },
     store:new SkinStore(countlyDb),
     saveUninitialized: false,
-    resave: false
+    resave: true,
+    rolling: true,
+    unset: "destroy"
 }));
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
@@ -843,25 +846,27 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                             }, function(a, c, b) {});
                         });
                     }
-        
-                    req.session.uid = member["_id"];
-                    req.session.gadm = (member["global_admin"] == true);
-                        req.session.email = member["email"];
-                    req.session.settings = member.settings;
-                    var update = {last_login:Math.round(new Date().getTime()/1000)};
-                    if(typeof member.password_changed === "undefined"){
-                        update.password_changed = Math.round(new Date().getTime()/1000);
-                    }
-                    if(req.body.lang && req.body.lang != member["lang"]){
-                        update.lang = req.body.lang;
-                    }
-                    if(Object.keys(update).length){
-                        countlyDb.collection('members').update({_id:member["_id"]}, {$set:update}, function(){});
-                    }
-                        if(plugins.getConfig("frontend", member.settings).session_timeout)
-                            req.session.expires = Date.now()+plugins.getConfig("frontend", member.settings).session_timeout;
-                    res.redirect(countlyConfig.path+'/dashboard');
-                    bruteforce.reset(req.body.username);
+                    req.session.regenerate(function(err) {
+                        // will have a new session here
+                        req.session.uid = member["_id"];
+                        req.session.gadm = (member["global_admin"] == true);
+                            req.session.email = member["email"];
+                        req.session.settings = member.settings;
+                        var update = {last_login:Math.round(new Date().getTime()/1000)};
+                        if(typeof member.password_changed === "undefined"){
+                            update.password_changed = Math.round(new Date().getTime()/1000);
+                        }
+                        if(req.body.lang && req.body.lang != member["lang"]){
+                            update.lang = req.body.lang;
+                        }
+                        if(Object.keys(update).length){
+                            countlyDb.collection('members').update({_id:member["_id"]}, {$set:update}, function(){});
+                        }
+                            if(plugins.getConfig("frontend", member.settings).session_timeout)
+                                req.session.expires = Date.now()+plugins.getConfig("frontend", member.settings).session_timeout;
+                        res.redirect(countlyConfig.path+'/dashboard');
+                        bruteforce.reset(req.body.username);
+                    });
                 }
             } else {
                 plugins.callMethod("loginFailed", {req:req, res:res, next:next, data:req.body});
