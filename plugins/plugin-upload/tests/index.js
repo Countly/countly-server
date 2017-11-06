@@ -97,29 +97,31 @@ function addOkTest(name,ext,description,pluginName){
 
 //Validating empty upload+ logging in
 describe("Setup+check empty upload", function(){
-        before(function( done ){
-            testUtils.logout();
-            testUtils.login( request );
-            testUtils.waitLogin( done );
-        });
-        it("check empty", function(done){
-        
-            API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
-            APP_ID = testUtils.get("APP_ID");
-            APP_KEY = testUtils.get("APP_KEY");
-
-            request
-            .post('/plugins/plugin-upload?_csrf='+testUtils.getCSRF()+'&api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
-            .expect(200)
-            .end(function(err, res){
-                if (err) return done(err);
-                (res.text).should.be.exactly("nofile");
-                done(); 
-            });
+    before(function( done ){
+        testUtils.logout();
+        testUtils.login( request );
+        testUtils.waitLogin( function(){
+            testUtils.loadCSRF(request, done);
         });
     });
+    it("check empty", function(done){
     
-        
+        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
+        APP_ID = testUtils.get("APP_ID");
+        APP_KEY = testUtils.get("APP_KEY");
+
+        request
+        .post('/plugins/plugin-upload?_csrf='+testUtils.getCSRF()+'&api_key='+API_KEY_ADMIN+'&app_id='+APP_ID)
+        .send({_csrf:testUtils.getCSRF()})
+        .expect(200)
+        .end(function(err, res){
+            if (err) return done(err);
+            (res.text).should.be.exactly("nofile");
+            done(); 
+        });
+    });
+});
+          
 var ext = ["zip","tar.gz","tar"];
 var testnames = {
     "package_invalid":"Uploading plugin should fail with error : package invalid -  Unable to parse package file",
@@ -168,7 +170,3 @@ for(var i=0; i<ext.length; i++)
 {
     addOkTest("ok",ext[i],"All files ok","plugin_example");
 }
-
-
-
-
