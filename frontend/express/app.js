@@ -290,7 +290,8 @@ app.use(function(req, res, next) {
         version:COUNTLY_VERSION,
         type:COUNTLY_TYPE,
         page:COUNTLY_PAGE,
-        title:COUNTLY_NAME
+        title:COUNTLY_NAME,
+        favicon:"images/favicon.png"
     };
     plugins.loadConfigs(countlyDb, function(){
         bruteforce.fails = plugins.getConfig("security").login_tries;
@@ -542,6 +543,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                         var countlyGlobal = {
                             countlyTitle:req.countly.title,
                             countlyVersion:req.countly.version,
+                            countlyFavicon:req.countly.favicon,
                             pluginsSHA : sha1Hash(plugins.getPlugins()),
                             apps:countlyGlobalApps,
                             defaultApp:defaultApp,
@@ -558,6 +560,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                         
                         var toDashboard = {
                             countlyTitle:req.countly.title,
+                            countlyFavicon:req.countly.favicon,
                             adminOfApps:adminOfApps,
                             userOfApps:userOfApps,
                             defaultApp:defaultApp,
@@ -629,7 +632,7 @@ app.get(countlyConfig.path+'/setup', function (req, res, next) {
         if (memberCount) {
             res.redirect(countlyConfig.path+'/login');
         } else {
-            res.render('setup', {countlyTitle:req.countly.title, countlyPage:req.countly.page, "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template});
+            res.render('setup', {countlyFavicon:req.countly.favicon,countlyTitle:req.countly.title, countlyPage:req.countly.page, "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template});
         }
     });
 });
@@ -642,7 +645,7 @@ app.get(countlyConfig.path+'/login', function (req, res, next) {
             if (memberCount) {
 				if(req.query.message)
 					req.flash('info', req.query.message);
-                res.render('login', { countlyTitle:req.countly.title, countlyPage:req.countly.page, "message":req.flash('info'), "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template  });
+                res.render('login', { countlyFavicon:req.countly.favicon,countlyTitle:req.countly.title, countlyPage:req.countly.page, "message":req.flash('info'), "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template  });
             } else {
                 res.redirect(countlyConfig.path+'/setup');
             }
@@ -654,7 +657,7 @@ app.get(countlyConfig.path+'/forgot', function (req, res, next) {
     if (req.session.uid) {
         res.redirect(countlyConfig.path+'/dashboard');
     } else {
-        res.render('forgot', { countlyTitle:req.countly.title, countlyPage:req.countly.page, "csrf":req.csrfToken(), "message":req.flash('info'), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template});
+        res.render('forgot', { countlyFavicon:req.countly.favicon,countlyTitle:req.countly.title, countlyPage:req.countly.page, "csrf":req.csrfToken(), "message":req.flash('info'), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template});
     }
 });
 
@@ -668,7 +671,7 @@ app.get(countlyConfig.path+'/reset/:prid', function (req, res, next) {
                     req.flash('info', 'reset.invalid');
                     res.redirect(countlyConfig.path+'/forgot');
                 } else {
-                    res.render('reset', { countlyTitle:req.countly.title, countlyPage:req.countly.page, "csrf":req.csrfToken(), "prid":req.params.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template });
+                    res.render('reset', { countlyFavicon:req.countly.favicon, countlyTitle:req.countly.title, countlyPage:req.countly.page, "csrf":req.csrfToken(), "prid":req.params.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template });
                 }
             } else {
                 req.flash('info', 'reset.invalid');
@@ -696,7 +699,7 @@ app.post(countlyConfig.path+'/reset', function (req, res, next) {
             countlyDb.collection('password_reset').remove({prid:req.body.prid}, function () {});
         });
     } else {
-        res.render('reset', { countlyTitle:req.countly.title, countlyPage:req.countly.page, "csrf":req.csrfToken(), "prid":req.body.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template});
+        res.render('reset', { countlyFavicon:req.countly.favicon, countlyTitle:req.countly.title, countlyPage:req.countly.page, "csrf":req.csrfToken(), "prid":req.body.prid, "message":"", path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template});
     }
 });
 
@@ -710,10 +713,10 @@ app.post(countlyConfig.path+'/forgot', function (req, res, next) {
                 countlyDb.collection('password_reset').insert({"prid":prid, "user_id":member._id, "timestamp":timestamp}, {safe:true}, function (err, password_reset) {
                     countlyMail.sendPasswordResetInfo(member, prid);
                     plugins.callMethod("passwordRequest", {req:req, res:res, next:next, data:req.body});
-                    res.render('forgot', { countlyTitle:req.countly.title, countlyPage:req.countly.page, "message":"forgot.result", "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template});
+                    res.render('forgot', { countlyFavicon:req.countly.favicon,countlyTitle:req.countly.title, countlyPage:req.countly.page, "message":"forgot.result", "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template});
                 });
             } else {
-                res.render('forgot', { countlyTitle:req.countly.title, countlyPage:req.countly.page,"message":"forgot.result", "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template});
+                res.render('forgot', { countlyFavicon:req.countly.favicon,countlyTitle:req.countly.title, countlyPage:req.countly.page,"message":"forgot.result", "csrf":req.csrfToken(), path:countlyConfig.path || "", cdn:countlyConfig.cdn || "", themeFiles:req.themeFiles, inject_template:req.template});
             }
         });
     } else {
