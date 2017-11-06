@@ -61,6 +61,18 @@ var testUtils = function testUtils(){
         if (apiKey) done();
 		else setTimeout( function(){ that.waitApiKey(done) }, 1000 );
     };
+    
+    this.loadCSRF = function(agent, done){
+        agent
+		.get('/dashboard')
+		.expect(200)
+		.end(function(err, res){
+            var rePattern = new RegExp(/countlyGlobal\["csrf_token"\] = "([^"]*)";/);
+            var arrMatches = res.text.match(rePattern);
+            csrf = arrMatches[1];
+            done();
+        });
+    };
 	
 	this.login = function(agent){
 		agent

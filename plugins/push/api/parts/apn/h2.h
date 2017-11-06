@@ -42,6 +42,7 @@ static std::string H2_APN_PATH("/3/device/");
 
 static std::string NGHTTP2_H2_ALPN = std::string("\x2h2");
 static std::string NGHTTP2_H2 = std::string("h2");
+static std::string EMPTY_STR = std::string("");
 
 #define BUFPOOL_CAPACITY 1000
 #define DUMMY_BUF_SIZE 100000
@@ -185,7 +186,7 @@ namespace apns {
 		nghttp2_session *session;
 		nghttp2_hd_deflater *deflater;
 		nghttp2_hd_inflater *inflater;
-		nghttp2_nv headers[6];
+		nghttp2_nv headers[7];
 		bool first;
 		void send_error(std::string error);
 		static void resolve_cb(uv_getaddrinfo_t* handle, int status, struct addrinfo* response);

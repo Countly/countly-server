@@ -7,7 +7,8 @@ var http = require('http'),
     jobs = require('./parts/jobs'),
     Promise = require("bluebird"),
     workers = [],
-    log = require('./utils/log.js')('core:api');
+    log = require('./utils/log.js')('core:api'),
+    rights = require('./utils/rights.js');
     
 plugins.setConfigs("api", {
     domain: "",
@@ -22,7 +23,8 @@ plugins.setConfigs("api", {
     session_cooldown: 15,
     request_threshold: 30,
     total_users: true,
-    export_limit: 10000
+    export_limit: 10000,
+    prevent_duplicate_requests: true
 });
 
 plugins.setConfigs("apps", {
@@ -46,9 +48,9 @@ plugins.setConfigs("security", {
 plugins.setConfigs('logs', {
     debug:      (countlyConfig.logging && countlyConfig.logging.debug)     ?  countlyConfig.logging.debug.join(', ')    : '',
     info:       (countlyConfig.logging && countlyConfig.logging.info)      ?  countlyConfig.logging.info.join(', ')     : '',
-    warning:    (countlyConfig.logging && countlyConfig.logging.warning)   ?  countlyConfig.logging.warning.join(', ')  : '',
+    warn:       (countlyConfig.logging && countlyConfig.logging.warn)   ?  countlyConfig.logging.warn.join(', ')  : '',
     error:      (countlyConfig.logging && countlyConfig.logging.error)     ?  countlyConfig.logging.error.join(', ')    : '',
-    default:    (countlyConfig.logging && countlyConfig.logging.default)   ?  countlyConfig.logging.default : 'warning'
+    default:    (countlyConfig.logging && countlyConfig.logging.default)   ?  countlyConfig.logging.default : 'warn',
 }, undefined, function(config){ 
     var cfg = plugins.getConfig('logs'), msg = {cmd: 'log', config: cfg};
     if (process.send) { process.send(msg); }
@@ -168,6 +170,7 @@ if (cluster.isMaster) {
         //ignore possible opted out users for ios 10
         if(params.qstring.device_id == "00000000-0000-0000-0000-000000000000"){
             common.returnMessage(params, 400, 'Ignoring device_id');
+            common.log("request").i('Request ignored: Ignoring zero IDFA device_id', params.req.url, params.req.body);
             return done ? done() : false;
         }
         common.db.collection('apps').findOne({'key':params.qstring.app_key}, function (err, app) {
@@ -250,12 +253,17 @@ if (cluster.isMaster) {
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, user){
                 params.app_user = user || {};
                 
-                //check unique milisecond timestamp, if it is the same as the last request had, 
-                //then we are having duplicate request, due to sudden connection termination
-                //except very old sdks with seconds timestamp
-                var ts = Math.round(parseFloat(params.qstring.timestamp || 0)) + "";
-                if(ts.length === 13 && params.time.mstimestamp === params.app_user.lac){
-                    params.cancelRequest = true;
+                if(plugins.getConfig("api").prevent_duplicate_requests){
+                    //check unique milisecond timestamp, if it is the same as the last request had, 
+                    //then we are having duplicate request, due to sudden connection termination
+                    var payload = params.href.substr(3) || "";
+                    if(params.req.method.toLowerCase() == 'post'){
+                        payload += params.req.body;
+                    }
+                    params.request_hash = common.crypto.createHash('sha512').update(payload).digest('hex')+(params.qstring.timestamp || params.time.mstimestamp);
+                    if(params.app_user.last_req === params.request_hash){
+                        params.cancelRequest = "Duplicate request";
+                    }
                 }
                 
                 if (params.qstring.metrics && typeof params.qstring.metrics === "string") {		
@@ -303,6 +311,11 @@ if (cluster.isMaster) {
                                     if(!newAppUser.fs || oldAppUser.fs < newAppUser.fs)
                                         newAppUser.fs = oldAppUser.fs;
                                 }
+                               //check if old user has been seen before new one
+                                else if(i == "fac"){
+                                    if(!newAppUser.fac || oldAppUser.fac < newAppUser.fac)
+                                        newAppUser.fac = oldAppUser.fac;
+                                }
                                 //check if old user has been the last to be seen
                                 else if(i == "ls"){
                                     if(!newAppUser.ls || oldAppUser.ls > newAppUser.ls){
@@ -312,6 +325,12 @@ if (cluster.isMaster) {
                                             newAppUser.lsid = oldAppUser.lsid;
                                         if(oldAppUser.sd)
                                             newAppUser.sd = oldAppUser.sd;
+                                    }
+                                }
+                                //check if old user has been the last to be seen
+                                else if(i == "lac"){
+                                    if(!newAppUser.lac || oldAppUser.lac > newAppUser.lac){
+                                        newAppUser.lac = oldAppUser.lac;
                                     }
                                 }
                                 //merge custom user data
@@ -404,7 +423,7 @@ if (cluster.isMaster) {
                             }
                             return result;
                         }
-                        common.db.collection('app_users' + params.app_id).findAndModify({_id:"uid-sequence"},{},{$inc:{seq:1}},{new:true, upsert:true}, function(err,result){
+                        common.db.collection('apps').findAndModify({_id:common.db.ObjectID(params.app_id)},{},{$inc:{seq:1}},{new:true, upsert:true}, function(err,result){
                             result = result && result.ok ? result.value : null;
                             if (result && result.seq) {
                                 params.app_user.uid = parseSequence(result.seq);
@@ -465,190 +484,21 @@ if (cluster.isMaster) {
                     }
                 } else {
                     if (plugins.getConfig("api").safe && !params.res.finished) {
-                        common.returnMessage(params, 200, 'Request ignored');
+                        common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
                     }
+                    common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
                     return done ? done() : false;
                 }
             });
         });
     }
     
-    function validateUserForWriteAPI(callback, params) {
-        common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
-            if (!member || err) {
-                common.returnMessage(params, 401, 'User does not exist');
-                return false;
-            }
-            
-            if (member && member.locked) {
-                common.returnMessage(params, 401, 'User is locked');
-                return false;
-            }
-            params.member = member;
-            if(plugins.dispatch("/validation/user", {params:params})){
-                if(!params.res.finished){
-                    common.returnMessage(params, 401, 'User does not have permission');
-                }
-                return false;
-            }
-            callback(params);
-        });
-    }
-    
-    function validateUserForDataReadAPI(params, callback, callbackParam) {
-        common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
-            if (!member || err) {
-                common.returnMessage(params, 401, 'User does not exist');
-                return false;
-            }
-            
-            if (typeof params.qstring.app_id === "undefined") {
-                common.returnMessage(params, 401, 'No app_id provided');
-                return false;
-            }
-    
-            if (!((member.user_of && member.user_of.indexOf(params.qstring.app_id) != -1) || member.global_admin)) {
-                common.returnMessage(params, 401, 'User does not have view right for this application');
-                return false;
-            }
-            
-            if (member && member.locked) {
-                common.returnMessage(params, 401, 'User is locked');
-                return false;
-            }
-    
-            common.db.collection('apps').findOne({'_id':common.db.ObjectID(params.qstring.app_id + "")}, function (err, app) {
-                if (!app) {
-                    common.returnMessage(params, 401, 'App does not exist');
-                    return false;
-                }
-                params.member = member;
-                params.app_id = app['_id'];
-                params.app_cc = app['country'];
-                params.appTimezone = app['timezone'];
-                params.app = app;
-                params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-                
-                if(plugins.dispatch("/validation/user", {params:params})){
-                    if(!params.res.finished){
-                        common.returnMessage(params, 401, 'User does not have permission');
-                    }
-                    return false;
-                }
-                
-                plugins.dispatch("/o/validate", {params:params, app:app});
-    
-                if (callbackParam) {
-                    callback(callbackParam, params);
-                } else {
-                    callback(params);
-                }
-            });
-        });
-    }
-    
-    function validateUserForDataWriteAPI(params, callback, callbackParam) {
-        common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
-            if (!member || err) {
-                common.returnMessage(params, 401, 'User does not exist');
-                return false;
-            }
-    
-            if (!((member.admin_of && member.admin_of.indexOf(params.qstring.app_id) != -1) || member.global_admin)) {
-                common.returnMessage(params, 401, 'User does not have write right for this application');
-                return false;
-            }
-            
-            if (member && member.locked) {
-                common.returnMessage(params, 401, 'User is locked');
-                return false;
-            }
-    
-            common.db.collection('apps').findOne({'_id':common.db.ObjectID(params.qstring.app_id + "")}, function (err, app) {
-                if (!app) {
-                    common.returnMessage(params, 401, 'App does not exist');
-                    return false;
-                }
-    
-                params.app_id = app['_id'];
-                params.appTimezone = app['timezone'];
-                params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-                params.member = member;
-                
-                if(plugins.dispatch("/validation/user", {params:params})){
-                    if(!params.res.finished){
-                        common.returnMessage(params, 401, 'User does not have permission');
-                    }
-                    return false;
-                }
-    
-                if (callbackParam) {
-                    callback(callbackParam, params);
-                } else {
-                    callback(params);
-                }
-            });
-        });
-    }
-    
-    function validateUserForGlobalAdmin(params, callback, callbackParam) {
-        common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
-            if (!member || err) {
-                common.returnMessage(params, 401, 'User does not exist');
-                return false;
-            }
-    
-            if (!member.global_admin) {
-                common.returnMessage(params, 401, 'User does not have global admin right');
-                return false;
-            }
-            
-            if (member && member.locked) {
-                common.returnMessage(params, 401, 'User is locked');
-                return false;
-            }
-            
-            params.member = member;
-            
-            if(plugins.dispatch("/validation/user", {params:params})){
-                if(!params.res.finished){
-                    common.returnMessage(params, 401, 'User does not have permission');
-                }
-                return false;
-            }
-    
-            if (callbackParam) {
-                callback(callbackParam, params);
-            } else {
-                callback(params);
-            }
-        });
-    }
-    
-    function validateUserForMgmtReadAPI(callback, params) {
-        common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
-            if (!member || err) {
-                common.returnMessage(params, 401, 'User does not exist');
-                return false;
-            }
-            
-            if (member && member.locked) {
-                common.returnMessage(params, 401, 'User is locked');
-                return false;
-            }
-    
-            params.member = member;
-            
-            if(plugins.dispatch("/validation/user", {params:params})){
-                if(!params.res.finished){
-                    common.returnMessage(params, 401, 'User does not have permission');
-                }
-                return false;
-            }
-            
-            callback(params);
-        });
-    }
+    //backwards compatability of old validation for pluggable code
+    var validateUserForWriteAPI = rights.validateUser;
+    var validateUserForDataReadAPI = rights.validateUserForRead;
+    var validateUserForDataWriteAPI = rights.validateUserForWrite;
+    var validateUserForGlobalAdmin = rights.validateGlobalAdmin;
+    var validateUserForMgmtReadAPI = rights.validateUser;
     
     http.Server(function (req, res) {
         plugins.loadConfigs(common.db, function(){
@@ -667,7 +517,7 @@ if (cluster.isMaster) {
                 * @property {string} apiPath - two top level url path, for example /i/analytics
                 * @property {string} fullPath - full url path, for example /i/analytics/dashboards
                 * @property {object} files - object with uploaded files, available in POST requests which upload files
-                * @property {boolean} cancelRequest - Used for skipping SDK requests, if contains true, then request should be ignored and not processed. Can be set at any time by any plugin, but API only checks for it in beggining after / and /sdk events, so that is when plugins should set it if needed
+                * @property {string} cancelRequest - Used for skipping SDK requests, if contains true, then request should be ignored and not processed. Can be set at any time by any plugin, but API only checks for it in beggining after / and /sdk events, so that is when plugins should set it if needed. Should contain reason for request cancelation
                 * @property {boolean} bulk - True if this SDK request is processed from the bulk method
                 * @property {array} promises - Array of the promises by different events. When all promises are fulfilled, request counts as processed
                 * @property {string} ip_address - IP address of the device submitted request, exists in all SDK requests
@@ -1310,6 +1160,11 @@ if (cluster.isMaster) {
                                 }
                             }
                     }
+                } else {
+                    if (plugins.getConfig("api").safe && !params.res.finished) {
+                        common.returnMessage(params, 200, 'Request ignored: ' + params.cancelRequest);
+                    }
+                    common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
                 }
             };
             
@@ -1326,7 +1181,8 @@ if (cluster.isMaster) {
                     for(var i in fields){
                         params.qstring[i] = fields[i];
                     }
-                    processRequest();
+                    if(!params.apiPath)
+                        processRequest();
                 });
             }
             else if (req.method === 'OPTIONS') {

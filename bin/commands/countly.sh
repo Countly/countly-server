@@ -115,6 +115,10 @@ countly_backupfiles (){
             mkdir -p files/plugins/$PLUGIN/extend ;
             cp -a $d/extend/. files/plugins/$PLUGIN/extend/ ;
         fi
+        if [ -d $d/crashsymbols ]; then
+            mkdir -p files/plugins/$PLUGIN/crashsymbols ;
+            cp -a $d/crashsymbols/. files/plugins/$PLUGIN/crashsymbols/ ;
+        fi
     done
     )
 }
@@ -128,8 +132,8 @@ countly_backupdb (){
     (mkdir -p $1 ;
     cd $1 ;
     echo "Backing up mongodb...";
-    mongodump --db countly > /dev/null;
-    mongodump --db countly_drill > /dev/null;
+    mongodump $(node $DIR/scripts/db.conf.js countly) > /dev/null;
+    mongodump $(node $DIR/scripts/db.conf.js countly_drill) > /dev/null;
     )
 }
 
@@ -194,6 +198,10 @@ countly_restorefiles (){
                 mkdir -p $DIR/../../plugins/$PLUGIN/extend ;
                 cp -a $d/extend/. $DIR/../../plugins/$PLUGIN/extend/ ;
             fi
+            if [ -d $d/crashsymbols ]; then
+                mkdir -p $DIR/../../plugins/$PLUGIN/crashsymbols ;
+                cp -a $d/crashsymbols/. $DIR/../../plugins/$PLUGIN/crashsymbols/ ;
+            fi
         done
         )
         echo "Restarting Countly...";
@@ -211,13 +219,13 @@ countly_restoredb (){
     fi
     if [ -d $1/dump/countly ]; then
         echo "Restoring countly database...";
-        mongorestore --db countly --batchSize=10 $1/dump/countly > /dev/null;
+        mongorestore $(node $DIR/scripts/db.conf.js countly) --batchSize=10 $1/dump/countly > /dev/null;
     else
         echo "No countly database dump to restore from";
     fi
     if [ -d $1/dump/countly_drill ]; then
         echo "Restoring countly_drill database...";
-        mongorestore --db countly_drill --batchSize=10 $1/dump/countly_drill > /dev/null;
+        mongorestore $(node $DIR/scripts/db.conf.js countly_drill) --batchSize=10 $1/dump/countly_drill > /dev/null;
     else
         echo "No countly_drill database dump to restore from";
     fi
@@ -244,12 +252,17 @@ source $DIR/enabled/countly.sh
 
 #process command
 NAME=$1;
+SCRIPT=$2;
 if [ -n "$(type -t countly_$1)" ] && [ "$(type -t countly_$1)" = function ]; then
     shift;
     countly_${NAME} "$@";
 elif [ -f $DIR/scripts/$NAME.sh ]; then
     shift;
     bash $DIR/scripts/$NAME.sh "$@";
+elif [ -d $DIR/../../plugins/$NAME ] && [ -f $DIR/../../plugins/$NAME/scripts/$SCRIPT.sh ]; then
+    shift;
+    shift;
+    bash $DIR/../../plugins/$NAME/scripts/$SCRIPT.sh "$@";
 else
     echo "";
     echo "countly usage:";

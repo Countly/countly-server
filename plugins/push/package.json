@@ -23,6 +23,7 @@
     "notifications"
   ],
   "dependencies": {
+    "jsonwebtoken": "^8.0.1",
     "node-forge": "0.6.38"
   },
   "private": true

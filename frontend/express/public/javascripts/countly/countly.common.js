@@ -8,6 +8,7 @@
 
     // Private Properties
     var _period = (store.get("countly_date")) ? store.get("countly_date") : "30days";
+    var _persistentSettings;
     /**
     * Get Browser language
     * @returns {string} browser locale in iso format en-US
@@ -15,16 +16,41 @@
     * //outputs en-US
     * countlyCommon.browserLang()
     */
-    countlyCommon.browserLang = function(){
+    countlyCommon.browserLang = function () {
         var lang = navigator.language || navigator.userLanguage;
-        if(lang){
+        if (lang) {
             lang = lang.toLowerCase();
-            lang.length > 3 && ( lang = lang.substring(0,3) + lang.substring(3).toUpperCase());
+            lang.length > 3 && (lang = lang.substring(0, 3) + lang.substring(3).toUpperCase());
         };
         return lang;
     };
 
     // Public Properties
+    /** 
+     * Set user persistent settings to store local storage
+     * @param {object} data - Object param for set new data
+    */
+    countlyCommon.setPersistentSettings = function (data) {
+        if (!_persistentSettings) {
+            _persistentSettings = localStorage.getItem("persistentSettings") ? JSON.parse(localStorage.getItem("persistentSettings")) : {}
+        }
+
+        for (var i in data)
+            _persistentSettings[i] = data[i];
+
+        localStorage.setItem("persistentSettings", JSON.stringify(_persistentSettings));
+    };
+
+    /**
+     * Get user persistent settings
+     */
+    countlyCommon.getPersistentSettings = function () {
+        if (!_persistentSettings) {
+            _persistentSettings = localStorage.getItem("persistentSettings") ? JSON.parse(localStorage.getItem("persistentSettings")) : {}
+        }
+
+        return _persistentSettings;
+    };
     /**
     * App Key of currently selected app or 0 when not initialized
     * @type {string|number} 
@@ -53,7 +79,7 @@
         }
     }
 
-    if(countlyGlobal["member"].lang){
+    if (countlyGlobal["member"].lang) {
         var lang = countlyGlobal["member"].lang;
         store.set("countly_lang", lang);
         countlyCommon.BROWSER_LANG_SHORT = lang;
@@ -89,7 +115,7 @@
     * @returns {string} supported values are (month, 60days, 30days, 7days, yesterday, hour or [startMiliseconds, endMiliseconds] as [1417730400000,1420149600000])
     */
     countlyCommon.getPeriodForAjax = function () {
-        if (Object.prototype.toString.call(_period) === '[object Array]'){
+        if (Object.prototype.toString.call(_period) === '[object Array]') {
             return JSON.stringify(_period);
         } else {
             return _period;
@@ -104,23 +130,33 @@
         countlyCommon.ACTIVE_APP_KEY = countlyGlobal['apps'][appId].key;
         countlyCommon.ACTIVE_APP_ID = appId;
         store.set("countly_active_app", appId);
+        $.ajax({
+            type: "POST",
+            url: countlyGlobal["path"] + "/user/settings/active-app",
+            data: {
+                "username": countlyGlobal["member"].username,
+                "appId": appId,
+                _csrf: countlyGlobal['csrf_token']
+            },
+            success: function (result) { }
+        });
     };
-    
+
     /**
     * Encode value to be passed to db as key, encoding $ symbol to &#36; if it is first and all . (dot) symbols to &#46; in the string
     * @param {string} str - value to encode
     * @returns {string} encoded string
     */
-    countlyCommon.encode = function(str){
+    countlyCommon.encode = function (str) {
         return str.replace(/^\$/g, "&#36;").replace(/\./g, '&#46;');
     };
-    
+
     /**
     * Decode value from db, decoding first &#36; to $ and all &#46; to . (dots). Decodes also url encoded values as &amp;#36;.
     * @param {string} str - value to decode
     * @returns {string} decoded string
     */
-    countlyCommon.decode = function(str){
+    countlyCommon.decode = function (str) {
         return str.replace(/^&#36;/g, "$").replace(/&#46;/g, '.');
     };
 
@@ -129,7 +165,7 @@
     * @param {string} str - value to decode
     * @returns {string} decoded string
     */
-    countlyCommon.decodeHtml = function(html) {
+    countlyCommon.decodeHtml = function (html) {
         var txt = document.createElement("textarea");
         txt.innerHTML = html;
         return txt.value;
@@ -165,7 +201,7 @@
             }
         }
 
-        return {"percent":pChange, "trend":trend};
+        return { "percent": pChange, "trend": trend };
     };
 
     /**
@@ -183,11 +219,11 @@
     */
     countlyCommon.getDescendantProp = function (obj, path, def) {
         for (var i = 0, path = (path + "").split('.'), len = path.length; i < len; i++) {
-            if(!obj || typeof obj !== 'object') return def;
+            if (!obj || typeof obj !== 'object') return def;
             obj = obj[path[i]];
         }
 
-        if(obj === undefined) return def;
+        if (obj === undefined) return def;
         return obj;
     };
 
@@ -222,8 +258,8 @@
     *]}, "#dashboard-graph", "separate-bar");
     */
     countlyCommon.drawGraph = function (dataPoints, container, graphType, inGraphProperties) {
-        _.defer(function(){
-            if ((!dataPoints.dp || !dataPoints.dp.length) || (graphType == "bar" && dataPoints.dp[0].data[0][1]== null && dataPoints.dp[0].data[1][1] == null)) {
+        _.defer(function () {
+            if ((!dataPoints.dp || !dataPoints.dp.length) || (graphType == "bar" && dataPoints.dp[0].data[0][1] == null && dataPoints.dp[0].data[1][1] == null)) {
                 $(container).hide();
                 $(container).siblings(".graph-no-data").show();
                 return true;
@@ -233,20 +269,20 @@
             }
 
             var graphProperties = {
-                series:{
-                    lines:{ show:true, fill:true },
-                    points:{ show:true }
+                series: {
+                    lines: { show: true, fill: true },
+                    points: { show: true }
                 },
-                grid:{ hoverable:true, borderColor:"null", color:"#999", borderWidth:0, minBorderMargin:10},
-                xaxis:{ minTickSize:1, tickDecimals:"number", tickLength:0},
-                yaxis:{ min:0, minTickSize:1, tickDecimals:"number", position:"right" },
-                legend:{ backgroundOpacity:0, margin:[20, -19] },
-                colors:countlyCommon.GRAPH_COLORS
+                grid: { hoverable: true, borderColor: "null", color: "#999", borderWidth: 0, minBorderMargin: 10 },
+                xaxis: { minTickSize: 1, tickDecimals: "number", tickLength: 0 },
+                yaxis: { min: 0, minTickSize: 1, tickDecimals: "number", position: "right" },
+                legend: { backgroundOpacity: 0, margin: [20, -19] },
+                colors: countlyCommon.GRAPH_COLORS
             };
 
             switch (graphType) {
                 case "line":
-                    graphProperties.series = {lines:{ show:true, fill:true }, points:{ show:true }};
+                    graphProperties.series = { lines: { show: true, fill: true }, points: { show: true } };
                     break;
                 case "bar":
                     if (dataPoints.ticks.length > 20) {
@@ -255,7 +291,7 @@
 
                     var barWidth = 0.6;
 
-                    switch(dataPoints.dp.length) {
+                    switch (dataPoints.dp.length) {
                         case 2:
                             barWidth = 0.3;
                             break;
@@ -271,31 +307,33 @@
                         }
                     }
 
-                    graphProperties.series = {stack:true, bars:{ show:true, barWidth:0.6, tickLength:0, fill:1 }};
+                    graphProperties.series = { stack: true, bars: { show: true, barWidth: 0.6, tickLength: 0, fill: 1 } };
                     graphProperties.xaxis.ticks = dataPoints.ticks;
                     break;
                 case "separate-bar":
                     if (dataPoints.ticks.length > 20) {
                         graphProperties.xaxis.rotateTicks = 45;
                     }
-                    graphProperties.series = {bars:{ show:true, align:"center", barWidth:0.6, tickLength:0, fill:1 }};
+                    graphProperties.series = { bars: { show: true, align: "center", barWidth: 0.6, tickLength: 0, fill: 1 } };
                     graphProperties.xaxis.ticks = dataPoints.ticks;
                     break;
                 case "pie":
-                    graphProperties.series = { pie:{
-                        show:true,
-                        lineWidth:0,
-                        radius:115,
-                        innerRadius: 0.45,
-                        combine:{
-                            color:'#CCC',
-                            threshold:0.05
-                        },
-                        label:{
-                            show:true,
-                            radius:160
+                    graphProperties.series = {
+                        pie: {
+                            show: true,
+                            lineWidth: 0,
+                            radius: 115,
+                            innerRadius: 0.45,
+                            combine: {
+                                color: '#CCC',
+                                threshold: 0.05
+                            },
+                            label: {
+                                show: true,
+                                radius: 160
+                            }
                         }
-                    }};
+                    };
                     graphProperties.legend.show = false;
                     break;
                 default:
@@ -349,7 +387,7 @@
     *}], "#dashboard-graph");
     */
     countlyCommon.drawTimeGraph = function (dataPoints, container, bucket, overrideBucket) {
-        _.defer(function(){
+        _.defer(function () {
             if (!dataPoints.length) {
                 $(container).hide();
                 $(container).siblings(".graph-no-data").show();
@@ -370,25 +408,29 @@
             }
 
             var graphProperties = {
-                    series:{
-                        lines:{ stack:false, show:false, fill:true, lineWidth:2.5, fillColor:{ colors:[
-                            { opacity:0 },
-                            { opacity:0 }
-                        ] }, shadowSize:0 },
-                        splines: {
-                            show: true,
-                            lineWidth: 2.5
-                        },
-                        points:{ show:true, radius:0, shadowSize:0, lineWidth:2 },
-                        shadowSize:0
+                series: {
+                    lines: {
+                        stack: false, show: false, fill: true, lineWidth: 2.5, fillColor: {
+                            colors: [
+                                { opacity: 0 },
+                                { opacity: 0 }
+                            ]
+                        }, shadowSize: 0
                     },
-                    crosshair: { mode: "x", color: "rgba(78,78,78,0.4)" },
-                    grid:{ hoverable:true, borderColor:"null", color:"#666", borderWidth:0, minBorderMargin:10, labelMargin:10},
-                    xaxis:{ tickDecimals:"number", tickSize:0, tickLength:0 },
-                    yaxis:{ min:0, minTickSize:1, tickDecimals:"number", ticks:3, position:"right" },
-                    legend:{ show:false, margin:[-25, -44], noColumns:3, backgroundOpacity:0 },
-                    colors:countlyCommon.GRAPH_COLORS
-                };
+                    splines: {
+                        show: true,
+                        lineWidth: 2.5
+                    },
+                    points: { show: true, radius: 0, shadowSize: 0, lineWidth: 2 },
+                    shadowSize: 0
+                },
+                crosshair: { mode: "x", color: "rgba(78,78,78,0.4)" },
+                grid: { hoverable: true, borderColor: "null", color: "#666", borderWidth: 0, minBorderMargin: 10, labelMargin: 10 },
+                xaxis: { tickDecimals: "number", tickSize: 0, tickLength: 0 },
+                yaxis: { min: 0, minTickSize: 1, tickDecimals: "number", ticks: 3, position: "right" },
+                legend: { show: false, margin: [-25, -44], noColumns: 3, backgroundOpacity: 0 },
+                colors: countlyCommon.GRAPH_COLORS
+            };
 
             graphProperties.series.points.show = (dataPoints[0].data.length <= 90);
 
@@ -478,21 +520,21 @@
                 keyEvents[k] = [];
 
                 keyEvents[k][keyEvents[k].length] = {
-                    data:[tmpMinIndex, tmpMin],
-                    code:keyEventCounter,
-                    color:graphObj.getData()[k].color,
-                    event:"min",
-                    desc:jQuery.i18n.prop('common.graph-min', tmpMin, label, graphTicks[tmpMinIndex])
+                    data: [tmpMinIndex, tmpMin],
+                    code: keyEventCounter,
+                    color: graphObj.getData()[k].color,
+                    event: "min",
+                    desc: jQuery.i18n.prop('common.graph-min', tmpMin, label, graphTicks[tmpMinIndex])
                 };
 
                 keyEventCounter = String.fromCharCode(keyEventCounter.charCodeAt() + 1);
 
                 keyEvents[k][keyEvents[k].length] = {
-                    data:[tmpMaxIndex, tmpMax],
-                    code:keyEventCounter,
-                    color:graphObj.getData()[k].color,
-                    event:"max",
-                    desc:jQuery.i18n.prop('common.graph-max', tmpMax, label, graphTicks[tmpMaxIndex])
+                    data: [tmpMaxIndex, tmpMax],
+                    code: keyEventCounter,
+                    color: graphObj.getData()[k].color,
+                    event: "max",
+                    desc: jQuery.i18n.prop('common.graph-max', tmpMax, label, graphTicks[tmpMaxIndex])
                 };
 
                 keyEventCounter = String.fromCharCode(keyEventCounter.charCodeAt() + 1);
@@ -511,8 +553,8 @@
                 }
 
                 for (var l = 0; l < keyEvents[k].length; l++) {
-                    var o = graphObj.pointOffset({x:keyEvents[k][l]["data"][0], y:keyEvents[k][l]["data"][1]});
-                    var p = graphObj.pointOffset({x:keyEvents[k][l]["data"][0], y:keyEvents[k][l]["data"][1]});
+                    var o = graphObj.pointOffset({ x: keyEvents[k][l]["data"][0], y: keyEvents[k][l]["data"][1] });
+                    var p = graphObj.pointOffset({ x: keyEvents[k][l]["data"][0], y: keyEvents[k][l]["data"][1] });
 
                     if (o.left <= 15) {
                         o.left = 15;
@@ -525,18 +567,18 @@
                     var keyEventLabel = $('<div class="graph-key-event-label">').text(keyEvents[k][l]["code"]);
 
                     keyEventLabel.attr({
-                        "title":keyEvents[k][l]["desc"],
-                        "data-points":"[" + keyEvents[k][l]["data"] + "]"
+                        "title": keyEvents[k][l]["desc"],
+                        "data-points": "[" + keyEvents[k][l]["data"] + "]"
                     }).css({
-                        "position":'absolute',
-                        "left":o.left,
-                        "top":o.top - 33,
-                        "display":'none',
-                        "background-color":bgColor
+                        "position": 'absolute',
+                        "left": o.left,
+                        "top": o.top - 33,
+                        "display": 'none',
+                        "background-color": bgColor
                     }).appendTo(graphObj.getPlaceholder()).show();
 
                     $(".tipsy").remove();
-                    keyEventLabel.tipsy({gravity:$.fn.tipsy.autoWE, offset:3, html:true});
+                    keyEventLabel.tipsy({ gravity: $.fn.tipsy.autoWE, offset: 3, html: true });
                 }
             }
 
@@ -544,37 +586,37 @@
             if (!(bucket == "hourly" && dataPoints[0].data.length > 24) && bucket != "weekly") {
                 var noteDateIds = countlyCommon.getNoteDateIds(bucket),
                     frontData = graphObj.getData()[graphObj.getData().length - 1],
-                    startIndex = (!frontData.data[1] && frontData.data[1] !== 0)? 1 : 0;
+                    startIndex = (!frontData.data[1] && frontData.data[1] !== 0) ? 1 : 0;
 
-                for (var k = 0, l = startIndex; k < frontData.data.length; k++, l++) {
-					if(frontData.data[l]){
-						var graphPoint = graphObj.pointOffset({x:frontData.data[l][0], y:frontData.data[l][1]});
+                for (var k = 0, l = startIndex; k < frontData.data.length; k++ , l++) {
+                    if (frontData.data[l]) {
+                        var graphPoint = graphObj.pointOffset({ x: frontData.data[l][0], y: frontData.data[l][1] });
 
-						if (countlyCommon.getNotesForDateId(noteDateIds[k]).length) {
-							var graphNoteLabel = $('<div class="graph-note-label"><div class="fa fa-pencil"></div></div>');
+                        if (countlyCommon.getNotesForDateId(noteDateIds[k]).length) {
+                            var graphNoteLabel = $('<div class="graph-note-label"><div class="fa fa-pencil"></div></div>');
                             graphNoteLabel.attr({
-								"title":countlyCommon.getNotesForDateId(noteDateIds[k]),
-                                "data-points":"[" + frontData.data[l] + "]"
-							}).css({
-								"position":'absolute',
-								"left":graphPoint.left,
-								"top":graphPoint.top - 33,
-								"display":'none',
-								"border-color":frontData.color
-							}).appendTo(graphObj.getPlaceholder()).show();
+                                "title": countlyCommon.getNotesForDateId(noteDateIds[k]),
+                                "data-points": "[" + frontData.data[l] + "]"
+                            }).css({
+                                "position": 'absolute',
+                                "left": graphPoint.left,
+                                "top": graphPoint.top - 33,
+                                "display": 'none',
+                                "border-color": frontData.color
+                            }).appendTo(graphObj.getPlaceholder()).show();
 
                             $(".tipsy").remove();
-                            graphNoteLabel.tipsy({gravity:$.fn.tipsy.autoWE, offset:3, html:true});
-						}
-					}
+                            graphNoteLabel.tipsy({ gravity: $.fn.tipsy.autoWE, offset: 3, html: true });
+                        }
+                    }
                 }
             }
 
-            $(container).on("mouseout", function() {
+            $(container).on("mouseout", function () {
                 graphObj.unlockCrosshair();
                 graphObj.clearCrosshair();
                 graphObj.unhighlight();
-                $("#graph-tooltip").fadeOut(200, function() {
+                $("#graph-tooltip").fadeOut(200, function () {
                     $(this).remove();
                 });
             });
@@ -583,15 +625,15 @@
 
                 var tooltip = $("#graph-tooltip");
                 var crossHairPos = graphObj.p2c(position);
-                var tooltipLeft = (crossHairPos.left < 200)? crossHairPos.left + 20 : crossHairPos.left - tooltip.width() - 20;
+                var tooltipLeft = (crossHairPos.left < 200) ? crossHairPos.left + 20 : crossHairPos.left - tooltip.width() - 20;
 
-                tooltip.css({left: tooltipLeft});
+                tooltip.css({ left: tooltipLeft });
 
                 if (onPoint) {
                     var dataSet = graphObj.getData(),
                         tooltipHTML = "<div class='title'>" + tickObj.tickTexts[dataIndex] + "</div>";
 
-                    dataSet = _.sortBy(dataSet, function(obj) { return obj.data[dataIndex][1]; });
+                    dataSet = _.sortBy(dataSet, function (obj) { return obj.data[dataIndex][1]; });
 
                     for (i = dataSet.length - 1; i >= 0; --i) {
                         var series = dataSet[i],
@@ -607,7 +649,7 @@
                         }
 
                         tooltipHTML += "<div class='inner'>";
-                        tooltipHTML += "<div class='color' style='background-color: "+ series.color + "'></div>";
+                        tooltipHTML += "<div class='color' style='background-color: " + series.color + "'></div>";
                         tooltipHTML += "<div class='series'>" + series.label + "</div>";
                         tooltipHTML += "<div class='value'>" + formattedValue + "</div>";
                         tooltipHTML += "</div>";
@@ -677,23 +719,23 @@
     * @param {string} gaugeColor - color of the gauge in hexadecimal string as #ffffff
     * @param {string|object} textField - selector for container or container object itself where to output textual value
     */
-    countlyCommon.drawGauge = function(targetEl, value, maxValue, gaugeColor, textField) {
+    countlyCommon.drawGauge = function (targetEl, value, maxValue, gaugeColor, textField) {
         var opts = {
-            lines:12,
-            angle:0.15,
-            lineWidth:0.44,
-            pointer:{
-                length:0.7,
-                strokeWidth:0.05,
-                color:'#000000'
+            lines: 12,
+            angle: 0.15,
+            lineWidth: 0.44,
+            pointer: {
+                length: 0.7,
+                strokeWidth: 0.05,
+                color: '#000000'
             },
-            colorStart:gaugeColor,
-            colorStop:gaugeColor,
-            strokeColor:'#E0E0E0',
-            generateGradient:true
+            colorStart: gaugeColor,
+            colorStop: gaugeColor,
+            strokeColor: '#E0E0E0',
+            generateGradient: true
         };
 
-        var gauge  = new Gauge($(targetEl)[0]).setOptions(opts);
+        var gauge = new Gauge($(targetEl)[0]).setOptions(opts);
 
         if (textField) {
             gauge.setTextField($(textField)[0]);
@@ -710,14 +752,14 @@
     * @param {object|string} intoElement - selector for container or container object itself where to create graph
     * @param {number} colorIndex - index of color from {@link countlyCommon.GRAPH_COLORS}
     */
-    countlyCommon.drawHorizontalStackedBars = function(data, intoElement, colorIndex) {
+    countlyCommon.drawHorizontalStackedBars = function (data, intoElement, colorIndex) {
         var processedData = [],
             tmpProcessedData = [],
             totalCount = 0,
             maxToDisplay = 10,
             barHeight = 30;
 
-            for (var i = 0; i < data.length; i++) {
+        for (var i = 0; i < data.length; i++) {
             tmpProcessedData.push({
                 label: data[i].label,
                 count: data[i].data[0][1],
@@ -735,7 +777,7 @@
                 processedData.push({
                     label: "Other",
                     count: totalCount - proCount,
-                    perc:  countlyCommon.round((100 - totalPerc), 2) + "%",
+                    perc: countlyCommon.round((100 - totalPerc), 2) + "%",
                     index: i
                 });
 
@@ -762,15 +804,15 @@
                 .enter().append("g");
 
             bar.append("rect")
-                .attr("width", function(d) { return ((d.count / totalCount) * 100) + "%"; } )
-                .attr("x", function(d) {
+                .attr("width", function (d) { return ((d.count / totalCount) * 100) + "%"; })
+                .attr("x", function (d) {
                     var myPercent = percentSoFar;
                     percentSoFar = percentSoFar + (100 * (d.count / totalCount));
 
                     return myPercent + "%";
                 })
                 .attr("height", barHeight)
-                .attr("fill",  function(d) {
+                .attr("fill", function (d) {
                     if (colorIndex || colorIndex === 0) {
                         return countlyCommon.GRAPH_COLORS[colorIndex];
                     } else {
@@ -781,7 +823,7 @@
                 .attr("stroke-width", 2);
 
             if (colorIndex || colorIndex === 0) {
-                bar.attr("opacity", function(d) {
+                bar.attr("opacity", function (d) {
                     return 1 - (0.05 * d.index);
                 });
             }
@@ -789,9 +831,9 @@
             percentSoFar = 0;
 
             bar.append("foreignObject")
-                .attr("width", function(d) { return ((d.count / totalCount) * 100) + "%"; } )
+                .attr("width", function (d) { return ((d.count / totalCount) * 100) + "%"; })
                 .attr("height", barHeight)
-                .attr("x", function(d) {
+                .attr("x", function (d) {
                     var myPercent = percentSoFar;
                     percentSoFar = percentSoFar + (100 * (d.count / totalCount));
 
@@ -799,44 +841,44 @@
                 })
                 .append("xhtml:div")
                 .attr("class", "hsb-tip")
-                .html(function(d) { return "<div>" + d.perc + "</div>"; });
+                .html(function (d) { return "<div>" + d.perc + "</div>"; });
 
             percentSoFar = 0;
 
             bar.append("text")
-                .attr("x", function(d) {
+                .attr("x", function (d) {
                     var myPercent = percentSoFar;
                     percentSoFar = percentSoFar + (100 * (d.count / totalCount));
 
                     return myPercent + 0.5 + "%";
                 })
                 .attr("dy", "1.35em")
-                .text(function(d) { return d.label; });
+                .text(function (d) { return d.label; });
         } else {
             var chart = d3.select(intoElement)
                 .attr("width", "100%")
                 .attr("height", barHeight);
 
             var bar = chart.selectAll("g")
-                .data([{text: jQuery.i18n.map["common.bar.no-data"]}])
+                .data([{ text: jQuery.i18n.map["common.bar.no-data"] }])
                 .enter().append("g");
 
             bar.append("rect")
-                .attr("width", "100%" )
+                .attr("width", "100%")
                 .attr("height", barHeight)
-                .attr("fill",  "#FBFBFB")
+                .attr("fill", "#FBFBFB")
                 .attr("stroke", "#FFF")
                 .attr("stroke-width", 2);
 
             bar.append("foreignObject")
-                .attr("width", "100%" )
+                .attr("width", "100%")
                 .attr("height", barHeight)
                 .append("xhtml:div")
                 .attr("class", "no-data")
-                .html(function(d) { return d.text; });
+                .html(function (d) { return d.text; });
         }
     };
-    
+
     /**
     * Extract range data from standard countly metric data model
     * @param {object} db - countly standard metric data object
@@ -978,8 +1020,8 @@
     * }
     */
     countlyCommon.extractChartData = function (db, clearFunction, chartData, dataProperties, metric) {
-        if(metric)
-            metric = "."+metric;
+        if (metric)
+            metric = "." + metric;
         else
             metric = "";
         countlyCommon.periodObj = getPeriodObj();
@@ -1026,10 +1068,10 @@
                         formattedDate = moment((activeDate + "/" + i).replace(/\./g, "/"), "YYYY/MM/DD");
                     }
 
-                    dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i+metric);
+                    dataObj = countlyCommon.getDescendantProp(db, activeDate + "." + i + metric);
                 } else {
                     formattedDate = moment((activeDateArr[i]).replace(/\./g, "/"), "YYYY/MM/DD");
-                    dataObj = countlyCommon.getDescendantProp(db, activeDateArr[i]+metric);
+                    dataObj = countlyCommon.getDescendantProp(db, activeDateArr[i] + metric);
                 }
 
                 dataObj = clearFunction(dataObj);
@@ -1067,7 +1109,7 @@
             keyEvents[k].max = _.max(chartVals);
         }
 
-        return {"chartDP":chartData, "chartData":_.compact(tableData), "keyEvents":keyEvents};
+        return { "chartDP": chartData, "chartData": _.compact(tableData), "keyEvents": keyEvents };
     };
 
     /**
@@ -1101,7 +1143,7 @@
         countlyCommon.periodObj = getPeriodObj();
 
         if (!rangeArray) {
-            return {"chartData":tableData};
+            return { "chartData": tableData };
         }
         var periodMin = 0,
             periodMax = 0,
@@ -1159,7 +1201,7 @@
             }
         } else {
 
-            var calculatedObj = (estOverrideMetric)? countlyTotalUsers.get(estOverrideMetric) : {};
+            var calculatedObj = (estOverrideMetric) ? countlyTotalUsers.get(estOverrideMetric) : {};
 
             for (var j = 0; j < rangeArray.length; j++) {
 
@@ -1261,7 +1303,7 @@
                 tableCounter++;
             }
         }
-        
+
         for (var i = 0; i < tableData.length; i++) {
             if (_.isEmpty(tableData[i])) {
                 tableData[i] = null;
@@ -1269,7 +1311,7 @@
         }
 
         tableData = _.compact(tableData);
-        
+
         if (propertyNames.indexOf("u") !== -1) {
             countlyCommon.sortByProperty(tableData, "u");
         } else if (propertyNames.indexOf("t") !== -1) {
@@ -1278,11 +1320,11 @@
             countlyCommon.sortByProperty(tableData, "c");
         }
 
-        return {"chartData":tableData};
+        return { "chartData": tableData };
     };
-    
-    countlyCommon.sortByProperty = function(tableData, prop){
-        tableData.sort(function(a,b){
+
+    countlyCommon.sortByProperty = function (tableData, prop) {
+        tableData.sort(function (a, b) {
             a = (a && a[prop]) ? a[prop] : 0;
             b = (b && b[prop]) ? b[prop] : 0;
             return b - a;
@@ -1306,20 +1348,20 @@
     *        {"metric":"Test1","t":66,"u":60,"n":30}
     *    ]}
     */
-    countlyCommon.mergeMetricsByName = function(chartData, metric){
+    countlyCommon.mergeMetricsByName = function (chartData, metric) {
         var uniqueNames = {},
             data;
-        for(var i = 0; i < chartData.length; i++){
+        for (var i = 0; i < chartData.length; i++) {
             data = chartData[i];
-            if(data[metric] && !uniqueNames[data[metric]]){
+            if (data[metric] && !uniqueNames[data[metric]]) {
                 uniqueNames[data[metric]] = data
             }
-            else{
-                for(var key in data){
-                    if(typeof data[key] == "string")
-                       uniqueNames[data[metric]][key] = data[key];
-                    else if(typeof data[key] == "number"){
-                        if(!uniqueNames[data[metric]][key])
+            else {
+                for (var key in data) {
+                    if (typeof data[key] == "string")
+                        uniqueNames[data[metric]][key] = data[key];
+                    else if (typeof data[key] == "number") {
+                        if (!uniqueNames[data[metric]][key])
                             uniqueNames[data[metric]][key] = 0;
                         uniqueNames[data[metric]][key] += data[key];
                     }
@@ -1345,18 +1387,18 @@
     * ]
     */
     countlyCommon.extractBarData = function (db, rangeArray, clearFunction, fetchFunction) {
-        fetchFunction = fetchFunction || function (rangeArr, dataObj) {return rangeArr;};
+        fetchFunction = fetchFunction || function (rangeArr, dataObj) { return rangeArr; };
 
         var rangeData = countlyCommon.extractTwoLevelData(db, rangeArray, clearFunction, [
             {
-                name:"range",
-                func:fetchFunction
+                name: "range",
+                func: fetchFunction
             },
-            { "name":"t" }
+            { "name": "t" }
         ]);
         return countlyCommon.calculateBarData(rangeData);
     };
-    
+
     /**
     * Extracts top three items (from rangeArray) that have the biggest total session counts from the chartData.
     * @param {object} chartData - chartData retrieved from {@link countlyCommon.extractTwoLevelData} as {"chartData":[{"carrier":"At&t","t":71,"u":62,"n":36},{"carrier":"Verizon","t":66,"u":60,"n":30}]}
@@ -1370,7 +1412,7 @@
     */
     countlyCommon.calculateBarData = function (rangeData) {
         rangeData.chartData = countlyCommon.mergeMetricsByName(rangeData.chartData, "range");
-        rangeData.chartData = _.sortBy(rangeData.chartData, function(obj) { return -obj.t; });
+        rangeData.chartData = _.sortBy(rangeData.chartData, function (obj) { return -obj.t; });
 
         var rangeNames = _.pluck(rangeData.chartData, 'range'),
             rangeTotal = _.pluck(rangeData.chartData, 't'),
@@ -1401,83 +1443,83 @@
                 percent += 100 - totalPercent;
             }
 
-            barData[i] = { "name":rangeNames[i], "percent":percent };
+            barData[i] = { "name": rangeNames[i], "percent": percent };
         }
 
         return barData;
     };
 
-	countlyCommon.extractUserChartData = function (db, label, sec) {
-		var ret = {"data":[],"label":label};
+    countlyCommon.extractUserChartData = function (db, label, sec) {
+        var ret = { "data": [], "label": label };
         countlyCommon.periodObj = getPeriodObj();
         var periodMin, periodMax, dateob;
-		if(countlyCommon.periodObj.isSpecialPeriod){
-			periodMin = 0;
+        if (countlyCommon.periodObj.isSpecialPeriod) {
+            periodMin = 0;
             periodMax = (countlyCommon.periodObj.daysInPeriod);
-			var dateob1 = countlyCommon.processPeriod(countlyCommon.periodObj.currentPeriodArr[0].toString());
-			var dateob2 = countlyCommon.processPeriod(countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length-1].toString());
-			dateob = {timestart:dateob1.timestart, timeend:dateob2.timeend, range:"d"};
-		}
-		else{
-			periodMin = countlyCommon.periodObj.periodMin;
-            periodMax = countlyCommon.periodObj.periodMax+1;
-			dateob = countlyCommon.processPeriod(countlyCommon.periodObj.activePeriod.toString());
-		}
-		var res = [],
-			ts;
-		//get all timestamps in that period
-		for(var i = 0, l = db.length; i < l; i++){
-			ts = db[i];
-			if(sec)
-				ts.ts = ts.ts*1000;
-			if(ts.ts > dateob.timestart && ts.ts <= dateob.timeend){
-				res.push(ts);
-			}
-		}
-		var lastStart,
-			lastEnd = dateob.timestart,
-			total,
-			ts,
-			data = ret.data;
-		for(var i = periodMin; i < periodMax; i++){
-			total = 0;
-			lastStart = lastEnd;
-			lastEnd = moment(lastStart).add(moment.duration(1, dateob.range)).valueOf();
-			for(var j = 0, l = res.length; j < l; j++){
-				ts = res[j];
-				if(ts.ts > lastStart && ts.ts <= lastEnd)
-					if(ts.c)
-						total += ts.c;
-					else
-						total++;
-			}
-			data.push([i, total]);
-		}
+            var dateob1 = countlyCommon.processPeriod(countlyCommon.periodObj.currentPeriodArr[0].toString());
+            var dateob2 = countlyCommon.processPeriod(countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length - 1].toString());
+            dateob = { timestart: dateob1.timestart, timeend: dateob2.timeend, range: "d" };
+        }
+        else {
+            periodMin = countlyCommon.periodObj.periodMin;
+            periodMax = countlyCommon.periodObj.periodMax + 1;
+            dateob = countlyCommon.processPeriod(countlyCommon.periodObj.activePeriod.toString());
+        }
+        var res = [],
+            ts;
+        //get all timestamps in that period
+        for (var i = 0, l = db.length; i < l; i++) {
+            ts = db[i];
+            if (sec)
+                ts.ts = ts.ts * 1000;
+            if (ts.ts > dateob.timestart && ts.ts <= dateob.timeend) {
+                res.push(ts);
+            }
+        }
+        var lastStart,
+            lastEnd = dateob.timestart,
+            total,
+            ts,
+            data = ret.data;
+        for (var i = periodMin; i < periodMax; i++) {
+            total = 0;
+            lastStart = lastEnd;
+            lastEnd = moment(lastStart).add(moment.duration(1, dateob.range)).valueOf();
+            for (var j = 0, l = res.length; j < l; j++) {
+                ts = res[j];
+                if (ts.ts > lastStart && ts.ts <= lastEnd)
+                    if (ts.c)
+                        total += ts.c;
+                    else
+                        total++;
+            }
+            data.push([i, total]);
+        }
         return ret;
     };
 
-	countlyCommon.processPeriod = function(period){
-		var date = period.split(".");
-		var range,
-			timestart,
-			timeend;
-		if(date.length == 1){
-			range = "M";
-			timestart = moment(period, "YYYY").valueOf();
-			timeend = moment(period, "YYYY").add(moment.duration(1, "y")).valueOf();
-		}
-		else if(date.length == 2){
-			range = "d";
-			timestart = moment(period, "YYYY.MM").valueOf();
-			timeend = moment(period, "YYYY.MM").add(moment.duration(1, "M")).valueOf();
-		}
-		else if(date.length == 3){
-			range = "h";
-			timestart = moment(period, "YYYY.MM.DD").valueOf();
-			timeend = moment(period, "YYYY.MM.DD").add(moment.duration(1, "d")).valueOf();
-		}
-		return {timestart:timestart, timeend:timeend, range:range};
-	}
+    countlyCommon.processPeriod = function (period) {
+        var date = period.split(".");
+        var range,
+            timestart,
+            timeend;
+        if (date.length == 1) {
+            range = "M";
+            timestart = moment(period, "YYYY").valueOf();
+            timeend = moment(period, "YYYY").add(moment.duration(1, "y")).valueOf();
+        }
+        else if (date.length == 2) {
+            range = "d";
+            timestart = moment(period, "YYYY.MM").valueOf();
+            timeend = moment(period, "YYYY.MM").add(moment.duration(1, "M")).valueOf();
+        }
+        else if (date.length == 3) {
+            range = "h";
+            timestart = moment(period, "YYYY.MM.DD").valueOf();
+            timeend = moment(period, "YYYY.MM.DD").add(moment.duration(1, "d")).valueOf();
+        }
+        return { timestart: timestart, timeend: timeend, range: range };
+    }
 
     /**
     * Shortens the given number by adding K (thousand) or M (million) postfix. K is added only if the number is bigger than 10000, etc.
@@ -1533,8 +1575,8 @@
             formattedDateEnd = moment(countlyCommon.periodObj.currentPeriodArr[(countlyCommon.periodObj.currentPeriodArr.length - 1)], "YYYY.M.D");
         }
 
-        var fromStr = countlyCommon.formatDate(formattedDateStart,countlyCommon.periodObj.dateString),
-            toStr = countlyCommon.formatDate(formattedDateEnd,countlyCommon.periodObj.dateString);
+        var fromStr = countlyCommon.formatDate(formattedDateStart, countlyCommon.periodObj.dateString),
+            toStr = countlyCommon.formatDate(formattedDateEnd, countlyCommon.periodObj.dateString);
 
         if (fromStr == toStr) {
             return fromStr;
@@ -1724,8 +1766,8 @@
     * //outputs Hello World
     * countlyCommon.toFirstUpper("hello world");
     */
-    countlyCommon.toFirstUpper = function(str) {
-        return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+    countlyCommon.toFirstUpper = function (str) {
+        return str.replace(/\w\S*/g, function (txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); });
     };
 
     /**
@@ -1763,7 +1805,7 @@
     *   "ticks":[[1,"23 Dec"],[4,"26 Dec"],[7,"29 Dec"],[10,"1 Jan"],[13,"4 Jan"],[16,"7 Jan"],[19,"10 Jan"],[22,"13 Jan"],[25,"16 Jan"],[28,"19 Jan"]]
     *}
     */
-    countlyCommon.getTickObj = function(bucket, overrideBucket) {
+    countlyCommon.getTickObj = function (bucket, overrideBucket) {
         var days = parseInt(countlyCommon.periodObj.numberOfDays, 10),
             ticks = [],
             tickTexts = [],
@@ -1772,8 +1814,8 @@
 
         if (overrideBucket) {
             var thisDay = moment(countlyCommon.periodObj.activePeriod, "YYYY.M.D");
-            ticks.push([0, countlyCommon.formatDate(thisDay,"D MMM")]);
-            tickTexts[0] = countlyCommon.formatDate(thisDay,"D MMM, dddd");
+            ticks.push([0, countlyCommon.formatDate(thisDay, "D MMM")]);
+            tickTexts[0] = countlyCommon.formatDate(thisDay, "D MMM, dddd");
         } else if ((days == 1 && _period != "month" && _period != "day") || (days == 1 && bucket == "hourly")) {
             for (var i = 0; i < 24; i++) {
                 ticks.push([i, (i + ":00")]);
@@ -1782,7 +1824,7 @@
             skipReduction = true;
         } else {
             var start = moment().subtract(days, 'days');
-            if (Object.prototype.toString.call(countlyCommon.getPeriod()) === '[object Array]'){
+            if (Object.prototype.toString.call(countlyCommon.getPeriod()) === '[object Array]') {
                 start = moment(countlyCommon.periodObj.currentPeriodArr[countlyCommon.periodObj.currentPeriodArr.length - 1], "YYYY.MM.DD").subtract(days, 'days');
             }
             if (bucket == "monthly") {
@@ -1803,16 +1845,16 @@
                 var allWeeks = [];
                 for (var i = 0; i < days; i++) {
                     start.add(1, 'days');
-                    allWeeks.push(start.isoWeek()+" "+start.isoWeekYear());
+                    allWeeks.push(start.isoWeek() + " " + start.isoWeekYear());
                 }
 
                 allWeeks = _.uniq(allWeeks);
 
                 for (var i = 0; i < allWeeks.length; i++) {
                     var parts = allWeeks[i].split(" ");
-                    if(parseInt(parts[1]) == moment().isoWeekYear(parseInt(parts[1])).isoWeek(parseInt(parts[0])).startOf('week').year()){
+                    if (parseInt(parts[1]) == moment().isoWeekYear(parseInt(parts[1])).isoWeek(parseInt(parts[0])).startOf('week').year()) {
                         ticks.push([i, "W" + allWeeks[i]]);
-    
+
                         var weekText = countlyCommon.formatDate(moment().isoWeekYear(parseInt(parts[1])).isoWeek(parseInt(parts[0])).startOf('week'), ", D MMM YYYY");
                         tickTexts[i] = "W" + parts[0] + weekText;
                     }
@@ -1823,17 +1865,17 @@
 
                     for (var j = 0; j < 24; j++) {
                         if (j == 0) {
-                            ticks.push([((24 * i) + j), countlyCommon.formatDate(start,"D MMM") + " 0:00"]);
+                            ticks.push([((24 * i) + j), countlyCommon.formatDate(start, "D MMM") + " 0:00"]);
                         }
 
-                        tickTexts.push(countlyCommon.formatDate(start,"D MMM, ") + j + ":00");
+                        tickTexts.push(countlyCommon.formatDate(start, "D MMM, ") + j + ":00");
                     }
                 }
             } else {
                 for (var i = 0; i < days; i++) {
                     start.add(1, 'days');
-                    ticks.push([i, countlyCommon.formatDate(start,"D MMM")]);
-                    tickTexts[i] = countlyCommon.formatDate(start,"D MMM, dddd");
+                    ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
+                    tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
                 }
             }
 
@@ -1861,8 +1903,8 @@
             tickTexts = tmpTickTexts;
         } else if (!skipReduction && ticks.length > 10) {
             var reducedTicks = [],
-                step = (Math.floor(ticks.length / 10) < 1)? 1 : Math.floor(ticks.length / 10),
-                pickStartIndex = (Math.floor(ticks.length / 30) < 1)? 1 : Math.floor(ticks.length / 30);
+                step = (Math.floor(ticks.length / 10) < 1) ? 1 : Math.floor(ticks.length / 10),
+                pickStartIndex = (Math.floor(ticks.length / 30) < 1) ? 1 : Math.floor(ticks.length / 30);
 
             for (var i = pickStartIndex; i < (ticks.length - 1); i = i + step) {
                 reducedTicks.push(ticks[i]);
@@ -1880,7 +1922,7 @@
 
         return {
             min: 0 - limitAdjustment,
-            max: (limitAdjustment)? tickTexts.length - 3 + limitAdjustment : tickTexts.length - 1,
+            max: (limitAdjustment) ? tickTexts.length - 3 + limitAdjustment : tickTexts.length - 1,
             tickTexts: tickTexts,
             ticks: _.compact(ticks)
         };
@@ -1895,7 +1937,7 @@
     * //outputs [1,2,3]
     * countlyCommon.union([1,2],[2,3]);
     */
-    countlyCommon.union = function(x, y) {
+    countlyCommon.union = function (x, y) {
         if (!x) {
             return y;
         } else if (!y) {
@@ -1903,11 +1945,11 @@
         }
 
         var obj = {};
-        for (var i = x.length-1; i >= 0; -- i) {
+        for (var i = x.length - 1; i >= 0; --i) {
             obj[x[i]] = true;
         }
 
-        for (var i = y.length-1; i >= 0; -- i) {
+        for (var i = y.length - 1; i >= 0; --i) {
             obj[y[i]] = true;
         }
 
@@ -1928,7 +1970,7 @@
     * //outputs 1,234,567
     * countlyCommon.formatNumber(1234567);
     */
-    countlyCommon.formatNumber = function(x) {
+    countlyCommon.formatNumber = function (x) {
         x = parseFloat(parseFloat(x).toFixed(2));
         var parts = x.toString().split(".");
         parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -1945,13 +1987,13 @@
     * //outputs 0012
     * countlyCommon.pad(12, 4, "0");
     */
-	countlyCommon.pad = function(n, width, z){
-		z = z || '0';
-		n = n + '';
-		return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
-	};
+    countlyCommon.pad = function (n, width, z) {
+        z = z || '0';
+        n = n + '';
+        return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+    };
 
-    countlyCommon.getNoteDateIds = function(bucket) {
+    countlyCommon.getNoteDateIds = function (bucket) {
         var _periodObj = countlyCommon.periodObj,
             dateIds = [],
             dotSplit = [],
@@ -1990,11 +2032,11 @@
                             }
                         }
                     }
-                } else if(countlyCommon.getPeriod() == "day") {
+                } else if (countlyCommon.getPeriod() == "day") {
                     for (var i = 0; i < tmpDate.getDate(); i++) {
                         _periodObj.currentPeriodArr.push(_periodObj.activePeriod + "." + (i + 1));
                     }
-                } else{
+                } else {
                     _periodObj.currentPeriodArr.push(_periodObj.activePeriod);
                 }
             }
@@ -2020,7 +2062,7 @@
                 var tmpDateIds = [];
 
                 for (var i = 0; i < 25; i++) {
-                    tmpDateIds.push(dateIds[0] + ((i < 10)? "0" + i : i))
+                    tmpDateIds.push(dateIds[0] + ((i < 10) ? "0" + i : i))
                 }
 
                 dateIds = tmpDateIds;
@@ -2039,7 +2081,7 @@
         return dateIds;
     };
 
-    countlyCommon.getNotesForDateId = function(dateId) {
+    countlyCommon.getNotesForDateId = function (dateId) {
         var ret = [];
 
         if (countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID] && countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].notes) {
@@ -2085,30 +2127,30 @@
     * //outputs <span title="Tue, 17 Jan 2017 13:54:26">3 days ago<a style="display: none;">|Tue, 17 Jan 2017 13:54:26</a></span>
     * countlyCommon.formatTimeAgo(1484654066);
     */
-	countlyCommon.formatTimeAgo = function(timestamp) {
-        if(Math.round(timestamp).toString().length === 10)
+    countlyCommon.formatTimeAgo = function (timestamp) {
+        if (Math.round(timestamp).toString().length === 10)
             timestamp *= 1000;
         var target = new Date(timestamp);
         var tooltip = moment(target).format("ddd, D MMM YYYY HH:mm:ss");
         var elem = $("<span>");
         elem.prop("title", tooltip);
-		var now = new Date();
-		var diff = Math.floor((now - target) / 1000);
-		if (diff <= 1) {elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.just-now"]);}
-		else if (diff < 20) {elem.css("color", "#50C354"); elem.text(jQuery.i18n.prop("common.ago.seconds-ago", diff));}
-		else if (diff < 40) {elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.half-minute"]);}
-		else if (diff < 60) {elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.less-minute"]);}
-		else if (diff <= 90) {elem.text(jQuery.i18n.map["common.ago.one-minute"]);}
-		else if (diff <= 3540) {elem.text(jQuery.i18n.prop("common.ago.minutes-ago", Math.round(diff / 60)));}
-		else if (diff <= 5400) {elem.text(jQuery.i18n.map["common.ago.one-hour"]);}
-		else if (diff <= 86400) {elem.text(jQuery.i18n.prop("common.ago.hours-ago", Math.round(diff / 3600)));}
-		else if (diff <= 129600) {elem.text(jQuery.i18n.map["common.ago.one-day"]);}
-		else if (diff < 604800) {elem.text(jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400)));}
-		else if (diff <= 777600) {elem.text(jQuery.i18n.map["common.ago.one-week"]);}
-		else elem.text(tooltip);
-        elem.append("<a style='display: none;'>|"+tooltip+"</a>");
+        var now = new Date();
+        var diff = Math.floor((now - target) / 1000);
+        if (diff <= 1) { elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.just-now"]); }
+        else if (diff < 20) { elem.css("color", "#50C354"); elem.text(jQuery.i18n.prop("common.ago.seconds-ago", diff)); }
+        else if (diff < 40) { elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.half-minute"]); }
+        else if (diff < 60) { elem.css("color", "#50C354"); elem.text(jQuery.i18n.map["common.ago.less-minute"]); }
+        else if (diff <= 90) { elem.text(jQuery.i18n.map["common.ago.one-minute"]); }
+        else if (diff <= 3540) { elem.text(jQuery.i18n.prop("common.ago.minutes-ago", Math.round(diff / 60))); }
+        else if (diff <= 5400) { elem.text(jQuery.i18n.map["common.ago.one-hour"]); }
+        else if (diff <= 86400) { elem.text(jQuery.i18n.prop("common.ago.hours-ago", Math.round(diff / 3600))); }
+        else if (diff <= 129600) { elem.text(jQuery.i18n.map["common.ago.one-day"]); }
+        else if (diff < 604800) { elem.text(jQuery.i18n.prop("common.ago.days-ago", Math.round(diff / 86400))); }
+        else if (diff <= 777600) { elem.text(jQuery.i18n.map["common.ago.one-week"]); }
+        else elem.text(tooltip);
+        elem.append("<a style='display: none;'>|" + tooltip + "</a>");
         return elem.prop('outerHTML');
-	};
+    };
 
     /**
     * Format duration to units of how much time have passed
@@ -2118,27 +2160,27 @@
     * //outputs 47 year(s) 28 day(s) 11:54:26
     * countlyCommon.formatTime(1484654066);
     */
-	countlyCommon.formatTime = function(timestamp) {
-		var str = "";
-		var seconds = timestamp % 60;
-		str = str+leadingZero(seconds);
-		timestamp -= seconds;
-		var minutes = timestamp % (60*60);
-		str = leadingZero(minutes/60)+":"+str;
-		timestamp -= minutes;
-		var hours = timestamp % (60*60*24);
-		str = leadingZero(hours/(60*60))+":"+str;
-		timestamp -= hours;
-		if(timestamp > 0){
-			var days = timestamp % (60*60*24*365);
-			str = (days/(60*60*24))+" day(s) "+str;
-			timestamp -= days;
-			if(timestamp > 0){
-				str = (timestamp/(60*60*24*365))+" year(s) "+str;
-			}
-		}
-		return str;
-	};
+    countlyCommon.formatTime = function (timestamp) {
+        var str = "";
+        var seconds = timestamp % 60;
+        str = str + leadingZero(seconds);
+        timestamp -= seconds;
+        var minutes = timestamp % (60 * 60);
+        str = leadingZero(minutes / 60) + ":" + str;
+        timestamp -= minutes;
+        var hours = timestamp % (60 * 60 * 24);
+        str = leadingZero(hours / (60 * 60)) + ":" + str;
+        timestamp -= hours;
+        if (timestamp > 0) {
+            var days = timestamp % (60 * 60 * 24 * 365);
+            str = (days / (60 * 60 * 24)) + " day(s) " + str;
+            timestamp -= days;
+            if (timestamp > 0) {
+                str = (timestamp / (60 * 60 * 24 * 365)) + " year(s) " + str;
+            }
+        }
+        return str;
+    };
 
     /**
     * Format duration into highest unit of how much time have passed. Used in big numbers
@@ -2148,7 +2190,7 @@
     * //outputs 2824.7 yrs
     * countlyCommon.timeString(1484654066);
     */
-    countlyCommon.timeString = function(timespent){
+    countlyCommon.timeString = function (timespent) {
         var timeSpentString = (timespent.toFixed(1)) + " " + jQuery.i18n.map["common.minute.abrv"];
 
         if (timespent >= 142560) {
@@ -2198,12 +2240,13 @@
     * //outputs 17.01.2017
     * countlyCommon.getDate(1484654066);
     */
-	countlyCommon.getDate = function(timestamp) {
-        if(Math.round(timestamp).toString().length === 10)
+    countlyCommon.getDate = function (timestamp) {
+        if (Math.round(timestamp).toString().length === 10)
             timestamp *= 1000;
-		var d = new Date(timestamp);
-		return leadingZero(d.getDate())+"."+leadingZero(d.getMonth()+1)+"."+d.getFullYear();
-	}
+        var d = new Date(timestamp);
+        return moment(d).format("ddd, D MMM YYYY");
+        //return leadingZero(d.getDate()) + "." + leadingZero(d.getMonth() + 1) + "." + d.getFullYear();
+    }
 
     /**
     * Get time from seconds timestamp
@@ -2213,12 +2256,12 @@
     * //outputs 13:54
     * countlyCommon.getTime(1484654066);
     */
-	countlyCommon.getTime = function(timestamp) {
-        if(Math.round(timestamp).toString().length === 10)
+    countlyCommon.getTime = function (timestamp) {
+        if (Math.round(timestamp).toString().length === 10)
             timestamp *= 1000;
-		var d = new Date(timestamp);
-		return leadingZero(d.getHours())+":"+leadingZero(d.getMinutes());
-	}
+        var d = new Date(timestamp);
+        return leadingZero(d.getHours()) + ":" + leadingZero(d.getMinutes());
+    }
 
     /**
     * Round to provided number of digits
@@ -2229,7 +2272,7 @@
     * //outputs 1.235
     * countlyCommon.round(1.2345, 3);
     */
-    countlyCommon.round = function(num, digits) {
+    countlyCommon.round = function (num, digits) {
         digits = Math.pow(10, digits || 0);
         return Math.round(num * digits) / digits;
     };
@@ -2255,7 +2298,7 @@
     *      "m":{"total":86,"prev-total":0,"change":"NA","trend":"u","isEstimate":true}
     * }
     */
-    countlyCommon.getDashboardData = function(data, properties, unique, estOverrideMetric, clearObject){
+    countlyCommon.getDashboardData = function (data, properties, unique, estOverrideMetric, clearObject) {
         var _periodObj = countlyCommon.periodObj,
             dataArr = {},
             tmp_x,
@@ -2270,20 +2313,20 @@
             change = {},
             isEstimate = false;
 
-            for(var i = 0; i < properties.length; i++){
-                current[properties[i]] = 0;
-                previous[properties[i]] = 0;
-                currentCheck[properties[i]] = 0;
-                previousCheck[properties[i]] = 0;
-            }
+        for (var i = 0; i < properties.length; i++) {
+            current[properties[i]] = 0;
+            previous[properties[i]] = 0;
+            currentCheck[properties[i]] = 0;
+            previousCheck[properties[i]] = 0;
+        }
 
         if (_periodObj.isSpecialPeriod) {
             isEstimate = true;
             for (var j = 0; j < (_periodObj.currentPeriodArr.length); j++) {
                 tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[j]);
                 tmp_x = clearObject(tmp_x);
-                for(var i = 0; i < properties.length; i++){
-                    if(unique.indexOf(properties[i]) === -1)
+                for (var i = 0; i < properties.length; i++) {
+                    if (unique.indexOf(properties[i]) === -1)
                         current[properties[i]] += tmp_x[properties[i]];
                 }
             }
@@ -2291,17 +2334,17 @@
             for (var j = 0; j < (_periodObj.previousPeriodArr.length); j++) {
                 tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriodArr[j]);
                 tmp_y = clearObject(tmp_y);
-                for(var i = 0; i < properties.length; i++){
-                    if(unique.indexOf(properties[i]) === -1)
+                for (var i = 0; i < properties.length; i++) {
+                    if (unique.indexOf(properties[i]) === -1)
                         previous[properties[i]] += tmp_y[properties[i]];
                 }
             }
-            
+
             //deal with unique values separately
             for (var j = 0; j < (_periodObj.uniquePeriodArr.length); j++) {
                 tmp_x = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodArr[j]);
                 tmp_x = clearObject(tmp_x);
-                for(var i = 0; i < unique.length; i++){
+                for (var i = 0; i < unique.length; i++) {
                     current[unique[i]] += tmp_x[unique[i]];
                 }
             }
@@ -2309,66 +2352,66 @@
             for (var j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
                 tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j]);
                 tmp_y = clearObject(tmp_y);
-                for(var i = 0; i < unique.length; i++){
+                for (var i = 0; i < unique.length; i++) {
                     previous[unique[i]] += tmp_y[unique[i]];
                 }
             }
-            
+
             //recheck unique values with larger buckets
             for (var j = 0; j < (_periodObj.uniquePeriodCheckArr.length); j++) {
                 tmpUniqObj = countlyCommon.getDescendantProp(data, _periodObj.uniquePeriodCheckArr[j]);
                 tmpUniqObj = clearObject(tmpUniqObj);
-                for(var i = 0; i < unique.length; i++){
+                for (var i = 0; i < unique.length; i++) {
                     currentCheck[unique[i]] += tmpUniqObj[unique[i]];
                 }
             }
-            
+
             for (var j = 0; j < (_periodObj.previousUniquePeriodArr.length); j++) {
                 tmpPrevUniqObj = countlyCommon.getDescendantProp(data, _periodObj.previousUniquePeriodArr[j]);
                 tmpPrevUniqObj = clearObject(tmpPrevUniqObj);
-                for(var i = 0; i < unique.length; i++){
+                for (var i = 0; i < unique.length; i++) {
                     previousCheck[unique[i]] += tmpPrevUniqObj[unique[i]];
                 }
             }
-            
+
             //check if we should overwrite uniques
-            for(var i = 0; i < unique.length; i++){
+            for (var i = 0; i < unique.length; i++) {
                 if (current[unique[i]] > currentCheck[unique[i]]) {
                     current[unique[i]] = currentCheck[unique[i]];
                 }
-                
+
                 if (previous[unique[i]] > previousCheck[unique[i]]) {
                     previous[unique[i]] = previousCheck[unique[i]];
                 }
             }
-            
+
         } else {
             tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod);
             tmp_y = countlyCommon.getDescendantProp(data, _periodObj.previousPeriod);
             tmp_x = clearObject(tmp_x);
             tmp_y = clearObject(tmp_y);
 
-            for(var i = 0; i < properties.length; i++){
+            for (var i = 0; i < properties.length; i++) {
                 current[properties[i]] = tmp_x[properties[i]];
                 previous[properties[i]] = tmp_y[properties[i]];
             }
         }
-        
+
         //check if we can correct data using total users correction
         if (_periodObj.periodContainsToday && estOverrideMetric && countlyTotalUsers.isUsable()) {
-            for(var i = 0; i < unique.length; i++){
-                if(estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users){
+            for (var i = 0; i < unique.length; i++) {
+                if (estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users) {
                     current[unique[i]] = countlyTotalUsers.get(estOverrideMetric[unique[i]]).users;
                 }
             }
         }
-        
+
         // Total users can't be less than new users
         if (typeof current.u !== "undefined" && typeof current.n !== "undefined" && current.u < current.n) {
-            if(_periodObj.periodContainsToday && estOverrideMetric && countlyTotalUsers.isUsable() && estOverrideMetric.u && countlyTotalUsers.get(estOverrideMetric.u).users){
+            if (_periodObj.periodContainsToday && estOverrideMetric && countlyTotalUsers.isUsable() && estOverrideMetric.u && countlyTotalUsers.get(estOverrideMetric.u).users) {
                 current.n = current.u;
             }
-            else{
+            else {
                 current.u = current.n;
             }
         }
@@ -2378,23 +2421,23 @@
             current.u = current.t;
         }
 
-        for(var i = 0; i < properties.length; i++){
+        for (var i = 0; i < properties.length; i++) {
             change[properties[i]] = countlyCommon.getPercentChange(previous[properties[i]], current[properties[i]]);
             dataArr[properties[i]] = {
-                "total":current[properties[i]],
-                "prev-total":previous[properties[i]],
-                "change":change[properties[i]].percent,
-                "trend":change[properties[i]].trend
+                "total": current[properties[i]],
+                "prev-total": previous[properties[i]],
+                "change": change[properties[i]].percent,
+                "trend": change[properties[i]].trend
             };
-            if(unique.indexOf(properties[i]) !== -1){
+            if (unique.indexOf(properties[i]) !== -1) {
                 dataArr[properties[i]].isEstimate = isEstimate;
             }
         }
-        
+
         //check if we can correct data using total users correction
         if (_periodObj.periodContainsToday && estOverrideMetric && countlyTotalUsers.isUsable()) {
-            for(var i = 0; i < unique.length; i++){
-                if(estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users){
+            for (var i = 0; i < unique.length; i++) {
+                if (estOverrideMetric[unique[i]] && countlyTotalUsers.get(estOverrideMetric[unique[i]]).users) {
                     dataArr[unique[i]].isEstimate = false;
                 }
             }
@@ -2402,7 +2445,7 @@
 
         return dataArr;
     }
-    
+
     /**
     * Get total data for period's each time bucket as comma separated string to generate sparkle/small bar lines
     * @param {object} data - countly metric model data
@@ -2432,10 +2475,10 @@
     *   "avg-events":"1.6222222222222222,1.5555555555555556,1.6,1.6363636363636365,1.6486486486486487,1,1,1,1,1,1.8333333333333333,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1.4137931034482758,1,1,1,1"
     * }
     */
-    countlyCommon.getSparklineData = function(data, props, clearObject) {
+    countlyCommon.getSparklineData = function (data, props, clearObject) {
         var _periodObj = countlyCommon.periodObj
         var sparkLines = {};
-        for(var p in props){
+        for (var p in props) {
             sparkLines[p] = [];
         }
 
@@ -2443,11 +2486,11 @@
             for (var i = _periodObj.periodMin; i < (_periodObj.periodMax + 1); i++) {
                 var tmp_x = countlyCommon.getDescendantProp(data, _periodObj.activePeriod + "." + i);
                 tmp_x = clearObject(tmp_x);
-                
-                for(var p in props){
-                    if(typeof props[p] === "string")
+
+                for (var p in props) {
+                    if (typeof props[p] === "string")
                         sparkLines[p].push(tmp_x[props[p]]);
-                    else if(typeof props[p] === "function")
+                    else if (typeof props[p] === "function")
                         sparkLines[p].push(props[p](tmp_x));
                 }
             }
@@ -2456,10 +2499,10 @@
                 var tmp_x = countlyCommon.getDescendantProp(data, _periodObj.currentPeriodArr[i]);
                 tmp_x = clearObject(tmp_x);
 
-                for(var p in props){
-                    if(typeof props[p] === "string")
+                for (var p in props) {
+                    if (typeof props[p] === "string")
                         sparkLines[p].push(tmp_x[props[p]]);
-                    else if(typeof props[p] === "function")
+                    else if (typeof props[p] === "function")
                         sparkLines[p].push(props[p](tmp_x));
                 }
             }
@@ -2481,17 +2524,17 @@
     * //outputs Jan 20
     * countlyCommon.formatDate(moment(), "MMM D");
     */
-    countlyCommon.formatDate = function(date, format){
-        if(countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "ko")
+    countlyCommon.formatDate = function (date, format) {
+        if (countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "ko")
             format = format.replace("MMM D", "MMM D[일]").replace("D MMM", "MMM D[일]");
-        else if(countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "ja")
+        else if (countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "ja")
             format = format.replace("MMM D", "MMM D[日]").replace("D MMM", "MMM D[日]");
-        else if(countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "zh")
+        else if (countlyCommon.BROWSER_LANG_SHORT.toLowerCase() == "zh")
             format = format.replace("MMMM", "M").replace("MMM", "M").replace("MM", "M").replace("DD", "D").replace("D M, YYYY", "YYYY M D").replace("D M", "M D").replace("D", "D[日]").replace("M", "M[月]").replace("YYYY", "YYYY[年]");
         return date.format(format);
     }
 
-    countlyCommon.showTooltip = function(args) {
+    countlyCommon.showTooltip = function (args) {
         showTooltip(args);
     };
 
@@ -2502,7 +2545,7 @@
     }
 
     function getDOY() {
-        var onejan = new Date((new Date()).getFullYear(),0,1);
+        var onejan = new Date((new Date()).getFullYear(), 0, 1);
         return Math.ceil(((new Date()) - onejan) / 86400000);
     }
 
@@ -2510,7 +2553,7 @@
     * Getter for period object
     * @returns {object} returns {@link countlyCommon.periodObj}
     */
-    countlyCommon.getPeriodObj = function() {
+    countlyCommon.getPeriodObj = function () {
         return countlyCommon.periodObj;
     }
 
@@ -2603,6 +2646,12 @@
                 numberOfDays = daysInPeriod = 90;
                 break;
             default:
+                if (/([0-9]+)days/.test(_period)) {
+                    var match = /([0-9]+)days/.exec(_period);
+                    if (match[1]) {
+                        numberOfDays = daysInPeriod = parseInt(match[1]);
+                    }
+                }
                 break;
         }
 
@@ -2611,8 +2660,8 @@
 
             // "Date to" selected date timezone changes based on how the
             // date picker is initialised so we take care of it here
-            var tmpDate = new Date (_period[1]);
-            tmpDate.setHours(0,0,0,0);
+            var tmpDate = new Date(_period[1]);
+            tmpDate.setHours(0, 0, 0, 0);
 
             _period[1] = tmpDate.getTime();
             _period[1] -= countlyCommon.getOffsetCorrectionForTimestamp(_period[1]);
@@ -2703,20 +2752,20 @@
         }
 
         periodObj = {
-            "activePeriod":activePeriod,
-            "periodMax":periodMax,
-            "periodMin":periodMin,
-            "previousPeriod":previousPeriod,
-            "currentPeriodArr":currPeriodArr,
-            "previousPeriodArr":prevPeriodArr,
-            "isSpecialPeriod":isSpecialPeriod,
-            "dateString":dateString,
-            "daysInPeriod":daysInPeriod,
-            "numberOfDays":numberOfDays,
-            "uniquePeriodArr":getUniqArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts, currPeriodArr),
-            "uniquePeriodCheckArr":getUniqCheckArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts),
-            "previousUniquePeriodArr":getUniqArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts, prevPeriodArr),
-            "previousUniquePeriodCheckArr":getUniqCheckArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts),
+            "activePeriod": activePeriod,
+            "periodMax": periodMax,
+            "periodMin": periodMin,
+            "previousPeriod": previousPeriod,
+            "currentPeriodArr": currPeriodArr,
+            "previousPeriodArr": prevPeriodArr,
+            "isSpecialPeriod": isSpecialPeriod,
+            "dateString": dateString,
+            "daysInPeriod": daysInPeriod,
+            "numberOfDays": numberOfDays,
+            "uniquePeriodArr": getUniqArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts, currPeriodArr),
+            "uniquePeriodCheckArr": getUniqCheckArray(currWeeksArr, currWeekCounts, currMonthsArr, currMonthCounts),
+            "previousUniquePeriodArr": getUniqArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts, prevPeriodArr),
+            "previousUniquePeriodCheckArr": getUniqCheckArray(prevWeeksArr, prevWeekCounts, prevMonthsArr, prevMonthCounts),
             "periodContainsToday": periodContainsToday
         };
 
@@ -2796,8 +2845,8 @@
                     rejectedWeekDayCounts[weeksArray[i]].count++;
                 } else {
                     rejectedWeekDayCounts[weeksArray[i]] = {
-                        count:1,
-                        index:i
+                        count: 1,
+                        index: i
                     };
                 }
             }
@@ -3012,9 +3061,9 @@
     }
 
     function leadingZero(value) {
-        if(value > 9)
+        if (value > 9)
             return value
-        return "0"+value;
+        return "0" + value;
     }
 
     /**
@@ -3022,7 +3071,7 @@
     * @param {number} inTS - second or milisecond timestamp
     * @returns {number} corrected timestamp applying user's timezone offset
     */
-    countlyCommon.getOffsetCorrectionForTimestamp = function(inTS) {
+    countlyCommon.getOffsetCorrectionForTimestamp = function (inTS) {
         var timeZoneOffset = new Date().getTimezoneOffset(),
             intLength = Math.round(inTS).toString().length,
             tzAdjustment = 0;
@@ -3039,9 +3088,9 @@
     }
 
     var getOffsetCorrectionForTimestamp = countlyCommon.getOffsetCorrectionForTimestamp;
-    
+
     var __months = [];
-    
+
     /**
     * Get array of localized short month names from moment js
     * @param {boolean} reset - used to reset months cache when changing locale
@@ -3050,19 +3099,19 @@
     * //outputs ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     * countlyCommon.getMonths();
     */
-    countlyCommon.getMonths = function(reset){
-        if(reset){
+    countlyCommon.getMonths = function (reset) {
+        if (reset) {
             __months = [];
         }
-        
-        if(!__months.length){
-            for(var i = 0; i < 12; i++){
+
+        if (!__months.length) {
+            for (var i = 0; i < 12; i++) {
                 __months.push(moment.localeData().monthsShort(moment([0, i]), ""));
             }
         }
         return __months;
     };
-    
+
     /**
     * Currently selected period
     * @property {array=} currentPeriodArr - array with ticks for current period (available only for special periods), example ["2016.12.22","2016.12.23","2016.12.24", ...]

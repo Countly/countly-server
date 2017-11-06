@@ -15,8 +15,8 @@ class ConnectionResource {
 		}
 	}
 
-	feed(array) {
-		return this.connection.feed(array);
+	feed(array, token) {
+		return this.connection.feed(array, token);
 	}
 
 	resolve() {

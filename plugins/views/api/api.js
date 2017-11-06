@@ -86,6 +86,33 @@ var plugin = {},
     
     function getHeatmap(params){
         var result = {types:[], data:[]};
+        var devices = [
+            {
+                type: "mobile",
+                minWidth: 0,
+                maxWidth: 767
+            },
+            {
+                type: "tablet",
+                minWidth: 767,
+                maxWidth: 1024
+            },
+            {
+                type: "desktop",
+                minWidth: 1024,
+                maxWidth: 10240
+            },
+            
+        ];
+        var width = parseInt(params.qstring.width);
+        var device = devices.filter((device) => {
+            return device.minWidth < width && device.maxWidth >= width;
+        });
+
+        if(!device.length){
+            common.returnMessage(params, 400, 'Bad request parameter: width');
+            return false;
+        }
         var collectionName = "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex');
         common.drillDb.collection(collectionName).findOne( {"_id": "meta_v2"},{_id:0, "sg.type":1, "sg.domain":1} ,function(err,meta){
             if(meta && meta.sg && meta.sg.type)
@@ -118,13 +145,12 @@ var plugin = {},
                             case "day":
                             case "yesterday":
                             case "hour":
-                            case "7days":
-                            case "30days":
-                            case "60days":
                                 break;
                             default:
-                                common.returnMessage(params, 400, 'Bad request parameter: period');
-                                return false;
+                                if(!/([0-9]+)days/.test(params.qstring.period)){
+                                    common.returnMessage(params, 400, 'Bad request parameter: period');
+                                    return false;
+                                }
                                 break;
                         }
                     }
@@ -184,6 +210,10 @@ var plugin = {},
                 queryObject.ts.$lt.setTimezone(params.appTimezone);
                 queryObject.ts.$lt = queryObject.ts.$lt.getTime() + queryObject.ts.$lt.getTimezoneOffset()*60000;
                 
+                queryObject["sg.width"] = {};
+                queryObject["sg.width"].$gt = device[0].minWidth;
+                queryObject["sg.width"].$lte = device[0].maxWidth;
+
                 if(params.qstring.segment)
                     queryObject["sg.segment"] = params.qstring.segment;
                 common.drillDb.collection(collectionName).find( queryObject,{_id:0, c:1, "sg.type":1, "sg.x":1, "sg.y":1, "sg.width":1, "sg.height":1}).toArray(function(err,data){

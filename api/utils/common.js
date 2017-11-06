@@ -381,6 +381,17 @@ var common = {},
     };
 
     /**
+    * Create HMAC sha512 hash from provided value and optional salt
+    * @param {string} str - value to hash
+    * @param {string=} addSalt - optional salt, uses ms timestamp by default
+    * @returns {string} HMAC sha1 hash
+    */
+    common.sha512Hash = function (str, addSalt) {
+        var salt = (addSalt) ? new Date().getTime() : '';
+        return crypto.createHmac('sha512', salt + '').update(str + '').digest('hex');
+    };
+
+    /**
     * Create MD5 hash from provided value
     * @param {string} str - value to hash
     * @returns {string} MD5 hash
@@ -1304,15 +1315,36 @@ var common = {},
                     return;
                 }
             }
-            if(!update["$setOnInsert"])
-                update["$setOnInsert"] = {};
-            if(!update["$setOnInsert"].fac)
-                update["$setOnInsert"].fac = params.time.mstimestamp;
             
-            if(!update["$set"])
-                update["$set"] = {};
-            if(!update["$set"].lac)
-                update["$set"].lac = params.time.mstimestamp;
+            var user = params.app_user || {};
+            
+            if(typeof user.fac === "undefined"){
+                if(!update["$setOnInsert"])
+                    update["$setOnInsert"] = {};
+                if(!update["$setOnInsert"].fac)
+                    update["$setOnInsert"].fac = params.time.mstimestamp;
+            }
+            
+            if(user.lac && user.lac < params.time.mstimestamp){
+                if(!update["$set"])
+                    update["$set"] = {};
+                if(!update["$set"].lac)
+                    update["$set"].lac = params.time.mstimestamp;
+            }
+            
+            if(params.qstring.device_id && typeof user.did === "undefined"){
+                if(!update["$set"])
+                    update["$set"] = {};
+                if(!update["$set"].did)
+                    update["$set"].did = params.qstring.device_id;
+            }
+            
+            if(plugins.getConfig("api").prevent_duplicate_requests && user.last_req !== params.request_hash){
+                if(!update["$set"])
+                    update["$set"] = {};
+                update["$set"].last_req = params.request_hash;
+            }
+            
             common.db.collection('app_users' + params.app_id).findAndModify({'_id': params.app_user_id},{}, update, {new:true, upsert:true}, function(err, res) {
                 if(!err && res && res.value)
                     params.app_user = res.value;

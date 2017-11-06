@@ -49,7 +49,24 @@ class Manager {
 
 				log.d('Cancelling %d jobs', toCancel ? toCancel.length : null);
 				try {
-					let promise = toCancel && toCancel.length ? Promise.all(toCancel.map(j => this.create(j).cancel(this.db))) : Promise.resolve(),
+					let sequence = (arr, transform) => {
+						return new Promise((resolve, reject) => {
+							var next = () => {
+								let promise = transform(arr.pop());
+								if (arr.length) {
+									promise.then(next, reject);
+								} else {
+									promise.then(resolve, reject);
+								}
+							};
+							if (!arr.length) {
+								resolve();
+							} else {
+								next();
+							}
+						});
+					};
+					let promise = toCancel && toCancel.length ? sequence(toCancel, j => this.create(j).cancel(this.db)) : Promise.resolve(),
 						resume = () => {
 							log.d('Resuming after cancellation');
 							this.collection.find({status: STATUS.PAUSED}).toArray((err, array) => {
@@ -58,16 +75,17 @@ class Manager {
 										return {_id: j._id, name: j.name};
 									}));
 									this.process(array.filter(j => this.types.indexOf(j.name) !== -1));
+								} else {
+									this.checkAfterDelay(DELAY_BETWEEN_CHECKS * 5);
 								}
 							});
+							// this.checkAfterDelay(DELAY_BETWEEN_CHECKS * 5);
 						};
 					promise.then(resume, resume);
-					this.checkAfterDelay(DELAY_BETWEEN_CHECKS * 5);
 				} catch(e) {
 					log.e(e, e.stack);
 					this.checkAfterDelay(DELAY_BETWEEN_CHECKS * 5);
 				}
-
 			});
 		}, (e) => {
 			log.e('Error when loading jobs', e, e.stack);
@@ -305,6 +323,9 @@ class Manager {
 											});
 											running.push(sub);
 											next();
+										} else if (!rejected && running.length < workersCount && subs.length > 0 && !this.getPool(subs[0]).canRun()) {
+											log.d('%s: not ready to run yet', job._idIpc);
+											setTimeout(next, 5000);
 										} else if (running.length === 0 && subs.length === 0) {
 											try {
 												log.d('%s: all subs done, resolving', job._idIpc);
@@ -378,7 +399,7 @@ class Manager {
 		if (!this.resources[job.resourceName()]) {
 			this.resources[job.resourceName()] = new RES.ResourcePool(() => {
 				return new RES.ResourceFaçade(job, this.files[job.name]);
-			}, 5);
+			}, 10);
 			this.resources[job.resourceName()].on(RES.EVT.CLOSED, () => {
 				log.w('all pool resources done');
 				delete this.resources[job.resourceName()];

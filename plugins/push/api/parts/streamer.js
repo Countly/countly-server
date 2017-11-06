@@ -72,11 +72,27 @@ class Streamer {
 							time: common.initTimeObj(this.anote.creds.app_timezone.tz, Date.now()),
 							qstring: Object.assign({app_id: this.anote.creds.app_id.toString()}, this.anote.query.drill)
 						};
+                        
+                        //check for cohort query
+                        var cohorts = {};
+                        if(params.qstring.queryObject.chr){
+                            if(params.qstring.queryObject.chr.$in && params.qstring.queryObject.chr.$in.length){
+                                for(var i = 0; i < params.qstring.queryObject.chr.$in.length; i++){
+                                    cohorts["chr."+params.qstring.queryObject.chr.$in[i]+".in"] = "true";
+                                }
+                            }
+                            if(params.qstring.queryObject.chr.$nin && params.qstring.queryObject.chr.$nin.length){
+                                for(var i = 0; i < params.qstring.queryObject.chr.$nin.length; i++){
+                                    cohorts["chr."+params.qstring.queryObject.chr.$nin[i]+".in"] = {$exists:false};
+                                }
+                            }
+                            delete params.qstring.queryObject.chr;
+                        }
 
 						log.i('[%s]: Drilling: %j', process.pid, this.anote.id, params);
 
 						this.drill().drill.fetchUsers(params, (err, uids) => {
-							query = Object.assign({}, this.anote.query.user || {});
+							query = Object.assign({}, this.anote.query.user || {}, cohorts);
 							query[common.dbUserMap.tokens + this.field] = true;
 
 							log.i('[%s]: Counting with drill of %d users: %j', process.pid, this.anote.id, uids.length, query);
@@ -112,7 +128,7 @@ class Streamer {
 									resolve(this.built);
 								}
 							});
-						});
+						}, db);
 					} else {
 						query = this.anote.query ? Object.assign({}, this.anote.query.user || {}) : {};
 						query[common.dbUserMap.tokens + this.field] = true;

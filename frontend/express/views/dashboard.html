@@ -26,7 +26,7 @@
 	<link rel="stylesheet" href="<%- cdn %>javascripts/dom/jqueryui/jquery.ui.theme.css" />
     <% if (production) { %>
 		<link rel="stylesheet" href="<%- cdn %>stylesheets/main.min.css?<%= countlyVersion %>" />
-		<link rel="stylesheet" href="<%- cdn %>stylesheets/plugins.min.css?<%= countlyVersion %>" />
+		<link rel="stylesheet" href="<%- cdn %>stylesheets/plugins.min.css?<%= countlyVersion %>&<%= pluginsSHA %>" />
     	<!-- PRODUCTION -->
     	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.dom.js?<%= countlyVersion %>"></script>
     	<script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.utils.js?<%= countlyVersion %>"></script>
@@ -68,6 +68,7 @@
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/jquery.hoverIntent.minified.js"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/tooltipster/tooltipster.bundle.min.js"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/highlight/highlight.pack.js"></script>
+        <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/dropzone.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/jquery.dataTables.js"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/dataTables/js/TableTools.js"></script>
         <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/dom/pace/pace.min.js"></script>
@@ -227,16 +228,17 @@
 						</div>
 						<div class="text" data-localize="sidebar.events"></div>
 					</a>
-					<% if(member['global_admin'] || adminOfApps.length  || config.autonomous) { %>
 					<a class="item" id="management-menu">
 						<div class="logo management ion-gear-a"></div>
 						<div class="text" data-localize="sidebar.management"></div>
 					</a>
 					<div class="sidebar-submenu" id="management-submenu">
+                        <% if(member['global_admin'] || adminOfApps.length  || config.autonomous) { %>
 						<a href="#/manage/apps" class="item active">
 							<div class="logo applications"></div>
 							<div class="text" data-localize="sidebar.management.applications"></div>
 						</a>
+                        <% } %>
 						<% if(member['global_admin']) { %>
 						<a href="#/manage/users" class="item">
 							<div class="logo mgmt-users"></div>
@@ -253,7 +255,6 @@
 							<div id="help-toggle"></div>
 						</a>
 					</div>
-					<% } %>
 				</div>
 			</div>
 				<div id="version-info"><%= countlyTypeName %></div>
@@ -774,7 +775,8 @@
 						</div>
 						<div style="display:none; float:right;" class="icon-button delete-app help-zone-vs" data-help-localize="help.manage-apps.app-delete-button" id="delete-app" data-localize="common.delete"></div>
                         <ul id="clear-data" class="options">
-                            <li id="clear-all"><span data-localize="management-applications.clear-all-data"></span></li>
+                            <li id="clear-reset"><span data-localize="management-applications.clear-reset-data"></span><span class="li-explanation" data-localize="management-applications.clear-reset-explanation"></span></li>
+                            <li id="clear-all"><span data-localize="management-applications.clear-all-data"></span><span class="li-explanation" data-localize="management-applications.clear-all-explanation"></span></li>
                             <li id="clear-1month"><span data-localize="management-applications.clear-1month-data"></span></li>
                             <li id="clear-3month"><span data-localize="management-applications.clear-3month-data"></span></li>
                             <li id="clear-6month"><span data-localize="management-applications.clear-6month-data"></span></li>
@@ -1288,7 +1290,7 @@
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.visualization.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/countly/countly.config.js?<%= countlyVersion %>"></script>
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.lib.js?<%= countlyVersion %>"></script>
-	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.plugins.js?<%= countlyVersion %>"></script>
+	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/min/countly.plugins.js?<%= countlyVersion %>&<%= pluginsSHA %>"></script>
     <% } else { %>
 	    <!-- DEVELOPMENT -->
 	    <script language="javascript" type="text/javascript" src="<%- cdn %>javascripts/utils/textcounter.min.js"></script>

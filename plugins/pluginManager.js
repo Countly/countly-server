@@ -5,6 +5,7 @@ var plugins = require('./plugins.json', 'dont-enclose'),
     utils = require('../api/utils/utils.js'),
     fs = require('fs'),
     path = require('path'),
+    querystring = require('querystring'),
     cp = require('child_process'),
     async = require("async"),
     _ = require('underscore'),
@@ -535,6 +536,72 @@ var pluginManager = function pluginManager(){
         conf.max_pool_size = 1;
         return this.dbConnection({mongodb: conf});
     };
+    
+    this.getDbConnectionParams = function(config) {
+        var ob = {};
+        var db;
+        if(typeof config == "string"){
+            db = config;
+            config = JSON.parse(JSON.stringify(countlyConfig));
+        }
+        else
+            config = config || JSON.parse(JSON.stringify(countlyConfig));
+        
+        if (typeof config.mongodb === 'string') {
+            dbName = db ? config.mongodb.replace(new RegExp('countly$'), db) : config.mongodb;
+            //remove protocol
+            dbName = dbName.split("://").pop();
+            if(dbName.indexOf("@") !== -1){
+                var auth = dbName.split("@").shift();
+                dbName = dbName.replace(auth+"@", "");
+                var parts = auth.split(":");
+                ob.username = parts[0];
+                ob.password = parts[1];
+            }
+            var parts = dbName.split("/");
+            ob.host = parts[0];
+            ob.db = parts[1] || "countly";
+            if(ob.db.indexOf("?") !== -1){
+                var parts = ob.db.split("?");
+                ob.db = parts[0];
+                var qstring = parts[1];
+                if(qstring && qstring.length){
+                    qstring = querystring.parse(qstring);
+                    if(qstring.ssl){
+                        ob.ssl = "";
+                        ob.sslAllowInvalidCertificates = "";
+                        ob.sslAllowInvalidHostnames = "";
+                    }
+                    if(qstring.replicaSet){
+                        ob.host = qstring.replicaSet+"/"+ob.host;
+                    }
+                }
+            }
+            
+        } else{
+            ob.db = db || config.mongodb.db || 'countly';
+            if ( typeof config.mongodb.replSetServers === 'object'){
+                ob.host = "";
+                if(config.mongodb.replicaName){
+                    ob.host = config.mongodb.replicaName+"/";
+                }
+                ob.host += config.mongodb.replSetServers.join(',');
+            } else {
+                ob.host = (config.mongodb.host + ':' + config.mongodb.port);
+            }
+            if(config.mongodb.serverOptions && config.mongodb.serverOptions.ssl){
+                ob.ssl = "";
+                ob.sslAllowInvalidCertificates = "";
+                ob.sslAllowInvalidHostnames = "";
+            }
+            if(config.mongodb.username && config.mongodb.password){
+                ob.username = config.mongodb.username;
+                ob.password = utils.decrypt(config.mongodb.password);
+            }
+        }
+        
+        return ob;
+    }
     
     this.dbConnection = function(config) {
         if (process.argv[1].endsWith('executor.js') && (!config || !config.mongodb || config.mongodb.max_pool_size !== 1)) {

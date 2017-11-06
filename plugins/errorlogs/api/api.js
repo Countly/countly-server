@@ -35,6 +35,12 @@ var plugin = {},
                             params.res.writeHead(200, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition':'attachment; filename=countly-'+params.qstring.log+'.log'});
                             params.res.write(data);
                             params.res.end();
+                        }).catch(function(reason) {
+                            if(!params.res.finished){
+                                params.res.writeHead(200, {'Content-Type': 'plain/text; charset=utf-8', 'Content-disposition':'attachment; filename=countly-'+params.qstring.log+'.log'});
+                                params.res.write("");
+                                params.res.end();
+                            }
                         });
                     }
                 }
@@ -50,12 +56,17 @@ var plugin = {},
                         readLastLines.read(dir+"/"+logs[params.qstring.log], lines)
                         .then(function(data){
                             common.returnOutput(params, data);
+                        }).catch(function(reason) {
+                            if(!params.res.finished){
+                                common.returnOutput(params, "");
+                            }
                         });
                     }
                 }
             }
             else{
                 function readLog(key, done){
+                    var finished = false;
                     if(lines == 0){
                         fs.readFile(dir+"/"+logs[key], 'utf8', function (err,data) {
                             if (err)
@@ -66,7 +77,15 @@ var plugin = {},
                     else{
                         readLastLines.read(dir+"/"+logs[key], lines)
                         .then(function(data){
-                            done(null, {key:key, val:data});
+                            if(!finished){
+                                finished = true;
+                                done(null, {key:key, val:data});
+                            }
+                        }).catch(function(reason) {
+                            if(!finished){
+                                finished = true;
+                                done(null, {key:key, val:""});
+                            }
                         });
                     }
                 };

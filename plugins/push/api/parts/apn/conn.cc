@@ -12,6 +12,51 @@
 #include "h2.h"
 #include "log.h"
 #include "utils.cc"
+// #include "trace.h"
+
+// namespace sample {
+//   auto ohhai = [](int n) {
+//   LOG_INFO("CONN " << uv_thread_self() << ": in ohhai");
+
+//     auto f = [&]() {
+//   LOG_INFO("CONN " << uv_thread_self() << ": in f");
+//       int *p = NULL;
+// 	  *p = 1;
+//       return p;
+//     };
+
+//     f();
+//   };
+// }
+
+// void foo() {
+//   LOG_INFO("CONN " << uv_thread_self() << ": in foo");
+//   using namespace sample;
+//   auto x = [&]() {
+//     ohhai(0);
+//   };
+//   x();
+// }
+
+// FILE *outfile = stdout;
+
+// void print_frame_attr_indent() { fprintf(outfile, "          "); }
+// const char *ansi_escend() { return ""; }
+// const char *ansi_esc(const char *code) { return ""; }
+
+// void print_nv(nghttp2_nv *nv) {
+//   fprintf(outfile, "%s%s%s: %s\n", ansi_esc("\033[1;34m"), nv->name,
+//           ansi_escend(), nv->value);
+// }
+// void print_nv(nghttp2_nv *nva, size_t nvlen) {
+//   auto end = nva + nvlen;
+//   for (; nva != end; ++nva) {
+//     print_frame_attr_indent();
+
+//     print_nv(nva);
+//   }
+// }
+
 
 namespace apns {
 	void H2::conn_thread_run(void *arg) {
@@ -218,6 +263,7 @@ namespace apns {
 				stats.state |= ST_CONNECTED;
 
 				LOG_INFO("CONN " << uv_thread_self() << ": done with HTTP/2 stack");
+				// foo();
 			} else {
 				LOG_WARNING("CONN " << uv_thread_self() << ": failed to connect, trying next server");
 				
@@ -755,7 +801,9 @@ namespace apns {
 
 			uv_mutex_lock(stream->obj->main_mutex);
 			{
-				stream->obj->statuses.push_back(std::make_tuple(stream->id, stream->status, stream->response));
+				std::string cpid(stream->id);
+				std::string cpresp(stream->response);
+				stream->obj->statuses.push_back(std::make_tuple(cpid, stream->status, cpresp));
 			}
 			uv_mutex_unlock(stream->obj->main_mutex);
 
@@ -1055,8 +1103,13 @@ namespace apns {
 
 
 				// fprintf(stderr, "Request headers:\n");
-				// print_nv(headers, 6);
-				stream->stream_id = nghttp2_submit_request(session, NULL, headers, headers[5].flags == NGHTTP2_NV_FLAG_NO_INDEX ? 5 : 6, &global_data, stream);
+				// print_nv(headers, headers[6].flags == NGHTTP2_NV_FLAG_NO_INDEX ? 6 : 7);
+				// int len = headers[6].flags == NGHTTP2_NV_FLAG_NO_INDEX ? 6 : 7;
+				// for (int i = 0; i < len; i++) {
+				// 	LOG_DEBUG("header " << i << ": " << headers[i])
+				// }
+				// LOG_DEBUG("CONN " << uv_thread_self() << ": headers " << nghttp2_strerror(stream->stream_id));
+				stream->stream_id = nghttp2_submit_request(session, NULL, headers, headers[6].flags == NGHTTP2_NV_FLAG_NO_INDEX ? 6 : 7, &global_data, stream);
 				// LOG_DEBUG("CONN " << uv_thread_self() << ": H2: sending " << stream->stream_id << " to " << stream->id);
 
 				if (stream->stream_id < 0) {

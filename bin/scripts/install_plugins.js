@@ -1,5 +1,6 @@
 var manager = require('../../plugins/pluginManager.js');
 var plugins = manager.getPlugins();
+require('../../api/utils/log').setLevel('db:write', 'mute');
 
 if(plugins.length > 0){
 	//run install files

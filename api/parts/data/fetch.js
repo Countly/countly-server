@@ -236,16 +236,20 @@ var fetch = {},
     };
 
     fetch.fetchDashboard = function(params) {
-        params.qstring.period = "30days";
+        params.qstring.period = params.qstring.period || "30days";
 
         fetchTimeObj('users', params, false, function(usersDoc) {
             fetchTimeObj('device_details', params, false, function(deviceDetailsDoc) {
                 fetchTimeObj('carriers', params, false, function(carriersDoc) {
                     var periods = [
-                            {period: "30days", out: "30days"},
-                            {period: "7days", out: "7days"},
-                            {period: "hour", out: "today"}
-                        ];
+                        {period: "30days", out: "30days"},
+                        {period: "7days", out: "7days"},
+                        {period: "hour", out: "today"}
+                    ];
+                    
+                    if(params.qstring.period !== "30days"){
+                        periods = [{period: params.qstring.period, out: params.qstring.period}];
+                    }
 
                     countlyCommon.setTimezone(params.appTimezone);
                     countlySession.setDb(usersDoc || {});
@@ -691,7 +695,6 @@ var fetch = {},
              We skip uid-sequence document and filter results by last session timestamp
              */
             var match = {
-                _id: { $ne: "uid-sequence" },
                 ls: countlyCommon.getTimestampRangeQuery(params, true)
             };
 

@@ -58,13 +58,12 @@ var plugin = {},
                         case "day":
                         case "yesterday":
                         case "hour":
-                        case "7days":
-                        case "30days":
-                        case "60days":
                             break;
                         default:
-                            common.returnMessage(params, 400, 'Bad request parameter: period');
-                            return false;
+                            if(!/([0-9]+)days/.test(params.qstring.period)){
+                                common.returnMessage(params, 400, 'Bad request parameter: period');
+                                return false;
+                            }
                             break;
                     }
                 }

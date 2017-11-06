@@ -12,3 +12,9 @@ plugins/plugins.json
 frontend/express/public/sdk/
 **/.DS_Store
 **/node_modules
+bin/scripts/nghttp2
+frontend/express/public/images/*/
+!frontend/express/public/images/dashboard/
+!frontend/express/public/images/flags/
+!frontend/express/public/images/management/
+!frontend/express/public/images/pre-login/

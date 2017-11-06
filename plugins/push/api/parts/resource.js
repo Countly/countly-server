@@ -2,16 +2,78 @@
 
 const res = require('../../../../api/parts/jobs/resource.js'),
 	  log = require('../../../../api/utils/log.js')('job:push:resource'),
+	  CT  = require('./credentials').CRED_TYPE,
+	  PL  = require('./note.js').Platform,
 	  APN = require('../parts/apn'),
-	  GCM = require('../parts/gcm');
+	  GCM = require('../parts/gcm'),
+	  jwt = require('jsonwebtoken'),
+	  TOKEN_VALID = 60 * 45;
+
+class Token {
+	constructor(key, kid, tid) {
+		this.key = key;
+		this.kid = kid;
+		this.tid = tid;
+		this.next();
+	}
+
+	current() {
+		if (!this.isValid()) {
+			this.next();
+		}
+		return this.token_bearer;
+	} 
+
+	next() {
+		this.token = this.sign();
+		this.token_bearer = 'bearer ' + this.token;
+		this.date = this.decode().iat;
+	}
+
+	isValid() {
+		return (Date.now() / 1000 - this.date) < TOKEN_VALID;
+	}
+
+	sign() {
+		return jwt.sign({
+			iss: this.tid,
+			iat: Math.floor(Date.now() / 1000)
+		}, this.key, {
+			algorithm: 'ES256', 
+			header: {
+				alg: 'ES256',
+				kid: this.kid
+			}
+		});
+	}
+
+	decode() {
+		return jwt.decode(this.token || this.sign());
+	}
+}
 
 class Connection extends res.Resource {
 	constructor(_id, name, credentials) {
 		super(_id, name);
 		log.d('[%d]: Initializing push resource with %j / %j / %j', process.pid, _id, name, credentials);
-		if (credentials.platform === 'i') {
-			this.connection = new APN.ConnectionResource(credentials.key, credentials.secret || '', credentials.bundle || '', credentials.expiration || '', credentials.host);
-		} else if (credentials.platform === 'a') {
+		if (credentials.platform === PL.APNS) {
+			var secret = credentials.secret || '',
+				bundle = credentials.bundle || '',
+				certificate = credentials.key;
+
+			if (credentials.type === CT[PL.APNS].TOKEN) {
+				var comps = credentials.secret.split('[CLY]');
+				this.token = new Token(credentials.key, comps[0], comps[1]);
+				log.d('current token %j', this.token.decode());
+				log.d('current secret %j', credentials.key);
+				bundle = comps[2];
+				secret = this.token.current();
+				certificate = '';
+				log.d('Will use team %j, key id %j, bundle %j for token generation, current token is %j, valid from %j', comps[1], comps[0], comps[2], this.token.token, this.token.date);
+			}
+
+			this.connection = new APN.ConnectionResource(certificate, secret, bundle, credentials.expiration || '', credentials.host);
+		} else if (credentials.platform === PL.GCM) {
 			this.connection = new GCM.ConnectionResource(credentials.key);
 		} else {
 			log.e(`Platform ${credentials.platform} is not supported`);
@@ -81,7 +143,7 @@ class Connection extends res.Resource {
 	}
 
 	feed (array) {
-		return this.connection.feed(array);
+		return this.connection.feed(array, this.token ? this.token.current() : undefined);
 	}
 
 	checkActive () {
@@ -113,5 +175,7 @@ class Connection extends res.Resource {
 		}
 	}
 }
+
+Connection.Token = Token;
 
 module.exports = Connection;

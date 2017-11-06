@@ -14,6 +14,7 @@ var plugin = {},
         var sdk = {};
         sdk.version = params.qstring.sdk_version;
         sdk.name = params.qstring.sdk_name;
+        var q = JSON.stringify(params.qstring);
 		var version = (params.qstring.metrics) ? (params.qstring.metrics._app_version || "") : "";
         var result = params.app_user;
 		if(result){
@@ -71,7 +72,9 @@ var plugin = {},
                 types["crash"] = JSON.stringify(types["crash"]);
             }
 		}
-        common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:types, q:JSON.stringify(params.qstring), s:sdk, h:params.req.headers, m:params.req.method, b:params.bulk || false}, function () {});
+        setTimeout(function(){
+            common.db.collection('logs' + params.app_id).insert({ts:ts, reqts:now, d:device, l:location, v:version, t:types, q:q, s:sdk, h:params.req.headers, m:params.req.method, b:params.bulk || false, c:(params.cancelRequest) ? params.cancelRequest: false}, function () {});
+        }, 1000);
 	});
 	
 	//read api call
@@ -90,7 +93,7 @@ var plugin = {},
 				common.db.collection('logs' + params.app_id).find(filter).toArray(function(err, items) {
 					if(err)
 						console.log(err);
-					common.returnOutput(params, items);
+					common.returnOutput(params, items || []);
 				});
 			});
 			return true;

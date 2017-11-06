@@ -463,6 +463,15 @@ var common          = require('../../../../api/utils/common.js'),
             msg.date = null;
         }
 
+        if (params.qstring.args.expiryDate) {
+            if ((params.qstring.args.expiryDate + '').length == 10) {
+                params.qstring.args.expiryDate *= 1000;
+            }
+            msg.expiryDate = moment.utc(params.qstring.args.expiryDate).toDate();
+        } else {
+            msg.expiryDate = null;
+        }
+
         if (typeof params.qstring.args.tz === 'undefined') {
             params.qstring.args.tz = false;
         }
@@ -559,6 +568,7 @@ var common          = require('../../../../api/utils/common.js'),
                 geo: geo ? msg.geo : undefined,
                 test: msg.test || false,
                 date: msg.date || new Date(),
+                expiryDate: msg.expiryDate,
                 tz: msg.tz
             });
 
@@ -679,12 +689,19 @@ var common          = require('../../../../api/utils/common.js'),
             detected;
 
         log.d('mime', mime);
-        log.d('args.key', args.key);
+        log.d('args.key', args.key, args.key.indexOf(';base64,'));
         
         if (args.platform === N.Platform.APNS) {
             if (mime === 'data:application/x-pkcs12') {
-                detected = [creds.CRED_TYPE[N.Platform.APNS].UNIVERSAL, creds.CRED_TYPE[N.Platform.APNS].DEV, creds.CRED_TYPE[N.Platform.APNS].PROD];
+                detected = [creds.CRED_TYPE[N.Platform.APNS].UNIVERSAL];
             } else if (mime === 'data:application/x-pkcs8') {
+                detected = [creds.CRED_TYPE[N.Platform.APNS].TOKEN];
+            } else if (mime === 'data:') {
+                var error = creds.check_token(args.key.substring(args.key.indexOf(',') + 1), args.secret);
+                if (error) {
+                    common.returnMessage(params, 400, error);
+                    return false;
+                }
                 detected = [creds.CRED_TYPE[N.Platform.APNS].TOKEN];
             } else {
                 common.returnMessage(params, 400, 'Certificate must be in P12 or P8 formats');
@@ -968,11 +985,11 @@ var common          = require('../../../../api/utils/common.js'),
         }
 
         var token, field, bool;
-        if (params.qstring.ios_token && typeof params.qstring.test_mode !== 'undefined') {
+        if (typeof params.qstring.ios_token !== 'undefined' && typeof params.qstring.test_mode !== 'undefined') {
             token = params.qstring.ios_token;
             field = common.dbUserMap.tokens + '.' + common.dbUserMap['apn_' + params.qstring.test_mode];
             bool  = common.dbUserMap.tokens + common.dbUserMap['apn_' + params.qstring.test_mode];
-        } else if (params.qstring.android_token && typeof params.qstring.test_mode !== 'undefined') {
+        } else if (typeof params.qstring.android_token !== 'undefined' && typeof params.qstring.test_mode !== 'undefined') {
             token = params.qstring.android_token;
             field = common.dbUserMap.tokens + '.' + common.dbUserMap['gcm_' + params.qstring.test_mode];
             bool  = common.dbUserMap.tokens + common.dbUserMap['gcm_' + params.qstring.test_mode];
@@ -999,6 +1016,8 @@ var common          = require('../../../../api/utils/common.js'),
                     common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$unset: $unset}, {upsert: false}, function(){});
                 }
             }
+        } else if (Object.keys($set).length) {
+            common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$set: $set}, {upsert: true}, function(){});
         }
 
     };

@@ -442,6 +442,8 @@ countlyModel.create = function (fetchValue) {
         for(var i = 0; i < maxItems; i++){
             var ob = [];
             for(var j = 0; j < cols.length; j++){
+                if(typeof data[i][cols[j]] === "number")
+                    data[i][cols[j]] = Math.round(data[i][cols[j]] * 100) / 100;
                 ob.push(data[i][cols[j]]);
             }
             ret.rows.push(ob);

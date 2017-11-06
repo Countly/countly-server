@@ -1,6 +1,64 @@
+## Version 17.09
+
+**Fixes**
+
+* Serverside models caching data when not needed
+* Countries API endpoint was not returning data
+* Ignore Mac specific files when merging production files
+* Reconnect correctly to database if mongod process goes down
+* Round up numbers in server side models if value is number
+* Density: round up values up to 2 decimal places
+* Crashes: Fixed link for crashes when segmenting
+* Reports: fix localization and period caches
+* Reports: fixed getting correct data when multiple jobs are running
+* Reports: added unique user estimation correction
+* Views: SDK might provide timestamp instead of duration fix
+* Configuration: use dot as delimiter for config UI building, allowing plugins have - in the name
+* Configuration: renamed warning to be consisted with internal setting
+* DBViewer: fix not unobfuscating internal events when there are no custom events
+* Persistent settings across logins for dashboard items
+
+**New Features**
+
+* Display API key in the top bar user dropdown
+* Users now have access to Management menu with read only accessible views
+* Invalidate sessions on password change
+* Add warning when changing App Key
+* DBViewer: stream documents for larger outputs
+* Crashes: use worker to highlight stack traces
+* Increase upload size in Nginx for larger files
+* API supports custom period of last days
+* Password hashing algorithm changed from SHA1 to SHA512
+* Show last used app even after logging out
+* Plugin upload: Allow uploading plugins from UI and attempt to recover on faulty plugin upload
+* Smart cache invalidation for more seamless upgrades and plugin state changes
+* UI changes: table dropdown options
+* Internal changes: more internal events for management, datatables and subrows
+* Persistent settings for dashboard UI choices
+
+**Enterprise Edition features**
+
+* Crash symbolication: new plugin allowing symbolicating iOS and Android stack traces
+* Alerts: new plugin that triggerts email alerts when a metric changes (e.g session, users, crashes)
+* Cohorts: new plugin that allows selecting users in different groups and using that as a segmentation option
+* Group permission management: new plugin that helps setup permissions for multiple users simultaneously
+* White labeling: new plugin to help modify logo and colors via the user interface
+* User Profiles: allow segmenting subsets of users from drill, funnels, etc
+* Attribution: add Universal Adword campaign support
+
+**Enterprise Edition fixes**
+
+* Drill: fixed lists not switching to string input in some cases
+* User Profiles: improved meta exclusion from users table
+* User Profiles: round duration property in user profiles
+* User Profiles: hide longer id in the table
+* Attribution: correctly delete graph data on clear
+* Dashboards: round up number for number widget
+
 ## Version 17.05.1
 
 **Fixes**
+
 * Fixed loading swf file while not being used
 * Exclude old SDKs from duplicate request check
 * Fix in some cases displaying Event segment values, which are numbers with [CLY]_ prefix

@@ -60,6 +60,7 @@ window.CrashesView = countlyView.extend({
         var self = this;
         var crashData = countlyCrashes.getData();
         this.dtable = $('#crash-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            "aaSorting": [[ 5, "desc" ]],
             "bServerSide": true,
             "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key="+countlyGlobal.member.api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID+"&method=crashes",
             "fnServerData": function ( sSource, aoData, fnCallback ) {
@@ -198,7 +199,7 @@ window.CrashesView = countlyView.extend({
             }
         }));
 
-		this.dtable.fnSort( [ [5,'desc'] ] );
+		//this.dtable.fnSort( [ [5,'desc'] ] );
         this.dtable.find("thead .check-green").click(function(){
             if($(this).hasClass("fa-check-square")){
                 $(".sticky-header .check-green").removeClass("fa-check-square").addClass("fa-square-o");
@@ -1249,13 +1250,6 @@ window.CrashgroupView = countlyView.extend({
                     $(".crash-comment-count").hide();
                 }
             });
-            var pre = $(".crash-stack pre")[0];
-            pre.innerHTML = '<span class="line-number"></span>' + pre.innerHTML + '<span class="cl"></span>';
-            var num = pre.innerHTML.split(/\n/).length;
-            for (var i = 0; i < num; i++) {
-                var line_num = pre.getElementsByTagName('span')[0];
-                line_num.innerHTML += '<span>' + (i + 1) + '</span>';
-            }
             $("#add_comment").click(function(){
                 var comment = {};
                 comment.time = new Date().getTime();
@@ -1332,21 +1326,33 @@ window.CrashgroupView = countlyView.extend({
         }
 
         $("document").ready(function() {
-            $('pre code').each(function(i, block) {
-                if(typeof Worker !== "undefined"){
-                    var worker = new Worker(countlyGlobal["path"]+'/javascripts/utils/highlight/highlight.worker.js');
-                    worker.onmessage = function(event) { 
-                        block.innerHTML = event.data;
-                        worker.terminate();
-                        worker = undefined;
-                    };
-                    worker.postMessage(block.textContent);
-                }
-                else if(typeof hljs != "undefined"){
-                    hljs.highlightBlock(block);
-                }
-            });
+            self.redecorateStacktrace();
         });
+    },
+    redecorateStacktrace:function(){
+         $(".crash-stack .line-number").remove();
+         $(".crash-stack .cl").remove();
+         var pre = $(".crash-stack pre")[0];
+         pre.innerHTML = '<span class="line-number"></span>' + pre.innerHTML + '<span class="cl"></span>';
+         var num = pre.innerHTML.split(/\n/).length;
+         for (var i = 0; i < num; i++) {
+             var line_num = pre.getElementsByTagName('span')[0];
+             line_num.innerHTML += '<span>' + (i + 1) + '</span>';
+         }
+         $('pre code').each(function(i, block) {
+             if(typeof Worker !== "undefined"){
+                 var worker = new Worker(countlyGlobal["path"]+'/javascripts/utils/highlight/highlight.worker.js');
+                 worker.onmessage = function(event) { 
+                     block.innerHTML = event.data;
+                     worker.terminate();
+                     worker = undefined;
+                 };
+                 worker.postMessage(block.textContent);
+             }
+             else if(typeof hljs != "undefined"){
+                 hljs.highlightBlock(block);
+             }
+         });
     },
     refresh:function () {
         var self = this;
@@ -1365,40 +1371,19 @@ window.CrashgroupView = countlyView.extend({
 
                 var crashData = countlyCrashes.getGroupData();
                 $("#error pre code").html(crashData.error);
-                $(".crash-stack .line-number").remove();
-                $(".crash-stack .cl").remove();
-                var pre = $(".crash-stack pre")[0];
-                pre.innerHTML = '<span class="line-number"></span>' + pre.innerHTML + '<span class="cl"></span>';
-                var num = pre.innerHTML.split(/\n/).length;
-                for (var i = 0; i < num; i++) {
-                    var line_num = pre.getElementsByTagName('span')[0];
-                    line_num.innerHTML += '<span>' + (i + 1) + '</span>';
-                }
                 var errorHeight = $("#expandable").find("code").outerHeight();
 
                 if (errorHeight < 200) {
                     $("#expandable").removeClass("collapsed");
                     $("#expand-crash").hide();
                 } else {
-                    $("#expandable").addClass("collapsed");
-                    $("#expand-crash").show();
+                    if($('#expand-crash:visible').length == 0){
+                        $("#expandable").addClass("collapsed");
+                        $("#expand-crash").show();
+                    }
                 }
-                
-                $('pre code').each(function(i, block) {
-                    if(typeof Worker !== "undefined"){
-                        var worker = new Worker(countlyGlobal["path"]+'/javascripts/utils/highlight/highlight.worker.js');
-                        worker.onmessage = function(event) { 
-                            block.innerHTML = event.data;
-                            worker.terminate();
-                            worker = undefined;
-                        };
-                        worker.postMessage(block.textContent);
-                    }
-                    else if(typeof hljs != "undefined"){
-                        hljs.highlightBlock(block);
-                    }
-                });
-                
+
+                self.redecorateStacktrace();
                 if(crashData.comments){
                     var container = $("#comments");
                     var comment, parent;
@@ -1443,8 +1428,6 @@ window.CrashgroupView = countlyView.extend({
 							'<td class="text-left">'+jQuery.i18n.map["crashes.state"]+'</td>';
                             if(data.custom)
                                 str += '<td class="text-left">'+jQuery.i18n.map["crashes.custom"]+'</td>';
-                            if(data.logs)
-                                str += '<td class="text-left">'+jQuery.i18n.map["crashes.logs"]+'</td>';
 						str += '</tr>'+
 						'<tr>'+
 							'<td class="text-left">'+data.app_version.replace(/:/g, '.')+'</td>'+
@@ -1487,26 +1470,21 @@ window.CrashgroupView = countlyView.extend({
                                 }
                                 str += '</td>';
                             }
-                            if(data.logs){
-                                str += '<td class="text-left">'+
-                                    '<pre>'+data.logs+'</pre>'+
-                                '</td>';
-                            }
 						str += '</tr>'+
                         '<tr>'+
-                        '<td colspan="5">';
-                        if(data.symbolicated){
-                            str += '<span class="icon-button green" data-localize="crash_symbolication.symbolicated" style="float: right; margin-top: 6px;">Symbolicated</span>';
-                        }
-                        else if(data.jobId){
-                            str += '<span class="icon-button light" data-localize="crash_symbolication.symbolication-process" style="float: right; margin-top: 6px;">Symbolication is in process</span>';
-                        }
-                        else if(typeof countlyCrashSymbols && countlyCrashes.canSymbolicate((data.os + "").toLowerCase(), data.build_uuid || data.app_version)){
-                            str += '<a class="icon-button light btn-symbolicate" data-symbol_id="'+countlyCrashes.canSymbolicate((data.os + "").toLowerCase(), data.build_uuid || data.app_version)+'" data-id="'+data._id+'" data-localize="crash_symbolication.symbolicate" style="float: right; margin-top: 6px;">Symbolicate</a>';
-                        }
+                        '<td colspan="4" class="stack-trace">';
                         str += '<pre>' + data.error + '</pre></td>'+
-						'</tr>'+
-						'</table>'+
+						'</tr>';
+                        if(data.logs){
+                            str += '<tr>'+
+                                '<td class="text-left">'+jQuery.i18n.map["crashes.logs"]+'</td>'+
+                            '</tr>'+
+                            '<tr>'+
+                            '<td colspan="4">'+
+                                '<pre>' + data.logs + '</pre></td>'+
+                            '</tr>';
+                        }
+						str += '</table>'+
 			'</div>';
 		}
 		return str;
@@ -1600,10 +1578,17 @@ $( document ).ready(function() {
     if(!production){
         CountlyHelpers.loadJS("crashes/javascripts/marked.min.js");
     }
-	var menu = '<a href="#/crashes" class="item" id="crash-menu">'+
+    
+    var menu = '<a class="item" id="sidebar-crashes">'+
         '<div class="logo ion-alert-circled"></div>'+
         '<div class="text" data-localize="crashes.title"></div>'+
-    '</a>';
+    '</a>'+
+    '<div class="sidebar-submenu" id="crash-submenu">'+
+        '<a href="#/crashes" class="item">'+
+            '<div class="logo-icon fa fa-line-chart"></div>'+
+            '<div class="text" data-localize="sidebar.dashboard">Overview</div>'+
+        '</a>'+
+    '</div>';
 	if($('.sidebar-menu #management-menu').length)
 		$('.sidebar-menu #management-menu').before(menu);
 	else

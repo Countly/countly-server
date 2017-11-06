@@ -67,7 +67,7 @@ describe('Reading config with ENV extensions', function(){
         }
     ];
     it('should extend properly', function(done){
-        for (var index in testCases) {
+        for (var index = 0; index < testCases.length; index++) {
             var testCase = testCases[index];
             process.env[testCase.env] = testCase.val;
             // copy config
