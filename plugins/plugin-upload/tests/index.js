@@ -40,7 +40,7 @@ function addTest(name,ext,description,myvalue){
     
     describe("No new plugins", function(){
         it("check if plugin not created -  "+name+" ("+ext+")", function(done){
-            var dir = path.resolve(__dirname + '/../../plugin_example');
+            var dir = path.resolve(__dirname + '/../../testarchive');
             if (!fs.existsSync(dir))
                 done();
             else
@@ -59,7 +59,7 @@ function addOkTest(name,ext,description,pluginName){
             .expect(200)
             .end(function(err, res){
                 if (err) return done(err);
-                (res.text).should.be.exactly("Success."+pluginName);
+                (res.text).should.be.exactly("Success.testarchive");
                 done();
             });
         });
@@ -77,7 +77,7 @@ function addOkTest(name,ext,description,pluginName){
     
     describe("Plugin copied in right folder", function(){
         it("check if plugin created -  "+name+" ("+ext+")", function(done){
-            var dir = path.resolve(__dirname + '/../../plugin_example');
+            var dir = path.resolve(__dirname + '/../../testarchive');
             if (fs.existsSync(dir))
                 done();
             else
@@ -87,7 +87,7 @@ function addOkTest(name,ext,description,pluginName){
     
     describe("Remove plugin", function(){
         it("Remove newly added plugin -  "+name+" ("+ext+")", function(done){
-            var dir = path.resolve(__dirname + '/../../plugin_example');
+            var dir = path.resolve(__dirname + '/../../testarchive');
             fse.remove(dir)
             .then(() => {done();})
             .catch(err => {done(err);});

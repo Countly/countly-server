@@ -60,6 +60,7 @@ window.CrashesView = countlyView.extend({
         var self = this;
         var crashData = countlyCrashes.getData();
         this.dtable = $('#crash-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
+            "aaSorting": [[ 5, "desc" ]],
             "bServerSide": true,
             "sAjaxSource": countlyCommon.API_PARTS.data.r + "?api_key="+countlyGlobal.member.api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID+"&method=crashes",
             "fnServerData": function ( sSource, aoData, fnCallback ) {
@@ -198,7 +199,7 @@ window.CrashesView = countlyView.extend({
             }
         }));
 
-		this.dtable.fnSort( [ [5,'desc'] ] );
+		//this.dtable.fnSort( [ [5,'desc'] ] );
         this.dtable.find("thead .check-green").click(function(){
             if($(this).hasClass("fa-check-square")){
                 $(".sticky-header .check-green").removeClass("fa-check-square").addClass("fa-square-o");
