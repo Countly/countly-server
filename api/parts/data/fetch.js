@@ -695,7 +695,6 @@ var fetch = {},
              We skip uid-sequence document and filter results by last session timestamp
              */
             var match = {
-                _id: { $ne: "uid-sequence" },
                 ls: countlyCommon.getTimestampRangeQuery(params, true)
             };
 
