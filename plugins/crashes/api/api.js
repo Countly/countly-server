@@ -575,7 +575,7 @@ plugins.setConfigs("crashes", {
                         common.db.collection('app_users' + params.app_id).count({},function(err, total) {
                             common.db.collection('app_crashgroups' + params.app_id).findOne({_id:params.qstring.group}, function(err, result){
                                 if(result){
-                                    result.total = total-1
+                                    result.total = total;
                                     result.url = common.crypto.createHash('sha1').update(params.app_id + result._id+"").digest('hex');
                                     if(result.comments)
                                         for(var i = 0; i < result.comments.length; i++){
@@ -615,7 +615,7 @@ plugins.setConfigs("crashes", {
                     var result = {};
 					common.db.collection('app_users' + params.app_id).count({},function(err, total) {
 						result.users = {};
-						result.users.total = total-1;
+						result.users.total = total;
                         result.users.affected = 0;
                         result.users.fatal = 0;
                         result.users.nonfatal = 0;

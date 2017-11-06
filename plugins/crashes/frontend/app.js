@@ -18,7 +18,7 @@ catch(err) {}
                     countlyDb.collection('app_users' + crash.app_id).count({},function(err, total) {
                         countlyDb.collection('app_crashgroups' + crash.app_id).findOne({_id:crash.crash_id}, function(err, result){
                             if(result){
-                                result.total = total-1;
+                                result.total = total;
                                 if(!result.share)
                                     result.share = {};
                                 
