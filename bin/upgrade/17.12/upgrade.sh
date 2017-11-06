@@ -25,8 +25,9 @@ then
     nodejs $DIR/upgrade/17.12/scripts/process_drill_meta.js
     
     echo "Deleting old drill meta data"
-    
     nodejs $DIR/upgrade/17.12/scripts/delete_drill_meta.js
+    
+    nodejs $DIR/upgrade/17.12/scripts/removeUnusedData.js
 fi
 
 #update web-sdk
