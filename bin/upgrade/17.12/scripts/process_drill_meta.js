@@ -49,12 +49,43 @@ function findProperty(res, prop){
 var processUp = ["up", "cmp", "custom"];
 var drillConfigs = {list_limit:100, big_list_limit:128000};
 
-function processProperty(pre, prop, res, query, updates, type, app_id){
+function diffValues(existing, adding){
+    var newVals = {};
+    if(Array.isArray(adding)){
+        for(var i = 0; i < adding.length; i++){
+            if(!existing[db.encode(adding[i])]){
+                newVals[db.encode(adding[i])] = true;
+            }
+        }
+    }
+    else{
+        for(var key in adding){
+            if(!existing[db.encode(key)]){
+                newVals[db.encode(key)] = true;
+            }
+        }
+    }
+    return newVals;
+}
+
+function processProperty(pre, prop, res, query, updates, type, app_id, existingVal){
     if(res && res.type){
         if(res.type === "l" || (res.type === "s" && typeof res.values !== "undefined")){
             if(res.values && typeof res.values !== "undefined"){
-                if((Array.isArray(res.values) && res.values.length <= drillConfigs.list_limit) ||
-                    (Object.keys(res.values).length <= drillConfigs.list_limit)){
+                var existingLength = 0,
+                    isBigList = false;
+                if(existingVal && existingVal.values){
+                    if(existingVal.type === "bl")
+                        isBigList = true;
+                    existingLength = Object.keys(existingVal.values).length;
+                    res.values = diffValues(existingVal.values, res.values);
+                    //nothing new to add
+                    if(Object.keys(res.values).length === 0){
+                        return;
+                    }
+                }
+                if(!isBigList && ((Array.isArray(res.values) && res.values.length + existingLength <= drillConfigs.list_limit) ||
+                    (Object.keys(res.values).length + existingLength <= drillConfigs.list_limit))){
                     //store as list
                     query[pre+"."+prop+".type"] = "l";
                     if(Array.isArray(res.values)){
@@ -68,8 +99,8 @@ function processProperty(pre, prop, res, query, updates, type, app_id){
                         }
                     }
                 }
-                else if((Array.isArray(res.values) && res.values.length <= drillConfigs.big_list_limit) ||
-                    (Object.keys(res.values).length <= drillConfigs.big_list_limit)){
+                else if((Array.isArray(res.values) && res.values.length + existingLength <= drillConfigs.big_list_limit) ||
+                    (Object.keys(res.values).length + existingLength <= drillConfigs.big_list_limit)){
                     //store as big list
                     query[pre+"."+prop+".type"] = "bl";
                     var update = {};
@@ -127,75 +158,75 @@ function processCollection(col, done){
                 console.log("Cannot find event name for", c, res);
                 return done();
             }
-            
-            var query = {up:{},e:{}};
-            for(var i = 0; i < res.length; i++){
-                if(res[i]._id === "meta" || res[i]._id === "meta_v2"){
-                    for(var key in res[i]){
-                        if(key === "sg"){
-                            for(var prop in res[i].sg){
-                                if(preset_sg[event] && preset_sg[event][prop]){
-                                    res[i].sg[prop].type = preset_sg[event][prop].type;
+            //find current up meta
+            db.collection("drill_meta"+app_id).findOne({_id:"meta_up"}, function(err, upMeta){
+                upMeta = upMeta || {};
+                var query = {up:{},e:{}};
+                for(var i = 0; i < res.length; i++){
+                    if(res[i]._id === "meta" || res[i]._id === "meta_v2"){
+                        for(var key in res[i]){
+                            if(key === "sg"){
+                                for(var prop in res[i].sg){
+                                    if(preset_sg[event] && preset_sg[event][prop]){
+                                        res[i].sg[prop].type = preset_sg[event][prop].type;
+                                    }
+                                    processProperty("sg", prop, res[i].sg[prop], query.e, updates, event, app_id);
                                 }
-                                processProperty("sg", prop, res[i].sg[prop], query.e, updates, event, app_id);
                             }
-                        }
-                        else if(key === "cmp"){
-                            for(var prop in res[i][key]){
-                                if (!prop || prop == "_id" || prop == "bv" || prop == "ip" || prop == "os" || prop == "r" || prop == "cty" || prop == "last_click") {
-                                    continue;
+                            else if(processUp.indexOf(key) !== -1){
+                                if(!upMeta[key])
+                                    upMeta[key] = {};
+                                for(var prop in res[i][key]){
+                                    if (key === "cmp" && (!prop || prop == "_id" || prop == "bv" || prop == "ip" || prop == "os" || prop == "r" || prop == "cty" || prop == "last_click")) {
+                                        continue;
+                                    }
+                                    processProperty(key, prop, res[i][key][prop], query.up, updates, "up", app_id, upMeta[key][prop]);
                                 }
-                                processProperty(key, prop, res[i][key][prop], query.up, updates, "up", app_id);
-                            }
-                        }
-                        else if(processUp.indexOf(key) !== -1){
-                            for(var prop in res[i][key]){
-                                processProperty(key, prop, res[i][key][prop], query.up, updates, "up", app_id);
                             }
                         }
                     }
+                    else{
+                        var prop = res[i]._id.replace("meta_v2_up.", "");
+                        delete res[i]._id;
+                        var ob = {type:"l", values:res[i]};
+                        processProperty("up", prop, ob, query.up, updates, "up", app_id);
+                    }
+                }
+                if(Object.keys(query.up).length){
+                    query.up._id = "meta_up";
+                    query.up.type = "up";
+                    query.up.app_id = app_id;
+                    updates.push(query.up);
+                }
+                if(Object.keys(query.e).length){
+                    query.e._id = "meta_"+crypto.createHash('sha1').update(event + app_id).digest('hex');
+                    query.e.type = "e";
+                    query.e.e = event;
+                    query.e.app_id = app_id;
+                    updates.push(query.e);
+                }
+                if(updates.length){
+                    db.onOpened(function(){
+                        var bulk = db._native.collection("drill_meta"+app_id).initializeUnorderedBulkOp();
+                        for(var i = 0; i < updates.length; i++){
+                            bulk.find({
+                                "_id": updates[i]._id
+                            }).upsert().updateOne({
+                                "$set": updates[i]
+                            });
+                        }
+                        bulk.execute(function (err, updateResult) {
+                            if(err){
+                                console.log(err, updateResult);
+                            }
+                            done();
+                        });
+                    });
                 }
                 else{
-                    var prop = res[i]._id.replace("meta_v2_up.", "");
-                    delete res[i]._id;
-                    var ob = {type:"l", values:res[i]};
-                    processProperty("up", prop, ob, query.up, updates, "up", app_id);
+                    done();
                 }
-            }
-            if(Object.keys(query.up).length){
-                query.up._id = "meta_up";
-                query.up.type = "up";
-                query.up.app_id = app_id;
-                updates.push(query.up);
-            }
-            if(Object.keys(query.e).length){
-                query.e._id = "meta_"+crypto.createHash('sha1').update(event + app_id).digest('hex');
-                query.e.type = "e";
-                query.e.e = event;
-                query.e.app_id = app_id;
-                updates.push(query.e);
-            }
-            if(updates.length){
-                db.onOpened(function(){
-                    var bulk = db._native.collection("drill_meta"+app_id).initializeUnorderedBulkOp();
-                    for(var i = 0; i < updates.length; i++){
-                        bulk.find({
-                            "_id": updates[i]._id
-                        }).upsert().updateOne({
-                            "$set": updates[i]
-                        });
-                    }
-                    bulk.execute(function (err, updateResult) {
-                        if(err){
-                            console.log(err, updateResult);
-                        }
-                        done();
-                    });
-                });
-            }
-            else{
-                done();
-            }
+            });
         }
         else{
             done();
@@ -216,7 +247,7 @@ pluginManager.loadConfigs(countlyDb, function(){
             var events = results.filter(function(col){
                 return reg.test(col.s.name);
             });
-            async.each(events, processCollection, function(){
+            async.eachSeries(events, processCollection, function(){
                 console.log("Finished processing drill meta data");
                 db.close();
             });
