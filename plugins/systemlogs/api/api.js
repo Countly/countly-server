@@ -264,7 +264,19 @@ var plugin = {},
             log.app_id = data.app_id;
         if(user._id){
             log.user_id = user._id + "";
-            common.db.collection('systemlogs').insert(log, function () {});
+            if(log.u =="")
+            {
+                common.db.collection('members').findOne({_id:common.db.ObjectID.createFromHexString(user._id)}, function(err, res){
+                    if(!err && res){
+                        log.u = res.email || res.username;
+                    }
+                     common.db.collection('systemlogs').insert(log, function () {});
+                });
+            }
+            else
+            {
+                common.db.collection('systemlogs').insert(log, function () {});
+            }
         }
         else{
             var query = {};
