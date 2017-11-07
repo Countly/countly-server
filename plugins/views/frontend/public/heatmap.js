@@ -12,7 +12,8 @@
         pageHeight = 0,
         currentDevice = [],
         dataCache = {};
-    Countly._internals.loadJS(Countly.url+"/views/javascripts/simpleheat.js", function(){
+        showHeatMap = Countly.passed_data.showHeatMap == false ? false : true;        
+	    Countly._internals.loadJS(Countly.url+"/views/javascripts/simpleheat.js", function(){
 	    loadCSS("http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css", function () {
             loadCSS(Countly.url + "/views/stylesheets/heatmap.css", function () {
 		        document.body.style.position = "relative";
@@ -138,18 +139,6 @@
                     tag.setAttribute('class', 'cly-item ');
                     tag.setAttribute('data-value', device.type);
                     tag.innerHTML = device.displayText;
-                    tag.addEventListener("click", function (e) {
-                        var dropdowns = topbar.getElementsByClassName("cly-dropdown");
-
-                        if (dropdowns.length) {
-                            Object.keys(dropdowns).forEach((drop) => {
-                                dropdowns[drop].classList.remove("cly-clicked");
-                            })
-                        }
-
-                        selectedDevice.innerHTML = device.displayText;
-                        e.stopPropagation();
-                    })
 
                     if (device.type == currentDevice[0].type) {
                         selectedDevice.innerHTML = device.displayText;
@@ -157,7 +146,7 @@
 
                     deviceListDiv.appendChild(tag);
 
-                    Countly._internals.add_event(tag, "click", function () {
+                    Countly._internals.add_event(tag, "click", function (e) {
                         document.body.style.width = "100%";
                         pageWidth = Countly._internals.getDocWidth();
                         canvas.setAttribute("width", "0px");
@@ -175,8 +164,18 @@
                             return device.minWidth < pageWidth && device.maxWidth >= pageWidth;
                         });
 
+                        var dropdowns = topbar.getElementsByClassName("cly-dropdown");
+                        
+                        if (dropdowns.length) {
+                            Object.keys(dropdowns).forEach((drop) => {
+                                dropdowns[drop].classList.remove("cly-clicked");
+                            })
+                        }
+                        
                         currentDevice[0] = updatedDevice[0];
+                        selectedDevice.innerHTML = currentDevice[0].displayText;
                         checkCache();
+                        e.stopPropagation();
                     });
                 })
 
@@ -196,7 +195,7 @@
                 var icon = document.createElement('i');
                 icon.setAttribute('class', 'ion-refresh');
 
-                var text = document.createElement('p');
+                var text = document.createElement('span');
                 text.innerHTML = 'Reload Data';
 
                 refresh.appendChild(icon);
@@ -218,28 +217,7 @@
                     }, 1);
                 });
 
-                var closeX = document.createElement('a');
-                closeX.setAttribute('class', 'cly-close ion-android-close');
-                closeX.href = "#";
-                topbar.appendChild(closeX);
-                Countly._internals.add_event(closeX, "click", function () {
-                    topbar.style.display = "none";
-                    canvas.style.display = "none";
-                    document.body.style.top = origtop;
-                    window.name = null;
-                });
-
-                document.body.addEventListener("click", function (e) {
-                    var dropdowns = topbar.getElementsByClassName("cly-dropdown");
-                    if (dropdowns.length) {
-                        Object.keys(dropdowns).forEach((drop) => {
-                            dropdowns[drop].classList.remove("cly-clicked");
-                        })
-                    }
-
-                    e.stopPropagation();
-                })
-
+              	
                 //make canvas on whole screen
                 var canvas = document.createElement("canvas");
                 canvas.style.position = "absolute";
@@ -256,7 +234,6 @@
                 checkCache();
 
                 Countly._internals.add_event(window, "resize", function () {
-                    Countly.stop_time();
                     canvas.setAttribute("width", "0px");
                     canvas.setAttribute("height", "0px");
                     setTimeout(function () {
@@ -269,15 +246,72 @@
                         canvas.setAttribute("width", pageWidth + "px");
                         canvas.setAttribute("height", pageHeight + "px");
                         map.resize();
-                        if (currentDevice[0].type != updatedDevice[0].type) {
-                            currentDevice[0] = updatedDevice[0];
-                            selectedDevice.innerHTML = currentDevice[0].displayText;
-                            checkCache();
-                        } else {
-                            drawData();
-                        }
+                        currentDevice[0] = updatedDevice[0];
+                        selectedDevice.innerHTML = currentDevice[0].displayText;
+                        checkCache();
                     }, 1);
                 });
+                
+                var showHide = document.createElement('div');
+                showHide.setAttribute('class', 'cly-checkbox');
+
+                var shLabel = document.createElement('label');
+                shLabel.setAttribute('class', 'cly-label');
+                shLabel.innerHTML = "Show Heatmap";
+
+                var shInput = document.createElement('input');
+                shInput.setAttribute('style', 'display: none');
+                shInput.setAttribute('type', 'checkbox');
+		        if(showHeatMap){
+                    shInput.setAttribute('checked', 'checked');                    
+                }
+	
+                var shSpan = document.createElement('span');
+                shSpan.setAttribute('class', 'cly-checkmark');
+
+                shLabel.appendChild(shInput);
+                shLabel.appendChild(shSpan);
+                showHide.appendChild(shLabel);
+                Countly._internals.add_event(shInput, "click", function () {
+                    showHeatMap = shInput.checked;
+                    var dataCLY;
+                    var prefix = "";
+                    if(window.name && window.name.indexOf("cly:") === 0){
+                        dataCLY = JSON.parse(window.name.replace("cly:", ""));
+                        prefix = window.name.slice(0,4);
+                    }
+                    else if(location.hash && location.hash.indexOf("#cly:") === 0){
+                        dataCLY = JSON.parse(location.hash.replace("#cly:", ""));
+                        prefix = window.name.slice(0,5);                        
+                    }
+
+                    dataCLY.showHeatMap = showHeatMap;
+                    window.name = prefix + JSON.stringify(dataCLY);
+
+	                if(!showHeatMap){
+                        canvas.setAttribute("width", "0px");
+                        canvas.setAttribute("height", "0px");
+                        map.resize();
+                    }else{
+                    	canvas.setAttribute("width", pageWidth + "px");
+                        canvas.setAttribute("height", pageHeight + "px");
+                        map.resize();
+                        checkCache();
+			        }
+                });
+
+                topbar.appendChild(showHide);
+                
+                document.body.addEventListener("click", function (e) {
+                    var dropdowns = topbar.getElementsByClassName("cly-dropdown");
+                    if (dropdowns.length) {
+                        Object.keys(dropdowns).forEach((drop) => {
+                            dropdowns[drop].classList.remove("cly-clicked");
+                        })
+                    }
+
+                    e.stopPropagation();
+                })
 
                 function listenDropdownEvent(event, element) {
                     element.addEventListener(event, function (e) {
@@ -321,10 +355,12 @@
     }
 
     function checkCache(){
-        if(dataCache[currentDevice[0].type]){
-            drawData();
-        }else{
-            loadData();                    
+        if(showHeatMap){
+            if (dataCache[currentDevice[0].type]) {
+                drawData();
+            } else {
+                loadData();
+            }
         }
     }
 

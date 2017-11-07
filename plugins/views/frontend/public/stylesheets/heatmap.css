@@ -1,7 +1,9 @@
 #cly-topbar {
     min-height: 59px;
     background-color: #FFFFFF;
-    font-family: Ubuntu,Helvetica,sans-serif;    
+    font-family: Ubuntu,Helvetica,sans-serif;  
+    -webkit-font-smoothing: antialiased; 
+    -moz-osx-font-smoothing: grayscale;   
     user-select: none;
     position: fixed;
     width: 100%;
@@ -10,6 +12,7 @@
     box-sizing: content-box;
     z-index: 1000001;
     box-shadow: inset 0 -1px 0 0 #E7E7E7;
+    line-height: 14px;
 }
 
 #cly-topbar .cly-center-menu {
@@ -35,16 +38,27 @@
     position: relative;
     cursor: pointer;
     float: left;
-    padding: 17px 0px
+    padding: 21px 0px;
 }
 
 #cly-topbar .cly-block {
     width: 130px;
-    padding: 17px 10px;
+    padding: 21px 10px;
+    color: #2EB52C;
+    font-size: 13px;
+}
+
+#cly-topbar .cly-block:hover {
+    color: #56C055;
 }
 
 #cly-topbar .cly-dropdown.cly-bordered {
     border-left: 1px solid #E7E7E7;
+    border-right: 1px solid #E7E7E7
+}
+
+#cly-topbar .cly-dropdown.cly-bordered:nth-child(2) {
+    border-left: 0px solid #E7E7E7;
     border-right: 1px solid #E7E7E7
 }
 
@@ -61,12 +75,6 @@
     color: #474747
 }
 
-#cly-topbar .cly-block p {
-    display: inline;
-    font-size: 13px;
-    color: #2fa732
-}
-
 #cly-topbar .cly-dropdown .cly-title {
     font-size: 10px;
     color: #666;
@@ -79,13 +87,13 @@
 }
 
 #cly-topbar .cly-block i {
-    font-size: 17px;
+    font-size: 14px;
     vertical-align: top;
     margin-top: 1px;
-    margin-right: 3px;
+    margin-right: 6px;
     display: inline-block;
-    color: #2fa732;
-    font-weight: 700
+    font-weight: 700;
+    line-height: 14px;
 }
 
 #cly-topbar .cly-dropdown.cly-large .cly-selected:after {
@@ -175,17 +183,6 @@
     background-color: #f3f3f3
 }
 
-#cly-topbar .cly-dropdown .cly-menu .cly-list .cly-item .cly-icon {
-    margin-right: 5px;
-    color: #8e8e8e;
-    width: 15px;
-    display: inline-block;
-    text-align: center;
-    font-size: 15px;
-    line-height: 15px;
-    vertical-align: top
-}
-
 #cly-topbar .cly-close {
     text-decoration: none;
     font-size: 22px;
@@ -193,4 +190,53 @@
     top: 17px;
     right: 22px;
     color: #666;
+}
+
+#cly-topbar .cly-checkbox {
+    position: absolute;
+    top: 21px;
+    right: 40px;
+    color: #666;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+#cly-topbar .cly-checkbox .cly-label {
+    line-height: 14px;
+    padding: 0px;
+    margin: 0px;
+    font-size: 13px;
+	cursor: pointer;
+}
+
+#cly-topbar .cly-checkmark {
+    position: absolute;
+    top: 0px;
+    left: -20px;
+    height: 14px;
+    width: 14px;
+    border: 1px solid #CBCBCB;
+    border-radius: 2px;
+    box-shadow:  inset 0px 0px 2px 0px #E7E7E7;
+}
+
+#cly-topbar .cly-checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+#cly-topbar .cly-checkbox input:checked ~ .cly-checkmark:after {
+    display: block;
+    left: 5px;
+    top: 2px;
+    width: 3px;
+    height: 7px;
+    border: 1px solid #2CB529;
+    border-width: 0 2px 2px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
 }
