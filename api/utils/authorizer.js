@@ -66,7 +66,7 @@ var crypto = require("crypto");
                     valid = true;
                 
                 //consume token if expired or not multi
-                if(!res.multi || (res.ttl > 0 && res.ends > Math.round(Date.now()/1000)))
+                if(!res.multi || (res.ttl > 0 && res.ends < Math.round(Date.now()/1000)))
                     options.db.collection("auth_tokens").remove({_id:options.token});
             }
             if(typeof options.callback === "function"){
