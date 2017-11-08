@@ -79,6 +79,10 @@
         return changes;
     };
 
+    var pnBase = "assistant-base";
+    var pnBaseGeneral = "assistant-base-general";
+    var pnStarRating = "star-rating";
+
     var fixData = function (given_data) {
         var the_notifs = [given_data.notifications, given_data.notifs_saved_private, given_data.notifs_saved_global];
 
@@ -239,23 +243,23 @@
 
                     if(obj.plugin_name === "assistant-base" && obj.notif_type === "1" && obj.notif_subtype === "2") {
                         obj.icon_path = "./assistant/images/push.svg";
-                    } else if(obj.plugin_name === "assistant-base" && obj.notif_type === "2" && obj.notif_subtype === "1") {
+                    } else if(obj.plugin_name === pnBase && obj.notif_type === "2" && obj.notif_subtype === "1") {
                         obj.icon_path = "./assistant/images/activity_increase.svg";
-                    } else if(obj.plugin_name === "assistant-base" && obj.notif_type === "2" && obj.notif_subtype === "2") {
+                    } else if(obj.plugin_name === pnBase && obj.notif_type === "2" && obj.notif_subtype === "2") {
                         obj.icon_path = "./assistant/images/activity_decrease.svg";
-                    } else if(obj.plugin_name === "assistant-base" && obj.notif_type === "2" && obj.notif_subtype === "3") {
+                    } else if(obj.plugin_name === pnBase && obj.notif_type === "2" && obj.notif_subtype === "3") {
                         obj.icon_path = "./assistant/images/activity_increase.svg";
-                    } else if(obj.plugin_name === "assistant-base" && obj.notif_type === "2" && obj.notif_subtype === "4") {
+                    } else if(obj.plugin_name === pnBase && obj.notif_type === "2" && obj.notif_subtype === "4") {
                         obj.icon_path = "./assistant/images/activity_decrease.svg";
-                    } else if(obj.plugin_name === "assistant-base" && obj.notif_type === "2" && obj.notif_subtype === "5") {
+                    } else if(obj.plugin_name === pnBase && obj.notif_type === "2" && obj.notif_subtype === "5") {
                         obj.icon_path = "./assistant/images/activity_increase.svg";
-                    } else if(obj.plugin_name === "assistant-base" && obj.notif_type === "2" && obj.notif_subtype === "6") {
+                    } else if(obj.plugin_name === pnBase && obj.notif_type === "2" && obj.notif_subtype === "6") {
                         obj.icon_path = "./assistant/images/activity_decrease.svg";
-                    } else if(obj.plugin_name === "assistant-base" && obj.notif_type === "3" && obj.notif_subtype === "2") {
+                    } else if(obj.plugin_name === pnBaseGeneral && obj.notif_type === "3" && obj.notif_subtype === "2") {
                         obj.icon_path = "./assistant/images/ios.svg";
-                    } else if(obj.plugin_name === "assistant-base" && obj.notif_type === "3" && obj.notif_subtype === "3") {
+                    } else if(obj.plugin_name === pnBaseGeneral && obj.notif_type === "3" && obj.notif_subtype === "3") {
                         obj.icon_path = "./assistant/images/android.svg";
-                    } else if(obj.plugin_name === "star-rating" && obj.notif_type === "1" && obj.notif_subtype === "1") {
+                    } else if(obj.plugin_name === pnStarRating && obj.notif_type === "1" && obj.notif_subtype === "1") {
                         obj.icon_path = "./assistant/images/star_rating.svg";
                     } else if(obj.notif_type === "1") {//quick tips
                         obj.icon_path = "./assistant/images/tip.svg";

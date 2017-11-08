@@ -27,7 +27,7 @@ const plugin = {},
         const api_key = params.qstring.api_key;//get target users api key
         const app_id = params.qstring.app_id;//get target apps id
 
-        //log.i('Assistant plugin request: Get All Notifications');
+        log.d('Assistant plugin request: Get All Notifications');
         const validate = ob.validateUserForMgmtReadAPI;
         validate(function (params) {
             const member = params.member;
@@ -71,7 +71,7 @@ const plugin = {},
             const api_key = params.qstring.api_key;
 
             const subAction = paths[3];
-            log.d('Assistant plugin request: 1, ' + subAction);
+            log.d('Assistant plugin request: ' + subAction);
             switch (subAction) {
                 case 'global':
                 case 'private':
@@ -198,7 +198,7 @@ const plugin = {},
 
         return ret;
     };
-
+/*
     plugins.register("/i/assistant_generate_all", function (ob) {
         const params = ob.params;
 
@@ -243,11 +243,12 @@ const plugin = {},
 
         return true;
     });
-
+*/
     //for debugging
     var db_name_notifs = "assistant_notifs";
     var db_name_config = "assistant_config";
 
+    /*
     plugins.register("/i/asistdelete", function (ob) {
         var params = ob.params;
 
@@ -255,7 +256,7 @@ const plugin = {},
             common.returnMessage(params, 400, 'Missing parameter "api_key"');
             return false;
         }
-        log.d('Assistant plugin request: /i/asistdelete');
+        log.i('Assistant plugin request: /i/asistdelete');
 
         ob.validateUserForGlobalAdmin(params, function (params) {
 
@@ -268,6 +269,7 @@ const plugin = {},
 
         return true;
     });
+    */
 
     plugins.register("/i/apps/delete", function(ob){
         //delete all notifications for specific app

@@ -37,7 +37,7 @@ const assistantJobGeneral = {},
                     feedDataBlog.anc_subtype = 1;
                     feedDataBlog.anc_version = NOTIFICATION_VERSION;
                     feedDataBlog.url = 'https://medium.com/feed/countly';
-                    feedDataBlog.targetHour = 15;
+                    feedDataBlog.targetHour = 11;
                     dataForFeedMap.push(feedDataBlog);
                 }
 
@@ -49,7 +49,7 @@ const assistantJobGeneral = {},
                     feedDataIOS.anc_subtype = 2;
                     feedDataIOS.anc_version = NOTIFICATION_VERSION;
                     feedDataIOS.url = 'https://github.com/countly/countly-sdk-ios/releases.atom';
-                    feedDataIOS.targetHour = 15;
+                    feedDataIOS.targetHour = 12;
                     dataForFeedMap.push(feedDataIOS);
                 }
 
@@ -61,7 +61,7 @@ const assistantJobGeneral = {},
                     feedDataAndroid.anc_subtype = 3;
                     feedDataAndroid.anc_version = NOTIFICATION_VERSION;
                     feedDataAndroid.url = 'https://github.com/countly/countly-sdk-android/releases.atom';
-                    feedDataAndroid.targetHour = 15;
+                    feedDataAndroid.targetHour = 13;
                     dataForFeedMap.push(feedDataAndroid);
                 }
 
@@ -74,7 +74,7 @@ const assistantJobGeneral = {},
                         feedDataCommunity.anc_subtype = 4;
                         feedDataCommunity.anc_version = NOTIFICATION_VERSION;
                         feedDataCommunity.url = 'https://github.com/Countly/countly-server/releases.atom';
-                        feedDataCommunity.targetHour = 15;
+                        feedDataCommunity.targetHour = 14;
                         dataForFeedMap.push(feedDataCommunity);
                     }
                 }
@@ -96,54 +96,60 @@ const assistantJobGeneral = {},
                 //go through all feeds
                 async.each(dataForFeedMap, function (feedItem, callbackOuter) {
                     //collect needed feed items
-                    parser.parseURL(feedItem.url, function(err, parsed) {
-                        let arrayForDataToNotify = [];
-                        if(!underscore.isUndefined(parsed)) {
-
-                            parsed.feed.entries.forEach(function (entry) {
-                                let eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
-                                let blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
-                                let data = [entry.title, entry.link];
-
-                                if(blog_post_ready) {
-                                    arrayForDataToNotify.push({blog_post_ready: blog_post_ready, data: data});
-                                }
-                            });
-
+                    parser.parseURL(feedItem.url, function(parserErr, parsed) {
+                        if(parserErr !== null) {
+                            log.w('Assistant plugin, feed reader returned error while reading feed. url: [%j] error: [%j] ', feedItem.url, parserErr);
                         } else {
-                            log.w('Assistant plugin, feed reader returned undefined! Probably timeout. url: [%j] error: [%j] ', feedItem.url, err);
-                        }
-                        //go through collected feed items
-                        async.each(arrayForDataToNotify, function (feedMiddleItem, callbackMiddle) {
-                            //go through all apps
-                            async.each(providedInfo.appsData, function (ret_app_data, callbackInner) {
-                                let apc = assistant.preparePluginSpecificFields(providedInfo, ret_app_data, PLUGIN_NAME);
-                                let anc = assistant.prepareNotificationSpecificFields(apc, feedItem.anc_i18n, feedItem.anc_type, feedItem.anc_subtype, feedItem.anc_version);
+                            let arrayForDataToNotify = [];
+                            if (!underscore.isUndefined(parsed)) {
+                                parsed.feed.entries.forEach(function (entry) {
+                                    let eventTimestamp = Date.parse(entry.pubDate);//rss post timestamp
+                                    let blog_post_ready = (nowTimestamp - eventTimestamp) <= intervalMs;//the rss post was published in the last 24 hours
+                                    let data = [entry.title, entry.link];
 
-                                assistant.createNotificationIfRequirementsMet(-1, feedItem.targetHour, (feedMiddleItem.blog_post_ready), feedMiddleItem.data, anc);
-                                callbackInner(null);
-                            }, function (err) {
-                                if(err != null) {
-                                    log.i('Assistant feed generation internal resolving, error:[%j]', err);
-                                }
-                                callbackMiddle(null);
-                            });
+                                    if (blog_post_ready) {
+                                        arrayForDataToNotify.push({blog_post_ready: blog_post_ready, data: data});
+                                    }
+                                });
 
-                        }, function (err) {
-                            if(err != null) {
-                                log.i('Assistant feed generation middle resolving, error:[%j]', err);
+                            } else {
+                                log.w('Assistant plugin, feed reader returned undefined! Probably timeout. url: [%j] error: [%j] ', feedItem.url, parserErr);
                             }
-                            callbackOuter(null);
-                        });
+                            //go through collected feed items
+                            async.each(arrayForDataToNotify, function (feedMiddleItem, callbackMiddle) {
+                                //go through all apps
+                                async.each(providedInfo.appsData, function (ret_app_data, callbackInner) {
+                                    let apc = assistant.preparePluginSpecificFields(providedInfo, ret_app_data, PLUGIN_NAME);
+                                    let anc = assistant.prepareNotificationSpecificFields(apc, feedItem.anc_i18n, feedItem.anc_type, feedItem.anc_subtype, feedItem.anc_version);
+
+                                    assistant.createNotificationIfRequirementsMet(-1, feedItem.targetHour, (feedMiddleItem.blog_post_ready), feedMiddleItem.data, anc);
+                                    callbackInner(null);
+                                }, function (err) {
+                                    if (err !== null) {
+                                        log.w('Assistant feed generation internal resolving with error:[%j]', err);
+                                    }
+                                    callbackMiddle(null);
+                                });
+
+                            }, function (feedHandlerErr) {
+                                if (feedHandlerErr !== null) {
+                                    log.w('Assistant feed generation middle resolving with error:[%j]', feedHandlerErr);
+                                }
+                                callbackOuter(null);
+                            });
+                        }
                     });
                     
                 }, function (err) {
-                    log.i('Assistant feed generation outer resolving, error:[%j]', err);
-                    log.i('Assistant for [%j] plugin resolving', PLUGIN_NAME);
+                    if(err !== null){
+                        log.w('Assistant feed generation outer resolving with an error:[%j]', err);
+                    } else {
+                        log.i('Assistant for [%j] plugin resolving with no errors', PLUGIN_NAME);
+                    }
                     resolve();
                 });
             } catch (ex) {
-                log.e('Assistant plugin [%j] FAILED!!!!! [%j]', PLUGIN_NAME, { message: ex.message, stack: ex.stack });
+                log.e('Assistant plugin [%j] FAILED with a exception [%j]', PLUGIN_NAME, { message: ex.message, stack: ex.stack });
                 resolve();
             }
         });
