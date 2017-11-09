@@ -27,6 +27,9 @@ countlyDb.collection('apps').find({}).toArray(function (err, apps) {
                     });
                 });
             }
+            else{
+                done();
+            }
         });
 	}
 	async.each(apps, upgrade, function(){
