@@ -40,7 +40,7 @@ var preset_sg = {
 
 function findProperty(res, prop){
     for(var i = 0; i <  res.length; i++){
-        if(typeof res[i][prop] !== "undefined"){
+        if(typeof res[i][prop] !== "undefined" && res[i][prop] != "undefined"){
             return res[i][prop];
         }
     }
@@ -53,15 +53,15 @@ function diffValues(existing, adding){
     var newVals = {};
     if(Array.isArray(adding)){
         for(var i = 0; i < adding.length; i++){
-            if(!existing[db.encode(adding[i])]){
-                newVals[db.encode(adding[i])] = true;
+            if(!existing[db.encode(adding[i]+"")] && db.encode(adding[i]+"") != ""){
+                newVals[db.encode(adding[i]+"")] = true;
             }
         }
     }
     else{
         for(var key in adding){
-            if(!existing[db.encode(key)]){
-                newVals[db.encode(key)] = true;
+            if(!existing[db.encode(key+"")] && db.encode(key+"") != ""){
+                newVals[db.encode(key+"")] = true;
             }
         }
     }
@@ -90,12 +90,14 @@ function processProperty(pre, prop, res, query, updates, type, app_id, existingV
                     query[pre+"."+prop+".type"] = "l";
                     if(Array.isArray(res.values)){
                         for(var i = 0; i < res.values.length; i++){
-                            query[pre+"."+prop+".values."+db.encode(res.values[i])] = true;
+                            if(db.encode(res.values[i]+"") != "")
+                                query[pre+"."+prop+".values."+db.encode(res.values[i]+"")] = true;
                         }
                     }
                     else{
                         for(var key in res.values){
-                            query[pre+"."+prop+".values."+key] = true;
+                            if(key != "")
+                                query[pre+"."+prop+".values."+key] = true;
                         }
                     }
                 }
@@ -117,12 +119,14 @@ function processProperty(pre, prop, res, query, updates, type, app_id, existingV
                     update.app_id = app_id;
                     if(Array.isArray(res.values)){
                         for(var i = 0; i < res.values.length; i++){
-                            update["values."+db.encode(res.values[i])] = true;
+                            if(db.encode(res.values[i]+"") != "")
+                                update["values."+db.encode(res.values[i]+"")] = true;
                         }
                     }
                     else{
                         for(var key in res.values){
-                            update["values."+key] = true;
+                            if(key != "")
+                                update["values."+key] = true;
                         }
                     }
                     updates.push(update);
@@ -206,7 +210,23 @@ function processCollection(col, done){
                     updates.push(query.e);
                 }
                 if(updates.length){
-                    db.onOpened(function(){
+                    async.eachSeries(updates, function(query, callback){
+                        //console.log("update", query);
+                        db.collection("drill_meta"+app_id).update({"_id": query._id}, {$set:query}, {upsert:true}, function(err, res){
+                            console.log("inserted new meta", query._id, "for", c, err);
+                            setTimeout(function(){
+                                callback();
+                            }, 5000);
+                        })
+                    }, function(){
+                        db.collection(c).remove({"_id": {"$regex": "meta.*"}}, function(err, res){
+                            console.log("removed old meta for ", c, err);
+                            setTimeout(function(){
+                                done();
+                            }, 5000);
+                        });
+                    });
+                    /*db.onOpened(function(){
                         var bulk = db._native.collection("drill_meta"+app_id).initializeUnorderedBulkOp();
                         for(var i = 0; i < updates.length; i++){
                             bulk.find({
@@ -219,9 +239,11 @@ function processCollection(col, done){
                             if(err){
                                 console.log(err, updateResult);
                             }
-                            done();
+                            setTimeout(function(){
+                               done(); 
+                            }, 5000);
                         });
-                    });
+                    });*/
                 }
                 else{
                     done();
