@@ -8,7 +8,7 @@
 <br/>
 
 * **We're hiring:** Countly is looking for full stack devs (remote work). [Click this link for job description](https://count.ly/full-stack-node-js-developer)
-* **Slack user?** [Join our Slack community](http://slack.count.ly:3000/)
+* **Slack user?** [Join our Slack community](https://slack.count.ly)
 * **Questions?** [Ask in our Community forum](http://community.count.ly)
 
 ## What's Countly?
@@ -119,7 +119,7 @@ And, if you liked Countly, [why not use one of our badges](https://count.ly/bran
 * [General product information](http://count.ly/product)
 * [Questions? Ask our forum](http://community.count.ly)
 * [Watch training videos on Youtube](https://www.youtube.com/user/GoCountly)
-* [Slack user? Come chat with us](http://slack.count.ly:3000)
+* [Slack user? Come chat with us](https://slack.count.ly)
 * [Documentation & API reference guide](http://resources.count.ly)
 * [Comparison of Countly editions](https://count.ly/compare)
 * [White labeling & rebranding options](https://count.ly/whitelabel-analytics/)
