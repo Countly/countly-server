@@ -249,7 +249,7 @@
                 { name:metric}
             ];
 
-        return countlyCommon.extractChartData(countlyViews.getDb(), countlyViews.clearObject, chartData, dataProps, path);
+        return countlyCommon.extractChartData(countlyViews.getDb(), countlyViews.clearObject, chartData, dataProps, countlyCommon.encode(path));
     };
 
     countlyViews.getData = function (clean) {
