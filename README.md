@@ -7,16 +7,16 @@
 
 <br/>
 
-* **We're hiring:** Countly is looking for full stack devs (remote work). [Click this link for job description](https://count.ly/full-stack-node-js-developer)
+* **We're hiring:** Countly is looking for full stack developers (remote work). [Check out available openings here](https://angel.co/countly/jobs).
 * **Slack user?** [Join our Slack community](https://slack.count.ly)
 * **Questions?** [Ask in our Community forum](http://community.count.ly)
 
 ## What's Countly?
-[Countly](http://count.ly) is an innovative, real-time, open source mobile & [web analytics](http://count.ly/web-analytics), [rich push notifications](http://count.ly/push-notifications) and [crash reporting](http://count.ly/crash-reports) platform powering more than 2500 web sites and 14000 mobile applications as of 2017 Q3. It collects data from mobile phones, tablets, Apple Watch and other internet-connected devices, and visualizes this information to analyze application usage and end-user behavior. 
+[Countly](http://count.ly) is an innovative, real-time, open source [mobile](https://count.ly/mobile-analytics) & [web analytics](http://count.ly/web-analytics), [rich push notifications](https://count.ly/plugins/rich-push-notifications) and [crash reporting](https://count.ly/plugins/crash-analytics) platform powering more than 2500 web sites and 14000 mobile applications as of 2017 Q3. It collects data from mobile phones, tablets, Apple Watch and other internet-connected devices, and visualizes this information to analyze application usage and end-user behavior. 
 
 With the help of [Javascript SDK](http://github.com/countly/countly-sdk-web), Countly is a web analytics platform with features on par with mobile SDKs. For more information about web analytics capabilities, [see this link](http://count.ly/web-analytics).
 
-There are two parts of Countly: the server that collects and analyzes data, and an SDK (mobile, web or desktop) that sends this data. This repository includes Countly Community Edition (server side). For more information other versions (e.g Enterprise Edition), see [comparison of different Countly editions](https://count.ly/compare)
+There are two parts of Countly: the server that collects and analyzes data, and an SDK (mobile, web or desktop) that sends this data. This repository includes Countly Community Edition (server side). For more information other versions (e.g Enterprise Edition), see [comparison of different Countly editions](https://count.ly/pricing#compare-editions)
 
 Click on the below image for a 1 minute video introduction to Countly (opens Youtube);
 
@@ -31,16 +31,16 @@ This repository includes server-side part of Countly, with following features:
 * User, application and permission management
 * Read / write APIs
 * Plugin based system
-* Analytics features for [mobile](http://count.ly/features), [web](http://count.ly/web-analytics) and desktop
-* [Crash reporting](http://count.ly/crash-reports) for iOS & Android and error reporting for Javascript
-* [Rich and interactive push notifications](http://count.ly/push-notifications) for iOS & Android
+* Analytics features for [mobile](https://count.ly/mobile-analytics), [web](https://count.ly/web-analytics) and [desktop](https://count.ly/desktop-analytics)
+* [Crash reporting](https://count.ly/plugins/crash-analytics) for iOS & Android and error reporting for Javascript
+* [Rich and interactive push notifications](https://count.ly/plugins/rich-push-notifications) for iOS & Android
 * Email reporting
 
 ![content](http://count.ly/wp-content/uploads/2017/05/all-grey.png)
 
 ## What can Countly track? 
 
-[Countly](http://count.ly) supports top-notch devices, including iOS, Android, Windows Phone and web apps. You can find a list of [official and community supported Countly SDK libraries here](https://count.ly/resources/source/download-sdk). Each SDK has its own installation instructions.
+[Countly](https://count.ly) supports top-notch devices, including iOS, Android, Windows Phone and web apps. You can find a list of [official and community supported Countly SDK libraries here](https://resources.count.ly/docs/downloading-sdks). Each SDK has its own installation instructions.
 
 ## Built with 
 
@@ -61,7 +61,7 @@ Countly is a privacy-focused and 360-degree analytics approach with several, uni
 
 * Real-time mobile analytics, web analytics and push notifications.
 * Your data, your rules - since you can install Countly on your own server, or let us do a private cloud deployment for you.
-* Configurable and extensible via open source [plugins](http://count.ly/plugins).
+* Configurable and extensible via open source [plugins](https://count.ly/plugins).
 * Modern and easy to use web dashboard with a focus on user experience, helping to get complex insights easily.
 * Tracking more than 2500 web sites and 12000 mobile applications.
 * Collecting more than 60 billion datapoints worlwide.
@@ -98,7 +98,7 @@ Countly has a [well defined API](http://resources.count.ly), that reads and writ
 
 ## Extensibility & plugins 
 
-Countly is extensible using the [plugin architecture](http://count.ly/plugins). We suggest [you read this document](http://resources.count.ly/docs/plugins-development-introduction) before creating your plugin. We provide support to companies with know-how in need to create their own plugins.
+Countly is extensible using the [plugin architecture](https://count.ly/plugins). We suggest [you read this document](http://resources.count.ly/docs/plugins-development-introduction) before creating your plugin. We provide support to companies with know-how in need to create their own plugins.
 
 ## How can I help you with your efforts?
 
@@ -110,17 +110,25 @@ Countly is extensible using the [plugin architecture](http://count.ly/plugins). 
 
 Also, you are encouraged to read an extended contribution section on [how to contribute to Countly](https://github.com/Countly/countly-server/blob/master/CONTRIBUTING.md)
 
-And, if you liked Countly, [why not use one of our badges](https://count.ly/brand-assets/) and give a link back to us, so others know about this wonderful platform? 
+## Badges
 
-![Light badge](https://count.ly/wp-content/uploads/2014/10/countly_badge_5.png)  ![Dark badge](https://count.ly/wp-content/uploads/2014/10/countly_badge_6.png)
+If you liked Countly, [why not use one of our badges](https://count.ly/brand-assets) and give a link back to us, so others know about this wonderful platform? 
+
+<a href="https://count.ly/f/badge" rel="nofollow"><img style="width:145px;height:60px" src="https://count.ly/badges/dark.svg" alt="Countly - Product Analytics" /></a>
+
+    <a href="https://count.ly/f/badge" rel="nofollow"><img style="width:145px;height:60px" src="https://count.ly/badges/dark.svg" alt="Countly - Product Analytics" /></a>
+
+<a href="https://count.ly/f/badge" rel="nofollow"><img style="width:145px;height:60px" src="https://count.ly/badges/light.svg" alt="Countly - Product Analytics" /></a>
+
+    <a href="https://count.ly/f/badge" rel="nofollow"><img style="width:145px;height:60px" src="https://count.ly/badges/light.svg" alt="Countly - Product Analytics" /></a>
 
 ## Links
 
+* [Our philosophy: Your Data, Your Rules](https://count.ly/your-data-your-rules)
+* [Countly Plugin Marketplace](https://count.ly/plugins)
 * [General product information](http://count.ly/product)
-* [Questions? Ask our forum](http://community.count.ly)
-* [Watch training videos on Youtube](https://www.youtube.com/user/GoCountly)
+* [Questions? Ask in our forum](http://community.count.ly)
+* [Watch training videos on Youtube](https://www.youtube.com/user/GoCountly/videos)
 * [Slack user? Come chat with us](https://slack.count.ly)
-* [Documentation & API reference guide](http://resources.count.ly)
-* [Comparison of Countly editions](https://count.ly/compare)
-* [White labeling & rebranding options](https://count.ly/whitelabel-analytics/)
-* [Extended list of Enterprise Edition features](https://count.ly/enterprise-edition-features), including referral analytics, user profiles, geolocations with push, detailed segmentation, funnels, real-time dashboard and more.
+* [Documentation & API reference](https://resources.count.ly)
+* [Countly Enterprise vs Community Edition](https://count.ly/pricing#compare-editions)
