@@ -3,7 +3,7 @@
 
 <br/>
 
-![header2](http://count.ly/wp-content/uploads/2017/09/github-image-update.png)
+![header2](https://count.ly/github/countly-editions.png)
 
 <br/>
 
@@ -20,7 +20,7 @@ There are two parts of Countly: the server that collects and analyzes data, and 
 
 Click on the below image for a 1 minute video introduction to Countly (opens Youtube);
 
-[![Countly Community Edition - Video](https://count.ly/wp-content/uploads/2017/01/countly-ce-1min-video.png)](https://youtu.be/htKeh9bsZwA)
+[![Countly Community Edition - Video](https://count.ly/github/countly-community-1min.png)](https://youtu.be/htKeh9bsZwA)
 
 
 ## What is included? 
@@ -36,7 +36,7 @@ This repository includes server-side part of Countly, with following features:
 * [Rich and interactive push notifications](https://count.ly/plugins/rich-push-notifications) for iOS & Android
 * Email reporting
 
-![content](http://count.ly/wp-content/uploads/2017/05/all-grey.png)
+![content](https://count.ly/github/countly-highlights.png)
 
 ## What can Countly track? 
 
