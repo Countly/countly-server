@@ -14,7 +14,7 @@
         dataCache = {};
         showHeatMap = Countly.passed_data.showHeatMap == false ? false : true;        
 	    Countly._internals.loadJS(Countly.url+"/views/javascripts/simpleheat.js", function(){
-	    loadCSS("http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css", function () {
+	    loadCSS(Countly.url+"/stylesheets/ionicons/css/ionicons.min.css", function () {
             loadCSS(Countly.url + "/views/stylesheets/heatmap.css", function () {
 		        document.body.style.position = "relative";
                 var origtop = document.body.style.top;
