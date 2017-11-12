@@ -104,9 +104,11 @@
                         }
                     }
 				}, 
-                error:function(){
-                    CountlyHelpers.alert(jQuery.i18n.map["crashes.not-found"], "red");
-                    app.navigate("/crashes", true);
+                error:function(jqXHR, textStatus, errorThrown ){
+                    if(errorThrown && errorThrown === "Bad Request"){
+                        CountlyHelpers.alert(jQuery.i18n.map["crashes.not-found"], "red");
+                        app.navigate("/crashes", true);
+                    }
                 }
 			});
 		}
