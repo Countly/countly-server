@@ -333,6 +333,16 @@ if (cluster.isMaster) {
                                         newAppUser.lac = oldAppUser.lac;
                                     }
                                 }
+                                else if(i == "lest"){
+                                    if(!newAppUser.lest || oldAppUser.lest > newAppUser.lest){
+                                        newAppUser.lest = oldAppUser.lest;
+                                    }
+                                }
+                                else if(i == "lbst"){
+                                    if(!newAppUser.lbst || oldAppUser.lbst > newAppUser.lbst){
+                                        newAppUser.lbst = oldAppUser.lbst;
+                                    }
+                                }
                                 //merge custom user data
                                 else if(typeof oldAppUser[i] === "object" && oldAppUser[i]){
                                     if(typeof newAppUser[i] === "undefined")
