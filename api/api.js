@@ -8,6 +8,7 @@ var http = require('http'),
     Promise = require("bluebird"),
     workers = [],
     log = require('./utils/log.js')('core:api'),
+    common = require('./utils/common.js'),
     rights = require('./utils/rights.js');
     
 plugins.setConfigs("api", {
@@ -75,7 +76,9 @@ process.on('unhandledRejection', (reason, p) => {
 });
 
 if (cluster.isMaster) {
-
+    //create db connection for some jobs reusing code
+    common.db = plugins.dbConnection();
+    
     var workerCount = (countlyConfig.api.workers)? countlyConfig.api.workers : os.cpus().length;
 
     for (var i = 0; i < workerCount; i++) {
@@ -129,7 +132,6 @@ if (cluster.isMaster) {
         jobs.job('api:clearTokens').replace().schedule('every 1 day');
     }, 10000);
 } else {
-    var common = require('./utils/common.js');
     var authorize = require('./utils/authorizer.js');
     var taskmanager = require('./utils/taskmanager.js');
     common.db = plugins.dbConnection(countlyConfig);
