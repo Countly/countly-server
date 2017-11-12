@@ -2590,7 +2590,14 @@ window.EventsView = countlyView.extend({
         $(".d-table").stickyTableHeaders();
     },
     getColumnCount:function(){
-        return $(".dataTable").find("thead th:not(.dynamic-col)").length;
+        return $(".dataTable").first().find("thead th").length;
+    },
+    getDataColumnCount:function(cnt){
+        if(cnt === 3)
+            return 4;
+        if(cnt === 4)
+            return 6;
+        return cnt;
     },
     renderCommon:function (isRefresh) {
         var eventData = countlyEvent.getEventData(),
@@ -2871,7 +2878,7 @@ window.EventsView = countlyView.extend({
 
             if (eventChanged || segmentationChanged) {
                 self.drawTable(eventData);
-            } else if (self.getColumnCount() != eventData.tableColumns.length) {
+            } else if (self.getColumnCount() != self.getDataColumnCount(eventData.tableColumns.length)) {
                 self.drawTable(eventData);
             } else {
                 CountlyHelpers.refreshTable(self.dtable, eventData.chartData);
