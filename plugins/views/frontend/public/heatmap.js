@@ -262,7 +262,6 @@
                     });
                     canvas.setAttribute("width", pageWidth + "px");
                     canvas.setAttribute("height", pageHeight + "px");
-                    map.resize();
                     currentDevice[0] = updatedDevice[0];
                     selectedDevice.innerHTML = currentDevice[0].displayText;
                     if (currentMap == "click") {
@@ -401,7 +400,7 @@
                 }
 
                 function loadData() {
-                    sendXmlHttpRequest({ app_key: Countly.app_key, view: Countly._internals.getLastView() || window.location.pathname, period: period, width: pageWidth }, function (err, clicks) {
+                    sendXmlHttpRequest({ app_key: Countly.app_key, view: Countly._internals.getLastView() || window.location.pathname, period: period, width: pageWidth, actionType: actionType }, apiPath, function (err, clicks) {
                         if (!err) {
                             dataCache[currentDevice[0].type] = clicks.data;
                             drawData();
@@ -436,7 +435,7 @@
 
     function loadScrollMap(cb) {
         var map,
-            actionType = "click",
+            actionType = "scroll",
             apiPath = "/o/actions",
             period = Countly.passed_data.period || "30days",
             dataCache = {};
@@ -463,19 +462,61 @@
                 }
 
                 function loadData() {
-                    drawData();
+                    sendXmlHttpRequest({ app_key: Countly.app_key, view: Countly._internals.getLastView() || window.location.pathname, period: period, width: pageWidth, actionType: actionType }, apiPath, function (err, scrolls) {
+                        if (!err) {
+                            dataCache[currentDevice[0].type] = scrolls.data;
+                            drawData();
+                        }
+                    });
                 }
 
                 function drawData() {
                     var heat = [];
+                    var count = [];                    
                     var width = pageWidth;
                     var height = pageHeight;
+                    var data = dataCache[currentDevice[0].type];
 
+                    for (var i = 0; i < data.length; i++) {
+                        offset = data[i].sg;
+                        if (offset.type == actionType) {
+                            var obj = {
+                                y: parseInt((offset.y / offset.height) * height),
+                                c: data[i].c
+                            }
+                            heat.push(obj);
+                        }
+                    }
+
+                    for (var i = 0; i <= pageHeight; i++) {
+                        count.push(0);
+                    }
+
+                    for (i = 0; i < heat.length; i++) {
+                        var data = heat[i];
+                        var y = data.y;
+                        ++count[y];
+                    }
+
+                    for (var i = (pageHeight - 1); i >= 0; i--) {
+                        count[i] += count[i + 1];
+                    }
+
+                    var maxViews = count[0];
+
+                    for (var i = 0; i <= pageHeight; i++) {
+                        if (maxViews > 0) {
+                            count[i] = parseInt((count[i] / maxViews) * 100);
+                        }
+                    }
+
+                    map.clear();
+                    map.data(count);
                     drawMap();
                 }
 
                 function drawMap() {
-                    map.gradiant();
+                    map.drawgradiant();
                 }
             });
         });
@@ -510,7 +551,7 @@
         return data;
     }
 
-    function sendXmlHttpRequest(params, callback) {
+    function sendXmlHttpRequest(params, apiPath, callback) {
         try {
             Countly._internals.log("Sending XML HTTP request");
             var xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : window.ActiveXObject ? new ActiveXObject('Microsoft.XMLHTTP') : null;

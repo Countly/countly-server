@@ -112,6 +112,7 @@ var plugin = {},
             
         ];
         var width = parseInt(params.qstring.width);
+        var actionType = params.qstring.actionType;
         var device = devices.filter((device) => {
             return device.minWidth < width && device.maxWidth >= width;
         });
@@ -176,7 +177,7 @@ var plugin = {},
                     countlyCommon.setTimezone(params.appTimezone);
                     countlyCommon.setPeriod(params.qstring.period);
                     var periodObj = countlyCommon.periodObj,
-                        queryObject = {"up.lv":params.qstring.view},
+                        queryObject = {},
                         now = params.time.now.toDate();
             
                     //create current period array if it does not exist
@@ -209,7 +210,7 @@ var plugin = {},
                             periodObj.currentPeriodArr.push(periodObj.activePeriod);
                         }
                     }
-            
+        
                     //get timestamps of start of days (DD-MM-YYYY-00:00) with respect to apptimezone for both beginning and end of period arrays
                     var tmpArr;
                     queryObject.ts = {};
@@ -228,10 +229,28 @@ var plugin = {},
                     queryObject["sg.width"] = {};
                     queryObject["sg.width"].$gt = device[0].minWidth;
                     queryObject["sg.width"].$lte = device[0].maxWidth;
-    
+                    queryObject["sg.type"] = actionType;
+
+                    var projections = {
+                        _id:0, 
+                        c:1, 
+                        "sg.type":1, 
+                        "sg.width":1, 
+                        "sg.height":1
+                    };
+
+                    if(actionType == "scroll"){
+                        projections["sg.y"] = 1;
+                        queryObject["sg.view"] = params.qstring.view;                        
+                    }else {
+                        projections["sg.x"] = 1;                    
+                        projections["sg.y"] = 1;   
+                        queryObject["up.lv"] = params.qstring.view;                        
+                    }
+
                     if(params.qstring.segment)
                         queryObject["sg.segment"] = params.qstring.segment;
-                    common.drillDb.collection(collectionName).find( queryObject,{_id:0, c:1, "sg.type":1, "sg.x":1, "sg.y":1, "sg.width":1, "sg.height":1}).toArray(function(err,data){
+                    common.drillDb.collection(collectionName).find( queryObject, projections).toArray(function(err,data){
                         result.data = data;
                         common.returnOutput(params,result,true,params.token_headers);
                     });

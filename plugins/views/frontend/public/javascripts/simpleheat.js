@@ -128,5 +128,106 @@ simpleheat.prototype = {
                 pixels[i + 2] = gradient[j + 2];
             }
         }
+    },
+
+    _colorStops: [
+        {
+            "stop": 100,
+            "color": "rgba(226, 72, 45, .7)",
+        },
+        {
+            "stop": 75,
+            "range": [75, 50],
+            "color": "rgba(61, 234, 35, .7)",
+        },
+        {
+            "stop": 50,
+            "range": [50, 25],
+            "color": "rgba(32, 232, 232, .7)",
+        },
+        {
+            "stop": 25,
+            "range": [25, 0],
+            "color": "rgba(35, 41, 234, .7)",
+        },
+        {
+            "stop": 0,
+            "color": "rgba(63, 63, 63, .7)",
+        }
+    ],
+
+    setPosition: function () {
+        this._colorStops.forEach(function(obj){
+            delete obj.y;
+            delete obj.position;
+        });
+        
+        if (this._data[0] == 0) {
+
+            //NO ONE SAW THE WEBSITE YET
+            this._colorStops.forEach(function(obj){
+                delete obj.position;
+            });
+            
+            this._colorStops[this._colorStops.length - 1].position = 0;            
+
+        } else if (this._data[0] == this._data[this._data.length - 1]) {
+
+            //EVERYONE SCROLLED TILL BOTTOM
+            this._colorStops[0].position = 0;
+
+        } else {
+            this._colorStops[0].position = 0;
+            this._colorStops[this._colorStops.length - 1].position = 1;
+
+            var j = 0;
+            for (var i = 1; i < (this._colorStops.length - 1); i++) {
+                var range = this._colorStops[i].range;
+                while (j < this._data.length) {
+                    if (this._data[j] > range[0]) {
+                        j++;
+                    } else if (this._data[j] <= range[0] && this._data[j] > range[1]) {
+                        this._colorStops[i].position = parseFloat((j / this._height).toFixed(2));
+                        this._colorStops[i].y = j;
+                        break;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+    },
+
+    drawgradiant: function () {
+        var ctx = this._ctx;
+        var grd = ctx.createLinearGradient(0, 0, 0, this._height);
+
+        this.setPosition();
+
+        for (var i = 0; i < this._colorStops.length; i++) {
+            if (this._colorStops[i].position >= 0) {
+                grd.addColorStop(this._colorStops[i].position, this._colorStops[i].color);
+            }
+        }
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, 0, this._width, this._height);
+
+        self = this;
+        this._colorStops.forEach(function (stop) {
+            if (stop.y >= 0) {
+                ctx.beginPath();
+                ctx.moveTo(0, stop.y);
+                ctx.lineTo(self._width, stop.y);
+                ctx.stroke();
+
+                ctx.fillStyle = "rgba(0,0,0,.5)";
+                ctx.fillRect(0, stop.y - 20, 40, 20);
+                ctx.stroke();
+
+                ctx.font = "13px Ubuntu";
+                ctx.fillStyle = "#fff";
+                ctx.fillText(stop.stop + " %", 5, stop.y - 5);
+            }
+        })
     }
 };
