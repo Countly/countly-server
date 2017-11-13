@@ -1,0 +1,25 @@
+{
+  "name": "countly_device_list",
+  "version": "1.0.0",
+  "description": "Generate list of devices to use in Countly dashboard",
+  "main": "countly.device.list.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate": "nodejs generate.js > countly.device.list.js"
+  },
+  "keywords": [
+    "countly",
+    "device",
+    "list"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/countly/countly-server.git"
+  },
+  "author": "Countly <hello@count.ly> (https://count.ly/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Countly/countly-sdk-web/issues"
+  },
+  "homepage": "https://count.ly/"
+}
