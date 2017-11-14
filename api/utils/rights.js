@@ -17,7 +17,7 @@ var common = require("./common.js"),
 * @returns {Promise} promise
 */
 exports.validateUserForRead = function(params, callback, callbackParam) {
-    return new Promise(function(resolve, reject){
+    return wrapCallback(params, callback, callbackParam, function(resolve, reject){
         common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
             if (!member || err) {
                 common.returnMessage(params, 401, 'User does not exist');
@@ -67,12 +67,6 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
                 plugins.dispatch("/o/validate", {params:params, app:app});
                 
                 resolve(callbackParam);
-    
-                if (callback && callbackParam) {
-                    callback(callbackParam, params);
-                } else if(callback){
-                    callback(params);
-                }
             });
         });
     });
@@ -89,7 +83,7 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
 * @returns {Promise} promise
 */
 exports.validateUserForWrite = function(params, callback, callbackParam) {
-    return new Promise(function(resolve, reject){
+    return wrapCallback(params, callback, callbackParam, function(resolve, reject){
         common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
             if (!member || err) {
                 common.returnMessage(params, 401, 'User does not exist');
@@ -130,12 +124,6 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
                 }
   
                 resolve(callbackParam);
-    
-                if (callback && callbackParam) {
-                    callback(callbackParam, params);
-                } else if(callback){
-                    callback(params);
-                }
             });
         });
     });
@@ -152,7 +140,7 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
 * @returns {Promise} promise
 */
 exports.validateGlobalAdmin = function(params, callback, callbackParam) {
-    return new Promise(function(resolve, reject){
+    return wrapCallback(params, callback, callbackParam, function(resolve, reject){
         common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
             if (!member || err) {
                 common.returnMessage(params, 401, 'User does not exist');
@@ -183,12 +171,6 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
             }
             
             resolve(callbackParam);
-    
-            if (callback && callbackParam) {
-                callback(callbackParam, params);
-            } else if(callback){
-                callback(params);
-            }
         });
     });
 }
@@ -204,14 +186,14 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
 * @returns {Promise} promise
 */
 exports.validateUser = function (params, callback, callbackParam) {
-    return new Promise(function(resolve, reject){
-        //old backwards compatability call check
-        if(typeof params === "function"){
-            var temp = params;
-            params = callback;
-            callback = temp;
-        }
-        
+    //old backwards compatability call check
+    if(typeof params === "function"){
+        var temp = params;
+        params = callback;
+        callback = temp;
+    }
+    
+    return wrapCallback(params, callback, callbackParam, function(resolve, reject){
         common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
             if (!member || err) {
                 common.returnMessage(params, 401, 'User does not exist');
@@ -236,12 +218,22 @@ exports.validateUser = function (params, callback, callbackParam) {
             }
             
             resolve(callbackParam);
-    
-            if (callback && callbackParam) {
-                callback(callbackParam, params);
-            } else if(callback){
-                callback(params);
-            }
         });
     });
 };
+
+function wrapCallback(params, callback, callbackParam, func){
+    var promise = new Promise(func);
+    if(callback){
+        promise.asCallback(function(err){
+            if(!err){
+                if (callbackParam) {
+                    callback(callbackParam, params);
+                } else {
+                    callback(params);
+                }
+           } 
+        });
+    }
+    return promise;
+}
