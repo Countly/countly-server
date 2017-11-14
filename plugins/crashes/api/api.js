@@ -15,64 +15,6 @@ plugins.setConfigs("crashes", {
     var ranges = ["ram", "bat", "disk", "run", "session"];
 	var segments = ["os_version", "os_name", "manufacture", "device", "resolution", "app_version", "cpu", "opengl", "orientation", "view", "browser"];
 	var bools = {"root":true, "online":true, "muted":true, "signal":true, "background":true};
-    var ios_cpus = {
-        "iPhone1,1":"RISC ARM 11",
-        "iPhone1,2":"RISC ARM 11",
-        "iPhone2,1":"ARM Cortex-A8",
-        "iPhone3,1":"ARMv7 A4",
-        "iPhone3,2":"ARMv7 A4",
-        "iPhone3,3":"ARMv7 A4",
-        "iPhone4,1":"ARMv7 A5",
-        "iPhone5,1":"ARMv7s A6",
-        "iPhone5,2":"ARMv7s A6",
-        "iPhone5,3":"ARMv7s A6",
-        "iPhone5,4":"ARMv7s A6",
-        "iPhone6,1":"ARMv8-A A7",
-        "iPhone6,2":"ARMv8-A A7",
-        "iPhone7,1":"ARMv8-A A8",
-        "iPhone7,2":"ARMv8-A A8",
-        "iPhone8,1":"ARMv8-A A9",
-	    "iPhone8,2":"ARMv8-A A8",
-        "iPod1,1":"ARM11",
-        "iPod2,1":"ARM11",
-        "iPod3,1":"ARMv7-A",
-        "iPod4,1": "ARMv7-A A4",
-        "iPod5,1":"ARMv7-A A5",
-        "iPod7,1":"ARMv8-A A8",
-        "iPad1,1":"ARMv7 A4",
-        "iPad2,1":"ARMv7 A5",
-        "iPad2,2":"ARMv7 A5",
-        "iPad2,3":"ARMv7 A5",
-        "iPad2,4":"ARMv7 A5 Rev A",
-        "iPad2,5":"ARMv7-A A5",
-        "iPad2,6":"ARMv7-A A5",
-        "iPad2,7":"ARMv7-A A5",
-        "iPad3,1":"ARMv7 A5X",
-        "iPad3,2":"ARMv7 A5X",
-        "iPad3,3":"ARMv7 A5X",
-        "iPad3,4":"ARMv7 A6X",
-        "iPad3,5":"ARMv7 A6X",
-        "iPad3,6":"ARMv7 A6X",
-        "iPad4,1":"ARMv8 A7 Rev A",
-        "iPad4,2":"ARMv8 A7 Rev A",
-        "iPad4,3":"ARMv8 A7 Rev A",
-        "iPad4,4":"ARMv8-A A7",
-        "iPad4,5":"ARMv8-A A7",
-        "iPad4,6":"ARMv8-A A7",
-        "iPad4,7":"ARMv8-A A7",
-        "iPad4,8":"ARMv8-A A7",
-        "iPad4,9":"ARMv8-A A7",
-        "iPad5,1":"ARMv8-A A8",
-        "iPad5,2":"ARMv8-A A8",
-        "iPad5,3":"ARMv8 A8X",
-        "iPad5,4":"ARMv8 A8X",
-        "iPad6,7":"ARMv8-A A9X",
-	    "iPad6,8":"ARMv8-A A9X",
-        "AppleTV5,3":"ARMv8-A A8",
-        "i386":"Simulator",
-        "x86_64":"Simulator"
-    };
-    
     plugins.internalDrillEvents.push("[CLY]_crash");
     //check app metric
     plugins.register("/session/metrics", function(ob){
@@ -159,8 +101,8 @@ plugins.setConfigs("crashes", {
                 crash._error = crash._error.trim();
                 var error = crash._error;
                 if(crash._os && crash._os.toLowerCase && crash._os.toLowerCase() == "ios"){
-                    if(crash._device && !crash._cpu)
-                        crash._cpu = ios_cpus[crash._device] || "Unknown";
+                    if(!crash._cpu && crash._architecture)
+                        crash._cpu = crash._architecture;
                     
                     var rLineNumbers = /^\d+\s*/gim;
                     crash._error = crash._error.replace(rLineNumbers, "");
