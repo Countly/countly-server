@@ -2064,6 +2064,7 @@ describe('Testing Crashes', function(){
             crash._os = "iOS";
             crash._os_version = "8.1";
             crash._device = "iPad3,5";
+            crash._architecture = "armv7";
             crash._resolution = "1576x2048";
             crash._app_version = "1.3";
             crash._opengl = "openGL ES 2.0";
@@ -2203,7 +2204,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("device",{"iPad3,5":1});
                 ob.should.have.property("resolution",{"1576x2048":1});
                 ob.should.have.property("app_version",{"1:3":1});
-                ob.should.have.property("cpu",{"ARMv7 A6X":1});
+                ob.should.have.property("cpu",{"armv7":1});
                 ob.should.have.property("opengl",{"openGL ES 2:0":1});
                 ob.should.have.property("orientation",{"landscape":1});
                 ob.should.have.property("custom",{"facebook":{"3:0":1},"googleplay":{"1:0":1}});
@@ -2230,6 +2231,7 @@ describe('Testing Crashes', function(){
 			var crash = {};
             crash._os = "iOS";
             crash._os_version = "8.1";
+            crash._architecture = "armv7";
             crash._device = "iPad3,5";
             crash._resolution = "1576x2048";
             crash._app_version = "1.3";
@@ -2369,7 +2371,7 @@ describe('Testing Crashes', function(){
                 ob.should.have.property("device",{"iPad3,5":2});
                 ob.should.have.property("resolution",{"1576x2048":2});
                 ob.should.have.property("app_version",{"1:3":2});
-                ob.should.have.property("cpu",{"ARMv7 A6X":2});
+                ob.should.have.property("cpu",{"armv7":2});
                 ob.should.have.property("opengl",{"openGL ES 2:0":2});
                 ob.should.have.property("orientation",{"landscape":2});
                 ob.should.have.property("custom",{"facebook":{"3:0":2},"googleplay":{"1:0":2}});
