@@ -232,7 +232,6 @@ app.get(countlyConfig.path+'/appimages/*', function(req, res) {
                         'Cache-Control':'public, max-age=31536000',
                         'Connection':'keep-alive',
                         'Date':new Date().toUTCString(),
-                        'ETag':'W/"1c8d-15ea960df3b"',
                         'Last-Modified':stats.mtime.toUTCString(),
                         'Server':'nginx/1.10.3 (Ubuntu)',
                         'X-Powered-By':'Express',
@@ -530,7 +529,15 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                         req.session.gadm = (member["global_admin"] == true);
                         req.session.email = member["email"];
                         req.session.settings = member.settings;
-                        res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+                        if(member.upgrade){
+                            res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+                            res.header('Expires', '0');
+                            res.header('Pragma', 'no-cache');
+                            countlyDb.collection('members').update({"_id":member._id}, {$unset:{upgrade:""}},function (err, member) {});
+                        }
+                        else{
+                            res.header('Cache-Control', 'public, max-age=31536000');
+                        }
 
                         member._id += "";
                         delete member["password"];
@@ -867,6 +874,13 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                         }
                             if(plugins.getConfig("frontend", member.settings).session_timeout)
                                 req.session.expires = Date.now()+plugins.getConfig("frontend", member.settings).session_timeout;
+                        if(member.upgrade){
+                            res.set({
+                                'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0',
+                                'Expires': '0',
+                                'Pragma': 'no-cache'
+                            });
+                        }
                         res.redirect(countlyConfig.path+'/dashboard');
                         bruteforce.reset(req.body.username);
                     });
