@@ -123,7 +123,7 @@ class Credentials {
 												tpks = tpks.value.replace(/0[\x00-\x1f\(\)!]/gi, '')
 																	.replace('\f\f', '\f')
 																	.split('\f')
-																	.map(s => s.replace(/[\x00-\x1f\(\)!,"$]/gi, '').trim());
+																	.map(s => s.replace(/[\x00-\x1f\(\)!,"$+#]/gi, '').trim());
 												tpks.shift();
 
 												for (var i = 0; i < tpks.length; i++) {
