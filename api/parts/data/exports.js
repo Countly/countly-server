@@ -166,7 +166,7 @@ var exports = {},
             if(options.limit)
                 alternateName += "_to_"+(parseInt(options.skip)+parseInt(options.limit));
         }
-        alternateName += "-"+moment().format("DD-MMM-YYYY");
+        alternateName += "_exported_on_"+moment().format("DD-MMM-YYYY");
         options.filename = options.filename || alternateName;
         var cursor = options.db.collection(options.collection).find(options.query, options.projection);
         if(options.sort)
@@ -211,7 +211,7 @@ var exports = {},
             method: options.method || 'POST',
             json:options.data || {}
         };
-        options.filename = options.filename || options.path.replace(/\//g, "_")+"-"+moment().format("DD-MMM-YYYY");
+        options.filename = options.filename || options.path.replace(/\//g, "_")+"_on_"+moment().format("DD-MMM-YYYY");
         request(opts, function (error, response, body) {
             var data = [];
             try{
@@ -240,7 +240,7 @@ var exports = {},
     */
     exports.fromData = function(data, options){
         options.type = options.type || "json";
-        options.filename = options.filename || "Data-export-"+moment().format("DD-MMM-YYYY");
+        options.filename = options.filename || "Data_export_on_"+moment().format("DD-MMM-YYYY");
         options.output = options.output || function(data){ exports.output(options.params, data, options.filename, options.type); };
         if(!data)
             data = [];
