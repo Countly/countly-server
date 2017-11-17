@@ -1063,7 +1063,7 @@ table.events-table { width:100%; padding:0; margin:0; }
 .export-description { font:15px Ubuntu,Helvetica,sans-serif; line-height:111%; color:#999; padding:10px; padding-bottom:5px; }
 .stretch {}
 #export-button { border: 1px solid #ccc; background-color: #f5f5f5; padding: 4px 10px; cursor: pointer; font-size: 11px; border-radius: 2px; }
-.export-dialog {padding: 15px; width: 270px; overflow: auto;}
+.export-dialog {padding: 15px; width: 270px; overflow: visible; min-height:210px;}
 .export-dialog .cly-select {width: 100%; margin:0px auto; box-sizing:border-box; margin-bottom: 10px; height:30px;}
 .export-dialog .cly-select .select-items {width: 101%;}
 .export-dialog p {margin:0px; font:14px Ubuntu,Helvetica,sans-serif; font-weight: bold; line-height:111%; margin-bottom: 10px;}
