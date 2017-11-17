@@ -149,7 +149,7 @@ class Credentials {
 								this.topics = topics;
 
 								if (topics.length === 0) {
-									return reject('Not a universal (Sanbox & Production) certificate');
+									return reject('Not a universal (Sandbox & Production) certificate');
 								}
 								// this.certificate = buffer;
 
