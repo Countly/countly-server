@@ -1,14 +1,14 @@
 (function () {
     var pageWidth = 0,
         pageHeight = 0,
-        currentDevice = [],
-        currentMap = "click",
+        currentDevice = Countly.passed_data.currentDevice && Countly.passed_data.currentDevice.length ? Countly.passed_data.currentDevice : [],
+        currentMap = Countly.passed_data.currentMap == "scroll" ? "scroll" : "click",
         showHeatMap = Countly.passed_data.showHeatMap == false ? false : true,
         clickMap,
         scrollMap;
 
-    loadCSS(Countly.url + "/stylesheets/ionicons/css/ionicons.min.css", function () {
-        loadCSS(Countly.url + "/views/stylesheets/heatmap.css", function () {
+    Countly._internals.loadCSS(Countly.url + "/stylesheets/ionicons/css/ionicons.min.css", function () {
+        Countly._internals.loadCSS(Countly.url + "/views/stylesheets/heatmap.css", function () {
             document.body.style.position = "relative";
             var origtop = document.body.style.top;
             var toppx = 59;
@@ -43,12 +43,22 @@
             topbar.setAttribute("id", "cly-topbar");
             document.body.appendChild(topbar);
 
-            pageWidth = Countly._internals.getDocWidth();
-            pageHeight = Countly._internals.getDocHeight();
+            
 
-            currentDevice = devices.filter((device) => {
-                return device.minWidth < pageWidth && device.maxWidth >= pageWidth;
-            });
+            if(currentDevice.length){
+                pageWidth = Countly._internals.getDocWidth();
+                pageWidth = Math.min(currentDevice[0].maxWidth, pageWidth);
+                document.body.style.width = pageWidth + "px";
+                document.body.style.marginLeft = "auto";
+                document.body.style.marginRight = "auto";
+                pageHeight = Countly._internals.getDocHeight();
+            }else{
+                pageWidth = Countly._internals.getDocWidth();
+                pageHeight = Countly._internals.getDocHeight();
+                currentDevice = devices.filter((device) => {
+                    return device.minWidth < pageWidth && device.maxWidth >= pageWidth;
+                });
+            }
 
             //TOPBAR IMAGE
             var img = document.createElement('img');
@@ -70,7 +80,7 @@
             mapSpan.setAttribute('class', 'cly-title');
 
             var selectedMap = document.createElement('div');
-            selectedMap.innerHTML = "Click Map";
+            selectedMap.innerHTML = capitalize(currentMap) + " Map";
             selectedMap.setAttribute('class', 'cly-selected cly-map');
 
             var mapMenuDiv = document.createElement('div');
@@ -98,6 +108,12 @@
 
                     canvas.setAttribute("width", "0px");
                     canvas.setAttribute("height", "0px");
+
+                    var grdMap = document.getElementById("cly-scroll-grd-map");
+                    if (grdMap) {
+                        grdMap.parentNode.removeChild(grdMap);
+                    }
+
                     if (map == "click") {
                         canvas.style.opacity = 0.5;
                         setTimeout(function () {
@@ -115,6 +131,7 @@
                     }
 
                     currentMap = map;
+                    addDataToWindow([{ "key": "currentMap", "value": currentMap }]);
                     selectedMap.innerHTML = capitalize(map) + " Map";
                     e.stopPropagation();
                 })
@@ -161,6 +178,10 @@
 
                 Countly._internals.add_event(tag, "click", function (e) {
                     document.body.style.width = "100%";
+                    var grdMap = document.getElementById("cly-scroll-grd-map");
+                    if (grdMap) {
+                        grdMap.parentNode.removeChild(grdMap);
+                    }
                     pageWidth = Countly._internals.getDocWidth();
                     canvas.setAttribute("width", "0px");
                     canvas.setAttribute("height", "0px");
@@ -185,6 +206,7 @@
                     }
 
                     currentDevice[0] = updatedDevice[0];
+                    addDataToWindow([{ "key": "currentDevice", "value": currentDevice }]);
                     selectedDevice.innerHTML = currentDevice[0].displayText;
 
                     if (currentMap == "click") {
@@ -226,6 +248,10 @@
                 dataCache = {};
                 canvas.setAttribute("width", "0px");
                 canvas.setAttribute("height", "0px");
+                var grdMap = document.getElementById("cly-scroll-grd-map");
+                if (grdMap) {
+                    grdMap.parentNode.removeChild(grdMap);
+                }
                 setTimeout(function () {
                     canvas.setAttribute("width", pageWidth + "px");
                     canvas.setAttribute("height", pageHeight + "px");
@@ -243,16 +269,19 @@
             canvas.style.top = "0px";
             canvas.style.left = "0px";
             canvas.style.zIndex = 1000000;
-            canvas.style.opacity = 0.5;
             canvas.style.pointerEvents = "none";
-            canvas.setAttribute("width", Countly._internals.getDocWidth() + "px");
-            canvas.setAttribute("height", Countly._internals.getDocHeight() + "px");
+            canvas.setAttribute("width", pageWidth + "px");
+            canvas.setAttribute("height", pageHeight + "px");
             canvas.id = "cly-canvas-map";
             document.body.appendChild(canvas);
 
             Countly._internals.add_event(window, "resize", function () {
                 canvas.setAttribute("width", "0px");
                 canvas.setAttribute("height", "0px");
+                var grdMap = document.getElementById("cly-scroll-grd-map");
+                if (grdMap) {
+                    grdMap.parentNode.removeChild(grdMap);
+                }
                 setTimeout(function () {
                     document.body.style.width = "100%";
                     pageWidth = Countly._internals.getDocWidth();
@@ -263,6 +292,7 @@
                     canvas.setAttribute("width", pageWidth + "px");
                     canvas.setAttribute("height", pageHeight + "px");
                     currentDevice[0] = updatedDevice[0];
+                    addDataToWindow([{ "key": "currentDevice", "value": currentDevice }]);
                     selectedDevice.innerHTML = currentDevice[0].displayText;
                     if (currentMap == "click") {
                         clickMap("resize", pageWidth, pageHeight, currentDevice, showHeatMap);
@@ -294,23 +324,15 @@
             showHide.appendChild(shLabel);
             Countly._internals.add_event(shInput, "click", function () {
                 showHeatMap = shInput.checked;
-                var dataCLY = {};
-                var prefix = "";
-                if (window.name && window.name.indexOf("cly:") === 0) {
-                    dataCLY = JSON.parse(window.name.replace("cly:", ""));
-                    prefix = window.name.slice(0, 4);
-                }
-                else if (location.hash && location.hash.indexOf("#cly:") === 0) {
-                    dataCLY = JSON.parse(location.hash.replace("#cly:", ""));
-                    prefix = window.name.slice(0, 5);
-                }
-
-                dataCLY.showHeatMap = showHeatMap;
-                window.name = prefix + JSON.stringify(dataCLY);
+                addDataToWindow([{ "key": "showHeatMap", "value": showHeatMap }]);
 
                 if (!showHeatMap) {
                     canvas.setAttribute("width", "0px");
                     canvas.setAttribute("height", "0px");
+                    var grdMap = document.getElementById("cly-scroll-grd-map");
+                    if (grdMap) {
+                        grdMap.parentNode.removeChild(grdMap);
+                    }
                 } else {
                     canvas.setAttribute("width", pageWidth + "px");
                     canvas.setAttribute("height", pageHeight + "px");
@@ -337,11 +359,18 @@
 
             loadClickMap(function (fn) {
                 clickMap = fn;
-                clickMap("init", pageWidth, pageHeight, currentDevice, showHeatMap);
+                if (currentMap == "click") {
+                    canvas.style.opacity = 0.5;
+                    clickMap("init", pageWidth, pageHeight, currentDevice, showHeatMap);
+                }
             });
 
             loadScrollMap(function (fn) {
                 scrollMap = fn;
+                if (currentMap == "scroll") {
+                    canvas.style.opacity = 1;
+                    scrollMap("init", pageWidth, pageHeight, currentDevice, showHeatMap);
+                }
             });
 
             function listenDropdownEvent(event, element) {
@@ -366,6 +395,25 @@
             }
         })
     });
+
+    function addDataToWindow(dataArray) {
+        var dataCLY = {};
+        var prefix = "";
+        if (window.name && window.name.indexOf("cly:") === 0) {
+            dataCLY = JSON.parse(window.name.replace("cly:", ""));
+            prefix = window.name.slice(0, 4);
+        }
+        else if (location.hash && location.hash.indexOf("#cly:") === 0) {
+            dataCLY = JSON.parse(location.hash.replace("#cly:", ""));
+            prefix = window.name.slice(0, 5);
+        }
+
+        dataArray.forEach(function (dataObj) {
+            dataCLY[dataObj.key] = dataObj.value;
+        });
+
+        window.name = prefix + JSON.stringify(dataCLY);
+    }
 
     function loadClickMap(cb) {
         var map,
@@ -444,6 +492,7 @@
             map = simpleheat("cly-canvas-map");
             return cb(function (eventType, pageWidth, pageHeight, currentDevice, showHeatMap) {
                 map.resize();
+                map.viewPortSize({ height: Countly._internals.getViewportHeight() });
 
                 if (eventType == "refresh") {
                     dataCache = {};
@@ -472,7 +521,7 @@
 
                 function drawData() {
                     var heat = [];
-                    var count = [];                    
+                    var count = [];
                     var width = pageWidth;
                     var height = pageHeight;
                     var data = dataCache[currentDevice[0].type];
@@ -502,37 +551,76 @@
                         count[i] += count[i + 1];
                     }
 
-                    var maxViews = count[0];
+                    var highestViews = count[0];
+                    var totalViews = 0;
 
                     for (var i = 0; i <= pageHeight; i++) {
-                        if (maxViews > 0) {
-                            count[i] = parseInt((count[i] / maxViews) * 100);
+                        if (highestViews > 0) {
+                            totalViews += count[i];
+                            count[i] = parseInt((count[i] / highestViews) * 100);
                         }
                     }
 
                     map.clear();
+                    map.max(totalViews);
+                    map.highest(highestViews);
                     map.data(count);
                     drawMap();
                 }
 
                 function drawMap() {
                     map.drawgradiant();
+                    map.addMarkers();
+
+                    //GRADIENT MAP                    
+                    var totalPageWidth = Countly._internals.getDocWidth();
+                    var resolutionXOffest = totalPageWidth - map._width;
+                    var grdMapX = map._width + (resolutionXOffest / 2) - 70;
+                    var grdMapY = map._viewPortHeight - 200;
+                    var grdMapWidth = 13;
+                    var grdMapHeight = 120;
+                    var grdXOffset = 10;
+                    var grdYOffset = 18;
+
+
+                    var canvas = document.createElement("canvas");
+                    canvas.style.position = "fixed";
+                    canvas.style.top = grdMapY + "px";
+                    canvas.style.left = grdMapX + "px";
+                    canvas.style.zIndex = 1000002;
+                    canvas.setAttribute("width", grdMapWidth + 2 * (grdXOffset) + "px");
+                    canvas.setAttribute("height", grdMapHeight + 2 * (grdYOffset) + "px");
+                    canvas.id = "cly-scroll-grd-map";
+
+                    var context = canvas.getContext('2d');
+                    var grdMap = context.createLinearGradient(grdXOffset, grdYOffset, grdMapWidth, grdMapHeight);
+
+                    var colorStops = JSON.parse(JSON.stringify(map._colorStops));
+                    var position = 0;
+                    colorStops.forEach(function (stop) {
+                        stop.position = parseFloat(position.toFixed(1));
+                        grdMap.addColorStop(stop.position, stop.color);
+                        position += 0.1;
+                    });
+
+                    context.fillStyle = "#fff";
+                    context.fillRect(0, 0, grdMapWidth + 2 * (grdXOffset), grdMapHeight + 2 * (grdYOffset));
+
+                    context.fillStyle = grdMap;
+                    context.fillRect(grdXOffset, grdYOffset, grdMapWidth, grdMapHeight);
+
+                    context.font = "10px Ubuntu";
+                    context.fillStyle = "#000";
+                    context.fillText("100%", grdXOffset - 7, grdYOffset - 4);
+
+                    context.font = "10px Ubuntu";
+                    context.fillStyle = "#000";
+                    context.fillText("0%", grdXOffset, grdYOffset + grdMapHeight + 8 + 3);
+
+                    document.body.appendChild(canvas);
                 }
             });
         });
-    }
-
-    function loadCSS(css, callback) {
-        var fileref = document.createElement('link'), loaded;
-        fileref.setAttribute("rel", "stylesheet");
-        fileref.setAttribute("href", css);
-        fileref.onreadystatechange = fileref.onload = function () {
-            if (!loaded) {
-                callback();
-            }
-            loaded = true;
-        };
-        document.getElementsByTagName("head")[0].appendChild(fileref);
     }
 
     function capitalize(str) {

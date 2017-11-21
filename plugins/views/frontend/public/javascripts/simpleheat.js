@@ -37,6 +37,10 @@ simpleheat.prototype = {
         return this;
     },
 
+    viewPortSize: function (data) {
+        this._viewPortHeight = data.height;
+    },
+
     add: function (point) {
         this._data.push(point);
         return this;
@@ -133,43 +137,76 @@ simpleheat.prototype = {
     _colorStops: [
         {
             "stop": 100,
-            "color": "rgba(226, 72, 45, .7)",
+            "range": [100, 90],
+            "color": "rgba(253, 36, 5, 0.7)"
         },
         {
-            "stop": 75,
-            "range": [75, 50],
-            "color": "rgba(61, 234, 35, .7)",
+            "stop": 90,
+            "range": [90, 80],
+            "color": "rgba(255, 212, 32, 0.7) "
+        },
+        {
+            "stop": 80,
+            "range": [80, 70],
+            "color": "rgba(217, 253, 40, 0.7)"
+        },
+        {
+            "stop": 70,
+            "range": [70, 60],
+            "color": "rgba(71, 254, 41, 0.7)"
+        },
+        {
+            "stop": 60,
+            "range": [60, 50],
+            "color": "rgba(0, 255, 130, 0.7)"
         },
         {
             "stop": 50,
-            "range": [50, 25],
-            "color": "rgba(32, 232, 232, .7)",
+            "range": [50, 40],
+            "color": "rgba(0, 255, 205, 0.7)"
         },
         {
-            "stop": 25,
-            "range": [25, 0],
-            "color": "rgba(35, 41, 234, .7)",
+            "stop": 40,
+            "range": [40, 30],
+            "color": "rgba(1, 169, 251, 0.7)"
         },
         {
-            "stop": 0,
-            "color": "rgba(63, 63, 63, .7)",
+            "stop": 30,
+            "range": [30, 20],
+            "color": "rgba(0, 41, 229, 0.7)"
+        },
+        {
+            "stop": 20,
+            "range": [20, 10],
+            "color": "rgba(40, 40, 89, 0.7)"
+        },
+        {
+            "stop": 10,
+            "range": [10, 0],
+            "color": "rgba(50, 49, 58, 0.7)"
         }
     ],
 
+    highest: function (data) {
+        this._highest = data;
+        return this;
+    },
+
     setPosition: function () {
-        this._colorStops.forEach(function(obj){
+        this._colorStops.forEach(function (obj) {
             delete obj.y;
             delete obj.position;
         });
-        
+
+        var addedColorStop = [];
         if (this._data[0] == 0) {
 
             //NO ONE SAW THE WEBSITE YET
-            this._colorStops.forEach(function(obj){
+            this._colorStops.forEach(function (obj) {
                 delete obj.position;
             });
-            
-            this._colorStops[this._colorStops.length - 1].position = 0;            
+
+            this._colorStops[this._colorStops.length - 1].position = 0;
 
         } else if (this._data[0] == this._data[this._data.length - 1]) {
 
@@ -177,29 +214,40 @@ simpleheat.prototype = {
             this._colorStops[0].position = 0;
 
         } else {
-            this._colorStops[0].position = 0;
-            this._colorStops[this._colorStops.length - 1].position = 1;
-
             var j = 0;
-            for (var i = 1; i < (this._colorStops.length - 1); i++) {
+            for (var i = 0; i < this._colorStops.length; i++) {
                 var range = this._colorStops[i].range;
+                var lastColorStop = undefined;
+                if (addedColorStop.length) {
+                    lastColorStop = addedColorStop[addedColorStop.length - 1];
+                }
+
                 while (j < this._data.length) {
                     if (this._data[j] > range[0]) {
                         j++;
                     } else if (this._data[j] <= range[0] && this._data[j] > range[1]) {
-                        this._colorStops[i].position = parseFloat((j / this._height).toFixed(2));
-                        this._colorStops[i].y = j;
+                        var position = parseFloat((j / this._height).toFixed(2));
+                        if(!lastColorStop || (Math.abs(position - lastColorStop.position) > 0.1)){
+                            this._colorStops[i].position = position
+                            this._colorStops[i].y = j;
+                            this._colorStops[i].percentage = this._data[j];
+                            addedColorStop.push(this._colorStops[i]);                        
+                        }
                         break;
                     } else {
                         break;
                     }
                 }
             }
+
+            this._colorStops[0].position = 0;
+            this._colorStops[this._colorStops.length - 1].position = 1;
         }
     },
 
     drawgradiant: function () {
         var ctx = this._ctx;
+
         var grd = ctx.createLinearGradient(0, 0, 0, this._height);
 
         this.setPosition();
@@ -211,22 +259,70 @@ simpleheat.prototype = {
         }
         ctx.fillStyle = grd;
         ctx.fillRect(0, 0, this._width, this._height);
+    },
 
+    addMarkers: function () {
+        var ctx = this._ctx;
+
+        var markers = [];
         self = this;
+
+        var totalViews = this._max;
+        var highestViews = this._highest;
+        var averageViews = totalViews / this._data.length;
+        var averageViewsPercentage = parseInt((averageViews / highestViews) * 100);
+
         this._colorStops.forEach(function (stop) {
-            if (stop.y >= 0) {
+            if (stop.y && stop.percentage) {
+                var obj = {
+                    percentage: stop.percentage,
+                    y: stop.y
+                }
+                markers.push(obj);
+            }
+        });
+
+        var addedMarkers = [];
+        var allowedByLastMarker = true;
+        markers.forEach(function (marker) {
+            if (addedMarkers.length) {
+                var lastMarkerAdded = addedMarkers[addedMarkers.length - 1];
+                allowedByLastMarker = Math.abs(marker.y - lastMarkerAdded.y) > 50;
+            }
+
+            //DISPLAYING ONLY MARKERS LYING AT 50PX FROM TOP AND BOTTOM            
+            if (marker.y >= 50 && marker.y < self._height - 50 && allowedByLastMarker) {
+                var cornerRadius = 5;
+                var rectX = 20;
+                var rectY = marker.y - 15;
+                var rectWidth = 217;
+                var rectHeight = 30;
+
                 ctx.beginPath();
-                ctx.moveTo(0, stop.y);
-                ctx.lineTo(self._width, stop.y);
+                ctx.moveTo(0, marker.y);
+                ctx.lineTo(self._width, marker.y);
+                ctx.shadowBlur = 0;
+                ctx.lineJoin = "meter";
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = "#313131"; 
                 ctx.stroke();
 
-                ctx.fillStyle = "rgba(0,0,0,.5)";
-                ctx.fillRect(0, stop.y - 20, 40, 20);
-                ctx.stroke();
+                ctx.fillStyle = "#313131";
+                ctx.lineJoin = "round";
+                ctx.lineWidth = cornerRadius;
+                ctx.shadowBlur = 2;
+                ctx.shadowColor = "rgba(0,0,0,0.11)";
+                ctx.strokeStyle = "#313131";
+                ctx.strokeRect(rectX + (cornerRadius / 2), rectY + (cornerRadius / 2), rectWidth - cornerRadius, rectHeight - cornerRadius);
+                ctx.fillRect(rectX + (cornerRadius / 2), rectY + (cornerRadius / 2), rectWidth - cornerRadius, rectHeight - cornerRadius);
 
                 ctx.font = "13px Ubuntu";
                 ctx.fillStyle = "#fff";
-                ctx.fillText(stop.stop + " %", 5, stop.y - 5);
+                ctx.textAlign = 'center';
+                ctx.textBaseline = "middle";
+                ctx.fillText(marker.percentage + " % of visitors reached this point", 18 + rectWidth/2, marker.y);
+
+                addedMarkers.push(marker);
             }
         })
     }
