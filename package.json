@@ -61,6 +61,7 @@
     "mongodb": "2.2.30",
     "mongoskin": "2.1.0",
     "nodemailer": "4.0.1",
+    "nodemailer-sendgrid-transport": "^0.2.0",
     "nodemailer-sendmail-transport": "1.0.2",
     "nodemailer-smtp-pool": "2.8.3",
     "nodemailer-smtp-transport": "2.7.4",
