@@ -196,22 +196,24 @@ simpleheat.prototype = {
         this._colorStops.forEach(function (obj) {
             delete obj.y;
             delete obj.position;
+            delete obj.zeroY;
+            delete obj.percentage;
         });
 
         var addedColorStop = [];
         if (this._data[0] == 0) {
 
-            //NO ONE SAW THE WEBSITE YET
-            this._colorStops.forEach(function (obj) {
-                delete obj.position;
-            });
-
+            //NO ONE SAW THE WEBSITE YET   
             this._colorStops[this._colorStops.length - 1].position = 0;
+            this._colorStops[this._colorStops.length - 1].zeroY = 0;
+            this._colorStops[this._colorStops.length - 1].percentage = 0;
 
         } else if (this._data[0] == this._data[this._data.length - 1]) {
 
             //EVERYONE SCROLLED TILL BOTTOM
             this._colorStops[0].position = 0;
+            this._colorStops[0].y = 0;
+            this._colorStops[0].percentage = 100;
 
         } else {
             var j = 0;
@@ -226,17 +228,26 @@ simpleheat.prototype = {
                     if (this._data[j] > range[0]) {
                         j++;
                     } else if (this._data[j] <= range[0] && this._data[j] > range[1]) {
+                        //ZERO PERCENTAGES WONT BE ALLOWED - HENCE NO MARKER FOR 0 PERCENTAGES
                         var position = parseFloat((j / this._height).toFixed(2));
-                        if(!lastColorStop || (Math.abs(position - lastColorStop.position) > 0.1)){
+                        if (!lastColorStop || (Math.abs(position - lastColorStop.position) > 0.1)) {
                             this._colorStops[i].position = position
                             this._colorStops[i].y = j;
                             this._colorStops[i].percentage = this._data[j];
-                            addedColorStop.push(this._colorStops[i]);                        
+                            addedColorStop.push(this._colorStops[i]);
                         }
                         break;
                     } else {
                         break;
                     }
+                }
+            }
+
+            while (j < this._data.length) {
+                j++;
+                if (this._data[j] == 0) {
+                    this._colorStops[this._colorStops.length - 1].zeroY = j;
+                    break;
                 }
             }
 
@@ -273,56 +284,131 @@ simpleheat.prototype = {
         var averageViewsPercentage = parseInt((averageViews / highestViews) * 100);
 
         this._colorStops.forEach(function (stop) {
-            if (stop.y && stop.percentage) {
-                var obj = {
+            var markerObj = undefined;
+            var averageObj = undefined;
+
+            //ONLY THOSE MARKERS WILL BE CONSIDERED THAT HAS A PERCENTAGE AND A Y-OFFSET
+            if (stop.y >= 0 && stop.percentage >= 0) {
+                markerObj = {
                     percentage: stop.percentage,
                     y: stop.y
                 }
-                markers.push(obj);
+            }
+
+            if (averageViewsPercentage <= stop.range[0] && averageViewsPercentage > stop.range[1]) {
+                //NO AVERAGE OBJECT FOR 0 PERCENTAGE
+                averageObj = {
+                    percentage: averageViewsPercentage,
+                    isAverage: true
+                }
+            }
+
+            if (markerObj && averageObj) {
+                if (markerObj.percentage >= averageObj.percentage) {
+                    markers.push(markerObj);
+                    markers.push(averageObj);
+                } else {
+                    markers.push(averageObj);
+                    markers.push(markerObj);
+                }
+            } else if (markerObj) {
+                markers.push(markerObj);
+            } else if (averageObj) {
+                markers.push(averageObj);
+            }
+
+            if (stop.zeroY >= 0) {
+                //MARKER FOR ZERO PERCENTAGE
+                markerObj = {
+                    percentage: 0,
+                    y: stop.zeroY
+                }
+                markers.push(markerObj);
             }
         });
 
-        var addedMarkers = [];
+        var allowedMarkers = [];
         var allowedByLastMarker = true;
-        markers.forEach(function (marker) {
-            if (addedMarkers.length) {
-                var lastMarkerAdded = addedMarkers[addedMarkers.length - 1];
-                allowedByLastMarker = Math.abs(marker.y - lastMarkerAdded.y) > 50;
+
+        for (var i = 0; i < markers.length; i++) {
+            var isAverageAllowed = markers[i].percentage != 0 && markers[i].percentage != 100;
+            if (markers[i].isAverage && isAverageAllowed) {
+                //CALCULATE THE Y-OFFSET FOR THE AVERAGE MARKER
+                var previousMarker = markers[i - 1] || {};
+                var nextMarker = markers[i + 1] || {};
+                var yPR = parseFloat((Math.abs((previousMarker.percentage || 100) - markers[i].percentage) / Math.abs(markers[i].percentage - (nextMarker.percentage || 0))).toFixed(2));
+                markers[i].y = parseInt(((previousMarker.y || 0) + (yPR * (nextMarker.y || this._height))) / (yPR + 1));
             }
 
-            //DISPLAYING ONLY MARKERS LYING AT 50PX FROM TOP AND BOTTOM            
-            if (marker.y >= 50 && marker.y < self._height - 50 && allowedByLastMarker) {
-                var cornerRadius = 5;
-                var rectX = 20;
-                var rectY = marker.y - 15;
-                var rectWidth = 217;
-                var rectHeight = 30;
+            if (allowedMarkers.length) {
+                var lastMarkerAdded = allowedMarkers[allowedMarkers.length - 1];
+                allowedByLastMarker = Math.abs(markers[i].y - lastMarkerAdded.y) > (markers[i].percentage == 0 ? 100 : 50);
+            }
 
-                ctx.beginPath();
-                ctx.moveTo(0, marker.y);
-                ctx.lineTo(self._width, marker.y);
-                ctx.shadowBlur = 0;
-                ctx.lineJoin = "meter";
-                ctx.lineWidth = 1;
-                ctx.strokeStyle = "#313131"; 
-                ctx.stroke();
+            if ((markers[i].isAverage && isAverageAllowed) || (markers[i].percentage == 0)) {
+                if (allowedByLastMarker) {
+                    allowedMarkers.push(markers[i]);
+                } else {
+                    allowedMarkers.pop();
+                    allowedMarkers.push(markers[i]);
+                }
+            } else if (allowedByLastMarker) {
+                allowedMarkers.push(markers[i]);
+            }
+        }
 
-                ctx.fillStyle = "#313131";
-                ctx.lineJoin = "round";
-                ctx.lineWidth = cornerRadius;
-                ctx.shadowBlur = 2;
-                ctx.shadowColor = "rgba(0,0,0,0.11)";
-                ctx.strokeStyle = "#313131";
-                ctx.strokeRect(rectX + (cornerRadius / 2), rectY + (cornerRadius / 2), rectWidth - cornerRadius, rectHeight - cornerRadius);
-                ctx.fillRect(rectX + (cornerRadius / 2), rectY + (cornerRadius / 2), rectWidth - cornerRadius, rectHeight - cornerRadius);
+        allowedMarkers.forEach(function (marker) {
+            var cornerRadius = 5;
+            var rectX = 20;
+            var rectWidth = 217;
+            var rectHeight = 30;
+            var boxYOffset = 15;
+            var textYOffset = 0;
 
-                ctx.font = "13px Ubuntu";
-                ctx.fillStyle = "#fff";
-                ctx.textAlign = 'center';
-                ctx.textBaseline = "middle";
-                ctx.fillText(marker.percentage + " % of visitors reached this point", 18 + rectWidth/2, marker.y);
 
-                addedMarkers.push(marker);
+            if (marker.isAverage) {
+                rectWidth = 111;
+            }
+
+            ctx.lineWidth = 1;
+            if (marker.y < boxYOffset) {
+                //100% MARKER
+                boxYOffset = 0;
+                textYOffset = 15;
+                ctx.lineWidth = 3;
+            } else if (marker.y > self._height - boxYOffset) {
+                //0% MARKER
+                boxYOffset = 30;
+                textYOffset = -15;
+            }
+
+            var rectY = marker.y - boxYOffset;
+
+            ctx.beginPath();
+            ctx.moveTo(0, marker.y);
+            ctx.lineTo(self._width, marker.y);
+            ctx.shadowBlur = 0;
+            ctx.lineJoin = "meter";
+            ctx.strokeStyle = "#313131";
+            ctx.stroke();
+
+            ctx.fillStyle = "#313131";
+            ctx.lineJoin = "round";
+            ctx.lineWidth = cornerRadius;
+            ctx.shadowBlur = 2;
+            ctx.shadowColor = "rgba(0,0,0,0.11)";
+            ctx.strokeStyle = "#313131";
+            ctx.strokeRect(rectX + (cornerRadius / 2), rectY + (cornerRadius / 2), rectWidth - cornerRadius, rectHeight - cornerRadius);
+            ctx.fillRect(rectX + (cornerRadius / 2), rectY + (cornerRadius / 2), rectWidth - cornerRadius, rectHeight - cornerRadius);
+
+            ctx.font = "13px Ubuntu";
+            ctx.fillStyle = "#fff";
+            ctx.textAlign = 'center';
+            ctx.textBaseline = "middle";
+            if (marker.isAverage) {
+                ctx.fillText("AVERAGE FOLD", 19 + rectWidth / 2, marker.y);
+            } else {
+                ctx.fillText(marker.percentage + " % of visitors reached this point", 19 + rectWidth / 2, marker.y + textYOffset);
             }
         })
     }
