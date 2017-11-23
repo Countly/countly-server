@@ -575,6 +575,9 @@ var pluginManager = function pluginManager(){
                     if(qstring.replicaSet){
                         ob.host = qstring.replicaSet+"/"+ob.host;
                     }
+                    if(qstring.authSource){
+                        ob.authenticationDatabase = qstring.authSource;
+                    }
                 }
             }
             
@@ -597,6 +600,12 @@ var pluginManager = function pluginManager(){
             if(config.mongodb.username && config.mongodb.password){
                 ob.username = config.mongodb.username;
                 ob.password = utils.decrypt(config.mongodb.password);
+                if(config.mongodb.dbOptions && config.mongodb.dbOptions.authSource){
+                    ob.authenticationDatabase = config.mongodb.dbOptions.authSource;
+                }
+                else if(config.mongodb.serverOptions && config.mongodb.serverOptions.authSource){
+                    ob.authenticationDatabase = config.mongodb.serverOptions.authSource;
+                }
             }
         }
         
