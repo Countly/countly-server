@@ -14,6 +14,12 @@
             var toppx = 59;
             var devices = [
                 {
+                    type: "all",
+                    displayText: "All",
+                    minWidth: 0,
+                    maxWidth: 10240
+                },
+                {
                     type: "mobile",
                     displayText: "Mobile",
                     minWidth: 0,
@@ -55,8 +61,8 @@
             }else{
                 pageWidth = Countly._internals.getDocWidth();
                 pageHeight = Countly._internals.getDocHeight();
-                currentDevice = devices.filter((device) => {
-                    return device.minWidth < pageWidth && device.maxWidth >= pageWidth;
+                currentDevice = devices.filter((deviceObj) => {
+                    return deviceObj.minWidth < pageWidth && deviceObj.maxWidth >= pageWidth && deviceObj.type != "all";
                 });
             }
 
@@ -193,8 +199,12 @@
                     canvas.setAttribute("width", pageWidth + "px");
                     canvas.setAttribute("height", pageHeight + "px");
 
-                    var updatedDevice = devices.filter((device) => {
-                        return device.minWidth < pageWidth && device.maxWidth >= pageWidth;
+                    var updatedDevice = devices.filter((deviceObj) => {
+                        if(device.type == "all"){
+                            return deviceObj.type == "all";
+                        }else{
+                            return deviceObj.minWidth < pageWidth && deviceObj.maxWidth >= pageWidth && deviceObj.type != "all";                            
+                        }
                     });
 
                     var dropdowns = topbar.getElementsByClassName("cly-dropdown");
@@ -286,8 +296,12 @@
                     document.body.style.width = "100%";
                     pageWidth = Countly._internals.getDocWidth();
                     pageHeight = Countly._internals.getDocHeight();
-                    var updatedDevice = devices.filter((device) => {
-                        return device.minWidth < pageWidth && device.maxWidth >= pageWidth;
+                    var updatedDevice = devices.filter((deviceObj) => {
+                        if(currentDevice[0].type == "all"){
+                            return deviceObj.type == "all";
+                        }else{
+                            return deviceObj.minWidth < pageWidth && deviceObj.maxWidth >= pageWidth && deviceObj.type != "all";                            
+                        }
                     });
                     canvas.setAttribute("width", pageWidth + "px");
                     canvas.setAttribute("height", pageHeight + "px");
@@ -448,7 +462,7 @@
                 }
 
                 function loadData() {
-                    sendXmlHttpRequest({ app_key: Countly.app_key, view: Countly._internals.getLastView() || window.location.pathname, period: period, width: pageWidth, actionType: actionType }, apiPath, function (err, clicks) {
+                    sendXmlHttpRequest({ app_key: Countly.app_key, view: Countly._internals.getLastView() || window.location.pathname, period: period, deviceType: currentDevice[0].type, actionType: actionType }, apiPath, function (err, clicks) {
                         if (!err) {
                             dataCache[currentDevice[0].type] = clicks.data;
                             drawData();
@@ -511,7 +525,7 @@
                 }
 
                 function loadData() {
-                    sendXmlHttpRequest({ app_key: Countly.app_key, view: Countly._internals.getLastView() || window.location.pathname, period: period, width: pageWidth, actionType: actionType }, apiPath, function (err, scrolls) {
+                    sendXmlHttpRequest({ app_key: Countly.app_key, view: Countly._internals.getLastView() || window.location.pathname, period: period, deviceType: currentDevice[0].type, actionType: actionType }, apiPath, function (err, scrolls) {
                         if (!err) {
                             dataCache[currentDevice[0].type] = scrolls.data;
                             drawData();
@@ -581,7 +595,6 @@
                     var grdMapHeight = 120;
                     var grdXOffset = 10;
                     var grdYOffset = 18;
-
 
                     var canvas = document.createElement("canvas");
                     canvas.style.position = "fixed";

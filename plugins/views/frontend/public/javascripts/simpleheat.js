@@ -193,10 +193,12 @@ simpleheat.prototype = {
     },
 
     setPosition: function () {
+
         this._colorStops.forEach(function (obj) {
             delete obj.y;
             delete obj.position;
             delete obj.zeroY;
+            delete obj.hundredY;
             delete obj.percentage;
         });
 
@@ -212,7 +214,7 @@ simpleheat.prototype = {
 
             //EVERYONE SCROLLED TILL BOTTOM
             this._colorStops[0].position = 0;
-            this._colorStops[0].y = 0;
+            this._colorStops[0].hundredY = this._height;
             this._colorStops[0].percentage = 100;
 
         } else {
@@ -225,18 +227,30 @@ simpleheat.prototype = {
                 }
 
                 while (j < this._data.length) {
-                    if (this._data[j] > range[0]) {
+                    //NOT CONSIDERING 0 AND 100 PERCENTAGE IN THIS LOOP 
+                    if (this._data[j] == 100 && this._data[j + 1] != 100) {
+                        //FINDING THE Y-OFFSET FOR 100%
+                        this._colorStops[0].hundredY = j;
+                    }
+
+                    if (this._data[j] == 0 && this._data[j - 1] != 0) {
+                        //FINDING THE Y-OFFSET FOR 0%
+                        this._colorStops[this._colorStops.length - 1].zeroY = j;
+                    }
+
+                    if (this._data[j] > range[0] || this._data[j] == this._data[j + 1] || this._data[j] == 100) {
                         j++;
                     } else if (this._data[j] <= range[0] && this._data[j] > range[1]) {
-                        //ZERO PERCENTAGES WONT BE ALLOWED - HENCE NO MARKER FOR 0 PERCENTAGES
                         var position = parseFloat((j / this._height).toFixed(2));
                         if (!lastColorStop || (Math.abs(position - lastColorStop.position) > 0.1)) {
                             this._colorStops[i].position = position
                             this._colorStops[i].y = j;
                             this._colorStops[i].percentage = this._data[j];
                             addedColorStop.push(this._colorStops[i]);
+                            break;
+                        } else {
+                            j++;
                         }
-                        break;
                     } else {
                         break;
                     }
@@ -246,6 +260,7 @@ simpleheat.prototype = {
             while (j < this._data.length) {
                 j++;
                 if (this._data[j] == 0) {
+                    //FINDING THE Y-OFFSET FOR 0%
                     this._colorStops[this._colorStops.length - 1].zeroY = j;
                     break;
                 }
@@ -286,6 +301,15 @@ simpleheat.prototype = {
         this._colorStops.forEach(function (stop) {
             var markerObj = undefined;
             var averageObj = undefined;
+
+            if (stop.hundredY >= 0) {
+                //MARKER FOR 100 PERCENTAGE
+                markerObj = {
+                    percentage: 100,
+                    y: stop.hundredY
+                }
+                markers.push(markerObj);
+            }
 
             //ONLY THOSE MARKERS WILL BE CONSIDERED THAT HAS A PERCENTAGE AND A Y-OFFSET
             if (stop.y >= 0 && stop.percentage >= 0) {
@@ -365,9 +389,16 @@ simpleheat.prototype = {
             var boxYOffset = 15;
             var textYOffset = 0;
 
-
             if (marker.isAverage) {
                 rectWidth = 111;
+            }
+
+            if(marker.percentage  == 0){
+                if(marker.y == 0){
+                    rectWidth = 315;
+                }else{
+                    rectWidth = 232;
+                }
             }
 
             ctx.lineWidth = 1;
@@ -408,7 +439,16 @@ simpleheat.prototype = {
             if (marker.isAverage) {
                 ctx.fillText("AVERAGE FOLD", 19 + rectWidth / 2, marker.y);
             } else {
-                ctx.fillText(marker.percentage + " % of visitors reached this point", 19 + rectWidth / 2, marker.y + textYOffset);
+                var text = marker.percentage + " % of visitors reached this point";
+                
+                if (marker.percentage == 0) {
+                    if(marker.y == 0){
+                        text = "We don’t have any scrollmap data for this page yet";
+                    }else{
+                        text = "No scrollmap data beyond this point";
+                    }
+                }
+                ctx.fillText(text, 19 + rectWidth / 2, marker.y + textYOffset);
             }
         })
     }

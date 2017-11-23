@@ -95,6 +95,12 @@ var plugin = {},
         var result = {types:[], data:[]};
         var devices = [
             {
+                type: "all",
+                displayText: "All",
+                minWidth: 0,
+                maxWidth: 10240
+            },
+            {
                 type: "mobile",
                 minWidth: 0,
                 maxWidth: 767
@@ -108,17 +114,17 @@ var plugin = {},
                 type: "desktop",
                 minWidth: 1024,
                 maxWidth: 10240
-            },
-            
+            },  
         ];
-        var width = parseInt(params.qstring.width);
+
+        var deviceType = params.qstring.deviceType;
         var actionType = params.qstring.actionType;
         var device = devices.filter((device) => {
-            return device.minWidth < width && device.maxWidth >= width;
+            return device.type == deviceType;
         });
 
         if(!device.length){
-            common.returnMessage(params, 400, 'Bad request parameter: width');
+            common.returnMessage(params, 400, 'Bad request parameter: device type');
             return false;
         }
         var collectionName = "drill_events" + crypto.createHash('sha1').update("[CLY]_action" + params.qstring.app_id).digest('hex');
