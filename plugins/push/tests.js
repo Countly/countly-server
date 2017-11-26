@@ -2,13 +2,16 @@
 var request = require('supertest');
 
 const should = require('should'),
-   testUtils = require('../../test/testUtils'),
-   API_KEY_ADMIN = testUtils.get('API_KEY_ADMIN');
+   testUtils = require('../../test/testUtils');
 
 request = request.agent(testUtils.url);
 
+var API_KEY_ADMIN = "";
+
 describe('Push', function(){
     it('should validate correct GCM key', (done) => {
+        API_KEY_ADMIN = testUtils.get('API_KEY_ADMIN');
+        
         request.post(`/i/pushes/validate?api_key=${API_KEY_ADMIN}&platform=a&key=AIzaSyBLaYw9HYPUxlrTLAomA3O3Dp44E2MFT0A&secret=`)
             .expect(200)
             .expect('Content-Type', /json/)
