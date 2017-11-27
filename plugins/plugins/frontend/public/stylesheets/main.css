@@ -17,9 +17,9 @@
 .configs > table,
 .configs > table td {border-radius: 0 !important;}
 .configs > table > tbody > tr > td { padding:0; }
-.configs > table > tbody > tr > td:first-child { padding:20px 25px; background-color: #FFF; color: #2FA732; min-width: 125px; }
+.configs > table > tbody > tr > td:first-child { background-color: #FFF; color: #2FA732; min-width: 125px; }
 @media (max-width: 1050px) { .configs > table > tbody > tr > td:first-child { padding:20px 10px; } }
-.configs > table > tbody > tr > td { border-bottom: 1px solid #d0d0d0; border-left: 1px solid #d0d0d0; }
+.configs > table > tbody > tr > td { border-bottom: 1px solid #d0d0d0; border-width: 0px }
 
 .configs span.config-help{font-size: 13px; color: #929292; padding-top: 10px; display: inline-block; line-height: 17px;}
 .configs span.config-help a{font-size: 13px; color: #2EB52B; display: inline-block; line-height: 17px; text-decoration: underline;}
@@ -44,3 +44,106 @@
 #sticky-plugin-header.fixed .widget-header { border-top:none; }
 #sticky-plugin-header.fixed + .plugins { margin-top: 57px; }
 #sticky-plugin-header.fixed + .plugins .sticky-header { top: 57px; }
+
+
+
+#configs-title-bar {
+    width: 180px;
+    overflow: hidden;
+    position: fixed;
+    left: 242px;
+    top: 79px;
+    text-align: right;
+    background-color: #efefef;
+    max-height: 580px;
+    box-sizing: border-box;
+    box-shadow: 0 0 0 1px #d0d0d0;
+}
+#configs-nav-head {
+    display: flex;
+    align-items: center;
+    height: 27px;
+    padding: 15px 20px 15px 15px;
+    color: #636363;
+    font: 15px Ubuntu,Helvetica,sans-serif;
+    text-align: left;
+    background-color: #ECECEC;
+    border-bottom: 1px solid #d0d0d0;
+    text-transform: uppercase;
+}
+
+#configs-title-bar #configs-nav-head {
+    padding-left: 15px;
+}
+
+#configs-title-container {
+    max-height: 490px;
+}
+
+.config-container {
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    height: 24px;
+    padding: 8px 12px;
+    overflow: auto;
+    border-top: 1px solid #d0d0d0;
+    background-color: #efefef;
+}
+.config-container .name {
+    text-align: left;
+    text-overflow: ellipsis;
+    text-transform: capitalize;
+    white-space: nowrap;
+    overflow: hidden;
+    float: left;    
+    color: #6b6b6b;
+    font: 14px Ubuntu,Helvetica,sans-serif;
+}
+
+.config-container:first-child {
+    border-top: none;
+}
+#configs-title-container .title {
+    background: #FFF;
+    cursor: default;
+}
+#configs-title-container .title .name {
+    color: #2EB52B;
+    text-transform: uppercase;
+    font-size: 13px;
+    padding-top: 8px
+}
+.config-container.selected {
+    background-color:#dedede
+}
+.config-table-row-header > td { padding: 20px !important}
+
+.title-rows-hidden .config-table-row-header{
+    display: none !important;
+}
+
+.title-rows-enable tr, .title-rows-enable tr:hover {
+    background-color: #F9F9F9 !important;
+}
+
+#empty-search-result{
+    border: 1px solid #D0D0D0;
+    padding: 50px;
+    text-align: center;
+    font-size: 16px;
+    color: #6b6b6b;
+    background-color: #fff;
+}
+.config-table-details-row, .config-table-row-header{
+    border-bottom: 0px solid #d0d0d0 !important;
+}
+
+.config-table-details-row td, .config-table-row-header td {
+    cursor: default;
+}
+
+.config-table-details-row td:last-child {
+    border-left: 0px solid #d0d0d0;
+}

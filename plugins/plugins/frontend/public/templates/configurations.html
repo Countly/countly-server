@@ -1,68 +1,121 @@
-	<div class="widget" id="sticky-config-header">
-		<div class="widget-header">
-			<div class="left">
-				<div class="title">{{page-title}}</div>
-			</div>
-            <div class="right btn-header">
-                {{#if namespace}}
-				<div class="icon-button light" id="configs-back"><i class="fa fa-chevron-left"></i>&nbsp;<span data-localize="plugins.back"></span></div>
-                {{/if}}
-				<div class="icon-button green" id="configs-apply-changes" data-localize="plugins.apply"></div>
-			</div>
-		</div>
-	</div>
-	<div class="configs" data-help-localize="help.{{{chart-helper}}}">
-        <table class="d-table help-zone-vb no-fix account-settings" cellpadding="0" cellspacing="0">
-        {{#if user}}
-        <tr><td data-localize="configs.account-settings"></td>
-        <td>
-        {{#if reset}}
-            <h3 data-localize='user-settings.force-password-reset' style='text-align: center;'></h3>
-        {{/if}}
-        <table class="d-table help-zone-vb " cellpadding="0" cellspacing="0">
-        <tr>
-            <td>
-                <div class="title" data-localize="user-settings.username"></div>
-            </td>
-            <td>
-                <div class="input"><input id="username" type="text" value=""/></div>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <div class="title" data-localize="user-settings.api-key"></div>
-            </td>
-            <td>
-                <div class="input"><input id="api-key" type="text" value="" readonly onclick='this.select()'/><br/><div id="usersettings_regenerate" class='small-link' data-localize="user-settings.regenerate-api-key"></div></div>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <div class="title" data-localize="user-settings.change-password"></div>
-            </td>
-            <td>
-                <div class="input"><input id="old_pwd" type="password" placeholder="Old password..." data-localize="placeholder.old-password"/></div>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <div class="title" data-localize="placeholder.new-password"></div>
-            </td>
-            <td>
-                <div class="input"><input id="new_pwd" type="password" placeholder="New password..." data-localize="placeholder.new-password"/></div>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                 <div class="title" data-localize="placeholder.new-password"></div>
-            </td>
-            <td>
-                <div class="input"><input id="re_new_pwd" type="password" placeholder="Again..." data-localize="placeholder.again"/></div>
-            </td>
-        </tr>
-        </table>
-        </td></tr>
-        {{/if}}
-		{{{configs}}}
-        </table>
-	</div>
+<div>
+    <div id="configs-title-bar">
+        <div id="configs-nav-head">
+            <div id="configs-nav-title">{{page-title}}</div>
+        </div>
+
+        <div class="nav-search">
+            <i class="fa fa-search"></i>
+            <input type="text" id="search-box">
+        </div>
+
+        <div id="configs-title-container" class="scrollable">
+            <div class="config-container title" style="height:30px">
+                <div class="name" data-localize="configs.core">Core</div>
+            </div>
+            {{#each navTitles.coreTitles}}
+                <div id="nav-item-{{this.key}}" class="config-container">
+                    <div class="name" data-localize="{{this.label}}">{{this.label}}</div>
+                </div>
+            {{/each}}
+
+            <div class="config-container title" style="height:30px">
+                <div class="name" data-localize="configs.plugins">Plugins</div>
+            </div>
+            {{#each navTitles.pluginTitles}}
+                <div id="nav-item-{{this.key}}" class="config-container">
+                        <div class="name" data-localize="{{this.label}}">{{this.label}}</div>
+                </div>
+            {{/each}}
+        </div>
+    </div>
+
+    <div style="margin-left: 200px">
+        <div class="widget" id="sticky-config-header">
+            <div class="widget-header">
+                <div class="left">
+                    <div id="config-title" class="title" style="padding-left:9px">{{selectedNav.label}}</div>
+                </div>
+                <div class="right btn-header">
+                    {{#if namespace}}
+                    <div class="icon-button light" id="configs-back">
+                        <i class="fa fa-chevron-left"></i>&nbsp;
+                        <span data-localize="plugins.back"></span>
+                    </div>
+                    {{/if}}
+                    <div class="icon-button green" id="configs-apply-changes" data-localize="plugins.apply"></div>
+                </div>
+            </div>
+        </div>
+        <div id="config-table-container" class="configs title-rows-hidden" data-help-localize="help.{{{chart-helper}}}">
+            <table class="d-table help-zone-vb no-fix account-settings" cellpadding="0" cellspacing="0">
+                {{#if user}}
+                <tr>
+                    <td data-localize="configs.account-settings"></td>
+                    <td>
+                        {{#if reset}}
+                        <h3 data-localize='user-settings.force-password-reset' style='text-align: center;'></h3>
+                        {{/if}}
+                        <table class="d-table help-zone-vb " cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td>
+                                    <div class="title" data-localize="user-settings.username"></div>
+                                </td>
+                                <td>
+                                    <div class="input">
+                                        <input id="username" type="text" value="" />
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="title" data-localize="user-settings.api-key"></div>
+                                </td>
+                                <td>
+                                    <div class="input">
+                                        <input id="api-key" type="text" value="" readonly onclick='this.select()' />
+                                        <br/>
+                                        <div id="usersettings_regenerate" class='small-link' data-localize="user-settings.regenerate-api-key"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="title" data-localize="user-settings.change-password"></div>
+                                </td>
+                                <td>
+                                    <div class="input">
+                                        <input id="old_pwd" type="password" placeholder="Old password..." data-localize="placeholder.old-password" />
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="title" data-localize="placeholder.new-password"></div>
+                                </td>
+                                <td>
+                                    <div class="input">
+                                        <input id="new_pwd" type="password" placeholder="New password..." data-localize="placeholder.new-password" />
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="title" data-localize="placeholder.new-password"></div>
+                                </td>
+                                <td>
+                                    <div class="input">
+                                        <input id="re_new_pwd" type="password" placeholder="Again..." data-localize="placeholder.again" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                {{/if}} {{{configs}}}
+            </table>
+
+            <div id="empty-search-result" style="display: none" data-localize="configs.no-search-result">There aren’t any configurations matching your search.</div>
+        </div>
+    </div>
+</div>
