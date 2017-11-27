@@ -21,7 +21,18 @@ window.component('push', function(push) {
 			IOS: 'i',
 			ANDROID: 'a'
 		},
-
+		TRIGGER_TYPE : {
+			COHORT_ENTRY : 'cohort-entry',
+			COHORT_EXIT : 'cohort-exit'
+		},
+		CAMPAIGN_START : {
+			SCHEDULED : 'scheduled',
+			NOW : 'send-now'
+		},
+		DELIVERY_METHOD : {
+			DELAYED : 'delayed',
+			IMMEDIATE : 'immediately'
+		},
 		S: '|'
 	};
 
@@ -43,6 +54,7 @@ window.component('push', function(push) {
 	if (!push.statusers) { push.statusers = []; }
 	if (!push.actions) { push.actions = []; }
 
+
 	push.Message = function(data) {
 		if (!(this instanceof push.Message)) {
 			return new push.Message(data);
@@ -62,11 +74,24 @@ window.component('push', function(push) {
 		}.bind(this);
 
 		this.___data = data;
-
+		
 		// ID of tokens build when building audience
 		this._id = m.prop(data._id);
 		this.type = m.prop(data.type || push.C.TYPE.MESSAGE);
+
+		// Automated push fields
+		this.triggerType = m.prop(data.type || push.C.TRIGGER_TYPE.COHORT_ENTRY);
 		this.apps = buildClearingProp(data.apps || []);
+		this.cohorts = buildClearingProp(data.cohorts || []);
+		this.hasCampaingEndDate = m.prop(data.hasCampaingEndDate || false);
+		this.campaingEndDate = m.prop(data.campaingEndDate || new Date());
+		this.deliveryDelay = m.prop(data.deliveryDelay || 5);
+		this.deliveryMethod = m.prop(data.deliveryMethod || push.C.DELIVERY_METHOD.DELAYED);
+		this.deliveryTime = m.prop(data.deliveryTime || "12:00");
+		this.messagePerUser = m.prop(data.messagePerUser || 1);
+		// this.availableCohorts = buildClearingProp(data.availableCohorts || []);
+		// Automated push fields -----
+
 		this.platforms = buildClearingProp(data.platforms || []);
 		this.sent = m.prop(data.sent);
 		this.sound = vprop(data.sound, function(v){ return !!v; }, t('pu.po.tab2.extras.sound.invalid'));
@@ -233,6 +258,19 @@ window.component('push', function(push) {
 		this.locales(data.locales || []);
 		this.count(data.count);
 		
+		this.getCohorts = function(callback){
+			var self = this;
+			if(this.apps() && this.apps().length > 0){
+				m.request({
+					method: 'GET',
+					url: window.countlyCommon.API_URL + '/o?api_key=' + window.countlyGlobal.member.api_key + "&app_id=" + this.apps()[0] + "&method=get_cohorts&display_loader=true",
+				}).then(function(data){
+					callback(data);
+				})
+			}
+			
+		}
+
 		this.remotePrepare = function(onFullBuild) {
 			var data = new FormData();
 			data.append('args', JSON.stringify(this.toJSON(true)));
