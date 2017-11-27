@@ -84,34 +84,41 @@ var plugin = {},
         }
         
         function dbLoadEventsData(apps, callback){
-            function getEvents(app, callback){
-                var result = {};
-                common.db.collection('events').findOne({'_id': common.db.ObjectID(app._id+"")}, function(err, events) {
-                    if (!err && events && events.list) {
-                        for (var i = 0; i < events.list.length; i++) {
-                            result[crypto.createHash('sha1').update(events.list[i] + app._id + "").digest('hex')] = "("+app.name+": "+events.list[i]+")";
+            if(params.member.eventList){
+                callback(params.member.eventList);
+            }
+            else{
+                function getEvents(app, callback){
+                    var result = {};
+                    common.db.collection('events').findOne({'_id': common.db.ObjectID(app._id+"")}, function(err, events) {
+                        if (!err && events && events.list) {
+                            for (var i = 0; i < events.list.length; i++) {
+                                result[crypto.createHash('sha1').update(events.list[i] + app._id + "").digest('hex')] = "("+app.name+": "+events.list[i]+")";
+                            }
+                        }
+                        result[crypto.createHash('sha1').update("[CLY]_session" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_session)";
+                        result[crypto.createHash('sha1').update("[CLY]_crash" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_crash)";
+                        result[crypto.createHash('sha1').update("[CLY]_view" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_view)";
+                        result[crypto.createHash('sha1').update("[CLY]_action" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_action)";
+                        result[crypto.createHash('sha1').update("[CLY]_push_action" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_push_action)";
+                        result[crypto.createHash('sha1').update("[CLY]_push_open" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_push_open)";
+                        result[crypto.createHash('sha1').update("[CLY]_push_sent" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_push_sent)";
+                        callback(null, result);
+                    });
+                }
+                
+                async.map(apps, getEvents, function (err, events) {
+                    var eventList = {};
+                    for(var i = 0; i < events.length; i++){
+                        for(var j in events[i]){
+                            eventList[j] = events[i][j];
                         }
                     }
-                    result[crypto.createHash('sha1').update("[CLY]_session" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_session)";
-                    result[crypto.createHash('sha1').update("[CLY]_crash" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_crash)";
-                    result[crypto.createHash('sha1').update("[CLY]_view" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_view)";
-                    result[crypto.createHash('sha1').update("[CLY]_action" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_action)";
-                    result[crypto.createHash('sha1').update("[CLY]_push_action" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_push_action)";
-                    result[crypto.createHash('sha1').update("[CLY]_push_open" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_push_open)";
-                    result[crypto.createHash('sha1').update("[CLY]_push_sent" + app._id + "").digest('hex')] = "("+app.name+": [CLY]_push_sent)";
-                    callback(null, result);
+
+                    params.member.eventList = eventList;
+                    callback(err, eventList);
                 });
             }
-            
-            async.map(apps, getEvents, function (err, events) {
-                var eventList = {};
-                for(var i = 0; i < events.length; i++){
-                    for(var j in events[i]){
-                        eventList[j] = events[i][j];
-                    }
-                }
-                callback(err, eventList);
-            });
         }
         
         function dbGetDb(apps){

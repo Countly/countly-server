@@ -287,7 +287,15 @@
             var name = "countly";
             if($(".widget-header .title").length)
                 name = jQuery.trim($(".widget-header .title").first().text()).replace(/[\r\n]+/g," ").split(" ")[0];
-            return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase())+"-"+moment().format("DD-MMM-YYYY");
+            if($(".widget #date-selector").length){
+                //include export range
+                name += "_for_"+countlyCommon.getDateRange();
+            }
+            else{
+                //include export date
+                name += +"_on_"+moment().format("DD-MMM-YYYY");
+            }
+            return (name.charAt(0).toUpperCase() + name.slice(1).toLowerCase());
         }
         function getExportData(dtable, type){
             var tableCols = dtable.fnSettings().aoColumns,
