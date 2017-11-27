@@ -27,9 +27,12 @@ window.component('radio', function(radio) {
 			}
 
 			return m('.comp-radio-option', {class: opts.checked ? 'active' : '', onclick: ctrl.value.bind(ctrl, o.value())}, [
-				m('input[type="radio"]', opts), 
-				m('label', o.title()), 
-				o.desc() ? m('span.help', o.desc()) : '',
+				m('div', [
+					m('input[type="radio"]', opts), 
+					m('label', o.title()),
+				]),
+				
+				o.desc() ? m('div', { style : { textAlign : "right"}}, m('span.help', o.desc())) : '',
 				o.view ? o.view() : ''
 			]);
 		}));
