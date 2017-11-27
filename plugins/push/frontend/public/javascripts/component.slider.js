@@ -8,7 +8,7 @@ if (!window.components) {
 }
 
 if (!window.components.slider) {
-
+	var t = window.components.t;
 	var defaultWidth = function() {
 		return Math.min(document.body.clientWidth - document.getElementById('sidebar').clientWidth, 968);
 	}, CLS = 'comp-slider comp-tt-bounding prevent-body-scroll';
@@ -25,6 +25,7 @@ if (!window.components.slider) {
 			this.loadingDesc = m.prop(data.loadingDesc || '');
 			this.component = data.component;
 			this.componentOpts = data.componentOpts;
+			this.footer = data.footer;
 		},
 
 		controller: function() {
@@ -52,6 +53,7 @@ if (!window.components.slider) {
 				this.model = model;
 				this.setWidth(this.model.width || defaultWidth());
 				this.el.className = CLS + this.model.class;
+				document.body.style.overflow = "hidden";
 				return this;
 			};
 
@@ -62,7 +64,7 @@ if (!window.components.slider) {
 				}
 				this.el.className = CLS + ' comp-slider-closed';
 				this.model = null;
-				document.body.style.overflow = this.overflow;
+				document.body.style.overflow = "auto";
 				return this;
 			}.bind(this);
 
@@ -100,9 +102,12 @@ if (!window.components.slider) {
 							m('div.comp-slider-title', [
 								typeof ctrl.model.title() === 'function' ? ctrl.model.title()() : ctrl.model.title() ? m('h3', ctrl.model.title()) : '',
 								typeof ctrl.model.desc() === 'function' ? ctrl.model.desc()() : ctrl.model.desc() ? m('h5', ctrl.model.desc()) : '',
-								m('a.comp-slider-close.ion-close', {href: '#', onclick: ctrl.close})
+								m('div.slider-close', { onclick: ctrl.close }, [
+									m('i.ion-ios-close-empty')
+								])
 							]),
 							m('div.comp-slider-content', m.component(ctrl.model.component, ctrl.model.componentOpts)),
+							ctrl.model.footer ? m.component(ctrl.model.footer) : ""
 						]),
 						ctrl.model.loadingTitle() ? 
 							m('.loader', [
