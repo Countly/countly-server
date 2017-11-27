@@ -145,10 +145,21 @@ function modifyUserDetailsForPush () {
             if (countlyGlobal.member.global_admin || (countlyGlobal.member.admin_of && countlyGlobal.member.admin_of.indexOf(countlyCommon.ACTIVE_APP_ID) !== -1)) {
                 if (!$('.btn-create-message').length) {
                     $('.widget-header .left').append($('<a class="icon-button green btn-header left btn-create-message" data-localize="push.create"></a>').text(jQuery.i18n.map['push.create']));
+                    
                 }
                 $('.btn-create-message').off('click').on('click', function(){
                     //drill filter
-                    var filterData = JSON.parse(app.userdataView.getExportQuery().query);
+                    var filterData = app.userdataView._query || {};
+                    
+                    //known/anonymous filter
+                    if(app.userdataView.filter == "user-known")
+                        filterData.hasInfo = true;
+                    else if(app.userdataView.filter == "user-anonymous")
+                        filterData.hasInfo = {"$ne": true};
+                    
+                    //text search filter
+                    if($('.dataTables_filter input').val().length)
+                        filterData.$text = { "$search": "\""+$('.dataTables_filter input').val()+"\"" };
                     
                     components.push.popup.show({
                         apps: [countlyCommon.ACTIVE_APP_ID],
