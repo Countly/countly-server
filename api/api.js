@@ -1157,6 +1157,9 @@ if (cluster.isMaster) {
                                 case 'durations':
                                     validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchDurations);
                                     break;
+                                case 'events':
+                                    validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchEvents);
+                                    break;
                                 default:
                                     if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
                                         common.returnMessage(params, 400, 'Invalid path, must be one of /dashboard or /countries');

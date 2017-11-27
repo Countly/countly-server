@@ -12,6 +12,7 @@ var fetch = {},
     countlyCarrier = countlyModel.load("carriers"),
     countlyDeviceDetails = countlyModel.load("device_details"),
     countlyLocation = countlyModel.load("countries"),
+    countlyEvents = countlyModel.load("event"),
     countlyCommon = require('../../lib/countly.common.js'),
     moment = require('moment-timezone'),
     _ = require('underscore'),
@@ -599,6 +600,50 @@ var fetch = {},
                     break;
             }
 		}
+    };
+    
+    fetch.fetchEvents = function(params) {
+        if(params.qstring.event && params.qstring.event.length){
+            var collectionName = "events" + crypto.createHash('sha1').update(params.qstring.event+params.app_id).digest('hex');
+            fetch.getTimeObjForEvents(collectionName, params, function(doc) {
+                countlyEvents.setDb(doc || {});
+                if(params.qstring.segmentation && params.qstring.segmentation !== "no-segment"){
+                    common.returnOutput(params, countlyEvents.getSegmentedData(params.qstring.segmentation));
+                }
+                else{
+                    common.returnOutput(params, countlyEvents.getSubperiodData());
+                }
+            });
+        }
+        else if(params.qstring.events && params.qstring.events.length){
+            if(typeof params.qstring.events === "string"){
+                try{
+                    params.qstring.events = JSON.parse(params.qstring.events);
+                }
+                catch(ex){}
+            }
+            if(Array.isArray(params.qstring.events)){
+                var data = {};
+                async.each(params.qstring.events, function(event, done){
+                    var collectionName = "events" + crypto.createHash('sha1').update(event+params.app_id).digest('hex');
+                    fetch.getTimeObjForEvents(collectionName, params, function(doc) {
+                        countlyEvents.setDb(doc || {});
+                        if(params.qstring.segmentation && params.qstring.segmentation !== "no-segment"){
+                            data[event] = countlyEvents.getSegmentedData(params.qstring.segmentation);
+                        }
+                        else{
+                            data[event] = countlyEvents.getSubperiodData();
+                        }
+                        done();
+                    });
+                }, function(){
+                    common.returnOutput(params, data);
+                });
+            }
+        }
+        else{
+            common.returnMessage(params, 400, 'Must provide event or events');
+        }
     };
 
     fetch.fetchTimeObj = function (collection, params, isCustomEvent, options) {
