@@ -57,10 +57,10 @@
                 document.body.style.width = pageWidth + "px";
                 document.body.style.marginLeft = "auto";
                 document.body.style.marginRight = "auto";
-                pageHeight = Countly._internals.getDocHeight();
+                pageHeight = Countly._internals.getDocHeight() - toppx;
             }else{
                 pageWidth = Countly._internals.getDocWidth();
-                pageHeight = Countly._internals.getDocHeight();
+                pageHeight = Countly._internals.getDocHeight() - toppx;
                 currentDevice = devices.filter((deviceObj) => {
                     return deviceObj.minWidth < pageWidth && deviceObj.maxWidth >= pageWidth && deviceObj.type != "all";
                 });
@@ -195,7 +195,7 @@
                     document.body.style.width = pageWidth + "px";
                     document.body.style.marginLeft = "auto";
                     document.body.style.marginRight = "auto";
-                    pageHeight = Countly._internals.getDocHeight();
+                    pageHeight = Countly._internals.getDocHeight() - toppx;
                     canvas.setAttribute("width", pageWidth + "px");
                     canvas.setAttribute("height", pageHeight + "px");
 
@@ -295,7 +295,7 @@
                 setTimeout(function () {
                     document.body.style.width = "100%";
                     pageWidth = Countly._internals.getDocWidth();
-                    pageHeight = Countly._internals.getDocHeight();
+                    pageHeight = Countly._internals.getDocHeight() - toppx;
                     var updatedDevice = devices.filter((deviceObj) => {
                         if(currentDevice[0].type == "all"){
                             return deviceObj.type == "all";
