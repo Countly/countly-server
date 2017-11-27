@@ -1,7 +1,7 @@
 'use strict';
 
 /* jshint undef: true, unused: true */
-/* globals m, moment, vprop, countlyCommon */
+/* globals m, moment, vprop, countlyCommon, countlyGlobal, $ */
 
 window.component('push.automated.popup', function (popup) {
     var t = window.components.t, push = window.components.push;
@@ -48,7 +48,7 @@ window.component('push.automated.popup', function (popup) {
                 componentOpts: {
                     message: message,
                     cohorts: cohorts.map(function (cohort) {
-                        return window.components.selector.Option({ value: cohort._id, title: cohort.name, selected: false })
+                        return window.components.selector.Option({ value: cohort._id, title: cohort.name, selected: false });
                     })
                 },
                 loadingTitle: function () {
@@ -64,40 +64,6 @@ window.component('push.automated.popup', function (popup) {
 
 
     };
-
-    var footerState = {
-        previousVisible: false,
-        previousEnabled: false,
-        prevAction: function () { },
-        nextVisible: true,
-        nextEnabled: false,
-        nextAction: function () { }
-    }
-
-    var footerComponent = {
-        controller: function () { },
-        view: function (ctrl) {
-            return m('div.comp-slider-footer', [
-                footerState.nextVisible
-                    ? m('div.icon-button.btn-next', {
-                        style: {
-                            cursor: footerState.nextEnabled ? 'pointer' : 'not-allowed',
-                            disabled: footerState.nextEnabled ? '' : 'disabled',
-
-                        }, onclick: footerState.nextAction
-                    }, t('pu.po.next'))
-                    : '',
-                footerState.previousVisible
-                    ? m('div.icon-button.btn-prev', {
-                        style: {
-                            cursor: "pointer",
-                            disabled: footerState.previousEnabled ? '' : 'disabled'
-                        }, onclick: footerState.prevAction
-                    }, t('pu.po.prev'))
-                    : ''
-            ])
-        }
-    }
 
     popup.controller = function (opts) {
         var popup = this, apps = [];
@@ -151,23 +117,29 @@ window.component('push.automated.popup', function (popup) {
                     }
                     break;
                 case 3:
-                    if (message.deliveryMethod() === push.C.DELIVERY_METHOD.DELAYED && (!message.deliveryDelay() || parseInt(message.deliveryDelay()) < 1))
+                    if (message.deliveryMethod() === push.C.DELIVERY_METHOD.DELAYED && (!message.deliveryDelay() || parseInt(message.deliveryDelay()) < 1)) {
                         enabled = false;
+                    }
 
-                    if (!message.messagePerUser() || parseInt(message.messagePerUser()) < 1)
+                    if (!message.messagePerUser() || parseInt(message.messagePerUser()) < 1) {
                         enabled = false;
+                    }
 
-                    if (message.cohorts().length === 0)
+                    if (message.cohorts().length === 0) {
                         enabled = false;
+                    }
 
                     break;
                 case 2:
-                    if (message.cohorts().length === 0)
+                    if (message.cohorts().length === 0) {
                         enabled = false;
-                    if (message.schedule() && message.date() === null)
+                    }
+                    if (message.schedule() && message.date() === null) {
                         enabled = false;
-                    if (message.hasCampaingEndDate() && message.campaingEndDate() === null)
+                    }
+                    if (message.hasCampaingEndDate() && message.campaingEndDate() === null) {
                         enabled = false;
+                    }
                     break;
                 case 1:
                     enabled = enabled && message.platforms().length && message.apps().length;
@@ -644,8 +616,8 @@ window.component('push.automated.popup', function (popup) {
                                     message.platforms(message.availablePlatforms());
                                     message.getCohorts(function (data) {
                                         cohorts = data.map(function (cohort) {
-                                            return window.components.selector.Option({ value: cohort._id, title: cohort.name, selected: false })
-                                        })
+                                            return window.components.selector.Option({ value: cohort._id, title: cohort.name, selected: false });
+                                        });
                                     });
                                 }
 
@@ -699,26 +671,21 @@ window.component('push.automated.popup', function (popup) {
                                     options: [
                                         { value: false, title: t('pu.po.tab1.testing-prod'), desc: t('pu.po.auto.tab0.testing-prod-desc') },
                                         { value: true, title: t('pu.po.tab1.testing-test'), desc: t('pu.po.auto.tab0.testing-test-desc') }
-                                    ], value: function () {
-                                        if (arguments.length) {
-                                            return message.test(arguments[0]);
-                                        }
-                                        return message.test();
-                                    }
+                                    ], value: message.test
                                 })
                             ]),
                             m('.btns', [
                                 m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(1) ? false : 'disabled' }, t('pu.po.next')),
                                 m('a.btn-prev', { href: '#', onclick: function (ev) { window.components.slider.instance.close(ev); } }, t('pu.po.close'))
                             ])
-                        ]))
+                        ]));
                 }
             },
 
             // Campaign Rules
             {
                 tab: this.renderTab.bind(this, 1),
-                view: function (ctrl) {
+                view: function () {
                     return m('div.comp-push-tab-content',
                         m('div.comp-panel', [
                             m('div.form-group', { key: "tab_1_0" }, [
@@ -727,12 +694,7 @@ window.component('push.automated.popup', function (popup) {
                                     options: [
                                         { value: push.C.TRIGGER_TYPE.COHORT_ENTRY, title: t('Cohort entry'), desc: t('pu.po.auto.tab1.cohort-entry-desc') },
                                         { value: push.C.TRIGGER_TYPE.COHORT_EXIT, title: t('Cohort exit'), desc: t('pu.po.auto.tab1.cohort-exit-desc') }
-                                    ], value: function () {
-                                        if (arguments.length)
-                                            message.triggerType(arguments[0]);
-
-                                        return message.triggerType();
-                                    }
+                                    ], value: message.triggerType
                                 })
                             ]),
                             m('div.form-group', { key: "tab_1_1" }, [
@@ -742,7 +704,7 @@ window.component('push.automated.popup', function (popup) {
                                     options: cohorts,
                                     value: function () {
                                         if (arguments.length) {
-                                            var selectedCohorts = cohorts.filter(function (o) { return o.selected() });
+                                            var selectedCohorts = cohorts.filter(function (o) { return o.selected(); });
                                             message.cohorts(selectedCohorts);
                                         }
                                         return cohorts;
@@ -804,12 +766,13 @@ window.component('push.automated.popup', function (popup) {
                                         ]),
 
                                         m('div.comp-grid-cell', { style: { backgroundColor: message.hasCampaingEndDate() ? "transparent" : "#F3F4F5" } },
-                                            m.component(components.datepicker, {
+                                            m.component(window.components.datepicker, {
                                                 position: "top",
                                                 id: 'campaign-end-date',
                                                 defaultDate: message.campaingEndDate(), date: function (_date) {
-                                                    if (_date)
-                                                        message.campaingEndDate(_date)
+                                                    if (_date) {
+                                                        message.campaingEndDate(_date);
+                                                    }
 
                                                     return message.hasCampaingEndDate() ? message.campaingEndDate() : null;
                                                 }
@@ -822,7 +785,7 @@ window.component('push.automated.popup', function (popup) {
                                 m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(2) ? false : 'disabled' }, t('pu.po.next')),
                                 popup.tabs.tab() > 0 ? m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev')) : ''
                             ])
-                        ]))
+                        ]));
                 }
             },
 
@@ -856,16 +819,11 @@ window.component('push.automated.popup', function (popup) {
                                                         style: { backgroundColor: "transparent" }
                                                     }),
                                                     m('span', t('pu.po.auto.tab2.days'))
-                                                ])
+                                                ]);
 
                                             }
                                         }
-                                    ], value: function () {
-                                        if (arguments.length)
-                                            message.deliveryMethod(arguments[0])
-
-                                        return message.deliveryMethod();
-                                    }
+                                    ], value: message.deliveryMethod
                                 })
                             ]),
                             m('div.form-group', { key: "tab_2_1" }, [
@@ -876,19 +834,14 @@ window.component('push.automated.popup', function (popup) {
                                         m('div.comp-grid-cell', t('pu.po.auto.tab2.send-in-user-tz')),
                                         m('div.comp-grid-cell.time-select', [
                                             m('i.material-icons', 'query_builder'),
-                                            m.component(components.singleselect, {
+                                            m.component(window.components.singleselect, {
                                                 id: 'delivery-time',
-                                                value: function () {
-                                                    if (arguments.length)
-                                                        message.deliveryTime(arguments[0]);
-
-                                                    return message.deliveryTime();
-                                                },
+                                                value: message.deliveryTime,
                                                 options: ctrl.times.map(function (time) {
                                                     return window.components.selector.Option({
                                                         value: (time < 10 ? "0" + time : time) + ":00",
                                                         title: (time < 10 ? "0" + time : time) + ":00"
-                                                    })
+                                                    });
                                                 })
                                             })
                                         ])
@@ -1070,7 +1023,7 @@ window.component('push.automated.popup', function (popup) {
                 controller: function () {
 
                 },
-                view: function (ctrl) {
+                view: function () {
                     return m('div.comp-push-tab-content.comp-summary', [
                         m('div.comp-panel', { style: { width: "590px" } }, [
                             m('div.form-group', { key: "tab_4_3" }, [
@@ -1087,7 +1040,7 @@ window.component('push.automated.popup', function (popup) {
                                     ]),
                                     m('div.comp-grid-row', [
                                         m('div.comp-grid-cell', t.p('pu.po.auto.tab4.platforms', message.platforms().length)),
-                                        m('div.comp-grid-cell', message.platforms().map(function (platform) { return platform === push.C.PLATFORMS.IOS ? t('pu.po.auto.tab4.platforms-ios') : t('pu.po.auto.tab4.platforms-android') }).join(', '))
+                                        m('div.comp-grid-cell', message.platforms().map(function (platform) { return platform === push.C.PLATFORMS.IOS ? t('pu.po.auto.tab4.platforms-ios') : t('pu.po.auto.tab4.platforms-android'); }).join(', '))
                                     ]),
                                     m('div.comp-grid-row', [
                                         m('div.comp-grid-cell', t('pu.po.auto.tab4.send-to-test')),
@@ -1104,7 +1057,7 @@ window.component('push.automated.popup', function (popup) {
                                     ]),
                                     m('div.comp-grid-row', [
                                         m('div.comp-grid-cell', t.p('pu.po.auto.tab4.cohorts', message.cohorts().length)),
-                                        m('div.comp-grid-cell', message.cohorts().map(function (cohort) { return cohort.title() }).join(', '))
+                                        m('div.comp-grid-cell', message.cohorts().map(function (cohort) { return cohort.title(); }).join(', '))
                                     ]),
                                     m('div.comp-grid-row', [
                                         m('div.comp-grid-cell', t('pu.po.auto.tab4.caping')),
