@@ -211,8 +211,8 @@ window.component('push.dash', function (dash) {
 			self.pushDrawerMenuOpen = !self.pushDrawerMenuOpen;
 		}
 	
-		this.checkIfEE = function () {
-			return countlyGlobal.plugins.indexOf('automated_push') >= 0;
+		this.isCohortsEnabled = function () {
+			return countlyGlobal.plugins.indexOf('cohorts') >= 0;
 		}
 	};
 	dash.view = function (ctrl) {
@@ -238,7 +238,7 @@ window.component('push.dash', function (dash) {
 											style: { marginRight: "0px" }
 										}, t('pu.dash.btn-group.create-message')),
 										ctrl.pushDrawerMenuOpen ?
-											ctrl.checkIfEE() ?
+											ctrl.isCohortsEnabled() ?
 											m('div.push-group-menu.ee-menu', [
 												m('div.auto-push-image', { onclick: ctrl.autoMessage }, [
 													m('div.title', t('pu.dash.btn-group.automated-message')),
