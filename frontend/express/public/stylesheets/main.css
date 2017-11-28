@@ -411,7 +411,7 @@ table { border-collapse: collapse; }
 #app-nav { width:190px;  display:none; text-align:right; height:100%; position:fixed; left:31px; z-index:997; padding-bottom: 120px; box-sizing: border-box; box-shadow: inset -1px 0 0 0 #d4d4d4; background-color: rgba(239, 239, 239, 0.7); }
 #app-nav-head { height:27px; padding:15px 20px 15px 15px; color:#636363; font:18px Ubuntu,Helvetica,sans-serif; line-height:111%; text-align:left; background-color: #ECECEC; border-bottom:1px solid #d0d0d0; }
 	#app-nav-head .button-container { overflow:hidden; position:absolute; top:22px; right:10px; }
-.app-container { cursor:pointer; height:26px; padding:8px 12px; padding-left:32px; overflow:auto; border-top: 1px solid #d0d0d0; background-color: #efefef; }
+.app-container { cursor:pointer; height:26px; padding:8px 12px; padding-left:32px; overflow:hidden; border-top: 1px solid #d0d0d0; background-color: #efefef; }
 .app-container:first-child { border-top:none; }
 .app-container:hover { background-color: #dedede; }
 .app-container.active { background-color: #dedede; }
@@ -1013,7 +1013,7 @@ div.datatablesubrow {display: none;}
     #event-nav .nav-search input { width:158px; }
 #event-nav-head { background-color:#ececec; position:relative; height:27px; padding:15px 20px 15px 15px; color:#636363; font:18px Ubuntu,Helvetica,sans-serif; line-height:111%; text-align:left; }
 #event-nav-title { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:85px; float:left; padding-top:4px; }
-.event-container { position:relative; cursor:pointer; height:28px; padding:4px 12px; overflow:auto; border-top: 1px solid #D0D0D0; }
+.event-container { position:relative; cursor:pointer; height:28px; padding:4px 12px; overflow:hidden; border-top: 1px solid #D0D0D0; }
 .event-container:hover { background-color: #dedede; }
 .event-container.active { background-color: #dedede; }
 	.event-container .name { width:151px; text-align:left; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; float:left; padding-top:7px; color:#6b6b6b; font:13px Ubuntu,Helvetica,sans-serif; line-height:111%; }
