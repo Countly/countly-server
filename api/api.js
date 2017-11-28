@@ -299,7 +299,9 @@ if (cluster.isMaster) {
                             validateAppForWriteAPI(params, done);
                         };
                         
-                        function mergeUserData(newAppUser, oldAppUser){
+                        function mergeUserData(newAppUser, oldAppUser){                  
+                            //allow plugins to deal with user mergin properties
+                            plugins.dispatch("/i/user_merge", {params:params, newAppUser:newAppUser, oldAppUser:oldAppUser});
                             //merge user data
                             for(var i in oldAppUser){
                                 // sum up session count and total session duration
