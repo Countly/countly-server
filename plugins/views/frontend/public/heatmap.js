@@ -46,7 +46,7 @@
 
             //TOPBAR
             var topbar = document.createElement('div');
-            topbar.setAttribute("id", "cly-topbar");
+            topbar.setAttribute("id", "cly-heatmap-topbar");
             document.body.appendChild(topbar);
 
             
@@ -57,10 +57,10 @@
                 document.body.style.width = pageWidth + "px";
                 document.body.style.marginLeft = "auto";
                 document.body.style.marginRight = "auto";
-                pageHeight = Countly._internals.getDocHeight();
+                pageHeight = Countly._internals.getDocHeight() - toppx;
             }else{
                 pageWidth = Countly._internals.getDocWidth();
-                pageHeight = Countly._internals.getDocHeight();
+                pageHeight = Countly._internals.getDocHeight() - toppx;
                 currentDevice = devices.filter((deviceObj) => {
                     return deviceObj.minWidth < pageWidth && deviceObj.maxWidth >= pageWidth && deviceObj.type != "all";
                 });
@@ -69,53 +69,53 @@
             //TOPBAR IMAGE
             var img = document.createElement('img');
             img.src = Countly.url + "/images/dashboard/countly_logo.svg";
-            img.setAttribute('class', 'cly-logo');
+            img.setAttribute('class', 'cly-heatmap-logo');
             topbar.appendChild(img);
 
             //MAIN DROPDOWN CONTAINER DIV WITHIN TOPBAR
             var mainDiv = document.createElement('div');
-            mainDiv.setAttribute('class', 'cly-center-menu');
+            mainDiv.setAttribute('class', 'cly-heatmap-center-menu');
             topbar.appendChild(mainDiv);
 
             //DROPDOWN TO SELECT THE HEATMAP TYPE --- STARTS HERE ---
             var mapsDropdown = document.createElement('div');
-            mapsDropdown.setAttribute('class', 'cly-dropdown cly-bordered cly-large cly-active');
+            mapsDropdown.setAttribute('class', 'cly-heatmap-dropdown cly-heatmap-bordered cly-heatmap-large cly-heatmap-active');
 
             var mapSpan = document.createElement('span');
             mapSpan.innerHTML = "Heatmap Type";
-            mapSpan.setAttribute('class', 'cly-title');
+            mapSpan.setAttribute('class', 'cly-heatmap-title');
 
             var selectedMap = document.createElement('div');
             selectedMap.innerHTML = capitalize(currentMap) + " Map";
-            selectedMap.setAttribute('class', 'cly-selected cly-map');
+            selectedMap.setAttribute('class', 'cly-heatmap-selected cly-heatmap-map');
 
             var mapMenuDiv = document.createElement('div');
-            mapMenuDiv.setAttribute('class', 'cly-menu');
+            mapMenuDiv.setAttribute('class', 'cly-heatmap-menu');
 
             var mapListDiv = document.createElement('div');
-            mapListDiv.setAttribute('class', 'cly-list');
-            mapListDiv.setAttribute('id', 'cly-maps');
+            mapListDiv.setAttribute('class', 'cly-heatmap-list');
+            mapListDiv.setAttribute('id', 'cly-heatmap-maps');
 
             var mapTypes = ['click', 'scroll'];
 
             mapTypes.forEach((map) => {
                 var tag = document.createElement('a');
-                tag.setAttribute('class', 'cly-item');
+                tag.setAttribute('class', 'cly-heatmap-item');
                 tag.setAttribute('data-value', map);
                 tag.innerHTML = capitalize(map) + " Map";
                 Countly._internals.add_event(tag, "click", function (e) {
-                    var dropdowns = topbar.getElementsByClassName("cly-dropdown");
+                    var dropdowns = topbar.getElementsByClassName("cly-heatmap-dropdown");
 
                     if (dropdowns.length) {
                         Object.keys(dropdowns).forEach((drop) => {
-                            dropdowns[drop].classList.remove("cly-clicked");
+                            dropdowns[drop].classList.remove("cly-heatmap-clicked");
                         })
                     }
 
                     canvas.setAttribute("width", "0px");
                     canvas.setAttribute("height", "0px");
 
-                    var grdMap = document.getElementById("cly-scroll-grd-map");
+                    var grdMap = document.getElementById("cly-heatmap-scroll-grd-map");
                     if (grdMap) {
                         grdMap.parentNode.removeChild(grdMap);
                     }
@@ -153,26 +153,26 @@
 
             //DROPDOWN TO SELECT THE DEVICE TYPE --- STARTS HERE ---
             var deviceDropdown = document.createElement('div');
-            deviceDropdown.setAttribute('class', 'cly-dropdown cly-bordered cly-large cly-active');
+            deviceDropdown.setAttribute('class', 'cly-heatmap-dropdown cly-heatmap-bordered cly-heatmap-large cly-heatmap-active');
 
             var deviceSpan = document.createElement('span');
             deviceSpan.innerHTML = "Resolution";
-            deviceSpan.setAttribute('class', 'cly-title');
+            deviceSpan.setAttribute('class', 'cly-heatmap-title');
 
             var selectedDevice = document.createElement('div');
             selectedDevice.innerHTML = "Desktop";
-            selectedDevice.setAttribute('class', 'cly-selected cly-device');
+            selectedDevice.setAttribute('class', 'cly-heatmap-selected cly-heatmap-device');
 
             var deviceMenuDiv = document.createElement('div');
-            deviceMenuDiv.setAttribute('class', 'cly-menu');
+            deviceMenuDiv.setAttribute('class', 'cly-heatmap-menu');
 
             var deviceListDiv = document.createElement('div');
-            deviceListDiv.setAttribute('class', 'cly-list');
-            deviceListDiv.setAttribute('id', 'cly-devices');
+            deviceListDiv.setAttribute('class', 'cly-heatmap-list');
+            deviceListDiv.setAttribute('id', 'cly-heatmap-devices');
 
             devices.forEach((device) => {
                 var tag = document.createElement('a');
-                tag.setAttribute('class', 'cly-item ');
+                tag.setAttribute('class', 'cly-heatmap-item ');
                 tag.setAttribute('data-value', device.type);
                 tag.innerHTML = device.displayText;
 
@@ -184,7 +184,7 @@
 
                 Countly._internals.add_event(tag, "click", function (e) {
                     document.body.style.width = "100%";
-                    var grdMap = document.getElementById("cly-scroll-grd-map");
+                    var grdMap = document.getElementById("cly-heatmap-scroll-grd-map");
                     if (grdMap) {
                         grdMap.parentNode.removeChild(grdMap);
                     }
@@ -195,7 +195,7 @@
                     document.body.style.width = pageWidth + "px";
                     document.body.style.marginLeft = "auto";
                     document.body.style.marginRight = "auto";
-                    pageHeight = Countly._internals.getDocHeight();
+                    pageHeight = Countly._internals.getDocHeight() - toppx;
                     canvas.setAttribute("width", pageWidth + "px");
                     canvas.setAttribute("height", pageHeight + "px");
 
@@ -207,11 +207,11 @@
                         }
                     });
 
-                    var dropdowns = topbar.getElementsByClassName("cly-dropdown");
+                    var dropdowns = topbar.getElementsByClassName("cly-heatmap-dropdown");
 
                     if (dropdowns.length) {
                         Object.keys(dropdowns).forEach((drop) => {
-                            dropdowns[drop].classList.remove("cly-clicked");
+                            dropdowns[drop].classList.remove("cly-heatmap-clicked");
                         })
                     }
 
@@ -239,7 +239,7 @@
 
             //REFRESH 
             var refresh = document.createElement('div');
-            refresh.setAttribute('class', 'cly-block');
+            refresh.setAttribute('class', 'cly-heatmap-block');
 
             var icon = document.createElement('i');
             icon.setAttribute('class', 'ion-refresh');
@@ -258,7 +258,7 @@
                 dataCache = {};
                 canvas.setAttribute("width", "0px");
                 canvas.setAttribute("height", "0px");
-                var grdMap = document.getElementById("cly-scroll-grd-map");
+                var grdMap = document.getElementById("cly-heatmap-scroll-grd-map");
                 if (grdMap) {
                     grdMap.parentNode.removeChild(grdMap);
                 }
@@ -282,20 +282,20 @@
             canvas.style.pointerEvents = "none";
             canvas.setAttribute("width", pageWidth + "px");
             canvas.setAttribute("height", pageHeight + "px");
-            canvas.id = "cly-canvas-map";
+            canvas.id = "cly-heatmap-canvas-map";
             document.body.appendChild(canvas);
 
             Countly._internals.add_event(window, "resize", function () {
                 canvas.setAttribute("width", "0px");
                 canvas.setAttribute("height", "0px");
-                var grdMap = document.getElementById("cly-scroll-grd-map");
+                var grdMap = document.getElementById("cly-heatmap-scroll-grd-map");
                 if (grdMap) {
                     grdMap.parentNode.removeChild(grdMap);
                 }
                 setTimeout(function () {
                     document.body.style.width = "100%";
                     pageWidth = Countly._internals.getDocWidth();
-                    pageHeight = Countly._internals.getDocHeight();
+                    pageHeight = Countly._internals.getDocHeight() - toppx;
                     var updatedDevice = devices.filter((deviceObj) => {
                         if(currentDevice[0].type == "all"){
                             return deviceObj.type == "all";
@@ -317,10 +317,10 @@
             });
 
             var showHide = document.createElement('div');
-            showHide.setAttribute('class', 'cly-checkbox');
+            showHide.setAttribute('class', 'cly-heatmap-checkbox');
 
             var shLabel = document.createElement('label');
-            shLabel.setAttribute('class', 'cly-label');
+            shLabel.setAttribute('class', 'cly-heatmap-label');
             shLabel.innerHTML = "Show Heatmap";
 
             var shInput = document.createElement('input');
@@ -331,7 +331,7 @@
             }
 
             var shSpan = document.createElement('span');
-            shSpan.setAttribute('class', 'cly-checkmark');
+            shSpan.setAttribute('class', 'cly-heatmap-checkmark');
 
             shLabel.appendChild(shInput);
             shLabel.appendChild(shSpan);
@@ -343,7 +343,7 @@
                 if (!showHeatMap) {
                     canvas.setAttribute("width", "0px");
                     canvas.setAttribute("height", "0px");
-                    var grdMap = document.getElementById("cly-scroll-grd-map");
+                    var grdMap = document.getElementById("cly-heatmap-scroll-grd-map");
                     if (grdMap) {
                         grdMap.parentNode.removeChild(grdMap);
                     }
@@ -361,10 +361,10 @@
             topbar.appendChild(showHide);
 
             Countly._internals.add_event(document.body, "click", function (e) {
-                var dropdowns = topbar.getElementsByClassName("cly-dropdown");
+                var dropdowns = topbar.getElementsByClassName("cly-heatmap-dropdown");
                 if (dropdowns.length) {
                     Object.keys(dropdowns).forEach((drop) => {
-                        dropdowns[drop].classList.remove("cly-clicked");
+                        dropdowns[drop].classList.remove("cly-heatmap-clicked");
                     })
                 }
 
@@ -389,19 +389,19 @@
 
             function listenDropdownEvent(event, element) {
                 element.addEventListener(event, function (e) {
-                    var wasActive = element.classList.contains("cly-clicked");
-                    var dropdowns = topbar.getElementsByClassName("cly-dropdown");
+                    var wasActive = element.classList.contains("cly-heatmap-clicked");
+                    var dropdowns = topbar.getElementsByClassName("cly-heatmap-dropdown");
 
                     if (dropdowns.length) {
                         Object.keys(dropdowns).forEach((drop) => {
-                            dropdowns[drop].classList.remove("cly-clicked");
+                            dropdowns[drop].classList.remove("cly-heatmap-clicked");
                         })
                     }
 
                     if (wasActive) {
-                        element.classList.remove("cly-clicked");
+                        element.classList.remove("cly-heatmap-clicked");
                     } else {
-                        element.classList.add("cly-clicked");
+                        element.classList.add("cly-heatmap-clicked");
                     }
 
                     e.stopPropagation();
@@ -441,7 +441,7 @@
             dataCache = {};
 
         Countly._internals.loadJS(Countly.url + "/views/javascripts/simpleheat.js", function () {
-            map = simpleheat("cly-canvas-map");
+            map = simpleheat("cly-heatmap-canvas-map");
             return cb(function (eventType, pageWidth, pageHeight, currentDevice, showHeatMap) {
                 map.resize();
 
@@ -503,7 +503,7 @@
             dataCache = {};
 
         Countly._internals.loadJS(Countly.url + "/views/javascripts/simpleheat.js", function () {
-            map = simpleheat("cly-canvas-map");
+            map = simpleheat("cly-heatmap-canvas-map");
             return cb(function (eventType, pageWidth, pageHeight, currentDevice, showHeatMap) {
                 map.resize();
                 map.viewPortSize({ height: Countly._internals.getViewportHeight() });
@@ -603,7 +603,7 @@
                     canvas.style.zIndex = 1000002;
                     canvas.setAttribute("width", grdMapWidth + 2 * (grdXOffset) + "px");
                     canvas.setAttribute("height", grdMapHeight + 2 * (grdYOffset) + "px");
-                    canvas.id = "cly-scroll-grd-map";
+                    canvas.id = "cly-heatmap-scroll-grd-map";
 
                     var context = canvas.getContext('2d');
                     var grdMap = context.createLinearGradient(grdXOffset, grdYOffset, grdMapWidth, grdMapHeight);

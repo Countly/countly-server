@@ -191,6 +191,19 @@ app.engine('html', require('ejs').renderFile);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'html');
 app.set('view options', {layout:false});
+
+app.use('/stylesheets/ionicons/fonts/', function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+})
+
+app.use('/fonts/', function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+})
+
 plugins.loadAppStatic(app, countlyDb, express);
 app.use(cookieParser());
 //server theme images
@@ -278,18 +291,6 @@ app.use(function(req, res, next){
     else
         next();
 });
-
-app.use('/stylesheets/ionicons/fonts/', function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-})
-
-app.use('/fonts/', function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-})
 
 app.use(flash());
 app.use(function(req, res, next) {
