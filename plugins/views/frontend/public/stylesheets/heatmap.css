@@ -45,6 +45,7 @@
             url('/fonts/Ubuntu-500italic/Ubuntu-500italic.ttf') format('truetype'),
             url('/fonts/Ubuntu-500italic/Ubuntu-500italic.svg#Ubuntu') format('svg');
 }
+
 #cly-heatmap-topbar {
     min-height: 59px;
     background-color: #FFFFFF;
@@ -119,6 +120,7 @@
 }
 
 #cly-heatmap-topbar .cly-heatmap-dropdown.cly-heatmap-active .cly-heatmap-selected {
+    vertical-align: top;
     display: inline
 }
 
@@ -128,6 +130,8 @@
 }
 
 #cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-title {
+    vertical-align: top;
+    margin-top: -3px;
     font-size: 10px;
     color: #666;
     margin-right: 25px;
@@ -154,7 +158,8 @@
     content: "\f3d0";
     margin-left: 10px;
     font-size: 10px;
-    vertical-align: top
+    vertical-align: top;
+    line-height: 16px;
 }
 
 #cly-heatmap-topbar .cly-heatmap-dropdown.cly-heatmap-large.cly-heatmap-clicked .cly-heatmap-selected:after {
@@ -269,7 +274,8 @@
     padding: 0px;
     margin: 0px;
     font-size: 13px;
-	cursor: pointer;
+    cursor: pointer;
+    vertical-align: top;
 }
 
 #cly-heatmap-topbar .cly-heatmap-checkmark {
