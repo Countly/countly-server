@@ -818,6 +818,9 @@ if (cluster.isMaster) {
                                 case 'me':
                                     validateUserForMgmtReadAPI(countlyApi.mgmt.users.getCurrentUser, params);
                                     break;
+                                case 'id':
+                                    validateUserForMgmtReadAPI(countlyApi.mgmt.users.getUserById, params);
+                                    break;
                                 default:
                                     if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
                                         common.returnMessage(params, 400, 'Invalid path, must be one of /all or /me');

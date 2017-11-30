@@ -83,7 +83,7 @@ window.SystemLogsView = countlyView.extend({
 						if(type == "display"){
 							return moment(new Date(row.ts*1000)).format("ddd, D MMM YYYY HH:mm:ss");
 						}else return row.ts;}, "sType":"string", "sExport":"systemlogs", "sTitle": jQuery.i18n.map["systemlogs.timestamp"]},
-					{ "mData": function(row, type){return row.u;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.user"], bSortable: false},
+					{ "mData": function(row, type){if(row.user_id && type === "display"){return "<a href='#/manage/users/"+row.user_id+"' class='table-link-user green'>"+row.u+"</a>";} else return row.u;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.user"], bSortable: false},
                     { "mData": function(row, type){return row.ip;}, "sType":"string", "sTitle": jQuery.i18n.map["systemlogs.ip-address"], bSortable: false},
 					{ "mData": function(row, type){
                         var ret = "<p>"+((jQuery.i18n.map["systemlogs.action."+row.a]) ? jQuery.i18n.map["systemlogs.action."+row.a] : row.a)+"</p>";
