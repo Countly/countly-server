@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Upload new plugins right from the user interface",
   "author": "Count.ly",
-  "homepage": "https://count.ly/plugins/",
+  "homepage": "https://count.ly/plugins/plugin-uploader",
   "repository": {
     "type": "git",
     "url": "http://github.com/Countly/countly-server.git"
