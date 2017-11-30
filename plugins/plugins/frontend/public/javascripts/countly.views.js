@@ -44,6 +44,7 @@ window.PluginsView = countlyView.extend({
 
             this.dtable = $('#plugins-table').dataTable($.extend({}, $.fn.dataTable.defaults, {
                 "aaData": pluginsData,
+                "bPaginate": false,
                 "aoColumns": [
                     { "mData": function (row, type) { if (row.enabled) { return jQuery.i18n.map[row.code + ".plugin-title"] || jQuery.i18n.map[row.code + ".title"] || row.title; } else return row.title }, "sType": "string", "sTitle": jQuery.i18n.map["plugins.name"] },
                     {
