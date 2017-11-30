@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Increase loyalty, user retention & satisfaction with push notifications",
   "author": "Count.ly",
-  "homepage": "https://count.ly/plugins/",
+  "homepage": "https://count.ly/plugins/rich-push-notifications",
   "scripts": {
     "postinstall": "cd ./api/parts/apn && npm install"
   },
