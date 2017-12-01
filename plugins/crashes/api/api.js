@@ -16,6 +16,35 @@ plugins.setConfigs("crashes", {
 	var segments = ["os_version", "os_name", "manufacture", "device", "resolution", "app_version", "cpu", "opengl", "orientation", "view", "browser"];
 	var bools = {"root":true, "online":true, "muted":true, "signal":true, "background":true};
     plugins.internalDrillEvents.push("[CLY]_crash");
+    plugins.register("/i/user_merge", function(ob){
+        var newAppUser = ob.newAppUser;
+        var oldAppUser = ob.oldAppUser;
+        var crashes = {};
+        if(oldAppUser.crashes && Array.isArray(oldAppUser.crashes)){
+            for(var i = 0; i < oldAppUser.crashes.length; i++){
+                crashes[oldAppUser.crashes[i]] = true;
+            }
+        }
+        if(newAppUser.crashes && Array.isArray(newAppUser.crashes)){
+            for(var i = 0; i < newAppUser.crashes.length; i++){
+                crashes[newAppUser.crashes[i]] = true;
+            }
+        }
+        crashes = Object.keys(crashes);
+        if(crashes.length){
+            newAppUser.crashes = crashes;
+        }
+    });
+    plugins.register("/i/device_id", function(ob){
+		var params = ob.params;
+		var appId = params.app_id;
+		var oldUid = ob.oldUser.uid;
+		var newUid = ob.newUser.uid;
+        if(oldUid != newUid){
+            common.db.collection("app_crashes" +  appId).update({uid:oldUid}, {'$set': {uid:newUid}}, {multi:true}, function(err, res){});
+            common.db.collection("app_crashusers" +  appId).update({uid:oldUid}, {'$set': {uid:newUid}}, {multi:true}, function(err, res){});
+        }
+	});
     //check app metric
     plugins.register("/session/metrics", function(ob){
         return new Promise(function(resolve, reject){
