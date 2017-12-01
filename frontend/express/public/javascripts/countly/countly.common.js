@@ -647,6 +647,9 @@
                         if (formattedValue) {
                             formattedValue = parseFloat(formattedValue).toFixed(2).replace(/[.,]00$/, "");
                         }
+                        if( series.data[dataIndex][2] ){
+                            formattedValue = series.data[dataIndex][2]; // to show customized string value tips
+                        }
 
                         tooltipHTML += "<div class='inner'>";
                         tooltipHTML += "<div class='color' style='background-color: " + series.color + "'></div>";
@@ -3161,5 +3164,49 @@
     *    }
     */
     countlyCommon.periodObj = calculatePeriodObj();
+
+
+    /**
+     * Parse second to standard time format
+     * @param {number} second  number
+     * @returns {string} return format "HH:MM:SS"
+     */
+    countlyCommon.formatSecond = function(second) {
+        var s = parseInt(second)
+        var m = moment();
+        m.set({hour:0,minute:0,second:0,millisecond:0});
+        m.add(s, 's');
+        return m.format("HH:mm:ss");
+    }
+
+    /**
+     * add one more column in chartDP[index].data to show string in dp
+     * for example: 
+     *     chartDPs = [
+     *          {color:"#88BBC8", label:"duration", data:[[0, 23], [1, 22]}],
+     *          {color:"#88BBC8", label:"count", data:[[0, 3], [1, 3]}],
+     *     }
+     *     lable = 'duration',
+     *      
+     * will return
+     *     chartDPs = [
+     *          {color:"#88BBC8", label:"duration", data:[[0, 23, "00:00:23"], [1, 22, "00:00:22"]}],
+     *          {color:"#88BBC8", label:"count", data:[[0, 3], [1, 3]}],
+     *     }
+     * @param {array} chartDPs 
+     * @param {string} labelName 
+     * @return {array} chartDPs
+     */
+    countlyCommon.formatSecondForDP = function(chartDPs, labelName) {
+        for(var k = 0; k < chartDPs.length; k++){
+            if(chartDPs[k].label === labelName){
+                var dp = chartDPs[k]
+                for(var i = 0; i <  dp.data.length; i++){
+                    dp.data[i][2] = countlyCommon.formatSecond(dp.data[i][1]);
+                }
+            }
+        } 
+        return chartDPs
+    }
 
 }(window.countlyCommon = window.countlyCommon || {}, jQuery));
