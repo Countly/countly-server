@@ -16,6 +16,32 @@ var plugin = {},
     plugins.internalDrillEvents.push("[CLY]_view");
     plugins.internalDrillEvents.push("[CLY]_action");
     
+    plugins.register("/i/user_merge", function(ob){
+        var newAppUser = ob.newAppUser;
+        var oldAppUser = ob.oldAppUser;
+        if(typeof oldAppUser.vc !== "undefined"){
+            if(typeof newAppUser.vc === "undefined")
+                newAppUser.vc = 0;
+            newAppUser.vc += oldAppUser.vc;
+        }
+        if(typeof oldAppUser.lvt !== "undefined"){
+            if(!newAppUser.lvt || oldAppUser.lvt > newAppUser.lvt){
+                newAppUser.lvt = oldAppUser.lvt;
+                newAppUser.lv = oldAppUser.lv;
+            }
+        }
+    });
+    
+    plugins.register("/i/device_id", function(ob){
+		var params = ob.params;
+		var appId = params.app_id;
+		var oldUid = ob.oldUser.uid;
+		var newUid = ob.newUser.uid;
+        if(oldUid != newUid){
+            common.db.collection("app_views" +  appId).update({uid:oldUid}, {'$set': {uid:newUid}}, {multi:true} ,function(err, res){});
+        }
+	});
+    
     plugins.register("/o", function(ob){
 		var params = ob.params;
 		var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
