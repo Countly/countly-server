@@ -1,5 +1,6 @@
 var http = require('http'),
     cluster = require('cluster'),
+    versionInfo = require('../frontend/express/version.info'),
     formidable = require('formidable'),
     os = require('os'),
     countlyConfig = require('./config', 'dont-enclose'),
@@ -906,6 +907,32 @@ if (cluster.isMaster) {
                                                 common.returnMessage(params, 400, 'Task does not exist');
                                             }
                                         });
+                                    }, params);
+                                    break;
+                                default:
+                                    if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
+                                        common.returnMessage(params, 400, 'Invalid path');
+                                    break;
+                            }
+            
+                            break;
+                        }
+                        case '/o/system':
+                        {
+                            if (!params.qstring.api_key) {
+                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
+                                return false;
+                            }
+            
+                            switch (paths[3]) {
+                                case 'version':
+                                    validateUserForMgmtReadAPI(function(){
+                                        common.returnOutput(params, {"version":versionInfo.version});
+                                    }, params);
+                                    break;
+                                case 'plugins':
+                                    validateUserForMgmtReadAPI(function(){
+                                        common.returnOutput(params, plugins.getPlugins());
                                     }, params);
                                     break;
                                 default:
