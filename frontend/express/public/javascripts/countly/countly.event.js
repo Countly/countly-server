@@ -556,7 +556,7 @@
                     "trend":changeSum.trend
                 },
                 "event-dur":{
-                    "total":currentDur,
+                    "total": countlyCommon.formatSecond(currentDur),
                     "change":changeDur.percent,
                     "trend":changeDur.trend
                 }
