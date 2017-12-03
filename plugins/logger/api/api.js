@@ -89,7 +89,7 @@ var plugin = {},
                 }
                 catch(ex){filter = {}}
             }
-            validate(params, function(params){
+            validate(params, function(params){  
 				common.db.collection('logs' + params.app_id).find(filter).toArray(function(err, items) {
 					if(err)
 						console.log(err);
@@ -98,8 +98,20 @@ var plugin = {},
 			});
 			return true;
 		}
+		if(params.qstring.method == 'collection_info'){ 
+            validate(params, function(params){
+				common.db.collection('logs' + params.app_id).stats(function(err, stats) {
+					if (err) {
+						console.log(err);
+					}
+					common.returnOutput(params, stats && {capped: stats.capped, max: stats.max} || {});
+				  });
+			});
+			return true;
+		}
 	});
-    
+	
+	 
     plugins.register("/i/apps/create", function(ob){
 		var params = ob.params;
 		var appId = ob.appId;

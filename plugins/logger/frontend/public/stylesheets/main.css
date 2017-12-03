@@ -19,3 +19,13 @@
 .logger table td pre .hljs-link {
     color: #8150da;
 }
+
+.logger .graph-description {
+    background-color: #f9f9f9;
+    padding: 10px 14px;
+    color: #868686;
+    font-size: 13px;
+    border: 1px solid #d0d0d0;
+    border-bottom-color: #e9e9e9;
+    overflow: auto;
+}
