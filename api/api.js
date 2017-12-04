@@ -588,13 +588,15 @@ if (cluster.isMaster) {
                             var requests = params.qstring.requests,
                                 appKey = params.qstring.app_key;
                 
-                            if (requests) {
+                            if (requests && typeof requests === "string") {
                                 try {
                                     requests = JSON.parse(requests);
                                 } catch (SyntaxError) {
                                     console.log('Parse bulk JSON failed', requests, req.url, req.body);
+                                    requests = null;
                                 }
-                            } else {
+                            }
+                            if(!requests){
                                 common.returnMessage(params, 400, 'Missing parameter "requests"');
                                 return false;
                             }
@@ -614,7 +616,7 @@ if (cluster.isMaster) {
                                 if (!requests[i].app_key && !appKey) {
                                     return processBulkRequest(i + 1);
                                 }
-                
+                                params.req.body = JSON.stringify(requests[i]);
                                 var tmpParams = {
                                     'app_id':'',
                                     'app_cc':'',
@@ -624,7 +626,7 @@ if (cluster.isMaster) {
                                         'city':requests[i].city || 'Unknown'
                                     },
                                     'qstring':requests[i],
-                                    'href':params.href,		
+                                    'href':"/i",		
                                     'res':params.res,		
                                     'req':params.req,
                                     'promises':[],
@@ -641,8 +643,9 @@ if (cluster.isMaster) {
                 
                                 return validateAppForWriteAPI(tmpParams, function(){
                                     function resolver(){
-                                        plugins.dispatch("/sdk/end", {params:tmpParams});
-                                        processBulkRequest(i + 1);
+                                        plugins.dispatch("/sdk/end", {params:tmpParams}, function(){
+                                            processBulkRequest(i + 1);
+                                        });
                                     }
                                     Promise.all(tmpParams.promises).then(resolver, resolver);
                                 });
