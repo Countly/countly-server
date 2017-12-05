@@ -439,6 +439,20 @@ window.component('push', function(push) {
 		this.createdSeconds = function() {
 			return this.date() ? new Date(this.date()).getTime() : null;
 		};
+
+		this.remoteStatusUpdate = function(){
+			return m.request({
+				method: 'GET',
+				url: window.countlyCommon.API_URL + '/i/pushes/update-status',
+				data: {
+					api_key: window.countlyGlobal.member.api_key,
+					args: {
+						_id: this._id(),
+						status : this.result.status()
+					}
+				}
+			});
+		}
 	};
 
 	push.MessageResult = function(data) {
@@ -490,8 +504,18 @@ window.component('push', function(push) {
 				}
 			}).then(function(data){
 				data.app_id = appId;
-				push.dashboard = data;
-				return data;
+				
+				var singleMessageData = Object.assign({}, data);
+				var automatedMessageData = Object.assign({}, data, { actions : data.actions_automated, sent : data.sent_automated});
+
+				delete singleMessageData.actions_automated;
+				delete singleMessageData.sent_automated;
+				delete automatedMessageData.actions_automated;
+				delete automatedMessageData.sent_automated;
+
+				var response = { single_message : singleMessageData, automated_message : automatedMessageData };
+				push.dashboard = response;
+				return response;
 			});
 		} else {
 			var deferred = m.deferred();

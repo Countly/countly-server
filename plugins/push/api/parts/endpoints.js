@@ -45,7 +45,11 @@ var common          = require('../../../../api/utils/common.js'),
             // wkt = wks.map((w, i) => (i === 0 || w > wks[0] ? agy : noy) + '-w' + w),
 
             // ids of event docs
-            ids = mts.map((m, i) => 'no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m),
+            ids = mts.reduce((acc, m, i) => {
+                acc.push('no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m);
+                acc.push('auto_' + (agm + i >= 12 ? noy : agy) + ':' + m);
+                return acc;
+            }, []),
             que = {_id: {$in: ids}},
 
             sen = 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_sent') + params.qstring.app_id).digest('hex'),
@@ -82,6 +86,7 @@ var common          = require('../../../../api/utils/common.js'),
             try {
                 var events = results.slice(0, 2).map(events => {
                     var ret = {weekly: {data: Array(wks.length).fill(0), keys: wkt}, monthly: {data: Array(mts.length).fill(0), keys: mtt}, total: 0};
+                    var retAuto = { daily: { data: Array(30).fill(0), keys : Array(30).fill(0).map((x, k) => k )}, total : 0, weekly: { data: Array(wks.length).fill(0), keys: wkt }, monthly: { data: Array(mts.length).fill(0), keys: mtt }};
                     // log.d('events', events);
                     events.forEach(e => {
                         // log.d('event', e);
@@ -99,18 +104,38 @@ var common          = require('../../../../api/utils/common.js'),
                                 wi = wks[yer === agy ? 'indexOf' : 'lastIndexOf'](we),
                                 mi = mts[yer === agy ? 'indexOf' : 'lastIndexOf'](mon + 1);
 
-                            ret.weekly.data[wi] += e.d[d].c;
-                            ret.monthly.data[mi] += e.d[d].c;
-                            ret.total += e.d[d].c;
+                                if (e.s === "no-segment" || !e.s) {
+                                    ret.weekly.data[wi] += e.d[d].c;
+                                    ret.monthly.data[mi] += e.d[d].c;
+                                    ret.total += e.d[d].c;
+                                }else{
+                                    var date = moment({ year : yer, month : mon, day : d});
+                                    var diff = moment().diff(date, "days");
+                                    
+    
+                                    if(diff <= 29){
+                                        var target = 29 - diff;
+                                        retAuto.daily.data[target] += e.d[d].c;
+                                        retAuto.total += e.d[d].c;
+                                    }
+    
+                                    retAuto.weekly.data[wi] += e.d[d].c;
+                                    retAuto.monthly.data[mi] += e.d[d].c;
+                                }
                         });
                     });
 
-                    return ret;
+                    return {
+                        m: ret,
+                        a: retAuto
+                    };
                 });
 
                 common.returnOutput(params, {
-                    sent: events[0],
-                    actions: events[1],
+                    sent: events[0].m,
+                    sent_automated: events[0].a,
+                    actions: events[1].m,
+                    actions_automated: events[1].a,
                     enabled: results[2] || 0,
                     users: results[3] ? results[3] - 1 : 0,
                     geos: results[4] || [],
