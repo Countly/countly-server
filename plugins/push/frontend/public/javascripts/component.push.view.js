@@ -25,47 +25,6 @@ window.component('push.view', function(view) {
 				var els = [
 					t('pu.po.view.title')
 				];
-				if (message.count()) {
-					els.push(m('span.count.ion-person', 'Recipients: ' + message.count().TOTALLY));
-				}
-				var s = message.result.status(),
-				 	override;
-				if (push.statusers) {
-					push.statusers.forEach(function(statuser){
-						var o = statuser(message.___data);
-						if (o) {
-							override = o;
-						}
-					});
-				}
-
-				var status = override || t('push.message.status.' + s);
-				// if (message.result.error()) {
-				if (message.result.error() && !message.result.isSent()) {
-					els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
-						m('circle[fill="#D54043"][cx=28][cy=28][r=28]'),
-						m('path[fill="#FFFFFF"][d=M40.9,16.1L40.9,16.1c1.4,1.4,1.4,3.6,0,4.9L21.1,40.9c-1.4,1.4-3.6,1.4-4.9,0l0,0c-1.4-1.4-1.4-3.6,0-4.9l19.8-19.8C37.3,14.8,39.5,14.8,40.9,16.1z]'),
-						m('path[fill="#FFFFFF"][d=M40.9,40.9L40.9,40.9c-1.4,1.4-3.6,1.4-4.9,0L16.1,21.1c-1.4-1.4-1.4-3.6,0-4.9l0,0c1.4-1.4,3.6-1.4,4.9,0l19.8,19.8C42.2,37.3,42.2,39.5,40.9,40.9z]'),
-					]), status]));
-				} else if (message.result.sending()) {
-					els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
-						m('circle[fill="#50A1EA"][cx=28][cy=28][r=28]'),
-						m('circle[fill="#F9F9F9"][cx=14][cy=29][r=5]'),
-						m('circle[fill="#ABCBFF"][cx=28][cy=29][r=5]'),
-						m('circle[fill="#6EA6FB"][cx=42][cy=29][r=5]'),
-					]), status]));
-				} else if (message.result.scheduled()) {
-					els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
-						m('circle[fill="#50A1EA"][cx=28][cy=28][r=28]'),
-						m('rect[fill="#F9F9F9"][x=24][y=10][width=7][height=22]'),
-						m('rect[fill="#F9F9F9"][x=24][y=27][width=21][height=7]'),
-					]), status]));
-				} else if (message.result.isSent()) {
-					els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
-						m('circle[fill="#2FA732"][cx=28][cy=28][r=28]'),
-						m('polyline[stroke="#FFFFFF"][fill=none][stroke-width=6][stroke-linecap=round][stroke-linejoin=round][points=15,29.4 24.2,40 40.3,16.7]'),
-					]), status]));
-				}
 				return m('h3', els);
 			}, 
 			// desc: t('pu.po.view.desc'),
@@ -81,6 +40,22 @@ window.component('push.view', function(view) {
 
 	view.controller = function(message){
 		this.message = message;
+
+		this.chartConfig = function(element){
+			element.style.height = '150px';
+			var graphData = [
+				{
+					label: "Actions",
+					data: [ [0, 2], [1, 5], [2, 8], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0], [10, 2], [11, 5], [12, 8], [13, 0], [14, 0], [15, 0], [16, 0], [17, 0], [18, 0], [19, 0], [20, 2], [21, 5], [22, 8], [23, 0], [24, 0], [25, 0], [26, 0], [27, 0], [28, 0], [29, 0]]
+				},
+				{
+					label: "Sent",
+					data: [ [0, 5], [1, 1], [2, 0], [3, 10], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0], [10, 1], [11, 0], [12, 1], [13, 0], [14, 0], [15, 0], [16, 0], [17, 0], [18, 0], [19, 0], [20, 1], [21, 10], [22, 2], [23, 0], [24, 0], [25, 0], [26, 0], [27, 0], [28, 0], [29, 0]]
+				}
+			];
+
+			countlyCommon.drawTimeGraph(graphData, ".message-chart");
+		}
 	};
 	view.view = function(ctrl){
 		var r = ctrl.message.result, 
@@ -93,7 +68,65 @@ window.component('push.view', function(view) {
 			if (fi === -1 && k.indexOf('a') === 0) { fa= i; }
 		});
 
-		return m('div.comp-push', [
+		var els = [t('pu.po.progress')];
+		if (ctrl.message.count()) {
+			els.push(m('span.count.ion-person', 'Recipients: ' + ctrl.message.count().TOTALLY));
+		}
+		var s = ctrl.message.result.status(),
+			 override;
+		if (push.statusers) {
+			push.statusers.forEach(function(statuser){
+				var o = statuser(ctrl.message.___data);
+				if (o) {
+					override = o;
+				}
+			});
+		}
+
+		var status = override || t('push.message.status.' + s);
+		// if (message.result.error()) {
+		if (ctrl.message.result.error() && !ctrl.message.result.isSent()) {
+			els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
+				m('circle[fill="#D54043"][cx=28][cy=28][r=28]'),
+				m('path[fill="#FFFFFF"][d=M40.9,16.1L40.9,16.1c1.4,1.4,1.4,3.6,0,4.9L21.1,40.9c-1.4,1.4-3.6,1.4-4.9,0l0,0c-1.4-1.4-1.4-3.6,0-4.9l19.8-19.8C37.3,14.8,39.5,14.8,40.9,16.1z]'),
+				m('path[fill="#FFFFFF"][d=M40.9,40.9L40.9,40.9c-1.4,1.4-3.6,1.4-4.9,0L16.1,21.1c-1.4-1.4-1.4-3.6,0-4.9l0,0c1.4-1.4,3.6-1.4,4.9,0l19.8,19.8C42.2,37.3,42.2,39.5,40.9,40.9z]'),
+			]), status]));
+		} else if (ctrl.message.result.sending()) {
+			els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
+				m('circle[fill="#50A1EA"][cx=28][cy=28][r=28]'),
+				m('circle[fill="#F9F9F9"][cx=14][cy=29][r=5]'),
+				m('circle[fill="#ABCBFF"][cx=28][cy=29][r=5]'),
+				m('circle[fill="#6EA6FB"][cx=42][cy=29][r=5]'),
+			]), status]));
+		} else if (ctrl.message.result.scheduled()) {
+			els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
+				m('circle[fill="#50A1EA"][cx=28][cy=28][r=28]'),
+				m('rect[fill="#F9F9F9"][x=24][y=10][width=7][height=22]'),
+				m('rect[fill="#F9F9F9"][x=24][y=27][width=21][height=7]'),
+			]), status]));
+		} else if (ctrl.message.result.isSent()) {
+			els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
+				m('circle[fill="#2FA732"][cx=28][cy=28][r=28]'),
+				m('polyline[stroke="#FFFFFF"][fill=none][stroke-width=6][stroke-linecap=round][stroke-linejoin=round][points=15,29.4 24.2,40 40.3,16.7]'),
+			]), status]));
+		}
+
+		return m('div.comp-push', { class : 'view-message-slider' }, [
+			m('h3', els),
+			m.component(components.widget, {
+				content: {
+					view: m('.message-chart-container',  [
+						m('.message-chart', {config : ctrl.chartConfig})
+					])
+				},
+				footer: {
+					bignumbers: [
+						{ title: 'pu.dash.metrics.sent', number:5, color: true, help: 'help.dashboard.push.sent' },
+						{ title: 'pu.dash.metrics.acti', number: 10, color: true, help: 'help.dashboard.push.actions' },
+					]
+				}
+			}),
+			m('h3', t('pu.po.message-specs')),
 			r.error() ? 
 				m(r.errorFixed().toLowerCase() === 'exited-sent' ? '.comp-push-warn' : '.comp-push-error', [
 					m('svg[width=21][height=18]', m('path[fill="#FFFFFF"][d="M20,18c0.6,0,0.8-0.4,0.5-0.9L11,0.9c-0.3-0.5-0.7-0.5-1,0L0.5,17.1C0.2,17.6,0.4,18,1,18H20zM10,13h2v2h-2V13z M10,8h2v4h-2V8z"]')),
@@ -211,6 +244,7 @@ window.component('push.view', function(view) {
 			m('.btns', [
 				m('a.btn-prev.orange', {
 					href: '#', 
+					style : { marginLeft : "5px"},
 					onclick: function(ev){ 
 						ev.preventDefault();
 						var json = ctrl.message.toJSON(false, true, true);
@@ -219,6 +253,7 @@ window.component('push.view', function(view) {
 					}
 				}, t('pu.po.duplicate')),
 				m('a.btn-next.red', {
+					style : { marginRight: "5px"},
 					href: '#', 
 					onclick: function(ev){ 
 						ev.preventDefault();
