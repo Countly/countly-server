@@ -345,6 +345,65 @@ window.WebDashboardView = countlyView.extend({
 
 app.addAppType("web", WebDashboardView);
 
+app.addAppSetting("web_event", {
+    toDisplay: function(appId, elem){$(elem).text(domainKeyToString(countlyGlobal['apps'][appId]["domain_event"]));},
+    toInput: function(appId, elem){$(elem).val(domainKeyToString(countlyGlobal['apps'][appId]["domain_event"]));},
+    toSave: function(appId, args, elem){
+        var domainEvent = $(elem).val().split(",");
+        if(domainEvent && domainEvent.length > 0){
+            for(var i = 0; i < domainEvent.length; i++){
+                domainEvent[i] = jQuery.trim(domainEvent[i]);
+            }
+        }
+        args.domain_event = domainEvent;
+    },
+    toInject: function(){
+        var addApp = '<tr class="appmng-domain">'+
+            '<td>'+
+                '<span data-localize="management-applications.domain-event"></span>'+
+            '</td>'+
+            '<td>'+
+                '<input type="text" value="" class="app-write-settings" data-id="domain_event" placeholder="Enter website domain..." data-localize="placeholder.domain-event-key" id="app-add-domain-event"></span>'+
+            '</td>'+
+        '</tr>';
+        
+        $("#add-new-app table .table-add").before(addApp);
+    
+        var editApp = '<tr class="appmng-domain">'+
+            '<td>'+
+                '<span data-localize="management-applications.domain-event"></span>'+
+            '</td>'+
+            '<td id="app-edit-domain">'+
+                '<div class="read app-read-settings" data-id="domain_event"></div>'+
+                '<div class="edit">'+
+                    '<input type="text" value="" class="app-write-settings" data-id="domain_event" data-localize="placeholder.domain-event-key" id="app-edit-domain-event"></span>'+
+                '</div>'+
+            '</td>'+
+        '</tr>';
+        
+        $(".app-details table .table-edit").before(editApp);
+    }
+});
+
+app.addPageScript("/manage/apps", function(){
+	var appId = countlyCommon.ACTIVE_APP_ID;
+    if(!countlyGlobal["apps"][appId] || countlyGlobal["apps"][appId].type == "web"){
+        $(".appmng-domain").show();
+    } 
+    else{
+        $(".appmng-domain").hide();
+    }
+});
+
+app.addAppManagementSwitchCallback(function(appId, type){
+    if(type == "web"){
+        $(".appmng-domain").show();
+    } 
+    else{
+        $(".appmng-domain").hide();
+    }
+});
+
 $( document ).ready(function() {
     var menu = '<a href="#/analytics/platforms" class="item">'+
 		'<div class="logo platforms"></div>'+
