@@ -1261,7 +1261,12 @@ window.ManageAppsView = countlyView.extend({
                                 countlyAppVersion.reset();
                                 countlyEvent.reset();
                             }
-                            CountlyHelpers.alert(jQuery.i18n.map["management-applications.clear-success"], "black");
+                            if(period=="reset")
+                            {
+                                CountlyHelpers.alert(jQuery.i18n.map["management-applications.reset-success"], "black");
+                            }
+                            else
+                                CountlyHelpers.alert(jQuery.i18n.map["management-applications.clear-success"], "black");
                         }
                     }
                 });

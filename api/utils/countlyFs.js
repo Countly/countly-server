@@ -611,7 +611,7 @@ countlyFs.fs = {};
     *       console.log("File exists");
     * });
     */
-    ob.exists = function(category, dest, callback){
+    ob.exists = function(category, dest,options, callback){
         if(typeof options === "function"){
             callback = options;
             options = null;
