@@ -86,7 +86,7 @@ var common          = require('../../../../api/utils/common.js'),
             try {
                 var events = results.slice(0, 2).map(events => {
                     var ret = {weekly: {data: Array(wks.length).fill(0), keys: wkt}, monthly: {data: Array(mts.length).fill(0), keys: mtt}, total: 0};
-                    var retAuto = { daily: { data: Array(30).fill(0), keys : Array(30).fill(0).map((x, k) => k )}, total : 0, weekly: { data: Array(wks.length).fill(0), keys: wkt }, monthly: { data: Array(mts.length).fill(0), keys: mtt }, total: 0 };
+                    var retAuto = { daily: { data: Array(30).fill(0), keys : Array(30).fill(0).map((x, k) => k )}, total : 0, weekly: { data: Array(wks.length).fill(0), keys: wkt }, monthly: { data: Array(mts.length).fill(0), keys: mtt }};
                     // log.d('events', events);
                     events.forEach(e => {
                         // log.d('event', e);
