@@ -345,25 +345,20 @@ window.WebDashboardView = countlyView.extend({
 
 app.addAppType("web", WebDashboardView);
 
-app.addAppSetting("web_event", {
-    toDisplay: function(appId, elem){$(elem).text(domainKeyToString(countlyGlobal['apps'][appId]["domain_event"]));},
-    toInput: function(appId, elem){$(elem).val(domainKeyToString(countlyGlobal['apps'][appId]["domain_event"]));},
+app.addAppSetting("app_domain", {
+    toDisplay: function(appId, elem){$(elem).text(countlyGlobal['apps'][appId]["app_domain"]);},
+    toInput: function(appId, elem){$(elem).val(countlyGlobal['apps'][appId]["app_domain"]);},
     toSave: function(appId, args, elem){
-        var domainEvent = $(elem).val().split(",");
-        if(domainEvent && domainEvent.length > 0){
-            for(var i = 0; i < domainEvent.length; i++){
-                domainEvent[i] = jQuery.trim(domainEvent[i]);
-            }
-        }
-        args.domain_event = domainEvent;
+        var domainEvent = $(elem).val();
+        args.app_domain = domainEvent;
     },
     toInject: function(){
         var addApp = '<tr class="appmng-domain">'+
             '<td>'+
-                '<span data-localize="management-applications.domain-event"></span>'+
+                '<span data-localize="management-applications.app-domain"></span>'+
             '</td>'+
             '<td>'+
-                '<input type="text" value="" class="app-write-settings" data-id="domain_event" placeholder="Enter website domain..." data-localize="placeholder.domain-event-key" id="app-add-domain-event"></span>'+
+                '<input type="text" value="" class="app-write-settings" data-id="app_domain" placeholder="Enter website domain..." data-localize="placeholder.app-domain-key" id="app-add-app-domain"></span>'+
             '</td>'+
         '</tr>';
         
@@ -371,12 +366,12 @@ app.addAppSetting("web_event", {
     
         var editApp = '<tr class="appmng-domain">'+
             '<td>'+
-                '<span data-localize="management-applications.domain-event"></span>'+
+                '<span data-localize="management-applications.app-domain"></span>'+
             '</td>'+
             '<td id="app-edit-domain">'+
-                '<div class="read app-read-settings" data-id="domain_event"></div>'+
+                '<div class="read app-read-settings" data-id="app_domain"></div>'+
                 '<div class="edit">'+
-                    '<input type="text" value="" class="app-write-settings" data-id="domain_event" data-localize="placeholder.domain-event-key" id="app-edit-domain-event"></span>'+
+                    '<input type="text" value="" class="app-write-settings" data-id="app_domain" data-localize="placeholder.app-domain-key" id="app-edit-app-domain"></span>'+
                 '</div>'+
             '</td>'+
         '</tr>';
