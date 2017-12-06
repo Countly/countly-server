@@ -73,7 +73,16 @@ window.ViewsView = countlyView.extend({
                 $(".widget-header .left .title").after(addDrill("sg.name", null, "[CLY]_view"));
                 if(countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type == "web" && domains.length){
                     columns.push({ "mData": function(row, type){
-                        return '<a href="#/analytics/views/action-map/'+row.views+'" class="table-link green" data-localize="views.table.view" style="margin:0px; padding:2px;">'+jQuery.i18n.map["views.table.view"]+'</a>';
+                        var url = "#/analytics/views/action-map/";
+                        if(countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID]["app_domain"] && countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID]["app_domain"].length > 0){
+                            url = countlyGlobal['apps'][countlyCommon.ACTIVE_APP_ID]["app_domain"];
+                            if(url.indexOf("http") !== 0)
+                                url = "http://"+url;
+                            if(url.substr(url.length - 1) == '/') 
+                                url = url.substr(0, url.length - 1);
+                        }
+
+                        return '<a href='+url+row.views+' class="table-link green" data-localize="views.table.view" style="margin:0px; padding:2px;">'+jQuery.i18n.map["views.table.view"]+'</a>';
                         }, sType:"string", "sTitle": jQuery.i18n.map["views.action-map"], "sClass":"shrink center", bSortable: false });
                 }
             }
@@ -130,6 +139,13 @@ window.ViewsView = countlyView.extend({
             
             $('.views-table tbody').on("click", "a.table-link", function (event){
                 event.stopPropagation();
+                var followLink = false;
+                var url = event.target.href;
+
+                if(url.indexOf("#/analytics/views/action-map/") < 0){
+                    followLink = true;
+                }
+
                 if(countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].sdk_version && parseInt((countlyGlobal.apps[countlyCommon.ACTIVE_APP_ID].sdk_version+"").split(".")[0]) <= 16){
                     return;
                 }
@@ -137,17 +153,31 @@ window.ViewsView = countlyView.extend({
                 if($(event.target).hasClass("active")){
                     $(".views-table a.table-link").removeClass("active");
                     $(event.target).addClass("active");
-                    var pos = $(event.target).offset();
-                    $('.widget-content .cly-button-menu').css({
-                        top: (pos.top+25) + "px",
-                        left: (pos.left-250) + "px",
-                        right: 35 + "px"
-                    });
-                    $('.widget-content > .cly-button-menu-trigger').addClass("active");
-                    $('.widget-content > .cly-button-menu').focus();
+                    
+                    if(!followLink){
+                        var pos = $(event.target).offset();
+                        $('.widget-content .cly-button-menu').css({
+                            top: (pos.top+25) + "px",
+                            left: (pos.left-250) + "px",
+                            right: 35 + "px"
+                        });
+                        $('.widget-content > .cly-button-menu-trigger').addClass("active");
+                        $('.widget-content > .cly-button-menu').focus();
+                    }
+
+                    var newWindow = "";
+                    if(followLink){
+                        newWindow = window.open("");
+                    }
+
                     countlyViews.getToken(function(token){
                         self.useView = event.target.hash;
                         self.token = token;
+
+                        if(followLink && (self.token !== false)){
+                            newWindow.location.href = url;
+                            newWindow.name = "cly:" + JSON.stringify({"token":self.token,"purpose":"heatmap",period:countlyCommon.getPeriodForAjax(),showHeatMap: true});    
+                        }
                     });
                 }
                 else{
@@ -170,7 +200,7 @@ window.ViewsView = countlyView.extend({
                 }
                 $('.widget-content > .cly-button-menu-trigger').removeClass("active");
             });
-            
+
             $('.widget-content .cly-button-menu').blur(function() {
                 $('.widget-content > .cly-button-menu-trigger').removeClass("active");
             });

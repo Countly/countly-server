@@ -345,6 +345,60 @@ window.WebDashboardView = countlyView.extend({
 
 app.addAppType("web", WebDashboardView);
 
+app.addAppSetting("app_domain", {
+    toDisplay: function(appId, elem){$(elem).text(countlyGlobal['apps'][appId]["app_domain"]);},
+    toInput: function(appId, elem){$(elem).val(countlyGlobal['apps'][appId]["app_domain"]);},
+    toSave: function(appId, args, elem){
+        var domainEvent = $(elem).val();
+        args.app_domain = domainEvent;
+    },
+    toInject: function(){
+        var addApp = '<tr class="appmng-domain">'+
+            '<td>'+
+                '<span data-localize="management-applications.app-domain"></span>'+
+            '</td>'+
+            '<td>'+
+                '<input type="text" value="" class="app-write-settings" data-id="app_domain" placeholder="Enter website domain..." data-localize="placeholder.app-domain-key" id="app-add-app-domain"></span>'+
+            '</td>'+
+        '</tr>';
+        
+        $("#add-new-app table .table-add").before(addApp);
+    
+        var editApp = '<tr class="appmng-domain">'+
+            '<td>'+
+                '<span data-localize="management-applications.app-domain"></span>'+
+            '</td>'+
+            '<td id="app-edit-domain">'+
+                '<div class="read app-read-settings" data-id="app_domain"></div>'+
+                '<div class="edit">'+
+                    '<input type="text" value="" class="app-write-settings" data-id="app_domain" data-localize="placeholder.app-domain-key" id="app-edit-app-domain"></span>'+
+                '</div>'+
+            '</td>'+
+        '</tr>';
+        
+        $(".app-details table .table-edit").before(editApp);
+    }
+});
+
+app.addPageScript("/manage/apps", function(){
+	var appId = countlyCommon.ACTIVE_APP_ID;
+    if(!countlyGlobal["apps"][appId] || countlyGlobal["apps"][appId].type == "web"){
+        $(".appmng-domain").show();
+    } 
+    else{
+        $(".appmng-domain").hide();
+    }
+});
+
+app.addAppManagementSwitchCallback(function(appId, type){
+    if(type == "web"){
+        $(".appmng-domain").show();
+    } 
+    else{
+        $(".appmng-domain").hide();
+    }
+});
+
 $( document ).ready(function() {
     var menu = '<a href="#/analytics/platforms" class="item">'+
 		'<div class="logo platforms"></div>'+
