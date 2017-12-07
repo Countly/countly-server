@@ -11,7 +11,7 @@
 
 #assistant_container .assistant_notif_title { font-size: 14px; margin-top: 5px; color: #636363; }
 #assistant_container .assistant_notif_timesince { font-size: 10px; color: #C9C9C9; margin-top: 5px; }
-#assistant_container .assistant_notif_message { font-size: 13px; color: #5f5f5f; margin-top: 15px; line-height: 17px; }
+#assistant_container .assistant_notif_message { font-size: 13px; color: #5f5f5f; margin-top: 15px; line-height: 17px; word-wrap: break-word;}
 
 #assistant_container .assistant_icon_quicktips { color: #44baa0; }
 #assistant_container .assistant_icon_insight { color: #Fcb11A; }
