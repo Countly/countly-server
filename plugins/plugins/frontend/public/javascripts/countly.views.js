@@ -330,7 +330,6 @@ window.ConfigurationsView = countlyView.extend({
         }
     },
     renderCommon: function (isRefresh) {
-        console.log("common");
         if (this.reset)
             $("#new-install-overlay").show();
         if (this.userConfig)
@@ -342,6 +341,10 @@ window.ConfigurationsView = countlyView.extend({
         this.searchKeys = this.getSearchKeys(this.configsData);
         this.navTitles = this.setNavTitles(this.configsData);
         this.selectedNav = this.navTitles.coreTitles[0];
+
+        this.isUserSettingsPage = this.navTitles.coreTitles.length === 0;
+
+        
 
         var configsHTML;
         var title = jQuery.i18n.map["plugins.configs"];
@@ -383,7 +386,17 @@ window.ConfigurationsView = countlyView.extend({
             $(this.el).html(this.template(this.templateData));
 
 
-            $('#nav-item-' + this.selectedNav.key).addClass('selected');
+            if(this.isUserSettingsPage){
+                $('#configs-title-bar').hide();
+                $('#config-title').html(jQuery.i18n.map['plugins.user-configs']);
+                $('#config-table-container').addClass('user-settings-table');
+            }
+            else{
+                $('#configs-table-widget').css('marginLeft', '200px');
+                $('#nav-item-' + this.selectedNav.key).addClass('selected');
+            }
+                
+
             this.changes = {};
             this.cache = JSON.parse(JSON.stringify(this.configsData));
 
@@ -824,7 +837,6 @@ window.ConfigurationsView = countlyView.extend({
             return prev;
         },[]);
 
-        console.log("result", result);
         return result;
     },
     generateConfigsTable: function (configsData, id) {
@@ -866,7 +878,6 @@ window.ConfigurationsView = countlyView.extend({
             else {
                 var input = this.getInputByType((id + "." + i).substring(1), configsData[i]);
                 var label = this.getInputLabel((id + "." + i).substring(1), i);
-                console.log("label",label)
                 if (input && label)
                     configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".","") + "' class='config-table-details-row'><td style='padding:15px 20px'>" + label + "</td><td style='padding:15px 20px'>" + input + "</td></tr>";
             }
@@ -947,16 +958,17 @@ window.ConfigurationsView = countlyView.extend({
             return id + ret;
     },
     setNavTitles: function (configdata) {
-        var plugins = countlyGlobal.plugins;
-
+    
         var pluginTitles = [], coreTitles = [];
 
         var self = this;
+        var coreDefaults = ['frontend', 'security', 'api', 'apps', 'logs'];
+
         Object.keys(configdata).forEach(function (key) {
-            if (plugins.indexOf(key) >= 0) 
-                pluginTitles.push({ key: key, label: self.getLabel(key) });
-            else
+            if (coreDefaults.indexOf(key) >= 0) 
                 coreTitles.push({ key: key, label: self.getLabel(key) });
+            else if(countlyGlobal["plugins"].indexOf(key) >= 0)
+                pluginTitles.push({ key: key, label: self.getLabel(key) });
         });
 
         coreTitles = coreTitles.sort(function (a, b) { return a > b; });

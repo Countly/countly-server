@@ -87,7 +87,7 @@
     align-items: center;
     height: 24px;
     padding: 8px 12px;
-    overflow: hidden;
+    overflow: auto;
     border-top: 1px solid #d0d0d0;
     background-color: #efefef;
 }
@@ -146,4 +146,9 @@
 
 .config-table-details-row td:last-child {
     border-left: 0px solid #d0d0d0;
+}
+
+.user-settings-table > table > tbody > tr > td:first-child{
+    padding: 20px 25px;
+    border-right: 1px solid #d0d0d0;
 }
