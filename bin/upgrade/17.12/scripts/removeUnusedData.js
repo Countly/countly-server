@@ -19,7 +19,7 @@ countlyDb.collection('apps').find({}).toArray(function (err, apps) {
     }
 	function upgrade(app, done){
 		console.log("Removing .old and .pe property from " + app.name);
-        countlyDb.collection('app_users' + app._id).update({},{$unset:{old:"", pe:""}}, {multi:true}, done);
+        countlyDb.collection('app_users' + app._id).update({},{$unset:{old:"", pe:"", crashes:""}}, {multi:true}, done);
 	}
 	async.forEach(apps, upgrade, function(){
 		removeOldSessions();
