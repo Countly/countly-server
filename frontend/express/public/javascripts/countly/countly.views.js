@@ -1260,7 +1260,7 @@ window.ManageAppsView = countlyView.extend({
                             }
                             if(period=="reset")
                             {
-                                CountlyHelpers.alert(jQuery.i18n.map["management-applications.reset-success"], "black");
+                               CountlyHelpers.alert(jQuery.i18n.map["management-applications.reset-success"], "black");
                             }
                             else
                                 CountlyHelpers.alert(jQuery.i18n.map["management-applications.clear-success"], "black");
@@ -3145,4 +3145,17 @@ app.route("/manage/tasks","longTasks", function () {
 });
 app.route("/analytics/events","events", function () {
 	this.renderWhenReady(this.eventsView);
+});
+
+$.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
+  //jqXHR.setRequestHeader('X-CSRFToken', csrf_token);
+    if(countlyGlobal.auth_token)
+    {
+        //jqXHR.setRequestHeader('countly-token', countlyGlobal.auth_token);
+        options.data = $.param($.extend(originalOptions.data||{}, {
+            auth_token: countlyGlobal.auth_token
+        }));
+        
+    }
+    
 });

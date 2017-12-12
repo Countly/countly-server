@@ -31,6 +31,8 @@ var versionInfo = require('./version.info'),
 	plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config', 'dont-enclose'),
     log = require('../../api/utils/log.js')('core:app');
+    var authorize = require('../../api/utils/authorizer.js'); //for token validations
+
     
     var COUNTLY_NAMED_TYPE = "Countly Community Edition v"+COUNTLY_VERSION;
     var COUNTLY_TYPE_CE = true;
@@ -432,6 +434,12 @@ app.get(countlyConfig.path+'/logout', function (req, res, next) {
         req.session.uid = null;
         req.session.gadm = null;
         req.session.email = null;
+        
+        if(req.session.auth_token)
+        {
+            countlyDb.collection("auth_tokens").remove({_id:req.session.auth_token});
+            req.session.auth_token = null;  
+        }
         req.session.settings = null;
         res.clearCookie('uid');
         res.clearCookie('gadm');
@@ -569,6 +577,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             defaultApp:defaultApp,
                             admin_apps:countlyGlobalAdminApps,
                             csrf_token:req.csrfToken(),
+                            auth_token:req.session.auth_token,
                             member:member,
                             config: req.config,
                             security: plugins.getConfig("security"),
@@ -873,8 +882,8 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                         // will have a new session here
                         req.session.uid = member["_id"];
                         req.session.gadm = (member["global_admin"] == true);
-                            req.session.email = member["email"];
-                        req.session.settings = member.settings;
+                        req.session.email = member["email"];
+
                         var update = {last_login:Math.round(new Date().getTime()/1000)};
                         if(typeof member.password_changed === "undefined"){
                             update.password_changed = Math.round(new Date().getTime()/1000);
@@ -885,7 +894,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                         if(Object.keys(update).length){
                             countlyDb.collection('members').update({_id:member["_id"]}, {$set:update}, function(){});
                         }
-                            if(plugins.getConfig("frontend", member.settings).session_timeout)
+                        if(plugins.getConfig("frontend", member.settings).session_timeout)
                                 req.session.expires = Date.now()+plugins.getConfig("frontend", member.settings).session_timeout;
                         if(member.upgrade){
                             res.set({
@@ -894,8 +903,20 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                                 'Pragma': 'no-cache'
                             });
                         }
-                        res.redirect(countlyConfig.path+'/dashboard');
-                        bruteforce.reset(req.body.username);
+                        //create token
+                        authorize.save({db:countlyDb,multi:true,owner:req.session.uid,callback:function(err,token){
+                            
+                            if(err){console.log(err);}
+                            if(token)
+                            {
+                                req.session.auth_token = token;
+                            }
+                            res.redirect(countlyConfig.path+'/dashboard');
+                            bruteforce.reset(req.body.username);
+                        
+                        }});
+                        
+                        
                     });
                 }
             } else {

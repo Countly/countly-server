@@ -27,7 +27,13 @@ var crypto = require("crypto");
         options.multi = options.multi || false;
         options.owner = options.owner || "";
         options.app = options.app || "";
-        options.db.collection("auth_tokens").insert({_id:options.token, ttl:options.ttl, ends:options.ttl+Math.round(Date.now()/1000), multi:options.multi, owner:options.owner, app:options.app}, function(err, res){
+        options.endpoint = options.endpoint || "";
+        
+        if(options.endpoint!="" && !Array.isArray(options.endpoint))
+        {
+            options.endpoint = [options.endpoint];
+        }
+        options.db.collection("auth_tokens").insert({_id:options.token, ttl:options.ttl, ends:options.ttl+Math.round(Date.now()/1000), multi:options.multi, owner:options.owner, app:options.app,endpoint:options.endpoint}, function(err, res){
             if(typeof options.callback === "function"){
                 options.callback(err, options.token);
             }
@@ -60,20 +66,81 @@ var crypto = require("crypto");
         options.db.collection("auth_tokens").findOne({_id:options.token},function(err, res){
             var valid = false;
             if(res){
-                if(res.ttl === 0)
-                    valid = true;
-                else if(res.ends >= Math.round(Date.now()/1000))
-                    valid = true;
+                var  valid_endpoint=true;
+                if(res.endpoint && res.endpoint!="")
+                {
+                    if(options.req_path!="")
+                    {
+                        valid_endpoint=false;
+                        for(var p=0; p<res.endpoint.length; p++)
+                        {
+                            if(options.req_path.substr(res.endpoint[p])>-1)
+                            {
+                                valid_endpoint=true;
+                            }
+                        }
+                    }
+                }
                 
-                //consume token if expired or not multi
-                if(!res.multi || (res.ttl > 0 && res.ends < Math.round(Date.now()/1000)))
-                    options.db.collection("auth_tokens").remove({_id:options.token});
+                if(valid_endpoint)
+                {
+                    if(res.ttl === 0)
+                        valid = true;
+                    else if(res.ends >= Math.round(Date.now()/1000))
+                        valid = true;
+                    
+                    //consume token if expired or not multi
+                    if(!res.multi || (res.ttl > 0 && res.ends < Math.round(Date.now()/1000)))
+                        options.db.collection("auth_tokens").remove({_id:options.token});
+                }
             }
             if(typeof options.callback === "function"){
                 options.callback(valid);
             }
         });
     };
+    
+    /** same as above, only if valid returns owner. Keeping both for backwards compability **/
+    authorizer.verify_return= function (options) {
+        options.db = options.db || common.db;
+        options.token = options.token || authorizer.getToken();
+        options.db.collection("auth_tokens").findOne({_id:options.token},function(err, res){
+            var valid = false;
+            if(res){
+                var  valid_endpoint=true;
+                if(res.endpoint && res.endpoint!="")
+                {
+                    if(options.req_path!="")
+                    {
+                        valid_endpoint=false;
+                        for(var p=0; p<res.endpoint.length; p++)
+                        {
+                            if(options.req_path.substr(res.endpoint[p])>-1)
+                            {
+                                valid_endpoint=true;
+                            }
+                        }
+                    }
+                }
+                
+                if(valid_endpoint)
+                {
+                    if(res.ttl === 0)
+                        valid = res.owner
+                    else if(res.ends >= Math.round(Date.now()/1000))
+                        valid = res.owner;
+                    
+                    //consume token if expired or not multi
+                    if(!res.multi || (res.ttl > 0 && res.ends < Math.round(Date.now()/1000)))
+                        options.db.collection("auth_tokens").remove({_id:options.token});
+                }
+            }
+            if(typeof options.callback === "function"){
+                options.callback(valid);
+            }
+        });
+    };
+    
     
     /**
     * Generates auhtentication ID

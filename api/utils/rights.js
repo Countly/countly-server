@@ -5,7 +5,29 @@
 var common = require("./common.js"),
     plugins = require('../../plugins/pluginManager.js'),
     Promise = require("bluebird");
+var authorize = require('./authorizer.js'); //for token validations
 
+    function validate_token_if_exists(params)
+    {
+        return new Promise(function(resolve, reject){
+            var token= params.qstring.auth_token || params.req.headers["countly-token"] || "";
+            if(token && token!="")
+            {
+                authorize.verify_return({db:common.db, token:token, req_path:params.fullPath, callback:function(valid){
+                    //false or owner.id
+                    if(valid)
+                        resolve(valid);
+                    else
+                    {
+                        resolve('token-invalid');
+                    }
+                    
+                }});
+            }
+            else
+                resolve("token-not-given");
+        });
+    }
 /**
 * Validate user for read access by api_key for provided app_id (both required parameters for the request). 
 * User must exist, must not be locked, must pass plugin validation (if any) and have at least user access to the provided app (which also must exist).
@@ -18,56 +40,68 @@ var common = require("./common.js"),
 */
 exports.validateUserForRead = function(params, callback, callbackParam) {
     return wrapCallback(params, callback, callbackParam, function(resolve, reject){
-        common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
-            if (!member || err) {
-                common.returnMessage(params, 401, 'User does not exist');
-                reject('User does not exist');
-                return false;
+        validate_token_if_exists(params).then(function(result){
+            var query={'api_key':params.qstring.api_key};
+            if(result!='token-not-given' && result!='token-invalid' )// then result is owner id
+            {
+                query = {'_id':common.db.ObjectID(result)};
             }
-            
-            if (typeof params.qstring.app_id === "undefined") {
-                common.returnMessage(params, 401, 'No app_id provided');
-                reject('No app_id provided');
-                return false;
-            }
-    
-            if (!((member.user_of && member.user_of.indexOf(params.qstring.app_id) != -1) || member.global_admin)) {
-                common.returnMessage(params, 401, 'User does not have view right for this application');
-                reject('User does not have view right for this application');
-                return false;
-            }
-            
-            if (member && member.locked) {
-                common.returnMessage(params, 401, 'User is locked');
-                reject('User is locked');
-                return false;
-            }
-    
-            common.db.collection('apps').findOne({'_id':common.db.ObjectID(params.qstring.app_id + "")}, function (err, app) {
-                if (!app) {
-                    common.returnMessage(params, 401, 'App does not exist');
-                    reject('App does not exist');
+            common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
+                if (!member || err) {
+                    common.returnMessage(params, 401, 'User does not exist');
+                    reject('User does not exist');
                     return false;
                 }
-                params.member = member;
-                params.app_id = app['_id'];
-                params.app_cc = app['country'];
-                params.appTimezone = app['timezone'];
-                params.app = app;
-                params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
                 
-                if(plugins.dispatch("/validation/user", {params:params})){
-                    if(!params.res.finished){
-                        common.returnMessage(params, 401, 'User does not have permission');
-                        reject('User does not have permission');
+                if (typeof params.qstring.app_id === "undefined") {
+                    common.returnMessage(params, 401, 'No app_id provided');
+                    reject('No app_id provided');
+                    return false;
+                }
+        
+                if (!((member.user_of && member.user_of.indexOf(params.qstring.app_id) != -1) || member.global_admin)) {
+                    common.returnMessage(params, 401, 'User does not have view right for this application');
+                    reject('User does not have view right for this application');
+                    return false;
+                }
+                
+                if (member && member.locked) {
+                    common.returnMessage(params, 401, 'User is locked');
+                    reject('User is locked');
+                    return false;
+                }
+        
+                common.db.collection('apps').findOne({'_id':common.db.ObjectID(params.qstring.app_id + "")}, function (err, app) {
+                    if (!app) {
+                        common.returnMessage(params, 401, 'App does not exist');
+                        reject('App does not exist');
+                        return false;
                     }
-                    return false;
-                }
-                
-                plugins.dispatch("/o/validate", {params:params, app:app});
-                
-                resolve(callbackParam);
+                    params.member = member;
+                    params.app_id = app['_id'];
+                    params.app_cc = app['country'];
+                    params.appTimezone = app['timezone'];
+                    params.app = app;
+                    params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                    
+                    if(plugins.dispatch("/validation/user", {params:params})){
+                        if(!params.res.finished){
+                            common.returnMessage(params, 401, 'User does not have permission');
+                            reject('User does not have permission');
+                        }
+                        return false;
+                    }
+                    
+                    plugins.dispatch("/o/validate", {params:params, app:app});
+                    
+                    resolve(callbackParam);
+                });
             });
+        },
+        function(err){
+            common.returnMessage(params, 401, 'User does not exist');
+            reject('User does not exist');
+            return false;
         });
     });
 }
@@ -84,47 +118,59 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
 */
 exports.validateUserForWrite = function(params, callback, callbackParam) {
     return wrapCallback(params, callback, callbackParam, function(resolve, reject){
-        common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
-            if (!member || err) {
-                common.returnMessage(params, 401, 'User does not exist');
-                reject('User does not exist');
-                return false;
+        validate_token_if_exists(params).then(function(result){
+            var query={'api_key':params.qstring.api_key};
+            if(result!='token-not-given' && result!='token-invalid' )// then result is owner id
+            {
+                query = {'_id':common.db.ObjectID(result)};
             }
-    
-            if (!((member.admin_of && member.admin_of.indexOf(params.qstring.app_id) != -1) || member.global_admin)) {
-                common.returnMessage(params, 401, 'User does not have write right for this application');
-                reject('User does not have write right for this application');
-                return false;
-            }
-            
-            if (member && member.locked) {
-                common.returnMessage(params, 401, 'User is locked');
-                reject('User is locked');
-                return false;
-            }
-    
-            common.db.collection('apps').findOne({'_id':common.db.ObjectID(params.qstring.app_id + "")}, function (err, app) {
-                if (!app) {
-                    common.returnMessage(params, 401, 'App does not exist');
-                    reject('App does not exist');
+            common.db.collection('members').findOne(query, function (err, member) {
+                if (!member || err) {
+                    common.returnMessage(params, 401, 'User does not exist');
+                    reject('User does not exist');
                     return false;
                 }
-    
-                params.app_id = app['_id'];
-                params.appTimezone = app['timezone'];
-                params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
-                params.member = member;
+        
+                if (!((member.admin_of && member.admin_of.indexOf(params.qstring.app_id) != -1) || member.global_admin)) {
+                    common.returnMessage(params, 401, 'User does not have write right for this application');
+                    reject('User does not have write right for this application');
+                    return false;
+                }
                 
-                if(plugins.dispatch("/validation/user", {params:params})){
-                    if(!params.res.finished){
-                        common.returnMessage(params, 401, 'User does not have permission');
-                        reject('User does not have permission');
-                    }
+                if (member && member.locked) {
+                    common.returnMessage(params, 401, 'User is locked');
+                    reject('User is locked');
                     return false;
                 }
-  
-                resolve(callbackParam);
+        
+                common.db.collection('apps').findOne({'_id':common.db.ObjectID(params.qstring.app_id + "")}, function (err, app) {
+                    if (!app) {
+                        common.returnMessage(params, 401, 'App does not exist');
+                        reject('App does not exist');
+                        return false;
+                    }
+        
+                    params.app_id = app['_id'];
+                    params.appTimezone = app['timezone'];
+                    params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+                    params.member = member;
+                    
+                    if(plugins.dispatch("/validation/user", {params:params})){
+                        if(!params.res.finished){
+                            common.returnMessage(params, 401, 'User does not have permission');
+                            reject('User does not have permission');
+                        }
+                        return false;
+                    }
+      
+                    resolve(callbackParam);
+                });
             });
+        },
+        function(err){
+            common.returnMessage(params, 401, 'User does not exist');
+            reject('User does not exist');
+            return false;
         });
     });
 }
@@ -141,36 +187,47 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
 */
 exports.validateGlobalAdmin = function(params, callback, callbackParam) {
     return wrapCallback(params, callback, callbackParam, function(resolve, reject){
-        common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
-            if (!member || err) {
-                common.returnMessage(params, 401, 'User does not exist');
-                reject('User does not exist');
-                return false;
+        validate_token_if_exists(params).then(function(result){
+            var query={'api_key':params.qstring.api_key};
+            if(result!='token-not-given' && result!='token-invalid' )// then result is owner id
+            {
+                query = {'_id':common.db.ObjectID(result)};
             }
-    
-            if (!member.global_admin) {
-                common.returnMessage(params, 401, 'User does not have global admin right');
-                reject('User does not have global admin right');
-                return false;
-            }
-            
-            if (member && member.locked) {
-                common.returnMessage(params, 401, 'User is locked');
-                reject('User is locked');
-                return false;
-            }
-            
-            params.member = member;
-            
-            if(plugins.dispatch("/validation/user", {params:params})){
-                if(!params.res.finished){
-                    common.returnMessage(params, 401, 'User does not have permission');
-                    reject('User does not have permission');
+            common.db.collection('members').findOne(query, function (err, member) {
+                if (!member || err) {
+                    common.returnMessage(params, 401, 'User does not exist');
+                    reject('User does not exist');
+                    return false;
                 }
-                return false;
-            }
+    
+                if (!member.global_admin) {
+                    common.returnMessage(params, 401, 'User does not have global admin right');
+                    reject('User does not have global admin right');
+                    return false;
+                }
             
-            resolve(callbackParam);
+                if (member && member.locked) {
+                    common.returnMessage(params, 401, 'User is locked');
+                    reject('User is locked');
+                    return false;
+                }
+                params.member = member;
+                params.member.auth_token = params.qstring.auth_token || params.req.headers["countly-token"] || "";
+            
+                if(plugins.dispatch("/validation/user", {params:params})){
+                    if(!params.res.finished){
+                        common.returnMessage(params, 401, 'User does not have permission');
+                        reject('User does not have permission');
+                    }
+                    return false;
+                }
+                resolve(callbackParam);
+            });
+        },
+        function(err){
+            common.returnMessage(params, 401, 'User does not exist');
+            reject('User does not exist');
+            return false;
         });
     });
 }
@@ -194,30 +251,42 @@ exports.validateUser = function (params, callback, callbackParam) {
     }
     
     return wrapCallback(params, callback, callbackParam, function(resolve, reject){
-        common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
-            if (!member || err) {
-                common.returnMessage(params, 401, 'User does not exist');
-                reject('User does not exist');
-                return false;
+        validate_token_if_exists(params).then(function(result){
+            var query={'api_key':params.qstring.api_key};
+            if(result!='token-not-given' && result!='token-invalid' )// then result is owner id
+            {
+                query = {'_id':common.db.ObjectID(result)};
             }
-            
-            if (member && member.locked) {
-                common.returnMessage(params, 401, 'User is locked');
-                reject('User is locked');
-                return false;
-            }
-            
-            params.member = member;
-            
-            if(plugins.dispatch("/validation/user", {params:params})){
-                if(!params.res.finished){
-                    common.returnMessage(params, 401, 'User does not have permission');
-                    reject('User does not have permission');
+            common.db.collection('members').findOne(query, function (err, member) {
+                if (!member || err) {
+                    common.returnMessage(params, 401, 'User does not exist');
+                    reject('User does not exist');
+                    return false;
                 }
-                return false;
-            }
-            
-            resolve(callbackParam);
+                
+                if (member && member.locked) {
+                    common.returnMessage(params, 401, 'User is locked');
+                    reject('User is locked');
+                    return false;
+                }
+                
+                params.member = member;
+                
+                if(plugins.dispatch("/validation/user", {params:params})){
+                    if(!params.res.finished){
+                        common.returnMessage(params, 401, 'User does not have permission');
+                        reject('User does not have permission');
+                    }
+                    return false;
+                }
+                
+                resolve(callbackParam);
+            });
+        },
+        function(err){
+            common.returnMessage(params, 401, 'User does not exist');
+            reject('User does not exist');
+            return false;
         });
     });
 };
