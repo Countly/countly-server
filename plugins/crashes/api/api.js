@@ -62,7 +62,7 @@ plugins.setConfigs("crashes", {
                 var dbAppUser = params.app_user;
                 var latest_version = params.qstring.metrics._app_version.replace(/\./g, ":");
                 if(dbAppUser && dbAppUser.uid && (!dbAppUser.av || common.versionCompare(latest_version, dbAppUser.av) > 0)){
-                    common.db.collection('app_crashusers' + params.app_id).find({uid:dbAppUser.uid}, {group:1, _id:0}, function(err, res){
+                    common.db.collection('app_crashusers' + params.app_id).find({uid:dbAppUser.uid}, {group:1, _id:0}).toArray(function(err, res){
                         if(res && res.length){
                             var crashes = [];
                             for(var i = 0; i < res.length; i++){
@@ -71,12 +71,12 @@ plugins.setConfigs("crashes", {
                                 }
                             }
                             if(crashes.length){
-                                async.map(Object.keys(crashes), function(crash, done){
+                                async.map(crashes, function(crash, done){
                                     checkCrash(latest_version, crash, dbAppUser.uid, done);
                                 }, function(err, res){
                                     var shouldRecalculate = false;
                                     if(res && res.length){
-                                        for(var i = 0; i <  res.lentgth; i++){
+                                        for(var i = 0; i < res.length; i++){
                                             if(res[i]){
                                                 shouldRecalculate = true;
                                                 break;
