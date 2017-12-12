@@ -3,14 +3,99 @@ var plugin = {},
     plugins = require('../../pluginManager.js'),
     stores = require("../stores.json"),
 	fetch = require('../../../api/parts/data/fetch.js'),
-    urlParse = require('url');
+    urlParse = require('url'),
+    underscore = require('underscore');
+
+var searchEngineKeyWord = {
+    "q":true, 
+    "search":true,
+    "searchfor": true,
+    "query": true,
+    "wd":"baidu", //only for baidu domains
+    "p":"yahoo", //only for yahoo domains
+    "text": "yandex", // only for yandex domains
+    "u": "facebook.com/l.php" // only for facebook.com/l.php
+};
+
+var filterList = ["google", "baidu.com", "bing", "yahoo", "yandex", "aol", "facebook.com/l.php"]
+var stripPath = ["r.search.yahoo.com", "m.baidu.com"]
+var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign","utm_term","utm_content"];
+
 
 (function (plugin) {
+    plugin.urlParser = function(url) {
+        var qIndex = url.indexOf("?");
+        var path = qIndex > 0 ? url.substring(0, qIndex) : url;
+        var query = qIndex > 0 ? url.substring(qIndex + 1) : "";
+        path = path
+            .replace(/^(http|https):\/\//, "")
+            .replace(/^www./, "");
+        
+        var isFromSearchEngine = false;
+        filterList.forEach( function(item) {
+            if(path.indexOf(item) >= 0) {
+                isFromSearchEngine = true;
+            }
+        })
+        var needStripPath = false;
+        stripPath.forEach( function(item){
+            if(path.indexOf(item) >= 0) {
+                needStripPath = true;
+            }
+        })
+        
+        var finallyQueryString = ""
+        query = query.split("#")[0];
+        var querryArray = query.split("&");
+    
+        if(needStripPath && path.indexOf("/") > 0) {
+           path = path.substring(0, path.indexOf("/"))
+        }
+        if(isFromSearchEngine){
+           querryArray.forEach(function(item){
+               var queryData = item.split("=");
+               if( queryData.length >= 2 && queryData[1].length > 0){
+                    var key = item.split("=")[0];
+                    var keepIt = false;
+                    for(var sKey in searchEngineKeyWord){
+                        if(searchEngineKeyWord[sKey] === true || path.indexOf(searchEngineKeyWord[sKey])> 0){
+                            if(key === sKey){
+                                keepIt = true
+                            }
+                        }
+                    }
+                    if(keepIt){
+                        finallyQueryString +=  (finallyQueryString[0] === "?" ?"&" : "?") + item 
+                    }
+               }
+           })
+        }else{
+        
+            querryArray.forEach(function(item){
+                if(item.indexOf("=") >= 0 && item.split("=").length >= 2){
+                     var key = item.split("=")[0];
+                     if(utmTags.indexOf(key) < 0 ){
+                         finallyQueryString += (finallyQueryString[0] === "?" ? "&" : "?") + item 
+                     }
+                }
+            })
+            
+        }
+    
+        var processedURL = path + finallyQueryString;
+        if(processedURL[processedURL.length - 1] === "/" && !/\/(\w+)\//.test(processedURL)) {
+            processedURL = processedURL.substring(0, processedURL.length - 1)
+        }
+        return processedURL;
+    }
+
+
+
 	plugins.register("/worker", function(ob){
 		common.dbUserMap['source'] = 'src';
 	});
     plugins.register("/o/method/total_users", function(ob){
-        ob.shortcodesForMetrics["sources"] = "src";
+        ob.shortcodesForMetrics["sources"] = " ";
     });
 	plugins.register("/session/metrics", function(ob){
 		var predefinedMetrics = ob.predefinedMetrics;
@@ -22,8 +107,13 @@ var plugin = {},
             }
         }
         if(params.qstring.metrics && typeof params.qstring.metrics._store != "undefined"){
+    
+            if (params.app && params.app.type === "web") {  
+                params.qstring.metrics._store =  plugin.urlParser(params.qstring.metrics._store);
+            }
             params.qstring.metrics._store = common.db.encode(params.qstring.metrics._store);
         }
+
 		predefinedMetrics.push({
             db: "sources",
             metrics: [
@@ -44,23 +134,15 @@ var plugin = {},
     plugins.register("/o/keywords", function(ob){
 		var params = ob.params;
 		var validateUserForDataReadAPI = ob.validateUserForDataReadAPI;
-        validateUserForDataReadAPI(params, function(){
-            var check = {
-                "q":true, 
-                "search":true,
-                "searchfor": true,
-                "query": true,
-                "wd":"baidu", //only for baidu domains
-                "p":"yahoo" //only for yahoo domains
-            };
+        validateUserForDataReadAPI(params, function(){ 
             fetch.getMetric(params, "sources", null, function(data){
                 var result = [];
                 for(var i = 0; i < data.length; i ++){
                     var parts = urlParse.parse(common.db.decode(data[i]._id), true);
                     if(parts.hostname && parts.query){
-                        for(var c in check){
+                        for(var c in searchEngineKeyWord){
                             if(typeof parts.query[c] != "undefined" && parts.query[c] != ""){
-                                if(typeof check[c] === "boolean" || (typeof check[c] === "string" && parts.hostname.indexOf(check[c]) !== -1)){
+                                if(typeof searchEngineKeyWord[c] === "boolean" || (typeof searchEngineKeyWord[c] === "string" && parts.hostname.indexOf(searchEngineKeyWord[c]) !== -1)){
                                     data[i]._id = common.db.encode(parts.query[c]+"");
                                     result.push(data[i]);
                                     break;
