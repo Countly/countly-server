@@ -368,7 +368,7 @@ if (cluster.isMaster) {
                                 //delete old user
                                 common.db.collection('app_users' + params.app_id).remove({_id:old_id}, function(){
                                     //let plugins know they need to merge user data
-                                    common.db.collection("metric_changes" + params.app_id).update({uid:oldUid}, {'$set': {uid:newUid}}, {multi:true}, function(err, res){});
+                                    common.db.collection("metric_changes" + params.app_id).update({uid:oldAppUser.uid}, {'$set': {uid:newAppUser.uid}}, {multi:true}, function(err, res){});
                                     plugins.dispatch("/i/device_id", {params:params, app:app, oldUser:oldAppUser, newUser:newAppUser});
                                     restartRequest();
                                 });
