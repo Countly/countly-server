@@ -1,9 +1,18 @@
 /* global Promise */
+"use strict"
 
 ;(function (global, factory) { // eslint-disable-line
-	"use strict"
 	/* eslint-disable no-undef */
 	var m = factory(global)
+	/*	Set dependencies when no window for isomorphic compatibility */
+	if(typeof window === "undefined") {
+		m.deps({
+			document: typeof document !== "undefined" ? document : {},
+			location: typeof location !== "undefined" ? location : {},
+			clearTimeout: clearTimeout,
+			setTimeout: setTimeout
+		})
+	}
 	if (typeof module === "object" && module != null && module.exports) {
 		module.exports = m
 	} else if (typeof define === "function" && define.amd) {
@@ -16,7 +25,7 @@
 	"use strict"
 
 	m.version = function () {
-		return "v0.2.5"
+		return "v0.2.8"
 	}
 
 	var hasOwn = {}.hasOwnProperty
@@ -103,7 +112,8 @@
 			} else if (match[3].charAt(0) === "[") { // #1195
 				var attrValue = match[6]
 				if (attrValue) attrValue = attrValue.replace(/\\(["'])/g, "$1")
-				cell.attrs[match[4]] = attrValue || true
+				if (match[4] === "class") classes.push(attrValue)
+				else cell.attrs[match[4]] = attrValue || true
 			}
 		}
 
@@ -398,9 +408,7 @@
 	}
 
 	var pendingRequests = 0
-	m.startComputation = function () { 
-		pendingRequests++ 
-	}
+	m.startComputation = function () { pendingRequests++ }
 	m.endComputation = function () {
 		if (pendingRequests > 1) {
 			pendingRequests--
@@ -516,7 +524,8 @@
 		parentTag
 	) {
 		var nodes = cached.nodes
-		if (!editable || editable !== $document.activeElement) {
+		if (!editable || editable !== $document.activeElement ||
+				data !== cached) {
 			if (data.$trusted) {
 				clear(nodes, cached)
 				nodes = injectHTML(parentElement, index, data)
@@ -526,6 +535,7 @@
 			} else if (editable) {
 				// contenteditable nodes use `innerHTML` instead of `nodeValue`.
 				editable.innerHTML = data
+				nodes = [].slice.call(editable.childNodes)
 			} else {
 				// was a trusted string
 				if (nodes[0].nodeType === 1 || nodes.length > 1 ||
@@ -1083,8 +1093,12 @@
 			//
 			// #348 don't set the value if not needed - otherwise, cursor
 			// placement breaks in Chrome
+			// #1252 likewise when `contenteditable` is set on an element.
 			try {
-				if (tag !== "input" || node[attrName] !== dataAttr) {
+				if (
+					tag !== "input" && !node.isContentEditable ||
+					node[attrName] != dataAttr // eslint-disable-line eqeqeq
+				) {
 					node[attrName] = dataAttr
 				}
 			} catch (e) {
@@ -1129,8 +1143,11 @@
 				if (e.message.indexOf("Invalid argument") < 0) throw e
 			}
 		} else if (attrName === "value" && tag === "input" &&
-								node.value !== dataAttr) {
-			// #348 dataAttr may not be a string, so use loose comparison
+								/* eslint-disable eqeqeq */
+								node.value != dataAttr) {
+								// #348 dataAttr may not be a string,
+								// so use loose comparison
+								/* eslint-enable eqeqeq */
 			node.value = dataAttr
 		}
 	}
@@ -1354,6 +1371,7 @@
 		}
 
 		prop.toJSON = function () {
+			if (store && isFunction(store.toJSON)) return store.toJSON()
 			return store
 		}
 
@@ -1417,6 +1435,8 @@
 		return parameterize(component, args)
 	}
 
+	var currentRoute, previousRoute
+
 	function checkPrevented(component, root, index, isPrevented) {
 		if (!isPrevented) {
 			m.redraw.strategy("all")
@@ -1449,6 +1469,7 @@
 			if (component == null) {
 				removeRootElement(root, index)
 			}
+
 			if (previousRoute) {
 				currentRoute = previousRoute
 			}
@@ -1457,8 +1478,8 @@
 
 	m.mount = m.module = function (root, component) {
 		if (!root) {
-			throw new Error("Please ensure the DOM element exists before " +
-				"rendering a template into it.")
+			throw new Error("Ensure the DOM element being passed to " +
+				"m.route/m.mount/m.render is not undefined.")
 		}
 
 		var index = roots.indexOf(root)
@@ -1585,7 +1606,7 @@
 	var modes = {pathname: "", hash: "#", search: "?"}
 	var redirect = noop
 	var isDefaultRoute = false
-	var routeParams, currentRoute, previousRoute
+	var routeParams
 
 	m.route = function (root, arg1, arg2, vdom) { // eslint-disable-line
 		// m.route()
@@ -2145,6 +2166,14 @@
 
 		if (options.deserialize === JSON.parse) {
 			xhr.setRequestHeader("Accept", "application/json, text/*")
+		}
+
+		if (isObject(options.headers)) {
+			for (var header in options.headers) {
+				if (hasOwn.call(options.headers, header)) {
+					xhr.setRequestHeader(header, options.headers[header])
+				}
+			}
 		}
 
 		if (isFunction(options.config)) {

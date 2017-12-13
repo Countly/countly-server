@@ -21,18 +21,6 @@ window.component('push', function(push) {
 			IOS: 'i',
 			ANDROID: 'a'
 		},
-		TRIGGER_TYPE : {
-			COHORT_ENTRY : 'cohort-entry',
-			COHORT_EXIT : 'cohort-exit'
-		},
-		CAMPAIGN_START : {
-			SCHEDULED : 'scheduled',
-			NOW : 'send-now'
-		},
-		DELIVERY_METHOD : {
-			DELAYED : 'delayed',
-			IMMEDIATE : 'immediately'
-		},
 		S: '|'
 	};
 
@@ -78,17 +66,18 @@ window.component('push', function(push) {
 		// ID of tokens build when building audience
 		this._id = m.prop(data._id);
 		this.type = m.prop(data.type || push.C.TYPE.MESSAGE);
+		this.apps = buildClearingProp(data.apps || []);
 
 		// Automated push fields
-		this.triggerType = m.prop(data.type || push.C.TRIGGER_TYPE.COHORT_ENTRY);
-		this.apps = buildClearingProp(data.apps || []);
-		this.cohorts = buildClearingProp(data.cohorts || []);
-		this.hasCampaingEndDate = m.prop(data.hasCampaingEndDate || false);
-		this.campaingEndDate = m.prop(data.campaingEndDate || new Date());
-		this.deliveryDelay = m.prop(data.deliveryDelay || 5);
-		this.deliveryMethod = m.prop(data.deliveryMethod || push.C.DELIVERY_METHOD.DELAYED);
-		this.deliveryTime = m.prop(data.deliveryTime || "12:00");
-		this.messagePerUser = m.prop(data.messagePerUser || 1);
+		this.auto = m.prop(data.auto || false);
+		this.autoActive = m.prop(data.autoActive || false);
+		this.autoOnEntry = m.prop(data.autoOnEntry || false);
+		this.autoCohorts = m.prop(data.autoCohorts || []);
+		this.autoEnd = m.prop(data.autoEnd || undefined);
+		this.autoDelay = m.prop(data.autoDelay || undefined);
+		this.autoTime = m.prop(data.autoTime || undefined);
+		this.autoCapMessages = m.prop(data.autoCapMessages || undefined);
+		this.autoCapSleep = m.prop(data.autoCapSleep || undefined);
 		// this.availableCohorts = buildClearingProp(data.availableCohorts || []);
 		// Automated push fields -----
 
@@ -250,27 +239,12 @@ window.component('push', function(push) {
 			this.platforms(this.platforms().filter(function(p){ return av.indexOf(p) !== -1; }));
 		}
 
-		this.schedule = m.prop(false);
-
 		this.ack = m.prop(false);
 
 		this._id(data._id);
 		this.locales(data.locales || []);
 		this.count(data.count);
 		
-		this.getCohorts = function(callback){
-			var self = this;
-			if(this.apps() && this.apps().length > 0){
-				m.request({
-					method: 'GET',
-					url: window.countlyCommon.API_URL + '/o?api_key=' + window.countlyGlobal.member.api_key + "&app_id=" + this.apps()[0] + "&method=get_cohorts&display_loader=true",
-				}).then(function(data){
-					callback(data);
-				})
-			}
-			
-		}
-
 		this.remotePrepare = function(onFullBuild) {
 			var data = new FormData();
 			data.append('args', JSON.stringify(this.toJSON(true)));
@@ -314,6 +288,14 @@ window.component('push', function(push) {
 				obj.date = this.date();
 				obj.buttons = parseInt(this.buttons());
 				obj.media = this.media();
+				obj.auto = this.auto();
+				obj.autoOnEntry = this.autoOnEntry();
+				obj.autoCohorts = this.autoCohorts();
+				obj.autoEnd = this.autoEnd();
+				obj.autoDelay = this.autoDelay();
+				obj.autoTime = this.autoTime();
+				obj.autoCapMessages = this.autoCapMessages();
+				obj.autoCapSleep = this.autoCapSleep();
 
 				if (this.data()) {
 					obj.data = typeof this.data() === 'string' ? JSON.parse(this.data()) : this.data();
@@ -412,7 +394,7 @@ window.component('push', function(push) {
 			}
 		};
 
-		this.date = m.prop(typeof data.date === 'string' ? new Date(data.date) : data.date || null);
+		this.date = m.prop(typeof data.date === 'string' ? new Date(data.date) : data.date || undefined);
 		this.tz = buildClearingProp(typeof data.tz === 'undefined' ? false : data.tz);
 		this.created = m.prop(data.created || null);
 		this.sent = m.prop(data.sent || null);
@@ -440,19 +422,38 @@ window.component('push', function(push) {
 			return this.date() ? new Date(this.date()).getTime() : null;
 		};
 
-		this.remoteStatusUpdate = function(){
+		this.remoteAutoActive = function() {
 			return m.request({
 				method: 'GET',
-				url: window.countlyCommon.API_URL + '/i/pushes/update-status',
+				url: window.countlyCommon.API_URL + '/i/pushes/autoActive',
 				data: {
 					api_key: window.countlyGlobal.member.api_key,
-					args: {
-						_id: this._id(),
-						status : this.result.status()
-					}
+					_id: this._id(),
+					autoActive: this.autoActive()
 				}
+			}).then(function(resp){
+				if (resp.error) { throw resp.error; }
+				this.autoActive(resp.autoActive);
+				return resp;
 			});
-		}
+		};
+
+		this.remoteLoad = function() {
+			return m.request({
+				method: 'GET',
+				url: window.countlyCommon.API_URL + '/i/pushes/message',
+				data: {
+					api_key: window.countlyGlobal.member.api_key,
+					args: JSON.stringify({
+						_id: this._id(),
+						apps: this.apps()
+					})
+				}
+			}).then(function(resp){
+				this.result.events(resp.result.events);
+				return resp;
+			}.bind(this));
+		};
 	};
 
 	push.MessageResult = function(data) {
@@ -468,6 +469,7 @@ window.component('push', function(push) {
 		this.error = m.prop(data.error);
 		this.errorCodes = m.prop(data.errorCodes);
 		this.nextbatch = m.prop(data.nextbatch);
+		this.events = m.prop(data.events || {});
 
 		this.percentSent = function() {
 			return this.total() === 0 ? 0 : Math.min(100, +(100 * this.sent() / (this.total() - (this.processed() - this.sent()))).toFixed(2));
@@ -504,18 +506,8 @@ window.component('push', function(push) {
 				}
 			}).then(function(data){
 				data.app_id = appId;
-				
-				var singleMessageData = Object.assign({}, data);
-				var automatedMessageData = Object.assign({}, data, { actions : data.actions_automated, sent : data.sent_automated});
-
-				delete singleMessageData.actions_automated;
-				delete singleMessageData.sent_automated;
-				delete automatedMessageData.actions_automated;
-				delete automatedMessageData.sent_automated;
-
-				var response = { single_message : singleMessageData, automated_message : automatedMessageData };
-				push.dashboard = response;
-				return response;
+				push.dashboard = data;
+				return data;
 			});
 		} else {
 			var deferred = m.deferred();
@@ -556,5 +548,4 @@ window.component('push', function(push) {
 			}
 		});
 	};
-
 });

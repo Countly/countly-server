@@ -249,7 +249,7 @@ if (cluster.isMaster) {
                 }
             }
 
-            if (params.qstring.tz && !isNaN(parseInt(params.qstring.tz))) {
+            if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
                 params.user.tz = parseInt(params.qstring.tz);
             } 
             
@@ -277,8 +277,8 @@ if (cluster.isMaster) {
                     }		
                 }
                 
-                plugins.dispatch("/sdk", {params:params, app:app});
-                
+            plugins.dispatch("/sdk", {params:params, app:app}, () => {
+
                 if (params.qstring.metrics) {		
                     common.processCarrier(params.qstring.metrics);	
                 		
@@ -505,6 +505,7 @@ if (cluster.isMaster) {
                     common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
                     return done ? done() : false;
                 }
+            });
             });
         });
     }

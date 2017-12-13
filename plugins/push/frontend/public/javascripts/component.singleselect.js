@@ -12,10 +12,14 @@ window.component('singleselect', function (sselect) {
         this.opts = opts;
         this.value = typeof opts.value === 'function' ? opts.value : m.prop(opts.value);
         this.options = m.prop(opts.options.map(window.components.selector.Option));
+        this.icon = opts.icon || '';
 
         this.isOpen = false;
-        this.onSelectClick = function () {
+        this.onSelectClick = function (ev) {
             this.isOpen = !this.isOpen;
+            if (opts.onclick) {
+                opts.onclick(ev)
+            }
         }
         this.hideDropDown = function () {
             m.startComputation();
@@ -29,8 +33,7 @@ window.component('singleselect', function (sselect) {
             return (('' + ctrl.value()) === ('' + o.value()));
         });
 
-        return m('div.cly-select-component.text-align-left', {
-            style: "width:100%",
+        return m('div.comp-singleselect.cly-select.text-align-left' + (ctrl.opts.class ? '.' + ctrl.opts.class : ''), {
             config: function (elm) {
                 var container = $(elm);
                 $(window).unbind('click.' + ctrl.opts.id).bind('click.' + ctrl.opts.id,  function(e){
@@ -42,23 +45,24 @@ window.component('singleselect', function (sselect) {
         }, [
                 m('.select-inner', {
                     onclick: function (e) {
+                        ctrl.onSelectClick(e);
                         e.stopPropagation();
-                        ctrl.onSelectClick();
-
                     }
                 }, [
                         m('.text-container', [
                             selected
                                 ? m('.text', { "data-value": selected.value() }, [
+                                    ctrl.icon,
                                     m('.default-text', selected.title())
                                 ])
                                 : m('.text', [
-                                    m('.default-text.text-light-gray', ctrl.opts.placeholder)
+                                    ctrl.icon,
+                                    m('.default-text', ctrl.opts.placeholder)
                                 ])
                         ]),
                         m('.right combo')
                     ]),
-                m('.select-items-component square', {
+                m('.select-items square', {
                     style: {
                         width: "100%",
                         display: ctrl.isOpen ? 'block' : 'none'

@@ -11,112 +11,81 @@ window.component('push.dash', function (dash) {
 		this.app_id = countlyCommon.ACTIVE_APP_ID;
 		this.period = m.prop('monthly');
 		this.source = m.prop('dash');
-		this.activeTab = m.prop("single_message");
+		this.tab = m.prop('');
 		this.messages = m.prop([]);
+		this.loaded = m.prop(false);
 		var dt = m.prop({
 			users: 0,
 			enabled: 0,
+			cohorts: [],
 			geos: [],
 			location: null,
 			sent: { monthly: { data: [], keys: [], total: 0 }, weekly: { data: [], keys: [], total: 0 } },
 			actions: { monthly: { data: [], keys: [], total: 0 }, weekly: { data: [], keys: [], total: 0 } },
-		})
-
-		var dtAutomated = m.prop({
-			users: 0,
-			enabled: 0,
-			geos: [],
-			location: null,
-			sent: { daily: { data: [], keys: [], total: 0 } },
+			sent_automated: { daily: { data: [], keys: [], total: 0 } },
+			actions_automated: { daily: { data: [], keys: [], total: 0 }},
 		});
 
-		var self = this
+		var self = this;
 		this.data = function () {
 
 			if (arguments.length) {
-
 				var data = arguments[0];
+				if (data) {
+					['sent', 'actions', 'sent_automated', 'actions_automated'].forEach(function (ev) {
+						ev = data[ev];
+						['weekly', 'monthly', 'daily'].forEach(function (period) {
+							if (!ev[period] || typeof ev[period].total !== 'undefined') {
+								return;
+							}
 
-				['single_message', 'automated_message'].forEach(function (messageType) {
+							if (period === 'weekly') {
+								period = ev[period];
 
-					if (data && data[messageType]) {
-						['sent', 'actions'].forEach(function (ev) {
-							ev = data[messageType][ev];
+								var len = Math.floor(period.data.length / 2);
+								period.data = period.data.slice(len);
+								period.keys = period.keys.slice(len);
+							} else {
+								period = ev[period];
+							}
 
-							['weekly', 'monthly', 'daily'].forEach(function (period) {
-								if (ev[period] && typeof ev[period].total !== 'undefined') {
-									return;
-								}
-
-								if (period === 'weekly') {
-									period = ev[period];
-
-									var len = Math.floor(period.data.length / 2);
-									period.data = period.data.slice(len);
-									period.keys = period.keys.slice(len);
-								} else {
-									period = ev[period];
-								}
-
-								if (period)
-									period.total = period.data.reduce(function (a, b) { return a + b; });
-							});
+							period.total = period.data.reduce(function (a, b) { return a + b; });
 						});
+					});
 
-						if (messageType === "single_message")
-							dt(data.single_message);
-						else
-							dtAutomated(data.automated_message);;
-
-					}
-
-				})
-
+					dt(data);
+				}
 			}
 			return dt();
 		};
 
-		this.messageData = function () {
-			return this.activeTab() === "single_message" ? dt() : dtAutomated();
-		}
-
 		setTimeout(function () {
-			components.push.remoteDashboard(this.app_id).then(this.data, console.log);
+			components.push.remoteDashboard(this.app_id).then(this.data, console.log).then(this.loaded.bind(null, true));
 		}.bind(this), 1);
 
 		this.dataDP = function () {
 
 			return {
 				dp: [
-					{ label: t('pu.dash.metrics.sent'), data: this.messageData() ? this.messageData().sent[this.period()].data.map(function (d, i) { return [i, d]; }) : [] },
-					{ label: t('pu.dash.metrics.acti'), data: this.messageData() ? this.messageData().actions[this.period()].data.map(function (d, i) { return [i, d]; }) : [] },
+					{ label: t('pu.dash.metrics.sent'), data: this.data() ? this.data()['sent' + this.tab()][this.period()].data.map(function (d, i) { return [i, d]; }) : [] },
+					{ label: t('pu.dash.metrics.acti'), data: this.data() ? this.data()['actions' + this.tab()][this.period()].data.map(function (d, i) { return [i, d]; }) : [] },
 				],
-				ticks: this.messageData() ? this.messageData().sent[this.period()].keys.map(function (d, i) { return [i, d]; }) : []
+				ticks: this.data() ? this.data()['sent' + this.tab()][this.period()].keys.map(function (d, i) { return [i, d]; }) : []
 			};
 		};
-		this.chartConfig = function (element, isInitialized) {
+		this.chartConfig = function (element) {
 			// element.style.height = element.clientWidth * 1 / 4 + 'px';
 			element.style.height = '330px';
 			// if (!isInitialized) {
 
-			if (this.activeTab() === "single_message")
+			if (this.tab() === ''){
 				countlyCommon.drawGraph(this.dataDP(), element, 'bar', { legend: { show: false } });
-			else {
-				var graphData = [
-					{
-						label: "Actions",
-						data: this.messageData().actions.daily.data.map(function (data, key) { return [key, data] })
-					},
-					{
-						label: "Sent",
-						data: this.messageData().sent.daily.data.map(function (data, key) { return [key, data] })
-					}
-				];
-
-				countlyCommon.drawTimeGraph(graphData, ".chart");
+			} else {
+				countlyCommon.drawTimeGraph([
+					{ label: t('pu.dash.metrics.sent'), data: this.data().sent_automated.daily.data.map(function (data, key) { return [key, data]; }) },
+					{ label: t('pu.dash.metrics.acti'), data: this.data().actions_automated.daily.data.map(function (data, key) { return [key, data]; }) },
+				], ".chart");
 			}
-
-
 			// }
 		}.bind(this);
 
@@ -166,10 +135,11 @@ window.component('push.dash', function (dash) {
 				fnServerParams: function (aoData) {
 					aoData.forEach(function (d) {
 						if (d.name === 'iSortCol_0') {
-							d.value = ['messagePerLocale.default', 'appNames', 'result.status', 'created', 'created', 'date', 'date'][d.value];
+							d.value = ['messagePerLocale.default', 'appNames', tableName === "dtable" ? 'result.status' : 'autoActive', 'created', 'created', 'date', 'date'][d.value];
 						}
 					});
 					aoData.push({ name: 'source', value: this.source() });
+					aoData.push({ name: 'auto', value: tableName === "dtableAutomated" });
 				}.bind(this),
 				oLanguage: {
 					sZeroRecords: t('pu.t.nothing'),
@@ -182,8 +152,7 @@ window.component('push.dash', function (dash) {
 				aoColumns: [
 					{ mData: unprop.bind(null, 'messagePerLocale.default', ''), sName: 'message', mRender: CountlyHelpers.clip(null, t('push.no-message')), sTitle: t('pu.t.message') },
 
-					tableName === "dtable"
-						? {
+					tableName === "dtable" ? {
 							mData: unprop.bind(null, 'result'), sName: 'status', sType: 'string', mRender: function (d, type, result) {
 								var s = result.result.status(),
 									override;
@@ -200,19 +169,10 @@ window.component('push.dash', function (dash) {
 						}
 						: {
 							mData: unprop.bind(null, 'result'), sName: 'status', sType: 'string', mRender: function (d, type, result) {
-								var s = result.result.status(); //TODO: Change this if you store automated message status in an other field.
-
-								var disabled = s === 1 ? 'disabled' : ''; //TODO: Change this 1: status disactive 2:status active
-
-								var input = '<div class="on-off-switch ' + disabled + '">';
-								if (s === 2) {
-									input += '<input type="checkbox" class="on-off-switch-checkbox status-switcher" id="message-' + d._id() + '" checked ' + disabled + '>';
-								} else {
-									input += '<input type="checkbox" class="on-off-switch-checkbox status-switcher" id="message-' + d._id() + '" ' + disabled + '>';
-								}
-								input += '<label class="on-off-switch-label" for="message-' + d._id() + '"></label>';
-								input += '<span class="text">' + 'Enable' + '</span>';
-								return input;
+								return '<div class="on-off-switch">' + 
+									'<input type="checkbox" class="on-off-switch-checkbox status-switcher" id="message-' + d._id() + '" ' + (result.autoActive() ? 'checked' : '') + '>' + 
+									'<label class="on-off-switch-label" for="message-' + d._id() + '"></label>' + 
+									'<span class="text">' + 'Enable' + '</span>';
 							}, sTitle: t('pu.t.status'), bSearchable: false
 						},
 					{ mData: function (x) { return x.appNames().join(', '); }, sName: 'apps', sType: 'string', mRender: CountlyHelpers.clip(), sTitle: t('pu.t.apps'), bSearchable: false },
@@ -232,12 +192,12 @@ window.component('push.dash', function (dash) {
 						}, bSearchable: false
 					},
 					{
-						mData: function (x) { return x },
+						mData: function (x) { return x; },
 						sName: 'menu',
 						sType: 'string',
 						sTitle: '',
 						sClass: 'shrink right',
-						mRender: function (d) {
+						mRender: function () {
 							return '<a class="cly-list-options"></a>';
 						},
 						sWidth: "100px",
@@ -249,14 +209,14 @@ window.component('push.dash', function (dash) {
 			}));
 
 
-			if (tableName === "dtableAutomated") {
-				this[tableName].find('tbody').on('click', '.status-switcher', function () {
-					var _id = this.id.toString().replace(/^message-/, '');
-					var newStatus = $(this).is(":checked");
+			// if (tableName === "dtableAutomated") {
+				// this[tableName].find('tbody').on('click', '.status-switcher', function () {
+				// 	var _id = this.id.toString().replace(/^message-/, '');
+				// 	var newStatus = $(this).is(":checked");
 
-					//TODO: Update message status
-				})
-			}
+				// 	//TODO: Update message status
+				// })
+			// }
 
 			CountlyHelpers.initializeTableOptions();
 
@@ -271,47 +231,42 @@ window.component('push.dash', function (dash) {
 			});
 
 			$(".cly-button-menu").on("cly-list.item", function (event, data) {
-				var id = $(data.target).data("id");
-				var message = self.messages().find(function (m) { return m._id() === id; });
+				var id = $(data.target).data("id"),
+					message = self.messages().find(function (m) { return m._id() === id; });
 
-				if ($(data.target).hasClass("view-message") && id) {
-					if (message) {
-						m.startComputation();
+				if ($(data.target).hasClass("view-message") && message) {
+					message.remoteLoad().then(function () {
 						components.push.view.show(message);
-						m.endComputation();
-					}
-				} else if ($(data.target).hasClass("duplicate-message") && id) {
-					if (message) {
-						var json = message.toJSON(false, true, true);
+					});
+				} else if ($(data.target).hasClass("duplicate-message") && message) {
+					var json = message.toJSON(false, true, true);
+					if (!message.active) {
 						delete json.date;
-						components.push.popup.show(json, true);
 					}
-				}
-				else if ($(data.target).hasClass("delete-message") && id) {
-					if (message) {
-						message.remoteDelete().then(function () {
-							if (window.app.activeView.mounted) {
-								window.app.activeView.mounted.refresh();
-							}
-						});
-					}
+					components.push.popup.show(json, true);
+				} else if ($(data.target).hasClass("delete-message") && message) {
+					message.remoteDelete().then(function () {
+						if (window.app.activeView.mounted) {
+							window.app.activeView.mounted.refresh();
+						}
+					});
 				}
 			});
 
 			this[tableName].find('tbody').on('click', '.status-switcher', function () {
 				var id = this.id.toString().replace(/^message-/, '');
-				var newStatus = $(this).is(":checked") ? 1 : 0;
 				var message = self.messages().find(function (m) { return m._id() === id; });
 
 				if (message) {
-					message.result.status(newStatus);
-					message.remoteStatusUpdate().then(function () {
-
+					message.autoActive($(this).is(":checked") ? true : false);
+					message.remoteAutoActive().then(function () {
+						if (window.app.activeView.mounted) {
+							window.app.activeView.mounted.refresh();
+						}
 					});
 				}
-
-			})
-		}
+			});
+		};
 
 		this.tableConfig = function (element, isInitialized, context) {
 			if (!isInitialized) {
@@ -334,19 +289,20 @@ window.component('push.dash', function (dash) {
 			if (this.dtableAutomated) {
 				this.dtableAutomated.fnDraw(false);
 			}
-			components.push.remoteDashboard(this.app_id).then(this.data, console.log);
+			this.loaded(false);
+			components.push.remoteDashboard(this.app_id, true).then(this.data, console.log);
 		}.bind(this);
 
-		this.message = function (ev) {
+		this.createMessage = function (ev) {
 			ev.preventDefault();
 			self.pushDrawerMenuOpen = false;
 			components.push.popup.show({ apps: [countlyCommon.ACTIVE_APP_ID] });
 		};
 
-		this.autoMessage = function (e) {
+		this.createAutoMessage = function (e) {
 			e.preventDefault();
 			self.pushDrawerMenuOpen = false;
-			components.push.automated.popup.show({ apps: [countlyCommon.ACTIVE_APP_ID] });
+			components.push.popup.show({ auto: true, apps: [countlyCommon.ACTIVE_APP_ID] });
 		};
 
 		this.pushDrawerMenuOpen = false;
@@ -355,11 +311,11 @@ window.component('push.dash', function (dash) {
 		this.messageMenu = function (e) {
 			e.preventDefault();
 			self.pushDrawerMenuOpen = !self.pushDrawerMenuOpen;
-		}
+		};
 
 		this.isCohortsEnabled = function () {
 			return countlyGlobal.plugins.indexOf('cohorts') >= 0;
-		}
+		};
 	};
 	dash.view = function (ctrl) {
 		return m('.push-overview', [
@@ -386,11 +342,11 @@ window.component('push.dash', function (dash) {
 							ctrl.pushDrawerMenuOpen ?
 								ctrl.isCohortsEnabled() ?
 									m('div.push-group-menu.ee-menu', [
-										m('div.auto-push-image', { onclick: ctrl.autoMessage }, [
+										m('div.auto-push-image', { onclick: ctrl.createAutoMessage }, [
 											m('div.title', t('pu.dash.btn-group.automated-message')),
 											m('div.description', t('pu.dash.btn-group.automated-message-desc')),
 										]),
-										m('div.one-time', { onclick: ctrl.message }, [
+										m('div.one-time', { onclick: ctrl.createMessage }, [
 											m('div', [
 												m('div.title', t('pu.dash.btn-group.one-time-message')),
 												m('div.description', t('pu.dash.btn-group.one-time-message-desc'))
@@ -406,7 +362,7 @@ window.component('push.dash', function (dash) {
 												m('a.url', t('Learn more about automation'))
 											])
 										]),
-										m('div.one-time', { onclick: ctrl.message }, [
+										m('div.one-time', { onclick: ctrl.createMessage }, [
 											m('div', {
 												style: {
 													boxSizing: "border-box",
@@ -435,7 +391,7 @@ window.component('push.dash', function (dash) {
 			m.component(components.widget, {
 				header: {
 					title: 'pu.dash.metrics',
-					control: ctrl.activeTab() === "single_message" ?
+					control: ctrl.tab() === '' ?
 						{
 							component: components.segmented,
 							opts: {
@@ -452,29 +408,29 @@ window.component('push.dash', function (dash) {
 					},
 					tabButtons: {
 						isVisible: true,
-						activeTab: ctrl.activeTab,
+						tab: ctrl.tab,
 						onChange: function (newTab) {
-							if (newTab === "automated_message")
+							if (newTab === "_automated")
 								ctrl.period('daily');
 							else
 								ctrl.period('monthly');
 
-							ctrl.activeTab(newTab);
+							ctrl.tab(newTab);
 						}
 					},
 					view: m('.chart', { config: ctrl.chartConfig })
 				},
 				footer: {
 					bignumbers: [
-						{ title: 'pu.dash.metrics.sent', number: ctrl.messageData() ? ctrl.messageData().sent[ctrl.period()].total : 0, color: true, help: 'help.dashboard.push.sent' },
-						{ title: 'pu.dash.metrics.acti', number: ctrl.messageData() ? ctrl.messageData().actions[ctrl.period()].total : 0, color: true, help: 'help.dashboard.push.actions' },
+						{ title: 'pu.dash.metrics.sent', number: ctrl.data() ? ctrl.data()['sent' + ctrl.tab()][ctrl.period()].total : 0, color: true, help: 'help.dashboard.push.sent' },
+						{ title: 'pu.dash.metrics.acti', number: ctrl.data() ? ctrl.data()['actions' + ctrl.tab()][ctrl.period()].total : 0, color: true, help: 'help.dashboard.push.actions' },
 					]
 				}
 			}),
 
 			m.component(components.widget, {
 				header: {
-					title: ctrl.activeTab() === "single_message" ? 'push.po.one-time-messages' : 'push.po.automated-messages',
+					title: ctrl.tab() === '' ? 'push.po.one-time-messages' : 'push.po.automated-messages',
 					control: {
 						component: components.segmented,
 						opts: {
@@ -487,10 +443,10 @@ window.component('push.dash', function (dash) {
 					}
 				},
 				content: {
-					view: ctrl.activeTab() === "single_message"
-						? m('table.d-table', { config: ctrl.tableConfig, key: 'single_messages' })
-						: m('table.d-table', { config: ctrl.tableConfigAutomatedMessages, key: 'automated_messages' })
-					, config: { class: 'message-table-container' }
+					view: ctrl.tab() === '' ? 
+						m('table.d-table', { config: ctrl.tableConfig, key: 'single_messages' })
+						: m('table.d-table', { config: ctrl.tableConfigAutomatedMessages, key: 'automated_messages' }), 
+					config: { class: 'message-table-container' }
 				}
 			}),
 			m('.cly-button-menu.message-menu', [
@@ -514,6 +470,7 @@ window.MessagingDashboardView = countlyView.extend({
 			this.div = $('<div />').appendTo($(this.el))[0];
 			this.mounted = m.mount(this.div, components.push.dash);
 		}
+		var self = this;
 		setTimeout(function () {
 			if ($("#help-toggle").hasClass("active")) {
 				$('.help-zone-vb').tipsy({
@@ -549,6 +506,10 @@ window.MessagingDashboardView = countlyView.extend({
 			m.mount(this.div, null);
 			this.mounted = null;
 		}
+	},
+
+	appChanged: function() {
+		this.renderCommon();
 	}
 
 });

@@ -32,7 +32,7 @@ var usage = {},
             update["$set"].lng = params.user.lng;
         }
 
-        if (params.user.tz) {
+        if (typeof params.user.tz !== 'undefined') {
             update["$set"].tz = params.user.tz;
         }
         

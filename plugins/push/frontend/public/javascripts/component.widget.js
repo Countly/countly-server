@@ -35,12 +35,12 @@ window.component('widget', function (widget) {
 					opts.content.tabButtons && opts.content.tabButtons.isVisible ?
 						m('.tab-buttons', [
 							m('div', {
-								class: opts.content.tabButtons.activeTab() === "single_message" ? "active" : "",
-								onclick: function () { opts.content.tabButtons.onChange("single_message") }
+								class: opts.content.tabButtons.tab() === "" ? "active" : "",
+								onclick: function () { opts.content.tabButtons.onChange("") }
 							}, t('push.po.one-time-messages')),
 							m('div', {
-								class: opts.content.tabButtons.activeTab() === "automated_message" ? "active" : "",
-								onclick: function () { opts.content.tabButtons.onChange("automated_message") }
+								class: opts.content.tabButtons.tab() === "_automated" ? "active" : "",
+								onclick: function () { opts.content.tabButtons.onChange("_automated") }
 							}, t('push.po.automated-messages'))
 						]) : '',
 					m('.widget-content', opts.content.config, opts.content.view)
