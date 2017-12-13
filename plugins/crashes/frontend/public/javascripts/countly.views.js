@@ -100,9 +100,9 @@ window.CrashesView = countlyView.extend({
             "aoColumns": [
                 { "mData": function(row, type){
                     if(self.selectedCrashes[row._id])
-                        return "<a class='fa fa-check-square check-green'></a>";
+                        return "<a class='fa fa-check-square check-green' id=\"" + row._id + "\"></a>";
                     else
-                        return "<a class='fa fa-square-o check-green'></a>";
+                        return "<a class='fa fa-square-o check-green'  id=\"" + row._id + "\"></a>";
                 }, "sType":"numeric", "sClass":"center", "sWidth": "30px", "bSortable": false, "sTitle": "<a class='fa fa-square-o check-green check-header'></a>"},
                 {
                     "mData": function(row, type) {
@@ -186,7 +186,7 @@ window.CrashesView = countlyView.extend({
                     "sTitle": jQuery.i18n.map["crashes.latest_app"],
                     "sWidth": "90px"
                 },
-                { "mData": function(row, type){return "<a class='table-link green' href='#/crashes/" + row._id + "'>" + jQuery.i18n.map["common.view"] + "</a>"; }, "sType":"numeric", "sClass":"center", "sWidth": "90px", "bSortable": false}
+                { "mData": function(row, type){return "<p class='table-link green'>" + jQuery.i18n.map["common.view"] + "</a>"; }, "sType":"numeric", "sClass":"center", "sWidth": "90px", "bSortable": false}
             ],
             "fnInitComplete": function(oSettings, json) {
                 $.fn.dataTable.defaults.fnInitComplete(oSettings, json);
@@ -223,8 +223,21 @@ window.CrashesView = countlyView.extend({
                 });
             }
         });
-        $('.crashes tbody').on("click", "tr", function (){
-			var id = $(this).attr("id");
+
+    
+    
+        $('.crashes tbody ').on("click", "tr", function (){
+            var id = $(this).attr("id");
+            if(id){
+                var link = "#/crashes/" + id ;
+                window.open(link, "_self");
+            } 
+        });
+
+        $('.crashes tbody ').on("click", "td:first-child", function (e){
+            e.cancelBubble = true;                       // IE Stop propagation
+            if (e.stopPropagation) e.stopPropagation();  // Other Broswers
+            var id = $(this).parent().attr("id");
             if(id){
                 if(self.selectedCrashes[id]){
                     $(this).find(".check-green").removeClass("fa-check-square").addClass("fa-square-o");
@@ -245,7 +258,7 @@ window.CrashesView = countlyView.extend({
                     $(".action-segmentation").addClass("disabled");
             }
 		});
-        
+         
         $(".filter-segmentation").on("cly-select-change", function (e, val) {
             self.filterCrashes(val);
         });
