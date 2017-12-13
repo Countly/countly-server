@@ -95,7 +95,7 @@ var utmTags = ["_ga", "_gac", "utm_source", "utm_medium", "utm_campaign","utm_te
 		common.dbUserMap['source'] = 'src';
 	});
     plugins.register("/o/method/total_users", function(ob){
-        ob.shortcodesForMetrics["sources"] = " ";
+        ob.shortcodesForMetrics["sources"] = "src";
     });
 	plugins.register("/session/metrics", function(ob){
 		var predefinedMetrics = ob.predefinedMetrics;
