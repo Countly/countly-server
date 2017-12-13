@@ -36,9 +36,7 @@ var getExportCommand = function(collection){
         outputParams(params);
     });
 }
-
-
-
+ 
 var getWebApps = function (db) {
     return new Promise(function (resolve, reject) {
         db.collection('apps').find({}).toArray(function (err, apps) {
@@ -74,30 +72,43 @@ var checkSource = function (db, collection) {
     })
 }
 
-var updateNewDoc = function (doc, db, collection) {
-    var newDoc  = {}
-    for(var key in  doc){ 
-        var url = countlyCommon.decode(key);
-        var newUrl = urlParser(url);
-        var newKey = countlyCommon.encode(newUrl);
-        newDoc[newKey] = doc[key];
-    }
 
+var updateNewMetaDoc = function (db, collection, newDoc) { 
     return new Promise(function (resolve, reject) {
         db.collection(collection).remove({"_id": "meta_v2_up.src"}, function(err, result){
-            if(!err){
-                db.collection(collection).insert(newDoc, function (err, result) {
-                    resolve(result || null);
-                })
+            if(err){
+                return reject(e);
             }
+            db.collection(collection).insert(newDoc, function (err, result) {
+                return resolve(result || null);
+            })
         })
     }).catch(function (e) {
+        console.log(e)
+        reject(e);
+    })
+}
+
+var updateDocs = function (db, collection, oldValue, newValue) {
+
+    return new Promise(function (resolve, reject) {
+        db.collection(collection).findAndModify({"up.src": oldValue}, 
+            { },
+            {$set:{"up.src": newValue}},
+            {}, 
+            function(err, result){
+                console.log(err,result,"@@@");
+                if(!err){
+                    resolve(result || null);
+                }
+        })
+    }).catch(function (e) {
+        console.log(e)
         reject(e);
     })
 
 
 }
-
 var arguments = process.argv.splice(2);
 var command = arguments && arguments[0];
 
@@ -109,21 +120,20 @@ Promise.coroutine(function * () {
         events.push("[CLY]_session");
         for(var k = 0; k < events.length; k++){
             collectionName = "drill_events" + crypto.createHash('sha1').update(events[k] + appID).digest('hex')
-            if(command === "backup"){ 
-                var doc = yield checkSource(countlyDrillDB, collectionName);
-                if(doc) {
-                    getExportCommand(collectionName);
-                }
+            var doc = yield checkSource(countlyDrillDB, collectionName);
+            if(doc) {
+                var newDoc  = {}
+                for(var key in  doc){ 
+                    var url = countlyCommon.decode(key);
+                    var newUrl = urlParser(url);
+                    var newKey = countlyCommon.encode(newUrl);
+                    newDoc[newKey] = doc[key];
+                    yield updateDocs(countlyDrillDB, collectionName, key, newKey);
+                } 
+                yield updateNewMetaDoc(countlyDrillDB, collectionName, newDoc);
+                console.log(doc);
+                console.log("new doc", newDoc);
             }
-            if(command === "modify"){
-                var doc = yield checkSource(countlyDrillDB, collectionName);
-                if(doc) {
-                  
-                   var newDoc = yield updateNewDoc(doc, countlyDrillDB, collectionName);
-                   console.log(doc);
-                   console.log("new doc", newDoc.ops);
-                }
-            } 
         } 
     }
 
