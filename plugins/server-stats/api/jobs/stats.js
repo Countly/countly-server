@@ -13,8 +13,8 @@ class StatsJob extends job.Job {
 
     run (db, done) {
         if(config.web.track != "none"){
-            db.collection("members").findOne({global_admin:true}, function(err, member){
-                if(!err && member){
+            db.collection("members").find({global_admin:true}).toArray(function(err, members){
+                if(!err && members.length > 0){
                     db.collection("server_stats_data_points").aggregate([
                         {
                             $group: {
@@ -42,13 +42,10 @@ class StatsJob extends job.Job {
                             }
                             data.avg = Math.round((data.all/allData.length)*100)/100;
                             var date = new Date();
-                            request({
-                                uri:"https://stats.count.ly/i",
-                                method:"GET",
-                                timeout:4E3,
-                                qs:{
+                            var usersData = [];
+                            members.forEach((member) => {
+                                usersData.push({
                                     device_id:member.email,
-                                    app_key:"386012020c7bf7fcb2f1edf215f1801d6146913f",
                                     timestamp: Math.floor(date.getTime()/1000),
                                     hour: date.getHours(),
                                     dow: date.getDay(),
@@ -59,7 +56,16 @@ class StatsJob extends job.Job {
                                             dataPointsLast3Months: data.month3
                                         }
                                     })
-                                }
+                                })
+                            })
+                            var formData = {
+                                app_key:"386012020c7bf7fcb2f1edf215f1801d6146913f",
+                                requests: JSON.stringify(usersData)                           
+                            }
+
+                            request.post({
+                                url:'https://stats.count.ly/i/bulk',
+                                formData: formData
                             }, function(a, c, b) {
                                 log.d('Done running stats job: %j', a);
                                 done();
