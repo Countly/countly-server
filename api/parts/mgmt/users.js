@@ -12,6 +12,45 @@ var usersApi = {},
         common.returnOutput(params, params.member);
         return true;
     };
+    
+    usersApi.getUserById = function (params) {
+        if (!params.member.global_admin) {
+            common.returnMessage(params, 401, 'User is not a global administrator');
+            return false;
+        }
+        if (!params.qstring.id || params.qstring.id.length !== 24) {
+            common.returnMessage(params, 401, 'Missing or incorrect user id parameter');
+            return false;
+        }
+        common.db.collection('members').findOne({_id:common.db.ObjectID(params.qstring.id)},{password:0, appSortList:0}, function (err, member) {
+    
+            if (!member || err) {
+                common.returnOutput(params, {});
+                return false;
+            }
+    
+            var memberObj = {};
+    
+            if(member.admin_of && member.admin_of.length > 0 && member.admin_of[0] == ""){
+                member.admin_of.splice(0, 1);
+            }
+            if(member.user_of && member.user_of.length > 0 && member.user_of[0] == ""){
+                member.user_of.splice(0, 1);
+            }
+            
+            member['admin_of'] = ((member.admin_of && member.admin_of.length > 0) ? member.admin_of : []);
+            member['user_of'] = ((member.user_of && member.user_of.length > 0) ? member.user_of : []);
+            member['global_admin'] = (member.global_admin === true);
+            member['locked'] = (member.locked === true);
+            member['created_at'] = member.created_at || 0;
+            member['last_login'] = member.last_login || 0;
+            member['is_current_user'] = (member.api_key == params.member.api_key);
+            memberObj[member._id] = member;
+    
+            common.returnOutput(params, memberObj);
+        });
+        return true;
+    };
 
     usersApi.getAllUsers = function (params) {
         if (!params.member.global_admin) {

@@ -4,18 +4,22 @@ window.LoggerView = countlyView.extend({
     },
     beforeRender: function() {
 		if(this.template)
-			return $.when(countlyLogger.initialize(this.filterToQuery())).then(function () {});
+			return $.when(countlyLogger.initialize(this.filterToQuery()), countlyLogger.collection_info()).then(function () {});
 		else{
 			var self = this;
 			return $.when($.get(countlyGlobal["path"]+'/logger/templates/logger.html', function(src){
 				self.template = Handlebars.compile(src);
-			}), countlyLogger.initialize(this.filterToQuery())).then(function () {});
+            }), countlyLogger.initialize(this.filterToQuery())
+            , countlyLogger.collection_info()).then(function () {});
 		}
     },
     renderCommon:function (isRefresh) {
         var data = countlyLogger.getData();
+        var collectoin_info = countlyLogger.getCollectionInfo();
+       
         this.templateData = {
-            "page-title":jQuery.i18n.map["logger.title"]
+            "page-title":jQuery.i18n.map["logger.title"],
+            "collection-info": jQuery.i18n.prop("logger.collection-description", collectoin_info.max)
         };
 		var self = this;
         if (!isRefresh) {

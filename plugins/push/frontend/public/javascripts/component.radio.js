@@ -26,13 +26,13 @@ window.component('radio', function(radio) {
 				opts.checked = 'checked';
 			}
 
-			return m('.comp-radio-option', {class: opts.checked ? 'active' : '', onclick: ctrl.value.bind(ctrl, o.value())}, [
+			return m('.comp-radio-option', {class: opts.checked ? 'comp-active' : 'comp-inactive', onclick: ctrl.value.bind(ctrl, o.value())}, [
 				m('div', [
 					m('input[type="radio"]', opts), 
 					m('label', o.title()),
 				]),
 				
-				o.desc() ? m('div', { style : { textAlign : "right"}}, m('span.help', o.desc())) : '',
+				o.desc() ? m('div.help-holder', m('span.help', o.desc())) : '',
 				o.view ? o.view() : ''
 			]);
 		}));

@@ -16,6 +16,16 @@ plugins.setConfigs("crashes", {
 	var segments = ["os_version", "os_name", "manufacture", "device", "resolution", "app_version", "cpu", "opengl", "orientation", "view", "browser"];
 	var bools = {"root":true, "online":true, "muted":true, "signal":true, "background":true};
     plugins.internalDrillEvents.push("[CLY]_crash");
+    plugins.register("/i/device_id", function(ob){
+		var params = ob.params;
+		var appId = params.app_id;
+		var oldUid = ob.oldUser.uid;
+		var newUid = ob.newUser.uid;
+        if(oldUid != newUid){
+            common.db.collection("app_crashes" +  appId).update({uid:oldUid}, {'$set': {uid:newUid}}, {multi:true}, function(err, res){});
+            common.db.collection("app_crashusers" +  appId).update({uid:oldUid}, {'$set': {uid:newUid}}, {multi:true}, function(err, res){});
+        }
+	});
     //check app metric
     plugins.register("/session/metrics", function(ob){
         return new Promise(function(resolve, reject){
@@ -37,19 +47,8 @@ plugins.setConfigs("crashes", {
                                 if(!crash.nonfatal)
                                     mod.fatal = -1;
                                 common.db.collection('app_crashusers' + params.app_id).update({"group":0, uid:uid}, {$inc:mod}, function(){
-                                    common.db.collection('app_crashusers' + params.app_id).count({"group":0, crashes: { $gt: 0 }}, function(err, userCount){
-                                        common.db.collection('app_crashusers' + params.app_id).count({"group":0, crashes: { $gt: 0 }, fatal: { $gt: 0 }}, function(err, fatalCount){
-                                            var set = {};
-                                            set.users = userCount;
-                                            set.usersfatal = fatalCount;
-                                            common.db.collection('app_crashgroups' + params.app_id).update({'_id': "meta" }, {$set:set}, function (err, res){});
-                                        });
-                                    });
+                                    done(null, true);
                                 });
-                                
-                                //remove crash from user's set
-                                common.updateAppUser(params, {$pull:{crashes:hash}});
-                                done();
                             }
                             else{
                                 done();
@@ -61,15 +60,49 @@ plugins.setConfigs("crashes", {
                     });
                 };
                 var dbAppUser = params.app_user;
-                if(dbAppUser && dbAppUser.uid && dbAppUser.crashes && dbAppUser.crashes.length){
-                    var latest_version = params.qstring.metrics._app_version.replace(/\./g, ":");
-                    if(dbAppUser.av && common.versionCompare(dbAppUser.av, latest_version) > 0)
-                        latest_version = dbAppUser.av;
-                    
-                    async.each(dbAppUser.crashes, function(crash, done){
-                        checkCrash(latest_version, crash, dbAppUser.uid, done);
-                    }, function(){
-                        resolve();
+                var latest_version = params.qstring.metrics._app_version.replace(/\./g, ":");
+                if(dbAppUser && dbAppUser.uid && (!dbAppUser.av || common.versionCompare(latest_version, dbAppUser.av) > 0)){
+                    common.db.collection('app_crashusers' + params.app_id).find({uid:dbAppUser.uid}, {group:1, _id:0}).toArray(function(err, res){
+                        if(res && res.length){
+                            var crashes = [];
+                            for(var i = 0; i < res.length; i++){
+                                if(res[i].group !== 0){
+                                    crashes.push(res[i].group);
+                                }
+                            }
+                            if(crashes.length){
+                                async.map(crashes, function(crash, done){
+                                    checkCrash(latest_version, crash, dbAppUser.uid, done);
+                                }, function(err, res){
+                                    var shouldRecalculate = false;
+                                    if(res && res.length){
+                                        for(var i = 0; i < res.length; i++){
+                                            if(res[i]){
+                                                shouldRecalculate = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if(shouldRecalculate){
+                                        common.db.collection('app_crashusers' + params.app_id).count({"group":0, crashes: { $gt: 0 }}, function(err, userCount){
+                                            common.db.collection('app_crashusers' + params.app_id).count({"group":0, crashes: { $gt: 0 }, fatal: { $gt: 0 }}, function(err, fatalCount){
+                                                var set = {};
+                                                set.users = userCount;
+                                                set.usersfatal = fatalCount;
+                                                common.db.collection('app_crashgroups' + params.app_id).update({'_id': "meta" }, {$set:set}, function (err, res){});
+                                            });
+                                        });
+                                    }
+                                    resolve();
+                                });
+                            }
+                            else{
+                                resolve();
+                            }
+                        }
+                        else{
+                            resolve();
+                        }
                     });
                 }
                 else{
@@ -482,9 +515,7 @@ plugins.setConfigs("crashes", {
                             });
                         }
                     }
-                    common.updateAppUser(params, { $addToSet: { crashes: hash } }, function(){
-                        checkUser(params.app_user, 0);
-                    });
+                    checkUser(params.app_user, 0);
                     resolve();
                 }
                 else{

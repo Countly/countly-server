@@ -1136,7 +1136,7 @@ var common = {},
     * @param {string} options.delimiter - delimiter between version, subversion, etc, defaults :
     * @param {string} options.zeroExtend - changes the result if one version string has less parts than the other. In this case the shorter string will be padded with "zero" parts instead of being considered smaller.
     * @param {string} options.lexicographical - compares each part of the version strings lexicographically instead of naturally; this allows suffixes such as "b" or "dev" but will cause "1.10" to be considered smaller than "1.2".
-    * @returns {number} 0 if they are both the same, 1 if first one is higher and -1 is second one is highet
+    * @returns {number} 0 if they are both the same, 1 if first one is higher and -1 is second one is higher
     */
 	common.versionCompare = function(v1, v2, options) {
 		var lexicographical = options && options.lexicographical,

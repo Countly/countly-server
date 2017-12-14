@@ -16,8 +16,8 @@ class Divider {
 		this.note = note;
 	}
 
-	subs (db, clear, audience) {
-		log.d('Dividing note %j clear %j', this.note._id, clear);
+	streamers (db) {
+		log.d('Dividing note %j', this.note._id);
 
 		return new Promise((resolve, reject) => {
 			this.apps(db).then((apps) => {
@@ -57,41 +57,83 @@ class Divider {
 						credentials.forEach(c => {
 							// token field level
 							c.divide(this.note.test).forEach(subc => {
-								subs.push(new Promise((resolve, reject) => {
-									let app = apps.filter(a => (a.apn && a.apn.filter(ac => ac._id.equals(c._id)).length) || (a.gcm && a.gcm.filter(ac => ac._id.equals(c._id)).length))[0],
-										appsubcred = subc.app(app._id, {tz: app.timezone, offset: app.timezone_offset}),
-										appsubnote = this.note.appsub(subs.length, appsubcred),
-										streamer = new Streamer(appsubnote);
+								let app = apps.filter(a => (a.apn && a.apn.filter(ac => ac._id.equals(c._id)).length) || (a.gcm && a.gcm.filter(ac => ac._id.equals(c._id)).length))[0],
+									appsubcred = subc.app(app._id, {tz: app.timezone, offset: app.timezone_offset}),
+									appsubnote = this.note.appsub(subs.length, appsubcred),
+									streamer = new Streamer(appsubnote);
 
-									appsubnote.nobuild = !!this.note.build;
-									log.d('Compiled appsub %j', appsubnote);
-
-									if (audience === null) {
-										streamer.clear(db);
-										resolve();
-									} else {
-										streamer[audience ? 'audience' : 'count'](db).then((count) => {
-											if (clear) { streamer.clear(db); }
-											resolve({
-												appsub: appsubnote,
-												streamer: streamer,
-												[audience ? 'audience' : 'count']: count
-											});
-										}, reject);
-									}
-								}));
+								appsubnote.nobuild = !!this.note.build;
+								log.d('Compiled appsub %j', appsubnote);
+								
+								subs.push({
+									appsub: appsubnote,
+									streamer: streamer
+								});
 							});
 						});
 
-						Promise.all(subs).then(resolve, reject);
+						resolve(subs);
 					}, reject);
 				} else {
-					reject('No credentials found');
+					reject('No credentials');
 				}
-
 			}, reject);
 		});
+	}
 
+	subs (db, clear, audience) {
+		return new Promise((resolve, reject) => {
+			this.streamers(db).then(results => {
+				if (audience === null) {
+					results.forEach(result => result.streamer.clear(db));
+					resolve();
+				} else {
+					Promise.all(results.map(result => new Promise((resolve, reject) => {
+						 result.streamer[audience ? 'audience' : 'count'](db).then((count => {
+						 	log.d('count %j', count);
+						 	result[audience ? 'audience' : 'count'] = count;
+						 	resolve(result);
+						 }), reject);
+					}))).then(resolve, reject);
+				}
+			}, reject);
+		});
+	}
+
+	removeAll (db) {
+		return new Promise((resolve, reject) => {
+			this.streamers(db).then(results => {
+				Promise.all(results.map(result => result.streamer.removeAll(db))).then(resolve, reject);
+			}, reject);
+		});
+	}
+
+	prepareAuto (db) {
+		return this.removeAll(db);
+		// return new Promise((resolve, reject) => {
+		// 	this.streamers(db).then(results => {
+		// 		Promise.all(results.map(result => result.streamer.removeAll(db))).then(resolve, reject);
+		// 	}, reject);
+		// });
+	}
+
+	nextDa (db) {
+		return new Promise((resolve, reject) => {
+			this.streamers(db).then(results => {
+				Promise.all(results.map(result => result.streamer.nextDa(db))).then(results => {
+					if (!results || !results.length) {
+						reject('no results for nextDa');
+					} else {
+						results = results.filter(r => !!r);
+						if (results.length) {
+							resolve(Math.min(results));
+						} else {
+							resolve();
+						}
+					}
+				}, reject);
+			}, reject);
+		});
 	}
 
 	clear (db) {
@@ -118,12 +160,6 @@ class Divider {
 						else { TOTALLY[a._id] += a.count; }
 						TOTALLY.TOTALLY += a.count;
 					}
-				}
-				var alltzs = [];
-				subs.forEach(s => alltzs = alltzs.concat(s.appsub.tzs || []));
-				alltzs.sort((a, b) => b - a);
-				if (alltzs[0] !== undefined) {
-					TOTALLY.tzs = alltzs;
 				}
 				log.d('Done counting %j', TOTALLY);
 				resolve(TOTALLY);
@@ -228,6 +264,43 @@ class Divider {
 			db.collection('apps').find({_id: {$in: this.note.apps}}).toArray((err, apps) => {
 				if (err || !apps.length) { reject(err || 'Apps not found'); }
 				else { resolve(apps); }
+			});
+		});
+	}
+
+	store (db, app, uids, now) {
+		return new Promise((resolve, reject) => {
+			db.collection('app_users' + app._id).find({uid: {$in: uids}}, {la: 1, tz: 1, msgs: 1, tk: 1}).toArray((err, users) => {
+				if (err) {
+					reject(err);
+				} else if (!users || !users.length) {
+					log.w('Users %j not found for app %j', uids, app);
+					resolve();
+				} else {
+					if (this.note.autoCapMessages) {
+						users = users.filter(user => {
+							return !user.msgs || user.msgs.filter(msg => {
+								return msg[0].equals(this.note._id);
+							}).length < this.note.autoCapMessages;
+						});
+						log.d('After capping messages number left %d users for note %j', users.length, this.note._id);
+					}
+
+					if (this.note.autoCapSleep) {
+						users = users.filter(user => {
+							let same = !user.msgs ? [] : user.msgs.filter(msg => {
+								return msg[0].equals(this.note._id);
+							}).map(msg => msg[1]);
+
+							return same.length === 0 || Math.max(same) < now - this.note.autoCapSleep;
+						});
+						log.d('After capping messages sleep left %d users for note %j', users.length, this.note._id);
+					}
+
+					this.streamers(db).then(subs => {
+						Promise.all(subs.map(sub => sub.streamer.store(db, users, now))).then(resolve, reject);
+					}, reject);
+				}
 			});
 		});
 	}

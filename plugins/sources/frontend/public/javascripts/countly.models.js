@@ -32,7 +32,7 @@
         else{
             if(code.indexOf("://") == -1){
                 if(separate)
-                    return jQuery.i18n.map["sources.organic"]+" ("+code+")";
+                    return code;
                 return jQuery.i18n.map["sources.direct"];
             }
             else if(separate)

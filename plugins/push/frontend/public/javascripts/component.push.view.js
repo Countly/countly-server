@@ -1,7 +1,7 @@
 'use strict';
 
 /* jshint undef: true, unused: true */
-/* globals m, moment */
+/* globals m, moment, countlyCommon */
 
 window.component('push.view', function(view) {
 	var components = window.components,
@@ -25,47 +25,6 @@ window.component('push.view', function(view) {
 				var els = [
 					t('pu.po.view.title')
 				];
-				if (message.count()) {
-					els.push(m('span.count.ion-person', 'Recipients: ' + message.count().TOTALLY));
-				}
-				var s = message.result.status(),
-				 	override;
-				if (push.statusers) {
-					push.statusers.forEach(function(statuser){
-						var o = statuser(message.___data);
-						if (o) {
-							override = o;
-						}
-					});
-				}
-
-				var status = override || t('push.message.status.' + s);
-				// if (message.result.error()) {
-				if (message.result.error() && !message.result.isSent()) {
-					els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
-						m('circle[fill="#D54043"][cx=28][cy=28][r=28]'),
-						m('path[fill="#FFFFFF"][d=M40.9,16.1L40.9,16.1c1.4,1.4,1.4,3.6,0,4.9L21.1,40.9c-1.4,1.4-3.6,1.4-4.9,0l0,0c-1.4-1.4-1.4-3.6,0-4.9l19.8-19.8C37.3,14.8,39.5,14.8,40.9,16.1z]'),
-						m('path[fill="#FFFFFF"][d=M40.9,40.9L40.9,40.9c-1.4,1.4-3.6,1.4-4.9,0L16.1,21.1c-1.4-1.4-1.4-3.6,0-4.9l0,0c1.4-1.4,3.6-1.4,4.9,0l19.8,19.8C42.2,37.3,42.2,39.5,40.9,40.9z]'),
-					]), status]));
-				} else if (message.result.sending()) {
-					els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
-						m('circle[fill="#50A1EA"][cx=28][cy=28][r=28]'),
-						m('circle[fill="#F9F9F9"][cx=14][cy=29][r=5]'),
-						m('circle[fill="#ABCBFF"][cx=28][cy=29][r=5]'),
-						m('circle[fill="#6EA6FB"][cx=42][cy=29][r=5]'),
-					]), status]));
-				} else if (message.result.scheduled()) {
-					els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
-						m('circle[fill="#50A1EA"][cx=28][cy=28][r=28]'),
-						m('rect[fill="#F9F9F9"][x=24][y=10][width=7][height=22]'),
-						m('rect[fill="#F9F9F9"][x=24][y=27][width=21][height=7]'),
-					]), status]));
-				} else if (message.result.isSent()) {
-					els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
-						m('circle[fill="#2FA732"][cx=28][cy=28][r=28]'),
-						m('polyline[stroke="#FFFFFF"][fill=none][stroke-width=6][stroke-linecap=round][stroke-linejoin=round][points=15,29.4 24.2,40 40.3,16.7]'),
-					]), status]));
-				}
 				return m('h3', els);
 			}, 
 			// desc: t('pu.po.view.desc'),
@@ -81,7 +40,27 @@ window.component('push.view', function(view) {
 
 	view.controller = function(message){
 		this.message = message;
+
+		this.chartConfig = function(element){
+			element.style.height = '150px';
+			var graphData = [
+				{
+					label: t('pu.dash.metrics.sent'),
+					data: message.result.events() ? message.result.events().sent.daily.map(function (d, i) { return [i, d]; }) : [],
+					// data: [ [0, 5], [1, 1], [2, 0], [3, 10], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0], [10, 1], [11, 0], [12, 1], [13, 0], [14, 0], [15, 0], [16, 0], [17, 0], [18, 0], [19, 0], [20, 1], [21, 10], [22, 2], [23, 0], [24, 0], [25, 0], [26, 0], [27, 0], [28, 0], [29, 0]]
+				},
+				{
+					label: t('pu.dash.metrics.acti'),
+					data: message.result.events() ? message.result.events().actions.daily.map(function (d, i) { return [i, d]; }) : [],
+					// data: [ [0, 2], [1, 5], [2, 8], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0], [10, 2], [11, 5], [12, 8], [13, 0], [14, 0], [15, 0], [16, 0], [17, 0], [18, 0], [19, 0], [20, 2], [21, 5], [22, 8], [23, 0], [24, 0], [25, 0], [26, 0], [27, 0], [28, 0], [29, 0]]
+				},
+			];
+
+			countlyCommon.setPeriod('30days');
+			countlyCommon.drawTimeGraph(graphData, ".message-chart");
+		};
 	};
+
 	view.view = function(ctrl){
 		var r = ctrl.message.result, 
 			ec = r.errorCodes() ? Object.keys(r.errorCodes()).sort() : [],
@@ -93,7 +72,64 @@ window.component('push.view', function(view) {
 			if (fi === -1 && k.indexOf('a') === 0) { fa= i; }
 		});
 
-		return m('div.comp-push', [
+		var els = [ctrl.message.auto() ? t('pu.po.progress.auto') : t('pu.po.progress')];
+		if (ctrl.message.count()) {
+			els.push(m('span.count.ion-person', 'Recipients: ' + ctrl.message.count().TOTALLY));
+		}
+		var s = ctrl.message.result.status(),
+			 override;
+		if (push.statusers) {
+			push.statusers.forEach(function(statuser){
+				var o = statuser(ctrl.message.___data);
+				if (o) {
+					override = o;
+				}
+			});
+		}
+
+		var status = ctrl.message.auto() ? t('push.message.status.auto.' + ctrl.message.autoActive()) : override || t('push.message.status.' + s);
+		// if (message.result.error()) {
+		if (!ctrl.message.auto() && ctrl.message.result.error() && !ctrl.message.result.isSent()) {
+			els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
+				m('circle[fill="#D54043"][cx=28][cy=28][r=28]'),
+				m('path[fill="#FFFFFF"][d=M40.9,16.1L40.9,16.1c1.4,1.4,1.4,3.6,0,4.9L21.1,40.9c-1.4,1.4-3.6,1.4-4.9,0l0,0c-1.4-1.4-1.4-3.6,0-4.9l19.8-19.8C37.3,14.8,39.5,14.8,40.9,16.1z]'),
+				m('path[fill="#FFFFFF"][d=M40.9,40.9L40.9,40.9c-1.4,1.4-3.6,1.4-4.9,0L16.1,21.1c-1.4-1.4-1.4-3.6,0-4.9l0,0c1.4-1.4,3.6-1.4,4.9,0l19.8,19.8C42.2,37.3,42.2,39.5,40.9,40.9z]'),
+			]), status]));
+		} else if (ctrl.message.result.sending()) {
+			els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
+				m('circle[fill="#50A1EA"][cx=28][cy=28][r=28]'),
+				m('circle[fill="#F9F9F9"][cx=14][cy=29][r=5]'),
+				m('circle[fill="#ABCBFF"][cx=28][cy=29][r=5]'),
+				m('circle[fill="#6EA6FB"][cx=42][cy=29][r=5]'),
+			]), status]));
+		} else if ((ctrl.message.auto() && !ctrl.message.autoActive()) || (!ctrl.message.auto() &&  ctrl.message.result.scheduled())) {
+			els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
+				m('circle[fill="#50A1EA"][cx=28][cy=28][r=28]'),
+				m('rect[fill="#F9F9F9"][x=24][y=10][width=7][height=22]'),
+				m('rect[fill="#F9F9F9"][x=24][y=27][width=21][height=7]'),
+			]), status]));
+		} else if ((ctrl.message.auto() && ctrl.message.autoActive()) || (!ctrl.message.auto() && ctrl.message.result.isSent())) {
+			els.push(m('.status', [m('svg[viewBox="0 0 56 56"][width=20px][height=20px]', [
+				m('circle[fill="#2FA732"][cx=28][cy=28][r=28]'),
+				m('polyline[stroke="#FFFFFF"][fill=none][stroke-width=6][stroke-linecap=round][stroke-linejoin=round][points=15,29.4 24.2,40 40.3,16.7]'),
+			]), status]));
+		}
+
+		return m('div.comp-push', { class : 'view-message-slider' }, [
+			m('h3', els),
+			ctrl.message.auto() ? m.component(components.widget, {
+				content: {
+					view: m('.message-chart-container',  [
+						m('.message-chart', {config : ctrl.chartConfig})
+					])
+				},
+				footer: {
+					bignumbers: [
+						{ title: 'pu.dash.metrics.sent', number: ctrl.message.result.events().sent.total, color: true, help: 'help.dashboard.push.sent' },
+						{ title: 'pu.dash.metrics.acti', number: ctrl.message.result.events().actions.total, color: true, help: 'help.dashboard.push.actions' },
+					]
+				}
+			}) : '',
 			r.error() ? 
 				m(r.errorFixed().toLowerCase() === 'exited-sent' ? '.comp-push-warn' : '.comp-push-error', [
 					m('svg[width=21][height=18]', m('path[fill="#FFFFFF"][d="M20,18c0.6,0,0.8-0.4,0.5-0.9L11,0.9c-0.3-0.5-0.7-0.5-1,0L0.5,17.1C0.2,17.6,0.4,18,1,18H20zM10,13h2v2h-2V13z M10,8h2v4h-2V8z"]')),
@@ -176,7 +212,6 @@ window.component('push.view', function(view) {
 					])
 				])
 				: '',
-			m('h4', t('pu.po.tab3.view')),
 			m.component(components.push.view.contents, {message: ctrl.message, isView: true}),
 			r.errorCodes() ? 
 				m('div.comp-push-error-codes', [
@@ -219,6 +254,7 @@ window.component('push.view', function(view) {
 					}
 				}, t('pu.po.duplicate')),
 				m('a.btn-next.red', {
+					style : { marginRight: 0},
 					href: '#', 
 					onclick: function(ev){ 
 						ev.preventDefault();
@@ -317,103 +353,206 @@ window.component('push.view', function(view) {
 					if (loc._id === ctrl.message.geo()) { geo = loc; }
 				});
 			}
-			return m('.comp-push-view', [
-				m('.comp-push-view-table', [
-					m('.comp-push-view-row', [
-						m('.col-left', t('pu.po.tab3.apps')),
-						m('.col-right', ctrl.message.appNames().join(', '))
-					]),
-					m('.comp-push-view-row', [
-						m('.col-left', t('pu.po.tab3.platforms')),
-						m('.col-right', ctrl.message.platforms().map(function(p){ return t('pu.platform.' + p); }).join(', '))
-					]),
-					m('.comp-push-view-row', [
-						m('.col-left', t('pu.po.tab3.type')),
-						m('.col-right', t('pu.po.tab3.type.' + ctrl.message.type()))
-					]),
-					ctrl.isView ? 
-						''
-						: m('.comp-push-view-row', [
-							m('.col-left', t('pu.po.tab3.audience')),
-							m('.col-right', ctrl.message.count() || ctrl.message.result.processed())
+			return m('.comp-push-view', {style: {marginBottom: '100px'}}, [
+				m('.form-group', [
+					m('h4', t('pu.po.tab0.title')),
+					m('.comp-push-view-table', [
+						m('.comp-push-view-row', [
+							m('.col-left', t('pu.po.tab3.apps')),
+							m('.col-right', ctrl.message.appNames().join(', '))
 						]),
-					m('.comp-push-view-row', [
-						m('.col-left', t('pu.po.tab3.test')),
-						m('.col-right', t('pu.po.tab3.test.' + !!ctrl.message.test()))
-					]),
-					ctrl.message.sound() ?
 						m('.comp-push-view-row', [
-							m('.col-left', t('pu.po.tab3.extras.sound')),
-							m('.col-right', m.trust(ctrl.message.sound()))
-						])
-						: '',
-					ctrl.message.badge() !== undefined ?
-						m('.comp-push-view-row', [
-							m('.col-left', t('pu.po.tab3.extras.badge')),
-							m('.col-right', ctrl.message.badge())
-						])
-						: '',
-					ctrl.message.url() ?
-						m('.comp-push-view-row', [
-							m('.col-left', t('pu.po.tab3.extras.url')),
-							m('.col-right', m.trust(ctrl.message.url()))
-						])
-						: '',
-					ctrl.message.media() ?
-						m('.comp-push-view-row', [
-							m('.col-left', t('pu.po.tab3.extras.media')),
-							m('.col-right', m.trust(ctrl.message.media()))
-						])
-						: '',
-					ctrl.message.data() ?
-						m('.comp-push-view-row', [
-							m('.col-left', t('pu.po.tab3.extras.data')),
-							m('.col-right', m.trust(ctrl.message.data()))
-						])
-						: '',
-					m('.comp-push-view-row', [
-						m('.col-left', t('pu.po.tab3.date')),
-						m('.col-right', (ctrl.message.date() ? moment(ctrl.message.date()).format('DD.MM.YYYY, HH:mm') : t('pu.po.tab3.date.now')) + (ctrl.message.tz() ? t('pu.po.tab3.date.intz') : ''))
-					]),
-					ctrl.message.result.isSent() ? 
-						m('.comp-push-view-row', [
-							m('.col-left', t('pu.po.tab3.date.sent')),
-							m('.col-right', ctrl.message.sent() ? moment(ctrl.message.sent()).format('DD.MM.YYYY, HH:mm') : '')
-						])
-						: '',
-					ctrl.message.geo() ? m('.comp-push-view-row', [
-						m('.col-left', t('pu.po.tab3.location')),
-						m('.col-right', geo ? geo.title : t('pu.po.tab3.location.unknown'))
-					]) : '',
-					ctrl.message.messagePerLocale() && ctrl.message.messagePerLocale()['default' + push.C.S + 't'] ? m('.comp-push-view-row', [
-						m('.col-left', t('pu.po.tab3.title')),
-						m('.col-right', m.trust(ctrl.message.messagePerLocale()['default' + push.C.S + 't']))
-					]) : '',
-					ctrl.message.buttons() > 0 ? m('.comp-push-view-row', [
-						m('.col-left', t('pu.po.tab3.btns')),
-						m('.col-right', [
-							m('.comp-push-view-row', [
-								m('.col-left', ctrl.message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 't']),
-								m('.col-right', m.trust(ctrl.message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 'l']))
+							m('.col-left', t('pu.po.tab3.platforms')),
+							m('.col-right', ctrl.message.platforms().map(function(p){ return t('pu.platform.' + p); }).join(', '))
+						]),
+						ctrl.message.auto() || !ctrl.message.geo() ? ''
+							: m('.comp-push-view-row', [
+								m('.col-left', t('pu.po.tab3.location')),
+								m('.col-right', geo ? geo.title : t('pu.po.tab3.location.unknown'))
 							]),
-							ctrl.message.buttons() > 1 ? m('.comp-push-view-row', [
-								m('.col-left', ctrl.message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 't']),
-								m('.col-right', m.trust(ctrl.message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 'l']))
-							]) : ''
-						])
-					]) : '',
+						m('.comp-push-view-row', [
+							m('.col-left', t('pu.po.tab3.test')),
+							m('.col-right', t('pu.po.tab3.test.' + !!ctrl.message.test()))
+						]),
+					]),	
 				]),
 
-				ctrl.message.messagePerLocale() && ctrl.message.messagePerLocale().default ? 
-					m('div', [
-						m('h4.comp-push-space-top', t('pu.po.tab3.message')),
-						m('.comp-push-view-message', ctrl.message.messagePerLocale().default)
-						// Object.keys(ctrl.message.messagePerLocale()).length === 1 ? 
-							// m('.comp-push-view-table', m('.comp-push-view-row', ctrl.message.messagePerLocale().default))
-							// : 
-							// m.component(ctrl.locales)
-					])
-					: '',
+				ctrl.message.auto() ? 
+					m('.form-group', [
+						m('h4', t('pu.po.tab1.title.auto')),
+						m('.comp-push-view-table', [
+							m('.comp-push-view-row', [
+								m('.col-left', t('pu.po.tab1.trigger-type')),
+								m('.col-right', ctrl.message.autoOnEntry() ? t('pu.po.tab1.trigger-type.entry') : t('pu.po.tab1.trigger-type.exit'))
+							]),
+							m('.comp-push-view-row', [
+								m('.col-left', t('pu.po.tab1.campaign-start-date')),
+								m('.col-right', ctrl.message.date() ? moment(ctrl.message.date()).format('DD.MM.YYYY, HH:mm') : t('pu.po.tab1.scheduling-auto-now'))
+							]),
+							m('.comp-push-view-row', [
+								m('.col-left', t('pu.po.tab1.campaign-end-date')),
+								m('.col-right', ctrl.message.autoEnd() ? moment(ctrl.message.autoEnd()).format('DD.MM.YYYY, HH:mm') : t('pu.never'))
+							]),
+						]),	
+					]) 
+					:
+					m('.form-group', [
+						m('h4', t('pu.po.tab1.title')),
+						m('.comp-push-view-table', [
+							m('.comp-push-view-row', [
+								m('.col-left', t('pu.po.tab3.date')),
+								m('.col-right', (ctrl.message.date() ? moment(ctrl.message.date()).format('DD.MM.YYYY, HH:mm') : t('pu.po.tab3.date.now')) + 
+									(ctrl.message.tz() ? 
+										t('pu.po.tab3.date.intz') 
+										: ctrl.message.autoTime() ? 
+											t('pu.po.tab3.date.intz') + ' ' + t('pu.at') + ctrl.message.autoTime()
+											: ''
+									)	
+								)
+							]),
+							m('.comp-push-view-row', [
+								m('.col-left', t('pu.po.tab1.campaign-end-date')),
+								m('.col-right', ctrl.message.autoEnd() ? moment(ctrl.message.autoEnd()).format('DD.MM.YYYY, HH:mm') : t('pu.never'))
+							]),
+						]),	
+					]),
+
+				ctrl.message.auto() ? 
+					m('.form-group', [
+						m('h4', t('pu.po.tab2.title.auto')),
+						m('.comp-push-view-table', [
+							m('.comp-push-view-row', [
+								m('.col-left', t('pu.po.tab2.delivery-method')),
+								m('.col-right', ctrl.message.autoDelay() ? 
+									t('pu.po.tab2.delayed') + ': ' + ((Math.floor(ctrl.message.autoDelay() / 1000 / 3600 / 24) > 0 ?
+																			t.n('pu.days', Math.floor(ctrl.message.autoDelay() / 1000 / 3600 / 24)) : '') +
+																	 ' ' + 
+																	 (Math.floor(ctrl.message.autoDelay() / 1000 / 3600) % 24 > 0 ?
+																	  		t.n('pu.hours', Math.floor(ctrl.message.autoDelay() / 1000 / 3600) % 24) : '')).trim()
+									: t('pu.po.tab2.immediately'))
+							]),
+							// m('.comp-push-view-row', [
+							// 	m('.col-left', t('pu.po.tab2.send-in-user-tz')),
+							// 	m('.col-right', ctrl.message.autoTime() || t('pu.no'))
+							// ]),
+							m('.comp-push-view-row', [
+								m('.col-left', t('pu.po.tab2.capping')),
+								m('.col-right', ctrl.message.autoCapMessages() || ctrl.message.autoCapSleep() ?
+									m.trust([
+										ctrl.message.autoCapMessages() ? t.n('pu.messages', ctrl.message.autoCapMessages()) : '',
+										ctrl.message.autoCapSleep() ?  
+											((Math.floor(ctrl.message.autoDelay() / 1000 / 3600 / 24) > 0 ?
+												t.n('pu.days', Math.floor(ctrl.message.autoDelay() / 1000 / 3600 / 24)) 
+												: '') +
+											' ' + 
+											(Math.floor(ctrl.message.autoDelay() / 1000 / 3600) % 24 > 0 ?
+												t.n('pu.hours', Math.floor(ctrl.message.autoDelay() / 1000 / 3600) % 24) 
+												: '')).trim()
+										: '',
+									].filter(function(x){ return !!x; }).join('<br />'))
+									: t('pu.no')
+								)
+
+							]),
+						]),	
+					]) 
+					:'',
+
+				m('.form-group', [
+					m('h4', t('pu.po.compose.title')),
+					m('.comp-push-view-table', [
+						m('.comp-push-view-row', [
+							m('.col-left', t('pu.po.tab3.type')),
+							m('.col-right', t('pu.po.tab3.type.' + ctrl.message.type()))
+						]),
+						ctrl.message.sound() ?
+							m('.comp-push-view-row', [
+								m('.col-left', t('pu.po.tab3.extras.sound')),
+								m('.col-right', m.trust(ctrl.message.sound()))
+							])
+							: '',
+						ctrl.message.badge() !== undefined ?
+							m('.comp-push-view-row', [
+								m('.col-left', t('pu.po.tab3.extras.badge')),
+								m('.col-right', ctrl.message.badge())
+							])
+							: '',
+						ctrl.message.url() ?
+							m('.comp-push-view-row', [
+								m('.col-left', t('pu.po.tab3.extras.url')),
+								m('.col-right', m.trust(ctrl.message.url()))
+							])
+							: '',
+						ctrl.message.media() ?
+							m('.comp-push-view-row', [
+								m('.col-left', t('pu.po.tab3.extras.media')),
+								m('.col-right', m.trust(ctrl.message.media()))
+							])
+							: '',
+						ctrl.message.data() ?
+							m('.comp-push-view-row', [
+								m('.col-left', t('pu.po.tab3.extras.data')),
+								m('.col-right', m.trust(ctrl.message.data()))
+							])
+							: '',
+						ctrl.message.messagePerLocale() && ctrl.message.messagePerLocale()['default' + push.C.S + 't'] ? m('.comp-push-view-row', [
+							m('.col-left', t('pu.po.tab4.message-title')),
+							m('.col-right', m.trust(ctrl.message.messagePerLocale()['default' + push.C.S + 't']))
+						]) : '',
+						ctrl.message.buttons() > 0 ? m('.comp-push-view-row', [
+							m('.col-left', t('pu.po.tab3.btns')),
+							m('.col-right', [
+								m('.comp-push-view-row', [
+									m('.col-left', ctrl.message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 't']),
+									m('.col-right', m.trust(ctrl.message.messagePerLocale()['default' + push.C.S + '0' + push.C.S + 'l']))
+								]),
+								ctrl.message.buttons() > 1 ? m('.comp-push-view-row', [
+									m('.col-left', ctrl.message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 't']),
+									m('.col-right', m.trust(ctrl.message.messagePerLocale()['default' + push.C.S + '1' + push.C.S + 'l']))
+								]) : ''
+							])
+						]) : '',
+						ctrl.message.messagePerLocale() && ctrl.message.messagePerLocale().default ?
+							m('.comp-push-view-row', [
+								m('.col-left', t('pu.po.tab4.message-content')),
+								m('.col-right', 
+									Object.keys(ctrl.message.messagePerLocale()).filter(function(l){ return l.indexOf(push.C.S) === -1 && !!ctrl.message.messagePerLocale()[l]; }).map(function(l){
+										return m('.comp-push-view-row', [
+											m('.col-left', l === 'default' ? 'Default' : l === 'null' ? t('pu.locale.null') : window.countlyGlobalLang.languages[l] ? window.countlyGlobalLang.languages[l].englishName : l),
+											m('.col-right', m.trust(ctrl.message.messagePerLocale()[l]))
+										]);
+									})
+								)
+							])
+							: '',
+					]),	
+				]), 
+
+				// m('.comp-push-view-table', [
+				// 	ctrl.isView ? 
+				// 		''
+				// 		: m('.comp-push-view-row', [
+				// 			m('.col-left', t('pu.po.tab3.audience')),
+				// 			m('.col-right', ctrl.message.count() || ctrl.message.result.processed())
+				// 		]),
+				// 	ctrl.message.result.isSent() ? 
+				// 		m('.comp-push-view-row', [
+				// 			m('.col-left', t('pu.po.tab3.date.sent')),
+				// 			m('.col-right', ctrl.message.sent() ? moment(ctrl.message.sent()).format('DD.MM.YYYY, HH:mm') : '')
+				// 		])
+				// 		: '',
+				// ]),
+
+				// ctrl.message.messagePerLocale() && ctrl.message.messagePerLocale().default ? 
+				// 	m('div', [
+				// 		m('h4.comp-push-space-top', t('pu.po.tab3.message')),
+				// 		m('.comp-push-view-message', ctrl.message.messagePerLocale().default)
+				// 		// Object.keys(ctrl.message.messagePerLocale()).length === 1 ? 
+				// 			// m('.comp-push-view-table', m('.comp-push-view-row', ctrl.message.messagePerLocale().default))
+				// 			// : 
+				// 			// m.component(ctrl.locales)
+				// 	])
+				// 	: '',
 			]);
 		}
 	};

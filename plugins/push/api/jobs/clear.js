@@ -26,7 +26,7 @@ class ClearJob extends job.Job {
 				else if (!msg) {
 					log.d('Nothing to clear - no message %j', this.data.mid);
 					done();
-				} else if (msg.clear || (msg.result.status === N.Status.Preparing && msg.created === null) || (msg.result.status & N.Status.Done)) {
+				} else if (!msg.auto && (msg.clear || (msg.result.status === N.Status.Preparing && msg.created === null) || (msg.result.status & N.Status.Done))) {
 					let divider = new Divider(new N.Note(msg));
 					divider.clear(db).then(() => {
 						log.d('Done clearing audience for %j', this.data.mid);

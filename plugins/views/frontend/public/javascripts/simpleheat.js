@@ -209,7 +209,10 @@ simpleheat.prototype = {
             this._colorStops[this._colorStops.length - 1].position = 0;
             this._colorStops[this._colorStops.length - 1].zeroY = 0;
             this._colorStops[this._colorStops.length - 1].percentage = 0;
-
+            var originalColor = this._colorStops[this._colorStops.length - 1].color;
+            this._colorStops[this._colorStops.length - 1].color = "rgba(255, 255, 255, 0.7)";
+            this._colorStops[this._colorStops.length - 1].originalColor = originalColor;
+            
         } else if (this._data[0] == this._data[this._data.length - 1]) {
 
             //EVERYONE SCROLLED TILL BOTTOM
@@ -388,17 +391,10 @@ simpleheat.prototype = {
             var rectHeight = 30;
             var boxYOffset = 15;
             var textYOffset = 0;
+            var textXOffset = 19;
 
             if (marker.isAverage) {
                 rectWidth = 111;
-            }
-
-            if(marker.percentage  == 0){
-                if(marker.y == 0){
-                    rectWidth = 315;
-                }else{
-                    rectWidth = 232;
-                }
             }
 
             ctx.lineWidth = 1;
@@ -406,11 +402,23 @@ simpleheat.prototype = {
                 //100% MARKER
                 boxYOffset = 0;
                 textYOffset = 15;
-                ctx.lineWidth = 3;
             } else if (marker.y > self._height - boxYOffset) {
                 //0% MARKER
                 boxYOffset = 30;
                 textYOffset = -15;
+            }
+
+            if (marker.percentage == 0) {
+                if (marker.y == 0) {
+                    rectWidth = 400;
+                    rectHeight = 100;
+                    boxYOffset = -100;
+                    rectX = self._width / 2 - rectWidth / 2;
+                    textXOffset = rectX;
+                    textYOffset = Math.abs(boxYOffset) + rectHeight / 2;
+                } else {
+                    rectWidth = 232;
+                }
             }
 
             var rectY = marker.y - boxYOffset;
@@ -421,7 +429,10 @@ simpleheat.prototype = {
             ctx.shadowBlur = 0;
             ctx.lineJoin = "meter";
             ctx.strokeStyle = "#313131";
-            ctx.stroke();
+
+            if (!(marker.y == 0 && marker.percentage == 0)) {
+                ctx.stroke();
+            }
 
             ctx.fillStyle = "#313131";
             ctx.lineJoin = "round";
@@ -437,19 +448,24 @@ simpleheat.prototype = {
             ctx.textAlign = 'center';
             ctx.textBaseline = "middle";
             if (marker.isAverage) {
-                ctx.fillText("AVERAGE FOLD", 19 + rectWidth / 2, marker.y);
+                ctx.fillText("AVERAGE FOLD", textXOffset + rectWidth / 2, marker.y);
             } else {
                 var text = marker.percentage + " % of visitors reached this point";
-                
+
                 if (marker.percentage == 0) {
-                    if(marker.y == 0){
+                    if (marker.y == 0) {
                         text = "We don’t have any scrollmap data for this page yet";
-                    }else{
+                    } else {
                         text = "No scrollmap data beyond this point";
                     }
                 }
-                ctx.fillText(text, 19 + rectWidth / 2, marker.y + textYOffset);
+                ctx.fillText(text, textXOffset + rectWidth / 2, marker.y + textYOffset);
             }
         })
+
+        if(this._colorStops[this._colorStops.length - 1].originalColor){
+            this._colorStops[this._colorStops.length - 1].color = this._colorStops[this._colorStops.length - 1].originalColor;
+        }
+        delete this._colorStops[this._colorStops.length - 1].originalColor;
     }
 };

@@ -63,8 +63,10 @@ var appsApi = {},
     };
     
     appsApi.getAppsDetails = function (params) {
-        if(params.app.owner)
+        if(params.app.owner){
+            params.app.owner_id = params.app.owner;
             params.app.owner = common.db.ObjectID(params.app.owner+"");
+        }
         common.db.collection('app_users'+params.qstring.app_id).find({}, {ls:1, _id:0}).sort({ls:-1}).limit(1).toArray(function(err, last) {
             common.db.collection('members').findOne({ _id: params.app.owner }, {full_name:1, username:1}, function(err, owner) {
                 if(owner){

@@ -46,7 +46,7 @@
             url('/fonts/Ubuntu-500italic/Ubuntu-500italic.svg#Ubuntu') format('svg');
 }
 
-#cly-topbar {
+#cly-heatmap-topbar {
     min-height: 59px;
     background-color: #FFFFFF;
     font-family: Ubuntu,Helvetica,sans-serif;  
@@ -63,7 +63,10 @@
     line-height: 14px;
 }
 
-#cly-topbar .cly-center-menu {
+#cly-heatmap-topbar .cly-heatmap-center-menu {
+    all: initial;
+    font-family: Ubuntu,Helvetica,sans-serif; 
+    line-height: 14px;
     width: 580px; 
     margin-left:auto; 
     margin-right:auto; 
@@ -71,15 +74,17 @@
     color: #666;
 }
 
-#cly-topbar .cly-logo {
+#cly-heatmap-topbar .cly-heatmap-logo {
+    all: initial;
     height:32px !important; 
     width: 185px;
     position:absolute; 
     margin: 13px 19px
 }
 
-#cly-topbar .cly-block,
-#cly-topbar .cly-dropdown {
+#cly-heatmap-topbar .cly-heatmap-block,
+#cly-heatmap-topbar .cly-heatmap-dropdown {
+    all: inherit;
     display: inline;
     width: 25px;
     text-align: center;
@@ -89,52 +94,55 @@
     padding: 21px 0px;
 }
 
-#cly-topbar .cly-block {
+#cly-heatmap-topbar .cly-heatmap-block {
     width: 130px;
     padding: 21px 10px;
     color: #2EB52C;
     font-size: 13px;
 }
 
-#cly-topbar .cly-block:hover {
+#cly-heatmap-topbar .cly-heatmap-block:hover {
     color: #56C055;
 }
 
-#cly-topbar .cly-dropdown.cly-bordered {
+#cly-heatmap-topbar .cly-heatmap-dropdown.cly-heatmap-bordered {
     border-left: 1px solid #E7E7E7;
     border-right: 1px solid #E7E7E7
 }
 
-#cly-topbar .cly-dropdown.cly-bordered:nth-child(2) {
+#cly-heatmap-topbar .cly-heatmap-dropdown.cly-heatmap-bordered:nth-child(2) {
     border-left: 0px solid #E7E7E7;
     border-right: 1px solid #E7E7E7
 }
 
-#cly-topbar .cly-dropdown.cly-large {
+#cly-heatmap-topbar .cly-heatmap-dropdown.cly-heatmap-large {
     width: 210px;
 }
 
-#cly-topbar .cly-dropdown.cly-active .cly-selected {
+#cly-heatmap-topbar .cly-heatmap-dropdown.cly-heatmap-active .cly-heatmap-selected {
+    vertical-align: top;
     display: inline
 }
 
-#cly-topbar .cly-dropdown .cly-selected {
+#cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-selected {
     font-size: 14px;
     color: #474747
 }
 
-#cly-topbar .cly-dropdown .cly-title {
+#cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-title {
+    vertical-align: top;
+    margin-top: -3px;
     font-size: 10px;
     color: #666;
     margin-right: 25px;
     text-transform: uppercase
 }
 
-#cly-topbar .cly-dropdown .cly-selected {
+#cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-selected {
     display: none
 }
 
-#cly-topbar .cly-block i {
+#cly-heatmap-topbar .cly-heatmap-block i {
     font-size: 14px;
     vertical-align: top;
     margin-top: 1px;
@@ -144,20 +152,25 @@
     line-height: 14px;
 }
 
-#cly-topbar .cly-dropdown.cly-large .cly-selected:after {
+#cly-heatmap-topbar .cly-heatmap-dropdown.cly-heatmap-large .cly-heatmap-selected:after {
+    all: initial;
     font-family: Ionicons;
     content: "\f3d0";
     margin-left: 10px;
     font-size: 10px;
-    vertical-align: top
+    vertical-align: top;
+    line-height: 16px;
 }
 
-#cly-topbar .cly-dropdown.cly-large.cly-clicked .cly-selected:after {
+#cly-heatmap-topbar .cly-heatmap-dropdown.cly-heatmap-large.cly-heatmap-clicked .cly-heatmap-selected:after {
     content: "\f3d8";
     color: #2fa732
 }
 
-#cly-topbar .cly-dropdown .cly-menu {
+#cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-menu {
+    all: initial;
+    font-family: Ubuntu,Helvetica,sans-serif !important;  
+    line-height: 14px;
     box-shadow: 0 3px 7px rgba(0, 0, 0, .08);
     border: 1px solid #d0d0d0;
     color: #474747;
@@ -173,8 +186,8 @@
     visibility: hidden
 }
 
-#cly-topbar .cly-dropdown .cly-menu:after,
-#cly-topbar .cly-dropdown .cly-menu:before {
+#cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-menu:after,
+#cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-menu:before {
     left: 50%;
     content: " ";
     height: 0;
@@ -183,13 +196,13 @@
     pointer-events: none
 }
 
-#cly-topbar .cly-dropdown.cly-clicked .cly-menu {
+#cly-heatmap-topbar .cly-heatmap-dropdown.cly-heatmap-clicked .cly-heatmap-menu {
     opacity: 1;
     transition: opacity .3s, visibility .3s;
     visibility: visible
 }
 
-#cly-topbar .cly-dropdown .cly-menu:before {
+#cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-menu:before {
     border: 6px solid rgba(194, 225, 245, 0);
     border-bottom-color: #FFF;
     margin-left: -6px;
@@ -197,7 +210,7 @@
     z-index: 2
 }
 
-#cly-topbar .cly-dropdown .cly-menu:after {
+#cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-menu:after {
     border: 7px solid rgba(194, 225, 245, 0);
     border-bottom-color: #D0D0D0;
     margin-left: -7px;
@@ -205,12 +218,15 @@
     z-index: 1
 }
 
-#cly-topbar .cly-dropdown .cly-menu .cly-list {
+#cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-menu .cly-heatmap-list {
+    all: initial;
     max-height: 300px;
     overflow: auto
 }
 
-#cly-topbar .cly-dropdown .cly-menu .cly-list .cly-item {
+#cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-menu .cly-heatmap-list .cly-heatmap-item {
+    font-family: Ubuntu,Helvetica,sans-serif !important;  
+    line-height: 14px;
     display: block;
     cursor: pointer;
     color: #474747;
@@ -223,15 +239,15 @@
     text-overflow: ellipsis
 }
 
-#cly-topbar .cly-dropdown .cly-menu .cly-list .cly-item:last-child {
+#cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-menu .cly-heatmap-list .cly-heatmap-item:last-child {
     border-bottom: none
 }
 
-#cly-topbar .cly-dropdown .cly-menu .cly-list .cly-item:hover {
+#cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-menu .cly-heatmap-list .cly-heatmap-item:hover {
     background-color: #f3f3f3
 }
 
-#cly-topbar .cly-close {
+#cly-heatmap-topbar .cly-heatmap-close {
     text-decoration: none;
     font-size: 22px;
     position: absolute;
@@ -240,8 +256,10 @@
     color: #666;
 }
 
-#cly-topbar .cly-checkbox {
+#cly-heatmap-topbar .cly-heatmap-checkbox {
+    all: initial;
     position: absolute;
+    line-height: 14px;
     top: 21px;
     right: 40px;
     color: #666;
@@ -251,15 +269,18 @@
     user-select: none;
 }
 
-#cly-topbar .cly-checkbox .cly-label {
-    line-height: 14px;
+#cly-heatmap-topbar .cly-heatmap-checkbox .cly-heatmap-label {
+    font-family: Ubuntu,Helvetica,sans-serif !important;
     padding: 0px;
     margin: 0px;
     font-size: 13px;
-	cursor: pointer;
+    cursor: pointer;
+    vertical-align: top;
 }
 
-#cly-topbar .cly-checkmark {
+#cly-heatmap-topbar .cly-heatmap-checkmark {
+    all: initial;
+    cursor: pointer;
     position: absolute;
     top: 0px;
     left: -20px;
@@ -270,13 +291,13 @@
     box-shadow:  inset 0px 0px 2px 0px #E7E7E7;
 }
 
-#cly-topbar .cly-checkmark:after {
+#cly-heatmap-topbar .cly-heatmap-checkmark:after {
     content: "";
     position: absolute;
     display: none;
 }
 
-#cly-topbar .cly-checkbox input:checked ~ .cly-checkmark:after {
+#cly-heatmap-topbar .cly-heatmap-checkbox input:checked ~ .cly-heatmap-checkmark:after {
     display: block;
     left: 5px;
     top: 2px;

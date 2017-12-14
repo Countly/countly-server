@@ -1,5 +1,6 @@
 var http = require('http'),
     cluster = require('cluster'),
+    versionInfo = require('../frontend/express/version.info'),
     formidable = require('formidable'),
     os = require('os'),
     countlyConfig = require('./config', 'dont-enclose'),
@@ -248,7 +249,7 @@ if (cluster.isMaster) {
                 }
             }
 
-            if (params.qstring.tz && !isNaN(parseInt(params.qstring.tz))) {
+            if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
                 params.user.tz = parseInt(params.qstring.tz);
             } 
             
@@ -276,8 +277,8 @@ if (cluster.isMaster) {
                     }		
                 }
                 
-                plugins.dispatch("/sdk", {params:params, app:app});
-                
+            plugins.dispatch("/sdk", {params:params, app:app}, () => {
+
                 if (params.qstring.metrics) {		
                     common.processCarrier(params.qstring.metrics);	
                 		
@@ -299,7 +300,9 @@ if (cluster.isMaster) {
                             validateAppForWriteAPI(params, done);
                         };
                         
-                        function mergeUserData(newAppUser, oldAppUser){
+                        function mergeUserData(newAppUser, oldAppUser){                  
+                            //allow plugins to deal with user mergin properties
+                            plugins.dispatch("/i/user_merge", {params:params, newAppUser:newAppUser, oldAppUser:oldAppUser});
                             //merge user data
                             for(var i in oldAppUser){
                                 // sum up session count and total session duration
@@ -365,6 +368,7 @@ if (cluster.isMaster) {
                                 //delete old user
                                 common.db.collection('app_users' + params.app_id).remove({_id:old_id}, function(){
                                     //let plugins know they need to merge user data
+                                    common.db.collection("metric_changes" + params.app_id).update({uid:oldAppUser.uid}, {'$set': {uid:newAppUser.uid}}, {multi:true}, function(err, res){});
                                     plugins.dispatch("/i/device_id", {params:params, app:app, oldUser:oldAppUser, newUser:newAppUser});
                                     restartRequest();
                                 });
@@ -502,6 +506,7 @@ if (cluster.isMaster) {
                     return done ? done() : false;
                 }
             });
+            });
         });
     }
     
@@ -584,13 +589,15 @@ if (cluster.isMaster) {
                             var requests = params.qstring.requests,
                                 appKey = params.qstring.app_key;
                 
-                            if (requests) {
+                            if (requests && typeof requests === "string") {
                                 try {
                                     requests = JSON.parse(requests);
                                 } catch (SyntaxError) {
                                     console.log('Parse bulk JSON failed', requests, req.url, req.body);
+                                    requests = null;
                                 }
-                            } else {
+                            }
+                            if(!requests){
                                 common.returnMessage(params, 400, 'Missing parameter "requests"');
                                 return false;
                             }
@@ -610,7 +617,7 @@ if (cluster.isMaster) {
                                 if (!requests[i].app_key && !appKey) {
                                     return processBulkRequest(i + 1);
                                 }
-                
+                                params.req.body = JSON.stringify(requests[i]);
                                 var tmpParams = {
                                     'app_id':'',
                                     'app_cc':'',
@@ -620,7 +627,7 @@ if (cluster.isMaster) {
                                         'city':requests[i].city || 'Unknown'
                                     },
                                     'qstring':requests[i],
-                                    'href':params.href,		
+                                    'href':"/i",		
                                     'res':params.res,		
                                     'req':params.req,
                                     'promises':[],
@@ -637,8 +644,9 @@ if (cluster.isMaster) {
                 
                                 return validateAppForWriteAPI(tmpParams, function(){
                                     function resolver(){
-                                        plugins.dispatch("/sdk/end", {params:tmpParams});
-                                        processBulkRequest(i + 1);
+                                        plugins.dispatch("/sdk/end", {params:tmpParams}, function(){
+                                            processBulkRequest(i + 1);
+                                        });
                                     }
                                     Promise.all(tmpParams.promises).then(resolver, resolver);
                                 });
@@ -816,6 +824,9 @@ if (cluster.isMaster) {
                                 case 'me':
                                     validateUserForMgmtReadAPI(countlyApi.mgmt.users.getCurrentUser, params);
                                     break;
+                                case 'id':
+                                    validateUserForMgmtReadAPI(countlyApi.mgmt.users.getUserById, params);
+                                    break;
                                 default:
                                     if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
                                         common.returnMessage(params, 400, 'Invalid path, must be one of /all or /me');
@@ -901,6 +912,32 @@ if (cluster.isMaster) {
                                                 common.returnMessage(params, 400, 'Task does not exist');
                                             }
                                         });
+                                    }, params);
+                                    break;
+                                default:
+                                    if(!plugins.dispatch(apiPath, {params:params, validateUserForDataReadAPI:validateUserForDataReadAPI, validateUserForMgmtReadAPI:validateUserForMgmtReadAPI, paths:paths, validateUserForDataWriteAPI:validateUserForDataWriteAPI, validateUserForGlobalAdmin:validateUserForGlobalAdmin}))
+                                        common.returnMessage(params, 400, 'Invalid path');
+                                    break;
+                            }
+            
+                            break;
+                        }
+                        case '/o/system':
+                        {
+                            if (!params.qstring.api_key) {
+                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
+                                return false;
+                            }
+            
+                            switch (paths[3]) {
+                                case 'version':
+                                    validateUserForMgmtReadAPI(function(){
+                                        common.returnOutput(params, {"version":versionInfo.version});
+                                    }, params);
+                                    break;
+                                case 'plugins':
+                                    validateUserForMgmtReadAPI(function(){
+                                        common.returnOutput(params, plugins.getPlugins());
                                     }, params);
                                     break;
                                 default:
