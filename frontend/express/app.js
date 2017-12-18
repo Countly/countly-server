@@ -30,6 +30,7 @@ var versionInfo = require('./version.info'),
     bruteforce = require('./libs/preventBruteforce.js'),
 	plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config', 'dont-enclose'),
+    moment = require('moment-timezone'),    
     log = require('../../api/utils/log.js')('core:app');
     
     var COUNTLY_NAMED_TYPE = "Countly Community Edition v"+COUNTLY_VERSION;
@@ -842,32 +843,62 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                     }
                     if (!countlyConfig.web.track || countlyConfig.web.track == "GA" && member['global_admin'] || countlyConfig.web.track == "noneGA" && !member['global_admin']) {
                         countlyStats.getUser(countlyDb, member, function(statsObj){
-                            var date = new Date();
-                            request({
-                                uri:"https://stats.count.ly/i",
-                                method:"GET",
-                                timeout:4E3,
-                                qs:{
-                                    device_id:member.email,
-                                    app_key:"386012020c7bf7fcb2f1edf215f1801d6146913f",
-                                    timestamp: Math.round(date.getTime()/1000),
-                                    hour: date.getHours(),
-                                    dow: date.getDay(),
-                                    user_details:JSON.stringify(
-                                        {
-                                            custom:{
-                                                apps: (member.user_of) ? member.user_of.length : 0,
-                                                platforms:{"$addToSet":statsObj["total-platforms"]},
-                                                events:statsObj["total-events"],
-                                                pushes:statsObj["total-msg-sent"],
-                                                crashes:statsObj["total-crash-groups"],
-                                                users:statsObj["total-users"]
-                                            }
-                                        }
-                                    )
-                                    
+                            countlyDb.collection("server_stats_data_points").aggregate([
+                                {
+                                    $group: {
+                                        _id: "$m",
+                                        e: { $sum: "$e"},
+                                        s: { $sum: "$s"}
+                                    }
                                 }
-                            }, function(a, c, b) {});
+                            ], { allowDiskUse:true }, function(error, allData) {
+                                if(!error){
+                                    var data = {};
+                                    data.all = 0;
+                                    data.month3 = [];
+                                    var utcMoment = moment.utc();
+                                    var months = {};
+                                    for(var i = 0; i < 3; i++){
+                                        months[utcMoment.format("YYYY:M")] = true;
+                                        utcMoment.subtract(1, 'months');
+                                    }
+                                    for(var i = 0; i < allData.length; i++){
+                                        data.all += allData[i].e + allData[i].s;
+                                        if(months[allData[i]._id]){
+                                            data.month3.push(allData[i]._id + " - " + (allData[i].e + allData[i].s));
+                                        }
+                                    }
+                                    data.avg = Math.round((data.all/allData.length)*100)/100;
+                                    var date = new Date();
+                                    request({
+                                        uri:"https://stats.count.ly/i",
+                                        method:"GET",
+                                        timeout:4E3,
+                                        qs:{
+                                            device_id:member.email,
+                                            app_key:"386012020c7bf7fcb2f1edf215f1801d6146913f",
+                                            timestamp: Math.round(date.getTime()/1000),
+                                            hour: date.getHours(),
+                                            dow: date.getDay(),
+                                            user_details:JSON.stringify(
+                                                {
+                                                    custom:{
+                                                        apps: (member.user_of) ? member.user_of.length : 0,
+                                                        platforms:{"$addToSet":statsObj["total-platforms"]},
+                                                        events:statsObj["total-events"],
+                                                        pushes:statsObj["total-msg-sent"],
+                                                        crashes:statsObj["total-crash-groups"],
+                                                        users:statsObj["total-users"],
+                                                        dataPointsAll: data.all,
+                                                        dataPointsMonthlyAvg: data.avg,
+                                                        dataPointsLast3Months: data.month
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    }, function(a, c, b) {console.log(a,c,b,"!@#!@4124212")});
+                                }
+                            }); 
                         });
                     }
                     req.session.regenerate(function(err) {
