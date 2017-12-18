@@ -896,7 +896,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                                                 }
                                             )
                                         }
-                                    }, function(a, c, b) {console.log(a,c,b,"!@#!@4124212")});
+                                    }, function(a, c, b) {});
                                 }
                             }); 
                         });
