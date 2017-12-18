@@ -1785,7 +1785,17 @@ var AppRouter = Backbone.Router.extend({
             var tablePersistSettings = pageSizeSettings.filter(function (item) {
                 return (item.viewId === app.activeView.cid | (item.viewId === app.activeView.cid && item.selector === settings.sTableId));
             })[0];
-            return tablePersistSettings ? tablePersistSettings.pageSize : 50;
+            
+            var pageSize;
+            
+            if(tablePersistSettings && tablePersistSettings.pageSize)
+                pageSize = tablePersistSettings.pageSize;
+            else if(settings.oInit && settings.oInit.iDisplayLength)
+                pageSize = settings.oInit.iDisplayLength;
+            else
+                pageSize = settings.iDisplayLength || settings._iDisplayLength || 50;
+
+            return pageSize;
         }
 
         $.extend(true, $.fn.dataTable.defaults, {
