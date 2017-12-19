@@ -16,11 +16,7 @@ var plugin = {},
 		
 		var events = [];
 
-		if (!appId ||
-			!(parseInt(params.qstring.hour) >= 0 && parseInt(params.qstring.hour) <= 23) ||
-			!(parseInt(params.qstring.dow) >= 0 && parseInt(params.qstring.dow) <= 6)) {
-			return false;
-		}
+		if (!appId) return false;
 
 		var hasSession = false;
 		var hasEvents = false;
@@ -40,7 +36,7 @@ var plugin = {},
 		var update = {};
 		var options = {};
 
-		if (hasSession) {
+		if (hasSession && params.qstring.hour && params.qstring.dow) {
 			criteria = {
 				"_id": "tod_" + appId + ":[CLY]_session"
 			};
