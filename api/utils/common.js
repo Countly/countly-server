@@ -469,8 +469,8 @@ var common = {},
             curMsTimestamp = ( parseInt(reqTimestamp, 10) > time.time()) ? time.time()*1000 : parseFloat(reqTimestamp, 10)*1000;
             currDate = new Date(currTimestamp * 1000);
         } else if (reqTimestamp && (Math.round(parseFloat(reqTimestamp, 10)) + "").length === 13 && common.isNumber(reqTimestamp)) {
-            var tmpTimestamp = Math.round(parseInt(reqTimestamp, 10) / 1000);
-            curMsTimestamp = ( tmpTimestamp > time.time()) ? time.time() * 1000 :  parseInt(reqTimestamp, 10);
+            var tmpTimestamp = Math.floor(parseInt(reqTimestamp, 10) / 1000);
+            curMsTimestamp = ( tmpTimestamp > time.time()) ? Date.now() :  parseInt(reqTimestamp, 10);
             currTimestamp = (tmpTimestamp > time.time()) ? time.time() : tmpTimestamp;
             currDate = new Date(currTimestamp * 1000);
         } else {
