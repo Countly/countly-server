@@ -101,19 +101,21 @@ var plugin = {},
 				queryArray.push(query);
 			}
 		}
-
-		common.db.onOpened(function(){
-			var bulk = common.db._native.collection("timesofday").initializeUnorderedBulkOp();
-			for(var i = 0; i < queryArray.length; i++){
-				bulk.find(queryArray[i].criteria).upsert().updateOne(queryArray[i].update);
-			}
-			bulk.execute(function(err, updateResult) {
-				if(err){
-					//there was an error
-				}
-				//all done
-			});
-		});
+        
+        if(queryArray.length){
+            common.db.onOpened(function(){
+                var bulk = common.db._native.collection("timesofday").initializeUnorderedBulkOp();
+                for(var i = 0; i < queryArray.length; i++){
+                    bulk.find(queryArray[i].criteria).upsert().updateOne(queryArray[i].update);
+                }
+                bulk.execute(function(err, updateResult) {
+                    if(err){
+                        //there was an error
+                    }
+                    //all done
+                });
+            });
+        }
 
 		return true;
 	});
