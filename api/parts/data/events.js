@@ -161,6 +161,7 @@ var countlyEvents = {},
             eventHashMap[eventCollectionName] = shortEventName;
                 
             // If present use timestamp inside each event while recording
+            var time = params.time;
             if (params.qstring.events[i].timestamp) {
                 params.time = common.initTimeObj(params.appTimezone, params.qstring.events[i].timestamp);
             }
@@ -262,7 +263,7 @@ var countlyEvents = {},
             mergeEvents(eventCollections[eventCollectionName], tmpEventColl);
             
             //switch back to request time
-            params.time = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+            params.time = time;
         }
 
         if (!plugins.getConfig("api").safe) {
