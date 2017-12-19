@@ -25,17 +25,8 @@
     };
 
     timesOfDayPlugin.fetchAllEvents = function () {
-        return $.ajax({
-            type: "GET",
-            url: countlyCommon.API_URL + "/o",
-            data: {
-                "api_key": countlyGlobal.member.api_key,
-                "app_id": countlyCommon.ACTIVE_APP_ID,
-                "method": "get_events"
-            },
-            success: function (json) {
-                _eventsList = json || {};
-            }
+        return $.when(countlyEvent.initialize()).then(function () { 
+            _eventsList = countlyEvent.getEvents().map(function(data){ return data.key });
         });
     }
 

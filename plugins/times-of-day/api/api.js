@@ -13,13 +13,12 @@ var plugin = {},
 
 
 		var appId = params.app_id;
-		var hour = params.qstring.hour;
-		var dow = params.qstring.dow;
+		
 		var events = [];
 
 		if (!appId ||
-			!(parseInt(hour) >= 0 && parseInt(hour) <= 23) ||
-			!(parseInt(dow) >= 0 && parseInt(dow) <= 6)) {
+			!(parseInt(params.qstring.hour) >= 0 && parseInt(params.qstring.hour) <= 23) ||
+			!(parseInt(params.qstring.dow) >= 0 && parseInt(params.qstring.dow) <= 6)) {
 			return false;
 		}
 
@@ -43,13 +42,13 @@ var plugin = {},
 
 		if (hasSession) {
 			criteria = {
-				"_id": "tod_" + appId + ":Sessions"
+				"_id": "tod_" + appId + ":[CLY]_session"
 			};
 
 			var incData = {};
-			incData[dow + "." + hour + ".count"] = 1;
+			incData[params.qstring.dow + "." + params.qstring.hour + ".count"] = 1;
 			var setData = {};
-			setData["_id"] = "tod_" + appId + ":Sessions";
+			setData["_id"] = "tod_" + appId + ":[CLY]_session";
 			setData['app'] = appId;
 
 			update = {
@@ -76,6 +75,9 @@ var plugin = {},
 					"_id": "tod_" + appId + ":" + events[i].key
 				};
 
+				var dow = events[i].dow || params.qstring.dow;
+				var hour = events[i].hour || params.qstring.hour;
+
 				var incData = {};
 				incData[dow + "." + hour + ".count"] = 1;
 				var setData = {};
@@ -101,26 +103,18 @@ var plugin = {},
 			}
 		}
 
-		var parallelTasksArray = [];
-
-		queryArray.forEach((query) => {
-			parallelTasksArray.push(insertUpdateTimesOfDay.bind(null, query));
-		});
-
-		async.parallel(parallelTasksArray, function (err, result) {
-			if (err) {
-				console.log("Error while updating times of day: ", err.message);
+		common.db.onOpened(function(){
+			var bulk = common.db._native.collection("timesofday").initializeUnorderedBulkOp();
+			for(var i = 0; i < queryArray.length; i++){
+				bulk.find(queryArray[i].criteria).upsert().updateOne(queryArray[i].update);
 			}
-		})
-
-		function insertUpdateTimesOfDay(query, callback) {
-			common.db.collection('timesofday').update(query.criteria, query.update, query.options, function (err, result) {
-				if (err) {
-					return callback(err);
+			bulk.execute(function(err, updateResult) {
+				if(err){
+					//there was an error
 				}
-				return callback(null, result);
+				//all done
 			});
-		}
+		});
 
 		return true;
 	});

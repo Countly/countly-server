@@ -5,7 +5,7 @@ window.todview = countlyView.extend({
 
     beforeRender: function () {
         var self = this;
-        self.tod_type = "Sessions";
+        self.tod_type = "[CLY]_session";
         if (!this.timesOfDayData) {
             return $.when($.get(countlyGlobal["path"] + '/times-of-day/templates/times-of-day.html', function (src) {
                 self.template = Handlebars.compile(src);
@@ -19,9 +19,9 @@ window.todview = countlyView.extend({
     },
 
     loadSessionEventData: function () {
-        $("#event-session-list").html('<div data-value="Sessions" class="es-option item" data-localize="times-of-day.sessions">' + jQuery.i18n.map['times-of-day.sessions'] + '</div>');
+        $("#event-session-list").html('<div data-value="[CLY]_session" class="es-option item" data-localize="times-of-day.sessions">' + jQuery.i18n.map['times-of-day.sessions'] + '</div>');
         $("#event-session-list").append('<div class="group">' + jQuery.i18n.map['times-of-day.events'] + '</div>');
-        var events = this.eventsList.list || [];
+        var events = this.eventsList || [];
         for (var i = 0; i < events.length; i++) {
             $("#event-session-list").append('<div data-value="' + events[i] + '" class="es-option item" data-localize="">' + events[i] + '</div>');
         }
@@ -119,8 +119,5 @@ $(document).ready(function () {
         '<div class="text" data-localize="times-of-day.plugin-title"></div>' +
         '</a>';
 
-    $('#default-type #analytics-submenu').append(menu);
-    $('#mobile-type #analytics-submenu').append(menu);
-    $('#web-type #analytics-submenu').append(menu);
-    $('#desktop-type #analytics-submenu').append(menu);
+    $('.sidebar-menu #analytics-submenu').append(menu); 
 });
