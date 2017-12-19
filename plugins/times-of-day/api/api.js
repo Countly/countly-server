@@ -36,7 +36,7 @@ var plugin = {},
 		var update = {};
 		var options = {};
 
-		if (hasSession && params.qstring.hour && params.qstring.dow) {
+		if (hasSession && params.qstring.hour !== undefined && params.qstring.dow !== undefined) {
 			criteria = {
 				"_id": "tod_" + appId + ":[CLY]_session"
 			};
@@ -73,7 +73,10 @@ var plugin = {},
 
 				var dow = events[i].dow || params.qstring.dow;
 				var hour = events[i].hour || params.qstring.hour;
-
+				
+				if(dow === undefined || hour === undefined)
+					continue;
+				
 				var incData = {};
 				incData[dow + "." + hour + ".count"] = 1;
 				var setData = {};
