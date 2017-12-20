@@ -915,6 +915,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                         req.session.uid = member["_id"];
                         req.session.gadm = (member["global_admin"] == true);
                         req.session.email = member["email"];
+                        req.session.settings = member.settings;
 
                         var update = {last_login:Math.round(new Date().getTime()/1000)};
                         if(typeof member.password_changed === "undefined"){
