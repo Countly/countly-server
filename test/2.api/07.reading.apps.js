@@ -12,12 +12,12 @@ describe('Reading apps', function(){
 			API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
 			API_KEY_USER = testUtils.get("API_KEY_USER");
 			request
-			.get('/o/apps')
+			.get('/o/apps/all')
 			.expect(400)
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'Missing parameter "api_key"');
+				ob.should.have.property('result', 'Missing parameter "api_key" or "auth_token"');
 				done()
 			});
 		});

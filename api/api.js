@@ -665,11 +665,6 @@ if (cluster.isMaster) {
                                 }
                             }
             
-                            if (!params.qstring.api_key) {
-                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                                return false;
-                            }
-            
                             switch (paths[3]) {
                                 case 'create':
                                     validateUserForWriteAPI(countlyApi.mgmt.users.createUser, params);
@@ -696,11 +691,6 @@ if (cluster.isMaster) {
                                 } catch (SyntaxError) {
                                     console.log('Parse ' + apiPath + ' JSON failed', req.url, req.body);
                                 }
-                            }
-            
-                            if (!params.qstring.api_key) {
-                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                                return false;
                             }
             
                             switch (paths[3]) {
@@ -732,11 +722,6 @@ if (cluster.isMaster) {
                         }
                         case '/i/tasks':
                         {
-                            if (!params.qstring.api_key) {
-                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                                return false;
-                            }
-                            
                             if (!params.qstring.task_id) {
                                 common.returnMessage(params, 400, 'Missing parameter "task_id"');
                                 return false;
@@ -812,11 +797,6 @@ if (cluster.isMaster) {
                         }
                         case '/o/users':
                         {
-                            if (!params.qstring.api_key) {
-                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                                return false;
-                            }
-            
                             switch (paths[3]) {
                                 case 'all':
                                     validateUserForMgmtReadAPI(countlyApi.mgmt.users.getAllUsers, params);
@@ -837,11 +817,6 @@ if (cluster.isMaster) {
                         }
                         case '/o/apps':
                         {
-                            if (!params.qstring.api_key) {
-                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                                return false;
-                            }
-            
                             switch (paths[3]) {
                                 case 'all':
                                     validateUserForMgmtReadAPI(countlyApi.mgmt.apps.getAllApps, params);
@@ -862,11 +837,6 @@ if (cluster.isMaster) {
                         }
                         case '/o/tasks':
                         {
-                            if (!params.qstring.api_key) {
-                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                                return false;
-                            }
-            
                             switch (paths[3]) {
                                 case 'all':
                                     validateUserForMgmtReadAPI(function(){
@@ -1093,11 +1063,6 @@ if (cluster.isMaster) {
                         }
                         case '/o':
                         {
-                            if (!params.qstring.api_key) {
-                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                                return false;
-                            }
-            
                             if (!params.qstring.app_id) {
                                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
                                 return false;
@@ -1159,11 +1124,6 @@ if (cluster.isMaster) {
                         }
                         case '/o/analytics':
                         {
-                            if (!params.qstring.api_key) {
-                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                                return false;
-                            }
-            
                             if (!params.qstring.app_id) {
                                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
                                 return false;

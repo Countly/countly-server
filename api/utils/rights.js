@@ -7,13 +7,15 @@ var common = require("./common.js"),
     Promise = require("bluebird");
 var authorize = require('./authorizer.js'); //for token validations
 
-    function validate_token_if_exists(params)
-    {
-        return new Promise(function(resolve, reject){
-            var token= params.qstring.auth_token || params.req.headers["countly-token"] || "";
-            if(token && token!="")
-            {
-                authorize.verify_return({db:common.db, token:token, req_path:params.fullPath, callback:function(valid){
+//check token and return owner id if token valid
+//owner d used later to set all member variables.
+function validate_token_if_exists(params)
+{
+    return new Promise(function(resolve, reject){
+        var token= params.qstring.auth_token || params.req.headers["countly-token"] || "";
+        if(token && token!="")
+        {
+            authorize.verify_return({db:common.db, token:token, req_path:params.fullPath, callback:function(valid){
                     //false or owner.id
                     if(valid)
                         resolve(valid);
@@ -23,11 +25,11 @@ var authorize = require('./authorizer.js'); //for token validations
                     }
                     
                 }});
-            }
-            else
-                resolve("token-not-given");
-        });
-    }
+        }
+        else
+            resolve("token-not-given");
+    });
+}
 /**
 * Validate user for read access by api_key for provided app_id (both required parameters for the request). 
 * User must exist, must not be locked, must pass plugin validation (if any) and have at least user access to the provided app (which also must exist).
@@ -41,12 +43,20 @@ var authorize = require('./authorizer.js'); //for token validations
 exports.validateUserForRead = function(params, callback, callbackParam) {
     return wrapCallback(params, callback, callbackParam, function(resolve, reject){
         validate_token_if_exists(params).then(function(result){
-            var query={'api_key':params.qstring.api_key};
+            var query="";
             if(result!='token-not-given' && result!='token-invalid' )// then result is owner id
             {
                 query = {'_id':common.db.ObjectID(result)};
             }
-            common.db.collection('members').findOne({'api_key':params.qstring.api_key}, function (err, member) {
+            else
+            {
+                if (!params.qstring.api_key) {
+                    common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                    return false;
+                }
+                query={'api_key':params.qstring.api_key};
+            }
+            common.db.collection('members').findOne(query, function (err, member) {
                 if (!member || err) {
                     common.returnMessage(params, 401, 'User does not exist');
                     reject('User does not exist');
@@ -99,8 +109,8 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
             });
         },
         function(err){
-            common.returnMessage(params, 401, 'User does not exist');
-            reject('User does not exist');
+            common.returnMessage(params, 401, 'Token is invalid');
+            reject('Token is invalid');
             return false;
         });
     });
@@ -119,10 +129,18 @@ exports.validateUserForRead = function(params, callback, callbackParam) {
 exports.validateUserForWrite = function(params, callback, callbackParam) {
     return wrapCallback(params, callback, callbackParam, function(resolve, reject){
         validate_token_if_exists(params).then(function(result){
-            var query={'api_key':params.qstring.api_key};
+            var query="";
             if(result!='token-not-given' && result!='token-invalid' )// then result is owner id
             {
                 query = {'_id':common.db.ObjectID(result)};
+            }
+            else
+            {
+                if (!params.qstring.api_key) {
+                    common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                    return false;
+                }
+                query={'api_key':params.qstring.api_key};
             }
             common.db.collection('members').findOne(query, function (err, member) {
                 if (!member || err) {
@@ -168,8 +186,8 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
             });
         },
         function(err){
-            common.returnMessage(params, 401, 'User does not exist');
-            reject('User does not exist');
+            common.returnMessage(params, 401, 'Token is invalid');
+            reject('Token is invalid');
             return false;
         });
     });
@@ -188,10 +206,18 @@ exports.validateUserForWrite = function(params, callback, callbackParam) {
 exports.validateGlobalAdmin = function(params, callback, callbackParam) {
     return wrapCallback(params, callback, callbackParam, function(resolve, reject){
         validate_token_if_exists(params).then(function(result){
-            var query={'api_key':params.qstring.api_key};
+            var query="";
             if(result!='token-not-given' && result!='token-invalid' )// then result is owner id
             {
                 query = {'_id':common.db.ObjectID(result)};
+            }
+            else
+            {
+                if (!params.qstring.api_key) {
+                    common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                    return false;
+                }
+                query={'api_key':params.qstring.api_key};
             }
             common.db.collection('members').findOne(query, function (err, member) {
                 if (!member || err) {
@@ -225,8 +251,8 @@ exports.validateGlobalAdmin = function(params, callback, callbackParam) {
             });
         },
         function(err){
-            common.returnMessage(params, 401, 'User does not exist');
-            reject('User does not exist');
+            common.returnMessage(params, 401, 'Token is invalid');
+            reject('Token is invalid');
             return false;
         });
     });
@@ -252,10 +278,18 @@ exports.validateUser = function (params, callback, callbackParam) {
     
     return wrapCallback(params, callback, callbackParam, function(resolve, reject){
         validate_token_if_exists(params).then(function(result){
-            var query={'api_key':params.qstring.api_key};
+            var query="";
             if(result!='token-not-given' && result!='token-invalid' )// then result is owner id
             {
                 query = {'_id':common.db.ObjectID(result)};
+            }
+            else
+            {
+                if (!params.qstring.api_key) {
+                    common.returnMessage(params, 400, 'Missing parameter "api_key" or "auth_token"');
+                    return false;
+                }
+                query={'api_key':params.qstring.api_key};
             }
             common.db.collection('members').findOne(query, function (err, member) {
                 if (!member || err) {
@@ -284,8 +318,8 @@ exports.validateUser = function (params, callback, callbackParam) {
             });
         },
         function(err){
-            common.returnMessage(params, 401, 'User does not exist');
-            reject('User does not exist');
+            common.returnMessage(params, 401, 'Token is invalid');
+            reject('Token is invalid');
             return false;
         });
     });

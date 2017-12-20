@@ -7,12 +7,12 @@ describe('Fail writing user', function(){
 	describe('Writing users without key', function(){
 		it('should bad request', function(done){
 			request
-			.get('/i/users')
+			.get('/i/users/update')
 			.expect(400)
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'Missing parameter "api_key"');
+				ob.should.have.property('result', 'Missing parameter "api_key" or "auth_token"');
 				done()
 			});
 		});

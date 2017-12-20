@@ -74,7 +74,8 @@ var crypto = require("crypto");
                         valid_endpoint=false;
                         for(var p=0; p<res.endpoint.length; p++)
                         {
-                            if(options.req_path.substr(res.endpoint[p])>-1)
+                            var my_regexp = new RegExp(res.endpoint[p]);
+                            if(my_regexp.test(options.req_path))
                             {
                                 valid_endpoint=true;
                             }
@@ -101,6 +102,9 @@ var crypto = require("crypto");
     };
     
     /** same as above, only if valid returns owner. Keeping both for backwards compability **/
+    /* regexp  any string - is used as substring. */
+    /* to mach exact ^{yourpath}$ */
+    /* full reference : https://www.w3schools.com/jsref/jsref_obj_regexp.asp */
     authorizer.verify_return= function (options) {
         options.db = options.db || common.db;
         options.token = options.token || authorizer.getToken();
@@ -115,7 +119,8 @@ var crypto = require("crypto");
                         valid_endpoint=false;
                         for(var p=0; p<res.endpoint.length; p++)
                         {
-                            if(options.req_path.substr(res.endpoint[p])>-1)
+                            var my_regexp = new RegExp(res.endpoint[p]);
+                            if(my_regexp.test(options.req_path))
                             {
                                 valid_endpoint=true;
                             }
