@@ -77,9 +77,6 @@ describe('Test if token is created on login', function(){
         after(function(done){
             db.collection("auth_tokens").find({owner:db.ObjectID(testowner)}).toArray(function(err, res){
                 if(err) done(err);
-                
-                console.log(res);
-                console.log(testowner);
                 if(res && res.length==1)
                 {
                     testtoken  = res[0]._id;
@@ -139,7 +136,6 @@ describe('Testing global admin user token', function(){
             if(token)
             {
                testtoken = token;
-               console.log(token);
                 done();
             }
             else
