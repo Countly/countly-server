@@ -1,0 +1,26 @@
+{
+  "name": "times-of-day",
+  "title": "Times of day",
+  "version": "1.0.0",
+  "description": "Times of day plugin for session and events visualization.",
+  "author": "Prikshit Tekta",
+  "homepage": "https://count.ly/plugins/",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
+  "keywords": [
+    "countly",
+    "analytics",
+    "mobile",
+    "times of day",
+    "session",
+    "events",
+    "visualization"
+  ],
+  "dependencies": {},
+  "private": true
+}

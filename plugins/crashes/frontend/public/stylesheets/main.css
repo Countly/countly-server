@@ -95,3 +95,5 @@
 #view-filter.crash-filter .filter-view-container.centered #segmentation .query > .and-or [data-value="OR"] {display: none !important;}
 
 #action-segmentation-tooltip { font-size:12px; max-width:300px; text-align: center; }
+
+.check-green:hover {  color: #217923;}
