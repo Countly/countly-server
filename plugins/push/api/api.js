@@ -50,7 +50,7 @@ var plugin = {},
     plugins.register('/sdk', function(ob){
         var params = ob.params;
         if (params.qstring.events) {
-            var pushEvents = params.qstring.events.filter(e => e.key.indexOf('[CLY]_push_') === 0 && e.segmentation && e.segmentation.i && e.segmentation.i.length === 24),
+            var pushEvents = params.qstring.events.filter(e => e.key && e.key.indexOf('[CLY]_push_') === 0 && e.segmentation && e.segmentation.i && e.segmentation.i.length === 24),
                 msgIds = pushEvents.map(e => common.db.ObjectID(e.segmentation.i));
             if (msgIds.length) {
                 return new Promise((resolve, reject) => {
