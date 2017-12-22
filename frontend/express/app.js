@@ -852,7 +852,15 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                                     }
                                 }
                             ], { allowDiskUse:true }, function(error, allData) {
-                                if(!error){
+                                var custom = {
+                                    apps: (member.user_of) ? member.user_of.length : 0,
+                                    platforms:{"$addToSet":statsObj["total-platforms"]},
+                                    events:statsObj["total-events"],
+                                    pushes:statsObj["total-msg-sent"],
+                                    crashes:statsObj["total-crash-groups"],
+                                    users:statsObj["total-users"]
+                                };
+                                if(!error && allData && allData.length){
                                     var data = {};
                                     data.all = 0;
                                     data.month3 = [];
@@ -869,35 +877,28 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                                         }
                                     }
                                     data.avg = Math.round((data.all/allData.length)*100)/100;
-                                    var date = new Date();
-                                    request({
-                                        uri:"https://stats.count.ly/i",
-                                        method:"GET",
-                                        timeout:4E3,
-                                        qs:{
-                                            device_id:member.email,
-                                            app_key:"386012020c7bf7fcb2f1edf215f1801d6146913f",
-                                            timestamp: Math.round(date.getTime()/1000),
-                                            hour: date.getHours(),
-                                            dow: date.getDay(),
-                                            user_details:JSON.stringify(
-                                                {
-                                                    custom:{
-                                                        apps: (member.user_of) ? member.user_of.length : 0,
-                                                        platforms:{"$addToSet":statsObj["total-platforms"]},
-                                                        events:statsObj["total-events"],
-                                                        pushes:statsObj["total-msg-sent"],
-                                                        crashes:statsObj["total-crash-groups"],
-                                                        users:statsObj["total-users"],
-                                                        dataPointsAll: data.all,
-                                                        dataPointsMonthlyAvg: data.avg,
-                                                        dataPointsLast3Months: data.month
-                                                    }
-                                                }
-                                            )
-                                        }
-                                    }, function(a, c, b) {});
+                                    custom.dataPointsAll = data.all;
+                                    custom.dataPointsMonthlyAvg = data.avg;
+                                    custom.dataPointsLast3Months = data.month3;
                                 }
+                                var date = new Date();
+                                request({
+                                    uri:"https://stats.count.ly/i",
+                                    method:"GET",
+                                    timeout:4E3,
+                                    qs:{
+                                        device_id:member.email,
+                                        app_key:"386012020c7bf7fcb2f1edf215f1801d6146913f",
+                                        timestamp: Math.round(date.getTime()/1000),
+                                        hour: date.getHours(),
+                                        dow: date.getDay(),
+                                        user_details:JSON.stringify(
+                                            {
+                                                custom:custom
+                                            }
+                                        )
+                                    }
+                                }, function(a, c, b) {});
                             }); 
                         });
                     }
