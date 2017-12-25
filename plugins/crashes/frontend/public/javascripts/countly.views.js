@@ -112,12 +112,14 @@ window.CrashesView = countlyView.extend({
 
                         // This separator is not visible in the UI but | is visible in exported data
                         var separator = "<span class='separator'>|</span>";
-
-                        if (row.is_resolved) {
+                   
+                        if(row.is_resolving) {
+                            tagDivs += separator + "<div class='tag'>" + "<span style='color:green;'>" + jQuery.i18n.map["crashes.resolving"] + "</span>" + "</div>";                            
+                        }else if (row.is_resolved) {
                             tagDivs += separator + "<div class='tag'>" + "<span style='color:green;'>" + jQuery.i18n.map["crashes.resolved"] + " (" + row.latest_version.replace(/:/g, '.') + ")</span>" + "</div>";
                         } else {
                             tagDivs += separator + "<div class='tag'>" + "<span style='color:red;'>" + jQuery.i18n.map["crashes.unresolved"] + "</span>" + "</div>";
-                        }
+                        } 
 
                         if (row.nonfatal) {
                             tagDivs += separator + "<div class='tag'>" + jQuery.i18n.map["crashes.nonfatal"] + "</div>";
@@ -273,10 +275,8 @@ window.CrashesView = countlyView.extend({
                         countlyCrashes.markResolve(self.selectedCrashesIds, function(data){
                             if(!data){
                                 CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
-                            }
-                            else{
                                 self.resetSelection(true);
-                            }
+                            } 
                         });
                     });
                 }
@@ -286,21 +286,6 @@ window.CrashesView = countlyView.extend({
                             return true;
                         }
                         countlyCrashes.markUnresolve(self.selectedCrashesIds, function(data){
-                            if(!data){
-                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
-                            }
-                            else{
-                                self.resetSelection(true);
-                            }
-                        });
-                    });
-                }
-                else if(val === "crash-view"){
-                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-view", self.selectedCrashesIds.length), "red", function (result) {
-                        if (!result) {
-                            return true;
-                        }
-                        countlyCrashes.markSeen(self.selectedCrashesIds, function(data){
                             if(!data){
                                 CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
                             }
@@ -325,12 +310,12 @@ window.CrashesView = countlyView.extend({
                         });
                     });
                 }
-                else if(val === "crash-show"){
-                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-show", self.selectedCrashesIds.length), "red", function (result) {
+                else if(val === "crash-resolving"){
+                    CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-resolving", self.selectedCrashesIds.length), "red", function (result) {
                         if (!result) {
                             return true;
                         }
-                        countlyCrashes.show(self.selectedCrashesIds, function(data){
+                        countlyCrashes.resolving(self.selectedCrashesIds, function(data){
                             if(!data){
                                 CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
                             }
@@ -339,7 +324,7 @@ window.CrashesView = countlyView.extend({
                             }
                         });
                     });
-                }
+                } 
                 else if(val === "crash-delete"){
                     CountlyHelpers.confirm(jQuery.i18n.prop("crashes.confirm-action-delete", self.selectedCrashesIds.length), "red", function (result) {
                         if (!result) {
@@ -356,7 +341,7 @@ window.CrashesView = countlyView.extend({
                     });
                 }
             }
-        });
+        });  
     },
     resetSelection: function(flash){
         if(flash){
@@ -491,7 +476,6 @@ window.CrashesView = countlyView.extend({
                     if (self.curMetric == elID.replace("crash-", "")) {
                         return true;
                     }
-        
                     self.curMetric = elID.replace("crash-", "");
                     self.switchMetric();
                 }
@@ -711,6 +695,9 @@ window.CrashesView = countlyView.extend({
                 case "crash-reoccurred":
                     qstring.query["is_renewed"] = true;
                     break;
+                case "crash-resolving":
+                    qstring.query["is_resolving"] = true;
+                    break;
             }
         }
         if(this.filter !== "crash-hidden"){
@@ -721,7 +708,7 @@ window.CrashesView = countlyView.extend({
         return qstring;
     },
     filterCrashes: function(filter){
-		this.filter = filter;
+        this.filter = filter;  
 		store.set("countly_crashfilter", filter);
 		$("#"+this.filter).addClass("selected").addClass("active");
 		this.dtable.fnDraw();
@@ -938,7 +925,6 @@ window.CrashgroupView = countlyView.extend({
                 crashData[ranges[i]] = {min:0, max:0, total:0, count:1};
             }
         }
-
         this.templateData = {
             "page-title":jQuery.i18n.map["crashes.crashes-by"],
             "note-placeholder": jQuery.i18n.map["crashes.editnote"],
@@ -1059,9 +1045,47 @@ window.CrashgroupView = countlyView.extend({
                 "avg":((Math.round(crashData.session.total/crashData.session.count)*100)/100)
             });
         }
+
+        function changeResolveStateText(crashData){
+            var selectOptions = "";
+
+            if(crashData.is_resolving){
+                $("#resolve-state").text(jQuery.i18n.map["crashes.resolving"]);
+                $("#resolve-state").attr('class', 'resolving-text');
+
+                selectOptions += '<div class="item" data-value="crash-resolve" data-localize="crashes.action-resolved"></div>'
+                    + '<div class="item" data-value="crash-unresolve" data-localize="crashes.action-unresolved"></div>'
+                    
+            }else if(crashData.is_resolved){
+                $("#resolve-state").text(jQuery.i18n.map["crashes.resolved"] + "(" + crashData.resolved_version + ")");
+                $("#resolve-state").attr('class', 'resolved-text');
+
+                selectOptions += '<div class="item" data-value="crash-unresolve" data-localize="crashes.action-unresolved"></div>'
+                + '<div class="item" data-value="crash-resolving" data-localize="crashes.action-resolving"></div>'
+
+            }else{
+                $("#resolve-state").text(jQuery.i18n.map["crashes.unresolved"]);
+                $("#resolve-state").attr('class', 'unresolved-text');
+
+                selectOptions += '<div class="item" data-value="crash-resolve" data-localize="crashes.action-resolved"></div>'
+                + '<div class="item" data-value="crash-resolving" data-localize="crashes.action-resolving"></div>'
+            }
+
+            if(crashData.is_hidden){
+                selectOptions += '<div class="item" data-value="crash-show" data-localize="crashes.action-show"></div>'
+            }else{
+                selectOptions += '<div class="item" data-value="crash-hide" data-localize="crashes.action-hide"></div>' 
+            }
+            selectOptions += '<div class="item" data-value="crash-delete" data-localize="crashes.action-delete"></div>'
+            $(".performan-action-slection").html(selectOptions)
+            app.localize();
+        }
+      
+
 		var self = this;
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
+            changeResolveStateText(crashData);
              if(typeof addDrill != "undefined"){
                 $("#content .widget:first-child .widget-header>.right").append(addDrill("sg.crash", this.id, "[CLY]_crash"));
             }
@@ -1102,72 +1126,8 @@ window.CrashgroupView = countlyView.extend({
 			});*/
 			CountlyHelpers.expandRows(this.dtable, this.formatData);
 			countlyCommon.drawGraph(crashData.dp[this.curMetric], "#dashboard-graph", "bar");
-			
-			$("#mark-resolved").not(".disabled").click(function(){
-                $("#mark-resolved").addClass("disabled");
-				$("#unresolved-text").css("display", "none");
-				countlyCrashes.markResolve(crashData._id, function(version){
-                    $("#mark-resolved").removeClass("disabled");
-
-                    if(version){
-                        $("#mark-resolved").css("display", "none");
-                        $("#mark-unresolved").css("display", "block");
-                        $("#resolved-text").css("display", "inline");
-                        $("#resolved-version").text(version);
-                    }
-                    else{
-                        $("#unresolved-text").css("display", "inline");
-                        CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
-                    }
-				});
-			});
-			
-			$("#mark-unresolved").not(".disabled").click(function(){
-                $("#mark-unresolved").addClass("disabled");
-				$("#resolved-text").css("display", "none");
-				countlyCrashes.markUnresolve(crashData._id, function(data){
-                    $("#mark-unresolved").removeClass("disabled");
-
-                    if(data){
-                        $("#mark-unresolved").css("display", "none");
-                        $("#mark-resolved").css("display", "block");
-                        $("#unresolved-text").css("display", "inline");
-                    }
-                    else{
-                        $("#resolved-text").css("display", "inline");
-                        CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
-                    }
-				});
-			});
-            
-            $(".btn-show-crash").click(function(){
-                $(".btn-show-crash").addClass("active");
-				countlyCrashes.show(crashData._id, function(data){
-                    if(data){
-                        $(".btn-show-crash").removeClass("active");
-                        $(".btn-show-crash").css("display", "none");
-                        $(".btn-hide-crash").css("display", "block");
-                    }
-                    else{
-                        CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
-                    }
-				});
-			});
-            
-            $(".btn-hide-crash").click(function(){
-                $(".btn-hide-crash").addClass("active");
-				countlyCrashes.hide(crashData._id, function(data){
-                    if(data){
-                        $(".btn-hide-crash").removeClass("active");
-                        $(".btn-hide-crash").css("display", "none");
-                        $(".btn-show-crash").css("display", "block");
-                    }
-                    else{
-                        CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
-                    }
-				});
-			});
-
+ 
+         
             $(".btn-share-crash").click(function(e){
 				if ($(this).hasClass("active")) {
                     $(this).removeClass("active");
@@ -1182,29 +1142,7 @@ window.CrashgroupView = countlyView.extend({
             $("#share-crash-done").click(function() {
                 $(".btn-share-crash").removeClass("active");
                 $("#crash-share-list").hide();
-            });
-            
-            $(".btn-delete-crash").on("click", function(){
-				var id = $(this).data("id");
-				CountlyHelpers.confirm(jQuery.i18n.map["crashes.confirm-delete"], "red", function (result) {
-					if (!result) {
-						return true;
-					}
-					countlyCrashes.del(crashData._id, function (data) {
-                        if(data){
-                            if(data.result == "Success"){
-                                window.location.hash = "/crashes";
-                            }
-                            else{
-                                CountlyHelpers.alert(data.result, "red");
-                            }
-                        }
-                        else{
-                            CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
-                        }
-					});
-				});
-			});
+            }); 
             
             if(crashData.is_public){
                 $('#crash-share-public').attr('checked', true);
@@ -1340,6 +1278,92 @@ window.CrashgroupView = countlyView.extend({
 
         $("document").ready(function() {
             self.redecorateStacktrace();
+        });
+        
+        var self = this;
+        $(".crash-manipulate-options").on("cly-select-change", function (e, val) {
+            if(val != ""){
+                $(".crash-manipulate-options").clySelectSetSelection("",jQuery.i18n.map["crashes.make-action"]);
+                if(val === "crash-resolve"){
+                    countlyCrashes.markResolve(crashData._id, function(version){
+                        if(version){
+                            crashData.is_resolved = true;
+                            crashData.is_resolving = false;
+                            crashData.resolved_version = version;
+                            changeResolveStateText(crashData)
+                        }
+                        else{
+                            CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                        }
+                    });
+                }
+                else if(val === "crash-resolving"){
+                    countlyCrashes.resolving([crashData._id], function(data){
+                        if(!data){
+                            CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red"); 
+                        }
+                        else{
+                            crashData.is_resolving = true; 
+                            changeResolveStateText(crashData)
+                        }
+                    });
+                }
+                else if(val === "crash-unresolve"){
+                    countlyCrashes.markUnresolve(crashData._id, function(data){ 
+                        if(data){
+                            crashData.is_resolved = false; 
+                            crashData.is_resolving = false;
+                            changeResolveStateText(crashData)
+                        }
+                        else{
+                            CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                        }
+				    });
+                }
+                else if(val === "crash-hide"){
+                    countlyCrashes.hide(crashData._id, function(data){
+                        if(data){
+                            crashData.is_hidden = true; 
+                            changeResolveStateText(crashData)
+                        }
+                        else{
+                            CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                        }
+                    });
+                }
+                else if(val === "crash-show"){
+                    countlyCrashes.show(crashData._id, function(data){
+                        if(data){
+                            crashData.is_hidden = false; 
+                            changeResolveStateText(crashData)
+                        }
+                        else{
+                            CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                        }
+                    });
+                }
+                else if(val === "crash-delete"){
+                    var id = $(self).data("id");
+                    CountlyHelpers.confirm(jQuery.i18n.map["crashes.confirm-delete"], "red", function (result) {
+                        if (!result) {
+                            return true;
+                        }
+                        countlyCrashes.del(crashData._id, function (data) {
+                            if(data){
+                                if(data.result == "Success"){
+                                    window.location.hash = "/crashes";
+                                }
+                                else{
+                                    CountlyHelpers.alert(data.result, "red");
+                                }
+                            }
+                            else{
+                                CountlyHelpers.alert(jQuery.i18n.map["crashes.try-later"], "red");
+                            }
+                        });
+                    });
+                }
+            }
         });
     },
     redecorateStacktrace:function(){

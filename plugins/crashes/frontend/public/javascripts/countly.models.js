@@ -224,6 +224,10 @@
         countlyCrashes.common(id, "show", callback);
     };
     
+    countlyCrashes.resolving = function (id, callback) {
+        countlyCrashes.common(id, "resolving", callback);
+    };
+ 
     countlyCrashes.del = function (id, callback) {
         countlyCrashes.common(id, "delete", callback);
     };

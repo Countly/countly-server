@@ -97,3 +97,8 @@
 #action-segmentation-tooltip { font-size:12px; max-width:300px; text-align: center; }
 
 .check-green:hover {  color: #217923;}
+
+.crash-manipulate-options { margin-top:0px !important; margin-left: 8px !important; float: right; margin-right: 0px !important; }
+.resolved-text {color: #45b849; padding-top: 2px; font-size: 11px;}
+.unresolved-text {color: #e11a15; padding-top: 2px; font-size: 11px;}
+.resolving-text {color: #45b849; padding-top: 2px; font-size: 11px;}

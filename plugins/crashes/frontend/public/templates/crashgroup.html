@@ -1,6 +1,29 @@
     <a href="#/crashes" class="back-link" style="margin-bottom: 25px;"><span data-localize="crashes.back-to-crashes"></span></a>
     {{#unless external}}
-    <div style="float:right; overflow: auto;">
+    <div style="float:right;">
+        {{#if hasPermission}}
+        <div class="cly-select float-right green crash-manipulate-options">
+            <div class="select-inner">
+                <div class="text-container">
+                    <div class="text" data-localize="crashes.make-action"></div>
+                </div>
+                <div class="right combo"></div>
+            </div>
+            <div class="select-items square" style="width:150px;">
+                <div class="performan-action-slection">
+                        <div class="item" data-value="crash-unresolve" data-localize="crashes.action-unresolved"></div>
+                        <div class="item" data-value="crash-resolving" data-localize="crashes.action-resolving"></div>
+                        <div class="item" data-value="crash-resolve" data-localize="crashes.action-resolved"></div>
+                        <div class="item" data-value="crash-hide" data-localize="crashes.action-hide"></div>
+                        <div class="item" data-value="crash-show" data-localize="crashes.action-show"></div>
+                        <div class="item" data-value="crash-delete" data-localize="crashes.action-delete"></div>
+                </div>
+            </div>
+        </div>
+        <div style="display: none">
+            <div id="action-segmentation-tooltip" data-localize="crashes.action-disabled-tooltip"></div>
+        </div>
+        {{/if}}
         <div id="crash-group-buttons" class="right btn-header help-zone-vs">
             {{#if hasPermission}}
             <a class="icon-button light btn-share-crash" data-id="{{id}}"><span data-localize="crashes.share"></span></a>
@@ -15,28 +38,11 @@
                 <li class="crash-share"><input type="checkbox" id="crash-share-users"/>&nbsp;<span data-localize="crashes.public-users"></span></li>
                 <div style="margin-top:10px;">
                     <div id="share-crash-done" style="float:right" class="icon-button light" data-localize="common.done"></div>
-                </div>
+                </div> 
             </ul>
-
-            {{#if data.is_hidden}}
-            <a class="icon-button light btn-show-crash" data-id="{{id}}"><span data-localize="crashes.show"></span></a>
-            <a class="icon-button light btn-hide-crash" style="display:none;" data-id="{{id}}"><span data-localize="crashes.hide"></span></a>
-            {{else}}
-            <a class="icon-button light btn-show-crash" style="display:none;" data-id="{{id}}"><span data-localize="crashes.show"></span></a>
-            <a class="icon-button light btn-hide-crash" data-id="{{id}}"><span data-localize="crashes.hide"></span></a>
-            {{/if}}
-
-            {{#if data.is_resolved}}
-            <div class="icon-button light" id="mark-unresolved"><i class="fa fa-remove"></i><span data-localize="crashes.mark-unresolved"></span></div>
-            <div class="icon-button light" id="mark-resolved" style="display: none;"><i class="fa fa-check"></i><span data-localize="crashes.mark-resolved"></span></div>
-            {{else}}
-            <div class="icon-button light" id="mark-unresolved" style="display: none;"><i class="fa fa-remove"></i><span data-localize="crashes.mark-unresolved"></span></div>
-            <div class="icon-button light" id="mark-resolved"><i class="fa fa-check"></i><span data-localize="crashes.mark-resolved"></span></div>
-            {{/if}}
-
-            <a class="icon-button red btn-delete-crash" data-id="{{id}}"><span data-localize="crashes.delete"></span></a>
             {{/if}}
         </div>
+ 
     </div>
     {{/unless}}
     <div class="widget main-error">
@@ -45,13 +51,7 @@
                 <div class="title">
                     <span id="error-title">{{error}}</span>
                     {{#unless external}}
-                    {{#if data.is_resolved}}
-                    <div id="resolved-text"><span data-localize="crashes.resolved-for"></span> <span id="resolved-version">{{data.resolved_version}}</span></div>
-                    <div id="unresolved-text" style="display: none;"><span data-localize="crashes.unresolved"></span></div>
-                    {{else}}
-                    <div id="resolved-text" style="display: none;"><span data-localize="crashes.resolved-for"></span> <span id="resolved-version">{{data.latest_version}}</span></div>
-                    <div id="unresolved-text"><span data-localize="crashes.unresolved"></span></div>
-                    {{/if}}
+                    <div><span id="resolve-state"></span></div> 
                     {{/unless}}
                 </div>
             </div>
