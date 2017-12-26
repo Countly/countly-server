@@ -1460,7 +1460,11 @@ window.ManageAppsView = countlyView.extend({
             }
 
             if (current_app_key !== app_key) {
-                CountlyHelpers.confirm(jQuery.i18n.map["management-applications.app-key-change-warning"], "red", function (result) {
+                var warningText = jQuery.i18n.map["management-applications.app-key-change-warning"];
+                if(countlyGlobal["plugins"].indexOf("drill") > -1){
+                    warningText = jQuery.i18n.map["management-applications.app-key-change-warning-EE"];
+                }
+                CountlyHelpers.confirm(warningText, "red", function (result) {
                     if(result)
                         updateApp();
                     else
