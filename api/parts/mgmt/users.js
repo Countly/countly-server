@@ -131,6 +131,8 @@ var usersApi = {},
             newMember.admin_of = newMember.admin_of || [];
             newMember.user_of = newMember.user_of || [];
             newMember.locked = false;
+            newMember.username = newMember.username.trim();
+            newMember.email = newMember.email.trim();
 
             common.db.collection('members').insert(newMember, {safe: true}, function(err, member) {
                 member = member.ops;
@@ -186,6 +188,12 @@ var usersApi = {},
             if(params.member._id !== params.qstring.args.user_id){
                 updatedMember.password_changed = 0;
             }
+        }
+        if (updatedMember.username) {
+            updatedMember.username = updatedMember.username.trim();
+        }
+        if (updatedMember.email) {
+            updatedMember.email = updatedMember.email.trim();
         }
         function killAllSessionForUser(userId) {
             common.db.collection('sessions_').find({

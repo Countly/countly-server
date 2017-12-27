@@ -727,6 +727,7 @@ app.post(countlyConfig.path+'/reset', function (req, res, next) {
 
 app.post(countlyConfig.path+'/forgot', function (req, res, next) {
     if (req.body.email) {
+        req.body.email = (req.body.email+"").trim();
         countlyDb.collection('members').findOne({"email":req.body.email}, function (err, member) {
             if (member) {
                 var timestamp = Math.round(new Date().getTime() / 1000),
@@ -753,7 +754,8 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
         } else {
             if (req.body.full_name && req.body.username && req.body.password && req.body.email) {
                 var password = sha512Hash(req.body.password);
-                
+                req.body.email = (req.body.email+"").trim();
+                req.body.username = (req.body.username+"").trim();
                 var doc = {"full_name":req.body.full_name, "username":req.body.username, "password":password, "email":req.body.email, "global_admin":true, created_at: Math.floor(((new Date()).getTime()) / 1000), password_changed: Math.floor(((new Date()).getTime()) / 1000)};
                 if(req.body.lang)
                     doc.lang = req.body.lang;
@@ -798,7 +800,8 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
 app.post(countlyConfig.path+'/login', function (req, res, next) {
     if (req.body.username && req.body.password) {
         var password = sha1Hash(req.body.password);
-         var password_SHA5 = sha512Hash(req.body.password);
+        var password_SHA5 = sha512Hash(req.body.password);
+        req.body.username = (req.body.username+"").trim();
         countlyDb.collection('members').findOne({$and : [{ $or: [ {"username":req.body.username}, {"email":req.body.username}]}, {$or: [{"password":password}, {"password" : password_SHA5}]}]}, function (err, member) {
             if (member) {
                 if(member.password === password) updateUserPasswordToSHA512(member._id, password_SHA5);
@@ -906,7 +909,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                         // will have a new session here
                         req.session.uid = member["_id"];
                         req.session.gadm = (member["global_admin"] == true);
-                            req.session.email = member["email"];
+                        req.session.email = member["email"];
                         req.session.settings = member.settings;
                         var update = {last_login:Math.round(new Date().getTime()/1000)};
                         if(typeof member.password_changed === "undefined"){
@@ -957,6 +960,7 @@ app.get(countlyConfig.path+'/api-key', function (req, res, next) {
             else{
                 var password = sha1Hash(user.pass);
                 var password_SHA5 = sha512Hash(user.pass);
+                user.name = (user.name+"").trim();
                 countlyDb.collection('members').findOne({$and : [{ $or: [ {"username":user.name}, {"email":user.name}]}, {$or: [{"password":password}, {"password" : password_SHA5}]}]}, function (err, member) {
                     if(member){
                         if(member.password === password) updateUserPasswordToSHA512(member._id, password_SHA5);
@@ -998,7 +1002,7 @@ app.post(countlyConfig.path+'/mobile/login', function (req, res, next) {
     if (req.body.username && req.body.password) {
         var password = sha1Hash(req.body.password);
         var password_SHA5 = sha512Hash(req.body.password);
-
+        req.body.username = (req.body.username+"").trim();
         countlyDb.collection('members').findOne({$and : [{ $or: [ {"username":req.body.username}, {"email":req.body.username}]}, {$or: [{"password":password}, {"password" : password_SHA5}]}]}, function (err, member) {
             if (member) {
                 if(member.password === password) updateUserPasswordToSHA512(member._id, password_SHA5);
@@ -1098,6 +1102,7 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
             res.send("user-settings.api-key-length");
             return false;
         }
+        req.body.username = (req.body.username+"").trim();
         updatedUser.username = req.body["username"];
         updatedUser.api_key = req.body["api_key"];
         if (req.body.lang) {
@@ -1209,6 +1214,7 @@ app.post(countlyConfig.path+'/users/check/email', function (req, res, next) {
         res.send(false);
         return false;
     }
+    req.body.email = (req.body.email+"").trim();
 
     countlyDb.collection('members').findOne({email:req.body.email}, function (err, member) {
         if (member || err) {
@@ -1220,10 +1226,11 @@ app.post(countlyConfig.path+'/users/check/email', function (req, res, next) {
 });
 
 app.post(countlyConfig.path+'/users/check/username', function (req, res, next) {
-    if (!req.session.uid || !isGlobalAdmin(req) || !req.body.username) {
+    if (!req.session.uid || !req.body.username) {
         res.send(false);
         return false;
     }
+    req.body.username = (req.body.username+"").trim();
 
     countlyDb.collection('members').findOne({username:req.body.username}, function (err, member) {
         if (member || err) {
