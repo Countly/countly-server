@@ -256,7 +256,7 @@ class Streamer {
 				else { 
 					var unloaded = ok && ok.result && ok.result.n ? ok.result.n : 0;
 					log.d('[%d:%s]: Removed %j users from collection %s, tz %j', process.pid, this.anote.id, ok, this.built, this.anote.tz);
-					if (this.anote.tz !== false && typeof this.anote.tz !== 'undefined') {
+					if (this.anote.auto || (this.anote.tz !== false && typeof this.anote.tz !== 'undefined')) {
 						db.collection(this.collection()).find({}, {da: 1}).sort({da: 1}).limit(1).toArray((err, min) => {
 							if (err) { reject(err); }
 							else if (!min || !min.length) { resolve({unloaded: unloaded}); }
@@ -290,19 +290,22 @@ class Streamer {
 			var autoDate, serverOffset = new Date().getTimezoneOffset() || 0;
 			if (this.anote.autoTime) {
 				autoDate = new Date(now.getTime());
-				autoDate.setHours(parseInt(this.anote.autoTime.split(':')[0]));
-				autoDate.setMinutes(parseInt(this.anote.autoTime.split(':')[1]));
+				autoDate.setHours(0);
+				autoDate.setMinutes(0);
 				autoDate.setSeconds(0);
 				autoDate.setMilliseconds(0);
+				autoDate = new Date(autoDate.getTime() + this.anote.autoTime);
 			}
 
+			// log.i('[%d:%s]: Storing %j for field %j', process.pid, this.anote.id, users, this.field);
 			users = users.filter(u => u[credentials.DB_USER_MAP.tokens][this.field]);
 			if (users.length === 0) {
 				log.d('[%d:%s]: no users with tokens: %j', process.pid, this.anote.id, users);
-				return resolve();
+				return resolve(0);
 			}
 
 			Promise.all(users.map(user => {
+				// log.i('[%d:%s]: user tz %j app tz %j, now %s', process.pid, this.anote.id, user.tz, this.anote.creds.app_timezone.offset, now);
 				user.tz = typeof user.tz === 'undefined' ? this.anote.creds.app_timezone.offset : user.tz;
 				user.da = now.getTime();
 
@@ -319,7 +322,7 @@ class Streamer {
 				}
 
 				if (this.anote.autoEnd < user.da) {
-					return resolve();
+					return resolve(0);
 				}
 
 				log.d('[%d:%s]: Storing user %s to be sent on %j', process.pid, this.anote.id, user._id, new Date(user.da));
@@ -332,10 +335,12 @@ class Streamer {
 						da: user.da
 					}, (err) => {
 						if (err) { reject(err); }
-						else { resolve(); }
+						else { resolve(1); }
 					});
 				});
-			})).then(resolve, reject);
+			})).then(results => {
+				resolve(results.filter(r => !!r).length);
+			}, reject);
 		});
 	}
 

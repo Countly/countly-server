@@ -2,6 +2,7 @@
 
 const job = require('../../../../api/parts/jobs/job.js'),
 	  log = require('../../../../api/utils/log.js')('job:push:build'),
+	  common = require('../../../../api/utils/common.js'),
 	  plugins = require('../../../../plugins/pluginManager.js'),
 	  retry = require('../../../../api/parts/jobs/retry.js'),
 	  Divider = require('../parts/divider.js'),
@@ -33,6 +34,22 @@ class BuildJob extends job.TransientJob {
 
 	run (db, done) {
 		log.d('Building audience for %j', this.data);
+
+		if (this.note.auto) {
+			Promise.all(this.note.apps.map(_id => common.dbPromise('app_users' + _id, 'aggregate', [{$match: {la: {$exists: true}}}, {$group: {_id: '$la', count: {$sum: 1}}}]))).then(results => {
+				var TOTALLY = {TOTALLY: 0};
+				results.forEach(res => {
+					res.forEach(loc => {
+						if (!TOTALLY[loc._id]) { TOTALLY[loc._id] = loc.count; }
+						else { TOTALLY[loc._id] += loc.count; }
+						TOTALLY.TOTALLY += loc.count;
+					});
+				});
+				log.d('Done counting locales %j: %j', this.data._id, TOTALLY);
+				done(null, TOTALLY);
+			}, done);
+			return;
+		}
 		
 		let geoPromise = this.data.geo && plugins.getPluginsApis().geo ? 
 			new Promise((resolve, reject) => {

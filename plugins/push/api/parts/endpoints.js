@@ -181,7 +181,6 @@ var common          = require('../../../../api/utils/common.js'),
             common.returnMessage(params, 400, 'Not enough apps');
             return false;
         }
-        console.log(args);
 
         var not = new Date(),
             noy = not.getFullYear(),
@@ -212,9 +211,9 @@ var common          = require('../../../../api/utils/common.js'),
         // log.d('qtk', qtk);
 
         var promises = [
-            common.dbPromise(msg, 'findOne', qms)
-        ].concat(sen.map(sen => common.dbPromise(sen, 'find', que)))
-        .concat(act.map(act => common.dbPromise(act, 'find', que)));
+                common.dbPromise(msg, 'findOne', qms)
+            ].concat(sen.map(sen => common.dbPromise(sen, 'find', que)))
+            .concat(act.map(act => common.dbPromise(act, 'find', que)));
 
         Promise.all(promises).then(results => {
             try {
@@ -285,7 +284,8 @@ var common          = require('../../../../api/utils/common.js'),
                 'geo':              { 'required': false, 'type': 'String'  },
                 'userConditions':   { 'required': false, 'type': 'Object'  },
                 'drillConditions':  { 'required': false, 'type': 'Object'  },
-                'test':             { 'required': false, 'type': 'Boolean' }
+                'test':             { 'required': false, 'type': 'Boolean' },
+                'auto':             { 'required': false, 'type': 'Boolean' }
             },
             msg = {};
 
@@ -350,7 +350,8 @@ var common          = require('../../../../api/utils/common.js'),
                         drillConditions: msg.drillConditions && Object.keys(msg.drillConditions).length ? msg.drillConditions : undefined,
                         geo: geo ? msg.geo : undefined,
                         tz: msg.tz,
-                        test: msg.test || false
+                        test: msg.test || false,
+                        auto: msg.auto || false
                     }), json = note.toJSON();
                     json.created = null;
             
@@ -813,7 +814,7 @@ var common          = require('../../../../api/utils/common.js'),
                 }
 
                 jobs.runTransient('push:build', note.toJSON()).then(build => {
-                    if (build.TOTALLY === 0) {
+                    if (!note.auto && build.TOTALLY === 0) {
                         common.returnMessage(params, 400, 'No audience');
                     } else {
                         note.build = {count: build, total: build.TOTALLY};
@@ -1178,7 +1179,7 @@ var common          = require('../../../../api/utils/common.js'),
     };
 
     api.onCohort = function(entered, cohort, uids) {
-        log.d('[auto] Processing cohort %j', cohort._id);
+        log.d('[auto] ================================= Processing cohort %j %s for %d users =======================================', cohort._id, entered ? 'enter' : 'exit', uids ? uids.length : 0);
         common.db.collection('apps').findOne({_id: common.db.ObjectID(cohort.app_id)}, (err, app) => {
             if (err) {
                 log.e('[auto] Error while loading app for automated push: %j', err);
@@ -1208,7 +1209,8 @@ var common          = require('../../../../api/utils/common.js'),
                                 return new Promise((resolve, reject) => {
                                     log.d('[auto] Processing message %j', msg);
                                     let divider = new Divider(new N.Note(msg));
-                                    divider.store(common.db, app, uids, new Date()).then(() => {
+                                    divider.store(common.db, app, uids, new Date()).then((stored) => {
+                                        common.db.collection('messages').update({_id: msg._id}, {$inc: {'result.total': stored}}, log.logdb('updating message with total'));
                                         divider.nextDa(common.db).then((next) => {
                                             if (next) {
                                                 log.d('[auto] Next auto job on %j', new Date(next));

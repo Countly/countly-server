@@ -272,7 +272,8 @@ window.component('push', function(push) {
 				drillConditions: this.drillConditions(),
 				geo: this.geo(),
 				tz: this.tz(),
-				test: this.test()
+				test: this.test(),
+				auto: this.auto()
 			};
 			if (includeId) {
 				obj._id = this._id();
@@ -288,7 +289,6 @@ window.component('push', function(push) {
 				obj.date = this.date();
 				obj.buttons = parseInt(this.buttons());
 				obj.media = this.media();
-				obj.auto = this.auto();
 				obj.autoOnEntry = this.autoOnEntry();
 				obj.autoCohorts = this.autoCohorts();
 				obj.autoEnd = this.autoEnd();

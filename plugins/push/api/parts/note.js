@@ -400,7 +400,8 @@ class AppSubNote {
 			content: JSON.stringify(this.content),
 			creds: this.creds,
 			query: this.query ? {} : undefined,
-			plan: this.plan
+			plan: this.plan,
+			auto: this.auto
 		};
 
 		if (this.query && this.query.user) {

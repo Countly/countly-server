@@ -261,7 +261,8 @@ class Divider {
 	apps (db) {
 		log.d('Looking for apps %j', this.note.apps);
 		return new Promise((resolve, reject) => {
-			db.collection('apps').find({_id: {$in: this.note.apps}}).toArray((err, apps) => {
+			var apps = this.note.apps.map(a => typeof a === 'string' ? db.ObjectID(a) : a);
+			db.collection('apps').find({_id: {$in: apps}}).toArray((err, apps) => {
 				if (err || !apps.length) { reject(err || 'Apps not found'); }
 				else { resolve(apps); }
 			});
@@ -280,7 +281,7 @@ class Divider {
 					if (this.note.autoCapMessages) {
 						users = users.filter(user => {
 							return !user.msgs || user.msgs.filter(msg => {
-								return msg[0].equals(this.note._id);
+								return msg.length === 2 && msg[0].equals(this.note._id);
 							}).length < this.note.autoCapMessages;
 						});
 						log.d('After capping messages number left %d users for note %j', users.length, this.note._id);
@@ -289,16 +290,19 @@ class Divider {
 					if (this.note.autoCapSleep) {
 						users = users.filter(user => {
 							let same = !user.msgs ? [] : user.msgs.filter(msg => {
-								return msg[0].equals(this.note._id);
+								return msg.length === 2 && msg[0].equals(this.note._id);
 							}).map(msg => msg[1]);
 
-							return same.length === 0 || Math.max(same) < now - this.note.autoCapSleep;
+							return same.length === 0 || Math.max(same) < now.getTime() - this.note.autoCapSleep;
 						});
 						log.d('After capping messages sleep left %d users for note %j', users.length, this.note._id);
 					}
 
 					this.streamers(db).then(subs => {
-						Promise.all(subs.map(sub => sub.streamer.store(db, users, now))).then(resolve, reject);
+						Promise.all(subs.map(sub => sub.streamer.store(db, users, now))).then((results) => {
+							var saved = results.reduce((a, b) => a + b);
+							resolve(saved);
+						}, reject);
 					}, reject);
 				}
 			});

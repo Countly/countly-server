@@ -61,7 +61,7 @@ class PushJob extends job.IPCJob {
 		}
 
 		if (this.note.auto && this.note.result.status === N.Status.InQueue) {
-			log.d('[%d:%s]: Won\'t devide auto message %s', process.pid, this.note.id, this._id);
+			log.d('[%d:%s]: Won\'t divide auto message %s', process.pid, this.note.id, this._id);
 			return Promise.resolve({workers: 0, subs: []});
 		}
 		
@@ -160,8 +160,10 @@ class PushJob extends job.IPCJob {
 			log.d('[%d:%s] now %d (%s), date %d (%s)', process.pid, this.anote.id, Date.now(), new Date(), this.anote.date.getTime(), this.anote.date);
 			return new Promise((resolve, reject) => {
 				this.streamer.unload(db, Date.now() - 30 * 60000).then((ok) => {
-					log.d('[%d:%s] unloaded %d users to skiptz, next is %j', process.pid, this.anote.id, ok.unloaded, ok.next);
-					db.collection('messages').update({_id: this.aoid}, {$inc: {'result.processed': ok.unloaded, 'result.errors': ok.unloaded, 'result.errorCodes.skiptz': ok.unloaded}}, log.logdb('updating message with skiptz code'));
+					if (ok) {
+						log.d('[%d:%s] unloaded %d users to skiptz, next is %j', process.pid, this.anote.id, ok.unloaded, ok.next);
+						db.collection('messages').update({_id: this.aoid}, {$inc: {'result.processed': ok.unloaded, 'result.errors': ok.unloaded, 'result.errorCodes.skiptz': ok.unloaded}}, log.logdb('updating message with skiptz code'));
+					}
 					resolve();
 				}, reject);
 			});
@@ -176,18 +178,21 @@ class PushJob extends job.IPCJob {
 			log.d('[%d:%s] setting auto message as started', process.pid, this.note._id);
 
 			new Divider(this.note).prepareAuto(db).then(() => {
-				log.d('[%s: %d]: Finished preparing auto message for job %j: %d subs', process.pid, this.note.id, this._id);
+				log.d('[%s: %d]: Finished preparing auto message for job %j', process.pid, this.note.id, this._id);
 				
 				let query = {_id: this.note._id, 'deleted': {$exists: false}},
-					update = {$set: {'result.status': N.Status.InProcessing, 'result.delivered': 0}};
+					update = {$set: {'result.status': N.Status.InProcessing}};
 
-					db.collection('messages').findAndModify(query, [['date', 1]], update, {'new': true}, (err, data) => {
+					db.collection('messages').findAndModify(query, [['date', 1]], update, {'new': true}, (err, doc) => {
 						if (err) {
 							done(err);
-						} else if (!data || !data.ok) {
+						} else if (!doc || !doc.ok) {
 							done('already running');
 						} else {
 							log.d('[%d:%s] auto message marked as started', process.pid, this.note._id);
+							if (doc.value.result.processed === 0) {
+								db.collection('messages').update({_id: doc.value._id}, {$set: {'result.delivered': 0, 'result.total': 0, 'result.processed': 0}}, log.logdb('resetting total to zero'));
+							}
 							done();
 						}
 					});
@@ -350,7 +355,7 @@ class PushJob extends job.IPCJob {
 			}
 
 			if (sent.length) {
-				db.collection('app_users' + this.anote.creds.app_id).update({_id: {$in: sent}}, {$push: {msgs: this.aoid}}, {multi: true}, log.logdb('adding message to app_users'));
+				db.collection('app_users' + this.anote.creds.app_id).update({_id: {$in: sent}}, {$push: {msgs: [this.aoid, Date.now()]}}, {multi: true}, log.logdb('adding message to app_users'));
 				
 	  			var common = require('../../../../api/utils/common.js');
 
@@ -428,16 +433,24 @@ class PushJob extends job.IPCJob {
 
 	cancel (db) {
 		return new Promise((resolve, reject) => {
-			super.cancel().then(() => {
-				let mid = this.note ? this.note._id : this.anote ? this.anote._id : this.data.mid;
+			db.collection('messages').findOne({_id: db.ObjectID(this.data.mid)}, {auto: 1}, (err, message) => {
+				if (err || !message || !message.auto) {
+					log.d(err, message);
+					super.cancel().then(() => {
+						let mid = this.note ? this.note._id : this.anote ? this.anote._id : this.data.mid;
 
-				if (mid) {
-					mid = typeof mid === 'string' ? db.ObjectID(mid) : mid;
-	
-					let query = {_id: mid},
-						update = {$set: {'result.status': N.Status.Aborted, 'result.error': 'Cancelled'}};
+						if (mid) {
+							mid = typeof mid === 'string' ? db.ObjectID(mid) : mid;
+					
+							let query = {_id: mid},
+								update = {$set: {'result.status': N.Status.Aborted, 'result.error': 'Cancelled'}};
 
-					db.collection('messages').update(query, update, log.logdb('cancelling message', resolve, reject));
+							db.collection('messages').update(query, update, log.logdb('cancelling message', resolve, reject));
+						}
+					});
+				} else {
+					log.d('Won\'t cancel message %s - auto message', this.data.mid);
+					super.cancel().then(resolve, reject);
 				}
 			});
 		});

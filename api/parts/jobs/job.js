@@ -413,6 +413,7 @@ class Job extends EventEmitter {
 	_finish (err, save) {
 		save = typeof save === 'undefined' ? true : save;
 		if (!this.isCompleted) {
+			log.d('Finishing %s' + (save ? ', saving' : ''), this._json._id);
 			this._json.status = STATUS.DONE;
 			this._json.finished = Date.now();
 			this._json.duration = this._json.finished - this._json.started;
