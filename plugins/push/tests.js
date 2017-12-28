@@ -33,7 +33,8 @@ var USERS = {
     'us_a': {tkap: 'android_us', locale: 'us', tz: -420},
 };
 
-const db = require('../pluginManager.js').singleDefaultConnection(),
+const  pluginManager = require('../pluginManager.js'),
+       db = pluginManager.singleDefaultConnection(),
        N = require('./api/parts/note.js'),
        Divider = require('./api/parts/divider.js'),
        Streamer = require('./api/parts/streamer.js'),
@@ -212,7 +213,7 @@ describe('Push', function(){
     function createAll(callback, next) {
         next = next || 0;
         if (Object.keys(USERS).length === next) {
-            setTimeout(callback, 1000);
+            setTimeout(callback, 5000);
         } else {
             createUser(Object.keys(USERS)[next], createAll.bind(null, callback, next + 1));
         }
@@ -594,393 +595,445 @@ describe('Push', function(){
         });
     });
     
-    describe('cohorts', () => {
-        var morning = new Date();
-        morning.setHours(0);
-        morning.setHours(0);
-        morning.setHours(0);
-        var cohorts = {
-            Now: {name: 'Now', steps: [{event: "Simple_" + db.ObjectID(), type:"did", period: "1days"}]},
-            Sleep: {name: 'Sleep', steps: [{event: "Simple_" + db.ObjectID(), type:"did", period: "1days"}]},
-            Delay: {name: 'Delay', steps: [{event: "Simple_" + db.ObjectID(), type:"did", period: "1days"}]},
-            Tz: {name: 'Tz', steps: [{event: "Simple_" + db.ObjectID(), type:"did", period: "1days"}]},
-            // Simple: {name: 'Simple', steps: [{event: "Simple_" + db.ObjectID(), type:"did", period: "1days"}, {event: "Exit_" + db.ObjectID(), type:"didnot", period: "1days"}]},
-            manual: {_id:"manual", type:"manual"}
-        }, eventTs = Date.now(), event = (chr) => {return {key: chr.steps[0].event, timestamp: eventTs, count: 1}; }, 
-        credentialsIOS,
-        credentialsAndroid,
-        appsubcredentialsAndroid;
-        
-        function createCohort(name, done) {
-            request.get(`/o?api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&method=get_cohorts`)
-                .expect(200)
-                .end((err, res) => {
-                    console.log('cohorts', err, res.text);
-                    if (err) { 
-                        return done(err); 
-                    }
+    if (plugins.getPluginsApis().cohorts) {
 
-                    var json = JSON.parse(res.text),
-                        cohort = json.filter(c => c.name === name)[0];
-
-                    if (cohort) {
-                        request.get(`/i/cohorts/delete?cohort_id=${cohort._id}&app_id=${APP_ID}&api_key=${API_KEY_ADMIN}`)
-                            .expect(200)
-                            .end((err, res) => {
-                                console.log('deleted', err, res.text);
-                                request.get("/i/cohorts/add?api_key="+API_KEY_ADMIN+"&app_id="+APP_ID+"&cohort_name="+name+"&steps="+JSON.stringify(cohorts[name].steps))
-                                    .expect(200)
-                                    .end((err, res) => {
-                                        console.log('created', err, res.text);
-                                        if (err) {
-                                            return done(err);
-                                        }
-                                        cohorts[name]._id = JSON.parse(res.text).result;
-                                        setTimeout(done, 1000);
-                                    });
-                            });
-                    } else {
-                        request.get("/i/cohorts/add?api_key="+API_KEY_ADMIN+"&app_id="+APP_ID+"&cohort_name="+name+"&steps="+JSON.stringify(cohorts[name].steps))
-                            .expect(200)
-                            .end((err, res) => {
-                                console.log('cohort created', err, res.text);
-                                if (err) {
-                                    return done(err);
-                                }
-                                cohorts[name]._id = JSON.parse(res.text).result;
-                                setTimeout(done, 1000);
-                            });
-                    }
-                });
-        }
-
-        it('should clear app data', done => {
-            USERS = {    
-                'no': {tkip: 'ios_no', locale: 'no'},
-                'tk_a': {tkap: 'f_qKFXO8HVY:APA91bHI8qmPEMsDrnKjywph5DqbL1Dj-4XrMSEdyDpjTNKHpuKJfSzCK02xwfS41OoHrPnSvi8P_61M44WrlgBD2NzVBntFVSTUcVU3Z32QVi67aZQCrIph3ZrZgY_hXSrbyH6Np_1a', locale: 'tr_TR', tz: 180},
-                'gb_a': {tkap: 'f_qKFXO8HVY:APA91bHI8qmPEMsDrnKjywph5DqbL1Dj-4XrMSEdyDpjTNKHpuKJfSzCK02xwfS41OoHrPnSvi8P_61M44WrlgBD2NzVBntFVSTUcVU3Z32QVi67aZQCrIph3ZrZgY_hXSrbyH6Np_1a', locale: 'en_GB', tz: 0},
-                'gb_2a': {tkap: 'f_qKFXO8HVY:APA91bHI8qmPEMsDrnKjywph5DqbL1Dj-4XrMSEdyDpjTNKHpuKJfSzCK02xwfS41OoHrPnSvi8P_61M44WrlgBD2NzVBntFVSTUcVU3Z32QVi67aZQCrIph3ZrZgY_hXSrbyH6Np_1a', locale: 'en_GB', tz: 0},
-                'gb_3a': {tkap: 'f_qKFXO8HVY:APA91bHI8qmPEMsDrnKjywph5DqbL1Dj-4XrMSEdyDpjTNKHpuKJfSzCK02xwfS41OoHrPnSvi8P_61M44WrlgBD2NzVBntFVSTUcVU3Z32QVi67aZQCrIph3ZrZgY_hXSrbyH6Np_1a', locale: 'en_GB', tz: 0},
-                'de_a': {tkap: 'f_qKFXO8HVY:APA91bHI8qmPEMsDrnKjywph5DqbL1Dj-4XrMSEdyDpjTNKHpuKJfSzCK02xwfS41OoHrPnSvi8P_61M44WrlgBD2NzVBntFVSTUcVU3Z32QVi67aZQCrIph3ZrZgY_hXSrbyH6Np_1a', locale: 'de_DE', tz: -1},
-                'us_a': {tkap: 'f_qKFXO8HVY:APA91bHI8qmPEMsDrnKjywph5DqbL1Dj-4XrMSEdyDpjTNKHpuKJfSzCK02xwfS41OoHrPnSvi8P_61M44WrlgBD2NzVBntFVSTUcVU3Z32QVi67aZQCrIph3ZrZgY_hXSrbyH6Np_1a', locale: 'en_US', tz: -420},
-            };
-            request.get(`/i/apps/reset?args=${JSON.stringify({app_id: APP_ID, period: 'all'})}&api_key=${API_KEY_ADMIN}`)
-                .expect(200)
-                .end((err, res) => {
-                    console.log('app clear', err, res.text);
-                    if (err) { 
-                        return done(err); 
-                    }
-                    done();
-                });
-        });
-
-        it('should set FCM key', done => {
-            request.post(`/i/pushes/validate?api_key=${API_KEY_ADMIN}&platform=a&key=AAAAyhsteIE:APA91bFySIoL-BMQjLEsje6sOY0W4PoXTHKn79mZvW2vZtE4Bwo1KntYOkwmnTYo_DASwWcywOvqlniOei_L6g7Lf4zZXcU1KmOhE4LQuClEExxzyappw90_zjOufiHTBtUJFqpsEJ9Q&secret=`)
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                    if (err) return done(err);
-                    var ob = JSON.parse(res.text);
-                    ob.should.have.property('cid').with.a.lengthOf(24);
-                    credentialsAndroid = new Credentials(ob.cid);
-
-                    request.get(`/i/apps/update?args=${JSON.stringify({app_id: APP_ID, timezone: 'Europe/Moscow', 
-                            apn: credentialsIOS ? [{_id: credentialsIOS._id, type: 'apn_universal'}] : undefined, 
-                            gcm: credentialsAndroid ? [{_id: credentialsAndroid._id, type: 'gcm'}] : undefined})}&api_key=${API_KEY_ADMIN}`)
-                        .expect(200)
-                        .end((err, res) => {
-                            console.log('app creds', err, res.text);
-                            if (err) { 
-                                return done(err); 
-                            }
-                            credentialsAndroid.load(db).then(() => {
-                                appsubcredentialsAndroid = credentialsAndroid.divide(false)[0].app(APP_ID, {tz: 'Europe/Moscow', offset: 180});
-                                done();
-                            }, done);
-                        });
-                });
-        }); 
-
-        // it('should set APN certificate', done => {
-        //     request.post(`/i/pushes/validate?api_key=${API_KEY_ADMIN}&platform=i&secret=`)
-        //         .attach('key', Buffer.from(p12))
-        //         .expect(200)
-        //         .end((err, res) => {
-        //             if (err) return done(err);
-        //             var ob = JSON.parse(res.text);
-        //             ob.should.have.property('cid').with.a.lengthOf(24);
-
-        //             credentialsIOS = new Credentials(ob.cid);
-
-        //             request.get(`/i/apps/update?args=${JSON.stringify({app_id: APP_ID, timezone: 'Europe/Moscow',
-        //                     apn: credentialsIOS ? [{_id: credentialsIOS._id, type: 'apn_universal'}] : undefined, 
-        //                     gcm: credentialsAndroid ? [{_id: credentialsAndroid._id, type: 'gcm'}] : undefined})}&api_key=${API_KEY_ADMIN}`)
-        //                 .expect(200)
-        //                 .end((err, res) => {
-        //                     console.log('app creds', err, res.text);
-        //                     if (err) { 
-        //                         return done(err); 
-        //                     }
-        //                     credentialsIOS.load(db).then(() => {
-        //                         appsubcredentialsIOS = credentialsIOS.divide(false)[0].app(APP_ID, {tz: 'Europe/Moscow', offset: 180});
-        //                         done();
-        //                     }, done);
-        //                 });
-        //         });
-        // });
-
-        it('should create first user', (done) => {
-          createUser('no', done, [event(cohorts.Now), event(cohorts.Sleep), event(cohorts.Delay), event(cohorts.Tz)]);
-        });
-
-        it('should create cohorts', (done) => {
-            createCohort('Now', createCohort.bind(null, 'Sleep', createCohort.bind(null, 'Delay', createCohort.bind(null, 'Tz', done))));
-        });
-
-        var defaults = {
-                type: 'data',
-                data: {a: 1},
-                apps: [APP_ID],
-                platforms: ['a'],
-                date: new Date(),
-                auto: true,
-            }, 
-            msgNow, msgSleep, msgDelay, msgTz,
-
-            createMessage = (json, done) => {
-                request.get(`/i/pushes/create?args=${JSON.stringify(json)}&api_key=${API_KEY_ADMIN}`)
+        describe('cohorts', () => {
+            var morning = new Date();
+            morning.setHours(0);
+            morning.setHours(0);
+            morning.setHours(0);
+            var cohorts = {
+                Now: {name: 'Now', steps: [{event: "Simple_" + db.ObjectID(), type:"did", period: "1days"}]},
+                Sleep: {name: 'Sleep', steps: [{event: "Simple_" + db.ObjectID(), type:"did", period: "1days"}]},
+                Delay: {name: 'Delay', steps: [{event: "Simple_" + db.ObjectID(), type:"did", period: "1days"}]},
+                Tz: {name: 'Tz', steps: [{event: "Simple_" + db.ObjectID(), type:"did", period: "1days"}]},
+                // Simple: {name: 'Simple', steps: [{event: "Simple_" + db.ObjectID(), type:"did", period: "1days"}, {event: "Exit_" + db.ObjectID(), type:"didnot", period: "1days"}]},
+                manual: {_id:"manual", type:"manual"}
+            }, eventTs = Date.now(), event = (chr) => {return {key: chr.steps[0].event, timestamp: eventTs, count: 1}; }, 
+            credentialsIOS,
+            credentialsAndroid,
+            appsubcredentialsAndroid;
+            
+            function createCohort(name, done) {
+                request.get(`/o?api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&method=get_cohorts`)
                     .expect(200)
                     .end((err, res) => {
-                        if (err) { return done(err); }
-                        Object.assign(json, JSON.parse(res.text));
-                        if (!json._id) { return done('no id'); }
-                        json._id = db.ObjectID(json._id);
-                        json.apps[0] = db.ObjectID(json.apps[0]);
-                        json.date = new Date(json.date);
-                        setTimeout(done, 1000);
-                    });
-            },
-
-            regenerateCohort = (_id, done, uids) => {
-                request.get(`/o?api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&method=cohort&generate=true&cohort=${_id}`)
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) return done(err);
-
-                        console.log('cohort regenerated', res.text);
-                        var ob = JSON.parse(res.text);
-                        if (uids) {
-                            uids.forEach(uid => {
-                                ob.indexOf(uid).should.not.equal(-1);
-                            });
+                        console.log('cohorts', err, res.text);
+                        if (err) { 
+                            return done(err); 
                         }
-                        setTimeout(done.bind(null, null, ob), 1000);
+
+                        var json = JSON.parse(res.text),
+                            cohort = json.filter(c => c.name === name)[0];
+
+                        if (cohort) {
+                            request.get(`/i/cohorts/delete?cohort_id=${cohort._id}&app_id=${APP_ID}&api_key=${API_KEY_ADMIN}`)
+                                .expect(200)
+                                .end((err, res) => {
+                                    console.log('deleted', err, res.text);
+                                    request.get("/i/cohorts/add?api_key="+API_KEY_ADMIN+"&app_id="+APP_ID+"&cohort_name="+name+"&steps="+JSON.stringify(cohorts[name].steps))
+                                        .expect(200)
+                                        .end((err, res) => {
+                                            console.log('created', err, res.text);
+                                            if (err) {
+                                                return done(err);
+                                            }
+                                            cohorts[name]._id = JSON.parse(res.text).result;
+                                            setTimeout(done, 1000);
+                                        });
+                                });
+                        } else {
+                            request.get("/i/cohorts/add?api_key="+API_KEY_ADMIN+"&app_id="+APP_ID+"&cohort_name="+name+"&steps="+JSON.stringify(cohorts[name].steps))
+                                .expect(200)
+                                .end((err, res) => {
+                                    console.log('cohort created', err, res.text);
+                                    if (err) {
+                                        return done(err);
+                                    }
+                                    cohorts[name]._id = JSON.parse(res.text).result;
+                                    setTimeout(done, 1000);
+                                });
+                        }
                     });
-            },
-
-            checkEach = (f, delay, timeout, error, done) => {
-                var expires = Date.now() + timeout,
-                    check = () => {
-                        f(ok => {
-                            if (ok) { 
-                                setTimeout(() => {
-                                    done();
-                                }, delay); 
-                            } else if (Date.now() > expires) { 
-                                done(error); 
-                            } else {
-                               setTimeout(check, delay);
-                            }
-                        });
-                    };
-                check();
-            },
-
-            delayedCount = (streamer, delay) => {
-                return new Promise((res, rej) => {
-                    setTimeout(() => {
-                        streamer.count(db).then(res, rej);
-                    }, delay);
-                });
-            };
-
-        // it('should create auto messages', done => {
-        //     msgNow = Object.assign({}, defaults, {autoCohorts: [cohorts.Simple._id], autoOnEntry: true, autoCapMessages: 2});
-        //     msgSleep = Object.assign({}, defaults, {autoCohorts: [cohorts.Simple._id], autoOnEntry: true, autoCapMessages: 2, autoCapSleep: 60 * 60000});
-        //     msgDelay = Object.assign({}, defaults, {autoCohorts: [cohorts.Simple._id], autoOnEntry: true, autoDelay: 60 * 60000});
-        //     msgTz = Object.assign({}, defaults, {autoCohorts: [cohorts.Simple._id], autoOnEntry: true, autoTime: 18 * 60 * 60000});
-        //     // createMessage(msgNow, createMessage.bind(null, msgSleep, createMessage.bind(null, msgDelay, createMessage.bind(null, msgTz, done))));
-        // });
-
-        it('should send tz message correctly', done => {
-            if (new Date().getHours() >= 22) {
-                return done();
             }
 
-            var dt = new Date(),
-                h = dt.getHours(),
-                m = dt.getMinutes(),
-                s = dt.getSeconds();
+            it('should clear app data', done => {
+                USERS = {    
+                    'no': {tkip: 'ios_no', locale: 'no'},
+                    'tk_a': {tkap: 'f_qKFXO8HVY:APA91bHI8qmPEMsDrnKjywph5DqbL1Dj-4XrMSEdyDpjTNKHpuKJfSzCK02xwfS41OoHrPnSvi8P_61M44WrlgBD2NzVBntFVSTUcVU3Z32QVi67aZQCrIph3ZrZgY_hXSrbyH6Np_1a', locale: 'tr_TR', tz: 180},
+                    'gb_a': {tkap: 'f_qKFXO8HVY:APA91bHI8qmPEMsDrnKjywph5DqbL1Dj-4XrMSEdyDpjTNKHpuKJfSzCK02xwfS41OoHrPnSvi8P_61M44WrlgBD2NzVBntFVSTUcVU3Z32QVi67aZQCrIph3ZrZgY_hXSrbyH6Np_1a', locale: 'en_GB', tz: 0},
+                    'gb_2a': {tkap: 'f_qKFXO8HVY:APA91bHI8qmPEMsDrnKjywph5DqbL1Dj-4XrMSEdyDpjTNKHpuKJfSzCK02xwfS41OoHrPnSvi8P_61M44WrlgBD2NzVBntFVSTUcVU3Z32QVi67aZQCrIph3ZrZgY_hXSrbyH6Np_1a', locale: 'en_GB', tz: 0},
+                    'gb_3a': {tkap: 'f_qKFXO8HVY:APA91bHI8qmPEMsDrnKjywph5DqbL1Dj-4XrMSEdyDpjTNKHpuKJfSzCK02xwfS41OoHrPnSvi8P_61M44WrlgBD2NzVBntFVSTUcVU3Z32QVi67aZQCrIph3ZrZgY_hXSrbyH6Np_1a', locale: 'en_GB', tz: 0},
+                    'de_a': {tkap: 'f_qKFXO8HVY:APA91bHI8qmPEMsDrnKjywph5DqbL1Dj-4XrMSEdyDpjTNKHpuKJfSzCK02xwfS41OoHrPnSvi8P_61M44WrlgBD2NzVBntFVSTUcVU3Z32QVi67aZQCrIph3ZrZgY_hXSrbyH6Np_1a', locale: 'de_DE', tz: -1},
+                    'us_a': {tkap: 'f_qKFXO8HVY:APA91bHI8qmPEMsDrnKjywph5DqbL1Dj-4XrMSEdyDpjTNKHpuKJfSzCK02xwfS41OoHrPnSvi8P_61M44WrlgBD2NzVBntFVSTUcVU3Z32QVi67aZQCrIph3ZrZgY_hXSrbyH6Np_1a', locale: 'en_US', tz: -420},
+                };
+                request.get(`/i/apps/reset?args=${JSON.stringify({app_id: APP_ID, period: 'all'})}&api_key=${API_KEY_ADMIN}`)
+                    .expect(200)
+                    .end((err, res) => {
+                        console.log('app clear', err, res.text);
+                        if (err) { 
+                            return done(err); 
+                        }
+                        done();
+                    });
+            });
 
-            msgTz = Object.assign({}, defaults, {autoCohorts: [cohorts.Tz._id], autoOnEntry: true, autoTime: h * 60 * 60000 + m * 60000 + s * 1000 + 10000});
-            console.log('Reference time will be %d ms, %d:%d:%d', msgTz.autoTime, h, m, s + 10);
+            it('should set FCM key', done => {
+                request.post(`/i/pushes/validate?api_key=${API_KEY_ADMIN}&platform=a&key=AAAAyhsteIE:APA91bFySIoL-BMQjLEsje6sOY0W4PoXTHKn79mZvW2vZtE4Bwo1KntYOkwmnTYo_DASwWcywOvqlniOei_L6g7Lf4zZXcU1KmOhE4LQuClEExxzyappw90_zjOufiHTBtUJFqpsEJ9Q&secret=`)
+                    .expect(200)
+                    .expect('Content-Type', /json/)
+                    .end((err, res) => {
+                        if (err) return done(err);
+                        var ob = JSON.parse(res.text);
+                        ob.should.have.property('cid').with.a.lengthOf(24);
+                        credentialsAndroid = new Credentials(ob.cid);
 
-            createMessage(msgTz, () => {
-                let note = new N.Note(msgTz),
-                    anote = note.appsub(0, appsubcredentialsAndroid),
-                    streamer = new Streamer(anote);
+                        request.get(`/i/apps/update?args=${JSON.stringify({app_id: APP_ID, timezone: 'Europe/Moscow', 
+                                apn: credentialsIOS ? [{_id: credentialsIOS._id, type: 'apn_universal'}] : undefined, 
+                                gcm: credentialsAndroid ? [{_id: credentialsAndroid._id, type: 'gcm'}] : undefined})}&api_key=${API_KEY_ADMIN}`)
+                            .expect(200)
+                            .end((err, res) => {
+                                console.log('app creds', err, res.text);
+                                if (err) { 
+                                    return done(err); 
+                                }
+                                credentialsAndroid.load(db).then(() => {
+                                    appsubcredentialsAndroid = credentialsAndroid.divide(false)[0].app(APP_ID, {tz: 'Europe/Moscow', offset: 180});
+                                    done();
+                                }, done);
+                            });
+                    });
+            }); 
 
-                createUser('tk_a', () => {}, [event(cohorts.Tz)]);
-                createUser('gb_a', () => {}, [event(cohorts.Tz)]);
-                createUser('us_a', setTimeout.bind(null, () => { 
+            // it('should set APN certificate', done => {
+            //     request.post(`/i/pushes/validate?api_key=${API_KEY_ADMIN}&platform=i&secret=`)
+            //         .attach('key', Buffer.from(p12))
+            //         .expect(200)
+            //         .end((err, res) => {
+            //             if (err) return done(err);
+            //             var ob = JSON.parse(res.text);
+            //             ob.should.have.property('cid').with.a.lengthOf(24);
 
-                    regenerateCohort(cohorts.Tz._id, (err, uids) => {
+            //             credentialsIOS = new Credentials(ob.cid);
+
+            //             request.get(`/i/apps/update?args=${JSON.stringify({app_id: APP_ID, timezone: 'Europe/Moscow',
+            //                     apn: credentialsIOS ? [{_id: credentialsIOS._id, type: 'apn_universal'}] : undefined, 
+            //                     gcm: credentialsAndroid ? [{_id: credentialsAndroid._id, type: 'gcm'}] : undefined})}&api_key=${API_KEY_ADMIN}`)
+            //                 .expect(200)
+            //                 .end((err, res) => {
+            //                     console.log('app creds', err, res.text);
+            //                     if (err) { 
+            //                         return done(err); 
+            //                     }
+            //                     credentialsIOS.load(db).then(() => {
+            //                         appsubcredentialsIOS = credentialsIOS.divide(false)[0].app(APP_ID, {tz: 'Europe/Moscow', offset: 180});
+            //                         done();
+            //                     }, done);
+            //                 });
+            //         });
+            // });
+
+            it('should create first user', (done) => {
+              createUser('no', done, [event(cohorts.Now), event(cohorts.Sleep), event(cohorts.Delay), event(cohorts.Tz)]);
+            });
+
+            it('should create cohorts', (done) => {
+                createCohort('Now', createCohort.bind(null, 'Sleep', createCohort.bind(null, 'Delay', createCohort.bind(null, 'Tz', done))));
+            });
+
+            var defaults = {
+                    type: 'data',
+                    data: {a: 1},
+                    apps: [APP_ID],
+                    platforms: ['a'],
+                    date: new Date(),
+                    auto: true,
+                }, 
+                msgNow, msgSleep, msgDelay, msgTz,
+
+                createMessage = (json, done) => {
+                    request.get(`/i/pushes/create?args=${JSON.stringify(json)}&api_key=${API_KEY_ADMIN}`)
+                        .expect(200)
+                        .end((err, res) => {
+                            if (err) { return done(err); }
+                            Object.assign(json, JSON.parse(res.text));
+                            if (!json._id) { return done('no id'); }
+                            json._id = db.ObjectID(json._id);
+                            json.apps[0] = db.ObjectID(json.apps[0]);
+                            json.date = new Date(json.date);
+                            setTimeout(done, 1000);
+                        });
+                },
+
+                regenerateCohort = (_id, done, uids) => {
+                    request.get(`/o?api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&method=cohort&generate=true&cohort=${_id}`)
+                        .expect(200)
+                        .end((err, res) => {
+                            if (err) return done(err);
+
+                            console.log('cohort regenerated', res.text);
+                            var ob = JSON.parse(res.text);
+                            if (uids) {
+                                uids.forEach(uid => {
+                                    ob.indexOf(uid).should.not.equal(-1);
+                                });
+                            }
+                            setTimeout(done.bind(null, null, ob), 1000);
+                        });
+                },
+
+                checkEach = (f, delay, timeout, error, done) => {
+                    var expires = Date.now() + timeout,
+                        check = () => {
+                            f(ok => {
+                                if (ok) { 
+                                    setTimeout(() => {
+                                        done();
+                                    }, delay); 
+                                } else if (Date.now() > expires) { 
+                                    done(error); 
+                                } else {
+                                   setTimeout(check, delay);
+                                }
+                            });
+                        };
+                    check();
+                },
+
+                delayedCount = (streamer, delay) => {
+                    return new Promise((res, rej) => {
+                        setTimeout(() => {
+                            streamer.count(db).then(res, rej);
+                        }, delay);
+                    });
+                };
+
+            // it('should create auto messages', done => {
+            //     msgNow = Object.assign({}, defaults, {autoCohorts: [cohorts.Simple._id], autoOnEntry: true, autoCapMessages: 2});
+            //     msgSleep = Object.assign({}, defaults, {autoCohorts: [cohorts.Simple._id], autoOnEntry: true, autoCapMessages: 2, autoCapSleep: 60 * 60000});
+            //     msgDelay = Object.assign({}, defaults, {autoCohorts: [cohorts.Simple._id], autoOnEntry: true, autoDelay: 60 * 60000});
+            //     msgTz = Object.assign({}, defaults, {autoCohorts: [cohorts.Simple._id], autoOnEntry: true, autoTime: 18 * 60 * 60000});
+            //     // createMessage(msgNow, createMessage.bind(null, msgSleep, createMessage.bind(null, msgDelay, createMessage.bind(null, msgTz, done))));
+            // });
+
+            it('should send tz message correctly', done => {
+                if (new Date().getHours() >= 22) {
+                    return done();
+                }
+
+                var dt = new Date(),
+                    h = dt.getHours(),
+                    m = dt.getMinutes(),
+                    s = dt.getSeconds();
+
+                msgTz = Object.assign({}, defaults, {autoCohorts: [cohorts.Tz._id], autoOnEntry: true, autoTime: h * 60 * 60000 + m * 60000 + s * 1000 + 10000});
+                console.log('Reference time will be %d ms, %d:%d:%d', msgTz.autoTime, h, m, s + 10);
+
+                createMessage(msgTz, () => {
+                    let note = new N.Note(msgTz),
+                        anote = note.appsub(0, appsubcredentialsAndroid),
+                        streamer = new Streamer(anote);
+
+                    createUser('tk_a', () => {}, [event(cohorts.Tz)]);
+                    createUser('gb_a', () => {}, [event(cohorts.Tz)]);
+                    createUser('us_a', setTimeout.bind(null, () => { 
+
+                        regenerateCohort(cohorts.Tz._id, (err, uids) => {
+                            if (err) { return done(err); }
+
+                            uids.length.should.equal(4);
+
+                            streamer.count(db).then(count => {
+                                count.should.equal(3);
+
+                                checkEach((clb) => {
+                                    streamer.count(db).then(count => {
+                                        clb(count === 2);
+                                    });
+                                }, 2000, 20000, '1 message should be sent', (err) => {
+                                    if (err) { return done(err); }
+
+                                    db.collection('messages').findOne(note._id, (err, msg) => {
+                                        if (err) { return done(err); }
+
+                                        msg.result.total.should.equal(3);
+                                        msg.result.processed.should.equal(1);
+                                        msg.result.sent.should.equal(1);
+                                        msg.result.errors.should.equal(0);
+
+                                        db.collection(streamer.collection()).find().toArray((err, arr) => {
+                                            if (err) { return done(err); }
+
+                                            arr.length.should.equal(2);
+
+                                            var tk = arr.filter(u => u.tz === 180)[0],
+                                                us = arr.filter(u => u.tz === -420)[0];
+
+                                            msg.result.nextbatch.getTime().should.equal(us.da);
+                                            msg.result.status.should.equal(4);
+                                            should.not.exist(msg.result.error);
+
+                                            db.collection(`app_users${APP_ID}`).findOne({did: 'gb_a'}, (err, gb) => {
+                                                if (err) { return done(err); }
+
+                                                gb.msgs.length.should.equal(1);
+                                                ('' + gb.msgs[0][0]).should.equal('' + msg._id);
+
+                                                db.collection('jobs').find({'data.mid': msg._id}).toArray((err, jobs) => {
+                                                    if (err) { return done(err); }
+        
+                                                    jobs.length.should.equal(3);
+                                                    var first = jobs.filter(j => j.status === 2).sort((a, b) => b.next - a.next),
+                                                        start = first[0],
+                                                        finished = first[1],
+                                                        next = jobs.filter(j => j.status === 0)[0];
+
+                                                    should.exist(start);
+                                                    should.exist(finished);
+                                                    should.exist(next);
+
+                                                    next.next.should.equal(us.da);
+
+                                                    // now let's push another user with 1 minute later tz
+                                                    createUser('de_a', setTimeout.bind(null, () => { 
+                                                        regenerateCohort(cohorts.Tz._id, (err, uids) => {
+                                                            uids.length.should.equal(5);
+
+                                                            streamer.count(db).then(count => {
+                                                                count.should.equal(3);
+
+                                                                checkEach((clb) => {
+                                                                    streamer.count(db).then(count => {
+                                                                        clb(count === 2);
+                                                                    });
+                                                                }, 2000, 120000, 'another 1 message should be sent', (err) => {
+                                                                    if (err) { return done(err); }
+        
+                                                                    db.collection('messages').findOne(note._id, (err, msg) => {
+                                                                        if (err) { return done(err); }
+                                                                        
+                                                                        should.exist(msg);
+                                                                        msg.result.total.should.equal(4);
+                                                                        msg.result.processed.should.equal(2);
+                                                                        msg.result.sent.should.equal(2);
+                                                                        msg.result.errors.should.equal(0);
+                                                                        msg.result.nextbatch.getTime().should.equal(us.da);
+                                                                        msg.result.status.should.equal(4);
+                                                                        should.not.exist(msg.result.error);
+
+                                                                        db.collection(`app_users${APP_ID}`).findOne({did: 'de_a'}, (err, de) => {
+                                                                            if (err) { return done(err); }
+
+                                                                            should.exist(de);
+                                                                            should.exist(de.msgs);
+                                                                            de.msgs.length.should.equal(1);
+                                                                            ('' + de.msgs[0][0]).should.equal('' + msg._id);
+
+                                                                            db.collection('jobs').find({'data.mid': msg._id}).toArray((err, jobs) => {
+                                                                                if (err) { return done(err); }
+                                                                            
+                                                                                jobs.length.should.equal(4);
+                                                                                jobs.filter(j => j.status !== 0).length.should.equal(3);
+                                                                                next = jobs.filter(j => j.status === 0);
+                                                                                next.length.should.equal(1);
+                                                                                next[0].next.should.equal(us.da);
+                                                                                
+                                                                                done();
+                                                                            });
+                                                                        });
+                                                                    });
+
+                                                                });
+                                                            });
+                                                        });
+
+                                                    }, 2000), [event(cohorts.Tz)]);
+
+
+                                                });
+
+                                            });
+
+
+                                            // user.msgs.length.should.equal(1);
+                                            // user.msgs[0][0].toString().should.equal('' + msg._id);
+
+                                            // if (user.msgs[0][1] < (Date.now() - 60000) || user.msgs[0][1] > Date.now()) {
+                                            //     done('invalid date: ' + arr[0].da + ' | ' + (arr.da - Date.now()) / 60000);
+                                            // } else {
+                                            //     done();
+                                            // }
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    }, 2000), [event(cohorts.Tz)]);
+                });
+            }).timeout(170000);
+      
+            var firstSend = null;
+            it('should send first capped delay message correctly', done => {
+                msgSleep = Object.assign({}, defaults, {autoCohorts: [cohorts.Sleep._id], autoOnEntry: true, autoCapMessages: 2, autoCapSleep: 60 * 60000});
+                createMessage(msgSleep, () => {
+                    let note = new N.Note(msgSleep),
+                        anote = note.appsub(0, appsubcredentialsAndroid),
+                        streamer = new Streamer(anote);
+
+                    anote.nobuild = true;
+
+                    // event.timestamp = Date.now() - 24 * 60 * 60000 + 20000;
+                    createUser('gb_2a', (err) => {
                         if (err) { return done(err); }
 
-                        uids.length.should.equal(4);
+                        regenerateCohort(cohorts.Sleep._id, (err, uids) => {
+                            if (err) { return done(err); }
 
-                        streamer.count(db).then(count => {
-                            count.should.equal(3);
+                            uids.length.should.equal(2);
 
                             checkEach((clb) => {
                                 streamer.count(db).then(count => {
-                                    clb(count === 2);
+                                    clb(count === 0);
                                 });
-                            }, 2000, 20000, '1 message should be sent', (err) => {
+                            }, 2000, 20000, 'streamer.count should equal 0', (err) => {
                                 if (err) { return done(err); }
 
                                 db.collection('messages').findOne(note._id, (err, msg) => {
                                     if (err) { return done(err); }
 
-                                    msg.result.total.should.equal(3);
                                     msg.result.processed.should.equal(1);
                                     msg.result.sent.should.equal(1);
                                     msg.result.errors.should.equal(0);
 
-                                    db.collection(streamer.collection()).find().toArray((err, arr) => {
+                                    db.collection(`app_users${APP_ID}`).findOne({did: 'gb_2a'}, (err, user) => {
                                         if (err) { return done(err); }
 
-                                        arr.length.should.equal(2);
+                                        user.msgs.length.should.equal(1);
+                                        user.msgs[0][0].toString().should.equal('' + msg._id);
+                                        firstSend = user.msgs[0][1];
 
-                                        var tk = arr.filter(u => u.tz === 180)[0],
-                                            us = arr.filter(u => u.tz === -420)[0];
-
-                                        msg.result.nextbatch.getTime().should.equal(us.da);
-                                        msg.result.status.should.equal(4);
-                                        should.not.exist(msg.result.error);
-
-                                        db.collection(`app_users${APP_ID}`).findOne({did: 'gb_a'}, (err, gb) => {
-                                            if (err) { return done(err); }
-
-                                            gb.msgs.length.should.equal(1);
-                                            ('' + gb.msgs[0][0]).should.equal('' + msg._id);
-
-                                            db.collection('jobs').find({'data.mid': msg._id}).toArray((err, jobs) => {
-                                                if (err) { return done(err); }
-    
-                                                jobs.length.should.equal(3);
-                                                var first = jobs.filter(j => j.status === 2).sort((a, b) => b.next - a.next),
-                                                    start = first[0],
-                                                    finished = first[1],
-                                                    next = jobs.filter(j => j.status === 0)[0];
-
-                                                should.exist(start);
-                                                should.exist(finished);
-                                                should.exist(next);
-
-                                                next.next.should.equal(us.da);
-
-                                                // now let's push another user with 1 minute later tz
-                                                createUser('de_a', setTimeout.bind(null, () => { 
-                                                    regenerateCohort(cohorts.Tz._id, (err, uids) => {
-                                                        uids.length.should.equal(5);
-
-                                                        streamer.count(db).then(count => {
-                                                            count.should.equal(3);
-
-                                                            checkEach((clb) => {
-                                                                streamer.count(db).then(count => {
-                                                                    clb(count === 2);
-                                                                });
-                                                            }, 2000, 120000, 'another 1 message should be sent', (err) => {
-                                                                if (err) { return done(err); }
-    
-                                                                db.collection('messages').findOne(note._id, (err, msg) => {
-                                                                    if (err) { return done(err); }
-                                                                    
-                                                                    should.exist(msg);
-                                                                    msg.result.total.should.equal(4);
-                                                                    msg.result.processed.should.equal(2);
-                                                                    msg.result.sent.should.equal(2);
-                                                                    msg.result.errors.should.equal(0);
-                                                                    msg.result.nextbatch.getTime().should.equal(us.da);
-                                                                    msg.result.status.should.equal(4);
-                                                                    should.not.exist(msg.result.error);
-
-                                                                    db.collection(`app_users${APP_ID}`).findOne({did: 'de_a'}, (err, de) => {
-                                                                        if (err) { return done(err); }
-
-                                                                        should.exist(de);
-                                                                        should.exist(de.msgs);
-                                                                        de.msgs.length.should.equal(1);
-                                                                        ('' + de.msgs[0][0]).should.equal('' + msg._id);
-
-                                                                        db.collection('jobs').find({'data.mid': msg._id}).toArray((err, jobs) => {
-                                                                            if (err) { return done(err); }
-                                                                        
-                                                                            jobs.length.should.equal(4);
-                                                                            jobs.filter(j => j.status !== 0).length.should.equal(3);
-                                                                            next = jobs.filter(j => j.status === 0);
-                                                                            next.length.should.equal(1);
-                                                                            next[0].next.should.equal(us.da);
-                                                                            
-                                                                            done();
-                                                                        });
-                                                                    });
-                                                                });
-
-                                                            });
-                                                        });
-                                                    });
-
-                                                }, 2000), [event(cohorts.Tz)]);
-
-
-                                            });
-
-                                        });
-
-
-                                        // user.msgs.length.should.equal(1);
-                                        // user.msgs[0][0].toString().should.equal('' + msg._id);
-
-                                        // if (user.msgs[0][1] < (Date.now() - 60000) || user.msgs[0][1] > Date.now()) {
-                                        //     done('invalid date: ' + arr[0].da + ' | ' + (arr.da - Date.now()) / 60000);
-                                        // } else {
-                                        //     done();
-                                        // }
+                                        if (firstSend < (Date.now() - 60000) || firstSend > Date.now()) {
+                                            done('invalid date: ' + firstSend + ' | ' + (firstSend - Date.now()) / 60000);
+                                        } else {
+                                            done();
+                                        }
                                     });
                                 });
                             });
                         });
-                    });
-                }, 2000), [event(cohorts.Tz)]);
+                    }, [event(cohorts.Sleep)]);
+                });
             });
-        }).timeout(170000);
-  
-        var firstSend = null;
-        it('should send first capped delay message correctly', done => {
-            msgSleep = Object.assign({}, defaults, {autoCohorts: [cohorts.Sleep._id], autoOnEntry: true, autoCapMessages: 2, autoCapSleep: 60 * 60000});
-            createMessage(msgSleep, () => {
+
+            it('should not send second capped delay message', done => {
                 let note = new N.Note(msgSleep),
                     anote = note.appsub(0, appsubcredentialsAndroid),
                     streamer = new Streamer(anote);
-
+           
                 anote.nobuild = true;
 
-                // event.timestamp = Date.now() - 24 * 60 * 60000 + 20000;
-                createUser('gb_2a', (err) => {
+                // exit from cohort
+                db.collection(`app_users${APP_ID}`).update({did: 'gb_2a'}, {$unset: {chr: 1}}, (err) => {
                     if (err) { return done(err); }
 
                     regenerateCohort(cohorts.Sleep._id, (err, uids) => {
@@ -988,125 +1041,119 @@ describe('Push', function(){
 
                         uids.length.should.equal(2);
 
-                        checkEach((clb) => {
-                            streamer.count(db).then(count => {
-                                clb(count === 0);
-                            });
-                        }, 2000, 20000, 'streamer.count should equal 0', (err) => {
-                            if (err) { return done(err); }
-
-                            db.collection('messages').findOne(note._id, (err, msg) => {
-                                if (err) { return done(err); }
-
-                                msg.result.processed.should.equal(1);
-                                msg.result.sent.should.equal(1);
-                                msg.result.errors.should.equal(0);
-
-                                db.collection(`app_users${APP_ID}`).findOne({did: 'gb_2a'}, (err, user) => {
-                                    if (err) { return done(err); }
-
-                                    user.msgs.length.should.equal(1);
-                                    user.msgs[0][0].toString().should.equal('' + msg._id);
-                                    firstSend = user.msgs[0][1];
-
-                                    if (firstSend < (Date.now() - 60000) || firstSend > Date.now()) {
-                                        done('invalid date: ' + firstSend + ' | ' + (firstSend - Date.now()) / 60000);
-                                    } else {
-                                        done();
-                                    }
-                                });
-                            });
-                        });
+                        delayedCount(streamer, 3000).then((count) => {
+                            count.should.equal(0);
+                            done();
+                        }, done);
                     });
-                }, [event(cohorts.Sleep)]);
-            });
-        });
-
-        it('should not send second capped delay message', done => {
-            let note = new N.Note(msgSleep),
-                anote = note.appsub(0, appsubcredentialsAndroid),
-                streamer = new Streamer(anote);
-       
-            anote.nobuild = true;
-
-            // exit from cohort
-            db.collection(`app_users${APP_ID}`).update({did: 'gb_2a'}, {$unset: {chr: 1}}, (err) => {
-                if (err) { return done(err); }
-
-                regenerateCohort(cohorts.Sleep._id, (err, uids) => {
-                    if (err) { return done(err); }
-
-                    uids.length.should.equal(2);
-
-                    delayedCount(streamer, 3000).then((count) => {
-                        count.should.equal(0);
-                        done();
-                    }, done);
                 });
             });
-        });
 
-        it('should process delayed message correctly', done => {
-            msgDelay = Object.assign({}, defaults, {autoCohorts: [cohorts.Delay._id], autoOnEntry: true, autoDelay: 60 * 60000});
-            createMessage(msgDelay, () => {
-                let note = new N.Note(msgDelay),
-                    anote = note.appsub(0, appsubcredentialsAndroid),
-                    streamer = new Streamer(anote);
+            it('should process delayed message correctly', done => {
+                msgDelay = Object.assign({}, defaults, {autoCohorts: [cohorts.Delay._id], autoOnEntry: true, autoDelay: 60 * 60000});
+                createMessage(msgDelay, () => {
+                    let note = new N.Note(msgDelay),
+                        anote = note.appsub(0, appsubcredentialsAndroid),
+                        streamer = new Streamer(anote);
 
-                anote.nobuild = true;
+                    anote.nobuild = true;
 
-                // event.timestamp = Date.now() - 24 * 60 * 60000 + 20000;
-                createUser('gb_3a', (err) => {
-                    if (err) { return done(err); }
-
-                    regenerateCohort(cohorts.Delay._id, (err, uids) => {
+                    // event.timestamp = Date.now() - 24 * 60 * 60000 + 20000;
+                    createUser('gb_3a', (err) => {
                         if (err) { return done(err); }
 
-                        uids.length.should.equal(2);
+                        regenerateCohort(cohorts.Delay._id, (err, uids) => {
+                            if (err) { return done(err); }
 
-                        delayedCount(streamer, 2000).then((count) => {
-                            count.should.equal(1);
+                            uids.length.should.equal(2);
 
-                            db.collection('messages').findOne(note._id, (err, msg) => {
+                            delayedCount(streamer, 2000).then((count) => {
+                                count.should.equal(1);
+
+                                db.collection('messages').findOne(note._id, (err, msg) => {
+                                    if (err) { return done(err); }
+
+                                    msg.result.processed.should.equal(0);
+                                    msg.result.sent.should.equal(0);
+
+                                    db.collection(`app_users${APP_ID}`).findOne({did: 'gb_3a'}, (err, user) => {
+                                        if (err) { return done(err); }
+                                        if (user.msgs) { return done('user has msgs'); }
+
+                                        db.collection(streamer.collection()).find().toArray((err, arr) => {
+                                            if (err) { return done(err); }
+
+                                            console.log(arr);
+                                            arr.length.should.equal(1);
+                                            if (arr[0].da > Date.now() + 60 * 60000 || arr[0].da < Date.now() + 59 * 60000) {
+                                                done('invalid date: ' + arr[0].da + ' | ' + (arr[0].da - Date.now()) / 60000);
+                                            } else {
+                                                done();
+                                            }
+                                        });
+                                    });
+                                });
+                            }, done);
+                        });
+                    }, [event(cohorts.Delay)]);
+                });
+            });
+
+            it('should send now message first time', done => {
+                msgNow = Object.assign({}, defaults, {autoCohorts: [cohorts.Now._id], autoOnEntry: true, autoCapMessages: 2});
+                createMessage(msgNow, () => {
+                    let note = new N.Note(msgNow),
+                        anote = note.appsub(0, appsubcredentialsAndroid),
+                        streamer = new Streamer(anote);
+
+                    anote.nobuild = true;
+                  
+                    // event.timestamp = Date.now() - 24 * 60 * 60000 + 20000;
+                    createUser('tk_a', (err) => {
+                        if (err) { return done(err); }
+
+                        regenerateCohort(cohorts.Now._id, (err, uids) => {
+                            if (err) { return done(err); }
+
+                            uids.length.should.equal(2);
+
+                            checkEach((clb) => {
+                                streamer.count(db).then(count => {
+                                    clb(count === 0);
+                                });
+                            }, 2000, 20000, 'streamer.count should equal 0', (err) => {
                                 if (err) { return done(err); }
 
-                                msg.result.processed.should.equal(0);
-                                msg.result.sent.should.equal(0);
-
-                                db.collection(`app_users${APP_ID}`).findOne({did: 'gb_3a'}, (err, user) => {
+                                db.collection('messages').findOne(note._id, (err, msg) => {
                                     if (err) { return done(err); }
-                                    if (user.msgs) { return done('user has msgs'); }
 
-                                    db.collection(streamer.collection()).find().toArray((err, arr) => {
+                                    msg.result.processed.should.equal(1);
+                                    msg.result.sent.should.equal(1);
+                                    msg.result.errors.should.equal(0);
+
+                                    db.collection(`app_users${APP_ID}`).findOne({did: 'tk_a'}, (err, user) => {
                                         if (err) { return done(err); }
 
-                                        console.log(arr);
-                                        arr.length.should.equal(1);
-                                        if (arr[0].da > Date.now() + 60 * 60000 || arr[0].da < Date.now() + 59 * 60000) {
-                                            done('invalid date: ' + arr[0].da + ' | ' + (arr[0].da - Date.now()) / 60000);
-                                        } else {
-                                            done();
-                                        }
+                                        user.msgs.length.should.equal(1);
+                                        user.msgs[0][0].toString().should.equal('' + msg._id);
+                                        done();
                                     });
                                 });
                             });
-                        }, done);
-                    });
-                }, [event(cohorts.Delay)]);
+                        });
+                    }, [event(cohorts.Now)]);
+                });
             });
-        });
 
-        it('should send now message first time', done => {
-            msgNow = Object.assign({}, defaults, {autoCohorts: [cohorts.Now._id], autoOnEntry: true, autoCapMessages: 2});
-            createMessage(msgNow, () => {
+            it('should send message second time', done => {
                 let note = new N.Note(msgNow),
                     anote = note.appsub(0, appsubcredentialsAndroid),
                     streamer = new Streamer(anote);
 
                 anote.nobuild = true;
-              
-                // event.timestamp = Date.now() - 24 * 60 * 60000 + 20000;
-                createUser('tk_a', (err) => {
+
+                // exit from cohort
+                db.collection(`app_users${APP_ID}`).update({did: 'tk_a'}, {$unset: {chr: 1}}, (err) => {
                     if (err) { return done(err); }
 
                     regenerateCohort(cohorts.Now._id, (err, uids) => {
@@ -1124,110 +1171,64 @@ describe('Push', function(){
                             db.collection('messages').findOne(note._id, (err, msg) => {
                                 if (err) { return done(err); }
 
-                                msg.result.processed.should.equal(1);
-                                msg.result.sent.should.equal(1);
+                                msg.result.processed.should.equal(2);
+                                msg.result.sent.should.equal(2);
                                 msg.result.errors.should.equal(0);
 
                                 db.collection(`app_users${APP_ID}`).findOne({did: 'tk_a'}, (err, user) => {
                                     if (err) { return done(err); }
 
-                                    user.msgs.length.should.equal(1);
+                                    user.msgs.length.should.equal(2);
                                     user.msgs[0][0].toString().should.equal('' + msg._id);
+                                    user.msgs[1][0].toString().should.equal('' + msg._id);
                                     done();
                                 });
                             });
                         });
                     });
-                }, [event(cohorts.Now)]);
+                });
             });
-        });
 
-        it('should send message second time', done => {
-            let note = new N.Note(msgNow),
-                anote = note.appsub(0, appsubcredentialsAndroid),
-                streamer = new Streamer(anote);
+            it('should not send message third time', done => {
+                let note = new N.Note(msgNow),
+                    anote = note.appsub(0, appsubcredentialsAndroid),
+                    streamer = new Streamer(anote);
 
-            anote.nobuild = true;
+                anote.nobuild = true;
 
-            // exit from cohort
-            db.collection(`app_users${APP_ID}`).update({did: 'tk_a'}, {$unset: {chr: 1}}, (err) => {
-                if (err) { return done(err); }
-
-                regenerateCohort(cohorts.Now._id, (err, uids) => {
+                // exit from cohort
+                db.collection(`app_users${APP_ID}`).update({did: 'tk_a'}, {$unset: {chr: 1}}, (err) => {
                     if (err) { return done(err); }
 
-                    uids.length.should.equal(2);
-
-                    checkEach((clb) => {
-                        streamer.count(db).then(count => {
-                            clb(count === 0);
-                        });
-                    }, 2000, 20000, 'streamer.count should equal 0', (err) => {
+                    regenerateCohort(cohorts.Now._id, (err, uids) => {
                         if (err) { return done(err); }
 
-                        db.collection('messages').findOne(note._id, (err, msg) => {
-                            if (err) { return done(err); }
+                        uids.length.should.equal(2);
 
-                            msg.result.processed.should.equal(2);
-                            msg.result.sent.should.equal(2);
-                            msg.result.errors.should.equal(0);
+                        delayedCount(streamer, 1000).then(count => {
+                            count.should.equal(0);
 
-                            db.collection(`app_users${APP_ID}`).findOne({did: 'tk_a'}, (err, user) => {
+                            db.collection('messages').findOne(note._id, (err, msg) => {
                                 if (err) { return done(err); }
 
-                                user.msgs.length.should.equal(2);
-                                user.msgs[0][0].toString().should.equal('' + msg._id);
-                                user.msgs[1][0].toString().should.equal('' + msg._id);
-                                done();
+                                msg.result.processed.should.equal(2);
+                                msg.result.sent.should.equal(2);
+                                msg.result.errors.should.equal(0);
+
+                                db.collection(`app_users${APP_ID}`).findOne({did: 'tk_a'}, (err, user) => {
+                                    if (err) { return done(err); }
+
+                                    user.msgs.length.should.equal(2);
+                                    user.msgs[0][0].toString().should.equal('' + msg._id);
+                                    user.msgs[1][0].toString().should.equal('' + msg._id);
+                                    done();
+                                });
                             });
-                        });
+                        }, done);
                     });
                 });
             });
         });
-
-        it('should not send message third time', done => {
-            let note = new N.Note(msgNow),
-                anote = note.appsub(0, appsubcredentialsAndroid),
-                streamer = new Streamer(anote);
-
-            anote.nobuild = true;
-
-            // exit from cohort
-            db.collection(`app_users${APP_ID}`).update({did: 'tk_a'}, {$unset: {chr: 1}}, (err) => {
-                if (err) { return done(err); }
-
-                regenerateCohort(cohorts.Now._id, (err, uids) => {
-                    if (err) { return done(err); }
-
-                    uids.length.should.equal(2);
-
-                    delayedCount(streamer, 1000).then(count => {
-                        count.should.equal(0);
-
-                        db.collection('messages').findOne(note._id, (err, msg) => {
-                            if (err) { return done(err); }
-
-                            msg.result.processed.should.equal(2);
-                            msg.result.sent.should.equal(2);
-                            msg.result.errors.should.equal(0);
-
-                            db.collection(`app_users${APP_ID}`).findOne({did: 'tk_a'}, (err, user) => {
-                                if (err) { return done(err); }
-
-                                user.msgs.length.should.equal(2);
-                                user.msgs[0][0].toString().should.equal('' + msg._id);
-                                user.msgs[1][0].toString().should.equal('' + msg._id);
-                                done();
-                            });
-                        });
-                    }, done);
-                });
-            });
-        });
-
-        // http://localhost:3001/i/cohorts/add?cohort_name=Sessions&steps=%5B%7B%22type%22%3A%22did%22%2C%22event%22%3A%22%5BCLY%5D_session%22%2C%22period%22%3A%227days%22%2C%22query%22%3A%7B%7D%2C%22byVal%22%3A%22%22%7D%5D&app_id=59f4877b5194de089c65188e&api_key=64d5918128cb8fa78b4d45340605d139
-
-    });
+    }
 
 });

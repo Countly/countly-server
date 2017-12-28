@@ -121,8 +121,8 @@ class Streamer {
 								{$project: this.projection2},
 								{$sort: {_id: 1}},
 								{$out: this.collection()}
-							], {allowDiskUse:true}, (err) => {
-								log.d('[%d:%s]: Aggregation done: %j', process.pid, this.anote.id, arguments);
+							], {allowDiskUse:true}, (err, res) => {
+								log.d('[%d:%s]: Aggregation done: %j', process.pid, this.anote.id, res);
 								if (err) {
 									log.d('[%d:%s]: >>>>>>>>>>>>>>>> Running aggregation second time!!!1111 <<<<<<<<<<<<<<<<<<', process.pid, this.anote.id);
 									db.collection('app_users' + this.anote.creds.app_id).aggregate([
@@ -131,8 +131,8 @@ class Streamer {
 										{$project: this.projection2},
 										{$sort: {_id: 1}},
 										{$out: this.collection()}
-									], {allowDiskUse:true}, (err) => {
-										log.d('[%d:%s]: 2nd Aggregation done: %j', process.pid, this.anote.id, arguments);
+									], {allowDiskUse:true}, (err, res) => {
+										log.d('[%d:%s]: 2nd Aggregation done: %j', process.pid, this.anote.id, res);
 										if (err) {
 											reject(err);
 										} else {
