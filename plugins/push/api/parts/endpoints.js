@@ -1265,6 +1265,7 @@ var common          = require('../../../../api/utils/common.js'),
     };
 
     api.processTokenSession = function(dbAppUser, params) {
+        console.log('=== processTokenSession', params.qstring ? JSON.stringify(params.qstring) : '');
         var $set = {}, $unset = {};
 
         if (params.qstring.locale) {

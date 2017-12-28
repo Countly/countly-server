@@ -84,6 +84,7 @@ var plugin = {},
             }
         }
         if (params.qstring.token_session) {
+            console.log('=== sdk on token_session', JSON.stringify(params.qstring));
             common.db.collection('app_users' + params.app_id).findOne({'_id': params.app_user_id }, function (err, dbAppUser){
                 push.processTokenSession(dbAppUser, params);
             });
