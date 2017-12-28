@@ -796,6 +796,8 @@ if (cluster.isMaster) {
                                 }
                             }
                             
+                            log.d('processing request %j', params.qstring);
+                            
                             params.promises = [];
                             validateAppForWriteAPI(params, function(){
                                 function resolver(){
