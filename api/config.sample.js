@@ -96,7 +96,7 @@ var countlyConfig = {
     * @property {array=} info - modules to log for information level for {@link logger}
     */
     logging: {
-        info: ["jobs", "push"],
+        debug: ["jobs", "push", "job"],
         default: "warn"
     },
     /**
