@@ -153,7 +153,7 @@ class Streamer {
 						query[common.dbUserMap.tokens + this.field] = true;
 
 						db.collection('app_users' + this.anote.creds.app_id).find().toArray((err, arr) => {
-							console.log('=== all users', err, arr : JSON.stringify(arr) : null);
+							console.log('=== all users', err, arr ? JSON.stringify(arr) : null);
 						});
 						
 						log.d('[%d:%s]: Not drilling %j to %s', process.pid, this.anote.id, {$match: query}, this.collection());
