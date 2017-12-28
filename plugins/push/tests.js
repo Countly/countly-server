@@ -175,22 +175,24 @@ describe('Push', function(){
             ob.should.have.property('result','Success');
 
             console.log(`/i?device_id=${id}&app_key=${APP_KEY}&token_session=1&${USERS[id].tkip ? 'ios_token=' + USERS[id].tkip : 'android_token=' + USERS[id].tkap}&test_mode=0&locale=${USERS[id].locale}`);
-            request.get(`/i?device_id=${id}&app_key=${APP_KEY}&token_session=1&${USERS[id].tkip ? 'ios_token=' + USERS[id].tkip : 'android_token=' + USERS[id].tkap}&test_mode=0&locale=${USERS[id].locale}`).expect(200).end((err, res) => {
-                if (err) {
-                    return callback(err);
-                }
+            setTimeout(() => { 
+                request.get(`/i?device_id=${id}&app_key=${APP_KEY}&token_session=1&${USERS[id].tkip ? 'ios_token=' + USERS[id].tkip : 'android_token=' + USERS[id].tkap}&test_mode=0&locale=${USERS[id].locale}`).expect(200).end((err, res) => {
+                    if (err) {
+                        return callback(err);
+                    }
 
-                var ob = JSON.parse(res.text);
-                ob.should.have.property('result','Success');
+                    var ob = JSON.parse(res.text);
+                    ob.should.have.property('result','Success');
 
-                if (events && events.length) {
-                    sendEvents(id, events, callback);
-                } else if (callback) {
-                    console.log('created user ' + id);
-                    callback();
-                }
+                    if (events && events.length) {
+                        sendEvents(id, events, callback);
+                    } else if (callback) {
+                        console.log('created user ' + id);
+                        callback();
+                    }
 
-            });
+                });
+            }, 6000);
         });
     }
 
@@ -269,7 +271,7 @@ describe('Push', function(){
                     'us_a': {tkap: 'android_us', locale: 'us', tz: -420},
                 };
                 createAll(done, 0);
-            });
+            }).timeout(10 * 10000);
 
             it('should have all USERS', done => {
                 db.collection('app_users' + APP_ID).count({$or: [{tkip: true}, {tkap: true}]}, (err, count) => {
