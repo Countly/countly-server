@@ -595,7 +595,7 @@ describe('Push', function(){
         });
     });
     
-    if (plugins.getPluginsApis().cohorts) {
+    if (pluginManager.getPluginsApis().cohorts) {
 
         describe('cohorts', () => {
             var morning = new Date();
