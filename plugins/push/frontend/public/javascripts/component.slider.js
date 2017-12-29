@@ -76,7 +76,6 @@ if (!window.components.slider) {
 				this.el.style.width = width + 'px';
 
 				var btns = this.el.querySelector('.btns');
-				if (btns) console.log(btns.tagName, btns.className);
 				if (btns) { btns.style.width = width + 'px'; }
 
 				// if (!once) {

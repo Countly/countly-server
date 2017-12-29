@@ -733,7 +733,7 @@ window.component('push.popup', function (popup) {
 								C.radio.view(ctrl.radioTest),
 								m('.desc', t('pu.po.tab1.testing-desc')),
 							]),
-							m('.btns', [
+							m('.btns', {key: 'btns'}, [
 								m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(1) ? false : 'disabled' }, t('pu.po.next')),
 								m('a.btn-prev', { href: '#', onclick: function (ev) { C.slider.instance.close(ev); } }, t('pu.po.close'))
 							])
@@ -846,7 +846,7 @@ window.component('push.popup', function (popup) {
 			                    C.radio.view(ctrl.radioStartDate)
 			                ]),
 
-			                m('.form-group', {style: {width: 'auto'}}, [
+			                m('.form-group', [
 			                    m('h4', t('pu.po.tab1.additional-options')),
 			                    m('.comp-grid.comp-unpadded', [
 			                        C.checkbox.view(ctrl.checkAutoEnd)
@@ -854,7 +854,7 @@ window.component('push.popup', function (popup) {
 			                    m('.desc', t('pu.po.tab2.delivery-time-desc')),
 			                ]),
 
-			                m('.btns', [
+			                m('.btns', {key: 'btns'}, [
 			                    m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(2) ? false : 'disabled' }, t('pu.po.next')),
 			                    popup.tabs.tab() > 0 ? m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev')) : ''
 			                ])
@@ -1003,7 +1003,7 @@ window.component('push.popup', function (popup) {
                                 m('.desc', t('pu.po.tab2.sleep-desc'))
                             ]) : '',
 
-                            m('.btns', [
+                            m('.btns', {key: 'btns'}, [
                                 m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(3) ? false : 'disabled' }, t('pu.po.next')),
                                 popup.tabs.tab() > 0 ? m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev')) : ''
                             ])
@@ -1071,7 +1071,7 @@ window.component('push.popup', function (popup) {
 									C.radio.view(ctrl.radioTz),
 									m('.desc', t('pu.po.tab1.scheduling-desc'))
 								]) : '',
-							m('.btns', [
+							m('.btns', {key: 'btns'}, [
 								m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(2) ? false : 'disabled' }, t('pu.po.next')),
 								popup.tabs.tab() > 0 ? m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev')) : ''
 							])
@@ -1222,7 +1222,7 @@ window.component('push.popup', function (popup) {
 							]) :
 							''
 					]),
-					m('.btns', [
+					m('.btns', {key: 'btns'}, [
 						!message.auto() && message.count() ? m('div', {
 							style: {
 								fontSize: "14px",
@@ -1258,7 +1258,7 @@ window.component('push.popup', function (popup) {
 							m('label', { onclick: function () { message.ack(!message.ack()); } }, t.n('pu.po.confirm', message.count())),
 						]),
 						m.component(C.push.view.contents, { message: message }),
-						m('.btns.final',
+						m('.btns.final', {key: 'btns'},
 							m('div.final-footer', [
 							    m('div', [
 							        message.auto() ? '' : message.count() ? m('div', { key: 'info-message' }, t.p('pu.po.recipients.message', message.count())) : '',
