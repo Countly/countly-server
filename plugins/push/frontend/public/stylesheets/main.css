@@ -28,9 +28,12 @@
 .comp-slider-title h3 .status { height: 20px; float: right; font-size: 14px; }
 .comp-slider-title h3 .status > svg { width: 20px; height: 20px; margin-right: 5px; margin-bottom: -4px; }
 
-.comp-push-panels { display: flex; width: 100%; margin: 0px 20px 100px 20px}
-.comp-push-panel {width: 2%; margin-bottom: 0; padding-right: 18px; }
-.comp-push-panel:last-child { padding-right: 30px; }
+.comp-push-panels { display: flex; margin: 0px 20px 100px 20px}
+.comp-push-panel, .comp-push-panels > .form-group { flex-grow: 1; margin-bottom: 0; padding-right: 18px }
+.comp-push-panels > .form-group { padding-right: 0; }
+.comp-push-panels > .comp-push-panel.form-group { padding-right: 18px; }
+.comp-push-panel:last-child { padding-right: 0; }
+.comp-push-panels > .comp-push-panel.form-group:last-child { padding-right: 0; }
 .comp-push-panels.left-bigger > div:first-child { width: 56%; }
 .comp-push-panels.left-bigger > div:last-child { width: 44%; }
 .comp-push-vert-panel { margin-bottom: 18px; }
@@ -1511,9 +1514,6 @@ span.emoji-inner {
 .comp-panel .form-group{
     margin-bottom: 20px;
 }
-.comp-panel > .form-group:nth-last-child(2){
-    margin-bottom: 100px;
-}
 .comp-panel .check-box label {
     cursor: pointer;
     margin-left: 0px !important;
@@ -1632,6 +1632,7 @@ span.emoji-inner {
 }
 .widget-header .cly-select { background-color: #ECECEC; position:relative; }
 
+.comp-push .comp-singleselect { width: 100%; }
 .comp-singleselect.cly-select { height: 33px; }
 .comp-singleselect.cly-select .text { padding: 9px 8px 8px; font-size: 12px; }
 .comp-singleselect.cly-select .text i { font-size: 15px; margin-right: 5px; }

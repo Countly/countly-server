@@ -683,7 +683,7 @@ window.component('push.popup', function (popup) {
 					};
 
 					this.selectGeos = new C.singleselect.controller({
-						options: [{ value: '', title: t('pu.po.tab1.geos.no') }].concat(push.dashboard.geos.map(function (geo) {
+						options: [{ value: undefined, title: t('pu.po.tab1.geos.no') }].concat(push.dashboard.geos.map(function (geo) {
 							return { value: geo._id, title: geo.title };
 						})),
 						value: message.geo
@@ -719,15 +719,15 @@ window.component('push.popup', function (popup) {
 										m('input[type="checkbox"]', o),
 										m('label', t('pu.platform.' + p))
 									]);
-								}),
-								!message.auto() && push.dashboard.geos && push.dashboard.geos.length ?
-									m('.comp-push-vert-panel', [
-										m('h4', t('pu.po.tab1.geos')),
-										C.singleselect.view(ctrl.selectGeos),
-										m('.desc', t('pu.po.tab1.geos-desc')),
-									])
-									: '',
+								})
 							]),
+							!message.auto() && push.dashboard.geos && push.dashboard.geos.length ?
+								m('.form-group', [
+									m('h4', t('pu.po.tab1.geos')),
+									C.singleselect.view(ctrl.selectGeos),
+									m('.desc', t('pu.po.tab1.geos-desc')),
+								])
+								: '',
 							m('.form-group', [
 								m('h4', t('pu.po.tab1.testing')),
 								C.radio.view(ctrl.radioTest),
