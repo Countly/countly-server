@@ -69,7 +69,8 @@
 	};
 	
 	$.fn.stickyTableHeaders = function () {
-		return (new $.StickyTableHeaders(this));
+		var self = this;
+		return (function(){setTimeout(function(){(new $.StickyTableHeaders(self))}, 2000);})();
 	};
 
 })(jQuery);
