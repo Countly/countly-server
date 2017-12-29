@@ -174,7 +174,7 @@ describe('Push', function(){
             var ob = JSON.parse(res.text);
             ob.should.have.property('result','Success');
 
-            console.log(`/i?device_id=${id}&app_key=${APP_KEY}&token_session=1&${USERS[id].tkip ? 'ios_token=' + USERS[id].tkip : 'android_token=' + USERS[id].tkap}&test_mode=0&locale=${USERS[id].locale}`);
+            // console.log(`/i?device_id=${id}&app_key=${APP_KEY}&token_session=1&${USERS[id].tkip ? 'ios_token=' + USERS[id].tkip : 'android_token=' + USERS[id].tkap}&test_mode=0&locale=${USERS[id].locale}`);
             setTimeout(() => { 
                 request.get(`/i?device_id=${id}&app_key=${APP_KEY}&token_session=1&${USERS[id].tkip ? 'ios_token=' + USERS[id].tkip : 'android_token=' + USERS[id].tkap}&test_mode=0&locale=${USERS[id].locale}`).expect(200).end((err, res) => {
                     if (err) {
@@ -187,7 +187,7 @@ describe('Push', function(){
                     if (events && events.length) {
                         sendEvents(id, events, callback);
                     } else if (callback) {
-                        console.log('created user ' + id);
+                        // console.log('created user ' + id);
                         callback();
                     }
 
@@ -224,8 +224,14 @@ describe('Push', function(){
     describe('streaming', () => {
         // require('../../api/utils/log.js').setDefault('debug');
 
-    var credentialsIOS = new Credentials('cidIOS'),
-        credentialsAndroid = new Credentials('cidAndroid');
+        var credentialsIOS = new Credentials('cidIOS'),
+            credentialsAndroid = new Credentials('cidAndroid'),
+            appsubcredentialsIOS, appsubcredentialsAndroid;
+
+        credentialsIOS.type = 'apn_universal';
+        credentialsIOS.platform = 'i';
+        credentialsAndroid.type = 'gcm';
+        credentialsAndroid.platform = 'a';
 
         for (let k in creds.DB_MAP) {
             common.dbMap[k] = creds.DB_MAP[k];
@@ -234,22 +240,18 @@ describe('Push', function(){
             common.dbUserMap[k] = creds.DB_USER_MAP[k];
         }
 
-        credentialsIOS.type = 'apn_universal';
-        credentialsIOS.platform = 'i';
-        credentialsAndroid.type = 'gcm';
-        credentialsAndroid.platform = 'a';
-
-        const subcredentialsIOS = credentialsIOS.divide(false)[0],
-              subcredentialsAndroid = credentialsAndroid.divide(false)[0],
-              appsubcredentialsIOS = subcredentialsIOS.app(APP_ID, {tz: 'Europe/Moscow', offset: 180}),
-              appsubcredentialsAndroid = subcredentialsAndroid.app(APP_ID, {tz: 'Europe/Moscow', offset: 180});
-
         describe('(timezoned)', () => {
             it('should clear app data', done => {
+                const subcredentialsIOS = credentialsIOS.divide(false)[0],
+                      subcredentialsAndroid = credentialsAndroid.divide(false)[0];
+
+                appsubcredentialsIOS = subcredentialsIOS.app(APP_ID, {tz: 'Europe/Moscow', offset: 180}),
+                appsubcredentialsAndroid = subcredentialsAndroid.app(APP_ID, {tz: 'Europe/Moscow', offset: 180});
+
                 request.get(`/i/apps/reset?args=${JSON.stringify({app_id: APP_ID, period: 'all'})}&api_key=${API_KEY_ADMIN}`)
                 .expect(200)
                 .end((err, res) => {
-                     console.log('app clear', err, res.text);
+                     // console.log('app clear', err, res.text);
                      if (err) { 
                          return done(err); 
                      }
@@ -334,7 +336,7 @@ describe('Push', function(){
                     min = momenttz.tz('2017-12-01 13:45', 'Europe/Moscow').toDate(),
                     max = momenttz.tz('2017-12-01 14:15', 'Europe/Moscow').toDate();
 
-                console.log(now, min, max);
+                // console.log(now, min, max);
 
                 streamer.load(db, null, null, 100, min.getTime(), max.getTime()).then(arr => {
                     arr.length.should.equal(0); // nobody's after GMT+3
@@ -475,12 +477,12 @@ describe('Push', function(){
                     should.not.exist(err);
                     app.should.not.be.null();
 
-                    console.log('user %j', findUser('ios_ru'));
+                    // console.log('user %j', findUser('ios_ru'));
                     divider.store(db, app, [findUser('ios_ru').uid], now).then((count) => {
                         count.should.equal(1);
 
                         db.collection(streamerIOS.collection()).find().toArray((err, arr) => {
-                            console.log('arr %j', arr);
+                            // console.log('arr %j', arr);
                             should.not.exist(err);
                             arr.length.should.equal(1);
                             arr[0].tkip.should.equal('ios_ru');
@@ -541,7 +543,7 @@ describe('Push', function(){
                     });
                 };
 
-                console.log(streamerIOS.collection(), streamerAndroid.collection());
+                // console.log(streamerIOS.collection(), streamerAndroid.collection());
 
                 db.collection('app_users' + APP_ID).update({'tk.ip': 'ios_ru'}, {$set: {msgs: [[note._id, momenttz.tz('2017-11-15 13:00', 'Europe/Moscow').toDate().getTime()]]}}, err => {
                     if (err) { return done(err); }
@@ -568,8 +570,8 @@ describe('Push', function(){
                                                     db.collection(streamerAndroid.collection()).find().toArray((err, usersAndroid) => {
                                                         should.not.exist(err);
 
-                                                        console.log('ios', usersIOS);
-                                                        console.log('usersAndroid', usersAndroid);
+                                                        // console.log('ios', usersIOS);
+                                                        // console.log('usersAndroid', usersAndroid);
 
                                                         usersIOS.length.should.equal(1);
                                                         usersIOS[0].tkip.should.equal('ios_ru');
@@ -620,7 +622,7 @@ describe('Push', function(){
                 request.get(`/o?api_key=${API_KEY_ADMIN}&app_id=${APP_ID}&method=get_cohorts`)
                     .expect(200)
                     .end((err, res) => {
-                        console.log('cohorts', err, res.text);
+                        // console.log('cohorts', err, res.text);
                         if (err) { 
                             return done(err); 
                         }
@@ -632,11 +634,11 @@ describe('Push', function(){
                             request.get(`/i/cohorts/delete?cohort_id=${cohort._id}&app_id=${APP_ID}&api_key=${API_KEY_ADMIN}`)
                                 .expect(200)
                                 .end((err, res) => {
-                                    console.log('deleted', err, res.text);
+                                    // console.log('deleted', err, res.text);
                                     request.get("/i/cohorts/add?api_key="+API_KEY_ADMIN+"&app_id="+APP_ID+"&cohort_name="+name+"&steps="+JSON.stringify(cohorts[name].steps))
                                         .expect(200)
                                         .end((err, res) => {
-                                            console.log('created', err, res.text);
+                                            // console.log('created', err, res.text);
                                             if (err) {
                                                 return done(err);
                                             }
@@ -648,7 +650,7 @@ describe('Push', function(){
                             request.get("/i/cohorts/add?api_key="+API_KEY_ADMIN+"&app_id="+APP_ID+"&cohort_name="+name+"&steps="+JSON.stringify(cohorts[name].steps))
                                 .expect(200)
                                 .end((err, res) => {
-                                    console.log('cohort created', err, res.text);
+                                    // console.log('cohort created', err, res.text);
                                     if (err) {
                                         return done(err);
                                     }
@@ -672,7 +674,7 @@ describe('Push', function(){
                 request.get(`/i/apps/reset?args=${JSON.stringify({app_id: APP_ID, period: 'all'})}&api_key=${API_KEY_ADMIN}`)
                     .expect(200)
                     .end((err, res) => {
-                        console.log('app clear', err, res.text);
+                        // console.log('app clear', err, res.text);
                         if (err) { 
                             return done(err); 
                         }
@@ -695,7 +697,7 @@ describe('Push', function(){
                                 gcm: credentialsAndroid ? [{_id: credentialsAndroid._id, type: 'gcm'}] : undefined})}&api_key=${API_KEY_ADMIN}`)
                             .expect(200)
                             .end((err, res) => {
-                                console.log('app creds', err, res.text);
+                                // console.log('app creds', err, res.text);
                                 if (err) { 
                                     return done(err); 
                                 }
@@ -773,7 +775,7 @@ describe('Push', function(){
                         .end((err, res) => {
                             if (err) return done(err);
 
-                            console.log('cohort regenerated', res.text);
+                            // console.log('cohort regenerated', res.text);
                             var ob = JSON.parse(res.text);
                             if (uids) {
                                 uids.forEach(uid => {
@@ -829,7 +831,7 @@ describe('Push', function(){
                     s = dt.getSeconds();
 
                 msgTz = Object.assign({}, defaults, {autoCohorts: [cohorts.Tz._id], autoOnEntry: true, autoTime: h * 60 * 60000 + m * 60000 + s * 1000 + 10000});
-                console.log('Reference time will be %d ms, %d:%d:%d', msgTz.autoTime, h, m, s + 10);
+                // console.log('Reference time will be %d ms, %d:%d:%d', msgTz.autoTime, h, m, s + 10);
 
                 createMessage(msgTz, () => {
                     let note = new N.Note(msgTz),
@@ -1085,7 +1087,7 @@ describe('Push', function(){
                                         db.collection(streamer.collection()).find().toArray((err, arr) => {
                                             if (err) { return done(err); }
 
-                                            console.log(arr);
+                                            // console.log(arr);
                                             arr.length.should.equal(1);
                                             if (arr[0].da > Date.now() + 60 * 60000 || arr[0].da < Date.now() + 59 * 60000) {
                                                 done('invalid date: ' + arr[0].da + ' | ' + (arr[0].da - Date.now()) / 60000);

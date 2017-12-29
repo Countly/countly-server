@@ -878,8 +878,8 @@ var common          = require('../../../../api/utils/common.js'),
         var mime = args.key.indexOf(';base64,') === -1 ? null : args.key.substring(0, args.key.indexOf(';base64,')),
             detected;
 
-        log.d('mime', mime);
-        log.d('args.key', args.key, args.key.indexOf(';base64,'));
+        // log.d('mime', mime);
+        // log.d('args.key', args.key, args.key.indexOf(';base64,'));
         
         if (args.platform === N.Platform.APNS) {
             if (mime === 'data:application/x-pkcs12') {
@@ -928,7 +928,7 @@ var common          = require('../../../../api/utils/common.js'),
                 common.returnOutput(params, {error: 'DB Error'});
             } else {
                 credentials = credentials.ops[0];
-                log.i('Saved credentials', credentials);
+                // log.i('Saved credentials', credentials);
                 jobs.runTransient('push:validate', {_id: credentials._id, cid: credentials._id, platform: args.platform}).then(() => {
                     log.d('Check app returned ok');
                     common.returnOutput(params, {cid: credentials._id});
