@@ -25,7 +25,7 @@ before_script:
   - until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
 script: sudo npm test
 after_script: 
-  - cat log/countly-api.log
+  - tail -n 1000 log/countly-api.log
   - cat log/countly-dashboard.log
   - cat /var/log/mongodb/mongod.log
 after_success:
