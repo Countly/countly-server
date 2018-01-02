@@ -1,0 +1,90 @@
+<div id="import-widget-drawer" class="cly-drawer">
+    <div class="title">
+        <span data-localize="data-migration.import-title">Import data</span>
+        <div class="close"><i class="ion-ios-close-empty"></i></div>
+    </div>
+    <div class="details">
+        <div class="settings section">
+            <div class="label" data-localize="data-migration.import-type">Import type</div>
+            <div id="data-import-type-selector" class="checks">
+                <div data-from="import-upload" class="check selected">
+                    <div class="box"></div>
+                    <div class="text" data-localize="data-migration.import-type-upload-label">Import data from other server</div>
+                    
+                </div>
+                <div data-from="import-token" class="check">
+                    <div class="box"></div>
+                    <div class="text" data-localize="data-migration.import-type-token-label">Export and transfer</div>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+        <div class="settings section" id='import-via-file'>
+            <div class='label' data-localize="data-migration.select-file">Select file</label></div>
+            <form action="/i/datamigration/import" enctype="multipart/form-data" method="post" id="import_data_form">
+                <input type='hidden' name="api_key" class="symbol-api-key"/>
+                <input type='hidden' name="app_id" class="symbol-app-id"/>
+            
+            <div class='file_upload_drop'  id="data-migration-import-via-file" action="/" enctype="multipart/form-data" method="post">
+                <div class="description" data-localize="data-migration.import-type-upload-description"></div>
+                <div class='dz-filechosen'></div>
+                <div class='dz-message'>
+                    <div class='give-upload'>
+                    <div class='arrow'></div>
+                    <p class='fline' data-localize="data-migration.upload-title"></p>
+                    <p class='sline'>
+                        <span data-localize="data-migration.drag-drop">Drag and drop files here or</span>
+                        <span data-localize="data-migration.browse" class="browse">browse</span></p>
+                    <p class='tline' data-localize="data-migration.upload-description">Upload your export</p>
+                    </div>
+                </div>    
+                <div class="fallback">
+                    <div class='give-upload'>
+                    <div class='arrow'></div>
+                    <p class='fline' data-localize="data-migration.upload-title"></p>
+                    <p class='sline'>
+                        <span data-localize="data-migration.drag-drop-unable"></span></p>
+                        <p class='sline'>
+                        <span class='browseme'><span data-localize="data-migration.browse" class="browse" id="browseplugins"></span><input type="file" name="import_file" id="migration_upload_fallback" /><span></p>
+                    <p class='tline' data-localize="data-migration.upload-description"></p>
+                    </div>
+                </div>
+                
+            </div>
+            </form>
+        </div>
+        
+        <div class="settings section" id="import-via-token" style="display:none;">
+            <div class="description" data-localize="data-migration.import-type-token-description" ></div>
+            <div class="label" data-localize="data-migration.server-address">Server address</div>
+            <div class="migration_copyboard" id='migration_address_copyboard2' data="">
+                <input type='text' value='' readonly>
+                <span data-localize="data-migration.click-to-copy">Click to copy</span>
+            </div>
+            
+            <form action="/o/datamigration/createimporttoken" enctype="multipart/form-data" method="post" id="create_token_form">
+                <input type='hidden' name="app_id" class="symbol-app-id"/>
+            </form>
+        </div>
+        <div class="settings section" id="data_migration_generated_token" style="display:none;">
+            <div class="label" data-localize="data-migration.server-address">Server address</div>
+            <div class="migration_copyboard" id='migration_address_copyboard' data="">
+                <input type='text' value='' readonly>
+                <span data-localize="data-migration.click-to-copy">Click to copy</span>
+            </div>
+            <p></p>
+            <div class="label" data-localize="data-migration.generated-token"></div>
+            <div class="migration_copyboard" id='migration_token_copyboard' data="">
+                <input type='text' value='' readonly>
+                <span data-localize="data-migration.click-to-copy">Click to copy</span>
+            </div>
+            <div data-localize="data-migration.create-another-token" id="create_another_token">New token</div>
+        </div>
+    </div>
+    <div class="buttons">
+        <div id='import_data_button' class='icon-button green disabled' data-localize="data-migration.import-data" >Import</div>
+        <div class="icon-button green" id='create_new_token' style='display:none;' data-localize="data-migration.create-token">Create token</div>
+    </div>
+</div>

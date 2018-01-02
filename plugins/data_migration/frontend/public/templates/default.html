@@ -1,0 +1,38 @@
+<div class="widget">
+    <div class="widget-header">
+        <div class="left"><div class="title" data-localize="data-migration.page-title"></div></div> 
+            <div style="float:right;">
+                <div class=" green help-zone-vs options-item" data-help-localize="help.manage-apps.app-clear-button" id="import-export-button">
+                <div class='openus'>
+                    <span data-localize="data-migration.import-export-button-title">Import/Export Data</span>
+                    <span class="down ion-chevron-down"></span>
+                    <span class="up ion-chevron-up"></span>
+                </div>
+                <div class='edit-menu' id='import-export-button-menu' style="display:none;">
+                    <div class=" item" id='show_data_export_form' data-localize="data-migration.export-data"></div>
+                    <div class=" item" id='show_data_import_form' data-localize="data-migration.import-data"></div>
+                </div>
+            </div>
+		</div>               
+    </div>
+    <div class='data-migration'>
+        <div id='tabs' class='ui-tabs ui-widget ui-widget-content ui-corner-all data-migration-tabs'>
+            <ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
+                <li class="ui-state-default ui-corner-top ui-tabs-selected ui-state-active">
+                    <a href="#data_migration_exports" data-localize="data-migration.my-exports" ></a>
+                </li>
+                <li class="ui-state-default ui-corner-top">
+                    <a href="#data_migration_imports" data-localize="data-migration.my-imports" ></a>
+                </li>
+            </ul>
+            <div id="data_migration_exports" class="ui-tabs-panel ui-widget-content ui-corner-bottom">
+                <div id='my_exports_list'></div>
+            </div>
+            <div id="data_migration_imports" class=" ui-tabs-panel ui-widget-content ui-corner-bottom" >
+                <div id='my_imports_list'></div>
+            </div>
+        </div>
+ 
+    </div>
+</div>
+
