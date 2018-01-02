@@ -1855,10 +1855,10 @@
 
                 for (var i = 0; i < allWeeks.length; i++) {
                     var parts = allWeeks[i].split(" ");
-                    if (parseInt(parts[1]) == moment().isoWeekYear(parseInt(parts[1])).isoWeek(parseInt(parts[0])).startOf('week').year()) {
+                    if (parseInt(parts[1]) == moment().isoWeekYear(parseInt(parts[1])).isoWeek(parseInt(parts[0])).isoWeekday(1).year()) {
                         ticks.push([i, "W" + allWeeks[i]]);
 
-                        var weekText = countlyCommon.formatDate(moment().isoWeekYear(parseInt(parts[1])).isoWeek(parseInt(parts[0])).startOf('week'), ", D MMM YYYY");
+                        var weekText = countlyCommon.formatDate(moment().isoWeekYear(parseInt(parts[1])).isoWeek(parseInt(parts[0])).isoWeekday(1), ", D MMM YYYY");
                         tickTexts[i] = "W" + parts[0] + weekText;
                     }
                 }
