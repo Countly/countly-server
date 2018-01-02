@@ -14,12 +14,12 @@ describe('Failing app data reading', function(){
 			API_KEY_USER = testUtils.get("API_KEY_USER");
 			APP_ID = testUtils.get("APP_ID");
 			request
-			.get('/o')
+			.get('/o?method=locations&app_id='+APP_ID)
 			.expect(400)
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'Missing parameter "api_key"');
+				ob.should.have.property('result', 'Missing parameter "api_key" or "auth_token"');
 				done()
 			});
 		});

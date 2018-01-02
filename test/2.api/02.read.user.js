@@ -26,12 +26,12 @@ describe('Initial reading', function(){
 	describe('Reading users without key', function(){
 		it('should bad request', function(done){
 			request
-			.get('/o/users')
+			.get('/o/users/all')
 			.expect(400)
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				ob.should.have.property('result', 'Missing parameter "api_key"');
+				ob.should.have.property('result', 'Missing parameter "api_key" or "auth_token"');
 				done()
 			});
 		});
@@ -82,7 +82,6 @@ describe('Initial reading', function(){
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
-				console.log()
 				var ob = JSON.parse(res.text);
 				ob.should.have.property('api_key', API_KEY_ADMIN);
 				ob.should.have.property('email', testUtils.email);

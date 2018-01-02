@@ -1137,7 +1137,7 @@ table.events-table { width:100%; padding:0; margin:0; }
 .time-picker span:hover { font-size: 16px; }
 .time-picker span.selected { font-weight: 500; font-size: 17px; }
 
-#graph-tooltip { pointer-events:none; padding:4px 7px; overflow:auto; border:1px solid #3C3C3C; border-radius:2px; background-color:rgba(60, 63, 64, 0.86); color:#FFF; font-size:11px; display:none; position:absolute; z-index:100; }
+#graph-tooltip { pointer-events:none; padding:4px 7px; overflow:hidden; border:1px solid #3C3C3C; border-radius:2px; background-color:rgba(60, 63, 64, 0.86); color:#FFF; font-size:11px; display:none; position:absolute; z-index:100; }
     #graph-tooltip.v2 { padding:0; }
 #graph-tooltip>span { display: block; padding:4px 7px; text-align: center; }
 #graph-tooltip .content { padding:8px 10px; font-size:12px; }
@@ -1152,7 +1152,7 @@ table.events-table { width:100%; padding:0; margin:0; }
     #graph-tooltip.white .title { text-align: center; padding:0px 5px 5px 5px; color:#636363; font-size:12px; }
     #graph-tooltip.white .separator { border-top-color:#D0D0D0; border-bottom: none; opacity: 1; }
 
-#graph-tooltip .inner { overflow:auto; margin:6px 0; padding:0 1px; overflow: hidden; color:#636363; font-size:12px; text-transform:uppercase; }
+#graph-tooltip .inner { margin:6px 0; padding:0 1px; overflow: hidden; color:#636363; font-size:12px; text-transform:uppercase; }
 #graph-tooltip .inner .color { float:left; width:12px; height:12px; margin-right:10px; }
 #graph-tooltip .inner .series { color:#636363; text-transform:uppercase; float:left; line-height:12px; font-size:12px; margin-right:20px; }
 #graph-tooltip .inner .value { color:#636363; float:right; line-height:12px; font-size:12px; }
@@ -1482,8 +1482,9 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 #top-bar .dropdown .item_info .user_name div:last-child { font-size: 12px;}
 #top-bar .dropdown .item_info .api_key { margin-top: 10px;}
 #top-bar .dropdown .item_info .api_key div:first-child { color: #676464; font-size: 11px; text-transform: uppercase;font-weight: 500;}
-#top-bar .dropdown .item_info .api_key div:last-child { font-size: 10px; text-transform: none; user-select: all}
-#top-bar .dropdown .item_info .api_key div:last-child::selection { background-color: #2FA732; color: #ffffff}
+#user_api_key_item input {width:100%; border:none; color: #969696; font-size: 10px; font-family: Ubuntu,Helvetica,sans-serif; cursor:pointer;}
+#user_api_key_item input::selection {background: #2EB52B;color:white;}
+#user_api_key_item input::-moz-selection {background: #2FA732;color:#ffffff;}
 
 #app-navigation.dropdown.large { padding:21px 25px 19px 25px; }
 #app-navigation #active-app-name { text-overflow:ellipsis; white-space:nowrap; overflow:hidden; display: inline-block; max-width: 125px; }

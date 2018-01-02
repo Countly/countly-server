@@ -1263,7 +1263,7 @@ window.ManageAppsView = countlyView.extend({
                             }
                             if(period=="reset")
                             {
-                                CountlyHelpers.alert(jQuery.i18n.map["management-applications.reset-success"], "black");
+                               CountlyHelpers.alert(jQuery.i18n.map["management-applications.reset-success"], "black");
                             }
                             else
                                 CountlyHelpers.alert(jQuery.i18n.map["management-applications.clear-success"], "black");
@@ -3186,4 +3186,34 @@ app.route("/manage/tasks","longTasks", function () {
 });
 app.route("/analytics/events","events", function () {
 	this.renderWhenReady(this.eventsView);
+});
+
+$.ajaxPrefilter(function( options, originalOptions, jqXHR ) {
+  //jqXHR.setRequestHeader('X-CSRFToken', csrf_token);
+    if(countlyGlobal.auth_token)
+    {
+        var testurl = originalOptions.url;
+        var urlParts = testurl.split('/');
+        var partcn = urlParts.length-1;
+        
+       //if url is valid+auth_token and api_key not given
+       if(urlParts[partcn].indexOf('auth_token=')==-1 && urlParts[partcn].indexOf('api_key=')==-1 && urlParts[0]=='' && (urlParts[1]=='o' || urlParts[1]=='i'))
+       {
+            //token and key is not given in url
+            //add token in header
+            if(typeof (originalOptions.data)=== 'string')
+            {
+                if(originalOptions.data.indexOf('auth_token=')==-1 && originalOptions.data.indexOf('api_key')==-1)
+                {
+                    jqXHR.setRequestHeader('countly-token', countlyGlobal.auth_token);
+                }
+            }
+            else
+            {
+                jqXHR.setRequestHeader('countly-token', countlyGlobal.auth_token);
+            }
+        }
+        
+    }
+    
 });
