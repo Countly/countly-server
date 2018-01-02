@@ -1355,6 +1355,11 @@ var AppRouter = Backbone.Router.extend({
             $("body").on("click", function () {
                 $topbar.find(".dropdown").removeClass("clicked");
             });
+            
+            $("#user_api_key_item").click(function () {
+                $(this).find('input').first().select();
+            });
+        
 
             // Prevent body scroll after list inside dropdown is scrolled till the end
             // Applies to any element that has prevent-body-scroll class as well

@@ -41,10 +41,7 @@ describe('create test user',function(){
 				testowner =  ob["_id"];
 				done()
 			});
-    
     });
-    
-    
 });
 
 describe('Getting CSRF', function(){
@@ -83,11 +80,9 @@ describe('Test if token is created on login', function(){
                     res[0].multi.should.be.exactly(true);
                     res[0].ttl.should.be.exactly(0);
                     done();
-                
                 }
                 else
                     done('invalid token count');
-            
             });
         });
 })
@@ -106,9 +101,7 @@ describe('Test if token is created on login', function(){
                 
                 if(res && res.length==0)
                 {
-                    
                     done();
-                
                 }
                 else
                     done('invalid token count');
@@ -139,10 +132,8 @@ describe('Testing global admin user token', function(){
                 done();
             }
             else
-                done("token not created");
-                        
+                done("token not created");    
         }});
-    
     });
     
     it('Try getting user info(validate user)', function(done){
@@ -166,19 +157,18 @@ describe('Testing global admin user token', function(){
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				
 				done()
 			});
 		});
     
-    it('Validate for write - need test', function(done){
+    it('Plugins, validate for write', function(done){
 			request
-			.get('/o/analytics/dashboard?app_id='+APP_ID+'&auth_token='+testtoken)
+			.get('/i/plugins?app_id='+APP_ID+'&auth_token='+testtoken)
 			.expect(200)
 			.end(function(err, res){
 				if (err) return done(err);
 				var ob = JSON.parse(res.text);
-				
+                ob.should.be.exactly("Not enough parameters");
 				done()
 			});
 		});
@@ -196,11 +186,9 @@ describe('Testing global admin user token', function(){
 		});
 	
     if('cleaning up previous token for this user',function(){
-    
         db.collection("auth_tokens").remove({owner:db.ObjectID(testowner)},function(err,res)
         {
             done();
-        
         });
     });
        
@@ -217,10 +205,8 @@ describe('Creating token to allow only paths under /o/users/', function(){
                 done();
             }
             else
-                done("token not created");
-                        
+                done("token not created");       
         }});
-    
     });
     
     it('Try getting all users list', function(done){
@@ -255,17 +241,13 @@ describe("cleaning up",function()
     it('remove token and user',function(done)
        {
             db.collection("auth_tokens").remove({_id:testtoken});
-            
             var params = {user_ids: [testowner]};
 			request
 			.get('/i/users/delete?&api_key='+API_KEY_ADMIN+"&args="+JSON.stringify(params))
 			.expect(200)
 			.end(function(err, res){
-				if (err) return done(err);
-				
+				if (err) return done(err);				
 				done()
 			});
        });
-
-
 });
