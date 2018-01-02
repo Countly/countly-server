@@ -2311,6 +2311,25 @@ var AppRouter = Backbone.Router.extend({
                     window.components.slider.instance.close();
                 }
             }
+
+            timezoneNotifier();
+            
+            function timezoneNotifier(){
+                var userTimezone = jstz.determine().name();
+                var appTimeZone = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].timezone;
+        
+                //ADD ALL THE OUTLYING TIMEZONES TO THIS OBJECT WHERE THE KEY SHOULD BE A TIMEZONE FROM THE PREFINED TIMEZONES
+                //DOING THIS TO MAP THE SIMILAR TIMEZONES FROM time AND jstz MODULES
+                
+                var outlierTimeZoneMappings = {
+                    "Asia/Calcutta" : ["Asia/Kolkata"]
+                };
+
+                if(userTimezone != appTimeZone && !(outlierTimeZoneMappings[appTimeZone] && outlierTimeZoneMappings[appTimeZone].indexOf(userTimezone) > -1)){
+                    CountlyHelpers.notify({ type: "warning", title: jQuery.i18n.map["common.timezone-diff-title"], message: jQuery.i18n.map["common.timezone-diff-message"], info: jQuery.i18n.map["common.timezone-diff-info"], sticky: true })
+                }
+            }
+
             $("#sidebar-menu .sidebar-menu").hide();
             var type = countlyGlobal["apps"][appId].type;
             if ($("#sidebar-menu #" + type + "-type").length)
