@@ -379,6 +379,8 @@ var AppRouter = Backbone.Router.extend({
         else if (change) {
             if (Backbone.history.fragment != "/")
                 this.navigate("#/", true);
+            else if(countlyCommon.APP_NAMESPACE !== false)
+                this.navigate("#/"+countlyCommon.ACTIVE_APP_ID+Backbone.history.fragment, true);
             else
                 this.dashboard();
         }
@@ -392,10 +394,6 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     dashboard: function () {
-        if (countlyGlobal["member"].restrict && countlyGlobal["member"].restrict.indexOf("#/") !== -1) {
-            this.dashboard = function(){};
-            return;
-        }
         if (_.isEmpty(countlyGlobal['apps']))
             this.renderWhenReady(this.manageAppsView);
         else if (typeof this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type] != "undefined")
