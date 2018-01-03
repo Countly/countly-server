@@ -148,7 +148,7 @@ module.exports = function(grunt) {
           reporter: 'spec',
 		  timeout: 50000
         },
-        src: ['test/**/*.js']
+        src: ['test/*/*.js']
       }
     }
   });
