@@ -394,6 +394,9 @@ var AppRouter = Backbone.Router.extend({
         }
     },
     dashboard: function () {
+        if (countlyGlobal["member"].restrict && countlyGlobal["member"].restrict.indexOf("#/") !== -1) {
+            return;
+        }
         if (_.isEmpty(countlyGlobal['apps']))
             this.renderWhenReady(this.manageAppsView);
         else if (typeof this.appTypes[countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].type] != "undefined")
