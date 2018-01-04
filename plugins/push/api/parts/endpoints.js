@@ -1265,7 +1265,6 @@ var common          = require('../../../../api/utils/common.js'),
     };
 
     api.processTokenSession = function(dbAppUser, params) {
-        console.log('=== processTokenSession', params.qstring ? JSON.stringify(params.qstring) : '');
         var $set = {}, $unset = {};
 
         if (params.qstring.locale) {
@@ -1288,13 +1287,9 @@ var common          = require('../../../../api/utils/common.js'),
                 $set[field] = token;
                 $set[bool] = true;
                 if (!dbAppUser) {
-                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$set: $set}, {upsert: true}, function(){
-                        common.db.collection('app_users' + params.app_id).findOne({'_id':params.app_user_id}, (err, user) => { console.log(1, err, user); });
-                    });
+                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$set: $set}, {upsert: true}, function(){});
                 } else if (common.dot(dbAppUser, field) != token) {
-                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$set: $set}, {upsert: true}, function(){
-                        common.db.collection('app_users' + params.app_id).findOne({'_id':params.app_user_id}, (err, user) => { console.log(2, err, user); });
-                    });
+                    common.db.collection('app_users' + params.app_id).update({'_id':params.app_user_id}, {$set: $set}, {upsert: true}, function(){});
 
                     if (!dbAppUser[common.dbUserMap.tokens]) dbAppUser[common.dbUserMap.tokens] = {};
                     common.dot(dbAppUser, field, token);

@@ -140,8 +140,8 @@ window.component('credentials', function(credentials) {
 									m('a.icon-button.light[href=#]', {onclick: ctrl.validate, disabled: !ctrl.isReadyForValidation()}, t('pu.validate'))
 								])
 								: m('.form', [
-									m('input[type=text]', {oninput: m.withAttr('value', ctrl.key), placeholder: t('pu.creds.set.gcm')}),
-									m('br'),
+									m('.comp-push-box', m('input[type=text]', {oninput: m.withAttr('value', ctrl.key), placeholder: t('pu.creds.set.gcm')})),
+									m('br.clearfix'),
 									m('a.icon-button.light[href=#]', {onclick: ctrl.validate, disabled: !ctrl.isReadyForValidation()}, t('pu.validate'))
 								])
 						])
