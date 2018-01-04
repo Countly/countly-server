@@ -12,7 +12,7 @@
 .comp-slider.comp-slider-closed { transform: translate(100%, 0); visibility: hidden; opacity: 0; }
 
 .comp-slider-inner { padding: 0px; height: 100%;}
-.comp-slider-title { padding: 20px; background-color: #FFF; height: 30px; margin: 0; position: relative; }
+.comp-slider-title { padding: 20px 30px; background-color: #FFF; height: 30px; margin: 0; position: relative; }
 .comp-slider-title h3 { margin: 0; font-weight: normal; color: #636363; font-size: 22px;}
 .comp-slider-title h5 { margin: 5px 0 4px 2px; color: #949DA3; font-weight: normal; }
 .comp-slider-close { position: absolute; top: 8px; left: 8px; width: 25px; height: 25px; color: #B2B2B2; background-color: #F0F0F0; border-radius: 100%; text-align: center; vertical-align: middle; line-height: 25px; }
@@ -1473,7 +1473,7 @@ span.emoji-inner {
 
 .slider-close{
     position: absolute;
-    right: 25px;
+    right: 30px;
     top: 9px;
     font-size: 45px;
     color: #9c9c9c;

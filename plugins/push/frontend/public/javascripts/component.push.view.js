@@ -138,7 +138,7 @@ window.component('push.view', function(view) {
 				: '',
 			r.sent() > 0 || !r.error() ? 
 				m('div', [
-					m('h4', t('pu.po.metrics')),
+					m('h4', t(ctrl.message.auto() ? 'pu.po.totals' : 'pu.po.metrics')),
 					m('.comp-push-view-table.comp-push-metrics', [
 						r.sending() ? 
 							m.component(view.metric, {
