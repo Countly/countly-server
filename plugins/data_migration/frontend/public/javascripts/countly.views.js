@@ -11,17 +11,48 @@ window.DataMigrationView = countlyView.extend({
             var self = this;
             return $.when($.get(countlyGlobal["path"]+'/data_migration/templates/default.html',   function(src){
                     //precompiled our template
+                    self.template_src = src;
                     self.template = Handlebars.compile(src);
-            }), countlyDataMigration.initialize()).then(function () {});
+            }),countlyDataMigration.initialize(),countlyDataMigration.loadExportList(),countlyDataMigration.loadImportList(),
+            $.get(countlyGlobal["path"]+'/data_migration/templates/export_drawer.html', function(src){
+                self.export_drawer = Handlebars.compile(src);
+            }),
+            $.get(countlyGlobal["path"]+'/data_migration/templates/import_drawer.html', function(src){
+                self.import_drawer = Handlebars.compile(src);
+            })
+            
+            ).then(function () {});
         }
     },
     //here we need to render our view
     renderCommon:function (isRefresh) {
         var self = this;
-        this.templateData={apps:countlyGlobal['apps']};
+        this.templateData={
+            apps:countlyGlobal['apps'],
+            delete_log_text:jQuery.i18n.map["data-migration.delete-log"],
+            downolad_log_text:jQuery.i18n.map["data-migration.download-log"],
+            downolad_export_text:jQuery.i18n.map["data-migration.download-export"],
+            resend_export_text:jQuery.i18n.map["data-migration.resend-export"],
+            delete_export_text:jQuery.i18n.map["data-migration.delete-export"],
+            stop_export_text:jQuery.i18n.map["data-migration.stop-export"],
+            data_migration_exports:"",
+            data_migration_imports:"",
+            no_exports_text:jQuery.i18n.map["data-migration.no-exports"],
+            no_imports_text:jQuery.i18n.map["data-migration.no-imports"],
+            app_name_text:jQuery.i18n.map["data-migration.table.app-name"],
+            step_text:jQuery.i18n.map["data-migration.table.step"],
+            status_text:jQuery.i18n.map["data-migration.table.status"],
+            last_update_text:jQuery.i18n.map["data-migration.table.last-update"]
+        };
         this.configsData = countlyDataMigration.getData();
-        
-        
+        //get export list
+        var exportlist = countlyDataMigration.getExportList();
+        if(exportlist.result && exportlist.result=='success')
+            this.templateData.data_migration_exports = exportlist.data;
+        //get import list
+        var importlist = countlyDataMigration.getImportList();
+        if(importlist.result && importlist.result=='success')
+            this.templateData.data_migration_imports = importlist.data;
         
         
         this.crash_symbolication = false;
@@ -61,90 +92,242 @@ window.DataMigrationView = countlyView.extend({
         }
         $(this.el).html(this.template(this.templateData));
         
-        //Export drawer
-        $.when($.get(countlyGlobal["path"]+'/data_migration/templates/export_drawer.html', function(src){
-            $(".widget").after(Handlebars.compile(src));
-            app.localize( $("#export-widget-drawer"));  
-               
+        if(!isRefresh)
+        {
+            //appends export drawer
+            $(".widget").after(self.export_drawer);
+            app.localize( $("#export-widget-drawer")); 
+            self.create_export_tab();
+            
+            //appends import drawer
+            $(".widget").after(self.import_drawer);
+            app.localize( $("#import-widget-drawer")); 
+            self.create_import_tab();
+            
+            //top button, open export drawer
             $("#show_data_export_form").on("click", function () {
                 self.reset_export_tab();
                 $(".cly-drawer").removeClass("open editing");
                 $("#export-widget-drawer").addClass("open");
                 $(".cly-drawer").find(".close").off("click").on("click", function () {
                     $(this).parents(".cly-drawer").removeClass("open");
-                    
                 });
             });
-                
-            var apps = [];
-            for (var appId in countlyGlobal.apps) {
-                apps.push({value: appId, name: countlyGlobal.apps[appId].name});
-            }
-            $("#multi-app-dropdown").clyMultiSelectSetItems(apps);
-                
-            $("#multi-app-dropdown").on("cly-multi-select-change", function(e, selected) {
-                $("#export-widget-drawer").trigger("data-updated");
-            });
-            $('#migrate_server_address').on( "keyup", function(e){$("#export-widget-drawer").trigger("data-updated");} );
-            $('#migrate_server_token').on( "keyup", function(e){$("#export-widget-drawer").trigger("data-updated");} );
-             
-            $("#data-export-type-selector").off("click").on("click", ".check", function() {
-                $("#data-export-type-selector").find(".check").removeClass("selected");
-                $(this).addClass("selected");
-                    
-                    if($(this).attr('data-from')=='export-transfer')
-                        $('#target-server-data').css('display','block');
-                    else
-                        $('#target-server-data').css('display','none'); 
-                    $("#export-widget-drawer").trigger("data-updated");
-            }); 
-            $('#migration_additional_files').click(function(){
-                    $(this).toggleClass("checked");
-                });
-            $('#migration_redirect_traffic').click(function(){
-                    $(this).toggleClass("checked");
-                });  
-                
-                
-            $("#export-widget-drawer").on("data-updated", function() {
-                allGood=false;
-                    var download_me = ($("#data-export-type-selector").find(".check.selected").data("from") == "export-download");
-                    
-                    var applist  = $("#multi-app-dropdown").clyMultiSelectGetSelection();
-                   
-                    if($('#migrate_server_address').val()!='' && $('#migrate_server_token').val()!='')
-                    {
-                        $("#test_connection_button").css('visibility','visible');
-                    }
-                    else
-                    {
-                        $("#test_connection_button").css('visibility','hidden');
-                    }
-                    
-                    if(applist && applist.length>0 && (download_me ||($('#migrate_server_address').val()!='' && $('#migrate_server_token').val()!='')))
-                    {
-                        $("#export_data_button").removeClass("disabled");
-                    }
-                    else
-                    {
-                        $("#export_data_button").addClass("disabled");
-                    }
-                    
-                    if($("#resend_export_id").val()!="" && $('#migrate_server_address').val()!='' && $('#migrate_server_token').val()!='')
-                        $("#send_export_button").removeClass("disabled");
-                    else
-                        $("#send_export_button").addClass("disabled");
-                });
-                
-                $("#export_data_button").click(function () {
-                    if ($(this).hasClass("disabled")) {return;}
-                    $("#export_data_form .symbol-api-key").val(countlyGlobal['member'].api_key);
-                    $("#export_data_form .symbol-app-id").val(countlyCommon.ACTIVE_APP_ID);
-                    var overlay = $("#overlay").clone();
-                    $("body").append(overlay);
-                    overlay.show();
             
-                    $('#export_data_form').ajaxSubmit({
+            //top button, open import drawer
+            $("#show_data_import_form").on("click", function () {
+                $(".cly-drawer").removeClass("open editing");
+                $("#import-widget-drawer").addClass("open");
+                $("#data-migration-import-via-file").height($("#import-widget-drawer").height()-300);
+                $(".cly-drawer").find(".close").off("click").on("click", function () {
+                   
+                    if($('#data_migration_generated_token').hasClass('newTokenIsGenerated'))
+                    {
+                        CountlyHelpers.confirm(jQuery.i18n.map["data-migration.close-without-copy"], "red",function(result) {
+                        if (!result) {return true;}
+                        $("#import-widget-drawer").removeClass("open");
+                        self.reset_import_tab();
+                        },[jQuery.i18n.map["data-migration.cancel"],jQuery.i18n.map['data-migration.continue-and-close']]);
+                    }
+                    else
+                    {
+                        self.reset_import_tab();
+                        $(this).parents(".cly-drawer").removeClass("open");
+                    }
+                });
+            });
+        }
+        $( "#tabs" ).tabs();
+
+
+        //export list - resend export button
+        $('#data_migration_exports').on('click', '.resend_export', function() {
+            self.reset_export_tab();
+            $('#migrate_server_token').val($(this).attr('data-server-token'));
+            $('#migrate_server_address').val($(this).attr('data-server-address'));
+           
+            var myapps = $(this).attr('data-apps').split(",")
+            var selected_apps = [];
+            for (var i=0; i<myapps.length; i++) {
+                selected_apps.push({value: myapps[i], name: countlyGlobal.apps[myapps[i]].name});
+            }
+                
+            $("#multi-app-dropdown").clyMultiSelectSetSelection( selected_apps);
+            $("#multi-app-dropdown").addClass("disabled");
+
+            $("#export_data_button").css('display','none');
+            $("#export-type-section").css('display','none');
+            $('#migration_additional_files').css('display','none');
+            $("#export_path").css('display','none');
+            $("#send_export_button").css('display','block');
+            $("#target-server-data").css('display','block');
+            $("#target-server-data").addClass('disabled');
+            $("#resend_export_id").val($(this).attr('data-id'));
+            $("#export-widget-drawer").trigger("data-updated");
+            $("#export-widget-drawer").addClass("open");
+            $(".cly-drawer").find(".close").off("click").on("click", function () {
+                $("#export-widget-drawer").removeClass("open");
+            });
+        });
+        
+        //Stop export click(in list)
+        $('#data_migration_exports').on('click', '.stop_export', function() {
+            var overlay = $("#overlay").clone();
+            $("body").append(overlay);
+            overlay.show();
+            
+            $.when(countlyDataMigration.stopExport($(this).attr('data'),function(result)
+            {
+                overlay.hide();
+                if(result && result['result']=='success')
+                {
+                    if(result.data && self.explanations[result.data])
+                    {
+                        var msg = {title:jQuery.i18n.map["data-migration.ok"], message: self.get_translation(result.data),info:"", sticky:false,clearAll:true,type:"info"};
+                        CountlyHelpers.notify(msg);
+                    }
+                }
+                else if(result && result['result']=='error')
+                {
+                       resp = self.get_response_text(result.data.xhr,result.data.status,result.data.error);
+                       CountlyHelpers.alert(self.get_translation(resp),"red");
+                       
+                }
+                self.load_export_list();
+            }));
+        });
+        
+        //delete export click(in list)
+        $('#data_migration_exports').on('click', '.delete_export', function() {
+            var  myid =$(this).attr('data');
+            CountlyHelpers.confirm(jQuery.i18n.map["data-migration.delete-export-confirm"], "red",function(result) {
+                if (!result) {return true;}
+                var overlay = $("#overlay").clone();
+                $("body").append(overlay);
+                overlay.show();
+                
+                $.when(countlyDataMigration.deleteExport(myid,function(result)
+                {
+                    overlay.hide();
+                    if(result && result['result']=='error')
+                    {
+                        resp = self.get_response_text(result.data.xhr,result.data.status,result.data.error);
+                        CountlyHelpers.alert(self.get_translation(resp),"red");
+                    }
+                    self.load_export_list();
+                }));
+            });
+        });
+       
+       //delete import list(in my import list)
+        $('#data_migration_imports').on('click', '.delete_import', function() {
+            var  myid =$(this).attr('data');
+            CountlyHelpers.confirm(jQuery.i18n.map["data-migration.delete-import-confirm"], "red",function(result) {
+                if (!result) {return true;}
+                var overlay = $("#overlay").clone();
+                $("body").append(overlay);
+                overlay.show();
+                
+                $.when(countlyDataMigration.deleteImport(myid,function(result)
+                {
+                    overlay.hide();
+                    if(result && result['result']=='error')
+                    {
+                        resp = self.get_response_text(result.data.xhr,result.data.status,result.data.error);
+                        CountlyHelpers.alert(self.get_translation(resp),"red");
+                    }
+                    self.load_import_list();
+                }));
+            });
+        });
+            
+        $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function () {
+            if($(this).attr('id')!='import-export-button')
+            {
+                $(this).next(".edit-menu").fadeToggle();    
+                $("#import-export-button").removeClass("active");
+                $("#import-export-button-menu").css('display','none');
+            }
+		});
+		$("body").off("mouseleave").on("mouseleave", ".options-item", function () {
+			$(this).find(".edit").next(".edit-menu").fadeOut();
+		});
+        
+        $(".edit-menu").hover(function(e){e.stopPropagation(); },function(e){e.stopPropagation(); });
+        
+        $("#import-export-button").click(function () {
+            if ($(this).hasClass("active")) {
+                $(this).removeClass("active");
+               $("#import-export-button-menu").css('display','none');
+              } else {
+                $(this).addClass("active");
+                $("#import-export-button-menu").css('display','block');
+              }
+        });
+    },
+    create_export_tab:function()
+    {
+        var self = this;
+        var apps = [];
+        for (var appId in countlyGlobal.apps) {
+            apps.push({value: appId, name: countlyGlobal.apps[appId].name});
+        }
+        
+        $("#multi-app-dropdown").clyMultiSelectSetItems(apps);      
+        $("#multi-app-dropdown").on("cly-multi-select-change", function(e, selected) {
+            $("#export-widget-drawer").trigger("data-updated");
+        });
+        $('#migrate_server_address').on( "keyup", function(e){$("#export-widget-drawer").trigger("data-updated");} );
+        $('#migrate_server_token').on( "keyup", function(e){$("#export-widget-drawer").trigger("data-updated");} );
+             
+        $("#data-export-type-selector").off("click").on("click", ".check", function() {
+            $("#data-export-type-selector").find(".check").removeClass("selected");
+            $(this).addClass("selected");  
+            
+            if($(this).attr('data-from')=='export-transfer')
+                $('#target-server-data').css('display','block');
+            else
+                $('#target-server-data').css('display','none'); 
+            $("#export-widget-drawer").trigger("data-updated");
+        }); 
+        
+        $('#migration_additional_files').click(function(){
+            $(this).toggleClass("checked");
+        });
+        $('#migration_redirect_traffic').click(function(){
+            $(this).toggleClass("checked");
+        });  
+                     
+        $("#export-widget-drawer").on("data-updated", function() {
+            var allGood=false;
+            var download_me = ($("#data-export-type-selector").find(".check.selected").data("from") == "export-download");       
+            var applist  = $("#multi-app-dropdown").clyMultiSelectGetSelection();
+                   
+            if($('#migrate_server_address').val()!='' && $('#migrate_server_token').val()!='')
+                $("#test_connection_button").css('visibility','visible');
+            else
+                $("#test_connection_button").css('visibility','hidden');
+                    
+            if(applist && applist.length>0 && (download_me ||($('#migrate_server_address').val()!='' && $('#migrate_server_token').val()!='')))
+                $("#export_data_button").removeClass("disabled");
+            else
+                $("#export_data_button").addClass("disabled");
+                    
+            if($("#resend_export_id").val()!="" && $('#migrate_server_address').val()!='' && $('#migrate_server_token').val()!='')
+                $("#send_export_button").removeClass("disabled");
+            else
+                $("#send_export_button").addClass("disabled");
+        });
+                
+        $("#export_data_button").click(function () {
+            if ($(this).hasClass("disabled")) {return;}
+                $("#export_data_form .symbol-api-key").val(countlyGlobal['member'].api_key);
+                $("#export_data_form .symbol-app-id").val(countlyCommon.ACTIVE_APP_ID);
+                var overlay = $("#overlay").clone();
+                $("body").append(overlay);
+                overlay.show();
+            
+                $('#export_data_form').ajaxSubmit({
                         beforeSubmit:function (formData, jqForm, options) { 
                             var applist  = $("#multi-app-dropdown").clyMultiSelectGetSelection();
                             var download_me = ($("#data-export-type-selector").find(".check.selected").data("from") == "export-download");
@@ -166,8 +349,6 @@ window.DataMigrationView = countlyView.extend({
                             setTimeout(self.load_export_list(),1000);                            
                             $("#export-widget-drawer").removeClass("open");
                             $("#tabs ul li a[href='#data_migration_exports']").trigger('click');
-                            
-                            
                             
                             var msg = {title:jQuery.i18n.map["data-migration.ok"], message: jQuery.i18n.map["data-migration.export-started"],info:"", sticky:false,clearAll:true,type:"info"};
                             CountlyHelpers.notify(msg);
@@ -192,113 +373,80 @@ window.DataMigrationView = countlyView.extend({
                         }
                     });
             
-                });
-                
-                
-                $('#test_connection_button').click(function(){
-                    if ($(this).hasClass("disabled")) {return;}
-                    
-                    var overlay = $("#overlay").clone();
-                    $("body").append(overlay);
-                    overlay.show();
-                    
-                    $.ajax({url: "/o/datamigration/validateconnection?api_key="+countlyGlobal['member'].api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID+'&server_token='+$('#migrate_server_token').val()+'&server_address='+$('#migrate_server_address').val(),
-                    success: function(result){
-                        if(result['result'])
-                        {
-                            var mm = result['result'];
-                            if(self.explanations[result['result']])
-                            {
-                                mm = self.explanations[result['result']];
-                            }
-                            
-                            var msg = {title:jQuery.i18n.map["data-migration.ok"], message: mm,info:"", sticky:false,clearAll:true,type:"info"};
-                            CountlyHelpers.notify(msg);
-                            
-                        }
-                        overlay.hide();
-                    },
-                    error: function(xhr, status, error){
-                        resp = self.get_response_text(xhr,status,error);
-                        CountlyHelpers.alert(self.get_translation(resp),"red");
-                        overlay.hide();
-                    }
-                    });   
-                    
-                    
-                });
-                $("#send_export_button").click(function () {
-                    if ($(this).hasClass("disabled")) {return;}
-                    
-                    var overlay = $("#overlay").clone();
-                    $("body").append(overlay);
-                    overlay.show();
-                    $.ajax({url: "/i/datamigration/sendexport?exportid="+$('#resend_export_id').val()+"&api_key="+countlyGlobal['member'].api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID+'&server_token='+$('#migrate_server_token').val()+'&server_address='+$('#migrate_server_address').val(),
-                    success: function(result){
-                        if(result['result'] && self.explanations[result['result']])
-                        {
-                            var msg = {title:jQuery.i18n.map["data-migration.ok"], message: self.explanations[result['result']],info:"", sticky:false,clearAll:true,type:"info"};
-                            CountlyHelpers.notify(msg);
-                            
-                        }
-                        $("#export-widget-drawer").removeClass("open");
-                            $("#tabs ul li a[href='#data_migration_exports']").trigger('click');
-                        overlay.hide();
-                        self.load_export_list();
-                        setTimeout(self.load_export_list(),1000);
-                    },
-                    error: function(xhr, status, error){
-                        resp = self.get_response_text(xhr,status,error);
-                        CountlyHelpers.alert(self.get_translation(resp),"red");
-                        overlay.hide();
-                        self.load_export_list();
-                        setTimeout(self.load_export_list(),1000);
-                    }
-                    });   
-                });
-        })); 
-
-        //Import drawer
-        $.when($.get(countlyGlobal["path"]+'/data_migration/templates/import_drawer.html', function(src){
-            $(".widget").after(Handlebars.compile(src));
-            app.localize( $("#import-widget-drawer"));  
+        });
+                       
+        $('#test_connection_button').click(function(){
+            if ($(this).hasClass("disabled")) {return;}
             
-            $('#migration_address_copyboard').attr("data",window.location.protocol+'//'+window.location.hostname);
-            $('#migration_address_copyboard2').attr("data",window.location.protocol+'//'+window.location.hostname);
-            $('#migration_address_copyboard input').first().val(window.location.protocol+'//'+window.location.hostname);
-            $('#migration_address_copyboard2 input').first().val(window.location.protocol+'//'+window.location.hostname);
+            var overlay = $("#overlay").clone();
+            $("body").append(overlay);
+            overlay.show();
+              
+            $.when(countlyDataMigration.testConnection($('#migrate_server_token').val(),$('#migrate_server_address').val(),function(result)
+            {
+                overlay.hide();
+                if(result && result['result']=='success')
+                {
+                    var mm = result.data;
+                    if(self.explanations[result.data])
+                    {
+                        mm = self.get_translation(result.data)
+                    }
                             
-            $("#show_data_import_form").on("click", function () {
-                $(".cly-drawer").removeClass("open editing");
-                $("#import-widget-drawer").addClass("open");
-                $("#data-migration-import-via-file").height($("#import-widget-drawer").height()-300);
-                $(".cly-drawer").find(".close").off("click").on("click", function () {
-                   
-                    if($('#data_migration_generated_token').hasClass('newTokenIsGenerated'))
-                    {
-                        CountlyHelpers.confirm(jQuery.i18n.map["data-migration.close-without-copy"], "red",function(result) {
-                        if (!result) {return true;}
-                        $("#import-widget-drawer").removeClass("open");
-                        self.reset_import_tab();
-                        },[jQuery.i18n.map["data-migration.cancel"],jQuery.i18n.map['data-migration.continue-and-close']]);
-                    }
-                    else
-                    {
-                        self.reset_import_tab();
-                        $(this).parents(".cly-drawer").removeClass("open");
-                    }
-                     
-                    
-               
-                });
-                
-                
-                
-            });
+                    var msg = {title:jQuery.i18n.map["data-migration.ok"], message: mm,info:"", sticky:false,clearAll:true,type:"info"};
+                            CountlyHelpers.notify(msg);
+                }
+                else if(result && result['result']=='error')
+                {
+                       resp = self.get_response_text(result.data.xhr,result.data.status,result.data.error);
+                       CountlyHelpers.alert(self.get_translation(resp),"red");
+                       
+                }
+            }));
+        });
+        
+        //SEND EXPORT
+        $("#send_export_button").click(function () {
+            if ($(this).hasClass("disabled")) {return;}
+            var overlay = $("#overlay").clone();
+            $("body").append(overlay);
+            overlay.show();
             
-            //file oploader
-            myDropzone = new Dropzone("#data-migration-import-via-file", {url:'/',autoQueue:false,param_name:"new_plugin_input",parallelUploads:0,maxFiles:1,
-                addedfile: function(file) {
+            $.when(countlyDataMigration.sendExport($('#resend_export_id').val(),$('#migrate_server_token').val(),$('#migrate_server_address').val(),function(result)
+            {
+                overlay.hide();
+                if(result && result['result']=='success')
+                {
+                    var mm = result.data;
+                    if(self.explanations[result.data] )
+                    {
+                        var msg = {title:jQuery.i18n.map["data-migration.ok"], message: self.get_translation(result.data),info:"", sticky:false,clearAll:true,type:"info"};
+                        CountlyHelpers.notify(msg);
+                    }
+                    $("#export-widget-drawer").removeClass("open");
+                    $("#tabs ul li a[href='#data_migration_exports']").trigger('click');    
+                }
+                else if(result && result['result']=='error')
+                {
+                       resp = self.get_response_text(result.data.xhr,result.data.status,result.data.error);
+                       CountlyHelpers.alert(self.get_translation(resp),"red");
+                       
+                }
+                self.load_export_list();
+            }));        
+        });
+    },
+    create_import_tab:function()
+    {
+        var self = this;
+        $('#migration_address_copyboard').attr("data",window.location.protocol+'//'+window.location.hostname);
+        $('#migration_address_copyboard2').attr("data",window.location.protocol+'//'+window.location.hostname);
+        $('#migration_address_copyboard input').first().val(window.location.protocol+'//'+window.location.hostname);
+        $('#migration_address_copyboard2 input').first().val(window.location.protocol+'//'+window.location.hostname);
+            
+        //file oploader
+        myDropzone = new Dropzone("#data-migration-import-via-file", {url:'/',autoQueue:false,param_name:"new_plugin_input",parallelUploads:0,maxFiles:1,
+            addedfile: function(file) {
                     if(check_ext(file.name))
                     {
                         myDropzone.disable();
@@ -376,7 +524,6 @@ window.DataMigrationView = countlyView.extend({
             $("#import-widget-drawer").on("data-updated", function() {
                 allGood=false;
                 var download_me = ($("#data-export-type-selector").find(".check.selected").data("from") == "export-download");
-                    
                 var applist  = $("#multi-app-dropdown").clyMultiSelectGetSelection();
                    
                 if(applist && applist.length>0 && (download_me ||($('#migrate_server_address').val()!='' && $('#migrate_server_token').val()!='')))
@@ -386,29 +533,24 @@ window.DataMigrationView = countlyView.extend({
             });
             
             $("#create_new_token").click(function () {
-            //adding api key and app id for form submit
-                $("#create_token_form .symbol-app-id").val(countlyCommon.ACTIVE_APP_ID);
-                
                 var overlay = $("#overlay").clone();
                 $("body").append(overlay);
                 overlay.show();
-        
+                
                 var msg = {title:jQuery.i18n.map["data-migration.please-wait"], message: jQuery.i18n.map["data-migration.creating-new-token"], sticky:false};
                 CountlyHelpers.notify(msg);
-            
-                //submiting form
-                $('#create_token_form').ajaxSubmit({
-                   
-                    success:function (result) {
-                        if(result['result'])
-                        {
-                            var mytoken=result['result'];
-                            overlay.hide();
-                            $("#import-widget-drawer .details .section").css('display','none');
+                
+                $.when(countlyDataMigration.createToken(function(result)
+                {
+                    overlay.hide();
+                    if(result && result['result']=='success')
+                    {
+                        var mytoken=result.data;
+                        $("#import-widget-drawer .details .section").css('display','none');
                             $("#import-widget-drawer .details .buttons").css('display','none');
                             
-                            $('#migration_token_copyboard').attr("data",result['result']);
-                            $('#migration_token_copyboard input').first().val(result['result']);
+                            $('#migration_token_copyboard').attr("data",mytoken);
+                            $('#migration_token_copyboard input').first().val(mytoken);
                             $('#data_migration_generated_token').addClass('newTokenIsGenerated');
                             
                             
@@ -416,16 +558,16 @@ window.DataMigrationView = countlyView.extend({
                              $('#data_migration_generated_token').css('display','block');
                             var msg = {title:jQuery.i18n.map["data-migration.complete"], message: jQuery.i18n.map["data-migration.new-token-created"], sticky:false,clearAll:true};
                             CountlyHelpers.notify(msg);
-                        }   
-                    },
-                    error: function(xhr, status, error){
-                        var resp = self.get_response_text(xhr,status,error);
-                        resp = self.get_translation(resp);
-                        var msg = {title:jQuery.i18n.map["data-migration.error"], message: jQuery.i18n.map["data-migration.unable-create-token"],info:resp, sticky:true,clearAll:true,type:"error"};
-                        CountlyHelpers.notify(msg);
-                        overlay.hide();  
                     }
-                });
+                    else if(result && result['result']=='error')
+                    {
+                       resp = self.get_response_text(result.data.xhr,result.data.status,result.data.error);
+                       resp = self.get_translation(resp);
+                       var msg = {title:jQuery.i18n.map["data-migration.error"], message: jQuery.i18n.map["data-migration.unable-create-token"],info:resp, sticky:true,clearAll:true,type:"error"};
+                        CountlyHelpers.notify(msg);
+                    }
+                
+                }));
             });
              
             $('.migration_copyboard').click(function(){
@@ -510,138 +652,6 @@ window.DataMigrationView = countlyView.extend({
             });
             
             
-        })); 
-        
-        
-        $( "#tabs" ).tabs();
-
-        this.load_export_list(); //load export list
-        this.load_import_list();
-
-        //export list - resend export button
-        $('#my_exports_list').on('click', '.resend_export', function() {
-            self.reset_export_tab();
-           $('#migrate_server_token').val($(this).attr('data-server-token'));
-           $('#migrate_server_address').val($(this).attr('data-server-address'));
-           
-           var myapps = $(this).attr('data-apps').split(",")
-           var selected_apps = [];
-           for (var i=0; i<myapps.length; i++) {
-                    selected_apps.push({value: myapps[i], name: countlyGlobal.apps[myapps[i]].name});
-                }
-                
-           $("#multi-app-dropdown").clyMultiSelectSetSelection( selected_apps);
-           $("#multi-app-dropdown").addClass("disabled");
-
-           $("#export_data_button").css('display','none');
-           $("#export-type-section").css('display','none');
-            $('#migration_additional_files').css('display','none');
-           $("#export_path").css('display','none');
-           $("#send_export_button").css('display','block');
-           $("#target-server-data").css('display','block');
-           $("#target-server-data").addClass('disabled');
-           $("#resend_export_id").val($(this).attr('data-id'));
-           $("#export-widget-drawer").trigger("data-updated");
-           $("#export-widget-drawer").addClass("open");
-           $(".cly-drawer").find(".close").off("click").on("click", function () {
-                    $("#export-widget-drawer").removeClass("open");
-                });
-        });
-        
-        
-        $('#my_exports_list').on('click', '.stop_export', function() {
-            var overlay = $("#overlay").clone();
-            $("body").append(overlay);
-            overlay.show();
-            $.ajax({url: "/i/datamigration/stop_export?exportid="+$(this).attr('data')+"&api_key="+countlyGlobal['member'].api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID,
-                success: function(result){
-                    if(result['result'] && self.explanations[result['result']])
-                    {
-                        var msg = {title:jQuery.i18n.map["data-migration.ok"], message: self.get_translation(result['result']),info:"", sticky:false,clearAll:true,type:"info"};
-                        CountlyHelpers.notify(msg);
-                    }
-                    overlay.hide();
-                    self.load_export_list();
-                },
-                error: function(xhr, status, error){
-                    resp = self.get_response_text(xhr,status,error);
-                    CountlyHelpers.alert(self.get_translation(resp),"red");
-                    overlay.hide();
-                    self.load_export_list();
-                }
-            });
-        });
-        
-        $('#my_exports_list').on('click', '.delete_export', function() {
-            var  myid =$(this).attr('data');
-            CountlyHelpers.confirm(jQuery.i18n.map["data-migration.delete-export-confirm"], "red",function(result) {
-                if (!result) {return true;}
-                var overlay = $("#overlay").clone();
-                $("body").append(overlay);
-                overlay.show();
-       
-                $.ajax({url: "/i/datamigration/delete_export?exportid="+myid+"&api_key="+countlyGlobal['member'].api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID,
-                    success: function(result){
-                        overlay.hide();
-                        self.load_export_list();
-                    },
-                    error: function(xhr, status, error){
-                        resp = self.get_response_text(xhr,status,error);
-                        CountlyHelpers.alert(self.get_translation(resp),"red");
-                        overlay.hide();
-                        self.load_export_list();
-                    }
-                });
-            });
-        });
-       
-        $('#my_imports_list').on('click', '.delete_import', function() {
-            var  myid =$(this).attr('data');
-            CountlyHelpers.confirm(jQuery.i18n.map["data-migration.delete-import-confirm"], "red",function(result) {
-                if (!result) {return true;}
-                var overlay = $("#overlay").clone();
-                $("body").append(overlay);
-                overlay.show();
-                $.ajax({url: "/i/datamigration/delete_import?exportid="+myid+"&api_key="+countlyGlobal['member'].api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID,
-                    success: function(result){
-                        overlay.hide();
-                        self.load_import_list(true);
-                    },
-                    error: function(xhr, status, error){
-                        resp = self.get_response_text(xhr,status,error);
-                        CountlyHelpers.alert(self.get_translation(resp),"red");
-                        overlay.hide();
-                        self.load_import_list(true);
-                    }
-                });
-            });
-            });
-            
-        $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function () {
-            if($(this).attr('id')!='import-export-button')
-            {
-                $(this).next(".edit-menu").fadeToggle();    
-                $("#import-export-button").removeClass("active");
-                $("#import-export-button-menu").css('display','none');
-            }
-		});
-		$("body").off("mouseleave").on("mouseleave", ".options-item", function () {
-			$(this).find(".edit").next(".edit-menu").fadeOut();
-           // $("#import-export-button").removeClass("active");
-            //   $("#import-export-button-menu").css('display','none');
-		});
-        
-        $(".edit-menu").hover(function(e){e.stopPropagation(); },function(e){e.stopPropagation(); });
-        
-        $("#import-export-button").click(function () {
-            if ($(this).hasClass("active")) {
-                $(this).removeClass("active");
-               $("#import-export-button-menu").css('display','none');
-              } else {
-                $(this).addClass("active");
-                $("#import-export-button-menu").css('display','block');
-              }
-        });
     },
     reset_export_tab:function()
     {
@@ -698,28 +708,6 @@ window.DataMigrationView = countlyView.extend({
        $('#data-import-type-selector').find(".check[data-from=import-token]").removeClass("selected");
         
     },
-    check_progress:function (exportid)
-    {
-        var self=this;
-        setTimeout(self.load_export_list(),1000);
-        /*$.ajax({url: "/o/datamigration/getstatus?exportid="+exportid+"&api_key="+countlyGlobal['member'].api_key+"&app_id="+countlyCommon.ACTIVE_APP_ID,
-        success: function(result){
-            result = result['result'];
-            if(result._id)
-            {
-                $("#export_progress").html("<p>Export id:"+result._id+"</p><p>Step:"+result.step+"</p><p>status:"+result.status+"</p><p>Progress:"+result.progress+"</p><p>Last updated:"+result.ts+"</p>"); 
-            }
-            if(result.status!='finished' && result.status!='failed')
-                setTimeout(self.check_progress(exportid),1000);
-            else
-                $("#export_progress").append("<a href='/data-migration/download?id="+result._id+"' target='_blank'>Lejuplādēt exportu</a>");
-            self.load_export_list();
-        },
-         error: function(xhr, status, error){
-            self.load_export_list();
-         }});*/
-        
-    },
     get_response_text:function(xhr,status,error)
     {
         var resp;
@@ -740,96 +728,20 @@ window.DataMigrationView = countlyView.extend({
             return jQuery.i18n.map["data-migration."+this.explanations[msg]];
         else return msg;
     },
-    generate_export_row:function(mydata)
-    {
-        html="";
-        if(mydata.stopped==true)
-            html=html+'<tr class="stopped" id="exportrow_'+mydata._id+'"'; 
-        else
-            html=html+'<tr id="exportrow_'+mydata._id+'"';               
-        var dd = new Date(mydata.ts);
-        
-        if(mydata.reason)
-        {
-            html = html+' class="have_reason"';
-        }
-        html = html+' >';
-        var appnames="";
-        if(mydata.apps)
-        {
-            appnames = CountlyHelpers.appIdsToNames(mydata.apps);
-        }
-        if(mydata.stopped==true)
-        {
-            mydata.status = "stopped";
-        }
-        
-        html=html+'<td>'+appnames+"</td><td>"+jQuery.i18n.map["data-migration.step."+mydata.step]+'</td><td><span class="migration_status migration_'+jQuery.i18n.map["data-migration.status."+mydata.status]+'"></span>'+mydata.status+"</td>";
-        html=html+'<td>'+ dd.toLocaleDateString("en-US")+' '+dd.toLocaleTimeString("en-US")+'</td>';
-        html = html+'<td>';
-        
-        html = html+'<div class="options-item"><div class="edit"></div>'
-        html=html+'<div class="edit-menu" style="display:none;">';
-         
-        if(mydata.log!='')
-        {
-            html = html+'<a class="item" style="display:block;" href="/data-migration/download?logfile='+mydata.log+'" target="_blank">'+jQuery.i18n.map["data-migration.download-log"]+'</a>';   
-        }
-        if(mydata.can_download==true)
-        {
-            html = html+'<a class="item" href="/data-migration/download?id='+mydata._id+'" target="_blank">'+jQuery.i18n.map["data-migration.download-export"]+'</a>';
-        
-        }
-        
-        if(mydata.stopped==false && (mydata.status!='failed' && mydata.status!='finished'))
-            html=html+ "<div class='item stop_export' data='"+mydata._id+"'>"+jQuery.i18n.map["data-migration.stop-export"]+"</div>";
-        if((mydata.status=='failed' || mydata.status=='finished' || mydata.stopped==true)  && mydata.can_download==true)
-        {
-             html=html+ '<div class="item resend_export" data-apps="'+mydata.apps.join()+'" data-id="'+mydata._id+'" data-server-token="'+mydata.server_token+'" data-server-address="'+mydata.server_address+'">'+jQuery.i18n.map["data-migration.resend-export"]+'</div>';
-        }
-        
-        html=html+ "<div class='item delete_export' data='"+mydata._id+"'>"+jQuery.i18n.map["data-migration.delete-export"]+"</div>";
-
-        html = html+'</div></div>';
-        
-        html = html+'</td>';
-        html = html+'</tr>'
-                           
-        
-      
-       if(mydata.reason)
-            html= html+'<tr class="migration_error_line" data="'+mydata._id+'"><td colspan="5">'+mydata.reason+'</td></tr>';
-        else
-        {
-            html= html+'<tr class="empty_error_line" data="'+mydata._id+'"><td colspan="5"></td></tr>';
-        }
-        return html;
-    },
     load_export_list:function(isRefresh)
     {
-        var self=this;
-        $.ajax({url: "/o/datamigration/getmyexports?app_id="+countlyCommon.ACTIVE_APP_ID,
-            success: function(result){
-           
-                if(result['result'])
-                    result = result['result'];
-                if(Array.isArray(result))
-                { 
-                    var html='<table id="migration_exports" class="migration_exports"><thead><row><th>'+jQuery.i18n.map["data-migration.table.app-name"]+'</th><th>'+jQuery.i18n.map["data-migration.table.step"]+'</th><th style="padding-left:30px;">'+jQuery.i18n.map["data-migration.table.status"]+'</th><th>'+jQuery.i18n.map["data-migration.table.last-update"]+'</th><th></th></row></thead>';
-                    for (var i = 0; i < result.length; i++) 
-                    {
-                        html = html+self.generate_export_row(result[i]);
-                    }
-                    html = html+'</table>';
-                    $('#my_exports_list').html(html);
-                }
-                else
-                {
-                    $('#my_exports_list').html('<div class="migration_empty" >'+self.get_translation(result)+'</div>');  
-                }      
-            },
-            error: function(xhr, status, error){ 
-                resp = self.get_response_text(xhr,status,error);
+        var self = this;
+		$.when(countlyDataMigration.loadExportList()).then(function () {
+            var result = countlyDataMigration.getExportList();
+            if(result && result['result']=='success')
+            {
+                self.templateData.data_migration_exports = result.data;
+                newPage = $("<div>" + self.template(self.templateData) + "</div>");
+                $(self.el).find('#my_exports_list').replaceWith(newPage.find('#my_exports_list')); 
+            }
+            else if(result && result['result']=='error')
+            {
+                resp = self.get_response_text(result.data.xhr,result.data.status,result.data.error);
                 CountlyHelpers.alert(self.get_translation(resp),"red");
             }
         });
@@ -837,66 +749,18 @@ window.DataMigrationView = countlyView.extend({
     load_import_list:function(isRefresh)
     {
         var self=this;  
-        $.ajax({url: "/o/datamigration/getmyimports?app_id="+countlyCommon.ACTIVE_APP_ID,
-            success: function(result){
-                if(result['result'])
-                    result = result['result'];
-
-                if(typeof result=== 'object')
-                {
-                    var html='<table class="migration_exports"><thead><row><th>'+jQuery.i18n.map["data-migration.table.app-name"]+'</th><th style="padding-left:30px;">'+jQuery.i18n.map["data-migration.table.status"]+'</th><th>'+jQuery.i18n.map["data-migration.table.last-update"]+'</th><th></th></row></thead>';
-                    
-                    for(var key in result) {
-                        if (result.hasOwnProperty(key)) {
-                            html = html+'<tr><td>';
-                            if(result[key].app_list)
-                            {
-                                html = html+result[key].app_list;
-                            }
-                            else
-                                html = html+key;
-                            html = html+'</td><td>';
-                            if(result[key].type=='')
-                            {
-                                html = html+'<span class="migration_status migration_finished"></span>'+jQuery.i18n.map["data-migration.status.finished"];
-                            }
-                            else
-                            {
-                                html = html+'<span class="migration_status migration_progress"></span>'+jQuery.i18n.map["data-migration.status.progress"];
-                            }
-                            if(result[key].last_update && result[key].last_update!='')
-                            {
-                            var dd = new Date(result[key].last_update);
-                            
-                            html = html+"<td>"+ dd.toLocaleDateString("en-US")+' '+dd.toLocaleTimeString("en-US")+"</td>";
-                            }
-                            else
-                            {
-                                html = html+"<td></td>";
-                            }
-                            html=html+ '</td><td><div class="options-item"><div class="edit"></div>';
-                            html=html+'<div class="edit-menu" style="display:none;">';
-         
-                            html = html+'<div class="delete_import item" data="'+key+'" >'+jQuery.i18n.map["data-migration.delete-export"]+"</div>";
-                            if(result[key].log!='')
-                            {
-                                 html = html+'<a class="item" style="display:block;" href="/data-migration/download?logfile='+result[key].log+'" target="_blank">'+jQuery.i18n.map["data-migration.download-log"]+'</a>';
-                            }
-                            html+='</div></td></tr>';
-                            html= html+'<tr class="empty_error_line"><td colspan="5"></td></tr>';
-                        }
-                    }
-                    html = html+'</table>';
-                     $('#my_imports_list').html(html);
-                    
-                }
-                else
-                {
-                    $('#my_imports_list').html('<div class="migration_empty" >'+self.get_translation(result)+'</div>');  
-                } 
-            },
-            error: function(xhr, status, error){ 
-                resp = self.get_response_text(xhr,status,error);
+        
+        $.when(countlyDataMigration.loadImportList()).then(function () {
+            var result = countlyDataMigration.getImportList();
+            if(result && result['result']=='success')
+            {
+                self.templateData.data_migration_imports = result.data;
+                newPage = $("<div>" + self.template(self.templateData) + "</div>");
+                $(self.el).find('#my_imports_list').replaceWith(newPage.find('#my_imports_list'));   
+            }
+            else if(result && result['result']=='error')
+            {
+                resp = self.get_response_text(result.data.xhr,result.data.status,result.data.error);
                 CountlyHelpers.alert(self.get_translation(resp),"red");
             }
         });
@@ -923,8 +787,8 @@ if(countlyGlobal["member"].global_admin){
         this.renderWhenReady(this.DataMigrationView);
     });
     
+    //add app setting for redirect
     app.addAppSetting("redirect_url", {
-        
         toDisplay: function(appId, elem){
             $(elem).text(process(countlyGlobal['apps'][appId]["redirect_url"]));
         },
@@ -944,7 +808,6 @@ if(countlyGlobal["member"].global_admin){
         toSave: function(appId, args, elem){
             if($(elem).is(":checked"))
             {
-                console.log("change me");
                 args.redirect_url = "";
             } 
         },
@@ -977,13 +840,7 @@ if(countlyGlobal["member"].global_admin){
                 $('#management-submenu .help-toggle').before(menu);
         }
         
-        $( document ).ajaxSend(function( event, request, settings ) {
-  var i=0;
-  i++;
-});
- 
         var curapp = countlyGlobal['member']['active_app_id'];
-        
         
         if(curapp  && countlyGlobal['apps'][curapp]['redirect_url'] &&  countlyGlobal['apps'][curapp]['redirect_url']!="")
         {
@@ -996,6 +853,7 @@ if(countlyGlobal["member"].global_admin){
         }
     });
     
+    //switching apps. show message if redirect url is set
     app.addAppSwitchCallback(function(appId){
         if(appId  && countlyGlobal['apps'][appId]['redirect_url'] &&  countlyGlobal['apps'][appId]['redirect_url']!="")
         {

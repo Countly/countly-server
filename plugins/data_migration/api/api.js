@@ -232,7 +232,7 @@ function run_command(my_command,update=true)
         child.on('exit', function(code) {
             if(code ==0)
             {
-                if(update && exp_count>0)
+                if(update && exp_count>0 && exportid && exportid!="")
                 {
                     if(update_progress(exportid,"exporting","progress",1,"")==false)
                     {
@@ -420,7 +420,7 @@ function copy_sybolication_file(obj)
                 }
                 else{
                     if (!fs.existsSync(obj.folder+'/'+obj.appid)) {
-                        try {fs.mkdirSync(obj.folder+'/'+obj.appid, 0744);}catch(err){log.me(logpath,err.message,true);}
+                        try {fs.mkdirSync(obj.folder+'/'+obj.appid, 0744);}catch(err){log_me(logpath,err.message,true);}
                     }
                     var wstream = fs.createWriteStream(obj.folder+'/'+obj.appid+'/'+ obj.symbolid + ".cly_symbol");
                     stream.pipe(wstream);
@@ -856,7 +856,7 @@ function report_import(params,message,status,my_exportid)
     catch (SyntaxError) {}  
                             
     var moredata = {"app_ids":imported_ids,"app_names":imported_apps,"exportid":my_exportid,reason:message};
-    if(params && params.req && params.req.headers["countly-token"])
+    if(params && params.qstring && params.qstring.exportid)
     {
         moredata.using_token = true;
         moredata.token = params.req.headers["countly-token"];
@@ -1066,6 +1066,7 @@ function create_and_validate_export_id(apps)
                                 update_progress(params.qstring.exportid,"importing","finished",0,"",true,{},params);
                                 if(res.server_address && res.server_address.length>0)
                                 {
+                                    //remove trailing slash
                                     while(res.server_address.length>0 && res.server_address[res.server_address.length-1]=='/')
                                     {
                                         res.server_address = res.server_address.substring(0, res.server_address.length-1);

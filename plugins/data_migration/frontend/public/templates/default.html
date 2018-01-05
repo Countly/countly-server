@@ -26,10 +26,109 @@
                 </li>
             </ul>
             <div id="data_migration_exports" class="ui-tabs-panel ui-widget-content ui-corner-bottom">
-                <div id='my_exports_list'></div>
+                <div id='my_exports_list'>
+                {{#ifCond data_migration_exports "!=" ""}}
+                    <table id="migration_exports" class="migration_exports">
+                        <thead>
+                            <row>
+                                <th>{{app_name_text}}</th>
+                                <th>{{step_text}}</th>
+                                <th style="padding-left:30px;">{{status_text}}</th>
+                                <th>{{last_update_text}}</th>
+                                <th></th>
+                            </row>
+                        </thead>
+                       
+                            {{#eachOfArray data_migration_exports}}
+                            <tr class="{{#if value.stopped}}stopped{{/if}} {{#if value.reason}}have_reason{{/if}}" id="exportrow_{{value._id}}">
+                               <td>{{value.appnames}}</td>
+                               <td>{{value.step}}</td>
+                               <td>
+                                    <span class="migration_status migration_{{value.status}}"></span>
+                                    {{value.status_text}}
+                               </td>
+                               <td>{{value.time}}</td>
+                               <td>
+                                    <div class="options-item">
+                                        <div class="edit"></div>
+                                        <div class="edit-menu" style="display:none;">
+                                            {{#if value.log}}
+                                            <a class="item" style="display:block;" href="/data-migration/download?logfile={{value.log}}" target="_blank">{{../../downolad_log_text}}</a>
+                                            {{/if}}
+                                            {{#if value.can_download}}
+                                                <a class="item" href="/data-migration/download?id={{value._id}}" target="_blank">{{../../downolad_export_text}}</a>
+                                            
+                                            {{/if}}
+                                            {{#if value.can_stop}}
+                                                <div class='item stop_export' data='{{value._id}}'>{{../../stop_export_text}}</div>
+                                            {{/if}}
+                                             {{#if value.can_resend}}
+                                               <div class="item resend_export" data-apps="{{value.applist}}" data-id="{{value._id}}" data-server-token="{{value.server_token}}" data-server-address="{{value.server_address}}">{{../../resend_export_text}}</div>
+                                            {{/if}}
+        
+                                            <div class='item delete_export' data='{{value._id}}'>{{../delete_export_text}}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {{#if value.reason}}
+                                <tr class="migration_error_line" data="{{value._id}}"><td colspan="5">{{value.reason}}</td></tr>
+                            {{else}}
+                                <tr class="empty_error_line" data="{{value._id}}"><td colspan="5"></td></tr>
+                            {{/if}}
+                            
+                            {{/eachOfArray}}
+                        
+                     
+                    </table>
+                {{else}}
+                    <div class="migration_empty" >{{no_exports_text}}</div>
+                {{/ifCond}}
+                </div>
             </div>
             <div id="data_migration_imports" class=" ui-tabs-panel ui-widget-content ui-corner-bottom" >
-                <div id='my_imports_list'></div>
+                <div id='my_imports_list'>
+                {{#ifCond data_migration_imports "!=" ""}}
+                    <table class="migration_exports">
+                        <thead>
+                            <row>
+                                <th>{{app_name_text}}</th>
+                                <th style="padding-left:30px;">{{status_text}}</th>
+                                <th>{{last_update_text}}</th>
+                                <th></th>
+                            </row>
+                        </thead>
+                        {{#eachOfArray data_migration_imports}}
+                            <tr>
+                                <td>{{value.app_list}}</td>
+                                <td>
+                                {{#ifCond value.type "!=" ""}} 
+                                    <span class="migration_status migration_progress"></span>{{value.status_text}}
+                                {{else}}
+                                    <span class="migration_status migration_finished"></span>{{value.status_text}}
+                                {{/ifCond}}
+                                </td>
+                                <td>{{value.last_update}}</td>
+                                <td>
+                                    <div class="options-item">
+                                        <div class="edit"></div>
+                                        <div class="edit-menu" style="display:none;">
+                                            <div class="delete_import item" data="{{value.key}}" >{{../delete_export_text}}</div>
+                                            {{#ifCond value.log "!=" ""}}
+                                                <a class="item" style="display:block;" href="/data-migration/download?logfile={{value.log}}" target="_blank">{{../../downolad_log_text}}</a>
+                                            {{/ifCond}}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="empty_error_line"><td colspan="5"></td></tr>
+                        {{/eachOfArray}}
+                        
+                    </table>
+                {{else}}
+                    <div class="migration_empty" >{{no_imports_text}}</div>
+                {{/ifCond}}
+                </div>
             </div>
         </div>
  
