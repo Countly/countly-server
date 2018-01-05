@@ -62,7 +62,7 @@ plugins.setConfigs("crashes", {
                 var dbAppUser = params.app_user;
                 var latest_version = params.qstring.metrics._app_version.replace(/\./g, ":");
                 if(dbAppUser && dbAppUser.uid && (!dbAppUser.av || common.versionCompare(latest_version, dbAppUser.av) > 0)){
-                    common.db.collection('app_crashusers' + params.app_id).find({uid:dbAppUser.uid}, {group:1, _id:0}, function(err, res){
+                    common.db.collection('app_crashusers' + params.app_id).find({uid:dbAppUser.uid}, {group:1, _id:0}).toArray(function(err, res){
                         if(res && res.length){
                             var crashes = [];
                             for(var i = 0; i < res.length; i++){
@@ -71,12 +71,12 @@ plugins.setConfigs("crashes", {
                                 }
                             }
                             if(crashes.length){
-                                async.map(Object.keys(crashes), function(crash, done){
+                                async.map(crashes, function(crash, done){
                                     checkCrash(latest_version, crash, dbAppUser.uid, done);
                                 }, function(err, res){
                                     var shouldRecalculate = false;
                                     if(res && res.length){
-                                        for(var i = 0; i <  res.lentgth; i++){
+                                        for(var i = 0; i < res.length; i++){
                                             if(res[i]){
                                                 shouldRecalculate = true;
                                                 break;
@@ -655,12 +655,14 @@ plugins.setConfigs("crashes", {
                         switch (params.qstring.filter) {
                             case "crash-resolved":
                                 filter["is_resolved"] = true;
+                                filter["is_resolving"] = {$ne: true};
                                 break;
                             case "crash-hidden":
                                 filter["is_hidden"] = true;
                                 break;
                             case "crash-unresolved":
                                 filter["is_resolved"] = false;
+                                filter["is_resolving"] = {$ne: true};
                                 break;
                             case "crash-nonfatal":
                                 filter["nonfatal"] = true;
@@ -677,6 +679,9 @@ plugins.setConfigs("crashes", {
                             case "crash-reoccurred":
                                 filter["is_renewed"] = true;
                                 break;
+                            case "crash-resolving":
+                                filter["is_resolving"] = true;
+                                break; 
                         }
                     }
                     if(params.qstring.filter !== "crash-hidden"){
@@ -686,7 +691,7 @@ plugins.setConfigs("crashes", {
                         filter["_id"] = {$ne:"meta"};
                     common.db.collection('app_crashgroups' + params.app_id).count({},function(err, total) {
                         total--;
-                        var cursor = common.db.collection('app_crashgroups' + params.app_id).find(filter,{uid:1, is_new:1, is_renewed:1, is_hidden:1, os:1, not_os_specific:1, name:1, error:1, users:1, lastTs:1, reports:1, latest_version:1, is_resolved:1, resolved_version:1, nonfatal:1, session:1});
+                        var cursor = common.db.collection('app_crashgroups' + params.app_id).find(filter,{uid:1, is_new:1, is_renewed:1, is_hidden:1, os:1, not_os_specific:1, name:1, error:1, users:1, lastTs:1, reports:1, latest_version:1, is_resolved:1, resolved_version:1, nonfatal:1, session:1, is_resolving: 1});
                         cursor.count(function (err, count) {
                             if(params.qstring.iDisplayStart && params.qstring.iDisplayStart != 0)
                                 cursor.skip(parseInt(params.qstring.iDisplayStart));
@@ -738,7 +743,7 @@ plugins.setConfigs("crashes", {
                             async.each(groups, function(group, done){
                                 ret[group._id] = group.latest_version;
                                 if(!group.is_resolved){
-                                    common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': group._id}, {"$set":{is_resolved:true, resolved_version:group.latest_version, is_renewed:false, is_new:false}}, function (err, res){
+                                    common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': group._id}, {"$set":{is_resolved:true, resolved_version:group.latest_version, is_renewed:false, is_new:false, is_resolving: false}}, function (err, res){
                                         if(!inc.resolved)
                                             inc.resolved = 0;
                                         inc.resolved++;
@@ -776,23 +781,25 @@ plugins.setConfigs("crashes", {
             case 'unresolve':
                 validate(params, function (params) {
                     var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
+                    console.log("!12312")
 					common.db.collection('app_crashgroups' + params.qstring.app_id).find({'_id': {$in:crashes}}).toArray(function(err, groups){
                         if(groups){
                             var inc = {};
+                            console.log("!123123333")
+
                             async.each(groups, function(group, done){
-                                if(group.is_resolved){
-                                    common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': group._id }, {"$set":{is_resolved:false, resolved_version:null}}, function (err, res){
+                                console.log("!12312555")
+
+                                common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': group._id }, {"$set":{is_resolved:false, resolved_version:null, is_resolving: false}}, function (err, res){
+                                    if(group.is_resolved){
                                         if(!inc.resolved)
                                             inc.resolved = 0;
                                         inc.resolved--;
-                                        plugins.dispatch("/systemlogs", {params:params, action:"crash_unresolved", data:{app_id:params.qstring.app_id, crash_id: group._id}});
-                                        done();
-                                        return true;
-                                    });
-                                }
-                                else{
+                                        plugins.dispatch("/systemlogs", {params:params, action:"crash_unresolved", data:{app_id:params.qstring.app_id, crash_id: group._id}});   
+                                    }
                                     done();
-                                }
+                                    return true;
+                                });
                             }, function(){
                                 if(Object.keys(inc).length)
                                     common.db.collection('app_crashgroups' + params.qstring.app_id).update({_id:"meta"},{$inc:inc}, function(err,result){});
@@ -892,6 +899,18 @@ plugins.setConfigs("crashes", {
                     });
 				});
                 break;
+
+            case 'resolving':
+                validate(params, function (params) {
+                    var crashes = params.qstring.args.crashes || [params.qstring.args.crash_id];
+                    common.db.collection('app_crashgroups' + params.qstring.app_id).update({'_id': {$in:crashes} }, {"$set":{is_resolving:true}}, {multi:true}, function (err, res){
+                        for(var i = 0; i < crashes.length; i++)
+                            plugins.dispatch("/systemlogs", {params:params, action:"crash_shown", data:{app_id:params.qstring.app_id, crash_id: params.qstring.args.crash_id}});
+                        common.returnMessage(params, 200, 'Success');
+						return true;
+                    });
+				});
+                break; 
             case 'add_comment':
                 ob.validateUserForWriteAPI(function(){
                     var comment = {};

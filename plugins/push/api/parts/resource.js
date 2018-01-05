@@ -158,7 +158,6 @@ class Connection extends res.Resource {
 	// this is required to keep event loop alive
 	startInterval() {
 		if (!this.interval) {
-			console.log('============ setting interval ' + this.interval);
 			var s = 0;
 			this.interval = setInterval(function() {
 				s = s + 1 - 1;
@@ -169,7 +168,6 @@ class Connection extends res.Resource {
 
 	stopInterval () {
 		if (this.interval) {
-			console.log('============ clearing interval ' + this.interval);
 			clearInterval(this.interval);
 			this.interval = 0;
 		}

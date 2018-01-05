@@ -1,0 +1,33 @@
+<div class="widget">
+    <div class="widget-header">
+        <div class="left">
+            <div style="overflow: auto;">
+                <div class="title small">{{page-title}}</div>
+            </div>
+            <div style="width:300px; display: inline-block;">
+                <div class="cly-select float">
+                    <div class="select-inner">
+                        <div class="text-container">
+                            <div class="text" id="es-selector" data-localize="times-of-day.sessions"></div>
+                        </div>
+                        <div class="right combo"></div>
+                    </div>
+                    <div class="select-items square">
+                        <div id="event-session-list">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="widget-content" style="padding-top: 30px">
+        <center>
+            <span class="tod-chart-title">
+                <span data-localize="times-of-day.chart-title">TIMES OF THE DAY (HOURS)</span>  →</span>
+            <div id="chart"></div>
+        </center>
+    </div>
+</div>
+
+<table id="dataTableOne" class="d-table tod-table help-zone-vb no-fix" cellpadding="0" cellspacing="0" data-help-localize="help.{{{table-helper}}}"></table>

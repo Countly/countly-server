@@ -448,7 +448,7 @@ simpleheat.prototype = {
             ctx.textAlign = 'center';
             ctx.textBaseline = "middle";
             if (marker.isAverage) {
-                ctx.fillText("AVERAGE FOLD", textXOffset + rectWidth / 2, marker.y);
+                ctx.fillText("AVERAGE FOLD", textXOffset + rectWidth / 2, marker.y + textYOffset);
             } else {
                 var text = marker.percentage + " % of visitors reached this point";
 

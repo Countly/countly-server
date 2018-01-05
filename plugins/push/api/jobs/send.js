@@ -32,9 +32,7 @@ class PushJob extends job.IPCJob {
 			log.d('[%d]: Loading subjob creds %j', process.pid, this._idIpc, this.anote.creds);
 
 			return new Promise((resolve, reject) => {
-				this.anote.creds.load(db).then(() => {
-					new Streamer(this.anote).loadTzs(db).then(resolve, reject);
-				}, reject);
+				this.anote.creds.load(db).then(resolve, reject);
 			});
 		} else {
 			log.d('[%d]: Preparing parent job %j (data %j)', process.pid, this._idIpc, this.data);
@@ -60,6 +58,11 @@ class PushJob extends job.IPCJob {
 	divide (db) {
 		if (this.failed) {
 			return Promise.reject(this.failed);
+		}
+
+		if (this.note.auto && this.note.result.status === N.Status.InQueue) {
+			log.d('[%d:%s]: Won\'t divide auto message %s', process.pid, this.note.id, this._id);
+			return Promise.resolve({workers: 0, subs: []});
 		}
 		
 		log.d('[%d:%s]: Dividing in %s (%j)', process.pid, this.note.id, this._id, this.note);
@@ -152,35 +155,17 @@ class PushJob extends job.IPCJob {
 		});
 	}
 
-	rejectUsersWhoPassedTz (db, status) {
-		if (this.anote.tz !== false) {
-			var diff = (this.anote.date.getTime() - Date.now() + this.anote.tz * 60000) / 60000,
-				del = Math.ceil(diff) + 90,
-				send = Math.ceil(diff) - 30;
+	rejectUsersWhoPassedDate (db) {
+		if (this.anote.tz !== false || this.anote.auto) {
 			log.d('[%d:%s] now %d (%s), date %d (%s)', process.pid, this.anote.id, Date.now(), new Date(), this.anote.date.getTime(), this.anote.date);
-			// var batch = new Date(this.date.getTime() + this.ano.tzs[0] - this.tz);
-			// var now = Date.now(),
-			// 	date = this.anote.date.getTime(),
-			// 	diff = (now - date) / 1000 / 60,
-			// 	del = Math.ceil(diff - 90),
-			// 	send = Math.ceil(diff + 30);
-			log.d('[%d:%s] diff %j, going to unload users with tz > %d and send to users with %d > tz > %d', process.pid, this.anote.id, diff, del, del, send);
-
 			return new Promise((resolve, reject) => {
-				this.tz = {$lt: del, $gt: send};
-				this.streamer.load(db, null, null, 1000000000, {$gte: del}).then((users) => {
-					if (users && users.length) {
-						log.d('[%d:%s] found %d users to skiptz: %j', process.pid, this.anote.id, users.length, users);
-						this.streamer.unload(db, users.map(u => u._id)).then(() => {
-							status += users.length;
-							db.collection('messages').update({_id: this.aoid}, {$inc: {'result.processed': users.length, 'result.errors': users.length, 'result.errorCodes.skiptz': users.length}}, log.logdb('updating message with skiptz code'));
-							resolve();
-						}, reject);
-					} else {
-						log.d('[%d:%s] found 0 users to skiptz', process.pid, this.anote.id);
-						resolve();
+				this.streamer.unload(db, Date.now() - 30 * 60000).then((ok) => {
+					if (ok) {
+						log.d('[%d:%s] unloaded %d users to skiptz, next is %j', process.pid, this.anote.id, ok.unloaded, ok.next);
+						db.collection('messages').update({_id: this.aoid}, {$inc: {'result.processed': ok.unloaded, 'result.errors': ok.unloaded, 'result.errorCodes.skiptz': ok.unloaded}}, log.logdb('updating message with skiptz code'));
 					}
-				});
+					resolve();
+				}, reject);
 			});
 		} else {
 			return Promise.resolve();
@@ -188,8 +173,36 @@ class PushJob extends job.IPCJob {
 	}
 
 	run (db, done, progress) {
+
+		if (this.note && this.note.auto && this.note.result.status === N.Status.InQueue) {
+			log.d('[%d:%s] setting auto message as started', process.pid, this.note._id);
+
+			new Divider(this.note).prepareAuto(db).then(() => {
+				log.d('[%s: %d]: Finished preparing auto message for job %j', process.pid, this.note.id, this._id);
+				
+				let query = {_id: this.note._id, 'deleted': {$exists: false}},
+					update = {$set: {'result.status': N.Status.InProcessing}};
+
+					db.collection('messages').findAndModify(query, [['date', 1]], update, {'new': true}, (err, doc) => {
+						if (err) {
+							done(err);
+						} else if (!doc || !doc.ok) {
+							done('already running');
+						} else {
+							log.d('[%d:%s] auto message marked as started', process.pid, this.note._id);
+							if (doc.value.result.processed === 0) {
+								db.collection('messages').update({_id: doc.value._id}, {$set: {'result.delivered': 0, 'result.total': 0, 'result.processed': 0}}, log.logdb('resetting total to zero'));
+							}
+							done();
+						}
+					});
+			}, done);
+
+			return;
+		}
+
 		log.d('[%d:%s] going to run subjob %j: %j', process.pid, this.anote.id, this._idIpc, this._json);
-		if (this.idx === 0) {
+		if (!this.anote.auto && this.idx === 0) {
 			log.d('[%d:%s] marking message as started from %j', process.pid, this.anote.id, this._idIpc);
 
 			let query = {_id: this.anote._id, 'deleted': {$exists: false}},
@@ -226,10 +239,16 @@ class PushJob extends job.IPCJob {
 			size: this.size,
 			done: this.done,
 			bookmark: this.bookmark
-		};
+		}, now = Date.now(), minDate, maxDate;
 
 		this.anote.nobuild = true;
 		this.streamer = new Streamer(this.anote);
+
+		if (this.anote.auto || this.anote.tz !== false) {
+			minDate = now - 30 * 60000;
+			maxDate = now + 10 * 60000;
+			log.d('[%d:%s]: Will stream limited to dates %s - %s', process.pid, this.anote.id, new Date(minDate), new Date(maxDate));
+		}
 
 		log.d('[%d:%s]: Ready to stream with bookmark %s, first %s', process.pid, this.anote.id, status.bookmark, this.data.first);
 		if (status.bookmark) {
@@ -240,9 +259,9 @@ class PushJob extends job.IPCJob {
 			log.d('[%d:%s]: Connection wants %d users', process.pid, this.anote.id, count);
 			Promise.all([
 				this.waitForAllPromises(),
-				this.rejectUsersWhoPassedTz(db, status)
+				this.rejectUsersWhoPassedDate(db, now - 30 * 60000)
 			]).then(() => {
-				this.streamer.load(db, this.data.first, this.data.last, Math.max(count, 10), this.tz).then((users) => {
+				this.streamer.load(db, this.data.first, this.data.last, Math.max(count, 10), minDate, maxDate).then((users) => {
 					// log.d('users %j', users);
 					// bookmark is not first of next batch, but rather last status from previous
 					// so it must be removed from array
@@ -336,7 +355,7 @@ class PushJob extends job.IPCJob {
 			}
 
 			if (sent.length) {
-				db.collection('app_users' + this.anote.creds.app_id).update({_id: {$in: sent}}, {$push: {msgs: this.aoid}}, {multi: true}, log.logdb('adding message to app_users'));
+				db.collection('app_users' + this.anote.creds.app_id).update({_id: {$in: sent}}, {$push: {msgs: [this.aoid, Date.now()]}}, {multi: true}, log.logdb('adding message to app_users'));
 				
 	  			var common = require('../../../../api/utils/common.js');
 
@@ -349,7 +368,7 @@ class PushJob extends job.IPCJob {
 				var params = {
 					qstring: {
 						events: [
-							{ key: '[CLY]_push_sent', count: sent.length, segmentation: {i: '' + this.anote._id } }
+							{ key: '[CLY]_push_sent', count: sent.length, segmentation: {i: '' + this.anote._id, a: this.anote.auto || false} }
 						]
 					},
 					app_id: typeof this.anote.creds.app_id === 'string' ? db.ObjectID(this.anote.creds.app_id) : this.anote.creds.app_id,
@@ -386,22 +405,19 @@ class PushJob extends job.IPCJob {
 			log.d('[%d]: Send promise returned success in %s', process.pid, this._idIpc);
 			if (!this.completed) {
 				done();
-				if (this.anote.tz !== false) {
+				if (this.anote.tz !== false || this.anote.auto) {
 					this.waitForAllPromises().then(() => {
-						this.anote.tzs = [];
-						this.streamer.loadTzs(db).then(() => {
-							if (this.anote.tzs && this.anote.tzs.length) {
-								log.d('[%d:%s]: %d tzs left: %j', process.pid, this.anote.id, this.anote.tzs.length, this.anote.tzs);
-								
-								var batch = new Date(this.anote.date.getTime() + (this.anote.tz - this.anote.tzs[0]) * 60000);
-								log.d('[%d:%s]: Scheduling message with date %j to be sent in user timezones (tz %j, tzs %j): %j', process.pid, this.anote.id, this.anote.date, this.anote.tz, this.anote.tzs, batch);
-							    jobs.job('push:send', {mid: this.aoid}).replace().once(batch);
-							    db.collection('messages').updateOne({_id: this.aoid}, {$set: {'result.status': N.Status.InQueue, 'result.nextbatch': batch}}, log.logdb('when updating message status with inqueue'));
-							} else {
-								log.d('[%d:%s]: 0 tzs left, clearing streamer', process.pid, this.anote.id);
+						this.streamer.nextDa(db).then(next => {
+							if (next) {
+								next = new Date(next);
+								log.d('[%d:%s]: Scheduling next batch to be sent on %j', process.pid, this.anote.id, next);
+							    jobs.job('push:send', {mid: this.aoid}).replace().once(next);
+							    db.collection('messages').updateOne({_id: this.aoid}, {$set: {'result.status': N.Status.InProcessing, 'result.nextbatch': next}}, log.logdb('when updating message status with inqueue'));
+							} else if (this.anote.tz !== false) {
+								log.d('[%d:%s]: nothing left, clearing streamer', process.pid, this.anote.id);
 								this.streamer.clear(db);
 							}
-						});
+						}, log.e.bind(log, 'Error when loading next date: %j'));
 					});
 				}
 			}
@@ -417,16 +433,24 @@ class PushJob extends job.IPCJob {
 
 	cancel (db) {
 		return new Promise((resolve, reject) => {
-			super.cancel().then(() => {
-				let mid = this.note ? this.note._id : this.anote ? this.anote._id : this.data.mid;
+			db.collection('messages').findOne({_id: db.ObjectID(this.data.mid)}, {auto: 1}, (err, message) => {
+				if (err || !message || !message.auto) {
+					log.d(err, message);
+					super.cancel().then(() => {
+						let mid = this.note ? this.note._id : this.anote ? this.anote._id : this.data.mid;
 
-				if (mid) {
-					mid = typeof mid === 'string' ? db.ObjectID(mid) : mid;
-	
-					let query = {_id: mid},
-						update = {$set: {'result.status': N.Status.Aborted, 'result.error': 'Cancelled'}};
+						if (mid) {
+							mid = typeof mid === 'string' ? db.ObjectID(mid) : mid;
+					
+							let query = {_id: mid},
+								update = {$set: {'result.status': N.Status.Aborted, 'result.error': 'Cancelled'}};
 
-					db.collection('messages').update(query, update, log.logdb('cancelling message', resolve, reject));
+							db.collection('messages').update(query, update, log.logdb('cancelling message', resolve, reject));
+						}
+					});
+				} else {
+					log.d('Won\'t cancel message %s - auto message', this.data.mid);
+					super.cancel().then(resolve, reject);
 				}
 			});
 		});

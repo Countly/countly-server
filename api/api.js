@@ -232,24 +232,7 @@ if (cluster.isMaster) {
                 }
             }
             
-            if (params.qstring.location && params.qstring.location.length > 0) {
-                var coords = params.qstring.location.split(',');
-                if (coords.length === 2) {
-                    var lat = parseFloat(coords[0]), lon = parseFloat(coords[1]);
-    
-                    if (!isNaN(lat) && !isNaN(lon)) {
-                        params.user.lat = lat;
-                        params.user.lng = lon;
-                        if(params.user.lat && params.user.lng){
-                            var update = {};  
-                            update["$set"] = {lat:params.user.lat, lng:params.user.lng};
-                            common.updateAppUser(params, update);
-                        }
-                    }
-                }
-            }
-
-            if (params.qstring.tz && !isNaN(parseInt(params.qstring.tz))) {
+            if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
                 params.user.tz = parseInt(params.qstring.tz);
             } 
             
@@ -277,8 +260,8 @@ if (cluster.isMaster) {
                     }		
                 }
                 
-                plugins.dispatch("/sdk", {params:params, app:app});
-                
+            plugins.dispatch("/sdk", {params:params, app:app}, () => {
+
                 if (params.qstring.metrics) {		
                     common.processCarrier(params.qstring.metrics);	
                 		
@@ -368,7 +351,7 @@ if (cluster.isMaster) {
                                 //delete old user
                                 common.db.collection('app_users' + params.app_id).remove({_id:old_id}, function(){
                                     //let plugins know they need to merge user data
-                                    common.db.collection("metric_changes" + params.app_id).update({uid:oldUid}, {'$set': {uid:newUid}}, {multi:true}, function(err, res){});
+                                    common.db.collection("metric_changes" + params.app_id).update({uid:oldAppUser.uid}, {'$set': {uid:newAppUser.uid}}, {multi:true}, function(err, res){});
                                     plugins.dispatch("/i/device_id", {params:params, app:app, oldUser:oldAppUser, newUser:newAppUser});
                                     restartRequest();
                                 });
@@ -505,6 +488,7 @@ if (cluster.isMaster) {
                     common.log("request").i('Request ignored: ' + params.cancelRequest, params.req.url, params.req.body);
                     return done ? done() : false;
                 }
+            });
             });
         });
     }
@@ -664,11 +648,6 @@ if (cluster.isMaster) {
                                 }
                             }
             
-                            if (!params.qstring.api_key) {
-                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                                return false;
-                            }
-            
                             switch (paths[3]) {
                                 case 'create':
                                     validateUserForWriteAPI(countlyApi.mgmt.users.createUser, params);
@@ -695,11 +674,6 @@ if (cluster.isMaster) {
                                 } catch (SyntaxError) {
                                     console.log('Parse ' + apiPath + ' JSON failed', req.url, req.body);
                                 }
-                            }
-            
-                            if (!params.qstring.api_key) {
-                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                                return false;
                             }
             
                             switch (paths[3]) {
@@ -731,11 +705,6 @@ if (cluster.isMaster) {
                         }
                         case '/i/tasks':
                         {
-                            if (!params.qstring.api_key) {
-                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                                return false;
-                            }
-                            
                             if (!params.qstring.task_id) {
                                 common.returnMessage(params, 400, 'Missing parameter "task_id"');
                                 return false;
@@ -774,10 +743,7 @@ if (cluster.isMaster) {
                         case '/i':
                         {
                             params.ip_address =  params.qstring.ip_address || common.getIpAddress(req);
-                            params.user = {
-                                'country':params.qstring.country_code || 'Unknown',
-                                'city':params.qstring.city || 'Unknown'
-                            };
+                            params.user = {};
             
                             if (!params.qstring.app_key || !params.qstring.device_id) {
                                 common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');
@@ -795,6 +761,8 @@ if (cluster.isMaster) {
                                 }
                             }
                             
+                            log.d('processing request %j', params.qstring);
+                            
                             params.promises = [];
                             validateAppForWriteAPI(params, function(){
                                 function resolver(){
@@ -811,11 +779,6 @@ if (cluster.isMaster) {
                         }
                         case '/o/users':
                         {
-                            if (!params.qstring.api_key) {
-                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                                return false;
-                            }
-            
                             switch (paths[3]) {
                                 case 'all':
                                     validateUserForMgmtReadAPI(countlyApi.mgmt.users.getAllUsers, params);
@@ -836,11 +799,6 @@ if (cluster.isMaster) {
                         }
                         case '/o/apps':
                         {
-                            if (!params.qstring.api_key) {
-                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                                return false;
-                            }
-            
                             switch (paths[3]) {
                                 case 'all':
                                     validateUserForMgmtReadAPI(countlyApi.mgmt.apps.getAllApps, params);
@@ -861,11 +819,6 @@ if (cluster.isMaster) {
                         }
                         case '/o/tasks':
                         {
-                            if (!params.qstring.api_key) {
-                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                                return false;
-                            }
-            
                             switch (paths[3]) {
                                 case 'all':
                                     validateUserForMgmtReadAPI(function(){
@@ -1092,11 +1045,6 @@ if (cluster.isMaster) {
                         }
                         case '/o':
                         {
-                            if (!params.qstring.api_key) {
-                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                                return false;
-                            }
-            
                             if (!params.qstring.app_id) {
                                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
                                 return false;
@@ -1158,11 +1106,6 @@ if (cluster.isMaster) {
                         }
                         case '/o/analytics':
                         {
-                            if (!params.qstring.api_key) {
-                                common.returnMessage(params, 400, 'Missing parameter "api_key"');
-                                return false;
-                            }
-            
                             if (!params.qstring.app_id) {
                                 common.returnMessage(params, 400, 'Missing parameter "app_id"');
                                 return false;

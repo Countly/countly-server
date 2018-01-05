@@ -58,6 +58,16 @@ class Note {
 		this.date = data.date;                						// Date to be sent on
 		this.tz = data.tz;                							// Send in user timezones
 
+		this.auto = data.auto;										// Automated message
+		this.autoActive = data.autoActive;							// Automated message: active, that is not stopped or deleted
+		this.autoOnEntry = data.autoOnEntry;						// Automated message: on cohort entry or exit
+		this.autoCohorts = data.autoCohorts;						// Automated message: cohorts array
+		this.autoEnd = data.autoEnd;								// Automated message: end date
+		this.autoDelay = data.autoDelay;							// Automated message: delay sending on this much time after trigger
+		this.autoTime = data.autoTime;								// Automated message: send in user's tz at this time
+		this.autoCapMessages = data.autoCapMessages;				// Automated message: limit number of messages per user
+		this.autoCapSleep = data.autoCapSleep;						// Automated message: how much ms to wait before sending a message
+
 		this.result = {
 			status: data.result ? data.result.status || Status.Initial : Status.Initial,
 			total: 0,
@@ -99,6 +109,15 @@ class Note {
 			expiryDate: this.expiryDate,
 			date: this.date,
 			tz: this.tz,
+			auto: this.auto,
+			autoActive: this.autoActive,
+			autoOnEntry: this.autoOnEntry,
+			autoCohorts: this.autoCohorts,
+			autoEnd: this.autoEnd,
+			autoDelay: this.autoDelay,
+			autoTime: this.autoTime,
+			autoCapMessages: this.autoCapMessages,
+			autoCapSleep: this.autoCapSleep,
 			created: this.created,
 			test: this.test,
 			build: this.build
@@ -170,7 +189,7 @@ class Note {
 
 				Object.keys(this.messagePerLocale).filter(k => k.indexOf(S) === -1).forEach(locale => {
 					if (!hasButtons && !hasTitle) {
-						content[locale] = this.compile(platform, this.messagePerLocale[locale])
+						content[locale] = this.compile(platform, this.messagePerLocale[locale]);
 					} else {
 						var cnt = {
 							message: this.messagePerLocale[locale] || this.messagePerLocale['default'],
@@ -186,7 +205,7 @@ class Note {
 								b.l = this.messagePerLocale[locale + S + i + S + 'l'] || b.l;
 							});
 						}
-						content[locale] = this.compile(platform, cnt)
+						content[locale] = this.compile(platform, cnt);
 					}
 				});
 				return content;
@@ -331,6 +350,14 @@ class AppSubNote {
 				if (note.userConditions) { this.query.user = typeof note.userConditions === 'string' ? JSON.parse(note.userConditions) : note.userConditions; }
 				if (note.drillConditions) { this.query.drill = typeof note.drillConditions === 'string' ? JSON.parse(note.drillConditions) : note.drillConditions; }
 			}
+			if (note.auto) {
+				this.auto = true;
+				this.autoEnd = note.autoEnd && note.autoEnd.getTime ? note.autoEnd.getTime() : note.autoEnd;		
+				this.autoDelay = note.autoDelay;	
+				this.autoTime = note.autoTime;
+				this.autoCapMessages = note.autoCapMessages;
+				this.autoCapSleep = note.autoCapSleep;
+			}
 		// from job data
 		} else if (note && note._id) {
 			this._id = note._id;
@@ -347,6 +374,14 @@ class AppSubNote {
 				this.query = {};
 				if (note.query.userConditions) { this.query.userConditions = JSON.parse(note.query.userConditions); }
 				if (note.query.drillConditions) { this.query.drillConditions = JSON.parse(note.query.drillConditions); }
+			}
+			if (note.auto) {
+				this.auto = true;
+				this.autoEnd = note.autoEnd && note.autoEnd.getTime ? note.autoEnd.getTime() : note.autoEnd;		
+				this.autoDelay = note.autoDelay;	
+				this.autoTime = note.autoTime;
+				this.autoCapMessages = note.autoCapMessages;
+				this.autoCapSleep = note.autoCapSleep;
 			}
 		} else {
 			throw new Error('Illegal arguments for AppSubNote constructor: ' + JSON.stringify(arguments));
@@ -365,7 +400,8 @@ class AppSubNote {
 			content: JSON.stringify(this.content),
 			creds: this.creds,
 			query: this.query ? {} : undefined,
-			plan: this.plan
+			plan: this.plan,
+			auto: this.auto
 		};
 
 		if (this.query && this.query.user) {

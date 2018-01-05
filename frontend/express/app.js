@@ -30,7 +30,10 @@ var versionInfo = require('./version.info'),
     bruteforce = require('./libs/preventBruteforce.js'),
 	plugins = require('../../plugins/pluginManager.js'),
     countlyConfig = require('./config', 'dont-enclose'),
+    moment = require('moment-timezone'),    
     log = require('../../api/utils/log.js')('core:app');
+    var authorize = require('../../api/utils/authorizer.js'); //for token validations
+
     
     var COUNTLY_NAMED_TYPE = "Countly Community Edition v"+COUNTLY_VERSION;
     var COUNTLY_TYPE_CE = true;
@@ -433,6 +436,12 @@ app.get(countlyConfig.path+'/logout', function (req, res, next) {
         req.session.uid = null;
         req.session.gadm = null;
         req.session.email = null;
+        
+        if(req.session.auth_token)
+        {
+            countlyDb.collection("auth_tokens").remove({_id:req.session.auth_token});
+            req.session.auth_token = null;  
+        }
         req.session.settings = null;
         res.clearCookie('uid');
         res.clearCookie('gadm');
@@ -570,6 +579,7 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                             defaultApp:defaultApp,
                             admin_apps:countlyGlobalAdminApps,
                             csrf_token:req.csrfToken(),
+                            auth_token:req.session.auth_token,
                             member:member,
                             config: req.config,
                             security: plugins.getConfig("security"),
@@ -726,6 +736,7 @@ app.post(countlyConfig.path+'/reset', function (req, res, next) {
 
 app.post(countlyConfig.path+'/forgot', function (req, res, next) {
     if (req.body.email) {
+        req.body.email = (req.body.email+"").trim();
         countlyDb.collection('members').findOne({"email":req.body.email}, function (err, member) {
             if (member) {
                 var timestamp = Math.round(new Date().getTime() / 1000),
@@ -752,7 +763,8 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
         } else {
             if (req.body.full_name && req.body.username && req.body.password && req.body.email) {
                 var password = sha512Hash(req.body.password);
-                
+                req.body.email = (req.body.email+"").trim();
+                req.body.username = (req.body.username+"").trim();
                 var doc = {"full_name":req.body.full_name, "username":req.body.username, "password":password, "email":req.body.email, "global_admin":true, created_at: Math.floor(((new Date()).getTime()) / 1000), password_changed: Math.floor(((new Date()).getTime()) / 1000)};
                 if(req.body.lang)
                     doc.lang = req.body.lang;
@@ -797,7 +809,8 @@ app.post(countlyConfig.path+'/setup', function (req, res, next) {
 app.post(countlyConfig.path+'/login', function (req, res, next) {
     if (req.body.username && req.body.password) {
         var password = sha1Hash(req.body.password);
-         var password_SHA5 = sha512Hash(req.body.password);
+        var password_SHA5 = sha512Hash(req.body.password);
+        req.body.username = (req.body.username+"").trim();
         countlyDb.collection('members').findOne({$and : [{ $or: [ {"username":req.body.username}, {"email":req.body.username}]}, {$or: [{"password":password}, {"password" : password_SHA5}]}]}, function (err, member) {
             if (member) {
                 if(member.password === password) updateUserPasswordToSHA512(member._id, password_SHA5);
@@ -842,40 +855,72 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                     }
                     if (!countlyConfig.web.track || countlyConfig.web.track == "GA" && member['global_admin'] || countlyConfig.web.track == "noneGA" && !member['global_admin']) {
                         countlyStats.getUser(countlyDb, member, function(statsObj){
-                            var date = new Date();
-                            request({
-                                uri:"https://stats.count.ly/i",
-                                method:"GET",
-                                timeout:4E3,
-                                qs:{
-                                    device_id:member.email,
-                                    app_key:"386012020c7bf7fcb2f1edf215f1801d6146913f",
-                                    timestamp: Math.round(date.getTime()/1000),
-                                    hour: date.getHours(),
-                                    dow: date.getDay(),
-                                    user_details:JSON.stringify(
-                                        {
-                                            custom:{
-                                                apps: (member.user_of) ? member.user_of.length : 0,
-                                                platforms:{"$addToSet":statsObj["total-platforms"]},
-                                                events:statsObj["total-events"],
-                                                pushes:statsObj["total-msg-sent"],
-                                                crashes:statsObj["total-crash-groups"],
-                                                users:statsObj["total-users"]
-                                            }
-                                        }
-                                    )
-                                    
+                            countlyDb.collection("server_stats_data_points").aggregate([
+                                {
+                                    $group: {
+                                        _id: "$m",
+                                        e: { $sum: "$e"},
+                                        s: { $sum: "$s"}
+                                    }
                                 }
-                            }, function(a, c, b) {});
+                            ], { allowDiskUse:true }, function(error, allData) {
+                                var custom = {
+                                    apps: (member.user_of) ? member.user_of.length : 0,
+                                    platforms:{"$addToSet":statsObj["total-platforms"]},
+                                    events:statsObj["total-events"],
+                                    pushes:statsObj["total-msg-sent"],
+                                    crashes:statsObj["total-crash-groups"],
+                                    users:statsObj["total-users"]
+                                };
+                                if(!error && allData && allData.length){
+                                    var data = {};
+                                    data.all = 0;
+                                    data.month3 = [];
+                                    var utcMoment = moment.utc();
+                                    var months = {};
+                                    for(var i = 0; i < 3; i++){
+                                        months[utcMoment.format("YYYY:M")] = true;
+                                        utcMoment.subtract(1, 'months');
+                                    }
+                                    for(var i = 0; i < allData.length; i++){
+                                        data.all += allData[i].e + allData[i].s;
+                                        if(months[allData[i]._id]){
+                                            data.month3.push(allData[i]._id + " - " + (allData[i].e + allData[i].s));
+                                        }
+                                    }
+                                    data.avg = Math.round((data.all/allData.length)*100)/100;
+                                    custom.dataPointsAll = data.all;
+                                    custom.dataPointsMonthlyAvg = data.avg;
+                                    custom.dataPointsLast3Months = data.month3;
+                                }
+                                var date = new Date();
+                                request({
+                                    uri:"https://stats.count.ly/i",
+                                    method:"GET",
+                                    timeout:4E3,
+                                    qs:{
+                                        device_id:member.email,
+                                        app_key:"386012020c7bf7fcb2f1edf215f1801d6146913f",
+                                        timestamp: Math.round(date.getTime()/1000),
+                                        hour: date.getHours(),
+                                        dow: date.getDay(),
+                                        user_details:JSON.stringify(
+                                            {
+                                                custom:custom
+                                            }
+                                        )
+                                    }
+                                }, function(a, c, b) {});
+                            }); 
                         });
                     }
                     req.session.regenerate(function(err) {
                         // will have a new session here
                         req.session.uid = member["_id"];
                         req.session.gadm = (member["global_admin"] == true);
-                            req.session.email = member["email"];
+                        req.session.email = member["email"];
                         req.session.settings = member.settings;
+
                         var update = {last_login:Math.round(new Date().getTime()/1000)};
                         if(typeof member.password_changed === "undefined"){
                             update.password_changed = Math.round(new Date().getTime()/1000);
@@ -886,7 +931,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                         if(Object.keys(update).length){
                             countlyDb.collection('members').update({_id:member["_id"]}, {$set:update}, function(){});
                         }
-                            if(plugins.getConfig("frontend", member.settings).session_timeout)
+                        if(plugins.getConfig("frontend", member.settings).session_timeout)
                                 req.session.expires = Date.now()+plugins.getConfig("frontend", member.settings).session_timeout;
                         if(member.upgrade){
                             res.set({
@@ -895,8 +940,20 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                                 'Pragma': 'no-cache'
                             });
                         }
-                        res.redirect(countlyConfig.path+'/dashboard');
-                        bruteforce.reset(req.body.username);
+                        //create token
+                        authorize.save({db:countlyDb,multi:true,owner:req.session.uid,callback:function(err,token){
+                            
+                            if(err){console.log(err);}
+                            if(token)
+                            {
+                                req.session.auth_token = token;
+                            }
+                            res.redirect(countlyConfig.path+'/dashboard');
+                            bruteforce.reset(req.body.username);
+                        
+                        }});
+                        
+                        
                     });
                 }
             } else {
@@ -925,6 +982,7 @@ app.get(countlyConfig.path+'/api-key', function (req, res, next) {
             else{
                 var password = sha1Hash(user.pass);
                 var password_SHA5 = sha512Hash(user.pass);
+                user.name = (user.name+"").trim();
                 countlyDb.collection('members').findOne({$and : [{ $or: [ {"username":user.name}, {"email":user.name}]}, {$or: [{"password":password}, {"password" : password_SHA5}]}]}, function (err, member) {
                     if(member){
                         if(member.password === password) updateUserPasswordToSHA512(member._id, password_SHA5);
@@ -966,7 +1024,7 @@ app.post(countlyConfig.path+'/mobile/login', function (req, res, next) {
     if (req.body.username && req.body.password) {
         var password = sha1Hash(req.body.password);
         var password_SHA5 = sha512Hash(req.body.password);
-
+        req.body.username = (req.body.username+"").trim();
         countlyDb.collection('members').findOne({$and : [{ $or: [ {"username":req.body.username}, {"email":req.body.username}]}, {$or: [{"password":password}, {"password" : password_SHA5}]}]}, function (err, member) {
             if (member) {
                 if(member.password === password) updateUserPasswordToSHA512(member._id, password_SHA5);
@@ -1066,6 +1124,7 @@ app.post(countlyConfig.path+'/user/settings', function (req, res, next) {
             res.send("user-settings.api-key-length");
             return false;
         }
+        req.body.username = (req.body.username+"").trim();
         updatedUser.username = req.body["username"];
         updatedUser.api_key = req.body["api_key"];
         if (req.body.lang) {
@@ -1177,6 +1236,7 @@ app.post(countlyConfig.path+'/users/check/email', function (req, res, next) {
         res.send(false);
         return false;
     }
+    req.body.email = (req.body.email+"").trim();
 
     countlyDb.collection('members').findOne({email:req.body.email}, function (err, member) {
         if (member || err) {
@@ -1188,10 +1248,11 @@ app.post(countlyConfig.path+'/users/check/email', function (req, res, next) {
 });
 
 app.post(countlyConfig.path+'/users/check/username', function (req, res, next) {
-    if (!req.session.uid || !isGlobalAdmin(req) || !req.body.username) {
+    if (!req.session.uid || !req.body.username) {
         res.send(false);
         return false;
     }
+    req.body.username = (req.body.username+"").trim();
 
     countlyDb.collection('members').findOne({username:req.body.username}, function (err, member) {
         if (member || err) {

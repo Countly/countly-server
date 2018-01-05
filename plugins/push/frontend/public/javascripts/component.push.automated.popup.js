@@ -60,9 +60,6 @@ window.component('push.automated.popup', function (popup) {
             });
             m.endComputation();
         });
-
-
-
     };
 
     popup.controller = function (opts) {
@@ -117,27 +114,27 @@ window.component('push.automated.popup', function (popup) {
                     }
                     break;
                 case 3:
-                    if (message.deliveryMethod() === push.C.DELIVERY_METHOD.DELAYED && (!message.deliveryDelay() || parseInt(message.deliveryDelay()) < 1)) {
+                    if (message.autoDelay() === null || message.autoDelay() <= 0) {
                         enabled = false;
                     }
 
-                    if (!message.messagePerUser() || parseInt(message.messagePerUser()) < 1) {
+                    if (message.autoTime() === null) {
                         enabled = false;
                     }
 
-                    if (message.cohorts().length === 0) {
+                    if (message.autoCap() && (!message.autoCapMessages() || !message.autoCapSleep())) {
                         enabled = false;
                     }
 
                     break;
                 case 2:
-                    if (message.cohorts().length === 0) {
+                    if (message.autoCohorts().length === 0) {
                         enabled = false;
                     }
                     if (message.schedule() && message.date() === null) {
                         enabled = false;
                     }
-                    if (message.hasCampaingEndDate() && message.campaingEndDate() === null) {
+                    if (message.autoEnd() === null) {
                         enabled = false;
                     }
                     break;
@@ -694,7 +691,7 @@ window.component('push.automated.popup', function (popup) {
                                     options: [
                                         { value: push.C.TRIGGER_TYPE.COHORT_ENTRY, title: t('Cohort entry'), desc: t('pu.po.auto.tab1.cohort-entry-desc') },
                                         { value: push.C.TRIGGER_TYPE.COHORT_EXIT, title: t('Cohort exit'), desc: t('pu.po.auto.tab1.cohort-exit-desc') }
-                                    ], value: message.triggerType
+                                    ], value: message.autoTriggerType
                                 })
                             ]),
                             m('div.form-group', { key: "tab_1_1" }, [
@@ -705,7 +702,7 @@ window.component('push.automated.popup', function (popup) {
                                     value: function () {
                                         if (arguments.length) {
                                             var selectedCohorts = cohorts.filter(function (o) { return o.selected(); });
-                                            message.cohorts(selectedCohorts);
+                                            message.autoCohorts(selectedCohorts);
                                         }
                                         return cohorts;
                                     }
@@ -756,26 +753,36 @@ window.component('push.automated.popup', function (popup) {
                                             m('div.check-box', { style: { display: "flex" } }, [
                                                 m('input[type=checkbox]', {
                                                     id: "end-date",
-                                                    checked: message.hasCampaingEndDate() ? 'checked' : undefined,
+                                                    checked: message.autoEnd() === undefined ? undefined : 'checked',
                                                     onchange: function () {
-                                                        message.hasCampaingEndDate(!message.hasCampaingEndDate());
+                                                        if (!this.checked && message.autoEnd() === undefined) {
+                                                            message.autoEnd(null);
+                                                        } else if (this.checked) {
+                                                            message.autoEnd(undefined);
+                                                        }
                                                     }
                                                 }),
-                                                m('label', { "for": "end-date", style: { marginBottom: "0px", marginTop: "0px" } }, t('pu.po.auto.tab1.campaign-end-date'))
+                                                m('label', { "for": "end-date", style: { marginBottom: "0px", marginTop: "0px" }, onclick: function(ev) {
+                                                    if (message.autoEnd() === undefined) {
+                                                        message.autoEnd(null);
+                                                    }
+                                                } }, t('pu.po.auto.tab1.campaign-end-date'))
                                             ]),
                                         ]),
 
-                                        m('div.comp-grid-cell', { style: { backgroundColor: message.hasCampaingEndDate() ? "transparent" : "#F3F4F5" } },
+                                        m('div.comp-grid-cell', { 
+                                                style: { backgroundColor: message.autoEnd() === undefined ? "#F3F4F5" : "transparent"},
+                                                onclick: function(ev) {
+                                                    if (message.autoEnd() === undefined) {
+                                                        message.autoEnd(null);
+                                                    }
+                                                }
+                                            },
                                             m.component(window.components.datepicker, {
                                                 position: "top",
                                                 id: 'campaign-end-date',
-                                                defaultDate: message.campaingEndDate(), date: function (_date) {
-                                                    if (_date) {
-                                                        message.campaingEndDate(_date);
-                                                    }
-
-                                                    return message.hasCampaingEndDate() ? message.campaingEndDate() : null;
-                                                }
+                                                defaultDate: new Date(), 
+                                                date: message.autoEnd
                                             })
                                         )
                                     ])
@@ -804,17 +811,23 @@ window.component('push.automated.popup', function (popup) {
                                 m('div.sub-desc', { style: { paddingTop: "0px" } }, t('pu.po.auto.tab2.delivery-method-desc')),
                                 m.component(window.components.radio, {
                                     options: [
-                                        { value: push.C.DELIVERY_METHOD.IMMEDIATE, title: t('pu.po.auto.tab2.immediately'), desc: t('pu.po.auto.tab2.immediately-desc') },
+                                        { value: null, title: t('pu.po.auto.tab2.immediately'), desc: t('pu.po.auto.tab2.immediately-desc') },
                                         {
-                                            value: push.C.DELIVERY_METHOD.DELAYED, title: t('pu.po.auto.tab2.delayed'), view: function () {
+                                            value: 1, title: t('pu.po.auto.tab2.delayed'), view: function () {
 
                                                 return m('div.comp-delay-container', [
                                                     m('input', {
                                                         type: "number",
                                                         min: 1,
-                                                        value: message.deliveryDelay(),
+                                                        value: message.autoDelay() === null ? '' : message.autoDelay(),
                                                         oninput: function (e) {
-                                                            message.deliveryDelay(e.target.value);
+                                                            var i = parseInt(this.value);
+                                                            if (!isNaN(i) && i >= 0) {
+                                                                message.autoDelay(i);
+                                                            } else {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                            }
                                                         },
                                                         style: { backgroundColor: "transparent" }
                                                     }),
@@ -823,9 +836,71 @@ window.component('push.automated.popup', function (popup) {
 
                                             }
                                         }
-                                    ], value: message.deliveryMethod
+                                    ], value: function() {
+                                        if (arguments[0] === null && message.autoDelay() > 0) {
+                                            message.autoDelay(null);
+                                        } else if (arguments[0] === 1 && message.autoDelay() === null) {
+                                            message.autoDelay(1);
+                                        }
+                                        return message.autoDelay() === null ? null : 1;
+                                    }
                                 })
                             ]),
+
+                            m('div.form-group', { key: "tab_2_1" }, [
+                                m('label.block-label', t('pu.po.auto.tab2.delivery-time')),
+                                m('div.sub-desc-below', t('pu.po.auto.tab2.delivery-time-desc')),
+                                m('div.comp-grid', [
+                                    m('div.comp-grid-row', [
+                                        m('div.comp-grid-cell', [
+                                            m('div.check-box', { style: { display: "flex" } }, [
+                                                m('input[type=checkbox]', {
+                                                    id: "send-time",
+                                                    checked: message.autoTime() === undefined ? undefined : 'checked',
+                                                    onchange: function () {
+                                                        if (!this.checked && message.autoTime() === undefined) {
+                                                            message.autoTime(null);
+                                                        } else if (this.checked) {
+                                                            message.autoTime(undefined);
+                                                        }
+                                                    }
+                                                }),
+                                                m('label', { "for": "send-time", style: { 
+                                                    marginBottom: "0px", 
+                                                    marginTop: "0px",
+                                                    onclick: function(ev) {
+                                                        if (message.autoTime() === undefined) {
+                                                            message.autoTime(null);
+                                                        }
+                                                    }
+                                                } }, t('pu.po.auto.tab2.send-in-user-tz'))
+                                            ]),
+                                        ]),
+
+                                        m('div.comp-grid-cell.time-select', {
+                                            style: { backgroundColor: message.autoTime() === undefined ? "#F3F4F5" : "transparent" },
+                                            onclick: function(ev) {
+                                                if (message.autoTime() === undefined) {
+                                                    message.autoTime(null);
+                                                }
+                                            }
+                                        }, [
+                                            m('i.material-icons', 'query_builder'),
+                                            message.autoTime() === undefined ? '' : m.component(window.components.singleselect, {
+                                                id: 'delivery-time',
+                                                value: message.autoTime,
+                                                options: ctrl.times.map(function (time) {
+                                                    return window.components.selector.Option({
+                                                        value: (time < 10 ? "0" + time : time) + ":00",
+                                                        title: (time < 10 ? "0" + time : time) + ":00"
+                                                    });
+                                                })
+                                            })
+                                        ])
+                                    ])
+                                ])
+                            ]),
+
                             m('div.form-group', { key: "tab_2_1" }, [
                                 m('label.block-label', t('pu.po.auto.tab2.delivery-time')),
                                 m('div.sub-desc', { style: { paddingTop: "0px" } },t('pu.po.auto.tab2.delivery-time-desc')),
@@ -836,7 +911,7 @@ window.component('push.automated.popup', function (popup) {
                                             m('i.material-icons', 'query_builder'),
                                             m.component(window.components.singleselect, {
                                                 id: 'delivery-time',
-                                                value: message.deliveryTime,
+                                                value: message.autoTime,
                                                 options: ctrl.times.map(function (time) {
                                                     return window.components.selector.Option({
                                                         value: (time < 10 ? "0" + time : time) + ":00",
@@ -856,10 +931,10 @@ window.component('push.automated.popup', function (popup) {
                                         m('div.comp-grid-cell', t('pu.po.auto.tab2.message-per-user')),
                                         m('div.comp-grid-cell', { style: { padding: "0px" } }, [
                                             m('input', {
-                                                type: "number", value: message.messagePerUser(),
+                                                type: "number", value: message.autoCapMessages(),
                                                 min: 1,
                                                 oninput: function (e) {
-                                                    message.messagePerUser(e.target.value);
+                                                    message.autoCapMessages(e.target.value);
                                                 }
                                             })
                                         ])
@@ -1053,11 +1128,11 @@ window.component('push.automated.popup', function (popup) {
                                 m('div.comp-grid', [
                                     m('div.comp-grid-row', [
                                         m('div.comp-grid-cell', t('pu.po.auto.tab4.trigger-type')),
-                                        m('div.comp-grid-cell', message.triggerType() === push.C.TRIGGER_TYPE.COHORT_ENTRY ? t('pu.po.auto.tab4.trigger-cohort-entry') : t('pu.po.auto.tab4.trigger-cohort-exit'))
+                                        m('div.comp-grid-cell', message.autoTriggerType() === push.C.TRIGGER_TYPE.COHORT_ENTRY ? t('pu.po.auto.tab4.trigger-cohort-entry') : t('pu.po.auto.tab4.trigger-cohort-exit'))
                                     ]),
                                     m('div.comp-grid-row', [
-                                        m('div.comp-grid-cell', t.p('pu.po.auto.tab4.cohorts', message.cohorts().length)),
-                                        m('div.comp-grid-cell', message.cohorts().map(function (cohort) { return cohort.title(); }).join(', '))
+                                        m('div.comp-grid-cell', t.p('pu.po.auto.tab4.cohorts', message.autoCohorts().length)),
+                                        m('div.comp-grid-cell', message.autoCohorts().map(function (cohort) { return cohort.title(); }).join(', '))
                                     ]),
                                     m('div.comp-grid-row', [
                                         m('div.comp-grid-cell', t('pu.po.auto.tab4.caping')),

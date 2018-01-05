@@ -379,6 +379,8 @@ var AppRouter = Backbone.Router.extend({
         else if (change) {
             if (Backbone.history.fragment != "/")
                 this.navigate("#/", true);
+            else if(countlyCommon.APP_NAMESPACE !== false)
+                this.navigate("#/"+countlyCommon.ACTIVE_APP_ID+Backbone.history.fragment, true);
             else
                 this.dashboard();
         }
@@ -393,7 +395,6 @@ var AppRouter = Backbone.Router.extend({
     },
     dashboard: function () {
         if (countlyGlobal["member"].restrict && countlyGlobal["member"].restrict.indexOf("#/") !== -1) {
-            this.dashboard = function(){};
             return;
         }
         if (_.isEmpty(countlyGlobal['apps']))
@@ -1355,6 +1356,11 @@ var AppRouter = Backbone.Router.extend({
             $("body").on("click", function () {
                 $topbar.find(".dropdown").removeClass("clicked");
             });
+            
+            $("#user_api_key_item").click(function () {
+                $(this).find('input').first().select();
+            });
+        
 
             // Prevent body scroll after list inside dropdown is scrolled till the end
             // Applies to any element that has prevent-body-scroll class as well
@@ -1785,7 +1791,17 @@ var AppRouter = Backbone.Router.extend({
             var tablePersistSettings = pageSizeSettings.filter(function (item) {
                 return (item.viewId === app.activeView.cid | (item.viewId === app.activeView.cid && item.selector === settings.sTableId));
             })[0];
-            return tablePersistSettings ? tablePersistSettings.pageSize : 50;
+            
+            var pageSize;
+            
+            if(tablePersistSettings && tablePersistSettings.pageSize)
+                pageSize = tablePersistSettings.pageSize;
+            else if(settings.oInit && settings.oInit.iDisplayLength)
+                pageSize = settings.oInit.iDisplayLength;
+            else
+                pageSize = settings.iDisplayLength || settings._iDisplayLength || 50;
+
+            return pageSize;
         }
 
         $.extend(true, $.fn.dataTable.defaults, {
@@ -2301,6 +2317,25 @@ var AppRouter = Backbone.Router.extend({
                     window.components.slider.instance.close();
                 }
             }
+            
+            function timezoneNotifier(){
+                var userTimezone = jstz.determine().name();
+                var appTimeZone = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].timezone;
+        
+                //ADD ALL THE OUTLYING TIMEZONES TO THIS OBJECT WHERE THE KEY SHOULD BE A TIMEZONE FROM THE PREFINED TIMEZONES
+                //DOING THIS TO MAP THE SIMILAR TIMEZONES FROM time AND jstz MODULES
+                
+                var outlierTimeZoneMappings = {
+                    "Asia/Calcutta" : ["Asia/Kolkata"]
+                };
+
+                if(userTimezone != appTimeZone && !(outlierTimeZoneMappings[appTimeZone] && outlierTimeZoneMappings[appTimeZone].indexOf(userTimezone) > -1)){
+                    CountlyHelpers.notify({ type: "warning", title: jQuery.i18n.map["common.timezone-diff-title"], message: jQuery.i18n.map["common.timezone-diff-message"], info: jQuery.i18n.map["common.timezone-diff-info"], sticky: true })
+                }
+            }
+
+            timezoneNotifier();
+
             $("#sidebar-menu .sidebar-menu").hide();
             var type = countlyGlobal["apps"][appId].type;
             if ($("#sidebar-menu #" + type + "-type").length)

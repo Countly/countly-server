@@ -702,15 +702,15 @@ window.ConfigurationsView = countlyView.extend({
                     return;
                 }
 
-                var searchResult = self.searchKeys.filter(function(item){
-                    return item.searchKeys.indexOf(searchKey) >= 0
+                var searchResult = self.searchKeys.filter(function(item){         
+                    return item.searchKeys.indexOf(searchKey.toLowerCase()) >= 0
                 });
                 
                 var configGroups = [];
                 searchResult.forEach(function(result){
                     var group = {
                         key : result.key,
-                        rows : result.subItems.filter(function(field){ return field.searchKeys.indexOf(searchKey) >= 0})
+                        rows : result.subItems.filter(function(field){ return field.searchKeys.indexOf(searchKey.toLowerCase()) >= 0 })
                     }
                     configGroups.push(group);
                 });
@@ -734,25 +734,6 @@ window.ConfigurationsView = countlyView.extend({
              */
             var navigationTop = $("#sticky-config-header").offset().top;
 
-            // $(window).on("scroll", function(e) {
-            //     var topBarHeight = $("#top-bar").outerHeight();
-            //     var $fixedHeader = $("#sticky-config-header");
-
-            //     if ($(this).scrollTop() > navigationTop - topBarHeight) {
-            //         var width = $("#content-container").width();
-            //         $fixedHeader.addClass("fixed");
-            //         $fixedHeader.css({width: width});
-
-            //         if (topBarHeight) {
-            //             $fixedHeader.css({top: topBarHeight});
-            //         } else {
-            //             $fixedHeader.css({top: 0});
-            //         }
-            //     } else {
-            //         $fixedHeader.removeClass("fixed");
-            //         $fixedHeader.css({width: ""});
-            //     }
-            // });
 
             $(window).on("resize", function (e) {
                 var $fixedHeader = $("#sticky-config-header");
@@ -820,10 +801,10 @@ window.ConfigurationsView = countlyView.extend({
                 
                 subPrev.subItems.push({
                     key : subKey,
-                    searchKeys : searchItems
+                    searchKeys : searchItems.toLowerCase()
                 });
 
-                subPrev.wholeList += searchItems;
+                subPrev.wholeList += searchItems.toLowerCase();
                 
                 return subPrev;
             }, { wholeList : "", subItems : []});
@@ -836,7 +817,6 @@ window.ConfigurationsView = countlyView.extend({
             prev.push(searchItem);
             return prev;
         },[]);
-
         return result;
     },
     generateConfigsTable: function (configsData, id) {

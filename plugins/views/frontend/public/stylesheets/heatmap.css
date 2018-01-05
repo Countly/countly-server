@@ -219,7 +219,6 @@
 }
 
 #cly-heatmap-topbar .cly-heatmap-dropdown .cly-heatmap-menu .cly-heatmap-list {
-    all: initial;
     max-height: 300px;
     overflow: auto
 }

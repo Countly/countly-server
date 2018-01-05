@@ -15,9 +15,9 @@ countlyDb.collection('apps').find({}).toArray(function (err, apps) {
             if(err){
                 throw err;
             }
-            if(res && res.seq){
-                //still not processed, let's process italics
-                countlyDb.collection('apps').update({_id:app._id}, {$set:{seq:res.seq}}, function(err, res){
+            if(res && res._id){
+                //still not processed, let's process it
+                countlyDb.collection('apps').update({_id:app._id}, {$set:{seq:res.seq || 0}}, function(err, res){
                     if(err){
                         throw err;
                     }

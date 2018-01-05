@@ -63,7 +63,7 @@ var stats = {},
                 var userCount = 0;
         
                 for (var i = 0; i < results.length; i++) {
-                    userCount += results[i];
+                    userCount += results[i] || 0;
                 }
         
                 callback(userCount, apps.length);
@@ -81,7 +81,7 @@ var stats = {},
                         var userCount = 0;
         
                         for (var i = 0; i < results.length; i++) {
-                            userCount += results[i];
+                            userCount += results[i] || 0;
                         }
         
                         callback(userCount, allApps.length);

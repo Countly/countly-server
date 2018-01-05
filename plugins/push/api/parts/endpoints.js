@@ -5,6 +5,7 @@ var common          = require('../../../../api/utils/common.js'),
     api             = {},
     crypto          = require('crypto'),
     creds           = require('./credentials.js'),
+    Divider         = require('./divider.js'),
     moment          = require('moment-timezone'),
     momenttz        = require('moment-timezone'),
     N               = require('./note.js'),
@@ -45,11 +46,17 @@ var common          = require('../../../../api/utils/common.js'),
             // wkt = wks.map((w, i) => (i === 0 || w > wks[0] ? agy : noy) + '-w' + w),
 
             // ids of event docs
-            ids = mts.reduce((acc, m, i) => {
-                acc.push('no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m);
-                acc.push('auto_' + (agm + i >= 12 ? noy : agy) + ':' + m);
-                return acc;
-            }, []),
+            suf = '_' + crypto.createHash('md5').update('false').digest('base64')[0],
+            ids = mts.map((m, i) => 'no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m)
+                    .concat([
+                        'a_' + noy + ':' + (nom + 1) + suf,  // '_a' is from crypto.createHash("md5").update('false').digest('base64')[0]
+                        'a_' + (nom === 0 ? agy : noy) + ':' + (nom === 0 ? 12 : nom) + suf
+                    ]),
+            // mts.reduce((acc, m, i) => {
+            //     acc.push('no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m);
+            //     acc.push('a_' + (agm + i >= 12 ? noy : agy) + ':' + m + '_a');   
+            //     return acc;
+            // }, []),
             que = {_id: {$in: ids}},
 
             sen = 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_sent') + params.qstring.app_id).digest('hex'),
@@ -61,6 +68,8 @@ var common          = require('../../../../api/utils/common.js'),
             qtk = {$or: [...new Set(Object.keys(creds.DB_USER_MAP).map(k => creds.DB_USER_MAP[k]).filter(f => ['i', 'a'].indexOf(f.charAt(0)) !== -1))].map(f => { return {[creds.DB_USER_MAP.tokens + f]: true}; })},
             // query on geos for this app
             qge = {deleted: {$exists: false}, $or: [{app: common.db.ObjectID(params.qstring.app_id)}, {app: {$exists: false}}]},
+            // query on cohorts
+            qqh = {app_id: params.qstring.app_id},
 
             rxp = /([0-9]{4}):([0-9]{1,2})/;
 
@@ -80,13 +89,14 @@ var common          = require('../../../../api/utils/common.js'),
             common.dbPromise(act, 'find', que),
             common.dbPromise(app, 'count', qtk),
             common.dbPromise(app, 'count'),
+            getCohortsPluginApi() ? common.dbPromise('cohorts', 'find', qqh) : Promise.resolve(),
             getGeoPluginApi() ? common.dbPromise(geo, 'find', qge) : Promise.resolve(),
             getGeoPluginApi() ? new Promise((resolve) => resolve(geoip.lookup(params.ip_address))) : Promise.resolve()
         ]).then(results => {
             try {
                 var events = results.slice(0, 2).map(events => {
                     var ret = {weekly: {data: Array(wks.length).fill(0), keys: wkt}, monthly: {data: Array(mts.length).fill(0), keys: mtt}, total: 0};
-                    var retAuto = { daily: { data: Array(30).fill(0), keys : Array(30).fill(0).map((x, k) => k )}, total : 0, weekly: { data: Array(wks.length).fill(0), keys: wkt }, monthly: { data: Array(mts.length).fill(0), keys: mtt }};
+                    var retAuto = { daily: { data: Array(30).fill(0), keys : Array(30).fill(0).map((x, k) => k )}, total : 0 };
                     // log.d('events', events);
                     events.forEach(e => {
                         // log.d('event', e);
@@ -104,23 +114,25 @@ var common          = require('../../../../api/utils/common.js'),
                                 wi = wks[yer === agy ? 'indexOf' : 'lastIndexOf'](we),
                                 mi = mts[yer === agy ? 'indexOf' : 'lastIndexOf'](mon + 1);
 
-                                if (e.s === "no-segment" || !e.s) {
+                                if (e.s === "no-segment") {
+                                    // log.d('%s / %d: %d', e.s, d, e.d[d].c);
                                     ret.weekly.data[wi] += e.d[d].c;
                                     ret.monthly.data[mi] += e.d[d].c;
                                     ret.total += e.d[d].c;
-                                }else{
+                                } else if (e.s === 'a' && 'false' in e.d[d]) {
+                                    // log.d('%s / %d: %d', e.s, d, e.d[d]['false'].c);
                                     var date = moment({ year : yer, month : mon, day : d});
                                     var diff = moment().diff(date, "days");
                                     
-    
-                                    if(diff <= 29){
+                                    if (diff <= 29) {
                                         var target = 29 - diff;
-                                        retAuto.daily.data[target] += e.d[d].c;
-                                        retAuto.total += e.d[d].c;
+                                        retAuto.daily.data[target] += e.d[d]['false'].c;
+                                        retAuto.total += e.d[d]['false'].c;
                                     }
     
-                                    retAuto.weekly.data[wi] += e.d[d].c;
-                                    retAuto.monthly.data[mi] += e.d[d].c;
+                                    ret.weekly.data[wi] -= e.d[d]['false'].c;
+                                    ret.monthly.data[mi] -= e.d[d]['false'].c;
+                                    ret.total -= e.d[d]['false'].c;
                                 }
                         });
                     });
@@ -138,9 +150,120 @@ var common          = require('../../../../api/utils/common.js'),
                     actions_automated: events[1].a,
                     enabled: results[2] || 0,
                     users: results[3] ? results[3] - 1 : 0,
-                    geos: results[4] || [],
-                    location: results[5] ? results[5].ll || null : null
+                    cohorts: results[4] || [],
+                    geos: results[5] || [],
+                    location: results[6] ? results[6].ll || null : null
                 });
+            } catch (error) {
+                log.e(error, error.stack);
+                common.returnMessage(params, 500, 'Error: ' + error);
+            }
+        }, error => {
+            common.returnMessage(params, 500, 'Error: ' + error);
+        });
+        return true;
+    };
+
+    api.message = function (params) {
+        var argProps = {
+                '_id':              { 'required': true, 'type': 'String', 'min-length': 24, 'max-length': 24 },
+                'apps':             { 'required': true, 'type': 'Array'   },
+            },
+            args = {};
+
+        if (!(args = common.validateArgs(params.qstring.args, argProps))) {
+            log.d('Not enough params to create message: %j', params.qstring.args);
+            common.returnMessage(params, 400, 'Not enough args');
+            return;
+        }
+
+        if (!args.apps.length) {
+            common.returnMessage(params, 400, 'Not enough apps');
+            return false;
+        }
+
+        var not = new Date(),
+            noy = not.getFullYear(),
+            nom = not.getMonth(),
+            // now = mom.isoWeek(),
+            agy = noy - 1,
+            // agw = ago.isoWeek(),
+
+            // ids of event docs
+            suf = '_' + crypto.createHash('md5').update(args._id).digest('base64')[0],
+            ids = [
+                'i_' + noy + ':' + (nom + 1) + suf,  // '_a' is from crypto.createHash("md5").update('false').digest('base64')[0]
+                'i_' + (nom === 0 ? agy : noy) + ':' + (nom === 0 ? 12 : nom) + suf
+            ],
+            que = {_id: {$in: ids}, s: 'i'},
+            qms = {_id: common.db.ObjectID(args._id)},
+
+            msg = 'messages',
+            sen = args.apps.map(app_id => 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_sent') + app_id).digest('hex')),
+            act = args.apps.map(app_id => 'events' + crypto.createHash('sha1').update(common.fixEventKey('[CLY]_push_action') + app_id).digest('hex')),
+
+            rxp = /([0-9]{4}):([0-9]{1,2})/;
+
+        // log.d(sen, act);
+        // log.d('mts', mts);
+        // log.d('wks', wks);
+        // log.d('que', que);
+        // log.d('qtk', qtk);
+
+        var promises = [
+                common.dbPromise(msg, 'findOne', qms)
+            ].concat(sen.map(sen => common.dbPromise(sen, 'find', que)))
+            .concat(act.map(act => common.dbPromise(act, 'find', que)));
+
+        Promise.all(promises).then(results => {
+            try {
+                if (!results[0]) {
+                    return common.returnMessage(params, 400, 'Not found');
+                }
+
+                var ret = {
+                    sent: { daily: Array(30).fill(0), total : 0 },
+                    actions: { daily: Array(30).fill(0), total : 0 }
+                };
+
+                results.forEach((events, i) => {
+                    if (i === 0) {
+                        return;
+                    }
+
+                    console.log(i, events);
+
+                    var obj = i - 1 < sen.length ? ret.sent : ret.actions;
+
+                    events.forEach(e => {
+                        var par = e._id.match(rxp),
+                            yer = parseInt(par[1]),
+                            mon = parseInt(par[2]) - 1;
+                        
+                        Object.keys(e.d).forEach(d => {
+                            d = parseInt(d);
+
+                            if (!e.d[d][args._id]) {
+                                return;
+                            }
+
+                            // current week & month numbers are first and last in wks / mts arrays
+                            var date = moment({ year : yer, month : mon, day : d});
+                            var diff = moment().diff(date, "days");
+  
+                            console.log(d, diff, e.d[d]);
+
+                            if (diff <= 29) {
+                                var target = 29 - diff;
+                                obj.daily[target] += e.d[d][args._id].c || 0;
+                                obj.total += e.d[d][args._id].c;
+                            }
+                        });
+                    });
+                });
+
+                results[0].result.events = ret;
+                common.returnOutput(params, results[0]);
             } catch (error) {
                 log.e(error, error.stack);
                 common.returnMessage(params, 500, 'Error: ' + error);
@@ -161,7 +284,8 @@ var common          = require('../../../../api/utils/common.js'),
                 'geo':              { 'required': false, 'type': 'String'  },
                 'userConditions':   { 'required': false, 'type': 'Object'  },
                 'drillConditions':  { 'required': false, 'type': 'Object'  },
-                'test':             { 'required': false, 'type': 'Boolean' }
+                'test':             { 'required': false, 'type': 'Boolean' },
+                'auto':             { 'required': false, 'type': 'Boolean' }
             },
             msg = {};
 
@@ -226,7 +350,8 @@ var common          = require('../../../../api/utils/common.js'),
                         drillConditions: msg.drillConditions && Object.keys(msg.drillConditions).length ? msg.drillConditions : undefined,
                         geo: geo ? msg.geo : undefined,
                         tz: msg.tz,
-                        test: msg.test || false
+                        test: msg.test || false,
+                        auto: msg.auto || false
                     }), json = note.toJSON();
                     json.created = null;
             
@@ -419,7 +544,14 @@ var common          = require('../../../../api/utils/common.js'),
                 'delayWhileIdle':       { 'required': false, 'type': 'Boolean' },
                 'data':                 { 'required': false, 'type': 'Object'  },
                 'source':               { 'required': false, 'type': 'String'  },
-                'test':                 { 'required': false, 'type': 'Boolean' }
+                'test':                 { 'required': false, 'type': 'Boolean' },
+                'auto':                 { 'required': false, 'type': 'Boolean' },
+                'autoOnEntry':          { 'required': false, 'type': 'Boolean' },
+                'autoCohorts':          { 'required': false, 'type': 'Array'   },
+                'autoDelay':            { 'required': false, 'type': 'Number'  },
+                'autoTime':             { 'required': false, 'type': 'Number'  },
+                'autoCapMessages':      { 'required': false, 'type': 'Number'  },
+                'autoCapSleep':         { 'required': false, 'type': 'Number'  }
             },
             msg = {};
 
@@ -488,6 +620,16 @@ var common          = require('../../../../api/utils/common.js'),
             msg.date = null;
         }
 
+        if (params.qstring.args.autoEnd) {
+            if ((params.qstring.args.autoEnd + '').length == 10) {
+                params.qstring.args.autoEnd *= 1000;
+            }
+
+            msg.autoEnd = moment.utc(params.qstring.args.autoEnd).toDate();
+        } else {
+            msg.autoEnd = null;
+        }
+
         if (params.qstring.args.expiryDate) {
             if ((params.qstring.args.expiryDate + '').length == 10) {
                 params.qstring.args.expiryDate *= 1000;
@@ -516,9 +658,10 @@ var common          = require('../../../../api/utils/common.js'),
             common.dbPromise('apps', 'find', {_id: {$in: msg.apps.map(common.db.ObjectID)}}),
             msg.geo ? common.dbPromise('geos', 'findOne', {_id: common.db.ObjectID(msg.geo)}) : Promise.resolve(),
             msg._id ? common.dbPromise('messages', 'findOne', {_id: common.db.ObjectID(msg._id)}) : Promise.resolve(),
-            msg.media && msg.type === 'message' ? mimeInfo(msg.media) : Promise.resolve()
+            msg.media && msg.type === 'message' ? mimeInfo(msg.media) : Promise.resolve(),
+            msg.auto && msg.autoCohorts && msg.autoCohorts.length ? common.dbPromise('cohorts', 'find', {_id: {$in: msg.autoCohorts}}) : Promise.resolve()
         ]).then(results => {
-            var apps = results[0], geo = results[1], prepared = results[2], mime = results[3];
+            var apps = results[0], geo = results[1], prepared = results[2], mime = results[3], cohorts = results[4];
 
             if (apps.length !== msg.apps.length) {
                 log.d('Asked to load: %j, loaded: %j', msg.apps, apps ? apps.map(a => a._id) : 'nothing');
@@ -531,6 +674,19 @@ var common          = require('../../../../api/utils/common.js'),
 
             if (msg.media && msg.type === 'message' && (!mime || !mime.headers['content-type'])) {
                 return common.returnMessage(params, 400, 'Cannot determine MIME type of media attachment');
+            }
+
+            if (msg.auto) {
+                if (!msg.autoCohorts || !msg.autoCohorts.length) {
+                    return common.returnMessage(params, 400, 'Cohorts are required for auto messages');
+                }
+                if (!cohorts || msg.autoCohorts.length != cohorts.length) {
+                    return common.returnMessage(params, 400, 'Cohorts not found');
+                }
+
+                if (msg.autoOnEntry !== false && msg.autoOnEntry !== true) {
+                    return common.returnMessage(params, 400, 'autoOnEntry is required for auto messages');
+                }
             }
 
             if (msg._id && !prepared) {
@@ -594,7 +750,16 @@ var common          = require('../../../../api/utils/common.js'),
                 test: msg.test || false,
                 date: msg.date || new Date(),
                 expiryDate: msg.expiryDate,
-                tz: msg.tz
+                tz: msg.tz,
+                auto: msg.auto || false,
+                autoActive: msg.auto ? true : undefined,
+                autoOnEntry: msg.auto ? msg.autoOnEntry : undefined,
+                autoCohorts: msg.auto ? cohorts.map(c => c._id) : undefined,
+                autoEnd: msg.auto ? msg.autoEnd : undefined,
+                autoDelay: msg.auto ?  msg.autoDelay || 0 : undefined,
+                autoTime: msg.auto ?  msg.autoTime || 0 : undefined,
+                autoCapMessages: msg.auto ?  msg.autoCapMessages || 0 : undefined,
+                autoCapSleep: msg.auto ?  msg.autoCapSleep || 0 : undefined,
             });
 
             note.date = momenttz(note.date).utc().toDate();
@@ -649,7 +814,7 @@ var common          = require('../../../../api/utils/common.js'),
                 }
 
                 jobs.runTransient('push:build', note.toJSON()).then(build => {
-                    if (build.TOTALLY === 0) {
+                    if (!note.auto && build.TOTALLY === 0) {
                         common.returnMessage(params, 400, 'No audience');
                     } else {
                         note.build = {count: build, total: build.TOTALLY};
@@ -713,8 +878,8 @@ var common          = require('../../../../api/utils/common.js'),
         var mime = args.key.indexOf(';base64,') === -1 ? null : args.key.substring(0, args.key.indexOf(';base64,')),
             detected;
 
-        log.d('mime', mime);
-        log.d('args.key', args.key, args.key.indexOf(';base64,'));
+        // log.d('mime', mime);
+        // log.d('args.key', args.key, args.key.indexOf(';base64,'));
         
         if (args.platform === N.Platform.APNS) {
             if (mime === 'data:application/x-pkcs12') {
@@ -763,7 +928,7 @@ var common          = require('../../../../api/utils/common.js'),
                 common.returnOutput(params, {error: 'DB Error'});
             } else {
                 credentials = credentials.ops[0];
-                log.i('Saved credentials', credentials);
+                // log.i('Saved credentials', credentials);
                 jobs.runTransient('push:validate', {_id: credentials._id, cid: credentials._id, platform: args.platform}).then(() => {
                     log.d('Check app returned ok');
                     common.returnOutput(params, {cid: credentials._id});
@@ -779,7 +944,7 @@ var common          = require('../../../../api/utils/common.js'),
         return true;
     };
 
-    var geoPlugin;
+    var geoPlugin, cohortsPlugin;
 
     function getGeoPluginApi() {
         if (geoPlugin === undefined) {
@@ -787,6 +952,14 @@ var common          = require('../../../../api/utils/common.js'),
         }
 
         return geoPlugin;
+    }
+
+    function getCohortsPluginApi() {
+        if (cohortsPlugin === undefined) {
+            cohortsPlugin = plugins.getPluginsApis().cohorts || null;
+        }
+
+        return cohortsPlugin;
     }
 
     api.getAllMessages = function (params) {
@@ -824,6 +997,12 @@ var common          = require('../../../../api/utils/common.js'),
 
         if (params.qstring.source) {
             query.source = params.qstring.source;
+        }
+
+        if (params.qstring.auto === 'true') {
+            query.auto = true;
+        } else if (params.qstring.auto === 'false') {
+            query.$or = [{auto: {$exists: false}}, {auto: false}];
         }
 
         log.d('Querying messages: %j', query);
@@ -915,6 +1094,35 @@ var common          = require('../../../../api/utils/common.js'),
         return true;
     };
 
+    api.autoActive = function (params) {
+        var _id = params.qstring._id;
+
+        if (!params.qstring._id) {
+            common.returnMessage(params, 400, 'Not enough args');
+            return false;
+        }
+
+        log.d('going to change auto active for message %j', _id);
+        common.db.collection('messages').findOne({'_id': common.db.ObjectID(_id)}, function(err, message) {
+            if (!message) {
+                common.returnMessage(params, 404, 'Message not found');
+                return false;
+            }
+            message.autoActive = params.qstring.autoActive === 'true';
+
+            common.db.collection('messages').update({_id: message._id}, {$set: {autoActive: message.autoActive}}, function(){});
+
+            if (message.autoActive) {
+                plugins.dispatch("/systemlogs", {params:params, action:"push_message_activated", data:message});
+            } else {
+                plugins.dispatch("/systemlogs", {params:params, action:"push_message_deactivated", data:message});
+            }
+            common.returnOutput(params, message);
+        });
+
+        return true;
+    };
+
 
     api.appCreateUpdate = function(ob) {
         var args = ob.params.qstring.args;
@@ -968,6 +1176,60 @@ var common          = require('../../../../api/utils/common.js'),
             // common.db.collection('apps').updateOne({_id: common.db.ObjectID(args.app_id)}, update, log.logdb('updating app with credentials'));
         }
         return false;
+    };
+
+    api.onCohort = function(entered, cohort, uids) {
+        log.d('[auto] ================================= Processing cohort %j %s for %d users =======================================', cohort._id, entered ? 'enter' : 'exit', uids ? uids.length : 0);
+        common.db.collection('apps').findOne({_id: common.db.ObjectID(cohort.app_id)}, (err, app) => {
+            if (err) {
+                log.e('[auto] Error while loading app for automated push: %j', err);
+            } else {
+                if (app.apn || app.gcm) {
+                    let now = new Date(), query = {
+                        apps: app._id, 
+                        auto: true, 
+                        autoActive: true, 
+                        autoCohorts: cohort._id, 
+                        autoOnEntry: entered,
+                        deleted: {$exists: false},
+                        date: {$lt: now},
+                        $or: [
+                            {autoEnd: {$exists: false}},
+                            {autoEnd: {$gt: now}}
+                        ],
+                        'result.status': {$in: [N.Status.InProcessing, N.Status.Done]}
+                    };
+                    common.db.collection('messages').find(query).toArray((err, msgs) => {
+                        if (err){
+                            log.e('[auto] Error while loading messages: %j', err);
+                        } else if (!msgs || !msgs.length) {
+                            log.d('[auto] Won\'t process - no messages');
+                        } else {
+                            Promise.all(msgs.map(msg => {
+                                return new Promise((resolve, reject) => {
+                                    log.d('[auto] Processing message %j', msg);
+                                    let divider = new Divider(new N.Note(msg));
+                                    divider.store(common.db, app, uids, new Date()).then((stored) => {
+                                        common.db.collection('messages').update({_id: msg._id}, {$inc: {'result.total': stored}}, log.logdb('updating message with total'));
+                                        divider.nextDa(common.db).then((next) => {
+                                            if (next) {
+                                                log.d('[auto] Next auto job on %j', new Date(next));
+                                                jobs.job('push:send', {mid: msg._id}).replace().once(next);
+                                            }
+                                            resolve();
+                                        }, reject);
+                                    }, reject);
+                                });
+                            })).then((err, results) => {
+                                log.i('[auto] Finished processing cohort %j with ' + (err ? 'error %j' :  'results %j'), cohort._id, err || results);
+                            });
+                        }
+                    });
+                } else {
+                    log.d('[auto] Won\'t process - no push credentials in app');
+                }
+            }
+        });
     };
 
     function mimeInfo(url) {

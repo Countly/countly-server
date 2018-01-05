@@ -284,7 +284,11 @@ class Manager {
 					log.d('%s: divided into %d sub(s) in %d worker(s)', job._idIpc, subs.length, workersCount);
 					if (subs.length === 0) {							// no subs, run in local process
 						log.d('%s: no subs, running locally', job._idIpc);
-						job._run(this.db).then(resolve, reject);
+						this.runLocally(job).then(upd => {
+							log.d('%s: done running locally with %j', job._idIpc, upd);
+							job._save(upd);
+							resolve(upd);
+						}, reject);
 					} else {											// one and more subs, run through IPC
 						job._divide(subs).then(() => {					// set sub idx & _id, save in DB
 							try {

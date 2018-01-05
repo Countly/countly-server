@@ -3,11 +3,10 @@
 var plugin = {},
     push = require('./parts/endpoints.js'),
     common = require('../../../api/utils/common.js'),
-    countlyCommon = require('../../../api/lib/countly.common.js'),
     log = common.log('push:api'),
     plugins = require('../../pluginManager.js');
 
-(function (plugin) {
+(function () {
 
     plugins.internalEvents.push('[CLY]_push_sent');
     plugins.internalEvents.push('[CLY]_push_action');
@@ -23,49 +22,65 @@ var plugin = {},
         }
     }
 
-    plugins.register('/worker', function(ob){
+    plugins.register('/worker', function(){
         setUpCommons();
+
+        plugins.register('/cohort/enter', ({cohort, uids}) => {
+            push.onCohort(true, cohort, uids);
+        });
+        
+        plugins.register('/cohort/exit', ({cohort, uids}) => {
+            push.onCohort(false, cohort, uids);
+        });
     });
 
-    plugins.register('/master', function(ob){
+    plugins.register('/master', function(){
         setUpCommons();
         
-        require('child_process').exec('openssl version', (error, out, err) => {
-            if (error || err) {
-                log.e('=======================---------------- !!! OPENSSL ERROR !!! ----------------=======================');
-                log.e('Error: %j', error);
-                log.e('STDERR: %j', err);
-                log.e('STDOUT: %j', out);
-                log.e('=====================================================================================================');
-            } else if (!out || (out.indexOf('1.0.2') === -1 && out.indexOf('1.0.3') === -1 && out.indexOf('1.1.') === -1)) {
-                log.e('=======================---------------- !!! OPENSSL ERROR !!! ----------------=======================');
-                log.e('STDOUT: %j', out);
-                log.e('=====================================================================================================');
-            }
+        plugins.register('/cohort/enter', ({cohort, uids}) => {
+            push.onCohort(true, cohort, uids);
+        });
+        
+        plugins.register('/cohort/exit', ({cohort, uids}) => {
+            push.onCohort(false, cohort, uids);
         });
     });
 
     //write api call
-    plugins.register('/i', function(ob){
+    plugins.register('/sdk', function(ob){
         var params = ob.params;
         if (params.qstring.events) {
-            for (var i = 0; i < params.qstring.events.length; i++) {
-                var event = params.qstring.events[i];
+            var pushEvents = params.qstring.events.filter(e => e.key && e.key.indexOf('[CLY]_push_') === 0 && e.segmentation && e.segmentation.i && e.segmentation.i.length === 24),
+                msgIds = pushEvents.map(e => common.db.ObjectID(e.segmentation.i));
+            if (msgIds.length) {
+                return new Promise((resolve, reject) => {
+                    common.db.collection('messages').find({_id: {$in: msgIds}}, {auto: 1}).toArray(function(err, msgs){
+                        if (err) {
+                            log.e('Error while looking for a message: %j', err);
+                            reject(err);
+                        } else {
+                            pushEvents.forEach(event => {
+                                var msg = msgs.filter(msg => ('' + msg._id) === event.segmentation.i)[0],
+                                    inc = {};
+                                if (msg) {
+                                    event.segmentation.a = msg.auto || false;
 
-                if (event.key && event.key.indexOf('[CLY]_push') === 0 && event.segmentation && event.segmentation.i && event.segmentation.i.length == 24) {
-                    var $inc = {};
-
-                    if (event.key == '[CLY]_push_open') {
-                        $inc['result.delivered'] = event.count;
-                    } else if (event.key == '[CLY]_push_action') {
-                        $inc['result.actioned'] = event.count;
-                        if (event.segmentation && event.segmentation.b !== undefined) {
-                            $inc['result.actioned|' + event.segmentation.b] = event.count;
+                                    if (event.key == '[CLY]_push_open') {
+                                        inc['result.delivered'] = event.count;
+                                    } else if (event.key == '[CLY]_push_action') {
+                                        inc['result.actioned'] = event.count;
+                                        if (event.segmentation && event.segmentation.b !== undefined) {
+                                            inc['result.actioned|' + event.segmentation.b] = event.count;
+                                        }
+                                    }
+                                    common.db.collection('messages').update({_id: msg._id}, {$inc: inc}, function(){});
+                                }
+                            });
+                            resolve();
                         }
-                    }
+                    });
 
-                    common.db.collection('messages').update({_id: common.db.ObjectID(event.segmentation.i)}, {$inc: $inc},function(){});
-                }
+                });
             }
         }
         if (params.qstring.token_session) {
@@ -99,6 +114,12 @@ var plugin = {},
                 break;
             case 'create':
                 validateUserForWriteAPI(push.create, params);
+                break;
+            case 'message':
+                validateUserForWriteAPI(push.message, params);
+                break;
+            case 'autoActive':
+                validateUserForWriteAPI(push.autoActive, params);
                 break;
             case 'delete':
                 validateUserForWriteAPI(push.delete, params);
@@ -206,7 +227,7 @@ var plugin = {},
         var a = [];
         for (var k in dbAppUser[common.dbUserMap.tokens]) a.push(common.dbUserMap.tokens + '.' + k);
         return a;
-    };
+    }
 }(plugin));
 
 module.exports = plugin;

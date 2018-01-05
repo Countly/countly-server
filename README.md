@@ -1,5 +1,5 @@
 
-# Countly Analytics [![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Install Countly on DigitalOcean](http://do.count.ly/button.svg?v2)](http://do.count.ly)
+# Countly Analytics [![Build Status](https://api.travis-ci.org/Countly/countly-server.png?branch=master)](https://travis-ci.org/Countly/countly-server) [![Install Countly on DigitalOcean](https://do.count.ly/button.svg?v2)](http://do.count.ly)
 
 <br/>
 

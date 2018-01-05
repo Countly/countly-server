@@ -413,6 +413,7 @@ class Job extends EventEmitter {
 	_finish (err, save) {
 		save = typeof save === 'undefined' ? true : save;
 		if (!this.isCompleted) {
+			log.d('Finishing %s' + (save ? ', saving' : ''), this._json._id);
 			this._json.status = STATUS.DONE;
 			this._json.finished = Date.now();
 			this._json.duration = this._json.finished - this._json.started;
@@ -618,18 +619,22 @@ class IPCJob extends ResourcefulJob {
 	}
 
 	_sendSave(data) {
-		log.d('[%d]: Sending progress update %j', process.pid, {
-			_id: this._idIpc,
-			cmd: EVT.SAVE,
-			from: process.pid,
-			data: data || this._json
-		});
-		process.send({
-			_id: this._idIpc,
-			cmd: EVT.SAVE,
-			from: process.pid,
-			data: data || this._json
-		});
+		if (process.send) {
+			log.d('[%d]: Sending progress update %j', process.pid, {
+				_id: this._idIpc,
+				cmd: EVT.SAVE,
+				from: process.pid,
+				data: data || this._json
+			});
+			process.send({
+				_id: this._idIpc,
+				cmd: EVT.SAVE,
+				from: process.pid,
+				data: data || this._json
+			});
+		} else {
+			this._save.apply(this, arguments);
+		}
 	}
 
 	_run(/* , resource */) {
@@ -661,9 +666,9 @@ class IPCJob extends ResourcefulJob {
 
 			this._json.status = STATUS.RUNNING;
 			this._json.started = Date.now();
-			this._sendSave({status: this._json.status, started: this._json.started});
 
 			try {
+			this._sendSave({status: this._json.status, started: this._json.started});
 			this.run(
 				this.db(),
 				(err, result) => {
