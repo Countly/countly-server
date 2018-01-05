@@ -232,23 +232,6 @@ if (cluster.isMaster) {
                 }
             }
             
-            if (params.qstring.location && params.qstring.location.length > 0) {
-                var coords = params.qstring.location.split(',');
-                if (coords.length === 2) {
-                    var lat = parseFloat(coords[0]), lon = parseFloat(coords[1]);
-    
-                    if (!isNaN(lat) && !isNaN(lon)) {
-                        params.user.lat = lat;
-                        params.user.lng = lon;
-                        if(params.user.lat && params.user.lng){
-                            var update = {};  
-                            update["$set"] = {lat:params.user.lat, lng:params.user.lng};
-                            common.updateAppUser(params, update);
-                        }
-                    }
-                }
-            }
-
             if (typeof params.qstring.tz !== 'undefined' && !isNaN(parseInt(params.qstring.tz))) {
                 params.user.tz = parseInt(params.qstring.tz);
             } 
@@ -760,10 +743,7 @@ if (cluster.isMaster) {
                         case '/i':
                         {
                             params.ip_address =  params.qstring.ip_address || common.getIpAddress(req);
-                            params.user = {
-                                'country':params.qstring.country_code || 'Unknown',
-                                'city':params.qstring.city || 'Unknown'
-                            };
+                            params.user = {};
             
                             if (!params.qstring.app_key || !params.qstring.device_id) {
                                 common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');

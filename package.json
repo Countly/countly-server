@@ -65,6 +65,7 @@
     "nodemailer-sendmail-transport": "1.0.2",
     "nodemailer-smtp-pool": "2.8.3",
     "nodemailer-smtp-transport": "2.7.4",
+    "offline-geocoder": "github:iartem/offline-geocoder",
     "properties-parser": "0.3.1",
     "request": "2.81.0",
     "string": "3.3.3",
