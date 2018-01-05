@@ -20,13 +20,6 @@
 
         _period = countlyCommon.getPeriodForAjax();
 
-        var userTimezone = jstz.determine().name();
-        var appTimeZone = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].timezone;
-
-        if(userTimezone != appTimeZone){
-            CountlyHelpers.notify({ type: "warning", title: "Timezone warning", message: "Your timezone is different from the configured timezone of this application.<br/><br/>Data is recorded and visualised in application's timezone.", info: "Click to dismiss", sticky: true })
-        }
-
         if (!countlyCommon.DEBUG) {
             _activeAppKey = countlyCommon.ACTIVE_APP_KEY;
             _initialized = true;
