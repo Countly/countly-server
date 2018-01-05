@@ -2311,6 +2311,8 @@ var AppRouter = Backbone.Router.extend({
                     window.components.slider.instance.close();
                 }
             }
+
+            timezoneNotifier();
             
             function timezoneNotifier(){
                 var userTimezone = jstz.determine().name();
@@ -2327,8 +2329,6 @@ var AppRouter = Backbone.Router.extend({
                     CountlyHelpers.notify({ type: "warning", title: jQuery.i18n.map["common.timezone-diff-title"], message: jQuery.i18n.map["common.timezone-diff-message"], info: jQuery.i18n.map["common.timezone-diff-info"], sticky: true })
                 }
             }
-
-            timezoneNotifier();
 
             $("#sidebar-menu .sidebar-menu").hide();
             var type = countlyGlobal["apps"][appId].type;
