@@ -37,7 +37,7 @@ class ReportsJob extends job.Job {
                     return doneJob();
                 }
                 async.eachSeries(res, function(report, done){
-                    if(report.frequency == "daily" || (report.frequency == "weekly" && report.r_day == dow)){
+                    if(report.enabled && (report.frequency == "daily" || (report.frequency == "weekly" && report.r_day == dow))){
                         reports.getReport(countlyDb, report, function(err, ob){
                             if(!err){
                                 reports.send(ob.report, ob.message, function(){
