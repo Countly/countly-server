@@ -793,7 +793,7 @@
     countlyPopulator.ensureJobs = function() {
         if(typeof countlyCohorts !== "undefined"){
             var iap = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].iap_event || ["Buy"];
-            countlyCohorts.add({cohort_name:"Buyed & Shared", steps: JSON.stringify([
+            countlyCohorts.add({cohort_name:"Bought & Shared", steps: JSON.stringify([
                 {
                     "type": "did",
                     "event": iap[0],
