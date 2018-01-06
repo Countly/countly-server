@@ -156,4 +156,4 @@
 .metrics-checkbox-line span {  color: #636363; margin-left:5px;}
 .include-metrics{display: block; width: 100%; height: 25px; box-sizing: border-box;}
 .metrics-checkbox-line{display:inline; float: left; margin-left: 5px; width: 100px; line-height: 16px;}
-.metrics-checkbox-inline{display:inline; float: left;}
+.metrics-checkbox-inline{display:inline; float: left; font-size:14px;}
