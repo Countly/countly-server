@@ -1,0 +1,142 @@
+<div id="reports-widget-drawer" class="cly-reports-drawer">
+    <div class="title">
+        <span id="reports-widget-drawer-create-title" data-localize='reports.create_new_report_title'></span>
+        <span id="reports-widget-drawer-edit-title" data-localize='reports.edit_report_title'></span>
+        <div class="close"><i id='reports-widge-close' class="ion-ios-close-empty"></i></div>
+    </div>
+
+    <div class="details">
+        <input type="text" id="current_report_id" hidden/>
+
+        <div class="section">
+            <div class="label" data-localize='reports.report_name' ></div>
+            <div>
+                <input id="report-name-input" class="input" type="text" >
+            </div>
+        </div>
+
+
+
+        <div class="section">
+            <div class="label" data-localize='reports.emails-title'></div>
+            <div id="emails-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text"  ></div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width: 100%;"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="label" data-localize='reports.frequency' ></div>
+            <div id="reports-frequency" class="checks">
+                <div id="daily-option" class="check selected">
+                    <div class="box"></div>
+                    <div class="text"  data-localize='reports.daily'></div>
+                 </div>
+                <div id="weekly-option" class="check">
+                    <div class="box"></div>
+                    <div class="text"  data-localize='reports.weekly'></div>
+                 </div>
+            </div>
+        </div>
+       
+
+        <div class="section" id="reports-dow-section" >
+            <div class="label" data-localize='reports.dow' ></div>
+            <div id="reports-dow" class="cly-select" style="width: 100%; box-sizing: border-box;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text" ></div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width: 100%;"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="label" data-localize='reports.time' ></div>
+            <div id="time-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text" data-localize='reports.select_time'></div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width: 100%;"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="label" data-localize='reports.timezone' ></div>
+            <div id="timezone-dropdown" class="cly-select" style="width: 100%; box-sizing: border-box;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text" data-localize='reports.select_timezone'></div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width: 100%;"></div>
+            </div>
+        </div>
+
+
+        <div class="section">
+            <div class="label" data-localize='reports.apps'></div>
+            <div id="multi-app-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text" data-localize='reports.Select_apps'></div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width: 100%;"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="label" data-localize='reports.include-metrics'></div>
+            <div class="include-metrics">
+                <div class="metrics-checkbox-line">
+                    <input id="metrics-analytics" class="metrics-checkbox-inline" type="checkbox" name="metrics" value="analytics"><span data-localize='reports.analytics'></span><br>
+                </div>
+                <div class="metrics-checkbox-line">
+                    <input id="metrics-revenue" class="metrics-checkbox-inline" type="checkbox" name="metrics" value="revenue"><span data-localize='reports.revenue'></span><br>
+                </div>
+            </div>
+            <div class="include-metrics">
+                <div class="metrics-checkbox-line">
+                    <input id="metrics-events" class="metrics-checkbox-inline" type="checkbox" name="metrics" value="events" ><span data-localize='reports.events'></span><br>
+                </div>
+                <div class="metrics-checkbox-line">
+                    <input id="metrics-crash" class="metrics-checkbox-inline" type="checkbox" name="metrics" value="crash" ><span data-localize='reports.crash'></span><br>
+                </div>
+            </div>
+        </div>
+ 
+          
+ 
+ 
+</div>
+<div class="buttons">
+        <div id="create-widget" class="icon-button green disabled" data-localize='reports.Create_New_Report'></div>
+        <div id="save-widget" class="icon-button green" data-localize='reports.Save_Changes'></div>
+</div>   
+  
+
+</div>
+

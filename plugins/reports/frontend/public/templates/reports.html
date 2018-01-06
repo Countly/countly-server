@@ -1,169 +1,29 @@
 <div class="widget">
-	<div class="widget-header">
-		<div class="left">
-			<div class="title">{{page-title}}</div>
-		</div>
+    <div class="widget-header">
+        <div class="left">
+            <div class="title">{{page-title}}</div>
+        </div>
         <div class="right btn-header">
-			<div class="icon-button green" id="add-report" data-localize="reports.create"></div>
-		</div>
-	</div>
+            <div class="icon-button green" id="add-report" data-localize="reports.create"></div>
+        </div>
+    </div>
 </div>
 <div class="reports-table" data-help-localize="help.{{{chart-helper}}}">
-<div class="create-report-row user-details datatablesubrow d-table">
-    <div class="row help-zone-vs">
-        <div class="title reports-frequency-title" data-localize="reports.frequency"></div>
-        <div class="detail">
-            <input class="reports-frequency" type="radio" name="frequency" value="daily" checked><span data-localize="reports.daily"></span>&nbsp;
-            <input class="reports-frequency" type="radio" name="frequency" value="weekly"><span data-localize="reports.weekly"></span>&nbsp;
-        </div>
-    </div>
-    <div class="row help-zone-vs">
-        <div class="title" data-localize="reports.time"></div>
-        <div class="detail">
-            <div class="cly-select reports-time">
-                <div class="select-inner">
-                    <div class="text-container">
-                        <div class="text">00:00</div>
-                    </div>
-                    <div class="right combo"></div>
-                </div>
-                <div class="select-items square">
-                    <div>
-                        <div data-value="00:00" class="segmentation-option item">00:00</div>
-                        <div data-value="01:00" class="segmentation-option item">01:00</div>
-                        <div data-value="02:00" class="segmentation-option item">02:00</div>
-                        <div data-value="03:00" class="segmentation-option item">03:00</div>
-                        <div data-value="04:00" class="segmentation-option item">04:00</div>
-                        <div data-value="05:00" class="segmentation-option item">05:00</div>
-                        <div data-value="06:00" class="segmentation-option item">06:00</div>
-                        <div data-value="07:00" class="segmentation-option item">07:00</div>
-                        <div data-value="08:00" class="segmentation-option item">08:00</div>
-                        <div data-value="09:00" class="segmentation-option item">09:00</div>
-                        <div data-value="10:00" class="segmentation-option item">10:00</div>
-                        <div data-value="11:00" class="segmentation-option item">11:00</div>
-                        <div data-value="12:00" class="segmentation-option item">12:00</div>
-                        <div data-value="13:00" class="segmentation-option item">13:00</div>
-                        <div data-value="14:00" class="segmentation-option item">14:00</div>
-                        <div data-value="15:00" class="segmentation-option item">15:00</div>
-                        <div data-value="16:00" class="segmentation-option item">16:00</div>
-                        <div data-value="17:00" class="segmentation-option item">17:00</div>
-                        <div data-value="18:00" class="segmentation-option item">18:00</div>
-                        <div data-value="19:00" class="segmentation-option item">19:00</div>
-                        <div data-value="20:00" class="segmentation-option item">20:00</div>
-                        <div data-value="21:00" class="segmentation-option item">21:00</div>
-                        <div data-value="22:00" class="segmentation-option item">22:00</div>
-                        <div data-value="23:00" class="segmentation-option item">23:00</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row help-zone-vs">
-        <div class="title" data-localize="reports.timezone"></div>
-        <div class="detail">
-            <div class="cly-select reports-timezone">
-                <div class="select-inner">
-                    <div class="text-container">
-                        <div class="text">(GMT+00:00) GMT (no daylight saving)</div>
-                    </div>
-                    <div class="right combo"></div>
-                </div>
-                <div class="select-items square">
-                    <div>
-                        {{#each zoneNames}}
-                            <div data-value="{{this}}" class="segmentation-option item">{{this}}</div>
-                        {{/each}}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row reports-dow">
-        <div class="title"><span data-localize="reports.dow"></span></div>
-        <div class="detail">
-            <div class="cly-select reports-day">
-                <div class="select-inner">
-                    <div class="text-container">
-                        <div class="text">Monday</div>
-                    </div>
-                    <div class="right combo"></div>
-                </div>
-                <div class="select-items square">
-                    <div>
-                        <div data-value="1" class="segmentation-option item" data-localize="reports.monday"></div>
-                        <div data-value="2" class="segmentation-option item" data-localize="reports.tuesday"></div>
-                        <div data-value="3" class="segmentation-option item" data-localize="reports.wednesday"></div>
-                        <div data-value="4" class="segmentation-option item" data-localize="reports.thursday"></div>
-                        <div data-value="5" class="segmentation-option item" data-localize="reports.friday"></div>
-                        <div data-value="6" class="segmentation-option item" data-localize="reports.saturday"></div>
-                        <div data-value="7" class="segmentation-option item" data-localize="reports.sunday"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="title"><span data-localize="reports.emails"></span><br/>
-        (<span data-localize="reports.help-emails"></span>)</div>
-        <div class="detail">
-            <textarea name="emails" class="reports-emails" cols="20" rows="5">{{member.email}}
-</textarea>
-        </div>
-    </div>
-    <div class="row admin-apps help-zone-vs">
-        <div class="title" data-localize="reports.apps"></div>
-        <div class="select-apps">
-            <i class="fa fa-plus-circle"></i>
-            <input type="hidden" value="" class="app-list"/>
-        </div>
-        <div class="detail user-admin-list">
-            <span data-localize="reports.help-apps"></span>
-        </div>
-        <div class="no-apps" data-localize="reports.help-apps"></div>
-    </div>
-    <div class="row help-zone-vs">
-        <div class="title reports-include" data-localize="reports.include-metrics"></div>
-        <div class="detail">
-            <input type="checkbox" class="reports-metrics" name="analytics"/>&nbsp;<span data-localize="reports.analytics"></span><br/>
-            <input type="checkbox" class="reports-metrics" name="events"/>&nbsp;<span data-localize="reports.events"></span><br/>
-            {{#if hasRevenue}}
-            <input type="checkbox" class="reports-metrics" name="revenue"/>&nbsp;<span data-localize="reports.revenue"></span><br/>
-            {{/if}}
-            {{#if hasPush}}
-            <input type="checkbox" class="reports-metrics" name="push"/>&nbsp;<span data-localize="reports.push"></span><br/>
-            {{/if}}
-            {{#if hasCrash}}
-            <input type="checkbox" class="reports-metrics" name="crash"/>&nbsp;<span data-localize="reports.crash"></span><br/>
-            {{/if}}
-            {{#if hasViews}}
-            <!--<input type="checkbox" class="reports-metrics" name="views"/>&nbsp;<span data-localize="reports.views"></span><br/>-->
-            {{/if}}
-        </div>
-    </div>
-    <div class="button-container">
-        <a class="icon-button light create-report" data-localize="common.create"></a>
-        <a class="icon-button light cancel-report" data-localize="common.cancel"></a>
-    </div>
 </div>
 <table id="reports-table" cellspacing="0" class="d-table reports-table"></table>
-<div id="listof-apps">
-    <div class="search">
-        <i class="fa fa-search"></i>
-        <input type="text">
-    </div>
-	<div class="scrollable">
-		{{#eachOfObjectValue apps}}
-		<div class="app searchable">
-			<div class="image" style="background-image: url('/appimages/{{this._id}}.png');"></div>
-			<div class="name">{{this.name}}</div>
-			<input class="app_id" type="hidden" value="{{this._id}}"/>
-		</div>
-		{{/eachOfObjectValue}}
-	</div>
-	<div class="button-container">
-		<a class="icon-button green" id="done" data-localize="common.done"></a>
-		<a class="icon-button dark" id="select-all" data-localize="common.select-all"></a>
-		<a class="icon-button dark" id="deselect-all" data-localize="common.deselect-all"></a>
-	</div>
 </div>
+
+
+{{> reports-drawer-template }}
+
+
+
+<div class="save-button-wrapper">
+    <div class="data-saver-bar data-saver-bar-hide">
+        <div class="data-save-bar-remind">
+
+        </div>
+        <div class="data-saver-button icon-button green" data-localize='alert.Save_Changes'></div>
+        <div class="data-saver-cancel-button icon-button" data-localize='alert.Discard_Changes'></div>
+    </div>
 </div>

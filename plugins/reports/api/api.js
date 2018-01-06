@@ -39,6 +39,17 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                     });
 				});
                 break;
+            case 'email':
+                validate(params, function (params) {
+                    common.db.collection('members').find({}).toArray(function(err, result){
+                        const data = [];
+                        result.forEach((member) => {
+                            data.push({name: member.full_name, email: member.email});
+                        })
+                        common.returnOutput(params, data);
+                    });
+                });
+                break;
             default:
                 common.returnMessage(params, 400, 'Invalid path');
                 break;
@@ -76,11 +87,7 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                             'metrics':	{ 'required': true, 'type': 'Object' }
                         },
                         props = {};
-    
-                    if (!(props = common.validateArgs(params.qstring.args, argProps))) {
-                        common.returnMessage(params, 200, 'Not enough args');
-                        return false;
-                    }
+                    props = params.qstring.args;
                     props.frequency = (props.frequency != "weekly") ? "daily" : "weekly";
                     props.minute = (props.minute) ? parseInt(props.minute) : 0;
                     props.hour = (props.hour) ? parseInt(props.hour) : 0;
@@ -121,10 +128,8 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         },
                         props = {};
         
-                    if (!(props = common.validateArgs(params.qstring.args, argProps))) {
-                        common.returnMessage(params, 200, 'Not enough args');
-                        return false;
-                    }
+                    props = params.qstring.args;
+
                     var id = props._id;
                     delete props._id;
                     if(props.frequency != "daily" && props.frequency != "weekly")
@@ -242,6 +247,27 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
                         }
                     });
 				}, params);
+                break;
+            case 'status': 
+                validate(function (params) {
+                    const statusList = params.qstring.args;
+                    const batch = [];
+                    for (const id in statusList) {
+                        batch.push(
+                            common.db.collection("reports").findAndModify(
+                                { _id: common.db.ObjectID(id) },
+                                {},
+                                { $set: { enabled: statusList[id] } },
+                                { new: false, upsert: false }
+                            )
+                        );
+                    }
+                    Promise.all(batch).then(function (result) {
+                        common.returnMessage(params, 200, "Success");
+                    }).catch((e)=>{
+                        common.returnMessage(params, 200, e);
+                    });
+                }, params);
                 break;
             default:
                 common.returnMessage(params, 400, 'Invalid path');
