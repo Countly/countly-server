@@ -13,7 +13,7 @@
 
 
 
-.cly-reports-drawer { position:fixed; width:715px; height:100%; right:0; transform: translateX(100%); transition:transform 0.3s; top:0; background-color: #f9f9f9; border-left:1px solid #d0d0d0; z-index: 10001; }
+.cly-reports-drawer { position:fixed; width:600px; height:100%; right:0; transform: translateX(100%); transition:transform 0.3s; top:0; background-color: #f9f9f9; border-left:1px solid #d0d0d0; z-index: 10001; }
 .cly-reports-drawer.open { transform: translateX(0); transition:transform 0.3s; }
 
 .cly-reports-drawer .title { position: relative; padding:20px; font-size: 20px; color:#636363; background-color: #FFF; }
