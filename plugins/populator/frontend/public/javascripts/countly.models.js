@@ -814,16 +814,7 @@
                     "type": "did",
                     "event": "[CLY]_session",
                     "period": "30days",
-                    "query": "{\"up.fs\":{\"$lt\":"+countlyPopulator.getEndTime()+"},\"custom.Facebook Login\":{\"$in\":[\"true\"]}}",
-                    "byVal": ""
-                }
-            ])});
-            countlyCohorts.add({cohort_name:"Twitter Login", steps: JSON.stringify([
-                {
-                    "type": "did",
-                    "event": "[CLY]_session",
-                    "period": "30days",
-                    "query": "{\"custom.Twitter Login\":{\"$in\":[\"true\"]}}",
+                    "query": "{\"custom.Facebook Login\":{\"$in\":[\"true\"]}}",
                     "byVal": ""
                 }
             ])});
