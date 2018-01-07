@@ -5,6 +5,14 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 #enable command line
 bash $DIR/scripts/detect.init.sh
 
+YUM_CMD=$(which yum)
+APT_GET_CMD=$(which apt-get)
+if [[ ! -z $APT_GET_CMD ]]; then
+	apt-get install -y sqlite3
+elif [[ ! -z $YUM_CMD ]]; then
+	yum install -y sqlite3
+fi
+
 countly stop
 
 #upgrade existing plugins
@@ -12,6 +20,7 @@ countly plugin upgrade push
 countly plugin upgrade live
 
 nodejs $DIR/upgrade/17.12/scripts/removeUnusedData.js
+nodejs $DIR/upgrade/17.12/scripts/process_geo_data.js
     
 set -e
 nodejs $DIR/upgrade/17.12/scripts/process_users_meta.js

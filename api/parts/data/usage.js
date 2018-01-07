@@ -1,45 +1,154 @@
 var usage = {},
     common = require('./../../utils/common.js'),
     geoip = require('geoip-lite'),
+    geocoder = require('offline-geocoder'),
+    log = require('../../utils/log.js')('api:usage'),
     async = require('async'),
     plugins = require('../../../plugins/pluginManager.js');
 
 (function (usage) {
 
+    function locFromGeocoder(loc) {
+        loc.gps = true;
+        return new Promise(resolve => {
+            try {
+                geocoder.reverse(loc.lat, loc.lon).then(data => {
+                    loc.country = loc.country || (data && data.country && data.country.id);
+                    loc.city = loc.city || (data && data.name);
+                    resolve(loc);
+                }, err => {
+                    log.w('Error to reverse geocode: %j', err);
+                    resolve(loc);
+                });
+            } catch (e) {
+                log.e('Error in geocoder: %j', e);
+                resolve(loc);
+            } 
+        });
+    }
+
+    function locFromGeoip(loc, ip_address) {
+        return new Promise(resolve => {
+            try {
+                var data = geoip.lookup(ip_address);
+                if (data) {
+                    loc.country = loc.country || (data && data.country);
+                    loc.city = loc.city || (data && data.city);
+                    loc.lat = loc.lat === undefined ? (data && data.ll && data.ll[0]) : loc.lat;
+                    loc.lon = loc.lon === undefined ? (data && data.ll && data.ll[1]) : loc.lon;
+                    resolve(loc);
+                } else {
+                    return resolve(loc);
+                }
+            } catch (e) {
+                log.e('Error in geoip: %j', e);
+                resolve(loc);
+            }
+        });
+    }
+
+    function updateLoc(params, optout, loc) {
+        var update = {};
+
+        loc.gps = loc.gps || false;
+        if (optout) {
+            loc.country = loc.city = 'Unknown';
+            update.$unset = {loc: 1};
+        } else {
+            if (!loc.country) {
+                loc.country = loc.city = 'Unknown';
+            } else if (!loc.city) {
+                loc.city = 'Unknown';
+            }
+        }
+
+        params.user.country = loc.country;
+        params.user.city = loc.city;
+
+        if (!params.app_user || params.app_user[common.dbUserMap.country_code] !== loc.country) {
+            update.$set = {[common.dbUserMap.country_code]: loc.country};
+        }
+        if (!params.app_user || params.app_user[common.dbUserMap.city] !== loc.city) {
+            if (!update.$set) { update.$set = {}; }
+            update.$set[common.dbUserMap.city] = loc.city;
+        }
+        if (loc.tz && (!params.app_user || params.app_user.tz !== loc.tz)) {
+            if (!update.$set) { update.$set = {}; }
+            update.$set.tz = loc.tz;
+        }
+
+        if (!optout) {
+            if (loc.lat !== undefined && (loc.gps || !params.app_user || !params.app_user.loc || !params.app_user.loc.gps || (params.time.mstimestamp - params.app_user.loc.date) > 7 * 24 * 3600)) {
+                // only override lat/lon if no recent gps location exists in user document
+                if (!update.$set) { update.$set = {}; }
+                update.$set.loc = params.user.loc = {
+                    gps: loc.gps,
+                    geo: {
+                        type: 'Point',
+                        coordinates: [loc.lat, loc.lon]
+                    },
+                    date: params.time.mstimestamp
+                };
+            } else if (loc.lat === undefined) {
+                // no lat/lon, using existing one if any (assuming dev uses gps)
+                params.user.loc = params.app_user.loc;
+            }
+        }
+
+        if (update.$set || update.$unset) {
+            common.updateAppUser(params, update);
+        }
+    }
+
     // Performs geoip lookup for the IP address of the app user
     usage.beginUserSession = function (params, done) {
-        // Location of the user is retrieved using geoip-lite module from her IP address.
-        var locationData = geoip.lookup(params.ip_address);
+        var loc = {
+            country: params.qstring.country_code,
+            city: params.qstring.city,
+            tz: params.user.tz
+        };
 
-        if (locationData) {
-            if (params.user.country == "Unknown" && locationData.country) {
-                params.user.country = locationData.country;
-            }
+        if ('location' in params.qstring) {
+            if (params.qstring.location) {
+                var coords = params.qstring.location.split(',');
+                if (coords.length === 2) {
+                    var lat = parseFloat(coords[0]), 
+                        lon = parseFloat(coords[1]);
 
-            if (params.user.city == "Unknown" && locationData.city) {
-                params.user.city = locationData.city;
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        loc.lat = lan;
+                        loc.lon = lon;
+                    }
+                }
+            } else {
+                updateLoc(params, true, loc);
+                return usage.beginUserSessionAfterGeo(params, done);
             }
-
-            // Coordinate values of the user location has no use for now
-            if (locationData.ll && (!params.user.lat || !params.user.lng)) {
-                params.user.lat = locationData.ll[0];
-                params.user.lng = locationData.ll[1];
-            }
-        }       
-        var update = {"$set":{}};  
-        if(params.user.lat && params.user.lng){
-            update["$set"].lat = params.user.lat;
-            update["$set"].lng = params.user.lng;
         }
 
-        if (typeof params.user.tz !== 'undefined') {
-            update["$set"].tz = params.user.tz;
+        if (loc.lat !== undefined) {
+            locFromGeocoder(loc).then(loc => {
+                if (loc.city && loc.country) {
+                    updateLoc(params, false, loc);
+                    usage.beginUserSessionAfterGeo(params, done);
+                } else {
+                    loc.city = loc.country = undefined;
+                    locFromGeoip(loc, params.ip_address).then(loc => {
+                        updateLoc(params, false, loc);
+                        usage.beginUserSessionAfterGeo(params, done);
+                    });
+                }
+            });
+        } else {
+            locFromGeoip(loc, params.ip_address).then(loc => {
+                updateLoc(params, false, loc);
+                usage.beginUserSessionAfterGeo(params, done);
+            });
         }
-        
-        if(Object.keys(update["$set"]).length)
-            common.updateAppUser(params, update);
+    };
 
-        dbAppUser = params.app_user
+    usage.beginUserSessionAfterGeo = function (params, done) {
+        var dbAppUser = params.app_user
         if(dbAppUser){
             var lastTs = dbAppUser[common.dbUserMap['last_end_session_timestamp']] || dbAppUser[common.dbUserMap['last_begin_session_timestamp']];
             if (!lastTs || (params.time.timestamp - lastTs) > plugins.getConfig("api").session_cooldown) {
@@ -196,35 +305,6 @@ var usage = {},
         var userProps = {};
         var predefinedMetrics = usage.getPredefinedMetrics(params, userProps);
         var isNewUser = (params.app_user && params.app_user[common.dbUserMap['first_seen']])? false : true;
-        // Location of the user is retrieved using geoip-lite module from her IP address.
-        var locationData = geoip.lookup(params.ip_address);
-
-        if (locationData) {
-            if (params.user.country == "Unknown" && locationData.country) {
-                params.user.country = locationData.country;
-            }
-
-            if (params.user.city == "Unknown" && locationData.city) {
-                params.user.city = locationData.city;
-            }
-
-            // Coordinate values of the user location has no use for now
-            if (locationData.ll && (!params.user.lat || !params.user.lng)) {
-                params.user.lat = locationData.ll[0];
-                params.user.lng = locationData.ll[1];
-            }
-        }
-        
-        if(params.user.lat && params.user.lng){
-            userProps.lat = params.user.lat;
-            userProps.lng = params.user.lng;
-        }
-
-        if (params.user.tz) {
-            userProps.tz = params.user.tz;
-        }
-        
-        userProps[common.dbUserMap['country_code']] = params.user.country;
         
         for (var i=0; i < predefinedMetrics.length; i++) {
             for (var j=0; j < predefinedMetrics[i].metrics.length; j++) {
@@ -518,20 +598,12 @@ var usage = {},
             userProps[common.dbUserMap['first_seen']] = params.time.timestamp;
             userProps[common.dbUserMap['last_seen']] = params.time.timestamp;
             userProps[common.dbUserMap['device_id']] = params.qstring.device_id;
-            userProps[common.dbUserMap['country_code']] = params.user.country;
-            userProps[common.dbUserMap['city']] = params.user.city;
         } else {
             if (parseInt(user[common.dbUserMap['last_seen']], 10) < params.time.timestamp) {
                 userProps[common.dbUserMap['last_seen']] = params.time.timestamp;
             }
 
-            if (user[common.dbUserMap['city']] != params.user.city) {
-                userProps[common.dbUserMap['city']] = params.user.city;
-            }
-
             if (user[common.dbUserMap['country_code']] != params.user.country) {
-                userProps[common.dbUserMap['country_code']] = params.user.country;
-
                 /*
                  Init metric changes object here because country code is not a part of
                  "metrics" object received from begin_session thus won't be tracked otherwise
