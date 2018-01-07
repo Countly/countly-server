@@ -15,12 +15,8 @@
 			success:function (json) {
                 if(json.length > 0){
                     for(var i = 0; i < json.length; i++){
-                        console.log(json[i],"!1");
-
                         json[i].title = json[i].title ? json[i].title : ''; 
                         json[i].enabled = json[i].enabled ? true : false;
-                        console.log(json[i],"!12");
-
                     }
                 }
 				_data = json;
@@ -43,7 +39,7 @@
     };
     
     countlyReporting.getEmailAddressList = function(){
-        const data = [];
+        var data = [];
         _emailList.forEach(function(item){
             data.push({name:item.email, value: item.email})
         })
