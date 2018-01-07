@@ -251,21 +251,20 @@ var logpath = path.resolve(__dirname, '../../../log/countly-api.log');
             case 'status': 
                 validate(function (params) {
                     const statusList = params.qstring.args;
-                    const batch = [];
-                    for (const id in statusList) {
-                        batch.push(
-                            common.db.collection("reports").findAndModify(
-                                { _id: common.db.ObjectID(id) },
-                                {},
-                                { $set: { enabled: statusList[id] } },
-                                { new: false, upsert: false }
-                            )
-                        );
-                    }
-                    Promise.all(batch).then(function (result) {
-                        common.returnMessage(params, 200, "Success");
-                    }).catch((e)=>{
-                        common.returnMessage(params, 200, e);
+
+                    common.db.onOpened(function(){
+                        var bulk = common.db._native.collection("reports").initializeUnorderedBulkOp();
+                        for (const id in statusList) {
+                            bulk.find({ _id: common.db.ObjectID(id) }).updateOne({ $set: { enabled: statusList[id] } });
+                        }
+                        if (bulk.length > 0) {
+                            bulk.execute(function(err, updateResult) {
+                                if(err){
+                                    common.returnMessage(params, 200, err);
+                                }
+                                common.returnMessage(params, 200, "Success");
+                            });
+                        }
                     });
                 }, params);
                 break;
