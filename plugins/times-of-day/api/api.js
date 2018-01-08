@@ -89,9 +89,8 @@ var plugin = {},
 					continue;
 
 				var incData = (query[id] && query[id].update) ? query[id].update.$inc : {};
-				incData['d.' + dow + "." + hour + ".count"] = incData['d.' + dow + "." + hour + ".count"]
-					? incData['d.' + dow + "." + hour + ".count"] + events[i].count
-					: events[i].count;
+				incData['d.' + dow + "." + hour + ".count"] = incData['d.' + dow + "." + hour + ".count"] ?
+					incData['d.' + dow + "." + hour + ".count"] + events[i].count : events[i].count;
 
 				var setData = {};
 				setData["_id"] = id;
