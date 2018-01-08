@@ -353,7 +353,8 @@ input.migration-green-checkbox:checked,#export-widget-drawer input[type=checkbox
 
 .migration-checkbox-label
 {
-font-size: 13px;
+    font-size: 13px;
+    color: #636363;
 }
 
 .migration-message{
