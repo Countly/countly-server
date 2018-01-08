@@ -11,23 +11,7 @@ var DEVICE_ID = "1234567890";
 
 describe('Testing Times Of Day', function () {
 
-    it('Should reset app data', function(done){
-        API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
-        APP_ID = testUtils.get("APP_ID");
-
-        var params = {app_id:APP_ID, period:"reset"};
-        request
-        .get('/i/apps/reset?api_key='+API_KEY_ADMIN+"&args="+JSON.stringify(params))
-        .expect(200)
-        .end(function(err, res){
-            if (err) return done(err);
-            var ob = JSON.parse(res.text);
-            ob.should.have.property('result', 'Success');
-            setTimeout(done, 5000)
-        });
-    })
-
-    it('Should get empty data', function (done) {
+    var checkEmptyData = function(done){
         API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
         APP_ID = testUtils.get("APP_ID");
         APP_KEY = testUtils.get("APP_KEY");
@@ -48,8 +32,12 @@ describe('Testing Times Of Day', function () {
                     allItemZero.should.eql(true);
                 });
 
-                setTimeout(done, 1000)
+                done();
             });
+    }
+
+    it('Should get empty data', function (done) {
+        checkEmptyData(done);
     });
 
     it('Should add data', function(done){
@@ -62,7 +50,7 @@ describe('Testing Times Of Day', function () {
                 + '&begin_session=true'
                 + '&dow=0'
                 + '&hour=0'
-                + '&events=[{"key" : "Login", "count" : 1, "timestamp" : 1513389337}, {"key" : "Login", "count" : 1, "timestamp" : 1513389337, "hour" : 1, "dow" : 1}]' 
+                + '&events=[{"key" : "Login", "count" : 1, "timestamp" : 1513389337}, {"key" : "Login", "count" : 1, "timestamp" : 1513389337, "hour" : 1, "dow" : 1}, {"key" : "Login", "count" : 1, "timestamp" : 1513389337, "hour" : 1, "dow" : 1}]';
 
         request
             .get(url)
@@ -73,16 +61,16 @@ describe('Testing Times Of Day', function () {
                 
                 var ob = JSON.parse(res.text);
                 ob.result.should.eql("Success");
-                done();
+                setTimeout(done, 1000)
             })
     });
 
     it('Should validate session data', function(done){
         API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
         APP_ID = testUtils.get("APP_ID");
-        APP_KEY = testUtils.get("APP_KEY");
+        
         request
-            .get('/o?api_key=' + API_KEY_ADMIN + "&app_key=" + API_KEY_ADMIN + "&app_id=" + APP_ID + "&method=times-of-day&tod_type=[CLY]_session")
+            .get('/o?api_key=' + API_KEY_ADMIN + '&app_id=' + APP_ID + '&method=times-of-day&tod_type=[CLY]_session')
             .expect(200)
             .end(function (err, res) {
                 
@@ -90,7 +78,7 @@ describe('Testing Times Of Day', function () {
 
                 var ob = JSON.parse(res.text);
                 ob.length.should.eql(7);
-
+                
                 ob.forEach((element, index) => {
                     element.length.should.eql(24);
 
@@ -126,7 +114,7 @@ describe('Testing Times Of Day', function () {
                     if(index === 0){
                         element[0].should.eql(1); //First event has no dow and hour so it should get it from session level
                     }else if(index === 1){
-                        element[1].should.eql(1); //Second event has own dow and hour parameter.
+                        element[1].should.eql(2); //Second and third events had own dow and hour parameter. Checking for multiple update
                     }
                     else{
                         var allItemZero = element.every(function(i){ return i === 0});
@@ -138,9 +126,7 @@ describe('Testing Times Of Day', function () {
             });
     })
 
-    after(function(){
-        
-        //Clear app data;
+    it('Should reset app', function(done){
         API_KEY_ADMIN = testUtils.get("API_KEY_ADMIN");
         APP_ID = testUtils.get("APP_ID");
 
@@ -152,7 +138,12 @@ describe('Testing Times Of Day', function () {
             if (err) return done(err);
             var ob = JSON.parse(res.text);
             ob.should.have.property('result', 'Success');
-            setTimeout(done, 5000)
+            setTimeout(done, 1000);
         });
-    })
+    });
+
+    it('Should get empty data', function (done) {
+        checkEmptyData(done);
+    });
+
 })

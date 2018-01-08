@@ -29,27 +29,27 @@ var plugin = {},
 			events = params.qstring.events;
 		}
 
-		var queryArray = [];
 		var query = {};
 		var criteria = {};
 		var update = {};
 		var options = {};
 
+
 		if (hasSession && params.qstring.hour !== undefined && params.qstring.dow !== undefined) {
-			var sessionDate = common.getDate(params.qstring.timestamp);
-			var month = sessionDate.getFullYear() + ":" + (sessionDate.getMonth() + 1);
+			var sessionDate = common.initTimeObj(params.appTimezone, params.qstring.timestamp);
+			var id = "[CLY]_session" + "_" + sessionDate.monthly.replace('.', ':');
 
 			criteria = {
-				"_id": "[CLY]_session" + "_" + month,
+				"_id": id
 			};
 
 			var incData = {};
 			incData['d.' + params.qstring.dow + "." + params.qstring.hour + ".count"] = 1;
 			var setData = {};
-			setData["_id"] = "[CLY]_session" + "_" + month;
-			setData['m'] = month;
+			setData["_id"] = id;
+			setData['m'] = sessionDate.monthly.replace('.', ':');
 			setData['s'] = "[CLY]_session";
-			setData['app_id'] = appId;
+			setData['a'] = appId;
 
 			update = {
 				$set: setData,
@@ -60,13 +60,11 @@ var plugin = {},
 				upsert: true
 			};
 
-			query = {
+			query[id] = {
 				"criteria": criteria,
 				"update": update,
 				"options": options
-			};
-
-			queryArray.push(query);
+			}
 		}
 
 		if (hasEvents) {
@@ -74,10 +72,13 @@ var plugin = {},
 			for (var i = 0; i < events.length; i++) {
 				if (events[i].key === undefined) continue;
 
-				var eventDate = events[i].timestamp ? common.getDate(events[i].timestamp) : common.getDate(params.qstring.timestamp);
-				var month = eventDate.getFullYear() + ":" + (eventDate.getMonth() + 1);
+				var timeStamp = events[i].timestamp || params.qstring.timestamp;
+				var eventDate = common.initTimeObj(params.appTimezone, timeStamp)
+
+				var id = events[i].key + "_" + eventDate.monthly.replace('.', ':');
+
 				criteria = {
-					"_id": events[i].key + "_" + month
+					"_id": id
 				};
 
 				var dow = events[i].dow === undefined ? params.qstring.dow : events[i].dow;
@@ -87,13 +88,16 @@ var plugin = {},
 				if (dow === undefined || hour === undefined)
 					continue;
 
-				var incData = {};
-				incData['d.' + dow + "." + hour + ".count"] = 1;
+				var incData = (query[id] && query[id].update) ? query[id].update.$inc : {};
+				incData['d.' + dow + "." + hour + ".count"] = incData['d.' + dow + "." + hour + ".count"]
+					? incData['d.' + dow + "." + hour + ".count"] + 1
+					: 1;
+
 				var setData = {};
-				setData["_id"] = events[i].key + "_" + month;
-				setData['m'] = month;
+				setData["_id"] = id;
+				setData['m'] = eventDate.monthly.replace('.', ':');
 				setData['s'] = events[i].key;
-				setData['app_id'] = appId;
+				setData['a'] = appId;
 
 				update = {
 					$set: setData,
@@ -104,19 +108,18 @@ var plugin = {},
 					upsert: true
 				};
 
-				query = {
+				query[id] = {
 					"criteria": criteria,
 					"update": update,
 					"options": options
 				};
-				queryArray.push(query);
 			}
 		}
 
 		var collectionName = "timesofday" + appId;
 
-		
-		if (queryArray.length) {
+
+		if (query) {
 			common.db.collection('events').findOne({ _id: common.db.ObjectID(appId) }, { list: 1 }, function (err, eventData) {
 
 				if (err) {
@@ -124,21 +127,23 @@ var plugin = {},
 					return true;
 				}
 
-				eventData = eventData == undefined ? { list : []} : eventData;
-				
+				eventData = eventData == undefined ? { list: [] } : eventData;
+
 				var limit = plugins.getConfig("api").event_limit;
 				var overLimit = eventData.list.count > limit;
 
 				common.db.onOpened(function () {
 					var bulk = common.db._native.collection(collectionName).initializeUnorderedBulkOp();
 
-					for (var i = 0; i < queryArray.length; i++) {
 
-						var s = queryArray[i].update.$set.s;
+					Object.keys(query).forEach(function (key, index) {
+						var queryObject = query[key];
+						var s = queryObject.update.$set.s;
+
 						if (s === "[CLY]_session" || !overLimit || (overLimit && eventData.list.indexOf(s) >= 0))
-							bulk.find(queryArray[i].criteria).upsert().updateOne(queryArray[i].update);
+							bulk.find(queryObject.criteria).upsert().updateOne(queryObject.update);
+					})
 
-					}
 
 					if (bulk.length > 0) {
 						bulk.execute(function (err, updateResult) {
@@ -200,27 +205,15 @@ var plugin = {},
 	});
 
 	plugins.register("/i/apps/clear_all", function (ob) {
-		var appId = ob.appId;
-		var collectionName = "timesofday" + appId;
-		common.db.collection(collectionName).remove({}, function (res) {
-			console.log("appId", res);
-		})
+		common.db.collection("timesofday" + ob.appId).drop(function () { });
 	});
 
 	plugins.register("/i/apps/reset", function (ob) {
-		var appId = ob.appId;
-		var collectionName = "timesofday" + appId;
-		common.db.collection(collectionName).remove({}, function (res) {
-			console.log("appId", res);
-		})
+		common.db.collection("timesofday" + ob.appId).drop(function () { });
 	});
 
 	plugins.register("/i/apps/delete", function (ob) {
-		var appId = ob.appId;
-		var collectionName = "timesofday" + appId;
-		common.db.collection(collectionName).remove({}, function (res) {
-			console.log("appId", res);
-		})
+		common.db.collection("timesofday" + ob.appId).drop(function () { });
 	});
 }(plugin));
 
