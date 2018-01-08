@@ -336,7 +336,7 @@ describe('Push', function(){
                     min = momenttz.tz('2017-12-01 13:45', 'Europe/Moscow').toDate(),
                     max = momenttz.tz('2017-12-01 14:15', 'Europe/Moscow').toDate();
 
-                // console.log(now, min, max);
+                console.log(now, min, max);
 
                 streamer.load(db, null, null, 100, min.getTime(), max.getTime()).then(arr => {
                     arr.length.should.equal(0); // nobody's after GMT+3
@@ -346,6 +346,7 @@ describe('Push', function(){
                     max = momenttz.tz('2017-12-01 15:15', 'Europe/Moscow').toDate();
 
                     streamer.load(db, null, null, 100, min.getTime(), max.getTime()).then(arr => {
+                      console.log(arr);
                         arr.length.should.equal(3); // ru, tk, unknown
 
                         streamer.unload(db, arr.map(u => u._id)).then(ok => {
