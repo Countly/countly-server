@@ -19,11 +19,13 @@ countly stop
 countly plugin upgrade push
 countly plugin upgrade live
 
-nodejs $DIR/upgrade/17.12/scripts/removeUnusedData.js
-nodejs $DIR/upgrade/17.12/scripts/process_geo_data.js
+countly plugin enable times-of-day
+
+nodejs $DIR/upgrade/18.01/scripts/removeUnusedData.js
+nodejs $DIR/upgrade/18.01/scripts/process_geo_data.js
     
 set -e
-nodejs $DIR/upgrade/17.12/scripts/process_users_meta.js
+nodejs $DIR/upgrade/18.01/scripts/process_users_meta.js
 set +e
 
 #update web-sdk
