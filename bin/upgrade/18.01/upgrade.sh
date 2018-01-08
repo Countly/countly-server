@@ -22,7 +22,6 @@ countly plugin upgrade live
 countly plugin enable times-of-day
 
 nodejs $DIR/upgrade/18.01/scripts/removeUnusedData.js
-nodejs $DIR/upgrade/18.01/scripts/process_geo_data.js
     
 set -e
 nodejs $DIR/upgrade/18.01/scripts/process_users_meta.js
