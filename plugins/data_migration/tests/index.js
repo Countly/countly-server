@@ -272,7 +272,7 @@ describe("Create simple export", function(){
         after(function( done ){
             //checking statuss and seeing if it moves to end
             counter=0;
-            setTimeout(function(){validate_result(done,10,"finished","failed");},1000);
+            setTimeout(function(){validate_result(done,60,"finished","failed");},1000);
         });
         
     });
@@ -339,7 +339,7 @@ describe("Create simple export", function(){
             });
         });
         
-         it("Check for files", function(done){
+        it("Check for files", function(done){
             var dir = path.resolve(__dirname,'./../export/'+test_export_id+'.tar.gz');
             var logdir = path.resolve(__dirname,'./../../../log/dm-export_'+test_export_id+'.log');
             if (!fs.existsSync(dir))
@@ -352,11 +352,11 @@ describe("Create simple export", function(){
         }); 
     
     });
-    /*
+    
     describe("Try export in different path",function(){
         it("Run simple export", function(done){
             request
-            .post('/i/datamigration/export?only_export=1&apps='+testapp._id+'&api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&export_path='+path_resolve(__dirname,'./../../'))
+            .post('/i/datamigration/export?only_export=1&apps='+testapp._id+'&api_key='+API_KEY_ADMIN+'&app_id='+APP_ID+'&target_path='+path.resolve(__dirname,'./../../'))
             .expect(200)
             .end(function(err, res){
                 if (err) return done(err);
@@ -371,23 +371,27 @@ describe("Create simple export", function(){
          after(function( done ){
             //checking statuss and seeing if it moves to end
             counter=0;
-            setTimeout(function(){validate_result(done,10,"finished","failed");},1000);
+            setTimeout(function(){validate_result(done,60,"finished","failed");},1000);
         });
-        
-        
-    
     });
-    describe("Validate exported files and cleanup",function(){
+    
+    describe("Validate exported files",function(){
         it("Check for files", function(done){
+           
             var dir = path.resolve(__dirname,'./../../'+test_export_id+'.tar.gz');
+
             var logdir = path.resolve(__dirname,'./../../../log/dm-export_'+test_export_id+'.log');
-            if (!fs.existsSync(dir))
-                    if(!fs.existsSync(logdir))
-                        done();
-                    else
-                        done("Log file not created");
+            if(fs.existsSync(logdir))
+            {
+                if (fs.existsSync(dir))
+                done();    
             else
                done("Archive not created");
+            }
+            else
+                done("Log file not created");
+                        
+            
         }); 
         
         it("delete export", function(done){
@@ -418,8 +422,8 @@ describe("Create simple export", function(){
     
     });
     
-    */
     
+  
  describe("Valiate invalid import",function(){  
     var mytoken="";
     it("Trying import without file", function(done){
