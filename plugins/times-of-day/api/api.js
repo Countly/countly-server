@@ -70,7 +70,7 @@ var plugin = {},
 		if (hasEvents) {
 
 			for (var i = 0; i < events.length; i++) {
-				if (events[i].key === undefined) continue;
+				if (events[i].key === undefined || events[i].count === undefined) continue;
 
 				var timeStamp = events[i].timestamp || params.qstring.timestamp;
 				var eventDate = common.initTimeObj(params.appTimezone, timeStamp)
@@ -90,8 +90,8 @@ var plugin = {},
 
 				var incData = (query[id] && query[id].update) ? query[id].update.$inc : {};
 				incData['d.' + dow + "." + hour + ".count"] = incData['d.' + dow + "." + hour + ".count"]
-					? incData['d.' + dow + "." + hour + ".count"] + 1
-					: 1;
+					? incData['d.' + dow + "." + hour + ".count"] + events[i].count
+					: events[i].count;
 
 				var setData = {};
 				setData["_id"] = id;
