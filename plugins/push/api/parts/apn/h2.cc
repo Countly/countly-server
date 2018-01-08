@@ -213,7 +213,7 @@ namespace apns {
 			SSL_CTX_set_mode(obj->ssl_ctx, SSL_MODE_AUTO_RETRY);
 			SSL_CTX_set_mode(obj->ssl_ctx, SSL_MODE_RELEASE_BUFFERS);
 
-			LOG_DEBUG("loading certificate from " << obj->certificate);
+			// LOG_DEBUG("loading certificate from " << obj->certificate);
 
 			if (obj->certificate.empty()) {
 				LOG_DEBUG("no certificate, using bearer " << obj->passphrase);
