@@ -7,17 +7,22 @@
 
     };
 
-    timesOfDayPlugin.fetchTodData = function (todType) {
+    timesOfDayPlugin.fetchTodData = function (todType, date_range) {
+
+        var data = {
+            "api_key": countlyGlobal.member.api_key,
+            "app_id": countlyCommon.ACTIVE_APP_ID,
+            "tod_type": todType,
+            "method": "times-of-day"
+        };
+
+        if(date_range)
+            data.date_range = date_range;
+
         return $.ajax({
             type: "GET",
             url: countlyCommon.API_URL + "/o",
-            data: {
-                "api_key": countlyGlobal.member.api_key,
-                "app_key": countlyCommon.ACTIVE_APP_KEY,
-                "app_id": countlyCommon.ACTIVE_APP_ID,
-                "tod_type": todType,
-                "method": "times-of-day"
-            },
+            data: data,
             success: function (json) {
                 _todData = json;
             }
@@ -410,7 +415,7 @@
                     .style('fill', 'rgba(57, 150, 249, ' + c(d.value) / 100 * 0.5 + ')');
 
                 mouseOverText
-                    .text(d.value)
+                    .text(countlyCommon.getShortNumber(d.value))
                     .style('fill-opacity', 1)
                     .attr('y', function () {
                         var textHeight = d3.select(this).node().getBoundingClientRect().height;
@@ -427,7 +432,7 @@
                 var endHourText = (endHour < 10 ? "0" + endHour : endHour) + ":00";
                 var percentage = ((d.value - d.average) * 100) / d.average;
 
-                var contentText = jQuery.i18n.prop('times-of-day.tooltip-1', d.value, d.label, startHourText, endHourText) + "<br/>";
+                var contentText = jQuery.i18n.prop('times-of-day.tooltip-1', countlyCommon.formatNumber(d.value), d.label, startHourText, endHourText) + "<br/>";
                 contentText += d.value > 0 ? jQuery.i18n.prop('times-of-day.tooltip-' + (percentage > 0 ? "more" : "less") + '-than', Math.abs(percentage.toFixed(0))) : "";
                 $('#mouseOverRectEvent').tooltipster('content', contentText);
             })

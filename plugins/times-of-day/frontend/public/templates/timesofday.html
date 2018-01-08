@@ -1,8 +1,9 @@
-<div class="widget">
+<div id="tod" class="widget">
     <div class="widget-header">
         <div class="left">
             <div style="overflow: auto;">
                 <div class="title small">{{page-title}}</div>
+                
             </div>
             <div style="width:300px; display: inline-block;">
                 <div class="cly-select float">
@@ -10,7 +11,8 @@
                         <div class="text-container">
                             <div class="text" id="es-selector" data-localize="times-of-day.sessions"></div>
                         </div>
-                        <div class="right combo"></div>
+                        <div class="right combo">
+                        </div>
                     </div>
                     <div class="select-items square">
                         <div id="event-session-list">
@@ -20,6 +22,14 @@
                 </div>
             </div>
         </div>
+        <div id="date-selector" class="help-zone-vs">
+            <div class="date-buttons-container">
+                <div class="button ds" id="ds_all" data-localize="times-of-day.all-time">All</div>
+                <div class="button ds" id="ds_last_3" data-localize="times-of-day.last-3-months">Last 3 Months</div>
+                <div class="button ds" id="ds_previous" data-localize="times-of-day.previous-month">Previous Month</div>
+                <div class="button ds active selected" id="ds_this" data-localize="times-of-day.this-month">This Month</div>
+            </div>
+		</div>
     </div>
     <div class="widget-content" style="padding-top: 30px">
         <center>

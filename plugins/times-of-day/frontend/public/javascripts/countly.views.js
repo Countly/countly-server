@@ -6,10 +6,11 @@ window.todview = countlyView.extend({
     beforeRender: function () {
         var self = this;
         self.tod_type = "[CLY]_session";
+        self.date_range = this.getDateRange('current');
         if (!this.timesOfDayData) {
-            return $.when($.get(countlyGlobal["path"] + '/times-of-day/templates/times-of-day.html', function (src) {
+            return $.when($.get(countlyGlobal["path"] + '/times-of-day/templates/timesofday.html', function (src) {
                 self.template = Handlebars.compile(src);
-            }), timesOfDayPlugin.fetchAllEvents(), timesOfDayPlugin.fetchTodData(self.tod_type)).then(function () {
+            }), timesOfDayPlugin.fetchAllEvents(), timesOfDayPlugin.fetchTodData(self.tod_type, self.date_range)).then(function () {
                 self.timesOfDayData = timesOfDayPlugin.getTodData();
                 self.eventsList = timesOfDayPlugin.getEventsList();
             });
@@ -31,7 +32,7 @@ window.todview = countlyView.extend({
             var value = $(this).data("value");
             self.tod_type = value;
             $.when(
-                timesOfDayPlugin.fetchTodData(value),
+                timesOfDayPlugin.fetchTodData(value, self.date_range),
                 timesOfDayPlugin.fetchAllEvents()
             ).done(function (result) {
                 self.timesOfDayData = timesOfDayPlugin.getTodData();
@@ -39,6 +40,27 @@ window.todview = countlyView.extend({
                 self.updateView();
             });
         });
+    },
+
+    getDateRange: function (period) {
+
+        switch (period) {
+            case "current":
+                var d = moment();
+                return d.year() + ":" + (d.month() + 1);
+            case "previous":
+                var d = moment().add(-1, "M");
+                return d.year() + ":" + (d.month() + 1);
+            case "last_3":
+                var response = [];
+                for (var i = 0; i < 3; i++) {
+                    var d = moment().add(-1 * i, "M");
+                    response.push(d.year() + ":" + (d.month() + 1))
+                }
+                return response.join(',');
+            default:
+                return;
+        }
     },
 
     renderCommon: function (isRefresh) {
@@ -49,6 +71,39 @@ window.todview = countlyView.extend({
         if (!isRefresh) {
             $(this.el).html(this.template(this.templateData));
             this.updateView();
+
+            var self = this;
+
+            $('.ds').on('click', function () {
+                var id = $(this).attr('id');
+                
+                $('.ds').removeClass('active').removeClass('selected');
+                $(this).addClass('active').addClass('selected');
+
+                switch (id) {
+                    case "ds_this":
+                        self.date_range = self.getDateRange('current');
+                        break;
+                    case "ds_previous":
+                        self.date_range = self.getDateRange('previous');
+                        break;
+                    case "ds_last_3":
+                        self.date_range = self.getDateRange('last_3');
+                        break;
+                    default:
+                        self.date_range = self.getDateRange();
+                        break;
+                }
+
+                $.when(
+                    timesOfDayPlugin.fetchTodData(self.tod_type, self.date_range),
+                    timesOfDayPlugin.fetchAllEvents()
+                ).done(function (result) {
+                    self.timesOfDayData = timesOfDayPlugin.getTodData();
+                    self.eventsList = timesOfDayPlugin.getEventsList();
+                    self.updateView();
+                });
+            })
         }
     },
 
@@ -89,13 +144,27 @@ window.todview = countlyView.extend({
                         return (hour < 10 ? "0" + hour : hour) + ":00 - " + (nextHour < 10 ? "0" + nextHour : nextHour) + ":00"
                     }, "sType": "string", "sTitle": jQuery.i18n.map['times-of-day.hours']
                 },
-                { "mData": "monday", "sType": "numeric", "sTitle": jQuery.i18n.map['times-of-day.monday'] },
-                { "mData": "tuesday", "sType": "numeric", "sTitle": jQuery.i18n.map['times-of-day.tuesday'] },
-                { "mData": "wednesday", "sType": "numeric", "sTitle": jQuery.i18n.map['times-of-day.wednesday'] },
-                { "mData": "thursday", "sType": "numeric", "sTitle": jQuery.i18n.map['times-of-day.thursday'] },
-                { "mData": "friday", "sType": "numeric", "sTitle": jQuery.i18n.map['times-of-day.friday'] },
-                { "mData": "saturday", "sType": "numeric", "sTitle": jQuery.i18n.map['times-of-day.saturday'] },
-                { "mData": "sunday", "sType": "numeric", "sTitle": jQuery.i18n.map['times-of-day.sunday'] }
+                { "mData": "monday", "sType": "numeric", "sTitle": jQuery.i18n.map['times-of-day.monday'], "mRender" :function(d){
+                    return countlyCommon.formatNumber(d);
+                }},
+                { "mData": "tuesday", "sType": "numeric", "sTitle": jQuery.i18n.map['times-of-day.tuesday'], "mRender" :function(d){
+                    return countlyCommon.formatNumber(d);
+                }},
+                { "mData": "wednesday", "sType": "numeric", "sTitle": jQuery.i18n.map['times-of-day.wednesday'], "mRender" :function(d){
+                    return countlyCommon.formatNumber(d);
+                }},
+                { "mData": "thursday", "sType": "numeric", "sTitle": jQuery.i18n.map['times-of-day.thursday'], "mRender" :function(d){
+                    return countlyCommon.formatNumber(d);
+                } },
+                { "mData": "friday", "sType": "numeric", "sTitle": jQuery.i18n.map['times-of-day.friday'], "mRender" :function(d){
+                    return countlyCommon.formatNumber(d);
+                } },
+                { "mData": "saturday", "sType": "numeric", "sTitle": jQuery.i18n.map['times-of-day.saturday'], "mRender" :function(d){
+                    return countlyCommon.formatNumber(d);
+                } },
+                { "mData": "sunday", "sType": "numeric", "sTitle": jQuery.i18n.map['times-of-day.sunday'], "mRender" :function(d){
+                    return countlyCommon.formatNumber(d);
+                } }
             ]
         }));
 
@@ -119,5 +188,5 @@ $(document).ready(function () {
         '<div class="text" data-localize="times-of-day.plugin-title"></div>' +
         '</a>';
 
-    $('.sidebar-menu #analytics-submenu').append(menu); 
+    $('.sidebar-menu #engagement-submenu').append(menu);
 });
