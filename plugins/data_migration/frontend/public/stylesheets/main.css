@@ -50,7 +50,6 @@ line-height: 17px;
 .data-migration .d-table
 {
     border-bottom: 1px solid #D0D0D0;
-
 }
 
 .data-migration .d-table td
@@ -69,13 +68,11 @@ line-height: 17px;
     text-align:center;
 }
 
-
-/*Options dropdown - copied from alerts plugin */
-.options-item .edit { display: block; right: 10px; top: 0; font-size: 17px; cursor: pointer; color: #a7a7a7; padding: 7px 10px; line-height: 15px; background-color: rgba(255,255,255,0.03); transition: background-color 1s; }
-.options-item .edit:before { font-size:20px; font-family: 'Ionicons';  content: "\f396"; }
-.options-item .edit:hover { color: #6B6B6B;  background-color: rgba(255,255,255,0.06); transition: background-color 1s; }
-.options-item:hover .edit-menu { display: block; }
-.options-item .edit-menu { 
+.data-migration-plugin .options-item .edit { display: block; right: 10px; top: 0; font-size: 17px; cursor: pointer; color: #a7a7a7; padding: 7px 10px; line-height: 15px; background-color: rgba(255,255,255,0.03); transition: background-color 1s; }
+.data-migration-plugin .options-item .edit:before { font-size:20px; font-family: 'Ionicons';  content: "\f396"; }
+.data-migration-plugin .options-item .edit:hover { color: #6B6B6B;  background-color: rgba(255,255,255,0.06); transition: background-color 1s; }
+.data-migration-plugin .options-item:hover .edit-menu { display: block; }
+.data-migration-plugin .options-item .edit-menu { 
     margin: -6px -80px;
     display: none; 
     float:left; 
@@ -89,15 +86,15 @@ line-height: 17px;
     padding:10px 0 10px 0;
     border: 1px solid #d0d0d0;
 }
-.options-item .edit-menu .item {  
+.data-migration-plugin .options-item .edit-menu .item {  
     cursor: pointer;
     padding: 8px 20px; 
     font-size: 24px;
     white-space: nowrap; 
     cursor:pointer; font-size: 13px; white-space: nowrap; color:#474747; }
-.options-item .edit-menu .item:hover { background-color: #f3f3f3; }
+.data-migration-plugin .options-item .edit-menu .item:hover { background-color: #f3f3f3; }
  
- .options-item .edit-menu:before {
+.data-migration-plugin .options-item .edit-menu:before {
     border: 4px solid rgba(194, 225, 245, 0);
     border-bottom-color: #FFF;
     right: 7px;
@@ -110,7 +107,7 @@ line-height: 17px;
     z-index: 2;
 }
  
- .options-item .edit-menu:after {
+.data-migration-plugin .options-item .edit-menu:after {
     border: 5px solid rgba(194, 225, 245, 0);
     border-bottom-color: #d0d0d0;
     right: 6px;
@@ -123,7 +120,7 @@ line-height: 17px;
     z-index: 1;
 }
 
-.options-item .edit-menu a.item{display:block;}
+.data-migration-plugin .options-item .edit-menu a.item{display:block;}
 
 /*options for top */
 #import-export-button
@@ -258,7 +255,7 @@ text-align: left;
     z-index:100;
 }
 
-.file_upload_drop
+#data-migration-import-via-file
 {
     width: 100%;
     height: 500px;
@@ -268,7 +265,7 @@ text-align: left;
     position: relative;
 }
 
-.file_upload_drop.file-selected .dz-message, .file_upload_drop.file-selected .fallback {
+#data-migration-import-via-file.file-selected .dz-message, #data-migration-import-via-file.file-selected .fallback {
     display: none;
 }
 
