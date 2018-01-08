@@ -30,6 +30,19 @@ Before starting, you may want to check Github's guide on [contributing open sour
 All translations take place on [Transifex Countly page](transifex.com/projects/p/countly). Please check if your language 
 is not there, or has a small percentage of translation. Create your account and apply to be a translator. 
 
+## Setting up a Development Environment
+
+Whether you want to start working on developing a new plugin, or some feature/ issue on the Countly Server itself, you will need a development environment to test your code on. 
+
+_Note: you will need [Vagrant](https://www.vagrantup.com/) and [Virtualbox](https://www.virtualbox.org/wiki/Downloads) installed._
+
+1. Start a VM on your machine, with `vagrant up`. 
+1. Log into the VM, with `vagrant ssh`
+1. Use the standard `countly start` / `countly restart` / etc. commands
+1. Logs are available in `/opt/countly/logs`
+1. (Optional) You might additionally want to enable the [debugger](https://resources.count.ly/v1.0/docs/debugging). 
+
+
 ## Add a badge to your site
 
 If you like Countly, [why not use one of our badges](https://count.ly/brand-assets/) and give a link back to us, so others know about this wonderful platform? 
