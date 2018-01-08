@@ -102,11 +102,11 @@
                             <tr>
                                 <td>{{value.app_list}}</td>
                                 <td>
-                                {{#ifCond value.type "!=" ""}} 
+                                {{#if value.type}} 
                                     <span class="migration_status migration_progress"></span>{{value.status_text}}
                                 {{else}}
                                     <span class="migration_status migration_finished"></span>{{value.status_text}}
-                                {{/ifCond}}
+                                {{/if}}
                                 </td>
                                 <td>{{value.last_update}}</td>
                                 <td>

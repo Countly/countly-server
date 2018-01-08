@@ -337,14 +337,9 @@ window.DataMigrationView = countlyView.extend({
                             else
                                 formData.push({ name:'only_export', value:'' });
                             formData.push({ name:'apps', value:applist.join() });
-
-   
                         },
                         success:function (result) {
-                            if(result['result'])
-                            {
-                                overlay.hide();                         
-                            }  
+                            overlay.hide();                          
                             self.load_export_list()
                             setTimeout(self.load_export_list(),1000);                            
                             $("#export-widget-drawer").removeClass("open");
@@ -411,8 +406,11 @@ window.DataMigrationView = countlyView.extend({
             var overlay = $("#overlay").clone();
             $("body").append(overlay);
             overlay.show();
-            
-            $.when(countlyDataMigration.sendExport($('#resend_export_id').val(),$('#migrate_server_token').val(),$('#migrate_server_address').val(),function(result)
+            var redir_me = '';
+            if($("#migration_redirect_traffic input").first().prop('checked') == true){
+                redir_me = '1';
+            }
+           $.when(countlyDataMigration.sendExport($('#resend_export_id').val(),$('#migrate_server_token').val(),$('#migrate_server_address').val(),redir_me,function(result)
             {
                 overlay.hide();
                 if(result && result['result']=='success')
@@ -433,7 +431,7 @@ window.DataMigrationView = countlyView.extend({
                        
                 }
                 self.load_export_list();
-            }));        
+            }));       
         });
     },
     create_import_tab:function()
@@ -773,14 +771,8 @@ window.DataMigrationView = countlyView.extend({
 //create view
 app.DataMigrationView = new DataMigrationView();
 
-function process(val)
-{
-    if(val && val!='')
-    {
-    return val;
-    }
-    return "";
-}
+
+
 if(countlyGlobal["member"].global_admin){
     //register route
    app.route('/manage/data-migration', 'datamigration', function () {
@@ -790,10 +782,11 @@ if(countlyGlobal["member"].global_admin){
     //add app setting for redirect
     app.addAppSetting("redirect_url", {
         toDisplay: function(appId, elem){
-            $(elem).text(process(countlyGlobal['apps'][appId]["redirect_url"]));
+            var vall = countlyGlobal['apps'][appId]["redirect_url"] || "";
+            $(elem).text(vall);
         },
         toInput: function(appId, elem){
-            var val = process(countlyGlobal['apps'][appId]["redirect_url"]);
+            var val = countlyGlobal['apps'][appId]["redirect_url"] || "";
             $(elem).val(val);
             if(val!="")
             {

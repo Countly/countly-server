@@ -211,7 +211,7 @@
 		});
     }
     
-    countlyDataMigration.sendExport = function(exportid,token,address,callback){
+    countlyDataMigration.sendExport = function(exportid,token,address,rediret_traffic,callback){
         $.ajax({
 			type:"GET",
 			url:countlyCommon.API_URL + "/i/datamigration/sendexport",
@@ -219,7 +219,8 @@
                 "app_id":countlyCommon.ACTIVE_APP_ID,
                 "server_token":token,
                 "server_address":address,
-                "exportid":exportid
+                "exportid":exportid,
+                'redirect_traffic':rediret_traffic
 			},
 			success:function (json) {
                 if(callback)
