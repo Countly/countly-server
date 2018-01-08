@@ -1,0 +1,26 @@
+{
+  "name": "countly-data-migration",
+  "title": "Data migration",
+  "version": "0.0.1",
+  "description": "Plugin for data migration from one Countly server to other",
+  "author": "Count.ly",
+  "homepage": "https://count.ly/plugins/",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Countly/countly-server.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Countly/countly-server/issues"
+  },
+  "keywords": [
+    "countly",
+    "analytics",
+    "mobile",
+    "plugins",
+    "template"
+  ],
+  "dependencies": {
+    "fs-extra": "^4.0.2"
+  },
+  "private": true
+}

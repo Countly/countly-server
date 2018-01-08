@@ -1,0 +1,75 @@
+<div id="export-widget-drawer" class="cly-drawer">
+    <div class="title">
+        <span data-localize="data-migration.export-title">Export data</span>
+        <div class="close"><i class="ion-ios-close-empty"></i></div>
+    </div>
+    <div class="details">
+    <form action="/i/datamigration/export" enctype="multipart/form-data" method="post" id="export_data_form" >
+        <div class="section">
+            <div class='label' data-localize="data-migration.aplications">Select Applications</label></div>
+            <div id="multi-app-dropdown" class="cly-multi-select" style="width: 100%; box-sizing: border-box;">
+                <div class="select-inner">
+                    <div class="text-container">
+                        <div class="text">
+                            <div class="default-text"></div>
+                        </div>
+                    </div>
+                    <div class="right combo"></div>
+                </div>
+                <div class="select-items square" style="width: 100%;"></div>
+            </div>
+            <input type='hidden' value="" name='exportid' id='resend_export_id' />
+        </div>
+        <div class='section' id="export_path" >
+            <div class="label" data-localize="data-migration.export-other-path"></div>
+            <div><input type='text' class="input" name='target_path' id='dif_target_path' /></div>
+            <p></p>
+        </div>
+        <div class="settings section" id="export-type-section">
+            <div class="label" data-localize="data-migration.export-type">Export type</div>
+            <div id="data-export-type-selector" class="checks">
+                <div data-from="export-transfer" class="check selected">
+                    <div class="box"></div>
+                    <div class="text" data-localize="data-migration.export-type-transfer-label">Export and transfer</div>
+                    <div class="description" data-localize="data-migration.export-type-transfer-description"></div>
+                </div>
+                <div data-from="export-download" class="check">
+                    <div class="box"></div>
+                    <div class="text" data-localize="data-migration.export-type-download-label">Export and download only</div>
+                    <div class="description" data-localize="data-migration.export-type-download-description">Exports package, which you can download later </div>
+                </div>
+            </div>
+        </div>
+        <div class="settings section" id="target-server-data">
+            <div class="label">
+                <span data-localize="data-migration.server-address"></span>
+                <span class='description' data-localize="data-migration.server-address-description"></span>
+            </div>
+            <div><input type='text' class="input" name='server_address' id='migrate_server_address' /></div>
+            <p></p>
+
+            <div class="label">
+                <span data-localize="data-migration.server-token"></span>
+                <span class="description" data-localize="data-migration.server-token-description"></span>
+            </div>
+            <div><input type='text' class="input" name='server_token' id='migrate_server_token' /></div>
+            
+            
+            <div data-localize="data-migration.test-connection" id="test_connection_button" data-localize="data-migration.test-connection" >Test connection</div>
+            
+        </div>
+         <div class="settings section" id="export-more-options">
+            <div id='migration_additional_files'><input  type='checkbox' name="aditional_files" value="1"/><label data-localize="data-migration.export-additional-files" class='migration-checkbox-label'></label></div>
+            
+            <div id='migration_redirect_traffic'><input  type='checkbox' name="redirect_traffic" value="1"/><label data-localize="data-migration.redirect-traffic" class='migration-checkbox-label'></label></div>
+            
+            
+         </div>
+       
+        
+        <input type='hidden' name="api_key" class="symbol-api-key"/>
+        <input type='hidden' name="app_id" class="symbol-app-id"/>
+        </form>
+    </div>
+    <div class="buttons"><div id='export_data_button' class='icon-button green disabled' data-localize="data-migration.export-data-button" >Export data</div><div id='send_export_button' class='icon-button green disabled' data-localize="data-migration.send-export-button" >Export data</div></div>
+</div>
