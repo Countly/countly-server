@@ -267,9 +267,9 @@ module.exports = function(my_db){
             child.on('error', function(error) {
                 if(my_logpath!='')
                 {
-                log_me(my_logpath,error.message,false);
+                    log_me(my_logpath,error.message,false);
                 }
-                return reject(Error('Error.For more information view log'+my_logpath));
+                return resolve();
                 
             });
             child.on('exit', function(code) {
@@ -287,7 +287,11 @@ module.exports = function(my_db){
                 }
                 else
                 {
-                    return reject(Error("Error. For more information view log: "+my_logpath));
+                    if(my_logpath!='')
+                    {
+                        log_me(my_logpath,"Exited with error code: "+code,false);
+                    }
+                    return resolve();
                 }
                 
             })
@@ -307,8 +311,11 @@ module.exports = function(my_db){
                             for (var z = 0; z < res[j].list.length; z++) {
                                 var eventCollName = "events" + crypto.createHash('sha1').update(res[j].list[z] + data.appid).digest('hex');
                                 scripts.push('mongodump ' + data.dbstr + ' --collection ' + eventCollName + ' --out ' + data.my_folder);
-                                eventCollName = "drill_events" + crypto.createHash('sha1').update(res[j].list[z] + data.appid).digest('hex');		
-                                scripts.push('mongodump ' + data.dbstr_drill + ' --collection ' + eventCollName + ' --out ' + data.my_folder);
+                                if(plugins.isPluginEnabled('drill'))
+                                {
+                                    eventCollName = "drill_events" + crypto.createHash('sha1').update(res[j].list[z] + data.appid).digest('hex');		
+                                    scripts.push('mongodump ' + data.dbstr_drill + ' --collection ' + eventCollName + ' --out ' + data.my_folder);
+                                }
                             }
                         }
                     }
@@ -420,18 +427,20 @@ module.exports = function(my_db){
                     scripts.push('mongodump ' + dbstr + ' --collection events -q \'{ _id: ObjectId(\"' + appid + '\") }\' --out ' + my_folder);
                     scripts.push('mongodump ' + dbstr + ' --collection funnels -q \'{ app_id: \"' + appid + '\" }\' --out ' + my_folder);
       
-                    //export drill
-                    var drill_events = ["session","view","action","push_action","push_open","push_sent","crash"]
+                    if(plugins.isPluginEnabled('drill'))
+                    {
+                        //export drill
+                        var drill_events = ["session","view","action","push_action","push_open","push_sent","crash"]
+                            
+                        for (var j=0; j<drill_events.length; j++)
+                        { 
+                            eventCollName = "drill_events" + crypto.createHash('sha1').update("[CLY]_"+drill_events[j] + appid).digest('hex');
+                            scripts.push('mongodump ' + dbstr_drill + ' --collection ' + eventCollName + ' --out ' + my_folder);
+                        }
                         
-                    for (var j=0; j<drill_events.length; j++)
-                    { 
-                        eventCollName = "drill_events" + crypto.createHash('sha1').update("[CLY]_"+drill_events[j] + appid).digest('hex');
-                        scripts.push('mongodump ' + dbstr_drill + ' --collection ' + eventCollName + ' --out ' + my_folder);
+                        scripts.push('mongodump ' + dbstr_drill + ' --collection drill_bookmarks -q \'{ app_id: \"' + appid + '\" }\' --out '+ my_folder);
+                        scripts.push('mongodump ' + dbstr_drill + ' --collection drill_meta'+appid+' --out '+ my_folder);
                     }
-                    
-                    scripts.push('mongodump ' + dbstr_drill + ' --collection drill_bookmarks -q \'{ app_id: \"' + appid + '\" }\' --out '+ my_folder);
-                    scripts.push('mongodump ' + dbstr_drill + ' --collection drill_meta'+appid+' --out '+ my_folder);
-
                     if(data.aditional_files)//export symbolication files
                     {
                         scripts.push('mongodump ' + dbstr + ' --collection app_crashsymbols' + appid+' --out '+ my_folder);
