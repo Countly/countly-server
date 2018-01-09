@@ -104,7 +104,7 @@ var usage = {},
                     gps: loc.gps,
                     geo: {
                         type: 'Point',
-                        coordinates: [loc.lat, loc.lon]
+                        coordinates: [loc.lon, loc.lat]
                     },
                     date: params.time.mstimestamp
                 };
