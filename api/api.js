@@ -437,7 +437,7 @@ if (cluster.isMaster) {
                     
                     function processRequestData(){
                         plugins.dispatch("/i", {params:params, app:app});
-                
+                        
                         if (params.qstring.events) {
                             if(params.promises)
                                 params.promises.push(countlyApi.data.events.processEvents(params));
@@ -446,7 +446,15 @@ if (cluster.isMaster) {
                         } else if (plugins.getConfig("api").safe && !params.bulk) {
                             common.returnMessage(params, 200, 'Success');
                         }
-                
+
+                        if (countlyApi.data.usage.processLocationRequired(params)) {
+                            countlyApi.data.usage.processLocation(params).then(continueProcessingRequestData);
+                        } else {
+                            continueProcessingRequestData();
+                        }
+                    }
+                    
+                    function continueProcessingRequestData(){
                         if (params.qstring.begin_session) {
                             countlyApi.data.usage.beginUserSession(params, done);
                         } else {
