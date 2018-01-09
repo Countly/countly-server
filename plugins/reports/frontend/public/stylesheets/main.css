@@ -13,7 +13,7 @@
 
 
 
-.cly-reports-drawer { position:fixed; width:600px; height:100%; right:0; transform: translateX(100%); transition:transform 0.3s; top:0; background-color: #f9f9f9; border-left:1px solid #d0d0d0; z-index: 10001; }
+.cly-reports-drawer { position:fixed; width:450px; height:100%; right:0; transform: translateX(100%); transition:transform 0.3s; top:0; background-color: #f9f9f9; border-left:1px solid #d0d0d0; z-index: 10001; }
 .cly-reports-drawer.open { transform: translateX(0); transition:transform 0.3s; }
 
 .cly-reports-drawer .title { position: relative; padding:20px; font-size: 20px; color:#636363; background-color: #FFF; }
@@ -153,7 +153,72 @@
     color: gray;
     margin-top: 18px;
 }
-.metrics-checkbox-line span {  color: #636363; margin-left:5px;}
-.include-metrics{display: block; width: 100%; height: 25px; box-sizing: border-box;}
-.metrics-checkbox-line{display:inline; float: left; margin-left: 5px; width: 100px; line-height: 16px;}
-.metrics-checkbox-inline{display:inline; float: left; font-size:14px;}
+.metrics-checkbox-line span {  color: #636363;}
+.include-metrics{display: block; width: 100%; }
+.metrics-checkbox-line{display:inline; float: left; margin-left: 5px;}
+.metrics-checkbox-inline{display:inline; float: left; font-size:12px;}
+
+
+.metrics-checkbox-line .container {
+    display: block;
+    position: relative;
+    padding-left: 23px;
+    margin-right: 10px;
+    margin-bottom: 12px;
+    line-height: 17px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #636363;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.metrics-checkbox-line .container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.metrics-checkbox-line .container .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 15px;
+    width: 15px;
+    background-color: #FFF;
+    border: solid;
+    border-width: 1px;
+    border-color: #c9c9c9;
+}
+
+.metrics-checkbox-line .container:hover input ~ .checkmark {
+ 
+}
+
+.metrics-checkbox-line .container input:checked ~ .checkmark {
+    background-color: #FFF;
+}
+
+.metrics-checkbox-line .container .checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.metrics-checkbox-line .container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.metrics-checkbox-line .container .checkmark:after {
+    left: 4.48px;
+    top: 1.6px;
+    width: 3.8px;
+    height: 7.5px;
+    border: solid #2EB52B;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
