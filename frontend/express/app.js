@@ -872,7 +872,7 @@ app.post(countlyConfig.path+'/login', function (req, res, next) {
                                     crashes:statsObj["total-crash-groups"],
                                     users:statsObj["total-users"]
                                 };
-                                if(!error && allData && allData.length){
+                                if(!error && allData && allData.length && !versionInfo.trial){
                                     var data = {};
                                     data.all = 0;
                                     data.month3 = [];
