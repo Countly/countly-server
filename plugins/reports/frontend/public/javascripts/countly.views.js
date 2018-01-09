@@ -555,7 +555,9 @@ window.ReportingView = countlyView.extend({
                     return $(".data-saver-bar").addClass("data-saver-bar-hide");
                 })
             })
-		})
+        })
+        
+        $(".save-table-data").css("display","none")
     }
 });
 
