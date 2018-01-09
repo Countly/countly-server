@@ -10,7 +10,7 @@ APT_GET_CMD=$(which apt-get)
 if [[ ! -z $APT_GET_CMD ]]; then
 	apt-get install -y sqlite3
 elif [[ ! -z $YUM_CMD ]]; then
-	yum install -y sqlite3
+	yum install -y sqlite
 fi
 
 countly stop
