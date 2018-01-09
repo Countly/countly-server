@@ -18,6 +18,7 @@ var crypto = require("crypto");
     * @param {string} options.token - token to store, if not provided, will be generated
     * @param {string} options.owner - id of the user who created this token
     * @param {string} options.app - id of the app for which token was created
+    * @param {string} options.endpoint - regexp of endpoint(any string - is used as substring,to mach exact ^{yourpath}$)
     * @param {function} options.callback - function called when saving was completed or errored, providing error object as first param and token string as second
     */
     authorizer.save = function (options) {
@@ -44,12 +45,12 @@ var crypto = require("crypto");
     * Get whole token information from database
     * @param {object} options - options for the task
     * @param {object} options.db - database connection
-    * @param {string} options.token - token to store, if not provided, will be generated
+    * @param {string} options.token - token to read
     * @param {function} options.callback - function called when reading was completed or errored, providing error object as first param and token object from database as second
     */
     authorizer.read = function (options) {
         options.db = options.db || common.db;
-        options.token = options.token || authorizer.getToken();
+        options.token = options.token || "";
         options.db.collection("auth_tokens").findOne({_id:options.token}, options.callback);
     };
     
@@ -57,12 +58,12 @@ var crypto = require("crypto");
     * Verify token and expire it
     * @param {object} options - options for the task
     * @param {object} options.db - database connection
-    * @param {string} options.token - token to store, if not provided, will be generated
+    * @param {string} options.token - token to verify
     * @param {function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
     */
     authorizer.verify = function (options) {
         options.db = options.db || common.db;
-        options.token = options.token || authorizer.getToken();
+        options.token = options.token || "";
         options.db.collection("auth_tokens").findOne({_id:options.token},function(err, res){
             var valid = false;
             if(res){
@@ -101,13 +102,16 @@ var crypto = require("crypto");
         });
     };
     
-    /** same as above, only if valid returns owner. Keeping both for backwards compability **/
-    /* regexp  any string - is used as substring. */
-    /* to mach exact ^{yourpath}$ */
-    /* full reference : https://www.w3schools.com/jsref/jsref_obj_regexp.asp */
+    /** 
+    * Similar to authorizer.verify. Only difference - return token owner if valid.
+    * @param {object} options - options for the task
+    * @param {object} options.db - database connection
+    * @param {string} options.token - token to verify
+    * @param {function} options.callback - function called when verifying was completed, providing 1 argument, true if could verify token and false if couldn't
+    */
     authorizer.verify_return= function (options) {
         options.db = options.db || common.db;
-        options.token = options.token || authorizer.getToken();
+        options.token = options.token || "";
         options.db.collection("auth_tokens").findOne({_id:options.token},function(err, res){
             var valid = false;
             if(res){
