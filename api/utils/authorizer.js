@@ -71,44 +71,47 @@ var crypto = require("crypto");
         if(!options.token || options.token=="")
         {
             options.callback(false);
+            return;
         }
-        
-        options.db.collection("auth_tokens").findOne({_id:options.token},function(err, res){
-            var valid = false;
-            if(res){
-                var  valid_endpoint=true;
-                if(res.endpoint && res.endpoint!="")
-                {
-                    if(options.req_path!="")
+        else
+        {
+            options.db.collection("auth_tokens").findOne({_id:options.token},function(err, res){
+                var valid = false;
+                if(res){
+                    var  valid_endpoint=true;
+                    if(res.endpoint && res.endpoint!="")
                     {
-                        valid_endpoint=false;
-                        for(var p=0; p<res.endpoint.length; p++)
+                        if(options.req_path!="")
                         {
-                            var my_regexp = new RegExp(res.endpoint[p]);
-                            if(my_regexp.test(options.req_path))
+                            valid_endpoint=false;
+                            for(var p=0; p<res.endpoint.length; p++)
                             {
-                                valid_endpoint=true;
+                                var my_regexp = new RegExp(res.endpoint[p]);
+                                if(my_regexp.test(options.req_path))
+                                {
+                                    valid_endpoint=true;
+                                }
                             }
                         }
                     }
-                }
-                
-                if(valid_endpoint)
-                {
-                    if(res.ttl === 0)
-                        valid = true;
-                    else if(res.ends >= Math.round(Date.now()/1000))
-                        valid = true;
                     
-                    //consume token if expired or not multi
-                    if(!res.multi || (res.ttl > 0 && res.ends < Math.round(Date.now()/1000)))
-                        options.db.collection("auth_tokens").remove({_id:options.token});
+                    if(valid_endpoint)
+                    {
+                        if(res.ttl === 0)
+                            valid = true;
+                        else if(res.ends >= Math.round(Date.now()/1000))
+                            valid = true;
+                        
+                        //consume token if expired or not multi
+                        if(!res.multi || (res.ttl > 0 && res.ends < Math.round(Date.now()/1000)))
+                            options.db.collection("auth_tokens").remove({_id:options.token});
+                    }
                 }
-            }
-            if(typeof options.callback === "function"){
-                options.callback(valid);
-            }
-        });
+                if(typeof options.callback === "function"){
+                    options.callback(valid);
+                }
+            });
+        }
     };
     
     /** 
@@ -125,44 +128,47 @@ var crypto = require("crypto");
         if(!options.token || options.token=="")
         {
             options.callback(false);
+            return;
         }
-        
-        options.db.collection("auth_tokens").findOne({_id:options.token},function(err, res){
-            var valid = false;
-            if(res){
-                var  valid_endpoint=true;
-                if(res.endpoint && res.endpoint!="")
-                {
-                    if(options.req_path!="")
+        else
+        {
+            options.db.collection("auth_tokens").findOne({_id:options.token},function(err, res){
+                var valid = false;
+                if(res){
+                    var  valid_endpoint=true;
+                    if(res.endpoint && res.endpoint!="")
                     {
-                        valid_endpoint=false;
-                        for(var p=0; p<res.endpoint.length; p++)
+                        if(options.req_path!="")
                         {
-                            var my_regexp = new RegExp(res.endpoint[p]);
-                            if(my_regexp.test(options.req_path))
+                            valid_endpoint=false;
+                            for(var p=0; p<res.endpoint.length; p++)
                             {
-                                valid_endpoint=true;
+                                var my_regexp = new RegExp(res.endpoint[p]);
+                                if(my_regexp.test(options.req_path))
+                                {
+                                    valid_endpoint=true;
+                                }
                             }
                         }
                     }
-                }
-                
-                if(valid_endpoint)
-                {
-                    if(res.ttl === 0)
-                        valid = res.owner
-                    else if(res.ends >= Math.round(Date.now()/1000))
-                        valid = res.owner;
                     
-                    //consume token if expired or not multi
-                    if(!res.multi || (res.ttl > 0 && res.ends < Math.round(Date.now()/1000)))
-                        options.db.collection("auth_tokens").remove({_id:options.token});
+                    if(valid_endpoint)
+                    {
+                        if(res.ttl === 0)
+                            valid = res.owner
+                        else if(res.ends >= Math.round(Date.now()/1000))
+                            valid = res.owner;
+                        
+                        //consume token if expired or not multi
+                        if(!res.multi || (res.ttl > 0 && res.ends < Math.round(Date.now()/1000)))
+                            options.db.collection("auth_tokens").remove({_id:options.token});
+                    }
                 }
-            }
-            if(typeof options.callback === "function"){
-                options.callback(valid);
-            }
-        });
+                if(typeof options.callback === "function"){
+                    options.callback(valid);
+                }
+            });
+        }
     };
     
     
