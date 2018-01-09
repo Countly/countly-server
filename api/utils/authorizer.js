@@ -50,8 +50,11 @@ var crypto = require("crypto");
     */
     authorizer.read = function (options) {
         options.db = options.db || common.db;
-        options.token = options.token || "";
-        options.db.collection("auth_tokens").findOne({_id:options.token}, options.callback);
+        options.token = options.token;
+        if(!options.token || options.token=="")
+            options.callback(Error('Token not given'),null);
+        else
+            options.db.collection("auth_tokens").findOne({_id:options.token}, options.callback);
     };
     
     /**
@@ -63,7 +66,13 @@ var crypto = require("crypto");
     */
     authorizer.verify = function (options) {
         options.db = options.db || common.db;
-        options.token = options.token || "";
+        options.token = options.token;
+        
+        if(!options.token || options.token=="")
+        {
+            options.callback(false);
+        }
+        
         options.db.collection("auth_tokens").findOne({_id:options.token},function(err, res){
             var valid = false;
             if(res){
@@ -111,7 +120,13 @@ var crypto = require("crypto");
     */
     authorizer.verify_return= function (options) {
         options.db = options.db || common.db;
-        options.token = options.token || "";
+        options.token = options.token;
+        
+        if(!options.token || options.token=="")
+        {
+            options.callback(false);
+        }
+        
         options.db.collection("auth_tokens").findOne({_id:options.token},function(err, res){
             var valid = false;
             if(res){
