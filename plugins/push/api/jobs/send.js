@@ -419,6 +419,8 @@ class PushJob extends job.IPCJob {
 							}
 						}, log.e.bind(log, 'Error when loading next date: %j'));
 					});
+				} else {
+					this.streamer.clear(db);
 				}
 			}
 		}, (err) => {
