@@ -59,7 +59,9 @@ set -e
 yum -y install python-setuptools
 
 #install supervisor
-easy_install supervisor
+yum install -y epel-release
+yum install -y python-pip && pip install pip --upgrade
+pip install supervisor
 
 #install sendmail
 yum -y install sendmail
