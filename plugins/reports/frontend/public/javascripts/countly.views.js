@@ -513,12 +513,13 @@ window.ReportingView = countlyView.extend({
 
         // load menu 
         $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function () {
-			$(this).next(".edit-menu").fadeToggle();
+            $(this).next(".edit-menu").fadeToggle();
+            event.stopPropagation();
 		});
-		$("body").off("mouseleave").on("mouseleave", ".options-item", function () {
-			$(this).find(".edit").next(".edit-menu").fadeOut();
+  
+        $(window).click(function() {
+            $(".options-item").find(".edit").next(".edit-menu").fadeOut();
         });
-        
 
         $(".report-switcher").off("click").on("click", function (e) {
 			var pluginId = this.id.toString().replace(/^plugin-/, '');
