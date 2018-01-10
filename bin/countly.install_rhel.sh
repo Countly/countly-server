@@ -55,12 +55,11 @@ service nginx restart
 systemctl enable nginx
 set -e
 
-#for easy_install
-yum -y install python-setuptools
-
 #install supervisor
+yum -y install python-setuptools
 yum install -y epel-release
 yum install -y python-pip && pip install pip --upgrade
+yum install -y python-meld3
 pip install supervisor
 
 #install sendmail
