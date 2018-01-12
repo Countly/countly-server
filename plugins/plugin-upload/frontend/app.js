@@ -108,23 +108,22 @@ function check_package_file(path)
     });
 }
 
-//checks if there is any of other mandatory files or folders.
-function check_structure(path,app,countlyDb)
+function install_dependencies(path)
 {
     return new Promise(function(resolve, reject){
-        if (!fs.existsSync(path+'/api/api.js'))
-            return reject(Error('apijs_missing')); 
-        if (!fs.existsSync(path+'/frontend/app.js'))
-            return reject(Error('appjs_missing'));   
-        if(! fs.existsSync(path+'/frontend/public/')) 
-            return reject(Error('public_missing'));
-        if (!fs.existsSync(path+'/install.js')) 
-            return reject(Error('install_missing'));   
-        if (!fs.existsSync(path+'/uninstall.js')) 
-            return reject(Error('uninstall_missing')); 
-        if (!fs.existsSync(path+'/frontend/public/javascripts')) 
-            return reject(Error('javascripts_missing'));
-            
+        var child = exec('npm install --unsafe-perm', {cwd: path}, function(error) {
+            if (error){
+                reject(error);
+            }
+            else
+                resolve();
+        });
+    });
+}
+
+function check_frontend_appjs(path)
+{
+    return new Promise(function(resolve, reject){
         try
         {
             delete require.cache[require.resolve(path+"/frontend/app.js")];
@@ -142,6 +141,29 @@ function check_structure(path,app,countlyDb)
     });
 }
 
+//checks if there is any of other mandatory files or folders.
+function check_structure(path,app,countlyDb)
+{
+    return new Promise(function(resolve, reject){
+        if (!fs.existsSync(path+'/api/api.js'))
+            return reject(Error('apijs_missing')); 
+        if (!fs.existsSync(path+'/frontend/app.js'))
+            return reject(Error('appjs_missing'));   
+        if(! fs.existsSync(path+'/frontend/public/')) 
+            return reject(Error('public_missing'));
+        if (!fs.existsSync(path+'/install.js')) 
+            return reject(Error('install_missing'));   
+        if (!fs.existsSync(path+'/uninstall.js')) 
+            return reject(Error('uninstall_missing')); 
+        if (!fs.existsSync(path+'/frontend/public/javascripts')) 
+            return reject(Error('javascripts_missing'));
+            
+        resolve();
+    });
+}
+
+
+//install dependencies and validate app.js
 //clears plugins/{myplugindir} if already uploaded once.
 function reset_plugin_dir()
 {
@@ -215,6 +237,8 @@ function validate_files(path,app,countlyDb)
 
             check_package_file(path)
             .then(function(){ return check_structure(path,app,countlyDb);})
+            .then(function(){ return install_dependencies(path);})
+            .then(function(){ return check_frontend_appjs(path);})
             .then(function(){ return reset_plugin_dir();})
             .then(
                 function(result) {
