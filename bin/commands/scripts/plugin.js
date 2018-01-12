@@ -57,20 +57,27 @@ else if(myArgs[0] == "disable" && myArgs[1]){
     }
 }
 else if(myArgs[0] == "test" && myArgs[1]){
-    if(plugins.indexOf(myArgs[1]) > -1){
+    var enabled = myArgs.slice(1, myArgs.length).filter((n) => plugins.includes(n))
+    if(enabled.length){
         var Mocha = require('mocha');
         var mocha = new Mocha({
           reporter: 'spec',
 		  timeout: 50000
         });
-        if(myArgs[2] && myArgs[2] === "only"){
+        if(myArgs.indexOf("only") !== -1){
             //run only plugin's test, for running on existing app without teardown
             //must configure APP_ID, APP_KEY and API_KEY_ADMIN in countly/test/testUtils.js
-            mocha.addFile(path.resolve(__dirname, '../../../plugins/'+myArgs[1]+"/tests"));
+            for(var i = 1; i < myArgs.length; i++){
+                if(myArgs[i] !== "only" && plugins.indexOf(myArgs[i]) !== -1)
+                    mocha.addFile(path.resolve(__dirname, '../../../plugins/'+myArgs[i]+"/tests"));
+            }
         }
         else{
             mocha.addFile(path.resolve(__dirname, '../../../test/4.plugins/separation/1.setup.js'));
-            mocha.addFile(path.resolve(__dirname, '../../../plugins/'+myArgs[1]+"/tests"));
+            for(var i = 1; i < myArgs.length; i++){
+                if( plugins.indexOf(myArgs[i]) !== -1)
+                    mocha.addFile(path.resolve(__dirname, '../../../plugins/'+myArgs[i]+"/tests"));
+            }
             mocha.addFile(path.resolve(__dirname, '../../../test/4.plugins/separation/2.teardown.js'));
         }
         // Run the tests.
