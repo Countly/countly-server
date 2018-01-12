@@ -291,7 +291,7 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
     });
     
     
-     plugins.register("/i/datamigration/delete_import", function(ob){
+   plugins.register("/i/datamigration/delete_import", function(ob){
         var params = ob.params;
         var validate = ob.validateUserForGlobalAdmin;
         if (params.qstring && params.qstring.args) {
@@ -377,7 +377,7 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
                                 }
                                 else
                                 {
-                                    common.returnMessage(ob.params,200,"Data has already been sent");
+                                    common.returnMessage(ob.params,404,"Data has already been sent");
                                 }
                             }
                             return true;
@@ -445,7 +445,7 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
                     } 
                     else
                     {
-                            common.returnMessage(params,404, "You don't have any exports"); 
+                        common.returnMessage(params,200, "You don't have any exports"); 
                     }
                 }
             }); 
@@ -744,7 +744,7 @@ function apply_redirect_to_apps(apps,params,my_redirect_url,userid,email)
                     return true;
                 }
                 
-                var r = request.post({url: params.qstring.server_address+'/i/datamigration/import?test_con=1',headers: {"countly-token": params.qstring.server_token}}, requestCallback);
+                var r = request.post({url: params.qstring.server_address+'/i/datamigration/import?test_con=1&auth_token='+params.qstring.server_token}, requestCallback);
                 var form = r.form();
                 function requestCallback(err, res, body) {
                     if(err)

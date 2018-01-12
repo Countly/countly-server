@@ -760,11 +760,11 @@ module.exports = function(my_db){
         if(params && params.qstring && params.qstring.exportid)
         {
             moredata.using_token = true;
-            moredata.token = params.req.headers["countly-token"];
+            moredata.token = params.qstring.auth_token || params.req.headers["countly-token"];
             moredata.serverip = params.req.headers["x-real-ip"];
             moredata.host = params.req.headers.host;
              
-            var r = request.post({url: 'http://'+moredata.serverip+'/i/datamigration/report_import?token='+params.req.headers["countly-token"]+"&exportid="+my_exportid+"&status="+status+"&message="+message, agentOptions: {rejectUnauthorized: false}}, function(err, res, body)
+            var r = request.post({url: 'http://'+moredata.serverip+'/i/datamigration/report_import?token='+moredata.token+"&exportid="+my_exportid+"&status="+status+"&message="+message, agentOptions: {rejectUnauthorized: false}}, function(err, res, body)
             {
                 if(err){
                      plugins.dispatch("/systemlogs", {params:params, action:"import_"+status+"_response_failed", data:moredata});
@@ -876,7 +876,7 @@ module.exports = function(my_db){
                     }
         
                     update_progress(my_exportid,"sending","progress",0,"",true);
-                    var r = request.post({url: res.server_address+'/i/datamigration/import?exportid='+my_exportid,headers: {"countly-token": res.server_token}}, requestCallback);
+                    var r = request.post({url: res.server_address+'/i/datamigration/import?exportid='+my_exportid+'&auth_token='+res.server_token}, requestCallback);
                     var form = r.form();
                     form.append("import_file", fs.createReadStream(dir));
                     function requestCallback(err, res, body) {
