@@ -19,10 +19,10 @@ var plugin = {},
                     console.log("Can't parse systelogs query");
                     query = {};
                 }
-                if(params.qstring.sSearch && params.qstring.sSearch != ""){
-                    query["i"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};
-                    //filter["$text"] = { "$search": "\""+params.qstring.sSearch+"\"" };
-                }
+            }
+            if(params.qstring.sSearch && params.qstring.sSearch != ""){
+                query["i"] = {"$regex": new RegExp(".*"+params.qstring.sSearch+".*", 'i')};
+                //filter["$text"] = { "$search": "\""+params.qstring.sSearch+"\"" };
             }
             query._id = {$ne:"meta_v2"};
             validate(params, function(params){
