@@ -39,7 +39,7 @@
 * Added app reset (additionally to existing clear data) to reset app to initial state
 * Configurations: new UI, now searchable
 * Crashes: add resolving state to indicate the process started for resolving crash
-* Dashboard URLs are not app namespaced, so copying links would automatically select proper app (configurable)
+* Dashboard URLs are now app namespaced, so copying links would automatically select proper app (configurable)
 * Data migration: new plugin to easily move data from one countly server to other
 * Email reports: new design and ability to name and toggle reports
 * Event Logs: now shows if request was canceled and why
@@ -80,7 +80,7 @@
 * Attribution: handle redirects correctly, when app data was migrated
 * Blocking request: renamed to Filter requests
 * Cohorts: Cannot edit cohort when one of the events deleted
-* Cohorts: process query correct when viewing user subsets in drill, push, etc
+* Cohorts: process query correctly when viewing user subsets in drill, push, etc
 * Cohorts: remove BY queries
 * Drill: Correct cohorts behavior in AND or OR queries
 * Drill: Correctly get start of the week for weekly reporting

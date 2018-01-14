@@ -639,7 +639,10 @@ if (cluster.isMaster) {
                                             processBulkRequest(i + 1);
                                         });
                                     }
-                                    Promise.all(tmpParams.promises).then(resolver, resolver);
+                                    Promise.all(tmpParams.promises).then(resolver).catch(function(error) {
+                                        console.log(error);
+                                        resolver();
+                                    });
                                 });
                             }
                             
@@ -776,7 +779,10 @@ if (cluster.isMaster) {
                                 function resolver(){
                                     plugins.dispatch("/sdk/end", {params:params});
                                 }
-                                Promise.all(params.promises).then(resolver, resolver);
+                                Promise.all(params.promises).then(resolver).catch(function(error) {
+                                    console.log(error);
+                                    resolver();
+                                });
                             });
             
                             if (!plugins.getConfig("api").safe && !params.res.finished) {
