@@ -1325,7 +1325,7 @@ var common = {},
                     update["$setOnInsert"].fac = params.time.mstimestamp;
             }
             
-            if(user.lac && user.lac < params.time.mstimestamp){
+            if(typeof user.lac === "undefined" || user.lac < params.time.mstimestamp){
                 if(!update["$set"])
                     update["$set"] = {};
                 if(!update["$set"].lac)
