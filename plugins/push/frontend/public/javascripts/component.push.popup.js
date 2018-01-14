@@ -54,7 +54,7 @@ window.component('push.popup', function (popup) {
 				];
 				return m('h3', els);
 			},
-			desc: t('pu.po.desc'),
+			desc: message.auto() ? t('pu.po.desc').replace('4', '5') : t('pu.po.desc'),
 			// onclose: function() {
 			// 	console.log('slider closed');
 			// },
@@ -1255,14 +1255,14 @@ window.component('push.popup', function (popup) {
 						m('.form-group', [
 							m('h4', t('pu.po.confirm')),
 							m('input[type=checkbox]', { checked: message.ack() ? 'checked' : undefined, onchange: function () { message.ack(!message.ack()); } }),
-							m('label', { onclick: function () { message.ack(!message.ack()); } }, t.n('pu.po.confirm', message.count())),
+							m('label', { onclick: function () { message.ack(!message.ack()); } }, t('pu.po.confirm.ready') + (message.auto() ? '' : ' ' + t.n('pu.po.confirm', message.count())) ),
 						]),
 						m.component(C.push.view.contents, { message: message }),
 						m('.btns.final', {key: 'btns'},
 							m('div.final-footer', [
 							    m('div', [
 							        message.auto() ? '' : message.count() ? m('div', { key: 'info-message' }, t.p('pu.po.recipients.message', message.count())) : '',
-							        m('div', t('pu.po.recipients.message.details')),
+							        message.auto() ? m('div', t('pu.po.recipients.message.details')) : '',
 							    ]),
 							    m('div', [
 							        m('a.btn-next', { href: '#', onclick: popup.send, disabled: message.ack() ? false : 'disabled' }, message.auto() ? t('pu.po.start') : t('pu.po.send')),

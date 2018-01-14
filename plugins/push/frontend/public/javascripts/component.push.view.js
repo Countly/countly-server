@@ -1,7 +1,7 @@
 'use strict';
 
 /* jshint undef: true, unused: true */
-/* globals m, moment, countlyCommon */
+/* globals m, moment, countlyCommon, $ */
 
 window.component('push.view', function(view) {
 	var components = window.components,
@@ -138,7 +138,7 @@ window.component('push.view', function(view) {
 				: '',
 			r.sent() > 0 || !r.error() ? 
 				m('div', [
-					m('h4', t(ctrl.message.auto() ? 'pu.po.totals' : 'pu.po.metrics')),
+					m('h4', t(ctrl.message.auto() ? 'pu.dash.totals' : 'pu.po.metrics')),
 					m('.comp-push-view-table.comp-push-metrics', [
 						r.sending() ? 
 							m.component(view.metric, {
@@ -243,34 +243,34 @@ window.component('push.view', function(view) {
 					}))
 				])
 				: '',
-			m('.btns', [
-				m('a.btn-prev.orange', {
-					href: '#', 
-					onclick: function(ev){ 
-						ev.preventDefault();
-						var json = ctrl.message.toJSON(false, true, true);
-						delete json.date;
-						components.push.popup.show(json, true);
-					}
-				}, t('pu.po.duplicate')),
-				m('a.btn-next.red', {
-					style : { marginRight: 0},
-					href: '#', 
-					onclick: function(ev){ 
-						ev.preventDefault();
-						ctrl.message.remoteDelete().then(function(){
-							components.slider.instance.close();
-							if (window.app.activeView.mounted) {
-								window.app.activeView.mounted.refresh();
-							}
-						});
-					}
-				}, t('pu.po.delete'))
-			].concat(components.push.actions.map(function(f){ 
-				return f(ctrl.message.___data); 
-			}).filter(function(x){ 
-				return typeof x === 'object'; 
-			})))
+			// m('.btns', [
+			// 	m('a.btn-prev.orange', {
+			// 		href: '#', 
+			// 		onclick: function(ev){ 
+			// 			ev.preventDefault();
+			// 			var json = ctrl.message.toJSON(false, true, true);
+			// 			delete json.date;
+			// 			components.push.popup.show(json, true);
+			// 		}
+			// 	}, t('pu.po.duplicate')),
+			// 	m('a.btn-next.red', {
+			// 		style : { marginRight: 0},
+			// 		href: '#', 
+			// 		onclick: function(ev){ 
+			// 			ev.preventDefault();
+			// 			ctrl.message.remoteDelete().then(function(){
+			// 				components.slider.instance.close();
+			// 				if (window.app.activeView.mounted) {
+			// 					window.app.activeView.mounted.refresh();
+			// 				}
+			// 			});
+			// 		}
+			// 	}, t('pu.po.delete'))
+			// ].concat(components.push.actions.map(function(f){ 
+			// 	return f(ctrl.message.___data); 
+			// }).filter(function(x){ 
+			// 	return typeof x === 'object'; 
+			// })))
 		]);
 	};
 
@@ -281,7 +281,28 @@ window.component('push.view', function(view) {
 				m('.col-left', [
 					m('h5', [
 						opts.title, 
-						opts.helpr ? m('span.ion-information-circled', components.tooltip.config(opts.helpr)) : ''
+						opts.helpr ? m('span.ion-information-circled', {
+							title: t(opts.helpr),
+							config: function(el){
+								$(el).tooltipster({
+									animation: 'fade',
+									animationDuration: 100,
+									delay: 100,
+									maxWidth: 240,
+									theme: 'tooltipster-borderless',
+									trigger: 'custom',
+									triggerOpen: {
+										mouseenter: true,
+										touchstart: true
+									},
+									triggerClose: {
+										mouseleave: true,
+										touchleave: true
+									},
+									interactive: true,
+									contentAsHTML: true
+								});
+							}}) : ''
 					]),
 					opts.count === opts.total ? 
 						m('span', m('b', opts.count))
@@ -353,7 +374,7 @@ window.component('push.view', function(view) {
 					if (loc._id === ctrl.message.geo()) { geo = loc; }
 				});
 			}
-			return m('.comp-push-view', {style: {marginBottom: '100px'}}, [
+			return m('.comp-push-view', [
 				m('.form-group', [
 					m('h4', t('pu.po.tab0.title')),
 					m('.comp-push-view-table', [
@@ -441,13 +462,13 @@ window.component('push.view', function(view) {
 									m.trust([
 										ctrl.message.autoCapMessages() ? t.n('pu.messages', ctrl.message.autoCapMessages()) : '',
 										ctrl.message.autoCapSleep() ?  
-											((Math.floor(ctrl.message.autoDelay() / 1000 / 3600 / 24) > 0 ?
-												t.n('pu.days', Math.floor(ctrl.message.autoDelay() / 1000 / 3600 / 24)) 
+											((Math.floor(ctrl.message.autoCapSleep() / 1000 / 3600 / 24) > 0 ?
+												t.n('pu.days', Math.floor(ctrl.message.autoCapSleep() / 1000 / 3600 / 24)) 
 												: '') +
 											' ' + 
-											(Math.floor(ctrl.message.autoDelay() / 1000 / 3600) % 24 > 0 ?
-												t.n('pu.hours', Math.floor(ctrl.message.autoDelay() / 1000 / 3600) % 24) 
-												: '')).trim()
+											(Math.floor(ctrl.message.autoCapSleep() / 1000 / 3600) % 24 > 0 ?
+												t.n('pu.hours', Math.floor(ctrl.message.autoCapSleep() / 1000 / 3600) % 24) 
+												: '')).trim() + ' ' + t('pu.hours.between')
 										: '',
 									].filter(function(x){ return !!x; }).join('<br />'))
 									: t('pu.no')

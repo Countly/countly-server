@@ -46,7 +46,7 @@ var common          = require('../../../../api/utils/common.js'),
             // wkt = wks.map((w, i) => (i === 0 || w > wks[0] ? agy : noy) + '-w' + w),
 
             // ids of event docs
-            suf = '_' + crypto.createHash('md5').update('false').digest('base64')[0],
+            suf = '_' + crypto.createHash('md5').update('true').digest('base64')[0],
             ids = mts.map((m, i) => 'no-segment_' + (agm + i >= 12 ? noy : agy) + ':' + m)
                     .concat([
                         'a_' + noy + ':' + (nom + 1) + suf,  // '_a' is from crypto.createHash("md5").update('false').digest('base64')[0]
@@ -119,20 +119,20 @@ var common          = require('../../../../api/utils/common.js'),
                                     ret.weekly.data[wi] += e.d[d].c;
                                     ret.monthly.data[mi] += e.d[d].c;
                                     ret.total += e.d[d].c;
-                                } else if (e.s === 'a' && 'false' in e.d[d]) {
-                                    // log.d('%s / %d: %d', e.s, d, e.d[d]['false'].c);
+                                } else if (e.s === 'a' && 'true' in e.d[d]) {
+                                    // log.d('%s / %d: %d', e.s, d, e.d[d]['true'].c);
                                     var date = moment({ year : yer, month : mon, day : d});
                                     var diff = moment().diff(date, "days");
                                     
                                     if (diff <= 29) {
                                         var target = 29 - diff;
-                                        retAuto.daily.data[target] += e.d[d]['false'].c;
-                                        retAuto.total += e.d[d]['false'].c;
+                                        retAuto.daily.data[target] += e.d[d]['true'].c;
+                                        retAuto.total += e.d[d]['true'].c;
                                     }
     
-                                    ret.weekly.data[wi] -= e.d[d]['false'].c;
-                                    ret.monthly.data[mi] -= e.d[d]['false'].c;
-                                    ret.total -= e.d[d]['false'].c;
+                                    ret.weekly.data[wi] -= e.d[d]['true'].c;
+                                    ret.monthly.data[mi] -= e.d[d]['true'].c;
+                                    ret.total -= e.d[d]['true'].c;
                                 }
                         });
                     });

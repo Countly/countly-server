@@ -67,7 +67,7 @@ window.component('singleselect', function (sselect) {
                         width: "100%",
                         display: ctrl.isOpen ? 'block' : 'none'
                     }
-                }, m('.scroll-list', {
+                }, m('.scroll-list.prevent-body-scroll', {
                     style: {
                         "overflow-y": "none"
                     },

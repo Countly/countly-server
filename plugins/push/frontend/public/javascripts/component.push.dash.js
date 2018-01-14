@@ -208,7 +208,6 @@ window.component('push.dash', function (dash) {
 				aaSorting: [[4, 'asc']]
 			}));
 
-
 			// if (tableName === "dtableAutomated") {
 				// this[tableName].find('tbody').on('click', '.status-switcher', function () {
 				// 	var _id = this.id.toString().replace(/^message-/, '');
@@ -221,24 +220,19 @@ window.component('push.dash', function (dash) {
 			CountlyHelpers.initializeTableOptions();
 
 			var self = this;
-			$(".cly-button-menu").on("cly-list.click", function (event, data) {
+			$(".cly-button-menu").off("cly-list.click").on("cly-list.click", function (event, data) {
 				var id = $(data.target).parents("tr").attr("mid");
 				if (id) {
-					$(".message-menu").find(".view-message").data("id", id);
 					$(".message-menu").find(".duplicate-message").data("id", id);
 					$(".message-menu").find(".delete-message").data("id", id);
 				}
 			});
 
-			$(".cly-button-menu").on("cly-list.item", function (event, data) {
+			$(".cly-button-menu").off("cly-list.item").on("cly-list.item", function (event, data) {
 				var id = $(data.target).data("id"),
 					message = self.messages().find(function (m) { return m._id() === id; });
 
-				if ($(data.target).hasClass("view-message") && message) {
-					message.remoteLoad().then(function () {
-						components.push.view.show(message);
-					});
-				} else if ($(data.target).hasClass("duplicate-message") && message) {
+				if ($(data.target).hasClass("duplicate-message") && message) {
 					var json = message.toJSON(false, true, true);
 					if (!message.active) {
 						delete json.date;
@@ -253,7 +247,7 @@ window.component('push.dash', function (dash) {
 				}
 			});
 
-			this[tableName].find('tbody').on('click', '.status-switcher', function () {
+			this[tableName].find('tbody').on('click', '.status-switcher', function (ev) {
 				var id = this.id.toString().replace(/^message-/, '');
 				var message = self.messages().find(function (m) { return m._id() === id; });
 
@@ -263,6 +257,20 @@ window.component('push.dash', function (dash) {
 						if (window.app.activeView.mounted) {
 							window.app.activeView.mounted.refresh();
 						}
+					});
+				}
+			});
+
+			this[tableName].find('tbody').on('click', 'tr', function (ev) {
+				if ($(ev.target).parents('.on-off-switch').length) {
+					return;
+				}
+				var id = this.attributes && this.attributes.mid && this.attributes.mid.value;
+				var message = self.messages().find(function (m) { return m._id() === id; });
+
+				if (message) {
+					message.remoteLoad().then(function () {
+						components.push.view.show(message);
 					});
 				}
 			});
@@ -296,12 +304,16 @@ window.component('push.dash', function (dash) {
 		this.createMessage = function (ev) {
 			ev.preventDefault();
 			self.pushDrawerMenuOpen = false;
+			self.tab('');
+			self.period('monthly');
 			components.push.popup.show({ apps: [countlyCommon.ACTIVE_APP_ID] });
 		};
 
 		this.createAutoMessage = function (e) {
 			e.preventDefault();
 			self.pushDrawerMenuOpen = false;
+			self.tab('_automated');
+			self.period('daily');
 			components.push.popup.show({ auto: true, apps: [countlyCommon.ACTIVE_APP_ID] });
 		};
 
@@ -450,7 +462,6 @@ window.component('push.dash', function (dash) {
 				}
 			}),
 			m('.cly-button-menu.message-menu', [
-				m('a.item.view-message', t('push.po.table.view')),
 				m('a.item.duplicate-message', t('push.po.table.dublicate')),
 				m('a.item.delete-message', t('push.po.table.delete'))
 			])
