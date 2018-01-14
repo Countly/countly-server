@@ -196,6 +196,9 @@
 .metrics-checkbox-line .container:hover input ~ .checkmark {
  
 }
+.reports-table td:hover{
+    cursor:default !important;
+}
 
 .metrics-checkbox-line .container input:checked ~ .checkmark {
     background-color: #FFF;
