@@ -1884,7 +1884,7 @@ span.emoji-inner {
 .comp-push .cly-multi-select .text { padding: 4px 6px; }
 .comp-push .cly-multi-select .text .default-text { padding: 5px 3px; }
 // .comp-push .cly-multi-select  .selection { margin-top: 0; margin-bottom: 0; }
-
+.comp-push .desc .warn { margin-left: 5px; }
 
 .comp-push .big-numbers-v2 { padding-top: 0; }
 .comp-push .big-numbers-v2 .big-numbers .inner { padding-top: 0; height: 60px; }

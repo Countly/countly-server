@@ -38,11 +38,13 @@ window.component('push.popup', function (popup) {
 			});
 
 			if (!found) {
+				m.endComputation();
 				return window.CountlyHelpers.alert(t('push.error.no-credentials'), 'red');
 			}
 		}
 
 		if (message.auto() && (!push.dashboard.cohorts || !push.dashboard.cohorts.length)) {
+			m.endComputation();
 			return window.CountlyHelpers.alert(t('push.error.no-cohorts'), 'red');
 		}
 
@@ -120,7 +122,7 @@ window.component('push.popup', function (popup) {
 			}
 
 			var enabled = true;
-			if ((message.auto() && tab >= 4) || (!message.auto && tab >= 3)) {
+			if ((message.auto() && tab >= 4) || (!message.auto() && tab >= 3)) {
 				if (message.type() === push.C.TYPE.MESSAGE) {
 					enabled = enabled && message.messagePerLocale().default;
 				} else if (message.type() === push.C.TYPE.DATA) {
@@ -377,30 +379,7 @@ window.component('push.popup', function (popup) {
 								var config = C.tooltip.config(t(error));
 								config.key = error;
 								config.appendToBody = true;
-								checkmark = !error ? m('span.ion-checkmark') : m('.error', {
-									key: error,
-									title: t(error),
-									config: function (el) {
-										$(el).tooltipster({
-											animation: 'fade',
-											animationDuration: 100,
-											delay: 100,
-											maxWidth: 240,
-											theme: 'tooltipster-borderless',
-											trigger: 'custom',
-											triggerOpen: {
-												mouseenter: true,
-												touchstart: true
-											},
-											triggerClose: {
-												mouseleave: true,
-												touchleave: true
-											},
-											interactive: true,
-											contentAsHTML: true
-										});
-									}
-								}, push.ICON.WARN());
+								checkmark = !error ? m('span.ion-checkmark') : m('.error', C.tooltip.config(t(error)), push.ICON.WARN());
 							} else {
 								var found = false, mpl = message.messagePerLocale();
 								[l.value, l.value + push.C.S + 't', l.value + push.C.S + '0' + push.C.S + 't', l.value + push.C.S + '0' + push.C.S + 'l', l.value + push.C.S + '1' + push.C.S + 't', l.value + push.C.S + '1' + push.C.S + 'l'].forEach(function (k) {
@@ -412,30 +391,7 @@ window.component('push.popup', function (popup) {
 								// message.locales()[l] ? m('.comp-push-tab-num.ion-checkmark') : 
 								m('span.comp-push-locale-count',
 									l.value === 'default' ?
-										m('.help-tt', m('span.ion-information-circled',
-											{
-												title: t('pu.po.tab2.default-message.help'),
-												config: function (el) {
-													$(el).tooltipster({
-														animation: 'fade',
-														animationDuration: 100,
-														delay: 100,
-														maxWidth: 240,
-														theme: 'tooltipster-borderless',
-														trigger: 'custom',
-														triggerOpen: {
-															mouseenter: true,
-															touchstart: true
-														},
-														triggerClose: {
-															mouseleave: true,
-															touchleave: true
-														},
-														interactive: true,
-														contentAsHTML: true
-													});
-												}
-											}))
+										m('.help-tt', m('span.ion-information-circled', C.tooltip.config(t('pu.po.tab2.default-message.help'))))
 										: (l.percent + '%')
 								),
 								m('span.comp-push-locale-title', l.title),
@@ -557,55 +513,11 @@ window.component('push.popup', function (popup) {
 							[
 								m('input', { onclick: function () { ctrl.value(ctrl.value() || ''); }, oninput: m.withAttr('value', ctrl.title), placeholder: ctrl.titlePlaceholder }, ctrl.title() || ''),
 								ctrl.title() !== undefined && !ctrl.title.valid ?
-									m('.error', {
-										title: ctrl.title.errorText,
-										config: function (el) {
-											$(el).tooltipster({
-												animation: 'fade',
-												animationDuration: 100,
-												delay: 100,
-												maxWidth: 240,
-												theme: 'tooltipster-borderless',
-												trigger: 'custom',
-												triggerOpen: {
-													mouseenter: true,
-													touchstart: true
-												},
-												triggerClose: {
-													mouseleave: true,
-													touchleave: true
-												},
-												interactive: true,
-												contentAsHTML: true
-											});
-										}
-									}, push.ICON.WARN())
+									m('.error', C.tooltip.config(ctrl.title.errorText), push.ICON.WARN())
 									: ''
 							]
 						),
-						ctrl.help ? m('.help-tt', {
-							title: ctrl.help,
-							config: function (el) {
-								$(el).tooltipster({
-									animation: 'fade',
-									animationDuration: 100,
-									delay: 100,
-									maxWidth: 240,
-									theme: 'tooltipster-borderless',
-									trigger: 'custom',
-									triggerOpen: {
-										mouseenter: true,
-										touchstart: true
-									},
-									triggerClose: {
-										mouseleave: true,
-										touchleave: true
-									},
-									interactive: true,
-									contentAsHTML: true
-								});
-							}
-						}, m('span.ion-information-circled')) : ''
+						ctrl.help ? m('.help-tt', C.tooltip.config(ctrl.help), m('span.ion-information-circled')) : ''
 					]),
 					m('.comp-push-extra-value', {
 						class: ctrl.value() === undefined ? '' : 'active', onclick: function () {
@@ -614,29 +526,7 @@ window.component('push.popup', function (popup) {
 					}, [
 							m(ctrl.textarea ? 'textarea' : 'input[type=' + ctrl.typ + ']', inp),
 							ctrl.value() !== undefined && !ctrl.value.valid ?
-								m('.error', {
-									title: ctrl.value.errorText,
-									config: function (el) {
-										$(el).tooltipster({
-											animation: 'fade',
-											animationDuration: 100,
-											delay: 100,
-											maxWidth: 240,
-											theme: 'tooltipster-borderless',
-											trigger: 'custom',
-											triggerOpen: {
-												mouseenter: true,
-												touchstart: true
-											},
-											triggerClose: {
-												mouseleave: true,
-												touchleave: true
-											},
-											interactive: true,
-											contentAsHTML: true
-										});
-									}
-								}, push.ICON.WARN())
+								m('.error', C.tooltip.config(ctrl.value.errorText), push.ICON.WARN())
 								: ''
 						])
 				]);
@@ -1027,7 +917,7 @@ window.component('push.popup', function (popup) {
 										d.setMinutes(0);
 										d.setSeconds(0);
 										d.setMilliseconds(0);
-										this.datepicker = C.datepicker.controller({ value: message.date, defaultDate: d });
+										this.datepicker = C.datepicker.controller({ value: message.date, defaultDate: d, id: 'campaign-end-date' });
 									}
 									return m('.date-time-container', C.datepicker.view(this.datepicker));
 								}.bind(this)
@@ -1066,6 +956,7 @@ window.component('push.popup', function (popup) {
 									m('h4', t('pu.po.tab1.tz')),
 									m('.desc', [
 										t('pu.po.tab1.tz-desc'),
+										' ',
 										m('span.warn', C.tooltip.config(t('pu.po.tab1.tz-yes-help')), push.ICON.WARN())
 									]),
 									C.radio.view(ctrl.radioTz),
@@ -1081,6 +972,7 @@ window.component('push.popup', function (popup) {
 			});
 		}
 
+		var viewTabIndex = tabs.length + 1;
 		// Message
 		tabs.push({
 			tab: this.renderTab.bind(this, tabs.length),
@@ -1238,7 +1130,7 @@ window.component('push.popup', function (popup) {
 									: m('span.warn', C.tooltip.config(t('pu.po.recipients.temporary')), push.ICON.WARN())
 							])
 							: "",
-						m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(3) ? false : 'disabled' }, t('pu.po.next')),
+						m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(viewTabIndex) ? false : 'disabled' }, t('pu.po.next')),
 						popup.tabs.tab() > 0 ? m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev')) : ''
 					])
 				]);
@@ -1248,8 +1140,9 @@ window.component('push.popup', function (popup) {
 		tabs.push({
 		    tab: this.renderTab.bind(this, tabs.length),
 		    controller: function () {
+		    	this.viewContents = new C.push.view.contents.controller({message: message});
 		    },
-		    view: function () {
+		    view: function (ctrl) {
 				return m('.comp-push-tab-content.comp-summary', [
 					m('.comp-panel', [
 						m('.form-group', [
@@ -1257,7 +1150,7 @@ window.component('push.popup', function (popup) {
 							m('input[type=checkbox]', { checked: message.ack() ? 'checked' : undefined, onchange: function () { message.ack(!message.ack()); } }),
 							m('label', { onclick: function () { message.ack(!message.ack()); } }, t('pu.po.confirm.ready') + (message.auto() ? '' : ' ' + t.n('pu.po.confirm', message.count())) ),
 						]),
-						m.component(C.push.view.contents, { message: message }),
+						C.push.view.contents.view(ctrl.viewContents),
 						m('.btns.final', {key: 'btns'},
 							m('div.final-footer', [
 							    m('div', [

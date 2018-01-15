@@ -29,5 +29,9 @@ if (!window.components.t) {
 			return window.jQuery.i18n.prop(key + '.m', count);
 		}
 	};
+
+	window.components.t.nn = function(key, count) {
+		return count + ' ' + window.components.t.n(key, count);
+	};
 }
 

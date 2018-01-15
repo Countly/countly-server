@@ -63,12 +63,14 @@ window.component('datepicker', function(datepicker) {
 		return m('.comp-datepicker' + (ctrl.opts.class ? '.' + ctrl.opts.class : ''), 
 		{
 			class: ctrl.open() ? 'active' : '',
-			config : function(elm){
+			config : function(){
 				$(window).unbind('click.' + ctrl.opts.id).bind('click.' + ctrl.opts.id,  function(e){
-					var container = $(elm);
-					if (container && !container.is(e.target) && container.has(e.target).length === 0) {
-                        ctrl.open(false);
-                    }
+					if (!$(e.target).parents('.comp-datepicker').length) {
+						m.startComputation();
+						ctrl.open(false);
+						$(window).unbind('click.' + ctrl.opts.id);
+						m.endComputation();
+					}
 				});
 			}
 		}, [
@@ -116,11 +118,10 @@ window.component('datepicker', function(datepicker) {
 				if (!isInitialized) {
 					$(element).datepicker({
 						defaultDate: ctrl.opts.defaultDate,
-						minDate: ctrl.opts.minDate,
+						minDate: ctrl.opts.minDate || new Date(),
 						maxDate: ctrl.opts.maxDate,
 						numberOfMonths:1,
 						showOtherMonths:true,
-						minDate:new Date(),
 						onSelect:function (selectedDate) {
 							var instance = $(this).data("datepicker"),
 								date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
