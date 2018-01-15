@@ -115,7 +115,7 @@ window.todview = countlyView.extend({
     },
 
     loadTimesOfDay: function () {
-        timesOfDayPlugin.loadTimesOfDay(this.timesOfDayData);
+        timesOfDayPlugin.loadTimesOfDay(this.timesOfDayData, this.tod_type === "[CLY]_session" ? jQuery.i18n.map['times-of-day.sessions']  : this.tod_type);
     },
 
     loadTimeOfDayTable: function () {
