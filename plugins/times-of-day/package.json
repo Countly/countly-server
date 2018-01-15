@@ -2,7 +2,7 @@
   "name": "times-of-day",
   "title": "Times of Day",
   "version": "1.0.0",
-  "description": "Visualise occurence times and days of your custom events and sessions",
+  "description": "Visualise occurrence times and days of your custom events and sessions",
   "author": "Prikshit Tekta",
   "homepage": "https://count.ly/plugins/times-of-day",
   "repository": {
