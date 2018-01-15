@@ -1,3 +1,113 @@
+## Version 18.01
+
+**Fixes**
+
+* Add export period to file name on export, if possible
+* Added separate post install script to allow running countly under countly user
+* Better duplicate request handling with logging (can be disabled in configs)
+* Bulk request fixes on waiting to process previous request, preventing them from pile up
+* Centos/RHEL installation fixes for nginx and supervisord
+* Changed formatting of date to be more locale independent
+* Countly backup and restore commands now work even if mongodb is on another server
+* DBViewer: optimize displaying collections for big amount of events
+* Error Logs: renamed to Server logs
+* Event Logs: show warning about limited data
+* Fix export dialog dropdown overflow in some cases
+* Fixed UI overflow for windows new Chrome versions
+* Fixed collapsing sticky table header in some cases
+* Fixed selecting API key in user menu
+* Handling future and incorrect timestamps
+* Handling session age properly to prevent old sessions piling up
+* Improved merging user properties on user merge
+* MacOS scroll bars issue has been fixed
+* Optimizing events view reloading (do not reload when not needed)
+* Plugin upload: works with plugins with dependencies
+* Plugins: disable pagination for plugins table
+* Push: fixed getting correct user profile query
+* Server Logs: handle properly when not possible to open file
+* Server stats: fixing data collection and reporting
+* Sorting server side tables on initialization, to save 1 request to the server
+* System logs: process search separately from filter
+* System logs: removed time selector
+* Trimming username or email on input when logging in or creating account
+* Views: fixing not displaying data on graph for views containing dot in the name
+
+**New Features**
+
+* API can now be authorized either with API key or Auth token
+* Added a way to link to specific user in Management-> Users
+* Added app reset (additionally to existing clear data) to reset app to initial state
+* Configurations: new UI, now searchable
+* Crashes: add resolving state to indicate the process started for resolving crash
+* Dashboard URLs are now app namespaced, so copying links would automatically select proper app (configurable)
+* Data migration: new plugin to easily move data from one countly server to other
+* Email reports: new design and ability to name and toggle reports
+* Event Logs: now shows if request was canceled and why
+* Format event duration as seconds
+* Full FS and GridFS support (switching for shared storage in config)
+* New installations use MongoDB 3.4
+* New location behavior, using more precise location data from location params, if possible
+* Populator: now also generates cohorts if plugin available
+* Removed app_users uid sequence to apps collection, to have clean collection for BI tools
+* Sources: new way of preprocessing web sources, smarter domain filtering
+* Systemlogs: linking to specific user who made action
+* Times of day: new plugin to show app usage on specific time of day or day of the week
+* UI changes, like favicon, new notification style
+* Views: Added heatmap click breakdown by resolution (requires Web SDK update)
+* Views: Added scroll maps (requires Web SDK update)
+* Web: Added website domain setting for app, to eliminate need for selecting domain for heatmaps
+
+**Enterprise Edition features**
+
+* Attribution: 7 day click data retention
+* Attribution: added custom segment limit
+* Attribution: added server to server campaign by matching advertising ids
+* Cohorts: add times user made action
+* Cohorts: added crash and view events
+* Drill: Added Browser version as drillable property
+* Drill: Catch big list overflow and mark it as full
+* Drill: Moved drill meta to separate collection and provided migration scripts, if user wants to have clean drill collections for BI tools
+* Drill: Switch to big list instead of string, when exceeds list limit
+* Funnels: showing dropped/lost users between funnel steps and other UI changes
+* Restrict: Improvements to restrict and allowing to change restriction dynamically
+* Restrict: correctly get menu texts when allowing/disallowing menus
+* Retention: switched to showing absolute retention
+* Users: display funnel durations
+* White labeling: added favicon change support
+
+**Enterprise Edition fixes**
+
+* Attribution: handle redirects correctly, when app data was migrated
+* Blocking request: renamed to Filter requests
+* Cohorts: Cannot edit cohort when one of the events deleted
+* Cohorts: process query correctly when viewing user subsets in drill, push, etc
+* Cohorts: remove BY queries
+* Drill: Correct cohorts behavior in AND or OR queries
+* Drill: Correctly get start of the week for weekly reporting
+* Drill: Remove cohorts from BY queries
+* Drill: fixed interpreting . as regex symbol in drill filters
+* Drill: interpret numeric values in filters as numbers
+* Filter requests: Allow editing rules
+* Filter requests: Allow toggling rules
+* Filter requests: prevent duplicated rules
+* Funnels: clearing cache properly on app reset
+* Live: switch to TTL data limitation instead of capped
+* Symbolication: added file format check
+
+**Development related**
+
+* Added Vagrant support
+* Added a way to get mongodb command line connection from config files
+* Added a way to hook into Backbone url processing
+* Added endpoint for precalculated event data
+* Added new rights module with promise support to validate users
+* Allow plugins to add command line commands
+* Allow running separate plugins test suite through command line on unclean instance
+* Command line: additional checks on user management
+* Create common.db connection on master process
+* Dashboard now uses token based authentication when communicating with API
+* Removed properties pe, crashes, old, lat and lng from app_users
+
 ## Version 17.09
 
 **Fixes**

@@ -4,6 +4,7 @@ var plugin = {},
     push = require('./parts/endpoints.js'),
     common = require('../../../api/utils/common.js'),
     log = common.log('push:api'),
+    jobs = require('../../../api/parts/jobs'),
     plugins = require('../../pluginManager.js');
 
 (function () {
@@ -36,7 +37,11 @@ var plugin = {},
 
     plugins.register('/master', function(){
         setUpCommons();
-        
+
+        setTimeout(() => {
+            jobs.job('push:cleanup').replace().schedule('every 59 minutes');
+        }, 10000);
+
         plugins.register('/cohort/enter', ({cohort, uids}) => {
             push.onCohort(true, cohort, uids);
         });

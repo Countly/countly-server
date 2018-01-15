@@ -480,7 +480,7 @@ table.d-table:not(.no-fix) { table-layout:fixed; }
 	.table-edit td, .table-add td { padding:10px; }
 	.table-edit .icon-button, .table-add .icon-button { float:right; }
 
-.dataTable td { font-family:Oswald; font-size:12px; }
+.dataTable td { font-family:Oswald; font-size:12px; line-height:18px; }
 .d-table .shrink {width: 1%;}
 .d-table .center{text-align: center;}
 .d-table .right{text-align: right;}
@@ -1229,6 +1229,16 @@ table.events-table { width:100%; padding:0; margin:0; }
 .options li:hover{ background-color: #000; }
 .options li span { line-height:23px; }
 .options li span.li-explanation{ color:#4f4f4f; display:block; font-size: 11px;}
+
+.web-10{width: 10%;}
+.web-15{width: 15%;}
+.web-20{width: 20%;}
+.web-25{width: 25%;}
+.web-30{width: 30%;}
+.web-35{width: 35%;}
+.web-40{width: 40%;}
+.web-45{width: 45%;}
+.web-50{width: 50%;}
 
 /* ALL APPS */
 .allapps .dataTable-top {border-radius: 0;}

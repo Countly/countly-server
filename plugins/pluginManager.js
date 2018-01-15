@@ -241,11 +241,17 @@ var pluginManager = function pluginManager(){
                             callback();
                         }
                     }
-                    Promise.all(promises).then(resolver, resolver);
+                    Promise.all(promises).then(resolver).catch(function(error) {
+                        console.log(error);
+                        resolver();
+                    });
                 }));
             }
             else if(callback){
-                Promise.all(promises).then(callback, callback);
+                Promise.all(promises).then(callback).catch(function(error) {
+                    console.log(error);
+                    callback();
+                });
             }
         } else if (callback) {
             callback();

@@ -423,6 +423,7 @@ window.component('push', function(push) {
 		};
 
 		this.remoteAutoActive = function() {
+			var self = this;
 			return m.request({
 				method: 'GET',
 				url: window.countlyCommon.API_URL + '/i/pushes/autoActive',
@@ -433,7 +434,7 @@ window.component('push', function(push) {
 				}
 			}).then(function(resp){
 				if (resp.error) { throw resp.error; }
-				this.autoActive(resp.autoActive);
+				self.autoActive(resp.autoActive);
 				return resp;
 			});
 		};
@@ -470,6 +471,22 @@ window.component('push', function(push) {
 		this.errorCodes = m.prop(data.errorCodes);
 		this.nextbatch = m.prop(data.nextbatch);
 		this.events = m.prop(data.events || {});
+
+		if (this.errorCodes()) {
+			var ec = this.errorCodes,
+				keys = Object.keys(ec).filter(function(k){ return ec[k] > 0; });
+			if (keys.length === 0) {
+				this.errorCodes(undefined);
+			} else {
+				var filtered = {};
+				keys.forEach(function(k){
+					if (ec[k]) {
+						filtered[k] = ec[k];
+					}
+				});
+				this.errorCodes(ec);
+			}
+		}
 
 		this.percentSent = function() {
 			return this.total() === 0 ? 0 : Math.min(100, +(100 * this.sent() / (this.total() - (this.processed() - this.sent()))).toFixed(2));

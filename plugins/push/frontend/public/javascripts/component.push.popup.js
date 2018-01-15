@@ -54,7 +54,7 @@ window.component('push.popup', function (popup) {
 				];
 				return m('h3', els);
 			},
-			desc: t('pu.po.desc'),
+			desc: message.auto() ? t('pu.po.desc').replace('4', '5') : t('pu.po.desc'),
 			// onclose: function() {
 			// 	console.log('slider closed');
 			// },
@@ -648,25 +648,25 @@ window.component('push.popup', function (popup) {
 			{
 				tab: this.renderTab.bind(this, 0),
 				controller: function () {
-					this.appsSelector = new C.multiselect.controller({
-						options: apps,
-						value: function () {
-							if (arguments.length) {
-								var selectedApps = apps.filter(function (o) { return o.selected(); });
+					// this.appsSelector = new C.multiselect.controller({
+					// 	options: apps,
+					// 	value: function () {
+					// 		if (arguments.length) {
+					// 			var selectedApps = apps.filter(function (o) { return o.selected(); });
 
-								message.apps(selectedApps.map(function (o) { return o.value(); }));
-								message.appNames(selectedApps.map(function (o) { return o.title(); }));
+					// 			message.apps(selectedApps.map(function (o) { return o.value(); }));
+					// 			message.appNames(selectedApps.map(function (o) { return o.title(); }));
 
-								if (!message.apps().length) {
-									message.platforms([]);
-								} else {
-									message.platforms(message.availablePlatforms());
-								}
-							}
+					// 			if (!message.apps().length) {
+					// 				message.platforms([]);
+					// 			} else {
+					// 				message.platforms(message.availablePlatforms());
+					// 			}
+					// 		}
 							
-							return apps;
-						}
-					});
+					// 		return apps;
+					// 	}
+					// });
 
 					this.onplatform = function (p, ev) {
 						if (ev instanceof MouseEvent && ev.target.tagName.toLowerCase() === 'input') {
@@ -701,12 +701,12 @@ window.component('push.popup', function (popup) {
 					var platforms = message.availablePlatforms();
 					return m('.comp-push-tab-content', [
 						m('.comp-panel', [
-							message.auto() ? '' : m('.form-group', [
-								m('h4', t('pu.po.tab0.select-apps')),
-								C.multiselect.view(ctrl.appsSelector),
-								// C.tagselector.view(ctrl.appsSelector),
-								m('.desc', t('pu.po.tab0.select-apps-desc'))
-							]),
+							// message.auto() ? '' : m('.form-group', [
+							// 	m('h4', t('pu.po.tab0.select-apps')),
+							// 	C.multiselect.view(ctrl.appsSelector),
+							// 	// C.tagselector.view(ctrl.appsSelector),
+							// 	m('.desc', t('pu.po.tab0.select-apps-desc'))
+							// ]),
 							m('.form-group', [
 								m('h4', t('pu.po.tab0.select-platforms')),
 								!platforms.length ? m('.help.pulsating', t('pu.po.tab0.select-platforms-no')) : platforms.map(function (p) {
@@ -1255,14 +1255,14 @@ window.component('push.popup', function (popup) {
 						m('.form-group', [
 							m('h4', t('pu.po.confirm')),
 							m('input[type=checkbox]', { checked: message.ack() ? 'checked' : undefined, onchange: function () { message.ack(!message.ack()); } }),
-							m('label', { onclick: function () { message.ack(!message.ack()); } }, t.n('pu.po.confirm', message.count())),
+							m('label', { onclick: function () { message.ack(!message.ack()); } }, t('pu.po.confirm.ready') + (message.auto() ? '' : ' ' + t.n('pu.po.confirm', message.count())) ),
 						]),
 						m.component(C.push.view.contents, { message: message }),
 						m('.btns.final', {key: 'btns'},
 							m('div.final-footer', [
 							    m('div', [
 							        message.auto() ? '' : message.count() ? m('div', { key: 'info-message' }, t.p('pu.po.recipients.message', message.count())) : '',
-							        m('div', t('pu.po.recipients.message.details')),
+							        message.auto() ? m('div', t('pu.po.recipients.message.details')) : '',
 							    ]),
 							    m('div', [
 							        m('a.btn-next', { href: '#', onclick: popup.send, disabled: message.ack() ? false : 'disabled' }, message.auto() ? t('pu.po.start') : t('pu.po.send')),

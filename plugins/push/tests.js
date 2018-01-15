@@ -248,7 +248,7 @@ describe('Push', function(){
                 appsubcredentialsIOS = subcredentialsIOS.app(APP_ID, {tz: 'Europe/Moscow', offset: 180}),
                 appsubcredentialsAndroid = subcredentialsAndroid.app(APP_ID, {tz: 'Europe/Moscow', offset: 180});
 
-                request.get(`/i/apps/reset?args=${JSON.stringify({app_id: APP_ID, period: 'all'})}&api_key=${API_KEY_ADMIN}`)
+                request.get(`/i/apps/reset?args=${JSON.stringify({app_id: APP_ID, period: 'reset'})}&api_key=${API_KEY_ADMIN}`)
                 .expect(200)
                 .end((err, res) => {
                      // console.log('app clear', err, res.text);
@@ -672,7 +672,7 @@ describe('Push', function(){
                     'de_a': {tkap: 'f_qKFXO8HVY:APA91bHI8qmPEMsDrnKjywph5DqbL1Dj-4XrMSEdyDpjTNKHpuKJfSzCK02xwfS41OoHrPnSvi8P_61M44WrlgBD2NzVBntFVSTUcVU3Z32QVi67aZQCrIph3ZrZgY_hXSrbyH6Np_1a', locale: 'de_DE', tz: -1},
                     'us_a': {tkap: 'f_qKFXO8HVY:APA91bHI8qmPEMsDrnKjywph5DqbL1Dj-4XrMSEdyDpjTNKHpuKJfSzCK02xwfS41OoHrPnSvi8P_61M44WrlgBD2NzVBntFVSTUcVU3Z32QVi67aZQCrIph3ZrZgY_hXSrbyH6Np_1a', locale: 'en_US', tz: -420},
                 };
-                request.get(`/i/apps/reset?args=${JSON.stringify({app_id: APP_ID, period: 'all'})}&api_key=${API_KEY_ADMIN}`)
+                request.get(`/i/apps/reset?args=${JSON.stringify({app_id: APP_ID, period: 'reset'})}&api_key=${API_KEY_ADMIN}`)
                     .expect(200)
                     .end((err, res) => {
                         // console.log('app clear', err, res.text);
@@ -1235,5 +1235,22 @@ describe('Push', function(){
             });
         });
     }
+    
+    //Reset app
+    describe('Reset app', function(){
+		it('should reset data', function(done){
+			var params = {app_id:APP_ID, period:"reset"};
+			request
+			.get('/i/apps/reset?api_key='+API_KEY_ADMIN+"&args="+JSON.stringify(params))
+			.expect(200)
+			.end(function(err, res){
+				if (err) return done(err);
+				var ob = JSON.parse(res.text);
+				ob.should.have.property('result', 'Success');
+				setTimeout(done, 5000)
+                db.close();
+			});
+		});
+	});
 
 });

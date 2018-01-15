@@ -11,7 +11,8 @@ class ClearJob extends job.Job {
                 {status: {$in: [job.STATUS.DONE, job.STATUS.CANCELLED]}},
                 {$or: [
                     {finished: {$exists: false}},
-                    {finished: {$lt: Date.now() - 60 * 60 * 24 * 1000}}
+                    {finished: {$lt: Date.now() - 60 * 60 * 24 * 1000}},
+                    {finished: null}
                 ]}
             ]
         };
