@@ -38,11 +38,13 @@ window.component('push.popup', function (popup) {
 			});
 
 			if (!found) {
+				m.endComputation();
 				return window.CountlyHelpers.alert(t('push.error.no-credentials'), 'red');
 			}
 		}
 
 		if (message.auto() && (!push.dashboard.cohorts || !push.dashboard.cohorts.length)) {
+			m.endComputation();
 			return window.CountlyHelpers.alert(t('push.error.no-cohorts'), 'red');
 		}
 
@@ -120,7 +122,7 @@ window.component('push.popup', function (popup) {
 			}
 
 			var enabled = true;
-			if ((message.auto() && tab >= 4) || (!message.auto && tab >= 3)) {
+			if ((message.auto() && tab >= 4) || (!message.auto() && tab >= 3)) {
 				if (message.type() === push.C.TYPE.MESSAGE) {
 					enabled = enabled && message.messagePerLocale().default;
 				} else if (message.type() === push.C.TYPE.DATA) {
@@ -1081,6 +1083,7 @@ window.component('push.popup', function (popup) {
 			});
 		}
 
+		var viewTabIndex = tabs.length + 1;
 		// Message
 		tabs.push({
 			tab: this.renderTab.bind(this, tabs.length),
@@ -1238,7 +1241,7 @@ window.component('push.popup', function (popup) {
 									: m('span.warn', C.tooltip.config(t('pu.po.recipients.temporary')), push.ICON.WARN())
 							])
 							: "",
-						m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(3) ? false : 'disabled' }, t('pu.po.next')),
+						m('a.btn-next', { href: '#', onclick: popup.next, disabled: popup.tabenabled(viewTabIndex) ? false : 'disabled' }, t('pu.po.next')),
 						popup.tabs.tab() > 0 ? m('a.btn-prev', { href: '#', onclick: popup.prev }, t('pu.po.prev')) : ''
 					])
 				]);

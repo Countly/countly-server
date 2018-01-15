@@ -7,7 +7,8 @@ window.component('push.dash', function (dash) {
 	var t = window.components.t,
 		PUSH = window.components.push;
 
-	dash.controller = function () {
+	dash.controller = function (refresh) {
+		console.log(refresh);
 		this.app_id = countlyCommon.ACTIVE_APP_ID;
 		this.period = m.prop('monthly');
 		this.source = m.prop('dash');
@@ -60,7 +61,7 @@ window.component('push.dash', function (dash) {
 		};
 
 		setTimeout(function () {
-			components.push.remoteDashboard(this.app_id).then(this.data, console.log).then(this.loaded.bind(null, true));
+			components.push.remoteDashboard(this.app_id, refresh).then(this.data, console.log).then(this.loaded.bind(null, true));
 		}.bind(this), 1);
 
 		this.dataDP = function () {
@@ -514,6 +515,7 @@ window.MessagingDashboardView = countlyView.extend({
 
 	destroy: function () {
 		if (this.mounted) {
+			delete components.push.dashboard;
 			m.mount(this.div, null);
 			this.mounted = null;
 		}
