@@ -379,30 +379,7 @@ window.component('push.popup', function (popup) {
 								var config = C.tooltip.config(t(error));
 								config.key = error;
 								config.appendToBody = true;
-								checkmark = !error ? m('span.ion-checkmark') : m('.error', {
-									key: error,
-									title: t(error),
-									config: function (el) {
-										$(el).tooltipster({
-											animation: 'fade',
-											animationDuration: 100,
-											delay: 100,
-											maxWidth: 240,
-											theme: 'tooltipster-borderless',
-											trigger: 'custom',
-											triggerOpen: {
-												mouseenter: true,
-												touchstart: true
-											},
-											triggerClose: {
-												mouseleave: true,
-												touchleave: true
-											},
-											interactive: true,
-											contentAsHTML: true
-										});
-									}
-								}, push.ICON.WARN());
+								checkmark = !error ? m('span.ion-checkmark') : m('.error', C.tooltip.config(t(error)), push.ICON.WARN());
 							} else {
 								var found = false, mpl = message.messagePerLocale();
 								[l.value, l.value + push.C.S + 't', l.value + push.C.S + '0' + push.C.S + 't', l.value + push.C.S + '0' + push.C.S + 'l', l.value + push.C.S + '1' + push.C.S + 't', l.value + push.C.S + '1' + push.C.S + 'l'].forEach(function (k) {
@@ -414,30 +391,7 @@ window.component('push.popup', function (popup) {
 								// message.locales()[l] ? m('.comp-push-tab-num.ion-checkmark') : 
 								m('span.comp-push-locale-count',
 									l.value === 'default' ?
-										m('.help-tt', m('span.ion-information-circled',
-											{
-												title: t('pu.po.tab2.default-message.help'),
-												config: function (el) {
-													$(el).tooltipster({
-														animation: 'fade',
-														animationDuration: 100,
-														delay: 100,
-														maxWidth: 240,
-														theme: 'tooltipster-borderless',
-														trigger: 'custom',
-														triggerOpen: {
-															mouseenter: true,
-															touchstart: true
-														},
-														triggerClose: {
-															mouseleave: true,
-															touchleave: true
-														},
-														interactive: true,
-														contentAsHTML: true
-													});
-												}
-											}))
+										m('.help-tt', m('span.ion-information-circled', C.tooltip.config(t('pu.po.tab2.default-message.help'))))
 										: (l.percent + '%')
 								),
 								m('span.comp-push-locale-title', l.title),
@@ -559,55 +513,11 @@ window.component('push.popup', function (popup) {
 							[
 								m('input', { onclick: function () { ctrl.value(ctrl.value() || ''); }, oninput: m.withAttr('value', ctrl.title), placeholder: ctrl.titlePlaceholder }, ctrl.title() || ''),
 								ctrl.title() !== undefined && !ctrl.title.valid ?
-									m('.error', {
-										title: ctrl.title.errorText,
-										config: function (el) {
-											$(el).tooltipster({
-												animation: 'fade',
-												animationDuration: 100,
-												delay: 100,
-												maxWidth: 240,
-												theme: 'tooltipster-borderless',
-												trigger: 'custom',
-												triggerOpen: {
-													mouseenter: true,
-													touchstart: true
-												},
-												triggerClose: {
-													mouseleave: true,
-													touchleave: true
-												},
-												interactive: true,
-												contentAsHTML: true
-											});
-										}
-									}, push.ICON.WARN())
+									m('.error', C.tooltip.config(ctrl.title.errorText), push.ICON.WARN())
 									: ''
 							]
 						),
-						ctrl.help ? m('.help-tt', {
-							title: ctrl.help,
-							config: function (el) {
-								$(el).tooltipster({
-									animation: 'fade',
-									animationDuration: 100,
-									delay: 100,
-									maxWidth: 240,
-									theme: 'tooltipster-borderless',
-									trigger: 'custom',
-									triggerOpen: {
-										mouseenter: true,
-										touchstart: true
-									},
-									triggerClose: {
-										mouseleave: true,
-										touchleave: true
-									},
-									interactive: true,
-									contentAsHTML: true
-								});
-							}
-						}, m('span.ion-information-circled')) : ''
+						ctrl.help ? m('.help-tt', C.tooltip.config(ctrl.help), m('span.ion-information-circled')) : ''
 					]),
 					m('.comp-push-extra-value', {
 						class: ctrl.value() === undefined ? '' : 'active', onclick: function () {
@@ -616,29 +526,7 @@ window.component('push.popup', function (popup) {
 					}, [
 							m(ctrl.textarea ? 'textarea' : 'input[type=' + ctrl.typ + ']', inp),
 							ctrl.value() !== undefined && !ctrl.value.valid ?
-								m('.error', {
-									title: ctrl.value.errorText,
-									config: function (el) {
-										$(el).tooltipster({
-											animation: 'fade',
-											animationDuration: 100,
-											delay: 100,
-											maxWidth: 240,
-											theme: 'tooltipster-borderless',
-											trigger: 'custom',
-											triggerOpen: {
-												mouseenter: true,
-												touchstart: true
-											},
-											triggerClose: {
-												mouseleave: true,
-												touchleave: true
-											},
-											interactive: true,
-											contentAsHTML: true
-										});
-									}
-								}, push.ICON.WARN())
+								m('.error', C.tooltip.config(ctrl.value.errorText), push.ICON.WARN())
 								: ''
 						])
 				]);
@@ -1029,7 +917,7 @@ window.component('push.popup', function (popup) {
 										d.setMinutes(0);
 										d.setSeconds(0);
 										d.setMilliseconds(0);
-										this.datepicker = C.datepicker.controller({ value: message.date, defaultDate: d });
+										this.datepicker = C.datepicker.controller({ value: message.date, defaultDate: d, id: 'campaign-end-date' });
 									}
 									return m('.date-time-container', C.datepicker.view(this.datepicker));
 								}.bind(this)
@@ -1068,6 +956,7 @@ window.component('push.popup', function (popup) {
 									m('h4', t('pu.po.tab1.tz')),
 									m('.desc', [
 										t('pu.po.tab1.tz-desc'),
+										' ',
 										m('span.warn', C.tooltip.config(t('pu.po.tab1.tz-yes-help')), push.ICON.WARN())
 									]),
 									C.radio.view(ctrl.radioTz),
