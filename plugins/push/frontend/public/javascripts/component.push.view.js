@@ -374,6 +374,14 @@ window.component('push.view', function(view) {
 					if (loc._id === ctrl.message.geo()) { geo = loc; }
 				});
 			}
+
+			var delayed = ctrl.message.autoDelay() > 0,
+				delayedDays = delayed ? Math.floor(ctrl.message.autoDelay() / 1000 / 3600 / 24) : 0,
+				delayedHours = delayed ? Math.floor(ctrl.message.autoDelay() / 1000 / 3600) % 24 : 0,
+				capped = ctrl.message.autoCapSleep() > 0,
+				cappedDays = capped ? Math.floor(ctrl.message.autoCapSleep() / 1000 / 3600 / 24) : 0,
+				cappedHours = capped ? Math.floor(ctrl.message.autoCapSleep() / 1000 / 3600) % 24 : 0;
+
 			return m('.comp-push-view', [
 				m('.form-group', [
 					m('h4', t('pu.po.tab0.title')),
@@ -444,12 +452,11 @@ window.component('push.view', function(view) {
 						m('.comp-push-view-table', [
 							m('.comp-push-view-row', [
 								m('.col-left', t('pu.po.tab2.delivery-method')),
-								m('.col-right', ctrl.message.autoDelay() ? 
-									t('pu.po.tab2.delayed') + ': ' + ((Math.floor(ctrl.message.autoDelay() / 1000 / 3600 / 24) > 0 ?
-																			t.n('pu.days', Math.floor(ctrl.message.autoDelay() / 1000 / 3600 / 24)) : '') +
-																	 ' ' + 
-																	 (Math.floor(ctrl.message.autoDelay() / 1000 / 3600) % 24 > 0 ?
-																	  		t.n('pu.hours', Math.floor(ctrl.message.autoDelay() / 1000 / 3600) % 24) : '')).trim()
+								m('.col-right', delayed ? 
+									t('pu.po.tab2.delayed') + ': ' + 
+										[t('pu.min'),
+										(delayedDays ? t.nn('pu.days', delayedDays) : ''),
+										(delayedHours ? t.nn('pu.hours', delayedHours) : '')].join(' ')
 									: t('pu.po.tab2.immediately'))
 							]),
 							// m('.comp-push-view-row', [
@@ -460,15 +467,12 @@ window.component('push.view', function(view) {
 								m('.col-left', t('pu.po.tab2.capping')),
 								m('.col-right', ctrl.message.autoCapMessages() || ctrl.message.autoCapSleep() ?
 									m.trust([
-										ctrl.message.autoCapMessages() ? t.n('pu.messages', ctrl.message.autoCapMessages()) : '',
-										ctrl.message.autoCapSleep() ?  
-											((Math.floor(ctrl.message.autoCapSleep() / 1000 / 3600 / 24) > 0 ?
-												t.n('pu.days', Math.floor(ctrl.message.autoCapSleep() / 1000 / 3600 / 24)) 
-												: '') +
-											' ' + 
-											(Math.floor(ctrl.message.autoCapSleep() / 1000 / 3600) % 24 > 0 ?
-												t.n('pu.hours', Math.floor(ctrl.message.autoCapSleep() / 1000 / 3600) % 24) 
-												: '')).trim() + ' ' + t('pu.hours.between')
+										ctrl.message.autoCapMessages() ? t('pu.max') + ' ' + t.nn('pu.messages', ctrl.message.autoCapMessages()) : '',
+										capped ?  
+											 [t('pu.min'),
+											 (cappedDays ? t.nn('pu.days', cappedDays) : ''),
+											 (cappedHours ? t.nn('pu.hours', cappedHours) : ''),
+											 t('pu.messages.between')].join(' ')
 										: '',
 									].filter(function(x){ return !!x; }).join('<br />'))
 									: t('pu.no')

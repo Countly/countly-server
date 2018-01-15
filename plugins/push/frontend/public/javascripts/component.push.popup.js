@@ -1248,8 +1248,9 @@ window.component('push.popup', function (popup) {
 		tabs.push({
 		    tab: this.renderTab.bind(this, tabs.length),
 		    controller: function () {
+		    	this.viewContents = new C.push.view.contents.controller({message: message});
 		    },
-		    view: function () {
+		    view: function (ctrl) {
 				return m('.comp-push-tab-content.comp-summary', [
 					m('.comp-panel', [
 						m('.form-group', [
@@ -1257,7 +1258,7 @@ window.component('push.popup', function (popup) {
 							m('input[type=checkbox]', { checked: message.ack() ? 'checked' : undefined, onchange: function () { message.ack(!message.ack()); } }),
 							m('label', { onclick: function () { message.ack(!message.ack()); } }, t('pu.po.confirm.ready') + (message.auto() ? '' : ' ' + t.n('pu.po.confirm', message.count())) ),
 						]),
-						m.component(C.push.view.contents, { message: message }),
+						C.push.view.contents.view(ctrl.viewContents),
 						m('.btns.final', {key: 'btns'},
 							m('div.final-footer', [
 							    m('div', [
