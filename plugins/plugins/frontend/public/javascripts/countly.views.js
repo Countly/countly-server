@@ -828,7 +828,15 @@ window.ConfigurationsView = countlyView.extend({
         var configsHTML = "";
         if (!first)
             configsHTML += "<table class='d-table help-zone-vb' cellpadding='0' cellspacing='0'>";
-        for (var i in configsData) {
+
+        var objectKeys = Object.keys(configsData);
+
+        if(id === ".logs"){
+            objectKeys.splice(objectKeys.indexOf("default"), 1);
+            objectKeys.unshift('default');
+        }
+        for (var a in objectKeys) {
+            var i = objectKeys[a];
             if (typeof configsData[i] == "object") {
 
                 if (configsData[i] != null) {
@@ -842,7 +850,6 @@ window.ConfigurationsView = countlyView.extend({
                             category = "PLUGINS";
                             relatedNav = this.navTitles.pluginTitles.find(function(x){ return x.key === i});
                         }
-                        // configsHTML += "<tr id='config-table-row-" + i + "' style='display:" + display + "' class='config-table-row'><td>" + label + "</td><td>" + this.generateConfigsTable(configsData[i], id + "." + i) + "</td></tr>";
                         configsHTML += "<tr id='config-table-row-header-" + i + "' style='display:" + display + "' class='config-table-row-header'><td style='display:block'>" + category + " > " + relatedNav.label + "</td></tr>"
                         configsHTML += "<tr id='config-table-row-" + i + "' style='display:" + display + "' class='config-table-row'><td>" + this.generateConfigsTable(configsData[i], id + "." + i) + "</td></tr>";
                     }
@@ -852,19 +859,20 @@ window.ConfigurationsView = countlyView.extend({
                     var input = this.getInputByType((id + "." + i).substring(1), "");
                     var label = this.getInputLabel((id + "." + i).substring(1), i);
                     if (input && label)
-                        configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".","") + "' class='config-table-details-row'><td style='padding:15px 20px'>" + label + "</td><td style='padding:15px 20px'>" + input + "</td></tr>";
+                        configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".","") + "' class='config-table-details-row'><td>" + label + "</td><td>" + input + "</td></tr>";
                 }
             }
             else {
                 var input = this.getInputByType((id + "." + i).substring(1), configsData[i]);
                 var label = this.getInputLabel((id + "." + i).substring(1), i);
                 if (input && label)
-                    configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".","") + "' class='config-table-details-row'><td style='padding:15px 20px'>" + label + "</td><td style='padding:15px 20px'>" + input + "</td></tr>";
+                    configsHTML += "<tr id='config-row-" + i + "-" + id.replace(".","") + "' class='config-table-details-row'><td>" + label + "</td><td>" + input + "</td></tr>";
             }
         }
         if (!first)
             configsHTML += "</table>";
 
+            
 
         return configsHTML;
     },

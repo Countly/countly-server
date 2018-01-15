@@ -152,3 +152,7 @@
     padding: 20px 25px;
     border-right: 1px solid #d0d0d0;
 }
+
+#config-table-container .config-table-row > td > table > tbody  > tr > td {
+    padding:15px 20px;
+}
