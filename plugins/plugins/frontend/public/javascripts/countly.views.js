@@ -829,7 +829,7 @@ window.ConfigurationsView = countlyView.extend({
         if (!first)
             configsHTML += "<table class='d-table help-zone-vb' cellpadding='0' cellspacing='0'>";
 
-        var objectKeys = Object.keys(configsData).sort(function(a, b) { return a < b ? -1 : 1 });
+        var objectKeys = Object.keys(configsData);
 
         if(id === ".logs"){
             objectKeys.splice(objectKeys.indexOf("default"), 1);
