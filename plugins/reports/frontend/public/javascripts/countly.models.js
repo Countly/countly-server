@@ -16,7 +16,7 @@
                 if(json.length > 0){
                     for(var i = 0; i < json.length; i++){
                         json[i].title = json[i].title ? json[i].title : ''; 
-                        json[i].enabled = json[i].enabled ? true : false;
+                        json[i].enabled = json[i].enabled === false ? false : true;
                     }
                 }
 				_data = json;
