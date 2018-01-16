@@ -59,6 +59,7 @@
 
 **Enterprise Edition features**
 
+* Alerts: added more metrics for alerts, as Bounce rate, Number of page views, Purchase sum
 * Attribution: 7 day click data retention
 * Attribution: added custom segment limit
 * Attribution: added server to server campaign by matching advertising ids
