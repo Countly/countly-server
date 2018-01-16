@@ -395,7 +395,7 @@ window.component('push.dash', function (dash) {
 				footer: {
 					config: { class: 'condensed' },
 					bignumbers: [
-						{ title: 'pu.dash.users.total', number: ctrl.data().users || 0, help: 'help.dashboard.total-users' },
+						{ title: 'pu.dash.users.total', number: ctrl.data().users || 0, help: 'help.dashboard.total-users-push' },
 						{ title: 'pu.dash.users.enabl', number: ctrl.data().enabled || 0, help: 'help.dashboard.messaging-users' },
 					]
 				}
