@@ -170,10 +170,14 @@ window.component('push.dash', function (dash) {
 						}
 						: {
 							mData: unprop.bind(null, 'result'), sName: 'status', sType: 'string', mRender: function (d, type, result) {
-								return '<div class="on-off-switch">' + 
-									'<input type="checkbox" class="on-off-switch-checkbox status-switcher" id="message-' + d._id() + '" ' + (result.autoActive() ? 'checked' : '') + '>' + 
-									'<label class="on-off-switch-label" for="message-' + d._id() + '"></label>' + 
-									'<span class="text">' + 'Enable' + '</span>';
+								if (d.autoEnd() && new Date(d.autoEnd()).getTime() < Date.now()) {
+									return t('pu.ended');
+								} else {
+									return '<div class="on-off-switch">' + 
+										'<input type="checkbox" class="on-off-switch-checkbox status-switcher" id="message-' + d._id() + '" ' + (result.autoActive() ? 'checked' : '') + '>' + 
+										'<label class="on-off-switch-label" for="message-' + d._id() + '"></label>' + 
+										'<span class="text">' + t('pu.enable') + '</span>';
+								}
 							}, sTitle: t('pu.t.status'), bSearchable: false
 						},
 					{ mData: function (x) { return x.appNames().join(', '); }, sName: 'apps', sType: 'string', mRender: CountlyHelpers.clip(), sTitle: t('pu.t.apps'), bSearchable: false },
