@@ -105,6 +105,30 @@
         else if(typeof props[name] !== "undefined")
             return props[name][Math.floor(Math.random()*props[name].length)];
 	}
+    function getIAPEvents(){
+        var iap = [];
+        var cur = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].iap_event;
+        if(cur){
+            if(typeof cur === "string" && cur.length){
+                iap.push(cur);
+                eventsMap[cur] = segments.Buy;
+            }
+            else if(jQuery.isArray(cur)){
+                for(var i = 0; i < cur.length; i++){
+                    if(cur[i] && cur[i].length){
+                        iap.push(cur[i]);
+                        eventsMap[cur[i]] = segments.Buy;
+                    }
+                }
+            }
+        }
+    
+        if(iap.length === 0){
+            iap = ["Buy"];
+            eventsMap["Buy"] = segments.Buy;
+        }
+        return iap;
+    }
 	function user(id){
 		this.getId = function() {
 			function s4() {
@@ -119,23 +143,7 @@
         this.stats = {u:0,s:0,x:0,d:0,e:0,r:0,b:0,c:0,p:0};
 		this.id = this.getId();
 		this.isRegistered = false;
-		this.iap = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].iap_event || ["Buy"];
-		if(this.iap != ""){
-            if(typeof this.iap === "string"){
-                eventsMap[this.iap] = segments.Buy;
-                this.iap = [this.iap];
-            }
-            else if(jQuery.isArray(this.iap)){
-                for(var i = 0; i <  this.iap.length; i++){
-                    eventsMap[this.iap[i]] = segments.Buy;
-                }
-
-            }
-		}
-        else{
-            this.iap = ["Buy"];
-            eventsMap["Buy"] = segments.Buy;
-        }
+		this.iap = getIAPEvents();
 
 		this.hasSession = false;
         if(ip_address.length > 0 && Math.random() >= 0.5){
@@ -792,7 +800,7 @@
     var ensuringJobs = false;
     countlyPopulator.ensureJobs = function() {
         if(typeof countlyCohorts !== "undefined"){
-            var iap = countlyGlobal["apps"][countlyCommon.ACTIVE_APP_ID].iap_event || ["Buy"];
+            var iap = getIAPEvents();
             countlyCohorts.add({cohort_name:"Bought & Shared", steps: JSON.stringify([
                 {
                     "type": "did",
@@ -823,7 +831,14 @@
                     "type": "did",
                     "event": iap[0],
                     "period": "30days",
-                    "query": "{\"up.ls\":{\"$gt\":"+countlyPopulator.getStartTime()+"}}",
+                    "query": "{}",
+                    "byVal": ""
+                },
+                {
+                    "type": "did",
+                    "event": "[CLY]_session",
+                    "period": "20days",
+                    "query": "{}",
                     "byVal": ""
                 }
             ])});

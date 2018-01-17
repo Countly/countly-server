@@ -552,14 +552,11 @@ app.get(countlyConfig.path+'/dashboard', function (req, res, next) {
                         req.session.gadm = (member["global_admin"] == true);
                         req.session.email = member["email"];
                         req.session.settings = member.settings;
+                        res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
+                        res.header('Expires', '0');
+                        res.header('Pragma', 'no-cache');
                         if(member.upgrade){
-                            res.header('Cache-Control', 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0');
-                            res.header('Expires', '0');
-                            res.header('Pragma', 'no-cache');
                             countlyDb.collection('members').update({"_id":member._id}, {$unset:{upgrade:""}},function (err, member) {});
-                        }
-                        else{
-                            res.header('Cache-Control', 'public, max-age=31536000');
                         }
 
                         member._id += "";

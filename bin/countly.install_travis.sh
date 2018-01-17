@@ -19,7 +19,7 @@ apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
 #update package index
 apt-get update
 
-apt-get -y install python-software-properties build-essential git
+apt-get -y install python-software-properties build-essential git sqlite3 unzip
 
 if !(command -v apt-add-repository >/dev/null) then
     apt-get -y install software-properties-common
