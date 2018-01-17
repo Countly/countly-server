@@ -47,7 +47,7 @@
 			var topBarHeight = $("#top-bar").outerHeight(),
 				cutOffAdd = 0;
 
-            if (topBarHeight) {
+            if ($("#top-bar").is(":visible") && topBarHeight) {
                 cutOffAdd = topBarHeight;
                 base.stickyHeader.css({top: topBarHeight});
 			} else {
