@@ -311,7 +311,7 @@
                     if (currentMap == "click") {
                         clickMap("resize", pageWidth, pageHeight, currentDevice, showHeatMap);
                     } else {
-                        scrollMap("refresh", pageWidth, pageHeight, currentDevice, showHeatMap);
+                        scrollMap("resize", pageWidth, pageHeight, currentDevice, showHeatMap);
                     }
                 }, 1);
             });
