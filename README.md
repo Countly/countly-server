@@ -12,7 +12,7 @@
 * **Questions?** [Ask in our Community forum](http://community.count.ly)
 
 ## What's Countly?
-[Countly](http://count.ly) is an innovative, real-time, open source [mobile](https://count.ly/mobile-analytics) & [web analytics](http://count.ly/web-analytics), [rich push notifications](https://count.ly/plugins/rich-push-notifications) and [crash reporting](https://count.ly/plugins/crash-analytics) platform powering more than 2500 web sites and 14000 mobile applications as of 2017 Q3. It collects data from mobile phones, tablets, Apple Watch and other internet-connected devices, and visualizes this information to analyze application usage and end-user behavior. 
+[Countly](http://count.ly) is an innovative, real-time, open source [mobile](https://count.ly/mobile-analytics) & [web analytics](http://count.ly/web-analytics), [rich push notifications](https://count.ly/plugins/rich-push-notifications) and [crash reporting](https://count.ly/plugins/crash-analytics) platform powering more than 2500 web sites, 14000 mobile applications and several tens of thousands of desktop applications as of 2017 Q3. It collects data from mobile, desktop, web apps including Apple Watch, TvOS and other internet-connected devices, and visualizes this information to analyze application usage and end-user behavior. 
 
 With the help of [Javascript SDK](http://github.com/countly/countly-sdk-web), Countly is a web analytics platform with features on par with mobile SDKs. For more information about web analytics capabilities, [see this link](http://count.ly/web-analytics).
 
@@ -40,7 +40,7 @@ This repository includes server-side part of Countly, with following features:
 
 ## What can Countly track? 
 
-[Countly](https://count.ly) supports top-notch devices, including iOS, Android, Windows Phone and web apps. You can find a list of [official and community supported Countly SDK libraries here](https://resources.count.ly/docs/downloading-sdks). Each SDK has its own installation instructions.
+[Countly](https://count.ly) can collect and visualize data from iOS, Android, Windows Phone devices, desktop applications (Windows, Mac OS) and web applications. You can find a list of [official and community supported Countly SDK libraries here](https://resources.count.ly/docs/downloading-sdks). Each SDK has its own installation instructions.
 
 ## Built with 
 
@@ -63,7 +63,7 @@ Countly is a privacy-focused and 360-degree analytics approach with several, uni
 * Your data, your rules - since you can install Countly on your own server, or let us do a private cloud deployment for you.
 * Configurable and extensible via open source [plugins](https://count.ly/plugins).
 * Modern and easy to use web dashboard with a focus on user experience, helping to get complex insights easily.
-* Tracking more than 2500 web sites and 12000 mobile applications.
+* Tracking more than 2500 web sites and 14000 mobile applications.
 * Collecting more than 60 billion datapoints worlwide.
 
 ## Differences between Community Edition & Enterprise Edition
@@ -72,7 +72,7 @@ Countly is a privacy-focused and 360-degree analytics approach with several, uni
 * **Deployment:** Community Edition deployments are for environments where the information stored is not critical since it does not include professional assistance. You must have a qualified technician. Enterprise Edition is for corporate environments that require availability and reliability where intellectual capital is critical.
 * **Technology:** Community Edition has a number of limitations, including no corporate support for sharding, replica sets or installation.
 * **Guarantee:** Community Edition is on the bleeding edge regarding version upgrades and with no bugfix guarantee. Enterprise Edition has bugfix guarantee, immediate resolution, verified builds, on-site and automatic version upgrades.
-* **Features:** Enterprise Edition has more features compared to Countly, with a focus on end-to-end analytics and marketing platform.
+* **Features:** Enterprise Edition has more features compared to Countly, with a focus on end-to-end analytics and marketing platform. Additional features include but not limited to automated push notifications, drilling on the raw data, user profiles, in-app purchase analytics, retention & engagement, user flows, cohorts and custom dashboards.
 
 ## Installing & upgrading Countly server
 
@@ -88,7 +88,7 @@ There are several ways to install Countly:
 
 3. For bash lovers, we provide a beautiful installation script (`bin/countly.install.sh`) in countly-server package which installs everything required to run Countly Server. For this, you need a stable release of this repository [available here](https://github.com/Countly/countly-server/releases). 
 
-4. Countly also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/u/countly/countly-server/) and [installation instructions for Docker](http://resources.count.ly/docs/installing-countly-server)
+4. Countly Community Edition also has Docker support - [see our official Docker repository](https://registry.hub.docker.com/u/countly/countly-server/) and [installation instructions for Docker](http://resources.count.ly/docs/installing-countly-server)
 
 If you want to upgrade Countly from a previous version, please take a look at [upgrading documentation](http://resources.count.ly/v1.0/docs/upgrading-countly-server).
 
