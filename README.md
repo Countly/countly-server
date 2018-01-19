@@ -3,7 +3,7 @@
 
 <br/>
 
-![header2](https://count.ly/github/countly-editions.png)
+![header2](https://count.ly/github/countly-editions.png?v2)
 
 <br/>
 
