@@ -340,9 +340,9 @@ table { border-collapse: collapse; }
 .big-numbers.top .trend { display: none; font-size:11px; margin-top:20px; position: relative; top:inherit; right: inherit; width: auto; height: auto; }
     .big-numbers.top .trend .material-icons { font-size: 16px; vertical-align: middle; margin-right:5px; }
     .big-numbers.top .trend.u,
-    .big-numbers.top .trend.u .change { color:#6BB96E !important; }
+    .big-numbers.top .trend.u .change { color:#83C986 !important; }
     .big-numbers.top .trend.d,
-    .big-numbers.top .trend.d .change { color:#C94C4C !important; }
+    .big-numbers.top .trend.d .change { color:#DB6E6E !important; }
     .big-numbers.top.active .trend { display: block; }
 .big-numbers.top .change { display:inline-block; vertical-align: middle; position: relative; top:inherit; right: inherit; }
 
@@ -397,8 +397,8 @@ table { border-collapse: collapse; }
 .big-numbers-v2 .big-numbers .number { margin-top: 2px; color:#484848; font-size: 34px; }
 .big-numbers-v2 .big-numbers .trend { margin-top:5px; height: auto; width: auto; top:0; right:0; position: relative; }
 .big-numbers-v2 .big-numbers .trend i { font-size: 13px; }
-.big-numbers-v2 .big-numbers .trend.u { color:#6BB96E; }
-.big-numbers-v2 .big-numbers .trend.d { color:#C94C4C; }
+.big-numbers-v2 .big-numbers .trend.u { color:#83C986; }
+.big-numbers-v2 .big-numbers .trend.d { color:#DB6E6E; }
 
 .google-disabled .big-numbers.radio .color { display: none; }
 .google-disabled .big-numbers.radio { cursor: default; }

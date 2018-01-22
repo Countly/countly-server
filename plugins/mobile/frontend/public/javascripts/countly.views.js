@@ -231,8 +231,8 @@ window.MobileDashboardView = countlyView.extend({
 
             self.drawGraph();
 
-            $(".usparkline").peity("bar", { width:"100%", height:"30", colour:"#6BB96E", strokeColour:"#6BB96E", strokeWidth:2 });
-            $(".dsparkline").peity("bar", { width:"100%", height:"30", colour:"#C94C4C", strokeColour:"#C94C4C", strokeWidth:2 });
+            $(".usparkline").peity("bar", { width:"100%", height:"30", colour:"#83C986", strokeColour:"#83C986", strokeWidth:2 });
+            $(".dsparkline").peity("bar", { width:"100%", height:"30", colour:"#DB6E6E", strokeColour:"#DB6E6E", strokeWidth:2 });
 
             if (newPage.find("#map-list-right").length == 0) {
                 $("#map-list-right").remove();
