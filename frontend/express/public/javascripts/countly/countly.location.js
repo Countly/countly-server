@@ -106,7 +106,7 @@
 
         for (var i = 0; i < locationData.chartData.length; i++) {
             locationData.chartData[i]['country_flag'] =
-                "<div class='flag' style='background-image:url("+countlyGlobal["path"]+"/images/flags/" + locationData.chartData[i]['code'] + ".png);'></div>" +
+                "<div class='flag' style='margin-top:4px; background-image:url("+countlyGlobal["path"]+"/images/flags/" + locationData.chartData[i]['code'] + ".png);'></div>" +
                 locationData.chartData[i]['country'];
         }
 

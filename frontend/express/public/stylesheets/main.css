@@ -1422,7 +1422,7 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 .cly-grid-7:last-child { width: 15%; }
 .cly-grid-8 { width: 12.5%; }
 
-#top-bar { min-height: 59px; min-width:1024px; background-color: #FFF; user-select: none; position: fixed; width:100%; z-index: 9999; box-shadow: inset 0 -1px 0 0 #E7E7E7; }
+#top-bar { height: 59px; min-width:1024px; background-color: #FFF; user-select: none; position: fixed; width:100%; z-index: 9999; box-shadow: inset 0 -1px 0 0 #E7E7E7; }
 #top-bar .logo-container { padding: 12px 19px; float:left; }
 #top-bar .logo { background-image: url("/images/dashboard/countly_logo.svg"); width: 185px; height: 32px; margin-top:1px; background-position: center; background-repeat: no-repeat; background-size: contain; }
 
@@ -1457,7 +1457,7 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 #top-bar .dropdown.large.clicked .empty-state:after,
 #top-bar .dropdown.large.force-clicked .selected:after,
 #top-bar .dropdown.large.force-clicked .empty-state:after { content: "\f3d8"; color:#2fa732; }
-#top-bar .dropdown .menu { box-shadow: 0 3px 7px rgba(0,0,0,.08); border: 1px solid #d0d0d0; color:#474747; opacity: 0; cursor:default; position: absolute; top:67px; left: 50%; width: 210px; margin-left:-105px; background-color: #FFF; border-radius: 2px; visibility: hidden; }
+#top-bar .dropdown .menu { box-shadow: 0 3px 7px rgba(0,0,0,.08); border: 1px solid #d0d0d0; color:#474747; opacity: 0; cursor:default; position: absolute; top:67px; left: 50%; width: 280px; margin-left:-140px; background-color: #FFF; border-radius: 2px; visibility: hidden; }
 #top-bar .dropdown.clicked .menu,
 #top-bar .dropdown.force-clicked .menu { opacity: 1; transition:opacity 0.3s, visibility 0.3s; visibility: visible; }
 #top-bar .dropdown .menu:before { border: 6px solid rgba(194, 225, 245, 0); border-bottom-color: #FFF; left: 50%; margin-left: -6px; top: -12px; content: " "; height: 0; width: 0; position: absolute; pointer-events: none; z-index: 2; }
@@ -1496,11 +1496,11 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 #user_api_key_item input::selection {background: #2EB52B;color:white;}
 #user_api_key_item input::-moz-selection {background: #2FA732;color:#ffffff;}
 
-#app-navigation.dropdown.large { padding:21px 25px 19px 25px; }
+#app-navigation.dropdown.large { padding:21px 25px 19px 25px; box-sizing:border-box; height:59px; width:230px; }
 #app-navigation #active-app-name { text-overflow:ellipsis; white-space:nowrap; overflow:hidden; display: inline-block; max-width: 125px; }
 #app-navigation #active-app-icon { vertical-align:top; display:inline-block; width:20px; height:20px; background-size:22px 22px; margin-right:10px; margin-top:-3px; background-position:center; border-radius:4px; border:1px solid #555; }
 #app-navigation .list .item .app-icon { width: 20px; height: 20px; background-position:center; background-size:22px 22px;  border-radius:4px; display: inline-block; margin-right:10px; vertical-align: top; margin-top: 1px; }
-#app-navigation .list .item .name { display: inline-block; vertical-align: top; margin-top:4px; white-space:nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 155px; }
+#app-navigation .list .item .name { display: inline-block; vertical-align: top; margin-top:4px; white-space:nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 210px; }
 #app-navigation .empty-state { padding:1px 0; }
 
 #version-info { position: absolute; bottom: 0; font-size: 11px; color: #747474; width: 100%; padding: 15px 0; box-sizing: border-box; text-align: center; background-color: #252525; z-index: 1; }
