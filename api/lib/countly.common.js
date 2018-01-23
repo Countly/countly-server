@@ -1590,7 +1590,7 @@ var countlyCommon = {},
             case "month": {
                 activePeriod = year;
                 previousPeriod = year - 1;
-                periodMax = month;
+                periodMax = 12;
                 periodMin = 1;
                 dateString = "MMM";
                 daysInPeriod = parseInt(_currMoment.format("DDD"),10);
@@ -1618,7 +1618,7 @@ var countlyCommon = {},
                 previousPeriod = _currMoment.format("YYYY.M");
                 _currMoment.add(day, 'days');
 
-                periodMax = day;
+                periodMax = new Date(year, month, 0).getDate();
                 periodMin = 1;
                 dateString = "D MMM";
                 daysInPeriod = day;

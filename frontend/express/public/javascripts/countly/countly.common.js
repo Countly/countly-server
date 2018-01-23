@@ -1833,8 +1833,8 @@
             if (bucket == "monthly") {
                 var allMonths = [];
 
-                for (var i = 0; i < days; i++) {
-                    start.add(1, 'days');
+                for (var i = 0; i < 12; i++) {
+                    start.add(1, 'months');
                     allMonths.push(start.format("MMM YYYY"));
                 }
 
@@ -1875,10 +1875,19 @@
                     }
                 }
             } else {
-                for (var i = 0; i < days; i++) {
-                    start.add(1, 'days');
-                    ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
-                    tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                if(_period === "day"){
+                    for (var i = 0; i < new Date(start.year(), start.month(), 0).getDate(); i++) {
+                        start.add(1, 'days');
+                        ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
+                        tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                    }
+                }
+                else{
+                    for (var i = 0; i < days; i++) {
+                        start.add(1, 'days');
+                        ticks.push([i, countlyCommon.formatDate(start, "D MMM")]);
+                        tickTexts[i] = countlyCommon.formatDate(start, "D MMM, dddd");
+                    }
                 }
             }
 
@@ -2585,7 +2594,7 @@
             case "month":
                 activePeriod = year;
                 previousPeriod = year - 1;
-                periodMax = month;
+                periodMax = 12;
                 periodMin = 1;
                 dateString = "MMM";
                 numberOfDays = getDOY();
@@ -2599,7 +2608,7 @@
                     previousDay = previousDate.date();
 
                 previousPeriod = previousYear + "." + previousMonth;
-                periodMax = day;
+                periodMax = new Date(year, month, 0).getDate();
                 periodMin = 1;
                 dateString = "D MMM";
                 numberOfDays = moment().format("D");
