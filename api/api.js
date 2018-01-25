@@ -630,6 +630,8 @@ if (cluster.isMaster) {
                                 if (!tmpParams.qstring.device_id) {
                                     return processBulkRequest(i + 1);
                                 } else {
+                                    //make sure device_id is string
+                                    tmpParams.qstring.device_id += "";
                                     tmpParams.app_user_id = common.crypto.createHash('sha1').update(tmpParams.qstring.app_key + tmpParams.qstring.device_id + "").digest('hex');
                                 }
                 
@@ -760,6 +762,8 @@ if (cluster.isMaster) {
                                 common.returnMessage(params, 400, 'Missing parameter "app_key" or "device_id"');
                                 return false;
                             } else {
+                                //make sure device_id is string
+                                params.qstring.device_id += "";
                                 // Set app_user_id that is unique for each user of an application.
                                 params.app_user_id = common.crypto.createHash('sha1').update(params.qstring.app_key + params.qstring.device_id + "").digest('hex');
                             }
