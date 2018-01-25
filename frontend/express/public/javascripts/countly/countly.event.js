@@ -67,7 +67,51 @@
             return true;
         }
     };
-
+    
+    //updates event map for current app
+    countlyEvent.update_map = function(event_map,event_order,callback){
+        $.ajax({
+            type:"POST",
+            url:countlyCommon.API_PARTS.data.w+"/events/edit_map",
+            data:{
+                "app_id":countlyCommon.ACTIVE_APP_ID,
+                "event_map":event_map,
+                "event_order":event_order
+            },
+            success:function (result) {callback(true);},
+            error:function (xhr, status, error) {
+            callback(false);}
+        });
+    };
+    //Updates visibility for multiple events
+    countlyEvent.update_visibility = function(my_events,visibility,callback){
+        $.ajax({
+            type: "POST",
+            url: countlyCommon.API_PARTS.data.w+"/events/change_visibility",
+            data:{
+                "app_id":countlyCommon.ACTIVE_APP_ID,
+                "set_visibility":visibility,
+                "events":JSON.stringify(my_events)
+            },
+            success:function (result) {callback(true);},
+            error:function (xhr, status, error) {callback(false);}
+        });
+    };
+    
+    //Deletes events
+    countlyEvent.delete_events = function(my_events,callback){
+        $.ajax({
+            type:"POST",
+            url:countlyCommon.API_PARTS.data.w+"/events/delete_events",
+            data:{
+                "app_id":countlyCommon.ACTIVE_APP_ID,
+                "events":JSON.stringify(my_events)
+            },
+            success:function (result) {callback(true);},
+            error:function (xhr, status, error) {callback(false);}
+        });
+    };
+    
     countlyEvent.refresh = function() {
         if (!countlyCommon.DEBUG) {
             return $.when(
@@ -245,6 +289,8 @@
             eventData.chartDP.dp = chartDP;
 
             eventData["eventName"] = countlyEvent.getEventLongName(_activeEvent);
+            if(mapKey && eventMap && eventMap[mapKey])
+                eventData["eventDescription"] = eventMap[mapKey].description || "";
             eventData["dataLevel"] = 2;
             eventData["tableColumns"] = [jQuery.i18n.map["events.table.segmentation"], countString];
             if (segmentsSum.length || segmentsDur.length) {
@@ -272,6 +318,8 @@
             eventData = countlyCommon.extractChartData(_activeEventDb, countlyEvent.clearEventsObject, chartData, dataProps);
 
             eventData["eventName"] = countlyEvent.getEventLongName(_activeEvent);
+            if(mapKey && eventMap && eventMap[mapKey])
+                eventData["eventDescription"] = eventMap[mapKey].description || "";
             eventData["dataLevel"] = 1;
             eventData["tableColumns"] = [jQuery.i18n.map["common.date"], countString];
 
@@ -330,26 +378,33 @@
                 arrayToUse = eventsWithOrder;
             }
 
-            if (eventMap[mapKey] && eventMap[mapKey]["name"]) {
+            if (eventMap[mapKey] && eventMap[mapKey]) {
+                if(typeof eventMap[mapKey]["is_visible"] == "undefined")
+                    eventMap[mapKey]["is_visible"] = true;
                 arrayToUse.push({
                     "key": events[i],
-                    "name": eventMap[mapKey]["name"],
-                    "count": eventMap[mapKey]["count"],
-                    "sum": eventMap[mapKey]["sum"],
-                    "dur": eventMap[mapKey]["dur"],
+                    "name": eventMap[mapKey]["name"] || events[i],
+                    "description": eventMap[mapKey]["description"] || "",
+                    "count": eventMap[mapKey]["count"] || "",
+                    "sum": eventMap[mapKey]["sum"] || "",
+                    "dur": eventMap[mapKey]["dur"] || "",
+                    "is_visible":eventMap[mapKey]["is_visible"],
                     "is_active": (_activeEvent == events[i])
                 });
             } else {
                 arrayToUse.push({
                     "key": events[i],
                     "name": events[i],
+                    "description": "",
                     "count": "",
                     "sum": "",
                     "dur": "",
+                    "is_visible":true,
                     "is_active": (_activeEvent == events[i])
                 });
             }
         }
+        
 
         eventsWithOrder = _.sortBy(eventsWithOrder, function(event){ return eventOrder.indexOf(event.key); });
         eventsWithoutOrder = _.sortBy(eventsWithoutOrder, function(event){ return event.key; });

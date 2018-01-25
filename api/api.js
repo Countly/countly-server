@@ -751,6 +751,149 @@ if (cluster.isMaster) {
             
                             break;
                         }
+                        case '/i/events':
+                        {
+                            switch (paths[3]) {
+                                case 'edit_map':
+                                {
+                                    validateUserForWriteAPI(function(){
+                                        common.db.collection('events').findOne({"_id":common.db.ObjectID(params.qstring.app_id)}, function (err, event) {
+                                            var update_array = {};
+                                            if(params.qstring.event_order && params.qstring.event_order!="")
+                                                update_array['order'] = JSON.parse(params.qstring.event_order);
+                                            else
+                                                update_array['order'] = event.order;
+                        
+                                            if(params.qstring.event_map && params.qstring.event_map!="")
+                                            {
+                                                params.qstring.event_map = JSON.parse(params.qstring.event_map);
+                                                if(event.map)
+                                                    update_array['map'] = JSON.parse(JSON.stringify(event.map));
+                                                else
+                                                    update_array['map'] = {};
+                                                
+                                                for (var k in params.qstring.event_map){
+                                                    if (params.qstring.event_map.hasOwnProperty(k)) {
+                                                        if(JSON.stringify(params.qstring.event_map[k])=='{}')
+                                                        {
+                                                            if(typeof(update_array['map'][k]) !== "undefined")
+                                                                delete update_array['map'][k];
+                                                        }
+                                                        else
+                                                            update_array['map'][k] = params.qstring.event_map[k];
+                                                    }
+                                                }
+                                            }
+                        
+                                            common.db.collection('events').update({"_id":common.db.ObjectID(params.qstring.app_id)}, {'$set':update_array}, function (err, events) {
+                                                if(err){
+                                                    common.returnMessage(params, 400, err);
+                                                }
+                                                else
+                                                {
+                                                    common.returnMessage(params, 200, 'Success');
+                                                    var data_arr = {update:update_array};
+                                                    data_arr.before = event || {};
+                                                    plugins.dispatch("/systemlogs", {params:params, action:"events_updated", data:data_arr});
+                                                }
+                                            });
+                                        });
+                                    },params);
+                                    break;
+                                }
+                                case 'delete_events':
+                                {
+                                    validateUserForWriteAPI(function(){
+                                        var idss = JSON.parse(params.qstring.events);
+                                        var app_id = params.qstring.app_id;
+                                        console.log(idss);
+                                        Promise.all(idss.map(function(event_key){
+                                            return new Promise(function(resolve, reject){
+                                                var updateThese = {
+                                                    "$unset": {},
+                                                    "$pull": {
+                                                        "list": event_key,
+                                                        "order": event_key
+                                                    }
+                                                };
+
+                                                if(event_key.indexOf('.') != -1){
+                                                    updateThese["$unset"]["map." + event_key.replace(/\./g,':')] = 1;
+                                                    updateThese["$unset"]["segments." + event_key.replace(/\./g,':')] = 1;
+                                                }
+                                                else{
+                                                    updateThese["$unset"]["map." + event_key] = 1;
+                                                    updateThese["$unset"]["segments." + event_key] = 1;
+                                                }
+
+                                                var collectionNameWoPrefix = crypto.createHash('sha1').update(event_key + app_id).digest('hex');
+                                                
+                                                console.log(updateThese);
+                                                common.db.collection('events').update({"_id":common.db.ObjectID(app_id)}, updateThese, function (err, events) {
+                                                    common.db.collection("events" + collectionNameWoPrefix).drop();
+                                                    resolve();  
+                                                });    
+                                            });
+                                        }))
+                                        .then(
+                                            function(result)
+                                            {
+                                                common.returnMessage(params, 200, 'Success');
+                                            },
+                                            function(err)
+                                            {
+                                                console.log(err);
+                                                 common.returnMessage(params, 400, err);
+                                            }
+                                        );
+                                    },params);
+                                    break;
+                                }
+                                case 'change_visibility':
+                                {
+                                    validateUserForWriteAPI(function(){
+                                        common.db.collection('events').findOne({"_id":common.db.ObjectID(params.qstring.app_id)}, function (err, event) {
+                                            var update_array = {};
+                                            var idss = JSON.parse(params.qstring.events);
+                                           
+                                            if(event.map)
+                                                update_array['map'] = JSON.parse(JSON.stringify(event.map));
+                                            else
+                                                update_array['map'] = {};
+                                            
+                                            for (var i=0; i<idss.length; i++){
+                                                if(params.qstring.set_visibility=='hide')
+                                                { 
+                                                    if(!update_array['map'][idss[i]])
+                                                        update_array['map'][idss[i]]={};
+                                                    update_array['map'][idss[i]]['is_visible'] = false;
+                                                }
+                                                else
+                                                {
+                                                    if(update_array['map'][idss[i]])
+                                                        update_array['map'][idss[i]]['is_visible'] = true;
+                                                }                                                    
+                                            }
+                                            common.db.collection('events').update({"_id":common.db.ObjectID(params.qstring.app_id)}, {'$set':update_array}, function (err, events) {
+                                            
+                                                if(err){
+                                                    common.returnMessage(params, 400, err);
+                                                }
+                                                else
+                                                {
+                                                    common.returnMessage(params, 200, 'Success');
+                                                    var data_arr = {update:update_array};
+                                                    data_arr.before = event || {};
+                                                    plugins.dispatch("/systemlogs", {params:params, action:"events_updated", data:data_arr});
+                                                }
+                                            });
+                                        });
+                                    },params);
+                                    break;
+                                }
+                            }
+                            break;
+                        }
                         case '/i':
                         {
                             params.ip_address =  params.qstring.ip_address || common.getIpAddress(req);
