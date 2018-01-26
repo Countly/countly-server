@@ -74,7 +74,7 @@
 
 #crash-table .separator { display: none; }
 
-#crash-table .tag { font-weight:100; margin-top:10px; float:left; margin-right:10px; border-radius: 2px; padding:2px 5px; font-size: 10px; color: #8e8e8e; border: 1px solid #d4d4d4; }
+#crash-table .tag { margin-top:10px; float:left; margin-right:5px; border-radius: 2px; padding:0 5px; font-size: 10px; line-height: 15px; color: #8e8e8e; border: 1px solid #d4d4d4; }
 #crash-table .tag.not-viewed,
 #crash-table .tag.re-occurred { display:none; }
 

@@ -480,7 +480,7 @@ table.d-table:not(.no-fix) { table-layout:fixed; }
 	.table-edit td, .table-add td { padding:10px; }
 	.table-edit .icon-button, .table-add .icon-button { float:right; }
 
-.dataTable td { font-family:Oswald; font-size:12px; line-height:18px; }
+.dataTable td { font-family:Ubuntu,Helvetica,sans-serif; font-size:12px; line-height:15px; }
 .d-table .shrink {width: 1%;}
 .d-table .center{text-align: center;}
 .d-table .right{text-align: right;}
@@ -1055,7 +1055,7 @@ table.events-table { width:100%; padding:0; margin:0; }
 
 #help-toggle { float:right; background-image:url('../images/dashboard/on-off.png'); width:34px; height:18px; background-position:-51px; margin-top:7px; margin-right:16px; cursor:pointer; }
 #help-toggle.active { background-position:0; }
-.percent-bar { height:11px; float:left; background-color:#AEE8B0; margin-right:4px; margin-top:1px; }
+.percent-bar { height:11px; float:left; background-color:#AEE8B0; margin-right:4px; margin-top:2px; }
 
 /* EXPORT */
 #export-checkbox-container { padding:10px; padding-bottom:2px; overflow:auto; }
@@ -1103,7 +1103,7 @@ table.events-table { width:100%; padding:0; margin:0; }
 .button-selector.light .button.active { background-color:#FFF; border:1px solid #2EB52B; position: relative; z-index:10;}
 .button-selector.light .button.disabled { opacity:0.3; cursor:default; }
 
-.cly-list-options {cursor: pointer; color:#BBBBBB; font-size: 20px; vertical-align: middle;}
+.cly-list-options {cursor: pointer; color:#BBBBBB; font-size: 20px; vertical-align: middle; line-height: 12px; }
 .cly-list-options:hover {color:#6B6B6B;}
 .cly-list-options:before { font-family: 'Ionicons';  content: "\f396"; }
 .cly-button-menu-trigger.active { opacity: 0.8; }
@@ -1332,10 +1332,8 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 #clear-app-data.active .down { display: none; }
 
 .status-color {white-space:nowrap;}
-.status-color i{margin-right: 5px;
-    font-size: 8px;
-    line-height: 12px;
-    vertical-align: top;}
+.status-color i { margin-right: 5px; font-size: 9px; vertical-align: bottom; margin-bottom: 3px; }
+
 /* Syntax highlighting - Highlight.js GoogleCode theme */
 .hljs{display:block;overflow-x:auto;background:#fff;color:#000}
 .hljs-comment,.hljs-quote{color:#800}
@@ -1404,7 +1402,7 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 .on-off-switch-checkbox:checked + .on-off-switch-label,
 .on-off-switch-checkbox:checked + .on-off-switch-label:before { }
 .on-off-switch-checkbox:checked + .on-off-switch-label:before { left: 23px; box-shadow: 0 1px 1px 0 #157313; }
-.on-off-switch .text { display: inline-block; opacity:1; font-size: 12px; color: #d0d0d0; vertical-align: top; margin-top: 8px; margin-left: 8px; }
+.on-off-switch .text { display: inline-block; opacity:1; font-size: 12px; color: #d0d0d0; vertical-align: top; margin-top: 7px; margin-left: 8px; line-height: 12px; }
 .on-off-switch input:checked + label + .text { opacity:0; }
 /* End of custom on-off switch based on input checkbox */
 
@@ -1496,7 +1494,7 @@ td.details:before { border: 8px solid rgba(194, 225, 245, 0); border-top-color: 
 #user_api_key_item input::selection {background: #2EB52B;color:white;}
 #user_api_key_item input::-moz-selection {background: #2FA732;color:#ffffff;}
 
-#app-navigation.dropdown.large { padding:21px 25px 19px 25px; box-sizing:border-box; height:59px; width:230px; }
+#app-navigation.dropdown.large { padding:21px 25px 19px 25px; box-sizing:border-box; height:59px; width:230px; white-space: nowrap; }
 #app-navigation #active-app-name { text-overflow:ellipsis; white-space:nowrap; overflow:hidden; display: inline-block; max-width: 125px; }
 #app-navigation #active-app-icon { vertical-align:top; display:inline-block; width:20px; height:20px; background-size:22px 22px; margin-right:10px; margin-top:-3px; background-position:center; border-radius:4px; border:1px solid #555; }
 #app-navigation .list .item .app-icon { width: 20px; height: 20px; background-position:center; background-size:22px 22px;  border-radius:4px; display: inline-block; margin-right:10px; vertical-align: top; margin-top: 1px; }

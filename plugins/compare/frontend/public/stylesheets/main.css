@@ -1,6 +1,6 @@
 .compare-view .alternative-selection { position: relative; background-color:#FFF; padding:20px 13px; border:1px solid #d0d0d0; border-bottom: none; }
 .compare-view.d-table .name { cursor: pointer; margin-left: 15px; }
-.compare-view.d-table .color { float: left; margin:0; }
+.compare-view.d-table .color { float: left; margin:2px 0 0 0; }
 .compare-view.d-table .up,
 .compare-view.d-table .down { font-size: 11px; margin-right: 8px; }
 .compare-view.d-table .up { color: #2fa732; }

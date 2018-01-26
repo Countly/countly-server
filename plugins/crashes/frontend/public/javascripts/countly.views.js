@@ -114,7 +114,7 @@ window.CrashesView = countlyView.extend({
                         var separator = "<span class='separator'>|</span>";
                    
                         if(row.is_resolving) {
-                            tagDivs += separator + "<div class='tag'>" + "<span style='color:green;'>" + jQuery.i18n.map["crashes.resolving"] + "</span>" + "</div>";                            
+                            tagDivs += separator + "<div class='tag'>" + "<span style='color:green;'>" + jQuery.i18n.map["crashes.resolving"] + "</span>" + "</div>";
                         }else if (row.is_resolved) {
                             tagDivs += separator + "<div class='tag'>" + "<span style='color:green;'>" + jQuery.i18n.map["crashes.resolved"] + " (" + row.latest_version.replace(/:/g, '.') + ")</span>" + "</div>";
                         } else {
