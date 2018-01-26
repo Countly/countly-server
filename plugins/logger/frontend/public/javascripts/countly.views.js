@@ -30,20 +30,6 @@ window.LoggerView = countlyView.extend({
                 "aaData": data,
                 "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
                     $(nRow).attr("id", aData._id);
-                    $(nRow).find("pre").each(function(i, block) {
-                        if(typeof Worker !== "undefined"){
-                            var worker = new Worker(countlyGlobal["path"]+'/javascripts/utils/highlight/highlight.worker.js');
-                            worker.onmessage = function(event) { 
-                                block.innerHTML = event.data;
-                                worker.terminate();
-                                worker = undefined;
-                            };
-                            worker.postMessage(block.textContent);
-                        }
-                        else if(typeof hljs != "undefined"){
-                            hljs.highlightBlock(block);
-                        }
-                    });
                 },
                 "aoColumns": [
                     { "mData": function(row, type){

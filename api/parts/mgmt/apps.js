@@ -357,11 +357,11 @@ var appsApi = {},
             skip[appId+"_"+now.format('YYYY')+":0"] = true;
             dates[now.format('YYYY:M')] = true;
             dates[now.format('YYYY')+":0"] = true;
-            for(var i = 0; i < common.base64.length; i++){
-                skip[appId+"_"+now.format('YYYY:M')+"_"+common.base64[i]] = true;
-                skip[appId+"_"+now.format('YYYY')+":0"+"_"+common.base64[i]] = true;
-                dates[now.format('YYYY:M')+"_"+common.base64[i]] = true;
-                dates[now.format('YYYY')+":0"+"_"+common.base64[i]] = true;
+            for(var j = 0; j < common.base64.length; j++){
+                skip[appId+"_"+now.format('YYYY:M')+"_"+common.base64[j]] = true;
+                skip[appId+"_"+now.format('YYYY')+":0"+"_"+common.base64[j]] = true;
+                dates[now.format('YYYY:M')+"_"+common.base64[j]] = true;
+                dates[now.format('YYYY')+":0"+"_"+common.base64[j]] = true;
             }
         }
 
