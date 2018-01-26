@@ -691,6 +691,7 @@ app.get(countlyConfig.path+'/forgot', function (req, res, next) {
 
 app.get(countlyConfig.path+'/reset/:prid', function (req, res, next) {
     if (req.params.prid) {
+        req.params.prid += "";
         countlyDb.collection('password_reset').findOne({prid:req.params.prid}, function (err, passwordReset) {
             var timestamp = Math.round(new Date().getTime() / 1000);
 
@@ -714,6 +715,7 @@ app.get(countlyConfig.path+'/reset/:prid', function (req, res, next) {
 
 app.post(countlyConfig.path+'/reset', function (req, res, next) {
     if (req.body.password && req.body.again && req.body.prid) {
+        req.body.prid += "";
         var password = sha512Hash(req.body.password);
 
         countlyDb.collection('password_reset').findOne({prid:req.body.prid}, function (err, passwordReset) {
