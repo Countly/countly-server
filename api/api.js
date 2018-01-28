@@ -760,28 +760,35 @@ if (cluster.isMaster) {
                                         common.db.collection('events').findOne({"_id":common.db.ObjectID(params.qstring.app_id)}, function (err, event) {
                                             var update_array = {};
                                             if(params.qstring.event_order && params.qstring.event_order!="")
-                                                update_array['order'] = JSON.parse(params.qstring.event_order);
+                                            {
+                                                try{update_array['order'] = JSON.parse(params.qstring.event_order);}
+                                                catch (SyntaxError) {update_array['order'] = event.order; console.log('Parse ' + params.qstring.event_order + ' JSON failed', req.url, req.body);}
+                                            }
                                             else
                                                 update_array['order'] = event.order;
                         
                                             if(params.qstring.event_map && params.qstring.event_map!="")
                                             {
-                                                params.qstring.event_map = JSON.parse(params.qstring.event_map);
+                                                try{params.qstring.event_map = JSON.parse(params.qstring.event_map);}
+                                                catch (SyntaxError) {params.qstring.event_map={}; console.log('Parse ' + params.qstring.event_map + ' JSON failed', req.url, req.body);}
+                                                
                                                 if(event.map)
-                                                    update_array['map'] = JSON.parse(JSON.stringify(event.map));
+                                                   try{ update_array['map'] = JSON.parse(JSON.stringify(event.map));} catch (SyntaxError) {update_array['map'] = {};}
                                                 else
                                                     update_array['map'] = {};
                                                 
+                                                
                                                 for (var k in params.qstring.event_map){
                                                     if (params.qstring.event_map.hasOwnProperty(k)) {
-                                                        if(JSON.stringify(params.qstring.event_map[k])=='{}')
-                                                        {
-                                                            if(typeof(update_array['map'][k]) !== "undefined")
-                                                                delete update_array['map'][k];
-                                                        }
-                                                        else
-                                                            update_array['map'][k] = params.qstring.event_map[k];
-                                                    }
+                                                        update_array['map'][k] = params.qstring.event_map[k];
+                                                        
+                                                        if(update_array['map'][k]['is_visible'] && update_array['map'][k]['is_visible']==true)
+                                                            delete update_array['map'][k]['is_visible'];
+                                                        if(update_array['map'][k]['name'] && update_array['map'][k]['name']==k)
+                                                            delete update_array['map'][k]['name'];
+                                                        if(Object.keys(update_array['map'][k]).length==0)
+                                                            delete update_array['map'][k];
+                                                    }                                                    
                                                 }
                                             }
                         
@@ -793,7 +800,11 @@ if (cluster.isMaster) {
                                                 {
                                                     common.returnMessage(params, 200, 'Success');
                                                     var data_arr = {update:update_array};
-                                                    data_arr.before = event || {};
+                                                    data_arr.before = {order:[],map:{}};
+                                                    if(event.order)
+                                                        data_arr.before.order = event.order;
+                                                    if(event.map)
+                                                         data_arr.before.map = event.map;
                                                     plugins.dispatch("/systemlogs", {params:params, action:"events_updated", data:data_arr});
                                                 }
                                             });
@@ -804,9 +815,9 @@ if (cluster.isMaster) {
                                 case 'delete_events':
                                 {
                                     validateUserForWriteAPI(function(){
-                                        var idss = JSON.parse(params.qstring.events);
+                                        var idss =[];
+                                        try{idss=JSON.parse(params.qstring.events);}catch(SyntaxError){idss=[];}
                                         var app_id = params.qstring.app_id;
-                                        console.log(idss);
                                         Promise.all(idss.map(function(event_key){
                                             return new Promise(function(resolve, reject){
                                                 var updateThese = {
@@ -828,9 +839,10 @@ if (cluster.isMaster) {
 
                                                 var collectionNameWoPrefix = crypto.createHash('sha1').update(event_key + app_id).digest('hex');
                                                 
-                                                console.log(updateThese);
                                                 common.db.collection('events').update({"_id":common.db.ObjectID(app_id)}, updateThese, function (err, events) {
                                                     common.db.collection("events" + collectionNameWoPrefix).drop();
+                                                    plugins.dispatch("/i/event/delete", {event_key:event_key,appId:app_id});
+                                                    plugins.dispatch("/systemlogs", {params:params, action:"event_deleted", data:{event:event_key,appID:app_id}});
                                                     resolve();  
                                                 });    
                                             });
@@ -854,25 +866,36 @@ if (cluster.isMaster) {
                                     validateUserForWriteAPI(function(){
                                         common.db.collection('events').findOne({"_id":common.db.ObjectID(params.qstring.app_id)}, function (err, event) {
                                             var update_array = {};
-                                            var idss = JSON.parse(params.qstring.events);
+                                             var idss =[];
+                                            try{idss=JSON.parse(params.qstring.events);}catch(SyntaxError){idss=[];}
                                            
                                             if(event.map)
-                                                update_array['map'] = JSON.parse(JSON.stringify(event.map));
+                                            {
+                                                try{ update_array['map'] = JSON.parse(JSON.stringify(event.map));}
+                                                catch(SyntaxError){
+                                                    update_array['map'] = {};
+                                                    console.log('Parse ' + event.map + ' JSON failed', req.url, req.body);
+                                                }
+                                            }
                                             else
                                                 update_array['map'] = {};
                                             
                                             for (var i=0; i<idss.length; i++){
+                                            
+                                                if(!update_array['map'][idss[i]])
+                                                    update_array['map'][idss[i]]={};
+                                                        
                                                 if(params.qstring.set_visibility=='hide')
-                                                { 
-                                                    if(!update_array['map'][idss[i]])
-                                                        update_array['map'][idss[i]]={};
                                                     update_array['map'][idss[i]]['is_visible'] = false;
-                                                }
                                                 else
-                                                {
-                                                    if(update_array['map'][idss[i]])
-                                                        update_array['map'][idss[i]]['is_visible'] = true;
-                                                }                                                    
+                                                    update_array['map'][idss[i]]['is_visible'] = true;
+                                                
+                                                if(update_array['map'][idss[i]]['is_visible'])
+                                                    delete update_array['map'][idss[i]]['is_visible'];
+                                                
+                                                if(Object.keys(update_array['map'][idss[i]]).length==0)
+                                                    delete update_array['map'][idss[i]];
+                                                
                                             }
                                             common.db.collection('events').update({"_id":common.db.ObjectID(params.qstring.app_id)}, {'$set':update_array}, function (err, events) {
                                             
@@ -883,7 +906,9 @@ if (cluster.isMaster) {
                                                 {
                                                     common.returnMessage(params, 200, 'Success');
                                                     var data_arr = {update:update_array};
-                                                    data_arr.before = event || {};
+                                                    data_arr.before = {map:{}};
+                                                    if(event.map)
+                                                         data_arr.before.map = event.map;
                                                     plugins.dispatch("/systemlogs", {params:params, action:"events_updated", data:data_arr});
                                                 }
                                             });

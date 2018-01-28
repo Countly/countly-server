@@ -229,12 +229,22 @@
 					</a>
 					<div class="sidebar-submenu" id="engagement-submenu">
 					</div>
-					<a href="#/analytics/events" class="item analytics" id="sidebar-events">
+					<a class="item analytics" id="events-menu">
 						<div class="logo events">
 							<i class="material-icons">bubble_chart</i>
 						</div>
 						<div class="text" data-localize="sidebar.events"></div>
 					</a>
+                    <div class="sidebar-submenu" id="events-submenu">
+                        <a href="#/analytics/events" class="item">
+							<div class="logo applications"></div>
+							<div class="text" data-localize="sidebar.events.all-events"></div>
+						</a>
+                        <a href="#/analytics/events/blueprint" class="item">
+							<div class="logo applications"></div>
+							<div class="text" data-localize="sidebar.events.blueprint"></div>
+						</a>
+                    </div>
 					<a class="item" id="management-menu">
 						<div class="logo management ion-gear-a"></div>
 						<div class="text" data-localize="sidebar.management"></div>
@@ -1137,11 +1147,9 @@
             </div>
 			<div class="scrollable" style="max-height:450px;">
 				{{#eachOfArray events}}
-                    {{#if value.is_visible}}
                     <div class="searchable event-container {{#if value.is_active}}active{{/if}}" data-key="{{value.key}}">
                         <div class="name">{{value.name}}</div>
                     </div>
-                    {{/if}}
 				{{/eachOfArray}}
 			</div>
 		</div>

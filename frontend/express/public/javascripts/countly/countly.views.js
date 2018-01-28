@@ -2532,12 +2532,13 @@ window.EventsBlueprintView = countlyView.extend({
         });
         //hide apply button
         $("#events-apply-changes").css('display','none');
+        $("#events-apply-order").css('display','none');
     },
     renderCommon:function (isRefresh) {
         var eventData = countlyEvent.getEventData();
         var self = this;
 
-        var eventmap = countlyEvent.getEvents();
+        var eventmap = countlyEvent.getEvents(true);
         this.activeEvent="";
         
         for(var i=0; i<eventmap.length; i++)
@@ -2550,12 +2551,12 @@ window.EventsBlueprintView = countlyView.extend({
             "page-title":eventData.eventName.toUpperCase(),
             "logo-class":"events",
             "events":eventmap,
-            "event-map":countlyEvent.getEventMap(),
+            "event-map":countlyEvent.getEventMap(true),
             "submenu":this.selectedSubmenu || "",
             "active-event":this.activeEvent || eventmap[0],
         };
         
-        if (countlyEvent.getEvents().length == 0) {
+        if (countlyEvent.getEvents(true).length == 0) {
             //recheck events
             $.when(countlyEvent.refreshEvents()).then(function () {
                 //if still 0, display error
