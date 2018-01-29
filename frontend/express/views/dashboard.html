@@ -229,12 +229,22 @@
 					</a>
 					<div class="sidebar-submenu" id="engagement-submenu">
 					</div>
-					<a href="#/analytics/events" class="item analytics" id="sidebar-events">
+					<a class="item analytics" id="events-menu">
 						<div class="logo events">
 							<i class="material-icons">bubble_chart</i>
 						</div>
 						<div class="text" data-localize="sidebar.events"></div>
 					</a>
+                    <div class="sidebar-submenu" id="events-submenu">
+                        <a href="#/analytics/events" class="item">
+							<div class="logo applications"></div>
+							<div class="text" data-localize="sidebar.events.all-events"></div>
+						</a>
+                        <a href="#/analytics/events/blueprint" class="item">
+							<div class="logo applications"></div>
+							<div class="text" data-localize="sidebar.events.blueprint"></div>
+						</a>
+                    </div>
 					<a class="item" id="management-menu">
 						<div class="logo management ion-gear-a"></div>
 						<div class="text" data-localize="sidebar.management"></div>
@@ -958,14 +968,176 @@
 			<div id="first-app-success" class="alert success" data-localize="management-applications.first-app-message2"></div>
 		</div>
 	</script>
+    <script id="template-events-blueprint"  type="text/x-handlebars-template">
+        <a class="back back-link" style="margin-bottom: 25px;" href="#/analytics/events"><span data-localize="events.back-to-events">Back to all events</span></a>
+        <div id="event-nav" style="top:123px">
+            <div id="event-nav-head">
+                 <div id="event-blueprint-nav-title" style="max-width: 120px;" data-localize="events.blueprint-title"></div>
+            </div>
+            <div class="searchable event-container{{#ifCond submenu "==" ""}} active {{/ifCond}}" data-key="">
+				<div class="name" data-localize="events.blueprint-general"></div>
+            </div>  
+            <div class="nav-search">
+                <i class="fa fa-search"></i>
+                <input type="text" />
+            </div>
+			<div class="scrollable" id="event-nav-eventitems" style="max-height:450px;">
+				{{#eachOfArray events}}
+				<div class="searchable event-container {{#ifCond ../submenu "==" value.key}}{{#if value.is_active}}active{{/if}}{{/ifCond}}" data-key="{{value.key}}">
+					<div class="name">{{value.name}}</div>
+				</div>
+				{{/eachOfArray}}
+			</div>
+		</div>
+        <div id="events-custom-settings">
+            <div class="widget" style="margin-left:200px;">
+                <div class="widget-header">
+                    <div class="left">
+                        <div class="title" data-localize="events.blueprint-general"></div>
+                    </div>
+                    <div class="right">
+                        <div class="icon-button green" id="events-apply-order" data-localize="plugins.apply"></div>
+                        <div class="cly-select" id="events-general-action" style="margin-top:7px;">
+                            <div class="select-inner">
+                                <div class="text-container">
+                                    <div class="text" data-localize="events.general.action.perform-action"></div>
+                                </div>
+                                <div class="right combo"></div>
+                            </div>
+                            <div class="select-items square">
+                                <div data-value="delete" class="event-option item" data-localize="events.general.action.delete">Delete</div>
+                                <div data-value="show" class="event-option item" data-localize="events.general.action.show">Show</div>
+                                <div data-value="hide" class="event-option item" data-localize="events.general.action.hide">Hide</div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                <div class="events-general-description" data-localize="events.general.description" ></div>
+                <div class="" id="events-custom-settings-table">
+                    <table class="events-table">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th style="text-align:center;"><input type="checkbox" id="select-all-events" class="custom-styled-green-check" /></th>
+                                        <th data-localize="events.general.event"></th>
+                                        <th data-localize="events.general.event-description"></th>
+                                    </tr>
+                                </thead>
+                                {{#eachOfObjectValue event-map}}
+                                <tr>
+                                    <td style="text-align:center;"><i class="fa fa-reorder event-order"></i></td>
+                                    <td style="text-align:center;"><input type="checkbox" class="custom-styled-green-check select-event-check" data-event-key="{{this.key}}"/></td>
+                                    <td>{{this.name}}</td>
+                                    <td>{{this.description}}</td>
+                                    
+                                </tr>
+                                {{/eachOfObjectValue}}
+                    </table>     
+                </div>
+            </div>
+        </div>
 
+        <div id="events-event-settings">
+            {{#if active-event}}
+            <div class="widget" style="margin-left:200px;">
+                <div class="widget-header widget">
+                    <div class="left">
+                        <div class="title" >{{active-event.key}}</div>
+                    </div>
+                    <div class="right">
+                        <div class="icon-button green" id="events-apply-changes" data-localize="plugins.apply"></div>
+                    </div>
+                </div>
+                <div class="configs title-rows-hidden" id="events-settings-table">
+                    <table class="d-table help-zone-vb">
+                        <tr class="config-table-row">
+                            <td>
+                                <table class="d-table help-zone-vb">
+                                    <tr class="config-table-details-row">
+                                        <td>
+                                            <div data-localize="events.edit.event-key"></div>
+                                            <span data-localize="events.edit.event-key-description" class="config-help"></span>
+                                        </td>
+                                        <td>
+                                            {{active-event.key}}
+                                            <input type="hidden" value="{{active-event.key}}" name="event_key" class="event_key" />
+                                        </td>
+                                    </tr>
+                                    <tr class="config-table-details-row">
+                                        <td>
+                                            <div data-localize="events.edit.event-name"></div>
+                                            <span data-localize="events.edit.event-name-description" class="config-help"></span>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="event_name" value="{{active-event.name}}" />
+                                        </td>
+                                    </tr>
+                                    <tr class="config-table-details-row">
+                                        <td>
+                                            <div data-localize="events.edit.event-description"></div>
+                                            <span data-localize="events.edit.event-description-description" class="config-help"></span>
+                                        </td>
+                                        <td>
+                                            <textarea rows="5" style="width: 100%;" class="event_description" >{{active-event.description}}</textarea>
+                                        </td>
+                                    </tr>
+                                    <tr class="config-table-details-row">
+                                        <td>
+                                            <div data-localize="events.edit.event-visible"></div>
+                                            <span data-localize="events.edit.event-visible-description" class="config-help"></span>
+                                        </td>
+                                        <td>
+                                            <div class="on-off-switch">
+                                                <input id="events.event_visible" class="on-off-switch-checkbox event_visible" type="checkbox"  {{#if active-event.is_visible}}checked {{/if}}/>
+                                                <label class="on-off-switch-label" for="events.event_visible"></label>
+                                                <span class="text">Enable</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr class="config-table-details-row">
+                                        <td>
+                                            <div data-localize="events.edit.display-count"></div>
+                                            <span data-localize="events.edit.display-count-description" class="config-help"></span>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="event_count" value="{{active-event.count}}" />
+                                        </td>
+                                    </tr>
+                                    <tr class="config-table-details-row">
+                                        <td>
+                                            <div data-localize="events.edit.display-sum"></div>
+                                            <span data-localize="events.edit.display-sum-description" class="config-help"></span>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="event_sum" value="{{active-event.sum}}" />
+                                        </td>
+                                    </tr>
+                                    <tr class="config-table-details-row">
+                                        <td>
+                                            <div data-localize="events.edit.display-duration"></div>
+                                            <span data-localize="events.edit.display-duration-description" class="config-help"></span>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="event_dur" value="{{active-event.dur}}" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            {{/if}}
+        </div>
+    </script>
 	<script id="template-events"  type="text/x-handlebars-template">
 		<div id="event-nav">
 			<div id="event-nav-head">
 				<div id="event-nav-title" style="max-width: 120px;" data-localize="events.title"></div>
 				<div style="overflow:hidden; position:absolute; top:14px; right:10px;">
 					<div class="icon-button help-zone-vs" id="edit-events-button" style="<% if(!member['global_admin']) { %> display:none; <% } %>">
-                        <i class="ion-gear-a"></i>
+                      <a href="#/analytics/events/blueprint"> <i class="ion-gear-a"></i></a>
 					</div>
 				</div>
 			</div>
@@ -975,49 +1147,13 @@
             </div>
 			<div class="scrollable" style="max-height:450px;">
 				{{#eachOfArray events}}
-				<div class="searchable event-container {{#if value.is_active}}active{{/if}}" data-key="{{value.key}}">
-					<div class="name">{{value.name}}</div>
-				</div>
+                    <div class="searchable event-container {{#if value.is_active}}active{{/if}}" data-key="{{value.key}}">
+                        <div class="name">{{value.name}}</div>
+                    </div>
 				{{/eachOfArray}}
 			</div>
 		</div>
-		<div id="edit-event-container" style="display:none;">
-			<div id="edit-event-table-container">
-                <table class="events-table" cellpadding="0" cellspacing="0">
-                    <thead>
-                    <tr>
-                        <th></th>
-                        <th style="text-align:center;"><i class="fa fa-trash delete-event-selected"></i></th>
-                        <th></th>
-                        <th data-localize="events.edit.event-key"></th>
-                        <th data-localize="events.edit.event-name"></th>
-                        <th data-localize="events.table.count"></th>
-                        <th data-localize="events.table.sum"></th>
-                        <th data-localize="events.table.dur"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {{#eachOfObjectValue event-map}}
-                    <tr>
-                        <td style="text-align:center;"><i class="fa fa-reorder event-order"></i></td>
-                        <td style="text-align:center;"><input type="checkbox" class="delete-event-check" data-event-key="{{this.key}}"/></td>
-                        <td style="text-align:center;"><i class="fa fa-trash delete-event" data-event-key="{{this.key}}"></i></td>
-                        <td class="event-key">{{this.key}}</td>
-                        <td><input class="event-name" type="text" placeholder="Event name"  data-localize="events.edit.event-name" value="{{this.name}}"/></td>
-                        <td><input class="event-count" type="text" placeholder="Count" data-localize="events.table.count" value="{{this.count}}"/></td>
-                        <td><input class="event-sum" type="text" placeholder="Sum" data-localize="events.table.sum" value="{{this.sum}}"/></td>
-                        <td><input class="event-dur" type="text" placeholder="Duration" data-localize="events.table.dur" value="{{this.dur}}"/></td>
-                    </tr>
-                    {{/eachOfObjectValue}}
-                    </tbody>
-                </table>
-			</div>
-			<div class="buttons">
-				<div id="settings-save-result" class="result-message"></div>
-				<a id="events-save" class="icon-button green" data-localize="common.save"></a>
-				<a id="dialog-cancel" class="icon-button light" data-localize="common.close"></a>
-			</div>
-		</div>
+
 		<div id="event-main" style="margin-left:199px;">
 		<div class="widget">
 			<div class="widget-header">
@@ -1052,6 +1188,7 @@
 				</div>
                 {{> date-selector }}
 			</div>
+            <div class="events-general-description">{{event-description}}</div>
 			<div class="widget-content" style="{{#if graph-type-double-pie}} overflow:hidden; {{else}} height:300px; padding-top:20px; padding-bottom:10px; {{/if}}">
 				{{#if graph-type-double-pie}}
 				<div class="pie-chart-container">

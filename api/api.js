@@ -753,6 +753,174 @@ if (cluster.isMaster) {
             
                             break;
                         }
+                        case '/i/events':
+                        {
+                            switch (paths[3]) {
+                                case 'edit_map':
+                                {
+                                    validateUserForWriteAPI(function(){
+                                        common.db.collection('events').findOne({"_id":common.db.ObjectID(params.qstring.app_id)}, function (err, event) {
+                                            var update_array = {};
+                                            if(params.qstring.event_order && params.qstring.event_order!="")
+                                            {
+                                                try{update_array['order'] = JSON.parse(params.qstring.event_order);}
+                                                catch (SyntaxError) {update_array['order'] = event.order; console.log('Parse ' + params.qstring.event_order + ' JSON failed', req.url, req.body);}
+                                            }
+                                            else
+                                                update_array['order'] = event.order;
+                        
+                                            if(params.qstring.event_map && params.qstring.event_map!="")
+                                            {
+                                                try{params.qstring.event_map = JSON.parse(params.qstring.event_map);}
+                                                catch (SyntaxError) {params.qstring.event_map={}; console.log('Parse ' + params.qstring.event_map + ' JSON failed', req.url, req.body);}
+                                                
+                                                if(event.map)
+                                                   try{ update_array['map'] = JSON.parse(JSON.stringify(event.map));} catch (SyntaxError) {update_array['map'] = {};}
+                                                else
+                                                    update_array['map'] = {};
+                                                
+                                                
+                                                for (var k in params.qstring.event_map){
+                                                    if (params.qstring.event_map.hasOwnProperty(k)) {
+                                                        update_array['map'][k] = params.qstring.event_map[k];
+                                                        
+                                                        if(update_array['map'][k]['is_visible'] && update_array['map'][k]['is_visible']==true)
+                                                            delete update_array['map'][k]['is_visible'];
+                                                        if(update_array['map'][k]['name'] && update_array['map'][k]['name']==k)
+                                                            delete update_array['map'][k]['name'];
+                                                        if(Object.keys(update_array['map'][k]).length==0)
+                                                            delete update_array['map'][k];
+                                                    }                                                    
+                                                }
+                                            }
+                        
+                                            common.db.collection('events').update({"_id":common.db.ObjectID(params.qstring.app_id)}, {'$set':update_array}, function (err, events) {
+                                                if(err){
+                                                    common.returnMessage(params, 400, err);
+                                                }
+                                                else
+                                                {
+                                                    common.returnMessage(params, 200, 'Success');
+                                                    var data_arr = {update:update_array};
+                                                    data_arr.before = {order:[],map:{}};
+                                                    if(event.order)
+                                                        data_arr.before.order = event.order;
+                                                    if(event.map)
+                                                         data_arr.before.map = event.map;
+                                                    plugins.dispatch("/systemlogs", {params:params, action:"events_updated", data:data_arr});
+                                                }
+                                            });
+                                        });
+                                    },params);
+                                    break;
+                                }
+                                case 'delete_events':
+                                {
+                                    validateUserForWriteAPI(function(){
+                                        var idss =[];
+                                        try{idss=JSON.parse(params.qstring.events);}catch(SyntaxError){idss=[];}
+                                        var app_id = params.qstring.app_id;
+                                        Promise.all(idss.map(function(event_key){
+                                            return new Promise(function(resolve, reject){
+                                                var updateThese = {
+                                                    "$unset": {},
+                                                    "$pull": {
+                                                        "list": event_key,
+                                                        "order": event_key
+                                                    }
+                                                };
+
+                                                if(event_key.indexOf('.') != -1){
+                                                    updateThese["$unset"]["map." + event_key.replace(/\./g,':')] = 1;
+                                                    updateThese["$unset"]["segments." + event_key.replace(/\./g,':')] = 1;
+                                                }
+                                                else{
+                                                    updateThese["$unset"]["map." + event_key] = 1;
+                                                    updateThese["$unset"]["segments." + event_key] = 1;
+                                                }
+
+                                                var collectionNameWoPrefix = crypto.createHash('sha1').update(event_key + app_id).digest('hex');
+                                                
+                                                common.db.collection('events').update({"_id":common.db.ObjectID(app_id)}, updateThese, function (err, events) {
+                                                    common.db.collection("events" + collectionNameWoPrefix).drop();
+                                                    plugins.dispatch("/i/event/delete", {event_key:event_key,appId:app_id});
+                                                    plugins.dispatch("/systemlogs", {params:params, action:"event_deleted", data:{event:event_key,appID:app_id}});
+                                                    resolve();  
+                                                });    
+                                            });
+                                        }))
+                                        .then(
+                                            function(result)
+                                            {
+                                                common.returnMessage(params, 200, 'Success');
+                                            },
+                                            function(err)
+                                            {
+                                                console.log(err);
+                                                 common.returnMessage(params, 400, err);
+                                            }
+                                        );
+                                    },params);
+                                    break;
+                                }
+                                case 'change_visibility':
+                                {
+                                    validateUserForWriteAPI(function(){
+                                        common.db.collection('events').findOne({"_id":common.db.ObjectID(params.qstring.app_id)}, function (err, event) {
+                                            var update_array = {};
+                                             var idss =[];
+                                            try{idss=JSON.parse(params.qstring.events);}catch(SyntaxError){idss=[];}
+                                           
+                                            if(event.map)
+                                            {
+                                                try{ update_array['map'] = JSON.parse(JSON.stringify(event.map));}
+                                                catch(SyntaxError){
+                                                    update_array['map'] = {};
+                                                    console.log('Parse ' + event.map + ' JSON failed', req.url, req.body);
+                                                }
+                                            }
+                                            else
+                                                update_array['map'] = {};
+                                            
+                                            for (var i=0; i<idss.length; i++){
+                                            
+                                                if(!update_array['map'][idss[i]])
+                                                    update_array['map'][idss[i]]={};
+                                                        
+                                                if(params.qstring.set_visibility=='hide')
+                                                    update_array['map'][idss[i]]['is_visible'] = false;
+                                                else
+                                                    update_array['map'][idss[i]]['is_visible'] = true;
+                                                
+                                                if(update_array['map'][idss[i]]['is_visible'])
+                                                    delete update_array['map'][idss[i]]['is_visible'];
+                                                
+                                                if(Object.keys(update_array['map'][idss[i]]).length==0)
+                                                    delete update_array['map'][idss[i]];
+                                                
+                                            }
+                                            common.db.collection('events').update({"_id":common.db.ObjectID(params.qstring.app_id)}, {'$set':update_array}, function (err, events) {
+                                            
+                                                if(err){
+                                                    common.returnMessage(params, 400, err);
+                                                }
+                                                else
+                                                {
+                                                    common.returnMessage(params, 200, 'Success');
+                                                    var data_arr = {update:update_array};
+                                                    data_arr.before = {map:{}};
+                                                    if(event.map)
+                                                         data_arr.before.map = event.map;
+                                                    plugins.dispatch("/systemlogs", {params:params, action:"events_updated", data:data_arr});
+                                                }
+                                            });
+                                        });
+                                    },params);
+                                    break;
+                                }
+                            }
+                            break;
+                        }
                         case '/i':
                         {
                             params.ip_address =  params.qstring.ip_address || common.getIpAddress(req);
