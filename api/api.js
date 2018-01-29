@@ -820,46 +820,47 @@ if (cluster.isMaster) {
                                         var idss =[];
                                         try{idss=JSON.parse(params.qstring.events);}catch(SyntaxError){idss=[];}
                                         var app_id = params.qstring.app_id;
-                                        Promise.all(idss.map(function(event_key){
-                                            return new Promise(function(resolve, reject){
-                                                var updateThese = {
-                                                    "$unset": {},
-                                                    "$pull": {
-                                                        "list": event_key,
-                                                        "order": event_key
-                                                    }
-                                                };
-
-                                                if(event_key.indexOf('.') != -1){
-                                                    updateThese["$unset"]["map." + event_key.replace(/\./g,':')] = 1;
-                                                    updateThese["$unset"]["segments." + event_key.replace(/\./g,':')] = 1;
-                                                }
-                                                else{
-                                                    updateThese["$unset"]["map." + event_key] = 1;
-                                                    updateThese["$unset"]["segments." + event_key] = 1;
-                                                }
-
-                                                var collectionNameWoPrefix = crypto.createHash('sha1').update(event_key + app_id).digest('hex');
-                                                
-                                                common.db.collection('events').update({"_id":common.db.ObjectID(app_id)}, updateThese, function (err, events) {
-                                                    common.db.collection("events" + collectionNameWoPrefix).drop();
-                                                    plugins.dispatch("/i/event/delete", {event_key:event_key,appId:app_id});
-                                                    plugins.dispatch("/systemlogs", {params:params, action:"event_deleted", data:{event:event_key,appID:app_id}});
-                                                    resolve();  
-                                                });    
-                                            });
-                                        }))
-                                        .then(
-                                            function(result)
-                                            {
-                                                common.returnMessage(params, 200, 'Success');
-                                            },
-                                            function(err)
+                                        var updateThese = {
+                                            "$unset": {},
+                                            "$pull": {
+                                                "list": { "$in": [] },
+                                                "order": { "$in": [] }
+                                            }
+                                        };
+                                        for(var i=0; i<idss.length; i++)
+                                        {
+                                            updateThese["$pull"]["list"]["$in"].push(idss[i]);
+                                            updateThese["$pull"]["order"]["$in"].push(idss[i]);
+                                           
+                                            if(idss[i].indexOf('.') != -1){
+                                                updateThese["$unset"]["map." + idss[i].replace(/\./g,':')] = 1;
+                                                updateThese["$unset"]["segments." + idss[i].replace(/\./g,':')] = 1;
+                                            }
+                                            else{
+                                                updateThese["$unset"]["map." + idss[i]] = 1;
+                                                updateThese["$unset"]["segments." + idss[i]] = 1;
+                                            }
+                                        }
+                                        
+                                        common.db.collection('events').update({"_id":common.db.ObjectID(app_id)}, updateThese, function (err, events) {
+                                            if(err)
                                             {
                                                 console.log(err);
-                                                 common.returnMessage(params, 400, err);
+                                                common.returnMessage(params, 400, err);
                                             }
-                                        );
+                                            else
+                                            {
+                                                for(var i=0; i<idss.length; i++)
+                                                {
+                                                    
+                                                    var collectionNameWoPrefix = crypto.createHash('sha1').update(idss[i] + app_id).digest('hex');
+                                                    common.db.collection("events" + collectionNameWoPrefix).drop();
+                                                    plugins.dispatch("/i/event/delete", {event_key:idss[i],appId:app_id});
+                                                }
+                                                plugins.dispatch("/systemlogs", {params:params, action:"event_deleted", data:{events:idss,appID:app_id}});
+                                                common.returnMessage(params, 200, 'Success');
+                                            }
+                                        });   
                                     },params);
                                     break;
                                 }
