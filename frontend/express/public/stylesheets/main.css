@@ -1025,7 +1025,7 @@ table.events-table { width:100%; padding:0; margin:0; border: 1px solid #D0D0D0;
 table.events-table  th { padding:10px 10px; color: #484848; font-weight:normal; font:11px Ubuntu,Helvetica,sans-serif;  border-right:none; background-color:#ECECEC; text-transform: uppercase; line-height: 12px; text-align: left; border-bottom: 1px solid #E2E2E2; border-top: 1px solid #D0D0D0;
     }
 table.events-table  thead tr { background-color:transparent; }
-table.events-table  td { padding: 10px 10px; margin:0;  color:#6B6B6B; font-family: Oswald; font-size: 12px; line-height: 18px;  margin: 0;}
+table.events-table  td { padding: 10px 10px; margin:0;  color:#6B6B6B; font-family: Ubuntu; font-size: 12px; line-height: 18px;  margin: 0;}
 table.events-table  td:first-child { width:30px; }
 table.events-table  td:nth-child(2) { width:30px; }
 table.events-table  td:nth-child(3) { width:190px; }
