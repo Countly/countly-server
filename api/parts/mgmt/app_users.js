@@ -54,7 +54,7 @@ var usersApi = {},
         if(Object.keys(update).length){
             for(var i in update){
                 if(i.indexOf("$") !== 0){
-                    var err = "Unkown modifier " + i + " in " + update + " for " + params.href
+                    var err = "Unkown modifier " + i + " in " + update + " for " + query
                     console.log(err);
                     if(callback)
                         callback(err);
@@ -255,7 +255,7 @@ var usersApi = {},
                     oldAppUser.did = new_device_id + "";
                     oldAppUser._id = new_id;
                     usersApi.create(app_id, oldAppUser, function(){
-                        common.db.collection('app_users' + params.app_id).remove({_id:old_id}, function(err, res){
+                        common.db.collection('app_users' + app_id).remove({_id:old_id}, function(err, res){
                             if(callback)
                                 callback(err, oldAppUser);
                         });
