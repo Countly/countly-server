@@ -214,7 +214,7 @@ var usersApi = {},
                 }
             }
             //update new user
-            usersApi.update(app_id, {_id:newAppUser._id}, {'$set': newAppUser}, , function(){
+            usersApi.update(app_id, {_id:newAppUser._id}, {'$set': newAppUser}, function(){
                 //delete old user
                 common.db.collection('app_users' + app_id).remove({_id:oldAppUser._id}, function(err, res){
                     //let plugins know they need to merge user data
