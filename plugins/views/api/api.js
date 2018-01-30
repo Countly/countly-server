@@ -33,12 +33,19 @@ var plugin = {},
     });
     
     plugins.register("/i/device_id", function(ob){
-		var params = ob.params;
-		var appId = params.app_id;
+		var appId = ob.app_id;
 		var oldUid = ob.oldUser.uid;
 		var newUid = ob.newUser.uid;
         if(oldUid != newUid){
             common.db.collection("app_views" +  appId).update({uid:oldUid}, {'$set': {uid:newUid}}, {multi:true} ,function(err, res){});
+        }
+	});
+    
+    plugins.register("/i/app_users/delete", function(ob){
+		var appId = ob.app_id;
+		var uids = ob.uids;
+        if(uids && uids.length){
+            common.db.collection("app_views" +  appId).remove({uid:{$in:uids}}, function(err) {});
         }
 	});
     
