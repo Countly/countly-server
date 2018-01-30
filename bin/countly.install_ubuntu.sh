@@ -22,7 +22,7 @@ fi
 
 #add node.js repo
 #echo | apt-add-repository ppa:chris-lea/node.js
-wget -qO- https://deb.nodesource.com/setup_6.x | bash -
+wget -qO- https://deb.nodesource.com/setup_8.x | bash -
 
 #update once more after adding new repos
 apt-get update
