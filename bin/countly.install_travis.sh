@@ -56,6 +56,7 @@ apt-get -y install supervisor || (echo "Failed to install supervisor." ; exit)
 #apt-get -y install sendmail
 
 #install grunt & npm modules
+NPM_CONFIG_PREFIX=~/.npm-global
 ( cd $DIR/.. ; npm install -g grunt-cli --unsafe-perm ; npm install )
 
 #install mongodb
