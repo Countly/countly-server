@@ -151,7 +151,7 @@ if (cluster.isMaster) {
         },
         mgmt:{
             users:require('./parts/mgmt/users.js'),
-            app:require('./parts/mgmt/apps.js'),
+            apps:require('./parts/mgmt/apps.js'),
             appUsers:require('./parts/mgmt/app_users.js')
         }
     };
