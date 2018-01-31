@@ -1497,9 +1497,7 @@
         var rangeNames = _.pluck(rangeData.chartData, 'range'),
             rangeTotal = _.pluck(rangeData.chartData, 't'),
             barData = [],
-            sum = 0,
             maxItems = 3,
-            totalPercent = 0,
             totalSum = 0;
 
         rangeTotal.forEach(function(r) {
@@ -1517,11 +1515,6 @@
         }
 
         for (var i = 0; i < maxItems; i++) {
-            sum += rangeTotal[i];
-        }
-
-        for (var i = 0; i < maxItems; i++) {
-
             var percent = Math.floor((rangeTotal[i] / totalSum) * 100);
             barData[i] = { "name": rangeNames[i], "percent": percent };
         }
