@@ -2486,18 +2486,41 @@ window.EventsBlueprintView = countlyView.extend({
         $(".event-container").unbind("click");
         $(".event-container").on("click", function () {
             var tmpCurrEvent = $(this).attr("data-key") || "";
-            $(".event-container").removeClass("active");
-            $(this).addClass("active");
-            if(tmpCurrEvent!="")
+            var myitem = this;
+            if($("#events-apply-changes").css('display')=="none")
             {
-                self.selectedSubmenu = tmpCurrEvent;
-                countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true,true); });
+                $(".event-container").removeClass("active");
+                $(myitem).addClass("active");
+                if(tmpCurrEvent!="")
+                {
+                    self.selectedSubmenu = tmpCurrEvent;
+                    countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true,true); });
+                }
+                else
+                {
+                    self.selectedSubmenu = "";
+                    countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true,false); });
+                }
             }
             else
             {
-                self.selectedSubmenu = "";
-                countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true,false); });
-            }       
+                CountlyHelpers.confirm(jQuery.i18n.map["events.general.want-to-discard"], "red",function(result) {
+                    if (!result) {return true;}
+                    
+                    $(".event-container").removeClass("active");
+                    $(myitem).addClass("active");
+                    if(tmpCurrEvent!="")
+                    {
+                        self.selectedSubmenu = tmpCurrEvent;
+                        countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true,true); });
+                    }
+                    else
+                    {
+                        self.selectedSubmenu = "";
+                        countlyEvent.setActiveEvent(tmpCurrEvent, function() { self.refresh(true,false); });
+                    }
+                },[jQuery.i18n.map["events.general.cancel"],jQuery.i18n.map['events.general.confirm']]);
+            }
         });
         
         //General settings, select all checkbox
@@ -2530,6 +2553,44 @@ window.EventsBlueprintView = countlyView.extend({
                 $("#events-apply-order").css('display','block');
             }
         });
+        
+        //general - show/hide button in dropdown
+        $('#events-custom-settings').on('click', '.event_toggle_visibility', function() {
+            var event = $(this).attr('data');
+            var toggleto = $(this).attr('data-changeto');
+            countlyEvent.update_visibility([event],toggleto,function(result)
+            {
+                if(result==true)
+                {
+                    var msg = {title:" ", message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"info"};
+                    CountlyHelpers.notify(msg);
+                    self.refresh(true,false);
+                }
+                else
+                    CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
+            });
+        });
+        
+         //general - delete button in dropdown
+         $('#events-custom-settings').on('click', '.delete_single_event', function() {
+            var event = $(this).attr('data');
+            CountlyHelpers.confirm(jQuery.i18n.map["event.general.want-delete"], "red",function(result) {
+                if (!result) {return true;}
+                countlyEvent.delete_events([event],function(result)
+                {
+                    if(result==true)
+                    {
+                        var msg = {title:" ", message: jQuery.i18n.map["events.general.events-deleted"],info:"", sticky:false,clearAll:true,type:"info"};
+                        CountlyHelpers.notify(msg);
+                        self.refresh(true,false);
+                    }
+                    else
+                        CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
+                });
+            },[jQuery.i18n.map["events.general.cancel"],jQuery.i18n.map['events.general.confirm']]);
+        });
+        
+        
         //hide apply button
         $("#events-apply-changes").css('display','none');
         $("#events-apply-order").css('display','none');
@@ -2547,13 +2608,28 @@ window.EventsBlueprintView = countlyView.extend({
                this.activeEvent = eventmap[i]; 
         }
         
+        var for_general = countlyEvent.getEventMap(true);
+        if(self.visibilityFilter===true || self.visibilityFilter===false)
+        {
+            var keys = Object.keys(for_general);
+            for(var i=0; i<keys.length; i++)
+            {
+                if(for_general[keys[i]].is_visible!=self.visibilityFilter)
+                {
+                    delete for_general[keys[i]];
+                }
+            }
+        }
+        
         this.templateData = {
             "page-title":eventData.eventName.toUpperCase(),
             "logo-class":"events",
             "events":eventmap,
-            "event-map":countlyEvent.getEventMap(true),
+            "event-map":for_general,
             "submenu":this.selectedSubmenu || "",
             "active-event":this.activeEvent || eventmap[0],
+            "visible":jQuery.i18n.map["events.general.status.visible"],
+            "hidden":jQuery.i18n.map["events.general.status.hidden"]
         };
         
         if (countlyEvent.getEvents(true).length == 0) {
@@ -2574,6 +2650,7 @@ window.EventsBlueprintView = countlyView.extend({
         }
         
         if (!isRefresh) {
+            this.visibilityFilter="";
             this.selectedSubmenu = "";
             $(this.el).html(this.template(this.templateData));
             self.check_changes();
@@ -2591,6 +2668,31 @@ window.EventsBlueprintView = countlyView.extend({
                 self.check_changes();
             });
             
+            
+             $("a").on("click", function (e) {
+                if($("#events-apply-changes").length && $("#events-apply-changes").css('display')!="none")
+                {
+                    var mytarget = e.target;
+                    CountlyHelpers.confirm(jQuery.i18n.map["events.general.want-to-discard"], "red",function(result) {
+                        if (!result) {return true;}
+                        $("a").unbind("click");
+                        $(e.target).trigger("click");
+                        
+                        
+                    },[jQuery.i18n.map["events.general.cancel"],jQuery.i18n.map['events.general.confirm']]); 
+                    return false;                    
+                }
+            });
+            
+            //general settings action
+            $("body").off("click", ".options-item .edit").on("click", ".options-item .edit", function () {
+                $(this).next(".edit-menu").fadeToggle();        
+            });
+            $("body").off("mouseleave").on("mouseleave", ".options-item", function () {
+                $(this).find(".edit").next(".edit-menu").fadeOut();
+            });
+            
+        
             //General, apply new order
             $("#events-apply-order").on("click", function () {
                 var eventOrder = [];
@@ -2599,7 +2701,7 @@ window.EventsBlueprintView = countlyView.extend({
                         eventOrder.push($(this).attr("data-event-key"));
                     }
                 });
-                countlyEvent.update_map("",JSON.stringify(eventOrder),function(result)
+                countlyEvent.update_map("",JSON.stringify(eventOrder),"",function(result)
                 {
                     if(result==true)
                     {
@@ -2612,6 +2714,17 @@ window.EventsBlueprintView = countlyView.extend({
                 });
             });
             
+            $("#events-general-filter").on("cly-select-change", function(e, selected) {
+                 if (selected) {
+                    if(selected=='hidden')
+                        self.visibilityFilter = false;
+                    else if(selected=='visible')
+                        self.visibilityFilter = true;
+                    else
+                        self.visibilityFilter="";
+                    self.refresh(true);
+                }
+            });
             //actions change
              $("#events-general-action").on("cly-select-change", function(e, selected) {
                 if (selected) {
@@ -2643,7 +2756,7 @@ window.EventsBlueprintView = countlyView.extend({
                         }
                         else if(selected=="delete")
                         {
-                             CountlyHelpers.confirm(jQuery.i18n.map["event.general.want-delete"], "red",function(result) {
+                             CountlyHelpers.confirm(jQuery.i18n.map["events.general.want-delete"], "red",function(result) {
                                 if (!result) {return true;}
                                 countlyEvent.delete_events(changeList,function(result)
                                 {
@@ -2685,7 +2798,7 @@ window.EventsBlueprintView = countlyView.extend({
                 else
                     eventMap[eventKey]["is_visible"]=false;
                 
-                countlyEvent.update_map(JSON.stringify(eventMap),"",function(result)
+                countlyEvent.update_map(JSON.stringify(eventMap),"","",function(result)
                 {
                     if(result==true)
                     {
@@ -2749,6 +2862,7 @@ window.EventsBlueprintView = countlyView.extend({
                 $(self.el).find("#event-nav-eventitems").html(newPage.find("#event-nav-eventitems").html());//reset navigation
                 self.pageScript(); //add scripts
                 app.localize($("#events-event-settings"));
+                app.localize($("#events-custom-settings-table"));
                 if(self.selectedSubmenu=="")
                 {
                     $('#events-event-settings').css("display","none");
@@ -2762,6 +2876,233 @@ window.EventsBlueprintView = countlyView.extend({
             });
         }
     }  
+});
+
+window.EventsOverviewView = countlyView.extend({
+    beforeRender: function() {},
+    initialize:function () {
+        var previousEvent = countlyCommon.getPersistentSettings()["activeEvent_" + countlyCommon.ACTIVE_APP_ID];
+        if(previousEvent)
+            countlyEvent.setActiveEvent(previousEvent);
+        this.template = Handlebars.compile($("#template-events-overview").html()); 
+    },
+    pageScripts()
+    {
+        var self=this;
+        $(".spark").sparkline('html', {
+                            type: 'line',
+                            height: '40',
+                            width: '150',
+                            lineColor: '#49c1e9',
+                            fillColor: "transparent",
+                            lineWidth: 1.5,
+                            spotColor: '#49c1e9',
+                            minSpotColor: "transparent",
+                            maxSpotColor: "transparent",
+                            highlightSpotColor: "transparent",
+                            highlightLineColor: "transparent",
+                            spotRadius: 3,
+                            drawNormalOnTop: false,
+                            disableTooltips: true
+                        });
+            $(".events-table").sortable({
+                items:"tbody tr",
+                revert:true,
+                handle:"td:first-child",
+                helper:function (e, elem) {
+                    elem.children().each(function () {
+                        $(this).width($(this).width());
+                    });
+                    elem.addClass("moving");
+                    return elem;
+                },
+                cursor:"move",
+                containment:"parent",
+                tolerance:"pointer",
+                placeholder:"event-row-placeholder",
+                stop:function (e, elem) {
+                    elem.item.removeClass("moving");
+                    self.order_changed();
+                    $("#events-apply-order").css('display','block');
+                }
+            });
+        //removes item from overview List
+        $(".delete-event-overview").on("click",function(){
+            if ($(this).attr("data-order-key")) {
+                var oldKey = $(this).attr("data-order-key");
+                self.overviewList.splice(oldKey,1);
+                for(var i=0; i<self.overviewList.length; i++)
+                {
+                    self.overviewList[i]["order"] = i;
+                }
+            }
+            self.refresh(true);
+        });
+    },
+    reloadGraphs:function(){
+    var self = this;
+        countlyEvent.getOverviewData(function(dd){
+            self.overviewGraph = dd;
+            for(var i=0; i<dd.length; i++)
+            {
+                var tt = self.fixTrend(dd[i]["trend"])
+                    dd[i]["trendClass"] =tt["class"];
+                    dd[i]["trendText"] = tt["text"];
+            }           
+            self.refresh(true);
+        });
+    },
+    dateChanged: function () {
+        var self=this;
+        self.reloadGraphs();
+    },
+    order_changed:function(){
+        //self.eventmap
+        var self = this;
+        console.log("order change");
+         var NeweventOrder = [];
+        
+        $("#event-overview-drawer .events-table").find(".delete-event-overview").each(function () {
+            console.log("found");
+           if ($(this).attr("data-order-key")){
+                
+                var i = $(this).attr("data-order-key");
+                console.log(i);
+                $(this).attr("data-order-key",NeweventOrder.length);
+                NeweventOrder.push({"order": NeweventOrder.length,"eventKey":self.overviewList[i].eventKey,"eventProperty":self.overviewList[i].eventProperty,"eventName":self.overviewList[i].eventName,"propertyName":self.overviewList[i].propertyName});
+                
+                $("#update_overview_button").removeClass('disabled');
+            }
+        });
+        self.overviewList = NeweventOrder;
+    },
+    fixTrend:function(changePercent) {
+        var value ={"class":"","text":""};
+        if (changePercent.indexOf("-") !== -1) {
+            value["text"] = changePercent;
+            value["class"] = "down";
+        } else if (changePercent.indexOf("∞") !== -1 || changePercent.indexOf("NA") !== -1) {
+            value["text"] = jQuery.i18n.map["events.overview.unknown"];
+            value["class"] = "unknown";
+        } else {
+            value["text"] = changePercent;
+            value["class"] = "up";
+        }
+        return value;
+    },
+    renderCommon:function (isRefresh) {
+        var eventData = countlyEvent.getEventData(),
+            eventSummary = countlyEvent.getEventSummary(),
+            self = this;
+        this.currentOverviewList = countlyEvent.getOverviewList();
+
+        this.eventmap = countlyEvent.getEventMap();
+        this.templateData = {
+            "logo-class":"events",
+            "event-map": this.eventmap,
+            "overview-list":this.overviewList || [],
+            "overview-graph":this.overviewGraph || []
+        };
+        if (!isRefresh) {
+            var overviewList = countlyEvent.getOverviewList();
+
+            this.overviewList = [];
+            for(var i=0; i<overviewList.length; i++)
+            {
+                this.overviewList.push({"order":i,"eventKey":overviewList[i].eventKey,"eventProperty":overviewList[i].eventProperty,"eventName":overviewList[i].eventName,"propertyName":overviewList[i].propertyName});
+            }
+            
+            this.templateData["overview-list"] = this.overviewList;
+            $(this.el).html(this.template(this.templateData));
+                        
+            
+            self.pageScripts();
+        
+            $(".cly-select").on("cly-select-change", function(e, selected) {
+            
+                var event =  $("#events-overview-event").clySelectGetSelection();
+                var property = $("#events-overview-attr").clySelectGetSelection();
+                if(event && property)
+                {
+                    $("#add_to_overview").removeClass('disabled');
+                }
+                else
+                {
+                    $("#add_to_overview").addClass('disabled');
+                }
+            });
+            
+            $("#events-overview-show-configure").on("click", function () {
+                $(".cly-drawer").removeClass("open editing");
+                $("#event-overview-drawer").addClass("open");
+                $("#event-overview-drawer").find(".close").off("click").on("click", function() {
+                    $(this).parents(".cly-drawer").removeClass("open");
+                });
+            });
+            
+            $("#add_to_overview").on("click", function () {
+               var event =  $("#events-overview-event").clySelectGetSelection();
+               var property = $("#events-overview-attr").clySelectGetSelection();
+                if(event && property)
+                {
+                    if(self.overviewList.length<10)
+                    {
+                        self.overviewList.push({eventKey:event,eventProperty:property,eventName:self.eventmap[event].name,propertyName:self.eventmap[event][property]||jQuery.i18n.map["events.table."+property],order:self.overviewList.length});
+                        $("#events-overview-event").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-event"]);
+                        $("#events-overview-attr").clySelectSetSelection("", jQuery.i18n.map["events.overview.choose-property"]);
+                        $("#update_overview_button").removeClass('disabled');
+                    }
+                    else
+                    {
+                        var msg = {title:" ", message: jQuery.i18n.map["events.overview.max-10"],info:"", sticky:false,clearAll:true,type:"info"};
+                        CountlyHelpers.notify(msg);
+                    } 
+                }
+                self.refresh(true);
+            });
+            
+            $("#update_overview_button").on("click", function () {
+                countlyEvent.update_map("","",JSON.stringify(self.overviewList),function(result)
+                {
+                    console.log(self.overviewList);
+                    if(result==true)
+                    {
+                        var msg = {title:" ", message: jQuery.i18n.map["events.general.changes-saved"],info:"", sticky:false,clearAll:true,type:"info"};
+                        CountlyHelpers.notify(msg);
+                        $("#event-overview-drawer").removeClass('open');
+                        $.when(countlyEvent.initialize(true)).then(function () {
+                            console.log("refreshed");
+                            var overviewList = countlyEvent.getOverviewList();
+                            this.overviewList = [];
+                            for(var i=0; i<overviewList.length; i++)
+                            {
+                                this.overviewList.push({"order":i,"eventKey":overviewList[i].eventKey,"eventProperty":overviewList[i].eventProperty,"eventName":overviewList[i].eventName,"propertyName":overviewList[i].propertyName});
+                            }
+                            
+                            self.dateChanged();
+                        });
+                    }
+                    else
+                        CountlyHelpers.alert(jQuery.i18n.map["events.general.update-not-successful"],"red");
+                });
+            });
+            
+            self.reloadGraphs();
+        }
+    },
+    refresh:function(dataChanged)
+    {
+        var self = this;
+        if(dataChanged)
+        {
+            self.renderCommon(true);
+            newPage = $("<div>" + self.template(self.templateData) + "</div>");
+            $(self.el).find("#events-overview-table").html(newPage.find("#events-overview-table").html());//Event settings
+             $(self.el).find("#overviewWidgets").html(newPage.find("#overviewWidgets").html());
+            
+             self.pageScripts();
+        }
+    }
 });
 
 window.EventsView = countlyView.extend({
@@ -3268,7 +3609,7 @@ app.manageAppsView = new ManageAppsView();
 app.manageUsersView = new ManageUsersView();
 app.eventsView = new EventsView();
 app.eventsBlueprintView = new EventsBlueprintView();
-app.dashboardView = new DashboardView();
+app.eventsOverviewView = new EventsOverviewView();
 app.longTaskView = new LongTaskView();
 
 app.route("/analytics/sessions","sessions", function () {
@@ -3326,6 +3667,8 @@ app.route("/analytics/events/:subpageid","events", function (subpageid) {
     this.eventsView.subpageid = subpageid;
     if(subpageid=='blueprint')
         this.renderWhenReady(this.eventsBlueprintView);
+    else if(subpageid=='overview')
+        this.renderWhenReady(this.eventsOverviewView);
     else
         this.renderWhenReady(this.eventsView)
 });

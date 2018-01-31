@@ -666,6 +666,15 @@ if (cluster.isMaster) {
                                                     }                                                    
                                                 }
                                             }
+                                            
+                                            if(params.qstring.event_overview && params.qstring.event_overview!="")
+                                            {
+                                                try{update_array['overview']= JSON.parse(params.qstring.event_overview);}
+                                                catch (SyntaxError) {update_array['overview']={}; console.log('Parse ' + params.qstring.event_overview + ' JSON failed', req.url, req.body);}
+                                            }
+                                            else
+                                                update_array['overview'] = event.overview;
+                                                
                         
                                             common.db.collection('events').update({"_id":common.db.ObjectID(params.qstring.app_id)}, {'$set':update_array}, function (err, events) {
                                                 if(err){
@@ -675,11 +684,13 @@ if (cluster.isMaster) {
                                                 {
                                                     common.returnMessage(params, 200, 'Success');
                                                     var data_arr = {update:update_array};
-                                                    data_arr.before = {order:[],map:{}};
+                                                    data_arr.before = {order:[],map:{},overview:[]};
                                                     if(event.order)
                                                         data_arr.before.order = event.order;
                                                     if(event.map)
                                                          data_arr.before.map = event.map;
+                                                    if(event.overview)
+                                                         data_arr.before.overview = event.overview;
                                                     plugins.dispatch("/systemlogs", {params:params, action:"events_updated", data:data_arr});
                                                 }
                                             });
@@ -1144,8 +1155,19 @@ if (cluster.isMaster) {
                                         } catch (SyntaxError) {
                                             console.log('Parse events array failed', params.qstring.events, req.url, req.body);
                                         }
-            
-                                        validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventData);
+                                        if(params.qstring.overview)
+                                        {
+                                            validateUserForDataReadAPI(params, function(){
+                                            
+                                                countlyApi.data.fetch.fetchDataEventsOverview(params);
+                                                
+
+                                            });
+                                        }
+                                        else
+                                        {
+                                            validateUserForDataReadAPI(params, countlyApi.data.fetch.fetchMergedEventData);
+                                        }
                                     } else {
                                         validateUserForDataReadAPI(params, countlyApi.data.fetch.prefetchEventData, params.qstring.method);
                                     }

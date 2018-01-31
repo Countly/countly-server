@@ -11,6 +11,7 @@
         _activeAppKey = 0,
         _initialized = false,
         _period = null;
+        _overviewList = [];
 
     //Public Methods
     countlyEvent.initialize = function(forceReload) {
@@ -68,15 +69,82 @@
         }
     };
     
+    countlyEvent.getOverviewList = function(){
+        if(_activeEvents && _activeEvents.overview)
+        {
+            return _activeEvents.overview;
+        }
+        else
+            return [];
+    }
+    
+    countlyEvent.getOverviewData = function(callback){
+        var my_events = [];
+        var _overviewData = [];
+        for(var i=0; i<_activeEvents.overview.length; i++)
+        {
+            if(my_events.indexOf(_activeEvents.overview[i].eventKey)==-1)
+                my_events.push(_activeEvents.overview[i].eventKey);
+        }
+
+        $.ajax({
+            type: "GET",
+            url: countlyCommon.API_PARTS.data.r,
+            data: {
+                "app_id" : countlyCommon.ACTIVE_APP_ID,
+                "method" : "events",
+                "events": JSON.stringify(my_events),
+                "period":countlyCommon.getPeriod(),
+                "timezone":countlyGlobal['defaultApp']['timezone'],
+                "timestamp": new Date().getTime(),
+                "overview":true
+            },
+            dataType: "json",
+            success: function(json) {
+                _overviewData = [];
+               
+               for(var i=0; i<_activeEvents.overview.length; i++)
+               {
+                    var event_key = _activeEvents.overview[i].eventKey;
+                    var column = _activeEvents.overview[i].eventProperty;
+                
+                    if(event_key && column)
+                    {
+                    var name = _activeEvents.overview[i].eventKey;
+                   
+                    if(_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key]["name"])
+                    {
+                        name =  _activeEvents.map[event_key]["name"];
+                    }
+                    var property = column;
+                    if(_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key][column])
+                    {
+                        property = _activeEvents.map[event_key][column];
+                    }
+                    var  description="";
+                    if(_activeEvents.map && _activeEvents.map[event_key] && _activeEvents.map[event_key]["description"])
+                    {
+                        description = _activeEvents.map[event_key]["description"];
+                    }
+;
+                   _overviewData.push({"name":name,"prop":property,"description":description,"key":event_key,"property":_activeEvents.overview[i].propertyKey,"data":json[event_key]["data"][column]['sparkline'],"count":json[event_key]["data"][column]['total'],"trend":json[event_key]["data"][column]['change']});
+                   }
+               }
+                callback(_overviewData);
+            }
+        });
+
+    };
     //updates event map for current app
-    countlyEvent.update_map = function(event_map,event_order,callback){
+    countlyEvent.update_map = function(event_map,event_order,event_overview,callback){
         $.ajax({
             type:"POST",
             url:countlyCommon.API_PARTS.data.w+"/events/edit_map",
             data:{
                 "app_id":countlyCommon.ACTIVE_APP_ID,
                 "event_map":event_map,
-                "event_order":event_order
+                "event_order":event_order,
+                "event_overview":event_overview
             },
             success:function (result) {callback(true);},
             error:function (xhr, status, error) {
@@ -363,8 +431,8 @@
 
         return eventData;
     };
-
-    countlyEvent.getEvents = function() {
+    
+    countlyEvent.getEvents = function(get_hidden) {
         var events = (_activeEvents)? ((_activeEvents.list)? _activeEvents.list : []) : [],
             eventMap = (_activeEvents)? ((_activeEvents.map)? _activeEvents.map : {}) : {},
             eventOrder = (_activeEvents)? ((_activeEvents.order)? _activeEvents.order : []) : [],
@@ -380,17 +448,21 @@
 
             if (eventMap[mapKey] && eventMap[mapKey]) {
                 if(typeof eventMap[mapKey]["is_visible"] == "undefined")
-                    eventMap[mapKey]["is_visible"] = true;
-                arrayToUse.push({
-                    "key": events[i],
-                    "name": eventMap[mapKey]["name"] || events[i],
-                    "description": eventMap[mapKey]["description"] || "",
-                    "count": eventMap[mapKey]["count"] || "",
-                    "sum": eventMap[mapKey]["sum"] || "",
-                    "dur": eventMap[mapKey]["dur"] || "",
-                    "is_visible":eventMap[mapKey]["is_visible"],
-                    "is_active": (_activeEvent == events[i])
-                });
+                    eventMap[mapKey]["is_visible"]=true;
+                if(eventMap[mapKey]["is_visible"] || get_hidden)
+                {
+                    arrayToUse.push({
+                        "key": events[i],
+                        "name": eventMap[mapKey]["name"] || events[i],
+                        "description": eventMap[mapKey]["description"] || "",
+                        "count": eventMap[mapKey]["count"] || "",
+                        "sum": eventMap[mapKey]["sum"] || "",
+                        "dur": eventMap[mapKey]["dur"] || "",
+                        "is_visible":eventMap[mapKey]["is_visible"],
+                        "is_active": (_activeEvent == events[i])
+                   
+                    });
+                }
             } else {
                 arrayToUse.push({
                     "key": events[i],
@@ -405,7 +477,6 @@
             }
         }
         
-
         eventsWithOrder = _.sortBy(eventsWithOrder, function(event){ return eventOrder.indexOf(event.key); });
         eventsWithoutOrder = _.sortBy(eventsWithoutOrder, function(event){ return event.key; });
 
@@ -449,8 +520,8 @@
         return eventNames;
     };
 
-    countlyEvent.getEventMap = function() {
-        var events = countlyEvent.getEvents(),
+    countlyEvent.getEventMap = function(get_hidden) {
+        var events = countlyEvent.getEvents(get_hidden),
             eventMap = {};
 
         for (var i = 0; i < events.length; i++) {

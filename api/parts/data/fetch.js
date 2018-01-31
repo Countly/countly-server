@@ -602,6 +602,36 @@ var fetch = {},
 		}
     };
     
+    fetch.fetchDataEventsOverview=function(params){
+         var ob = {
+            app_id: params.qstring.app_id,
+            appTimezone:params.qstring.timezone,
+            qstring: {
+                period: params.qstring.period
+            },
+            time: common.initTimeObj(params.qstring.timezone, params.qstring.timestamp)
+        };
+        
+        if(Array.isArray(params.qstring.events)){
+            var data = {};
+            async.each(params.qstring.events, function(event, done){
+                var collectionName = "events" + crypto.createHash('sha1').update(event+params.qstring.app_id).digest('hex');
+                    fetch.getTimeObjForEvents(collectionName, ob, function(doc) {
+                        countlyEvents.setDb(doc || {});
+                        var my_line1 = countlyEvents.getNumber("c");
+                         var my_line2 = countlyEvents.getNumber("s");
+                          var my_line3 = countlyEvents.getNumber("dur");
+                        data[event]={}
+                        data[event].data = {"count":my_line1,"sum":my_line2,"dur":my_line3};
+                        done();
+                    });
+                }, 
+                function(){
+                 common.returnOutput(params, data);
+            });
+        }
+    };
+    
     fetch.fetchEvents = function(params) {
         if(params.qstring.event && params.qstring.event.length){
             var collectionName = "events" + crypto.createHash('sha1').update(params.qstring.event+params.app_id).digest('hex');
