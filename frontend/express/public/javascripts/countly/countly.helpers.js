@@ -1715,10 +1715,12 @@
                     }
                     if(shouldDelete)
                         delete oSVersionData.chartData[i];
+                        delete platformVersionTotal[i];
                 }
             }
 
             oSVersionData.chartData = _.compact(oSVersionData.chartData);
+            platformVersionTotal = _.compact(platformVersionTotal);
 
             var platformVersionNames = _.pluck(oSVersionData.chartData, metric || _name),
                 platformNames = [];
