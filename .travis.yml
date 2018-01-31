@@ -22,6 +22,7 @@ before_script:
   - mongod --version
   - cat /var/log/mongodb/mongod.log
   - until nc -z localhost 27017; do echo Waiting for MongoDB; sleep 1; done
+  - sleep 10
 script: sudo npm test
 after_script: 
   - cat log/countly-api.log
